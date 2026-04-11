@@ -21,7 +21,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>루멘수학 학생앱 v1-4</title>
+<title>루멘수학 학생앱 v1-8</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -100,13 +100,19 @@ html, body { height: 100%; background: #f8fafc; font-family: 'Apple SD Gothic Ne
 .pa {
   width: 50px; height: 50px; border-radius: 50%;
   background: linear-gradient(135deg, var(--red), #ff6b7a);
-  display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 900; color: white; flex-shrink: 0;
+  letter-spacing: -1px;
 }
-.pi .pname { font-size: 18px; font-weight: 900; color: var(--text); }
-.pi .pgrade { font-size: 12px; color: var(--sub); margin-top: 3px; }
+.pi {
+  display: flex; align-items: center; gap: 0; flex: 1; min-width: 0;
+}
+.pi .pname { font-size: 22px; font-weight: 900; color: var(--text); white-space: nowrap; }
+.pi .pdot { font-size: 14px; color: #cbd5e1; margin: 0 6px; flex-shrink: 0; }
+.pi .pgrade { font-size: 13px; font-weight: 600; color: var(--sub); white-space: nowrap; }
 .pbadge {
-  margin-left: auto; background: var(--red); color: white;
-  font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+  margin-left: auto; background: #059669; color: white;
+  font-size: 10px; font-weight: 800; padding: 5px 11px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
 }
 .mission-card {
   background: linear-gradient(135deg, var(--navy), var(--navy2));
@@ -135,8 +141,23 @@ html, body { height: 100%; background: #f8fafc; font-family: 'Apple SD Gothic Ne
   position: absolute; top: 9px; right: 9px; border-radius: 20px;
   padding: 3px 8px; font-size: 10px; font-weight: 800;
 }
-.fbadge.soon { background: #fef3c7; color: #92400e; }
-.fbadge.lock { background: #f1f5f9; color: var(--sub); }
+.fbadge.soon { background: #fee2e2; color: #991b1b; }
+.fbadge.lock { background: #fee2e2; color: #991b1b; }
+
+/* 제출 목록 */
+.sub-list-wrap { margin-top: 14px; }
+.sub-list-title { font-size: 12px; font-weight: 800; color: var(--sub); margin-bottom: 10px; letter-spacing: 0.5px; }
+.sub-item {
+  background: white; border-radius: 13px; padding: 13px 15px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05); border: 1.5px solid #f1f5f9;
+}
+.sub-item-icon { font-size: 20px; flex-shrink: 0; }
+.sub-item-info { flex: 1; min-width: 0; }
+.sub-item-title { font-size: 13px; font-weight: 800; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sub-item-meta { font-size: 11px; color: var(--sub); margin-top: 2px; }
+.sub-item-type { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px; background: #f1f5f9; color: var(--sub); flex-shrink: 0; }
+.sub-empty { text-align: center; padding: 20px; font-size: 13px; color: #94a3b8; }
 
 /* 서브 화면 공통 */
 .sub-hdr {
@@ -230,13 +251,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         onkeydown="if(event.key==='Enter')loginCode()">
     </div>
     <button class="btn-lp prim" onclick="loginCode()">🔑 코드로 시작</button>
-    <div class="div-or">또는</div>
-    <div class="ig">
-      <label>이름으로 테스트 (코드 없이)</label>
-      <input id="name-inp" type="text" placeholder="홍길동" maxlength="10"
-        onkeydown="if(event.key==='Enter')loginName()">
-    </div>
-    <button class="btn-lp sec" onclick="loginName()">👤 테스트로 시작</button>
+
     <div class="lerr" id="lerr"></div>
   </div>
 </div>
@@ -255,12 +270,13 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
   </div>
   <div class="home-body">
     <div class="profile-card">
-      <div class="pa">🎓</div>
+      <div class="pa" id="h-initial">윤</div>
       <div class="pi">
-        <div class="pname" id="h-name">학생</div>
-        <div class="pgrade" id="h-grade">루멘수학</div>
+        <span class="pname" id="h-name">학생</span>
+        <span class="pdot">·</span>
+        <span class="pgrade" id="h-grade">루멘수학</span>
       </div>
-      <div class="pbadge" id="h-badge">수학중</div>
+      <div class="pbadge" id="h-badge">수강중</div>
     </div>
     <div class="mission-card">
       <div class="mlabel">📌 오늘의 미션</div>
@@ -272,22 +288,23 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <div class="ficon">🎙️</div>
         <div><div class="fname">녹음제출</div><div class="fdesc">개념 설명<br>녹음 올리기</div></div>
       </button>
-      <button class="feat-btn on" onclick="go('screen-planner')">
+      <button class="feat-btn locked" onclick="goLock('플래너', '플래너 채점 연동 후\n사용 가능해요!')">
+        <div class="fbadge lock">🔒 개발중</div>
         <div class="ficon">📓</div>
         <div><div class="fname">플래너</div><div class="fdesc">플래너 사진<br>제출하기</div></div>
       </button>
       <button class="feat-btn locked" onclick="goLock('레벨확인', '나의 현재 레벨과 배지를\n확인하는 기능이에요.')">
-        <div class="fbadge soon">준비중</div>
+        <div class="fbadge lock">🔒 개발중</div>
         <div class="ficon">🏆</div>
         <div><div class="fname">레벨확인</div><div class="fdesc">내 레벨과<br>배지 보기</div></div>
       </button>
       <button class="feat-btn locked" onclick="goLock('숙제현황', '숙제 진행 현황과\n완료율을 확인하는 기능이에요.')">
-        <div class="fbadge lock">🔒 잠금</div>
+        <div class="fbadge lock">🔒 개발중</div>
         <div class="ficon">✅</div>
         <div><div class="fname">숙제현황</div><div class="fdesc">숙제 완료<br>현황 확인</div></div>
       </button>
       <button class="feat-btn locked wide" onclick="goLock('성적리포트', '시험 결과와 성장 추이를\n그래프로 확인하는 기능이에요.')">
-        <div class="fbadge lock">🔒 잠금</div>
+        <div class="fbadge lock">🔒 개발중</div>
         <div class="ficon">📊</div>
         <div><div class="fname">성적리포트</div><div class="fdesc">시험 결과와 성장 추이를 한눈에 확인</div></div>
       </button>
@@ -305,6 +322,16 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     <div class="rcard">
       <div class="rcard-title">📌 오늘의 미션</div>
       <div id="r-mission" style="font-size:13px;color:#94a3b8">자유 제출 — 오늘 배운 개념을 설명해보세요 😊</div>
+    </div>
+    <div class="rcard">
+      <div class="rcard-title">✏️ 제출 제목</div>
+      <div id="title-mission-wrap" style="display:none;margin-bottom:8px">
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px">미션에서 선택하거나 직접 입력하세요</div>
+        <div id="mission-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+      </div>
+      <input id="rec-title-inp" type="text" placeholder="예: 이차함수 개념 설명 / 3번 문제풀이"
+        style="width:100%;padding:13px 14px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:14px;font-family:inherit;outline:none;color:#0f172a;background:#f8fafc"
+        oninput="updateSubmitBtn()">
     </div>
     <div class="rcard">
       <div class="rcard-title">🎙️ 직접 녹음하기</div>
@@ -340,6 +367,10 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         • 최대 5분까지 녹음 가능해요<br>
         • 파일이 있으면 올려도 돼요
       </div>
+    </div>
+    <div class="sub-list-wrap" id="sub-list-wrap">
+      <div class="sub-list-title">📋 이전 제출 목록</div>
+      <div id="sub-list-body"><div class="sub-empty">불러오는 중...</div></div>
     </div>
   </div>
 </div>
@@ -451,6 +482,7 @@ function go(id) {
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
   target.classList.add('active');
   window.scrollTo(0,0);
+  if (id === 'screen-record') loadSubmissionList();
 }
 function goLock(title, desc) {
   document.getElementById('lk-title').textContent = title;
@@ -497,11 +529,15 @@ function logout() {
 function renderHome() {
   if (!studentInfo) { setErr('학생 정보 오류'); return; }
   var name = studentInfo.name || '학생';
-  var grade = (studentInfo.grade || '루멘수학').replace('학교','').replace('학년','년');
+  var grade = (studentInfo.grade || '루멘수학').replace('학교','').replace('학년','학년');
   var mission = studentInfo.lumen_rec_mission || '';
+  // 이니셜
+  var initial = name.charAt(0) || '학';
+  var initialEl = document.getElementById('h-initial');
+  if (initialEl) initialEl.textContent = initial;
   document.getElementById('h-name').textContent = name;
   document.getElementById('h-grade').textContent = grade + (isTest ? ' (테스트)' : '');
-  document.getElementById('h-badge').textContent = isTest ? '테스트' : '수학중';
+  document.getElementById('h-badge').textContent = isTest ? '테스트' : '수강중';
   var mel = document.getElementById('h-mission');
   if (mission) { mel.className = 'mtext'; mel.textContent = mission; }
   else { mel.className = 'mnone'; mel.textContent = '선생님이 미션을 등록하면 여기에 표시돼요'; }
@@ -510,7 +546,19 @@ function renderHome() {
   if (mission) {
     rel.style.cssText = 'font-size:14px;color:#0d2240;font-weight:700;line-height:1.6;background:#fef9c3;border-radius:10px;padding:10px;border:1px solid #fcd34d';
     rel.textContent = '💬 ' + mission;
+    // 미션 칩 표시
+    var mwrap = document.getElementById('title-mission-wrap');
+    var chips = document.getElementById('mission-chips');
+    if (mwrap && chips) {
+      mwrap.style.display = 'block';
+      var missionList = mission.split('/').map(function(s){ return s.trim(); }).filter(Boolean);
+      chips.innerHTML = missionList.map(function(m) {
+        return '<button onclick="selectMissionChip(this)" style="padding:7px 13px;border-radius:20px;border:1.5px solid #e2e8f0;background:white;font-size:12px;font-weight:700;color:#0d2240;cursor:pointer;font-family:inherit">' + m + '</button>';
+      }).join('');
+    }
   } else {
+    var mwrap2 = document.getElementById('title-mission-wrap');
+    if (mwrap2) mwrap2.style.display = 'none';
     rel.style.cssText = 'font-size:13px;color:#94a3b8';
     rel.textContent = '자유 제출 — 오늘 배운 개념을 설명해보세요 😊';
   }
@@ -609,10 +657,63 @@ function removePhoto(idx) {
   updateSubmitBtn();
 }
 
+function selectMissionChip(el) {
+  var chips = document.querySelectorAll('#mission-chips button');
+  chips.forEach(function(b) { b.style.background='white'; b.style.borderColor='#e2e8f0'; b.style.color='#0d2240'; });
+  el.style.background = '#0d2240'; el.style.borderColor = '#0d2240'; el.style.color = 'white';
+  document.getElementById('rec-title-inp').value = el.textContent;
+  updateSubmitBtn();
+}
+
 function updateSubmitBtn() {
   var btn = document.getElementById('sub-btn');
   if (!btn) return;
-  btn.disabled = !audioBlob && photoFiles.length === 0;
+  var hasMedia = !!(audioBlob || photoFiles.length > 0);
+  var hasTitle = !!(document.getElementById('rec-title-inp') && document.getElementById('rec-title-inp').value.trim());
+  btn.disabled = !(hasMedia && hasTitle);
+}
+
+// 제출 목록 로드
+async function loadSubmissionList() {
+  if (!studentInfo || isTest) {
+    document.getElementById('sub-list-body').innerHTML = '<div class="sub-empty">테스트 모드에서는 목록을 불러올 수 없어요</div>';
+    return;
+  }
+  try {
+    var key = 'submissions_' + studentInfo.lumen_rec_code;
+    var res = await sb.from('lumen_store').select('value').eq('key', key).single();
+    var list = (res.data && res.data.value) ? res.data.value : [];
+    renderSubmissionList(list);
+  } catch(e) {
+    document.getElementById('sub-list-body').innerHTML = '<div class="sub-empty">제출 내역이 없어요 🙂</div>';
+  }
+}
+
+function renderSubmissionList(list) {
+  var body = document.getElementById('sub-list-body');
+  if (!body) return;
+  if (!list || list.length === 0) {
+    body.innerHTML = '<div class="sub-empty">아직 제출한 내역이 없어요 🙂</div>';
+    return;
+  }
+  var sorted = list.slice().reverse();
+  var html = '';
+  sorted.forEach(function(item) {
+    var icon = item.type === 'recording' ? '🎙️' : '📷';
+    var typeLabel = item.type === 'recording' ? '녹음' : '플래너';
+    if (item.type === 'both') { icon = '🎙️📷'; typeLabel = '녹음+사진'; }
+    var dt = item.submittedAt ? new Date(item.submittedAt) : null;
+    var dateStr = dt ? (dt.getMonth()+1) + '/' + dt.getDate() + ' ' + ('0'+dt.getHours()).slice(-2) + ':' + ('0'+dt.getMinutes()).slice(-2) : '';
+    html += '<div class="sub-item">';
+    html += '<div class="sub-item-icon">' + icon + '</div>';
+    html += '<div class="sub-item-info">';
+    html += '<div class="sub-item-title">' + (item.title || '제목 없음') + '</div>';
+    html += '<div class="sub-item-meta">' + dateStr + '</div>';
+    html += '</div>';
+    html += '<div class="sub-item-type">' + typeLabel + '</div>';
+    html += '</div>';
+  });
+  body.innerHTML = html;
 }
 
 // 사진 Supabase 업로드
@@ -634,6 +735,8 @@ async function uploadPhotos(code, stamp) {
 // 통합 제출 (녹음 + 사진)
 async function submitAll() {
   if (!audioBlob && photoFiles.length === 0) return;
+  var title = document.getElementById('rec-title-inp') ? document.getElementById('rec-title-inp').value.trim() : '';
+  if (!title) { alert('제출 제목을 입력해주세요!'); return; }
 
   if (isTest) {
     document.getElementById('sub-status').innerHTML = '<div class="sok">🧪 테스트 모드예요!<br><span style="font-size:12px;font-weight:500">실제 제출은 코드 로그인 후 가능해요 😊</span></div>';
@@ -649,23 +752,59 @@ async function submitAll() {
     var now = new Date();
     var stamp = now.getFullYear()+('0'+(now.getMonth()+1)).slice(-2)+('0'+now.getDate()).slice(-2)+'_'+('0'+now.getHours()).slice(-2)+('0'+now.getMinutes()).slice(-2);
     var results = [];
+    var fileUrl = '';
+    var submitType = '';
 
     // 녹음 업로드
     if (audioBlob) {
       var ext = audioBlob.type.includes('webm') ? 'webm' : audioBlob.type.includes('mp4') ? 'm4a' : 'mp3';
-      var res = await sb.storage.from('recordings').upload(code+'/'+code+'_'+stamp+'.'+ext, audioBlob, { contentType: audioBlob.type||'audio/webm', upsert:false });
+      var recPath = code+'/'+code+'_'+stamp+'.'+ext;
+      var res = await sb.storage.from('recordings').upload(recPath, audioBlob, { contentType: audioBlob.type||'audio/webm', upsert:false });
       if (res.error) throw res.error;
+      var urlRes = sb.storage.from('recordings').getPublicUrl(recPath);
+      fileUrl = urlRes.data ? urlRes.data.publicUrl : '';
       results.push('🎙️ 녹음 1개');
+      submitType = 'recording';
     }
 
     // 사진 업로드
     if (photoFiles.length > 0) {
       var photoUrls = await uploadPhotos(code, stamp);
       results.push('📷 사진 ' + photoUrls.length + '장');
+      submitType = audioBlob ? 'both' : 'photo';
+      if (!fileUrl && photoUrls.length > 0) fileUrl = photoUrls[0];
     }
+
+    // DB에 메타데이터 저장
+    var key = 'submissions_' + code;
+    var dbRes = await sb.from('lumen_store').select('value').eq('key', key).single();
+    var existingList = (dbRes.data && dbRes.data.value) ? dbRes.data.value : [];
+    var newEntry = {
+      id: stamp,
+      title: title,
+      type: submitType,
+      fileUrl: fileUrl,
+      photoUrls: photoFiles.length > 0 ? await (async function(){
+        // photoUrls가 이미 업로드됐으면 다시 계산
+        var urls2 = [];
+        for(var pi=0; pi<photoFiles.length; pi++){
+          var ext2 = photoFiles[pi].type.includes('png')?'png':photoFiles[pi].type.includes('gif')?'gif':'jpg';
+          var path2 = code+'/'+code+'_'+stamp+'_photo'+(pi+1)+'.'+ext2;
+          var ur2 = sb.storage.from('photos').getPublicUrl(path2);
+          if(ur2.data) urls2.push(ur2.data.publicUrl);
+        }
+        return urls2;
+      })() : [],
+      submittedAt: now.toISOString()
+    };
+    existingList.push(newEntry);
+    await sb.from('lumen_store').upsert({ key: key, value: existingList });
 
     document.getElementById('sub-status').innerHTML = '<div class="sok">🎉 제출 완료! ' + results.join(' + ') + '<br><span style="font-size:12px;font-weight:500">선생님이 곧 확인하실 거예요 😊</span></div>';
     btn.textContent = '✅ 완료!'; btn.style.background = 'linear-gradient(135deg,#64748b,#94a3b8)';
+
+    // 목록 새로고침
+    loadSubmissionList();
 
     // 초기화
     audioBlob = null; photoFiles = [];
@@ -673,6 +812,9 @@ async function submitAll() {
       btn.disabled = false; btn.textContent = '📤 추가 제출하기'; btn.style.background = '';
       document.getElementById('rec-prev-wrap').style.display = 'none';
       document.getElementById('fname-disp').style.display = 'none';
+      document.getElementById('rec-title-inp').value = '';
+      var chips = document.querySelectorAll('#mission-chips button');
+      chips.forEach(function(b) { b.style.background='white'; b.style.borderColor='#e2e8f0'; b.style.color='#0d2240'; });
       renderPhotoGrid();
       updateSubmitBtn();
     }, 4000);
