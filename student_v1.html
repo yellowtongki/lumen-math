@@ -21,7 +21,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>루멘수학 학생앱 v1-8</title>
+<title>루멘수학 학생앱 v1-9</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -134,6 +134,45 @@ html, body { height: 100%; background: #f8fafc; font-family: 'Apple SD Gothic Ne
 .feat-btn.locked { opacity: 0.52; cursor: default; }
 .feat-btn.wide { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 16px; min-height: auto; padding: 16px 20px; }
 .feat-btn:active:not(.locked) { transform: scale(0.96); }
+/* 하브루타 녹음 버튼 (C안) */
+.havruta-btn {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  background: linear-gradient(135deg, #e8192c 0%, #c0392b 100%);
+  border-radius: 22px; padding: 26px 20px 20px; margin-bottom: 12px;
+  border: none; cursor: pointer; font-family: inherit; width: 100%;
+  box-shadow: 0 8px 28px rgba(232,25,44,0.35); position: relative; overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.havruta-btn::before {
+  content: ''; position: absolute; top: -30px; right: -30px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+.havruta-btn::after {
+  content: ''; position: absolute; bottom: -20px; left: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+.havruta-btn:active { transform: scale(0.97); box-shadow: 0 4px 16px rgba(232,25,44,0.3); }
+.havruta-icon-wrap {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(255,255,255,0.18); display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px; position: relative; z-index: 1;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.havruta-title {
+  font-size: 20px; font-weight: 900; color: white; margin-bottom: 5px;
+  position: relative; z-index: 1; letter-spacing: -0.3px;
+}
+.havruta-desc {
+  font-size: 12px; color: rgba(255,255,255,0.78); line-height: 1.6;
+  position: relative; z-index: 1;
+}
+.havruta-tag {
+  margin-top: 14px; background: rgba(255,255,255,0.2); border-radius: 20px;
+  padding: 6px 16px; font-size: 11px; color: white; font-weight: 700;
+  position: relative; z-index: 1; border: 1px solid rgba(255,255,255,0.3);
+}
 .ficon { font-size: 30px; line-height: 1; }
 .fname { font-size: 14px; font-weight: 900; color: var(--text); }
 .fdesc { font-size: 10px; color: var(--sub); margin-top: 3px; line-height: 1.5; }
@@ -283,11 +322,31 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
       <div id="h-mission" class="mnone">선생님이 미션을 등록하면 여기에 표시돼요</div>
     </div>
     <div class="sec-title">무엇을 할까요?</div>
+    <!-- 하브루타 녹음 메인 버튼 (C안) -->
+    <button class="havruta-btn" onclick="go('screen-record')">
+      <div class="havruta-icon-wrap">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- 마이크 몸체 -->
+          <rect x="15" y="4" width="14" height="22" rx="7" fill="white" opacity="0.95"/>
+          <!-- 마이크 격자 라인 -->
+          <line x1="15" y1="13" x2="29" y2="13" stroke="rgba(232,25,44,0.3)" stroke-width="1.2"/>
+          <line x1="15" y1="18" x2="29" y2="18" stroke="rgba(232,25,44,0.3)" stroke-width="1.2"/>
+          <!-- 마이크 스탠드 곡선 -->
+          <path d="M10 22 C10 31 34 31 34 22" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.9"/>
+          <!-- 스탠드 세로줄 -->
+          <line x1="22" y1="31" x2="22" y2="38" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+          <!-- 스탠드 받침 -->
+          <line x1="15" y1="38" x2="29" y2="38" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+          <!-- 음파 효과 -->
+          <path d="M7 19 C7 27.5 37 27.5 37 19" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M4 16 C4 30 40 30 40 16" stroke="rgba(255,255,255,0.18)" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <div class="havruta-title">하브루타 녹음</div>
+      <div class="havruta-desc">오늘 배운 개념을 선생님처럼<br>말로 설명해보세요</div>
+      <div class="havruta-tag">탭해서 시작하기 →</div>
+    </button>
     <div class="feat-grid">
-      <button class="feat-btn on" onclick="go('screen-record')">
-        <div class="ficon">🎙️</div>
-        <div><div class="fname">녹음제출</div><div class="fdesc">개념 설명<br>녹음 올리기</div></div>
-      </button>
       <button class="feat-btn locked" onclick="goLock('플래너', '플래너 채점 연동 후\n사용 가능해요!')">
         <div class="fbadge lock">🔒 개발중</div>
         <div class="ficon">📓</div>
@@ -303,10 +362,10 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <div class="ficon">✅</div>
         <div><div class="fname">숙제현황</div><div class="fdesc">숙제 완료<br>현황 확인</div></div>
       </button>
-      <button class="feat-btn locked wide" onclick="goLock('성적리포트', '시험 결과와 성장 추이를\n그래프로 확인하는 기능이에요.')">
+      <button class="feat-btn locked" onclick="goLock('성적리포트', '시험 결과와 성장 추이를\n그래프로 확인하는 기능이에요.')">
         <div class="fbadge lock">🔒 개발중</div>
         <div class="ficon">📊</div>
-        <div><div class="fname">성적리포트</div><div class="fdesc">시험 결과와 성장 추이를 한눈에 확인</div></div>
+        <div><div class="fname">성적리포트</div><div class="fdesc">시험 결과<br>성장 추이</div></div>
       </button>
     </div>
   </div>
@@ -316,7 +375,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 <div class="screen" id="screen-record">
   <div class="sub-hdr">
     <button class="back-btn" onclick="go('screen-home')">←</button>
-    <div class="sub-title">🎙️ 녹음제출</div>
+    <div class="sub-title">🎙️ 하브루타 녹음</div>
   </div>
   <div class="rec-body">
     <div class="rcard">
