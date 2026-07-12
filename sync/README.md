@@ -7,7 +7,22 @@
 | 파일 | 역할 |
 |------|------|
 | `mathflat_login_http.js` | **1단계: 로그인 테스트 (✅ 성공, 권장 방식).** 매쓰플랫 내부 로그인 API를 직접 호출 |
+| `mathflat_collector.js` | **2단계: 문항 단위 정오답 수집기 (✅ 검증됨).** 학생×교재×문항별 O/X + 채점시각 + 유형 수집 |
 | `mathflat_login_test.js` | 로그인 테스트 (브라우저 방식). 클라우드 프록시 환경에서는 브라우저 연결이 차단되어 동작하지 않음 — 로컬 PC 참고용 |
+
+## 수집기 사용법
+
+```bash
+NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt \
+  node sync/mathflat_collector.js --days 14
+```
+
+- `--days N` 최근 N일 채점분만 (기본 14) · `--limit N` 처리 개수 제한(테스트)
+- 결과는 `sync/_debug/collected.json`에 저장 (개인정보 포함 → **커밋 금지**, .gitignore 처리됨)
+- `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` 설정 시 `mf_answer_records` 테이블에 자동 upsert
+- 저장 스키마: **`docs/mathflat_schema.md`**
+
+검증 결과(2026-07-12): 반 10개 → 학습지 8건(테스트) → 문항 121개 정상 수집.
 
 ## 사용법 (클라우드 환경)
 
