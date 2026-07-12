@@ -71,6 +71,55 @@ create index on mf_answer_records (result) where result = 'X';
 create index on mf_answer_records (concept_id);
 ```
 
+## 1-B. `mf_study_sessions` — 학습지+교재 세션 단위(시간순)
+
+학생이 푼 **학습지·교재**를 세션(구간) 단위로 시간순 수집. 교재 오답을 시간별로 담는 테이블.
+(학습내역 API `/student-history/work/student/{id}` 기반)
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| `id` | bigint (PK) | |
+| `mf_student_id` | text | 매쓰플랫 학생 ID |
+| `source` | text | **`학습지` / `교재`** |
+| `book_type` | text | `WORKSHEET` / `WORKBOOK` |
+| `book_id` | bigint | 교재/학습지 원본 ID |
+| `title` | text | 교재·학습지 이름 (예: RPM, 일품) |
+| `subtitle` | text | 부제 (예: 중등수학1(상)) |
+| `chapter` | text | 단원 |
+| `page` | text | 페이지 범위 (교재, 예: `66~165`) |
+| `student_book_id` | bigint | 학생-교재/학습지 인스턴스 ID |
+| `student_workbook_id` | bigint | 학생-교재 인스턴스 ID (교재) |
+| `assigned_count` | int | 배정 문항 수 |
+| `correct_count` | int | 정답 수 |
+| `wrong_count` | int | **오답 수** |
+| `update_datetime` | timestamptz | **학습/채점 시각** |
+| `problem_count` | int | 문항 수 (교재 progressId 수) |
+| `status` | text | 상태 |
+| `collected_at` | timestamptz (기본 now()) | 수집 시각 |
+
+**중복 방지 키**: `(mf_student_id, book_id, student_workbook_id, student_book_id, update_datetime)`.
+
+```sql
+create table if not exists mf_study_sessions (
+  id bigint generated always as identity primary key,
+  mf_student_id text not null,
+  source text check (source in ('학습지','교재')),
+  book_type text, book_id bigint,
+  title text, subtitle text, chapter text, page text,
+  student_book_id bigint, student_workbook_id bigint,
+  assigned_count int, correct_count int, wrong_count int,
+  update_datetime timestamptz, problem_count int, status text,
+  collected_at timestamptz default now(),
+  unique (mf_student_id, book_id, student_workbook_id, student_book_id, update_datetime)
+);
+create index on mf_study_sessions (mf_student_id, update_datetime);
+create index on mf_study_sessions (source);
+```
+
+> **교재의 문항별 O/X 상세**: 교재 세션의 `progressIdList`(문항별 진도 ID)까지 확보했으나,
+> 이를 O/X로 푸는 상세 엔드포인트는 아직 미확인. 현재는 **페이지·세션 단위 정답/오답 수 + 시각**을
+> 수집. 문항별 교재 O/X는 그 엔드포인트를 찾으면 `mf_answer_records`에 `source='교재'`로 합류 예정.
+
 ## 2. `mf_review_schedule` — 에빙하우스 복습 스케줄 (다음 단계)
 
 틀린 문항마다 다음 복습일을 관리. 복습에서 또 틀리면 주기 리셋.

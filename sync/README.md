@@ -7,7 +7,7 @@
 | 파일 | 역할 |
 |------|------|
 | `mathflat_login_http.js` | **1단계: 로그인 테스트 (✅ 성공, 권장 방식).** 매쓰플랫 내부 로그인 API를 직접 호출 |
-| `mathflat_collector.js` | **2단계: 문항 단위 정오답 수집기 (✅ 검증됨).** 학생×교재×문항별 O/X + 채점시각 + 유형 수집 |
+| `mathflat_collector.js` | **2단계: 학습 데이터 수집기 (✅ 검증됨).** 학습지 문항별 O/X + **교재 세션별 오답**을 시간순 수집 |
 | `mathflat_login_test.js` | 로그인 테스트 (브라우저 방식). 클라우드 프록시 환경에서는 브라우저 연결이 차단되어 동작하지 않음 — 로컬 PC 참고용 |
 
 ## 수집기 사용법
@@ -17,12 +17,15 @@ NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt \
   node sync/mathflat_collector.js --days 14
 ```
 
-- `--days N` 최근 N일 채점분만 (기본 14) · `--limit N` 처리 개수 제한(테스트)
-- 결과는 `sync/_debug/collected.json`에 저장 (개인정보 포함 → **커밋 금지**, .gitignore 처리됨)
-- `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` 설정 시 `mf_answer_records` 테이블에 자동 upsert
+- `--days N` 최근 N일 (기본 30) · `--limit N` 학습지 처리 제한 · `--students N` 학습내역 학생 수 제한
+- `--skip-problems` 학습지 문항 건너뛰기 · `--skip-history` 교재/세션 건너뛰기
+- 결과는 `sync/_debug/`에 저장 (개인정보 포함 → **커밋 금지**, .gitignore 처리됨)
+  - `mf_answer_records.json` — 학습지 문항별 O/X
+  - `mf_study_sessions.json` — 학습지+교재 세션별(시간순) 정답/오답 수
+- `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` 설정 시 각 테이블에 자동 upsert
 - 저장 스키마: **`docs/mathflat_schema.md`**
 
-검증 결과(2026-07-12): 반 10개 → 학습지 8건(테스트) → 문항 121개 정상 수집.
+검증 결과(2026-07-12): 활동학생 26명 · 학습지 문항 1,801개(오답 401) · 교재 세션 153개(오답 14,774) 정상 수집.
 
 ## 사용법 (클라우드 환경)
 
