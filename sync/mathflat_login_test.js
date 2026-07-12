@@ -47,16 +47,32 @@ async function main() {
   }
   log(`로그인 시도 아이디: ${ID.slice(0, 2)}***** (마스킹)`);
 
-  const browser = await chromium.launch({
+  // 클라우드 환경은 아웃바운드가 프록시(HTTPS_PROXY)를 거친다.
+  // 프록시가 TLS를 재종단하므로 브라우저가 인증서 검증에 실패할 수 있어,
+  // 프록시가 감지되면 명시적으로 프록시 지정 + 인증서 오류 무시로 통과시킨다.
+  const proxyServer = process.env.HTTPS_PROXY || process.env.https_proxy;
+  const launchOpts = {
     headless: true,
     executablePath: findChromium(),
-  });
+    args: [
+      '--ignore-certificate-errors',
+      '--disable-quic', // 프록시가 UDP/QUIC를 지원하지 않아 연결이 끊기는 것 방지
+      '--no-sandbox',
+    ],
+  };
+  if (proxyServer) {
+    launchOpts.proxy = { server: proxyServer };
+    log('프록시 사용:', proxyServer);
+  }
+  const browser = await chromium.launch(launchOpts);
   const context = await browser.newContext({
     userAgent:
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
       '(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
     viewport: { width: 1440, height: 900 },
     locale: 'ko-KR',
+    // 프록시가 재종단한 인증서를 신뢰하기 위함 (프록시 경유 시에만 의미 있음)
+    ignoreHTTPSErrors: Boolean(proxyServer),
   });
   const page = await context.newPage();
 
