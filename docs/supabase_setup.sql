@@ -13,6 +13,7 @@ create table if not exists mf_answer_records (
   problem_seq int,                          -- (학습지) 문항 순번
   student_workbook_id bigint,               -- (교재) 학생-교재 인스턴스
   student_book_id bigint,                   -- (교재) 학생-교재 ID
+  book_id bigint,                           -- (교재) 교재 원본 ID
   workbook_page_id bigint,                  -- (교재) 페이지 ID
   workbook_problem_id bigint,               -- (교재) 교재-문제 ID
   number text,                              -- (교재) 문항번호
@@ -40,6 +41,8 @@ create table if not exists mf_answer_records (
   assign_datetime timestamptz,
   collected_at timestamptz default now()
 );
+-- (이미 테이블을 만든 경우를 위한 보정: book_id 컬럼 추가)
+alter table mf_answer_records add column if not exists book_id bigint;
 create index if not exists idx_mf_ans_student on mf_answer_records (mf_student_id, score_datetime);
 create index if not exists idx_mf_ans_wrong   on mf_answer_records (result) where result = 'X';
 create index if not exists idx_mf_ans_concept on mf_answer_records (concept_id);
