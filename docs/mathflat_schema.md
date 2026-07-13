@@ -19,6 +19,7 @@
 | `problem_seq` | int (nullable) | (학습지) 문항 순번 |
 | `student_workbook_id` | bigint (nullable) | (교재) 학생-교재 인스턴스 ID |
 | `student_book_id` | bigint (nullable) | (교재) 학생-교재 ID |
+| `book_id` | bigint (nullable) | (교재) 교재 원본 ID |
 | `workbook_page_id` | bigint (nullable) | (교재) 페이지 ID |
 | `workbook_problem_id` | bigint (nullable) | (교재) 교재-문제 ID |
 | `number` | text (nullable) | (교재) 문항번호 (예: `필수 문제 2.(1)`) |

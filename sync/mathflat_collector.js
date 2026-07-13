@@ -68,17 +68,24 @@ const fmt = (d) => d.toISOString().slice(0, 10);
 const toOX = (r) => (r === 'CORRECT' ? 'O' : (r === 'WRONG' || r === 'INCORRECT') ? 'X' : '-');
 
 let TOKEN = null;
-async function api(pathname) {
-  const res = await fetch(`${API}${pathname}`, {
-    headers: {
-      'content-type': 'application/json', accept: 'application/json, text/plain, */*',
-      'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com',
-      authorization: `Bearer ${TOKEN}`, 'x-auth-token': TOKEN,
-      origin: 'https://teacher.mathflat.com', referer: 'https://teacher.mathflat.com/',
-    },
-  });
+function _apiHeaders() {
+  return {
+    'content-type': 'application/json', accept: 'application/json, text/plain, */*',
+    'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com',
+    authorization: `Bearer ${TOKEN}`, 'x-auth-token': TOKEN,
+    origin: 'https://teacher.mathflat.com', referer: 'https://teacher.mathflat.com/',
+  };
+}
+async function api(pathname, _retried) {
+  const res = await fetch(`${API}${pathname}`, { headers: _apiHeaders() });
   const text = await res.text();
   let json = null; try { json = JSON.parse(text); } catch (_) {}
+  // 토큰 만료(401) → 재로그인 후 1회 재시도 (긴 수집 중 세션 끊김 대응)
+  if (res.status === 401 && !_retried) {
+    log('토큰 만료 감지 → 재로그인');
+    await login();
+    return api(pathname, true);
+  }
   if (!res.ok) throw new Error(`${res.status} ${(json && json.code) || ''} @ ${pathname}`);
   return json ? (json.data !== undefined ? json.data : json) : null;
 }
@@ -98,6 +105,21 @@ async function login() {
 async function getActiveStudents() {
   const d = await api('/students?size=500');
   return (d.content || []).filter((s) => s.status === 'ACTIVE');
+}
+
+// mf_answer_records 컬럼 통일 — PostgREST는 한 배치의 모든 객체 키가 같아야 함(PGRST102).
+// 학습지·교재가 같은 키 집합을 갖도록 빈 값은 null로 채운다.
+const REC_COLS = [
+  'record_key','source','student_worksheet_id','problem_seq','student_workbook_id','student_book_id',
+  'workbook_page_id','workbook_problem_id','number','page','mf_student_id','lumen_rec_code','academy_id',
+  'class_id','class_name','book_id','worksheet_id','worksheet_title','worksheet_type','chapter','school','grade',
+  'problem_id','worksheet_problem_id','concept_id','topic_id','sub_topic_id','level','result','score',
+  'score_datetime','assign_datetime',
+];
+function mkRec(partial) {
+  const o = {};
+  for (const k of REC_COLS) o[k] = (partial[k] !== undefined ? partial[k] : null);
+  return o;
 }
 
 // ── [A] 문항 단위 학습지 정오답 (반 → 학습지 → 문항) ──
@@ -126,17 +148,17 @@ async function collectAnswerRecords(me, cutoff) {
         const ws = summary.worksheet || w.worksheet || {};
         problems.forEach((pr, idx) => {
           const prob = pr.problem || {};
-          records.push({
+          records.push(mkRec({
             record_key: `ws:${asg.studentWorksheetId}:${idx + 1}`, source: '학습지',
             academy_id: me.academyId, mf_student_id: asg.studentId,
             student_worksheet_id: asg.studentWorksheetId, problem_seq: idx + 1,
             worksheet_id: ws.id, worksheet_title: ws.title, worksheet_type: ws.type,
             chapter: ws.chapter || null, school: ws.school || null, grade: ws.grade || null,
-            worksheet_problem_id: pr.worksheetProblemId, problem_id: prob.id, number: null,
+            worksheet_problem_id: pr.worksheetProblemId, problem_id: prob.id,
             concept_id: prob.conceptId || null, topic_id: prob.topicId || null, sub_topic_id: prob.subTopicId || null,
             level: prob.level || null, result: toOX(pr.result),
             score: summary.score, score_datetime: summary.scoreDatetime, assign_datetime: summary.assignDatetime,
-          });
+          }));
         });
         processed++;
         await sleep(120);
@@ -224,7 +246,7 @@ async function collectWorkbookProblems(me, students, cutoff) {
           await sleep(90);
         }
         for (const [wpId, v] of Object.entries(byProblem)) {
-          records.push({
+          records.push(mkRec({
             record_key: `wb:${c.studentWorkbookId}:${wpId}`, source: '교재',
             academy_id: me.academyId, mf_student_id: st.id,
             student_workbook_id: c.studentWorkbookId, student_book_id: c.studentBookId,
@@ -233,7 +255,7 @@ async function collectWorkbookProblems(me, students, cutoff) {
             workbook_problem_id: Number(wpId), number: v.number || null,
             concept_id: v.conceptId || null, topic_id: v.topicId || null, sub_topic_id: v.subTopicId || null,
             level: v.level || null, result: toOX(v.result), score_datetime: v.at || null,
-          });
+          }));
         }
       }
     }
