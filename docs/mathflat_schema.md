@@ -2,15 +2,27 @@
 
 수집기(`sync/mathflat_collector.js`)가 매쓰플랫에서 가져온 **문항 단위 정오답**을 저장하는 테이블 설계입니다.
 
-## 1. `mf_answer_records` — 문항 단위 정오답 (핵심 테이블)
+## 1. `mf_answer_records` — 문항 단위 정오답 (핵심 테이블, 학습지+교재 통합)
 
-학생 × 학습지 × 문항 1개 = 1행.
+학생 × (학습지 또는 교재) × 문항 1개 = 1행. `source`로 학습지/교재를 구분한다.
+
+- **학습지**: `/student-worksheet/assign/{swId}/problem`
+- **교재**: `/student-workbook/student/{sid}/{studentWorkbookId}/{studentBookId}/{progressId}`
+  (진도별 응답을 `workbook_problem_id`로 dedup, 최신 채점 유지)
 
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
 | `id` | bigint (PK, 자동) | 행 고유번호 |
-| `student_worksheet_id` | bigint | 매쓰플랫 학생학습지 ID (배정 단위) |
-| `problem_seq` | int | 학습지 내 문항 순번(= 문항번호) |
+| `record_key` | text UNIQUE | **중복방지 키**. 학습지 `ws:{swId}:{seq}` / 교재 `wb:{studentWorkbookId}:{workbookProblemId}` |
+| `source` | text | **`학습지` / `교재`** |
+| `student_worksheet_id` | bigint (nullable) | (학습지) 학생학습지 ID |
+| `problem_seq` | int (nullable) | (학습지) 문항 순번 |
+| `student_workbook_id` | bigint (nullable) | (교재) 학생-교재 인스턴스 ID |
+| `student_book_id` | bigint (nullable) | (교재) 학생-교재 ID |
+| `workbook_page_id` | bigint (nullable) | (교재) 페이지 ID |
+| `workbook_problem_id` | bigint (nullable) | (교재) 교재-문제 ID |
+| `number` | text (nullable) | (교재) 문항번호 (예: `필수 문제 2.(1)`) |
+| `page` | text (nullable) | (교재) 페이지 범위 |
 | `mf_student_id` | text | 매쓰플랫 학생 ID (예: `I2090532`) |
 | `lumen_rec_code` | text (nullable) | 루멘 6자리 학생코드 — 매핑되면 채움 (아래 3 참고) |
 | `academy_id` | text | 학원 ID (`D1358`) |
@@ -34,14 +46,22 @@
 | `assign_datetime` | timestamptz | 출제(배정) 시각 |
 | `collected_at` | timestamptz (기본 now()) | 수집 시각 |
 
-**중복 방지 키(upsert 기준)**: `(student_worksheet_id, problem_seq)` UNIQUE.
-같은 학습지를 다시 수집해도 갱신(merge)되어 중복 저장 안 됨.
+**중복 방지 키(upsert 기준)**: `record_key` UNIQUE (학습지·교재 공통).
+같은 문항을 다시 수집해도 갱신(merge)되어 중복 저장 안 됨.
 
 ```sql
 create table if not exists mf_answer_records (
   id bigint generated always as identity primary key,
-  student_worksheet_id bigint not null,
-  problem_seq int not null,
+  record_key text unique not null,
+  source text check (source in ('학습지','교재')),
+  student_worksheet_id bigint,
+  problem_seq int,
+  student_workbook_id bigint,
+  student_book_id bigint,
+  workbook_page_id bigint,
+  workbook_problem_id bigint,
+  number text,
+  page text,
   mf_student_id text not null,
   lumen_rec_code text,
   academy_id text,
@@ -116,9 +136,9 @@ create index on mf_study_sessions (mf_student_id, update_datetime);
 create index on mf_study_sessions (source);
 ```
 
-> **교재의 문항별 O/X 상세**: 교재 세션의 `progressIdList`(문항별 진도 ID)까지 확보했으나,
-> 이를 O/X로 푸는 상세 엔드포인트는 아직 미확인. 현재는 **페이지·세션 단위 정답/오답 수 + 시각**을
-> 수집. 문항별 교재 O/X는 그 엔드포인트를 찾으면 `mf_answer_records`에 `source='교재'`로 합류 예정.
+> **교재의 문항별 O/X 상세** ✅ 완료(2026-07-13): `/student-workbook/student/{sid}/{studentWorkbookId}/{studentBookId}/{progressId}`
+> 로 문항별 O/X·시각·단원·문항번호·유형까지 수집해 `mf_answer_records`에 `source='교재'`로 저장.
+> `mf_study_sessions`는 페이지·세션 단위 요약(타임라인용)으로 계속 병행.
 
 ## 2. `mf_review_schedule` — 에빙하우스 복습 스케줄 (다음 단계)
 

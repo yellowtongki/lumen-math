@@ -7,7 +7,7 @@
 | 파일 | 역할 |
 |------|------|
 | `mathflat_login_http.js` | **1단계: 로그인 테스트 (✅ 성공, 권장 방식).** 매쓰플랫 내부 로그인 API를 직접 호출 |
-| `mathflat_collector.js` | **2단계: 학습 데이터 수집기 (✅ 검증됨).** 학습지 문항별 O/X + **교재 세션별 오답**을 시간순 수집 |
+| `mathflat_collector.js` | **2단계: 학습 데이터 수집기 (✅ 검증됨).** 학습지 **+ 교재 문항별 O/X** + 세션별(시간순) 통합 수집 |
 | `mathflat_login_test.js` | 로그인 테스트 (브라우저 방식). 클라우드 프록시 환경에서는 브라우저 연결이 차단되어 동작하지 않음 — 로컬 PC 참고용 |
 
 ## 수집기 사용법
@@ -17,11 +17,13 @@ NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt \
   node sync/mathflat_collector.js --days 14
 ```
 
-- `--days N` 최근 N일 (기본 30) · `--limit N` 학습지 처리 제한 · `--students N` 학습내역 학생 수 제한
-- `--skip-problems` 학습지 문항 건너뛰기 · `--skip-history` 교재/세션 건너뛰기
+- `--days N` 최근 N일 (기본 30) · `--students N` 학생 수 제한 · `--limit N` 학습지 처리 제한 · `--wb-limit N` 교재 처리 제한
+- `--skip-problems`(학습지) · `--skip-workbook`(교재 문항) · `--skip-history`(세션) 각각 생략 가능
 - 결과는 `sync/_debug/`에 저장 (개인정보 포함 → **커밋 금지**, .gitignore 처리됨)
-  - `mf_answer_records.json` — 학습지 문항별 O/X
-  - `mf_study_sessions.json` — 학습지+교재 세션별(시간순) 정답/오답 수
+  - `mf_answer_records.json` — **학습지 + 교재 문항별 O/X** (`source`로 구분, `record_key`로 중복방지)
+  - `mf_study_sessions.json` — 학습지+교재 세션별(시간순) 요약
+
+> ⚠️ 교재 문항 수집은 교재 1권당 진도별로 수십~수백 회 호출한다(무거움). 야간 실행 시 `--days`를 좁혀 최근 활동만 수집 권장.
 - `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` 설정 시 각 테이블에 자동 upsert
 - 저장 스키마: **`docs/mathflat_schema.md`**
 

@@ -16,7 +16,10 @@
  *     GET /student-history/work/student/{studentId}?startDate=&endDate=
  *          → bookType=WORKSHEET(학습지)/WORKBOOK(교재) 항목, 각 components 에
  *            correctCount/wrongCount/updateDatetime/page/chapter
- *   (교재의 "문항별" O/X 상세는 progressIdList까지 확보, 해석 엔드포인트는 추후 연결)
+ *   [C] 교재 문항별 O/X (✅ 2026-07-13 확보)
+ *     GET /student-workbook/student/{sid}/{studentWorkbookId}/{studentBookId}/{progressId}
+ *          → 문항별 scoring.result(CORRECT/WRONG) + updateDatetime + 단원 + 문항번호 + 유형
+ *            진도(progressId)별 응답을 workbook_problem_id로 dedup(최신 채점 유지)
  *
  * 사용법 (클라우드):
  *   NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt \
@@ -53,9 +56,11 @@ const opt = (name, def) => { const i = args.indexOf(name); return i >= 0 && args
 const DAYS = parseInt(opt('--days', '30'), 10);
 const LIMIT = parseInt(opt('--limit', '0'), 10);
 const STU_LIMIT = parseInt(opt('--students', '0'), 10);
+const WB_LIMIT = parseInt(opt('--wb-limit', '0'), 10); // 교재 문항수집 대상 교재 수 제한(0=전체)
 const OUT_DIR = opt('--out-dir', path.join(__dirname, '_debug'));
 const SKIP_PROBLEMS = has('--skip-problems');
 const SKIP_HISTORY = has('--skip-history');
+const SKIP_WORKBOOK = has('--skip-workbook'); // 교재 문항단위 수집 건너뛰기
 
 function log(...a) { const t = new Date().toISOString().replace('T', ' ').slice(0, 19); console.log(`[${t}]`, ...a); }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -122,11 +127,12 @@ async function collectAnswerRecords(me, cutoff) {
         problems.forEach((pr, idx) => {
           const prob = pr.problem || {};
           records.push({
+            record_key: `ws:${asg.studentWorksheetId}:${idx + 1}`, source: '학습지',
             academy_id: me.academyId, mf_student_id: asg.studentId,
             student_worksheet_id: asg.studentWorksheetId, problem_seq: idx + 1,
             worksheet_id: ws.id, worksheet_title: ws.title, worksheet_type: ws.type,
             chapter: ws.chapter || null, school: ws.school || null, grade: ws.grade || null,
-            worksheet_problem_id: pr.worksheetProblemId, problem_id: prob.id,
+            worksheet_problem_id: pr.worksheetProblemId, problem_id: prob.id, number: null,
             concept_id: prob.conceptId || null, topic_id: prob.topicId || null, sub_topic_id: prob.subTopicId || null,
             level: prob.level || null, result: toOX(pr.result),
             score: summary.score, score_datetime: summary.scoreDatetime, assign_datetime: summary.assignDatetime,
@@ -181,6 +187,60 @@ async function collectStudySessions(students, cutoff) {
   return rows;
 }
 
+// ── [C] 교재 문항 단위 정오답 (student-workbook 진도별 → dedup) ──
+// GET /student-workbook/student/{sid}/{studentWorkbookId}/{studentBookId}/{progressId}
+//   → 문항별 scoring.result(CORRECT/WRONG) + updateDatetime + 단원(title) + 문항번호(number) + 유형
+async function collectWorkbookProblems(me, students, cutoff) {
+  const start = fmt(cutoff > new Date(Date.now() - 360 * 86400000) ? cutoff : new Date(Date.now() - 360 * 86400000));
+  const end = fmt(new Date(Date.now() + 86400000));
+  const target = STU_LIMIT ? students.slice(0, STU_LIMIT) : students;
+  log(`[C] 교재 문항 수집 · 학생 ${target.length}명`);
+  const records = [];
+  let wbCount = 0;
+  for (const st of target) {
+    let items;
+    try { items = await api(`/student-history/work/student/${st.id}?startDate=${start}&endDate=${end}`); }
+    catch (e) { continue; }
+    const books = (items || []).filter((it) => it.bookType === 'WORKBOOK');
+    for (const it of books) {
+      for (const c of it.components || []) {
+        if (c.updateDatetime && new Date(c.updateDatetime) < cutoff) continue; // 기간 밖 교재 스킵
+        if (WB_LIMIT && wbCount >= WB_LIMIT) { log(`  [C] --wb-limit ${WB_LIMIT} 도달`); return records; }
+        wbCount++;
+        const base = `/student-workbook/student/${st.id}/${c.studentWorkbookId}/${c.studentBookId}`;
+        const byProblem = {};
+        for (const pid of c.progressIdList || []) {
+          let page;
+          try { page = await api(`${base}/${pid}?page=0&size=1000000`); }
+          catch (e) { continue; }
+          for (const p of (page && page.content) || []) {
+            const s = p.scoring || {};
+            const prev = byProblem[p.id];
+            if (!prev || (s.updateDatetime || '') > (prev.at || '')) {
+              byProblem[p.id] = { unit: p.title, number: p.number, result: s.result, at: s.updateDatetime,
+                conceptId: p.conceptId, topicId: p.topicId, subTopicId: p.subTopicId, level: p.level, pageId: p.workbookPageId };
+            }
+          }
+          await sleep(90);
+        }
+        for (const [wpId, v] of Object.entries(byProblem)) {
+          records.push({
+            record_key: `wb:${c.studentWorkbookId}:${wpId}`, source: '교재',
+            academy_id: me.academyId, mf_student_id: st.id,
+            student_workbook_id: c.studentWorkbookId, student_book_id: c.studentBookId,
+            book_id: it.bookId, worksheet_title: (it.title || '') + (it.subtitle || ''),
+            chapter: v.unit || it.chapter || null, page: c.page || null, workbook_page_id: v.pageId,
+            workbook_problem_id: Number(wpId), number: v.number || null,
+            concept_id: v.conceptId || null, topic_id: v.topicId || null, sub_topic_id: v.subTopicId || null,
+            level: v.level || null, result: toOX(v.result), score_datetime: v.at || null,
+          });
+        }
+      }
+    }
+  }
+  return records;
+}
+
 function saveJson(name, data) {
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const p = path.join(OUT_DIR, name);
@@ -198,20 +258,22 @@ async function main() {
   const students = await getActiveStudents();
   log(`활동 학생(ACTIVE) ${students.length}명`);
 
-  let answers = [], sessions = [];
-  if (!SKIP_PROBLEMS) { answers = await collectAnswerRecords(me, cutoff); saveJson('mf_answer_records.json', answers); }
+  let wsAnswers = [], wbAnswers = [], sessions = [];
+  if (!SKIP_PROBLEMS) wsAnswers = await collectAnswerRecords(me, cutoff);
+  if (!SKIP_WORKBOOK) wbAnswers = await collectWorkbookProblems(me, students, cutoff);
+  const answers = wsAnswers.concat(wbAnswers);           // 학습지 + 교재 문항단위 통합
+  if (answers.length) saveJson('mf_answer_records.json', answers);
   if (!SKIP_HISTORY)  { sessions = await collectStudySessions(students, cutoff); saveJson('mf_study_sessions.json', sessions); }
 
   // 통계
-  const wsSess = sessions.filter((s) => s.source === '학습지');
   const bkSess = sessions.filter((s) => s.source === '교재');
-  const bkWrong = bkSess.reduce((a, s) => a + (s.wrong_count || 0), 0);
   log('── 수집 완료 ──');
-  log(`[A] 학습지 문항 레코드: ${answers.length}개 (오답 ${answers.filter((r) => r.result === 'X').length})`);
-  log(`[B] 세션: 학습지 ${wsSess.length} · 교재 ${bkSess.length} (교재 오답 합계 ${bkWrong})`);
+  log(`[A] 학습지 문항: ${wsAnswers.length}개 (오답 ${wsAnswers.filter((r) => r.result === 'X').length})`);
+  log(`[C] 교재 문항:   ${wbAnswers.length}개 (오답 ${wbAnswers.filter((r) => r.result === 'X').length})`);
+  log(`[B] 세션(시간순): 학습지 ${sessions.filter((s) => s.source === '학습지').length} · 교재 ${bkSess.length}`);
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
-    if (answers.length) await upsert('mf_answer_records', answers, 'student_worksheet_id,problem_seq');
+    if (answers.length) await upsert('mf_answer_records', answers, 'record_key');
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
