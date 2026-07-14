@@ -305,9 +305,59 @@ async function main() {
     if (answers.length) await upsert('mf_answer_records', answers, 'record_key');
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
     await refreshConceptNames();
+    await refreshBookCatalog();
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
+}
+
+// ── 교재 카탈로그 갱신 ───────────────────────────────────────
+// 학생별 매쓰플랫 교재 목록 + 교재 메타(이름·출판사·학년학기)를
+// lumen_store 'mf_books'에 저장. (학생앱 아하노트 교재 선택,
+// 학원앱 '매쓰플랫 교재 가져오기'가 이 카탈로그를 사용)
+async function refreshBookCatalog() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  const gradeKeyOf = (w) => {
+    const sc = { ELEMENTARY: '초', MIDDLE: '중', HIGH: '고' }[w.schoolType] || '';
+    if (!sc || !w.grade) return '';
+    return sc + w.grade + (w.semester ? '-' + w.semester : '');
+  };
+  try {
+    // 누적된 세션 테이블에서 학생별 교재 목록 수집
+    const rows = [];
+    for (let off = 0; off < 50000; off += 1000) {
+      const res = await fetch(`${url}/rest/v1/mf_study_sessions?select=mf_student_id,book_id,title,subtitle&source=eq.${encodeURIComponent('교재')}&limit=1000&offset=${off}`, { headers: sbHeaders });
+      if (!res.ok) break;
+      const batch = await res.json();
+      rows.push(...batch);
+      if (batch.length < 1000) break;
+    }
+    const byStudent = {}; const bookIds = new Set();
+    rows.forEach((r) => {
+      if (!r.book_id) return;
+      bookIds.add(r.book_id);
+      const a = (byStudent[r.mf_student_id] = byStudent[r.mf_student_id] || []);
+      if (a.indexOf(r.book_id) < 0) a.push(r.book_id);
+    });
+    if (!bookIds.size) { log('교재 카탈로그: 대상 없음 → 건너뜀'); return; }
+    const books = {};
+    for (const bid of bookIds) {
+      let w = null;
+      try { w = await api(`/workbook/${bid}`); } catch (e) {}
+      const row = rows.find((r) => r.book_id === bid) || {};
+      books[bid] = w
+        ? { n: (w.fulltitle || ((w.title || '') + ' ' + (w.subtitle || ''))).replace(/\s+/g, ' ').trim(), p: w.publisher || '', g: gradeKeyOf(w), pages: w.maxPage || 0 }
+        : { n: ((row.title || '') + ' ' + (row.subtitle || '')).trim(), p: '', g: '', pages: 0 };
+      await sleep(80);
+    }
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST',
+      headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_books', value: { books, byStudent, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
+    });
+    log(`교재 카탈로그(mf_books): 교재 ${Object.keys(books).length} · 학생 ${Object.keys(byStudent).length} ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('교재 카탈로그 갱신 실패(치명적 아님):', e.message); }
 }
 
 // ── 유형명 사전 갱신 ─────────────────────────────────────────
