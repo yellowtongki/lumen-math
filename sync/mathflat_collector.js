@@ -295,6 +295,13 @@ async function main() {
   log(`[B] 세션(시간순): 학습지 ${sessions.filter((s) => s.source === '학습지').length} · 교재 ${bkSess.length}`);
 
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    // 학생 명단(이름·학년) 저장 — 앱에서 mf_student_id를 실제 이름으로 표시하기 위함
+    const studentRows = students.map((s) => ({
+      mf_student_id: s.id, name: s.name, login_id: s.loginId || null,
+      grade: s.grade != null ? String(s.grade) : null, school_type: s.schoolType || null,
+      status: s.status || null,
+    }));
+    if (studentRows.length) await upsert('mf_students', studentRows, 'mf_student_id');
     if (answers.length) await upsert('mf_answer_records', answers, 'record_key');
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
   } else {

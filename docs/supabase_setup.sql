@@ -73,14 +73,29 @@ create table if not exists mf_study_sessions (
 create index if not exists idx_mf_sess_student on mf_study_sessions (mf_student_id, update_datetime);
 create index if not exists idx_mf_sess_source  on mf_study_sessions (source);
 
+-- 2-B) 학생 명단 (mf_student_id → 이름·학년) ─ 앱에서 실제 이름 표시용
+create table if not exists mf_students (
+  mf_student_id text primary key,
+  name text,
+  login_id text,
+  grade text,
+  school_type text,
+  status text,
+  lumen_rec_code text,                      -- 루멘 코드 매핑되면 채움
+  collected_at timestamptz default now()
+);
+
 -- 3) 학원앱(브라우저)이 데이터를 "읽을" 수 있도록 권한 설정
 --    (쓰기는 수집기가 service_role 키로 저장하며 아래 정책과 무관하게 동작)
 alter table mf_answer_records  enable row level security;
 alter table mf_study_sessions  enable row level security;
+alter table mf_students        enable row level security;
 
 drop policy if exists "read mf_answer_records" on mf_answer_records;
 drop policy if exists "read mf_study_sessions" on mf_study_sessions;
+drop policy if exists "read mf_students" on mf_students;
 create policy "read mf_answer_records" on mf_answer_records for select using (true);
 create policy "read mf_study_sessions" on mf_study_sessions for select using (true);
+create policy "read mf_students" on mf_students for select using (true);
 
 -- 완료! 이제 수집기가 SUPABASE_URL / SUPABASE_SERVICE_KEY 로 데이터를 저장합니다.
