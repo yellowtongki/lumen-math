@@ -306,6 +306,7 @@ async function main() {
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
     await refreshConceptNames();
     await refreshBookCatalog();
+    await refreshTypeDb();
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
@@ -358,6 +359,67 @@ async function refreshBookCatalog() {
     });
     log(`교재 카탈로그(mf_books): 교재 ${Object.keys(books).length} · 학생 ${Object.keys(byStudent).length} ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('교재 카탈로그 갱신 실패(치명적 아님):', e.message); }
+}
+
+// ── 전체 교육과정 유형DB 갱신 ────────────────────────────────
+// 매쓰플랫 개념칩 전체(초/중/고 3키) + 우리 교재 per-workbook 칩을 union하고,
+// 각 유형의 orderingNumber로 학년(초1-1 … 고 과목)을 해독해 트리로 만들어
+// lumen_store 'mf_typedb'에 저장. (학원앱 유형DB 화면이 이 트리를 렌더)
+const _HS_SUBJ = { 1: '공통수학1', 2: '공통수학2', 3: '대수', 4: '미적분Ⅰ', 5: '확률과통계', 6: '미적분Ⅱ', 7: '기하' };
+const _GROUP_ORD = { 초등: 0, 중등: 1, 고등: 2, 기타: 3 };
+function _decodeGrade(ord) {
+  ord = String(ord || ''); const s = ord[1], g = ord[2], sem = ord[3];
+  if (s === '1') return { group: '초등', label: `초${g}-${sem}` };
+  if (s === '2') return { group: '중등', label: `중${g}-${sem}` };
+  if (s === '3') return { group: '고등', label: _HS_SUBJ[g] || ('고' + g) };
+  return { group: '기타', label: '기타' };
+}
+async function refreshTypeDb() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  const cleanNm = (n) => String(n || '').split(';')[0].trim();
+  try {
+    const byConcept = {};
+    const addChips = (arr) => (arr || []).forEach((c) => {
+      if (!c.conceptId) return;
+      const ord = String(c.orderingNumber || ''); const cur = byConcept[c.conceptId];
+      if (!cur || (ord && ord < cur.ord)) byConcept[c.conceptId] = { name: cleanNm(c.conceptName), big: c.bigChapterName || '', mid: c.middleChapterName || '', little: c.littleChapterName || '', ord: ord || (cur && cur.ord) || '' };
+    });
+    // 1) 전체 교육과정 (초/중/고)
+    for (const k of ['1.4.4145', '1.4.4146', '1.4.4147']) { try { addChips(await api(`/concept/chips?curriculumKey=${k}`)); } catch (e) {} }
+    // 2) 우리 교재로 누락 단원 보강
+    const sessRes = await fetch(`${url}/rest/v1/mf_study_sessions?select=book_id&source=${encodeURIComponent('교재')}&limit=5000`, { headers: sbHeaders });
+    const bookIds = sessRes.ok ? [...new Set((await sessRes.json()).map((r) => r.book_id).filter(Boolean))] : [];
+    for (const bid of bookIds) { try { addChips(await api(`/concept/chips?curriculumKey=1&workbookIds=${bid}`)); } catch (e) {} await sleep(60); }
+    // 3) 트리 구성: 학년 → 대단원 → 중단원 → 소단원 → [유형]
+    const grades = {};
+    Object.values(byConcept).forEach((c) => {
+      const d = _decodeGrade(c.ord); const gl = d.label;
+      const big = c.big || '(대단원)', mid = c.mid || '(중단원)', lit = c.little || mid, typ = c.name || '(유형)';
+      const G = (grades[gl] = grades[gl] || { group: d.group, ord: c.ord || '999', tree: {} });
+      if (c.ord && c.ord < G.ord) G.ord = c.ord;
+      G.tree[big] = G.tree[big] || {};
+      G.tree[big][mid] = G.tree[big][mid] || {};
+      (G.tree[big][mid][lit] = G.tree[big][mid][lit] || new Set()).add(typ);
+    });
+    const order = Object.keys(grades).sort((a, b) => (_GROUP_ORD[grades[a].group] - _GROUP_ORD[grades[b].group]) || grades[a].ord.localeCompare(grades[b].ord));
+    const out = order.map((gl) => {
+      const G = grades[gl];
+      const bigs = Object.keys(G.tree).sort().map((big) => {
+        const mids = Object.keys(G.tree[big]).map((mid) => ({ n: mid, s: Object.keys(G.tree[big][mid]).map((lit) => ({ n: lit, t: [...G.tree[big][mid][lit]] })) }));
+        let tc = 0; mids.forEach((m) => m.s.forEach((l) => tc += l.t.length));
+        return { n: big, c: tc, m: mids };
+      });
+      return { g: gl, grp: G.group, b: bigs };
+    });
+    if (!out.length) { log('유형DB: 대상 없음 → 건너뜀'); return; }
+    const total = out.reduce((a, g) => a + g.b.reduce((x, b) => x + b.c, 0), 0);
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_typedb', value: { updated: new Date().toISOString(), total, grades: out }, updated_at: new Date().toISOString() }]),
+    });
+    log(`유형DB(mf_typedb): 학년 ${out.length} · 유형 ${total} ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('유형DB 갱신 실패(치명적 아님):', e.message); }
 }
 
 // ── 유형명 사전 갱신 ─────────────────────────────────────────
