@@ -10316,8 +10316,75 @@ function _mfCyc(stage){var s='';for(var i=0;i<5;i++)s+='<i style="width:12px;hei
 function _mfPill(txt,color){var c={red:['#fdecec','#dc2626'],amber:['#fbf1e0','#d97706'],green:['#e7f6ef','#059669'],blue:['#eef4fe','#1d6fe8'],purple:['#f3ecfd','#7c3aed'],gray:['#f1f5f9','#64748b']}[color]||['#f1f5f9','#64748b'];return '<span style="display:inline-flex;align-items:center;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;background:'+c[0]+';color:'+c[1]+'">'+txt+'</span>';}
 function _mfOX(r){var isO=r==='o';return '<span style="width:20px;height:20px;display:inline-grid;place-items:center;font-weight:800;font-size:11px;border:2px solid '+(isO?'#1d6fe8':'#dc2626')+';color:'+(isO?'#1d6fe8':'#dc2626')+';border-radius:'+(isO?'50%':'5px')+'">'+(isO?'O':'X')+'</span>';}
 
+/* ── 실제 Supabase 데이터 → 대시보드 계산 (검증 완료) ── */
+window._MF_REAL=null; window._MF_LOADING=false;
+function _mfClean(t){return (t||'').replace(/^\d{1,2}월\s*\d{1,2}일\s*/,'').replace(/\[[^\]]*\]/g,'').replace(/\d+~\d+p/g,'').replace(/\s{2,}/g,' ').trim()||(t||'');}
+function computeInsight(studs, recs, today){
+  var COLORS=['#1d6fe8','#7c3aed','#059669','#d97706','#dc2626','#0891b2','#c026d3','#65a30d'], STAGE=[1,3,7,14,30];
+  var nameOf={}; (studs||[]).forEach(function(s){nameOf[s.mf_student_id]={name:s.name,grade:s.grade,school:s.school_type};});
+  function gl(g,sc){var p=sc==='HIGH'?'고':sc==='MIDDLE'?'중':sc==='ELEMENTARY'?'초':'';return p+(g||'');}
+  function pkey(r){return r.source==='교재'?('wb:'+r.workbook_problem_id):('ws:'+(r.problem_id||(r.worksheet_title+':'+r.problem_seq)));}
+  function labelOf(r){return r.source==='교재'?(r.number?r.number+'번':'문항'):((r.problem_seq||'')+'번');}
+  var byStu={}; recs.forEach(function(r){(byStu[r.mf_student_id]=byStu[r.mf_student_id]||[]).push(r);});
+  var perStudent={}, queue=[], mistake=0, gap=0, gapCh={};
+  Object.keys(byStu).forEach(function(sid){
+    var rs=byStu[sid], byP={};
+    rs.forEach(function(r){(byP[pkey(r)]=byP[pkey(r)]||[]).push(r);});
+    var reviewCnt=0, chAgg={}, oAll=0, xAll=0;
+    Object.keys(byP).forEach(function(k){
+      var arr=byP[k]; arr.sort(function(a,b){return (a.score_datetime||'').localeCompare(b.score_datetime||'');});
+      var last=arr[arr.length-1], wrongN=arr.filter(function(a){return a.result==='X';}).length;
+      if(wrongN>0){ if(last.result==='O')mistake++; else if(wrongN>=2){gap++; var gc=last.chapter||_mfClean(last.worksheet_title); gapCh[gc]=(gapCh[gc]||0)+1;} }
+      var ch=_mfClean(last.worksheet_title)+(last.chapter?' · '+last.chapter:'');
+      chAgg[ch]=chAgg[ch]||{o:0,x:0};
+      arr.forEach(function(a){ if(a.result==='O'){chAgg[ch].o++;oAll++;} else if(a.result==='X'){chAgg[ch].x++;xAll++;} });
+      if(last.result==='X'){ reviewCnt++; var st=Math.min(wrongN,STAGE.length), d=new Date(last.score_datetime||today), nx=new Date(d.getTime()+STAGE[0]*86400000);
+        queue.push({sid:sid,who:(nameOf[sid]&&nameOf[sid].name)||sid,src:last.source,title:_mfClean(last.worksheet_title)+' · '+labelOf(last),topic:last.chapter||'',stage:st,when:(last.score_datetime||'').slice(0,10),overdue:nx<=today}); }
+    });
+    var weak=Object.keys(chAgg).map(function(k){var v=chAgg[k];return {name:k,total:v.o+v.x,rate:Math.round(100*v.o/(v.o+v.x||1))};}).filter(function(w){return w.total>=5;}).sort(function(a,b){return a.rate-b.rate;});
+    perStudent[sid]={reviewCnt:reviewCnt,weak:weak,rate:Math.round(100*oAll/(oAll+xAll||1)),total:oAll+xAll};
+  });
+  var briefing=Object.keys(perStudent).filter(function(sid){return perStudent[sid].reviewCnt>0;})
+    .sort(function(a,b){return perStudent[b].reviewCnt-perStudent[a].reviewCnt;}).slice(0,8).map(function(sid,i){
+      var info=nameOf[sid]||{}, v=perStudent[sid], w0=v.weak[0];
+      return {name:info.name||sid,grade:gl(info.grade,info.school),color:COLORS[i%COLORS.length],review:v.reviewCnt,
+        cmt:(w0?('<b>'+w0.name+'</b> 정답률 '+w0.rate+'% — 복습 필요 '+v.reviewCnt+'문항.'):('복습 필요 '+v.reviewCnt+'문항.')),
+        weak:v.weak.slice(0,2).map(function(w){return [w.name,w.rate+'%',(w.rate<50?'red':w.rate<70?'amber':'green')];})};
+    });
+  queue.sort(function(a,b){return (b.overdue-a.overdue)||((b.when||'').localeCompare(a.when||''));});
+  var risk=Object.keys(perStudent).filter(function(sid){return perStudent[sid].total>=10;})
+    .sort(function(a,b){return perStudent[a].rate-perStudent[b].rate;}).slice(0,3).map(function(sid){
+      var info=nameOf[sid]||{}, v=perStudent[sid];
+      return {name:(info.name||sid),sev:(v.rate<50?'hi':'mid'),tag:'정답률 '+v.rate+'%',why:'최근 '+v.total+'문항 · 복습 필요 '+v.reviewCnt+'문항',trend:'—'};
+    });
+  var gapTypes=Object.keys(gapCh).sort(function(a,b){return gapCh[b]-gapCh[a];}).slice(0,3).join(', ')||'—';
+  return {date:(today.toLocaleDateString?today.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'}):String(today).slice(0,10)),
+    className:'전체', isSample:false, briefing:briefing, queue:queue.slice(0,40), risk:risk, aha:[],
+    judge:{mistake:mistake,gap:gap,gapTypes:gapTypes}, reviewTotal:queue.length, studentCount:Object.keys(perStudent).length};
+}
+async function mfInsightLoad(){
+  if(window._MF_LOADING) return; window._MF_LOADING=true;
+  try{
+    var sb=getSupaClient(); if(!sb){window._MF_LOADING=false;return;}
+    var COLS='source,mf_student_id,worksheet_title,chapter,number,problem_seq,problem_id,workbook_problem_id,result,score_datetime';
+    var st=await sb.from('mf_students').select('mf_student_id,name,grade,school_type');
+    var p1=await sb.from('mf_answer_records').select(COLS).order('score_datetime',{ascending:false}).range(0,999);
+    var p2=await sb.from('mf_answer_records').select(COLS).order('score_datetime',{ascending:false}).range(1000,1999);
+    var recs=[].concat(p1.data||[],p2.data||[]);
+    window._MF_REAL = recs.length ? computeInsight(st.data||[], recs, new Date()) : null;
+  }catch(e){ console.error('mfInsightLoad', e); }
+  window._MF_LOADING=false;
+  if(VIEW==='mfinsight') render();
+}
+function getMfInsightData(){
+  if(window._MF_REAL) return window._MF_REAL;
+  if(typeof getSupaClient==='function' && getSupaClient()){ mfInsightLoad(); return null; }
+  return mfInsightData();
+}
+
 function rMfInsight(){
-  var D=mfInsightData();
+  var D=getMfInsightData();
+  if(!D) return '<div style="max-width:1040px;margin:0 auto;padding:72px 18px;text-align:center;color:#64748b;font-size:14px">⏳ 매쓰플랫 수집 데이터를 불러오는 중…<div style="font-size:12px;color:#94a2b5;margin-top:8px">처음 열 때 몇 초 걸릴 수 있어요</div></div>';
   // 브리핑 카드
   var brief=D.briefing.map(function(b){
     return '<div style="border:1px solid #e5eaf1;border-radius:11px;padding:12px 13px;background:#fff;margin-bottom:10px">'
@@ -10347,7 +10414,7 @@ function rMfInsight(){
       +'<div style="margin-left:auto;font-weight:800;font-size:13px;color:'+(r.trend==='—'?'#64748b':'#dc2626')+'">'+r.trend+'</div></div>';
   }).join('');
   // 아하노트 연동
-  var aha=D.aha.map(function(a){
+  var aha=(D.aha&&D.aha.length)?D.aha.map(function(a){
     var track=a.track.map(function(t,i){
       var box=t[0]==='o'?['#e7f6ef','#059669']:t[0]==='x'?['#fdecec','#dc2626']:['#fbf1e0','#d97706'];
       var seg='<span style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;font-weight:700;font-size:11.5px;background:'+box[0]+';color:'+box[1]+'">'+((t[0]==='o'||t[0]==='x')?_mfOX(t[0])+' ':'')+t[1]+'</span>';
@@ -10357,7 +10424,7 @@ function rMfInsight(){
       +'<div style="display:flex;gap:9px;align-items:flex-start;margin-bottom:11px"><div style="width:22px;height:22px;border-radius:6px;background:#7c3aed;color:#fff;display:grid;place-items:center;font-weight:800;font-size:12px;flex:none;margin-top:1px">Q</div>'
       +'<div style="font-weight:700;font-size:13.5px">'+a.q+'</div><div style="margin-left:auto;flex:none">'+_mfPill(a.who,'purple')+'</div></div>'
       +'<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'+track+(a.done?' '+_mfPill('해결됨 ✓','green'):' '+_mfPill('추적 중','amber'))+'</div></div>';
-  }).join('');
+  }).join('') : '<div style="border:1px dashed #cbd5e1;border-radius:12px;padding:18px;background:#fafbfd;color:#64748b;font-size:12.5px;text-align:center;line-height:1.6">아하노트에 담긴 교재·페이지·문항번호를 실제 정오답과 매칭해, 질문한 문제의 <b>복습 결과(맞혔는지)</b>까지 추적합니다. <b style="color:#7c3aed">(연동 준비 중)</b></div>';
 
   var sampleNote=D.isSample?'<div style="background:#fff7e8;color:#d97706;border:1px solid #f5e2be;border-radius:9px;padding:9px 13px;font-size:12px;font-weight:600;margin-bottom:16px">🔎 예시(가상) 데이터 미리보기입니다. Supabase에 매쓰플랫 수집 데이터가 연결되면 실제 학생 데이터로 자동 전환됩니다.</div>':'';
 
@@ -10383,7 +10450,7 @@ function rMfInsight(){
     // ③ 아하노트
     +'<h2 style="font-size:16px;font-weight:800;margin:0 0 10px">💡 아하노트 ↔ 정오답 연동 <span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:#f3ecfd;color:#7c3aed;vertical-align:middle">루멘 고유</span></h2>'
     +aha
-    +'<div style="color:#94a2b5;font-size:11.5px;text-align:center;padding:16px">루멘수학 학원앱 · 매쓰플랫 인사이트 · 학생 데이터는 실제 연결 전까지 예시입니다</div>'
+    +'<div style="color:#94a2b5;font-size:11.5px;text-align:center;padding:16px">루멘수학 학원앱 · 매쓰플랫 인사이트'+(D.isSample?' · 학생 데이터는 예시입니다':' · 학생 '+(D.studentCount||0)+'명 · 복습 대상 '+(D.reviewTotal||0)+'문항 (실제 수집 데이터)')+'</div>'
     +'</div>'
     +'<style>@media(max-width:760px){.mf-grid{grid-template-columns:1fr!important}}</style>';
 }
@@ -10397,7 +10464,7 @@ window.mfOpenWrongWorksheet=mfOpenWrongWorksheet;
 
 // 오늘의 복습 + 수업 전 브리핑 출력(인쇄)
 function mfInsightPrint(){
-  var D=mfInsightData();
+  var D=(window._MF_REAL)||mfInsightData();
   var briefRows=D.briefing.map(function(b){
     return '<tr><td class="nm">'+b.name+'<span class="gr">'+b.grade+'</span></td>'
       +'<td class="rv">'+b.review+'문항</td>'
