@@ -304,9 +304,50 @@ async function main() {
     if (studentRows.length) await upsert('mf_students', studentRows, 'mf_student_id');
     if (answers.length) await upsert('mf_answer_records', answers, 'record_key');
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
+    await refreshConceptNames();
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
+}
+
+// ── 유형명 사전 갱신 ─────────────────────────────────────────
+// mf_answer_records에 등장하는 concept_id의 한글 유형명을 매쓰플랫
+// /concept/chips에서 받아 lumen_store 'mf_concept_names'에 저장.
+// (학생앱 '스포트라이트'·학원앱 취약유형 화면이 이 사전으로 이름 표시)
+async function refreshConceptNames() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    // 1) 저장된 정오답에서 concept_id·book_id 수집
+    const usedIds = new Set(); const bookIds = new Set();
+    for (let off = 0; off < 50000; off += 1000) {
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=concept_id,book_id,source&limit=1000&offset=${off}`, { headers: sbHeaders });
+      if (!res.ok) break;
+      const rows = await res.json();
+      rows.forEach((r) => { if (r.concept_id != null) usedIds.add(r.concept_id); if (r.source === '교재' && r.book_id) bookIds.add(r.book_id); });
+      if (rows.length < 1000) break;
+    }
+    if (!usedIds.size) { log('유형사전: 대상 concept 없음 → 건너뜀'); return; }
+    // 2) 매쓰플랫 유형칩: 전체(key=1) + 교재별 필터 union (커버리지 최대화)
+    const dict = {};
+    const addChips = (arr) => (arr || []).forEach((c) => {
+      if (c.conceptId && !dict[c.conceptId]) dict[c.conceptId] = { n: String(c.conceptName || '').split(';')[0].trim(), m: c.middleChapterName || '' };
+    });
+    addChips(await api('/concept/chips?curriculumKey=1'));
+    for (const bid of bookIds) {
+      try { addChips(await api(`/concept/chips?curriculumKey=1&workbookIds=${bid}`)); } catch (e) {}
+      await sleep(80);
+    }
+    // 3) 실사용 concept만 추려 lumen_store에 저장
+    const val = {};
+    usedIds.forEach((id) => { if (dict[id]) val[id] = dict[id]; });
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST',
+      headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_concept_names', value: val, updated_at: new Date().toISOString() }]),
+    });
+    log(`유형사전(mf_concept_names): ${Object.keys(val).length}/${usedIds.size}개 매핑 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('유형사전 갱신 실패(치명적 아님):', e.message); }
 }
 
 async function upsert(table, records, onConflict) {
