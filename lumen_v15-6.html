@@ -3949,7 +3949,7 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
-      {ver:'v15-6',date:'2026',stability:'warn',memo:'🗺️ 로드맵 자동 진도 연동 — 매쓰플랫 채점 기록으로 교재 진도가 자동 갱신. [수집기] refreshRoadmap()이 mf_study_sessions(교재)를 학생×교재로 집계해 lumen_store mf_progress 저장(도달 최대 페이지·현재 단원·주간 진도·단원별 정오답·월별 정답률). refreshBookCatalog에 교재 목차(units, 대단원 순서) 추가. [학원앱] (1) 로드맵 플래너(#roadmap_mgr, lrp)의 「진행 중 교재」 카드가 매쓰플랫 자동 진도로 채워짐 — 교재를 이름 정규화로 매칭, 도달 페이지·현재 단원·주간 진도·% + 탭하면 단원 노선(완료✓/지금 여기📍/예정), 예상 완료일도 매쓰플랫 실측(도달페이지+주간속도)으로 계산해 「예측 불가」 해소. (2) 학생 개인탭 로드맵(lrm)에도 「🤖 매쓰플랫 자동 진도」 섹션 추가. 학생 매칭은 lumen_rec_code→이름. 기존 수동 「교재 진도」 단원체크는 병행 유지. [학생앱 v2-5] 동일 데이터로 여정 화면에 현행/선행 트랙+단원 노선 펼침+월별 발자취. 읽기전용(자동). 실기기 테스트 전. [플래너 버그수정] ① 승인이 검토대기로 되돌아가던 원인 수정 — or_studentdb 병합에서 lumen_planner_photos를 "분석 있는 쪽 우선"으로 골라 다른 기기의 미승인 분석본이 승인본(reviewed)을 덮던 것을 승인>분석>빈 순위로 교체(동순위 로컬). ② 승인 즉시 세트 배지 ✅승인됨·카드 헤더 배지 갱신(updatePlannerCardBadges 호출 — 기존엔 미호출로 화면상 검토대기 유지). ③ 개별 승인 alert → 비차단 토스트(plToast)로 교체, 연속 승인 시 확인 클릭 불필요. 되돌아간 기존 건은 사진검토 상단 「✅ 전체 승인」 1회로 일괄 복구 가능.'},
+      {ver:'v15-6',date:'2026',stability:'warn',memo:'🗺️ 로드맵 자동 진도 연동 — 매쓰플랫 채점 기록으로 교재 진도가 자동 갱신. [수집기] refreshRoadmap()이 mf_study_sessions(교재)를 학생×교재로 집계해 lumen_store mf_progress 저장(도달 최대 페이지·현재 단원·주간 진도·단원별 정오답·월별 정답률). refreshBookCatalog에 교재 목차(units, 대단원 순서) 추가. [학원앱] (1) 로드맵 플래너(#roadmap_mgr, lrp)의 「진행 중 교재」 카드가 매쓰플랫 자동 진도로 채워짐 — 교재를 이름 정규화로 매칭, 도달 페이지·현재 단원·주간 진도·% + 탭하면 단원 노선(완료✓/지금 여기📍/예정), 예상 완료일도 매쓰플랫 실측(도달페이지+주간속도)으로 계산해 「예측 불가」 해소. (2) 학생 개인탭 로드맵(lrm)에도 「🤖 매쓰플랫 자동 진도」 섹션 추가. 학생 매칭은 lumen_rec_code→이름. 기존 수동 「교재 진도」 단원체크는 병행 유지. [학생앱 v2-5] 동일 데이터로 여정 화면에 현행/선행 트랙+단원 노선 펼침+월별 발자취. 읽기전용(자동). 실기기 테스트 전. [플래너 버그수정] ① 승인이 검토대기로 되돌아가던 원인 수정 — or_studentdb 병합에서 lumen_planner_photos를 "분석 있는 쪽 우선"으로 골라 다른 기기의 미승인 분석본이 승인본(reviewed)을 덮던 것을 승인>분석>빈 순위로 교체(동순위 로컬). ② 승인 즉시 세트 배지 ✅승인됨·카드 헤더 배지 갱신(updatePlannerCardBadges 호출 — 기존엔 미호출로 화면상 검토대기 유지). ③ 개별 승인 alert → 비차단 토스트(plToast)로 교체, 연속 승인 시 확인 클릭 불필요. 되돌아간 기존 건은 사진검토 상단 「✅ 전체 승인」 1회로 일괄 복구 가능. [사진검토 작업속도 4종] ① 승인 직후 다음 검토대기 세트로 자동 스크롤+펼침(plGotoNextPending — 화면에 없으면 접힌 학생 카드도 자동으로 엶, 다 끝나면 🎉 토스트). ② 상단 「📋 대기만」 필터 — 검토·분석 대기 있는 학생만 표시(숨긴 수 안내+전체 보기 링크, localStorage lumen_photo_filter). ③ 「🤖 자동승인」 토글 — ⚠️ 플래그 없는 분석완료 세트를 자동 승인(점수·순공시간·학생앱 반영, autoApproved 표시, 플래그 세트는 검토대기 유지; 켤 때 안내 확인, 메타 로드 후·개별 분석 직후 실행, localStorage lumen_planner_autoapprove). ④ 홈 「플래너 검토 대기」 클릭 시 사진검토 화면으로 직행(기존엔 입력 화면).'},
       {ver:'v15-5',date:'2026',stability:'warn',memo:'✍️ 수학풀이분석 리포트 조립기 추가(pwaBuildReport) — 자동 파이프라인 1단계. Opus가 산출한 구조화 분석데이터(영역·난이도·문항별 채점·첨삭·총평 등)를 넣으면 v5 표준 리포트 HTML을 자동 조립(문자열 결합, 중첩 템플릿 리터럴 없음). 편집 마커 data-edit(overall/headline/q{n}-comment/home)·data-audience=parent 모두 포함해 기존 편집화면과 호환. 조립된 report_html은 기존 pwaImportOne→Storage 통째 저장 경로 재사용(저장 구조 무변경). v5 원본과 동일 렌더 확인(로컬 스크린샷). 다음: 업로드 2파일(학생스캔+시험지답지 합본)→pdf.js→Haiku 분리(자동정렬 없음)→Opus 정답표·학생별 분석→조립기 연결. ⚠️ 실브라우저 테스트 전(샌드박스는 API 차단).'},
       {ver:'v15-4',date:'2026',stability:'warn',memo:'🔬 유형DB 전면 교체 — 매쓰플랫 전체 교육과정 자동. 기존 수동 BUILTIN_TYPE_DB(원장이 매쓰플랫 보고 손으로 입력)를 폐기하고, lumen_store mf_typedb(수집기가 매일 갱신)를 렌더. [데이터] 수집기 refreshTypeDb: /concept/chips 전체 3키(1.4.4145 초·4146 중·4147 고) + 사용 교재 per-workbook 칩 union → 각 유형의 orderingNumber(2번째=학교급,3번째=학년,4번째=학기; 고등은 3번째=과목)로 학년 해독 → 학년→대단원→중단원→소단원→유형 트리로 mf_typedb 저장(현재 3,632유형·24학년그룹). [화면] rTypeDb 재작성(MF_TYPEDB/MTD_* 네임스페이스): 학교급 탭(초/중/고)+학년 알약(초1-1…고 과목)+유형명 검색(경로표시)+대단원 접기. 좌측 rBookTypeLeftNav의 유형 모드도 mf_typedb 기반으로 교체(학교급·학년 바로가기). 기존 typeDbSearch/rTypeDbContent/import·export는 미사용(제거 안 함). [주의] 매쓰플랫이 2022개정만 담아 중3-2(삼각비·원의성질·통계)는 아직 비어 있고, 우리 학생이 그 교재를 풀면 per-workbook 병합으로 자동 채워짐. 유형성취도(taData)는 무관·영향 없음. 실기기 테스트 전.'},
       {ver:'v15-3',date:'2026',stability:'warn',memo:'📥 매쓰플랫 교재 가져오기. 교재 라이브러리 헤더에 「📥 매쓰플랫 가져오기」 버튼 → lumen_store mf_books(수집기가 매일 새벽 자동 갱신: 학생별 교재 목록 + 교재 메타[이름·출판사·학년학기 gradeKey·페이지])와 mf_students를 읽어 모달 목록 표시(학년순, 푸는 학생 이름 표기, 이미 있는 교재는 mfBookId·이름 정규화 매칭으로 「이미 있음」 비활성). 선택 가져오기 시 emptyBook 기반으로 or_books에 추가(mfBookId 저장=재가져오기 중복 방지) + 그 교재를 푸는 학생에게 자동 배정(lumen_assignedBooks push {bookId,type,startDate=오늘}, 동명이인은 건너뜀). 신규 코드 mfi/MFI 네임스페이스, vodOverlay 재사용, 기존 코드는 rBooks 헤더 버튼 1곳만 수정. 학생앱 v2-4 아하노트 교재 선택과 같은 mf_books 데이터 사용.'},
@@ -6897,7 +6897,7 @@ function rHome(){
   h+='<div style="font-size:15px;font-weight:900;color:#0d2240;margin-bottom:14px">✅ 오늘 챙길 것</div>';
   h+=_homeTodoRow('📝','#dcfce7','오늘 기록 미작성',(recTotal>0?(todayKey+' '+recTotal+'명 · 기록 탭에서 입력'):'오늘 수업 없음'),recMissing,'red',"go('record')");
   h+=_homeTodoRow('📓','#fee2e2','오늘 플래너 미제출',(plannerLoading?'제출 현황 불러오는 중…':(todayKey+' 수업 학생 중 미제출')),(plannerLoading?null:planMissing),'red',"go('planner')");
-  h+=_homeTodoRow('📋','#eaf2ff','플래너 검토 대기','분석 완료·미승인',reviewWait,'amber',"go('planner')");
+  h+=_homeTodoRow('📋','#eaf2ff','플래너 검토 대기','분석 완료·미승인',reviewWait,'amber',"VIEW='planner';PLANNER_VIEW='photo';renderFuncTab()");
   h+=_homeTodoRow('💡','#fef3c7','아하노트 미해결',(ahaReady?'학생 질문 누적':'불러오는 중…'),(ahaReady?ahaPending:null),'amber',"go('aha')");
   h+=_homeTodoRow('🤖','#ede9fe','피드백 미생성','오늘 분석 완료·총평 미작성',fbMissing,'amber',"go('bulk')");
   h+=_homeTodoRow('📄','#f1f5f9','PDF 분석 대기',(pdfWait>0?'업로드 후 분석 진행 중':'대기 없음'),pdfWait,'amber',"go('analyzing')");
@@ -23142,6 +23142,11 @@ function rPlannerPhoto() {
   h += '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">';
   h += '<button onclick="bulkAnalyzePlanner()" style="flex:1;min-width:120px;padding:11px;background:linear-gradient(135deg,#7c3aed,#8b5cf6);color:white;border:none;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">🔍 전체 미검토 AI 분석</button>';
   h += '<button onclick="bulkApprovePlanner()" style="flex:1;min-width:120px;padding:11px;background:linear-gradient(135deg,#059669,#10b981);color:white;border:none;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">✅ 전체 승인</button>';
+  // ★ v15-6: 대기만 보기 필터 + 플래그 없는 세트 자동 승인 토글
+  var _pf = localStorage.getItem('lumen_photo_filter') || 'all';
+  h += '<button onclick="setPlannerPhotoFilter()" title="검토·분석 대기가 있는 학생만 표시" style="padding:11px 14px;background:' + (_pf==='pending'?'#0d2240':'white') + ';color:' + (_pf==='pending'?'#ffd54a':'#475569') + ';border:1.5px solid ' + (_pf==='pending'?'#0d2240':'#e2e8f0') + ';border-radius:12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">📋 대기만' + (_pf==='pending'?' ✓':'') + '</button>';
+  var _aa = localStorage.getItem('lumen_planner_autoapprove') === '1';
+  h += '<button onclick="togglePlannerAutoApprove()" title="분석 결과에 ⚠️ 플래그가 없는 세트를 확인 없이 자동 승인 (플래그 세트는 검토대기 유지)" style="padding:11px 14px;background:' + (_aa?'#ecfdf5':'white') + ';color:' + (_aa?'#0e7a52':'#475569') + ';border:1.5px solid ' + (_aa?'#6ee7b7':'#e2e8f0') + ';border-radius:12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap">🤖 자동승인 ' + (_aa?'ON':'OFF') + '</button>';
   // 열 토글
   h += '<div style="display:flex;align-items:center;gap:4px;background:#f8fafc;border-radius:10px;padding:3px;border:1.5px solid #e2e8f0">';
   [2,3,4].forEach(function(n) {
@@ -23181,6 +23186,9 @@ function rPlannerPhoto() {
   if (typeof window._plannerOpenCards === 'undefined') window._plannerOpenCards = {};
   var sortedStudents = getPhotoSortedStudents(activeStudents);
 
+  // ★ v15-6: 「대기만 보기」 필터 — 검토·분석 대기 없는 학생 숨김
+  var _pfMode = localStorage.getItem('lumen_photo_filter') || 'all';
+  var _pfHidden = 0;
   h += '<div id="planner-photo-list" style="display:grid;grid-template-columns:repeat(' + cols + ',minmax(0,1fr));gap:10px">';
   sortedStudents.forEach(function(st) {
     var photos = st.lumen_planner_photos || [];
@@ -23189,6 +23197,7 @@ function rPlannerPhoto() {
     var reviewWaitCnt = pending.length - unanalyzedCnt;
     var hasPending = pending.length > 0;
     var hasAny = photos.length > 0;
+    if (_pfMode === 'pending' && !hasPending) { _pfHidden++; return; }
 
     // 상태 결정 — 3가지: 미검토 / 완료 / 제출없음
     // (제출없음은 사진 로드 후에 정확히 판별되므로 일단 하위 영역에서 보여줌)
@@ -23227,6 +23236,9 @@ function rPlannerPhoto() {
     h += '</div>';
   });
   h += '</div>';
+  if (_pfMode === 'pending') {
+    h += '<div style="margin-top:10px;text-align:center;font-size:11.5px;color:#94a3b8;font-weight:700">📋 대기만 보기 중 — 대기 없는 학생 ' + _pfHidden + '명 숨김 · <span onclick="setPlannerPhotoFilter()" style="color:#1d6fe8;cursor:pointer;text-decoration:underline">전체 보기</span></div>';
+  }
   h += '</div>';
 
   // ★ v11-1: 펼쳐진 카드만 사진 로드 + plannerJumpToPhoto로 들어온 경우 자동 펼침
@@ -23264,6 +23276,112 @@ function setPlannerCols(n) {
   localStorage.setItem('lumen_planner_cols', String(n));
   render();
 }
+
+// ★ v15-6: 「대기만 보기」 필터 토글
+function setPlannerPhotoFilter() {
+  var cur = localStorage.getItem('lumen_photo_filter') || 'all';
+  localStorage.setItem('lumen_photo_filter', cur === 'pending' ? 'all' : 'pending');
+  render();
+}
+
+// ★ v15-6: 플래그 여부 (bulkApprovePlanner와 동일 기준)
+function _plHasFlag(a) {
+  if (!a) return false;
+  return a.flagDateMismatch===true||a.flagDateMismatch==='true'
+      || a.flagLowEffort===true||a.flagLowEffort==='true'
+      || a.flagEmpty===true||a.flagEmpty==='true'
+      || a.flagUnreadable===true||a.flagUnreadable==='true';
+}
+
+// ★ v15-6: 자동 승인 토글 — 켤 때 안내 확인 + 즉시 1회 실행
+function togglePlannerAutoApprove() {
+  var on = localStorage.getItem('lumen_planner_autoapprove') === '1';
+  if (!on) {
+    var ok = confirm('🤖 자동 승인을 켤까요?\n\nAI 분석에 ⚠️ 플래그(날짜불일치·성의없음·빈플래너·판독불가)가 없는 세트는 확인 없이 자동 승인되어 점수가 학생앱까지 반영됩니다.\n\n플래그 세트는 계속 검토대기로 남아 원장님 확인을 기다립니다.\n언제든 다시 끌 수 있어요.');
+    if (!ok) return;
+  }
+  localStorage.setItem('lumen_planner_autoapprove', on ? '0' : '1');
+  if (!on) autoApproveUnflagged();
+  render();
+}
+
+// ★ v15-6: 플래그 없는 분석완료 세트 자동 승인 (토글 ON일 때만)
+//   점수 계산은 개별 승인(approveAnalysis)·전체 승인(bulkApprovePlanner)과 동일 규칙.
+function autoApproveUnflagged() {
+  if (localStorage.getItem('lumen_planner_autoapprove') !== '1') return;
+  var count = 0, touched = {};
+  students.forEach(function(st) {
+    (st.lumen_planner_photos || []).forEach(function(p) {
+      if (!p || p.reviewed || !p.analysis) return;
+      if (_plHasFlag(p.analysis)) return;
+      var dateStr = p.analysis.date || '';
+      if (!dateStr) return;
+      var fc = (p.urls || []).length || (p.files || []).length || 2;
+      var autoPl = calcPlannerScoreByPlannerDate(dateStr, p.setId, fc);
+      var total = autoPl + (parseInt(p.analysis.studyScore)||0) + (parseInt(p.analysis.practiceScore)||0) + (parseInt(p.analysis.specificScore)||0) + (parseInt(p.analysis.feedbackScore)||0);
+      if (!st.lumen_planner) st.lumen_planner = {};
+      st.lumen_planner[dateStr] = total;
+      var mins = parseTimeToMins(p.analysis.totalTime || '');
+      if (mins > 0) { if (!st.lumen_study_time) st.lumen_study_time = {}; st.lumen_study_time[dateStr] = mins; }
+      p.reviewed = true;
+      p.autoApproved = true; // 자동 승인 표시 (추적용)
+      count++;
+      touched[st.id] = st;
+    });
+  });
+  if (!count) return;
+  saveStudents();
+  if (typeof publishPlannerDataForStudent === 'function') {
+    Object.keys(touched).forEach(function(sid) { publishPlannerDataForStudent(touched[sid]); });
+  }
+  if (typeof updatePlannerCardBadges === 'function') updatePlannerCardBadges();
+  plToast('🤖 플래그 없는 ' + count + '개 세트 자동 승인 (점수·학생앱 반영)');
+}
+
+// ★ v15-6: 다음 검토대기 세트로 자동 이동 (승인 직후 호출)
+window.plGotoNextPending = function(curSi) {
+  // 1) 화면에 이미 렌더된 세트 중에서 다음 검토대기 찾기
+  var wraps = Array.prototype.slice.call(document.querySelectorAll('[id^="planner-set-wrap-"]'));
+  var curId = 'planner-set-wrap-' + curSi;
+  var idx = -1;
+  for (var i = 0; i < wraps.length; i++) { if (wraps[i].id === curId) { idx = i; break; } }
+  var ordered = wraps.slice(idx + 1).concat(wraps.slice(0, idx < 0 ? 0 : idx));
+  for (var j = 0; j < ordered.length; j++) {
+    var w = ordered[j];
+    var badge = w.querySelector('[id^="planner-set-badge-"]');
+    if (badge && badge.textContent.indexOf('검토대기') >= 0) {
+      var siKey = w.id.replace('planner-set-wrap-', '');
+      window._plannerOpenSets = window._plannerOpenSets || {};
+      window._plannerOpenSets[siKey] = true;
+      var body = document.getElementById('planner-set-body-' + siKey);
+      var arrow = document.getElementById('planner-set-arrow-' + siKey);
+      if (body) body.style.display = 'block';
+      if (arrow) arrow.textContent = '▼';
+      w.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+  }
+  // 2) 화면엔 없음 → 접힌 카드 중 검토대기 있는 학생을 펼치고 이동
+  var act = students.filter(function(s) { return s.lumen_rec_code && !s.withdrawn; });
+  var sorted = (typeof getPhotoSortedStudents === 'function') ? getPhotoSortedStudents(act) : act;
+  for (var k = 0; k < sorted.length; k++) {
+    var st = sorted[k];
+    var has = (st.lumen_planner_photos || []).some(function(p) { return p && p.analysis && !p.reviewed; });
+    if (!has) continue;
+    if (window._plannerOpenCards && window._plannerOpenCards[st.id]) continue; // 이미 열린 카드는 1)에서 확인됨
+    window._plannerOpenCards = window._plannerOpenCards || {};
+    window._plannerOpenCards[st.id] = true;
+    var cb = document.getElementById('planner-card-body-' + st.id);
+    var ca = document.getElementById('planner-card-arrow-' + st.id);
+    if (cb) cb.style.display = 'block';
+    if (ca) ca.textContent = '▼';
+    var card = document.getElementById('planner-card-' + st.id);
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (typeof loadOnePlannerCard === 'function') loadOnePlannerCard(st);
+    return;
+  }
+  plToast('🎉 검토대기가 모두 끝났어요!');
+};
 
 // 탭 열릴 때 자동으로 모든 학생 사진 로드
 // ★ v11-1: 단일 학생 사진 로드 (아코디언 펼칠 때 호출)
@@ -23527,6 +23645,8 @@ async function preloadAllPlannerMeta() {
     saveStudents();
     updatePlannerCardBadges();
   }
+  // ★ v15-6: 자동승인 ON이면 메타 로드 후 무플래그 세트 자동 승인
+  if (typeof autoApproveUnflagged === 'function') autoApproveUnflagged();
 }
 
 // ★ v11-2: 헤더 뱃지/색상만 갱신 (전체 render 없이)
@@ -24560,6 +24680,16 @@ async function analyzePlannerPhotos(stId, si, setId) {
 
     if (resultEl) resultEl.innerHTML = renderAnalysisResult(analysis, stId, setId, si, false);
     if (btn) { btn.textContent = '🔍 다시 분석'; btn.disabled = false; }
+    // ★ v15-6: 자동승인 ON + 무플래그면 분석 직후 즉시 승인 + 화면 갱신
+    if (localStorage.getItem('lumen_planner_autoapprove') === '1' && typeof _plHasFlag === 'function' && !_plHasFlag(analysis)) {
+      autoApproveUnflagged();
+      var exA = (stInfo.lumen_planner_photos || []).find(function(p) { return p.setId === setId; });
+      if (exA && exA.reviewed) {
+        if (resultEl) resultEl.innerHTML = renderAnalysisResult(analysis, stId, setId, si, true);
+        var sb3 = document.getElementById('planner-set-badge-' + si);
+        if (sb3) sb3.innerHTML = '<div style="font-size:10px;font-weight:700;color:#059669;background:#dcfce7;padding:2px 8px;border-radius:10px">✅ 승인됨</div>';
+      }
+    }
   } catch(e) {
     // ★ v11-1: 실패 시 analyzing 해제 + analysisError 저장
     if (stInfo && stInfo.lumen_planner_photos) {
@@ -24646,6 +24776,8 @@ function approveAnalysis(stId, setId, si) {
   plToast('✅ ' + stInfo.name + ' ' + dateStr + ' — ' + totalScore + '점 반영 (학생앱 자동 반영)');
   // ★ v11-3: 승인 후 해당 세트 자동 접힘 (작업 흐름 개선)
   if (typeof collapseSetAccordion === 'function') collapseSetAccordion(si);
+  // ★ v15-6: 다음 검토대기 세트로 자동 이동 — 위→아래 클릭만으로 연속 처리
+  setTimeout(function(){ if (typeof plGotoNextPending === 'function') plGotoNextPending(si); }, 200);
 }
 
 // ★ v15-6: 비차단 토스트 — alert 대신 (연속 승인 시 확인 클릭 불필요, 작업 속도 개선)
