@@ -31301,9 +31301,16 @@ function rPwa(){
   h += '<span style="font-size:12.5px;color:#6b7280">학생 풀이 분석 → 검토 → 학부모 공유</span></div>';
   h += '<div style="font-size:12.5px;color:#6b7280;margin-bottom:18px">클로드(Opus)에서 받은 분석 JSON 파일을 올리면 학생별 리포트가 만들어집니다. 검토 후 파일로 저장해 공유하세요.</div>';
 
-  // 가져오기
+  // 자동 분석(신규 v15-5)
+  h += '<div style="background:linear-gradient(135deg,#0d2240,#1a3564);border-radius:14px;padding:17px 18px;margin-bottom:14px;color:#fff">';
+  h += '<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap"><div style="font-size:15px;font-weight:800">⚡ 자동 분석</div><span style="font-size:10.5px;font-weight:800;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:3px 9px">NEW</span></div>';
+  h += '<div style="font-size:12px;opacity:.9;margin:6px 0 11px;line-height:1.6">학생 답안 스캔 PDF와 시험지·답지 합본 PDF를 올리면, 학생별로 분리·채점·분석해 리포트를 자동 생성합니다. (클로드 채팅·JSON 복사 없이)</div>';
+  h += '<button onclick="pwaAutoOpen()" style="border:none;background:#e8192c;color:#fff;font-weight:800;font-size:13px;padding:10px 18px;border-radius:10px;cursor:pointer;font-family:inherit">📄 PDF 올려서 자동 분석</button>';
+  h += '</div>';
+
+  // 가져오기(JSON 수동 — 하위호환)
   h += '<div style="background:#fff;border:1.5px solid #e9b9bf;border-radius:14px;padding:16px 17px;margin-bottom:18px">';
-  h += '<div style="font-size:14px;font-weight:800;color:#0d2240;margin-bottom:10px">📤 분석 파일 가져오기</div>';
+  h += '<div style="font-size:14px;font-weight:800;color:#0d2240;margin-bottom:10px">📤 분석 파일 가져오기 <span style="font-size:11px;font-weight:600;color:#94a3b8">(수동 JSON)</span></div>';
   h += '<div style="border:2px dashed #e9b9bf;border-radius:12px;background:#fdf7f8;padding:20px 14px;text-align:center">';
   h += '<div style="font-size:24px;margin-bottom:8px">📄</div>';
   h += '<label style="display:inline-block;font-size:13px;font-weight:800;border-radius:9px;padding:9px 16px;background:#fff;color:#0d2240;border:1px solid #e7e9ef;cursor:pointer">JSON 파일 선택'
@@ -31483,6 +31490,329 @@ function pwaBuildReport(d){
     +'<div class="disc">'+pwaRepRich(d.discHtml||'AI가 스캔된 답안의 풀이 과정을 분석한 잠정 리포트입니다. 원장 확인 후 공유됩니다.')+'</div></footer>'
     +'</div></body></html>';
   return html;
+}
+
+/* ═══════════════ 수학풀이분석 자동 파이프라인 (v15-5) ═══════════════
+   업로드(학생스캔 + 시험지·답지 합본) → pdf.js 이미지화 →
+   Haiku 분리(자동정렬 없음) → Opus 정답표 파싱 → Opus 학생별 분석 →
+   pwaBuildReport 조립 → pwaImportOne 저장(검토대기). 오버레이로 격리.
+   문자열 결합만(중첩 템플릿 리터럴 금지). */
+
+var PWA_AUTO = { studScan:null, examPdf:null, examName:'', pages:[], groups:[], answerKey:null, running:false };
+var PWA_HAIKU = 'claude-haiku-4-5-20251001';
+var PWA_OPUS  = 'claude-opus-4-8';
+
+function paEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function paKey(){ return (typeof apiKey!=='undefined' && apiKey) ? apiKey : (localStorage.getItem('or_api_key')||''); }
+function paRoster(){
+  try{
+    var raw = localStorage.getItem('or_studentdb'); var arr = raw?JSON.parse(raw):[];
+    if(!Array.isArray(arr)) return [];
+    return arr.filter(function(s){ return s && !s.withdrawn && s.name; })
+              .map(function(s){ return { name:s.name, code:s.lumen_rec_code||'', grade:s.grade||'', group:s.group||'' }; });
+  }catch(e){ return []; }
+}
+
+/* ── PDF → 페이지 이미지 ── */
+async function paPdfToImages(arrayBuffer, targetW){
+  targetW = targetW||1700;
+  if(typeof pdfjsLib==='undefined'||!pdfjsLib.getDocument) throw new Error('PDF 기능 로딩 중입니다. 잠시 후 다시 시도하세요.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  var pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  var out = [];
+  for(var i=1;i<=pdf.numPages;i++){
+    var page = await pdf.getPage(i);
+    var vp0 = page.getViewport({ scale:1 });
+    var vp = page.getViewport({ scale: targetW/vp0.width });
+    var canvas = document.createElement('canvas');
+    canvas.width = vp.width; canvas.height = vp.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+    var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+    out.push({ idx:i, dataUrl:dataUrl, base64: dataUrl.split(',')[1] });
+  }
+  return out;
+}
+
+/* ── Claude 비전 호출(공통) ── */
+async function paClaude(model, base64List, promptText, maxTok){
+  var content = [];
+  (base64List||[]).forEach(function(b){ content.push({ type:'image', source:{ type:'base64', media_type:'image/jpeg', data:b } }); });
+  content.push({ type:'text', text: promptText });
+  var res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'x-api-key': paKey(), 'anthropic-version':'2023-06-01', 'anthropic-dangerous-direct-browser-access':'true' },
+    body: JSON.stringify({ model: model, max_tokens: maxTok||1500, messages:[{ role:'user', content: content }] })
+  });
+  if(!res.ok){ var t = await res.text(); throw new Error('API '+res.status+': '+t.slice(0,200)); }
+  var data = await res.json();
+  return (data.content||[]).filter(function(b){ return b.type==='text'; }).map(function(b){ return b.text; }).join('');
+}
+function paParseJson(text){
+  var s = String(text||'').replace(/```json|```/g,'').trim();
+  var a = s.indexOf('{'), b = s.lastIndexOf('}');
+  var a2 = s.indexOf('['), b2 = s.lastIndexOf(']');
+  if(a2>=0 && (a<0 || a2<a)){ if(a2>=0&&b2>=0) s = s.slice(a2,b2+1); }
+  else if(a>=0&&b>=0){ s = s.slice(a,b+1); }
+  return JSON.parse(s);
+}
+
+/* ── 1) 페이지 분리(Haiku) — 자동정렬 없음 ── */
+var PA_SPLIT_PROMPT = '이 이미지는 수학 시험답안 스캔입니다. 일부는 회전돼 있을 수 있습니다. 모든 방향의 글자를 읽으세요.\n판단:\n- isCover: 시험 표지 요소(제2교시·수학영역·이름칸 등)나 새 학생의 첫 장이면 true.\n- studentName: 손으로 쓴 학생 이름. 인쇄 글자는 이름 아님. 없으면 null.\n- pageNumber: 인쇄된 쪽번호 분자(1/8이면 1). 없으면 null.\n- totalPages: 쪽번호 분모(1/8이면 8). 없으면 null.\nJSON만 출력:\n{"isCover":true/false,"studentName":"이름"또는null,"pageNumber":숫자또는null,"totalPages":숫자또는null}';
+
+async function paSplitPage(base64){
+  var txt = await paClaude(PWA_HAIKU, [base64], PA_SPLIT_PROMPT, 300);
+  try{ return paParseJson(txt); }catch(e){ return { isCover:false, studentName:null, pageNumber:null, totalPages:null, _err:true }; }
+}
+// 스캔 순서 보존(정렬 금지). 표지/쪽번호1에서 새 학생 시작.
+function paGroup(pages){
+  var students = [], cur = null;
+  pages.forEach(function(p){
+    var startNew = (cur===null) || p.isCover===true || p.pageNumber===1;
+    if(startNew){ cur = { read: p.studentName||null, name:'', pages:[p] }; students.push(cur); }
+    else { cur.pages.push(p); if(!cur.read && p.studentName) cur.read = p.studentName; }
+  });
+  return students; // 페이지 순서 = 스캔 순서 그대로
+}
+function paMatchRoster(readName, roster){
+  if(!readName) return null;
+  var n = String(readName).replace(/\s/g,'');
+  var hit = roster.find(function(r){ return r.name.replace(/\s/g,'')===n; });
+  if(hit) return hit;
+  hit = roster.find(function(r){ var x=r.name.replace(/\s/g,''); return x.indexOf(n)>=0||n.indexOf(x)>=0; });
+  return hit||null;
+}
+
+/* ── 2) 정답표 파싱(Opus) ── */
+var PA_KEY_PROMPT = '아래 이미지들은 수학 시험지와 답지가 함께 있는 PDF입니다. 문항별 채점 기준표를 만드세요.\n각 문항: no(번호), answer(정답), points(배점 숫자, 모르면 null), unit(단원·영역명 짧게), level(난이도 "상"/"중"/"중하" 중 하나).\n시험 메타: exam_name, subject, grade도 읽으세요.\nJSON만 출력:\n{"exam_name":"...","subject":"...","grade":"...","items":[{"no":1,"answer":"③","points":4,"unit":"다항식","level":"중"}, ...]}';
+
+async function paAnswerKey(examImages){
+  var b = examImages.map(function(x){ return x.base64; });
+  var txt = await paClaude(PWA_OPUS, b, PA_KEY_PROMPT, 3000);
+  return paParseJson(txt);
+}
+
+/* ── 3) 학생별 분석(Opus) → 조립기용 구조화 데이터 ── */
+function paAnalysisPrompt(student, examName, answerKey){
+  var keyText = answerKey && answerKey.items ? JSON.stringify(answerKey.items) : '(정답표 없음 — 직접 채점하고 채점 확인 권장을 표시)';
+  return ''
+    + '너는 루멘수학 원장을 돕는 수학 시험답안 분석가다. 아래 이미지는 학생 "' + student + '"의 손글씨 시험답안 스캔이다.\n'
+    + '시험: ' + examName + '\n'
+    + '정답표(문항별 정답·배점·단원·난이도): ' + keyText + '\n\n'
+    + '할 일: 답안을 정답표와 대조해 채점하고, 풀이 과정을 분석해 학부모용 리포트 데이터를 만든다.\n'
+    + '원칙:\n'
+    + '- 스캔에 없는 문항은 채점하지 말 것(미스캔 처리, mark "-").\n'
+    + '- 틀린 이유를 "계산·마무리 실수"와 "개념·접근 오류"로 구분.\n'
+    + '- 맞힌 문항도 과정이 번잡하면 짚어준다.\n'
+    + '- 문체: 학부모가 읽는 따뜻하고 자연스러운 사람 문장. AI 티(과장·상투어) 금지. 점수보다 습관·성장에 초점.\n'
+    + '- evidence(첨삭)는 핵심 문항 3~5개만. 각 evidence.html은 <p>문장</p> 형식, 필요시 <b>, <span class="mark">강조</span>, 마지막에 <p class="rx"><b>처방</b> · ...</p>. 틀린 문항이면 맨 앞에 <span class="correct-chip">✓ 바른 풀이 요약</span> 가능.\n'
+    + '- evidence.pageRef: 이 문항이 보이는 학생 페이지 번호(1부터, 아래 이미지 순서).\n\n'
+    + '출력은 아래 JSON 하나만(설명·코드블록 금지):\n'
+    + '{\n'
+    + '  "summary": {"correct":정답수, "graded":채점문항수, "error_label":"계산·마무리" 같은 짧은 실점원인},\n'
+    + '  "headline": "안정적인 <span class=\\"em\\">상위권</span>입니다" 처럼 한 줄 판정(em 태그로 핵심어 강조),\n'
+    + '  "verdictLine": "한 문장 요약",\n'
+    + '  "vtags": ["고난도 100%","쉬운 실수 1개","50분 완주"],\n'
+    + '  "overall": ["총평 문단1(<span class=\\"hl\\">강조</span> 가능)","문단2"],\n'
+    + '  "kpis": {"correct":13,"graded":14,"timeMin":null,"timeSub":"","highRate":100,"highSub":"상 난이도 전부","errorLabel":"계산·마무리","errorSub":"개념 오류 0건"},\n'
+    + '  "strengths": ["빛난 점1","점2","점3"],\n'
+    + '  "areas": [{"name":"영역명","correct":4,"total":4}],\n'
+    + '  "levels": [{"name":"상 (고난도)","correct":3,"total":3},{"name":"중","correct":6,"total":6},{"name":"중하 (기본)","correct":4,"total":5}],\n'
+    + '  "levelInsight": "난이도 관련 한 줄 통찰(<b>강조</b> 가능), 없으면 빈문자열",\n'
+    + '  "ox": [{"n":1,"mark":"O"},{"n":4,"mark":"X","miss":true},{"n":5,"mark":"-"}],  // 전체 문항. mark: O정답 X오답 -미스캔. miss:true=오답강조, flag:true=재검토\n'
+    + '  "oxHeadNote": "22문항 중 14문항 스캔",\n'
+    + '  "oxNote": "특이사항 각주(<br>로 줄바꿈), 없으면 빈문자열",\n'
+    + '  "causes": {"calc":1,"concept":0,"calcNote":"부호·마무리","conceptNote":"풀이 방향 정확"},\n'
+    + '  "evidence": [{"qno":4,"unit":"행렬·기본연산","result":"ng","pageRef":1,"caption":"빨간 표시=틀린 지점","html":"<p>...</p><p class=\\"rx\\"><b>처방</b> · ...</p>"}],  // ng틀림 ok정답\n'
+    + '  "home": "오늘의 한 가지(집에서 챙길 것 한 문장)",\n'
+    + '  "goal": "다음 목표 한 문장(<b>강조</b> 가능)",\n'
+    + '  "roadmap": [{"title":"복습 항목","desc":"설명","tags":[{"cls":"mf","txt":"매쓰플랫"},{"cls":"lv","txt":"중하"},{"cls":"qn","txt":"5~8문항"},{"cls":"hw","txt":"이번 주 반영"}]}],\n'
+    + '  "encourage": "마지막 격려 한 문장(<b>강조</b> 가능)",\n'
+    + '  "discNote": "스캔 범위·미포함 문항 등 주의 각주"\n'
+    + '}';
+}
+
+async function paAnalyze(group, student, examName){
+  var imgs = group.pages.map(function(p){ return p.base64; });
+  var txt = await paClaude(PWA_OPUS, imgs, paAnalysisPrompt(student.name||group.name||'학생', examName, PWA_AUTO.answerKey), 5000);
+  var d = paParseJson(txt);
+  // 페이지 이미지 연결
+  d.student = { name: student.name||'', grade: student.grade||'', rec_code: student.code||'' };
+  d.exam = { name: examName, subject: (PWA_AUTO.answerKey&&PWA_AUTO.answerKey.subject)||'', round:'' };
+  (d.evidence||[]).forEach(function(e){
+    var pi = (e.pageRef||1)-1; var pg = group.pages[pi]||group.pages[0];
+    if(pg) e.img = pg.dataUrl;
+  });
+  d.fullscans = group.pages.map(function(p,i){ return { img:p.dataUrl, cap:(i+1)+'면' }; });
+  if(d.discNote) d.discHtml = d.discNote;
+  if(!PWA_AUTO.answerKey && d.oxNote!=null) d.oxNote = (d.oxNote?d.oxNote+'<br>':'') + '※ 답지 미제공 — 채점 확인 권장.';
+  return d;
+}
+
+/* ── 비용 추정 ── */
+function paCostEst(nStudentPages, nExamPages, nStudents){
+  // 대략치(입력 이미지 ~1700토큰): Haiku $1/$5, Opus $5/$25 per 1M, 환율 1530
+  var haikuIn = nStudentPages*1700, haikuOut = nStudentPages*80;
+  var keyIn = nExamPages*1700, keyOut = 1500;
+  var anaIn = nStudentPages*1700 + nStudents*500, anaOut = nStudents*2500;
+  var usd = (haikuIn/1e6*1+haikuOut/1e6*5) + (keyIn/1e6*5+keyOut/1e6*25) + (anaIn/1e6*5+anaOut/1e6*25);
+  return { usd: usd, krw: Math.round(usd*1530) };
+}
+
+/* ── 오버레이 UI ── */
+function pwaAutoOpen(){
+  var ov = document.getElementById('pa-ov'); if(ov) ov.remove();
+  ov = document.createElement('div'); ov.id='pa-ov';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(13,34,64,.5);z-index:99997;display:flex;align-items:center;justify-content:center;padding:18px;font-family:inherit';
+  ov.innerHTML = paUploadHtml();
+  ov.addEventListener('click', function(e){ if(e.target===ov && !PWA_AUTO.running) pwaAutoClose(); });
+  document.body.appendChild(ov);
+}
+function pwaAutoClose(){ var o=document.getElementById('pa-ov'); if(o) o.remove(); PWA_AUTO={ studScan:null, examPdf:null, examName:'', pages:[], groups:[], answerKey:null, running:false }; }
+function paSet(html){ var o=document.getElementById('pa-ov'); if(o) o.firstChild ? (o.innerHTML=html) : (o.innerHTML=html); }
+
+function paCard(inner){
+  return '<div style="background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(13,34,64,.4)">'
+    + '<div style="background:#0d2240;color:#fff;padding:13px 17px;display:flex;align-items:center;justify-content:space-between">'
+    + '<b style="font-size:14px">📝 수학풀이분석 · 자동 분석</b>'
+    + (PWA_AUTO.running?'':'<button onclick="pwaAutoClose()" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:7px;padding:5px 10px;cursor:pointer;font-family:inherit">닫기</button>')
+    + '</div><div style="padding:16px">' + inner + '</div></div>';
+}
+function paUploadHtml(){
+  var s1 = PWA_AUTO.studScan ? '<div style="font-size:11.5px;font-weight:700;color:#16a34a;margin-top:6px">✓ '+paEsc(PWA_AUTO.studScan.name)+'</div>' : '';
+  var s2 = PWA_AUTO.examPdf ? '<div style="font-size:11.5px;font-weight:700;color:#16a34a;margin-top:6px">✓ '+paEsc(PWA_AUTO.examPdf.name)+'</div>' : '';
+  var h = '';
+  h += '<div style="border:1.5px dashed #c7cfdd;border-radius:12px;background:#f9fbfd;padding:16px;text-align:center;margin-bottom:9px;position:relative">';
+  h += '<span style="position:absolute;top:9px;right:10px;font-size:9.5px;font-weight:900;padding:2px 8px;border-radius:999px;background:#e8192c;color:#fff">필수</span>';
+  h += '<div style="font-size:22px">📄</div><div style="font-size:12.5px;font-weight:800;color:#0d2240;margin-top:3px">학생 답안 스캔 PDF</div><div style="font-size:10.5px;color:#6b7280">여러 학생 섞인 스캔본</div>';
+  h += '<label style="display:inline-block;margin-top:8px;font-size:12px;font-weight:700;background:#fff;border:1px solid #e7e9ef;border-radius:8px;padding:7px 13px;cursor:pointer">파일 선택<input type="file" accept="application/pdf" style="display:none" onchange="paPick(this,\'stud\')"></label>'+s1+'</div>';
+  h += '<div style="border:1.5px dashed #c7cfdd;border-radius:12px;background:#f9fbfd;padding:16px;text-align:center;margin-bottom:12px;position:relative">';
+  h += '<span style="position:absolute;top:9px;right:10px;font-size:9.5px;font-weight:900;padding:2px 8px;border-radius:999px;background:#f1f4f9;color:#64748b;border:1px solid #e6eaf2">권장</span>';
+  h += '<div style="font-size:22px">📋✅</div><div style="font-size:12.5px;font-weight:800;color:#0d2240;margin-top:3px">원본 시험지 + 답지 합본 PDF</div><div style="font-size:10.5px;color:#6b7280">한 파일에 시험지·답지 — 앱이 자동 구분</div>';
+  h += '<label style="display:inline-block;margin-top:8px;font-size:12px;font-weight:700;background:#fff;border:1px solid #e7e9ef;border-radius:8px;padding:7px 13px;cursor:pointer">파일 선택<input type="file" accept="application/pdf" style="display:none" onchange="paPick(this,\'exam\')"></label>'+s2+'</div>';
+  h += '<label style="font-size:11.5px;font-weight:700;color:#64748b">시험 이름</label>';
+  h += '<input id="pa-examname" value="'+paEsc(PWA_AUTO.examName)+'" oninput="PWA_AUTO.examName=this.value" placeholder="예: 온다 1학기 기말 · A-알파 02회" style="width:100%;border:1px solid #dde3ec;border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit;margin:5px 0 12px">';
+  h += '<button onclick="paStart()" style="width:100%;border:none;background:#e8192c;color:#fff;font-weight:800;font-size:13.5px;padding:12px;border-radius:11px;cursor:pointer;font-family:inherit">분석 시작</button>';
+  h += '<div style="font-size:11px;color:#6b7280;margin-top:9px;line-height:1.6">💡 합본 PDF를 올리면 <b>시험지·답지를 자동 구분</b>해 정답표를 만들고, 학생 답안을 <b>대조 채점</b>합니다(정확). 분리는 Haiku, 분석은 Opus. 실행 전 예상 비용을 확인합니다.</div>';
+  h += '<div style="font-size:10.5px;color:#94a3b8;margin-top:6px">⚠ Storage·API 호출은 실제 배포 브라우저(학원앱)에서만 동작합니다.</div>';
+  return paCard(h);
+}
+function paPick(input, which){
+  var f = input.files[0]; if(!f) return;
+  if(which==='stud') PWA_AUTO.studScan = f; else PWA_AUTO.examPdf = f;
+  paSet(paUploadHtml());
+}
+
+async function paStart(){
+  if(!PWA_AUTO.studScan){ alert('학생 답안 스캔 PDF를 올려주세요.'); return; }
+  if(!paKey()){ alert('설정에서 Claude API 키를 먼저 등록해주세요.'); return; }
+  PWA_AUTO.examName = (document.getElementById('pa-examname')||{}).value || PWA_AUTO.examName;
+  paSet(paCard('<div style="text-align:center;padding:26px 10px"><div style="font-size:30px">🔄</div><div style="font-size:14px;font-weight:800;color:#0d2240;margin-top:10px">PDF를 이미지로 변환 중…</div></div>'));
+  try{
+    var sBuf = await PWA_AUTO.studScan.arrayBuffer();
+    PWA_AUTO.pages = await paPdfToImages(sBuf.slice(0));
+    PWA_AUTO.examImages = [];
+    if(PWA_AUTO.examPdf){ var eBuf = await PWA_AUTO.examPdf.arrayBuffer(); PWA_AUTO.examImages = await paPdfToImages(eBuf.slice(0)); }
+  }catch(e){ return paFail('PDF를 읽지 못했습니다: '+e.message); }
+  // 비용 확인
+  var roster = paRoster();
+  var estN = Math.max(1, Math.round(PWA_AUTO.pages.length/6)); // 대략 학생 수
+  var c = paCostEst(PWA_AUTO.pages.length, PWA_AUTO.examImages.length, estN);
+  var msg = '예상 비용 약 ₩'+c.krw+' (학생 스캔 '+PWA_AUTO.pages.length+'쪽'+(PWA_AUTO.examImages.length?' · 합본 '+PWA_AUTO.examImages.length+'쪽':'')+').\n분석을 시작할까요?';
+  if(!confirm(msg)){ paSet(paUploadHtml()); return; }
+  PWA_AUTO.running = true;
+  paSet(paCard('<div id="pa-prog" style="padding:6px 2px"></div>'));
+  paProg('정답표 만드는 중…', 5);
+  try{
+    if(PWA_AUTO.examImages.length){ PWA_AUTO.answerKey = await paAnswerKey(PWA_AUTO.examImages);
+      if(PWA_AUTO.answerKey && PWA_AUTO.answerKey.exam_name && !PWA_AUTO.examName) PWA_AUTO.examName = PWA_AUTO.answerKey.exam_name;
+    }
+  }catch(e){ PWA_AUTO.answerKey=null; /* 정답표 실패해도 진행 */ }
+  // 분리(Haiku)
+  var metas = [];
+  for(var i=0;i<PWA_AUTO.pages.length;i++){
+    paProg('페이지 분리 '+(i+1)+'/'+PWA_AUTO.pages.length+' (Haiku)…', 5+Math.round(35*i/PWA_AUTO.pages.length));
+    var m;
+    try{ m = await paSplitPage(PWA_AUTO.pages[i].base64); }catch(e){
+      if(String(e.message).indexOf('401')>=0){ PWA_AUTO.running=false; return paFail('API 키가 올바르지 않습니다(401).'); }
+      if(String(e.message).indexOf('Failed to fetch')>=0){ PWA_AUTO.running=false; return paFail('브라우저에서 API 호출이 막혔습니다(미리보기/CORS). 실제 앱 환경에서 실행하세요.'); }
+      m = { isCover:false, studentName:null, pageNumber:null, totalPages:null };
+    }
+    m.idx = PWA_AUTO.pages[i].idx; m.dataUrl = PWA_AUTO.pages[i].dataUrl; m.base64 = PWA_AUTO.pages[i].base64;
+    metas.push(m);
+  }
+  PWA_AUTO.groups = paGroup(metas);
+  PWA_AUTO.groups.forEach(function(g){ var r=paMatchRoster(g.read, roster); if(r){ g.student=r; } else g.student=null; });
+  PWA_AUTO.running = false;
+  paSet(paSplitConfirmHtml());
+}
+
+function paProg(txt, pct){
+  var el = document.getElementById('pa-prog'); if(!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:16px 6px"><div style="font-size:26px">⚙️</div>'
+    + '<div style="font-size:13.5px;font-weight:800;color:#0d2240;margin:9px 0 8px">'+paEsc(txt)+'</div>'
+    + '<div style="height:8px;background:#eef2f7;border-radius:6px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,#1d6fe8,#2c84ff)"></div></div></div>';
+}
+function paFail(msg){ PWA_AUTO.running=false; paSet(paCard('<div style="padding:14px"><div style="background:#fdeced;border:1px solid #f3c7cc;border-radius:11px;padding:13px;font-size:12.5px;color:#a01624;line-height:1.6">⚠ '+paEsc(msg)+'</div><button onclick="paSet(paUploadHtml())" style="margin-top:12px;width:100%;border:1px solid #e7e9ef;background:#fff;border-radius:9px;padding:10px;font-weight:700;cursor:pointer;font-family:inherit">다시</button></div>')); }
+
+/* ── 분리 확인 화면 ── */
+function paSplitConfirmHtml(){
+  var roster = paRoster();
+  var h = '<div style="font-size:13px;font-weight:800;color:#0d2240;margin-bottom:4px">🧩 학생 '+PWA_AUTO.groups.length+'명으로 나눴어요 — 이름 확인</div>';
+  h += '<div style="font-size:10.5px;color:#e08a00;background:#fff7ea;border:1px solid #f3dcae;border-radius:8px;padding:7px 10px;margin-bottom:11px;font-weight:700">📌 페이지는 스캔 순서 그대로입니다 (자동정렬 안 함)</div>';
+  PWA_AUTO.groups.forEach(function(g,gi){
+    var picked = g.student ? g.student.name : '';
+    var opts = '<option value="">— 이름 선택 —</option>';
+    roster.forEach(function(r){ opts += '<option value="'+paEsc(r.name)+'"'+(r.name===picked?' selected':'')+'>'+paEsc(r.name)+'</option>'; });
+    var status = picked ? '<span style="font-size:10px;font-weight:800;color:#16a34a">명단 일치 ✓</span>'
+      : (g.read ? '<span style="font-size:10px;font-weight:800;color:#e08a00">읽힘: '+paEsc(g.read)+' · 확인</span>' : '<span style="font-size:10px;color:#94a3b8">이름 선택</span>');
+    h += '<div style="border:1px solid #e6eaf2;border-radius:12px;padding:11px;margin-bottom:9px">';
+    h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">';
+    h += '<div style="width:32px;height:32px;border-radius:9px;background:#0d2240;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px">'+paEsc((picked||'?')[0])+'</div>';
+    h += '<select onchange="paSetName('+gi+',this.value)" style="font-size:13px;font-weight:800;color:#0d2240;border:1px solid #dde3ec;border-radius:8px;padding:6px 9px;font-family:inherit">'+opts+'</select>';
+    h += status + '<span style="margin-left:auto;font-size:11px;color:#6b7280">'+g.pages.length+'쪽</span>';
+    h += (gi>0?'<button onclick="paMergeUp('+gi+')" style="font-size:10.5px;font-weight:700;color:#1d6fe8;background:#eef4fe;border:1px solid #cfe0fb;border-radius:8px;padding:5px 9px;cursor:pointer;font-family:inherit">↑합치기</button>':'');
+    h += '</div><div style="display:flex;gap:5px;flex-wrap:wrap">';
+    g.pages.forEach(function(p,pi){
+      h += '<div style="width:44px;text-align:center">';
+      h += '<div style="width:44px;height:56px;border:1px solid '+(p.isCover?'#8fd4a8':'#e6eaf2')+';border-radius:6px;background:#f8fafc url('+p.dataUrl+') center/cover;position:relative"></div>';
+      h += '<div style="font-size:9px;color:#94a3b8;margin-top:1px">'+(pi+1)+(pi>0?' <a onclick="paSplitHere('+gi+','+p.idx+')" style="color:#1d6fe8;cursor:pointer">✂</a>':'')+'</div></div>';
+    });
+    h += '</div></div>';
+  });
+  h += '<button onclick="paRunAnalysis()" style="width:100%;border:none;background:#e8192c;color:#fff;font-weight:800;font-size:13.5px;padding:12px;border-radius:11px;cursor:pointer;font-family:inherit;margin-top:4px">확인 — '+PWA_AUTO.groups.length+'명 분석 시작</button>';
+  return paCard(h);
+}
+function paSetName(gi,name){ var roster=paRoster(); PWA_AUTO.groups[gi].student = name ? (roster.find(function(r){return r.name===name;})||{name:name}) : null; paSet(paSplitConfirmHtml()); }
+function paMergeUp(gi){ var g=PWA_AUTO.groups; g[gi-1].pages=g[gi-1].pages.concat(g[gi].pages); g.splice(gi,1); paSet(paSplitConfirmHtml()); }
+function paSplitHere(gi,idx){ var g=PWA_AUTO.groups[gi]; var cut=g.pages.findIndex(function(p){return p.idx===idx;}); var moved=g.pages.slice(cut); g.pages=g.pages.slice(0,cut); PWA_AUTO.groups.splice(gi+1,0,{read:null,name:'',student:null,pages:moved}); paSet(paSplitConfirmHtml()); }
+
+/* ── 분석 실행 + 저장 ── */
+async function paRunAnalysis(){
+  var unnamed = PWA_AUTO.groups.filter(function(g){ return !g.student||!g.student.name; }).length;
+  if(unnamed>0 && !confirm('이름이 안 정해진 학생 '+unnamed+'명은 건너뜁니다. 계속할까요?')) return;
+  var targets = PWA_AUTO.groups.filter(function(g){ return g.student&&g.student.name; });
+  PWA_AUTO.running = true;
+  paSet(paCard('<div id="pa-prog"></div>'));
+  var done = [], failed = [];
+  await pwaLoadIndex();
+  for(var i=0;i<targets.length;i++){
+    var g = targets[i];
+    paProg('분석 중 '+(i+1)+'/'+targets.length+' · '+g.student.name+' (Opus)…', 45+Math.round(50*i/targets.length));
+    try{
+      var d = await paAnalyze(g, g.student, PWA_AUTO.examName);
+      var html = pwaBuildReport(d);
+      var data = { schema_version:'exam-1.0', student:d.student, exam:d.exam, summary:d.summary||{}, report_html:html };
+      await pwaImportOne(data, '자동분석·'+g.student.name);
+      done.push(g.student.name);
+    }catch(e){ failed.push({ name:g.student.name, msg:e.message }); }
+  }
+  await pwaSaveIndex();
+  PWA_AUTO.running = false;
+  var h = '<div style="text-align:center;padding:6px 2px 12px"><div style="font-size:30px">✅</div><div style="font-size:14px;font-weight:800;color:#0d2240;margin-top:8px">분석 완료 — 검토 대기 '+done.length+'건 등록</div></div>';
+  done.forEach(function(n){ h += '<div style="border:1px solid #e6eaf2;border-radius:10px;padding:9px 12px;margin-bottom:7px;font-size:12.5px;font-weight:700;color:#0d2240">'+paEsc(n)+' · 🟡 검토 대기</div>'; });
+  failed.forEach(function(f){ h += '<div style="border:1px solid #f3c7cc;border-radius:10px;padding:9px 12px;margin-bottom:7px;font-size:12px;color:#a01624">'+paEsc(f.name)+' · 실패: '+paEsc(f.msg).slice(0,80)+'</div>'; });
+  h += '<button onclick="pwaAutoClose();if(typeof render===\'function\')render();" style="width:100%;border:none;background:#0d2240;color:#fff;font-weight:800;font-size:13px;padding:11px;border-radius:10px;cursor:pointer;font-family:inherit;margin-top:6px">검토 목록으로</button>';
+  paSet(paCard(h));
 }
 
 async function pwaImportOne(data, fname){
