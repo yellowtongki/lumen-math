@@ -521,16 +521,17 @@ async function supaFullPull() {
             Object.keys(_sStm).forEach(function(dk){ if(_sStm[dk]!==undefined && _sStm[dk]!==null) _stm[dk] = _sStm[dk]; });
             if(Object.keys(_stm).length>0) m.lumen_study_time = _stm;
             if((!s.lumen_recordings || Object.keys(s.lumen_recordings||{}).length===0) && prev.lumen_recordings && Object.keys(prev.lumen_recordings).length>0) m.lumen_recordings = prev.lumen_recordings;
-            // ★ v11-22: 플래너 분석(lumen_planner_photos) 보존 — setId 기준 병합, 검토/분석 있는 쪽 우선
+            // ★ v15-6 수정: 플래너 분석(lumen_planner_photos) 병합 — 승인(reviewed) > 분석(analysis) > 빈 항목 순위.
+            //   (기존 '분석 있는 쪽 우선' 규칙은 다른 기기의 미승인 분석본이 승인본을 덮어
+            //    승인해도 검토대기로 되돌아가던 버그의 원인 — 승인 상태가 항상 이김, 동순위면 로컬)
             var _pPhotos = {};
+            var _pRank = function(x){ return (x && x.reviewed ? 2 : 0) + (x && x.analysis ? 1 : 0); };
             (prev.lumen_planner_photos||[]).forEach(function(p){ if(p && p.setId) _pPhotos[p.setId]=p; });
             (s.lumen_planner_photos||[]).forEach(function(p){
               if(!p || !p.setId) return;
               var ex = _pPhotos[p.setId];
               if(!ex){ _pPhotos[p.setId]=p; return; }
-              var pHas = !!(p.reviewed || p.analysis);
-              var exHas = !!(ex.reviewed || ex.analysis);
-              _pPhotos[p.setId] = (exHas && !pHas) ? ex : p; // 클라우드만 분석 있으면 클라우드, 그 외 로컬
+              _pPhotos[p.setId] = (_pRank(ex) > _pRank(p)) ? ex : p;
             });
             var _mergedPhotos = Object.values(_pPhotos);
             if(_mergedPhotos.length>0) m.lumen_planner_photos = _mergedPhotos;
@@ -3948,7 +3949,7 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
-      {ver:'v15-6',date:'2026',stability:'warn',memo:'🗺️ 로드맵 자동 진도 연동 — 매쓰플랫 채점 기록으로 교재 진도가 자동 갱신. [수집기] refreshRoadmap()이 mf_study_sessions(교재)를 학생×교재로 집계해 lumen_store mf_progress 저장(도달 최대 페이지·현재 단원·주간 진도·단원별 정오답·월별 정답률). refreshBookCatalog에 교재 목차(units, 대단원 순서) 추가. [학원앱] (1) 로드맵 플래너(#roadmap_mgr, lrp)의 「진행 중 교재」 카드가 매쓰플랫 자동 진도로 채워짐 — 교재를 이름 정규화로 매칭, 도달 페이지·현재 단원·주간 진도·% + 탭하면 단원 노선(완료✓/지금 여기📍/예정), 예상 완료일도 매쓰플랫 실측(도달페이지+주간속도)으로 계산해 「예측 불가」 해소. (2) 학생 개인탭 로드맵(lrm)에도 「🤖 매쓰플랫 자동 진도」 섹션 추가. 학생 매칭은 lumen_rec_code→이름. 기존 수동 「교재 진도」 단원체크는 병행 유지. [학생앱 v2-5] 동일 데이터로 여정 화면에 현행/선행 트랙+단원 노선 펼침+월별 발자취. 읽기전용(자동). 실기기 테스트 전.'},
+      {ver:'v15-6',date:'2026',stability:'warn',memo:'🗺️ 로드맵 자동 진도 연동 — 매쓰플랫 채점 기록으로 교재 진도가 자동 갱신. [수집기] refreshRoadmap()이 mf_study_sessions(교재)를 학생×교재로 집계해 lumen_store mf_progress 저장(도달 최대 페이지·현재 단원·주간 진도·단원별 정오답·월별 정답률). refreshBookCatalog에 교재 목차(units, 대단원 순서) 추가. [학원앱] (1) 로드맵 플래너(#roadmap_mgr, lrp)의 「진행 중 교재」 카드가 매쓰플랫 자동 진도로 채워짐 — 교재를 이름 정규화로 매칭, 도달 페이지·현재 단원·주간 진도·% + 탭하면 단원 노선(완료✓/지금 여기📍/예정), 예상 완료일도 매쓰플랫 실측(도달페이지+주간속도)으로 계산해 「예측 불가」 해소. (2) 학생 개인탭 로드맵(lrm)에도 「🤖 매쓰플랫 자동 진도」 섹션 추가. 학생 매칭은 lumen_rec_code→이름. 기존 수동 「교재 진도」 단원체크는 병행 유지. [학생앱 v2-5] 동일 데이터로 여정 화면에 현행/선행 트랙+단원 노선 펼침+월별 발자취. 읽기전용(자동). 실기기 테스트 전. [플래너 버그수정] ① 승인이 검토대기로 되돌아가던 원인 수정 — or_studentdb 병합에서 lumen_planner_photos를 "분석 있는 쪽 우선"으로 골라 다른 기기의 미승인 분석본이 승인본(reviewed)을 덮던 것을 승인>분석>빈 순위로 교체(동순위 로컬). ② 승인 즉시 세트 배지 ✅승인됨·카드 헤더 배지 갱신(updatePlannerCardBadges 호출 — 기존엔 미호출로 화면상 검토대기 유지). ③ 개별 승인 alert → 비차단 토스트(plToast)로 교체, 연속 승인 시 확인 클릭 불필요. 되돌아간 기존 건은 사진검토 상단 「✅ 전체 승인」 1회로 일괄 복구 가능.'},
       {ver:'v15-5',date:'2026',stability:'warn',memo:'✍️ 수학풀이분석 리포트 조립기 추가(pwaBuildReport) — 자동 파이프라인 1단계. Opus가 산출한 구조화 분석데이터(영역·난이도·문항별 채점·첨삭·총평 등)를 넣으면 v5 표준 리포트 HTML을 자동 조립(문자열 결합, 중첩 템플릿 리터럴 없음). 편집 마커 data-edit(overall/headline/q{n}-comment/home)·data-audience=parent 모두 포함해 기존 편집화면과 호환. 조립된 report_html은 기존 pwaImportOne→Storage 통째 저장 경로 재사용(저장 구조 무변경). v5 원본과 동일 렌더 확인(로컬 스크린샷). 다음: 업로드 2파일(학생스캔+시험지답지 합본)→pdf.js→Haiku 분리(자동정렬 없음)→Opus 정답표·학생별 분석→조립기 연결. ⚠️ 실브라우저 테스트 전(샌드박스는 API 차단).'},
       {ver:'v15-4',date:'2026',stability:'warn',memo:'🔬 유형DB 전면 교체 — 매쓰플랫 전체 교육과정 자동. 기존 수동 BUILTIN_TYPE_DB(원장이 매쓰플랫 보고 손으로 입력)를 폐기하고, lumen_store mf_typedb(수집기가 매일 갱신)를 렌더. [데이터] 수집기 refreshTypeDb: /concept/chips 전체 3키(1.4.4145 초·4146 중·4147 고) + 사용 교재 per-workbook 칩 union → 각 유형의 orderingNumber(2번째=학교급,3번째=학년,4번째=학기; 고등은 3번째=과목)로 학년 해독 → 학년→대단원→중단원→소단원→유형 트리로 mf_typedb 저장(현재 3,632유형·24학년그룹). [화면] rTypeDb 재작성(MF_TYPEDB/MTD_* 네임스페이스): 학교급 탭(초/중/고)+학년 알약(초1-1…고 과목)+유형명 검색(경로표시)+대단원 접기. 좌측 rBookTypeLeftNav의 유형 모드도 mf_typedb 기반으로 교체(학교급·학년 바로가기). 기존 typeDbSearch/rTypeDbContent/import·export는 미사용(제거 안 함). [주의] 매쓰플랫이 2022개정만 담아 중3-2(삼각비·원의성질·통계)는 아직 비어 있고, 우리 학생이 그 교재를 풀면 per-workbook 병합으로 자동 채워짐. 유형성취도(taData)는 무관·영향 없음. 실기기 테스트 전.'},
       {ver:'v15-3',date:'2026',stability:'warn',memo:'📥 매쓰플랫 교재 가져오기. 교재 라이브러리 헤더에 「📥 매쓰플랫 가져오기」 버튼 → lumen_store mf_books(수집기가 매일 새벽 자동 갱신: 학생별 교재 목록 + 교재 메타[이름·출판사·학년학기 gradeKey·페이지])와 mf_students를 읽어 모달 목록 표시(학년순, 푸는 학생 이름 표기, 이미 있는 교재는 mfBookId·이름 정규화 매칭으로 「이미 있음」 비활성). 선택 가져오기 시 emptyBook 기반으로 or_books에 추가(mfBookId 저장=재가져오기 중복 방지) + 그 교재를 푸는 학생에게 자동 배정(lumen_assignedBooks push {bookId,type,startDate=오늘}, 동명이인은 건너뜀). 신규 코드 mfi/MFI 네임스페이스, vodOverlay 재사용, 기존 코드는 rBooks 헤더 버튼 1곳만 수정. 학생앱 v2-4 아하노트 교재 선택과 같은 mf_books 데이터 사용.'},
@@ -23440,7 +23441,7 @@ async function loadOnePlannerCard(st) {
       html += '<div style="font-size:11px;font-weight:800;color:#0d2240">' + set.dateLabel + ' <span style="font-weight:600;color:#64748b">' + set.timeLabel + '</span></div>';
       html += summaryHtml;
       html += '</div></div>';
-      html += badgeHtml;
+      html += '<span id="planner-set-badge-' + siKey + '">' + badgeHtml + '</span>';
       html += '</div>';
 
       // 아코디언 본문
@@ -24634,9 +24635,32 @@ function approveAnalysis(stId, setId, si) {
     publishPlannerDataForStudent(stInfo);
   }
 
-  alert(stInfo.name + ' ' + dateStr + ' 플래너 ' + totalScore + '점 반영 완료!\n(학생앱에 자동 반영됨)');
+  // ★ v15-6: 승인 즉시 배지 갱신 — 세트 배지 → ✅ 승인됨, 카드 헤더 배지 재계산
+  //   (기존: 배지 갱신 없이 alert만 떠서 "승인해도 검토대기 그대로"로 보이던 문제)
+  var setBadge = document.getElementById('planner-set-badge-' + si);
+  if (setBadge) setBadge.innerHTML = '<div style="font-size:10px;font-weight:700;color:#059669;background:#dcfce7;padding:2px 8px;border-radius:10px">✅ 승인됨</div>';
+  var setWrap = document.getElementById('planner-set-wrap-' + si);
+  if (setWrap) { setWrap.style.borderColor = '#bbf7d0'; var hd = setWrap.firstElementChild; if (hd) hd.style.background = '#f0fdf4'; }
+  if (typeof updatePlannerCardBadges === 'function') updatePlannerCardBadges();
+
+  plToast('✅ ' + stInfo.name + ' ' + dateStr + ' — ' + totalScore + '점 반영 (학생앱 자동 반영)');
   // ★ v11-3: 승인 후 해당 세트 자동 접힘 (작업 흐름 개선)
   if (typeof collapseSetAccordion === 'function') collapseSetAccordion(si);
+}
+
+// ★ v15-6: 비차단 토스트 — alert 대신 (연속 승인 시 확인 클릭 불필요, 작업 속도 개선)
+function plToast(msg) {
+  var t = document.getElementById('pl-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'pl-toast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#0d2240;color:#fff;font-size:13px;font-weight:800;padding:12px 22px;border-radius:50px;box-shadow:0 10px 26px rgba(13,34,64,0.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:99999;white-space:nowrap;font-family:inherit';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function(){ t.style.opacity = '0'; }, 2600);
 }
 
 // 시간 문자열 → 분 변환
