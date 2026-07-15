@@ -3948,7 +3948,7 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
-      {ver:'v15-6',date:'2026',stability:'warn',memo:'🗺️ 로드맵 자동 진도 연동 — 매쓰플랫 채점 기록으로 교재 진도가 자동 갱신. [수집기] refreshRoadmap()이 mf_study_sessions(교재)를 학생×교재로 집계해 lumen_store mf_progress 저장(도달 최대 페이지·현재 단원·주간 진도·단원별 정오답·월별 정답률). refreshBookCatalog에 교재 목차(units, 대단원 순서) 추가. [학원앱] 로드맵 관리(lrm)에 「🤖 매쓰플랫 자동 진도」 섹션 추가 — 학생을 mf_student_id로 매칭(lumen_rec_code→이름) 후 교재별 현행/선행/복습 자동 구분·도달 페이지·현재 단원·% + 탭하면 단원 노선(완료✓/지금 여기📍/예정). 기존 수동 「교재 진도」 단원체크는 병행 유지. [학생앱 v2-5] 동일 데이터로 여정 화면에 현행/선행 트랙+단원 노선 펼침+월별 발자취. 읽기전용(자동). 실기기 테스트 전.'},
+      {ver:'v15-6',date:'2026',stability:'warn',memo:'🗺️ 로드맵 자동 진도 연동 — 매쓰플랫 채점 기록으로 교재 진도가 자동 갱신. [수집기] refreshRoadmap()이 mf_study_sessions(교재)를 학생×교재로 집계해 lumen_store mf_progress 저장(도달 최대 페이지·현재 단원·주간 진도·단원별 정오답·월별 정답률). refreshBookCatalog에 교재 목차(units, 대단원 순서) 추가. [학원앱] (1) 로드맵 플래너(#roadmap_mgr, lrp)의 「진행 중 교재」 카드가 매쓰플랫 자동 진도로 채워짐 — 교재를 이름 정규화로 매칭, 도달 페이지·현재 단원·주간 진도·% + 탭하면 단원 노선(완료✓/지금 여기📍/예정), 예상 완료일도 매쓰플랫 실측(도달페이지+주간속도)으로 계산해 「예측 불가」 해소. (2) 학생 개인탭 로드맵(lrm)에도 「🤖 매쓰플랫 자동 진도」 섹션 추가. 학생 매칭은 lumen_rec_code→이름. 기존 수동 「교재 진도」 단원체크는 병행 유지. [학생앱 v2-5] 동일 데이터로 여정 화면에 현행/선행 트랙+단원 노선 펼침+월별 발자취. 읽기전용(자동). 실기기 테스트 전.'},
       {ver:'v15-5',date:'2026',stability:'warn',memo:'✍️ 수학풀이분석 리포트 조립기 추가(pwaBuildReport) — 자동 파이프라인 1단계. Opus가 산출한 구조화 분석데이터(영역·난이도·문항별 채점·첨삭·총평 등)를 넣으면 v5 표준 리포트 HTML을 자동 조립(문자열 결합, 중첩 템플릿 리터럴 없음). 편집 마커 data-edit(overall/headline/q{n}-comment/home)·data-audience=parent 모두 포함해 기존 편집화면과 호환. 조립된 report_html은 기존 pwaImportOne→Storage 통째 저장 경로 재사용(저장 구조 무변경). v5 원본과 동일 렌더 확인(로컬 스크린샷). 다음: 업로드 2파일(학생스캔+시험지답지 합본)→pdf.js→Haiku 분리(자동정렬 없음)→Opus 정답표·학생별 분석→조립기 연결. ⚠️ 실브라우저 테스트 전(샌드박스는 API 차단).'},
       {ver:'v15-4',date:'2026',stability:'warn',memo:'🔬 유형DB 전면 교체 — 매쓰플랫 전체 교육과정 자동. 기존 수동 BUILTIN_TYPE_DB(원장이 매쓰플랫 보고 손으로 입력)를 폐기하고, lumen_store mf_typedb(수집기가 매일 갱신)를 렌더. [데이터] 수집기 refreshTypeDb: /concept/chips 전체 3키(1.4.4145 초·4146 중·4147 고) + 사용 교재 per-workbook 칩 union → 각 유형의 orderingNumber(2번째=학교급,3번째=학년,4번째=학기; 고등은 3번째=과목)로 학년 해독 → 학년→대단원→중단원→소단원→유형 트리로 mf_typedb 저장(현재 3,632유형·24학년그룹). [화면] rTypeDb 재작성(MF_TYPEDB/MTD_* 네임스페이스): 학교급 탭(초/중/고)+학년 알약(초1-1…고 과목)+유형명 검색(경로표시)+대단원 접기. 좌측 rBookTypeLeftNav의 유형 모드도 mf_typedb 기반으로 교체(학교급·학년 바로가기). 기존 typeDbSearch/rTypeDbContent/import·export는 미사용(제거 안 함). [주의] 매쓰플랫이 2022개정만 담아 중3-2(삼각비·원의성질·통계)는 아직 비어 있고, 우리 학생이 그 교재를 풀면 per-workbook 병합으로 자동 채워짐. 유형성취도(taData)는 무관·영향 없음. 실기기 테스트 전.'},
       {ver:'v15-3',date:'2026',stability:'warn',memo:'📥 매쓰플랫 교재 가져오기. 교재 라이브러리 헤더에 「📥 매쓰플랫 가져오기」 버튼 → lumen_store mf_books(수집기가 매일 새벽 자동 갱신: 학생별 교재 목록 + 교재 메타[이름·출판사·학년학기 gradeKey·페이지])와 mf_students를 읽어 모달 목록 표시(학년순, 푸는 학생 이름 표기, 이미 있는 교재는 mfBookId·이름 정규화 매칭으로 「이미 있음」 비활성). 선택 가져오기 시 emptyBook 기반으로 or_books에 추가(mfBookId 저장=재가져오기 중복 방지) + 그 교재를 푸는 학생에게 자동 배정(lumen_assignedBooks push {bookId,type,startDate=오늘}, 동명이인은 건너뜀). 신규 코드 mfi/MFI 네임스페이스, vodOverlay 재사용, 기존 코드는 rBooks 헤더 버튼 1곳만 수정. 학생앱 v2-4 아하노트 교재 선택과 같은 mf_books 데이터 사용.'},
@@ -34309,7 +34309,7 @@ function lbuGoBook(bookId){
   var HS_START = 10;
   var TKEY = 'lumen_plan_templates';
 
-  var P = { sel:null, code:'', prog:{}, goal:null, marks:{}, loaded:false, ts:0, token:0, search:'', tplSel:'' };
+  var P = { sel:null, code:'', prog:{}, goal:null, marks:{}, loaded:false, ts:0, token:0, search:'', tplSel:'', mf:null, mfOpen:{} };
 
   // ── 기본 헬퍼 ──
   function pad2(n){ return n < 10 ? '0' + n : '' + n; }
@@ -34450,6 +34450,16 @@ function lbuGoBook(bookId){
   }
   function estFinish(st, it, prm){ // 진행 교재 예상 완료
     var now = new Date();
+    // v15-6: 매쓰플랫 실측(도달 페이지 + 주간 진도) 우선
+    if (prm.speedMode === 'real') {
+      var mfb = mfForBook(it.b);
+      if (mfb && mfb.pages > 0 && mfb.prog && mfb.prog.maxPage) {
+        var leftMf = Math.max(0, mfb.pages - mfb.prog.maxPage);
+        if (leftMf <= 0) return { date: now, basis: '완주', weeks: 0 };
+        var wk = mfb.prog.weekPages || 0;
+        if (wk > 0) return { date: addWeeks(now, leftMf / wk), basis: '매쓰플랫 실측 ' + wk + 'p/주', weeks: leftMf / wk };
+      }
+    }
     if (prm.speedMode === 'real') {
       var pr = bookPct(it.b);
       var rate = realRate(it.b);
@@ -34486,7 +34496,7 @@ function lbuGoBook(bookId){
     var cur = itemsOf(st).map(function(it){
       var e = estFinish(st, it, prm);
       var gd = pdate(it.a && it.a.goalDate);
-      return { it: it, pr: bookPct(it.b), est: e, goal: gd, warn: !!(gd && e.date && e.date > gd) };
+      return { it: it, pr: bookPct(it.b), mf: mfForBook(it.b), est: e, goal: gd, warn: !!(gd && e.date && e.date > gd) };
     });
     var start = chainStart(st, cur, prm);
     var qrows = [];
@@ -34562,12 +34572,47 @@ function lbuGoBook(bookId){
         });
       } catch (e) { console.error('[플래너] 로드 실패:', e); }
     }
+    // v15-6: 매쓰플랫 자동 진도 로드 (이름 매칭)
+    var mf = null;
+    if (sb) { try { mf = await loadMfProgress(sb, st); } catch (e) { console.warn('[플래너] 매쓰플랫 진도 로드 실패:', e); } }
     if (t !== P.token || P.sel !== stId) return;
-    P.code = code; P.prog = prog || {}; P.goal = goal; P.marks = marks || {};
+    P.code = code; P.prog = prog || {}; P.goal = goal; P.marks = marks || {}; P.mf = mf; P.mfOpen = {};
     P.loaded = true; P.ts = Date.now();
     fill();
   }
   window.lrpMarksChanged = function(marks){ P.marks = marks || {}; if (P.sel) fill(); };
+
+  // v15-6: 매쓰플랫 자동 진도 로드 — 교재를 '이름 정규화'로 매칭 (id 불일치 회피)
+  function mfNorm(s){ return String(s || '').replace(/[\s\-–·()\[\]]/g, '').toLowerCase(); }
+  function mfCourse(g){
+    if (!g) return -1;
+    var m = String(g).match(/(초|중|고)\s*(\d)\s*[-–]\s*(\d)/);
+    if (m) { if (m[1] === '고') return COURSES.indexOf(HS_MAP[m[2] + '-' + m[3]] || ''); return COURSES.indexOf(m[1] + m[2] + '-' + m[3]); }
+    return -1;
+  }
+  async function loadMfProgress(sb, st){
+    var r = await sb.from('lumen_store').select('key,value').in('key', ['mf_progress', 'mf_books']);
+    var prog = null, cat = null;
+    (r.data || []).forEach(function(row){ var v = parseVal(row.value); if (row.key === 'mf_progress') prog = v; else if (row.key === 'mf_books') cat = v; });
+    if (!prog || !cat) return null;
+    var r2 = await sb.from('mf_students').select('mf_student_id,name,lumen_rec_code');
+    var list = (r2 && r2.data) || [], m = null;
+    for (var i = 0; i < list.length; i++) { if (list[i].lumen_rec_code && list[i].lumen_rec_code === st.lumen_rec_code) { m = list[i]; break; } }
+    if (!m) { var same = list.filter(function(x){ return x.name === st.name; }); if (same.length === 1) m = same[0]; }
+    if (!m) return null;
+    var pBooks = (prog.byStudent && prog.byStudent[m.mf_student_id]) || {};
+    var meta = cat.books || {};
+    var s = schoolIdxOf(st);
+    var byName = {};
+    Object.keys(pBooks).forEach(function(bid){
+      var md = meta[bid] || {}, pr = pBooks[bid] || {};
+      var ci = mfCourse(md.g || md.n || '');
+      var track = (ci < 0 || s < 0) ? '현행' : (ci > s ? '선행' : (ci < s ? '복습' : '현행'));
+      byName[mfNorm(md.n)] = { id: bid, name: md.n || '교재', g: md.g || '', pages: md.pages || 0, units: md.units || [], prog: pr, ci: ci, track: track };
+    });
+    return { byName: byName, sid: m.mf_student_id };
+  }
+  function mfForBook(b){ return (P.mf && b) ? (P.mf.byName[mfNorm(b.name)] || null) : null; }
 
   // ══════════ 렌더 ══════════
   // 미리보기·타임라인 전용 CSS — 플래너 화면과 공유 HTML이 공용 (v14-8)
@@ -34790,27 +34835,74 @@ function lbuGoBook(bookId){
   function curCardHTML(c, s){
     var b = c.it.b;
     var tg = tagOf(c.it.ci, s);
-    var h = '<div class="lrp-bk">';
+    var mfb = c.mf;
+    var mfp = mfb && mfb.prog;
+    var hasMf = !!(mfp && mfp.maxPage);
+    // 매쓰플랫 페이지 진도율(있으면 우선), 없으면 수동 단원 진도율
+    var mfPct = (hasMf && mfb.pages > 0) ? Math.min(100, Math.round(mfp.maxPage / mfb.pages * 100)) : null;
+    var h = '<div class="lrp-bk"' + (hasMf ? ' style="cursor:pointer" onclick="lrpMfToggle(\'' + esc(b.id) + '\')"' : '') + '>';
     h += '<div class="lrp-bh"><div class="lrp-cover" style="background:' + tg.clr + '">' + esc(String(b.name || '책').charAt(0)) + '</div>';
-    h += '<div class="lrp-bn">' + esc(b.name || '') + '<br><span class="lrp-tag ' + tg.c + '">' + tg.t + '</span></div></div>';
-    if (c.pr) {
-      var fc = c.pr.pct >= 100 ? 'gg' : (tg.c === 'adv' ? 'pp' : '');
-      var pcClr = c.pr.pct >= 100 ? '#10b981' : (tg.c === 'adv' ? '#7c3aed' : '#1d6fe8');
-      h += '<div class="lrp-brow"><div class="lrp-ebar"><div class="lrp-efill ' + fc + '" style="width:' + c.pr.pct + '%"></div></div><div class="lrp-bpct" style="color:' + pcClr + '">' + c.pr.pct + '%</div></div>';
+    h += '<div class="lrp-bn">' + esc(b.name || '') + '<br><span class="lrp-tag ' + tg.c + '">' + tg.t + '</span>'
+      + (hasMf ? ' <span class="lrp-tag" style="background:#ecfdf5;color:#0e7a52">🤖 자동</span>' : '') + '</div></div>';
+    var barPct = (mfPct != null) ? mfPct : (c.pr ? c.pr.pct : null);
+    if (barPct != null) {
+      var fc = barPct >= 100 ? 'gg' : (tg.c === 'adv' ? 'pp' : '');
+      var pcClr = barPct >= 100 ? '#10b981' : (tg.c === 'adv' ? '#7c3aed' : '#1d6fe8');
+      h += '<div class="lrp-brow"><div class="lrp-ebar"><div class="lrp-efill ' + fc + '" style="width:' + barPct + '%"></div></div><div class="lrp-bpct" style="color:' + pcClr + '">' + barPct + '%</div></div>';
     }
     h += '<div class="lrp-bmeta">';
-    if (c.pr) h += '<span class="lrp-mc2">단원 ' + c.pr.done + '/' + c.pr.total + '</span>';
-    else {
+    if (hasMf) {
+      h += '<span class="lrp-mc2 real">📖 ' + mfp.maxPage + (mfb.pages ? '/' + mfb.pages : '') + 'p</span>';
+      if (mfp.curChapter) h += '<span class="lrp-mc2">📍 ' + esc(mfp.curChapter) + '</span>';
+      if (mfp.weekPages) h += '<span class="lrp-mc2">이번 주 +' + mfp.weekPages + 'p</span>';
+    } else if (c.pr) {
+      h += '<span class="lrp-mc2">단원 ' + c.pr.done + '/' + c.pr.total + '</span>';
+    } else {
       var mp = (getSt() && getSt().lumen_materialProgress || {})[b.id] || {};
-      var cur = parseInt(mp.currentPage) || 0;
+      var curp = parseInt(mp.currentPage) || 0;
       var tot = parseInt(b.totalPages) || 0;
-      h += '<span class="lrp-mc2">' + (tot ? cur + '/' + tot + 'p' : '단원·페이지 정보 없음') + '</span>';
+      h += '<span class="lrp-mc2">' + (tot ? curp + '/' + tot + 'p' : '단원·페이지 정보 없음') + '</span>';
     }
     if (c.est && c.est.basis && c.est.basis !== '목표일' && c.est.basis !== '완주') h += '<span class="lrp-mc2 real">⚡ ' + esc(c.est.basis) + '</span>';
     if (c.est && c.est.date) h += '<span class="lrp-mc2 ' + (c.warn ? 'warn' : 'ok') + '">📈 예상 ' + fmtSeg(c.est.date) + (c.warn ? ' ⚠️' : ' ✅') + '</span>';
-    else if (c.est && c.est.basis !== '완주') h += '<span class="lrp-mc2 warn">📈 예측 불가 — 단원 체크나 할당량 필요</span>';
+    else if (c.est && c.est.basis !== '완주' && !hasMf) h += '<span class="lrp-mc2 warn">📈 예측 불가 — 단원 체크나 할당량 필요</span>';
     if (c.goal) h += '<span class="lrp-mc2">🎯 목표 ' + (c.goal.getMonth() + 1) + '월</span>';
-    h += '</div></div>';
+    h += '</div>';
+    if (hasMf && P.mfOpen[b.id]) h += mfRouteHTML(mfb);
+    else if (hasMf) h += '<div style="font-size:9.5px;color:#94a3b8;font-weight:800;margin-top:6px">단원 노선 ▾</div>';
+    h += '</div>';
+    return h;
+  }
+  // 단원 노선 (라이트, 로드맵 관리 lrm과 동일 규칙)
+  function mfRouteHTML(bk){
+    var pr = bk.prog || {}, chs = pr.chapters || [], toc = bk.units || [];
+    if (!chs.length && !toc.length) return '<div style="font-size:10px;color:#94a3b8;font-weight:700;margin-top:6px">채점 기록이 쌓이면 단원이 표시돼요.</div>';
+    function nm(x){ return String(x || '').replace(/[\s\.\-–·()\[\]0-9ⅠⅡⅢⅣⅤⅥⅦ]/g, '').replace(/[a-zA-Z]/g, '').toLowerCase(); }
+    var studied = {}; chs.forEach(function(c){ studied[nm(c.n)] = c; });
+    var curKey = nm(pr.curChapter);
+    var seq = toc.length ? toc.slice() : chs.map(function(c){ return c.n; });
+    if (toc.length) chs.forEach(function(c){ var f = false; toc.forEach(function(t){ if (nm(t) === nm(c.n)) f = true; }); if (!f) seq.push(c.n); });
+    var curIdx = -1; seq.forEach(function(n2, i){ if (nm(n2) === curKey) curIdx = i; });
+    var h = '<div style="margin-top:8px;border-left:2px solid #e2e8f0;padding-left:11px">';
+    seq.forEach(function(n2, i){
+      var st2 = studied[nm(n2)];
+      var isCur = (curKey && nm(n2) === curKey);
+      var isDone = st2 && !isCur && (curIdx < 0 || i < curIdx);
+      var dot = isCur ? '#f59e0b' : (isDone ? '#10b981' : '#cbd5e1');
+      var nmClr = isCur ? '#b45309' : (isDone ? '#15803d' : '#94a3b8');
+      h += '<div style="position:relative;padding:4px 0"><div style="position:absolute;left:-16px;top:7px;width:8px;height:8px;border-radius:50%;background:' + dot + ';border:2px solid #fff;box-shadow:0 0 0 1px ' + dot + '"></div>';
+      h += '<div style="font-size:11px;font-weight:800;color:' + nmClr + '">' + (isDone ? '✓ ' : (isCur ? '📍 ' : '')) + esc(n2) + '</div>';
+      if (isCur) {
+        var rate = (st2 && st2.total) ? Math.round(st2.correct / st2.total * 100) : null;
+        var sub = []; if (pr.maxPage) sub.push(pr.maxPage + '쪽'); if (rate != null) sub.push('정답률 ' + rate + '%');
+        if (sub.length) h += '<div style="font-size:9px;color:#b45309;font-weight:700">' + esc(sub.join(' · ')) + '</div>';
+      } else if (st2) {
+        var rr = (st2.total) ? Math.round(st2.correct / st2.total * 100) : null;
+        if (st2.minP || rr != null) h += '<div style="font-size:9px;color:#94a3b8;font-weight:700">' + (st2.minP ? st2.minP + '~' + st2.maxP + '쪽' : '') + (rr != null ? ' · 정답률 ' + rr + '%' : '') + '</div>';
+      } else { h += '<div style="font-size:9px;color:#cbd5e1;font-weight:700">예정</div>'; }
+      h += '</div>';
+    });
+    h += '</div>';
     return h;
   }
   function tplBarHTML(){
@@ -35066,10 +35158,11 @@ function lbuGoBook(bookId){
   // ── 조작 핸들러 ──
   window.lrpOpen = function(stId){
     P.sel = stId;
-    if (P.selPrev !== stId) { P.prog = {}; P.goal = null; P.loaded = false; P.ts = 0; P.selPrev = stId; }
+    if (P.selPrev !== stId) { P.prog = {}; P.goal = null; P.loaded = false; P.ts = 0; P.selPrev = stId; P.mf = null; P.mfOpen = {}; }
     if (typeof VIEW !== 'undefined' && VIEW !== 'roadmap_mgr') { VIEW = 'roadmap_mgr'; }
     render();
   };
+  window.lrpMfToggle = function(bid){ P.mfOpen[bid] = !P.mfOpen[bid]; fill(); };
   window.lrpSearch = function(v){
     P.search = v || '';
     var l = document.getElementById('lrp-left-list');
