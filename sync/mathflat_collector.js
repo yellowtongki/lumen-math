@@ -307,6 +307,7 @@ async function main() {
     await refreshConceptNames();
     await refreshBookCatalog();
     await refreshTypeDb();
+    await refreshRoadmap();
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
@@ -350,6 +351,15 @@ async function refreshBookCatalog() {
       books[bid] = w
         ? { n: (w.fulltitle || ((w.title || '') + ' ' + (w.subtitle || ''))).replace(/\s+/g, ' ').trim(), p: w.publisher || '', g: gradeKeyOf(w), pages: w.maxPage || 0 }
         : { n: ((row.title || '') + ' ' + (row.subtitle || '')).trim(), p: '', g: '', pages: 0 };
+      // 교재 목차(대단원 순서) — 로드맵 '앞으로 배울 단원' 표시용
+      try {
+        const chips = await api(`/concept/chips?curriculumKey=1&workbookIds=${bid}`);
+        const bigs = [], seen = new Set();
+        (chips || []).slice()
+          .sort((a, b) => String(a.orderingNumber || '').localeCompare(String(b.orderingNumber || '')))
+          .forEach((c) => { const bg = c.bigChapterName; if (bg && !seen.has(bg)) { seen.add(bg); bigs.push(bg); } });
+        if (bigs.length) books[bid].units = bigs;
+      } catch (e) {}
       await sleep(80);
     }
     const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
@@ -420,6 +430,76 @@ async function refreshTypeDb() {
     });
     log(`유형DB(mf_typedb): 학년 ${out.length} · 유형 ${total} ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('유형DB 갱신 실패(치명적 아님):', e.message); }
+}
+
+// ── 로드맵 진도 집계 갱신 ─────────────────────────────────────
+// 교재 세션(mf_study_sessions, source=교재)을 학생×교재로 집계해
+// lumen_store 'mf_progress'에 저장. (학생앱/학원앱 로드맵이 이 데이터로
+// 도달 페이지·현재 단원·주간 진도·단원별·월별 정답률을 렌더)
+//   value = { updated, byStudent: { <sid>: { <book_id>: {
+//     maxPage, curChapter, lastDate, weekPages,
+//     chapters:[{n,minP,maxP,lastDate,correct,total}],
+//     months:{ "YYYY-MM": {c,t,maxP} } } } } }
+// 현행/선행 구분은 '오늘' 기준이라 앱에서 계산(학년+교재 학기 g).
+function _parsePage(p) { const m = String(p == null ? '' : p).match(/\d+/g); return m ? Math.max.apply(null, m.map(Number)) : 0; }
+async function refreshRoadmap() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    const rows = [];
+    for (let off = 0; off < 300000; off += 1000) {
+      const res = await fetch(`${url}/rest/v1/mf_study_sessions?select=mf_student_id,book_id,chapter,page,correct_count,wrong_count,update_datetime&source=eq.${encodeURIComponent('교재')}&order=update_datetime.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
+      if (!res.ok) break;
+      const batch = await res.json();
+      rows.push(...batch);
+      if (batch.length < 1000) break;
+    }
+    if (!rows.length) { log('로드맵: 교재 세션 없음 → 건너뜀'); return; }
+    const now = Date.now(), WEEK = 7 * 86400000;
+    const byStudent = {};
+    rows.forEach((r) => {
+      if (!r.book_id || r.mf_student_id == null) return;
+      const pg = _parsePage(r.page);
+      const dt = r.update_datetime || '';
+      const cc = r.correct_count || 0, wc = r.wrong_count || 0;
+      const S = byStudent[r.mf_student_id] = byStudent[r.mf_student_id] || {};
+      const B = S[r.book_id] = S[r.book_id] || { maxPage: 0, curChapter: '', lastDate: '', weekBase: null, _chap: {}, months: {} };
+      if (pg > B.maxPage) B.maxPage = pg;
+      if (dt >= B.lastDate) { B.lastDate = dt; if (r.chapter) B.curChapter = r.chapter; }
+      if (r.chapter) {
+        const c = B._chap[r.chapter] = B._chap[r.chapter] || { n: r.chapter, minP: 1e9, maxP: 0, lastDate: '', correct: 0, total: 0 };
+        if (pg && pg < c.minP) c.minP = pg;
+        if (pg > c.maxP) c.maxP = pg;
+        if (dt > c.lastDate) c.lastDate = dt;
+        c.correct += cc; c.total += cc + wc;
+      }
+      // 주간 진도: 7일 이전 시점의 최대 도달 페이지를 기준선으로
+      const ts = dt ? Date.parse(dt.replace(' ', 'T')) : NaN;
+      if (!isNaN(ts) && (now - ts) > WEEK) { if (B.weekBase === null || pg > B.weekBase) B.weekBase = pg; }
+      const ym = dt.slice(0, 7);
+      if (ym) {
+        const m = B.months[ym] = B.months[ym] || { c: 0, t: 0, maxP: 0 };
+        m.c += cc; m.t += cc + wc; if (pg > m.maxP) m.maxP = pg;
+      }
+    });
+    const out = {};
+    Object.keys(byStudent).forEach((sid) => {
+      out[sid] = {};
+      Object.keys(byStudent[sid]).forEach((bid) => {
+        const B = byStudent[sid][bid];
+        const chapters = Object.keys(B._chap).map((k) => B._chap[k])
+          .map((c) => ({ n: c.n, minP: (c.minP === 1e9 ? 0 : c.minP), maxP: c.maxP, lastDate: (c.lastDate || '').slice(0, 10), correct: c.correct, total: c.total }))
+          .sort((a, b) => (a.minP - b.minP) || a.lastDate.localeCompare(b.lastDate));
+        const weekPages = B.weekBase === null ? B.maxPage : Math.max(0, B.maxPage - B.weekBase);
+        out[sid][bid] = { maxPage: B.maxPage, curChapter: B.curChapter, lastDate: (B.lastDate || '').slice(0, 10), weekPages, chapters, months: B.months };
+      });
+    });
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_progress', value: { updated: new Date().toISOString(), byStudent: out }, updated_at: new Date().toISOString() }]),
+    });
+    log(`로드맵(mf_progress): 학생 ${Object.keys(out).length} ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('로드맵 갱신 실패(치명적 아님):', e.message); }
 }
 
 // ── 유형명 사전 갱신 ─────────────────────────────────────────
