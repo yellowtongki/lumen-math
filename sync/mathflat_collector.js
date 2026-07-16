@@ -122,36 +122,45 @@ function mkRec(partial) {
   return o;
 }
 
-// ── [A] 문항 단위 학습지 정오답 (반 → 학습지 → 문항) ──
-async function collectAnswerRecords(me, cutoff) {
-  const classes = await api('/lesson-classes');
-  const classList = classes.content || classes || [];
-  log(`[A] 학습지 문항 수집 · 반 ${classList.length}개`);
+// ── [A] 문항 단위 학습지 정오답 (학생 → 학습내역 → 문항) ──
+// v2 (2026-07-17): 기존 "반 → 학습지" 경로는 반별 학습지가 300개를 넘으면
+// 최신 학습지가 첫 페이지 밖으로 밀려 통째로 누락됨(M4·T5·T630에서 실제 발생).
+// 학생별 학습내역(student-history)은 반 배정·페이지와 무관하게 전부 나오므로 교체.
+// history component.studentBookId가 곧 studentWorksheetId (assign API에 그대로 사용 가능 확인).
+const WS_TAGS = {}; // worksheet_id → {tag,type,titleTag} — 숙제(HOMEWORK) 등 태그 구분용
+async function collectAnswerRecords(me, students, cutoff) {
+  const start = fmt(cutoff), end = fmt(new Date(Date.now() + 86400000));
+  log(`[A] 학습지 문항 수집(학생 단위) · 학생 ${students.length}명 (${start}~${end})`);
   const records = [];
   const seen = new Set();
   let processed = 0;
-  for (const cls of classList) {
-    let worksheets;
-    try { worksheets = (await api(`/student-worksheet/lesson-class/${cls.id}?page=0&size=300`)).content || []; }
-    catch (e) { log(`  · 반 ${cls.name} 조회 실패: ${e.message}`); continue; }
-    for (const w of worksheets) {
-      for (const asg of w.assignedStudentList || []) {
-        if (asg.status !== 'COMPLETE' || seen.has(asg.studentWorksheetId)) continue;
-        seen.add(asg.studentWorksheetId);
+  for (const st of students) {
+    let items;
+    try { items = await api(`/student-history/work/student/${st.id}?startDate=${start}&endDate=${end}`); }
+    catch (e) { log(`  · 학생 ${st.id} 학습내역 실패: ${e.message}`); continue; }
+    for (const it of items || []) {
+      if (it.bookType !== 'WORKSHEET') continue;
+      for (const c of it.components || []) {
+        const swId = c.studentBookId; // = studentWorksheetId
+        if (!swId || seen.has(swId)) continue;
+        if (c.status !== 'COMPLETE') continue;
+        if (c.updateDatetime && new Date(c.updateDatetime) < cutoff) continue;
+        seen.add(swId);
         if (LIMIT && processed >= LIMIT) { log(`  [A] --limit ${LIMIT} 도달`); return records; }
         let summary, problems;
         try {
-          summary = await api(`/student-worksheet/assign/${asg.studentWorksheetId}`);
+          summary = await api(`/student-worksheet/assign/${swId}`);
           if (summary.scoreDatetime && new Date(summary.scoreDatetime) < cutoff) continue;
-          problems = (await api(`/student-worksheet/assign/${asg.studentWorksheetId}/problem`)).content || [];
-        } catch (e) { log(`  · 채점 조회 실패 sw=${asg.studentWorksheetId}: ${e.message}`); continue; }
-        const ws = summary.worksheet || w.worksheet || {};
+          problems = (await api(`/student-worksheet/assign/${swId}/problem`)).content || [];
+        } catch (e) { log(`  · 채점 조회 실패 sw=${swId}: ${e.message}`); continue; }
+        const ws = summary.worksheet || {};
+        if (ws.id) WS_TAGS[ws.id] = { tag: ws.tag || null, type: ws.type || null, titleTag: ws.titleTag || null };
         problems.forEach((pr, idx) => {
           const prob = pr.problem || {};
           records.push(mkRec({
-            record_key: `ws:${asg.studentWorksheetId}:${idx + 1}`, source: '학습지',
-            academy_id: me.academyId, mf_student_id: asg.studentId,
-            student_worksheet_id: asg.studentWorksheetId, problem_seq: idx + 1,
+            record_key: `ws:${swId}:${idx + 1}`, source: '학습지',
+            academy_id: me.academyId, mf_student_id: st.id,
+            student_worksheet_id: swId, problem_seq: idx + 1,
             worksheet_id: ws.id, worksheet_title: ws.title, worksheet_type: ws.type,
             chapter: ws.chapter || null, school: ws.school || null, grade: ws.grade || null,
             worksheet_problem_id: pr.worksheetProblemId, problem_id: prob.id,
@@ -164,8 +173,28 @@ async function collectAnswerRecords(me, cutoff) {
         await sleep(120);
       }
     }
+    await sleep(80);
   }
   return records;
+}
+
+// 학습지 태그 사전을 lumen_store 'mf_ws_tags'에 병합 저장 (숙제 제외 필터용)
+async function saveWsTags() {
+  const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key || !Object.keys(WS_TAGS).length) return;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    let cur = {};
+    const rc = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_tags&select=value`, { headers: sbHeaders });
+    if (rc.ok) { const j = await rc.json(); if (j[0] && j[0].value && j[0].value.tags) cur = j[0].value.tags; }
+    Object.assign(cur, WS_TAGS);
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST',
+      headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_ws_tags', value: { tags: cur, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
+    });
+    log(`학습지 태그(mf_ws_tags): ${Object.keys(cur).length}개 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('학습지 태그 저장 실패(치명적 아님):', e.message); }
 }
 
 // ── [B] 학습지+교재 세션 단위 (학생별 학습내역, 시간순) ──
@@ -287,7 +316,7 @@ async function main() {
   log(`활동 학생(ACTIVE) ${students.length}명`);
 
   let wsAnswers = [], wbAnswers = [], sessions = [];
-  if (!SKIP_PROBLEMS) wsAnswers = await collectAnswerRecords(me, cutoff);
+  if (!SKIP_PROBLEMS) wsAnswers = await collectAnswerRecords(me, students, cutoff);
   if (!SKIP_WORKBOOK) wbAnswers = await collectWorkbookProblems(me, students, cutoff);
   const answers = wsAnswers.concat(wbAnswers);           // 학습지 + 교재 문항단위 통합
   if (answers.length) saveJson('mf_answer_records.json', answers);
@@ -310,6 +339,7 @@ async function main() {
     if (studentRows.length) await upsert('mf_students', studentRows, 'mf_student_id');
     if (answers.length) await upsert('mf_answer_records', answers, 'record_key');
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
+    await saveWsTags();
     await refreshConceptNames();
     await refreshBookCatalog();
     await refreshTypeDb();
