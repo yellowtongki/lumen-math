@@ -157,6 +157,7 @@ async function collectAnswerRecords(me, students, cutoff) {
         if (ws.id) WS_TAGS[ws.id] = { tag: ws.tag || null, type: ws.type || null, titleTag: ws.titleTag || null };
         problems.forEach((pr, idx) => {
           const prob = pr.problem || {};
+          const natRate = prob.problemSummary && prob.problemSummary.answerRate != null ? prob.problemSummary.answerRate : null;
           records.push(mkRec({
             record_key: `ws:${swId}:${idx + 1}`, source: '학습지',
             academy_id: me.academyId, mf_student_id: st.id,
@@ -166,6 +167,8 @@ async function collectAnswerRecords(me, students, cutoff) {
             worksheet_problem_id: pr.worksheetProblemId, problem_id: prob.id,
             concept_id: prob.conceptId || null, topic_id: prob.topicId || null, sub_topic_id: prob.subTopicId || null,
             level: prob.level || null, result: toOX(pr.result),
+            number: idx + 1,          // 문항 번호 (풀이 순서)
+            page: natRate,            // ⚠ 학습지 행에서 page 컬럼은 전국 정답률(%)로 재활용 (전용 컬럼 없음)
             score: summary.score, score_datetime: summary.scoreDatetime, assign_datetime: summary.assignDatetime,
           }));
         });
