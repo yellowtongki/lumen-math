@@ -494,6 +494,60 @@ async function refreshRoadmap() {
         out[sid][bid] = { maxPage: B.maxPage, curChapter: B.curChapter, lastDate: (B.lastDate || '').slice(0, 10), weekPages, chapters, months: B.months };
       });
     });
+
+    // ── 단원명 보강: 세션엔 chapter가 없어 문항단위 기록(mf_answer_records, 교재)에서
+    //    단원별 정오답·페이지·현재 단원을 집계해 위 out에 덮어씀 ([C] 수집 시 채워짐).
+    //    교재 섹션 제목(p.title: '단원 마무리' 등)은 지저분하므로 concept_id→대단원명으로
+    //    묶어 교재 목차(units)와 같은 깨끗한 대단원으로 표기. ──
+    try {
+      // concept_id → 대단원명 매핑 (전체 교육과정 3키)
+      const conceptBig = {};
+      for (const k of ['1.4.4145', '1.4.4146', '1.4.4147']) {
+        try { (await api(`/concept/chips?curriculumKey=${k}`) || []).forEach((c) => { if (c.conceptId && c.bigChapterName) conceptBig[c.conceptId] = c.bigChapterName; }); } catch (e) {}
+      }
+      const arows = [];
+      for (let off = 0; off < 500000; off += 1000) {
+        const res2 = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,book_id,chapter,concept_id,page,result,score_datetime&source=eq.${encodeURIComponent('교재')}&order=score_datetime.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
+        if (!res2.ok) break;
+        const b2 = await res2.json();
+        arows.push(...b2);
+        if (b2.length < 1000) break;
+      }
+      if (arows.length) {
+        const ca = {}; // ca[sid][bid] = { cur:'', curDate:'', _chap:{} }
+        arows.forEach((r) => {
+          // 개념→대단원 매핑된 것만 사용(교재 섹션 잡음 '단원 마무리·쌍둥이 기출' 등 제거).
+          const chapName = (r.concept_id != null) ? conceptBig[r.concept_id] : null;
+          if (!r.book_id || r.mf_student_id == null || !chapName) return;
+          const sid = r.mf_student_id, bid = r.book_id, dt = r.score_datetime || '';
+          const pg = _parsePage(r.page);
+          const S = ca[sid] = ca[sid] || {};
+          const Bk = S[bid] = S[bid] || { cur: '', curDate: '', _chap: {} };
+          if (dt >= Bk.curDate) { Bk.curDate = dt; Bk.cur = chapName; }
+          const c = Bk._chap[chapName] = Bk._chap[chapName] || { n: chapName, minP: 1e9, maxP: 0, lastDate: '', correct: 0, total: 0 };
+          if (pg && pg < c.minP) c.minP = pg;
+          if (pg > c.maxP) c.maxP = pg;
+          if (dt > c.lastDate) c.lastDate = dt;
+          if (r.result === 'O') { c.correct++; c.total++; }
+          else if (r.result === 'X') { c.total++; }
+        });
+        let filled = 0;
+        Object.keys(ca).forEach((sid) => {
+          out[sid] = out[sid] || {};
+          Object.keys(ca[sid]).forEach((bid) => {
+            const Bk = ca[sid][bid];
+            const chapters = Object.keys(Bk._chap).map((k) => Bk._chap[k])
+              .map((c) => ({ n: c.n, minP: (c.minP === 1e9 ? 0 : c.minP), maxP: c.maxP, lastDate: (c.lastDate || '').slice(0, 10), correct: c.correct, total: c.total }))
+              .sort((a, b) => (a.minP - b.minP) || a.lastDate.localeCompare(b.lastDate));
+            const prev = out[sid][bid] || { maxPage: 0, weekPages: 0, months: {}, lastDate: '' };
+            out[sid][bid] = { maxPage: prev.maxPage, curChapter: Bk.cur, lastDate: prev.lastDate || (Bk.curDate || '').slice(0, 10), weekPages: prev.weekPages, chapters, months: prev.months };
+            filled++;
+          });
+        });
+        log(`로드맵: 단원명 보강 ${filled}개 교재(mf_answer_records)`);
+      }
+    } catch (e) { log('로드맵 단원명 보강 실패(치명적 아님):', e.message); }
+
     const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
       method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify([{ key: 'mf_progress', value: { updated: new Date().toISOString(), byStudent: out }, updated_at: new Date().toISOString() }]),
