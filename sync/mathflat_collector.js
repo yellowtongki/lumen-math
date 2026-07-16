@@ -272,6 +272,12 @@ function saveJson(name, data) {
 }
 
 async function main() {
+  // --weekly-only: 매쓰플랫 로그인 없이 주간테스트 집계만 (Supabase 기존 기록 사용)
+  if (has('--weekly-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    await refreshWeekly();
+    return;
+  }
   if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
   const cutoff = new Date(Date.now() - DAYS * 86400 * 1000);
   log(`로그인 중… (최근 ${DAYS}일, 기준 ${fmt(cutoff)} 이후)`);
@@ -308,6 +314,7 @@ async function main() {
     await refreshBookCatalog();
     await refreshTypeDb();
     await refreshRoadmap();
+    await refreshWeekly();
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
@@ -554,6 +561,74 @@ async function refreshRoadmap() {
     });
     log(`로드맵(mf_progress): 학생 ${Object.keys(out).length} ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('로드맵 갱신 실패(치명적 아님):', e.message); }
+}
+
+// ── 주간테스트(WEEKLY) 리포트 데이터 집계 ────────────────────
+// mf_answer_records의 worksheet_type='WEEKLY'를 학생×학습지로 집계해
+// lumen_store 'mf_weekly'에 저장. 학원 내 평균·등수는 같은 학습지를 푼
+// 우리 학생들로 즉시 계산. 전국 평균·등수는 매쓰플랫 보고서 API 확보 후 채움(natAvg/natRank).
+//   value = { updated, tests: [{ key, title, date, students: [{ sid, score,
+//     correct, total, wrongConcepts:[{id,n,cnt}], acadRank, acadN, acadAvg }] }] }
+async function refreshWeekly() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    const rows = [];
+    for (let off = 0; off < 500000; off += 1000) {
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,concept_id,result,score,score_datetime&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.WEEKLY&limit=1000&offset=${off}`, { headers: sbHeaders });
+      if (!res.ok) break;
+      const batch = await res.json();
+      rows.push(...batch);
+      if (batch.length < 1000) break;
+    }
+    if (!rows.length) { log('주간테스트: WEEKLY 기록 없음 → 건너뜀'); return; }
+    // 유형명 사전 (오답 유형 이름 표시용)
+    let cname = {};
+    try {
+      const rc = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_concept_names&select=value`, { headers: sbHeaders });
+      if (rc.ok) { const j = await rc.json(); cname = (j[0] && j[0].value) || {}; }
+    } catch (e) {}
+    // 학습지(worksheet_id) × 학생(student_worksheet_id) 집계
+    const tests = {}; // wid → { title, date, students: { sid → agg } }
+    rows.forEach((r) => {
+      if (!r.worksheet_id || r.mf_student_id == null) return;
+      const T = tests[r.worksheet_id] = tests[r.worksheet_id] || { title: r.worksheet_title || '', date: '', students: {} };
+      const S = T.students[r.mf_student_id] = T.students[r.mf_student_id] || { sid: r.mf_student_id, score: null, correct: 0, total: 0, wrong: {} , dt: '' };
+      S.total++;
+      if (r.result === 'O') S.correct++;
+      else if (r.result === 'X' && r.concept_id != null) S.wrong[r.concept_id] = (S.wrong[r.concept_id] || 0) + 1;
+      if (r.score != null) S.score = r.score;
+      const dt = (r.score_datetime || '').slice(0, 10);
+      if (dt > S.dt) S.dt = dt;
+      if (dt > T.date) T.date = dt;
+    });
+    const out = [];
+    Object.keys(tests).forEach((wid) => {
+      const T = tests[wid];
+      const sts = Object.values(T.students);
+      // 학원 내 평균·등수 (점수 있는 학생 기준)
+      const scored = sts.filter((s) => s.score != null);
+      const avg = scored.length ? Math.round(scored.reduce((a, s) => a + s.score, 0) / scored.length) : null;
+      const sorted = scored.slice().sort((a, b) => b.score - a.score);
+      const students = sts.map((s) => {
+        const rank = (s.score != null) ? (sorted.findIndex((x) => x.score === s.score) + 1) : null; // 동점=같은 등수
+        const wrongConcepts = Object.keys(s.wrong)
+          .map((cid) => ({ id: Number(cid), n: (cname[cid] && cname[cid].n) || '', cnt: s.wrong[cid] }))
+          .sort((a, b) => b.cnt - a.cnt).slice(0, 8);
+        return { sid: s.sid, score: s.score, correct: s.correct, total: s.total, date: s.dt,
+          wrongConcepts, acadRank: rank, acadN: scored.length, acadAvg: avg,
+          natAvg: null, natRank: null, natN: null }; // 전국은 보고서 API 확보 후
+      });
+      out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, date: T.date, students });
+    });
+    out.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_weekly', value: { updated: new Date().toISOString(), tests: out }, updated_at: new Date().toISOString() }]),
+    });
+    const nStu = out.reduce((a, t) => a + t.students.length, 0);
+    log(`주간테스트(mf_weekly): 테스트 ${out.length}개 · 학생기록 ${nStu}건 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('주간테스트 갱신 실패(치명적 아님):', e.message); }
 }
 
 // ── 유형명 사전 갱신 ─────────────────────────────────────────
