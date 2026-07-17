@@ -128,6 +128,31 @@ function mkRec(partial) {
 // 학생별 학습내역(student-history)은 반 배정·페이지와 무관하게 전부 나오므로 교체.
 // history component.studentBookId가 곧 studentWorksheetId (assign API에 그대로 사용 가능 확인).
 const WS_TAGS = {}; // worksheet_id → {tag,type,titleTag} — 숙제(HOMEWORK) 등 태그 구분용
+const WS_BEHAV = {}; // studentWorksheetId → {sid,wid,date,b:[{name,score,grade}]} — 원클릭 보고서 행동영역(역량)
+
+// 원클릭 보고서 PDF에서 행동영역(역량별 성취율·등급) 추출
+// GET /report/worksheet/download?studentWorksheetId={swId} → 서버 생성 PDF (텍스트 레이어 있음)
+let _pdfParse = null, _pdfWarned = false;
+function getPdfParse() {
+  if (_pdfParse) return _pdfParse;
+  try { _pdfParse = require('pdf-parse'); } catch (e) {
+    if (!_pdfWarned) { log('⚠ pdf-parse 미설치 → 역량(행동영역) 수집 생략 (npm install 필요)'); _pdfWarned = true; }
+  }
+  return _pdfParse;
+}
+const BEHAV_NAMES = ['문제해결역량', '추론역량', '의사소통역량', '연결역량', '정보처리역량'];
+async function fetchBehaviors(swId) {
+  const pdfParse = getPdfParse(); if (!pdfParse) return null;
+  const res = await fetch(`${API}/report/worksheet/download?studentWorksheetId=${swId}`, { headers: { ..._apiHeaders(), accept: '*/*' } });
+  if (!res.ok) throw new Error(`보고서 다운로드 ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  const d = await pdfParse(buf);
+  // 공백 + 제어문자( 등, PDF 텍스트 레이어에 섞여 있음) 제거
+  const t = (d.text || '').replace(/[\s\u0000-\u001f]+/g, '');
+  const m = t.match(/행동영역[\s\S]*?영역별성취율([\d.]+)%([\d.]+)%([\d.]+)%([\d.]+)%([\d.]+)%영역별등급(\d)(\d)(\d)(\d)(\d)/);
+  if (!m) return null;
+  return BEHAV_NAMES.map((name, i) => ({ name, score: Number(m[1 + i]), grade: Number(m[6 + i]) }));
+}
 async function collectAnswerRecords(me, students, cutoff) {
   const start = fmt(cutoff), end = fmt(new Date(Date.now() + 86400000));
   log(`[A] 학습지 문항 수집(학생 단위) · 학생 ${students.length}명 (${start}~${end})`);
@@ -155,6 +180,13 @@ async function collectAnswerRecords(me, students, cutoff) {
         } catch (e) { log(`  · 채점 조회 실패 sw=${swId}: ${e.message}`); continue; }
         const ws = summary.worksheet || {};
         if (ws.id) WS_TAGS[ws.id] = { tag: ws.tag || null, type: ws.type || null, titleTag: ws.titleTag || null };
+        // 역량(행동영역): 숙제·입학테스트 제외한 학습지만 원클릭 보고서 PDF에서 추출
+        if (ws.tag !== 'HOMEWORK' && ws.tag !== 'ENTRANCE_TEST') {
+          try {
+            const b = await fetchBehaviors(swId);
+            if (b) WS_BEHAV[swId] = { sid: st.id, wid: ws.id, date: (summary.scoreDatetime || '').slice(0, 10), b };
+          } catch (e) { log(`  · 역량 추출 실패 sw=${swId}: ${e.message}`); }
+        }
         problems.forEach((pr, idx) => {
           const prob = pr.problem || {};
           const natRate = prob.problemSummary && prob.problemSummary.answerRate != null ? prob.problemSummary.answerRate : null;
@@ -179,6 +211,27 @@ async function collectAnswerRecords(me, students, cutoff) {
     await sleep(80);
   }
   return records;
+}
+
+// 역량(행동영역) 사전을 lumen_store 'mf_ws_behaviors'에 병합 저장 (90일 이전 정리)
+async function saveWsBehaviors() {
+  const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key || !Object.keys(WS_BEHAV).length) return;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    let cur = {};
+    const rc = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_behaviors&select=value`, { headers: sbHeaders });
+    if (rc.ok) { const j = await rc.json(); if (j[0] && j[0].value && j[0].value.map) cur = j[0].value.map; }
+    Object.assign(cur, WS_BEHAV);
+    const cutoff90 = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+    Object.keys(cur).forEach((k) => { if (cur[k] && cur[k].date && cur[k].date < cutoff90) delete cur[k]; });
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST',
+      headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_ws_behaviors', value: { map: cur, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
+    });
+    log(`역량 행동영역(mf_ws_behaviors): 신규 ${Object.keys(WS_BEHAV).length} · 총 ${Object.keys(cur).length}개 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('역량 저장 실패(치명적 아님):', e.message); }
 }
 
 // 학습지 태그 사전을 lumen_store 'mf_ws_tags'에 병합 저장 (숙제 제외 필터용)
@@ -343,6 +396,7 @@ async function main() {
     if (answers.length) await upsert('mf_answer_records', answers, 'record_key');
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
     await saveWsTags();
+    await saveWsBehaviors();
     await refreshConceptNames();
     await refreshBookCatalog();
     await refreshTypeDb();
