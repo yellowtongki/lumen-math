@@ -141,18 +141,30 @@ function getPdfParse() {
   return _pdfParse;
 }
 const BEHAV_NAMES = ['문제해결역량', '추론역량', '의사소통역량', '연결역량', '정보처리역량'];
-async function fetchBehaviors(swId) {
+async function fetchReportStats(swId) {
   const pdfParse = getPdfParse(); if (!pdfParse) return null;
-  const res = await fetch(`${API}/report/worksheet/download?studentWorksheetId=${swId}`, { headers: { ..._apiHeaders(), accept: '*/*' } });
+  const H = { ..._apiHeaders(), accept: '*/*' };
+  // 전국(NATION)은 매쓰플랫 제공 테스트지(주간·단원 등)에서만 가능 — 커스텀 학습지는 거부될 수 있어 폴백
+  let res = await fetch(`${API}/report/worksheet/download?studentWorksheetId=${swId}&reportRankOptions=NATION&reportRankOptions=ACADEMY`, { headers: H });
+  if (!res.ok) res = await fetch(`${API}/report/worksheet/download?studentWorksheetId=${swId}&reportRankOptions=ACADEMY`, { headers: H });
+  if (!res.ok) res = await fetch(`${API}/report/worksheet/download?studentWorksheetId=${swId}`, { headers: H });
   if (!res.ok) throw new Error(`보고서 다운로드 ${res.status}`);
   const buf = Buffer.from(await res.arrayBuffer());
   const d = await pdfParse(buf);
-  // 공백 + 제어문자( 등, PDF 텍스트 레이어에 섞여 있음) 제거
+  // 공백 + 제어문자(PDF 텍스트 레이어에 섞여 있음) 제거
   const t = (d.text || '').replace(/[\s\u0000-\u001f]+/g, '');
+  const out = { b: null, nat: null, acad: null };
   const m = t.match(/행동영역[\s\S]*?영역별성취율([\d.]+)%([\d.]+)%([\d.]+)%([\d.]+)%([\d.]+)%영역별등급(\d)(\d)(\d)(\d)(\d)/);
-  if (!m) return null;
-  return BEHAV_NAMES.map((name, i) => ({ name, score: Number(m[1 + i]), grade: Number(m[6 + i]) }));
+  if (m) out.b = BEHAV_NAMES.map((name, i) => ({ name, score: Number(m[1 + i]), grade: Number(m[6 + i]) }));
+  const n = t.match(/전국전체평균([\d.]+)점등수(\d+)등\/(\d+)명/);
+  if (n) out.nat = { avg: Number(n[1]), rank: Number(n[2]), n: Number(n[3]) };
+  const a = t.match(/학원전체평균([\d.]+)점등수(\d+)등\/(\d+)명/);
+  if (a) out.acad = { avg: Number(a[1]), rank: Number(a[2]), n: Number(a[3]) };
+  // 커스텀 학습지는 "전국"이 사실상 우리 학원뿐 → 전국 응시자가 학원 응시자보다 많을 때만 진짜 전국으로 인정
+  if (out.nat && !(out.nat.n > ((out.acad && out.acad.n) || 1))) out.nat = null;
+  return (out.b || out.nat || out.acad) ? out : null;
 }
+
 async function collectAnswerRecords(me, students, cutoff) {
   const start = fmt(cutoff), end = fmt(new Date(Date.now() + 86400000));
   log(`[A] 학습지 문항 수집(학생 단위) · 학생 ${students.length}명 (${start}~${end})`);
@@ -183,9 +195,9 @@ async function collectAnswerRecords(me, students, cutoff) {
         // 역량(행동영역): 숙제·입학테스트 제외한 학습지만 원클릭 보고서 PDF에서 추출
         if (ws.tag !== 'HOMEWORK' && ws.tag !== 'ENTRANCE_TEST') {
           try {
-            const b = await fetchBehaviors(swId);
-            if (b) WS_BEHAV[swId] = { sid: st.id, wid: ws.id, date: (summary.scoreDatetime || '').slice(0, 10), b };
-          } catch (e) { log(`  · 역량 추출 실패 sw=${swId}: ${e.message}`); }
+            const stat = await fetchReportStats(swId);
+            if (stat) WS_BEHAV[swId] = { sid: st.id, wid: ws.id, date: (summary.scoreDatetime || '').slice(0, 10), b: stat.b, nat: stat.nat, acad: stat.acad };
+          } catch (e) { log(`  · 역량·등수 추출 실패 sw=${swId}: ${e.message}`); }
         }
         problems.forEach((pr, idx) => {
           const prob = pr.problem || {};
