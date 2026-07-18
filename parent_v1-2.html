@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>루멘수학 학부모 v1-2</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;background:#eef2f8;color:#0f172a;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+#app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:#eef2f8}
+/* 로그인 */
+.login{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;background:linear-gradient(160deg,#0d2240,#1d3a6e)}
+.login .lg{font-size:13px;font-weight:800;color:#ffd54a;letter-spacing:2px}
+.login h1{color:#fff;font-size:26px;font-weight:900;margin-top:8px}
+.login p{color:#8fb8e8;font-size:13px;font-weight:600;margin-top:6px;text-align:center;line-height:1.7}
+.login input{margin-top:22px;width:100%;max-width:280px;border:none;border-radius:14px;padding:16px;font-size:20px;font-weight:900;text-align:center;letter-spacing:4px;font-family:inherit;outline:none;text-transform:uppercase}
+.login button{margin-top:12px;width:100%;max-width:280px;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:900;background:#ffd54a;color:#0d2240}
+.login .err{color:#fca5a5;font-size:12px;font-weight:700;margin-top:12px;min-height:18px;text-align:center;white-space:pre-line}
+.login .ft{color:#3f5578;font-size:10px;font-weight:700;margin-top:30px}
+/* 헤더 */
+.hd{background:linear-gradient(160deg,#0d2240 0%,#16305c 70%,#1d3a6e 100%);padding:20px 20px 46px;color:#fff;position:relative;overflow:hidden}
+.hd::after{content:'';position:absolute;top:-40px;right:-30px;width:150px;height:150px;border-radius:50%;background:rgba(255,213,74,.07)}
+.hd .brand{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:800;color:#ffd54a;letter-spacing:1.5px}
+.hd .brand .out{margin-left:auto;background:rgba(255,255,255,.12);border:none;color:#c7d5ee;font-size:9.5px;font-weight:800;border-radius:50px;padding:4px 10px}
+.hd .name{font-size:23px;font-weight:900;margin-top:6px;letter-spacing:-.4px}
+.hd .name small{font-size:11px;font-weight:700;color:#8fb8e8;margin-left:5px}
+.hd .greet{font-size:11px;color:#c7d5ee;font-weight:600;margin-top:3px}
+.sibs{display:flex;gap:6px;margin-top:10px;position:relative;z-index:2}
+.sib{border:none;font-size:10.5px;font-weight:800;border-radius:50px;padding:5px 13px;background:rgba(255,255,255,.13);color:#c7d5ee}
+.sib.on{background:#ffd54a;color:#0d2240}
+/* 상태 캡슐 */
+.caps{display:flex;gap:9px;padding:0 16px;margin-top:-28px;position:relative;z-index:2}
+.cap{flex:1;background:#fff;border-radius:15px;padding:11px 13px;display:flex;align-items:center;gap:9px;box-shadow:0 6px 18px rgba(13,34,64,.10)}
+.cap .ci{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cap .ct{font-size:10px;font-weight:800;color:#64748b}
+.cap .cs{font-size:12px;font-weight:900;margin-top:1px}
+/* 히어로 */
+.hero{margin:14px 16px 0;border-radius:20px;overflow:hidden;box-shadow:0 10px 26px rgba(13,34,64,.14);background:#fff}
+.hero-top{padding:16px 17px 14px;color:#fff;position:relative;overflow:hidden}
+.hero-top::after{content:'';position:absolute;top:-30px;right:-20px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.06)}
+.hero-top .or{font-size:8.5px;opacity:.75;letter-spacing:1.6px;font-weight:800}
+.hero-top .nm{font-size:20px;font-weight:900;margin-top:3px}
+.hero-top .tags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.hero-top .tg{font-size:9px;font-weight:800;background:rgba(255,255,255,.16);border-radius:7px;padding:3px 9px}
+.hero-top .tg.gold{background:#ffd54a;color:#7f1d1d}
+.hero-bd{padding:14px 16px}
+.ring{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ring>div{width:50px;height:50px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring b{font-size:17px;color:#0d2240}
+.ring span{font-size:7.5px;font-weight:800;color:#94a3b8}
+.tot{background:#0d2240;border-radius:13px;padding:12px 14px;margin-top:12px}
+.tot .t1{font-size:10px;font-weight:900;color:#ffd54a}
+.tot .t2{font-size:11.5px;color:#e2e8f0;line-height:1.7;margin-top:5px;white-space:pre-wrap}
+.tot .t2.clip{overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
+.hero-cta{display:flex;gap:8px;margin-top:12px}
+.hero-cta .b1{flex:1;border:none;background:linear-gradient(135deg,#1d6fe8,#3b82f6);color:#fff;font-size:12.5px;font-weight:900;padding:12px 0;border-radius:12px;box-shadow:0 4px 12px rgba(29,111,232,.3)}
+/* 지난 리포트 스트립 */
+.hist{display:flex;gap:7px;padding:12px 16px 2px;overflow-x:auto}
+.hp{flex-shrink:0;background:#fff;border:1.5px solid #e8eef8;border-radius:13px;padding:8px 12px;text-align:center;min-width:56px}
+.hp.on{border-color:#1d6fe8;background:#eff6ff}
+.hp .d{font-size:9px;font-weight:800;color:#94a3b8}
+.hp .s{font-size:13px;font-weight:900;color:#0d2240;margin-top:1px}
+.hp .g{width:7px;height:7px;border-radius:50%;margin:3px auto 0}
+/* 섹션 */
+.sec{margin:12px 16px 0;background:#fff;border-radius:17px;padding:14px 15px;box-shadow:0 3px 12px rgba(13,34,64,.05)}
+.sec .st{font-size:13px;font-weight:900;color:#0d2240;display:flex;align-items:center;gap:7px}
+.sec .st .more{margin-left:auto;font-size:10px;color:#1d6fe8;font-weight:800;background:none;border:none}
+.wk{display:flex;gap:5px;margin-top:10px}
+.wk>div{flex:1;text-align:center}
+.wk .wd{font-size:8.5px;color:#94a3b8;font-weight:700}
+.wk .wv{height:32px;border-radius:9px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:3px}
+.subnote{font-size:10.5px;color:#64748b;font-weight:600;margin-top:8px}
+/* 하단 탭 */
+.tabbar{position:sticky;bottom:0;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid #e8eef8;display:flex;padding:8px 6px calc(10px + env(safe-area-inset-bottom));margin-top:auto;z-index:50}
+.tb{flex:1;text-align:center;background:none;border:none;padding:0}
+.tb .ti{font-size:19px}
+.tb .tl{font-size:8.5px;font-weight:800;color:#94a3b8;margin-top:2px}
+.tb.on .tl{color:#1d6fe8}
+.tb .dot{width:5px;height:5px;border-radius:50%;background:#ef4444;margin:2px auto 0}
+.view{flex:1;padding-bottom:14px}
+.pagehd{padding:16px 18px 12px;font-size:17px;font-weight:900;color:#0d2240;display:flex;align-items:center;gap:8px}
+.pagehd small{font-size:10.5px;color:#94a3b8;font-weight:700}
+iframe.rep{width:100%;height:calc(100vh - 130px);border:none;background:#f0f4f8}
+.month-nav{display:flex;align-items:center;gap:8px;padding:0 18px}
+.month-nav button{border:1px solid #e2e8f0;background:#fff;border-radius:9px;width:32px;height:32px;font-size:13px;font-weight:900}
+.month-nav .ym{font-size:14px;font-weight:900;color:#0d2240}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px 16px}
+.cal .dh{font-size:9px;font-weight:800;color:#94a3b8;text-align:center}
+.cal .dc{aspect-ratio:1;border-radius:9px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(13,34,64,.05)}
+.cal .dc .dn{font-size:8.5px;font-weight:700;color:#94a3b8}
+.cal .dc .ds{font-size:12px;font-weight:900}
+.recrow{display:flex;flex-direction:column;gap:6px;background:#fff;border-radius:14px;padding:12px 14px;margin:0 16px 10px;box-shadow:0 2px 8px rgba(13,34,64,.05)}
+.recrow .rt{font-size:12px;font-weight:800;color:#0d2240}
+.recrow audio{width:100%;height:36px}
+.bookrow{background:#fff;border-radius:14px;padding:13px 15px;margin:0 16px 10px;box-shadow:0 2px 8px rgba(13,34,64,.05)}
+.bookrow .bn{font-size:12.5px;font-weight:900;color:#0d2240}
+.bookrow .bch{font-size:10px;color:#64748b;font-weight:700;margin-top:2px}
+.bar{height:9px;background:#eef2f7;border-radius:99px;margin-top:7px;overflow:hidden}
+.bar>div{height:100%;background:linear-gradient(90deg,#1d6fe8,#7c3aed);border-radius:99px}
+.empty{text-align:center;color:#94a3b8;font-size:12px;font-weight:700;padding:40px 20px;line-height:1.8}
+.skel{text-align:center;color:#94a3b8;font-size:13px;font-weight:700;padding:60px 20px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ═══════════ 루멘수학 학부모앱 v1-2 ═══════════
+ * 접속: 자녀 코드(lumen_rec_code) 6자리 — 학생앱과 동일
+ * 데이터: Supabase lumen_store(or_studentdb·pub_reports_<code>·mf_progress·mf_books),
+ *         mf_students, recordings 버킷(녹음), photos 버킷(발행 리포트 HTML)
+ * 리포트: 학원앱에서 승인(발행)된 것만 표시 — 초안은 절대 노출되지 않음 */
+var SUPA_URL = 'https://bhkkkbcytcrlxhrtjgen.supabase.co';
+var SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
+var sb = null;
+function db(){ if(!sb && window.supabase) sb = window.supabase.createClient(SUPA_URL, SUPA_KEY); return sb; }
+
+var P = { code:'', st:null, all:[], pub:null, recs:[], prog:null, books:null, mfSid:null, tab:'home', plYm:'', loading:false };
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function todayStr(){ var d=new Date(); return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0'); }
+function gcolor(lv){ lv=Number(lv)||0; return lv<=1?'#1d6fe8':lv===2?'#059669':lv===3?'#f59e0b':'#ef4444'; }
+function gradeHdr(lv){ lv=Number(lv)||3;
+  if(lv<=1) return 'linear-gradient(135deg,#1e3a8a,#2563eb)';
+  if(lv===2) return 'linear-gradient(135deg,#7f1d1d,#c0392b)';
+  if(lv===3) return 'linear-gradient(135deg,#78350f,#d97706)';
+  return 'linear-gradient(135deg,#374151,#6b7280)';
+}
+function shortGrade(g){ return String(g||'').replace('초등학교','초').replace('중학교','중').replace('고등학교','고').replace(/\s/g,'').replace('학년',''); }
+
+/* ── 데이터 로드 ── */
+async function loadAll(code){
+  P.loading=true; render();
+  var c=db(); if(!c){ P.loading=false; render(); return; }
+  try{
+    var r=await c.from('lumen_store').select('value').eq('key','or_studentdb').single();
+    var arr=(r.data&&r.data.value)||[];
+    P.all=Array.isArray(arr)?arr:[];
+    var matches=P.all.filter(function(s){ return s&&s.lumen_rec_code===code; });
+    if(!matches.length){ throw new Error('코드 ['+code+']를 찾을 수 없어요\n학원에 확인해 주세요'); }
+    // v1-2: 같은 코드가 중복 등록돼 있어도 하나라도 퇴원이면 차단
+    if(matches.some(function(s){ return s.withdrawn; })){ throw new Error('이용이 중단된 계정입니다.\n학원에 문의해 주세요.'); }
+    var st=matches[0];
+    P.st=st; P.code=code;
+    localStorage.setItem('lumen_parent_code', code);
+    // 발행 리포트 메타 + 매쓰플랫 진도 (병렬)
+    var q1=c.from('lumen_store').select('key,value').in('key',['pub_reports_'+code,'mf_progress','mf_books']);
+    var q2=c.from('mf_students').select('mf_student_id,name,lumen_rec_code');
+    var q3=c.storage.from('recordings').list(code, { limit:60, sortBy:{ column:'created_at', order:'desc' } });
+    var res=await Promise.all([q1,q2,q3]);
+    P.pub=null; P.prog=null; P.books=null;
+    ((res[0].data)||[]).forEach(function(row){
+      var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+      if(row.key==='pub_reports_'+code) P.pub=v;
+      else if(row.key==='mf_progress') P.prog=v;
+      else if(row.key==='mf_books') P.books=v;
+    });
+    P.mfSid=null;
+    var mfs=(res[1].data)||[];
+    var hit=mfs.find(function(s){ return s.lumen_rec_code===code; });
+    if(!hit){ var same=mfs.filter(function(s){ return s.name===st.name; }); if(same.length===1) hit=same[0]; }
+    if(hit) P.mfSid=hit.mf_student_id;
+    P.recs=(res[2].data)||[];
+  }catch(e){
+    P.st=null; P.loginErr=e.message||'연결에 실패했어요';
+  }
+  P.loading=false;
+  if(!P.plYm){ var d=new Date(); P.plYm=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0'); }
+  render();
+}
+
+/* ── 판정 헬퍼 ── */
+function plannerToday(){
+  var st=P.st; if(!st) return false;
+  var t=todayStr(); var ymd=t.replace(/\./g,'');
+  if(st.lumen_planner&&st.lumen_planner[t]!=null) return true;
+  return (st.lumen_planner_photos||[]).some(function(p){ return p&&p.setId&&String(p.setId).slice(0,8)===ymd; });
+}
+function recToday(){
+  var iso=new Date().toISOString().slice(0,10);
+  var ymd=iso.replace(/-/g,'');
+  return (P.recs||[]).some(function(f){ return (f.created_at||'').slice(0,10)===iso||(f.name||'').indexOf(ymd)>=0; });
+}
+function weekPlanner(){
+  var st=P.st; var out=[];
+  var now=new Date(); var mon=new Date(now); mon.setDate(now.getDate()-((now.getDay()+6)%7));
+  var names=['월','화','수','목','금'];
+  for(var i=0;i<5;i++){
+    var d=new Date(mon); d.setDate(mon.getDate()+i);
+    var key=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+    var sc=st&&st.lumen_planner?st.lumen_planner[key]:null;
+    out.push({ nm:names[i], score:(sc!=null?sc:null), today:key===todayStr(), future:d>now });
+  }
+  return out;
+}
+function progBooks(){
+  if(!P.prog||!P.mfSid||!P.books) return [];
+  var by=(P.prog.byStudent||{})[P.mfSid]||{};
+  var out=[];
+  Object.keys(by).forEach(function(bid){
+    var pr=by[bid]; var bk=(P.books.books||{})[bid];
+    if(!bk) return;
+    var pct=(bk.pages&&pr.maxPage)?Math.min(100,Math.round(pr.maxPage/bk.pages*100)):null;
+    out.push({ n:bk.n||('교재 '+bid), ch:pr.curChapter||'', pct:pct, maxPage:pr.maxPage||0, pages:bk.pages||0, last:pr.lastDate||'' });
+  });
+  out.sort(function(a,b){ return (b.last||'').localeCompare(a.last||''); });
+  return out;
+}
+
+/* ── 렌더 ── */
+function render(){
+  var app=document.getElementById('app');
+  if(!P.st){
+    var saved=localStorage.getItem('lumen_parent_code')||'';
+    app.innerHTML='<div class="login">'
+      +'<div class="lg">🏫 LUMEN MATH</div>'
+      +'<h1>루멘수학 학부모</h1>'
+      +'<p>자녀의 학습 코드 6자리를 입력해 주세요<br>(학생앱과 같은 코드입니다)</p>'
+      +'<input id="pcode" maxlength="6" placeholder="ABC123" value="'+esc(saved)+'" onkeydown="if(event.key===\'Enter\')doLogin()">'
+      +'<button onclick="doLogin()">'+(P.loading?'확인 중…':'우리 아이 보러가기')+'</button>'
+      +'<div class="err">'+esc(P.loginErr||'')+'</div>'
+      +'<div class="ft">Lumen Math Academy · parent v1-2</div></div>';
+    return;
+  }
+  var h='';
+  if(P.tab==='home') h=vHome();
+  else if(P.tab==='report') h=vReport();
+  else if(P.tab==='planner') h=vPlanner();
+  else if(P.tab==='rec') h=vRec();
+  else if(P.tab==='roadmap') h=vRoadmap();
+  var hasNew=false;
+  if(P.pub&&P.pub.at){ hasNew=(Date.now()-Date.parse(P.pub.at))<48*3600*1000; }
+  app.innerHTML='<div class="view">'+h+'</div>'
+    +'<div class="tabbar">'
+    +tabBtn('home','🏠','홈',false)
+    +tabBtn('report','📋','리포트',hasNew)
+    +tabBtn('planner','📓','플래너',false)
+    +tabBtn('rec','🎙️','녹음',false)
+    +tabBtn('roadmap','🗺️','로드맵',false)
+    +'</div>';
+}
+function tabBtn(k,ic,lb,dot){
+  return '<button class="tb'+(P.tab===k?' on':'')+'" onclick="goTab(\''+k+'\')"><div class="ti">'+ic+'</div><div class="tl">'+lb+'</div>'+(dot?'<div class="dot"></div>':'')+'</button>';
+}
+window.goTab=function(k){ P.tab=k; render(); window.scrollTo(0,0); };
+window.doLogin=function(){
+  var v=(document.getElementById('pcode')||{}).value||'';
+  v=v.trim().toUpperCase();
+  if(v.length<4){ P.loginErr='코드를 확인해 주세요'; render(); return; }
+  P.loginErr='';
+  loadAll(v);
+};
+window.doLogout=function(){ P.st=null; P.loginErr=''; render(); };
+window.switchChild=function(code){ if(code&&code!==P.code){ P.tab='home'; loadAll(code); } };
+
+function headerHtml(){
+  var st=P.st;
+  var sibs=(st.lumen_siblings||[]).map(function(id){ return P.all.find(function(s){ return s&&s.id===id&&!s.withdrawn; }); }).filter(Boolean);
+  var today=new Date();
+  var wd=['일','월','화','수','목','금','토'][today.getDay()];
+  var h='<div class="hd">'
+    +'<div class="brand">🏫 LUMEN MATH · 학부모 <button class="out" onclick="doLogout()">코드 변경</button></div>'
+    +'<div class="name">'+esc(st.name)+' <small>'+esc(st.grade||'')+(st.group?' · '+esc(st.group)+'반':'')+'</small></div>'
+    +'<div class="greet">'+(today.getMonth()+1)+'월 '+today.getDate()+'일 '+wd+'요일 · 오늘도 함께 응원해요 👏</div>';
+  if(sibs.length){
+    h+='<div class="sibs"><button class="sib on">'+esc(st.name)+'</button>';
+    sibs.forEach(function(s){ h+='<button class="sib" onclick="switchChild(\''+esc(s.lumen_rec_code||'')+'\')">'+esc(s.name)+'</button>'; });
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function vHome(){
+  var st=P.st;
+  var pl=plannerToday(), rc=recToday();
+  var h=headerHtml();
+  h+='<div class="caps">'
+    +'<div class="cap"><div class="ci" style="background:'+(pl?'#ecfdf5':'#fef2f2')+'">📓</div><div><div class="ct">오늘 플래너</div><div class="cs" style="color:'+(pl?'#059669':'#dc2626')+'">'+(pl?'제출 완료 ✓':'아직이에요')+'</div></div></div>'
+    +'<div class="cap"><div class="ci" style="background:'+(rc?'#ecfdf5':'#fef2f2')+'">🎙️</div><div><div class="ct">녹음 숙제</div><div class="cs" style="color:'+(rc?'#059669':'#dc2626')+'">'+(rc?'제출 완료 ✓':'아직이에요')+'</div></div></div>'
+    +'</div>';
+  // 히어로: 최신 발행 리포트
+  var rec0=P.pub&&P.pub.recent&&P.pub.recent[0];
+  if(rec0){
+    var isNew=P.pub.at&&(Date.now()-Date.parse(P.pub.at))<48*3600*1000;
+    var isWeekly=rec0.testType==='weekly';
+    h+='<div class="hero">'
+      +'<div class="hero-top" style="background:'+gradeHdr(rec0.level)+'">'
+      +'<div class="or">루멘수학 · ONE REPORT</div>'
+      +'<div class="nm">최근 학습 리포트'+(isNew?' <span style="font-size:9px;background:#ffd54a;color:#7f1d1d;border-radius:50px;padding:2px 8px;vertical-align:3px;font-weight:900">NEW</span>':'')+'</div>'
+      +'<div class="tags"><span class="tg">📅 '+esc(rec0.date||'')+'</span>'
+      +(isWeekly?'<span class="tg gold">🌐 전국주간테스트</span>':'<span class="tg">📝 일일테스트</span>')
+      +(rec0.bookname?'<span class="tg">'+esc(String(rec0.bookname).slice(0,18))+'</span>':'')
+      +'</div></div>'
+      +'<div class="hero-bd">'
+      +'<div style="display:flex;align-items:center;gap:13px">'
+      +'<div class="ring" style="background:conic-gradient('+gcolor(rec0.level)+' 0 '+(Number(rec0.score)||0)+'%,#e8eef8 '+(Number(rec0.score)||0)+'% 100%)"><div><b>'+esc(rec0.score||'-')+'</b><span>'+esc(rec0.level||'-')+'등급</span></div></div>'
+      +'<div style="flex:1;display:flex;flex-direction:column;gap:5px">'
+      +(rec0.acadRank&&rec0.showAcadRank!==false?'<div style="font-size:12px;font-weight:900;color:#0d2240">학원 <b style="color:#059669;font-size:14px">'+rec0.acadRank+'</b>등 / '+rec0.acadN+'명'+(rec0.acadAvg?' <span style="font-size:9.5px;color:#94a3b8">평균 '+rec0.acadAvg+'점</span>':'')+'</div>':'')
+      +(rec0.rank&&rec0.showRank!==false?'<div style="font-size:12px;font-weight:900;color:#0d2240">전국 <b style="color:#1d6fe8;font-size:14px">'+rec0.rank+'</b>등 / '+rec0.total+'명'+(rec0.avgScore?' <span style="font-size:9px;font-weight:900;color:#059669;background:#ecfdf5;border-radius:50px;padding:2px 7px">평균 대비 '+(Number(rec0.score)>=Number(rec0.avgScore)?'+':'')+Math.round(Number(rec0.score)-Number(rec0.avgScore))+'점</span>':'')+'</div>':'')
+      +'</div></div>'
+      +(rec0.comment?'<div class="tot"><div class="t1">💬 선생님 총평</div><div class="t2 clip">'+esc(rec0.comment)+'</div></div>':'')
+      +'<div class="hero-cta"><button class="b1" onclick="goTab(\'report\')">📋 리포트 전체 보기</button></div>'
+      +'</div></div>';
+    // 지난 리포트 스트립
+    h+='<div class="hist">';
+    (P.pub.recent||[]).forEach(function(r,i){
+      h+='<div class="hp'+(i===0?' on':'')+'"><div class="d">'+esc((r.date||'').slice(5))+'</div><div class="s">'+esc(r.score||'-')+'</div><div class="g" style="background:'+gcolor(r.level)+'"></div></div>';
+    });
+    h+='</div>';
+  } else {
+    h+='<div class="sec"><div class="st">📋 학습 리포트</div><div class="empty">아직 발행된 리포트가 없어요.<br>선생님이 발행하면 이곳에 바로 나타납니다.</div></div>';
+  }
+  // 플래너 주간
+  var wk=weekPlanner();
+  h+='<div class="sec"><div class="st">📓 이번 주 플래너 <button class="more" onclick="goTab(\'planner\')">기록 ›</button></div><div class="wk">';
+  wk.forEach(function(d){
+    var bg='#eef2f7', fg='#94a3b8', txt='-';
+    if(d.score!=null){ txt=String(d.score); bg=(d.score>=8?'#059669':d.score>=5?'#f59e0b':'#94a3b8'); fg='#fff'; }
+    else if(d.today){ txt=plannerToday()?'✓':'…'; if(plannerToday()){bg='#059669';fg='#fff';} }
+    h+='<div><div class="wd"'+(d.today?' style="color:#0d2240;font-weight:900"':'')+'>'+d.nm+'</div><div class="wv" style="background:'+bg+';color:'+fg+';'+(d.today?'box-shadow:0 0 0 2px #ffd54a':'')+'">'+txt+'</div></div>';
+  });
+  h+='</div>';
+  var stm=(P.st.lumen_study_time||{})[todayStr()];
+  h+='<div class="subnote">'+(stm?('오늘 순공 '+Math.floor(stm/60)+'시간 '+(stm%60)+'분 · '):'')+'플래너 점수는 선생님 검토 후 반영됩니다</div></div>';
+  // 녹음
+  h+='<div class="sec"><div class="st">🎙️ 하브루타 녹음 <button class="more" onclick="goTab(\'rec\')">전체 듣기 ›</button></div>';
+  if(!rc){
+    h+='<div style="display:flex;align-items:center;gap:9px;margin-top:9px;background:#fff7ed;border:1px solid #fed7aa;border-radius:11px;padding:10px 12px">'
+      +'<span style="font-size:15px">⏰</span><div><div style="font-size:11px;font-weight:900;color:#9a3412">오늘 녹음이 아직 제출 전이에요</div><div style="font-size:9.5px;color:#c2410c;font-weight:700;margin-top:1px">아이에게 응원 한마디 어떠세요?</div></div></div>';
+  }
+  var r0=(P.recs||[])[0];
+  if(r0){
+    h+='<div style="font-size:11px;font-weight:800;color:#0d2240;margin-top:9px">최근 녹음 · '+esc((r0.created_at||'').slice(5,10).replace('-','/'))+'</div>'
+      +'<audio controls preload="none" style="width:100%;height:36px;margin-top:5px" src="'+SUPA_URL+'/storage/v1/object/public/recordings/'+esc(P.code)+'/'+encodeURIComponent(r0.name)+'"></audio>';
+  } else if(rc===false){
+    h+='<div class="subnote">아직 제출된 녹음이 없어요</div>';
+  }
+  h+='</div>';
+  // 로드맵
+  var bks=progBooks();
+  h+='<div class="sec" style="background:linear-gradient(135deg,#0d2240,#16305c);color:#fff;margin-bottom:14px"><div class="st" style="color:#fff">🗺️ 우리 아이 로드맵 <button class="more" style="color:#ffd54a" onclick="goTab(\'roadmap\')">전체 ›</button></div>';
+  if(bks.length){
+    var b0=bks[0];
+    h+='<div style="display:flex;align-items:center;gap:11px;margin-top:11px"><div style="font-size:24px">🚀</div><div style="flex:1">'
+      +'<div style="font-size:12px;font-weight:900">'+esc(b0.n)+'</div>'
+      +(b0.ch?'<div style="font-size:9.5px;color:#6ee7b7;font-weight:800;margin-top:2px">'+esc(b0.ch)+' 진행 중</div>':'')
+      +'<div style="height:9px;background:rgba(255,255,255,.12);border-radius:99px;margin-top:7px;overflow:hidden"><div style="width:'+(b0.pct!=null?b0.pct:30)+'%;height:100%;background:linear-gradient(90deg,#ffd54a,#f59e0b);border-radius:99px"></div></div>'
+      +'<div style="font-size:9px;color:#8fb8e8;font-weight:700;margin-top:4px">'+(b0.pct!=null?('진도 '+b0.pct+'% ('+b0.maxPage+'/'+b0.pages+'p)'):(b0.maxPage+'페이지까지 도달'))+'</div>'
+      +'</div></div>';
+  } else {
+    h+='<div style="font-size:11px;color:#8fb8e8;font-weight:700;margin-top:10px">진도 데이터를 준비 중이에요</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function vReport(){
+  var h='<div class="pagehd">📋 학습 리포트 <small>발행된 리포트만 표시됩니다</small></div>';
+  if(P.pub&&P.pub.url){
+    h+='<iframe class="rep" src="'+esc(P.pub.url)+'?v='+encodeURIComponent(P.pub.at||'')+'"></iframe>';
+  } else {
+    h+='<div class="empty">아직 발행된 리포트가 없어요.<br>선생님이 발행하면 이곳에서 전체 리포트를<br>날짜별로 넘겨볼 수 있습니다.</div>';
+  }
+  return h;
+}
+
+window.plShift=function(n){
+  var y=Number(P.plYm.slice(0,4)), m=Number(P.plYm.slice(5))-1+n;
+  var d=new Date(y,m,1);
+  P.plYm=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0');
+  render();
+};
+function vPlanner(){
+  var st=P.st;
+  var y=Number(P.plYm.slice(0,4)), m=Number(P.plYm.slice(5));
+  var first=new Date(y,m-1,1), days=new Date(y,m,0).getDate();
+  var h='<div class="pagehd">📓 플래너 기록</div>';
+  h+='<div class="month-nav"><button onclick="plShift(-1)">‹</button><span class="ym">'+y+'년 '+m+'월</span><button onclick="plShift(1)">›</button></div>';
+  h+='<div class="cal">';
+  ['일','월','화','수','목','금','토'].forEach(function(d){ h+='<div class="dh">'+d+'</div>'; });
+  for(var i=0;i<first.getDay();i++) h+='<div></div>';
+  var cnt=0, sum=0;
+  for(var d=1;d<=days;d++){
+    var key=y+'.'+String(m).padStart(2,'0')+'.'+String(d).padStart(2,'0');
+    var sc=st.lumen_planner?st.lumen_planner[key]:null;
+    var col='#cbd5e1', txt='';
+    if(sc!=null){ cnt++; sum+=Number(sc)||0; txt=String(sc); col=(sc>=8?'#059669':sc>=5?'#f59e0b':'#94a3b8'); }
+    var isToday=key===todayStr();
+    h+='<div class="dc"'+(isToday?' style="box-shadow:0 0 0 2px #ffd54a"':'')+'><div class="dn">'+d+'</div><div class="ds" style="color:'+col+'">'+(txt||'·')+'</div></div>';
+  }
+  h+='</div>';
+  h+='<div class="sec" style="margin-top:0"><div class="subnote" style="margin-top:0">이번 달 '+cnt+'회 제출'+(cnt?(' · 평균 '+(Math.round(sum/cnt*10)/10)+'점'):'')+' · 점수는 선생님 검토 후 확정됩니다</div></div>';
+  return h;
+}
+
+function vRec(){
+  var h='<div class="pagehd">🎙️ 하브루타 녹음 <small>최근 60개</small></div>';
+  if(!(P.recs||[]).length){ h+='<div class="empty">아직 제출된 녹음이 없어요</div>'; return h; }
+  P.recs.forEach(function(f){
+    if(!f||!f.name||f.name.indexOf('.emptyFolderPlaceholder')>=0) return;
+    var dt=(f.created_at||'').slice(0,10).replace(/-/g,'.');
+    h+='<div class="recrow"><div class="rt">🎧 '+esc(dt||f.name)+'</div>'
+      +'<audio controls preload="none" src="'+SUPA_URL+'/storage/v1/object/public/recordings/'+esc(P.code)+'/'+encodeURIComponent(f.name)+'"></audio></div>';
+  });
+  return h;
+}
+
+function vRoadmap(){
+  var bks=progBooks();
+  var h='<div class="pagehd">🗺️ 로드맵 <small>매쓰플랫 자동 진도</small></div>';
+  if(!bks.length){ h+='<div class="empty">진도 데이터를 준비 중이에요</div>'; return h; }
+  bks.forEach(function(b){
+    h+='<div class="bookrow"><div class="bn">📘 '+esc(b.n)+'</div>'
+      +(b.ch?'<div class="bch">'+esc(b.ch)+' 진행 중'+(b.last?' · 최근 학습 '+esc(b.last.slice(5))+'':'')+'</div>':'')
+      +'<div class="bar"><div style="width:'+(b.pct!=null?b.pct:20)+'%"></div></div>'
+      +'<div class="bch" style="margin-top:5px">'+(b.pct!=null?('진도 '+b.pct+'% · '+b.maxPage+'/'+b.pages+'페이지'):(b.maxPage+'페이지까지 도달'))+'</div></div>';
+  });
+  h+='<div class="sec"><div class="subnote" style="margin-top:0">진도는 매일 새벽 매쓰플랫에서 자동으로 업데이트됩니다</div></div>';
+  return h;
+}
+
+/* ── 시작 ── */
+(function(){
+  var saved=localStorage.getItem('lumen_parent_code');
+  if(saved){ loadAll(saved); } else { render(); }
+})();
+</script>
+</body></html>
