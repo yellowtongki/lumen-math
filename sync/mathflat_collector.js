@@ -508,6 +508,15 @@ async function main() {
     await refreshMonthCounts();
     return;
   }
+  // --scores-only: 월간보고서 점수·티어만 수집 (매쓰플랫 로그인 필요)
+  if (has('--scores-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const me2 = await login();
+    log(`로그인 성공 · 학원 ${me2.academyId}`);
+    await refreshMonthScores(await getActiveStudents());
+    return;
+  }
   if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
   const cutoff = new Date(Date.now() - DAYS * 86400 * 1000);
   log(`로그인 중… (최근 ${DAYS}일, 기준 ${fmt(cutoff)} 이후)`);
@@ -548,9 +557,50 @@ async function main() {
     await refreshRoadmap();
     await refreshWeekly();
     await refreshMonthCounts();
+    await refreshMonthScores(students);
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
+}
+
+// ── 매쓰플랫 학생ID ↔ 학원 학생코드 매핑 ───────────────────────────
+// mf_answer_records의 lumen_rec_code는 비어 있음(수집 시 미매핑) → 집계 시점에
+// or_studentdb(이름→코드)와 mf_students(sid→이름)를 이름으로 조인해 해결.
+// 이름이 중복되면 그 학생만 매핑 생략(sid: 키 유지). 매핑된 코드는
+// mf_students.lumen_rec_code에도 백필해 앱(월간보고서 등)의 매칭을 돕는다.
+async function buildSidCodeMap() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  const map = {}; // mf_student_id → lumen_rec_code
+  try {
+    const r1 = await fetch(`${url}/rest/v1/lumen_store?key=eq.or_studentdb&select=value`, { headers: sbHeaders });
+    const j1 = await r1.json();
+    let arr = Array.isArray(j1) && j1[0] ? j1[0].value : [];
+    if (typeof arr === 'string') { try { arr = JSON.parse(arr); } catch (e) { arr = []; } }
+    const byName = {}; const dup = {};
+    (arr || []).forEach((s) => {
+      if (!s || !s.name || s.lumen_rec_code == null || s.withdrawn) return;
+      const nm = String(s.name).trim();
+      if (byName[nm]) dup[nm] = true; else byName[nm] = String(s.lumen_rec_code);
+    });
+    const r2 = await fetch(`${url}/rest/v1/mf_students?select=mf_student_id,name`, { headers: sbHeaders });
+    const rows = await r2.json();
+    const backfill = [];
+    (Array.isArray(rows) ? rows : []).forEach((m) => {
+      const nm = String(m.name || '').trim();
+      if (!nm || dup[nm] || !byName[nm]) return;
+      map[m.mf_student_id] = byName[nm];
+      backfill.push({ mf_student_id: m.mf_student_id, lumen_rec_code: byName[nm] });
+    });
+    if (backfill.length) {
+      await fetch(`${url}/rest/v1/mf_students?on_conflict=mf_student_id`, {
+        method: 'POST', headers: Object.assign({}, sbHeaders, { prefer: 'resolution=merge-duplicates' }),
+        body: JSON.stringify(backfill),
+      });
+    }
+    log(`학생 매핑: ${Object.keys(map).length}명 (mf_students 코드 백필 ${backfill.length}건)`);
+  } catch (e) { log('학생 매핑 실패(치명적 아님):', e.message); }
+  return map;
 }
 
 // ── 월별 문항수 집계 → lumen_store 'mf_month_counts' ───────────────
@@ -561,6 +611,7 @@ async function refreshMonthCounts() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
   try {
+    const sidCode = await buildSidCodeMap();
     const now = new Date();
     const months = [];
     for (let i = 0; i < 3; i++) {
@@ -580,7 +631,7 @@ async function refreshMonthCounts() {
         const batch = await res.json();
         batch.forEach((r) => {
           if (r.result !== 'O' && r.result !== 'X') return;
-          const k = r.lumen_rec_code || (r.mf_student_id ? 'sid:' + r.mf_student_id : null);
+          const k = r.lumen_rec_code || sidCode[r.mf_student_id] || (r.mf_student_id ? 'sid:' + r.mf_student_id : null);
           if (!k) return;
           counts[k] = (counts[k] || 0) + 1;
         });
@@ -604,6 +655,45 @@ async function refreshMonthCounts() {
     }).join(' · ');
     log(`월별 문항수 집계 저장(mf_month_counts): ${mm}`);
   } catch (e) { log('월별 문항수 집계 실패(치명적 아님):', e.message); }
+}
+
+// ── 매쓰플랫 월간보고서 점수·티어 → lumen_store 'mf_month_scores' ──────
+// 학생별 생성된 월간보고서(SUCCESS)의 종합점수·티어·영역/행동점수를 수집.
+// PDF 없이 목록 API 값만 사용. 레벨관리 훈장·뱃지·추이 그래프의 데이터원.
+// 값 형태: { months: { '2025-12': { '<code|sid:...>': {s,t,a,b} } }, updated }
+async function refreshMonthScores(students) {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    const sidCode = await buildSidCodeMap();
+    const months = {};
+    let nRep = 0;
+    for (const st of students) {
+      let list = [];
+      try { const d = await api(`/report/${st.id}?type=MONTHLY&size=50`); list = (d && d.content) || []; }
+      catch (e) { continue; }
+      const k = sidCode[st.id] || ('sid:' + st.id);
+      list.forEach((r) => {
+        if (r.status !== 'SUCCESS' || r.deleted || !r.yearMonth) return;
+        const ym = String(r.yearMonth).slice(0, 7);
+        if (!months[ym]) months[ym] = {};
+        months[ym][k] = { s: r.totalScore ?? null, t: r.totalTier ?? null, a: r.areaScore ?? null, b: r.behaviorScore ?? null };
+        nRep++;
+      });
+      await sleep(120);
+    }
+    // 기존 저장분과 병합(월 단위 덮어쓰기 — 같은 달은 최신 조회가 정답)
+    const prevRes = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_month_scores&select=value`, { headers: sbHeaders });
+    let prev = {};
+    try { const j = await prevRes.json(); prev = (Array.isArray(j) && j[0] && j[0].value && j[0].value.months) || {}; } catch (e) {}
+    const merged = Object.assign({}, prev, months);
+    const w = await fetch(`${url}/rest/v1/lumen_store`, {
+      method: 'POST', headers: Object.assign({}, sbHeaders, { prefer: 'resolution=merge-duplicates' }),
+      body: JSON.stringify({ key: 'mf_month_scores', value: { months: merged, updated: new Date().toISOString() } }),
+    });
+    if (!w.ok) { log(`mf_month_scores 저장 실패 ${w.status}`); return; }
+    log(`월간보고서 점수 수집 저장(mf_month_scores): 보고서 ${nRep}건 · 월 ${Object.keys(months).length}개`);
+  } catch (e) { log('월간보고서 점수 수집 실패(치명적 아님):', e.message); }
 }
 
 // ── 교재 카탈로그 갱신 ───────────────────────────────────────
