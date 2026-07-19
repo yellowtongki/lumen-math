@@ -88,11 +88,15 @@ def get_duration(video):
 # ─────────────────────────────────────────────────────────────
 # 1) 분석: 무음 구간 찾기
 # ─────────────────────────────────────────────────────────────
-def detect_silences(video):
+def detect_silences(video, noise_db=None, min_silence=None):
     """ffmpeg silencedetect 로 무음 구간 [(start, end), ...] 반환"""
+    if noise_db is None:
+        noise_db = NOISE_DB
+    if min_silence is None:
+        min_silence = MIN_SILENCE
     proc = subprocess.run(
         ["ffmpeg", "-hide_banner", "-nostats", "-i", video,
-         "-af", f"silencedetect=noise={NOISE_DB}dB:d={MIN_SILENCE}",
+         "-af", f"silencedetect=noise={noise_db}dB:d={min_silence}",
          "-f", "null", "-"],
         capture_output=True, text=True,
     )
@@ -111,16 +115,31 @@ def detect_silences(video):
     return silences
 
 
-def silences_to_cuts(silences, duration):
+def silences_to_cuts(silences, duration, padding=None, min_cut=None):
     """무음 구간 -> 실제로 자를 구간 (양쪽 여유 남기고, 너무 짧은 건 제외)"""
+    if padding is None:
+        padding = KEEP_PADDING
+    if min_cut is None:
+        min_cut = MIN_CUT
     cuts = []
     for s, e in silences:
-        cs = s + KEEP_PADDING
-        ce = e - KEEP_PADDING
+        cs = s + padding
+        ce = e - padding
         ce = min(ce, duration)
-        if ce - cs >= MIN_CUT:
+        if ce - cs >= min_cut:
             cuts.append((cs, ce))
     return cuts
+
+
+def extract_thumbnail(video, at_sec, out_png, width=240):
+    """영상의 특정 시각 장면을 PNG 이미지로 저장 (미리보기용)"""
+    subprocess.run(
+        ["ffmpeg", "-hide_banner", "-y", "-ss", f"{max(0.0, at_sec):.2f}",
+         "-i", video, "-frames:v", "1", "-vf", f"scale={width}:-1",
+         out_png],
+        capture_output=True, text=True,
+    )
+    return os.path.exists(out_png)
 
 
 def cutlist_path(video):
@@ -196,16 +215,19 @@ def cuts_to_keeps(cuts, duration):
     return [(s, e) for s, e in keeps if e - s > 0.05]
 
 
-def build(video):
-    duration = get_duration(video)
-    cuts = read_cutlist(video)
+def build_from_cuts(video, cuts, out=None, duration=None, progress=None):
+    """
+    자를 구간(cuts) 목록을 받아 완성 영상을 만든다.
+    progress: 0.0~1.0 진행률을 받는 콜백 함수 (선택). GUI 진행 바에 사용.
+    반환: (완성파일경로, 원본길이, 완성예상길이)
+    """
+    if duration is None:
+        duration = get_duration(video)
     keeps = cuts_to_keeps(cuts, duration)
 
-    base, ext = os.path.splitext(video)
-    out = base + "_편집완성.mp4"
-
-    if not cuts:
-        print("자를 구간이 없어 원본을 그대로 내보냅니다.")
+    if out is None:
+        base, _ext = os.path.splitext(video)
+        out = base + "_편집완성.mp4"
 
     # select 필터용 표현식: 남길 구간들을 OR 로 연결
     expr = "+".join(f"between(t,{s:.3f},{e:.3f})" for s, e in keeps)
@@ -214,24 +236,50 @@ def build(video):
 
     vf = f"select='{expr}',setpts=N/FRAME_RATE/TB"
     af = f"aselect='{expr}',asetpts=N/SR/TB"
-
-    total_keep = sum(e - s for s, e in keeps)
-    print(f"완성 예상 길이: {fmt(total_keep)}  (원본 {fmt(duration)})")
-    print("영상을 만드는 중입니다... (길이에 따라 몇 분 걸릴 수 있어요)")
+    total_keep = sum(e - s for s, e in keeps) or duration
 
     cmd = [
-        "ffmpeg", "-hide_banner", "-y", "-i", video,
+        "ffmpeg", "-hide_banner", "-nostats", "-y", "-i", video,
         "-vf", vf, "-af", af,
         "-c:v", "libx264", "-preset", VIDEO_PRESET, "-crf", str(VIDEO_CRF),
         "-c:a", "aac", "-b:a", "160k",
         "-movflags", "+faststart",
+        "-progress", "pipe:1",
         out,
     ]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    import tempfile
+    errf = tempfile.TemporaryFile()
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=errf, text=True)
+    for line in proc.stdout:
+        line = line.strip()
+        if line.startswith("out_time=") and progress:
+            try:
+                t = parse_time(line.split("=", 1)[1])
+                progress(min(0.99, t / total_keep))
+            except (ValueError, ZeroDivisionError):
+                pass
+        elif line == "progress=end" and progress:
+            progress(1.0)
+    proc.wait()
     if proc.returncode != 0:
+        errf.seek(0)
+        raise RuntimeError(errf.read().decode("utf-8", "replace")[-1800:])
+    return out, duration, total_keep
+
+
+def build(video):
+    duration = get_duration(video)
+    cuts = read_cutlist(video)
+    if not cuts:
+        print("자를 구간이 없어 원본을 그대로 내보냅니다.")
+    print("영상을 만드는 중입니다... (길이에 따라 몇 분 걸릴 수 있어요)")
+    try:
+        out, dur, keep = build_from_cuts(video, cuts, duration=duration)
+    except RuntimeError as e:
         print("⚠ 영상 만들기에 실패했습니다. 아래 메시지를 확인해 주세요:")
-        print(proc.stderr[-1500:])
+        print(str(e))
         sys.exit(1)
+    print(f"완성 길이: {fmt(keep)}  (원본 {fmt(dur)})")
     print(f"\n✅ 완성! -> {os.path.basename(out)}")
 
 
