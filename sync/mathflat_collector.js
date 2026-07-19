@@ -368,7 +368,153 @@ function saveJson(name, data) {
   return p;
 }
 
+/* ═══════════ 월간보고서 자동 실행 (--monthly) ═══════════
+ * 학원앱 「🚀 일괄 실행」이 저장한 lumen_store 'mf_report_req'
+ * ({ym, status:'requested', students:[{sid,name,code,opinion}]})를 읽어
+ * 매쓰플랫에서 학생별 월간 리포트 PDF를 다운로드하고
+ * Supabase Storage(photos/mf_monthly/<YYYY-MM>/)에 업로드 →
+ * 'mf_report_files' 색인 갱신 → status: done/partial/failed.
+ * 월간 리포트 API 경로는 최초 1회 웹 번들에서 자동 탐색해
+ * lumen_store 'mf_report_api'에 저장·재사용. */
+
+const SB_URL = process.env.SUPABASE_URL, SB_KEY = process.env.SUPABASE_SERVICE_KEY;
+function sbH(extra) { return Object.assign({ apikey: SB_KEY, authorization: `Bearer ${SB_KEY}` }, extra || {}); }
+async function storeGet(key) {
+  const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.${encodeURIComponent(key)}&select=value`, { headers: sbH() });
+  const j = await r.json().catch(() => null);
+  return Array.isArray(j) && j[0] ? j[0].value : null;
+}
+async function storeSet(key, value) {
+  const r = await fetch(`${SB_URL}/rest/v1/lumen_store`, {
+    method: 'POST', headers: sbH({ 'content-type': 'application/json', prefer: 'resolution=merge-duplicates' }),
+    body: JSON.stringify({ key, value }),
+  });
+  if (!r.ok) log(`lumen_store ${key} 저장 실패 ${r.status}`);
+  return r.ok;
+}
+async function storageUpload(pathRel, buf, contentType) {
+  const r = await fetch(`${SB_URL}/storage/v1/object/${pathRel}`, {
+    method: 'POST', headers: sbH({ 'content-type': contentType, 'x-upsert': 'true' }), body: buf,
+  });
+  if (!r.ok) log(`Storage 업로드 실패 ${r.status} @ ${pathRel}: ${(await r.text().catch(() => '')).slice(0, 120)}`);
+  return r.ok;
+}
+
+// 월간 리포트 다운로드 시도 — 성공 시 PDF Buffer
+const MONTHLY_PARAM_KEYS = ['yearMonth', 'month', 'date', 'range'];
+function monthlyQuery(paramKey, sid, ym) {
+  if (paramKey === 'yearMonth') return `?studentId=${sid}&yearMonth=${ym}`;
+  if (paramKey === 'month') return `?studentId=${sid}&month=${ym}`;
+  if (paramKey === 'date') return `?studentId=${sid}&date=${ym}-01`;
+  const [y, m] = ym.split('-').map(Number);
+  const last = new Date(y, m, 0).getDate();
+  return `?studentId=${sid}&startDate=${ym}-01&endDate=${ym}-${String(last).padStart(2, '0')}`;
+}
+async function tryMonthlyOnce(pathname, paramKey, sid, ym) {
+  const url = `${API}${pathname}${monthlyQuery(paramKey, sid, ym)}`;
+  const res = await fetch(url, { headers: { ..._apiHeaders(), accept: '*/*' } });
+  if (!res.ok) return null;
+  const ct = res.headers.get('content-type') || '';
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (!/pdf|octet-stream/i.test(ct) && !(buf.length > 4 && buf.slice(0, 4).toString() === '%PDF')) return null;
+  if (buf.length < 10000) return null; // 빈/오류 응답 방어
+  return buf;
+}
+// 웹 번들에서 month 관련 report 경로 후보 탐색 (최초 1회)
+async function discoverMonthlyPaths() {
+  const cands = new Set();
+  try {
+    const html = await (await fetch('https://teacher.mathflat.com/', { headers: { accept: 'text/html' } })).text();
+    const srcs = [...html.matchAll(/(?:src|href)="([^"]+\.js)"/g)].map((m) => m[1]);
+    for (const s of srcs.slice(0, 12)) {
+      const u = s.startsWith('http') ? s : 'https://teacher.mathflat.com' + (s.startsWith('/') ? s : '/' + s);
+      let js = ''; try { js = await (await fetch(u)).text(); } catch (e) { continue; }
+      for (const m of js.matchAll(/["'`](\/[A-Za-z0-9\/_.-]*report[A-Za-z0-9\/_.-]*)["'`]/gi)) {
+        const p = m[1];
+        if (/month|study|learn/i.test(p)) cands.add(p.replace(/\.$/, ''));
+      }
+    }
+  } catch (e) { log('번들 탐색 실패(치명적 아님):', e.message); }
+  const list = [...cands];
+  try { saveJson('mf_report_api_candidates.json', list); } catch (e) {}
+  if (list.length) log(`월간 리포트 API 후보 ${list.length}개 발견: ${list.slice(0, 8).join(' , ')}${list.length > 8 ? ' …' : ''}`);
+  return list;
+}
+async function findMonthlyApi(sid, ym) {
+  // 1) 그럴듯한 기본 후보 (worksheet 리포트가 /report/worksheet/download 였던 패턴)
+  const known = ['/report/month/download', '/report/monthly/download', '/report/study/download', '/report/month', '/report/monthly'];
+  // 2) 번들 탐색 후보 (download 포함 우선)
+  const found = await discoverMonthlyPaths();
+  const paths = [...new Set([...known, ...found.filter((p) => /download/i.test(p)), ...found])].slice(0, 25);
+  for (const p of paths) {
+    for (const k of MONTHLY_PARAM_KEYS) {
+      try {
+        const buf = await tryMonthlyOnce(p, k, sid, ym);
+        if (buf) { log(`✅ 월간 리포트 API 확인: ${p} (${k})`); return { path: p, paramKey: k, buf }; }
+      } catch (e) {}
+      await sleep(60);
+    }
+  }
+  return null;
+}
+async function runMonthly() {
+  if (!SB_URL || !SB_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+  if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+  const req = await storeGet('mf_report_req');
+  if (!req || req.status !== 'requested') { log(`월간보고서: 대기 중인 요청 없음 (status=${(req && req.status) || '없음'})`); return; }
+  const ym = req.ym;
+  const items = req.students || [];
+  log(`월간보고서 실행: ${ym} · ${items.length}명`);
+  const me = await login();
+  log(`로그인 성공 · 학원 ${me.academyId}`);
+  const students = await getActiveStudents();
+  const byName = {}; students.forEach((s) => { byName[s.name] = s; });
+
+  let apiInfo = await storeGet('mf_report_api');
+  const results = [];
+  for (const it of items) {
+    const st = byName[it.name] || students.find((s) => String(s.id) === String(it.sid));
+    if (!st) { results.push({ name: it.name, ok: false, why: '학생 매칭 실패' }); continue; }
+    let buf = null;
+    if (apiInfo && apiInfo.path) {
+      try { buf = await tryMonthlyOnce(apiInfo.path, apiInfo.paramKey, st.id, ym); } catch (e) {}
+    }
+    if (!buf) {
+      const hit = await findMonthlyApi(st.id, ym);
+      if (hit) { apiInfo = { path: hit.path, paramKey: hit.paramKey }; await storeSet('mf_report_api', apiInfo); buf = hit.buf; }
+    }
+    if (!buf) { results.push({ name: it.name, ok: false, why: '리포트 API 미확인' }); continue; }
+    const safe = String(it.name).replace(/[^가-힣a-zA-Z0-9]/g, '_');
+    const rel = `photos/mf_monthly/${ym}/${safe}_${ym}.pdf`;
+    const ok = await storageUpload(rel, buf, 'application/pdf');
+    results.push({ name: it.name, ok, path: ok ? rel : null, why: ok ? '' : '업로드 실패' });
+    log(`  · ${it.name}: ${ok ? '저장 완료 (' + Math.round(buf.length / 1024) + 'KB)' : '업로드 실패'}`);
+    await sleep(300);
+  }
+  // 색인 갱신 (mf_report_files: {ym:{files:[{name,path,at}]}})
+  const okR = results.filter((r) => r.ok);
+  if (okR.length) {
+    const files = (await storeGet('mf_report_files')) || {};
+    files[ym] = files[ym] || { files: [] };
+    okR.forEach((r) => {
+      files[ym].files = (files[ym].files || []).filter((f) => f.path !== r.path);
+      files[ym].files.push({ name: `${r.name}_${ym}.pdf`, path: r.path, at: new Date().toISOString() });
+    });
+    await storeSet('mf_report_files', files);
+  }
+  const fails = results.filter((r) => !r.ok);
+  req.status = okR.length ? (fails.length ? 'partial' : 'done') : 'failed';
+  req.doneAt = new Date().toISOString();
+  req.note = fails.length ? '실패: ' + fails.map((f) => `${f.name}(${f.why})`).join(', ') : '';
+  await storeSet('mf_report_req', req);
+  log(`월간보고서 완료: 성공 ${okR.length} · 실패 ${fails.length}${req.note ? ' · ' + req.note : ''}`);
+  if (!okR.length) log('※ 월간 리포트 API를 못 찾았습니다 — _debug/mf_report_api_candidates.json의 후보 목록을 요약에 포함해 주세요.');
+  log('※ 선생님 의견 자동 입력은 API 확인 후 지원 예정 — 승인된 의견은 학원앱에 보존되어 있습니다.');
+}
+
 async function main() {
+  // --monthly: 월간보고서 요청 처리 (매쓰플랫 로그인 필요)
+  if (has('--monthly')) { await runMonthly(); return; }
   // --weekly-only: 매쓰플랫 로그인 없이 주간테스트 집계만 (Supabase 기존 기록 사용)
   if (has('--weekly-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
