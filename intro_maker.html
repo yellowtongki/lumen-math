@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>강의 인트로 이미지 만들기 · 루멘수학</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖼️</text></svg>">
+</head>
+<body>
+<style>
+:root{
+  --bg:#eef2f8; --panel:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#dde5f0;
+  --accent:#1d6fe8; --focus:#ffb703;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0a1120; --panel:#111a2c; --ink:#e9f0fb; --sub:#93a4bd; --line:#20304a; --accent:#4f9bff; }
+}
+:root[data-theme="dark"]{ --bg:#0a1120; --panel:#111a2c; --ink:#e9f0fb; --sub:#93a4bd; --line:#20304a; --accent:#4f9bff; }
+:root[data-theme="light"]{ --bg:#eef2f8; --panel:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#dde5f0; --accent:#1d6fe8; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding:24px 16px 44px}
+.wrap{max-width:940px;margin:0 auto}
+.hd{text-align:center;margin-bottom:20px}
+.hd h1{font-size:21px;font-weight:900;letter-spacing:-.3px}
+.hd p{font-size:13px;color:var(--sub);font-weight:600;margin-top:5px}
+.layout{display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start}
+@media (max-width:720px){ .layout{grid-template-columns:1fr} }
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 4px 18px rgba(13,34,64,.08)}
+.fld{margin-bottom:15px}
+.fld:last-child{margin-bottom:0}
+label{display:block;font-size:12px;font-weight:800;color:var(--ink);margin-bottom:6px}
+label .hint{font-weight:600;color:var(--sub);font-size:11px}
+input[type=text]{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font-size:15px;font-family:inherit;color:var(--ink);background:transparent;font-weight:700}
+input[type=text]:focus{outline:none;border-color:var(--accent)}
+.themes{display:flex;gap:8px;flex-wrap:wrap}
+.sw{width:34px;height:34px;border-radius:9px;border:2px solid transparent;cursor:pointer;padding:0;position:relative}
+.sw.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--ink)}
+.sw:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:800;border:1.5px solid var(--line);background:transparent;color:var(--sub);border-radius:20px;padding:7px 13px;cursor:pointer;font-family:inherit}
+.chip.on{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.chip:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.dl{width:100%;margin-top:6px;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:900;font-family:inherit;background:linear-gradient(135deg,#0d2240,#1d6fe8);color:#fff;cursor:pointer;box-shadow:0 6px 16px rgba(29,111,232,.32)}
+.dl:active{transform:translateY(1px)}
+.dl:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.stage{display:flex;flex-direction:column;gap:12px;align-items:center}
+.canvas-shell{width:100%;border-radius:16px;overflow:hidden;box-shadow:0 14px 40px rgba(13,34,64,.24);background:#000;line-height:0}
+canvas{width:100%;height:auto;display:block}
+.note{font-size:12px;color:var(--sub);font-weight:600;line-height:1.7;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;width:100%}
+.note b{color:var(--ink)}
+.seg{display:flex;gap:6px;background:color-mix(in srgb,var(--ink) 6%,transparent);border-radius:10px;padding:4px}
+.seg button{flex:1;border:none;background:transparent;color:var(--sub);font-size:12px;font-weight:800;font-family:inherit;padding:8px;border-radius:7px;cursor:pointer}
+.seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 4px rgba(13,34,64,.12)}
+</style>
+
+<div class="wrap">
+  <div class="hd">
+    <h1>🖼️ 강의 인트로 이미지 만들기</h1>
+    <p>과정과 제목만 입력하면 완성 — 다운로드해서 유튜브 썸네일/인트로로 올리세요</p>
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="fld">
+        <label>과정 <span class="hint">(위 작은 글씨)</span></label>
+        <input type="text" id="i-course" value="미적분1" placeholder="예: 미적분1">
+      </div>
+      <div class="fld">
+        <label>제목 <span class="hint">(큰 글씨)</span></label>
+        <input type="text" id="i-title" value="좌극한" placeholder="예: 좌극한">
+      </div>
+      <div class="fld">
+        <label>부제 <span class="hint">(선택)</span></label>
+        <input type="text" id="i-sub" value="" placeholder="예: 개념 + 예제 3문항">
+      </div>
+      <div class="fld">
+        <label>색 테마</label>
+        <div class="themes" id="themes"></div>
+      </div>
+      <div class="fld">
+        <label>비율</label>
+        <div class="seg" id="ratio">
+          <button data-r="16:9" class="on">16:9 (유튜브)</button>
+          <button data-r="1:1">1:1 (정사각)</button>
+        </div>
+      </div>
+      <div class="fld">
+        <label>브랜드 표기</label>
+        <div class="row" id="brandrow">
+          <button class="chip on" data-b="on">루멘수학 표시</button>
+          <button class="chip" data-b="off">숨김</button>
+        </div>
+      </div>
+      <button class="dl" id="dl">⬇️ 이미지 다운로드 (PNG)</button>
+    </div>
+
+    <div class="stage">
+      <div class="canvas-shell"><canvas id="cv" width="1280" height="720"></canvas></div>
+      <div class="note">💡 <b>사용법</b> — ① 과정·제목 입력 → ② 색 고르기 → ③ <b>다운로드</b> → ④ 유튜브에 영상 올릴 때 <b>썸네일(미리보기 이미지)</b>로 지정. 이미지 편집 프로그램 필요 없이 여기서 바로 완성됩니다.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var THEMES=[
+  {key:'navy',   name:'네이비', c1:'#0b1428', c2:'#16305c', glowA:'56,189,248', glowB:'124,58,237', chip:'#8fd3ff', chipBg:'56,189,248', brand:'#ffd54a'},
+  {key:'violet', name:'퍼플',   c1:'#1a1033', c2:'#3b1d70', glowA:'167,139,250', glowB:'236,72,153', chip:'#d6b8ff', chipBg:'167,139,250', brand:'#ffd54a'},
+  {key:'teal',   name:'틸',     c1:'#04201f', c2:'#0d4d47', glowA:'45,212,191', glowB:'56,189,248', chip:'#7ff0e0', chipBg:'45,212,191', brand:'#fde68a'},
+  {key:'sunset', name:'선셋',   c1:'#2a0f0a', c2:'#7c2d12', glowA:'251,146,60', glowB:'244,63,94', chip:'#ffd0a8', chipBg:'251,146,60', brand:'#fff1c9'},
+  {key:'rose',   name:'로즈',   c1:'#2a0a1a', c2:'#7a1f4d', glowA:'244,114,182', glowB:'129,140,248', chip:'#ffc4e2', chipBg:'244,114,182', brand:'#ffe08a'},
+  {key:'slate',  name:'그레이', c1:'#0f172a', c2:'#334155', glowA:'148,163,184', glowB:'100,116,139', chip:'#cbd5e1', chipBg:'148,163,184', brand:'#facc15'}
+];
+var state={ course:'미적분1', title:'좌극한', sub:'', theme:'navy', ratio:'16:9', brand:true };
+
+// 테마 스와치
+var tb=document.getElementById('themes');
+THEMES.forEach(function(t){
+  var b=document.createElement('button');
+  b.className='sw'+(t.key===state.theme?' on':''); b.dataset.k=t.key; b.title=t.name;
+  b.style.background='linear-gradient(135deg,'+t.c1+','+t.c2+')';
+  b.setAttribute('aria-label','색 테마 '+t.name);
+  b.onclick=function(){ state.theme=t.key; [].forEach.call(tb.children,function(x){x.classList.toggle('on',x.dataset.k===t.key);}); draw(); };
+  tb.appendChild(b);
+});
+document.getElementById('i-course').oninput=function(){ state.course=this.value; draw(); };
+document.getElementById('i-title').oninput=function(){ state.title=this.value; draw(); };
+document.getElementById('i-sub').oninput=function(){ state.sub=this.value; draw(); };
+document.getElementById('ratio').onclick=function(e){ var btn=e.target.closest('button'); if(!btn)return; state.ratio=btn.dataset.r; [].forEach.call(this.children,function(x){x.classList.toggle('on',x===btn);}); draw(); };
+document.getElementById('brandrow').onclick=function(e){ var btn=e.target.closest('.chip'); if(!btn)return; state.brand=(btn.dataset.b==='on'); [].forEach.call(this.children,function(x){x.classList.toggle('on',x===btn);}); draw(); };
+document.getElementById('dl').onclick=download;
+
+var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+function T(){ for(var i=0;i<THEMES.length;i++) if(THEMES[i].key===state.theme) return THEMES[i]; return THEMES[0]; }
+function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+function draw(){
+  var t=T();
+  var W=1280, H=(state.ratio==='1:1')?1280:720;
+  cv.width=W; cv.height=H;
+  // 배경 그라데이션
+  var lin=ctx.createLinearGradient(0,0,W,H);
+  lin.addColorStop(0,t.c1); lin.addColorStop(1,t.c2);
+  ctx.fillStyle=lin; ctx.fillRect(0,0,W,H);
+  // 은은한 글로우 2개
+  function glow(cx,cy,rad,rgb,a){ var g=ctx.createRadialGradient(cx,cy,0,cx,cy,rad); g.addColorStop(0,'rgba('+rgb+','+a+')'); g.addColorStop(1,'rgba('+rgb+',0)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+  glow(W*0.24,H*0.20,W*0.42,t.glowA,0.22);
+  glow(W*0.82,H*0.82,W*0.5,t.glowB,0.26);
+
+  var cx=W/2;
+  // 브랜드
+  if(state.brand){
+    ctx.textAlign='center'; ctx.fillStyle='rgba('+hexToRgb(t.brand)+',0.9)';
+    ctx.font='800 '+Math.round(H*0.033)+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+    ctx.fillText('LUMEN  루멘수학', cx, H*0.13);
+  }
+
+  // 과정 칩
+  var course=(state.course||'').trim();
+  var blockTop=H*(state.brand?0.34:0.30);
+  if(course){
+    ctx.font='800 '+Math.round(H*0.045)+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+    var cw=ctx.measureText('📘 '+course).width;
+    var padX=Math.round(H*0.035), chH=Math.round(H*0.085), chW=cw+padX*2;
+    var chY=blockTop-chH;
+    ctx.fillStyle='rgba('+t.chipBg+',0.16)'; rr(cx-chW/2,chY,chW,chH,chH/2); ctx.fill();
+    ctx.lineWidth=2; ctx.strokeStyle='rgba('+t.chipBg+',0.55)'; rr(cx-chW/2,chY,chW,chH,chH/2); ctx.stroke();
+    ctx.fillStyle=t.chip; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('📘 '+course, cx, chY+chH/2+2);
+    ctx.textBaseline='alphabetic';
+  }
+
+  // 제목 (길면 자동 줄바꿈 + 폰트 축소)
+  var title=(state.title||'').trim()||'제목을 입력하세요';
+  var maxW=W*0.84;
+  var fs=Math.round(H*0.17);
+  var lines;
+  while(fs>Math.round(H*0.07)){
+    ctx.font='900 '+fs+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+    lines=wrap(title,maxW);
+    if(lines.length<=2) break;
+    fs-=6;
+  }
+  ctx.font='900 '+fs+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+  lines=wrap(title,maxW);
+  ctx.textAlign='center'; ctx.fillStyle='#ffffff';
+  ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=18; ctx.shadowOffsetY=6;
+  var lh=fs*1.14; var startY=H*0.55 - (lines.length-1)*lh/2;
+  lines.forEach(function(ln,i){ ctx.fillText(ln, cx, startY+i*lh); });
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+
+  // 부제
+  var sub=(state.sub||'').trim();
+  if(sub){
+    ctx.font='700 '+Math.round(H*0.042)+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+    ctx.fillStyle='rgba(255,255,255,0.62)';
+    ctx.fillText(sub, cx, startY+(lines.length-1)*lh+H*0.10);
+  }
+}
+function wrap(text,maxW){
+  var words=text.split(' '); if(words.length===1){ // 공백없으면 글자단위
+    var s='',out=[]; for(var i=0;i<text.length;i++){ if(ctx.measureText(s+text[i]).width>maxW){ out.push(s); s=text[i]; } else s+=text[i]; } if(s)out.push(s); return out.length?out:[text];
+  }
+  var out=[],cur='';
+  words.forEach(function(w){ var test=cur?cur+' '+w:w; if(ctx.measureText(test).width>maxW&&cur){ out.push(cur); cur=w; } else cur=test; });
+  if(cur)out.push(cur); return out;
+}
+function hexToRgb(h){ h=h.replace('#',''); if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2]; var n=parseInt(h,16); return (n>>16&255)+','+(n>>8&255)+','+(n&255); }
+
+function download(){
+  draw();
+  cv.toBlob(function(blob){
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    var nm=((state.course||'')+' '+(state.title||'인트로')).trim().replace(/[\\/:*?"<>|]/g,'_')||'intro';
+    a.href=url; a.download=nm+'.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+  },'image/png');
+}
+draw();
+</script>
+
+</body>
+</html>
