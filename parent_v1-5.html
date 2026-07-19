@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>루멘수학 학부모 v1-5</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;background:#eef2f8;color:#0f172a;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+#app{max-width:520px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:#eef2f8}
+/* 로그인 */
+.login{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;background:linear-gradient(160deg,#0d2240,#1d3a6e)}
+.login .lg{font-size:13px;font-weight:800;color:#ffd54a;letter-spacing:2px}
+.login h1{color:#fff;font-size:26px;font-weight:900;margin-top:8px}
+.login p{color:#8fb8e8;font-size:13px;font-weight:600;margin-top:6px;text-align:center;line-height:1.7}
+.login input{margin-top:22px;width:100%;max-width:280px;border:none;border-radius:14px;padding:16px;font-size:20px;font-weight:900;text-align:center;letter-spacing:4px;font-family:inherit;outline:none;text-transform:uppercase}
+.login button{margin-top:12px;width:100%;max-width:280px;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:900;background:#ffd54a;color:#0d2240}
+.login .err{color:#fca5a5;font-size:12px;font-weight:700;margin-top:12px;min-height:18px;text-align:center;white-space:pre-line}
+.login .ft{color:#3f5578;font-size:10px;font-weight:700;margin-top:30px}
+/* 헤더 */
+.hd{background:linear-gradient(160deg,#0d2240 0%,#16305c 70%,#1d3a6e 100%);padding:20px 20px 46px;color:#fff;position:relative;overflow:hidden}
+.hd::after{content:'';position:absolute;top:-40px;right:-30px;width:150px;height:150px;border-radius:50%;background:rgba(255,213,74,.07)}
+.hd .brand{display:flex;align-items:center;gap:7px;font-size:10.5px;font-weight:800;color:#ffd54a;letter-spacing:1.5px}
+.hd .brand .out{margin-left:auto;background:rgba(255,255,255,.12);border:none;color:#c7d5ee;font-size:9.5px;font-weight:800;border-radius:50px;padding:4px 10px}
+.hd .name{font-size:23px;font-weight:900;margin-top:6px;letter-spacing:-.4px}
+.hd .name small{font-size:11px;font-weight:700;color:#8fb8e8;margin-left:5px}
+.hd .greet{font-size:11px;color:#c7d5ee;font-weight:600;margin-top:3px}
+.sibs{display:flex;gap:6px;margin-top:10px;position:relative;z-index:2}
+.sib{border:none;font-size:10.5px;font-weight:800;border-radius:50px;padding:5px 13px;background:rgba(255,255,255,.13);color:#c7d5ee}
+.sib.on{background:#ffd54a;color:#0d2240}
+/* 상태 캡슐 */
+.caps{display:flex;gap:9px;padding:0 16px;margin-top:-28px;position:relative;z-index:2}
+.cap{flex:1;background:#fff;border-radius:15px;padding:11px 13px;display:flex;align-items:center;gap:9px;box-shadow:0 6px 18px rgba(13,34,64,.10)}
+.cap .ci{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cap .ct{font-size:10px;font-weight:800;color:#64748b}
+.cap .cs{font-size:12px;font-weight:900;margin-top:1px}
+/* 히어로 */
+.hero{margin:14px 16px 0;border-radius:20px;overflow:hidden;box-shadow:0 10px 26px rgba(13,34,64,.14);background:#fff}
+.hero-top{padding:16px 17px 14px;color:#fff;position:relative;overflow:hidden}
+.hero-top::after{content:'';position:absolute;top:-30px;right:-20px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.06)}
+.hero-top .or{font-size:8.5px;opacity:.75;letter-spacing:1.6px;font-weight:800}
+.hero-top .nm{font-size:20px;font-weight:900;margin-top:3px}
+.hero-top .tags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.hero-top .tg{font-size:9px;font-weight:800;background:rgba(255,255,255,.16);border-radius:7px;padding:3px 9px}
+.hero-top .tg.gold{background:#ffd54a;color:#7f1d1d}
+.hero-bd{padding:14px 16px}
+.ring{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ring>div{width:50px;height:50px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring b{font-size:17px;color:#0d2240}
+.ring span{font-size:7.5px;font-weight:800;color:#94a3b8}
+.tot{background:#0d2240;border-radius:13px;padding:12px 14px;margin-top:12px}
+.tot .t1{font-size:10px;font-weight:900;color:#ffd54a}
+.tot .t2{font-size:11.5px;color:#e2e8f0;line-height:1.7;margin-top:5px;white-space:pre-wrap}
+.tot .t2.clip{overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
+.hero-cta{display:flex;gap:8px;margin-top:12px}
+.hero-cta .b1{flex:1;border:none;background:linear-gradient(135deg,#1d6fe8,#3b82f6);color:#fff;font-size:12.5px;font-weight:900;padding:12px 0;border-radius:12px;box-shadow:0 4px 12px rgba(29,111,232,.3)}
+/* 지난 리포트 스트립 */
+.hist{display:flex;gap:7px;padding:12px 16px 2px;overflow-x:auto}
+.hp{flex-shrink:0;background:#fff;border:1.5px solid #e8eef8;border-radius:13px;padding:8px 12px;text-align:center;min-width:56px}
+.hp.on{border-color:#1d6fe8;background:#eff6ff}
+.hp .d{font-size:9px;font-weight:800;color:#94a3b8}
+.hp .s{font-size:13px;font-weight:900;color:#0d2240;margin-top:1px}
+.hp .g{width:7px;height:7px;border-radius:50%;margin:3px auto 0}
+/* 섹션 */
+.sec{margin:12px 16px 0;background:#fff;border-radius:17px;padding:14px 15px;box-shadow:0 3px 12px rgba(13,34,64,.05)}
+.sec .st{font-size:13px;font-weight:900;color:#0d2240;display:flex;align-items:center;gap:7px}
+.sec .st .more{margin-left:auto;font-size:10px;color:#1d6fe8;font-weight:800;background:none;border:none}
+.wk{display:flex;gap:5px;margin-top:10px}
+.wk>div{flex:1;text-align:center}
+.wk .wd{font-size:8.5px;color:#94a3b8;font-weight:700}
+.wk .wv{height:32px;border-radius:9px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:3px}
+.subnote{font-size:10.5px;color:#64748b;font-weight:600;margin-top:8px}
+/* 하단 탭 */
+.tabbar{position:sticky;bottom:0;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);border-top:1px solid #e8eef8;display:flex;padding:8px 6px calc(10px + env(safe-area-inset-bottom));margin-top:auto;z-index:50}
+.tb{flex:1;text-align:center;background:none;border:none;padding:0}
+.tb .ti{font-size:19px}
+.tb .tl{font-size:8.5px;font-weight:800;color:#94a3b8;margin-top:2px}
+.tb.on .tl{color:#1d6fe8}
+.tb .dot{width:5px;height:5px;border-radius:50%;background:#ef4444;margin:2px auto 0}
+.view{flex:1;padding-bottom:14px}
+.pagehd{padding:16px 18px 12px;font-size:17px;font-weight:900;color:#0d2240;display:flex;align-items:center;gap:8px}
+.pagehd small{font-size:10.5px;color:#94a3b8;font-weight:700}
+iframe.rep{width:100%;height:calc(100vh - 130px);border:none;background:#f0f4f8}
+.month-nav{display:flex;align-items:center;gap:8px;padding:0 18px}
+.month-nav button{border:1px solid #e2e8f0;background:#fff;border-radius:9px;width:32px;height:32px;font-size:13px;font-weight:900}
+.month-nav .ym{font-size:14px;font-weight:900;color:#0d2240}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px 16px}
+.cal .dh{font-size:9px;font-weight:800;color:#94a3b8;text-align:center}
+.cal .dc{aspect-ratio:1;border-radius:9px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(13,34,64,.05)}
+.cal .dc .dn{font-size:8.5px;font-weight:700;color:#94a3b8}
+.cal .dc .ds{font-size:12px;font-weight:900}
+.recrow{display:flex;flex-direction:column;gap:6px;background:#fff;border-radius:14px;padding:12px 14px;margin:0 16px 10px;box-shadow:0 2px 8px rgba(13,34,64,.05)}
+.recrow .rt{font-size:12px;font-weight:800;color:#0d2240}
+.recrow audio{width:100%;height:36px}
+.bookrow{background:#fff;border-radius:14px;padding:13px 15px;margin:0 16px 10px;box-shadow:0 2px 8px rgba(13,34,64,.05)}
+.bookrow .bn{font-size:12.5px;font-weight:900;color:#0d2240}
+.bookrow .bch{font-size:10px;color:#64748b;font-weight:700;margin-top:2px}
+.bar{height:9px;background:#eef2f7;border-radius:99px;margin-top:7px;overflow:hidden}
+.bar>div{height:100%;background:linear-gradient(90deg,#1d6fe8,#7c3aed);border-radius:99px}
+.empty{text-align:center;color:#94a3b8;font-size:12px;font-weight:700;padding:40px 20px;line-height:1.8}
+.skel{text-align:center;color:#94a3b8;font-size:13px;font-weight:700;padding:60px 20px}
+/* ══ 로드맵 v2-1 ══ */
+#screen-roadmap{background:#f1f5f9;}
+.rm-body{flex:1;padding:14px 14px 22px;overflow-y:auto;}
+.rm-sum{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:18px;padding:15px 16px;margin-bottom:13px;cursor:pointer;box-shadow:0 6px 20px rgba(13,34,64,0.25);}
+.rm-sum-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.rm-sum-lead{color:#ffd54a;font-size:16px;font-weight:900;}
+.rm-sum-sub{color:rgba(255,255,255,0.5);font-size:11px;font-weight:600;margin-top:3px;}
+.rm-sum-pct{font-size:24px;font-weight:900;color:white;text-align:right;line-height:1;}
+.rm-sum-cap{font-size:9px;color:rgba(255,255,255,0.45);font-weight:700;margin-top:3px;text-align:right;}
+.rm-minirail{display:flex;align-items:center;margin-top:12px;}
+.rm-md{width:8px;height:8px;border-radius:50%;background:#24476f;flex-shrink:0;}
+.rm-md.d{background:#34d399;}
+.rm-md.f{background:#ffd54a;box-shadow:0 0 0 3px rgba(255,213,74,0.3);}
+.rm-md.s{background:#38bdf8;}
+.rm-ml{flex:1;height:2.5px;background:#24476f;}
+.rm-ml.d{background:#34d399;}
+.rm-sum-hint{text-align:center;font-size:10px;color:#ffd54a;font-weight:800;margin-top:11px;}
+.rm-card{background:white;border-radius:16px;padding:13px;margin-bottom:10px;box-shadow:0 3px 12px rgba(13,34,64,0.06);}
+.rm-ch{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.rm-cover{width:32px;height:40px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;font-weight:900;}
+.rm-nm{font-size:13.5px;font-weight:800;color:#0f172a;flex:1;min-width:0;}
+.rm-tag{display:inline-block;font-size:9.5px;font-weight:800;border-radius:20px;padding:1px 8px;margin-top:2px;}
+.rm-tag.t-cur{background:#eff6ff;color:#1d4ed8;}
+.rm-tag.t-adv{background:#faf5ff;color:#7c3aed;}
+.rm-tag.t-back{background:#f0fdf4;color:#15803d;}
+.rm-done-badge{font-size:10px;font-weight:900;color:#15803d;background:#f0fdf4;border-radius:20px;padding:3px 9px;flex-shrink:0;}
+.rm-brow{display:flex;align-items:center;gap:9px;}
+.rm-ebar{position:relative;overflow:hidden;background:#e8edf5;border-radius:50px;height:14px;flex:1;}
+.rm-efill{height:100%;border-radius:50px;position:relative;background:linear-gradient(90deg,#1d6fe8,#38bdf8);transition:width .3s;}
+.rm-efill.pp{background:linear-gradient(90deg,#7c3aed,#d946ef);}
+.rm-efill.gg{background:linear-gradient(90deg,#10b981,#34d399);}
+.rm-efill::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.5) 50%,transparent 70%);animation:rmShine 2.4s infinite;}
+@keyframes rmShine{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.rm-pc{font-size:14px;font-weight:900;min-width:40px;text-align:right;}
+.rm-mt{font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.rm-mt .rm-dates{flex:1;min-width:0;line-height:1.5;}
+.rm-ckbtn{border:none;background:#0d2240;color:white;font-family:inherit;font-size:10.5px;font-weight:800;padding:7px 13px;border-radius:50px;cursor:pointer;flex-shrink:0;}
+.rm-ckbtn:active{transform:scale(0.95);}
+.rm-nounit{font-size:11px;color:#94a3b8;font-weight:700;background:#f8fafc;border:1.5px dashed #e2e8f0;border-radius:10px;padding:9px 11px;}
+.rm-empty{background:white;border-radius:16px;padding:28px 18px;text-align:center;box-shadow:0 3px 12px rgba(13,34,64,0.06);}
+.rm-empty .e1{font-size:34px;margin-bottom:8px;}
+.rm-empty .e2{font-size:13px;font-weight:800;color:#0f172a;}
+.rm-empty .e3{font-size:11px;color:#94a3b8;font-weight:600;margin-top:4px;line-height:1.6;}
+.rm-loading{text-align:center;color:#94a3b8;font-size:12px;font-weight:700;padding:30px 0;}
+/* 여정 화면 */
+#screen-journey{background:#0b1428;}
+.rm-vjbody{flex:1;overflow-y:auto;padding:16px 10px 80px;background:radial-gradient(circle at 18% 8%,rgba(56,189,248,0.12),transparent 40%),radial-gradient(circle at 85% 32%,rgba(124,58,237,0.14),transparent 45%),linear-gradient(180deg,#0b1428 0%,#122a52 100%);}
+.rm-goal{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#f59e0b,#ea580c);border-radius:18px;padding:12px 14px;box-shadow:0 12px 26px rgba(245,158,11,0.4);margin-bottom:8px;}
+.rm-gob{width:44px;height:44px;border-radius:50%;background:#0e4a84;color:white;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,255,255,0.7);flex-shrink:0;overflow:hidden;}
+.rm-gob img{width:100%;height:100%;object-fit:cover;}
+.rm-goi{flex:1;min-width:0;}
+.rm-g1{font-size:10px;font-weight:900;color:rgba(255,255,255,0.85);}
+.rm-g2{font-size:14px;font-weight:900;color:white;margin-top:1px;}
+.rm-goedit{border:none;font-family:inherit;background:rgba(255,255,255,0.22);color:white;font-size:10px;font-weight:900;padding:7px 12px;border-radius:50px;cursor:pointer;flex-shrink:0;}
+.rm-gopick{display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:12px;flex-wrap:wrap;}
+.rm-gomini{width:36px;height:36px;border-radius:50%;color:white;font-size:9.5px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid rgba(255,255,255,0.35);overflow:hidden;flex-shrink:0;background:#0e4a84;}
+.rm-gomini img{width:100%;height:100%;object-fit:cover;}
+.rm-vjrow{display:grid;grid-template-columns:1fr 40px 1fr;min-height:50px;}
+.rm-vc{position:relative;display:flex;flex-direction:column;align-items:center;}
+.rm-vc::before{content:'';position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:4px;background:#1e3a63;}
+.rm-vjrow.done .rm-vc::before{background:linear-gradient(180deg,#34d399,#38bdf8);}
+.rm-vjrow.front .rm-vc::before{background:linear-gradient(180deg,#1e3a63 35%,#38bdf8 100%);}
+.rm-vdot{width:15px;height:15px;border-radius:50%;background:#152c50;border:3px solid #2b4d7e;margin-top:12px;z-index:1;}
+.rm-vjrow.done .rm-vdot{background:#34d399;border-color:#0f3b2e;}
+.rm-vdot.big{width:19px;height:19px;background:#ffd54a;border-color:#8a6d00;animation:rmPulse 1.8s infinite;}
+.rm-vdot.exam{width:auto;height:auto;background:none;border:none;font-size:20px;margin-top:6px;}
+@keyframes rmPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,213,74,0.55)}50%{box-shadow:0 0 0 10px rgba(255,213,74,0)}}
+.rm-rocket{position:absolute;top:-16px;left:50%;font-size:26px;z-index:2;animation:rmFloat 2s ease-in-out infinite;filter:drop-shadow(0 6px 10px rgba(56,189,248,0.5));}
+@keyframes rmFloat{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-8px)}}
+.rm-vl{display:flex;flex-direction:column;align-items:flex-end;gap:6px;padding:10px 8px 10px 0;}
+.rm-vr{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:10px 0 10px 8px;}
+.rm-vstn{font-size:11px;font-weight:900;color:#8fb3e8;background:rgba(255,255,255,0.07);border-radius:50px;padding:3px 10px;}
+.rm-vstn.on{color:white;background:rgba(56,189,248,0.28);}
+.rm-vstn.fr{color:#0d2240;background:#ffd54a;}
+.rm-vme{font-size:10.5px;font-weight:900;color:#ffd54a;text-align:right;line-height:1.4;}
+.rm-vschool{margin-top:5px;font-size:9px;font-weight:800;color:#0d2240;background:#ffd54a;border-radius:50px;padding:2px 7px;white-space:nowrap;z-index:1;}
+.rm-vcard{background:white;border-radius:13px;padding:9px 10px;width:100%;max-width:150px;box-shadow:0 6px 16px rgba(0,0,0,0.35);}
+.rm-vcard .vn{font-size:11px;font-weight:800;color:#0d2240;margin-bottom:6px;}
+.rm-vcard .vp{font-size:11px;font-weight:900;margin-top:5px;text-align:right;}
+.rm-vcard .rm-ebar{height:9px;}
+.rm-vfold{margin:10px auto;width:max-content;max-width:96%;font-size:10.5px;font-weight:800;color:#9fc0f2;border:1.5px dashed #3b5f97;border-radius:50px;padding:7px 14px;cursor:pointer;background:rgba(255,255,255,0.04);text-align:center;}
+.rm-vpill{display:block;width:max-content;margin:12px auto 2px;background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.18);color:#d7e6ff;font-size:10.5px;font-weight:800;border-radius:50px;padding:5px 13px;}
+.rm-fab{position:fixed;right:14px;bottom:16px;border:none;font-family:inherit;background:#0d2240;color:#ffd54a;font-size:11px;font-weight:900;padding:11px 15px;border-radius:50px;cursor:pointer;box-shadow:0 8px 18px rgba(0,0,0,0.45);z-index:40;}
+/* 단원 체크 / 목표 모달 */
+.rm-modal-bg{display:none;position:fixed;inset:0;background:rgba(13,34,64,0.55);z-index:60;}
+.rm-modal-bg.show{display:block;}
+.rm-modal{position:fixed;left:0;right:0;bottom:0;background:white;border-radius:22px 22px 0 0;padding:18px 16px 22px;z-index:61;transform:translateY(105%);transition:transform .22s ease-out;max-height:82vh;display:flex;flex-direction:column;}
+.rm-modal.show{transform:translateY(0);}
+.rm-mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.rm-mtitle{font-size:15px;font-weight:900;color:#0f172a;}
+.rm-mx{border:none;background:#f1f5f9;color:#64748b;width:30px;height:30px;border-radius:50%;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;}
+.rm-mdates{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-bottom:11px;font-size:10.5px;font-weight:800;color:#475569;}
+.rm-mdates span{background:#f1f5f9;border-radius:20px;padding:4px 10px;}
+.rm-mbar{background:#e8edf5;border-radius:50px;height:16px;overflow:hidden;}
+.rm-mbar-fill{height:100%;border-radius:50px;background:linear-gradient(90deg,#1d6fe8,#38bdf8);transition:width .25s;}
+.rm-mcnt{display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:#64748b;margin:6px 0 10px;}
+.rm-units{flex:1;overflow-y:auto;background:#fbfcfe;border:1px solid #eef2f7;border-radius:14px;padding:2px 12px;min-height:120px;}
+.rm-unit{display:flex;align-items:center;gap:11px;padding:11px 2px;border-bottom:1px solid #f1f5f9;cursor:pointer;}
+.rm-unit:last-child{border-bottom:none;}
+.rm-uck{width:22px;height:22px;border-radius:8px;border:2.5px solid #cbd5e1;display:flex;align-items:center;justify-content:center;font-size:12px;color:white;flex-shrink:0;transition:all .15s;}
+.rm-unit.on .rm-uck{background:#10b981;border-color:#10b981;}
+.rm-un{font-size:13px;font-weight:700;color:#0f172a;flex:1;min-width:0;}
+.rm-unit.on .rm-un{color:#15803d;}
+.rm-ud{font-size:9.5px;color:#94a3b8;font-weight:700;white-space:nowrap;}
+.rm-save{width:100%;border:none;font-family:inherit;background:linear-gradient(135deg,#1d6fe8,#38bdf8);color:white;font-size:14px;font-weight:900;padding:14px 0;border-radius:16px;cursor:pointer;box-shadow:0 8px 20px rgba(29,111,232,0.35);margin-top:12px;}
+.rm-save:disabled{opacity:0.55;}
+.rm-mhint{text-align:center;font-size:10px;color:#94a3b8;font-weight:600;margin-top:9px;}
+.rm-ginp{width:100%;padding:13px 14px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:14px;font-family:inherit;outline:none;margin-bottom:9px;}
+.rm-ginp:focus{border-color:#1d6fe8;}
+.rm-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0d2240;color:white;font-size:12.5px;font-weight:800;padding:12px 20px;border-radius:50px;box-shadow:0 10px 26px rgba(13,34,64,0.4);opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;white-space:nowrap;}
+.rm-toast.show{opacity:1;}
+
+/* ══ v2-5: 여정 안 매쓰플랫 자동 진도 (현행/선행 트랙 + 단원 노선 + 월별) ══ */
+.rm-yhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 2px 11px;position:relative;z-index:2;}
+.rm-yt{font-size:13px;font-weight:900;color:#fff;}
+.rm-ys{font-size:9.5px;font-weight:800;color:#8fb3e8;background:rgba(255,255,255,0.08);border-radius:50px;padding:4px 11px;white-space:nowrap;}
+.rm-trk{border-radius:18px;padding:13px 14px;margin-bottom:11px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(56,189,248,0.35);cursor:pointer;}
+.rm-trk.adv{border-color:rgba(217,70,239,0.42);}
+.rm-trk.back{border-color:rgba(52,211,153,0.42);}
+.rm-trk:active{transform:scale(0.99);}
+.rm-thead{display:flex;align-items:center;gap:8px;}
+.rm-tbadge{font-size:9.5px;font-weight:900;color:#fff;border-radius:50px;padding:3px 10px;background:linear-gradient(90deg,#1d6fe8,#38bdf8);flex-shrink:0;white-space:nowrap;}
+.rm-trk.adv .rm-tbadge{background:linear-gradient(90deg,#7c3aed,#d946ef);}
+.rm-trk.back .rm-tbadge{background:linear-gradient(90deg,#0d9488,#34d399);}
+.rm-tname{font-size:12.5px;font-weight:900;color:#fff;flex:1;min-width:0;}
+.rm-tpct{font-size:15px;font-weight:900;color:#38bdf8;}
+.rm-trk.adv .rm-tpct{color:#e879f9;}
+.rm-trk.back .rm-tpct{color:#34d399;}
+.rm-tmeta{font-size:9.5px;color:#8fb3e8;font-weight:700;margin-top:4px;line-height:1.6;}
+.rm-tbar{height:9px;background:#16294a;border-radius:50px;margin-top:9px;overflow:hidden;}
+.rm-tbar i{display:block;height:100%;border-radius:50px;background:linear-gradient(90deg,#1d6fe8,#38bdf8);position:relative;overflow:hidden;}
+.rm-trk.adv .rm-tbar i{background:linear-gradient(90deg,#7c3aed,#d946ef);}
+.rm-trk.back .rm-tbar i{background:linear-gradient(90deg,#0d9488,#34d399);}
+.rm-tbar i::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.4) 50%,transparent 70%);animation:rmShine 2.4s infinite;}
+.rm-ttap{font-size:8.5px;font-weight:900;color:#ffd54a;margin-top:7px;}
+/* 단원 노선 (펼침) */
+.rm-route{overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.rm-route.open{max-height:900px;margin-top:10px;}
+.rm-u{display:flex;gap:10px;}
+.rm-ur{width:15px;display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.rm-ur .ud{width:10px;height:10px;border-radius:50%;background:#152c50;border:2.5px solid #2b4d7e;flex-shrink:0;}
+.rm-u.done .rm-ur .ud{background:#34d399;border-color:#0f3b2e;}
+.rm-u.cur .rm-ur .ud{width:14px;height:14px;background:#ffd54a;border-color:#8a6d00;}
+.rm-ur .ul{flex:1;width:3px;background:#1e3a63;min-height:8px;}
+.rm-u.done .rm-ur .ul{background:#34d399;}
+.rm-ux{flex:1;min-width:0;padding-bottom:9px;}
+.rm-ux .un{font-size:10.5px;font-weight:900;color:#5f7ba8;}
+.rm-u.done .rm-ux .un{color:#7fe6bb;}
+.rm-u.cur .rm-ux .un{color:#ffd54a;font-size:11.5px;}
+.rm-ux .um{font-size:8.5px;color:#49648f;font-weight:700;margin-top:1px;}
+.rm-upin{background:#ffd54a;color:#0d2240;border-radius:11px;padding:8px 10px;margin-top:5px;}
+.rm-trk.adv .rm-upin{background:#e9d5ff;color:#4c1d95;}
+.rm-upin .p1{font-size:10px;font-weight:900;}
+.rm-upin .p2{font-size:8.5px;font-weight:800;opacity:0.72;margin-top:1.5px;}
+.rm-upin .pb{height:5px;background:rgba(13,34,64,0.18);border-radius:50px;margin-top:5px;overflow:hidden;}
+.rm-upin .pb i{display:block;height:100%;background:#0d2240;border-radius:50px;}
+.rm-trk.adv .rm-upin .pb i{background:#6d28d9;}
+.rm-ucheck{border:1px dashed rgba(255,213,74,0.4);font-family:inherit;font-size:8.5px;font-weight:900;color:#ffd54a;background:rgba(255,213,74,0.12);border-radius:50px;padding:5px 11px;margin-top:8px;cursor:pointer;}
+.rm-tnone{font-size:10px;color:#5f7ba8;font-weight:700;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.14);border-radius:11px;padding:9px 11px;margin-top:9px;}
+/* 월별 발자취 스트립 */
+.rm-months{margin:6px 0 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:16px;padding:12px 13px;position:relative;z-index:2;}
+.rm-months .mt{font-size:11.5px;font-weight:900;color:#fff;margin-bottom:11px;}
+.rm-mrow{display:flex;align-items:flex-end;gap:6px;height:74px;}
+.rm-mcell{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;justify-content:flex-end;}
+.rm-mcell .bar{width:100%;max-width:24px;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,#38bdf8,#1d6fe8);min-height:4px;transition:height .3s;}
+.rm-mcell.lo .bar{background:linear-gradient(180deg,#fbbf24,#f59e0b);}
+.rm-mcell.cur .bar{background:linear-gradient(180deg,#ffd54a,#f59e0b);box-shadow:0 0 12px rgba(255,213,74,0.4);}
+.rm-mcell .mv{font-size:9.5px;font-weight:900;color:#dbe7fb;}
+.rm-mcell .mn{font-size:8.5px;font-weight:800;color:#5f7ba8;}
+.rm-mcell.cur .mn{color:#ffd54a;}
+.rm-mnote{font-size:8.5px;color:#49648f;font-weight:700;margin-top:9px;text-align:center;}
+/* 월별 팝업 */
+.rm-monpop{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.95);width:88%;max-width:340px;background:#101d3c;border:1.5px solid rgba(56,189,248,0.4);border-radius:18px;padding:16px;z-index:61;box-shadow:0 20px 50px rgba(0,0,0,0.6);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-height:80vh;overflow-y:auto;}
+.rm-monpop.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
+.rm-monpop .rm-mtitle{color:#fff;}
+.rm-monpop .rm-mx{background:rgba(255,255,255,0.1);color:#8fb3e8;}
+.rm-msec{background:rgba(255,255,255,0.06);border-radius:11px;padding:9px 11px;margin-bottom:7px;}
+.rm-msec .sk{font-size:9px;font-weight:900;color:#8fb3e8;}
+.rm-msec .sv{font-size:11.5px;font-weight:800;color:#fff;margin-top:3px;line-height:1.6;}
+
+/* ══ v2-8: 월별 타임라인 여정 ══ */
+.rm-6btn{border:none;font-family:inherit;background:rgba(255,255,255,0.22);color:#fff;font-size:9.5px;font-weight:900;padding:6px 10px;border-radius:50px;cursor:pointer;flex-shrink:0;line-height:1.25;text-align:center;}
+.rm-dual{display:flex;gap:13px;justify-content:center;margin:14px 0 2px;}
+.rm-dual span{font-size:10.5px;font-weight:800;color:#8fb3e8;display:flex;align-items:center;gap:5px;}
+.rm-dual i{width:10px;height:10px;border-radius:3px;}
+.rm-dual .kb{background:#38bdf8;}
+.rm-dual .kr{background:#e879f9;}
+.rm-tl2{position:relative;padding:12px 0 4px;}
+.rm-tl2::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:5px;transform:translateX(-50%);border-radius:50px;background:linear-gradient(180deg,#1e3a63 0%,#8b5cf6 34%,#38bdf8 100%);}
+.rm-tlrow{position:relative;display:grid;grid-template-columns:1fr 44px 1fr;align-items:center;min-height:58px;}
+.rm-tlrow.cur{align-items:flex-start;}
+.rm-tlL{grid-column:1;min-width:0;display:flex;flex-direction:column;align-items:flex-end;}
+.rm-tlR{grid-column:3;min-width:0;display:flex;flex-direction:column;align-items:flex-start;}
+.rm-tlC{grid-column:2;justify-self:center;z-index:3;display:flex;flex-direction:column;align-items:center;position:relative;padding-top:6px;}
+.rm-tldot{width:13px;height:13px;border-radius:50%;background:#24476f;border:3px solid #0b1428;}
+.rm-tldot.cur{width:20px;height:20px;background:#ffd54a;border-color:#8a6d00;animation:rmPulse 1.8s infinite;}
+.rm-tlm{font-size:10px;font-weight:900;margin-top:5px;background:rgba(255,255,255,0.1);color:#dbe7fb;border-radius:12px;padding:2px 8px;white-space:nowrap;text-align:center;line-height:1.3;}
+.rm-tlm.now{background:#ffd54a;color:#0d2240;}
+.rm-tlrk{position:absolute;left:50%;transform:translateX(-50%);top:-24px;font-size:24px;z-index:5;animation:rmFloat 2s ease-in-out infinite;filter:drop-shadow(0 5px 8px rgba(56,189,248,0.5));}
+.rm-tlL .rm-trk,.rm-tlR .rm-trk{max-width:100%;width:100%;}
+/* 과거 달 카드 (요약) */
+.rm-tlpast{background:rgba(13,26,53,0.9);border-radius:12px;padding:8px 11px;border:1.5px solid rgba(56,189,248,0.4);max-width:190px;margin:3px 0;cursor:pointer;}
+.rm-tlpast.adv{border-color:rgba(232,121,249,0.45);}
+.rm-tlpast.back{border-color:rgba(52,211,153,0.45);}
+.rm-tlpb{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.rm-tlbadge{font-size:8px;font-weight:900;color:#fff;border-radius:50px;padding:1.5px 7px;background:linear-gradient(90deg,#1d6fe8,#38bdf8);white-space:nowrap;}
+.rm-tlpast.adv .rm-tlbadge{background:linear-gradient(90deg,#7c3aed,#d946ef);}
+.rm-tlpast.back .rm-tlbadge{background:linear-gradient(90deg,#0d9488,#34d399);}
+.rm-tlpct{font-size:12px;font-weight:900;color:#38bdf8;}
+.rm-tlpast.adv .rm-tlpct{color:#e879f9;}
+.rm-tlpast.back .rm-tlpct{color:#34d399;}
+.rm-tlnm{font-size:11px;font-weight:900;color:#fff;margin-top:4px;line-height:1.3;}
+.rm-tlmeta{font-size:9px;color:#8fb3e8;font-weight:700;margin-top:2px;line-height:1.5;}
+/* 현재 달 카드 (컴팩트 + 진도바 + 탭 펼침) */
+.rm-tlcur{background:rgba(13,26,53,0.94);border-radius:13px;padding:9px 11px;border:1.5px solid rgba(56,189,248,0.55);max-width:196px;margin:3px 0;cursor:pointer;box-shadow:0 8px 20px rgba(56,189,248,0.18);}
+.rm-tlcur.adv{border-color:rgba(232,121,249,0.55);box-shadow:0 8px 20px rgba(232,121,249,0.18);}
+.rm-tlcur.back{border-color:rgba(52,211,153,0.55);}
+.rm-tlbar{height:7px;background:#16294a;border-radius:50px;margin-top:7px;overflow:hidden;}
+.rm-tlbar i{display:block;height:100%;border-radius:50px;background:linear-gradient(90deg,#1d6fe8,#38bdf8);}
+.rm-tlcur.adv .rm-tlbar i{background:linear-gradient(90deg,#7c3aed,#d946ef);}
+.rm-tlcur.back .rm-tlbar i{background:linear-gradient(90deg,#0d9488,#34d399);}
+.rm-tltap{font-size:8px;font-weight:900;color:#ffd54a;margin-top:6px;}
+/* 앞으로(예정) 카드 */
+.rm-tlahead-h{text-align:center;font-size:9.5px;font-weight:900;color:#5f7ba8;margin:2px 0 6px;letter-spacing:0.03em;}
+.rm-tlplan{background:rgba(13,26,53,0.6);border:1.5px dashed rgba(143,179,232,0.4);border-radius:12px;padding:7px 10px;max-width:170px;margin:3px 0;}
+.rm-tlplan.adv{border-color:rgba(232,121,249,0.4);}
+.rm-tlstart{position:relative;z-index:3;width:max-content;margin:4px auto 0;background:rgba(13,26,53,0.95);border:2px solid #93c5fd;border-radius:14px;padding:8px 15px;text-align:center;}
+.rm-tlstart .ce{font-size:17px;}
+.rm-tlstart .ct{font-size:12px;font-weight:900;color:#fff;margin-top:2px;}
+/* ══ v1-3: 학생앱 로드맵 이식 (여정 오버레이) ══ */
+.rm-jov{position:fixed;inset:0;z-index:200;background:#0b1428;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s ease;visibility:hidden;}
+.rm-jov.show{transform:none;visibility:visible;}
+.rm-jov-hd{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#0d1a35;color:#fff;flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,.35);}
+.rm-jov-back{background:rgba(255,255,255,.12);border:none;color:#fff;font-size:18px;font-weight:900;width:34px;height:34px;border-radius:10px;cursor:pointer;}
+.rm-jov-ttl{font-size:15px;font-weight:900;}
+.rm-body{padding:14px 14px 22px;}
+/* ══ v1-4: 로드맵 탭에 여정(로켓 타임라인)을 바로 인라인 표시 ══ */
+.rm-tabjov{background:#0b1428;min-height:calc(100vh - 66px);}
+.rm-tabjov .rm-vjbody{padding:16px 10px 90px;}
+.rm-tabjov .rm-fab{position:fixed;bottom:74px;right:14px;}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ═══════════ 루멘수학 학부모앱 v1-4 ═══════════
+ * 접속: 자녀 코드(lumen_rec_code) 6자리 — 학생앱과 동일
+ * 데이터: Supabase lumen_store(or_studentdb·pub_reports_<code>·mf_progress·mf_books),
+ *         mf_students, recordings 버킷(녹음), photos 버킷(발행 리포트 HTML)
+ * 리포트: 학원앱에서 승인(발행)된 것만 표시 — 초안은 절대 노출되지 않음
+ * v1-3: 로드맵을 학생앱과 동일한 모양으로 이식 — 🚀 로켓 여정 요약 카드 +
+ *        「전체 여정 보기」(6년 사다리 ↔ 월별 타임라인, 로켓 위치 표시) + 교재 카드.
+ *        학생앱 로드맵 코드(CSS/JS)를 그대로 가져오되 학부모용 읽기전용
+ *        (진도 체크·목표 변경 등 쓰기 기능 제거). 데이터는 기존 mf_progress·
+ *        or_books·bookprog_<code>·goal_<code>·univ_marks 재사용. 자녀 전환 시 재로드.
+ * v1-4: 로드맵 탭을 누르면 요약 카드 대신 「전체 여정」(로켓 타임라인)을 첫 화면에
+ *        바로 표시 — 임팩트 강화. 여정을 탭에 인라인 렌더(오버레이 제거),
+ *        FAB(🚀 내 위치)는 탭바 위로 배치, 월별 팝업·토스트만 오버레이 유지. */
+var SUPA_URL = 'https://bhkkkbcytcrlxhrtjgen.supabase.co';
+var SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
+var sb = null;
+function db(){ if(!sb && window.supabase) sb = window.supabase.createClient(SUPA_URL, SUPA_KEY); return sb; }
+
+var P = { code:'', st:null, all:[], pub:null, recs:[], prog:null, books:null, mfSid:null, tab:'home', plYm:'', loading:false };
+
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function todayStr(){ var d=new Date(); return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0'); }
+function gcolor(lv){ lv=Number(lv)||0; return lv<=1?'#1d6fe8':lv===2?'#059669':lv===3?'#f59e0b':'#ef4444'; }
+function gradeHdr(lv){ lv=Number(lv)||3;
+  if(lv<=1) return 'linear-gradient(135deg,#1e3a8a,#2563eb)';
+  if(lv===2) return 'linear-gradient(135deg,#7f1d1d,#c0392b)';
+  if(lv===3) return 'linear-gradient(135deg,#78350f,#d97706)';
+  return 'linear-gradient(135deg,#374151,#6b7280)';
+}
+function shortGrade(g){ return String(g||'').replace('초등학교','초').replace('중학교','중').replace('고등학교','고').replace(/\s/g,'').replace('학년',''); }
+
+/* ── 데이터 로드 ── */
+async function loadAll(code){
+  P.loading=true; render();
+  var c=db(); if(!c){ P.loading=false; render(); return; }
+  try{
+    var r=await c.from('lumen_store').select('value').eq('key','or_studentdb').single();
+    var arr=(r.data&&r.data.value)||[];
+    P.all=Array.isArray(arr)?arr:[];
+    var matches=P.all.filter(function(s){ return s&&s.lumen_rec_code===code; });
+    if(!matches.length){ throw new Error('코드 ['+code+']를 찾을 수 없어요\n학원에 확인해 주세요'); }
+    // v1-2: 같은 코드가 중복 등록돼 있어도 하나라도 퇴원이면 차단
+    if(matches.some(function(s){ return s.withdrawn; })){ throw new Error('이용이 중단된 계정입니다.\n학원에 문의해 주세요.'); }
+    var st=matches[0];
+    P.st=st; P.code=code;
+    localStorage.setItem('lumen_parent_code', code);
+    // 발행 리포트 메타 + 매쓰플랫 진도 (병렬)
+    var q1=c.from('lumen_store').select('key,value').in('key',['pub_reports_'+code,'typeach_pub_'+code,'mf_progress','mf_books']);
+    var q2=c.from('mf_students').select('mf_student_id,name,lumen_rec_code');
+    var q3=c.storage.from('recordings').list(code, { limit:60, sortBy:{ column:'created_at', order:'desc' } });
+    var res=await Promise.all([q1,q2,q3]);
+    P.pub=null; P.prog=null; P.books=null; P.typeach=null;
+    ((res[0].data)||[]).forEach(function(row){
+      var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+      if(row.key==='pub_reports_'+code) P.pub=v;
+      else if(row.key==='typeach_pub_'+code) P.typeach=v; // v1-5: 유형 성취 리포트 (발행분만)
+      else if(row.key==='mf_progress') P.prog=v;
+      else if(row.key==='mf_books') P.books=v;
+    });
+    P.mfSid=null;
+    var mfs=(res[1].data)||[];
+    var hit=mfs.find(function(s){ return s.lumen_rec_code===code; });
+    if(!hit){ var same=mfs.filter(function(s){ return s.name===st.name; }); if(same.length===1) hit=same[0]; }
+    if(hit) P.mfSid=hit.mf_student_id;
+    P.recs=(res[2].data)||[];
+  }catch(e){
+    P.st=null; P.loginErr=e.message||'연결에 실패했어요';
+  }
+  P.loading=false;
+  if(!P.plYm){ var d=new Date(); P.plYm=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0'); }
+  render();
+}
+
+/* ── 판정 헬퍼 ── */
+function plannerToday(){
+  var st=P.st; if(!st) return false;
+  var t=todayStr(); var ymd=t.replace(/\./g,'');
+  if(st.lumen_planner&&st.lumen_planner[t]!=null) return true;
+  return (st.lumen_planner_photos||[]).some(function(p){ return p&&p.setId&&String(p.setId).slice(0,8)===ymd; });
+}
+function recToday(){
+  var iso=new Date().toISOString().slice(0,10);
+  var ymd=iso.replace(/-/g,'');
+  return (P.recs||[]).some(function(f){ return (f.created_at||'').slice(0,10)===iso||(f.name||'').indexOf(ymd)>=0; });
+}
+function weekPlanner(){
+  var st=P.st; var out=[];
+  var now=new Date(); var mon=new Date(now); mon.setDate(now.getDate()-((now.getDay()+6)%7));
+  var names=['월','화','수','목','금'];
+  for(var i=0;i<5;i++){
+    var d=new Date(mon); d.setDate(mon.getDate()+i);
+    var key=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+    var sc=st&&st.lumen_planner?st.lumen_planner[key]:null;
+    out.push({ nm:names[i], score:(sc!=null?sc:null), today:key===todayStr(), future:d>now });
+  }
+  return out;
+}
+function progBooks(){
+  if(!P.prog||!P.mfSid||!P.books) return [];
+  var by=(P.prog.byStudent||{})[P.mfSid]||{};
+  var out=[];
+  Object.keys(by).forEach(function(bid){
+    var pr=by[bid]; var bk=(P.books.books||{})[bid];
+    if(!bk) return;
+    var pct=(bk.pages&&pr.maxPage)?Math.min(100,Math.round(pr.maxPage/bk.pages*100)):null;
+    out.push({ n:bk.n||('교재 '+bid), ch:pr.curChapter||'', pct:pct, maxPage:pr.maxPage||0, pages:bk.pages||0, last:pr.lastDate||'' });
+  });
+  out.sort(function(a,b){ return (b.last||'').localeCompare(a.last||''); });
+  return out;
+}
+
+/* ── 렌더 ── */
+function render(){
+  var app=document.getElementById('app');
+  if(!P.st){
+    var saved=localStorage.getItem('lumen_parent_code')||'';
+    app.innerHTML='<div class="login">'
+      +'<div class="lg">🏫 LUMEN MATH</div>'
+      +'<h1>루멘수학 학부모</h1>'
+      +'<p>자녀의 학습 코드 6자리를 입력해 주세요<br>(학생앱과 같은 코드입니다)</p>'
+      +'<input id="pcode" maxlength="6" placeholder="ABC123" value="'+esc(saved)+'" onkeydown="if(event.key===\'Enter\')doLogin()">'
+      +'<button onclick="doLogin()">'+(P.loading?'확인 중…':'우리 아이 보러가기')+'</button>'
+      +'<div class="err">'+esc(P.loginErr||'')+'</div>'
+      +'<div class="ft">Lumen Math Academy · parent v1-5</div></div>';
+    return;
+  }
+  var h='';
+  if(P.tab==='home') h=vHome();
+  else if(P.tab==='report') h=vReport();
+  else if(P.tab==='planner') h=vPlanner();
+  else if(P.tab==='rec') h=vRec();
+  else if(P.tab==='roadmap') h=vRoadmap();
+  var hasNew=false;
+  if(P.pub&&P.pub.at){ hasNew=(Date.now()-Date.parse(P.pub.at))<48*3600*1000; }
+  app.innerHTML='<div class="view">'+h+'</div>'
+    +'<div class="tabbar">'
+    +tabBtn('home','🏠','홈',false)
+    +tabBtn('report','📋','리포트',hasNew)
+    +tabBtn('planner','📓','플래너',false)
+    +tabBtn('rec','🎙️','녹음',false)
+    +tabBtn('roadmap','🗺️','로드맵',false)
+    +'</div>';
+  if(P.tab==='roadmap' && window.rmParentSync) rmParentSync();
+}
+function tabBtn(k,ic,lb,dot){
+  return '<button class="tb'+(P.tab===k?' on':'')+'" onclick="goTab(\''+k+'\')"><div class="ti">'+ic+'</div><div class="tl">'+lb+'</div>'+(dot?'<div class="dot"></div>':'')+'</button>';
+}
+window.goTab=function(k){ P.tab=k; render(); window.scrollTo(0,0); };
+window.doLogin=function(){
+  var v=(document.getElementById('pcode')||{}).value||'';
+  v=v.trim().toUpperCase();
+  if(v.length<4){ P.loginErr='코드를 확인해 주세요'; render(); return; }
+  P.loginErr='';
+  loadAll(v);
+};
+window.doLogout=function(){ P.st=null; P.loginErr=''; render(); };
+window.switchChild=function(code){ if(code&&code!==P.code){ P.tab='home'; loadAll(code); } };
+
+function headerHtml(){
+  var st=P.st;
+  var sibs=(st.lumen_siblings||[]).map(function(id){ return P.all.find(function(s){ return s&&s.id===id&&!s.withdrawn; }); }).filter(Boolean);
+  var today=new Date();
+  var wd=['일','월','화','수','목','금','토'][today.getDay()];
+  var h='<div class="hd">'
+    +'<div class="brand">🏫 LUMEN MATH · 학부모 <button class="out" onclick="doLogout()">코드 변경</button></div>'
+    +'<div class="name">'+esc(st.name)+' <small>'+esc(st.grade||'')+(st.group?' · '+esc(st.group)+'반':'')+'</small></div>'
+    +'<div class="greet">'+(today.getMonth()+1)+'월 '+today.getDate()+'일 '+wd+'요일 · 오늘도 함께 응원해요 👏</div>';
+  if(sibs.length){
+    h+='<div class="sibs"><button class="sib on">'+esc(st.name)+'</button>';
+    sibs.forEach(function(s){ h+='<button class="sib" onclick="switchChild(\''+esc(s.lumen_rec_code||'')+'\')">'+esc(s.name)+'</button>'; });
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function vHome(){
+  var st=P.st;
+  var pl=plannerToday(), rc=recToday();
+  var h=headerHtml();
+  h+='<div class="caps">'
+    +'<div class="cap"><div class="ci" style="background:'+(pl?'#ecfdf5':'#fef2f2')+'">📓</div><div><div class="ct">오늘 플래너</div><div class="cs" style="color:'+(pl?'#059669':'#dc2626')+'">'+(pl?'제출 완료 ✓':'아직이에요')+'</div></div></div>'
+    +'<div class="cap"><div class="ci" style="background:'+(rc?'#ecfdf5':'#fef2f2')+'">🎙️</div><div><div class="ct">녹음 숙제</div><div class="cs" style="color:'+(rc?'#059669':'#dc2626')+'">'+(rc?'제출 완료 ✓':'아직이에요')+'</div></div></div>'
+    +'</div>';
+  // 히어로: 최신 발행 리포트
+  var rec0=P.pub&&P.pub.recent&&P.pub.recent[0];
+  if(rec0){
+    var isNew=P.pub.at&&(Date.now()-Date.parse(P.pub.at))<48*3600*1000;
+    var isWeekly=rec0.testType==='weekly';
+    h+='<div class="hero">'
+      +'<div class="hero-top" style="background:'+gradeHdr(rec0.level)+'">'
+      +'<div class="or">루멘수학 · ONE REPORT</div>'
+      +'<div class="nm">최근 학습 리포트'+(isNew?' <span style="font-size:9px;background:#ffd54a;color:#7f1d1d;border-radius:50px;padding:2px 8px;vertical-align:3px;font-weight:900">NEW</span>':'')+'</div>'
+      +'<div class="tags"><span class="tg">📅 '+esc(rec0.date||'')+'</span>'
+      +(isWeekly?'<span class="tg gold">🌐 전국주간테스트</span>':'<span class="tg">📝 일일테스트</span>')
+      +(rec0.bookname?'<span class="tg">'+esc(String(rec0.bookname).slice(0,18))+'</span>':'')
+      +'</div></div>'
+      +'<div class="hero-bd">'
+      +'<div style="display:flex;align-items:center;gap:13px">'
+      +'<div class="ring" style="background:conic-gradient('+gcolor(rec0.level)+' 0 '+(Number(rec0.score)||0)+'%,#e8eef8 '+(Number(rec0.score)||0)+'% 100%)"><div><b>'+esc(rec0.score||'-')+'</b><span>'+esc(rec0.level||'-')+'등급</span></div></div>'
+      +'<div style="flex:1;display:flex;flex-direction:column;gap:5px">'
+      +(rec0.acadRank&&rec0.showAcadRank!==false?'<div style="font-size:12px;font-weight:900;color:#0d2240">학원 <b style="color:#059669;font-size:14px">'+rec0.acadRank+'</b>등 / '+rec0.acadN+'명'+(rec0.acadAvg?' <span style="font-size:9.5px;color:#94a3b8">평균 '+rec0.acadAvg+'점</span>':'')+'</div>':'')
+      +(rec0.rank&&rec0.showRank!==false?'<div style="font-size:12px;font-weight:900;color:#0d2240">전국 <b style="color:#1d6fe8;font-size:14px">'+rec0.rank+'</b>등 / '+rec0.total+'명'+(rec0.avgScore?' <span style="font-size:9px;font-weight:900;color:#059669;background:#ecfdf5;border-radius:50px;padding:2px 7px">평균 대비 '+(Number(rec0.score)>=Number(rec0.avgScore)?'+':'')+Math.round(Number(rec0.score)-Number(rec0.avgScore))+'점</span>':'')+'</div>':'')
+      +'</div></div>'
+      +(rec0.comment?'<div class="tot"><div class="t1">💬 선생님 총평</div><div class="t2 clip">'+esc(rec0.comment)+'</div></div>':'')
+      +'<div class="hero-cta"><button class="b1" onclick="goTab(\'report\')">📋 리포트 전체 보기</button></div>'
+      +'</div></div>';
+    // 지난 리포트 스트립
+    h+='<div class="hist">';
+    (P.pub.recent||[]).forEach(function(r,i){
+      h+='<div class="hp'+(i===0?' on':'')+'"><div class="d">'+esc((r.date||'').slice(5))+'</div><div class="s">'+esc(r.score||'-')+'</div><div class="g" style="background:'+gcolor(r.level)+'"></div></div>';
+    });
+    h+='</div>';
+  } else {
+    h+='<div class="sec"><div class="st">📋 학습 리포트</div><div class="empty">아직 발행된 리포트가 없어요.<br>선생님이 발행하면 이곳에 바로 나타납니다.</div></div>';
+  }
+  // 플래너 주간
+  var wk=weekPlanner();
+  h+='<div class="sec"><div class="st">📓 이번 주 플래너 <button class="more" onclick="goTab(\'planner\')">기록 ›</button></div><div class="wk">';
+  wk.forEach(function(d){
+    var bg='#eef2f7', fg='#94a3b8', txt='-';
+    if(d.score!=null){ txt=String(d.score); bg=(d.score>=8?'#059669':d.score>=5?'#f59e0b':'#94a3b8'); fg='#fff'; }
+    else if(d.today){ txt=plannerToday()?'✓':'…'; if(plannerToday()){bg='#059669';fg='#fff';} }
+    h+='<div><div class="wd"'+(d.today?' style="color:#0d2240;font-weight:900"':'')+'>'+d.nm+'</div><div class="wv" style="background:'+bg+';color:'+fg+';'+(d.today?'box-shadow:0 0 0 2px #ffd54a':'')+'">'+txt+'</div></div>';
+  });
+  h+='</div>';
+  var stm=(P.st.lumen_study_time||{})[todayStr()];
+  h+='<div class="subnote">'+(stm?('오늘 순공 '+Math.floor(stm/60)+'시간 '+(stm%60)+'분 · '):'')+'플래너 점수는 선생님 검토 후 반영됩니다</div></div>';
+  // 녹음
+  h+='<div class="sec"><div class="st">🎙️ 하브루타 녹음 <button class="more" onclick="goTab(\'rec\')">전체 듣기 ›</button></div>';
+  if(!rc){
+    h+='<div style="display:flex;align-items:center;gap:9px;margin-top:9px;background:#fff7ed;border:1px solid #fed7aa;border-radius:11px;padding:10px 12px">'
+      +'<span style="font-size:15px">⏰</span><div><div style="font-size:11px;font-weight:900;color:#9a3412">오늘 녹음이 아직 제출 전이에요</div><div style="font-size:9.5px;color:#c2410c;font-weight:700;margin-top:1px">아이에게 응원 한마디 어떠세요?</div></div></div>';
+  }
+  var r0=(P.recs||[])[0];
+  if(r0){
+    h+='<div style="font-size:11px;font-weight:800;color:#0d2240;margin-top:9px">최근 녹음 · '+esc((r0.created_at||'').slice(5,10).replace('-','/'))+'</div>'
+      +'<audio controls preload="none" style="width:100%;height:36px;margin-top:5px" src="'+SUPA_URL+'/storage/v1/object/public/recordings/'+esc(P.code)+'/'+encodeURIComponent(r0.name)+'"></audio>';
+  } else if(rc===false){
+    h+='<div class="subnote">아직 제출된 녹음이 없어요</div>';
+  }
+  h+='</div>';
+  // 로드맵
+  var bks=progBooks();
+  h+='<div class="sec" style="background:linear-gradient(135deg,#0d2240,#16305c);color:#fff;margin-bottom:14px"><div class="st" style="color:#fff">🗺️ 우리 아이 로드맵 <button class="more" style="color:#ffd54a" onclick="goTab(\'roadmap\')">전체 ›</button></div>';
+  if(bks.length){
+    var b0=bks[0];
+    h+='<div style="display:flex;align-items:center;gap:11px;margin-top:11px"><div style="font-size:24px">🚀</div><div style="flex:1">'
+      +'<div style="font-size:12px;font-weight:900">'+esc(b0.n)+'</div>'
+      +(b0.ch?'<div style="font-size:9.5px;color:#6ee7b7;font-weight:800;margin-top:2px">'+esc(b0.ch)+' 진행 중</div>':'')
+      +'<div style="height:9px;background:rgba(255,255,255,.12);border-radius:99px;margin-top:7px;overflow:hidden"><div style="width:'+(b0.pct!=null?b0.pct:30)+'%;height:100%;background:linear-gradient(90deg,#ffd54a,#f59e0b);border-radius:99px"></div></div>'
+      +'<div style="font-size:9px;color:#8fb8e8;font-weight:700;margin-top:4px">'+(b0.pct!=null?('진도 '+b0.pct+'% ('+b0.maxPage+'/'+b0.pages+'p)'):(b0.maxPage+'페이지까지 도달'))+'</div>'
+      +'</div></div>';
+  } else {
+    h+='<div style="font-size:11px;color:#8fb8e8;font-weight:700;margin-top:10px">진도 데이터를 준비 중이에요</div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+/* v1-5: 유형 성취 리포트 (신호등 → 성장 스토리) — 학원앱 「학부모앱 발행」분만 표시 */
+function vTypeAch(){
+  var list=(P.typeach&&P.typeach.list)||[];
+  if(!list.length) return '';
+  var sel=P.taSel!=null?P.taSel:list.length-1;
+  if(sel<0||sel>=list.length) sel=list.length-1;
+  var rep=list[sel];
+  var SIG={g:['🟢 양호','#059669'],y:['🟡 보통','#d97706'],r:['🔴 주의','#dc2626']};
+  var h='<div class="sec"><div class="st">🎨 유형 성취 리포트 <small style="font-weight:600;color:#94a3b8">2주 단위 · 문항 데이터 자동 분석</small></div>';
+  // 기간 칩
+  if(list.length>1){
+    h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">';
+    list.forEach(function(r,i){
+      var on=i===sel;
+      h+='<button onclick="P.taSel='+i+';render()" style="font-size:11px;font-weight:800;border-radius:20px;padding:4px 10px;border:1.5px solid '+(on?'#1d6fe8':'#e2e8f0')+';background:'+(on?'#eff6ff':'white')+';color:'+(on?'#1d6fe8':'#94a3b8')+';cursor:pointer;font-family:inherit">'+esc(r.label||r.period)+'</button>';
+    });
+    h+='</div>';
+  }
+  h+='<div style="background:linear-gradient(135deg,#0d2240,#1d6fe8);color:white;border-radius:14px 14px 0 0;padding:13px 14px">'
+    +'<div style="font-size:10px;opacity:0.7">루멘수학 · 유형 성취 리포트</div>'
+    +'<div style="font-size:16px;font-weight:800">'+esc(rep.name||'')+'</div>'
+    +'<div style="font-size:10px;opacity:0.8">'+esc(rep.grade||'')+' · '+esc(rep.label||'')+' · '+(rep.nProblems||0)+'문항 도전</div></div>';
+  h+='<div style="background:#f1f5f9;border-radius:0 0 14px 14px;padding:10px">';
+  // A. 신호등
+  if((rep.units||[]).length){
+    h+='<div style="background:white;border-radius:12px;padding:12px;margin-bottom:8px"><div style="font-size:12px;font-weight:800;margin-bottom:6px;color:#0d2240">단원별 신호등</div>';
+    rep.units.forEach(function(u){ var sg=SIG[u.sig]||SIG.y;
+      h+='<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #f1f5f9;color:#334155"><span>'+esc(u.name)+'</span><span style="color:'+sg[1]+';font-weight:800">'+sg[0]+' '+u.rate+'%</span></div>'; });
+    h+='</div>';
+  }
+  // 약점 추이
+  if(rep.weakPrev!=null){
+    var better=rep.weakCur<=rep.weakPrev;
+    h+='<div style="background:white;border-radius:12px;padding:12px;margin-bottom:8px"><div style="font-size:12px;font-weight:800;color:#0d2240;margin-bottom:4px">📉 약점 유형 추이</div>'
+      +'<div style="font-size:20px;font-weight:900;color:'+(better?'#059669':'#dc2626')+'">'+rep.weakPrev+'개 → '+rep.weakCur+'개'
+      +(better&&rep.weakPrev>rep.weakCur?' <span style="font-size:11px">▼ '+(rep.weakPrev-rep.weakCur)+'개 개선</span>':'')+'</div></div>';
+  }
+  // B. 성장 스토리
+  if((rep.conquests||[]).length){
+    h+='<div style="background:white;border-radius:12px;padding:12px;margin-bottom:8px"><div style="font-size:12px;font-weight:800;color:#059669;margin-bottom:6px">✅ 정복한 유형</div>';
+    rep.conquests.forEach(function(q){ h+='<div style="font-size:12px;padding:3px 0;color:#334155">'+esc(q.name)+' <b>'+q.from+'% → '+q.to+'%</b> <span style="color:#059669;font-weight:900">▲</span></div>'; });
+    h+='</div>';
+  }
+  if((rep.challenges||[]).length){
+    h+='<div style="background:white;border-radius:12px;padding:12px;margin-bottom:8px"><div style="font-size:12px;font-weight:800;color:#d97706;margin-bottom:6px">🔥 지금 도전 중</div>';
+    rep.challenges.forEach(function(q){ h+='<div style="font-size:12px;padding:3px 0;color:#334155">'+esc(q.name)+' <b>'+q.rate+'%</b><br><span style="font-size:10px;color:#94a3b8">'+esc(q.unit||'')+'</span></div>'; });
+    h+='</div>';
+  }
+  if(rep.goal){
+    h+='<div style="background:white;border-radius:12px;padding:12px;margin-bottom:8px"><div style="font-size:12px;font-weight:800;color:#0d2240;margin-bottom:4px">🎯 다음 목표</div>'
+      +'<div style="font-size:12px;color:#334155">'+esc(rep.goal.name)+' 80% 넘기기 (현재 '+rep.goal.rate+'%)</div></div>';
+  }
+  if(rep.memo){
+    h+='<div style="background:#0d2240;color:white;border-radius:12px;padding:12px"><div style="font-size:11px;font-weight:800;opacity:0.7;margin-bottom:4px">💬 선생님 한마디</div><div style="font-size:12px;line-height:1.6">'+esc(rep.memo)+'</div></div>';
+  }
+  h+='</div></div>';
+  return h;
+}
+
+function vReport(){
+  var h='<div class="pagehd">📋 학습 리포트 <small>발행된 리포트만 표시됩니다</small></div>';
+  h+=vTypeAch(); // v1-5: 유형 성취 리포트 먼저
+  if(P.pub&&P.pub.url){
+    h+='<iframe class="rep" src="'+esc(P.pub.url)+'?v='+encodeURIComponent(P.pub.at||'')+'"></iframe>';
+  } else if(!((P.typeach&&P.typeach.list)||[]).length) {
+    h+='<div class="empty">아직 발행된 리포트가 없어요.<br>선생님이 발행하면 이곳에서 전체 리포트를<br>날짜별로 넘겨볼 수 있습니다.</div>';
+  }
+  return h;
+}
+
+window.plShift=function(n){
+  var y=Number(P.plYm.slice(0,4)), m=Number(P.plYm.slice(5))-1+n;
+  var d=new Date(y,m,1);
+  P.plYm=d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0');
+  render();
+};
+function vPlanner(){
+  var st=P.st;
+  var y=Number(P.plYm.slice(0,4)), m=Number(P.plYm.slice(5));
+  var first=new Date(y,m-1,1), days=new Date(y,m,0).getDate();
+  var h='<div class="pagehd">📓 플래너 기록</div>';
+  h+='<div class="month-nav"><button onclick="plShift(-1)">‹</button><span class="ym">'+y+'년 '+m+'월</span><button onclick="plShift(1)">›</button></div>';
+  h+='<div class="cal">';
+  ['일','월','화','수','목','금','토'].forEach(function(d){ h+='<div class="dh">'+d+'</div>'; });
+  for(var i=0;i<first.getDay();i++) h+='<div></div>';
+  var cnt=0, sum=0;
+  for(var d=1;d<=days;d++){
+    var key=y+'.'+String(m).padStart(2,'0')+'.'+String(d).padStart(2,'0');
+    var sc=st.lumen_planner?st.lumen_planner[key]:null;
+    var col='#cbd5e1', txt='';
+    if(sc!=null){ cnt++; sum+=Number(sc)||0; txt=String(sc); col=(sc>=8?'#059669':sc>=5?'#f59e0b':'#94a3b8'); }
+    var isToday=key===todayStr();
+    h+='<div class="dc"'+(isToday?' style="box-shadow:0 0 0 2px #ffd54a"':'')+'><div class="dn">'+d+'</div><div class="ds" style="color:'+col+'">'+(txt||'·')+'</div></div>';
+  }
+  h+='</div>';
+  h+='<div class="sec" style="margin-top:0"><div class="subnote" style="margin-top:0">이번 달 '+cnt+'회 제출'+(cnt?(' · 평균 '+(Math.round(sum/cnt*10)/10)+'점'):'')+' · 점수는 선생님 검토 후 확정됩니다</div></div>';
+  return h;
+}
+
+function vRec(){
+  var h='<div class="pagehd">🎙️ 하브루타 녹음 <small>최근 60개</small></div>';
+  if(!(P.recs||[]).length){ h+='<div class="empty">아직 제출된 녹음이 없어요</div>'; return h; }
+  P.recs.forEach(function(f){
+    if(!f||!f.name||f.name.indexOf('.emptyFolderPlaceholder')>=0) return;
+    var dt=(f.created_at||'').slice(0,10).replace(/-/g,'.');
+    h+='<div class="recrow"><div class="rt">🎧 '+esc(dt||f.name)+'</div>'
+      +'<audio controls preload="none" src="'+SUPA_URL+'/storage/v1/object/public/recordings/'+esc(P.code)+'/'+encodeURIComponent(f.name)+'"></audio></div>';
+  });
+  return h;
+}
+
+function vRoadmap(){
+  // v1-4: 로드맵 탭 = 전체 여정(로켓 타임라인)을 첫 화면에 바로 표시
+  var h='<div class="rm-tabjov">'
+    +'<div class="rm-vjbody" id="rm-vjbody"><div class="rm-loading" style="padding:40px 0;color:#8fb3e8">불러오는 중…</div></div>'
+    +'<button class="rm-fab" id="rm-fab" onclick="rmJumpMe()">🚀 내 위치</button>'
+    +'</div>';
+  return h;
+}
+
+/* ══ 로드맵 v2-1 ══ */
+;(function(){
+/* ===== 학부모앱 이식 shim (v1-3) — 읽기전용 ===== */
+var isTest=false;
+var ahaCachedBooks=null;
+async function ahaLoadAssignedBooks(){
+  if(ahaCachedBooks!==null) return ahaCachedBooks;
+  if(!window.sb||!studentInfo){ ahaCachedBooks=[]; return []; }
+  try{
+    var r1=await window.sb.from("lumen_store").select("value").eq("key","or_books").single();
+    var allBooks=[];
+    if(r1.data&&r1.data.value){ var _raw=r1.data.value; try{ allBooks=(typeof _raw==="string")?JSON.parse(_raw):_raw; }catch(e){} }
+    if(!Array.isArray(allBooks)) allBooks=[];
+    var assigned=studentInfo.lumen_assignedBooks||[];
+    var ids=assigned.map(function(ab){ return ab.bookId; });
+    ahaCachedBooks=allBooks.filter(function(b){ return ids.indexOf(b.id)>=0; });
+    return ahaCachedBooks;
+  }catch(e){ ahaCachedBooks=[]; return []; }
+}
+
+// 과정 사다리 (초5 ~ 고3 · 22개정 고등 과목명)
+var COURSES=['초5-1','초5-2','초6-1','초6-2','중1-1','중1-2','중2-1','중2-2','중3-1','중3-2','공수1','공수2','대수','미적Ⅰ','확통','미적Ⅱ'];
+var HS_START=10; // '공수1' 인덱스
+
+var rmProg={};      // bookprog_{code} — { bookId: { unitId: {on,t} } }
+var rmGoal=null;    // goal_{code} — { univ, major, t }
+var rmMarks={};     // univ_marks — { 대학이름: 이미지URL }
+var rmBooks=[];     // [{ b:교재, a:배정, ci:과정인덱스 }]
+var rmLoaded=false;
+var rmCur=null;     // 단원 모달의 현재 책 item
+var rmBuf={};       // 단원 모달 편집 버퍼 { unitId: {on,t} }
+var rmHSopen=false; // 여정 고등 접힘 토글
+// v2-5: 매쓰플랫 자동 진도
+var rmMf={ books:[], months:[], loaded:false }; // books:[{id,name,g,pages,units,prog,ci,track}], months:[{ym,c,t,rate,books:[...]}]
+var rmRouteOpen={};  // { bookId: true } 단원 노선 펼침 상태
+var rm6yrOpen=false; // v2-8: 6년 학년 사다리 토글(기본=월별 타임라인)
+
+function pad2(n){ return n<10 ? '0'+n : ''+n; }
+function nowT(){ var d=new Date(); return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes()); }
+function pdate(s){ if(!s) return null; var t=Date.parse(String(s).replace(/\./g,'-')); return isNaN(t) ? null : new Date(t); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function rmToast(msg){
+  var t=document.getElementById('rm-toast'); if(!t) return;
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+// ── 과정 파싱: 교재 이름 → COURSES 인덱스 ──
+function courseFromName(name){
+  if(!name) return -1;
+  var m=String(name).match(/(초|중|고)\s*(\d)\s*[-–]\s*(\d)/);
+  if(m){
+    if(m[1]==='고'){
+      var hsMap={'1-1':'공수1','1-2':'공수2','2-1':'대수','2-2':'미적Ⅰ','3-1':'확통','3-2':'미적Ⅱ'};
+      return COURSES.indexOf(hsMap[m[2]+'-'+m[3]]||'');
+    }
+    return COURSES.indexOf(m[1]+m[2]+'-'+m[3]);
+  }
+  if(/공통수학\s*1|공수\s*1/.test(name)) return COURSES.indexOf('공수1');
+  if(/공통수학\s*2|공수\s*2/.test(name)) return COURSES.indexOf('공수2');
+  if(/미적분\s*(Ⅱ|II|2)/.test(name)) return COURSES.indexOf('미적Ⅱ');
+  if(/미적분\s*(Ⅰ|I|1)?/.test(name) && /미적분/.test(name)) return COURSES.indexOf('미적Ⅰ');
+  if(/확률과\s*통계|확통/.test(name)) return COURSES.indexOf('확통');
+  if(/대수/.test(name)) return COURSES.indexOf('대수');
+  return -1;
+}
+
+// ── 학교 표준 과정 인덱스 (학년 + 오늘 날짜) ──
+function schoolIdx(){
+  var g=(window.studentInfo&&studentInfo.grade)||'';
+  var m=String(g).match(/(초|중|고)[^0-9]*(\d)/);
+  if(!m) return -1;
+  var lv=m[1], num=parseInt(m[2],10);
+  var mo=new Date().getMonth()+1;
+  var sem=(mo>=3&&mo<=8)?1:2; // 9월~2월 = 2학기
+  var key;
+  if(lv==='고'){
+    var hsMap={'1-1':'공수1','1-2':'공수2','2-1':'대수','2-2':'미적Ⅰ','3-1':'확통','3-2':'미적Ⅱ'};
+    key=hsMap[num+'-'+sem];
+  } else key=lv+num+'-'+sem;
+  return COURSES.indexOf(key||'');
+}
+
+// ── 단원 목록 정규화: or_books의 units(배열/줄바꿈 문자열) → [{id,name}] ──
+function bookUnits(b){
+  var u=b&&b.units;
+  if(typeof u==='string') u=u.split(/\n/).map(function(s){return s.trim();}).filter(function(s){return s;});
+  if(!Array.isArray(u)||!u.length) return null;
+  return u.map(function(it,i){
+    if(typeof it==='string') return {id:'u'+pad2(i+1), name:it};
+    return {id:it.id||('u'+pad2(i+1)), name:it.name||it.title||('단원 '+(i+1))};
+  });
+}
+
+function bookPct(b){
+  var us=bookUnits(b); if(!us) return null;
+  var p=rmProg[b.id]||{}; var done=0;
+  us.forEach(function(u){ if(p[u.id]&&p[u.id].on) done++; });
+  return { done:done, total:us.length, pct:Math.round(done/us.length*100) };
+}
+
+// ── 최전선(현재 위치) 인덱스 ──
+function frontIdx(){
+  var f=-1;
+  rmBooks.forEach(function(it){
+    if(it.ci<0) return;
+    var pr=bookPct(it.b);
+    var active = pr ? pr.pct<100 : true;
+    if(active && it.ci>f) f=it.ci;
+  });
+  if(f<0) rmBooks.forEach(function(it){ if(it.ci>f) f=it.ci; });
+  if(f<0) f=schoolIdx();
+  return f;
+}
+
+function gapInfo(){
+  var f=frontIdx(), s=schoolIdx();
+  if(f<0) return { f:f, s:s, lead:'🗺️ 나의 로드맵', sub:'교재가 배정되면 위치가 계산돼요' };
+  if(s<0) return { f:f, s:s, lead:'🚀 현재 과정: '+COURSES[f], sub:'' };
+  var d=f-s;
+  if(d>0) return { f:f, s:s, lead:'🚀 선행 +'+d+'학기', sub:'학교보다 '+(d>=2?(Math.floor(d/2)+'년'+(d%2?' 반':'')+' '):'')+'앞서 달리는 중!' };
+  if(d===0) return { f:f, s:s, lead:'🏃 학교 진도와 나란히', sub:'현행 과정을 착실하게!' };
+  return { f:f, s:s, lead:'🌱 개념 다지기 집중 구간', sub:'단단히 다진 만큼 뒤가 빨라져요' };
+}
+
+function journeyPct(f){
+  if(f<0) return 0;
+  var best=null;
+  rmBooks.forEach(function(it){
+    if(it.ci!==f) return;
+    var p=bookPct(it.b);
+    if(p && (best===null||p.pct>best)) best=p.pct;
+  });
+  var frac=(best===null)?0:best/100;
+  return Math.min(100, Math.round((f+frac)/COURSES.length*100));
+}
+
+// ── 예상 마무리 (최근 4주 체크 속도) ──
+function forecast(it){
+  var us=bookUnits(it.b); if(!us) return null;
+  var p=rmProg[it.b.id]||{}; var done=0, recent=0, now=Date.now();
+  us.forEach(function(u){
+    var e=p[u.id];
+    if(e&&e.on){ done++; var t=Date.parse(e.t||''); if(t&&(now-t)<28*86400000) recent++; }
+  });
+  var left=us.length-done;
+  if(left<=0) return { txt:'완주 🏅', warn:false, done:true };
+  if(recent<=0) return null;
+  var weeks=left/(recent/4);
+  var d=new Date(now+weeks*7*86400000);
+  var seg=d.getDate()<=10?'초':(d.getDate()<=20?'중':'말');
+  var gd=pdate(it.a&&it.a.goalDate);
+  var warn=!!(gd&&d>gd);
+  return { txt:'예상 '+(d.getMonth()+1)+'월 '+seg+(warn?' ⚠️':' ✅'), warn:warn, done:false };
+}
+
+function datesLine(it){
+  var parts=[];
+  var sd=pdate(it.a&&it.a.startDate);
+  var gd=pdate(it.a&&it.a.goalDate);
+  if(sd) parts.push('🚩 '+(sd.getMonth()+1)+'.'+sd.getDate()+' 시작');
+  if(gd) parts.push('🎯 목표 '+(gd.getMonth()+1)+'월');
+  var fc=forecast(it);
+  if(fc&&!fc.done) parts.push('📈 '+fc.txt);
+  return parts.join(' · ');
+}
+
+// ── 데이터 로드 ──
+async function rmLoad(){
+  rmProg={}; rmGoal=null; rmMarks={};
+  if(!window.sb||!window.studentInfo) return;
+  var code=studentInfo.lumen_rec_code;
+  try{
+    var r=await sb.from('lumen_store').select('key,value').in('key',['bookprog_'+code,'goal_'+code,'univ_marks']);
+    (r.data||[]).forEach(function(row){
+      var v=row.value;
+      try{ if(typeof v==='string') v=JSON.parse(v); }catch(e){}
+      if(row.key==='bookprog_'+code) rmProg=v||{};
+      else if(row.key==='goal_'+code) rmGoal=v||null;
+      else if(row.key==='univ_marks') rmMarks=v||{};
+    });
+  }catch(e){ console.error('로드맵 데이터 로드 실패:', e); }
+  var books=[];
+  try{ books=await ahaLoadAssignedBooks(); }catch(e){ books=[]; }
+  var assigns=(studentInfo&&studentInfo.lumen_assignedBooks)||[];
+  rmBooks=(books||[]).map(function(b){
+    var a=null;
+    assigns.forEach(function(x){ if(x&&x.bookId===b.id) a=x; });
+    return { b:b, a:a||{}, ci:courseFromName(b.name) };
+  });
+  rmBooks.sort(function(x,y){ return (y.ci-x.ci)||String(x.b.name||'').localeCompare(String(y.b.name||'')); });
+  try{ await rmLoadMf(); }catch(e){ console.warn('MF 진도 로드 실패:', e); }
+  rmLoaded=true;
+}
+
+// ── 진입 ──
+window.rmOpen=async function(){
+  go('screen-roadmap');
+  document.getElementById('rm-books').innerHTML='<div class="rm-loading">불러오는 중…</div>';
+  await rmLoad();
+  rmRenderSummary();
+  rmRenderBooks();
+};
+
+window.rmOpenJourney=function(){
+  rmEnsureOverlays();
+  rmHSopen=false;
+  rmRenderJourney();
+  var ov=document.getElementById('rm-journey-ov'); if(ov) ov.classList.add('show');
+  document.body.style.overflow='hidden';
+  setTimeout(function(){ rmJumpMe(); }, 120);
+};
+window.rmCloseJourney=function(){
+  var ov=document.getElementById('rm-journey-ov'); if(ov) ov.classList.remove('show');
+  document.body.style.overflow='';
+};
+
+// ── 요약 카드 ──
+function rmRenderSummary(){
+  var gi=gapInfo();
+  document.getElementById('rm-gapline').textContent=gi.lead;
+  document.getElementById('rm-gapsub').textContent=gi.sub;
+  document.getElementById('rm-journeypct').textContent=journeyPct(gi.f)+'%';
+  var rail=document.getElementById('rm-minirail');
+  var f=gi.f, s=gi.s;
+  if(f<0){ rail.innerHTML=''; return; }
+  var lo=Math.max(0,Math.min(f,s<0?f:s)-1), hi=Math.min(COURSES.length-1,f+3);
+  var h='';
+  for(var i=lo;i<=hi;i++){
+    var cls=(i<f)?'d':(i===f?'f':(i===s?'s':''));
+    h+='<div class="rm-md '+cls+'"></div>';
+    if(i<hi) h+='<div class="rm-ml '+(i<f?'d':'')+'"></div>';
+  }
+  rail.innerHTML=h;
+}
+
+// ── 교재 카드 목록 ──
+function rmRenderBooks(){
+  var box=document.getElementById('rm-books');
+  if(!rmBooks.length){
+    box.innerHTML='<div class="rm-empty"><div class="e1">📚</div><div class="e2">아직 배정된 교재가 없어요</div><div class="e3">원장님이 교재를 배정하면<br>여기에 에너지바가 생겨요!</div></div>';
+    return;
+  }
+  var s=schoolIdx(), h='';
+  rmBooks.forEach(function(it){
+    var b=it.b, pr=bookPct(b);
+    var tag, tcls;
+    if(it.ci<0||s<0){ tag='배정'; tcls='t-cur'; }
+    else if(it.ci>s){ tag='선행'; tcls='t-adv'; }
+    else if(it.ci<s){ tag='복습'; tcls='t-back'; }
+    else { tag='현행'; tcls='t-cur'; }
+    var coverClr=(tcls==='t-adv')?'#7c3aed':(tcls==='t-back'?'#10b981':'#dc2626');
+    var first=String(b.name||'책').trim().charAt(0);
+    h+='<div class="rm-card">';
+    h+='<div class="rm-ch"><div class="rm-cover" style="background:'+coverClr+'">'+esc(first)+'</div>';
+    h+='<div class="rm-nm">'+esc(b.name||'(이름 없음)')+'<br><span class="rm-tag '+tcls+'">'+tag+'</span></div>';
+    if(pr&&pr.pct>=100) h+='<div class="rm-done-badge">🏅 완주!</div>';
+    h+='</div>';
+    if(pr){
+      var fillCls=pr.pct>=100?'gg':(tcls==='t-adv'?'pp':'');
+      var pcClr=pr.pct>=100?'#10b981':(tcls==='t-adv'?'#7c3aed':'#1d6fe8');
+      h+='<div class="rm-brow"><div class="rm-ebar"><div class="rm-efill '+fillCls+'" style="width:'+pr.pct+'%"></div></div><div class="rm-pc" style="color:'+pcClr+'">'+pr.pct+'%</div></div>';
+      var dl=datesLine(it);
+      h+='<div class="rm-mt"><span class="rm-dates">'+(dl?esc(dl):'&nbsp;')+'</span></div>';
+    } else {
+      h+='<div class="rm-nounit">📋 단원 준비 중 — 원장님이 단원 목록을 등록하면 체크할 수 있어요</div>';
+      var dl2=datesLine(it);
+      if(dl2) h+='<div class="rm-mt"><span class="rm-dates">'+esc(dl2)+'</span></div>';
+    }
+    h+='</div>';
+  });
+  box.innerHTML=h;
+}
+
+// ── 단원 체크 모달 ──
+window.rmOpenUnits=function(bid){ return; /* 학부모앱 읽기전용 */
+  var it=null;
+  rmBooks.forEach(function(x){ if(x.b.id===bid) it=x; });
+  if(!it) return;
+  rmCur=it; rmBuf={};
+  document.getElementById('rm-mtitle').textContent=it.b.name||'교재';
+  var dl=datesLine(it);
+  document.getElementById('rm-mdates').innerHTML=dl?dl.split(' · ').map(function(p){return '<span>'+esc(p)+'</span>';}).join(''):'';
+  rmRenderUnits();
+  document.getElementById('rm-modalBg').classList.add('show');
+  document.getElementById('rm-modal').classList.add('show');
+};
+
+function unitState(uid){
+  if(rmBuf[uid]) return rmBuf[uid];
+  var p=rmProg[rmCur.b.id]||{};
+  return p[uid]||null;
+}
+
+function rmRenderUnits(){
+  var us=bookUnits(rmCur.b)||[];
+  var done=0, firstOff=-1;
+  us.forEach(function(u,i){
+    var st=unitState(u.id);
+    if(st&&st.on) done++;
+    else if(firstOff<0) firstOff=i;
+  });
+  var pct=us.length?Math.round(done/us.length*100):0;
+  document.getElementById('rm-mbarFill').style.width=pct+'%';
+  document.getElementById('rm-mcnt').textContent=done+' / '+us.length+' 단원';
+  document.getElementById('rm-mpct').textContent=pct+'%';
+  var h='';
+  us.forEach(function(u,i){
+    var st=unitState(u.id);
+    var on=!!(st&&st.on);
+    var lab;
+    if(on){
+      var t=st.t?new Date(st.t.replace('T',' ').replace(/-/g,'/')):null;
+      lab=(t&&!isNaN(t))?((t.getMonth()+1)+'.'+t.getDate()+' ✓'):'✓';
+    } else lab=(i===firstOff)?'진행 중':'예정';
+    h+='<div class="rm-unit'+(on?' on':'')+'" onclick="rmToggleUnit(\''+esc(u.id)+'\')">';
+    h+='<div class="rm-uck">✓</div><div class="rm-un">'+esc(u.name)+'</div><div class="rm-ud">'+lab+'</div></div>';
+  });
+  document.getElementById('rm-units').innerHTML=h;
+}
+
+window.rmToggleUnit=function(uid){ return; /* 학부모앱 읽기전용 */
+  var st=unitState(uid);
+  rmBuf[uid]={ on:!(st&&st.on), t:nowT() };
+  rmRenderUnits();
+};
+
+window.rmCloseUnits=function(){
+  document.getElementById('rm-modalBg').classList.remove('show');
+  document.getElementById('rm-modal').classList.remove('show');
+  rmCur=null; rmBuf={};
+};
+
+window.rmSaveUnits=async function(){ return; /* 학부모앱 읽기전용 */
+  if(!rmCur) return;
+  var changed=Object.keys(rmBuf).length;
+  if(!changed){ rmCloseUnits(); return; }
+  var bid=rmCur.b.id;
+  if(!rmProg[bid]) rmProg[bid]={};
+  Object.keys(rmBuf).forEach(function(uid){
+    rmProg[bid][uid]={ on:rmBuf[uid].on?1:0, t:rmBuf[uid].t };
+  });
+  var btn=document.getElementById('rm-saveBtn');
+  btn.disabled=true; btn.textContent='저장 중…';
+  try{
+    var code=studentInfo.lumen_rec_code;
+    await sb.from('lumen_store').upsert({ key:'bookprog_'+code, value:rmProg });
+    rmToast('⚡ 저장 완료! 원장님 화면에 반영됐어요');
+  }catch(e){
+    console.error('진도 저장 실패:', e);
+    rmToast('저장 실패 — 잠시 후 다시 시도해 주세요');
+  }
+  btn.disabled=false; btn.textContent='저장하기';
+  rmCloseUnits();
+  rmRenderSummary();
+  rmRenderBooks();
+};
+
+// ── 목표 대학 ──
+function goalUniv(){ return (rmGoal&&rmGoal.univ)||(studentInfo&&studentInfo.lumen_targetUniversity)||''; }
+function goalMajor(){ return (rmGoal&&rmGoal.major)||(studentInfo&&studentInfo.lumen_targetMajor)||''; }
+
+window.rmOpenGoal=function(){ return; /* 학부모앱 읽기전용 */
+  document.getElementById('rm-goalUniv').value=goalUniv();
+  document.getElementById('rm-goalMajor').value=goalMajor();
+  document.getElementById('rm-goalBg').classList.add('show');
+  document.getElementById('rm-goalModal').classList.add('show');
+};
+window.rmCloseGoal=function(){
+  document.getElementById('rm-goalBg').classList.remove('show');
+  document.getElementById('rm-goalModal').classList.remove('show');
+};
+window.rmPickGoal=function(univ){ return; /* 학부모앱 읽기전용 */
+  rmGoal={ univ:univ, major:goalMajor(), t:nowT() };
+  rmPushGoal();
+};
+window.rmSaveGoal=function(){ return; /* 학부모앱 읽기전용 */
+  var u=document.getElementById('rm-goalUniv').value.trim();
+  var m=document.getElementById('rm-goalMajor').value.trim();
+  if(!u){ rmToast('대학 이름을 입력해 주세요'); return; }
+  rmGoal={ univ:u, major:m, t:nowT() };
+  rmCloseGoal();
+  rmPushGoal();
+};
+async function rmPushGoal(){ return; /* 학부모앱 읽기전용 */
+  try{
+    var code=studentInfo.lumen_rec_code;
+    await sb.from('lumen_store').upsert({ key:'goal_'+code, value:rmGoal });
+    rmToast('🏆 목표가 저장됐어요!');
+  }catch(e){
+    console.error('목표 저장 실패:', e);
+    rmToast('저장 실패 — 잠시 후 다시 시도해 주세요');
+  }
+  rmRenderJourney();
+  if(window.rmApplyHome) rmApplyHome();
+}
+
+// ── 여정 렌더 ──
+function markHTML(univ, size){
+  var url=rmMarks&&rmMarks[univ];
+  if(url) return '<img src="'+esc(url)+'" alt="">';
+  var init=String(univ||'?').replace(/대학교|대학/g,'').trim().slice(0,2)||'🎯';
+  return esc(init);
+}
+
+function stationRow(i, f, s, sideFlip){
+  var cls=(i<f)?'done':(i===f?'front':'');
+  var books=rmBooks.filter(function(it){ return it.ci===i; });
+  var cardsL='', cardsR='', stn='', extraC='';
+  var stnCls=(i===f)?'fr':((i===s)?'on':'');
+  stn='<span class="rm-vstn '+stnCls+'">'+esc(COURSES[i])+'</span>';
+  if(i===s) extraC='<span class="rm-vschool">🏫 학교는 여기</span>';
+  var lHtml='', rHtml='';
+  if(i===f){
+    var gi=gapInfo();
+    lHtml+='<span class="rm-vme">지금 여기!'+((gi.f-gi.s)>0&&gi.s>=0?'<br>(+'+(gi.f-gi.s)+'학기)':'')+'</span>';
+  }
+  books.forEach(function(it,bi){
+    var pr=bookPct(it.b);
+    // v2-6: 매쓰플랫 교재(수동 단원 없음)는 '지금 학습 중' 트랙에서 자세히 보여주므로
+    //       여정 사다리에는 빈 '—' 카드를 그리지 않는다(목업처럼 깔끔한 노선 유지).
+    if(!pr) return;
+    var pctTxt=pr.pct+'%';
+    var fillCls=(pr&&pr.pct>=100)?'gg':((it.ci>s&&s>=0)?'pp':'');
+    var pcClr=(pr&&pr.pct>=100)?'#10b981':(fillCls==='pp'?'#c084fc':'#1d6fe8');
+    var card='<div class="rm-vcard"><div class="vn">'+esc(it.b.name||'')+'</div>'
+      +(pr?('<div class="rm-ebar"><div class="rm-efill '+fillCls+'" style="width:'+pr.pct+'%"></div></div>'):'')
+      +'<div class="vp" style="color:'+pcClr+'">'+(pr&&pr.pct>=100?'🏅 ':'')+pctTxt+'</div></div>';
+    if((bi+(sideFlip?1:0))%2===0) rHtml+=card; else lHtml+=card;
+  });
+  var rocket=(i===f)?'<span class="rm-rocket">🚀</span>':'';
+  var dot=(i===f)?'<span class="rm-vdot big"></span>':'<span class="rm-vdot"></span>';
+  var rowId=(i===f)?' id="rm-frontRow"':'';
+  var h='<div class="rm-vjrow '+cls+'"'+rowId+'>';
+  h+='<div class="rm-vl">'+lHtml+'</div>';
+  h+='<div class="rm-vc">'+rocket+dot+extraC+'</div>';
+  h+='<div class="rm-vr">'+stn+rHtml+'</div>';
+  h+='</div>';
+  return h;
+}
+
+// ── v2-5: 매쓰플랫 자동 진도 로드 (mf_progress + mf_books, 학생→sid 매칭) ──
+async function rmLoadMf(){
+  rmMf={ books:[], months:[], loaded:true };
+  if(isTest||!window.sb||!studentInfo) return;
+  try{
+    var r=await sb.from('lumen_store').select('key,value').in('key',['mf_progress','mf_books']);
+    var prog=null, cat=null;
+    (r.data||[]).forEach(function(row){
+      var v=row.value; try{ if(typeof v==='string') v=JSON.parse(v); }catch(e){}
+      if(row.key==='mf_progress') prog=v; else if(row.key==='mf_books') cat=v;
+    });
+    if(!prog||!cat) return;
+    // 학생 → mf_student_id 매칭 (아하노트·스포트라이트와 동일 규칙)
+    var r2=await sb.from('mf_students').select('mf_student_id,name,lumen_rec_code');
+    var list=(r2&&r2.data)||[]; var m=null;
+    for(var i=0;i<list.length;i++){ if(list[i].lumen_rec_code&&list[i].lumen_rec_code===studentInfo.lumen_rec_code){ m=list[i]; break; } }
+    if(!m){ var same=list.filter(function(x){ return x.name===studentInfo.name; }); if(same.length===1) m=same[0]; }
+    if(!m) return;
+    var sid=m.mf_student_id;
+    var pBooks=(prog.byStudent&&prog.byStudent[sid])||{};
+    var meta=cat.books||{};
+    var s=schoolIdx();
+    var monthAgg={};
+    Object.keys(pBooks).forEach(function(bid){
+      var md=meta[bid]||{}; var pr=pBooks[bid]||{};
+      var ci=courseFromName(md.g||md.n||'');
+      var track=(ci<0||s<0)?'현행':(ci>s?'선행':(ci<s?'복습':'현행'));
+      rmMf.books.push({ id:bid, name:md.n||'교재', g:md.g||'', pages:md.pages||0, units:md.units||[], prog:pr, ci:ci, track:track });
+      // 월별 병합
+      var mo=pr.months||{};
+      Object.keys(mo).forEach(function(ym){
+        var a=monthAgg[ym]=monthAgg[ym]||{ ym:ym, c:0, t:0, books:[] };
+        a.c+=mo[ym].c||0; a.t+=mo[ym].t||0;
+        a.books.push({ name:md.n||'교재', c:mo[ym].c||0, t:mo[ym].t||0, maxP:mo[ym].maxP||0 });
+      });
+    });
+    // 트랙 우선순위: 현행 > 선행(가까운 순) > 복습, 그 안에서 최근 학습 순
+    var ord={ '현행':0, '선행':1, '복습':2 };
+    rmMf.books.sort(function(a,b){
+      return (ord[a.track]-ord[b.track]) || (String((b.prog&&b.prog.lastDate)||'').localeCompare(String((a.prog&&a.prog.lastDate)||'')));
+    });
+    rmMf.months=Object.keys(monthAgg).sort().map(function(ym){
+      var a=monthAgg[ym]; a.rate=a.t?Math.round(a.c/a.t*100):0; return a;
+    });
+    // v2-9: '앞으로' 예정용 — 원장님 계획 큐(lumen_roadmap_plan) + 교재명 사전(or_books)
+    rmMf.plan=(studentInfo&&studentInfo.lumen_roadmap_plan)||null;
+    rmMf.booksById={};
+    try{
+      var rb=await sb.from('lumen_store').select('value').eq('key','or_books').single();
+      var allB=(rb&&rb.data&&rb.data.value)||[];
+      if(typeof allB==='string'){ try{ allB=JSON.parse(allB); }catch(e){ allB=[]; } }
+      if(Array.isArray(allB)) allB.forEach(function(b){ if(b&&b.id) rmMf.booksById[b.id]={ name:b.name||'', ci:courseFromName(b.name||'') }; });
+    }catch(e){}
+  }catch(e){ console.warn('매쓰플랫 진도 로드 실패:', e); }
+}
+
+// v2-9: 현재 교재의 남은 단원 수(목차 순서, 현재 단원 이후) — null이면 판정 불가
+function rmRemainingUnits(bk){
+  var toc=(bk&&bk.units)||[]; if(!toc.length) return null;
+  var cur=(bk.prog&&bk.prog.curChapter)||''; if(!cur) return null;
+  function nrm(x){ return String(x||'').replace(/[\s\.\-–·()\[\]0-9ⅠⅡⅢⅣⅤⅥⅦ]/g,'').replace(/[a-zA-Z]/g,'').toLowerCase(); }
+  var ci=-1; toc.forEach(function(u,i){ if(nrm(u)===nrm(cur)) ci=i; });
+  if(ci<0) return null;
+  return Math.max(0, toc.length-1-ci);
+}
+// v2-9: 로켓 위 '앞으로(예정)' — 곧 완주 + 원장 계획 큐 + 먼 미래 교육과정 추측(흐림)
+function rmAheadHtml(curYm){
+  var s=schoolIdx();
+  var items=[]; // 가까운 것부터
+  // 1) 곧 완주 (현재 달 교재 중 남은 단원 ≤2) — 최대 2개
+  var soon=[];
+  rmMf.books.forEach(function(bk){
+    var mo=(bk.prog&&bk.prog.months)||{}; if(!mo[curYm]) return;
+    var rem=rmRemainingUnits(bk);
+    if(rem!==null && rem<=2){
+      soon.push({ side:(bk.track==='선행')?'R':'L', tc:(bk.track==='선행')?'adv':'', badge:'곧 완주', name:bk.name, sub:(rem===0?'곧 완주!':'남은 '+rem+'단원'), op:0.82, maxP:(bk.prog&&bk.prog.maxPage)||0 });
+    }
+  });
+  soon.sort(function(a,b){ return b.maxP-a.maxP; });
+  soon.slice(0,2).forEach(function(x){ items.push(x); });
+  // 2) 다음 교재 큐 (원장 계획)
+  var covered={};
+  var plan=(rmMf.plan&&rmMf.plan.queue)||[];
+  plan.slice(0,3).forEach(function(q){
+    if(!q||!q.bookId) return;
+    var b=rmMf.booksById&&rmMf.booksById[q.bookId]; if(!b||!b.name) return;
+    if(b.ci>=0) covered[b.ci]=1;
+    items.push({ side:(b.ci>=0&&s>=0&&b.ci>s)?'R':'L', tc:(b.ci>=0&&s>=0&&b.ci>s)?'adv':'', badge:'📋 계획', name:b.name, sub:'원장님 계획', op:0.85 });
+  });
+  // 3) 먼 미래 교육과정 추측 (선행 최전선 다음, 큐가 커버한 과정 제외) — 최대 3개
+  var front=-1; rmMf.books.forEach(function(bk){ if(bk.ci>front) front=bk.ci; });
+  if(front<0) front=s;
+  var gc=0;
+  if(front>=0){
+    for(var i=front+1; i<COURSES.length && gc<3; i++){
+      if(covered[i]) continue;
+      items.push({ side:'R', tc:'adv', badge:'예정', name:COURSES[i], sub:'', op:Math.max(0.35,0.6-gc*0.1), guess:true });
+      gc++;
+    }
+  }
+  if(!items.length) return '';
+  items=items.slice(0,5); // 너무 많지 않게 (가까운 것 우선)
+  items.reverse(); // 먼 미래가 위로
+  var h='<div class="rm-tlahead-h">🔜 앞으로 (예정)</div>';
+  items.forEach(function(it){
+    var card='<div class="rm-tlplan '+it.tc+'" style="opacity:'+it.op+'">'
+      +'<div class="rm-tlpb"><span class="rm-tlbadge" style="'+(it.guess?'background:#334d70;':'')+'">'+esc(it.badge)+'</span></div>'
+      +'<div class="rm-tlnm" style="font-size:10.5px">'+esc(it.name)+'</div>'
+      +(it.sub?'<div class="rm-tlmeta">'+esc(it.sub)+'</div>':'')+'</div>';
+    h+='<div class="rm-tlrow"><div class="rm-tlL">'+(it.side==='L'?card:'')+'</div>'
+      +'<div class="rm-tlC"><span class="rm-tldot" style="opacity:.4;width:10px;height:10px"></span></div>'
+      +'<div class="rm-tlR">'+(it.side==='R'?card:'')+'</div></div>';
+  });
+  return h;
+}
+
+// 한 교재 트랙 카드 + 단원 노선
+function rmTrackHTML(bk){
+  var pr=bk.prog||{}; var tc=(bk.track==='선행')?'adv':(bk.track==='복습'?'back':'');
+  // v2-6: 교재 총페이지를 아는 경우에만 %; 모르면 도달 페이지를 대표값으로(잘못된 0% 방지)
+  var hasPct=(bk.pages>0&&pr.maxPage);
+  var pct=hasPct?Math.min(100,Math.round(pr.maxPage/bk.pages*100)):0;
+  var head=hasPct?(pct+'%'):(pr.maxPage?(pr.maxPage+'쪽'):'진행 중');
+  var badge=bk.track;
+  if(bk.track==='선행'&&bk.ci>=0&&schoolIdx()>=0){ var d=bk.ci-schoolIdx(); if(d>0) badge='선행 +'+d+'학기'; }
+  var open=!!rmRouteOpen[bk.id];
+  var meta=[];
+  if(pr.maxPage) meta.push(pr.maxPage+(bk.pages?' / '+bk.pages+'쪽':'쪽 도달'));
+  if(pr.curChapter) meta.push('현재 '+esc(pr.curChapter));
+  if(pr.weekPages&&pr.weekPages<pr.maxPage) meta.push('이번 주 +'+pr.weekPages+'쪽');
+  if(pr.lastDate) meta.push('채점 '+pr.lastDate.slice(5).replace('-','.'));
+  var h='<div class="rm-trk '+tc+'" onclick="rmToggleRoute(\''+esc(bk.id)+'\')">';
+  h+='<div class="rm-thead"><span class="rm-tbadge">'+esc(badge)+'</span><span class="rm-tname">'+esc(bk.name)+'</span><span class="rm-tpct">'+head+'</span></div>';
+  h+='<div class="rm-tmeta">'+(meta.length?meta.join(' · '):'채점 기록 대기 중')+' <span style="color:#6ee7b7">🤖 자동</span></div>';
+  if(hasPct) h+='<div class="rm-tbar"><i style="width:'+pct+'%"></i></div>';
+  h+='<div class="rm-ttap">'+(open?'▲ 접기':'▼ 탭하면 단원 노선')+'</div>';
+  h+='<div class="rm-route'+(open?' open':'')+'">'+rmRouteHTML(bk)+'</div>';
+  h+='</div>';
+  return h;
+}
+
+function rmRouteHTML(bk){
+  var pr=bk.prog||{}; var chs=pr.chapters||[];
+  var toc=bk.units||[];
+  if(!chs.length&&!toc.length) return '<div class="rm-tnone">아직 채점 기록이 없어요 — 매쓰플랫에서 채점하면 단원 진도가 자동으로 표시돼요.</div>';
+  // 정규화 매칭용
+  function norm(x){ return String(x||'').replace(/[\s\.\-–·()\[\]0-9ⅠⅡⅢⅣⅤⅥⅦ]/g,'').replace(/[a-zA-Z]/g,'').toLowerCase(); }
+  var studied={}; chs.forEach(function(c){ studied[norm(c.n)]=c; });
+  var curKey=norm(pr.curChapter);
+  var rows=[];
+  // 목차가 있으면 목차 순서로, 없으면 학습한 단원 순서로
+  var seq=toc.length? toc.slice() : chs.map(function(c){ return c.n; });
+  // 학습했지만 목차에 없는 단원 보강
+  if(toc.length){ chs.forEach(function(c){ var f=false; toc.forEach(function(t){ if(norm(t)===norm(c.n)) f=true; }); if(!f) seq.push(c.n); }); }
+  var curIdx=-1;
+  seq.forEach(function(nm,i){ if(norm(nm)===curKey||(studied[norm(nm)]&&studied[norm(nm)]===studied[curKey])) curIdx=i; });
+  var h='';
+  seq.forEach(function(nm,i){
+    var st=studied[norm(nm)];
+    var isCur=(curKey&&norm(nm)===curKey);
+    // v2-7: 현재 단원보다 앞(목차 순서)이면 채점 기록이 아직 없어도 '완료'로 추론
+    //       (오래된 단원은 수집 범위 밖이라 데이터가 없을 수 있음)
+    var isDone=!isCur&&curIdx>=0&&i<curIdx;
+    var cls=isCur?'cur':((isDone||st)?'done':'');
+    var last=(i===seq.length-1);
+    h+='<div class="rm-u '+cls+'"><div class="rm-ur"><div class="ud"></div>'+(last?'':'<div class="ul"></div>')+'</div><div class="rm-ux">';
+    var mark=(isDone||(st&&!isCur))?'✓ ':'';
+    h+='<div class="un">'+mark+esc(nm)+'</div>';
+    if(isCur){
+      var rate=(st&&st.total)?Math.round(st.correct/st.total*100):null;
+      var p2=[]; if(rate!=null) p2.push('정답률 '+rate+'%'); if(st&&st.total) p2.push(st.total+'문항');
+      h+='<div class="rm-upin"><div class="p1">📍 지금 여기'+(pr.maxPage?' · '+pr.maxPage+'쪽':'')+'</div>'+(p2.length?'<div class="p2">'+p2.join(' · ')+'</div>':'')+(rate!=null?'<div class="pb"><i style="width:'+rate+'%"></i></div>':'')+'</div>';
+    } else if(st){
+      var rr=(st.total)?Math.round(st.correct/st.total*100):null;
+      h+='<div class="um">'+(st.minP?st.minP+'~'+st.maxP+'쪽':'')+(rr!=null?' · 정답률 '+rr+'%':'')+(st.lastDate?' · '+st.lastDate.slice(5).replace('-','.'):'')+'</div>';
+    } else if(isDone){
+      h+='<div class="um">완료</div>';
+    } else {
+      h+='<div class="um">예정</div>';
+    }
+    h+='</div></div>';
+  });
+  return h;
+}
+
+// 월별 발자취 스트립
+function rmMonthsHTML(){
+  var ms=rmMf.months||[];
+  if(ms.length<2) return '';
+  var recent=ms.slice(-6);
+  var curYm=recent[recent.length-1].ym;
+  var h='<div class="rm-months"><div class="mt">📊 월별 발자취 — 매쓰플랫 정답률 <span style="font-size:8.5px;color:#6ee7b7">🤖 자동</span></div><div class="rm-mrow">';
+  recent.forEach(function(m){
+    var hgt=Math.max(4,Math.round(m.rate*0.6));
+    var cls=(m.ym===curYm)?'cur':(m.rate<75?'lo':'');
+    h+='<div class="rm-mcell '+cls+'" onclick="rmMonthPop(\''+m.ym+'\')"><div class="mv">'+m.rate+'%</div><div class="bar" style="height:'+hgt+'px"></div><div class="mn">'+esc(m.ym.slice(5))+'월</div></div>';
+  });
+  h+='</div><div class="rm-mnote">막대를 누르면 그 달의 학습 상세를 볼 수 있어요</div></div>';
+  return h;
+}
+
+window.rmToggleRoute=function(bid){
+  rmRouteOpen[bid]=!rmRouteOpen[bid];
+  rmRenderJourney();
+};
+
+window.rmMonthPop=function(ym){
+  var m=null; (rmMf.months||[]).forEach(function(x){ if(x.ym===ym) m=x; });
+  if(!m) return;
+  document.getElementById('rm-monTitle').textContent=ym.replace('-','년 ')+'월의 발자취';
+  var h='<div class="rm-msec"><div class="sk">📊 매쓰플랫 정답률</div><div class="sv">'+m.rate+'% ('+m.c+'/'+m.t+'문항 정답)</div></div>';
+  var bh=''; (m.books||[]).forEach(function(b){
+    var rr=b.t?Math.round(b.c/b.t*100):0;
+    bh+='<div class="sv" style="margin-top:4px">· '+esc(b.name)+' — 정답률 '+rr+'%'+(b.maxP?' · '+b.maxP+'쪽 도달':'')+'</div>';
+  });
+  if(bh) h+='<div class="rm-msec"><div class="sk">📖 이 달의 교재</div>'+bh+'</div>';
+  document.getElementById('rm-monBody').innerHTML=h;
+  document.getElementById('rm-monBg').classList.add('show');
+  document.getElementById('rm-monPop').classList.add('show');
+};
+window.rmCloseMonth=function(){
+  document.getElementById('rm-monBg').classList.remove('show');
+  document.getElementById('rm-monPop').classList.remove('show');
+};
+
+function rmRenderJourney(){
+  var box=document.getElementById('rm-vjbody');
+  if(!box) return;
+  var gi=gapInfo(), f=gi.f, s=gi.s;
+  var univ=goalUniv(), major=goalMajor();
+  var h='';
+  // 목표 카드 (맨 위)
+  h+='<div class="rm-goal"><div class="rm-gob">'+markHTML(univ)+'</div>';
+  var hbNo=hakbeon();
+  h+='<div class="rm-goi"><div class="rm-g1">🏆 최종 목표</div><div class="rm-g2">'+(univ?esc(univ)+(major?' · '+esc(major):''):'목표 대학을 정해보세요')+'</div>'+((univ&&hbNo)?'<div class="rm-gsn">🎓 예비 '+hbNo+'학번</div>':'')+'</div>';
+  // v2-8: 월별 타임라인 ↔ 6년 학년 사다리 전환 버튼 + 목표 변경
+  h+='<div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">';
+  h+='<button class="rm-6btn" onclick="rmToggle6yr()">'+(rm6yrOpen?'📅 월별<br>보기':'🎓 6년<br>사다리')+'</button>';
+  h+='</div></div>';
+  // 대학 마크 빠른 선택 (원장님이 univ_marks 등록 시 표시)
+  var mk=Object.keys(rmMarks||{});
+  if(mk.length){
+    h+='<div class="rm-gopick">';
+    mk.slice(0,5).forEach(function(u){
+      h+='<div class="rm-gomini" onclick="rmPickGoal(\''+esc(u)+'\')" title="'+esc(u)+'">'+markHTML(u)+'</div>';
+    });
+    h+='</div>';
+  }
+  if(rm6yrOpen){
+    // ── 6년 학년 사다리 (기존 여정) ──
+    h+='<div class="rm-vjrow"><div class="rm-vl"></div><div class="rm-vc"><span class="rm-vdot exam">🎓</span></div><div class="rm-vr"><span class="rm-vstn">수능</span></div></div>';
+    var lo=Math.max(0,(s>=0?Math.min(f<0?s:f,s):(f<0?4:f))-1);
+    var flip=0;
+    if(f<HS_START&&!rmHSopen){
+      h+='<div class="rm-vfold" onclick="rmToggleHS()">고등 과정 · '+esc(COURSES[HS_START])+' → '+esc(COURSES[COURSES.length-1])+' ('+(COURSES.length-HS_START)+'개 역) 펼치기 ▾</div>';
+      for(var i1=HS_START-1;i1>=lo;i1--){ h+=stationRow(i1,f,s,(flip++)%2===1); }
+    } else {
+      if(f<HS_START&&rmHSopen) h+='<div class="rm-vfold" onclick="rmToggleHS()">고등 과정 접기 ▴</div>';
+      for(var i2=COURSES.length-1;i2>=lo;i2--){ h+=stationRow(i2,f,s,(flip++)%2===1); }
+    }
+    h+='<div class="rm-vpill">🌱 여정 시작</div>';
+  } else if(rmMf.books&&rmMf.books.length){
+    // ── 월별 타임라인 (기본) ──
+    h+='<div class="rm-dual"><span><i class="kb"></i>현행'+((s>=0&&COURSES[s])?' ('+esc(COURSES[s])+')':'')+'</span><span><i class="kr"></i>선행</span></div>';
+    h+=rmMonthTimelineHtml();
+    h+='<div class="rm-tlstart"><div class="ce">🌱</div><div class="ct">여정 시작</div></div>';
+  } else if(rmMf.loaded){
+    h+='<div class="rm-tnone" style="margin:14px 2px">📚 매쓰플랫 채점 기록이 쌓이면 여기에 월별 여정이 자동으로 나타나요.</div>';
+  } else {
+    h+='<div class="rm-loading" style="padding:26px 0">불러오는 중…</div>';
+  }
+  box.innerHTML=h;
+}
+
+// v2-8: 월별 타임라인 (현행 왼쪽 / 선행 오른쪽, 최신 달=현재+로켓, 탭하면 단원 노선)
+function rmMonthTimelineHtml(){
+  var map={};
+  rmMf.books.forEach(function(bk){
+    var mo=(bk.prog&&bk.prog.months)||{};
+    Object.keys(mo).forEach(function(ym){ (map[ym]=map[ym]||[]).push({ bk:bk, m:mo[ym] }); });
+  });
+  var yms=Object.keys(map).sort().reverse();
+  if(!yms.length) return '<div class="rm-tnone" style="margin:12px 2px">채점 기록이 쌓이면 월별 여정이 나타나요.</div>';
+  var curYm=yms[0];
+  var h='<div class="rm-tl2">';
+  h+=rmAheadHtml(curYm); // v2-9: 로켓 위 '앞으로(예정)'
+  yms.forEach(function(ym){
+    var items=map[ym]; var isCur=(ym===curYm);
+    // 정렬: 선행이 여러 권이면 진도 높은 순
+    items.sort(function(a,b){ return (b.m.maxP||0)-(a.m.maxP||0); });
+    var L='', R='';
+    items.forEach(function(it){
+      var card=isCur? rmTLCur(it.bk,it.m) : rmTLPast(it.bk,it.m);
+      if(it.bk.track==='선행') R+=card; else L+=card;
+    });
+    h+='<div class="rm-tlrow'+(isCur?' cur':'')+'"'+(isCur?' id="rm-frontRow"':'')+'>';
+    h+='<div class="rm-tlL">'+L+'</div>';
+    h+='<div class="rm-tlC">'+(isCur?'<span class="rm-tlrk">🚀</span>':'')+'<span class="rm-tldot'+(isCur?' cur':'')+'"></span><span class="rm-tlm'+(isCur?' now':'')+'">'+rmYmLabel(ym)+(isCur?'<br>현재':'')+'</span></div>';
+    h+='<div class="rm-tlR">'+R+'</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
+}
+function rmYmLabel(ym){ var mo=parseInt(ym.slice(5),10); return (isNaN(mo)?ym:mo+'월'); }
+// 현재 달 카드 — 컴팩트(교재명 한 줄) + 진도바 + 탭하면 단원 노선
+function rmTLCur(bk,m){
+  var pr=bk.prog||{};
+  var tc=(bk.track==='선행')?'adv':(bk.track==='복습'?'back':'');
+  var hasPct=(bk.pages>0&&pr.maxPage);
+  var pct=hasPct?Math.min(100,Math.round(pr.maxPage/bk.pages*100)):0;
+  var head=hasPct?(pct+'%'):(pr.maxPage?(pr.maxPage+'쪽'):'진행 중');
+  var badge=bk.track;
+  if(bk.track==='선행'&&bk.ci>=0&&schoolIdx()>=0){ var d=bk.ci-schoolIdx(); if(d>0) badge='선행 +'+d+'학기'; }
+  var open=!!rmRouteOpen[bk.id];
+  var h='<div class="rm-tlcur '+tc+'" onclick="rmToggleRoute(\''+esc(bk.id)+'\')">';
+  h+='<div class="rm-tlpb"><span class="rm-tlbadge">'+esc(badge)+'</span><span class="rm-tlpct">'+head+'</span></div>';
+  h+='<div class="rm-tlnm">'+esc(bk.name)+'</div>';
+  var meta=[];
+  if(pr.curChapter) meta.push('현재 '+esc(pr.curChapter));
+  if(pr.lastDate) meta.push('채점 '+pr.lastDate.slice(5).replace('-','.'));
+  h+='<div class="rm-tlmeta">'+(meta.length?meta.join(' · '):(pr.maxPage?pr.maxPage+'쪽 도달':'채점 대기'))+' <span style="color:#6ee7b7">🤖</span></div>';
+  if(hasPct) h+='<div class="rm-tlbar"><i style="width:'+pct+'%"></i></div>';
+  h+='<div class="rm-tltap">'+(open?'▲ 접기':'▼ 탭하면 단원 노선')+'</div>';
+  if(open) h+='<div class="rm-route open">'+rmRouteHTML(bk)+'</div>';
+  h+='</div>';
+  return h;
+}
+function rmTLPast(bk,m){
+  var tc=(bk.track==='선행')?'adv':(bk.track==='복습'?'back':'');
+  var rate=m.t?Math.round(m.c/m.t*100):0;
+  var badge=bk.track;
+  if(bk.track==='선행'&&bk.ci>=0&&schoolIdx()>=0){ var d=bk.ci-schoolIdx(); if(d>0) badge='선행 +'+d+'학기'; }
+  var h='<div class="rm-tlpast '+tc+'" onclick="rmToggleRoute(\''+esc(bk.id)+'\')">';
+  h+='<div class="rm-tlpb"><span class="rm-tlbadge">'+esc(badge)+'</span><span class="rm-tlpct">'+rate+'%</span></div>';
+  h+='<div class="rm-tlnm">'+esc(bk.name)+'</div>';
+  h+='<div class="rm-tlmeta">'+(m.maxP?m.maxP+'쪽 · ':'')+'정답률 '+rate+'%</div>';
+  if(rmRouteOpen[bk.id]) h+='<div class="rm-route open">'+rmRouteHTML(bk)+'</div>';
+  h+='</div>';
+  return h;
+}
+
+window.rmToggle6yr=function(){ rm6yrOpen=!rm6yrOpen; rmRenderJourney(); };
+window.rmToggleHS=function(){ rmHSopen=!rmHSopen; rmRenderJourney(); };
+
+window.rmJumpMe=function(){
+  var el=document.getElementById('rm-frontRow');
+  if(el&&el.scrollIntoView) el.scrollIntoView({ behavior:'smooth', block:'center' });
+};
+
+// ── v2-2: 예비 학번 · 홈 반영 · 플래너 탭 ──
+function hakbeon(){
+  var g=(window.studentInfo&&studentInfo.grade)||'';
+  var m=String(g).match(/(초|중|고)[^0-9]*(\d)/);
+  if(!m) return null;
+  var lv=m[1], n=parseInt(m[2],10);
+  if(!(n>=1&&n<=6)) return null;
+  var d=new Date();
+  var sy=(d.getMonth()+1>=3)?d.getFullYear():d.getFullYear()-1;
+  var remain;
+  if(lv==='초') remain=(6-n)+6;
+  else if(lv==='중') remain=(3-n)+3;
+  else remain=(3-n);
+  if(remain<0) return null;
+  var ent=(sy+remain+1)%100;
+  return (ent<10?'0'+ent:''+ent);
+}
+function univShort(u){ return String(u||'').replace('대학교','대'); }
+
+var rmHomeLoaded=false;
+async function rmEnsureGoalMarks(){
+  if(rmHomeLoaded) return;
+  if(!window.sb||!window.studentInfo) return;
+  var code=studentInfo.lumen_rec_code;
+  try{
+    var r=await sb.from('lumen_store').select('key,value').in('key',['goal_'+code,'univ_marks']);
+    (r.data||[]).forEach(function(row){
+      var v=row.value;
+      try{ if(typeof v==='string') v=JSON.parse(v); }catch(e){}
+      if(row.key==='goal_'+code) rmGoal=v||rmGoal;
+      else if(row.key==='univ_marks') rmMarks=v||rmMarks;
+    });
+    rmHomeLoaded=true;
+  }catch(e){ console.error('목표/마크 로드 실패:', e); }
+}
+
+
+/* ===== 학부모앱: 월별 팝업 + 토스트만 1회 주입 (여정은 탭에 인라인) ===== */
+var _rmOvDone=false;
+function rmEnsureOverlays(){
+  if(_rmOvDone) return; _rmOvDone=true;
+  var wrap=document.createElement('div');
+  wrap.innerHTML=''
+    +'<div class="rm-modal-bg" id="rm-monBg" onclick="rmCloseMonth()"></div>'
+    +'<div class="rm-monpop" id="rm-monPop">'
+    +  '<div class="rm-mhead"><div class="rm-mtitle" id="rm-monTitle">발자취</div><button class="rm-mx" onclick="rmCloseMonth()">✕</button></div>'
+    +  '<div id="rm-monBody"></div>'
+    +'</div>'
+    +'<div class="rm-toast" id="rm-toast"></div>';
+  document.body.appendChild(wrap);
+}
+
+/* ===== 학부모앱: 로드맵 탭 진입 동기화 — 전체 여정을 바로 렌더 ===== */
+var _rmForCode=null;
+window.rmParentSync=async function(){
+  rmEnsureOverlays();
+  var st=(window.P&&window.P.st)||null;
+  if(!st){ return; }
+  window.studentInfo=st;
+  if(!document.getElementById('rm-vjbody')) return; // 스켈레톤 준비 전
+  var code=st.lumen_rec_code||'';
+  if(_rmForCode!==code){
+    // 다른 자녀로 전환 → 캐시 리셋 후 재로드
+    _rmForCode=code;
+    ahaCachedBooks=null; rmLoaded=false; rmHomeLoaded=false; rmHSopen=false; rm6yrOpen=false;
+    rmProg={}; rmGoal=null; rmMarks={}; rmBooks=[]; rmMf={books:[],months:[],loaded:false};
+    rmRenderJourney();
+    try{ await rmLoad(); }catch(e){ console.warn('로드맵 로드 실패',e); }
+    try{ await rmEnsureGoalMarks(); }catch(e){}
+    if(((window.P&&window.P.st)||{}).lumen_rec_code!==code) return; // 그새 자녀 전환됨
+    if(window.P&&window.P.tab==='roadmap'){ rmRenderJourney(); setTimeout(function(){ rmJumpMe(); },150); }
+  } else {
+    rmRenderJourney();
+  }
+};
+
+})();
+
+/* ── 시작 ── */
+(function(){
+  var saved=localStorage.getItem('lumen_parent_code');
+  if(saved){ loadAll(saved); } else { render(); }
+})();
+</script>
+</body></html>

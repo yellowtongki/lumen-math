@@ -508,6 +508,12 @@ async function main() {
     await refreshMonthCounts();
     return;
   }
+  // --typeach-only: 매쓰플랫 로그인 없이 유형성취도 2주 집계만 (Supabase 기존 기록 사용)
+  if (has('--typeach-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    await refreshTypeAch();
+    return;
+  }
   // --scores-only: 월간보고서 점수·티어만 수집 (매쓰플랫 로그인 필요)
   if (has('--scores-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -558,6 +564,7 @@ async function main() {
     await refreshWeekly();
     await refreshMonthCounts();
     await refreshMonthScores(students);
+    await refreshTypeAch();
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
@@ -655,6 +662,97 @@ async function refreshMonthCounts() {
     }).join(' · ');
     log(`월별 문항수 집계 저장(mf_month_counts): ${mm}`);
   } catch (e) { log('월별 문항수 집계 실패(치명적 아님):', e.message); }
+}
+
+// ── 유형성취도 2주 단위 집계 → lumen_store 'mf_type_ach' ─────────────
+// mf_answer_records(문항×유형×난이도×정오)를 학생×2주기간×유형으로 집계.
+// 학원앱 유형성취도 「자동 회차·변화 대시보드」, 학부모 유형 리포트,
+// 학생앱 정복 퀘스트의 데이터원. PDF 업로드 불필요.
+// 기간: 2025-11-03(월)부터 14일 창. 최근 8개 기간(16주)만 저장.
+// 값: { epoch, periods:[시작일...], names:{cid:{m:중단원,n:유형명}},
+//       data: { '<code|sid:...>': { '<기간시작일>': { '<cid>': [총,정답, 개념총,개념정답, 기본총,기본정답, 심화총,심화정답] } } } }
+const TA_EPOCH = '2025-11-03';
+function taPeriodStart(dateStr) {
+  const d = new Date(dateStr.slice(0, 10) + 'T00:00:00Z');
+  const e = new Date(TA_EPOCH + 'T00:00:00Z');
+  const idx = Math.floor((d - e) / (14 * 86400000));
+  if (idx < 0) return null;
+  return new Date(e.getTime() + idx * 14 * 86400000).toISOString().slice(0, 10);
+}
+async function refreshTypeAch() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    const sidCode = await buildSidCodeMap();
+    // 최근 8개 기간의 시작일
+    const nowP = taPeriodStart(new Date().toISOString());
+    const periods = [];
+    for (let i = 7; i >= 0; i--) {
+      const t = new Date(nowP + 'T00:00:00Z').getTime() - i * 14 * 86400000;
+      const p = new Date(t).toISOString().slice(0, 10);
+      if (p >= TA_EPOCH) periods.push(p);
+    }
+    const since = periods[0];
+    const data = {};
+    let nRec = 0;
+    for (let off = 0; off < 500000; off += 1000) {
+      const q = `select=lumen_rec_code,mf_student_id,concept_id,level,result,score_datetime`
+        + `&score_datetime=gte.${since}&limit=1000&offset=${off}&order=score_datetime.asc`;
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?${q}`, { headers: sbHeaders });
+      if (!res.ok) { log(`유형 집계 조회 실패 ${res.status}`); break; }
+      const batch = await res.json();
+      batch.forEach((r) => {
+        if ((r.result !== 'O' && r.result !== 'X') || !r.concept_id || !r.score_datetime) return;
+        const p = taPeriodStart(r.score_datetime); if (!p || p < since) return;
+        const codeK = r.lumen_rec_code || sidCode[r.mf_student_id] || (r.mf_student_id ? 'sid:' + r.mf_student_id : null);
+        if (!codeK) return;
+        const cid = String(r.concept_id);
+        const stu = data[codeK] || (data[codeK] = {});
+        const per = stu[p] || (stu[p] = {});
+        const arr = per[cid] || (per[cid] = [0, 0, 0, 0, 0, 0, 0, 0]);
+        const ok = r.result === 'O' ? 1 : 0;
+        arr[0]++; arr[1] += ok;
+        const lv = Number(r.level) || 3;
+        const b = lv <= 2 ? 1 : lv === 3 ? 2 : 3; // 1=개념(1-2) 2=기본(3) 3=심화(4-5)
+        arr[b * 2]++; arr[b * 2 + 1] += ok;
+        nRec++;
+      });
+      if (batch.length < 1000) break;
+    }
+    // 등장한 유형의 이름 사전만 동봉 (앱이 별도 로드 없이 바로 표시)
+    const usedCids = new Set();
+    Object.values(data).forEach((stu) => Object.values(stu).forEach((per) => Object.keys(per).forEach((c) => usedCids.add(c))));
+    let names = {};
+    try {
+      const rn = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_concept_names&select=value`, { headers: sbHeaders });
+      const jn = await rn.json();
+      const all = (Array.isArray(jn) && jn[0] && jn[0].value) || {};
+      usedCids.forEach((c) => { if (all[c]) names[c] = all[c]; });
+    } catch (e) {}
+    const w = await fetch(`${url}/rest/v1/lumen_store`, {
+      method: 'POST', headers: Object.assign({}, sbHeaders, { prefer: 'resolution=merge-duplicates' }),
+      body: JSON.stringify({ key: 'mf_type_ach', value: { epoch: TA_EPOCH, periods, names, data, updated: new Date().toISOString() } }),
+    });
+    if (!w.ok) { log(`mf_type_ach 저장 실패 ${w.status}`); return; }
+    log(`유형성취도 집계 저장(mf_type_ach): ${periods[0]}~ · 문항 ${nRec} · 학생 ${Object.keys(data).length}명 · 유형 ${usedCids.size}개`);
+    // 학생앱용 개인별 키(typeach_stu_<code>) — 다른 학생 데이터·코드가 노출되지 않게 분리 저장
+    const stuRows = [];
+    Object.keys(data).forEach((codeK) => {
+      if (codeK.startsWith('sid:')) return; // 코드 매핑 안 된 학생은 학생앱 표시 불가
+      const mine = data[codeK];
+      const myNames = {};
+      Object.values(mine).forEach((per) => Object.keys(per).forEach((c) => { if (names[c]) myNames[c] = names[c]; }));
+      stuRows.push({ key: 'typeach_stu_' + codeK, value: { periods, names: myNames, mine, updated: new Date().toISOString() } });
+    });
+    if (stuRows.length) {
+      const w2 = await fetch(`${url}/rest/v1/lumen_store`, {
+        method: 'POST', headers: Object.assign({}, sbHeaders, { prefer: 'resolution=merge-duplicates' }),
+        body: JSON.stringify(stuRows),
+      });
+      if (!w2.ok) log(`typeach_stu_* 저장 실패 ${w2.status}`);
+      else log(`학생앱용 개인 유형데이터 저장: ${stuRows.length}명`);
+    }
+  } catch (e) { log('유형성취도 집계 실패(치명적 아님):', e.message); }
 }
 
 // ── 매쓰플랫 월간보고서 점수·티어 → lumen_store 'mf_month_scores' ──────
