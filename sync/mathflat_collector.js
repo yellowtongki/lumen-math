@@ -502,6 +502,12 @@ async function main() {
     await refreshWeekly();
     return;
   }
+  // --counts-only: 매쓰플랫 로그인 없이 월별 문항수 집계만 (Supabase 기존 기록 사용)
+  if (has('--counts-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    await refreshMonthCounts();
+    return;
+  }
   if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
   const cutoff = new Date(Date.now() - DAYS * 86400 * 1000);
   log(`로그인 중… (최근 ${DAYS}일, 기준 ${fmt(cutoff)} 이후)`);
@@ -541,9 +547,63 @@ async function main() {
     await refreshTypeDb();
     await refreshRoadmap();
     await refreshWeekly();
+    await refreshMonthCounts();
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
+}
+
+// ── 월별 문항수 집계 → lumen_store 'mf_month_counts' ───────────────
+// 레벨관리 「이번달 문제수 손 입력」 대체: mf_answer_records에서 채점(O/X)된
+// 문항을 학생×월로 집계. 최근 3개월만 다시 계산하고 과거 달은 보존한다.
+// 값 형태: { months: { '2026-07': { '<lumen_rec_code|sid:...>': 문항수 } }, updated }
+async function refreshMonthCounts() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    const now = new Date();
+    const months = [];
+    for (let i = 0; i < 3; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+    }
+    const fresh = {};
+    for (const ym of months) {
+      const [y, m] = ym.split('-').map(Number);
+      const next = new Date(y, m, 1); // m은 1-12 → Date月 인덱스로 쓰면 다음 달 1일
+      const nextYm = next.getFullYear() + '-' + String(next.getMonth() + 1).padStart(2, '0');
+      const counts = {};
+      for (let off = 0; off < 200000; off += 1000) {
+        const q = `select=lumen_rec_code,mf_student_id,result&score_datetime=gte.${ym}-01&score_datetime=lt.${nextYm}-01&limit=1000&offset=${off}`;
+        const res = await fetch(`${url}/rest/v1/mf_answer_records?${q}`, { headers: sbHeaders });
+        if (!res.ok) { log(`월별 집계 조회 실패 ${res.status} (${ym})`); break; }
+        const batch = await res.json();
+        batch.forEach((r) => {
+          if (r.result !== 'O' && r.result !== 'X') return;
+          const k = r.lumen_rec_code || (r.mf_student_id ? 'sid:' + r.mf_student_id : null);
+          if (!k) return;
+          counts[k] = (counts[k] || 0) + 1;
+        });
+        if (batch.length < 1000) break;
+      }
+      fresh[ym] = counts;
+    }
+    // 기존 저장분과 병합 — 3개월보다 오래된 달은 그대로 유지
+    const prevRes = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_month_counts&select=value`, { headers: sbHeaders });
+    let prev = {};
+    try { const j = await prevRes.json(); prev = (Array.isArray(j) && j[0] && j[0].value && j[0].value.months) || {}; } catch (e) {}
+    const merged = Object.assign({}, prev, fresh);
+    const w = await fetch(`${url}/rest/v1/lumen_store`, {
+      method: 'POST', headers: Object.assign({}, sbHeaders, { prefer: 'resolution=merge-duplicates' }),
+      body: JSON.stringify({ key: 'mf_month_counts', value: { months: merged, updated: new Date().toISOString() } }),
+    });
+    if (!w.ok) { log(`mf_month_counts 저장 실패 ${w.status}`); return; }
+    const mm = months.map((ym) => {
+      const c = fresh[ym] || {};
+      return `${ym}: ${Object.values(c).reduce((a, b) => a + b, 0)}문항/${Object.keys(c).length}명`;
+    }).join(' · ');
+    log(`월별 문항수 집계 저장(mf_month_counts): ${mm}`);
+  } catch (e) { log('월별 문항수 집계 실패(치명적 아님):', e.message); }
 }
 
 // ── 교재 카탈로그 갱신 ───────────────────────────────────────
