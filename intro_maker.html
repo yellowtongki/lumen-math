@@ -51,6 +51,14 @@ canvas{width:100%;height:auto;display:block}
 .seg{display:flex;gap:6px;background:color-mix(in srgb,var(--ink) 6%,transparent);border-radius:10px;padding:4px}
 .seg button{flex:1;border:none;background:transparent;color:var(--sub);font-size:12px;font-weight:800;font-family:inherit;padding:8px;border-radius:7px;cursor:pointer}
 .seg button.on{background:var(--panel);color:var(--ink);box-shadow:0 1px 4px rgba(13,34,64,.12)}
+.sz{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.sz:last-child{margin-bottom:0}
+.sz .nm{font-size:12px;font-weight:800;color:var(--ink);width:34px;flex:none}
+.sz input[type=range]{flex:1;accent-color:var(--accent);height:22px}
+.sz .val{font-size:11px;font-weight:800;color:var(--sub);width:38px;text-align:right;flex:none;font-variant-numeric:tabular-nums}
+.szhead{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.szhead .rst{margin-left:auto;font-size:11px;font-weight:800;color:var(--accent);background:transparent;border:1px solid var(--line);border-radius:8px;padding:4px 9px;cursor:pointer;font-family:inherit}
+.szhead .rst:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 </style>
 
 <div class="wrap">
@@ -72,6 +80,12 @@ canvas{width:100%;height:auto;display:block}
       <div class="fld">
         <label>부제 <span class="hint">(선택)</span></label>
         <input type="text" id="i-sub" value="" placeholder="예: 개념 + 예제 3문항">
+      </div>
+      <div class="fld">
+        <div class="szhead"><label style="margin:0">글씨 크기</label><button class="rst" id="sz-reset">기본값</button></div>
+        <div class="sz"><span class="nm">과정</span><input type="range" id="sz-course" min="0.5" max="1.8" step="0.05" value="1"><span class="val" id="szv-course">100%</span></div>
+        <div class="sz"><span class="nm">제목</span><input type="range" id="sz-title" min="0.5" max="1.8" step="0.05" value="1"><span class="val" id="szv-title">100%</span></div>
+        <div class="sz"><span class="nm">부제</span><input type="range" id="sz-sub" min="0.5" max="1.8" step="0.05" value="1"><span class="val" id="szv-sub">100%</span></div>
       </div>
       <div class="fld">
         <label>색 테마</label>
@@ -110,7 +124,7 @@ var THEMES=[
   {key:'rose',   name:'로즈',   c1:'#2a0a1a', c2:'#7a1f4d', glowA:'244,114,182', glowB:'129,140,248', chip:'#ffc4e2', chipBg:'244,114,182', brand:'#ffe08a'},
   {key:'slate',  name:'그레이', c1:'#0f172a', c2:'#334155', glowA:'148,163,184', glowB:'100,116,139', chip:'#cbd5e1', chipBg:'148,163,184', brand:'#facc15'}
 ];
-var state={ course:'미적분1', title:'좌극한', sub:'', theme:'navy', ratio:'16:9', brand:true };
+var state={ course:'미적분1', title:'좌극한', sub:'', theme:'navy', ratio:'16:9', brand:true, courseScale:1, titleScale:1, subScale:1 };
 
 // 테마 스와치
 var tb=document.getElementById('themes');
@@ -127,6 +141,19 @@ document.getElementById('i-title').oninput=function(){ state.title=this.value; d
 document.getElementById('i-sub').oninput=function(){ state.sub=this.value; draw(); };
 document.getElementById('ratio').onclick=function(e){ var btn=e.target.closest('button'); if(!btn)return; state.ratio=btn.dataset.r; [].forEach.call(this.children,function(x){x.classList.toggle('on',x===btn);}); draw(); };
 document.getElementById('brandrow').onclick=function(e){ var btn=e.target.closest('.chip'); if(!btn)return; state.brand=(btn.dataset.b==='on'); [].forEach.call(this.children,function(x){x.classList.toggle('on',x===btn);}); draw(); };
+// 글씨 크기 슬라이더
+function bindSize(id,key){
+  var sl=document.getElementById('sz-'+id), vv=document.getElementById('szv-'+id);
+  sl.oninput=function(){ state[key]=parseFloat(this.value); vv.textContent=Math.round(state[key]*100)+'%'; draw(); };
+}
+bindSize('course','courseScale'); bindSize('title','titleScale'); bindSize('sub','subScale');
+document.getElementById('sz-reset').onclick=function(){
+  state.courseScale=state.titleScale=state.subScale=1;
+  [['course','courseScale'],['title','titleScale'],['sub','subScale']].forEach(function(p){
+    document.getElementById('sz-'+p[0]).value=1; document.getElementById('szv-'+p[0]).textContent='100%';
+  });
+  draw();
+};
 document.getElementById('dl').onclick=download;
 
 var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
@@ -158,9 +185,10 @@ function draw(){
   var course=(state.course||'').trim();
   var blockTop=H*(state.brand?0.34:0.30);
   if(course){
-    ctx.font='800 '+Math.round(H*0.045)+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+    var cfs=Math.round(H*0.045*state.courseScale);
+    ctx.font='800 '+cfs+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
     var cw=ctx.measureText('📘 '+course).width;
-    var padX=Math.round(H*0.035), chH=Math.round(H*0.085), chW=cw+padX*2;
+    var padX=Math.round(cfs*0.78), chH=Math.round(cfs*1.9), chW=cw+padX*2;
     var chY=blockTop-chH;
     ctx.fillStyle='rgba('+t.chipBg+',0.16)'; rr(cx-chW/2,chY,chW,chH,chH/2); ctx.fill();
     ctx.lineWidth=2; ctx.strokeStyle='rgba('+t.chipBg+',0.55)'; rr(cx-chW/2,chY,chW,chH,chH/2); ctx.stroke();
@@ -172,9 +200,10 @@ function draw(){
   // 제목 (길면 자동 줄바꿈 + 폰트 축소)
   var title=(state.title||'').trim()||'제목을 입력하세요';
   var maxW=W*0.84;
-  var fs=Math.round(H*0.17);
+  var fs=Math.round(H*0.17*state.titleScale);
+  var fsMin=Math.round(H*0.07*state.titleScale);
   var lines;
-  while(fs>Math.round(H*0.07)){
+  while(fs>fsMin){
     ctx.font='900 '+fs+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
     lines=wrap(title,maxW);
     if(lines.length<=2) break;
@@ -191,7 +220,7 @@ function draw(){
   // 부제
   var sub=(state.sub||'').trim();
   if(sub){
-    ctx.font='700 '+Math.round(H*0.042)+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
+    ctx.font='700 '+Math.round(H*0.042*state.subScale)+"px 'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif";
     ctx.fillStyle='rgba(255,255,255,0.62)';
     ctx.fillText(sub, cx, startY+(lines.length-1)*lh+H*0.10);
   }
