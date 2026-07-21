@@ -5218,21 +5218,29 @@ function setHwStatus(v){
   if(idx>=0){list[idx].hwStatus=form.hwStatus;saveList();}
   render();
 }
-// 리포트/미리보기에 들어갈 숙제 경고등 HTML (고정 문구, 2단계). compact=true면 미리보기용 작은 크기
-function hwLightHTML(status, compact){
-  if(status!=='done'&&status!=='weak') return '';
-  var done=status==='done';
-  var accent=done?'#10b981':'#dc2626', tc=done?'#047857':'#b91c1c';
-  var title=done?'숙제를 성실히 완료했어요':'이번 숙제가 미흡했어요';
-  var sub=done?'이번 숙제를 잘 해왔습니다. 칭찬해 주세요 👏':'숙제가 미흡했습니다. 가정에서 한 번 확인 부탁드립니다.';
-  var S=compact
-    ? {mt:'12px',pad:'11px 13px',gap:'11px',lw:'36px',lf:'18px',bw:'5px',tf:'14px',sf:'11px',sh:'0 3px 10px rgba(0,0,0,0.14)'}
-    : {mt:'18px',pad:'16px 18px',gap:'15px',lw:'52px',lf:'26px',bw:'7px',tf:'21px',sf:'15px',sh:'0 5px 16px rgba(0,0,0,0.18)'};
-  return '<div style="margin-top:'+S.mt+';border-radius:14px;padding:'+S.pad+';display:flex;align-items:center;gap:'+S.gap+';background:#fff;border-left:'+S.bw+' solid '+accent+';box-shadow:'+S.sh+'">'
-    +'<div style="width:'+S.lw+';height:'+S.lw+';border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:'+S.lf+';background:'+accent+';box-shadow:0 0 0 4px '+(done?'rgba(16,185,129,0.18)':'rgba(220,38,38,0.18)')+'">'+(done?'🟢':'🔴')+'</div>'
-    +'<div><div style="font-size:'+S.tf+';font-weight:900;color:'+tc+'">'+title+'</div><div style="font-size:'+S.sf+';color:#64748b;margin-top:2px;line-height:1.5">'+sub+'</div></div>'
-    +'</div>';
+// v16-32: 경고등을 한 줄짜리 간단한 '단어 뱃지'로 표시 (원장 요청). compact=true면 미리보기용 작은 크기
+// 뱃지 1개 렌더 — emoji+짧은 단어. kind:'hw'/'pl'
+function lightChipHTML(kind, status, compact){
+  var m;
+  if(kind==='hw'){
+    if(status==='done') m={emo:'🟢',label:'숙제 완료',bg:'#dcfce7',tc:'#047857'};
+    else if(status==='weak') m={emo:'🔴',label:'숙제 미흡',bg:'#fee2e2',tc:'#b91c1c'};
+  }else{
+    if(status==='done') m={emo:'📔',label:'플래너 제출',bg:'#e0f2fe',tc:'#0369a1'};
+    else if(status==='miss') m={emo:'📭',label:'플래너 미제출',bg:'#fef3c7',tc:'#b45309'};
+  }
+  if(!m) return '';
+  var fs=compact?'12.5px':'15px', pad=compact?'5px 11px':'7px 14px';
+  return '<span style="display:inline-flex;align-items:center;gap:5px;background:'+m.bg+';color:'+m.tc+';font-weight:800;font-size:'+fs+';padding:'+pad+';border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,0.12);white-space:nowrap">'+m.emo+' '+m.label+'</span>';
 }
+// 숙제+플래너 경고등을 한 줄(flex row)에 나란히
+function lightsRowHTML(hwStatus, plStatus, compact){
+  var a=lightChipHTML('hw',hwStatus,compact), b=lightChipHTML('pl',plStatus,compact);
+  if(!a&&!b) return '';
+  return '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:'+(compact?'11px':'15px')+'">'+a+b+'</div>';
+}
+// (호환) 개별 함수 — 이제 한 줄 뱃지 1개를 반환
+function hwLightHTML(status, compact){ return lightChipHTML('hw',status,compact); }
 // v16-32: 오각형은 매쓰플랫 '행동영역(역량)'만 — 예전 난이도(기초/기본/표준/응용/심화)로
 // 채워진 스테일 오각형은 표시하지 않는다. 렌더/AI 프롬프트 공통 필터.
 var DIFF_LABELS={'기초':1,'기본':1,'표준':1,'응용':1,'심화':1};
@@ -5245,20 +5253,7 @@ function setPlStatus(v){
   if(idx>=0){list[idx].plStatus=form.plStatus;list[idx].udPlTouched=true;saveList();}
   render();
 }
-function plLightHTML(status, compact){
-  if(status!=='done'&&status!=='miss') return '';
-  var done=status==='done';
-  var accent=done?'#0ea5e9':'#f59e0b', tc=done?'#0369a1':'#b45309';
-  var title=done?'플래너를 잘 작성했어요':'플래너가 제출되지 않았어요';
-  var sub=done?'학습 플래너를 성실히 기록하고 있습니다 👍':'오늘 학습 플래너가 제출되지 않았습니다. 가정에서 한 번 확인 부탁드립니다.';
-  var S=compact
-    ? {mt:'10px',pad:'11px 13px',gap:'11px',lw:'36px',lf:'18px',bw:'5px',tf:'14px',sf:'11px',sh:'0 3px 10px rgba(0,0,0,0.14)'}
-    : {mt:'12px',pad:'16px 18px',gap:'15px',lw:'52px',lf:'26px',bw:'7px',tf:'21px',sf:'15px',sh:'0 5px 16px rgba(0,0,0,0.18)'};
-  return '<div style="margin-top:'+S.mt+';border-radius:14px;padding:'+S.pad+';display:flex;align-items:center;gap:'+S.gap+';background:#fff;border-left:'+S.bw+' solid '+accent+';box-shadow:'+S.sh+'">'
-    +'<div style="width:'+S.lw+';height:'+S.lw+';border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:'+S.lf+';background:'+accent+';box-shadow:0 0 0 4px '+(done?'rgba(14,165,233,0.18)':'rgba(245,158,11,0.18)')+'">'+(done?'📔':'📭')+'</div>'
-    +'<div><div style="font-size:'+S.tf+';font-weight:900;color:'+tc+'">'+title+'</div><div style="font-size:'+S.sf+';color:#64748b;margin-top:2px;line-height:1.5">'+sub+'</div></div>'
-    +'</div>';
-}
+function plLightHTML(status, compact){ return lightChipHTML('pl',status,compact); }
 function autoResize(el){
   if(!el)return;
   el.style.height='auto';
@@ -6711,8 +6706,7 @@ function buildMultiReportHTML(reports){
       +(d.testType==='weekly'?'<div style="background:rgba(59,184,255,0.35);border-radius:22px;padding:7px 16px;font-size:17px;font-weight:700">🌐 전국주간테스트</div>':'<div style="background:rgba(16,185,129,0.35);border-radius:22px;padding:7px 16px;font-size:17px;font-weight:700">📝 일일테스트</div>')
       +(d.bookname?'<div style="background:rgba(255,255,255,0.2);border-radius:22px;padding:7px 16px;font-size:17px;font-weight:600">📖 '+d.bookname+'</div>':'')
       +'</div>'
-      +hwLightHTML(d.hwStatus)  /* v16-30: 숙제 경고등 — 리포트 헤더 안 */
-      +plLightHTML(d.plStatus)  /* v16-32: 플래너 경고등 — 리포트 헤더 안 */
+      +lightsRowHTML(d.hwStatus,d.plStatus,false)  /* v16-32: 숙제·플래너 경고등(한 줄 뱃지) — 리포트 헤더 안 */
       +'</div>'
       +(d.comment?'<div style="background:linear-gradient(135deg,#0d2240,#1a3564);border-radius:18px;padding:22px;margin-top:18px;color:white"><div style="font-size:15px;font-weight:800;letter-spacing:1px;opacity:0.7;margin-bottom:12px">💬 선생님 총평</div><div style="font-size:19px;line-height:2;opacity:0.95;white-space:pre-wrap">'+d.comment.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div></div>':'')
       +growthH
@@ -10536,8 +10530,7 @@ function rPreview(){
         ${d.testType==='weekly'?`<div style="background:rgba(59,184,255,0.25);border:1px solid rgba(59,184,255,0.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">🌐 전국주간테스트</div>`:`<div style="background:rgba(16,185,129,0.25);border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700">📝 일일테스트</div>`}
       </div>
       ${d.bookname?`<div style="font-size:11px;opacity:0.65;margin-top:7px;font-weight:500">📖 ${d.bookname}</div>`:''}
-      ${hwLightHTML(d.hwStatus,true)}
-      ${plLightHTML(d.plStatus,true)}
+      ${lightsRowHTML(d.hwStatus,d.plStatus,true)}
     </div>
     <div style="padding:0 13px;max-width:480px;margin:0 auto">
       ${d.comment?`<div style="background:linear-gradient(135deg,#0d2240 0%,#1a3564 100%);border-radius:16px;padding:16px 18px;margin-top:12px;color:white;box-shadow:0 4px 16px rgba(13,34,64,0.2)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><div style="width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:12px">💬</div><span style="font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;opacity:0.75">${STUDENT_VIEW?'선생님 피드백':'선생님 총평'}</span></div><div style="font-size:12px;line-height:1.9;opacity:0.95;white-space:pre-wrap;border-top:1px solid rgba(255,255,255,0.12);padding-top:8px">${d.comment}</div></div>`:''}
