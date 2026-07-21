@@ -1037,10 +1037,11 @@ async function refreshRoadmap() {
   } catch (e) { log('로드맵 갱신 실패(치명적 아님):', e.message); }
 }
 
-// ── 주간테스트(WEEKLY) 리포트 데이터 집계 ────────────────────
-// mf_answer_records의 worksheet_type='WEEKLY'를 학생×학습지로 집계해
+// ── 주간·단원테스트(WEEKLY·CHAPTER) 리포트 데이터 집계 ────────────────────
+// mf_answer_records의 worksheet_type='WEEKLY'/'CHAPTER'를 학생×학습지로 집계해
 // lumen_store 'mf_weekly'에 저장. 학원 내 평균·등수는 같은 학습지를 푼
-// 우리 학생들로 즉시 계산. 전국 평균·등수는 매쓰플랫 보고서 API 확보 후 채움(natAvg/natRank).
+// 우리 학생들로 즉시 계산(전국 등수는 원클릭 보고서 PDF에서만 확보 → mf_ws_behaviors).
+// (단원테스트는 원클릭 PDF의 행동영역·전국등수가 불안정해서, 학원 등수라도 PDF 없이 보장하기 위함)
 //   value = { updated, tests: [{ key, title, date, students: [{ sid, score,
 //     correct, total, wrongConcepts:[{id,n,cnt}], acadRank, acadN, acadAvg }] }] }
 async function refreshWeekly() {
@@ -1049,7 +1050,7 @@ async function refreshWeekly() {
   try {
     const rows = [];
     for (let off = 0; off < 500000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,concept_id,result,score,score_datetime&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.WEEKLY&limit=1000&offset=${off}`, { headers: sbHeaders });
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime&source=eq.${encodeURIComponent('학습지')}&worksheet_type=in.(WEEKLY,CHAPTER)&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const batch = await res.json();
       rows.push(...batch);
@@ -1063,10 +1064,10 @@ async function refreshWeekly() {
       if (rc.ok) { const j = await rc.json(); cname = (j[0] && j[0].value) || {}; }
     } catch (e) {}
     // 학습지(worksheet_id) × 학생(student_worksheet_id) 집계
-    const tests = {}; // wid → { title, date, students: { sid → agg } }
+    const tests = {}; // wid → { title, type, date, students: { sid → agg } }
     rows.forEach((r) => {
       if (!r.worksheet_id || r.mf_student_id == null) return;
-      const T = tests[r.worksheet_id] = tests[r.worksheet_id] || { title: r.worksheet_title || '', date: '', students: {} };
+      const T = tests[r.worksheet_id] = tests[r.worksheet_id] || { title: r.worksheet_title || '', type: r.worksheet_type || '', date: '', students: {} };
       const S = T.students[r.mf_student_id] = T.students[r.mf_student_id] || { sid: r.mf_student_id, score: null, correct: 0, total: 0, wrong: {} , dt: '' };
       S.total++;
       if (r.result === 'O') S.correct++;
@@ -1093,7 +1094,7 @@ async function refreshWeekly() {
           wrongConcepts, acadRank: rank, acadN: scored.length, acadAvg: avg,
           natAvg: null, natRank: null, natN: null }; // 전국은 보고서 API 확보 후
       });
-      out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, date: T.date, students });
+      out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, type: T.type, date: T.date, students });
     });
     out.sort((a, b) => String(b.date).localeCompare(String(a.date)));
     const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
@@ -1101,7 +1102,8 @@ async function refreshWeekly() {
       body: JSON.stringify([{ key: 'mf_weekly', value: { updated: new Date().toISOString(), tests: out }, updated_at: new Date().toISOString() }]),
     });
     const nStu = out.reduce((a, t) => a + t.students.length, 0);
-    log(`주간테스트(mf_weekly): 테스트 ${out.length}개 · 학생기록 ${nStu}건 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+    const nWk = out.filter((t) => t.type === 'WEEKLY').length, nCh = out.filter((t) => t.type === 'CHAPTER').length;
+    log(`주간·단원테스트(mf_weekly): 테스트 ${out.length}개(주간 ${nWk}·단원 ${nCh}) · 학생기록 ${nStu}건 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('주간테스트 갱신 실패(치명적 아님):', e.message); }
 }
 
