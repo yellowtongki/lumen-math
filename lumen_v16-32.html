@@ -38574,6 +38574,9 @@ function rUltraLeftNav(){
       h+='<span style="font-size:15px;font-weight:800;color:#fff;white-space:nowrap">'+esc2(x.name)+'</span>';
       h+='<span style="font-size:13px;font-weight:800;color:'+((x.main&&x.main.score>=70)?'#7cc4ff':'#ffd08a')+'">'+(x.main?x.main.score+'점':'-')+'</span>';
       if(x.plMissing) h+='<span style="font-size:9px;font-weight:800;border-radius:50px;padding:1px 7px;background:rgba(239,68,68,0.25);color:#fca5a5">플래너</span>';
+      // v16-32: 숙제 경고등 상태도 플래너 뱃지처럼 표시 (미흡=빨강 / 완료=초록)
+      if(x.r&&x.r.hwStatus==='weak') h+='<span style="font-size:9px;font-weight:800;border-radius:50px;padding:1px 7px;background:rgba(239,68,68,0.25);color:#fca5a5">숙제</span>';
+      else if(x.r&&x.r.hwStatus==='done') h+='<span style="font-size:9px;font-weight:800;border-radius:50px;padding:1px 7px;background:rgba(16,185,129,0.25);color:#6ee7b7">숙제✓</span>';
       h+='<span style="margin-left:auto;font-size:13px">'+stIcon+'</span></div>';
     });
   }
