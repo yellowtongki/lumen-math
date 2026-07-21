@@ -5223,13 +5223,31 @@ function toggleRank(){
 function setHwStatus(v){
   form.hwStatus=(form.hwStatus===v?'':v);
   const idx=list.findIndex(s=>s.id===form.id);
-  if(idx>=0){list[idx].hwStatus=form.hwStatus;saveList();}
+  if(idx>=0){list[idx].hwStatus=form.hwStatus;saveList();schedRepublish(list[idx]);}
   hwcMirrorFromReport(form.name, form.date, form.hwStatus); // v16-33: 숙제체크 그리드에도 반영
   render();
 }
 // v16-32: 리포트 id로 경고등 토글 (일괄피드백 등에서 사용). 같은 값 재클릭 시 끔.
-window.setReportHw=function(id,v){ var idx=list.findIndex(function(s){return s.id===id;}); if(idx<0)return; list[idx].hwStatus=(list[idx].hwStatus===v?'':v); saveList(); hwcMirrorFromReport(list[idx].name, list[idx].date, list[idx].hwStatus); render(); };
-window.setReportPl=function(id,v){ var idx=list.findIndex(function(s){return s.id===id;}); if(idx<0)return; list[idx].plStatus=(list[idx].plStatus===v?'':v); list[idx].udPlTouched=true; saveList(); render(); };
+window.setReportHw=function(id,v){ var idx=list.findIndex(function(s){return s.id===id;}); if(idx<0)return; list[idx].hwStatus=(list[idx].hwStatus===v?'':v); saveList(); hwcMirrorFromReport(list[idx].name, list[idx].date, list[idx].hwStatus); schedRepublish(list[idx]); render(); };
+window.setReportPl=function(id,v){ var idx=list.findIndex(function(s){return s.id===id;}); if(idx<0)return; list[idx].plStatus=(list[idx].plStatus===v?'':v); list[idx].udPlTouched=true; saveList(); schedRepublish(list[idx]); render(); };
+// v16-33: 이미 발행된 학부모 리포트는 경고등을 바꾸면 자동 재발행 (초안은 승인 때 반영되므로 건드리지 않음).
+// 인자로 받은 「그 리포트」가 발행된 것일 때만 재발행. 같은 학생(코드)당 1.5초 디바운스
+// — 그리드에서 여러 칸을 빠르게 눌러도 업로드 1회로 합쳐짐.
+var _repubTimers={};
+function schedRepublish(reportObj){
+  try{
+    if(!reportObj||!reportObj.ultraApproved) return; // 이 리포트가 발행된 것일 때만
+    var st=(students||[]).find(function(x){ return x&&x.name===reportObj.name&&x.grade===reportObj.grade&&!x.withdrawn&&x.lumen_rec_code; });
+    if(!st) st=(students||[]).find(function(x){ return x&&x.name===reportObj.name&&!x.withdrawn&&x.lumen_rec_code; });
+    if(!st) return;
+    var code=st.lumen_rec_code;
+    if(_repubTimers[code]) clearTimeout(_repubTimers[code]);
+    _repubTimers[code]=setTimeout(function(){
+      delete _repubTimers[code];
+      udPublishParent({st:st, r:reportObj, name:st.name});
+    }, 1500);
+  }catch(e){}
+}
 // v16-32: 경고등을 한 줄짜리 간단한 '단어 뱃지'로 표시 (원장 요청). compact=true면 미리보기용 작은 크기
 // 뱃지 1개 렌더 — emoji+짧은 단어. kind:'hw'/'pl'
 function lightChipHTML(kind, status, compact){
@@ -5262,7 +5280,7 @@ function setPlStatus(v){
   form.plStatus=(form.plStatus===v?'':v);
   form.udPlTouched=true; // 수동 설정 시 울트라 자동 갱신이 덮어쓰지 않도록
   const idx=list.findIndex(s=>s.id===form.id);
-  if(idx>=0){list[idx].plStatus=form.plStatus;list[idx].udPlTouched=true;saveList();}
+  if(idx>=0){list[idx].plStatus=form.plStatus;list[idx].udPlTouched=true;saveList();schedRepublish(list[idx]);}
   render();
 }
 function plLightHTML(status, compact){ return lightChipHTML('pl',status,compact); }
@@ -22270,7 +22288,7 @@ window.hwcToggle=function(stId, iso){
   var dot=iso.replace(/-/g,'.');
   var touched=false;
   (list||[]).forEach(function(r){
-    if(r&&r.name===st.name&&normalizeDate(r.date||'')===dot){ r.hwStatus=next; touched=true; }
+    if(r&&r.name===st.name&&normalizeDate(r.date||'')===dot){ r.hwStatus=next; touched=true; schedRepublish(r); }
   });
   if(touched) saveList();
   render();
@@ -38551,11 +38569,14 @@ window.udSetHw=function(rid,v){
   var row=UD.rows.find(function(x){ return x.rid===rid; }); if(!row||!row.r) return;
   row.r.hwStatus=(row.r.hwStatus===v?'':v); saveList();
   hwcMirrorFromReport(row.r.name, row.r.date, row.r.hwStatus); // v16-33: 숙제체크 그리드에도 반영
+  schedRepublish(row.r);
   render();
 };
 window.udSetPl=function(rid,v){
   var row=UD.rows.find(function(x){ return x.rid===rid; }); if(!row||!row.r) return;
-  row.r.plStatus=(row.r.plStatus===v?'':v); row.r.udPlTouched=true; saveList(); render();
+  row.r.plStatus=(row.r.plStatus===v?'':v); row.r.udPlTouched=true; saveList();
+  schedRepublish(row.r);
+  render();
 };
 
 // v16-7: 시험지 제외(삭제)·복구·날짜 스트립 페이징
