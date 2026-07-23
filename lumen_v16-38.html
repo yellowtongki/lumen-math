@@ -40769,10 +40769,31 @@ window.jmDelExam=function(id){
   var d=jmData(); d.exams=d.exams.filter(function(x){ return x.id!==id; }); jmSave(d);
   if(JM.sel===id) JM.sel=null; render();
 };
-// PDF 업로드 → AI 문항 추출 (단원은 문제 내용으로 추정 — 원장 선택 A안)
+// PDF 업로드 → 문항 추출 (v16-38.1: 1차 로컬 정규식[확실] + 2차 AI 단원 추정[실패해도 진행])
+// 족보 형식: 문항마다 [4.00점] 배점 마커 + 난이도(쉬움/보통/어려움) 마커 — 정규식으로 골격 추출
+function jmLocalParse(txt){
+  var marks=[]; var re=/\[(\d+(?:\.\d+)?)점\]/g; var m;
+  while((m=re.exec(txt))) marks.push({pts:parseFloat(m[1]), idx:m.index});
+  if(marks.length<3) return null;
+  var qs=[]; var lastN=0; var seqOk=true;
+  marks.forEach(function(mk,i){
+    var before=txt.slice(Math.max(0,mk.idx-800), mk.idx);
+    // 난이도: 마커 직전 가장 가까운 것
+    var dm=null; var dre=/(쉬움|보통|어려움|어렵|심화)/g; var d;
+    while((d=dre.exec(before))) dm=d[1];
+    var diff=dm==='쉬움'?'쉬움':(dm==='보통'?'보통':(dm?'어려움':'보통'));
+    // 문항번호: 직전 "N. n)" 패턴의 마지막 것
+    var nm=null; var nre=/(\d{1,2})\s*\.\s*\d{0,2}\)/g; var n;
+    while((n=nre.exec(before))) nm=parseInt(n[1]);
+    var qn=(nm&&nm>lastN&&nm<=lastN+3)?nm:(lastN+1); // 순서 이상하면 연번으로
+    if(nm!==qn) seqOk=seqOk&&(nm==null);
+    lastN=qn;
+    qs.push({ n:qn, unit:'', diff:diff, pts:mk.pts, _txt:before.slice(-260) });
+  });
+  return { qs:qs, seqOk:seqOk };
+}
 window.jmUpload=async function(input){
   var f=input.files&&input.files[0]; input.value=''; if(!f) return;
-  if(!apiKey&&!geminiKey){ alert('API 키를 먼저 등록해주세요 (설정 탭)'); return; }
   if(typeof pdfjsLib==='undefined'||!pdfjsLib.getDocument){ alert('PDF 기능 로딩 중 — 잠시 후 다시'); return; }
   JM.busy=true; JM.aiMsg='📄 PDF 읽는 중…'; render();
   try{
@@ -40780,26 +40801,53 @@ window.jmUpload=async function(input){
     var ab=await f.arrayBuffer();
     var pdf=await pdfjsLib.getDocument({data:ab}).promise;
     var txt='';
-    for(var i=1;i<=Math.min(pdf.numPages,20);i++){
+    for(var i=1;i<=Math.min(pdf.numPages,25);i++){
       var pg=await pdf.getPage(i); var tc=await pg.getTextContent();
       txt+=tc.items.map(function(it){ return it.str; }).join(' ')+'\n';
     }
-    txt=txt.replace(/[A-Za-z0-9+/=]{40,}/g,' ').replace(/\s{2,}/g,' ').slice(0,28000); // 수식 암호블록 제거
-    JM.aiMsg='🤖 AI가 문항을 읽는 중… (배점·난이도·단원 추정)'; render();
-    var prompt='다음은 한국 수학 기출시험지에서 추출한 텍스트입니다. 문항 목록을 JSON 배열로만 출력하세요(설명 금지).\n'
-      +'각 문항: {"n":문항번호(정수),"pts":배점(숫자, [4.00점] 표기에서),"diff":"쉬움"|"보통"|"어려움"(쉬움1~2=쉬움, 보통=보통, 어렵/심화=어려움, 없으면 "보통"),"unit":"단원명(문제 내용으로 추정, 한국 수학 교육과정 단원명, 예: 삼각비, 원의 성질, 이차함수)"}\n'
-      +'문항번호 순서대로, 마지막 문항까지 빠짐없이.\n\n'+txt;
-    var out=await callAI(prompt);
-    var m=out.match(/\[[\s\S]*\]/); if(!m) throw new Error('AI 응답에서 문항 목록을 찾지 못했어요');
-    var qs=JSON.parse(m[0]).map(function(q,i){ return { n:Number(q.n)||i+1, unit:String(q.unit||''), diff:(['쉬움','보통','어려움'].indexOf(q.diff)>=0?q.diff:'보통'), pts:Number(q.pts)||0 }; });
-    if(!qs.length) throw new Error('문항이 추출되지 않았어요');
-    var tot=qs.reduce(function(a,q){ return a+q.pts; },0);
-    if(tot<50||tot>150){ var eq=Math.round(100/qs.length*100)/100; qs.forEach(function(q){ q.pts=eq; }); } // 배점 이상 → 균등 배점 폴백
+    txt=txt.replace(/[A-Za-z0-9+\/=]{40,}/g,' ').replace(/\s{2,}/g,' ');
+    // ── 1차: 로컬 정규식 (배점 마커 기반 — AI 불필요, 확실) ──
+    var loc=jmLocalParse(txt);
+    var qs=null;
+    if(loc&&loc.qs.length>=3){
+      qs=loc.qs;
+    } else {
+      // ── 폴백: 전체 AI 추출 (형식이 다른 시험지) ──
+      if(!apiKey&&!geminiKey) throw new Error('이 시험지에서 배점 마커([N점])를 찾지 못했어요.\nAPI 키를 등록하면 AI 추출을 시도하고, 수동 등록도 가능해요.');
+      JM.aiMsg='🤖 AI가 문항 전체를 읽는 중…'; render();
+      var out=await callAI('다음 수학 시험지 텍스트에서 문항 목록을 추출해 압축 JSON 배열로만 출력(설명·코드펜스 금지, [ 로 시작): [{"n":번호,"pts":배점,"diff":"쉬움"|"보통"|"어려움","unit":"단원명 추정"}]\n\n'+txt.slice(0,20000));
+      console.log('[자체모의] AI 전체추출 응답:', out.slice(0,800));
+      var objs=(out.match(/\{[^{}]*\}/g)||[]).map(function(x){ try{ return JSON.parse(x); }catch(e){ return null; } }).filter(Boolean).filter(function(q){ return q&&q.n!=null; });
+      if(!objs.length) throw new Error('문항을 추출하지 못했어요.\n(AI 응답 앞부분: '+String(out||'(빈 응답)').slice(0,120)+')\n수동 등록으로 진행할 수 있어요.');
+      qs=objs.map(function(q,i){ return { n:Number(q.n)||i+1, unit:String(q.unit||''), diff:(['쉬움','보통','어려움'].indexOf(q.diff)>=0?q.diff:'보통'), pts:Number(q.pts)||0 }; });
+    }
+    var tot=qs.reduce(function(a,q){ return a+(Number(q.pts)||0); },0);
+    if(tot<30||tot>200){ var eq=Math.round(100/qs.length*100)/100; qs.forEach(function(q){ q.pts=eq; }); }
+    // 시험 생성 (단원은 비워두고 즉시 사용 가능 — AI는 뒤에서 채움)
     var d=jmData();
-    var ex={ id:'jm_'+Date.now(), title:f.name.replace(/\.pdf$/i,''), school:'', schGrade:'', date:jmToday(), distId:'', questions:qs, results:{} };
+    var ex={ id:'jm_'+Date.now(), title:f.name.replace(/\.pdf$/i,''), school:'', schGrade:'', date:jmToday(), distId:'', questions:qs.map(function(q){ return {n:q.n,unit:q.unit||'',diff:q.diff,pts:q.pts}; }), results:{} };
     d.exams.unshift(ex); jmSave(d); JM.sel=ex.id;
-    plToast('🤖 '+qs.length+'문항 추출 완료 — 단원·배점을 확인해 주세요');
-  }catch(e){ console.error('[자체모의] 추출 실패:', e); alert('추출 실패: '+e.message+'\n수동 등록으로 진행할 수 있어요.'); }
+    plToast('📄 '+qs.length+'문항 추출 완료 (배점·난이도 자동)');
+    render();
+    // ── 2차: AI 단원 추정 (실패해도 시험은 그대로 사용 가능) ──
+    if((apiKey||geminiKey)&&qs.some(function(q){ return !q.unit; })){
+      JM.aiMsg='🤖 AI가 단원을 추정하는 중… (실패해도 문항은 그대로)'; render();
+      try{
+        var snip=qs.map(function(q){ return q.n+'번: '+String(q._txt||'').replace(/[\[\]{}"]/g,' ').slice(-200); }).join('\n');
+        var uo=await callAI('아래는 한국 수학 시험 문항별 지문 일부입니다. 각 문항의 교육과정 단원명을 추정해 압축 JSON 객체로만 출력({ 로 시작, 설명 금지): {"1":"단원명","2":"단원명",...}\n단원명 예: 삼각비, 원의 성질, 원주각, 이차함수, 확률, 대푯값과 산포도, 지수함수, 수열\n\n'+snip.slice(0,15000));
+        console.log('[자체모의] AI 단원 응답:', uo.slice(0,400));
+        var um=uo.match(/\{[\s\S]*\}/);
+        if(um){
+          var units=JSON.parse(um[0]);
+          var d2=jmData(); var ex2=d2.exams.find(function(x){ return x.id===ex.id; });
+          if(ex2){
+            (ex2.questions||[]).forEach(function(q){ if(!q.unit&&units[String(q.n)]) q.unit=String(units[String(q.n)]).slice(0,30); });
+            jmSave(d2); plToast('🤖 단원 추정 완료 — ①에서 확인·수정하세요');
+          }
+        }
+      }catch(e){ console.warn('[자체모의] 단원 추정 실패(문항은 유지):', e.message); plToast('⚠️ 단원 자동 추정 실패 — ①에서 직접 입력해 주세요'); }
+    }
+  }catch(e){ console.error('[자체모의] 추출 실패:', e); alert('추출 실패: '+e.message); }
   JM.busy=false; JM.aiMsg=''; render();
 };
 // ── 문항 편집 / O/X ──
