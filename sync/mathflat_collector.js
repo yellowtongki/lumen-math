@@ -533,6 +533,7 @@ async function backfillBehaviors(days) {
       return !e.b || wantNat;
     });
     if (!targets.length) { log(`행동영역 백필: 누락 없음 (최근 ${days}일)`); return; }
+    targets.sort((a, b) => String(sws[b].date).localeCompare(String(sws[a].date))); // 최신 시험지 우선 (뒤쪽이 속도제한에 걸려도 중요한 최근분은 확보)
     log(`행동영역 백필: 대상 ${targets.length}건 (최근 ${days}일) — 시험지당 최대 3회 재시도`);
     let got = 0;
     for (const swId of targets) {
@@ -545,14 +546,14 @@ async function backfillBehaviors(days) {
         } catch (e) {}
         const needMore = !best || !best.b || ((sws[swId].type === 'WEEKLY' || sws[swId].type === 'CHAPTER') && !best.nat);
         if (!needMore) break;
-        await sleep(500);
+        await sleep(best ? 700 : 2000); // 실패(속도제한 의심)면 길게 쉼
       }
       if (best && (best.b || best.nat || best.acad)) {
         cur[String(swId)] = { sid: sws[swId].sid, wid: sws[swId].wid, date: sws[swId].date,
           b: best.b || prev.b || null, nat: best.nat || prev.nat || null, acad: best.acad || prev.acad || null };
         got++;
       }
-      await sleep(150);
+      await sleep(450);
     }
     const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
       method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
