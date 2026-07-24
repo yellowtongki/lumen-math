@@ -493,9 +493,87 @@ async function runMonthly() {
   }
 }
 
+// ── 행동영역·전국등수 백필 (v16-43) ───────────────────────────
+// 원클릭 보고서 PDF는 매쓰플랫이 비결정적으로 생성(같은 시험지도 행동영역이
+// 있다 없다 함) → 첫 수집에서 놓친 시험지의 행동영역(오각형)·전국/학원 등수를
+// 최근 N일 범위에서 다시 시도해 채운다. 시험지당 최대 3회 재요청.
+async function backfillBehaviors(days) {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  if (!getPdfParse()) return;
+  try {
+    // 현재 사전 + 태그
+    let cur = {}, tags = {};
+    const rc = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_behaviors&select=value`, { headers: sbHeaders });
+    if (rc.ok) { const j = await rc.json(); cur = (j[0] && j[0].value && j[0].value.map) || {}; }
+    const rt = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_tags&select=value`, { headers: sbHeaders });
+    if (rt.ok) { const j = await rt.json(); tags = (j[0] && j[0].value && j[0].value.tags) || {}; }
+    // 최근 학습지 시험지 목록
+    const d0 = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const rows = [];
+    for (let off = 0; off < 50000; off += 1000) {
+      const q = `select=student_worksheet_id,worksheet_id,worksheet_type,mf_student_id,score_datetime&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${d0}&limit=1000&offset=${off}`;
+      const r = await fetch(`${url}/rest/v1/mf_answer_records?${q}`, { headers: sbHeaders });
+      if (!r.ok) break;
+      const b = await r.json(); rows.push(...b);
+      if (b.length < 1000) break;
+    }
+    const sws = {};
+    rows.forEach((r) => {
+      if (!r.student_worksheet_id) return;
+      const tg = tags[r.worksheet_id];
+      if ((tg && (tg.tag === 'HOMEWORK' || tg.tag === 'ENTRANCE_TEST')) || r.worksheet_type === 'ENTRANCE') return;
+      sws[r.student_worksheet_id] = { sid: r.mf_student_id, wid: r.worksheet_id, type: r.worksheet_type, date: (r.score_datetime || '').slice(0, 10) };
+    });
+    // 누락 대상: 사전에 없거나, 행동영역(b) 없거나, (주간·단원인데) 전국(nat) 없음
+    const targets = Object.keys(sws).filter((swId) => {
+      const e = cur[String(swId)];
+      if (!e) return true;
+      const wantNat = (sws[swId].type === 'WEEKLY' || sws[swId].type === 'CHAPTER') && !e.nat;
+      return !e.b || wantNat;
+    });
+    if (!targets.length) { log(`행동영역 백필: 누락 없음 (최근 ${days}일)`); return; }
+    log(`행동영역 백필: 대상 ${targets.length}건 (최근 ${days}일) — 시험지당 최대 3회 재시도`);
+    let got = 0;
+    for (const swId of targets) {
+      const prev = cur[String(swId)] || {};
+      let best = null;
+      for (let att = 1; att <= 3; att++) {
+        try {
+          const s2 = await fetchReportStats(swId);
+          if (s2) { best = best || {}; if (s2.b && !best.b) best.b = s2.b; if (s2.nat && !best.nat) best.nat = s2.nat; if (s2.acad && !best.acad) best.acad = s2.acad; }
+        } catch (e) {}
+        const needMore = !best || !best.b || ((sws[swId].type === 'WEEKLY' || sws[swId].type === 'CHAPTER') && !best.nat);
+        if (!needMore) break;
+        await sleep(500);
+      }
+      if (best && (best.b || best.nat || best.acad)) {
+        cur[String(swId)] = { sid: sws[swId].sid, wid: sws[swId].wid, date: sws[swId].date,
+          b: best.b || prev.b || null, nat: best.nat || prev.nat || null, acad: best.acad || prev.acad || null };
+        got++;
+      }
+      await sleep(150);
+    }
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_ws_behaviors', value: { map: cur, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
+    });
+    log(`행동영역 백필: ${got}/${targets.length} 확보 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('행동영역 백필 실패(치명적 아님):', e.message); }
+}
+
 async function main() {
   // --monthly: 월간보고서 요청 처리 (매쓰플랫 로그인 필요)
   if (has('--monthly')) { await runMonthly(); return; }
+  // --behaviors-only: 행동영역·등수 백필만 (매쓰플랫 로그인 필요)
+  if (has('--behaviors-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meB = await login();
+    log(`로그인 성공 · 학원 ${meB.academyId}`);
+    await backfillBehaviors(parseInt(opt('--days', '14'), 10));
+    return;
+  }
   // --weekly-only: 매쓰플랫 로그인 없이 주간테스트 집계만 (Supabase 기존 기록 사용)
   if (has('--weekly-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -557,6 +635,7 @@ async function main() {
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
     await saveWsTags();
     await saveWsBehaviors();
+    await backfillBehaviors(14); // 놓친 행동영역·전국등수 매일 자동 재시도 (v16-43)
     await refreshConceptNames();
     await refreshBookCatalog();
     await refreshTypeDb();
