@@ -1015,10 +1015,11 @@ function _parsePage(p) { const m = String(p == null ? '' : p).match(/\d+/g); ret
 async function refreshRoadmap() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  const cut = (d) => String(d || '').slice(0, 10);
   try {
     const rows = [];
     for (let off = 0; off < 300000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_study_sessions?select=mf_student_id,book_id,chapter,page,correct_count,wrong_count,update_datetime&source=eq.${encodeURIComponent('교재')}&order=update_datetime.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
+      const res = await fetch(`${url}/rest/v1/mf_study_sessions?select=mf_student_id,book_id,chapter,page,correct_count,wrong_count,update_datetime,student_workbook_id,student_book_id&source=eq.${encodeURIComponent('교재')}&order=update_datetime.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const batch = await res.json();
       rows.push(...batch);
@@ -1026,30 +1027,35 @@ async function refreshRoadmap() {
     }
     if (!rows.length) { log('로드맵: 교재 세션 없음 → 건너뜀'); return; }
     const now = Date.now(), WEEK = 7 * 86400000;
-    const byStudent = {};
+    // v17-5: 회차(재수강) 분리 — 같은 교재라도 매쓰플랫 배정(student_workbook_id)마다 별도 회차로 집계.
+    //        최상위 필드는 「현재(최근 채점) 회차」 기준 → 앱들은 수정 없이 현재 회차를 보게 됨.
+    const byStudent = {}; // sid → bid → rkey → round
     rows.forEach((r) => {
       if (!r.book_id || r.mf_student_id == null) return;
       const pg = _parsePage(r.page);
       const dt = r.update_datetime || '';
       const cc = r.correct_count || 0, wc = r.wrong_count || 0;
+      const rk = String(r.student_book_id || r.student_workbook_id || '0');
       const S = byStudent[r.mf_student_id] = byStudent[r.mf_student_id] || {};
-      const B = S[r.book_id] = S[r.book_id] || { maxPage: 0, curChapter: '', lastDate: '', firstDate: '', weekBase: null, _chap: {}, months: {} };
-      if (pg > B.maxPage) B.maxPage = pg;
-      if (dt && (!B.firstDate || dt < B.firstDate)) B.firstDate = dt; // v17-1: 교재 시작일(최초 채점)
-      if (dt >= B.lastDate) { B.lastDate = dt; if (r.chapter) B.curChapter = r.chapter; }
+      const Bk = S[r.book_id] = S[r.book_id] || {};
+      const R = Bk[rk] = Bk[rk] || { k: rk, maxPage: 0, curChapter: '', lastDate: '', firstDate: '', weekBase: null, _chap: {}, months: {}, n: 0, c: 0, t: 0 };
+      R.n++;
+      if (pg > R.maxPage) R.maxPage = pg;
+      if (dt && (!R.firstDate || dt < R.firstDate)) R.firstDate = dt;
+      if (dt >= R.lastDate) { R.lastDate = dt; if (r.chapter) R.curChapter = r.chapter; }
       if (r.chapter) {
-        const c = B._chap[r.chapter] = B._chap[r.chapter] || { n: r.chapter, minP: 1e9, maxP: 0, lastDate: '', correct: 0, total: 0 };
+        const c = R._chap[r.chapter] = R._chap[r.chapter] || { n: r.chapter, minP: 1e9, maxP: 0, lastDate: '', correct: 0, total: 0 };
         if (pg && pg < c.minP) c.minP = pg;
         if (pg > c.maxP) c.maxP = pg;
         if (dt > c.lastDate) c.lastDate = dt;
         c.correct += cc; c.total += cc + wc;
       }
-      // 주간 진도: 7일 이전 시점의 최대 도달 페이지를 기준선으로
+      R.c += cc; R.t += cc + wc;
       const ts = dt ? Date.parse(dt.replace(' ', 'T')) : NaN;
-      if (!isNaN(ts) && (now - ts) > WEEK) { if (B.weekBase === null || pg > B.weekBase) B.weekBase = pg; }
+      if (!isNaN(ts) && (now - ts) > WEEK) { if (R.weekBase === null || pg > R.weekBase) R.weekBase = pg; }
       const ym = dt.slice(0, 7);
       if (ym) {
-        const m = B.months[ym] = B.months[ym] || { c: 0, t: 0, maxP: 0 };
+        const m = R.months[ym] = R.months[ym] || { c: 0, t: 0, maxP: 0 };
         m.c += cc; m.t += cc + wc; if (pg > m.maxP) m.maxP = pg;
       }
     });
@@ -1057,66 +1063,84 @@ async function refreshRoadmap() {
     Object.keys(byStudent).forEach((sid) => {
       out[sid] = {};
       Object.keys(byStudent[sid]).forEach((bid) => {
-        const B = byStudent[sid][bid];
-        const chapters = Object.keys(B._chap).map((k) => B._chap[k])
-          .map((c) => ({ n: c.n, minP: (c.minP === 1e9 ? 0 : c.minP), maxP: c.maxP, lastDate: (c.lastDate || '').slice(0, 10), correct: c.correct, total: c.total }))
+        const rounds = Object.values(byStudent[sid][bid]).sort((a, b) => String(a.firstDate).localeCompare(String(b.firstDate)) || String(a.k).localeCompare(String(b.k)));
+        const cur = rounds.reduce((a, b) => (String(b.lastDate) >= String(a.lastDate) ? b : a));
+        const chapters = Object.values(cur._chap)
+          .map((c) => ({ n: c.n, minP: (c.minP === 1e9 ? 0 : c.minP), maxP: c.maxP, lastDate: cut(c.lastDate), correct: c.correct, total: c.total }))
           .sort((a, b) => (a.minP - b.minP) || a.lastDate.localeCompare(b.lastDate));
-        const weekPages = B.weekBase === null ? B.maxPage : Math.max(0, B.maxPage - B.weekBase);
-        out[sid][bid] = { maxPage: B.maxPage, curChapter: B.curChapter, lastDate: (B.lastDate || '').slice(0, 10), firstDate: (B.firstDate || '').slice(0, 10), weekPages, chapters, months: B.months };
+        const weekPages = cur.weekBase === null ? cur.maxPage : Math.max(0, cur.maxPage - cur.weekBase);
+        out[sid][bid] = {
+          maxPage: cur.maxPage, curChapter: cur.curChapter, lastDate: cut(cur.lastDate), firstDate: cut(cur.firstDate),
+          weekPages, chapters, months: cur.months,
+          curKey: cur.k, roundNo: rounds.indexOf(cur) + 1, roundN: rounds.length,
+          rounds: rounds.map((r, i) => ({ no: i + 1, k: r.k, first: cut(r.firstDate), last: cut(r.lastDate), maxP: r.maxPage, n: r.n, rate: (r.t > 0 ? Math.round(r.c / r.t * 100) : null), cur: (r === cur) })),
+        };
       });
     });
 
-    // ── 단원명 보강: 세션엔 chapter가 없어 문항단위 기록(mf_answer_records, 교재)에서
-    //    단원별 정오답·페이지·현재 단원을 집계해 위 out에 덮어씀 ([C] 수집 시 채워짐).
-    //    교재 섹션 제목(p.title: '단원 마무리' 등)은 지저분하므로 concept_id→대단원명으로
-    //    묶어 교재 목차(units)와 같은 깨끗한 대단원으로 표기. ──
+    // ── 단원명 보강: 문항단위 기록(mf_answer_records, 교재)에서 「현재 회차」 것만 골라
+    //    concept→대단원명으로 묶어 깨끗한 단원별 정오답으로 교체. 회차별 정답률(rate)도 문항 기준으로 보강. ──
     try {
-      // concept_id → 대단원명 매핑 (전체 교육과정 3키)
       const conceptBig = {};
       for (const k of ['1.4.4145', '1.4.4146', '1.4.4147']) {
         try { (await api(`/concept/chips?curriculumKey=${k}`) || []).forEach((c) => { if (c.conceptId && c.bigChapterName) conceptBig[c.conceptId] = c.bigChapterName; }); } catch (e) {}
       }
       const arows = [];
       for (let off = 0; off < 500000; off += 1000) {
-        const res2 = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,book_id,chapter,concept_id,page,result,score_datetime&source=eq.${encodeURIComponent('교재')}&order=score_datetime.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
+        const res2 = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,book_id,chapter,concept_id,page,result,score_datetime,student_workbook_id,student_book_id&source=eq.${encodeURIComponent('교재')}&order=score_datetime.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
         if (!res2.ok) break;
         const b2 = await res2.json();
         arows.push(...b2);
         if (b2.length < 1000) break;
       }
       if (arows.length) {
-        const ca = {}; // ca[sid][bid] = { cur:'', curDate:'', _chap:{} }
+        const ca = {}; // sid → bid → { cur, curDate, _chap } (현재 회차만)
+        const roundAcc = {}; // sid → bid → rkey → {c,t} (회차별 문항 정답률 보강)
         arows.forEach((r) => {
-          // 개념→대단원 매핑된 것만 사용(교재 섹션 잡음 '단원 마무리·쌍둥이 기출' 등 제거).
+          if (!r.book_id || r.mf_student_id == null) return;
+          const rk = String(r.student_book_id || r.student_workbook_id || '0');
+          const ra = ((roundAcc[r.mf_student_id] = roundAcc[r.mf_student_id] || {})[r.book_id] = (roundAcc[r.mf_student_id][r.book_id] || {}));
+          const acc = ra[rk] = ra[rk] || { c: 0, t: 0 };
+          if (r.result === 'O') { acc.c++; acc.t++; } else if (r.result === 'X') { acc.t++; }
+          const o = out[r.mf_student_id] && out[r.mf_student_id][r.book_id];
+          if (!o || String(o.curKey) !== rk) return; // 단원별 정오답은 현재 회차만
           const chapName = (r.concept_id != null) ? conceptBig[r.concept_id] : null;
-          if (!r.book_id || r.mf_student_id == null || !chapName) return;
-          const sid = r.mf_student_id, bid = r.book_id, dt = r.score_datetime || '';
+          if (!chapName) return;
+          const dt = r.score_datetime || '';
           const pg = _parsePage(r.page);
-          const S = ca[sid] = ca[sid] || {};
-          const Bk = S[bid] = S[bid] || { cur: '', curDate: '', firstDate: '', _chap: {} };
+          const S = ca[r.mf_student_id] = ca[r.mf_student_id] || {};
+          const Bk = S[r.book_id] = S[r.book_id] || { cur: '', curDate: '', _chap: {} };
           if (dt >= Bk.curDate) { Bk.curDate = dt; Bk.cur = chapName; }
-          if (dt && (!Bk.firstDate || dt < Bk.firstDate)) Bk.firstDate = dt;
           const c = Bk._chap[chapName] = Bk._chap[chapName] || { n: chapName, minP: 1e9, maxP: 0, lastDate: '', correct: 0, total: 0 };
           if (pg && pg < c.minP) c.minP = pg;
           if (pg > c.maxP) c.maxP = pg;
           if (dt > c.lastDate) c.lastDate = dt;
-          if (r.result === 'O') { c.correct++; c.total++; }
-          else if (r.result === 'X') { c.total++; }
+          if (r.result === 'O') { c.correct++; c.total++; } else if (r.result === 'X') { c.total++; }
         });
         let filled = 0;
         Object.keys(ca).forEach((sid) => {
-          out[sid] = out[sid] || {};
           Object.keys(ca[sid]).forEach((bid) => {
+            const o = out[sid] && out[sid][bid]; if (!o) return;
             const Bk = ca[sid][bid];
-            const chapters = Object.keys(Bk._chap).map((k) => Bk._chap[k])
-              .map((c) => ({ n: c.n, minP: (c.minP === 1e9 ? 0 : c.minP), maxP: c.maxP, lastDate: (c.lastDate || '').slice(0, 10), correct: c.correct, total: c.total }))
+            const chapters = Object.values(Bk._chap)
+              .map((c) => ({ n: c.n, minP: (c.minP === 1e9 ? 0 : c.minP), maxP: c.maxP, lastDate: cut(c.lastDate), correct: c.correct, total: c.total }))
               .sort((a, b) => (a.minP - b.minP) || a.lastDate.localeCompare(b.lastDate));
-            const prev = out[sid][bid] || { maxPage: 0, weekPages: 0, months: {}, lastDate: '', firstDate: '' };
-            out[sid][bid] = { maxPage: prev.maxPage, curChapter: Bk.cur, lastDate: prev.lastDate || (Bk.curDate || '').slice(0, 10), firstDate: prev.firstDate || (Bk.firstDate || '').slice(0, 10), weekPages: prev.weekPages, chapters, months: prev.months };
+            o.chapters = chapters;
+            if (Bk.cur) o.curChapter = Bk.cur;
             filled++;
           });
         });
-        log(`로드맵: 단원명 보강 ${filled}개 교재(mf_answer_records)`);
+        // 회차별 문항 정답률 반영 (세션 카운트보다 정확 — 5문항 이상일 때만 교체)
+        Object.keys(roundAcc).forEach((sid) => {
+          Object.keys(roundAcc[sid]).forEach((bid) => {
+            const o = out[sid] && out[sid][bid]; if (!o || !o.rounds) return;
+            o.rounds.forEach((r) => {
+              const acc = roundAcc[sid][bid][r.k];
+              if (acc && acc.t >= 5) r.rate = Math.round(acc.c / acc.t * 100);
+            });
+          });
+        });
+        log(`로드맵: 단원명 보강 ${filled}개 교재(현재 회차 기준)`);
       }
     } catch (e) { log('로드맵 단원명 보강 실패(치명적 아님):', e.message); }
 
@@ -1124,7 +1148,8 @@ async function refreshRoadmap() {
       method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify([{ key: 'mf_progress', value: { updated: new Date().toISOString(), byStudent: out }, updated_at: new Date().toISOString() }]),
     });
-    log(`로드맵(mf_progress): 학생 ${Object.keys(out).length} ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+    const nRe = Object.values(out).reduce((a, bks) => a + Object.values(bks).filter((b) => b.roundN > 1).length, 0);
+    log(`로드맵(mf_progress): 학생 ${Object.keys(out).length} · 재수강(2회차+) 교재 ${nRe}권 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('로드맵 갱신 실패(치명적 아님):', e.message); }
 }
 
