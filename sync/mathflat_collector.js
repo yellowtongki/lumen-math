@@ -575,6 +575,15 @@ async function main() {
     await backfillBehaviors(parseInt(opt('--days', '14'), 10));
     return;
   }
+  // --roadmap-only: 로드맵(mf_progress) 집계만 (단원명 매핑에 매쓰플랫 로그인 필요)
+  if (has('--roadmap-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meR = await login();
+    log(`로그인 성공 · 학원 ${meR.academyId}`);
+    await refreshRoadmap();
+    return;
+  }
   // --weekly-only: 매쓰플랫 로그인 없이 주간테스트 집계만 (Supabase 기존 기록 사용)
   if (has('--weekly-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -1024,8 +1033,9 @@ async function refreshRoadmap() {
       const dt = r.update_datetime || '';
       const cc = r.correct_count || 0, wc = r.wrong_count || 0;
       const S = byStudent[r.mf_student_id] = byStudent[r.mf_student_id] || {};
-      const B = S[r.book_id] = S[r.book_id] || { maxPage: 0, curChapter: '', lastDate: '', weekBase: null, _chap: {}, months: {} };
+      const B = S[r.book_id] = S[r.book_id] || { maxPage: 0, curChapter: '', lastDate: '', firstDate: '', weekBase: null, _chap: {}, months: {} };
       if (pg > B.maxPage) B.maxPage = pg;
+      if (dt && (!B.firstDate || dt < B.firstDate)) B.firstDate = dt; // v17-1: 교재 시작일(최초 채점)
       if (dt >= B.lastDate) { B.lastDate = dt; if (r.chapter) B.curChapter = r.chapter; }
       if (r.chapter) {
         const c = B._chap[r.chapter] = B._chap[r.chapter] || { n: r.chapter, minP: 1e9, maxP: 0, lastDate: '', correct: 0, total: 0 };
@@ -1052,7 +1062,7 @@ async function refreshRoadmap() {
           .map((c) => ({ n: c.n, minP: (c.minP === 1e9 ? 0 : c.minP), maxP: c.maxP, lastDate: (c.lastDate || '').slice(0, 10), correct: c.correct, total: c.total }))
           .sort((a, b) => (a.minP - b.minP) || a.lastDate.localeCompare(b.lastDate));
         const weekPages = B.weekBase === null ? B.maxPage : Math.max(0, B.maxPage - B.weekBase);
-        out[sid][bid] = { maxPage: B.maxPage, curChapter: B.curChapter, lastDate: (B.lastDate || '').slice(0, 10), weekPages, chapters, months: B.months };
+        out[sid][bid] = { maxPage: B.maxPage, curChapter: B.curChapter, lastDate: (B.lastDate || '').slice(0, 10), firstDate: (B.firstDate || '').slice(0, 10), weekPages, chapters, months: B.months };
       });
     });
 
@@ -1083,8 +1093,9 @@ async function refreshRoadmap() {
           const sid = r.mf_student_id, bid = r.book_id, dt = r.score_datetime || '';
           const pg = _parsePage(r.page);
           const S = ca[sid] = ca[sid] || {};
-          const Bk = S[bid] = S[bid] || { cur: '', curDate: '', _chap: {} };
+          const Bk = S[bid] = S[bid] || { cur: '', curDate: '', firstDate: '', _chap: {} };
           if (dt >= Bk.curDate) { Bk.curDate = dt; Bk.cur = chapName; }
+          if (dt && (!Bk.firstDate || dt < Bk.firstDate)) Bk.firstDate = dt;
           const c = Bk._chap[chapName] = Bk._chap[chapName] || { n: chapName, minP: 1e9, maxP: 0, lastDate: '', correct: 0, total: 0 };
           if (pg && pg < c.minP) c.minP = pg;
           if (pg > c.maxP) c.maxP = pg;
@@ -1100,8 +1111,8 @@ async function refreshRoadmap() {
             const chapters = Object.keys(Bk._chap).map((k) => Bk._chap[k])
               .map((c) => ({ n: c.n, minP: (c.minP === 1e9 ? 0 : c.minP), maxP: c.maxP, lastDate: (c.lastDate || '').slice(0, 10), correct: c.correct, total: c.total }))
               .sort((a, b) => (a.minP - b.minP) || a.lastDate.localeCompare(b.lastDate));
-            const prev = out[sid][bid] || { maxPage: 0, weekPages: 0, months: {}, lastDate: '' };
-            out[sid][bid] = { maxPage: prev.maxPage, curChapter: Bk.cur, lastDate: prev.lastDate || (Bk.curDate || '').slice(0, 10), weekPages: prev.weekPages, chapters, months: prev.months };
+            const prev = out[sid][bid] || { maxPage: 0, weekPages: 0, months: {}, lastDate: '', firstDate: '' };
+            out[sid][bid] = { maxPage: prev.maxPage, curChapter: Bk.cur, lastDate: prev.lastDate || (Bk.curDate || '').slice(0, 10), firstDate: prev.firstDate || (Bk.firstDate || '').slice(0, 10), weekPages: prev.weekPages, chapters, months: prev.months };
             filled++;
           });
         });
