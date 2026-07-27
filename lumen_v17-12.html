@@ -39036,10 +39036,9 @@ function vodManage(){
     }
   }
   wrap+='</div>';
-  wrap+='</div>';
-  // 우: 상시 미리보기 (v17-12)
+  // 우: 상시 미리보기 (v17-12) — 격자의 3번째 칸
   wrap+=vodPrevPane(v);
-  wrap+='</div></div>';
+  wrap+='</div></div></div>';
   if(VOD_BULK_OPEN) wrap+=vodBulkModal();
   setTimeout(vodPrevInit,0);
   return wrap;
@@ -39097,9 +39096,12 @@ function vodPrevDur(vid, ev){
     if(!v.durationSec||Math.abs(v.durationSec-d)>3){
       var was=v.durationSec;
       v.durationSec=d; vodSaveCatalog();
-      var el=document.getElementById('vod-prev-dur');
-      if(el) el.innerHTML='✅ 길이 '+vodFmt(d)+' <span style="color:#059669">'+(was?'(자동 보정됨)':'(자동 감지·저장됨)')+'</span>';
       try{ vodToast('⏱ 영상 길이 '+vodFmt(d)+' 자동 저장 — 학생 완료율 계산에 사용됩니다'); }catch(e){}
+      // 목록·상세의 "시간 미입력" 표기도 즉시 갱신 (재렌더 후에는 길이가 일치해 다시 저장/렌더되지 않음)
+      try{ render(); }catch(e){
+        var el=document.getElementById('vod-prev-dur');
+        if(el) el.innerHTML='✅ 길이 '+vodFmt(d)+' <span style="color:#059669">'+(was?'(자동 보정됨)':'(자동 감지·저장됨)')+'</span>';
+      }
     }
   }catch(e){}
 }
