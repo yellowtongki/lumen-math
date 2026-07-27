@@ -1160,13 +1160,54 @@ async function refreshRoadmap() {
 // (단원테스트는 원클릭 PDF의 행동영역·전국등수가 불안정해서, 학원 등수라도 PDF 없이 보장하기 위함)
 //   value = { updated, tests: [{ key, title, date, students: [{ sid, score,
 //     correct, total, wrongConcepts:[{id,n,cnt}], acadRank, acadN, acadAvg }] }] }
+// 시험지 정보(학교급·학년·학기·범위) 계산 — 학기는 범위의 단원명 키워드로 판정.
+// 두 학기 키워드가 섞이거나 판정 불가면 학기 없이 학년만 (틀린 학기를 보여주는 것보다 안전).
+const SEM_KEYS = {
+  '초4': { 1: ['큰 수', '각도', '곱셈과 나눗셈', '평면도형의 이동', '막대그래프', '규칙 찾기'],
+           2: ['분수의 덧셈', '진분수', '대분수', '삼각형', '소수의 덧셈', '사각형', '꺾은선', '다각형'] },
+  '초5': { 1: ['혼합 계산', '약수와 배수', '규칙과 대응', '약분과 통분', '분수의 덧셈', '둘레와 넓이'],
+           2: ['수의 범위', '어림', '분수의 곱셈', '합동과 대칭', '소수의 곱셈', '직육면체', '평균과 가능성'] },
+  '초6': { 1: ['각기둥과 각뿔', '비와 비율', '여러 가지 그래프', '직육면체의 부피'],
+           2: ['공간과 입체', '비례식', '비례배분', '원의 넓이', '원기둥', '원뿔', '구'] },
+  '중1': { 1: ['소인수분해', '최대공약수', '최소공배수', '정수와 유리수', '문자', '식의 값', '일차식', '일차방정식', '순서쌍', '좌표', '그래프', '정비례', '반비례', '기호의 생략'],
+           2: ['점, 선, 면', '각', '위치 관계', '평행선', '작도', '합동', '다각형', '부채꼴', '다면체', '회전체', '겉넓이', '부피', '도수분포', '히스토그램', '상대도수'] },
+  '중2': { 1: ['유리수의 소수', '순환소수', '지수법칙', '단항식', '다항식', '일차부등식', '부등식', '연립방정식', '함숫값', '일차함수'],
+           2: ['이등변', '외심', '내심', '삼각형의 성질', '평행사변형', '사각형', '닮음', '피타고라스', '경우의 수', '확률'] },
+  '중3': { 1: ['제곱근', '무리수', '실수', '근호', '곱셈 공식', '인수분해', '이차방정식', '이차함수'],
+           2: ['삼각비', '원주각', '현', '접선', '대푯값', '산포도', '상관관계'] },
+};
+function paperOf(school, grade, chapter, title) {
+  const scMap = { ELEMENTARY: '초', MIDDLE: '중', HIGH: '고' };
+  const sc = scMap[school] || '';
+  if (!sc || !grade) return null;
+  const range = chapter || '';
+  // 고등: 학기 대신 과목명 (제목에서 추출)
+  if (sc === '고') {
+    const m = String(title || '').match(/(공통수학\s*\d|대수|미적분\s*[Ⅰ Ⅱ12]*|수학\s*[ⅠⅡ12]|확률과 통계|기하)/);
+    return { sc, g: grade, sem: null, label: m ? m[1].replace(/\s+/g, '') : '고' + grade, range };
+  }
+  const gk = sc + grade;
+  // 제목에 "중N-M" 형태가 있으면 그대로 (단원테스트 제목 등)
+  const tm = String(title || '').match(new RegExp(gk.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*-\\s*([12])'));
+  if (tm) return { sc, g: grade, sem: Number(tm[1]), label: gk + '-' + tm[1], range };
+  const keys = SEM_KEYS[gk];
+  let sem = null;
+  if (keys && range) {
+    const hit = { 1: 0, 2: 0 };
+    [1, 2].forEach((s) => keys[s].forEach((k) => { if (range.includes(k)) hit[s]++; }));
+    if (hit[1] > 0 && hit[2] === 0) sem = 1;
+    else if (hit[2] > 0 && hit[1] === 0) sem = 2;
+  }
+  return { sc, g: grade, sem, label: gk + (sem ? '-' + sem : ''), range };
+}
+
 async function refreshWeekly() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
   try {
     const rows = [];
     for (let off = 0; off < 500000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime&source=eq.${encodeURIComponent('학습지')}&worksheet_type=in.(WEEKLY,CHAPTER)&limit=1000&offset=${off}`, { headers: sbHeaders });
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade&source=eq.${encodeURIComponent('학습지')}&worksheet_type=in.(WEEKLY,CHAPTER)&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const batch = await res.json();
       rows.push(...batch);
@@ -1183,7 +1224,10 @@ async function refreshWeekly() {
     const tests = {}; // wid → { title, type, date, students: { sid → agg } }
     rows.forEach((r) => {
       if (!r.worksheet_id || r.mf_student_id == null) return;
-      const T = tests[r.worksheet_id] = tests[r.worksheet_id] || { title: r.worksheet_title || '', type: r.worksheet_type || '', date: '', students: {} };
+      const T = tests[r.worksheet_id] = tests[r.worksheet_id] || { title: r.worksheet_title || '', type: r.worksheet_type || '', date: '', students: {},
+        school: r.school || null, grade: r.grade != null ? Number(r.grade) : null, chapter: r.chapter || null };
+      if (!T.chapter && r.chapter) T.chapter = r.chapter;
+      if (!T.school && r.school) { T.school = r.school; T.grade = r.grade != null ? Number(r.grade) : T.grade; }
       const S = T.students[r.mf_student_id] = T.students[r.mf_student_id] || { sid: r.mf_student_id, score: null, correct: 0, total: 0, wrong: {} , dt: '' };
       S.total++;
       if (r.result === 'O') S.correct++;
@@ -1210,7 +1254,8 @@ async function refreshWeekly() {
           wrongConcepts, acadRank: rank, acadN: scored.length, acadAvg: avg,
           natAvg: null, natRank: null, natN: null }; // 전국은 보고서 API 확보 후
       });
-      out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, type: T.type, date: T.date, students });
+      out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, type: T.type, date: T.date,
+        paper: paperOf(T.school, T.grade, T.chapter, T.title), students });
     });
     out.sort((a, b) => String(b.date).localeCompare(String(a.date)));
     const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
