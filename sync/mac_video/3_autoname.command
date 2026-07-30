@@ -136,7 +136,10 @@ NR == FNR {
   gsub(/^[ \t]+|[ \t]+$/, "", nm)
   if (day == "" || nm == "") { badtt++; next }
   ttn++
-  ttday[ttn] = day
+  ttday[ttn]  = day
+  # 앞부분이 2026-07-23 형태면 그 날짜에만 적용하는 규칙입니다
+  ttisdate[ttn] = (day ~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/) ? 1 : 0
+  if (ttisdate[ttn]) ndate++; else nweek++
   ttfrom[ttn] = minutes(substr(span, 1, 5))     # span은 09:30-11:00 형태(ASCII)
   ttto[ttn]   = minutes(substr(span, 7, 5))
   ttname[ttn] = nm
@@ -179,10 +182,19 @@ END {
     mi = minutes(substr(w, 12, 5))
     dn = DAYNAME[dow(y, mo, dd) + 1]
 
+    # ① 날짜로 지정한 규칙을 먼저 봅니다 (그 날만의 시간표가 이깁니다)
     cls[r] = ""
+    d10 = substr(w, 1, 10)
     for (k = 1; k <= ttn; k++) {
-      if (ttday[k] != dn) continue
-      if (mi >= ttfrom[k] && mi < ttto[k]) { cls[r] = ttname[k]; break }
+      if (!ttisdate[k] || ttday[k] != d10) continue
+      if (mi >= ttfrom[k] && mi < ttto[k]) { cls[r] = ttname[k]; bydate++; break }
+    }
+    # ② 없으면 요일 반복 규칙을 봅니다
+    if (cls[r] == "") {
+      for (k = 1; k <= ttn; k++) {
+        if (ttisdate[k] || ttday[k] != dn) continue
+        if (mi >= ttfrom[k] && mi < ttto[k]) { cls[r] = ttname[k]; byweek++; break }
+      }
     }
     if (cls[r] == "") noclass++
   }
@@ -240,8 +252,9 @@ END {
     printf "%s\r\n", out
   }
 
-  printf "RESULT\t%d\t%d\t%d\t%d\t%d\t%d\n", \
-         filled, skipped_has, skipped_nodate, noclass, ttn, badtt > "/dev/stderr"
+  printf "RESULT\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", \
+         filled, skipped_has, skipped_nodate, noclass, ttn, badtt, \
+         ndate, nweek, bydate, byweek > "/dev/stderr"
 }
 ' "$TT" "$CSV" > "$TMP" 2> "$TMP.msg"
 
@@ -264,13 +277,19 @@ NODATE=$(printf   '%s' "$RESULT" | cut -f4)
 NOCLASS=$(printf  '%s' "$RESULT" | cut -f5)
 TTN=$(printf      '%s' "$RESULT" | cut -f6)
 BADTT=$(printf    '%s' "$RESULT" | cut -f7)
+NDATE=$(printf    '%s' "$RESULT" | cut -f8)
+NWEEK=$(printf    '%s' "$RESULT" | cut -f9)
+BYDATE=$(printf   '%s' "$RESULT" | cut -f10)
+BYWEEK=$(printf   '%s' "$RESULT" | cut -f11)
 
 mv "$TMP" "$CSV"
 rm -f "$TMP.msg"
 
 echo ""
 echo " ✅ 새이름 $FILLED 개를 채웠습니다."
-[ "${TTN:-0}" -gt 0 ]     && echo "    · 시간표 $TTN 개 시간대를 적용했습니다."
+[ "${TTN:-0}" -gt 0 ]     && echo "    · 시간표 $TTN 줄 (날짜지정 ${NDATE:-0} / 요일반복 ${NWEEK:-0})"
+[ "${BYDATE:-0}" -gt 0 ]  && echo "    · 날짜지정으로 판정한 영상 ${BYDATE} 개"
+[ "${BYWEEK:-0}" -gt 0 ]  && echo "    · 요일반복으로 판정한 영상 ${BYWEEK} 개"
 [ "${BADTT:-0}" -gt 0 ]   && echo "    ⚠️  시간표에서 형식이 맞지 않아 무시한 줄이 $BADTT 개 있습니다."
 [ "${NOCLASS:-0}" -gt 0 ] && echo "    ⚠️  $NOCLASS 개는 시간표에 없는 시각이라 반 이름 없이 지었습니다."
 [ "${HAS:-0}" -gt 0 ]     && echo "    · 이미 이름을 적어두신 $HAS 개는 그대로 두었습니다."
