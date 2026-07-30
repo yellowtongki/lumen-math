@@ -59,8 +59,9 @@ printf '\xEF\xBB\xBF' > "$OUT"
   csvq "새파일명(여기에 입력)"; printf ','
   csvq "폴더";                 printf ','
   csvq "크기MB";               printf ','
-  csvq "파일생성일";           printf ','
-  csvq "촬영일(영상메타)";     printf ','
+  csvq "녹화일시";             printf ','
+  csvq "맥에추가된날";         printf ','
+  csvq "영상메타촬영일";       printf ','
   csvq "길이";                 printf ','
   csvq "전체경로(수정금지)";   printf '\r\n'
 } >> "$OUT"
@@ -82,18 +83,29 @@ while IFS= read -r -d '' f; do
   esac
   sizemb=$(printf '%s' "$bytes" | awk '{ printf "%.1f", $1/1048576 }')
 
-  # 파일이 만들어진 시각 (맥 기준, 복사하면 복사한 날짜가 됩니다)
+  # ★ 녹화일시 = 파일 수정일.
+  #   아이폰에서 에어드랍으로 받으면 촬영 시각이 여기 그대로 보존됩니다.
+  #   (파인더 목록의 '수정일' 칸과 같은 값 / 우리 시간대 기준)
+  wdate=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$f" 2>/dev/null || echo "")
+  case "$wdate" in
+    [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\ [0-9][0-9]:[0-9][0-9]) : ;;
+    *) wdate="" ;;
+  esac
+
+  # 맥에 파일이 생긴 시각 (에어드랍으로 받은 시각 — 촬영 시각이 아닙니다)
   cdate=$(stat -f "%SB" -t "%Y-%m-%d %H:%M" "$f" 2>/dev/null || echo "")
   case "$cdate" in
     [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\ [0-9][0-9]:[0-9][0-9]) : ;;
     *) cdate="" ;;
   esac
 
-  # 영상 자체에 기록된 촬영 시각 (스포트라이트 메타데이터, 맥 기본 기능)
-  mdate=$(mdls -raw -name kMDItemContentCreationDate "$f" 2>/dev/null || echo "")
-  case "$mdate" in
+  # 영상 안에 기록된 촬영 시각 (참고용 대조 칸).
+  # 맥은 이 값을 세계표준시로 주기 때문에 우리 시간대로 바꿔서 적습니다.
+  mraw=$(mdls -raw -name kMDItemContentCreationDate "$f" 2>/dev/null || echo "")
+  mdate=""
+  case "$mraw" in
     ''|'(null)') mdate="" ;;
-    *)           mdate=$(printf '%s' "$mdate" | cut -c1-16) ;;
+    *) mdate=$(date -j -f "%Y-%m-%d %H:%M:%S %z" "$mraw" "+%Y-%m-%d %H:%M" 2>/dev/null || echo "") ;;
   esac
   case "$mdate" in
     ''|[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]\ [0-9][0-9]:[0-9][0-9]) : ;;
@@ -109,6 +121,7 @@ while IFS= read -r -d '' f; do
     csvq "";        printf ','
     csvq "$rel";    printf ','
     csvq "$sizemb"; printf ','
+    csvq "$wdate";  printf ','
     csvq "$cdate";  printf ','
     csvq "$mdate";  printf ','
     csvq "$dur";    printf ','
@@ -131,12 +144,15 @@ else
   echo ""
   echo " 목록 파일: $OUT"
   echo ""
-  echo " 다음 순서:"
-  echo "   1) 위 CSV 파일을 넘버스(Numbers)나 엑셀로 엽니다"
-  echo "   2) ' 새파일명(여기에 입력) ' 칸에 원하는 이름을 적습니다"
-  echo "      · 비워두면 그 영상은 이름을 바꾸지 않습니다"
-  echo "      · 확장자(.mp4 등)는 안 적어도 알아서 붙습니다"
-  echo "   3) 저장한 뒤 '2_rename.command' 를 실행합니다"
+  echo " 다음 순서 (둘 중 하나):"
+  echo ""
+  echo "   [간편] '3_autoname.command' 를 실행하면 녹화일시로 이름을 자동으로 채워 줍니다"
+  echo "          → 확인·수정 후 '2_rename.command'"
+  echo ""
+  echo "   [직접] 위 CSV를 넘버스(Numbers)나 엑셀로 열어"
+  echo "          ' 새파일명(여기에 입력) ' 칸을 채우고 저장 → '2_rename.command'"
+  echo "          · 비워두면 그 영상은 이름을 바꾸지 않습니다"
+  echo "          · 확장자(.MOV 등)는 안 적어도 알아서 붙습니다"
   echo ""
   open -R "$OUT" 2>/dev/null || true
 fi
