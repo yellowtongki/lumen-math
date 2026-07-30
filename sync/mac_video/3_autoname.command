@@ -55,19 +55,31 @@ fi
 echo ""
 echo " 어떤 방식으로 이름을 지을까요?"
 echo ""
-echo "   1) 날짜 + 반 + 그날 그 반의 순번 + 원본번호"
-echo "        예) 2026-07-27_공수2_01강_부분집합_p129_IMG_9559"
-echo "   2) 날짜 + 반 + 시각 + 원본번호"
-echo "        예) 2026-07-27_공수2_1101_부분집합_p129_IMG_9559"
-echo "   3) 반 이름 없이 · 날짜 + 시각 + 원본번호"
-echo "        예) 2026-07-27_1101_부분집합_p129_IMG_9559"
+echo "   1) 유튜브 제목과 똑같이  (추천)"
+echo "        예) 공수2 부분집합 p127 260727"
+echo "        → 유튜브에 올릴 때 «제목이 자동으로» 채워집니다"
 echo ""
-echo " (단원·페이지는 CSV의 「단원」「페이지」 칸에 적으면 이름에 들어갑니다)"
+echo "   2) 날짜를 앞에  (파일 목록이 촬영순으로 정렬됨)"
+echo "        예) 260727 공수2 부분집합 p127"
+echo ""
+echo "   3) 자세히  (연-월-일 + 그날 순번)"
+echo "        예) 2026-07-27_공수2_01강_부분집합_p127"
+echo ""
+echo " (단원·페이지는 CSV의 「단원」「페이지」 칸에 적으면 들어갑니다)"
 echo ""
 printf " 번호 [1] → "
 read -r STYLE
 [ -z "${STYLE:-}" ] && STYLE=1
 case "$STYLE" in 1|2|3) : ;; *) STYLE=1 ;; esac
+
+echo ""
+echo " 원본번호(IMG_9559)를 이름 끝에 붙일까요?"
+echo "   · 원본 폴더(강의영상원본)라면 y  — 편집본과 짝을 찾기 쉬움"
+echo "   · 유튜브에 올릴 편집본이라면 n  — 제목이 깔끔해짐"
+echo ""
+printf " 붙이기 [n] → "
+read -r RAWID
+case "${RAWID:-}" in y|Y|yes|YES) WITHID=1 ;; *) WITHID=0 ;; esac
 
 echo ""
 echo " 이미 만들어진 새파일명도 «다시» 만들까요?"
@@ -90,7 +102,7 @@ if [ -z "$TT" ]; then
   TT="$EMPTY"
 fi
 
-awk -v style="$STYLE" -v over="$OVER" '
+awk -v style="$STYLE" -v over="$OVER" -v withid="$WITHID" '
 function parse_csv(line, arr,    i, n, ch, nx, field, inq) {
   n = 0; field = ""; inq = 0
   for (i = 1; i <= length(line); i++) {
@@ -219,7 +231,7 @@ END {
       w2 = cell[s, WHEN]
       if (w2 == "") continue
       if (substr(w2, 1, 10) != d) continue
-      if (style != "3" && cls[s] != cls[r]) continue
+      if (cls[s] != cls[r]) continue      # 순번은 «반별로» 1강부터 다시 셉니다
       t2 = substr(w2, 12, 5)
       if (t2 < t || (t2 == t && s < r)) rank++
     }
@@ -234,33 +246,49 @@ END {
 
     d = substr(w, 1, 10)
     hm = substr(w, 12, 2) substr(w, 15, 2)
+    ymd6 = substr(w, 3, 2) substr(w, 6, 2) substr(w, 9, 2)   # 2026-07-27 → 260727
 
     base = cell[r, CUR]
     sub(/\.[^.]*$/, "", base)
 
-    name = d
-    if (style != "3" && cls[r] != "") name = name "_" cls[r]
-
-    if (style == "1" && cls[r] != "") name = name "_" sprintf("%02d강", seq[r])
-    else                              name = name "_" hm
-
     # 단원 (예: 부분집합)
-    if (UNIT > 0) {
-      u = cell[r, UNIT]
-      gsub(/^[ \t]+|[ \t]+$/, "", u)
-      if (u != "") { name = name "_" u; nunit++ }
-    }
-    # 페이지 (숫자만 적으면 p 를 붙여 줍니다: 129 → p129)
-    if (PAGE > 0) {
-      pg = cell[r, PAGE]
-      gsub(/^[ \t]+|[ \t]+$/, "", pg)
-      if (pg != "") {
-        if (pg ~ /^[0-9]/) pg = "p" pg
-        name = name "_" pg; npage++
-      }
+    u = (UNIT > 0) ? cell[r, UNIT] : ""
+    gsub(/^[ \t]+|[ \t]+$/, "", u)
+    if (u != "") nunit++
+
+    # 페이지 — 숫자만 적어도 p 를 붙이고, p 와 숫자 사이 공백을 없앱니다
+    pg = (PAGE > 0) ? cell[r, PAGE] : ""
+    gsub(/[ \t]/, "", pg)
+    if (pg != "") {
+      if (pg ~ /^[0-9]/) pg = "p" pg
+      npage++
     }
 
-    name = name "_" base
+    if (style == "3") {
+      name = d
+      if (cls[r] != "") name = name "_" cls[r] "_" sprintf("%02d강", seq[r])
+      else              name = name "_" hm
+      if (u  != "") name = name "_" u
+      if (pg != "") name = name "_" pg
+      if (withid == "1") name = name "_" base
+    } else {
+      # 유튜브 제목과 같은 «띄어쓰기» 형식. 빈 칸은 건너뛰어 공백이 겹치지 않습니다
+      name = ""
+      if (style == "2") name = ymd6
+      if (cls[r] != "") name = (name == "" ? cls[r] : name " " cls[r])
+      if (u  != "")     name = (name == "" ? u  : name " " u)
+      if (pg != "")     name = (name == "" ? pg : name " " pg)
+      if (style == "1") name = (name == "" ? ymd6 : name " " ymd6)
+      if (withid == "1") name = (name == "" ? base : name " " base)
+    }
+
+    # 같은 이름이 두 번 나오면 뒤에 -2, -3 을 붙여 충돌을 막습니다
+    if (name in used) {
+      used[name]++
+      ndup++
+      name = name "-" used[name]
+    } else used[name] = 1
+
     cell[r, NEW] = name
     filled++
   }
@@ -275,9 +303,9 @@ END {
     printf "%s\r\n", out
   }
 
-  printf "RESULT\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", \
+  printf "RESULT\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", \
          filled, skipped_has, skipped_nodate, noclass, ttn, badtt, \
-         ndate, nweek, bydate, byweek, byhand, nunit, npage > "/dev/stderr"
+         ndate, nweek, bydate, byweek, byhand, nunit, npage, ndup > "/dev/stderr"
 }
 ' "$TT" "$CSV" > "$TMP" 2> "$TMP.msg"
 
@@ -307,6 +335,7 @@ BYWEEK=$(printf   '%s' "$RESULT" | cut -f11)
 BYHAND=$(printf   '%s' "$RESULT" | cut -f12)
 NUNIT=$(printf    '%s' "$RESULT" | cut -f13)
 NPAGE=$(printf    '%s' "$RESULT" | cut -f14)
+NDUP=$(printf     '%s' "$RESULT" | cut -f15)
 
 mv "$TMP" "$CSV"
 rm -f "$TMP.msg"
@@ -319,6 +348,7 @@ echo " ✅ 새이름 $FILLED 개를 채웠습니다."
 [ "${BYHAND:-0}" -gt 0 ]  && echo "    · CSV의 「반」 칸에 이미 적힌 값을 쓴 영상 ${BYHAND} 개"
 [ "${NUNIT:-0}" -gt 0 ]   && echo "    · 단원명을 넣은 영상 ${NUNIT} 개"
 [ "${NPAGE:-0}" -gt 0 ]   && echo "    · 페이지를 넣은 영상 ${NPAGE} 개"
+[ "${NDUP:-0}" -gt 0 ]    && echo "    ⚠️  이름이 겹쳐 -2, -3 을 붙인 영상 ${NDUP} 개 (단원·페이지를 채우면 없어집니다)"
 [ "${BADTT:-0}" -gt 0 ]   && echo "    ⚠️  시간표에서 형식이 맞지 않아 무시한 줄이 $BADTT 개 있습니다."
 [ "${NOCLASS:-0}" -gt 0 ] && echo "    ⚠️  $NOCLASS 개는 시간표에 없는 시각이라 반 이름 없이 지었습니다."
 [ "${HAS:-0}" -gt 0 ]     && echo "    · 이미 이름을 적어두신 $HAS 개는 그대로 두었습니다."
