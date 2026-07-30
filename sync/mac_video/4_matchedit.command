@@ -154,7 +154,7 @@ NR == FNR {
     }
     if (CUR  == 0) CUR  = 1
     if (NEW  == 0) NEW  = 2
-    if (WHEN == 0) WHEN = 5
+    if (WHEN == 0) WHEN = 8
     # 참고용 후보 칸이 없으면 맨 뒤에 새로 만듭니다
     if (CAND == 0) { CAND = NCOL1 + 1; cell[1, CAND] = "그날_강의목록(참고)"; ncol[1] = CAND }
   }

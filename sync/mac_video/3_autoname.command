@@ -56,11 +56,13 @@ echo ""
 echo " 어떤 방식으로 이름을 지을까요?"
 echo ""
 echo "   1) 날짜 + 반 + 그날 그 반의 순번 + 원본번호"
-echo "        예) 2026-07-27_미적분1_01강_IMG_9556"
+echo "        예) 2026-07-27_공수2_01강_부분집합_p129_IMG_9559"
 echo "   2) 날짜 + 반 + 시각 + 원본번호"
-echo "        예) 2026-07-27_미적분1_0932_IMG_9556"
+echo "        예) 2026-07-27_공수2_1101_부분집합_p129_IMG_9559"
 echo "   3) 반 이름 없이 · 날짜 + 시각 + 원본번호"
-echo "        예) 2026-07-27_0932_IMG_9556"
+echo "        예) 2026-07-27_1101_부분집합_p129_IMG_9559"
+echo ""
+echo " (단원·페이지는 CSV의 「단원」「페이지」 칸에 적으면 이름에 들어갑니다)"
 echo ""
 printf " 번호 [1] → "
 read -r STYLE
@@ -68,12 +70,12 @@ read -r STYLE
 case "$STYLE" in 1|2|3) : ;; *) STYLE=1 ;; esac
 
 echo ""
-echo " 이름 끝에 넣을 꼬리표가 있으면 적으세요. (없으면 그냥 엔터)"
-echo "   예) 집합  →  2026-07-27_공수2_01강_집합_IMG_9560"
+echo " 이미 만들어진 새파일명도 «다시» 만들까요?"
+echo "   (단원·페이지를 적은 뒤 이름을 새로 만들 때 y)"
 echo ""
-printf " 꼬리표 → "
-read -r RAWTAG
-TAG=$(printf '%s' "${RAWTAG:-}" | tr '/:' '--' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+printf " 다시 만들기 [n] → "
+read -r RAWOW
+case "${RAWOW:-}" in y|Y|yes|YES) OVER=1 ;; *) OVER=0 ;; esac
 
 STAMP=$(date "+%Y%m%d-%H%M%S")
 BACKUP="${CSV%.csv}_백업_$STAMP.csv"
@@ -88,7 +90,7 @@ if [ -z "$TT" ]; then
   TT="$EMPTY"
 fi
 
-awk -v style="$STYLE" -v tag="$TAG" '
+awk -v style="$STYLE" -v over="$OVER" '
 function parse_csv(line, arr,    i, n, ch, nx, field, inq) {
   n = 0; field = ""; inq = 0
   for (i = 1; i <= length(line); i++) {
@@ -159,10 +161,13 @@ NR == FNR {
       if (index(f[i], "현재파일명") > 0) CUR  = i
       if (index(f[i], "새파일명")   > 0) NEW  = i
       if (index(f[i], "녹화일시")   > 0) WHEN = i
+      if (f[i] == "반")                  CLSC = i
+      if (f[i] == "단원")                UNIT = i
+      if (f[i] == "페이지")              PAGE = i
     }
     if (CUR == 0) CUR = 1
     if (NEW == 0) NEW = 2
-    if (WHEN == 0) WHEN = 5
+    if (WHEN == 0) WHEN = 8
   }
   last = FNR
 }
@@ -182,6 +187,9 @@ END {
     mi = minutes(substr(w, 12, 5))
     dn = DAYNAME[dow(y, mo, dd) + 1]
 
+    # ⓪ 「반」 칸에 값이 있으면 그것이 최우선 (직접 고친 값을 존중)
+    if (CLSC > 0 && cell[r, CLSC] != "") { cls[r] = cell[r, CLSC]; byhand++; continue }
+
     # ① 날짜로 지정한 규칙을 먼저 봅니다 (그 날만의 시간표가 이깁니다)
     cls[r] = ""
     d10 = substr(w, 1, 10)
@@ -197,6 +205,7 @@ END {
       }
     }
     if (cls[r] == "") noclass++
+    else if (CLSC > 0 && cell[r, CLSC] == "") cell[r, CLSC] = cls[r]
   }
 
   # ── 같은 날 · 같은 반 안에서 시간순 순번을 매깁니다 ──
@@ -219,7 +228,7 @@ END {
 
   filled = 0; skipped_has = 0; skipped_nodate = 0
   for (r = 2; r <= last; r++) {
-    if (cell[r, NEW] != "") { skipped_has++; continue }
+    if (cell[r, NEW] != "" && over != "1") { skipped_has++; continue }
     w = cell[r, WHEN]
     if (w == "") { skipped_nodate++; continue }
 
@@ -235,9 +244,23 @@ END {
     if (style == "1" && cls[r] != "") name = name "_" sprintf("%02d강", seq[r])
     else                              name = name "_" hm
 
-    if (tag != "") name = name "_" tag
-    name = name "_" base
+    # 단원 (예: 부분집합)
+    if (UNIT > 0) {
+      u = cell[r, UNIT]
+      gsub(/^[ \t]+|[ \t]+$/, "", u)
+      if (u != "") { name = name "_" u; nunit++ }
+    }
+    # 페이지 (숫자만 적으면 p 를 붙여 줍니다: 129 → p129)
+    if (PAGE > 0) {
+      pg = cell[r, PAGE]
+      gsub(/^[ \t]+|[ \t]+$/, "", pg)
+      if (pg != "") {
+        if (pg ~ /^[0-9]/) pg = "p" pg
+        name = name "_" pg; npage++
+      }
+    }
 
+    name = name "_" base
     cell[r, NEW] = name
     filled++
   }
@@ -252,9 +275,9 @@ END {
     printf "%s\r\n", out
   }
 
-  printf "RESULT\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", \
+  printf "RESULT\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", \
          filled, skipped_has, skipped_nodate, noclass, ttn, badtt, \
-         ndate, nweek, bydate, byweek > "/dev/stderr"
+         ndate, nweek, bydate, byweek, byhand, nunit, npage > "/dev/stderr"
 }
 ' "$TT" "$CSV" > "$TMP" 2> "$TMP.msg"
 
@@ -281,6 +304,9 @@ NDATE=$(printf    '%s' "$RESULT" | cut -f8)
 NWEEK=$(printf    '%s' "$RESULT" | cut -f9)
 BYDATE=$(printf   '%s' "$RESULT" | cut -f10)
 BYWEEK=$(printf   '%s' "$RESULT" | cut -f11)
+BYHAND=$(printf   '%s' "$RESULT" | cut -f12)
+NUNIT=$(printf    '%s' "$RESULT" | cut -f13)
+NPAGE=$(printf    '%s' "$RESULT" | cut -f14)
 
 mv "$TMP" "$CSV"
 rm -f "$TMP.msg"
@@ -290,6 +316,9 @@ echo " ✅ 새이름 $FILLED 개를 채웠습니다."
 [ "${TTN:-0}" -gt 0 ]     && echo "    · 시간표 $TTN 줄 (날짜지정 ${NDATE:-0} / 요일반복 ${NWEEK:-0})"
 [ "${BYDATE:-0}" -gt 0 ]  && echo "    · 날짜지정으로 판정한 영상 ${BYDATE} 개"
 [ "${BYWEEK:-0}" -gt 0 ]  && echo "    · 요일반복으로 판정한 영상 ${BYWEEK} 개"
+[ "${BYHAND:-0}" -gt 0 ]  && echo "    · CSV의 「반」 칸에 이미 적힌 값을 쓴 영상 ${BYHAND} 개"
+[ "${NUNIT:-0}" -gt 0 ]   && echo "    · 단원명을 넣은 영상 ${NUNIT} 개"
+[ "${NPAGE:-0}" -gt 0 ]   && echo "    · 페이지를 넣은 영상 ${NPAGE} 개"
 [ "${BADTT:-0}" -gt 0 ]   && echo "    ⚠️  시간표에서 형식이 맞지 않아 무시한 줄이 $BADTT 개 있습니다."
 [ "${NOCLASS:-0}" -gt 0 ] && echo "    ⚠️  $NOCLASS 개는 시간표에 없는 시각이라 반 이름 없이 지었습니다."
 [ "${HAS:-0}" -gt 0 ]     && echo "    · 이미 이름을 적어두신 $HAS 개는 그대로 두었습니다."
@@ -298,9 +327,11 @@ echo ""
 echo " 원본 백업: $BACKUP"
 echo ""
 echo " 다음 순서:"
-echo "   1) CSV를 열어 채워진 이름을 확인하고, 단원명 등을 덧붙입니다"
-echo "      (또는 '4_matchedit.command' 로 강의편집 폴더 이름을 가져옵니다)"
-echo "   2) '2_rename.command' 를 실행해 실제로 이름을 바꿉니다"
+echo "   1) CSV를 열어 「단원」「페이지」 칸을 채웁니다"
+echo "      · 반이 비어 있으면 「반」 칸에 직접 적으세요"
+echo "   2) 이 프로그램을 «다시» 실행하고 [다시 만들기 → y] 를 고르면"
+echo "      단원·페이지가 들어간 이름으로 새로 만들어집니다"
+echo "   3) '2_rename.command' 를 실행해 실제로 이름을 바꿉니다"
 echo ""
 open -R "$CSV" 2>/dev/null || true
 echo ""

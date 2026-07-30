@@ -56,7 +56,10 @@ echo " 🔎 찾는 중... (영상이 많으면 잠시 걸립니다)"
 printf '\xEF\xBB\xBF' > "$OUT"
 {
   csvq "현재파일명";           printf ','
-  csvq "새파일명(여기에 입력)"; printf ','
+  csvq "새파일명(자동)";        printf ','
+  csvq "반";                   printf ','
+  csvq "단원";                 printf ','
+  csvq "페이지";               printf ','
   csvq "폴더";                 printf ','
   csvq "크기MB";               printf ','
   csvq "녹화일시";             printf ','
@@ -118,7 +121,10 @@ while IFS= read -r -d '' f; do
 
   {
     csvq "$name";   printf ','
-    csvq "";        printf ','
+    csvq "";        printf ','   # 새파일명 — 3_autoname 이 채웁니다
+    csvq "";        printf ','   # 반     — 시간표로 자동, 없으면 직접 입력
+    csvq "";        printf ','   # 단원   — 직접 입력
+    csvq "";        printf ','   # 페이지 — 직접 입력
     csvq "$rel";    printf ','
     csvq "$sizemb"; printf ','
     csvq "$wdate";  printf ','
