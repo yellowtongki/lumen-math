@@ -70,6 +70,7 @@ printf '\xEF\xBB\xBF' > "$OUT"
 } >> "$OUT"
 
 COUNT=0
+TOTBYTES=0
 while IFS= read -r -d '' f; do
   name=$(basename "$f")
   dir=$(dirname "$f")
@@ -134,6 +135,7 @@ while IFS= read -r -d '' f; do
     csvq "$f";      printf '\r\n'
   } >> "$OUT"
 
+  TOTBYTES=$((TOTBYTES + bytes))
   COUNT=$((COUNT + 1))
 done < <(find "$ROOT" -type f \( \
       -iname '*.mp4'  -o -iname '*.mov'  -o -iname '*.m4v'  -o -iname '*.avi' \
@@ -146,18 +148,19 @@ if [ "$COUNT" -eq 0 ]; then
   echo " 영상 파일을 찾지 못했습니다. 폴더를 다시 확인해 주세요."
   rm -f "$OUT"
 else
-  echo " ✅ 영상 $COUNT 개를 찾았습니다."
+  TOTGB=$(printf '%s' "$TOTBYTES" | awk '{ printf "%.1f", $1/1073741824 }')
+  echo " ✅ 영상 $COUNT 개 · 합계 ${TOTGB} GB 를 찾았습니다."
   echo ""
   echo " 목록 파일: $OUT"
   echo ""
   echo " 다음 순서 (둘 중 하나):"
   echo ""
-  echo "   [간편] '3_autoname.command' 를 실행하면 녹화일시로 이름을 자동으로 채워 줍니다"
-  echo "          → 확인·수정 후 '2_rename.command'"
+  echo "   1) '3_autoname.command' — 날짜·시간표로 반과 순번을 자동으로 채웁니다"
+  echo "   2) CSV를 열어 「단원」「페이지」 칸을 적습니다 (반이 비었으면 반도)"
+  echo "   3) '3_autoname.command' 다시 실행 → [다시 만들기 y] 로 이름 완성"
+  echo "   4) '2_rename.command' — 실제로 이름을 바꿉니다"
   echo ""
-  echo "   [직접] 위 CSV를 넘버스(Numbers)나 엑셀로 열어"
-  echo "          ' 새파일명(여기에 입력) ' 칸을 채우고 저장 → '2_rename.command'"
-  echo "          · 비워두면 그 영상은 이름을 바꾸지 않습니다"
+  echo "          · 새파일명을 비워두면 그 영상은 이름을 바꾸지 않습니다"
   echo "          · 확장자(.MOV 등)는 안 적어도 알아서 붙습니다"
   echo ""
   open -R "$OUT" 2>/dev/null || true
