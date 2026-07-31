@@ -176,6 +176,8 @@ NR == FNR {
       if (f[i] == "반")                  CLSC = i
       if (f[i] == "단원")                UNIT = i
       if (f[i] == "페이지")              PAGE = i
+      if (f[i] == "날짜")                YMDC = i
+      if (f[i] == "원본번호")            IMGC = i
     }
     if (CUR == 0) CUR = 1
     if (NEW == 0) NEW = 2
@@ -191,19 +193,19 @@ END {
 
   # ── 각 영상이 어느 반 시간인지 찾습니다 ──
   for (r = 2; r <= last; r++) {
+    # ⓪ 「반」 칸에 값이 있으면 그것이 최우선 (직접 고친 값을 존중)
+    if (CLSC > 0 && cell[r, CLSC] != "") { cls[r] = cell[r, CLSC]; byhand++; continue }
+
+    cls[r] = ""
     w = cell[r, WHEN]
-    if (w == "") continue
+    if (w == "") { noclass++; continue }   # 녹화일시가 없으면 시간표를 볼 수 없습니다
     y = substr(w, 1, 4) + 0
     mo = substr(w, 6, 2) + 0
     dd = substr(w, 9, 2) + 0
     mi = minutes(substr(w, 12, 5))
     dn = DAYNAME[dow(y, mo, dd) + 1]
 
-    # ⓪ 「반」 칸에 값이 있으면 그것이 최우선 (직접 고친 값을 존중)
-    if (CLSC > 0 && cell[r, CLSC] != "") { cls[r] = cell[r, CLSC]; byhand++; continue }
-
     # ① 날짜로 지정한 규칙을 먼저 봅니다 (그 날만의 시간표가 이깁니다)
-    cls[r] = ""
     d10 = substr(w, 1, 10)
     for (k = 1; k <= ttn; k++) {
       if (!ttisdate[k] || ttday[k] != d10) continue
@@ -223,7 +225,7 @@ END {
   # ── 같은 날 · 같은 반 안에서 시간순 순번을 매깁니다 ──
   for (r = 2; r <= last; r++) {
     w = cell[r, WHEN]
-    if (w == "") continue
+    if (w == "") { seq[r] = 1; continue }
     d = substr(w, 1, 10); t = substr(w, 12, 5)
     rank = 1
     for (s = 2; s <= last; s++) {
@@ -242,14 +244,36 @@ END {
   for (r = 2; r <= last; r++) {
     if (cell[r, NEW] != "" && over != "1") { skipped_has++; continue }
     w = cell[r, WHEN]
-    if (w == "") { skipped_nodate++; continue }
 
-    d = substr(w, 1, 10)
-    hm = substr(w, 12, 2) substr(w, 15, 2)
-    ymd6 = substr(w, 3, 2) substr(w, 6, 2) substr(w, 9, 2)   # 2026-07-27 → 260727
+    # 날짜는 「날짜」 칸이 우선입니다.
+    # (편집본은 수정일이 «편집한 시각» 이라 이름에 적힌 날짜를 써야 맞습니다)
+    ymd6 = ""
+    if (YMDC > 0 && cell[r, YMDC] ~ /^[0-9][0-9][0-9][0-9][0-9][0-9]$/) {
+      ymd6 = cell[r, YMDC]; byymd++
+    } else if (w != "") {
+      ymd6 = substr(w, 3, 2) substr(w, 6, 2) substr(w, 9, 2)   # 2026-07-27 → 260727
+    }
+    if (ymd6 == "") { skipped_nodate++; continue }
 
-    base = cell[r, CUR]
-    sub(/\.[^.]*$/, "", base)
+    # 연-월-일 / 시각 (녹화일시가 없으면 날짜 칸에서 만듭니다)
+    if (w != "") {
+      d  = substr(w, 1, 10)
+      hm = substr(w, 12, 2) substr(w, 15, 2)
+    } else {
+      d  = "20" substr(ymd6, 1, 2) "-" substr(ymd6, 3, 2) "-" substr(ymd6, 5, 2)
+      hm = ""
+    }
+
+    # 원본번호는 「원본번호」 칸에서 가져옵니다.
+    # (현재파일명을 쓰면 이미 바꾼 이름이 통째로 다시 붙는 사고가 납니다)
+    base = (IMGC > 0) ? cell[r, IMGC] : ""
+    gsub(/[ \t]/, "", base)
+    if (base == "") {
+      base = cell[r, CUR]
+      sub(/\.[^.]*$/, "", base)
+      # 이름 자체가 IMG_9560 형태일 때만 씁니다
+      if (base !~ /^[Ii][Mm][Gg]_[0-9]+$/) base = ""
+    }
 
     # 단원 (예: 부분집합)
     u = (UNIT > 0) ? cell[r, UNIT] : ""
@@ -266,11 +290,11 @@ END {
 
     if (style == "3") {
       name = d
-      if (cls[r] != "") name = name "_" cls[r] "_" sprintf("%02d강", seq[r])
-      else              name = name "_" hm
+      if (cls[r] != "")  name = name "_" cls[r] "_" sprintf("%02d강", seq[r])
+      else if (hm != "") name = name "_" hm
       if (u  != "") name = name "_" u
       if (pg != "") name = name "_" pg
-      if (withid == "1") name = name "_" base
+      if (withid == "1" && base != "") name = name "_" base
     } else {
       # 유튜브 제목과 같은 «띄어쓰기» 형식. 빈 칸은 건너뛰어 공백이 겹치지 않습니다
       name = ""
@@ -279,7 +303,7 @@ END {
       if (u  != "")     name = (name == "" ? u  : name " " u)
       if (pg != "")     name = (name == "" ? pg : name " " pg)
       if (style == "1") name = (name == "" ? ymd6 : name " " ymd6)
-      if (withid == "1") name = (name == "" ? base : name " " base)
+      if (withid == "1" && base != "") name = (name == "" ? base : name " " base)
     }
 
     # 같은 이름이 두 번 나오면 뒤에 -2, -3 을 붙여 충돌을 막습니다
@@ -303,9 +327,9 @@ END {
     printf "%s\r\n", out
   }
 
-  printf "RESULT\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", \
+  printf "RESULT\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n", \
          filled, skipped_has, skipped_nodate, noclass, ttn, badtt, \
-         ndate, nweek, bydate, byweek, byhand, nunit, npage, ndup > "/dev/stderr"
+         ndate, nweek, bydate, byweek, byhand, nunit, npage, ndup, byymd > "/dev/stderr"
 }
 ' "$TT" "$CSV" > "$TMP" 2> "$TMP.msg"
 
@@ -336,6 +360,7 @@ BYHAND=$(printf   '%s' "$RESULT" | cut -f12)
 NUNIT=$(printf    '%s' "$RESULT" | cut -f13)
 NPAGE=$(printf    '%s' "$RESULT" | cut -f14)
 NDUP=$(printf     '%s' "$RESULT" | cut -f15)
+BYYMD=$(printf    '%s' "$RESULT" | cut -f16)
 
 mv "$TMP" "$CSV"
 rm -f "$TMP.msg"
@@ -348,6 +373,7 @@ echo " ✅ 새이름 $FILLED 개를 채웠습니다."
 [ "${BYHAND:-0}" -gt 0 ]  && echo "    · CSV의 「반」 칸에 이미 적힌 값을 쓴 영상 ${BYHAND} 개"
 [ "${NUNIT:-0}" -gt 0 ]   && echo "    · 단원명을 넣은 영상 ${NUNIT} 개"
 [ "${NPAGE:-0}" -gt 0 ]   && echo "    · 페이지를 넣은 영상 ${NPAGE} 개"
+[ "${BYYMD:-0}" -gt 0 ]   && echo "    · CSV의 「날짜」 칸을 쓴 영상 ${BYYMD} 개"
 [ "${NDUP:-0}" -gt 0 ]    && echo "    ⚠️  이름이 겹쳐 -2, -3 을 붙인 영상 ${NDUP} 개 (단원·페이지를 채우면 없어집니다)"
 [ "${BADTT:-0}" -gt 0 ]   && echo "    ⚠️  시간표에서 형식이 맞지 않아 무시한 줄이 $BADTT 개 있습니다."
 [ "${NOCLASS:-0}" -gt 0 ] && echo "    ⚠️  $NOCLASS 개는 시간표에 없는 시각이라 반 이름 없이 지었습니다."

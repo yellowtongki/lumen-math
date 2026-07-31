@@ -149,7 +149,7 @@ function parse_csv(line, arr,    i, n, ch, nx, field, inq) {
     }
     if (ci == 0) ci = 1
     if (ni == 0) ni = 2
-    if (pi == 0) pi = 12
+    if (pi == 0) pi = 14
     next
   }
 

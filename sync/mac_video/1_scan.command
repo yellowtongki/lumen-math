@@ -81,6 +81,73 @@ else
   rm -f "$ROOT/.lumen_write_test"
 fi
 
+
+# ══════════════════════════════════════════════════════════════
+#  이미 정리된 파일명에서 정보를 «되읽어» 옵니다.
+#
+#  덕분에 ① 단원명만 고쳐서 다시 이름 짓기 ② 편집본(수정일이 편집시각인
+#  파일)도 이름에 적힌 날짜를 그대로 쓰기 가 가능해집니다.
+#
+#  알아보는 형태
+#    공수2 부분집합 p127 260727 IMG_9560     (형식1 + 원본번호)
+#    260727 공수2 부분집합 p127              (형식2)
+#    2026-07-27_공수2_02강_부분집합_p127      (형식3)
+#    IMG_9560                                (아직 안 바꾼 원본)
+#  결과: "반|단원|페이지|날짜(YYMMDD)|원본번호"
+# ══════════════════════════════════════════════════════════════
+parse_name() {
+  pn_nm="$1"; pn_cls=""; pn_unit=""; pn_pg=""; pn_ymd=""; pn_img=""
+
+  # ① 원본번호 IMG_9560
+  pn_img=$(printf '%s' "$pn_nm" | grep -oE '[Ii][Mm][Gg]_[0-9]+' | head -1)
+  pn_rest="$pn_nm"
+  if [ -n "$pn_img" ]; then
+    pn_rest=$(printf '%s' "$pn_rest" | sed "s/[ _]*$pn_img//")
+  fi
+
+  # ② 캡컷이 붙이는 꼬리(-1, -2)를 떼어냅니다.
+  #    이게 붙어 있으면 "260727-1" 이 되어 날짜를 못 알아봅니다.
+  pn_rest=$(printf '%s' "$pn_rest" | sed 's/-[0-9]\{1,2\}[ ]*$//')
+
+  # ③ 날짜 — 끝의 6자리 / 앞의 6자리 / 2026-07-27 형태
+  pn_ymd=$(printf '%s' "$pn_rest" | sed -n 's/.*[^0-9]\([0-9]\{6\}\)[ _]*$/\1/p')
+  [ -z "$pn_ymd" ] && pn_ymd=$(printf '%s' "$pn_rest" | sed -n 's/^\([0-9]\{6\}\)$/\1/p')
+  [ -z "$pn_ymd" ] && pn_ymd=$(printf '%s' "$pn_rest" | sed -n 's/^\([0-9]\{6\}\)[ _].*/\1/p')
+  if [ -z "$pn_ymd" ]; then
+    pn_ymd=$(printf '%s' "$pn_rest" | sed -n 's/^[0-9][0-9]\([0-9][0-9]\)-\([0-9][0-9]\)-\([0-9][0-9]\).*/\1\2\3/p')
+    [ -n "$pn_ymd" ] && pn_rest=$(printf '%s' "$pn_rest" | sed 's/^[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}[ _]*//')
+  else
+    pn_rest=$(printf '%s' "$pn_rest" | sed -e "s/[ _]*$pn_ymd[ _]*$//" -e "s/^$pn_ymd[ _]*//")
+  fi
+
+  # 6자리가 날짜답지 않으면(월이 01~12가 아니면) 버립니다
+  if [ -n "$pn_ymd" ]; then
+    pn_mm=$(printf '%s' "$pn_ymd" | cut -c3-4)
+    case "$pn_mm" in
+      0[1-9]|1[0-2]) : ;;
+      *) pn_ymd="" ;;
+    esac
+  fi
+
+  # ④ 페이지 p127
+  pn_pg=$(printf '%s' "$pn_rest" | grep -oE '(^|[ _])[Pp][0-9]+([ _]|$)' | head -1 | tr -d ' _')
+  if [ -n "$pn_pg" ]; then
+    pn_rest=$(printf '%s' "$pn_rest" | sed "s/[ _]*$pn_pg\([ _]\|$\)/ /")
+  fi
+
+  # ⑤ 회차 표시(02강) 는 다시 계산되므로 떼어냅니다
+  pn_rest=$(printf '%s' "$pn_rest" | sed 's/[ _][0-9][0-9]강//')
+
+  # ⑥ 남은 것 = 「반 단원」
+  pn_rest=$(printf '%s' "$pn_rest" | sed -e 's/[ _][ _]*/ /g' -e 's/^ *//' -e 's/ *$//')
+  if [ -n "$pn_rest" ]; then
+    pn_cls="${pn_rest%% *}"
+    pn_unit="${pn_rest#* }"
+    [ "$pn_unit" = "$pn_cls" ] && pn_unit=""
+  fi
+  printf '%s|%s|%s|%s|%s' "$pn_cls" "$pn_unit" "$pn_pg" "$pn_ymd" "$pn_img"
+}
+
 # CSV 한 칸을 안전하게 감싸기 (쉼표·따옴표가 들어있어도 깨지지 않게)
 csvq() { printf '"%s"' "$(printf '%s' "${1:-}" | sed 's/"/""/g')"; }
 
@@ -95,6 +162,8 @@ printf '\xEF\xBB\xBF' > "$OUT"
   csvq "반";                   printf ','
   csvq "단원";                 printf ','
   csvq "페이지";               printf ','
+  csvq "날짜";                 printf ','
+  csvq "원본번호";             printf ','
   csvq "폴더";                 printf ','
   csvq "크기MB";               printf ','
   csvq "녹화일시";             printf ','
@@ -107,6 +176,7 @@ printf '\xEF\xBB\xBF' > "$OUT"
 COUNT=0
 TOTBYTES=0
 NDUR=0
+NPARSED=0
 while IFS= read -r -d '' f; do
   name=$(basename "$f")
   dir=$(dirname "$f")
@@ -157,12 +227,29 @@ while IFS= read -r -d '' f; do
   dur=$(printf '%s' "$dsec" | awk '{ s=int($1+0.5); if(s<=0){ print "" } else { printf "%d:%02d", int(s/60), s%60 } }')
   [ -n "$dur" ] && NDUR=$((NDUR + 1))
 
+  # 이미 정리된 이름이면 반·단원·페이지·날짜·원본번호를 되읽어 옵니다
+  base="${name%.*}"
+  PN=$(parse_name "$base")
+  p_cls=$(printf  '%s' "$PN" | cut -d'|' -f1)
+  p_unit=$(printf '%s' "$PN" | cut -d'|' -f2)
+  p_pg=$(printf   '%s' "$PN" | cut -d'|' -f3)
+  p_ymd=$(printf  '%s' "$PN" | cut -d'|' -f4)
+  p_img=$(printf  '%s' "$PN" | cut -d'|' -f5)
+  [ -n "$p_unit" ] && NPARSED=$((NPARSED + 1))
+
+  # 이름에 날짜가 없으면 녹화일시(수정일)에서 가져옵니다
+  if [ -z "$p_ymd" ] && [ -n "$wdate" ]; then
+    p_ymd=$(printf '%s' "$wdate" | sed -n 's/^[0-9][0-9]\([0-9][0-9]\)-\([0-9][0-9]\)-\([0-9][0-9]\).*/\1\2\3/p')
+  fi
+
   {
     csvq "$name";   printf ','
     csvq "";        printf ','   # 새파일명 — 3_autoname 이 채웁니다
-    csvq "";        printf ','   # 반     — 시간표로 자동, 없으면 직접 입력
-    csvq "";        printf ','   # 단원   — 직접 입력
-    csvq "";        printf ','   # 페이지 — 직접 입력
+    csvq "$p_cls";  printf ','   # 반     — 시간표로 자동, 없으면 직접 입력
+    csvq "$p_unit"; printf ','   # 단원   — 직접 입력
+    csvq "$p_pg";   printf ','   # 페이지 — 직접 입력
+    csvq "$p_ymd";  printf ','   # 날짜   — YYMMDD
+    csvq "$p_img";  printf ','   # 원본번호
     csvq "$rel";    printf ','
     csvq "$sizemb"; printf ','
     csvq "$wdate";  printf ','
@@ -191,6 +278,11 @@ else
   if [ "$NDUR" -eq 0 ]; then
     echo " ℹ️  재생 길이를 읽지 못했습니다. (이 디스크는 스포트라이트 색인이 꺼진 듯합니다)"
     echo "    이름을 짓는 데 꼭 필요한 «녹화일시» 는 정상이니 그대로 진행하셔도 됩니다."
+    echo ""
+  fi
+  if [ "$NPARSED" -gt 0 ]; then
+    echo " 🔁 이미 정리된 이름 $NPARSED 개에서 반·단원·페이지·날짜를 되읽었습니다."
+    echo "    → 단원명만 고쳐서 다시 이름을 지을 수 있습니다."
     echo ""
   fi
   echo " 목록 파일: $OUT"
