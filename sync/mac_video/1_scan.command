@@ -44,7 +44,42 @@ if [ ! -d "$ROOT" ]; then
   exit 1
 fi
 
+
+# ── 외장하드 대응: 이 경로가 어떤 디스크에 있는지 알아냅니다 ──
+#    결과: "파일시스템종류|읽기전용(1/0)"  (예: "exfat|0", "ntfs|1")
+vol_info() {
+  dev=$(stat -f "%Sd" "$1" 2>/dev/null)
+  if [ -z "${dev:-}" ]; then printf '%s' "|0"; return; fi
+  line=$(mount 2>/dev/null | grep "^/dev/$dev on " | head -1)
+  fs=$(printf '%s' "$line" | sed -n 's/.*(\([a-zA-Z0-9]*\).*/\1/p')
+  case "$line" in *read-only*) ro=1 ;; *) ro=0 ;; esac
+  printf '%s|%s' "$fs" "$ro"
+}
+
+VI=$(vol_info "$ROOT"); FSTYPE="${VI%%|*}"; VOLRO="${VI##*|}"
+
+if [ -n "$FSTYPE" ] && [ "$FSTYPE" != "apfs" ] && [ "$FSTYPE" != "hfs" ]; then
+  echo ""
+  echo " 💽 이 폴더는 «$FSTYPE» 형식의 디스크에 있습니다. (외장하드로 보입니다)"
+fi
+if [ "$VOLRO" = "1" ]; then
+  echo ""
+  echo " ⚠️  이 디스크는 «읽기 전용» 입니다. 목록은 만들 수 있지만"
+  echo "     이름 변경은 되지 않습니다."
+  echo "     윈도우용(NTFS) 외장하드는 맥에서 기본으로 쓰기가 막혀 있습니다."
+  echo "     → 맥에서도 쓰려면 디스크를 exFAT 로 다시 포맷하거나,"
+  echo "       파일을 맥으로 옮긴 뒤 이름을 바꾸셔야 합니다."
+fi
+
+# 목록 파일을 그 폴더에 못 쓰면 바탕화면에 대신 저장합니다
 OUT="$ROOT/_강의영상_목록.csv"
+if ! touch "$ROOT/.lumen_write_test" 2>/dev/null; then
+  OUT="$HOME/Desktop/_강의영상_목록.csv"
+  echo ""
+  echo " ℹ️  그 폴더에 파일을 쓸 수 없어, 목록을 «바탕화면» 에 저장합니다."
+else
+  rm -f "$ROOT/.lumen_write_test"
+fi
 
 # CSV 한 칸을 안전하게 감싸기 (쉼표·따옴표가 들어있어도 깨지지 않게)
 csvq() { printf '"%s"' "$(printf '%s' "${1:-}" | sed 's/"/""/g')"; }
@@ -71,6 +106,7 @@ printf '\xEF\xBB\xBF' > "$OUT"
 
 COUNT=0
 TOTBYTES=0
+NDUR=0
 while IFS= read -r -d '' f; do
   name=$(basename "$f")
   dir=$(dirname "$f")
@@ -119,6 +155,7 @@ while IFS= read -r -d '' f; do
   # 재생 길이 (초 → 분:초)
   dsec=$(mdls -raw -name kMDItemDurationSeconds "$f" 2>/dev/null || echo "")
   dur=$(printf '%s' "$dsec" | awk '{ s=int($1+0.5); if(s<=0){ print "" } else { printf "%d:%02d", int(s/60), s%60 } }')
+  [ -n "$dur" ] && NDUR=$((NDUR + 1))
 
   {
     csvq "$name";   printf ','
@@ -151,6 +188,11 @@ else
   TOTGB=$(printf '%s' "$TOTBYTES" | awk '{ printf "%.1f", $1/1073741824 }')
   echo " ✅ 영상 $COUNT 개 · 합계 ${TOTGB} GB 를 찾았습니다."
   echo ""
+  if [ "$NDUR" -eq 0 ]; then
+    echo " ℹ️  재생 길이를 읽지 못했습니다. (이 디스크는 스포트라이트 색인이 꺼진 듯합니다)"
+    echo "    이름을 짓는 데 꼭 필요한 «녹화일시» 는 정상이니 그대로 진행하셔도 됩니다."
+    echo ""
+  fi
   echo " 목록 파일: $OUT"
   echo ""
   echo " 다음 순서 (둘 중 하나):"

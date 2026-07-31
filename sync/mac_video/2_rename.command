@@ -21,6 +21,18 @@ unescape_path() {
           -e 's/\\\(.\)/\1/g'
 }
 
+
+# ── 외장하드 대응: 이 경로가 어떤 디스크에 있는지 알아냅니다 ──
+#    결과: "파일시스템종류|읽기전용(1/0)"  (예: "exfat|0", "ntfs|1")
+vol_info() {
+  dev=$(stat -f "%Sd" "$1" 2>/dev/null)
+  if [ -z "${dev:-}" ]; then printf '%s' "|0"; return; fi
+  line=$(mount 2>/dev/null | grep "^/dev/$dev on " | head -1)
+  fs=$(printf '%s' "$line" | sed -n 's/.*(\([a-zA-Z0-9]*\).*/\1/p')
+  case "$line" in *read-only*) ro=1 ;; *) ro=0 ;; esac
+  printf '%s|%s' "$fs" "$ro"
+}
+
 echo ""
 echo "════════════════════════════════════════════════"
 echo "   루멘수학 · 강의영상 이름 바꾸기"
@@ -162,7 +174,38 @@ if [ -z "$PARSED" ]; then
 fi
 
 SRC_LIST=(); DST_LIST=()
-SKIP_BLANK=0; SKIP_SAME=0; SKIP_MISSING=0; SKIP_EXISTS=0
+SKIP_BLANK=0; SKIP_SAME=0; SKIP_MISSING=0; SKIP_EXISTS=0; SKIP_RO=0
+
+# ── 파일들이 놓인 디스크 확인 (외장하드 대응) ──
+FIRSTDIR=""
+while IFS= read -r _c && IFS= read -r _n && IFS= read -r _p; do
+  if [ -n "${_p:-}" ] && [ -e "$_p" ]; then FIRSTDIR=$(dirname "$_p"); break; fi
+done <<< "$PARSED"
+
+BADCHARS='/:'
+if [ -n "$FIRSTDIR" ]; then
+  VI=$(vol_info "$FIRSTDIR"); FSTYPE="${VI%%|*}"; VOLRO="${VI##*|}"
+  if [ -n "$FSTYPE" ] && [ "$FSTYPE" != "apfs" ] && [ "$FSTYPE" != "hfs" ]; then
+    echo ""
+    echo " 💽 파일이 «$FSTYPE» 형식의 디스크에 있습니다. (외장하드로 보입니다)"
+  fi
+  case "$FSTYPE" in
+    exfat|msdos|ntfs)
+      # 윈도우 계열 디스크는 쓸 수 없는 글자가 더 많습니다
+      BADCHARS='/:\*?"<>|'
+      echo "    → 이 형식에서 쓸 수 없는 글자( \\ * ? \" < > | )도 - 로 바꿉니다."
+      ;;
+  esac
+  if [ "$VOLRO" = "1" ]; then
+    echo ""
+    echo " ⚠️  이 디스크는 «읽기 전용» 이라 이름을 바꿀 수 없습니다."
+    echo "     윈도우용(NTFS) 외장하드는 맥에서 기본으로 쓰기가 막혀 있습니다."
+    echo "     → exFAT 로 다시 포맷하거나, 파일을 맥으로 옮긴 뒤 진행하세요."
+    echo ""
+    read -r -p " 엔터를 누르면 창이 닫힙니다. " _
+    exit 1
+  fi
+fi
 
 echo ""
 echo " ── 바꿀 목록 미리보기 ─────────────────────────"
@@ -181,8 +224,8 @@ while IFS= read -r cur && IFS= read -r new && IFS= read -r pth; do
     SKIP_MISSING=$((SKIP_MISSING + 1)); continue
   fi
 
-  # 맥에서 파일명에 쓸 수 없는 글자(/ 와 :)는 - 로 바꿉니다
-  new=$(printf '%s' "$new" | tr '/:' '--')
+  # 그 디스크에서 파일명에 쓸 수 없는 글자를 - 로 바꿉니다
+  new=$(printf '%s' "$new" | tr "$BADCHARS" '-')
 
   # 확장자를 안 적었으면 원래 확장자를 붙여 줍니다
   oldname=$(basename "$pth")
@@ -202,6 +245,12 @@ while IFS= read -r cur && IFS= read -r new && IFS= read -r pth; do
   dir=$(dirname "$pth")
   dst="$dir/$new"
 
+  # 그 폴더에 쓸 권한이 없으면 바꿀 수 없습니다 (읽기 전용 디스크 등)
+  if [ ! -w "$dir" ]; then
+    echo "  ⚠️  쓰기 권한 없음(읽기 전용): $oldname"
+    SKIP_RO=$((SKIP_RO + 1)); continue
+  fi
+
   if [ -e "$dst" ]; then
     echo "  ⚠️  같은 이름이 이미 있어 건너뜀: $new"
     SKIP_EXISTS=$((SKIP_EXISTS + 1)); continue
@@ -218,7 +267,7 @@ TOTAL=${#SRC_LIST[@]}
 echo ""
 echo " ───────────────────────────────────────────────"
 echo " 바꿀 파일: $TOTAL 개"
-echo " 그대로 두는 파일: 새이름 비어있음 $SKIP_BLANK / 이름 같음 $SKIP_SAME / 파일없음 $SKIP_MISSING / 중복 $SKIP_EXISTS"
+echo " 그대로 두는 파일: 새이름 비어있음 $SKIP_BLANK / 이름 같음 $SKIP_SAME / 파일없음 $SKIP_MISSING / 중복 $SKIP_EXISTS / 읽기전용 $SKIP_RO"
 echo ""
 
 if [ "$TOTAL" -eq 0 ]; then
@@ -244,7 +293,12 @@ esac
 STAMP=$(date "+%Y%m%d-%H%M%S")
 LOGDIR=$(dirname "$CSV")
 LOG="$LOGDIR/_이름변경기록_$STAMP.tsv"
-: > "$LOG"
+if ! : > "$LOG" 2>/dev/null; then
+  # CSV가 있는 곳에 쓸 수 없으면 바탕화면에 기록을 남깁니다
+  LOG="$HOME/Desktop/_이름변경기록_$STAMP.tsv"
+  : > "$LOG"
+  echo " ℹ️  되돌리기 기록을 «바탕화면» 에 저장합니다."
+fi
 
 OK=0; NG=0
 i=0
