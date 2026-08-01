@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 · 오답 연결 선생님 풀이 (상의용)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{ --red:#e8192c; --navy:#0d2240; --navy2:#1d3a60; }
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#e9edf3;padding:24px 12px 80px;display:flex;flex-direction:column;align-items:center;gap:26px}
+.note{max-width:390px;width:100%;background:#fffbe8;border:1.5px solid #fbbf24;border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#78350f;font-weight:600}
+.phone{width:390px;max-width:100%;background:#f0f4f8;border-radius:28px;box-shadow:0 12px 40px rgba(13,34,64,0.25);overflow:hidden;border:6px solid #0d2240}
+.hd{background:var(--navy);padding:40px 20px 16px;color:#fff}
+.hd .t{font-size:18px;font-weight:800}
+.hd .s{font-size:11px;opacity:0.65;margin-top:2px}
+.wrap{padding:14px 14px 26px}
+.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 10px rgba(13,34,64,0.06)}
+.ct{font-size:14px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.cs{font-size:11px;color:#94a3b8;margin-bottom:11px;line-height:1.6}
+.q{border:1.5px solid #eef2f7;border-radius:12px;padding:11px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.q .day{flex:none;width:44px;text-align:center;border-radius:9px;padding:5px 0;font-size:10px;font-weight:900}
+.d1{background:#fee2e2;color:#dc2626}.d3{background:#ffedd5;color:#c2410c}.d7{background:#e0f2fe;color:#0369a1}
+.q .m{min-width:0;flex:1}
+.q .n{font-size:12.5px;font-weight:800;color:var(--navy)}
+.q .i{font-size:10.5px;color:#94a3b8;margin-top:2px}
+.sol{flex:none;border:none;border-radius:20px;padding:7px 11px;font-size:11px;font-weight:800;font-family:inherit;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff}
+.sol.none{background:#f1f5f9;color:#94a3b8}
+.badge{display:inline-block;font-size:9.5px;font-weight:900;border-radius:20px;padding:2px 7px;vertical-align:1px}
+.player{background:var(--navy);border-radius:14px;overflow:hidden;margin-bottom:10px}
+.yt{position:relative;padding-top:56%;background:linear-gradient(135deg,#0d2240,#1d3a60)}
+.yt .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:#fff}
+.yt .pb{width:56px;height:56px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff}
+.yt .cap{font-size:11px;font-weight:700;opacity:0.85}
+.chip{background:rgba(255,255,255,0.14);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:800;color:#ffd54a}
+.hs{background:#fff;border:1.5px solid #eef2f7;border-radius:12px;overflow:hidden;margin-bottom:8px}
+.hs .ht{font-size:11px;font-weight:800;color:#64748b;padding:8px 11px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center}
+.hs .img{height:150px;background:
+ repeating-linear-gradient(#fbfcfe 0 26px, #eef2f7 26px 27px);position:relative;padding:12px 14px;font-family:'Comic Sans MS',cursive;color:#334155;font-size:12px;line-height:1.9}
+.hs .img .red{color:var(--red);font-weight:700}
+.hs .zoom{position:absolute;right:9px;bottom:8px;background:rgba(13,34,64,0.75);color:#fff;font-size:10px;border-radius:16px;padding:4px 9px;font-weight:700}
+.btnrow{display:flex;gap:8px}
+.b1{flex:1;border:none;border-radius:11px;padding:11px 0;font-size:12.5px;font-weight:800;font-family:inherit;background:var(--red);color:#fff}
+.b2{flex:1;border:1.5px solid #e2e8f0;border-radius:11px;padding:11px 0;font-size:12.5px;font-weight:800;font-family:inherit;background:#fff;color:#475569}
+.aha{display:flex;gap:10px;align-items:flex-start;border:1.5px solid #eef2f7;border-radius:12px;padding:11px 12px;margin-bottom:8px}
+.aha .ph{flex:none;width:46px;height:46px;border-radius:10px;background:repeating-linear-gradient(45deg,#e2e8f0 0 6px,#f1f5f9 6px 12px);display:flex;align-items:center;justify-content:center;font-size:16px}
+.lbl{max-width:390px;width:100%;font-size:13px;font-weight:900;color:#0d2240;padding-left:4px}
+.arrow{font-size:20px;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<div class="note">🎨 <b>상의용 목업입니다</b> — 실제 기능 없음. 학생앱에 「내가 틀린 문제 ↔ 선생님 풀이(영상·손풀이)」가 연결되면 이런 모습이 됩니다. 답지와 달리 <b>전체 문제가 아니라 "내 오답"에만</b> 붙고, 복습 주기(1→3→7일)에 맞춰 다시 나타납니다.</div>
+
+<div class="lbl">① 학생앱 홈 — 「오늘의 복습」 카드</div>
+<div class="phone">
+  <div class="hd"><div class="t">🎯 오늘의 복습</div><div class="s">틀린 문제는 1 → 3 → 7 → 14일 뒤에 다시 만나요</div></div>
+  <div class="wrap">
+    <div class="card">
+      <div class="ct">📌 오늘 다시 풀 문제 <span class="badge" style="background:#fee2e2;color:#dc2626">4개</span></div>
+      <div class="cs">어제·지난주에 틀린 문제예요. <b>먼저 스스로 풀어보고</b>, 막히면 선생님 풀이를 열어보세요.</div>
+      <div class="q">
+        <div class="day d1">1일차</div>
+        <div class="m"><div class="n">07.28 학습지 · 5번</div><div class="i">직각삼각형의 합동 조건 응용 (RHS)</div></div>
+        <button class="sol">🎬 선생님 풀이</button>
+      </div>
+      <div class="q">
+        <div class="day d1">1일차</div>
+        <div class="m"><div class="n">07.28 학습지 · 7번</div><div class="i">평행선에서의 활용(2)</div></div>
+        <button class="sol">🖼 손풀이</button>
+      </div>
+      <div class="q">
+        <div class="day d3">3일차</div>
+        <div class="m"><div class="n">쎈 중2-2 · p84 · 312번</div><div class="i">종이를 접었을 때 각의 크기</div></div>
+        <button class="sol">🎬 선생님 풀이</button>
+      </div>
+      <div class="q">
+        <div class="day d7">7일차</div>
+        <div class="m"><div class="n">07.21 주간테스트 · 18번</div><div class="i">지수법칙 — 자릿수 구하기</div></div>
+        <button class="sol none">풀이 준비 중</button>
+      </div>
+      <div style="font-size:10.5px;color:#94a3b8;line-height:1.6;margin-top:8px">💡 풀이가 있는 문제에만 버튼이 켜져요. 복습에서 또 틀리면 1일차부터 다시 시작!</div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow">⬇ 「🎬 선생님 풀이」를 누르면</div>
+
+<div class="lbl">② 문제 풀이 화면 — 영상은 그 문제 시점부터</div>
+<div class="phone">
+  <div class="hd"><div class="t">07.28 학습지 · 5번</div><div class="s">직각삼각형의 합동 조건 응용 (RHS) · ❌ 7/28에 틀린 문제</div></div>
+  <div class="wrap">
+    <div class="player">
+      <div class="yt">
+        <div class="play">
+          <div class="pb">▶</div>
+          <div class="cap">중2 판서 260728 수업 영상</div>
+          <div class="chip">⏱ 12:40부터 — 5번 풀이 지점으로 바로 이동</div>
+        </div>
+      </div>
+    </div>
+    <div class="hs">
+      <div class="ht"><span>✍️ 선생님 손풀이</span><span style="color:#0369a1">원장님이 수업에서 푼 그대로</span></div>
+      <div class="img">
+        <div>△ABC와 △DEF에서</div>
+        <div><span class="red">∠B = ∠E = 90°</span>, AC = DF (빗변)</div>
+        <div>AB = DE  →  <span class="red">RHS 합동!</span> ✓</div>
+        <div class="zoom">🔍 누르면 크게</div>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="b1">📸 다시 푼 풀이 올리기</button>
+      <button class="b2">💡 아하노트에 담기</button>
+    </div>
+    <div style="font-size:10.5px;color:#94a3b8;line-height:1.7;margin-top:10px">다시 푼 풀이를 올리면 재복습 기록에 반영되고 XP를 받아요 ⚡ (기존 재풀이 제출과 같은 방식)</div>
+  </div>
+</div>
+
+<div class="arrow">⬇ 아하노트에서도</div>
+
+<div class="lbl">③ 아하노트 — 질문한 문제에 풀이가 자동으로 붙음</div>
+<div class="phone">
+  <div class="hd"><div class="t">💡 내 아하노트</div><div class="s">질문한 문제에 선생님 풀이가 도착하면 알려드려요</div></div>
+  <div class="wrap">
+    <div class="card">
+      <div class="aha">
+        <div class="ph">📷</div>
+        <div class="m" style="flex:1">
+          <div class="n" style="font-size:12.5px;font-weight:800;color:#0d2240">쎈 중2-2 · p84 · 312번 <span class="badge" style="background:#dcfce7;color:#059669">해결됨</span></div>
+          <div class="i" style="font-size:10.5px;color:#94a3b8;margin-top:2px">틀린 이유: 조건을 빠뜨림 · 7/26 질문</div>
+        </div>
+        <button class="sol">🎬 풀이 보기</button>
+      </div>
+      <div class="aha" style="border-color:#fde68a;background:#fffdf5">
+        <div class="ph">📷</div>
+        <div class="m" style="flex:1">
+          <div class="n" style="font-size:12.5px;font-weight:800;color:#0d2240">일품 중2 · p52 · 178번 <span class="badge" style="background:#fef3c7;color:#b45309">대기 중</span></div>
+          <div class="i" style="font-size:10.5px;color:#94a3b8;margin-top:2px">아직 풀이가 없어요 — 선생님께 요청이 전달됐어요 📨</div>
+        </div>
+      </div>
+      <div style="font-size:10.5px;color:#94a3b8;line-height:1.7;margin-top:6px">아하노트에는 교재·쪽수·문항번호가 이미 있어서, 올라온 풀이와 <b>자동으로 짝지어져요</b>. 없는 풀이는 선생님 화면에 「요청 목록」으로 모여요.</div>
+    </div>
+  </div>
+</div>
+
+<div class="note">🏫 <b>학원앱 쪽에는</b> ① 이번 주 「많이 틀린 문항 TOP」에 풀이 업로드 버튼(요청이 많은 순) ② 사진 여러 장을 한꺼번에 올리면 파일명·AI로 문항과 자동 매칭, 애매한 것만 골라달라고 묻는 검수 화면이 생깁니다. 자세한 것은 설계안 문서에 있어요.</div>
+
+</body>
+</html>
