@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 · 약점 지도 + 망각곡선 (상의용)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{ --red:#e8192c; --navy:#0d2240; --navy2:#1d3a60; --g:#22c55e; --y:#f59e0b; --r:#ef4444; }
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#e9edf3;padding:24px 12px 80px;display:flex;flex-direction:column;align-items:center;gap:26px}
+.note{max-width:960px;width:100%;background:#fffbe8;border:1.5px solid #fbbf24;border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.7;color:#78350f;font-weight:600}
+.lbl{max-width:960px;width:100%;font-size:14px;font-weight:900;color:#0d2240;padding-left:4px}
+.desk{max-width:960px;width:100%;background:#f6f8fb;border-radius:18px;box-shadow:0 10px 34px rgba(13,34,64,0.18);overflow:hidden;border:1px solid #dbe3ee}
+.dhd{background:var(--navy);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.dhd .t{font-size:16px;font-weight:900}
+.chip{background:rgba(255,255,255,0.14);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800}
+.chip.on{background:#ffd54a;color:#0d2240}
+.dbody{display:grid;grid-template-columns:1fr 300px;gap:0}
+.grid{padding:14px 16px;background:#fff}
+.legend{display:flex;gap:12px;align-items:center;font-size:10.5px;font-weight:700;color:#64748b;margin-bottom:10px;flex-wrap:wrap}
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:3px}
+.unit{margin-bottom:14px}
+.ut{font-size:12.5px;font-weight:900;color:var(--navy);padding:7px 10px;background:#f1f5f9;border-radius:8px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center}
+.ut .pct{font-size:11px;font-weight:900}
+.row{display:grid;grid-template-columns:190px 1fr;gap:8px;align-items:center;padding:5px 4px;border-bottom:1px solid #f8fafc}
+.tn{font-size:11.5px;font-weight:700;color:#334155;line-height:1.45}
+.tn .aha{display:inline-block;background:#fef3c7;color:#b45309;border-radius:10px;font-size:9px;font-weight:900;padding:1px 6px;margin-left:4px}
+.tn .rev{display:inline-block;background:#e0f2fe;color:#0369a1;border-radius:10px;font-size:9px;font-weight:900;padding:1px 6px;margin-left:3px}
+.cells{display:flex;gap:4px;flex-wrap:wrap}
+.c{width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:900}
+.cg{background:var(--g)}.cy{background:var(--y)}.cr{background:var(--r)}.cx{background:#e2e8f0}
+.sep{width:1px;background:#eef2f7;margin:0 4px}
+.presc{background:#fbfcff;border-left:1px solid #e8eef8;padding:14px}
+.pt{font-size:13px;font-weight:900;color:var(--navy);margin-bottom:4px}
+.ps{font-size:10.5px;color:#94a3b8;margin-bottom:10px;line-height:1.6}
+.pitem{background:#fff;border:1.5px solid #fecaca;border-radius:11px;padding:10px 11px;margin-bottom:8px}
+.pitem.y{border-color:#fde68a}
+.pitem .n{font-size:11.5px;font-weight:800;color:#0d2240}
+.pitem .d{font-size:10px;color:#94a3b8;margin-top:2px;line-height:1.5}
+.pbtns{display:flex;gap:5px;margin-top:7px}
+.pb1{flex:1;border:none;border-radius:8px;padding:6px 0;font-size:10px;font-weight:800;font-family:inherit;background:var(--navy);color:#fff}
+.pb2{flex:1;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 0;font-size:10px;font-weight:800;font-family:inherit;background:#fff;color:#475569}
+.phone{width:390px;max-width:100%;background:#f0f4f8;border-radius:28px;box-shadow:0 12px 40px rgba(13,34,64,0.25);overflow:hidden;border:6px solid #0d2240}
+.hd{background:var(--navy);padding:40px 20px 16px;color:#fff}
+.hd .t{font-size:18px;font-weight:800}
+.hd .s{font-size:11px;opacity:0.65;margin-top:2px}
+.wrap{padding:14px 14px 26px}
+.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 10px rgba(13,34,64,0.06)}
+.ct{font-size:14px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.cs{font-size:11px;color:#94a3b8;margin-bottom:11px;line-height:1.6}
+.ubar{margin-bottom:11px}
+.ubar .un{display:flex;justify-content:space-between;font-size:11.5px;font-weight:800;color:#334155;margin-bottom:4px}
+.ubar .track{height:12px;border-radius:99px;background:#f1f5f9;overflow:hidden;display:flex}
+.wk{border:1.5px solid #eef2f7;border-radius:12px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:10px}
+.wk .rank{flex:none;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff}
+.wk .m{min-width:0;flex:1}
+.wk .n{font-size:12px;font-weight:800;color:var(--navy);line-height:1.4}
+.wk .i{font-size:10px;color:#94a3b8;margin-top:1px}
+.wk .go{flex:none;border:none;border-radius:18px;padding:6px 10px;font-size:10.5px;font-weight:800;font-family:inherit;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff}
+.curve{background:linear-gradient(160deg,#0d2240,#1d3a60);border-radius:14px;padding:14px;color:#fff;margin-bottom:10px}
+.curve .t{font-size:12.5px;font-weight:900;margin-bottom:2px}
+.curve .s{font-size:10px;opacity:0.7;margin-bottom:8px;line-height:1.5}
+.arrow{font-size:20px;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<div class="note">🎨 <b>상의용 목업</b> — 실제 기능 없음. <b>이미 쌓여 있는 데이터</b>(문항 단위 정오답·유형 성취도 2주 집계·아하노트 334건)로 만들 수 있는 화면입니다. 매쓰플랫 유형분석(프리미엄)과 같은 지도에 + 아하노트 + 복습 이력 + 망각곡선을 얹습니다.</div>
+
+<div class="lbl">① 학원앱 — 「🗺 약점 지도」 (학생별 · 시험대비 필터)</div>
+<div class="desk">
+  <div class="dhd">
+    <div class="t">🗺 성재연 약점 지도</div>
+    <span class="chip">중1-2 도형</span>
+    <span class="chip on">🎯 시험범위만 (기본도형~작도)</span>
+    <span class="chip">전체 보기</span>
+    <span style="margin-left:auto;font-size:10.5px;opacity:0.75">자료: 최근 8주 채점 987문항 · 아하노트 12건</span>
+  </div>
+  <div class="dbody">
+    <div class="grid">
+      <div class="legend">
+        <span><span class="sw" style="background:var(--g)"></span>80%↑</span>
+        <span><span class="sw" style="background:var(--y)"></span>60~79%</span>
+        <span><span class="sw" style="background:var(--r)"></span>60% 미만</span>
+        <span><span class="sw" style="background:#e2e8f0"></span>안 풀음</span>
+        <span>💡 아하노트 질문</span><span>🔁 복습 예정</span>
+        <span style="margin-left:auto">칸 = 유형 · 왼쪽부터 개념｜기본｜심화</span>
+      </div>
+      <div class="unit">
+        <div class="ut"><span>기본 도형과 작도 ─ 기본 도형</span><span class="pct" style="color:var(--g)">평균 84% · 안정</span></div>
+        <div class="row"><div class="tn">점, 선, 면</div>
+          <div class="cells"><span class="c cg">92</span><span class="c cg">88</span><span class="sep"></span><span class="c cg">85</span><span class="c cy">71</span><span class="sep"></span><span class="c cx"></span></div></div>
+        <div class="row"><div class="tn">각의 성질 <span class="aha">💡2</span></div>
+          <div class="cells"><span class="c cg">90</span><span class="c cy">75</span><span class="sep"></span><span class="c cy">68</span><span class="c cr">50</span><span class="sep"></span><span class="c cx"></span></div></div>
+      </div>
+      <div class="unit">
+        <div class="ut"><span>기본 도형과 작도 ─ 위치 관계</span><span class="pct" style="color:var(--r)">평균 58% · ⚠ 취약</span></div>
+        <div class="row"><div class="tn">점·직선·평면의 위치 관계 <span class="aha">💡3</span> <span class="rev">🔁 8/3</span></div>
+          <div class="cells"><span class="c cy">70</span><span class="c cr">55</span><span class="sep"></span><span class="c cr">42</span><span class="c cr">38</span><span class="sep"></span><span class="c cx"></span></div></div>
+        <div class="row"><div class="tn">공간에서 두 평면의 위치 관계 <span class="rev">🔁 오늘</span></div>
+          <div class="cells"><span class="c cy">67</span><span class="sep"></span><span class="c cr">45</span><span class="sep"></span><span class="c cx"></span></div></div>
+        <div class="row"><div class="tn">평행선의 성질과 활용 <span class="aha">💡4</span></div>
+          <div class="cells"><span class="c cg">82</span><span class="c cy">74</span><span class="sep"></span><span class="c cy">63</span><span class="c cr">48</span><span class="sep"></span><span class="c cr">30</span></div></div>
+      </div>
+      <div class="unit">
+        <div class="ut"><span>기본 도형과 작도 ─ 작도와 합동</span><span class="pct" style="color:var(--y)">평균 72% · 보통</span></div>
+        <div class="row"><div class="tn">삼각형의 작도</div>
+          <div class="cells"><span class="c cg">88</span><span class="sep"></span><span class="c cy">70</span><span class="sep"></span><span class="c cx"></span></div></div>
+        <div class="row"><div class="tn">직각삼각형의 합동 (RHA·RHS) <span class="aha">💡1</span> <span class="rev">🔁 8/5</span></div>
+          <div class="cells"><span class="c cg">85</span><span class="c cy">72</span><span class="sep"></span><span class="c cr">55</span><span class="sep"></span><span class="c cx"></span></div></div>
+      </div>
+    </div>
+    <div class="presc">
+      <div class="pt">🩺 시험대비 처방전</div>
+      <div class="ps">시험범위 안에서 빨강·노랑 유형만 자동으로 모았습니다. 위험한 순서.</div>
+      <div class="pitem">
+        <div class="n">🔴 점·직선·평면의 위치 관계</div>
+        <div class="d">기본 42% (12문항 중 5) · 아하노트 3회 · 틀린이유: 관련개념부족</div>
+        <div class="pbtns"><button class="pb1">📄 유사문항 뽑기</button><button class="pb2">🔁 복습카드 넣기</button></div>
+      </div>
+      <div class="pitem">
+        <div class="n">🔴 평행선의 활용 (심화)</div>
+        <div class="d">심화 30% · 주간테스트 2회 연속 오답 · 아하노트 4회</div>
+        <div class="pbtns"><button class="pb1">📄 유사문항 뽑기</button><button class="pb2">🔁 복습카드 넣기</button></div>
+      </div>
+      <div class="pitem y">
+        <div class="n">🟡 직각삼각형의 합동 (기본)</div>
+        <div class="d">55% → 감점 잦음 · 최근 오답 7/28 학습지 5번</div>
+        <div class="pbtns"><button class="pb1">📄 유사문항 뽑기</button><button class="pb2">🔁 복습카드 넣기</button></div>
+      </div>
+      <div style="font-size:10px;color:#94a3b8;line-height:1.6;margin-top:8px">「유사문항 뽑기」= 매쓰플랫에서 이 유형으로 학습지 만들 목록 복사. 처방전은 학부모 리포트에도 붙일 수 있음.</div>
+    </div>
+  </div>
+</div>
+
+<div class="arrow">⬇ 같은 데이터를 학생앱에서는</div>
+
+<div class="lbl">② 학생앱 — 「나의 약점 지도」 + 망각곡선</div>
+<div class="phone">
+  <div class="hd"><div class="t">🗺 나의 약점 지도</div><div class="s">채점된 987문항 · 아하노트 12개로 만든 진짜 내 지도</div></div>
+  <div class="wrap">
+    <div class="card">
+      <div class="ct">📚 단원별 히트맵 <span style="font-size:10px;font-weight:800;color:#0369a1;background:#e0f2fe;border-radius:12px;padding:2px 8px">시험범위</span></div>
+      <div class="ubar"><div class="un"><span>기본 도형</span><span style="color:var(--g)">84%</span></div>
+        <div class="track"><div style="width:84%;background:var(--g)"></div></div></div>
+      <div class="ubar"><div class="un"><span>위치 관계 ⚠</span><span style="color:var(--r)">58%</span></div>
+        <div class="track"><div style="width:58%;background:var(--r)"></div></div></div>
+      <div class="ubar"><div class="un"><span>작도와 합동</span><span style="color:var(--y)">72%</span></div>
+        <div class="track"><div style="width:72%;background:var(--y)"></div></div></div>
+      <div style="font-size:10.5px;color:#94a3b8;line-height:1.6">막대를 누르면 유형별로 펼쳐져요. 💡는 내가 질문했던 유형!</div>
+    </div>
+    <div class="card">
+      <div class="ct">🎯 나의 취약 유형 TOP 3</div>
+      <div class="wk"><div class="rank" style="background:var(--r)">1</div>
+        <div class="m"><div class="n">점·직선·평면의 위치 관계</div><div class="i">기본 42% · 💡질문 3번 · 🔁 다음 복습 오늘</div></div>
+        <button class="go">복습 →</button></div>
+      <div class="wk"><div class="rank" style="background:var(--r)">2</div>
+        <div class="m"><div class="n">평행선의 활용 (심화)</div><div class="i">심화 30% · 주간테스트 연속 오답</div></div>
+        <button class="go">복습 →</button></div>
+      <div class="wk"><div class="rank" style="background:var(--y)">3</div>
+        <div class="m"><div class="n">직각삼각형의 합동</div><div class="i">기본 55% · 7/28 학습지 5번 오답</div></div>
+        <button class="go">복습 →</button></div>
+    </div>
+    <div class="curve">
+      <div class="t">🧠 기억은 이렇게 사라져요 — 위치 관계</div>
+      <div class="s">7/28에 배운 내용, 복습을 안 하면 회색 선처럼 잊혀요. 제때 복습하면(⚡) 초록 선처럼 다시 올라갑니다.</div>
+      <svg viewBox="0 0 330 130" width="100%" style="overflow:visible">
+        <line x1="26" y1="10" x2="26" y2="108" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+        <line x1="26" y1="108" x2="322" y2="108" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+        <text x="8" y="16" fill="rgba(255,255,255,0.6)" font-size="8">100%</text>
+        <text x="10" y="106" fill="rgba(255,255,255,0.6)" font-size="8">0%</text>
+        <path d="M26,14 C60,55 100,85 180,98 C240,105 290,107 322,107" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2" stroke-dasharray="4 4"/>
+        <path d="M26,14 C42,40 54,52 62,58 L62,22 C80,44 100,54 112,58 L112,26 C150,48 190,56 208,58 L208,30 C260,48 300,52 322,54" fill="none" stroke="#4ade80" stroke-width="3" stroke-linecap="round"/>
+        <g font-size="9" fill="#ffd54a" font-weight="900">
+          <text x="56" y="16">⚡1일</text><text x="104" y="20">⚡3일</text><text x="198" y="24">⚡7일</text><text x="310" y="46">⚡14일</text>
+        </g>
+        <circle cx="208" cy="58" r="5" fill="#ffd54a" stroke="#0d2240" stroke-width="2"/>
+        <text x="216" y="74" fill="#ffd54a" font-size="9" font-weight="900">지금 여기! 복습하면 58→92%</text>
+        <text x="120" y="120" fill="rgba(255,255,255,0.55)" font-size="8">배운 날로부터 지난 시간 →</text>
+      </svg>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button style="flex:1;border:none;border-radius:11px;padding:11px 0;font-size:12.5px;font-weight:900;font-family:inherit;background:#ffd54a;color:#0d2240">⚡ 지금 복습하기 (3문제 · +30XP)</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">💡 내 질문 다시 보기</div>
+      <div class="cs">아하노트에 질문했던 문제도 약점 지도에 함께 계산돼요.</div>
+      <div class="wk"><div class="rank" style="background:#7c3aed">💡</div>
+        <div class="m"><div class="n">RPM 중1-1 · p41 · 3번</div><div class="i">틀린 이유: 관련개념부족 · 7/31 질문 · 위치 관계 유형</div></div>
+        <button class="go">보기</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="note">🏫 <b>만드는 재료는 전부 이미 있습니다</b> — ① 문항 단위 정오답(매일 수집) ② 유형 성취도 2주 집계(수집기가 계산 중) ③ 아하노트 334건(교재·쪽·번호·틀린이유). 새로 만드는 것은 화면 2개(학원앱 약점 지도+처방전, 학생앱 지도+망각곡선)와 복습 스케줄 계산뿐입니다. 망각곡선의 % 수치는 "예상 기억률"(에빙하우스 근사)로 표시하고, 복습 완료 기록이 쌓이면 곡선이 다시 올라가게 그립니다.</div>
+
+</body>
+</html>
