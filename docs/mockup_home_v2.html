@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 v2 · 짧은 홈 + 복습 화면 (상의용)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{ --red:#e8192c; --navy:#0d2240; --navy2:#1d3a60; --mf:#1d6fe8; --g:#22c55e; --y:#f59e0b; --r:#ef4444; }
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#e9edf3;padding:24px 12px 80px;display:flex;flex-direction:column;align-items:center;gap:20px}
+.note{max-width:840px;width:100%;background:#fffbe8;border:1.5px solid #fbbf24;border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.7;color:#78350f;font-weight:600}
+.row{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.col{display:flex;flex-direction:column;align-items:center;gap:8px}
+.lbl{font-size:13px;font-weight:900;color:#0d2240}
+.phone{width:380px;max-width:100%;background:#f0f4f8;border-radius:30px;box-shadow:0 14px 44px rgba(13,34,64,0.28);overflow:hidden;border:7px solid #0d2240}
+.hd{background:#fff;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eef2f7}
+.logo{display:flex;align-items:center;gap:8px}
+.logo .ic{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#0d2240,#1d6fe8);display:flex;align-items:center;justify-content:center;font-size:17px}
+.logo .main{font-size:14px;font-weight:900;color:var(--navy)}
+.logo .sub{font-size:9.5px;color:#94a3b8;font-weight:700}
+.me{display:flex;align-items:center;gap:7px}
+.me .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#e8192c,#b91220);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900}
+.me .nm{font-size:12px;font-weight:900;color:var(--navy)}
+.me .gd{font-size:9px;color:#94a3b8;font-weight:700}
+.body{padding:13px;display:flex;flex-direction:column;gap:10px}
+.strip{background:#fff;border-radius:13px;padding:11px 13px;display:flex;align-items:center;gap:9px;box-shadow:0 1px 6px rgba(13,34,64,0.05)}
+.strip .t{font-size:11.5px;color:#475569;font-weight:700;flex:1}
+.strip .t b{color:var(--navy)}
+.strip .ch{color:#cbd5e1;font-size:15px}
+/* 복습 strip (짧게 — 누르면 들어감) */
+.rvstrip{background:linear-gradient(120deg,#0d2240,#1d3a60);border-radius:14px;padding:13px 15px;display:flex;align-items:center;gap:11px;cursor:pointer;box-shadow:0 3px 12px rgba(13,34,64,0.18)}
+.rvstrip .ic{font-size:24px}
+.rvstrip .m{flex:1;color:#fff}
+.rvstrip .m .t{font-size:14px;font-weight:900}
+.rvstrip .m .s{font-size:10px;opacity:0.72;margin-top:1px}
+.rvstrip .cnt{background:#ffd54a;color:#0d2240;border-radius:20px;font-size:12px;font-weight:900;padding:3px 11px}
+.rvstrip .ch{color:rgba(255,255,255,0.55);font-size:18px}
+.tiles2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border:none;border-radius:15px;padding:13px;text-align:left;font-family:inherit;position:relative;cursor:pointer;color:#fff;min-height:90px}
+.tile.red{background:linear-gradient(145deg,#e8192c,#b91220)}
+.tile.pl{background:linear-gradient(145deg,#7c3aed,#5b21b6)}
+.tile .bd{position:absolute;top:10px;right:10px;font-size:8.5px;font-weight:900;border-radius:20px;padding:2px 7px;background:rgba(255,255,255,0.25)}
+.tile .ic{font-size:22px}.tile .fn{font-size:13px;font-weight:900;margin-top:5px}.tile .fd{font-size:9.5px;opacity:0.85;margin-top:2px}
+.tiles4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.t4{border:none;border-radius:14px;padding:12px;text-align:left;font-family:inherit;cursor:pointer;position:relative;min-height:76px}
+.t4.map{background:#fff7ed;border:1.5px solid #fed7aa}
+.t4.hall{background:#fffbeb;border:1.5px solid #fde68a}
+.t4.aha{background:#eff6ff;border:1.5px solid #bfdbfe}
+.t4.vod{background:#f5f3ff;border:1.5px solid #ddd6fe}
+.t4.rm{background:#ecfdf5;border:1.5px solid #a7f3d0}
+.t4.pl2{background:#faf5ff;border:1.5px solid #e9d5ff}
+.t4 .ic{font-size:20px}.t4 .fn{font-size:12.5px;font-weight:900;color:var(--navy);margin-top:4px}.t4 .fd{font-size:9px;color:#94a3b8;margin-top:1px}
+.t4 .bd{position:absolute;top:9px;right:9px;font-size:8px;font-weight:900;border-radius:20px;padding:2px 6px;background:#e8192c;color:#fff}
+.mission{background:#fef9c3;border:1px solid #fcd34d;border-radius:11px;padding:10px 12px;font-size:11px;font-weight:800;color:#0d2240;line-height:1.5}
+/* 복습 화면 */
+.scr-hd{background:linear-gradient(150deg,#0d2240,#1d3a60);color:#fff;padding:16px 16px 15px}
+.scr-hd .bk{font-size:12px;opacity:0.7;margin-bottom:8px}
+.scr-hd .t{font-size:18px;font-weight:900}
+.scr-hd .s{font-size:11px;opacity:0.75;margin-top:2px}
+.curve{background:rgba(255,255,255,0.07);border-radius:12px;padding:11px 12px 5px;margin-top:12px}
+.curve .cl{font-size:10.5px;font-weight:800;opacity:0.9;margin-bottom:2px}
+.sbody{padding:13px;display:flex;flex-direction:column;gap:10px}
+.qcard{background:#fff;border:1.5px solid #eef2f7;border-radius:13px;padding:12px}
+.qcard .qh{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.qcard .day{flex:none;border-radius:9px;padding:4px 8px;font-size:9.5px;font-weight:900}
+.d1{background:#fee2e2;color:#dc2626}.d3{background:#ffedd5;color:#c2410c}.d7{background:#e0f2fe;color:#0369a1}
+.qcard .nm{font-size:13px;font-weight:900;color:var(--navy)}
+.qcard .ty{font-size:10.5px;color:#94a3b8;margin-top:1px}
+.qcard .acts{display:flex;gap:7px;margin-top:9px}
+.qb{flex:1;border:none;border-radius:10px;padding:9px 0;font-size:11.5px;font-weight:800;font-family:inherit;cursor:pointer}
+.qb.re{background:var(--navy);color:#fff}
+.qb.new{background:#eff6ff;color:var(--mf);border:1.5px solid #bfdbfe}
+.qb.sol{background:#fff;color:#475569;border:1.5px solid #e2e8f0}
+.howbox{background:#f0f9ff;border:1px solid #bae6fd;border-radius:11px;padding:11px 13px;font-size:11px;color:#0c4a6e;line-height:1.7;font-weight:600}
+.bigbtn{border:none;border-radius:13px;padding:13px 0;font-size:13.5px;font-weight:900;font-family:inherit;background:#ffd54a;color:#0d2240;width:100%}
+.caption{max-width:840px;width:100%;font-size:11px;color:#64748b;text-align:center;font-weight:600;line-height:1.7}
+</style>
+</head>
+<body>
+
+<div class="note">🎨 <b>상의용 목업 v2</b> — 지적 반영: ① 홈을 <b>짧게</b> — 복습·약점 지도는 <b>눌러서 들어가는</b> 형태(홈엔 얇은 줄·타일만). ② 「지금 복습 시작」이 <b>어떻게 문제를 만드는지</b>를 복습 화면에 명시(오답 재도전 / 새 유사문제 매쓰플랫 생성).</div>
+
+<div class="row">
+  <!-- 짧아진 홈 -->
+  <div class="col">
+    <div class="lbl">① 홈 — 짧아짐 (한 화면에 거의 들어옴)</div>
+    <div class="phone">
+      <div class="hd">
+        <div class="logo"><div class="ic">🎓</div><div><div class="main">루멘수학</div><div class="sub">학생 전용 앱</div></div></div>
+        <div class="me"><div class="av">성</div><div><div class="nm">성재연</div><div class="gd">중1 · 수강중</div></div></div>
+      </div>
+      <div class="body">
+        <div class="strip"><span style="font-size:15px">📢</span><span class="t"><b>공지사항</b> · 8월 시험대비 특강</span><span class="ch">›</span></div>
+        <!-- 복습: 짧은 줄 하나. 누르면 복습 화면으로 -->
+        <div class="rvstrip">
+          <span class="ic">🔥</span>
+          <span class="m"><span class="t">오늘의 복습</span><span class="s">틀린 문제 다시 풀 시간이에요 · +30XP</span></span>
+          <span class="cnt">3</span><span class="ch">›</span>
+        </div>
+        <div class="tiles2">
+          <button class="tile red"><span class="bd">오늘</span><div class="ic">🎙️</div><div class="fn">하브루타 녹음</div><div class="fd">📌 이차함수 최댓값</div></button>
+          <button class="tile pl"><span class="bd" style="background:#fff;color:#7c3aed">오늘 제출</span><div class="ic">📓</div><div class="fn">플래너</div><div class="fd">오늘 제출·주간계획</div></button>
+        </div>
+        <div class="tiles4">
+          <button class="t4 map"><div class="ic">🗺️</div><div class="fn">약점 지도</div><div class="fd">내 취약 유형 보기</div></button>
+          <button class="t4 aha"><span class="bd">2</span><div class="ic">💡</div><div class="fn">아하노트</div><div class="fd">문제 질문하기</div></button>
+          <button class="t4 hall"><div class="ic">🏆</div><div class="fn">명예의 전당</div><div class="fd">이번 주 1등</div></button>
+          <button class="t4 vod"><span class="bd">NEW</span><div class="ic">🎬</div><div class="fn">강의실</div><div class="fd">배정 강의</div></button>
+          <button class="t4 rm"><div class="ic">🧭</div><div class="fn">로드맵</div><div class="fd">진도·여정</div></button>
+          <button class="t4 pl2"><div class="ic">📊</div><div class="fn">내 점수</div><div class="fd">플래너·랭킹</div></button>
+        </div>
+        <div class="mission">📌 오늘의 미션 — 오늘 배운 개념을 말로 설명해 보세요!</div>
+      </div>
+    </div>
+    <div class="caption">복습은 얇은 줄 하나(개수 배지). 약점 지도는 타일로. <br>복습할 게 없는 날은 줄이 사라져 더 짧아집니다.</div>
+  </div>
+
+  <!-- 복습 화면 -->
+  <div class="col">
+    <div class="lbl">② 🔥 오늘의 복습 (눌러서 들어간 화면)</div>
+    <div class="phone">
+      <div class="scr-hd">
+        <div class="bk">‹ 홈</div>
+        <div class="t">🔥 오늘의 복습</div>
+        <div class="s">틀린 문제는 1 → 3 → 7 → 14일마다 다시! 오늘 3문제</div>
+        <div class="curve">
+          <div class="cl">🧠 위치 관계 — 지금 복습하면 58% → 92%</div>
+          <svg viewBox="0 0 320 60" width="100%" style="overflow:visible">
+            <path d="M8,10 C50,40 120,54 312,58" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" stroke-dasharray="4 4"/>
+            <path d="M8,10 C22,30 32,40 40,44 L40,15 C70,36 110,44 128,46 L128,19 C180,38 220,44 236,46" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round"/>
+            <g font-size="8" fill="#ffd54a" font-weight="900"><text x="34" y="12">⚡1일</text><text x="120" y="15">⚡3일</text><text x="224" y="40">⚡오늘</text></g>
+            <circle cx="236" cy="46" r="4.5" fill="#ffd54a" stroke="#0d2240" stroke-width="2"/>
+          </svg>
+        </div>
+      </div>
+      <div class="sbody">
+        <div class="howbox">💡 <b>복습하는 법 — 2가지</b><br>① <b>다시 풀기</b>: 틀렸던 그 문제를 책으로 다시 풀고, 푼 사진을 올려요.<br>② <b>새 문제 풀기</b>: 같은 유형의 <b>새 문제를 매쓰플랫에 만들어</b> 드려요.</div>
+
+        <div class="qcard">
+          <div class="qh"><span class="day d1">1일차</span><div><div class="nm">RPM 중1-1 · p41 · 3번</div><div class="ty">점·직선·평면의 위치 관계 · 💡질문했던 문제</div></div></div>
+          <div class="acts">
+            <button class="qb re">📸 다시 풀고 올리기</button>
+            <button class="qb new">🧩 새 문제 풀기</button>
+            <button class="qb sol">🎬 풀이</button>
+          </div>
+        </div>
+        <div class="qcard">
+          <div class="qh"><span class="day d3">3일차</span><div><div class="nm">쎈 중2-2 · p84 · 312번</div><div class="ty">종이접기 각의 크기</div></div></div>
+          <div class="acts">
+            <button class="qb re">📸 다시 풀고 올리기</button>
+            <button class="qb new">🧩 새 문제 풀기</button>
+            <button class="qb sol">🎬 풀이</button>
+          </div>
+        </div>
+        <div class="qcard">
+          <div class="qh"><span class="day d7">7일차</span><div><div class="nm">07.21 주간테스트 · 18번</div><div class="ty">지수법칙 — 자릿수 구하기</div></div></div>
+          <div class="acts">
+            <button class="qb re">📸 다시 풀고 올리기</button>
+            <button class="qb new">🧩 새 문제 풀기</button>
+            <button class="qb sol">🎬 풀이</button>
+          </div>
+        </div>
+
+        <button class="bigbtn">🧩 3문제 한 번에 새 학습지로 (매쓰플랫)</button>
+      </div>
+    </div>
+    <div class="caption">「다시 풀고 올리기」 = 기존 재풀이 사진 제출 재사용(+XP). <br>「새 문제 풀기」 = 그 유형으로 매쓰플랫 학습지 자동 생성.<br>다시 풀어서 맞히면 복습 주기가 다음 단계로 넘어가요.</div>
+  </div>
+</div>
+
+<div class="note">🔑 <b>정직하게</b>: 앱이 수학 문제를 직접 그려내는 게 아닙니다. 우리가 아는 건 "무엇을 틀렸나"예요. 그래서 복습은 <b>①원래 문제를 다시 풀게 안내(문제 출처는 학생 책·아하노트 사진) + ②원하면 매쓰플랫에 같은 유형 새 학습지 생성</b> 두 갈래로 굴러갑니다. 둘 다 지금 데이터·API로 가능합니다.</div>
+
+</body>
+</html>
