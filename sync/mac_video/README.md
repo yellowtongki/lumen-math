@@ -29,6 +29,20 @@
 
 ## 준비 (처음 한 번만)
 
+### 가장 쉬운 방법 — 터미널에 한 줄 붙여넣기
+
+맥미니에서 **터미널**을 엽니다. (`Command + 스페이스` → `터미널` 입력 → 엔터)
+아래 한 줄을 **통째로 복사해 붙여넣고 엔터**를 누르세요.
+
+```
+mkdir -p ~/Desktop/영상이름정리 && cd ~/Desktop/영상이름정리 && for f in 1_scan.command 2_rename.command 3_autoname.command 4_matchedit.command timetable.txt README.md; do curl -fsSLO "https://raw.githubusercontent.com/yellowtongki/lumen-math/refs/heads/claude/mac-mini-lecture-video-rename-6ie3vv/sync/mac_video/$f"; done && chmod +x *.command && open .
+```
+
+바탕화면에 **`영상이름정리`** 폴더가 생기고 창이 열립니다. 준비 끝입니다.
+(실행 권한까지 자동으로 설정되므로 아래 3번은 하지 않아도 됩니다)
+
+### 또는 직접 옮기기
+
 1. 이 저장소를 맥미니로 내려받거나, 아래 파일들을 맥미니 **같은 폴더**(예: 바탕화면)에
    저장합니다. `timetable.txt` 는 `3_autoname.command` 와 **반드시 같은 폴더**에 있어야 합니다.
 
