@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>루멘수학 v17-25</title>
+<title>루멘수학 v17-26</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1690,7 +1690,7 @@ body{
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-size:11px;opacity:0.5;letter-spacing:1.2px;font-weight:600;text-transform:uppercase;margin-bottom:2px">🏫 루멘수학</div>
-          <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">LUMEN <span style="font-size:12px;opacity:0.45;font-weight:600">v17-25</span></div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">LUMEN <span style="font-size:12px;opacity:0.45;font-weight:600">v17-26</span></div>
         </div>
       </div>
       <!-- AI 전환 버튼 -->
@@ -4694,6 +4694,7 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v17-26',date:'2026',stability:'warn',memo:'📒 리커버리 운영 장부(이력) 신설 — 보드가 약속한 「기록이 쌓여 2학기 운영 장부가 됩니다」를 실제로 완성. [탭 전환] 리커버리 화면 상단에 「🚑 이번 주 보드 / 📒 운영 장부」 토글(RC.view). [장부 요약] 누적 리커버리 주(회차)·연인원(호출 합)·완료율·최다 대상 학생. [학생별 표] 호출 횟수·완료·완료율·최근 호출일 + 🔁연속 배지(반복 대상 조기 포착), 호출 많은 순. [주차별 타임라인] 토요일별 호출 명단(✅완료/⏳대기)과 완료 수. [기록 스냅샷] rcToggleCall(호출 ON)·rcMarkDone(완료) 시 그 시점의 학생명·반·주간점수·처방 요약(진짜구멍 수/처방 유형)을 call 항목에 저장(e.snap) — 이후 데이터가 바뀌거나 학생이 나가도 「그 주 리커버리가 무엇이었는지」가 남는다. 과거 기록은 스냅샷이 없으므로 현재 명단으로 이름만 보강. 데이터는 기존 rc_state(lumen_store)에 그대로 누적, 새 테이블 없음. CSV 내보내기 포함.'},
       {ver:'v17-25',date:'2026',stability:'warn',memo:'🎬 강의실 「단원」 아코디언 정리 + 퇴원생 배정 자동 제외. [단원 아코디언] 폴더(예: 공통수학2 판서) 안에서 영상을 「단원」으로 묶어 접기/펼치기 — 영상이 많아도 필요한 단원만 펼쳐 찾는다(매쓰플랫 강의 화면과 같은 방식). 단원은 원장님이 직접 「＋ 단원 추가」·이름수정·순서(▲▼)·삭제 가능(단원 삭제해도 영상은 「미분류」로 보존). 영상을 단원에 넣는 법: (1) 영상 상세의 「단원」 드롭다운, (2) 여러 영상 체크 후 일괄 바의 「단원으로 이동」. 학생앱에서도 같은 단원으로 접혀서 보인다(안 본 강의 있는 단원만 자동 펼침). [퇴원생] 강의배정·모니터링·배정 인원수에서 퇴원 학생 자동 제외(vodAssignOf가 표시 단계에서 걸러냄 — 원자료는 보존해 복귀 시 되살아남). 데이터: VOD_CATALOG.units[{id,folderId,name,order}] + video.unitId. 카탈로그는 lumen_store로 동기화되어 학생앱에 그대로 반영.'},
       {ver:'v17-24',date:'2026',stability:'warn',memo:'🚑 리커버리 보드 업그레이드 (토요일 클리닉·종이 중심). [요약 스트립] 상단에 대상 N명(🔥 두 기준 겹침 수)·호출 확정 N/N·처방 약점 유형 수·「📄 종이 학습지 인쇄」 카드. [종이 학습지 인쇄] rcPrint — 호출 확정 학생(없으면 선발 전원) 1인 1장 인쇄창. 학생별 약점 유형 목록(🔴진짜 구멍/🟡실전만 약함/🔵예전 내용 판정 + 교재 정답률·쪽·시험 오답 문항 수) + 체크박스 + 확인란. 문제 자체는 매쓰플랫 유형분석에서 그 유형으로 학습지를 만들어 붙이거나 교재 해당 쪽 재풀이(B-1 반자동). 하단 요약 바에도 📄 종이 인쇄 버튼 추가. 선발·판정(hole/prac/old)·호출·완료·학부모 안내문은 v17-6 그대로. ⚠ 매쓰플랫 완전 자동 학습지 생성은 API 요청 본문 확보 후 별도(B-2).'},
       {ver:'v17-19',date:'2026',stability:'warn',memo:'📅 출결·보충 관리 버그 수정 + 개선. [버그1] 개별 학생 달력에서 결석 칸을 한 번만 눌러도 사유·보충 정보가 통째로 지워지던 문제 — 이제는 클릭 시 사유를 보고/수정하는 창이 뜨고, 실제 결석 취소는 오른쪽 「🩹 결석 보충 관리」의 별도 「결석 취소」 버튼(확인창 포함)에서만 하도록 분리. [버그2] 보충 지정 시 날짜를 안 바꾸고 누르면 결석일=보충일이 되며 기록이 자기참조로 깨져(상태가 planned로 바뀌며 목록에서 사라짐) 취소도 못 하던 사고 — 보충일 기본값을 결석일+7일로, 같은 날 지정은 막고 안내, 이미 깨진 기록은 여는 즉시 자동 복구. [개선1] 월간 캘린더 우측 「명단」에서 학생 이름을 누르면 그 학생 개별 페이지로 바로 이동(결석 이유 확인·수정). [개선2] 월간 캘린더 상단에 「이번 달 결석·보충 현황」 요약 카드 신설(미보충/보충예정 학생을 날짜순 칩으로 한눈에, 클릭시 해당 날짜로 이동) + 날짜 칸 뱃지를 미보충/예정/완료로 세분화.'},
@@ -8680,7 +8681,7 @@ function rBookProgTl(){
  * 주말 보충 자동 선발: ①주간테스트 기준점 미만 ②교재 단원 정답률 기준 미만.
  * 시험 오답 유형의 단원을 교재 단원 정답률과 대조해 처방(진짜 구멍/실전 약함) 자동 생성.
  * 기준=rc_config, 호출·완료 기록=rc_state (모든 기기 공유). */
-var RC={kicked:false,loaded:false,cfg:{minScore:80,minUnit:60,weeks:3},state:{calls:{}}};
+var RC={kicked:false,loaded:false,view:'board',cfg:{minScore:80,minUnit:60,weeks:3},state:{calls:{}}};  // ★ v17-26: view = 'board' | 'ledger'
 async function rcLoad(force){
   if(RC.loaded&&!force) return;
   var sb=getSupaClient(); if(!sb){ RC.loaded=true; return; }
@@ -8707,16 +8708,29 @@ window.rcEditCfg=function(which){
   if(which==='score') RC.cfg.minScore=n; else if(which==='unit') RC.cfg.minUnit=n; else RC.cfg.weeks=Math.min(12,n);
   rcSaveCfg(); render();
 };
+window.rcSetView=function(v){ RC.view=v; render(); };
+// ★ v17-26: 호출/완료 시 그 시점의 「무엇이었는지」를 기록에 남긴다 (이후 데이터가 바뀌어도 장부에 보존)
+function rcSnapOf(k){
+  try{
+    var row=rcRows().find(function(x){ return x.stKey===k; });
+    if(!row) return null;
+    var holes=(row.match||[]).filter(function(m){ return m.verdict==='hole'; }).length;
+    return { name:row.st.name, group:row.st.group||'', grade:row.st.grade||'',
+      score:(row.testHit?row.testHit.score:null), rx:(row.rx||[]).slice(0,3), holes:holes,
+      rxN:(row.match&&row.match.length)?row.match.length:(row.rx?row.rx.length:0) };
+  }catch(e){ return null; }
+}
 window.rcToggleCall=function(k){
   var wk=rcWeekKey(); var W=RC.state.calls[wk]=RC.state.calls[wk]||{};
   var e=W[k]=W[k]||{};
   e.on=!e.on;
+  if(e.on){ var s=rcSnapOf(k); if(s) e.snap=s; }   // 호출 켤 때 스냅샷
   rcSaveState(); render();
 };
 window.rcMarkDone=function(k){
   var wk=rcWeekKey(); var W=RC.state.calls[wk]=RC.state.calls[wk]||{};
   var e=W[k]=W[k]||{};
-  if(e.done){ delete e.done; } else { e.done=new Date().toISOString().slice(0,10); e.on=true; }
+  if(e.done){ delete e.done; } else { e.done=new Date().toISOString().slice(0,10); e.on=true; if(!e.snap){ var s=rcSnapOf(k); if(s) e.snap=s; } }
   rcSaveState(); render();
 };
 function rcNrm(x){ return String(x||'').replace(/[\s\.\-–·()\[\]0-9ⅠⅡⅢⅣⅤⅥⅦ]/g,'').toLowerCase(); }
@@ -8878,6 +8892,10 @@ function rRecovery(){
   h+='<div style="font-size:22px;font-weight:900;color:#0d2240">🚑 리커버리 수업</div>';
   h+='<div style="font-size:12px;color:#94a3b8;font-weight:600">자동 선발 · 원장님이 호출 확정 · 완료까지 기록</div>';
   h+='<button onclick="rcLoad(true).then(function(){render()})" style="margin-left:auto;border:1px solid #e2e8f0;background:white;color:#64748b;font-family:inherit;font-size:10.5px;font-weight:800;padding:5px 11px;border-radius:50px;cursor:pointer">🔄 새로고침</button></div>';
+  // ★ v17-26: 보드 / 운영 장부 전환
+  var tb=function(v,label){ var on=(RC.view===v); return '<button onclick="rcSetView(\''+v+'\')" style="border:none;font-family:inherit;font-size:14px;font-weight:900;padding:9px 18px;border-radius:10px;cursor:pointer;'+(on?'background:#0d2240;color:#fff':'background:transparent;color:#64748b')+'">'+label+'</button>'; };
+  h+='<div style="display:inline-flex;background:#f1f5f9;border-radius:12px;padding:4px;gap:4px;margin-bottom:14px">'+tb('board','🚑 이번 주 보드')+tb('ledger','📒 운영 장부')+'</div>';
+  if(RC.view==='ledger'){ h+=rcLedger(); h+='</div>'; return h; }
   // 기준
   h+='<div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:13px;padding:11px 14px;font-size:13px;font-weight:800;color:#475569;margin-bottom:14px;display:flex;gap:9px;align-items:center;flex-wrap:wrap">선발 기준:';
   h+='<button onclick="rcEditCfg(\'score\')" style="background:#fff;border:1.5px solid #cbd5e1;border-radius:50px;padding:5px 13px;font-size:13px;font-weight:900;color:#0d2240;cursor:pointer;font-family:inherit">주간테스트 '+RC.cfg.minScore+'점 미만 ✎</button>';
@@ -8947,6 +8965,128 @@ function rRecovery(){
   h+='</div>';
   return h;
 }
+
+/* ═══════ v17-26: 리커버리 운영 장부(이력) ═══════
+ * 데이터는 rc_state(RC.state.calls, lumen_store)를 그대로 읽어 주차별·학생별로 집계.
+ * e.snap = 호출/완료 시점의 스냅샷(이름·반·주간점수·처방 수·진짜구멍 수) — 없으면 현재 명단으로 보강. */
+function rcNameOf(k, snap){
+  if(snap&&snap.name) return snap.name;
+  var arr=(typeof students!=='undefined'&&students)||[];
+  var s=arr.find(function(x){ return String(x.id)===String(k)||x.name===k; });
+  return s?s.name:k;
+}
+function rcGroupOf(k, snap){
+  if(snap&&snap.group) return snap.group;
+  var arr=(typeof students!=='undefined'&&students)||[];
+  var s=arr.find(function(x){ return String(x.id)===String(k)||x.name===k; });
+  return s?(s.group||''):'';
+}
+function rcFmtW(wk){ var d=new Date(wk); if(isNaN(d)) return wk; return (d.getMonth()+1)+'.'+d.getDate(); }
+function rcLedgerData(){
+  var calls=RC.state.calls||{};
+  var weeks=Object.keys(calls).filter(function(wk){
+    var W=calls[wk]||{}; return Object.keys(W).some(function(k){ var e=W[k]; return e&&(e.on||e.done); });
+  }).sort().reverse();
+  var perStu={}, weekRows=[], totCall=0, totDone=0;
+  weeks.forEach(function(wk){
+    var W=calls[wk]||{}; var called=[];
+    Object.keys(W).forEach(function(k){
+      var e=W[k]; if(!e||!(e.on||e.done)) return;
+      var nm=rcNameOf(k,e.snap), grp=rcGroupOf(k,e.snap);
+      called.push({ k:k, nm:nm, grp:grp, done:e.done||'', snap:e.snap||null });
+      totCall++; if(e.done) totDone++;
+      var p=perStu[k]=perStu[k]||{ k:k, nm:nm, grp:grp, calls:0, dones:0, last:'', weeks:[], lastSnap:null };
+      p.nm=nm; p.grp=grp; p.calls++; if(e.done) p.dones++;
+      if(wk>p.last){ p.last=wk; p.lastSnap=e.snap||p.lastSnap; }
+      p.weeks.push(wk);
+    });
+    called.sort(function(a,b){ return (b.done?1:0)-(a.done?1:0)||a.nm.localeCompare(b.nm,'ko'); });
+    weekRows.push({ wk:wk, called:called, doneN:called.filter(function(c){return c.done;}).length });
+  });
+  var stuRows=Object.keys(perStu).map(function(k){ return perStu[k]; });
+  stuRows.forEach(function(p){
+    var ws=p.weeks.slice().sort(); var maxRun=1, run=1;
+    for(var i=1;i<ws.length;i++){ var diff=(new Date(ws[i])-new Date(ws[i-1]))/86400000; if(diff<=7.5){ run++; if(run>maxRun) maxRun=run; } else run=1; }
+    p.streak=maxRun;
+  });
+  stuRows.sort(function(a,b){ return (b.calls-a.calls)||(b.dones-a.dones)||a.nm.localeCompare(b.nm,'ko'); });
+  return { weeks:weeks, weekRows:weekRows, stuRows:stuRows, totCall:totCall, totDone:totDone };
+}
+function rcLedger(){
+  var D=rcLedgerData();
+  var h='';
+  if(!D.weeks.length){
+    return '<div style="padding:50px 20px;text-align:center;color:#94a3b8">'
+      +'<div style="font-size:40px">📒</div>'
+      +'<div style="font-size:16px;font-weight:800;color:#0d2240;margin-top:8px">아직 리커버리 기록이 없습니다</div>'
+      +'<div style="font-size:13px;margin-top:6px">「🚑 이번 주 보드」에서 학생을 <b>호출</b>하고 보충 후 <b>완료 처리</b>하면<br>여기에 주차별로 차곡차곡 쌓입니다.</div></div>';
+  }
+  var rate=D.totCall?Math.round(D.totDone/D.totCall*100):0;
+  var top=D.stuRows[0];
+  var card=function(l,v,sub,cls){
+    return '<div style="flex:1;min-width:130px;background:'+(cls==='b'?'#eff6ff':cls==='g'?'#f0fdf4':cls==='y'?'#fffbeb':'#f8fafc')+';border-left:4px solid '+(cls==='b'?'#3b82f6':cls==='g'?'#22c55e':cls==='y'?'#f59e0b':'#cbd5e1')+';border-radius:13px;padding:12px 15px">'
+      +'<div style="font-size:11px;color:#64748b;font-weight:800">'+l+'</div>'
+      +'<div style="font-size:23px;font-weight:900;color:#0d2240;line-height:1.15;margin-top:2px">'+v+(sub?' <span style="font-size:12px;color:#94a3b8;font-weight:800">'+sub+'</span>':'')+'</div></div>';
+  };
+  h+='<div style="display:flex;gap:11px;margin-bottom:16px;flex-wrap:wrap">';
+  h+=card('📅 진행한 리커버리', D.weeks.length, '회차', 'b');
+  h+=card('👥 누적 호출 연인원', D.totCall, '명', '');
+  h+=card('✅ 완료율', rate+'%', D.totDone+'/'+D.totCall, 'g');
+  h+=card('🔁 최다 대상', top?esc2(top.nm):'—', top?(top.calls+'회'):'', 'y');
+  h+='</div>';
+  h+='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;margin-bottom:16px">';
+  h+='<div style="display:flex;align-items:center;padding:11px 15px;background:#f8fafc;border-bottom:1px solid #e2e8f0">'
+    +'<span style="font-size:14px;font-weight:900;color:#0d2240">👥 학생별 리커버리 누적</span>'
+    +'<span style="font-size:11px;color:#94a3b8;font-weight:700;margin-left:8px">호출 많은 순 · 🔁=반복 대상(구멍이 안 메워지는 신호)</span>'
+    +'<button onclick="rcLedgerCsv()" style="margin-left:auto;border:1px solid #cbd5e1;background:#fff;color:#475569;font-family:inherit;font-size:11px;font-weight:800;padding:6px 12px;border-radius:8px;cursor:pointer">⬇ CSV 내보내기</button></div>';
+  h+='<div style="display:flex;padding:8px 15px;font-size:11px;font-weight:800;color:#94a3b8;border-bottom:1px solid #f1f5f9">'
+    +'<span style="width:22%">이름</span><span style="width:15%">반</span><span style="width:12%;text-align:center">호출</span><span style="width:12%;text-align:center">완료</span><span style="width:19%">완료율</span><span style="width:20%">최근 · 처방</span></div>';
+  D.stuRows.forEach(function(p){
+    var pr=p.calls?Math.round(p.dones/p.calls*100):0;
+    var barCol=pr>=100?'#10b981':(pr>=50?'#1d6fe8':'#f59e0b');
+    var repeat=(p.streak>=2)||(p.calls>=3);
+    var snapTxt=p.lastSnap?((p.lastSnap.score!=null?p.lastSnap.score+'점':'')+(p.lastSnap.holes?' · 🔴'+p.lastSnap.holes:'')):'';
+    h+='<div style="display:flex;align-items:center;padding:10px 15px;border-bottom:1px solid #f1f5f9;font-size:13px;background:'+(repeat?'#fff7ed':'#fff')+'">';
+    h+='<span style="width:22%;font-weight:900;color:#0d2240">'+esc2(p.nm)+(repeat?' <span style="font-size:10px;font-weight:900;background:#fed7aa;color:#9a3412;border-radius:20px;padding:2px 7px">🔁'+(p.streak>=2?p.streak+'주 연속':p.calls+'회')+'</span>':'')+'</span>';
+    h+='<span style="width:15%;color:#64748b;font-weight:700">'+esc2(p.grp||'—')+'</span>';
+    h+='<span style="width:12%;text-align:center;font-weight:900;color:#0d2240">'+p.calls+'회</span>';
+    h+='<span style="width:12%;text-align:center;font-weight:800;color:#15803d">'+p.dones+'회</span>';
+    h+='<span style="width:19%;display:flex;align-items:center;gap:7px"><span style="flex:1;max-width:90px;height:7px;background:#eef2f7;border-radius:5px;overflow:hidden"><i style="display:block;height:100%;width:'+pr+'%;background:'+barCol+'"></i></span><b style="color:'+barCol+'">'+pr+'%</b></span>';
+    h+='<span style="width:20%;font-size:11.5px;color:#94a3b8;font-weight:700">'+rcFmtW(p.last)+' 토'+(snapTxt?' · '+esc2(snapTxt):'')+'</span>';
+    h+='</div>';
+  });
+  h+='</div>';
+  h+='<div style="font-size:14px;font-weight:900;color:#0d2240;margin:0 2px 10px">📅 주차별 기록 <span style="font-size:11px;color:#94a3b8;font-weight:700">최근 순</span></div>';
+  D.weekRows.forEach(function(w){
+    var d=new Date(w.wk); var mon=d.getMonth()+1, day=d.getDate();
+    h+='<div style="border:1px solid #e2e8f0;border-radius:13px;padding:12px 15px;margin-bottom:10px;background:#fff">';
+    h+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">';
+    h+='<span style="font-size:15px;font-weight:900;color:#0d2240">'+mon+'월 '+day+'일 (토)</span>';
+    h+='<span style="font-size:12px;font-weight:800;color:#64748b">호출 '+w.called.length+'명 · <span style="color:#15803d">완료 '+w.doneN+'명</span></span>';
+    var wr=w.called.length?Math.round(w.doneN/w.called.length*100):0;
+    h+='<span style="margin-left:auto;font-size:12px;font-weight:900;color:'+(wr>=100?'#10b981':wr>=50?'#1d6fe8':'#f59e0b')+'">'+wr+'%</span>';
+    h+='</div>';
+    h+='<div style="display:flex;gap:7px;flex-wrap:wrap">';
+    w.called.forEach(function(c){
+      var done=!!c.done;
+      var tip=c.snap?((c.snap.score!=null?'주간 '+c.snap.score+'점':'')+(c.snap.holes?' · 진짜구멍 '+c.snap.holes:'')+(c.snap.rxN?' · 처방 '+c.snap.rxN+'유형':'')):'';
+      h+='<span title="'+esc2(tip)+'" style="font-size:12.5px;font-weight:800;border-radius:9px;padding:5px 11px;'+(done?'background:#dcfce7;color:#15803d':'background:#fef3c7;color:#92400e')+'">'+(done?'✅ ':'⏳ ')+esc2(c.nm)+(c.grp?' <span style="opacity:.6;font-size:10px">'+esc2(c.grp)+'</span>':'')+'</span>';
+    });
+    h+='</div></div>';
+  });
+  return h;
+}
+window.rcLedgerCsv=function(){
+  var D=rcLedgerData();
+  var rows=[['주(토요일)','이름','반','상태','완료일','주간점수','진짜구멍수','처방유형수']];
+  D.weekRows.forEach(function(w){
+    w.called.forEach(function(c){
+      var s=c.snap||{};
+      rows.push([w.wk, c.nm, c.grp, c.done?'완료':'미완료', c.done||'', (s.score!=null?s.score:''), (s.holes!=null?s.holes:''), (s.rxN!=null?s.rxN:'')]);
+    });
+  });
+  attDownloadCsv('리커버리_운영장부.csv', rows);
+};
 
 /* ═══════ v16-44: 주간테스트 명예의 전당 (홈 카드 + 학생앱 발표) ═══════
  * 등수 기준 = 같은 시험지(worksheet)를 푼 학생 전원 (학년·요일 무관 — 수·목 반 합산, 선행 포함).
