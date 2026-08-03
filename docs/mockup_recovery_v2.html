@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 · 🚑 리커버리 보드 업그레이드 (상의용)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{ --navy:#0d2240; --navy2:#1d3a60; --red:#e8192c; --g:#22c55e; --y:#f59e0b; --r:#ef4444; --mf:#1d6fe8; }
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#e9edf3;padding:24px 12px 80px;display:flex;flex-direction:column;align-items:center;gap:20px}
+.note{max-width:1080px;width:100%;background:#fffbe8;border:1.5px solid #fbbf24;border-radius:12px;padding:12px 15px;font-size:12.5px;line-height:1.7;color:#78350f;font-weight:600}
+.lbl{max-width:1080px;width:100%;font-size:14px;font-weight:900;color:#0d2240;padding-left:4px}
+.desk{max-width:1080px;width:100%;background:#f6f8fb;border-radius:18px;box-shadow:0 10px 34px rgba(13,34,64,0.18);overflow:hidden;border:1px solid #dbe3ee}
+.dhd{background:linear-gradient(120deg,#0d2240,#1d3a60);color:#fff;padding:16px 20px;display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+.dhd .ic{font-size:26px}
+.dhd .t{font-size:19px;font-weight:900}
+.dhd .s{font-size:11px;opacity:0.7;margin-top:1px}
+.dhd .rt{margin-left:auto;display:flex;gap:8px;align-items:center}
+.crit{background:rgba(255,255,255,0.1);border-radius:10px;padding:7px 12px;font-size:11px;font-weight:800}
+.crit b{color:#ffd54a}
+/* 요약 스트립 */
+.summary{display:flex;gap:12px;padding:14px 18px;background:#fff;border-bottom:1px solid #eef2f7;flex-wrap:wrap}
+.sbox{flex:1;min-width:120px;background:#f8fafc;border-radius:13px;padding:12px 14px;border-left:4px solid #cbd5e1}
+.sbox.red{border-color:var(--r);background:#fef2f2}
+.sbox.y{border-color:var(--y);background:#fffbeb}
+.sbox.g{border-color:var(--g);background:#f0fdf4}
+.sbox .l{font-size:11px;color:#64748b;font-weight:800}
+.sbox .v{font-size:26px;font-weight:900;color:var(--navy);line-height:1.1;margin-top:3px}
+.sbox .v small{font-size:13px;color:#94a3b8;font-weight:800}
+/* 본문 */
+.body{padding:16px 18px;display:flex;flex-direction:column;gap:11px}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
+.seg{display:flex;background:#eef2f7;border-radius:9px;padding:3px}
+.seg button{border:none;background:none;font-family:inherit;font-size:12px;font-weight:800;color:#64748b;padding:6px 13px;border-radius:7px;cursor:pointer}
+.seg button.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.spacer{margin-left:auto}
+.pbtn{border:none;border-radius:10px;padding:9px 15px;font-size:12.5px;font-weight:900;font-family:inherit;cursor:pointer}
+.pbtn.print{background:var(--navy);color:#fff}
+.pbtn.sms{background:#fff;border:1.5px solid #cbd5e1;color:#475569}
+/* 학생 카드 */
+.rcard{background:#fff;border:1.5px solid #eef2f7;border-radius:15px;padding:0;overflow:hidden}
+.rc-head{display:flex;align-items:center;gap:12px;padding:13px 15px;cursor:pointer}
+.rc-sev{flex:none;width:52px;height:52px;border-radius:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:900}
+.rc-sev.hi{background:linear-gradient(145deg,#dc2626,#991b1b)}
+.rc-sev.mid{background:linear-gradient(145deg,#f59e0b,#b45309)}
+.rc-sev .n{font-size:19px;line-height:1}
+.rc-sev .u{font-size:8.5px;opacity:0.85;margin-top:2px}
+.rc-info{flex:1;min-width:0}
+.rc-info .nm{font-size:15px;font-weight:900;color:var(--navy)}
+.rc-info .nm .cls{font-size:11px;color:#94a3b8;font-weight:700;margin-left:5px}
+.rc-metrics{display:flex;gap:8px;margin-top:5px;flex-wrap:wrap}
+.metric{font-size:11px;font-weight:800;border-radius:20px;padding:3px 9px;display:flex;align-items:center;gap:4px}
+.metric.test{background:#fee2e2;color:#dc2626}
+.metric.unit{background:#fff7ed;color:#c2410c}
+.metric.aha{background:#eff6ff;color:#1d4ed8}
+.rc-status{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.callbtn{border:none;border-radius:20px;padding:7px 14px;font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer;background:var(--navy);color:#fff}
+.callbtn.on{background:#dcfce7;color:#166534}
+.rc-body{padding:0 15px 14px 79px;border-top:1px dashed #eef2f7}
+.presc-t{font-size:11px;font-weight:900;color:#64748b;margin:11px 0 7px}
+.prow{display:grid;grid-template-columns:1fr 78px 96px;gap:8px;align-items:center;padding:7px 10px;background:#f8fafc;border-radius:9px;margin-bottom:5px}
+.prow .un{font-size:12px;font-weight:800;color:#334155}
+.prow .un .why{font-size:9.5px;font-weight:800;border-radius:8px;padding:1px 6px;margin-left:5px}
+.why.hole{background:#fee2e2;color:#dc2626}
+.why.slip{background:#fef3c7;color:#b45309}
+.prow .rate{font-size:11px;font-weight:900;text-align:center}
+.prow .src{font-size:10px;color:#94a3b8;font-weight:700;text-align:right}
+.papernote{font-size:10.5px;color:#0369a1;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:8px 10px;margin-top:6px;line-height:1.6}
+/* 종이 프린트 미리보기 */
+.paper{max-width:400px;width:100%;background:#fff;border:1px solid #d1d5db;border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,0.12);padding:24px 22px;font-family:'Times New Roman',serif}
+.paper .ph{text-align:center;border-bottom:2px solid #0d2240;padding-bottom:10px;margin-bottom:14px}
+.paper .ph .tt{font-size:18px;font-weight:900;color:#0d2240;font-family:'Apple SD Gothic Neo',sans-serif}
+.paper .ph .sub{font-size:11px;color:#64748b;margin-top:3px;font-family:'Apple SD Gothic Neo',sans-serif}
+.paper .prow2{display:flex;align-items:center;gap:8px;padding:9px 4px;border-bottom:1px solid #eee}
+.paper .box{width:20px;height:20px;border:1.5px solid #94a3b8;border-radius:4px;flex:none}
+.paper .qd{flex:1;font-family:'Apple SD Gothic Neo',sans-serif}
+.paper .qd .b{font-size:13px;font-weight:800;color:#0d2240}
+.paper .qd .s{font-size:10.5px;color:#64748b;margin-top:1px}
+.caption{max-width:1080px;width:100%;font-size:11.5px;color:#64748b;font-weight:600;line-height:1.7;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="note">🎨 <b>상의용 목업</b> — 기존 🚑 리커버리 보드(v17-6)를 <b>토요일 리커버리(종이·강제)</b>에 맞춰 시각 업그레이드. 선발 = <b>그 주 주간테스트 점수 + 교재 단원 정오답율</b>. 각 학생별 「다시 풀 오답 처방」을 <b>종이 학습지로 프린트</b>. 학생앱은 안 쓰고 <b>선생님 화면 + 종이</b>로 굴러갑니다.</div>
+
+<div class="lbl">① 학원앱 — 🚑 리커버리 보드 (업그레이드)</div>
+<div class="desk">
+  <div class="dhd">
+    <span class="ic">🚑</span>
+    <div><div class="t">리커버리 — 이번 주 토요일</div><div class="s">8/2(토) 오후 · 주간테스트 + 교재 정답률로 자동 선발</div></div>
+    <div class="rt">
+      <span class="crit">선발 기준: 주간 <b>80점</b> 미만 · 단원 <b>60%</b> 미만 ⚙</span>
+    </div>
+  </div>
+  <div class="summary">
+    <div class="sbox red"><div class="l">🚨 리커버리 대상</div><div class="v">7<small>명</small></div></div>
+    <div class="sbox y"><div class="l">📞 호출 완료</div><div class="v">5<small>/7명</small></div></div>
+    <div class="sbox g"><div class="l">🧩 처방 문항</div><div class="v">38<small>문항</small></div></div>
+    <div class="sbox"><div class="l">📄 종이 학습지</div><div class="v">준비<small> 완료</small></div></div>
+  </div>
+  <div class="body">
+    <div class="toolbar">
+      <div class="seg"><button class="on">위험순</button><button>반별</button><button>미호출만</button></div>
+      <div class="spacer"></div>
+      <button class="pbtn print">📄 7명 종이 학습지 한 번에 인쇄</button>
+      <button class="pbtn sms">📩 미호출 2명 안내문자</button>
+    </div>
+
+    <!-- 학생 카드 1 (펼침) -->
+    <div class="rcard">
+      <div class="rc-head">
+        <div class="rc-sev hi"><span class="n">3</span><span class="u">약점 단원</span></div>
+        <div class="rc-info">
+          <div class="nm">성재연 <span class="cls">중1 · 통합반</span></div>
+          <div class="rc-metrics">
+            <span class="metric test">📉 주간 66점</span>
+            <span class="metric unit">📚 위치관계 42%</span>
+            <span class="metric unit">📚 평행선 48%</span>
+            <span class="metric aha">💡 아하 3</span>
+          </div>
+        </div>
+        <div class="rc-status">
+          <button class="callbtn on">✓ 호출 완료</button>
+          <span style="font-size:9.5px;color:#94a3b8;font-weight:700">▲ 처방 접기</span>
+        </div>
+      </div>
+      <div class="rc-body">
+        <div class="presc-t">🧩 토요일에 다시 풀 문항 (자동 처방 · 종이 출력)</div>
+        <div class="prow"><span class="un">점·직선·평면의 위치 관계 <span class="why hole">진짜 구멍</span></span><span class="rate" style="color:var(--r)">42%</span><span class="src">교재+주간 오답</span></div>
+        <div class="prow"><span class="un">평행선의 활용 <span class="why hole">진짜 구멍</span></span><span class="rate" style="color:var(--r)">48%</span><span class="src">교재 오답 4</span></div>
+        <div class="prow"><span class="un">직각삼각형의 합동 <span class="why slip">실전만 약함</span></span><span class="rate" style="color:var(--y)">55%</span><span class="src">주간테스트 오답</span></div>
+        <div class="papernote">📄 이 3유형 × 각 4문항 = <b>12문항</b>이 성재연 종이 학습지로 나옵니다. 「진짜 구멍」(교재도 틀림)은 개념부터, 「실전만 약함」(교재는 맞는데 시험서 틀림)은 실전 유형 위주로 자동 구성.</div>
+      </div>
+    </div>
+
+    <!-- 학생 카드 2 (접힘) -->
+    <div class="rcard">
+      <div class="rc-head">
+        <div class="rc-sev hi"><span class="n">3</span><span class="u">약점 단원</span></div>
+        <div class="rc-info">
+          <div class="nm">한소율 <span class="cls">중1 · 통합반</span></div>
+          <div class="rc-metrics">
+            <span class="metric test">📉 주간 71점</span>
+            <span class="metric unit">📚 작도 52%</span>
+            <span class="metric unit">📚 합동 58%</span>
+          </div>
+        </div>
+        <div class="rc-status"><button class="callbtn on">✓ 호출 완료</button><span style="font-size:9.5px;color:#94a3b8;font-weight:700">▼ 처방 보기</span></div>
+      </div>
+    </div>
+
+    <!-- 학생 카드 3 (접힘 · 미호출) -->
+    <div class="rcard" style="border-color:#fecaca">
+      <div class="rc-head">
+        <div class="rc-sev mid"><span class="n">2</span><span class="u">약점 단원</span></div>
+        <div class="rc-info">
+          <div class="nm">옥서정 <span class="cls">중1 · 통합반</span></div>
+          <div class="rc-metrics">
+            <span class="metric test">📉 주간 74점</span>
+            <span class="metric unit">📚 위치관계 55%</span>
+          </div>
+        </div>
+        <div class="rc-status"><button class="callbtn">📞 호출하기</button><span style="font-size:9.5px;color:#dc2626;font-weight:800">아직 미호출</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lbl">② 종이 학습지 — 프린트 미리보기 (학생별 1장)</div>
+<div class="paper">
+  <div class="ph"><div class="tt">🚑 리커버리 학습지 — 성재연</div><div class="sub">루멘수학 · 8월 2일(토) · 다시 풀 12문항</div></div>
+  <div class="prow2"><span class="box"></span><div class="qd"><div class="b">1. 위치 관계 — RPM 중1-1 p41 · 3번</div><div class="s">진짜 구멍 · 지난 시험 틀림 + 교재도 틀림</div></div></div>
+  <div class="prow2"><span class="box"></span><div class="qd"><div class="b">2. 위치 관계 — 쎈 중1-1 p78 · 12번</div><div class="s">진짜 구멍</div></div></div>
+  <div class="prow2"><span class="box"></span><div class="qd"><div class="b">3. 평행선의 활용 — 개념원리 p92 · 15번</div><div class="s">진짜 구멍</div></div></div>
+  <div class="prow2"><span class="box"></span><div class="qd"><div class="b">4. 직각삼각형 합동 — 07.28 학습지 · 5번</div><div class="s">실전만 약함 · 다시 풀기</div></div></div>
+  <div style="text-align:center;font-size:10px;color:#94a3b8;margin-top:12px;font-family:'Apple SD Gothic Neo',sans-serif">… 외 8문항 · 다 풀면 선생님께 확인받으세요 ✍️</div>
+</div>
+
+<div class="caption">「📄 인쇄」를 누르면 <b>대상 학생 전원의 종이 학습지가 한 번에</b> 나옵니다 (학생마다 자기 오답으로 구성).<br>토요일에 종이로 풀고 → 선생님이 채점·확인하면 → 그 유형이 「복습 완료」로 기록되고 다음 망각곡선 주기로 넘어갑니다.</div>
+
+<div class="note">🔑 <b>이 방식의 핵심</b>: ① 학생 자율 없음 — 선생님이 보드에서 대상 확인 → 종이 인쇄 → 토요일 강제 풀이. ② 문항은 <b>학생이 실제로 틀린 교재·시험 문제</b>(새 문제 생성·매쓰플랫 프리미엄 불필요, 종이라 태블릿도 불필요). ③ 「진짜 구멍」(교재도 틀림) vs 「실전만 약함」(교재는 맞는데 시험서 틀림) 구분으로 <b>같은 오답도 처방이 달라짐</b> — 이게 매쓰플랫 챌린지엔 없는 우리만의 강점.</div>
+
+</body>
+</html>
