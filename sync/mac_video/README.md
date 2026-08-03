@@ -35,11 +35,15 @@
 아래 한 줄을 **통째로 복사해 붙여넣고 엔터**를 누르세요.
 
 ```
-mkdir -p ~/Desktop/영상이름정리 && cd ~/Desktop/영상이름정리 && for f in 1_scan.command 2_rename.command 3_autoname.command 4_matchedit.command timetable.txt README.md; do curl -fsSLO "https://raw.githubusercontent.com/yellowtongki/lumen-math/refs/heads/claude/mac-mini-lecture-video-rename-6ie3vv/sync/mac_video/$f"; done && chmod +x *.command && open .
+mkdir -p ~/Desktop/영상이름정리 && cd ~/Desktop/영상이름정리 && B=https://raw.githubusercontent.com/yellowtongki/lumen-math/refs/heads/claude/mac-mini-lecture-video-rename-6ie3vv/sync/mac_video && for f in 1_scan.command 2_rename.command 3_autoname.command 4_matchedit.command README.md; do curl -fsSLO "$B/$f"; done && { [ -f timetable.txt ] || curl -fsSLO "$B/timetable.txt"; } && chmod +x *.command && open .
 ```
 
 바탕화면에 **`영상이름정리`** 폴더가 생기고 창이 열립니다. 준비 끝입니다.
 (실행 권한까지 자동으로 설정되므로 아래 3번은 하지 않아도 됩니다)
+
+> **도구가 갱신되면 같은 명령을 다시 붙여넣으면 됩니다.**
+> 원장님이 고친 `timetable.txt` 는 **덮어쓰지 않습니다.**
+> (시간표를 처음 상태로 되돌리고 싶을 때만 그 파일을 지우고 다시 실행하세요)
 
 ### 또는 직접 옮기기
 
