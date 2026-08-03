@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>루멘수학 v17-24</title>
+<title>루멘수학 v17-25</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1690,7 +1690,7 @@ body{
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-size:11px;opacity:0.5;letter-spacing:1.2px;font-weight:600;text-transform:uppercase;margin-bottom:2px">🏫 루멘수학</div>
-          <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">LUMEN <span style="font-size:12px;opacity:0.45;font-weight:600">v17-24</span></div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">LUMEN <span style="font-size:12px;opacity:0.45;font-weight:600">v17-25</span></div>
         </div>
       </div>
       <!-- AI 전환 버튼 -->
@@ -4694,6 +4694,7 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v17-25',date:'2026',stability:'warn',memo:'🎬 강의실 「단원」 아코디언 정리 + 퇴원생 배정 자동 제외. [단원 아코디언] 폴더(예: 공통수학2 판서) 안에서 영상을 「단원」으로 묶어 접기/펼치기 — 영상이 많아도 필요한 단원만 펼쳐 찾는다(매쓰플랫 강의 화면과 같은 방식). 단원은 원장님이 직접 「＋ 단원 추가」·이름수정·순서(▲▼)·삭제 가능(단원 삭제해도 영상은 「미분류」로 보존). 영상을 단원에 넣는 법: (1) 영상 상세의 「단원」 드롭다운, (2) 여러 영상 체크 후 일괄 바의 「단원으로 이동」. 학생앱에서도 같은 단원으로 접혀서 보인다(안 본 강의 있는 단원만 자동 펼침). [퇴원생] 강의배정·모니터링·배정 인원수에서 퇴원 학생 자동 제외(vodAssignOf가 표시 단계에서 걸러냄 — 원자료는 보존해 복귀 시 되살아남). 데이터: VOD_CATALOG.units[{id,folderId,name,order}] + video.unitId. 카탈로그는 lumen_store로 동기화되어 학생앱에 그대로 반영.'},
       {ver:'v17-24',date:'2026',stability:'warn',memo:'🚑 리커버리 보드 업그레이드 (토요일 클리닉·종이 중심). [요약 스트립] 상단에 대상 N명(🔥 두 기준 겹침 수)·호출 확정 N/N·처방 약점 유형 수·「📄 종이 학습지 인쇄」 카드. [종이 학습지 인쇄] rcPrint — 호출 확정 학생(없으면 선발 전원) 1인 1장 인쇄창. 학생별 약점 유형 목록(🔴진짜 구멍/🟡실전만 약함/🔵예전 내용 판정 + 교재 정답률·쪽·시험 오답 문항 수) + 체크박스 + 확인란. 문제 자체는 매쓰플랫 유형분석에서 그 유형으로 학습지를 만들어 붙이거나 교재 해당 쪽 재풀이(B-1 반자동). 하단 요약 바에도 📄 종이 인쇄 버튼 추가. 선발·판정(hole/prac/old)·호출·완료·학부모 안내문은 v17-6 그대로. ⚠ 매쓰플랫 완전 자동 학습지 생성은 API 요청 본문 확보 후 별도(B-2).'},
       {ver:'v17-19',date:'2026',stability:'warn',memo:'📅 출결·보충 관리 버그 수정 + 개선. [버그1] 개별 학생 달력에서 결석 칸을 한 번만 눌러도 사유·보충 정보가 통째로 지워지던 문제 — 이제는 클릭 시 사유를 보고/수정하는 창이 뜨고, 실제 결석 취소는 오른쪽 「🩹 결석 보충 관리」의 별도 「결석 취소」 버튼(확인창 포함)에서만 하도록 분리. [버그2] 보충 지정 시 날짜를 안 바꾸고 누르면 결석일=보충일이 되며 기록이 자기참조로 깨져(상태가 planned로 바뀌며 목록에서 사라짐) 취소도 못 하던 사고 — 보충일 기본값을 결석일+7일로, 같은 날 지정은 막고 안내, 이미 깨진 기록은 여는 즉시 자동 복구. [개선1] 월간 캘린더 우측 「명단」에서 학생 이름을 누르면 그 학생 개별 페이지로 바로 이동(결석 이유 확인·수정). [개선2] 월간 캘린더 상단에 「이번 달 결석·보충 현황」 요약 카드 신설(미보충/보충예정 학생을 날짜순 칩으로 한눈에, 클릭시 해당 날짜로 이동) + 날짜 칸 뱃지를 미보충/예정/완료로 세분화.'},
       {ver:'v17-18',date:'2026',stability:'warn',memo:'🩹 울트라 새벽 초안 「날짜 밀림」 버그 수정 — 7/25 옥서정 리포트에 7/24 시험(90점/전국등수) 피드백이 잘못 붙는 문제 발견(새벽 Routine이 여러 날짜를 한번에 처리하며 날짜를 착각해 다른 날 데이터를 저장). 앞으로는 새벽 초안 글 속 점수와 그날 실제 채점 점수가 다르면(±2점 초과) 자동 반영을 막고, 이미 잘못 반영된 것도 열람 시 자동으로 비우고 「⚠ 자동 초안 점수가 실제와 달라 비웠어요」로 표시(승인·발행된 것과 원장님이 직접 쓴 글은 건드리지 않음).'},
@@ -39588,7 +39589,8 @@ function lbuGoBook(bookId){
    - 매칭키: students[].lumen_rec_code === vod_watch_logs.student_code
    - 자체완결: 좌측 vodLeftNav + 본문 vodMain, 상태는 VOD_* 전역
    ════════════════════════════════════════════════════════════════ */
-var VOD_CATALOG=null;   // {folders:[{id,name,order,seqOpen,maxRate,completeThreshold,created_at}], videos:[{id,folderId,title,youtubeId,durationSec,order,quiz:[],created_at}]}
+var VOD_CATALOG=null;   // {folders:[{id,name,order,seqOpen,maxRate,completeThreshold,created_at}], units:[{id,folderId,name,order}], videos:[{id,folderId,unitId,title,youtubeId,durationSec,order,quiz:[],created_at}]}
+var VOD_UNIT_OPEN={};   // ★ v17-25: 단원 아코디언 펼침 상태 (key = folderId+'|'+unitId). undefined면 기본 규칙(선택 영상 포함 단원만 펼침)
 var VOD_ASSIGN=null;    // { videoId:{codes:[],due:''} }
 var VOD_LOGS=null;      // vod_watch_logs 행 배열 (없으면 [])
 var VOD_LOGS_LOADING=false;
@@ -39610,9 +39612,11 @@ var VOD_MON_GRP='';       // 반별 탭 선택 반
 /* ── 로드/저장 ─────────────────────────────── */
 function vodLoadCatalog(){
   var d={folders:[],videos:[]};
-  try{ var raw=localStorage.getItem('lumen_vod_catalog'); if(raw){ var o=JSON.parse(raw); if(o&&typeof o==='object'){ d.folders=Array.isArray(o.folders)?o.folders:[]; d.videos=Array.isArray(o.videos)?o.videos:[]; } } }catch(e){}
+  try{ var raw=localStorage.getItem('lumen_vod_catalog'); if(raw){ var o=JSON.parse(raw); if(o&&typeof o==='object'){ d.folders=Array.isArray(o.folders)?o.folders:[]; d.videos=Array.isArray(o.videos)?o.videos:[]; d.units=Array.isArray(o.units)?o.units:[]; } } }catch(e){}
+  if(!Array.isArray(d.units)) d.units=[];   // ★ v17-25: 단원(폴더 안 묶음) [{id,folderId,name,order}]
   d.folders.forEach(function(f){ if(typeof f.seqOpen!=='boolean') f.seqOpen=false; if(typeof f.manualOrder!=='boolean') f.manualOrder=false;  /* v17-23: 기본=제목 날짜순 자동 정렬 */ if(typeof f.completeThreshold!=='number') f.completeThreshold=90; if(f.maxRate===undefined) f.maxRate=''; if(typeof f.order!=='number') f.order=0; });
-  d.videos.forEach(function(v){ if(!Array.isArray(v.quiz)) v.quiz=[]; if(typeof v.order!=='number') v.order=0; if(typeof v.durationSec!=='number') v.durationSec=0; });
+  d.units.forEach(function(u){ if(typeof u.order!=='number') u.order=0; });
+  d.videos.forEach(function(v){ if(!Array.isArray(v.quiz)) v.quiz=[]; if(typeof v.order!=='number') v.order=0; if(typeof v.durationSec!=='number') v.durationSec=0; if(typeof v.unitId!=='string') v.unitId=''; });   // ★ v17-25: unitId
   return d;
 }
 function vodLoadAssign(){
@@ -39678,7 +39682,35 @@ function vodVideosOf(fid){
   return arr.sort((f&&f.manualOrder)?vodByOrder:vodByDateThenOrder);
 }
 function vodVideoById(id){ vodEnsure(); return VOD_CATALOG.videos.filter(function(v){return v.id===id;})[0]||null; }
-function vodAssignOf(vid){ vodEnsure(); var a=VOD_ASSIGN[vid]; return a?{codes:(a.codes||[]).slice(),due:a.due||''}:{codes:[],due:''}; }
+// ★ v17-25: 퇴원생은 배정 표시에서 제외 (원자료 VOD_ASSIGN은 그대로 두어 복귀 시 되살아남)
+function vodIsWithdrawnCode(code){
+  if(typeof students==='undefined'||!students) return false;
+  for(var i=0;i<students.length;i++){ if(students[i].lumen_rec_code===code) return !!students[i].withdrawn; }
+  return false;   // 미등록(과거) 코드는 유지
+}
+function vodAssignOf(vid){ vodEnsure(); var a=VOD_ASSIGN[vid]; if(!a) return {codes:[],due:''};
+  var codes=(a.codes||[]).filter(function(c){ return !vodIsWithdrawnCode(c); });
+  return {codes:codes,due:a.due||''};
+}
+/* ── v17-25: 단원(폴더 안 묶음) 헬퍼 ─────────── */
+function vodUnitsOf(fid){ vodEnsure(); return VOD_CATALOG.units.filter(function(u){return u.folderId===fid;}).sort(vodByOrder); }
+function vodUnitById(id){ vodEnsure(); return VOD_CATALOG.units.filter(function(u){return u.id===id;})[0]||null; }
+// 영상의 유효 단원 id — 단원이 없거나 삭제된 단원을 가리키면 ''(미분류)
+function vodVideoUnitId(v){ if(!v||!v.unitId) return ''; var u=vodUnitById(v.unitId); return (u&&u.folderId===v.folderId)?u.id:''; }
+// 폴더 안 영상을 [{u, uid, videos}] 로 묶는다. 단원 순서 + 마지막에 미분류(있을 때).
+function vodGroupedVideos(fid){
+  var units=vodUnitsOf(fid);
+  var all=vodVideosOf(fid);   // 이미 날짜/수동 정렬됨
+  var groups=[];
+  units.forEach(function(u){
+    groups.push({u:u, uid:u.id, name:u.name, videos:all.filter(function(v){return vodVideoUnitId(v)===u.id;})});
+  });
+  var un=all.filter(function(v){return vodVideoUnitId(v)==='';});
+  // 미분류: 영상이 있을 때 항상 표시(정리 대상이 보이도록). 단원이 하나도 없으면 이름을 '전체'로.
+  if(un.length) groups.push({u:null, uid:'', name:(units.length?'미분류':'전체 영상'), videos:un});
+  return groups;
+}
+function vodUnitKey(fid,uid){ return fid+'|'+(uid||''); }
 function vodActiveStudents(){ return (typeof getSortedStudents==='function')?getSortedStudents(false):[]; }
 function vodStudentByCode(code){ var all=(typeof getSortedStudents==='function')?getSortedStudents(true):[]; for(var i=0;i<all.length;i++){ if(all[i].lumen_rec_code===code) return all[i]; } return null; }
 function vodGradeShort(g){ return (typeof gradeShort==='function')?gradeShort(g):(g||''); }
@@ -39806,36 +39838,84 @@ function vodManage(){
   } else {
     wrap+='<span style="font-size:9.5px;font-weight:800;color:#92400e;background:#fef3c7;border-radius:20px;padding:2px 7px">✋ 수동 순서</span>';
   }
+  // ★ v17-25: 단원 추가 버튼 (관리 모드) — 폴더 안에서 영상을 단원으로 묶는다
+  if(VOD_MODE==='manage'){
+    wrap+='<button onclick="vodAddUnit(\''+fid+'\')" style="margin-left:auto;border:1px solid #cbd5e1;background:#fff;color:#0369a1;border-radius:7px;padding:4px 8px;font-size:10.5px;font-weight:800;font-family:inherit;cursor:pointer">＋ 단원</button>';
+  }
   wrap+='</div>';
   wrap+='<input id="vod-q" value="'+vodEsc(VOD_Q)+'" oninput="vodSetQ(this.value)" placeholder="🔎 제목 검색 (예: 집합, 260727)" style="width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:6px 9px;font-size:11.5px;font-family:inherit;outline:none;margin-bottom:8px;color:#334155">';
-  var vids=allVids.filter(function(x){ return !VOD_Q||String(x.title||'').toLowerCase().indexOf(VOD_Q.toLowerCase())>=0; });
-  if(!allVids.length){ wrap+='<div style="padding:14px;text-align:center;color:#94a3b8;font-size:12px">아직 영상이 없습니다. 「＋ 영상 추가」로 등록하세요.</div>'; }
-  else if(!vids.length){ wrap+='<div style="padding:14px;text-align:center;color:#94a3b8;font-size:12px">「'+vodEsc(VOD_Q)+'」와 맞는 영상이 없습니다.</div>'; }
-  // ★ v17-23: 목록만 따로 스크롤 — 아래쪽 영상을 보려고 상세·미리보기까지 올릴 필요가 없다
-  wrap+='<div id="vod-vlist" style="max-height:calc(100vh - 300px);overflow-y:auto;overflow-x:hidden;padding-right:2px">';
-  vids.forEach(function(x,idx){
+  // 한 영상 카드 HTML (단원 아코디언 안에서 재사용)
+  function vodRowHtml(x){
     var on=(x.id===vid); var acount=vodAssignOf(x.id).codes.length;
     var sel=!!VOD_VSEL[x.id];
     var td=vodTitleDate(x.title);
     var isNew=(x.id===VOD_JUST_ADDED);
-    wrap+='<div id="vodrow-'+x.id+'" onclick="vodSelVideo(\''+x.id+'\')" style="border:1px solid '+(sel?'#1d6fe8':(on?'#93c5fd':'#e2e8f0'))+';background:'+(sel?'#eff6ff':(on?'#f8fbff':'#fff'))+';border-radius:9px;padding:9px 11px;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px'+(isNew?';box-shadow:0 0 0 2px #fbbf24':'')+'">'
+    return '<div id="vodrow-'+x.id+'" onclick="vodSelVideo(\''+x.id+'\')" style="border:1px solid '+(sel?'#1d6fe8':(on?'#93c5fd':'#e2e8f0'))+';background:'+(sel?'#eff6ff':(on?'#f8fbff':'#fff'))+';border-radius:9px;padding:9px 11px;margin:0 0 6px 10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px'+(isNew?';box-shadow:0 0 0 2px #fbbf24':'')+'">'
       +'<span onclick="event.stopPropagation();vodBulkToggleVideo(\''+x.id+'\')" title="일괄 배정용 선택" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;flex:none;cursor:pointer;'+(sel?'background:#1d6fe8;border:2px solid #1d6fe8;color:#fff;font-size:12px;font-weight:900':'background:#fff;border:2px solid #cbd5e1')+'">'+(sel?'✓':'')+'</span>'
       +'<div style="min-width:0;flex:1"><div style="font-size:12px;font-weight:700;color:#0d2240;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(isNew?'<span style="color:#b45309">🆕 </span>':'')+vodEsc(x.title)+'</div>'
       +'<div style="font-size:10px;color:#94a3b8">'+(td?'<span style="color:#0369a1;font-weight:700">'+vodFmtTitleDate(td)+'</span> · ':'<span style="color:#f59e0b;font-weight:700" title="제목에 날짜(예: 260729)가 없어 맨 아래에 놓입니다">날짜 없음</span> · ')
       +(x.durationSec?vodFmt(x.durationSec):'시간 미입력')+' · 배정 '+acount+'명'+(x.quiz&&x.quiz.length?' · 확인질문 '+x.quiz.length:'')+'</div></div>'
-      // ★ v17-23: 날짜순 자동 정렬 중에는 ▲▼를 감춘다 (눌러도 정렬이 되돌리므로 혼란만 준다).
-      //   순서를 손으로 잡고 싶으면 폴더 설정에서 「수동 순서」로 바꾸면 다시 나타난다.
       +(autoSort?'':'<div style="display:flex;gap:2px;flex-shrink:0">'
       +'<button onclick="event.stopPropagation();vodMoveVideo(\''+x.id+'\',-1)" title="위로" style="border:none;background:#f1f5f9;color:#64748b;border-radius:6px;width:24px;height:24px;cursor:pointer;font-family:inherit">▲</button>'
       +'<button onclick="event.stopPropagation();vodMoveVideo(\''+x.id+'\',1)" title="아래로" style="border:none;background:#f1f5f9;color:#64748b;border-radius:6px;width:24px;height:24px;cursor:pointer;font-family:inherit">▼</button>'
       +'</div>')+'</div>';
+  }
+  var searching=!!VOD_Q;
+  var qmatch=function(x){ return !searching||String(x.title||'').toLowerCase().indexOf(VOD_Q.toLowerCase())>=0; };
+  var groups=vodGroupedVideos(fid);
+  var totalMatch=allVids.filter(qmatch).length;
+  if(!allVids.length){ wrap+='<div style="padding:14px;text-align:center;color:#94a3b8;font-size:12px">아직 영상이 없습니다. 「＋ 영상 추가」로 등록하세요.</div>'; }
+  else if(searching&&!totalMatch){ wrap+='<div style="padding:14px;text-align:center;color:#94a3b8;font-size:12px">「'+vodEsc(VOD_Q)+'」와 맞는 영상이 없습니다.</div>'; }
+  // ★ v17-23: 목록만 따로 스크롤  ·  ★ v17-25: 단원별 아코디언
+  wrap+='<div id="vod-vlist" style="max-height:calc(100vh - 300px);overflow-y:auto;overflow-x:hidden;padding-right:2px">';
+  var units=vodUnitsOf(fid);
+  groups.forEach(function(g,gi){
+    var gv=g.videos.filter(qmatch);
+    if(searching&&!gv.length) return;   // 검색 중엔 매치 없는 단원 숨김
+    var hasSel=g.videos.some(function(v){return v.id===vid;});
+    var key=vodUnitKey(fid,g.uid);
+    var explicit=VOD_UNIT_OPEN[key];
+    var open=searching?true:(explicit!==undefined?explicit:hasSel);
+    var isUnassigned=(g.uid==='');
+    var headBg=isUnassigned?'#fff7ed':'#f1f5f9';
+    var headCol=isUnassigned?'#9a3412':'#0d2240';
+    wrap+='<div style="margin-bottom:6px">';
+    wrap+='<div onclick="vodToggleUnit(\''+fid+'\',\''+g.uid+'\','+(open?1:0)+')" style="display:flex;align-items:center;gap:6px;background:'+headBg+';border-radius:8px;padding:7px 10px;cursor:pointer;user-select:none">'
+      +'<span style="font-size:11px;color:#64748b;width:12px">'+(open?'▾':'▸')+'</span>'
+      +'<span style="font-size:12px;font-weight:800;color:'+headCol+';min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(isUnassigned?'🗂 ':'📂 ')+vodEsc(g.name)+'</span>'
+      +'<span style="font-size:10px;color:#94a3b8;flex:none">'+gv.length+'</span>';
+    // 단원 관리 버튼(관리 모드·실제 단원만)
+    if(VOD_MODE==='manage'&&!isUnassigned){
+      wrap+='<span style="margin-left:auto;display:flex;gap:2px;flex:none" onclick="event.stopPropagation()">'
+        +'<button onclick="vodRenameUnit(\''+g.uid+'\')" title="단원 이름 수정" style="border:none;background:#e2e8f0;color:#475569;border-radius:5px;width:22px;height:22px;cursor:pointer;font-size:11px">✏️</button>'
+        +'<button onclick="vodMoveUnit(\''+g.uid+'\',-1)" title="위로" style="border:none;background:#e2e8f0;color:#475569;border-radius:5px;width:22px;height:22px;cursor:pointer;font-family:inherit">▲</button>'
+        +'<button onclick="vodMoveUnit(\''+g.uid+'\',1)" title="아래로" style="border:none;background:#e2e8f0;color:#475569;border-radius:5px;width:22px;height:22px;cursor:pointer;font-family:inherit">▼</button>'
+        +'<button onclick="vodDeleteUnit(\''+g.uid+'\')" title="단원 삭제(영상은 미분류로 이동)" style="border:none;background:#fee2e2;color:#dc2626;border-radius:5px;width:22px;height:22px;cursor:pointer">🗑</button>'
+        +'</span>';
+    } else if(VOD_MODE==='manage'&&isUnassigned&&units.length){
+      wrap+='<span style="margin-left:auto;font-size:9px;color:#c2410e;flex:none">체크 후 아래 「단원으로 이동」</span>';
+    }
+    wrap+='</div>';
+    if(open){
+      wrap+='<div style="padding-top:6px">';
+      if(!gv.length){ wrap+='<div style="padding:8px 10px 4px 20px;color:#cbd5e1;font-size:11px">이 단원에 영상이 없습니다.</div>'; }
+      gv.forEach(function(x){ wrap+=vodRowHtml(x); });
+      wrap+='</div>';
+    }
+    wrap+='</div>';
   });
   wrap+='</div>';   // 목록 스크롤 영역 끝
   // v16-19: 일괄 배정 바 (영상 1개 이상 선택 시)
   var selN=Object.keys(VOD_VSEL).filter(function(k){return VOD_VSEL[k]&&vodVideoById(k);}).length;
   if(selN){
-    wrap+='<div style="display:flex;align-items:center;gap:10px;background:#0d2240;border-radius:10px;padding:9px 13px;margin-top:4px">'
-      +'<span style="color:#fff;font-size:12px;font-weight:800">☑️ '+selN+'개 영상 선택</span>'
+    // ★ v17-25: 선택 영상들을 단원으로 이동하는 드롭다운
+    var moveSel='<select onchange="vodBulkSetUnit(this.value);this.selectedIndex=0" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:8px;padding:7px 8px;font-size:11px;font-family:inherit;cursor:pointer">'
+      +'<option value="__none__">📂 단원으로 이동…</option>';
+    vodUnitsOf(fid).forEach(function(u){ moveSel+='<option value="'+u.id+'">→ '+vodEsc(u.name)+'</option>'; });
+    moveSel+='<option value="">→ 미분류</option><option value="__new__">＋ 새 단원 만들어 이동</option></select>';
+    wrap+='<div style="display:flex;align-items:center;gap:8px;background:#0d2240;border-radius:10px;padding:9px 13px;margin-top:4px;flex-wrap:wrap">'
+      +'<span style="color:#fff;font-size:12px;font-weight:800">☑️ '+selN+'개 선택</span>'
+      +moveSel
       +'<button onclick="vodBulkOpen()" style="margin-left:auto;background:#1d6fe8;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer">📤 일괄 배정 →</button>'
       +'<button onclick="vodBulkClearSel()" style="background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer">해제</button></div>';
   }
@@ -39850,11 +39930,20 @@ function vodManage(){
       +'<button onclick="vodEditVideo(\''+v.id+'\')" style="font-size:11px;color:#1d4ed8;border:1px solid #bfdbfe;background:#eff6ff;border-radius:7px;padding:5px 9px;font-family:inherit;cursor:pointer;font-weight:700">✏️ 편집</button>'
       +'<button onclick="vodDeleteVideo(\''+v.id+'\')" style="font-size:11px;color:#dc2626;border:1px solid #fecaca;background:#fef2f2;border-radius:7px;padding:5px 9px;font-family:inherit;cursor:pointer;font-weight:700">삭제</button></div>';
     wrap+='</div>';
-    wrap+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">'
+    wrap+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;align-items:center">'
       +'<span style="font-size:10px;color:#64748b;background:#f1f5f9;padding:3px 8px;border-radius:6px">유튜브ID '+vodEsc(v.youtubeId||'미입력')+'</span>'
       +'<span style="font-size:10px;color:#64748b;background:#f1f5f9;padding:3px 8px;border-radius:6px">'+(v.durationSec?vodFmt(v.durationSec):'시간 미입력')+'</span>'
       +'<button onclick="vodOpenQuiz(\''+v.id+'\')" style="font-size:10px;color:#7c3aed;background:#f3e8ff;padding:3px 8px;border-radius:6px;border:none;font-family:inherit;cursor:pointer">확인질문 '+(v.quiz?v.quiz.length:0)+' ✏️</button>'
       +'<button onclick="vodPreview(\''+v.id+'\')" style="font-size:10px;color:#fff;background:#e8192c;padding:3px 10px;border-radius:6px;border:none;font-family:inherit;cursor:pointer;font-weight:800">▶ 미리보기</button></div>';
+    // ★ v17-25: 이 영상의 단원 지정 (드롭다운)
+    var vUid=vodVideoUnitId(v);
+    var uSel='<div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:6px 9px">'
+      +'<span style="font-size:11px;font-weight:800;color:#64748b;flex:none">📂 단원</span>'
+      +'<select onchange="vodSetVideoUnit(\''+v.id+'\',this.value)" style="flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:7px;padding:5px 7px;font-size:11.5px;font-family:inherit;color:#0d2240">'
+      +'<option value=""'+(vUid===''?' selected':'')+'>미분류</option>';
+    vodUnitsOf(v.folderId).forEach(function(u){ uSel+='<option value="'+u.id+'"'+(vUid===u.id?' selected':'')+'>'+vodEsc(u.name)+'</option>'; });
+    uSel+='<option value="__new__">＋ 새 단원 만들기…</option></select></div>';
+    wrap+=uSel;
     // 배정
     var asn=vodAssignOf(v.id);
     wrap+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
@@ -40474,11 +40563,78 @@ function vodScrollToVideo(id){
 }
 function vodMoveVideo(id, dir){
   vodEnsure(); var v=vodVideoById(id); if(!v) return;
-  var list=vodVideosOf(v.folderId); var idx=-1,i;
+  // ★ v17-25: 같은 단원 안에서만 위/아래로 이동
+  var myUid=vodVideoUnitId(v);
+  var list=vodVideosOf(v.folderId).filter(function(x){return vodVideoUnitId(x)===myUid;}); var idx=-1,i;
   for(i=0;i<list.length;i++){ if(list[i].id===id){ idx=i; break; } }
   var j=idx+dir; if(j<0||j>=list.length) return;
   var a=list[idx], b=list[j]; var t=a.order; a.order=b.order; b.order=t;
   vodSaveCatalog(); render();
+}
+/* ── v17-25: 단원(폴더 안 묶음) CRUD ─────────── */
+function vodToggleUnit(fid, uid, curOpen){ VOD_UNIT_OPEN[vodUnitKey(fid,uid)]=!curOpen; render(); }
+function vodAddUnit(fid){
+  vodEnsure(); var name=(prompt('새 단원 이름을 입력하세요 (예: 다항식, 경우의 수)')||'').trim();
+  if(!name) return;
+  var maxo=vodUnitsOf(fid).reduce(function(a,u){return Math.max(a,u.order||0);},0);
+  var nu={id:vodId('vu'),folderId:fid,name:name,order:maxo+1};
+  VOD_CATALOG.units.push(nu); VOD_UNIT_OPEN[vodUnitKey(fid,nu.id)]=true;
+  vodSaveCatalog(); vodToast('단원 「'+name+'」 추가됨'); render();
+}
+function vodRenameUnit(uid){
+  var u=vodUnitById(uid); if(!u) return;
+  var name=(prompt('단원 이름 수정', u.name)||'').trim(); if(!name) return;
+  u.name=name; vodSaveCatalog(); vodToast('이름 변경됨'); render();
+}
+function vodDeleteUnit(uid){
+  var u=vodUnitById(uid); if(!u) return;
+  var n=vodVideosOf(u.folderId).filter(function(v){return vodVideoUnitId(v)===uid;}).length;
+  if(!confirm('단원 「'+u.name+'」을 삭제할까요?\n영상 '+n+'개는 삭제되지 않고 「미분류」로 이동합니다.')) return;
+  vodEnsure();
+  VOD_CATALOG.videos.forEach(function(v){ if(v.unitId===uid) v.unitId=''; });
+  VOD_CATALOG.units=VOD_CATALOG.units.filter(function(x){return x.id!==uid;});
+  vodSaveCatalog(); vodToast('단원 삭제됨 (영상은 미분류로 이동)'); render();
+}
+function vodMoveUnit(uid, dir){
+  var u=vodUnitById(uid); if(!u) return;
+  var list=vodUnitsOf(u.folderId); var idx=-1,i;
+  for(i=0;i<list.length;i++){ if(list[i].id===uid){ idx=i; break; } }
+  var j=idx+dir; if(j<0||j>=list.length) return;
+  var a=list[idx], b=list[j]; var t=a.order; a.order=b.order; b.order=t;
+  vodSaveCatalog(); render();
+}
+// 영상 하나의 단원 변경 (드롭다운). '__new__' 선택 시 새 단원 만들어 이동.
+function vodSetVideoUnit(vid, uid){
+  vodEnsure(); var v=vodVideoById(vid); if(!v) return;
+  if(uid==='__new__'){
+    var name=(prompt('새 단원 이름')||'').trim(); if(!name){ render(); return; }
+    var maxo=vodUnitsOf(v.folderId).reduce(function(a,u){return Math.max(a,u.order||0);},0);
+    var nu={id:vodId('vu'),folderId:v.folderId,name:name,order:maxo+1};
+    VOD_CATALOG.units.push(nu); uid=nu.id;
+  }
+  v.unitId=uid||'';
+  if(uid) VOD_UNIT_OPEN[vodUnitKey(v.folderId,uid)]=true;
+  vodSaveCatalog(); vodToast('단원 이동됨'); render();
+}
+// 선택한 여러 영상을 한 단원으로 이동
+function vodBulkSetUnit(uid){
+  if(uid==='__none__'){ render(); return; }
+  vodEnsure();
+  var ids=Object.keys(VOD_VSEL).filter(function(k){return VOD_VSEL[k]&&vodVideoById(k);});
+  if(!ids.length) return;
+  var fid=vodDefaultFolder();
+  if(uid==='__new__'){
+    var name=(prompt('새 단원 이름')||'').trim(); if(!name){ render(); return; }
+    var maxo=vodUnitsOf(fid).reduce(function(a,u){return Math.max(a,u.order||0);},0);
+    var nu={id:vodId('vu'),folderId:fid,name:name,order:maxo+1};
+    VOD_CATALOG.units.push(nu); uid=nu.id;
+  }
+  // 단원은 폴더 소속이므로 현재 폴더의 영상만 이동(다른 폴더 영상이 섞여 선택된 경우 방지)
+  var moved=0;
+  ids.forEach(function(id){ var v=vodVideoById(id); if(v && v.folderId===fid){ v.unitId=uid||''; moved++; } });
+  if(uid) VOD_UNIT_OPEN[vodUnitKey(fid,uid)]=true;
+  VOD_VSEL={};
+  vodSaveCatalog(); vodToast(moved+'개 영상을 단원으로 이동'); render();
 }
 
 /* ── 액션: 배정 ───────────────────────────── */
