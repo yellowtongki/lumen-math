@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>루멘수학 v17-23</title>
+<title>루멘수학 v17-24</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1690,7 +1690,7 @@ body{
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-size:11px;opacity:0.5;letter-spacing:1.2px;font-weight:600;text-transform:uppercase;margin-bottom:2px">🏫 루멘수학</div>
-          <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">LUMEN <span style="font-size:12px;opacity:0.45;font-weight:600">v17-23</span></div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">LUMEN <span style="font-size:12px;opacity:0.45;font-weight:600">v17-24</span></div>
         </div>
       </div>
       <!-- AI 전환 버튼 -->
@@ -4694,6 +4694,7 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v17-24',date:'2026',stability:'warn',memo:'🚑 리커버리 보드 업그레이드 (토요일 클리닉·종이 중심). [요약 스트립] 상단에 대상 N명(🔥 두 기준 겹침 수)·호출 확정 N/N·처방 약점 유형 수·「📄 종이 학습지 인쇄」 카드. [종이 학습지 인쇄] rcPrint — 호출 확정 학생(없으면 선발 전원) 1인 1장 인쇄창. 학생별 약점 유형 목록(🔴진짜 구멍/🟡실전만 약함/🔵예전 내용 판정 + 교재 정답률·쪽·시험 오답 문항 수) + 체크박스 + 확인란. 문제 자체는 매쓰플랫 유형분석에서 그 유형으로 학습지를 만들어 붙이거나 교재 해당 쪽 재풀이(B-1 반자동). 하단 요약 바에도 📄 종이 인쇄 버튼 추가. 선발·판정(hole/prac/old)·호출·완료·학부모 안내문은 v17-6 그대로. ⚠ 매쓰플랫 완전 자동 학습지 생성은 API 요청 본문 확보 후 별도(B-2).'},
       {ver:'v17-19',date:'2026',stability:'warn',memo:'📅 출결·보충 관리 버그 수정 + 개선. [버그1] 개별 학생 달력에서 결석 칸을 한 번만 눌러도 사유·보충 정보가 통째로 지워지던 문제 — 이제는 클릭 시 사유를 보고/수정하는 창이 뜨고, 실제 결석 취소는 오른쪽 「🩹 결석 보충 관리」의 별도 「결석 취소」 버튼(확인창 포함)에서만 하도록 분리. [버그2] 보충 지정 시 날짜를 안 바꾸고 누르면 결석일=보충일이 되며 기록이 자기참조로 깨져(상태가 planned로 바뀌며 목록에서 사라짐) 취소도 못 하던 사고 — 보충일 기본값을 결석일+7일로, 같은 날 지정은 막고 안내, 이미 깨진 기록은 여는 즉시 자동 복구. [개선1] 월간 캘린더 우측 「명단」에서 학생 이름을 누르면 그 학생 개별 페이지로 바로 이동(결석 이유 확인·수정). [개선2] 월간 캘린더 상단에 「이번 달 결석·보충 현황」 요약 카드 신설(미보충/보충예정 학생을 날짜순 칩으로 한눈에, 클릭시 해당 날짜로 이동) + 날짜 칸 뱃지를 미보충/예정/완료로 세분화.'},
       {ver:'v17-18',date:'2026',stability:'warn',memo:'🩹 울트라 새벽 초안 「날짜 밀림」 버그 수정 — 7/25 옥서정 리포트에 7/24 시험(90점/전국등수) 피드백이 잘못 붙는 문제 발견(새벽 Routine이 여러 날짜를 한번에 처리하며 날짜를 착각해 다른 날 데이터를 저장). 앞으로는 새벽 초안 글 속 점수와 그날 실제 채점 점수가 다르면(±2점 초과) 자동 반영을 막고, 이미 잘못 반영된 것도 열람 시 자동으로 비우고 「⚠ 자동 초안 점수가 실제와 달라 비웠어요」로 표시(승인·발행된 것과 원장님이 직접 쓴 글은 건드리지 않음).'},
       {ver:'v17-17',date:'2026',stability:'warn',memo:'🎯 녹음 주제 자동 배정 (목업 합의안: 수업일마다 1개=주3회·개인맞춤 켬·자유제출 허용). 녹음관리에 「🎯 주제 배정」 서브탭 신설 — ① 학년별 공통: 이번 주(월~토) 학년×수업일 표(수업요일은 그 학년 학생들이 속한 반의 lumen_group_days 합집합, 미설정 시 월수금), 셀 클릭 수정, ✨ AI 자동 생성(빈 칸만 — 최근 리포트 취약 유형 기반). ② 개인 맞춤: 학생별 다음 수업일 주제(최근 오답 유형 기반 ✨ 생성/수정/삭제) — 개인 주제가 학년 공통보다 우선. 데이터 rec_topics(lumen_store·SYNC_KEYS·날짜키 합집합 병합 로컬 우선). 새벽 4시 Routine이 그날 수업 학년·오답 학생 주제를 자동 생성해 채움. 학생앱 v2-20이 읽어 홈·녹음 화면에 「오늘의 주제」 표시(우선순위: 미션설정 수동 미션 > 개인 자동 > 학년 자동, 자유 제출은 그대로 허용).'},
@@ -8797,6 +8798,63 @@ function rcVerdictChip(m){
   if(m.verdict==='prac') return '<span style="font-size:12px;font-weight:900;border-radius:8px;padding:4px 10px;background:#fef3c7;color:#92400e">⚠️ 실전 약함</span>';
   return '<span style="font-size:12px;font-weight:900;border-radius:8px;padding:4px 10px;background:#e0e7ff;color:#3730a3">💤 예전 내용</span>';
 }
+// ★ v17-24: 리커버리 종이 학습지 일괄 인쇄 — 학생별 1장, 약점 유형·판정·교재 쪽·오답 문항 + 체크박스.
+//   B-1(반자동): 문항 자체는 매쓰플랫 유형분석에서 이 유형으로 학습지 만들어 붙이거나, 학생이 교재 오답을 다시 푼다.
+//   대상 = 호출 확정 학생(없으면 선발된 전원). 인쇄 창을 열어 브라우저 인쇄로 종이/PDF 저장.
+window.rcPrint=function(){
+  var wk=rcWeekKey(); var W=RC.state.calls[wk]||{};
+  var all=rcRows();
+  var rows=all.filter(function(x){ return W[x.stKey]&&W[x.stKey].on&&!(W[x.stKey].done); });
+  if(!rows.length) rows=all;   // 확정이 없으면 선발 전원
+  if(!rows.length){ alert('선발된 학생이 없습니다.'); return; }
+  var d=new Date(wk); var dstr=(d.getMonth()+1)+'월 '+d.getDate()+'일(토)';
+  var vName={ hole:'🔴 진짜 구멍', prac:'🟡 실전만 약함', old:'🔵 예전 내용' };
+  var esc=function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var pages=rows.map(function(x){
+    var items=[];
+    // ① 시험 오답 유형 (진짜 구멍 우선)
+    (x.match||[]).forEach(function(m){
+      items.push({ label:esc(m.unit)+' <span class="v '+m.verdict+'">'+vName[m.verdict]+'</span>',
+        sub:(m.rate!=null?('교재 정답률 '+m.rate+'%'+(m.book?' · '+esc(m.book):'')):'교재 기록 없음')+' · 시험 '+m.cnt+'문항 틀림' });
+    });
+    // ② 교재 약점 단원 (매칭 안 된 것)
+    (x.unitHits||[]).filter(function(u){ return !(x.match||[]).some(function(m){ return m.verdict==='hole'&&(rcNrm(u.n).indexOf(rcNrm(m.unit))>=0||rcNrm(m.unit).indexOf(rcNrm(u.n))>=0); }); })
+      .slice(0,4).forEach(function(u){
+        items.push({ label:esc(u.n)+' <span class="v hole">🔴 교재 약점</span>', sub:esc(u.book)+' p.'+u.minP+'~'+u.maxP+' · 교재 정답률 '+u.rate+'%' });
+      });
+    if(!items.length) items.push({ label:'복습할 약점 유형', sub:'선생님이 지정' });
+    var rowsHtml=items.map(function(it,i){
+      return '<div class="q"><span class="box"></span><div class="qd"><div class="qt">'+(i+1)+'. '+it.label+'</div><div class="qs">'+it.sub+'</div></div></div>';
+    }).join('');
+    var testTag=x.testHit?('주간테스트 '+x.testHit.score+'점'):'교재 약점';
+    return '<div class="paper">'
+      +'<div class="ph"><div class="tt">🚑 리커버리 학습지 — '+esc(x.st.name)+'</div>'
+      +'<div class="sub">루멘수학 · '+dstr+' · '+esc((x.st.grade||'').replace(/학교|학년/g,'').replace(/\s/g,''))+' '+esc(x.st.group||'')+' · '+testTag+'</div></div>'
+      +'<div class="guide">📌 아래 <b>약점 유형</b>을 오늘 리커버리에서 다시 잡습니다. 🔴 진짜 구멍은 개념부터, 🟡 실전만 약함은 실전 문제 위주로. '
+      +'문제는 매쓰플랫 유형분석에서 이 유형으로 학습지를 만들어 함께 풀거나, 교재 해당 쪽을 다시 풉니다.</div>'
+      +rowsHtml
+      +'<div class="foot">다 풀면 선생님께 확인받으세요 ✍️ &nbsp; 확인: __________</div>'
+      +'</div>';
+  }).join('');
+  var html='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>리커버리 학습지 '+dstr+'</title>'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;background:#fff;color:#0d2240}'
+    +'.paper{width:100%;max-width:720px;margin:0 auto;padding:34px 30px;page-break-after:always}'
+    +'.ph{text-align:center;border-bottom:3px solid #0d2240;padding-bottom:12px;margin-bottom:16px}'
+    +'.ph .tt{font-size:24px;font-weight:900}.ph .sub{font-size:13px;color:#64748b;margin-top:5px}'
+    +'.guide{background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px 14px;font-size:12.5px;color:#0c4a6e;line-height:1.7;margin-bottom:16px}'
+    +'.q{display:flex;align-items:flex-start;gap:12px;padding:13px 6px;border-bottom:1px solid #eee}'
+    +'.box{width:26px;height:26px;border:2px solid #94a3b8;border-radius:6px;flex:none;margin-top:2px}'
+    +'.qd .qt{font-size:16px;font-weight:800}.qd .qs{font-size:12.5px;color:#64748b;margin-top:3px}'
+    +'.v{font-size:12px;font-weight:900;border-radius:7px;padding:2px 9px;margin-left:5px;white-space:nowrap}'
+    +'.v.hole{background:#fee2e2;color:#b91c1c}.v.prac{background:#fef3c7;color:#92400e}.v.old{background:#e0e7ff;color:#3730a3}'
+    +'.foot{margin-top:22px;font-size:13px;color:#334155;text-align:right;font-weight:700}'
+    +'@media print{.paper{padding:20px 16px}}</style></head><body>'+pages+'</body></html>';
+  var w=window.open('','_blank');
+  if(!w){ alert('팝업이 차단되었습니다. 브라우저에서 팝업을 허용해 주세요.'); return; }
+  w.document.write(html); w.document.close();
+  setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} }, 400);
+  plToast('📄 '+rows.length+'명 리커버리 학습지 인쇄 창을 열었어요');
+};
 window.rcCopySms=function(){
   var wk=rcWeekKey(); var W=RC.state.calls[wk]||{};
   var rows=rcRows().filter(function(x){ return W[x.stKey]&&W[x.stKey].on&&!(W[x.stKey].done); });
@@ -8825,6 +8883,22 @@ function rRecovery(){
   h+='<button onclick="rcEditCfg(\'unit\')" style="background:#fff;border:1.5px solid #cbd5e1;border-radius:50px;padding:5px 13px;font-size:13px;font-weight:900;color:#0d2240;cursor:pointer;font-family:inherit">단원 정답률 '+RC.cfg.minUnit+'% 미만 ✎</button>';
   h+='<button onclick="rcEditCfg(\'weeks\')" style="background:#fff;border:1.5px solid #cbd5e1;border-radius:50px;padding:5px 13px;font-size:13px;font-weight:900;color:#0d2240;cursor:pointer;font-family:inherit">최근 '+RC.cfg.weeks+'주 ✎</button>';
   h+='<span style="margin-left:auto;font-size:11px;color:#94a3b8">두 기준 모두 걸리면 🔥 1순위</span></div>';
+  // ★ v17-24: 요약 스트립 (대상·확정·처방 유형·종이) + 종이 인쇄
+  var pri1=rows.filter(function(x){ return x.pri===0; }).length;
+  var rxUnits=0; rows.forEach(function(x){ rxUnits += (x.match&&x.match.length) ? x.match.length : (x.rx?x.rx.length:0); });
+  var scall=function(l,v,sub,cls){
+    return '<div style="flex:1;min-width:120px;background:'+(cls==='red'?'#fef2f2':cls==='y'?'#fffbeb':cls==='g'?'#f0fdf4':'#f8fafc')+';border-left:4px solid '+(cls==='red'?'#ef4444':cls==='y'?'#f59e0b':cls==='g'?'#22c55e':'#cbd5e1')+';border-radius:13px;padding:11px 14px">'
+      +'<div style="font-size:11px;color:#64748b;font-weight:800">'+l+'</div>'
+      +'<div style="font-size:24px;font-weight:900;color:#0d2240;line-height:1.1;margin-top:2px">'+v+(sub?' <span style="font-size:12px;color:#94a3b8;font-weight:800">'+sub+'</span>':'')+'</div></div>';
+  };
+  h+='<div style="display:flex;gap:11px;margin-bottom:14px;flex-wrap:wrap">';
+  h+=scall('🚨 리커버리 대상', rows.length, '명'+(pri1?' · 🔥'+pri1:''), 'red');
+  h+=scall('📞 호출 확정', confirmed, '/'+rows.length+'명', 'y');
+  h+=scall('🧩 처방 약점 유형', rxUnits, '유형', 'g');
+  h+='<div style="flex:1;min-width:150px;background:#f8fafc;border-left:4px solid #0d2240;border-radius:13px;padding:11px 14px;display:flex;flex-direction:column;justify-content:center;gap:6px">'
+    +'<button onclick="rcPrint()" style="border:none;background:#0d2240;color:#fff;font-family:inherit;font-size:12.5px;font-weight:900;padding:9px 0;border-radius:9px;cursor:pointer">📄 종이 학습지 인쇄</button>'
+    +'<div style="font-size:9.5px;color:#94a3b8;font-weight:700;text-align:center">확정 학생(없으면 전원) 1인 1장</div></div>';
+  h+='</div>';
   if(!rows.length) h+='<div style="padding:40px;text-align:center;color:#15803d;font-weight:800;font-size:15px">🎉 지금 기준으로 선발된 학생이 없습니다</div>';
   rows.forEach(function(x){
     var e=W[x.stKey]||{};
@@ -8866,7 +8940,8 @@ function rRecovery(){
   h+='<div style="display:flex;align-items:center;gap:12px;background:#0d2240;border-radius:14px;padding:13px 17px;color:#fff;margin-top:14px;flex-wrap:wrap;font-size:14.5px;font-weight:800">';
   h+='📅 이번 주말('+(d2.getMonth()+1)+'.'+d2.getDate()+' 토) 리커버리: <b style="color:#ffd54a">'+confirmed+'명 확정</b>';
   h+='<span style="opacity:0.6;font-size:12px">보충 후 「✅ 완료 처리」 — 기록이 쌓여 2학기 운영 장부가 됩니다</span>';
-  h+='<button onclick="rcCopySms()" style="margin-left:auto;background:#ffd54a;color:#0d2240;border:none;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:900;cursor:pointer;font-family:inherit">📋 학부모 안내문 복사</button>';
+  h+='<button onclick="rcPrint()" style="margin-left:auto;background:#fff;color:#0d2240;border:none;border-radius:10px;padding:9px 15px;font-size:13.5px;font-weight:900;cursor:pointer;font-family:inherit">📄 종이 인쇄</button>';
+  h+='<button onclick="rcCopySms()" style="background:#ffd54a;color:#0d2240;border:none;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:900;cursor:pointer;font-family:inherit">📋 학부모 안내문 복사</button>';
   h+='</div>';
   h+='</div>';
   return h;
