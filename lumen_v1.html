@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>루멘수학 v17-26</title>
+<title>루멘수학 v17-27</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" async></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -461,11 +461,11 @@ async function supaFullPull() {
     result.data.forEach(function(row) {
       // ★ v15-1: 강의실 카탈로그 union-merge — 폴더/영상 id 기준 병합, 로컬 우선(삭제 전파 안 함)
       if (row.key === 'lumen_vod_catalog') {
-        var lc={folders:[],videos:[]}, sc={folders:[],videos:[]};
-        try{ lc=JSON.parse(localStorage.getItem('lumen_vod_catalog')||'{"folders":[],"videos":[]}'); }catch(e){}
+        var lc={folders:[],videos:[],units:[]}, sc={folders:[],videos:[],units:[]};
+        try{ lc=JSON.parse(localStorage.getItem('lumen_vod_catalog')||'{"folders":[],"videos":[],"units":[]}'); }catch(e){}
         try{ sc=(typeof row.value==='string')?JSON.parse(row.value):(row.value||{}); }catch(e){}
-        if(!lc||typeof lc!=='object') lc={folders:[],videos:[]};
-        if(!sc||typeof sc!=='object') sc={folders:[],videos:[]};
+        if(!lc||typeof lc!=='object') lc={folders:[],videos:[],units:[]};
+        if(!sc||typeof sc!=='object') sc={folders:[],videos:[],units:[]};
         var fMap={}; (sc.folders||[]).forEach(function(f){ if(f&&f.id) fMap[f.id]=f; }); (lc.folders||[]).forEach(function(f){ if(f&&f.id) fMap[f.id]=f; });
         // ★ v17-12: 영상 병합은 로컬 우선이되, 로컬의 링크/길이가 비어 있으면 클라우드 값 보존 —
         //   다른 기기에서 고친 링크를 옛 값(빈 링크)을 든 기기가 덮어쓰는 사고 방지 (외심 강의 재발 건)
@@ -480,7 +480,16 @@ async function supaFullPull() {
             vMap[v.id]=m;
           } else vMap[v.id]=v;
         });
-        _origSetItem('lumen_vod_catalog', JSON.stringify({folders:Object.keys(fMap).map(function(k){return fMap[k];}),videos:Object.keys(vMap).map(function(k){return vMap[k];})}));
+        // ★ v17-27: 단원(units)도 병합 — v17-25가 추가한 units를 이 병합이 몰라서 풀 때마다 지워지던 버그 수정.
+        //   로컬 우선(이름 수정 보존)이되, 로컬이 「이름 복구 필요」 자리표시자면 클라우드 원본 이름에 양보.
+        var uMap={};
+        (lc.units||[]).forEach(function(u){ if(u&&u.id) uMap[u.id]=u; });
+        (sc.units||[]).forEach(function(u){
+          if(!u||!u.id) return;
+          var l=uMap[u.id];
+          if(!l||/이름 복구 필요/.test(String(l.name||''))) uMap[u.id]=u;
+        });
+        _origSetItem('lumen_vod_catalog', JSON.stringify({folders:Object.keys(fMap).map(function(k){return fMap[k];}),videos:Object.keys(vMap).map(function(k){return vMap[k];}),units:Object.keys(uMap).map(function(k){return uMap[k];})}));
         if(typeof VOD_CATALOG!=='undefined') VOD_CATALOG=null;
         return;
       }
@@ -1690,7 +1699,7 @@ body{
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-size:11px;opacity:0.5;letter-spacing:1.2px;font-weight:600;text-transform:uppercase;margin-bottom:2px">🏫 루멘수학</div>
-          <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">LUMEN <span style="font-size:12px;opacity:0.45;font-weight:600">v17-26</span></div>
+          <div style="font-size:20px;font-weight:800;letter-spacing:-0.3px">LUMEN <span style="font-size:12px;opacity:0.45;font-weight:600">v17-27</span></div>
         </div>
       </div>
       <!-- AI 전환 버튼 -->
@@ -4694,6 +4703,7 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v17-27',date:'2026',stability:'warn',memo:'🚑 리커버리 3분할 개편 + 🎬 강의실 단원 소실 수정. [① 강의실 단원 버그] v15-1의 lumen_vod_catalog 동기화 병합이 v17-25가 추가한 units(단원 목록)를 몰라 클라우드에서 당길 때마다 단원이 지워지던 버그 — 병합에 units 포함(로컬 우선, 자리표시자는 클라우드 원본 이름에 양보). 영상들이 unitId(소속 단원)를 아직 기억하므로 vodRestoreUnits가 그룹을 유지한 채 「단원 N (이름 복구 필요)」로 자동 재생성 — 원장님은 ✏️로 이름만 다시 붙이면 됨. 클라우드에 원본 이름이 남아 있으면 다음 동기화 때 자동 교체. [② 리커버리 3분할] 화면 폭 1560으로 확장, 좌=예상 명단(자동 선발) · 우=확정 명단 패널(고정) — 좌측 학생 사이드바까지 3분할. [시험지 팝업] 주간점수 칩 클릭 → mf_answer_records의 문항별 실채점 기록으로 「실제 주간테스트」 검증: 채점일시·문항별 O/X 그리드·틀린 문항의 유형·난이도·전국 정답률 (rcOpenPaper, RC.papers 캐시, 재응시는 최근 채점만). [확정·시간 배분] 호출 확정하면 우측 패널에 등장, 시간대 버튼(기본 10:00/11:00/13:00)으로 배정 — 날짜·시간대는 ✎로 편집(rc_config.slots + rc_state.dates 주별 날짜). 같은 것 재클릭=해제. [직접 추가] 기준에 안 걸린 학생도 드롭다운으로 수동 호출(👋 직접 배지, ✕ 취소). 인쇄에도 포함(빈 양식). [안내문 확인] 기존 「바로 복사」 → 팝업에서 학생별 문구(날짜·시간·보충 내용 자동 반영)를 확인·수정한 뒤 전체 복사(rcOpenSms). 자동 발송 아님. [출결 연동] ✅ 완료 처리 → 그 학생 출결의 리커버리 기록(lumen_recovery_log[날짜]={done,time,src:board})에 자동 기재, 완료 취소 시 board가 만든 기록만 철회(원장님이 출결에서 직접 넣은 기록 보호). 출결 캘린더·통계 리커버리 횟수와 통합. 하단 요약 바는 우측 패널로 흡수·제거.'},
       {ver:'v17-26',date:'2026',stability:'warn',memo:'📒 리커버리 운영 장부(이력) 신설 — 보드가 약속한 「기록이 쌓여 2학기 운영 장부가 됩니다」를 실제로 완성. [탭 전환] 리커버리 화면 상단에 「🚑 이번 주 보드 / 📒 운영 장부」 토글(RC.view). [장부 요약] 누적 리커버리 주(회차)·연인원(호출 합)·완료율·최다 대상 학생. [학생별 표] 호출 횟수·완료·완료율·최근 호출일 + 🔁연속 배지(반복 대상 조기 포착), 호출 많은 순. [주차별 타임라인] 토요일별 호출 명단(✅완료/⏳대기)과 완료 수. [기록 스냅샷] rcToggleCall(호출 ON)·rcMarkDone(완료) 시 그 시점의 학생명·반·주간점수·처방 요약(진짜구멍 수/처방 유형)을 call 항목에 저장(e.snap) — 이후 데이터가 바뀌거나 학생이 나가도 「그 주 리커버리가 무엇이었는지」가 남는다. 과거 기록은 스냅샷이 없으므로 현재 명단으로 이름만 보강. 데이터는 기존 rc_state(lumen_store)에 그대로 누적, 새 테이블 없음. CSV 내보내기 포함.'},
       {ver:'v17-25',date:'2026',stability:'warn',memo:'🎬 강의실 「단원」 아코디언 정리 + 퇴원생 배정 자동 제외. [단원 아코디언] 폴더(예: 공통수학2 판서) 안에서 영상을 「단원」으로 묶어 접기/펼치기 — 영상이 많아도 필요한 단원만 펼쳐 찾는다(매쓰플랫 강의 화면과 같은 방식). 단원은 원장님이 직접 「＋ 단원 추가」·이름수정·순서(▲▼)·삭제 가능(단원 삭제해도 영상은 「미분류」로 보존). 영상을 단원에 넣는 법: (1) 영상 상세의 「단원」 드롭다운, (2) 여러 영상 체크 후 일괄 바의 「단원으로 이동」. 학생앱에서도 같은 단원으로 접혀서 보인다(안 본 강의 있는 단원만 자동 펼침). [퇴원생] 강의배정·모니터링·배정 인원수에서 퇴원 학생 자동 제외(vodAssignOf가 표시 단계에서 걸러냄 — 원자료는 보존해 복귀 시 되살아남). 데이터: VOD_CATALOG.units[{id,folderId,name,order}] + video.unitId. 카탈로그는 lumen_store로 동기화되어 학생앱에 그대로 반영.'},
       {ver:'v17-24',date:'2026',stability:'warn',memo:'🚑 리커버리 보드 업그레이드 (토요일 클리닉·종이 중심). [요약 스트립] 상단에 대상 N명(🔥 두 기준 겹침 수)·호출 확정 N/N·처방 약점 유형 수·「📄 종이 학습지 인쇄」 카드. [종이 학습지 인쇄] rcPrint — 호출 확정 학생(없으면 선발 전원) 1인 1장 인쇄창. 학생별 약점 유형 목록(🔴진짜 구멍/🟡실전만 약함/🔵예전 내용 판정 + 교재 정답률·쪽·시험 오답 문항 수) + 체크박스 + 확인란. 문제 자체는 매쓰플랫 유형분석에서 그 유형으로 학습지를 만들어 붙이거나 교재 해당 쪽 재풀이(B-1 반자동). 하단 요약 바에도 📄 종이 인쇄 버튼 추가. 선발·판정(hole/prac/old)·호출·완료·학부모 안내문은 v17-6 그대로. ⚠ 매쓰플랫 완전 자동 학습지 생성은 API 요청 본문 확보 후 별도(B-2).'},
@@ -8681,7 +8691,7 @@ function rBookProgTl(){
  * 주말 보충 자동 선발: ①주간테스트 기준점 미만 ②교재 단원 정답률 기준 미만.
  * 시험 오답 유형의 단원을 교재 단원 정답률과 대조해 처방(진짜 구멍/실전 약함) 자동 생성.
  * 기준=rc_config, 호출·완료 기록=rc_state (모든 기기 공유). */
-var RC={kicked:false,loaded:false,view:'board',cfg:{minScore:80,minUnit:60,weeks:3},state:{calls:{}}};  // ★ v17-26: view = 'board' | 'ledger'
+var RC={kicked:false,loaded:false,view:'board',cfg:{minScore:80,minUnit:60,weeks:3,slots:['10:00','11:00','13:00']},state:{calls:{},dates:{}},papers:{}};  // ★ v17-26 view: board|ledger · ★ v17-27 slots(시간대)·dates(주별 날짜 지정)·papers(시험지 팝업 캐시)
 async function rcLoad(force){
   if(RC.loaded&&!force) return;
   var sb=getSupaClient(); if(!sb){ RC.loaded=true; return; }
@@ -8691,14 +8701,15 @@ async function rcLoad(force){
     var r=await sb.from('lumen_store').select('key,value').in('key',['rc_config','rc_state']);
     (r.data||[]).forEach(function(row){
       var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
-      if(row.key==='rc_config'&&v) RC.cfg={ minScore:Number(v.minScore)||80, minUnit:Number(v.minUnit)||60, weeks:Number(v.weeks)||3 };
-      else if(row.key==='rc_state'&&v) RC.state={ calls:v.calls||{} };
+      if(row.key==='rc_config'&&v) RC.cfg={ minScore:Number(v.minScore)||80, minUnit:Number(v.minUnit)||60, weeks:Number(v.weeks)||3,
+        slots:(Array.isArray(v.slots)&&v.slots.length)?v.slots:['10:00','11:00','13:00'] };
+      else if(row.key==='rc_state'&&v) RC.state={ calls:v.calls||{}, dates:v.dates||{} };
     });
   }catch(e){ console.error('[리커버리] 로드 실패:',e); }
   RC.loaded=true;
 }
-async function rcSaveCfg(){ try{ await supaSetItem('rc_config',{ minScore:RC.cfg.minScore, minUnit:RC.cfg.minUnit, weeks:RC.cfg.weeks, updated:new Date().toISOString() }); plToast('💾 기준 저장'); }catch(e){ alert('저장 실패: '+e.message); } }
-async function rcSaveState(){ try{ await supaSetItem('rc_state',{ calls:RC.state.calls, updated:new Date().toISOString() }); }catch(e){} }
+async function rcSaveCfg(){ try{ await supaSetItem('rc_config',{ minScore:RC.cfg.minScore, minUnit:RC.cfg.minUnit, weeks:RC.cfg.weeks, slots:RC.cfg.slots, updated:new Date().toISOString() }); plToast('💾 기준 저장'); }catch(e){ alert('저장 실패: '+e.message); } }
+async function rcSaveState(){ try{ await supaSetItem('rc_state',{ calls:RC.state.calls, dates:RC.state.dates||{}, updated:new Date().toISOString() }); }catch(e){} }
 function rcWeekKey(){ var d=new Date(); var add=(6-d.getDay()+7)%7; return new Date(d.getTime()+add*86400000).toISOString().slice(0,10); }
 window.rcEditCfg=function(which){
   var cur=which==='score'?RC.cfg.minScore:(which==='unit'?RC.cfg.minUnit:RC.cfg.weeks);
@@ -8730,9 +8741,81 @@ window.rcToggleCall=function(k){
 window.rcMarkDone=function(k){
   var wk=rcWeekKey(); var W=RC.state.calls[wk]=RC.state.calls[wk]||{};
   var e=W[k]=W[k]||{};
-  if(e.done){ delete e.done; } else { e.done=new Date().toISOString().slice(0,10); e.on=true; if(!e.snap){ var s=rcSnapOf(k); if(s) e.snap=s; } }
+  if(e.done){ delete e.done; rcAttLog(k,wk,e,false); }
+  else { e.done=new Date().toISOString().slice(0,10); e.on=true; if(!e.snap){ var s=rcSnapOf(k); if(s) e.snap=s; } rcAttLog(k,wk,e,true); }
   rcSaveState(); render();
 };
+// ★ v17-27: 완료 처리 ↔ 출결 연동 — 학생 출결의 리커버리 기록(lumen_recovery_log)에 자동 기재/철회.
+//   출결 캘린더·통계의 리커버리 횟수와 하나로 합쳐진다. src:'board' 표시로 원장님이 출결에서 직접 넣은 기록은 건드리지 않음.
+function rcAttLog(k,wk,e,add){
+  try{
+    var st=students.find(function(x){ return String(x.id||x.name)===String(k); });
+    if(!st) return;
+    var dt=rcRecDate(wk);
+    if(!st.lumen_recovery_log) st.lumen_recovery_log={};
+    if(add){
+      var ex=st.lumen_recovery_log[dt];
+      if(ex&&ex.src!=='board') return;   // 원장님이 출결에서 직접 넣은 같은 날짜 기록은 덮어쓰지 않음
+      st.lumen_recovery_log[dt]={ done:true, time:e.slot||'', src:'board' };
+    }
+    else { var cur=st.lumen_recovery_log[dt]; if(cur&&cur.src==='board') delete st.lumen_recovery_log[dt]; }
+    saveStudents();
+    if(add) plToast('🗓️ 출결 리커버리 기록에 기재됨 ('+dt.slice(5).replace('-','.')+(e.slot?' '+e.slot:'')+')');
+  }catch(err){}
+}
+// ★ v17-27: 이번 주 리커버리 실시 날짜 (기본 = 토요일 주키, 주별로 변경 가능)
+function rcRecDate(wk){ return (RC.state.dates&&RC.state.dates[wk])||wk; }
+function rcDayLabel(ds){ var d=new Date(ds); if(isNaN(d)) return ''; return ['일','월','화','수','목','금','토'][d.getDay()]; }
+window.rcEditSchedule=function(){
+  var wk=rcWeekKey();
+  var d=prompt('리커버리 실시 날짜 (YYYY-MM-DD)', rcRecDate(wk));
+  if(d===null) return;
+  d=d.trim();
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||isNaN(new Date(d))){ alert('날짜는 2026-08-08 형식으로 입력해 주세요.'); return; }
+  var s=prompt('시간대 목록 (쉼표로 구분, 예: 10:00, 11:00, 13:00)', RC.cfg.slots.join(', '));
+  if(s===null) return;
+  var slots=s.split(',').map(function(x){ return x.trim(); }).filter(function(x){ return /^\d{1,2}:\d{2}$/.test(x); });
+  if(!slots.length){ alert('시간대는 10:00 형식으로 하나 이상 입력해 주세요.'); return; }
+  RC.state.dates=RC.state.dates||{}; RC.state.dates[wk]=d;
+  RC.cfg.slots=slots;
+  rcSaveState(); rcSaveCfg(); render();
+};
+window.rcSetSlot=function(k,slot){
+  var wk=rcWeekKey(); var W=RC.state.calls[wk]=RC.state.calls[wk]||{};
+  var e=W[k]=W[k]||{};
+  e.slot=(e.slot===slot)?'':slot;   // 같은 것 다시 누르면 해제
+  rcSaveState(); render();
+};
+// ★ v17-27: 기준에 안 걸렸어도 원장님 판단으로 직접 추가 (수동 호출)
+window.rcManualAdd=function(sel){
+  var k=sel.value; if(!k) return; sel.value='';
+  var st=students.find(function(x){ return String(x.id||x.name)===String(k); });
+  if(!st) return;
+  var wk=rcWeekKey(); var W=RC.state.calls[wk]=RC.state.calls[wk]||{};
+  var e=W[k]=W[k]||{};
+  e.on=true; e.manual=true;
+  e.snap={ name:st.name, group:st.group||'', grade:st.grade||'', score:null, rx:['원장님 직접 지정'], holes:0, rxN:0 };
+  rcSaveState(); render();
+};
+window.rcManualRemove=function(k){
+  var wk=rcWeekKey(); var W=RC.state.calls[wk]||{};
+  if(W[k]){ delete W[k]; rcSaveState(); render(); }
+};
+// 이번 주 확정 명단 = 자동 선발 중 호출 ON + 수동 추가 (우측 패널·안내문·인쇄 공용)
+function rcConfirmed(){
+  var wk=rcWeekKey(); var W=RC.state.calls[wk]||{};
+  var rows=rcRows(); var out=[]; var seen={};
+  rows.forEach(function(x){
+    var e=W[x.stKey];
+    if(e&&e.on){ seen[x.stKey]=1; out.push({ k:x.stKey, name:x.st.name, group:x.st.group||'', score:(x.testHit?x.testHit.score:null), rx:x.rx||[], row:x, e:e, manual:false }); }
+  });
+  Object.keys(W).forEach(function(k){
+    var e=W[k]; if(!e||!e.on||seen[k]) return;
+    var s=e.snap||{};
+    out.push({ k:k, name:s.name||k, group:s.group||'', score:(s.score!=null?s.score:null), rx:s.rx||[], row:null, e:e, manual:!!e.manual });
+  });
+  return out;
+}
 function rcNrm(x){ return String(x||'').replace(/[\s\.\-–·()\[\]0-9ⅠⅡⅢⅣⅤⅥⅦ]/g,'').toLowerCase(); }
 // 유형 id → 단원명 (유형성취도 사전의 중단원명)
 function rcUnitOf(cid){
@@ -8752,7 +8835,8 @@ function rcRows(){
       if(t.type!=='WEEKLY'||!t.date||t.date<since) return;
       var me=(t.students||[]).find(function(sx){ return String(sx.sid)===String(sid)&&sx.score!=null; });
       if(me&&me.score<RC.cfg.minScore){
-        if(!testHit||String(t.date)>String(testHit.date)) testHit={ date:t.date, title:t.title, score:me.score, wrong:me.wrongConcepts||[] };
+        if(!testHit||String(t.date)>String(testHit.date)) testHit={ date:t.date, title:t.title, score:me.score, wrong:me.wrongConcepts||[],
+          wid:t.wid, correct:me.correct, total:me.total, rank:me.acadRank, rankN:me.acadN, avg:me.acadAvg, paper:t.paper||null };  // ★ v17-27: 시험지 팝업용
       }
     });
     // ② 단원 기준 (진행 중 교재의 단원 정답률)
@@ -8820,9 +8904,17 @@ window.rcPrint=function(){
   var wk=rcWeekKey(); var W=RC.state.calls[wk]||{};
   var all=rcRows();
   var rows=all.filter(function(x){ return W[x.stKey]&&W[x.stKey].on&&!(W[x.stKey].done); });
+  // ★ v17-27: 직접 추가(수동) 학생도 학습지 포함 — 약점 데이터가 없으면 「선생님이 지정」 빈 양식
+  var inRows={}; all.forEach(function(x){ inRows[x.stKey]=1; });
+  Object.keys(W).forEach(function(k){
+    var e=W[k]; if(!e||!e.on||e.done||inRows[k]) return;
+    var s=e.snap||{};
+    rows.push({ st:{ name:s.name||k, group:s.group||'', grade:s.grade||'' }, stKey:k, testHit:null, unitHits:[], match:[], rx:[], pri:2 });
+  });
   if(!rows.length) rows=all;   // 확정이 없으면 선발 전원
   if(!rows.length){ alert('선발된 학생이 없습니다.'); return; }
-  var d=new Date(wk); var dstr=(d.getMonth()+1)+'월 '+d.getDate()+'일(토)';
+  var recDt=rcRecDate(wk);
+  var d=new Date(recDt); var dstr=(d.getMonth()+1)+'월 '+d.getDate()+'일('+rcDayLabel(recDt)+')';
   var vName={ hole:'🔴 진짜 구멍', prac:'🟡 실전만 약함', old:'🔵 예전 내용' };
   var esc=function(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
   var pages=rows.map(function(x){
@@ -8870,24 +8962,129 @@ window.rcPrint=function(){
   setTimeout(function(){ try{ w.focus(); w.print(); }catch(e){} }, 400);
   plToast('📄 '+rows.length+'명 리커버리 학습지 인쇄 창을 열었어요');
 };
-window.rcCopySms=function(){
-  var wk=rcWeekKey(); var W=RC.state.calls[wk]||{};
-  var rows=rcRows().filter(function(x){ return W[x.stKey]&&W[x.stKey].on&&!(W[x.stKey].done); });
-  if(!rows.length){ alert('호출 확정된 학생이 없습니다.'); return; }
-  var d=new Date(wk); var dstr=(d.getMonth()+1)+'월 '+d.getDate()+'일(토)';
-  var txt=rows.map(function(x){
-    var why=x.rx.length?(' 보충 내용: '+x.rx[0]):'';
-    return '[루멘수학] 안녕하세요, '+x.st.name+' 학생 '+dstr+' 리커버리 보충수업 안내드립니다. 최근 학습 점검 결과 보완이 필요한 단원이 있어 주말 보충을 진행합니다.'+why+' 참석 부탁드립니다. 감사합니다.';
-  }).join('\n\n');
-  try{ navigator.clipboard.writeText(txt); }catch(e){}
-  plToast('📋 안내문 '+rows.length+'명분 복사됨');
+// ★ v17-27: 팝업 공통 (render()와 독립 — body에 직접 부착)
+function rcPopShow(html){
+  rcPopClose();
+  var ov=document.createElement('div');
+  ov.id='rc-pop';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(13,34,64,.55);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.addEventListener('click',function(ev){ if(ev.target===ov) rcPopClose(); });
+  ov.innerHTML='<div style="background:#fff;border-radius:18px;width:640px;max-width:94vw;max-height:88vh;overflow:auto;padding:22px 24px">'+html+'</div>';
+  document.body.appendChild(ov);
+}
+window.rcPopClose=function(){ var ov=document.getElementById('rc-pop'); if(ov) ov.remove(); };
+function rcPopHead(title){
+  return '<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px"><div style="font-size:17px;font-weight:900;color:#0d2240">'+title+'</div>'
+    +'<button onclick="rcPopClose()" style="margin-left:auto;border:none;background:#f1f5f9;border-radius:50px;width:30px;height:30px;font-size:14px;font-weight:900;cursor:pointer;color:#64748b">✕</button></div>';
+}
+// ★ v17-27: 학부모 안내문 — 복사 전에 확인·수정하는 팝업 (자동 발송 아님, 복사만)
+window.rcOpenSms=function(){
+  var list=rcConfirmed().filter(function(c){ return !(c.e&&c.e.done); });
+  if(!list.length){ alert('호출 확정된 학생이 없습니다.'); return; }
+  var wk=rcWeekKey(); var dt=rcRecDate(wk);
+  var d=new Date(dt); var dstr=(d.getMonth()+1)+'월 '+d.getDate()+'일('+rcDayLabel(dt)+')';
+  var h=rcPopHead('📨 학부모 안내문 확인 · 수정 후 복사');
+  h+='<div style="font-size:11.5px;color:#94a3b8;font-weight:700;margin-bottom:12px">보내지는 것이 아니라 <b style="color:#b45309">복사만</b> 됩니다 — 원장님이 문자앱에 붙여넣어 발송</div>';
+  list.forEach(function(c,i){
+    var when=dstr+(c.e&&c.e.slot?' '+c.e.slot:'');
+    var why=(c.rx&&c.rx.length&&c.rx[0]!=='원장님 직접 지정')?(' 보충 내용: '+c.rx[0]+'.'):'';
+    var txt='[루멘수학] 안녕하세요, '+c.name+' 학생 '+when+' 리커버리 보충수업 안내드립니다. 최근 학습 점검 결과 보완이 필요한 단원이 있어 보충을 진행합니다.'+why+' 참석 부탁드립니다. 감사합니다.';
+    h+='<div style="border:1.5px solid #e2e8f0;border-radius:12px;padding:12px 14px;margin-bottom:9px">';
+    h+='<div style="font-size:11px;font-weight:900;color:#7c3aed;margin-bottom:5px">'+esc2(c.name)+' 학부모님 · '+esc2(when)+'</div>';
+    h+='<textarea id="rc-sms-'+i+'" style="width:100%;border:none;font-family:inherit;font-size:12.5px;line-height:1.75;color:#334155;resize:vertical;min-height:92px;font-weight:600;outline:none">'+esc2(txt)+'</textarea>';
+    h+='</div>';
+  });
+  h+='<button onclick="rcCopyAllSms('+list.length+')" style="border:none;border-radius:10px;padding:11px 14px;font-family:inherit;font-size:13.5px;font-weight:900;cursor:pointer;width:100%;background:#ffd54a;color:#0d2240">📋 전체 복사 ('+list.length+'명분)</button>';
+  rcPopShow(h);
+};
+window.rcCopyAllSms=function(n){
+  var parts=[];
+  for(var i=0;i<n;i++){ var ta=document.getElementById('rc-sms-'+i); if(ta&&ta.value.trim()) parts.push(ta.value.trim()); }
+  if(!parts.length) return;
+  try{ navigator.clipboard.writeText(parts.join('\n\n')); }catch(e){}
+  plToast('📋 안내문 '+parts.length+'명분 복사됨');
+  rcPopClose();
+};
+// ★ v17-27: 주간점수 클릭 → 시험지 확인 팝업 — mf_answer_records의 문항별 실채점 기록으로
+//   「실제 주간테스트가 맞는지」(채점일시·문항별 O/X·틀린 유형·난이도·전국 정답률) 확인.
+var RC_LV={1:'최하',2:'하',3:'중',4:'상',5:'최상'};
+window.rcOpenPaper=async function(k){
+  var row=rcRows().find(function(x){ return x.stKey===k; });
+  if(!row||!row.testHit||row.testHit.wid==null){ alert('이 학생의 주간테스트 정보를 찾지 못했습니다.'); return; }
+  var t=row.testHit, sid=row.sid;
+  var ck=sid+'_'+t.wid;
+  rcPopShow(rcPopHead('📄 '+esc2(row.st.name)+' — '+esc2(t.title))+'<div style="padding:30px;text-align:center;color:#94a3b8;font-weight:700">문항 기록 불러오는 중…</div>');
+  var recs=RC.papers[ck];
+  if(!recs){
+    try{
+      var sb=getSupaClient();
+      var r=await sb.from('mf_answer_records')
+        .select('problem_seq,number,result,concept_id,level,page,score_datetime,student_worksheet_id')
+        .eq('worksheet_id',t.wid).eq('mf_student_id',sid).eq('source','학습지')
+        .order('problem_seq',{ascending:true}).limit(500);
+      recs=(r&&r.data)||[];
+      // 재응시가 있으면 가장 최근 채점(student_worksheet_id)만
+      if(recs.length){
+        var bySw={}; recs.forEach(function(x){ var sw=x.student_worksheet_id||'0'; (bySw[sw]=bySw[sw]||[]).push(x); });
+        var swIds=Object.keys(bySw);
+        if(swIds.length>1){
+          swIds.sort(function(a,b){ var da=(bySw[a][0].score_datetime||''), db=(bySw[b][0].score_datetime||''); return db.localeCompare(da); });
+          recs=bySw[swIds[0]];
+        }
+      }
+      RC.papers[ck]=recs;
+    }catch(e){ recs=null; }
+  }
+  if(!document.getElementById('rc-pop')) return;   // 기다리는 사이 닫았으면 중단
+  var h=rcPopHead('📄 '+esc2(row.st.name)+' — '+esc2(t.title));
+  var sub=t.score+'점 · '+(t.correct!=null?t.correct+'/'+t.total+'문항':'')+(t.rank?' · 학원 '+t.rank+'/'+t.rankN+'등':'')+(t.avg!=null?' (평균 '+t.avg+'점)':'');
+  h+='<div style="font-size:12px;color:#64748b;font-weight:700">'+esc2(sub)+'</div>';
+  if(recs===null||!recs.length){
+    h+='<div style="padding:26px;text-align:center;color:#94a3b8;font-weight:700;font-size:12.5px">문항별 기록을 불러오지 못했습니다.<br>수집기가 이 시험을 아직 문항 단위로 수집하지 않았거나 네트워크 문제입니다.<br><span style="font-size:11px">점수 자체는 매쓰플랫 채점 기록('+esc2(String(t.date||''))+')에서 온 값입니다.</span></div>';
+    rcPopShow(h); return;
+  }
+  var lastDt=''; recs.forEach(function(x){ var d0=String(x.score_datetime||''); if(d0>lastDt) lastDt=d0; });
+  var vtag=function(s){ return '<span style="font-size:11px;font-weight:800;border-radius:50px;padding:4px 11px;background:#ecfdf5;color:#0e7a52;border:1px solid #a7f3d0">'+s+'</span>'; };
+  h+='<div style="display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 14px">';
+  h+=vtag('✓ 매쓰플랫 실채점 기록 '+recs.length+'문항');
+  if(lastDt) h+=vtag('✓ 채점일시 '+esc2(lastDt.slice(0,16).replace('T',' ')));
+  if(t.paper&&t.paper.label) h+=vtag('✓ '+esc2(t.paper.label)+(t.paper.range?' · '+esc2(String(t.paper.range).slice(0,22)):''));
+  h+='</div>';
+  h+='<div style="font-size:12px;font-weight:900;color:#0d2240;margin-bottom:7px">문항별 정오</div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-bottom:14px">';
+  recs.forEach(function(x){
+    var no=(x.number!=null?x.number:x.problem_seq);
+    var isX=(x.result==='X'), isO=(x.result==='O');
+    var bg=isX?'background:#fef2f2;border-color:#fecaca':(isO?'background:#f0fdf4;border-color:#bbf7d0':'');
+    var mk=isX?'<span style="color:#dc2626">✕</span>':(isO?'<span style="color:#16a34a">○</span>':'<span style="color:#cbd5e1">−</span>');
+    h+='<div style="border:1.5px solid #e2e8f0;border-radius:9px;padding:5px 0 4px;text-align:center;'+bg+'"><div style="font-size:9.5px;color:#94a3b8;font-weight:800">'+no+'번</div><div style="font-size:14px;font-weight:900">'+mk+'</div></div>';
+  });
+  h+='</div>';
+  var xs=recs.filter(function(x){ return x.result==='X'; });
+  if(xs.length){
+    h+='<div style="font-size:12px;font-weight:900;color:#0d2240;margin-bottom:7px">❌ 틀린 문항의 유형</div>';
+    xs.forEach(function(x){
+      var no=(x.number!=null?x.number:x.problem_seq);
+      var nm=(x.concept_id!=null&&typeof tqName==='function')?tqName(x.concept_id):'';
+      if(nm===String(x.concept_id)) nm='';
+      var nat=(x.page!=null&&x.page>=0&&x.page<=100)?Math.round(x.page):null;
+      h+='<div style="border:1px solid #fecaca;background:#fff8f8;border-radius:11px;padding:9px 12px;margin-bottom:6px;font-size:12px;font-weight:800;color:#334155;display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
+      h+='<span>'+no+'번</span>'+(nm?'<span>「'+esc2(nm)+'」</span>':'<span style="color:#94a3b8">유형 정보 없음</span>');
+      if(x.level&&RC_LV[x.level]) h+='<span style="font-size:10px;background:#7c2d12;color:#fff;border-radius:6px;padding:2px 7px">'+RC_LV[x.level]+'</span>';
+      if(nat!=null) h+='<span style="margin-left:auto;font-size:10.5px;color:#94a3b8;font-weight:700">전국 정답률 '+nat+'%</span>';
+      h+='</div>';
+    });
+  }
+  h+='<div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:10px">ℹ️ 문제 원본 이미지는 매쓰플랫에 있습니다 — 앱은 문항별 정오·유형·난이도·전국 정답률·채점일시까지 표시합니다.</div>';
+  rcPopShow(h);
 };
 function rRecovery(){
   if(!RC.loaded){ rcLoad().then(function(){ if(VIEW==='recovery') render(); }); return '<div style="padding:60px;text-align:center;color:#94a3b8;font-weight:700">🚑 리커버리 불러오는 중…</div>'; }
   var wk=rcWeekKey(); var W=RC.state.calls[wk]||{};
   var rows=rcRows();
-  var confirmed=rows.filter(function(x){ return W[x.stKey]&&W[x.stKey].on&&!W[x.stKey].done; }).length;
-  var h='<div style="padding:18px 22px 40px;max-width:1150px">';
+  var conf=rcConfirmed();
+  var confirmed=conf.filter(function(c){ return !(c.e&&c.e.done); }).length;
+  var h='<div style="padding:18px 22px 40px;max-width:1560px">';   // ★ v17-27: 우측 패널 포함 3분할 폭
   h+='<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px">';
   h+='<div style="font-size:22px;font-weight:900;color:#0d2240">🚑 리커버리 수업</div>';
   h+='<div style="font-size:12px;color:#94a3b8;font-weight:600">자동 선발 · 원장님이 호출 확정 · 완료까지 기록</div>';
@@ -8910,14 +9107,16 @@ function rRecovery(){
       +'<div style="font-size:11px;color:#64748b;font-weight:800">'+l+'</div>'
       +'<div style="font-size:24px;font-weight:900;color:#0d2240;line-height:1.1;margin-top:2px">'+v+(sub?' <span style="font-size:12px;color:#94a3b8;font-weight:800">'+sub+'</span>':'')+'</div></div>';
   };
+  var recDt=rcRecDate(wk); var rd=new Date(recDt);
   h+='<div style="display:flex;gap:11px;margin-bottom:14px;flex-wrap:wrap">';
-  h+=scall('🚨 리커버리 대상', rows.length, '명'+(pri1?' · 🔥'+pri1:''), 'red');
-  h+=scall('📞 호출 확정', confirmed, '/'+rows.length+'명', 'y');
+  h+=scall('🚨 예상 명단 (자동 선발)', rows.length, '명'+(pri1?' · 🔥'+pri1:''), 'red');
+  h+=scall('📞 확정 명단 (원장님 체크)', confirmed, '명', 'y');
   h+=scall('🧩 처방 약점 유형', rxUnits, '유형', 'g');
-  h+='<div style="flex:1;min-width:150px;background:#f8fafc;border-left:4px solid #0d2240;border-radius:13px;padding:11px 14px;display:flex;flex-direction:column;justify-content:center;gap:6px">'
-    +'<button onclick="rcPrint()" style="border:none;background:#0d2240;color:#fff;font-family:inherit;font-size:12.5px;font-weight:900;padding:9px 0;border-radius:9px;cursor:pointer">📄 종이 학습지 인쇄</button>'
-    +'<div style="font-size:9.5px;color:#94a3b8;font-weight:700;text-align:center">확정 학생(없으면 전원) 1인 1장</div></div>';
+  h+=scall('🗓️ 이번 주 리커버리', (rd.getMonth()+1)+'/'+rd.getDate()+'('+rcDayLabel(recDt)+')', RC.cfg.slots.join('·'), '');
   h+='</div>';
+  // ★ v17-27: 3분할 — 좌 = 예상 명단 보드 · 우 = 확정 명단(시간 배분·안내문·인쇄·출결 연동)
+  h+='<div style="display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;align-items:start">';
+  h+='<div>';
   if(!rows.length) h+='<div style="padding:40px;text-align:center;color:#15803d;font-weight:800;font-size:15px">🎉 지금 기준으로 선발된 학생이 없습니다</div>';
   rows.forEach(function(x){
     var e=W[x.stKey]||{};
@@ -8928,7 +9127,7 @@ function rRecovery(){
     h+='<span style="font-size:19px;font-weight:900;color:#0d2240">'+esc2(x.st.name)+'</span>';
     h+='<span style="font-size:13px;color:#94a3b8;font-weight:800">'+esc2((x.st.grade||'').replace(/학교|학년/g,'').replace(/\s/g,''))+' · '+esc2(x.st.group||'')+'</span>';
     if(x.pri===0) h+='<span style="font-size:13px;font-weight:900;border-radius:9px;padding:5px 11px;background:#7c2d12;color:#fff">🔥 두 기준 모두 — 1순위</span>';
-    if(x.testHit) h+='<span style="font-size:13px;font-weight:900;border-radius:9px;padding:5px 11px;background:#fee2e2;color:#dc2626">주간 '+x.testHit.score+'점 ('+esc2(String(x.testHit.date||'').slice(5).replace('-','.'))+')</span>';
+    if(x.testHit) h+='<span onclick="rcOpenPaper(\''+esc2(x.stKey).replace(/'/g,'')+'\')" title="시험지 확인 — 문항별 정오·채점일시" style="font-size:13px;font-weight:900;border-radius:9px;padding:5px 11px;background:#fee2e2;color:#dc2626;border:1.5px dashed #fca5a5;cursor:pointer">주간 '+x.testHit.score+'점 ('+esc2(String(x.testHit.date||'').slice(5).replace('-','.'))+') <span style="font-weight:800;opacity:0.65;font-size:10.5px">📄 시험지</span></span>';
     x.unitHits.slice(0,2).forEach(function(u){ h+='<span style="font-size:13px;font-weight:900;border-radius:9px;padding:5px 11px;background:#fef3c7;color:#92400e">「'+esc2(u.n)+'」 '+u.rate+'%</span>'; });
     h+='<span style="margin-left:auto;display:flex;align-items:center;gap:9px">';
     if(doneRow){ h+='<span style="font-size:13px;font-weight:900;border-radius:50px;padding:5px 12px;background:#dcfce7;color:#15803d">✅ '+esc2(String(e.done).slice(5).replace('-','.'))+' 완료</span>'; h+='<button onclick="rcMarkDone(\''+esc2(x.stKey).replace(/'/g,'')+'\')" style="border:1px solid #e2e8f0;background:#fff;color:#94a3b8;font-family:inherit;font-size:10px;font-weight:800;padding:3px 9px;border-radius:8px;cursor:pointer">↩</button>'; }
@@ -8954,15 +9153,59 @@ function rRecovery(){
     if(x.rx.length&&!doneRow) h+='<div style="font-size:14px;font-weight:800;color:#0e7490;margin-top:8px">📋 보충 제안: '+x.rx.map(esc2).join(' / ')+'</div>';
     h+='</div>';
   });
-  // 요약 바
-  var d2=new Date(wk);
-  h+='<div style="display:flex;align-items:center;gap:12px;background:#0d2240;border-radius:14px;padding:13px 17px;color:#fff;margin-top:14px;flex-wrap:wrap;font-size:14.5px;font-weight:800">';
-  h+='📅 이번 주말('+(d2.getMonth()+1)+'.'+d2.getDate()+' 토) 리커버리: <b style="color:#ffd54a">'+confirmed+'명 확정</b>';
-  h+='<span style="opacity:0.6;font-size:12px">보충 후 「✅ 완료 처리」 — 기록이 쌓여 2학기 운영 장부가 됩니다</span>';
-  h+='<button onclick="rcPrint()" style="margin-left:auto;background:#fff;color:#0d2240;border:none;border-radius:10px;padding:9px 15px;font-size:13.5px;font-weight:900;cursor:pointer;font-family:inherit">📄 종이 인쇄</button>';
-  h+='<button onclick="rcCopySms()" style="background:#ffd54a;color:#0d2240;border:none;border-radius:10px;padding:9px 16px;font-size:13.5px;font-weight:900;cursor:pointer;font-family:inherit">📋 학부모 안내문 복사</button>';
+  h+='</div>';   // 좌측 끝
+  h+=rcSidePanel(conf, wk);
+  h+='</div>';   // 그리드 끝
   h+='</div>';
-  h+='</div>';
+  return h;
+}
+// ★ v17-27: 우측 확정 명단 패널 — 시간 배분·직접 추가·안내문 확인·인쇄·출결 연동 안내
+function rcSidePanel(conf, wk){
+  var recDt=rcRecDate(wk); var rd=new Date(recDt);
+  var live=conf.filter(function(c){ return !(c.e&&c.e.done); });
+  var h='<div style="position:sticky;top:14px">';
+  h+='<div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:15px;overflow:hidden">';
+  h+='<div style="padding:11px 15px;background:#0d2240;color:#fff;font-size:13.5px;font-weight:900;display:flex;align-items:center;gap:8px">📞 확정 명단 · 시간 배분<span style="margin-left:auto;font-size:11px;background:rgba(255,255,255,.18);border-radius:50px;padding:3px 10px">'+live.length+'명</span></div>';
+  h+='<div style="display:flex;gap:6px;align-items:center;font-size:11.5px;font-weight:800;color:#64748b;padding:9px 14px;background:#f8fafc;border-bottom:1px solid #eef2f7;flex-wrap:wrap">🗓️ <b style="color:#0d2240">'+(rd.getMonth()+1)+'월 '+rd.getDate()+'일('+rcDayLabel(recDt)+')</b> · 시간대:';
+  RC.cfg.slots.forEach(function(s){ h+='<span style="border:1px solid #cbd5e1;background:#fff;border-radius:50px;padding:3px 10px;font-weight:800;font-size:11px">'+esc2(s)+'</span>'; });
+  h+='<span onclick="rcEditSchedule()" style="color:#1d6fe8;cursor:pointer">✎ 날짜·시간 편집</span></div>';
+  h+='<div style="padding:12px 14px">';
+  if(!conf.length){
+    h+='<div style="padding:18px 8px;text-align:center;color:#94a3b8;font-size:12px;font-weight:700;line-height:1.7">아직 확정된 학생이 없습니다.<br>왼쪽 명단에서 <b>호출 확정</b>을 체크하세요.</div>';
+  }
+  conf.forEach(function(c){
+    var done=!!(c.e&&c.e.done);
+    h+='<div style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid '+(done?'#bbf7d0':'#eef2f7')+';border-radius:11px;margin-bottom:7px;background:'+(done?'#f7fef9':'#fbfcff')+';flex-wrap:wrap">';
+    h+='<span style="font-size:13.5px;font-weight:900;color:#0d2240">'+(done?'✅ ':'')+esc2(c.name)+'</span>';
+    h+='<span style="font-size:10.5px;color:#94a3b8;font-weight:700">'+esc2(c.group||'')+(c.score!=null?' · '+c.score+'점':'')+'</span>';
+    if(c.manual) h+='<span style="font-size:9.5px;font-weight:900;background:#e0e7ff;color:#3730a3;border-radius:20px;padding:2px 7px">👋 직접</span>';
+    h+='<span style="margin-left:auto;display:flex;gap:4px;align-items:center">';
+    if(!done){
+      RC.cfg.slots.forEach(function(s){
+        var on=(c.e&&c.e.slot===s);
+        h+='<button onclick="rcSetSlot(\''+esc2(c.k).replace(/'/g,'')+'\',\''+esc2(s)+'\')" style="font-size:11px;font-weight:900;border-radius:8px;padding:5px 9px;border:1.5px solid '+(on?'#1d6fe8':'#e2e8f0')+';background:'+(on?'#1d6fe8':'#fff')+';color:'+(on?'#fff':'#94a3b8')+';cursor:pointer;font-family:inherit">'+esc2(s)+'</button>';
+      });
+    } else if(c.e&&c.e.slot){ h+='<span style="font-size:11px;font-weight:800;color:#15803d">'+esc2(c.e.slot)+'</span>'; }
+    if(c.manual) h+='<button onclick="rcManualRemove(\''+esc2(c.k).replace(/'/g,'')+'\')" title="확정 취소" style="border:none;background:#fee2e2;color:#dc2626;border-radius:7px;width:22px;height:22px;cursor:pointer;font-weight:900">✕</button>';
+    h+='</span></div>';
+  });
+  // 직접 추가 (기준에 안 걸린 학생도 원장님 판단으로)
+  var inConf={}; conf.forEach(function(c){ inConf[c.k]=1; });
+  var addable=getSortedStudents().filter(function(s){ return !inConf[String(s.id||s.name)]; });
+  if(addable.length){
+    h+='<select onchange="rcManualAdd(this)" style="width:100%;border:1.5px dashed #cbd5e1;border-radius:10px;padding:8px 10px;font-family:inherit;font-size:12px;font-weight:800;color:#64748b;background:#fff;margin:3px 0 8px;cursor:pointer">';
+    h+='<option value="">＋ 학생 직접 추가 (기준 밖이어도 호출)</option>';
+    addable.forEach(function(s){ var k=String(s.id||s.name); h+='<option value="'+esc2(k)+'">'+esc2(s.name)+(s.group?' ('+esc2(s.group)+')':'')+'</option>'; });
+    h+='</select>';
+  }
+  if(conf.length) h+='<div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin:2px 2px 10px">💡 시간대를 누르면 배정 — 안내문·출결 기록에 자동 반영</div>';
+  h+='<div style="display:flex;gap:9px;align-items:flex-start;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:11px;padding:10px 12px;font-size:11.5px;font-weight:700;color:#166534;line-height:1.65">🗓️ <span><b>출결 연동</b> — 「✅ 완료 처리」하면 그 학생 출결의 <b>리커버리 기록</b>에 자동 기재됩니다 (출결 캘린더·통계와 하나로).</span></div>';
+  h+='<div style="height:10px"></div>';
+  h+='<button onclick="rcOpenSms()" style="border:none;border-radius:10px;padding:11px 14px;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer;width:100%;background:#ffd54a;color:#0d2240">📨 학부모 안내문 확인'+(live.length?' ('+live.length+'명)':'')+'</button>';
+  h+='<div style="height:7px"></div>';
+  h+='<button onclick="rcPrint()" style="border:none;border-radius:10px;padding:11px 14px;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer;width:100%;background:#0d2240;color:#fff">📄 종이 학습지 인쇄'+(live.length?' (확정 '+live.length+'명)':' (선발 전원)')+'</button>';
+  h+='<div style="font-size:9.5px;color:#94a3b8;font-weight:700;text-align:center;margin-top:5px">확정 학생(없으면 선발 전원) 1인 1장 · 보충 후 「✅ 완료 처리」가 운영 장부에 쌓입니다</div>';
+  h+='</div></div></div>';
   return h;
 }
 
@@ -39763,7 +40006,30 @@ function vodLoadAssign(){
   try{ var raw=localStorage.getItem('lumen_vod_assign'); if(raw){ var o=JSON.parse(raw); if(o&&typeof o==='object') return o; } }catch(e){}
   return {};
 }
-function vodEnsure(){ if(VOD_CATALOG===null){ VOD_CATALOG=vodLoadCatalog(); try{ vodScrubBadIds(); }catch(e){} } if(VOD_ASSIGN===null) VOD_ASSIGN=vodLoadAssign(); }
+function vodEnsure(){ if(VOD_CATALOG===null){ VOD_CATALOG=vodLoadCatalog(); try{ vodScrubBadIds(); }catch(e){} try{ vodRestoreUnits(); }catch(e){} } if(VOD_ASSIGN===null) VOD_ASSIGN=vodLoadAssign(); }
+// ★ v17-27: 단원 목록이 지워졌는데 영상들이 unitId(어느 단원 소속이었는지)를 아직 갖고 있으면
+//   같은 그룹을 유지한 채 자리표시자 단원으로 재생성 — 원장님은 이름만 다시 붙이면 됨.
+//   클라우드에 원본 이름이 남아 있으면 다음 동기화 때 자리표시자가 원본 이름으로 자동 교체된다(병합 규칙).
+function vodRestoreUnits(){
+  if(!VOD_CATALOG) return;
+  if(!Array.isArray(VOD_CATALOG.units)) VOD_CATALOG.units=[];
+  var have={}; VOD_CATALOG.units.forEach(function(u){ if(u&&u.id) have[u.id]=1; });
+  var orphan={}; // unitId → {folderId, ord(첫 영상 순서)}
+  (VOD_CATALOG.videos||[]).forEach(function(v){
+    if(!v||!v.unitId||have[v.unitId]) return;
+    if(!orphan[v.unitId]) orphan[v.unitId]={ folderId:v.folderId, ord:(v.order!=null?v.order:999) };
+  });
+  var ids=Object.keys(orphan);
+  if(!ids.length) return;
+  ids.sort(function(a,b){ return orphan[a].ord-orphan[b].ord; });
+  var byFolder={};
+  ids.forEach(function(uid){
+    var o=orphan[uid]; byFolder[o.folderId]=(byFolder[o.folderId]||0)+1;
+    VOD_CATALOG.units.push({ id:uid, folderId:o.folderId, name:'단원 '+byFolder[o.folderId]+' (이름 복구 필요)', order:o.ord });
+  });
+  try{ vodSaveCatalog(); }catch(e){}
+  try{ vodToast('🎬 지워졌던 단원 '+ids.length+'개를 되살렸습니다 — 이름만 다시 붙여주세요 (✏️)'); }catch(e){}
+}
 function vodSaveCatalog(){ vodEnsure(); localStorage.setItem('lumen_vod_catalog', JSON.stringify(VOD_CATALOG)); }
 function vodSaveAssign(){ vodEnsure(); localStorage.setItem('lumen_vod_assign', JSON.stringify(VOD_ASSIGN)); }
 
