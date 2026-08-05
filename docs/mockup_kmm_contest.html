@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 · KMM 경시대회 연동 v2 (상의용)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{ --red:#e8192c; --navy:#0d2240; --navy2:#1d3a60; --g:#22c55e; --y:#f59e0b; --r:#ef4444; }
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#e9edf3;padding:24px 12px 80px;display:flex;flex-direction:column;align-items:center;gap:26px}
+.note{max-width:1060px;width:100%;background:#fffbe8;border:1.5px solid #fbbf24;border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.8;color:#78350f;font-weight:600}
+.note b{color:#92400e}
+.src{max-width:1060px;width:100%;background:#eef6ff;border:1.5px solid #93c5fd;border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.8;color:#1e3a8a;font-weight:600}
+.src b{color:#1d4ed8}
+.lbl{max-width:1060px;width:100%;font-size:14px;font-weight:900;color:#0d2240;padding-left:4px}
+.lbl .s{font-size:11px;color:#64748b;font-weight:700;margin-left:8px}
+/* 학원앱 데스크톱 패널 */
+.desk{max-width:1060px;width:100%;background:#f6f8fb;border-radius:18px;box-shadow:0 10px 34px rgba(13,34,64,0.18);overflow:hidden;border:1px solid #dbe3ee}
+.dhd{background:var(--navy);color:#fff;padding:14px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dhd .t{font-size:16px;font-weight:900}
+.chip{background:rgba(255,255,255,0.14);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800}
+.chip.on{background:#ffd54a;color:#0d2240}
+.pull{margin-left:auto;background:var(--red);color:#fff;border:none;border-radius:20px;padding:7px 14px;font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer}
+.pulled{font-size:10px;color:#94c5ff;font-weight:700}
+.gtabs{display:flex;gap:6px;padding:10px 16px 0;background:#fff;flex-wrap:wrap}
+.gt{border:1.5px solid #e2e8f0;background:#fff;border-radius:9px 9px 0 0;padding:7px 13px;font-size:11.5px;font-weight:800;color:#64748b}
+.gt.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.gt small{font-weight:700;opacity:0.7}
+.strip{display:flex;gap:10px;padding:14px 16px;background:#fff;border-bottom:1px solid #eef2f7;flex-wrap:wrap}
+.stat{flex:1;min-width:118px;background:#f8fafc;border:1.5px solid #eef2f7;border-radius:12px;padding:10px 12px}
+.stat .k{font-size:10.5px;font-weight:800;color:#94a3b8}
+.stat .v{font-size:18px;font-weight:900;color:var(--navy);margin-top:2px}
+.stat .v small{font-size:11px;color:#64748b;font-weight:700}
+.stat.dd{background:#fff8f0;border-color:#fed7aa}
+.stat.dd .v{color:#c2410c}
+.dbody{display:grid;grid-template-columns:1fr 360px;gap:0}
+@media(max-width:860px){.dbody{grid-template-columns:1fr}}
+.tblwrap{padding:14px 16px;background:#fff;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f1f5f9;color:#475569;font-size:10.5px;font-weight:900;padding:7px 8px;text-align:left;white-space:nowrap}
+td{padding:8px;border-bottom:1px solid #f8fafc;color:#334155;font-weight:700;white-space:nowrap}
+tr.sel td{background:#fff8f8}
+.aw{display:inline-block;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:900}
+.aw.g{background:#fef9c3;color:#a16207}.aw.s{background:#e2e8f0;color:#475569}.aw.b{background:#fde8d7;color:#9a3412}.aw.e{background:#eef2ff;color:#4338ca}.aw.n{background:#f1f5f9;color:#94a3b8}
+.weakchip{display:inline-block;background:#fee2e2;color:#b91c1c;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:900}
+.dare{display:inline-block;background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe;border-radius:10px;padding:1px 7px;font-size:9.5px;font-weight:900;margin-left:4px}
+.rcbtn{border:none;border-radius:8px;padding:5px 9px;font-size:10px;font-weight:900;font-family:inherit;background:var(--navy);color:#fff;cursor:pointer}
+.unitbars{padding:0 16px 16px;background:#fff}
+.ubt{font-size:12px;font-weight:900;color:var(--navy);margin:4px 0 8px}
+.ub{display:grid;grid-template-columns:170px 1fr 46px;gap:8px;align-items:center;margin-bottom:5px}
+.ub .n{font-size:11px;font-weight:800;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ub .track{height:11px;border-radius:99px;background:#f1f5f9;overflow:hidden}
+.ub .fill{height:100%;border-radius:99px}
+.ub .p{font-size:11px;font-weight:900;text-align:right}
+/* 상세(우측) */
+.detail{background:#fbfcff;border-left:1px solid #e8eef8;padding:14px}
+.dt{font-size:13px;font-weight:900;color:var(--navy);margin-bottom:2px}
+.ds{font-size:10.5px;color:#94a3b8;margin-bottom:10px;line-height:1.6}
+.oxg{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px}
+.ox{height:38px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:8.5px;font-weight:800;color:#64748b;background:#f0fdf4;border:1.5px solid #bbf7d0}
+.ox b{font-size:11px;color:#15803d}
+.ox.x{background:#fef2f2;border-color:#fecaca}.ox.x b{color:#dc2626}
+.ox.h{background:#fefce8;border-color:#fde68a}.ox.h b{color:#a16207}
+.oxleg{font-size:9.5px;color:#94a3b8;font-weight:700;margin-bottom:12px;line-height:1.6}
+.probview{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px;margin-bottom:8px}
+.probview .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.probview .pn{font-size:11.5px;font-weight:900;color:#dc2626}
+.probview .imgs{display:flex;gap:6px}
+.probview .im{flex:1;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;height:74px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#94a3b8;font-weight:800;gap:3px}
+.probview .im .big{font-size:18px}
+.witem{background:#fff;border:1.5px solid #fecaca;border-radius:11px;padding:10px 11px;margin-bottom:8px}
+.witem .n{font-size:11.5px;font-weight:800;color:#0d2240}
+.witem .d{font-size:10px;color:#94a3b8;margin-top:2px;line-height:1.5}
+.pbtns{display:flex;gap:5px;margin-top:7px}
+.pb1{flex:1;border:none;border-radius:8px;padding:6px 0;font-size:10px;font-weight:800;font-family:inherit;background:var(--navy);color:#fff}
+.pb2{flex:1;border:1.5px solid #e2e8f0;border-radius:8px;padding:6px 0;font-size:10px;font-weight:800;font-family:inherit;background:#fff;color:#475569}
+.next{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid #fdba74;border-radius:11px;padding:10px 12px}
+.next .n{font-size:11.5px;font-weight:900;color:#9a3412}
+.next .d{font-size:10px;color:#c2410c;margin-top:3px;line-height:1.6}
+/* 폰 프레임 */
+.phones{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;max-width:1060px}
+.phone{width:390px;max-width:100%;background:#f0f4f8;border-radius:28px;box-shadow:0 12px 40px rgba(13,34,64,0.25);overflow:hidden;border:6px solid #0d2240}
+.hd{background:var(--navy);padding:36px 20px 16px;color:#fff}
+.hd .t{font-size:18px;font-weight:800}
+.hd .s{font-size:11px;opacity:0.65;margin-top:2px}
+.hd.parent{background:linear-gradient(135deg,#3b2f63,#0d2240)}
+.wrap{padding:14px 14px 26px}
+.card{background:#fff;border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:0 2px 10px rgba(13,34,64,0.06)}
+.ct{font-size:14px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.cs{font-size:11px;color:#94a3b8;margin-bottom:10px;line-height:1.6}
+.medal{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:14px;color:#fff;margin-bottom:10px}
+.medal .ic{font-size:38px}
+.medal .aw2{font-size:17px;font-weight:900}
+.medal .sc{font-size:11px;opacity:0.8;margin-top:2px;line-height:1.5}
+.medal .pct{margin-left:auto;text-align:center;background:rgba(255,255,255,0.12);border-radius:12px;padding:8px 12px}
+.medal .pct .b{font-size:16px;font-weight:900;color:#ffd54a}
+.medal .pct .k{font-size:9px;opacity:0.75}
+.chart{background:#fbfcff;border:1.5px solid #eef2f7;border-radius:12px;padding:10px 8px 4px;margin-bottom:8px;overflow-x:auto}
+.chart .ttl{font-size:10.5px;font-weight:900;color:#475569;padding-left:6px;margin-bottom:2px}
+.qxp{display:flex;align-items:center;gap:10px;border:1.5px solid #d1fae5;background:#f0fdf4;border-radius:12px;padding:10px 12px;margin-bottom:7px}
+.qxp .ic{font-size:20px}
+.qxp .m{flex:1;min-width:0}
+.qxp .n{font-size:12px;font-weight:800;color:#065f46;line-height:1.4}
+.qxp .i{font-size:10px;color:#059669;margin-top:1px}
+.qxp .xp{flex:none;background:#059669;color:#fff;border-radius:14px;padding:4px 9px;font-size:10px;font-weight:900}
+.retry{display:flex;gap:8px;margin-bottom:8px}
+.rt{flex:1;background:#fff;border:1.5px solid #fecaca;border-radius:12px;padding:9px 10px}
+.rt .n{font-size:11.5px;font-weight:900;color:#b91c1c}
+.rt .d{font-size:9.5px;color:#94a3b8;margin-top:2px;line-height:1.5}
+.rt .im{margin-top:6px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;height:52px;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#94a3b8;font-weight:800}
+.rt button{width:100%;margin-top:6px;border:none;border-radius:8px;padding:6px 0;font-size:10px;font-weight:900;font-family:inherit;background:#dc2626;color:#fff}
+.mcol{display:flex;gap:6px;margin-bottom:8px}
+.mc{flex:1;text-align:center;background:#f8fafc;border:1.5px solid #eef2f7;border-radius:12px;padding:8px 4px}
+.mc .e{font-size:20px}
+.mc .k{font-size:9px;font-weight:800;color:#64748b;margin-top:2px}
+.mc.on{background:#fefce8;border-color:#fde68a}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.duo .box{border-radius:12px;padding:10px 11px}
+.duo .good{background:#f0fdf4;border:1.5px solid #bbf7d0}
+.duo .bad{background:#fef2f2;border:1.5px solid #fecaca}
+.duo .k{font-size:10px;font-weight:900}
+.duo .good .k{color:#15803d}.duo .bad .k{color:#b91c1c}
+.duo li{font-size:10.5px;color:#334155;font-weight:700;margin:4px 0 0 14px;line-height:1.4}
+.plan{background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:12px;padding:11px 12px;font-size:11px;color:#4c1d95;font-weight:700;line-height:1.7;margin-bottom:8px}
+.plan b{color:#5b21b6}
+.dday{display:flex;align-items:center;gap:10px;background:#fff7ed;border:1.5px solid #fdba74;border-radius:12px;padding:10px 12px}
+.dday .b{font-size:16px;font-weight:900;color:#c2410c}
+.dday .d{font-size:10.5px;color:#9a3412;font-weight:700;line-height:1.5}
+svg text{font-family:inherit}
+</style>
+</head>
+<body>
+
+<div class="note">
+  🧪 <b>상의용 목업 v2</b> — 실제 저장·동작 없음. <b>2026-08-05 매쓰플랫 API 접속으로 실제 확인한 데이터 구조</b>를 반영했습니다.
+  화면의 학생 이름은 <b>전부 가명</b>이며(공개 저장소 규칙), 점수 분포·오답 위치·일정은 실제 구조 그대로입니다.<br>
+  📥 수집 방식: 원장님이 학원앱에서 <b>「매쓰플랫에서 가져오기」 버튼</b>을 누르면 수집 (새벽 자동 없음, 월 1회 시험이므로).
+</div>
+
+<div class="src">
+  🔎 <b>API로 자동으로 가져와지는 것 (버튼 1번)</b> — ① 회차·학년별 시험 목록(2025.4 제1회부터 전부) ② 학생별 점수·정답/오답 수·<b>수상 등급</b>(금·은·동·장려)
+  ③ <b>문항별 O/X + 채점 시각</b> ④ 문항별 배점·난이도·단원(유형DB 연결) ⑤ <b>문제·정답·풀이 원본 이미지</b> ⑥ 다음 회차 일정(시험기간·채점기간)
+  ⑦ 위 학년 도전 응시 기록<br>
+  📄 <b>PDF 업로드 시에만 추가되는 것</b> — 전국 백분위 · 전국 평균 점수 · 문항별 전국 정답률 (매쓰플랫이 보고서 PDF에만 넣어주는 값)
+</div>
+
+<!-- ═══════════ 학원앱 ═══════════ -->
+<div class="lbl">🖥️ 학원앱 — 「🏆 경시대회」 탭 <span class="s">버튼 수집 + 학년 탭 + 학원 정답률 + 문제 이미지 + 다음 회차</span></div>
+<div class="desk">
+  <div class="dhd">
+    <div class="t">🏆 경시대회 (KMM)</div>
+    <div class="chip">제14회 · 5월</div>
+    <div class="chip">제15회 · 6월</div>
+    <div class="chip on">제16회 · 7월</div>
+    <button class="pull">📥 매쓰플랫에서 가져오기</button>
+    <div class="pulled">마지막 수집 8/5 14:20</div>
+  </div>
+  <div class="gtabs">
+    <div class="gt on">중1 <small>8명</small></div>
+    <div class="gt">중2 <small>3명</small></div>
+    <div class="gt">중3 <small>3명</small></div>
+    <div class="gt">초4 <small>2명</small></div>
+    <div class="gt">초5 <small>1명</small></div>
+    <div class="gt">초6 <small>5명</small></div>
+  </div>
+  <div class="strip">
+    <div class="stat"><div class="k">중1 응시</div><div class="v">8<small>명 (전체 22명)</small></div></div>
+    <div class="stat"><div class="k">학원 평균</div><div class="v">58.6<small>점</small></div></div>
+    <div class="stat"><div class="k">수상</div><div class="v">4<small>명 (은2·장려2)</small></div></div>
+    <div class="stat"><div class="k">지난 회 대비</div><div class="v" style="color:#15803d">+6.1<small>점</small></div></div>
+    <div class="stat dd"><div class="k">다음 회차 (제17회)</div><div class="v">D-19<small> · 8/24~30 응시</small></div></div>
+  </div>
+  <div class="dbody">
+    <div>
+    <div class="tblwrap">
+      <table>
+        <tr><th>학생</th><th>점수</th><th>학원</th><th>수상</th><th>추이 (5→6→7월)</th><th>오답</th><th>취약 단원</th><th>채점일</th><th></th></tr>
+        <tr class="sel"><td>김하람 <span class="dare">🔥 중2 도전 43점</span></td><td><b>93</b></td><td>1등</td><td><span class="aw s">은상</span></td><td>73 → 68 → <b>93</b> ↗</td><td>2</td><td><span class="weakchip">그래프</span></td><td>7/29</td><td><button class="rcbtn">🚑</button></td></tr>
+        <tr><td>이도윤</td><td><b>90</b></td><td>2등</td><td><span class="aw s">은상</span></td><td>85 → 88 → 90 ↗</td><td>3</td><td><span class="weakchip">정비례</span></td><td>7/29</td><td><button class="rcbtn">🚑</button></td></tr>
+        <tr><td>박시우</td><td><b>63</b></td><td>3등</td><td><span class="aw e">장려상</span></td><td>55 → 60 → 63 ↗</td><td>9</td><td><span class="weakchip">일차방정식의 풀이</span></td><td>7/29</td><td><button class="rcbtn">🚑</button></td></tr>
+        <tr><td>최서아</td><td><b>60</b></td><td>4등</td><td><span class="aw e">장려상</span></td><td>– → 52 → 60 ↗</td><td>9</td><td><span class="weakchip">그래프</span> <span class="weakchip">정비례</span></td><td>7/29</td><td><button class="rcbtn">🚑</button></td></tr>
+        <tr><td>정하준</td><td><b>48</b></td><td>5등</td><td><span class="aw n">—</span></td><td>50 → 45 → 48 →</td><td>11</td><td><span class="weakchip">일차방정식의 활용</span> 외 2</td><td>7/29</td><td><button class="rcbtn">🚑</button></td></tr>
+        <tr><td>강지안</td><td><b>44</b></td><td>6등</td><td><span class="aw n">—</span></td><td>– → 41 → 44 ↗</td><td>12</td><td><span class="weakchip">등식의 성질</span> 외 2</td><td>7/29</td><td><button class="rcbtn">🚑</button></td></tr>
+        <tr><td>윤지호</td><td><b>32</b></td><td>7등</td><td><span class="aw n">—</span></td><td>38 → 35 → 32 ↘</td><td>14</td><td><span class="weakchip">일차식의 계산</span> 외 3</td><td>7/29</td><td><button class="rcbtn">🚑</button></td></tr>
+        <tr><td>임서준</td><td><b>29</b></td><td>8등</td><td><span class="aw n">—</span></td><td>– → – → 29</td><td>15</td><td><span class="weakchip">그래프</span> 외 3</td><td>7/29</td><td><button class="rcbtn">🚑</button></td></tr>
+      </table>
+    </div>
+    <div class="unitbars">
+      <div class="ubt">📊 중1 단원별 학원 정답률 (제16회, 문항별 O/X 집계)</div>
+      <div class="ub"><div class="n">일차식의 덧셈과 뺄셈</div><div class="track"><div class="fill" style="width:78%;background:#22c55e"></div></div><div class="p" style="color:#15803d">78%</div></div>
+      <div class="ub"><div class="n">방정식과 항등식 · 등식의 성질</div><div class="track"><div class="fill" style="width:71%;background:#22c55e"></div></div><div class="p" style="color:#15803d">71%</div></div>
+      <div class="ub"><div class="n">일차방정식의 풀이·활용</div><div class="track"><div class="fill" style="width:55%;background:#f59e0b"></div></div><div class="p" style="color:#b45309">55%</div></div>
+      <div class="ub"><div class="n">정비례 · 반비례</div><div class="track"><div class="fill" style="width:52%;background:#f59e0b"></div></div><div class="p" style="color:#b45309">52%</div></div>
+      <div class="ub"><div class="n">그래프 · 좌표평면</div><div class="track"><div class="fill" style="width:41%;background:#ef4444"></div></div><div class="p" style="color:#b91c1c">41%</div></div>
+    </div>
+    </div>
+    <div class="detail">
+      <div class="dt">김하람 · 제16회 문항별 결과</div>
+      <div class="ds">93점 · 오답 2 (6번·13번, 모두 「그래프」) · 채점 7/29 17:08</div>
+      <div class="oxg">
+        <div class="ox"><b>1</b>2점·100%</div><div class="ox"><b>2</b>2점·75%</div><div class="ox"><b>3</b>3점·75%</div><div class="ox"><b>4</b>3점·88%</div><div class="ox"><b>5</b>3점·88%</div>
+        <div class="ox x"><b>6</b>3점·88%</div><div class="ox"><b>7</b>3점·62%</div><div class="ox"><b>8</b>4점·75%</div><div class="ox"><b>9</b>4점·62%</div><div class="ox"><b>10</b>4점·62%</div>
+        <div class="ox"><b>11</b>4점·50%</div><div class="ox"><b>12</b>4점·88%</div><div class="ox x"><b>13</b>4점·38%</div><div class="ox h"><b>14</b>4점·38%</div><div class="ox"><b>15</b>4점·75%</div>
+        <div class="ox"><b>16</b>5점·62%</div><div class="ox"><b>17</b>5점·50%</div><div class="ox h"><b>18</b>5점·38%</div><div class="ox"><b>19</b>5점·50%</div><div class="ox h"><b>20</b>6점·38%</div>
+        <div class="ox"><b>21</b>3점·38%</div><div class="ox"><b>22</b>4점·75%</div><div class="ox"><b>23</b>5점·50%</div><div class="ox h"><b>24</b>5점·25%</div><div class="ox h"><b>25</b>6점·38%</div>
+      </div>
+      <div class="oxleg">초록 = 정답 · 빨강 = 오답 · 노랑 = <b>어려운 문제 정답</b>(학원 정답률 40% 이하를 맞힘) · 숫자 아래는 배점·학원 정답률 <b>(📄 PDF 업로드 시 전국 정답률로 교체)</b></div>
+      <div class="probview">
+        <div class="ph"><div class="pn">❌ 13번 · 그래프 · 4점</div><button class="pb2" style="flex:none;padding:4px 10px">🖨️ 인쇄</button></div>
+        <div class="imgs">
+          <div class="im"><span class="big">🖼️</span>문제 원본 이미지</div>
+          <div class="im"><span class="big">📝</span>풀이 이미지</div>
+        </div>
+        <div class="ds" style="margin:6px 0 0">매쓰플랫이 문제·정답·풀이 이미지 주소를 그대로 제공 → 클릭 한 번으로 원본 확인·인쇄</div>
+      </div>
+      <div class="witem">
+        <div class="n">📉 취약: 그래프 (학원 전체도 41%로 최약)</div>
+        <div class="d">오답 2문항 모두 그래프 단원 — 유형DB·리커버리 보드 연결</div>
+        <div class="pbtns"><button class="pb1">🚑 리커버리 보드에 추가</button><button class="pb2">🖨️ 유사문항 학습지</button></div>
+      </div>
+      <div class="next">
+        <div class="n">📅 제17회 일정 (API 자동)</div>
+        <div class="d">응시 8/24(월)~8/30(일) · 채점 8/31 · 시상 신청 9/1~9/2<br>→ 시험 전 주에 「그래프」 보충 수업 배치 권장</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ 학생앱 + 학부모앱 ═══════════ -->
+<div class="phones">
+<div>
+<div class="lbl" style="margin-bottom:10px">📱 학생앱 — 「내 경시대회」</div>
+<div class="phone">
+  <div class="hd"><div class="t">루멘수학 ✏️</div><div class="s">김하람 · 중1 (가명)</div></div>
+  <div class="wrap">
+    <div class="card">
+      <div class="ct">🏆 제16회 KMM 경시대회</div>
+      <div class="medal">
+        <div class="ic">🥈</div>
+        <div><div class="aw2">은상 · 학원 1등!</div><div class="sc">93점 · 지난 회보다 +25점 반등</div></div>
+        <div class="pct"><div class="b">금상까지 2점</div><div class="k">다음 목표</div></div>
+      </div>
+      <div class="mcol">
+        <div class="mc on"><div class="e">🥉</div><div class="k">14회 동상</div></div>
+        <div class="mc on"><div class="e">🎖️</div><div class="k">15회 장려</div></div>
+        <div class="mc on"><div class="e">🥈</div><div class="k">16회 은상</div></div>
+        <div class="mc"><div class="e">❓</div><div class="k">17회 8월</div></div>
+      </div>
+      <div class="chart">
+        <div class="ttl">점수 변화 (5월 → 6월 → 7월)</div>
+        <svg viewBox="0 0 330 120" width="100%" height="120">
+          <line x1="30" y1="100" x2="320" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+          <line x1="30" y1="60" x2="320" y2="60" stroke="#f1f5f9" stroke-width="1"/>
+          <line x1="30" y1="20" x2="320" y2="20" stroke="#f1f5f9" stroke-width="1"/>
+          <text x="26" y="104" font-size="8" fill="#94a3b8" text-anchor="end">60</text>
+          <text x="26" y="64" font-size="8" fill="#94a3b8" text-anchor="end">80</text>
+          <text x="26" y="24" font-size="8" fill="#94a3b8" text-anchor="end">100</text>
+          <polyline points="70,74 185,84 300,34" fill="none" stroke="#e8192c" stroke-width="2"/>
+          <circle cx="70" cy="74" r="4" fill="#e8192c" stroke="#fff" stroke-width="2"/>
+          <circle cx="185" cy="84" r="4" fill="#e8192c" stroke="#fff" stroke-width="2"/>
+          <circle cx="300" cy="34" r="4" fill="#e8192c" stroke="#fff" stroke-width="2"/>
+          <text x="70" y="66" font-size="9.5" fill="#0d2240" font-weight="900" text-anchor="middle">73</text>
+          <text x="185" y="98" font-size="9.5" fill="#0d2240" font-weight="900" text-anchor="middle">68</text>
+          <text x="300" y="26" font-size="9.5" fill="#0d2240" font-weight="900" text-anchor="middle">93</text>
+          <text x="70" y="114" font-size="8.5" fill="#94a3b8" text-anchor="middle">14회·동상</text>
+          <text x="185" y="114" font-size="8.5" fill="#94a3b8" text-anchor="middle">15회·장려</text>
+          <text x="300" y="114" font-size="8.5" fill="#94a3b8" text-anchor="middle">16회·은상</text>
+        </svg>
+      </div>
+      <div class="qxp" style="background:#f5f3ff;border-color:#ddd6fe">
+        <div class="ic">🔥</div>
+        <div class="m"><div class="n" style="color:#5b21b6">중2 시험에도 도전!</div><div class="i" style="color:#7c3aed">한 학년 위 시험 43점 — 도전 뱃지 획득</div></div>
+        <div class="xp" style="background:#7c3aed">+20 XP</div>
+      </div>
+      <div class="ct" style="margin-top:6px">❌ 틀린 문제 다시 풀기 <span style="font-size:10px;color:#94a3b8;font-weight:700">(문제 원본 그대로)</span></div>
+      <div class="retry">
+        <div class="rt"><div class="n">6번 · 그래프 · 3점</div><div class="im">🖼️ 문제 이미지</div><button>다시 풀고 사진 제출</button></div>
+        <div class="rt"><div class="n">13번 · 그래프 · 4점</div><div class="im">🖼️ 문제 이미지</div><button>다시 풀고 사진 제출</button></div>
+      </div>
+      <div class="qxp">
+        <div class="ic">🎯</div>
+        <div class="m"><div class="n">정복 퀘스트: 그래프</div><div class="i">재풀이 2개 + 유사문항 5개 → 17회 대비 완료</div></div>
+        <div class="xp">+50 XP</div>
+      </div>
+      <div class="dday"><div class="b">D-19</div><div class="d"><b>제17회 8/24~8/30 응시</b><br>금상까지 2점! 그래프만 잡으면 됩니다</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div>
+<div class="lbl" style="margin-bottom:10px">📱 학부모앱 — 「경시 리포트」</div>
+<div class="phone">
+  <div class="hd parent"><div class="t">루멘수학 · 학부모</div><div class="s">김하람 학생 · 중1 (가명)</div></div>
+  <div class="wrap">
+    <div class="card">
+      <div class="ct">🏆 제16회 KMM 경시대회 결과</div>
+      <div class="cs">2026년 7월 · 매쓰플랫 공식 채점 (7/29) · 전국 단위 시험</div>
+      <div class="medal">
+        <div class="ic">🥈</div>
+        <div><div class="aw2">은상 수상</div><div class="sc">93점 / 100점 · 학원 1등</div></div>
+        <div class="pct"><div class="b">상위 6%</div><div class="k">전국 백분위 📄</div></div>
+      </div>
+      <div class="chart">
+        <div class="ttl">3개월 변화 — 슬럼프를 이겨낸 반등</div>
+        <svg viewBox="0 0 330 96" width="100%" height="96">
+          <line x1="30" y1="80" x2="320" y2="80" stroke="#e2e8f0" stroke-width="1"/>
+          <polyline points="70,44 185,52 300,16" fill="none" stroke="#e8192c" stroke-width="2"/>
+          <circle cx="70" cy="44" r="4" fill="#e8192c" stroke="#fff" stroke-width="2"/>
+          <circle cx="185" cy="52" r="4" fill="#e8192c" stroke="#fff" stroke-width="2"/>
+          <circle cx="300" cy="16" r="4" fill="#e8192c" stroke="#fff" stroke-width="2"/>
+          <text x="70" y="36" font-size="9.5" fill="#0d2240" font-weight="900" text-anchor="middle">73 · 동상</text>
+          <text x="185" y="68" font-size="9.5" fill="#0d2240" font-weight="900" text-anchor="middle">68 · 장려</text>
+          <text x="300" y="10" font-size="9.5" fill="#0d2240" font-weight="900" text-anchor="middle">93 · 은상</text>
+          <text x="70" y="92" font-size="8.5" fill="#94a3b8" text-anchor="middle">5월</text>
+          <text x="185" y="92" font-size="8.5" fill="#94a3b8" text-anchor="middle">6월</text>
+          <text x="300" y="92" font-size="8.5" fill="#94a3b8" text-anchor="middle">7월</text>
+        </svg>
+      </div>
+      <div class="duo">
+        <div class="box good"><div class="k">💪 우수 단원</div><li>일차식의 덧셈과 뺄셈</li><li>반비례</li><li>방정식과 항등식</li></div>
+        <div class="box bad"><div class="k">📌 보완 단원</div><li>그래프 (2문항 오답)</li><li style="color:#94a3b8">학원 차원 취약 단원과 동일</li></div>
+      </div>
+      <div class="plan">🏫 <b>루멘수학의 다음 계획</b> — 틀린 2문항의 원본 문제로 재풀이를 진행하고, 「그래프」 유사문항 보충 후 <b>제17회(8/24~30) 응시 전 완성</b>을 목표로 합니다. 금상까지 단 2점입니다.</div>
+      <div class="dday"><div class="b">📅</div><div class="d"><b>제17회 접수 일정</b> — 응시 8/24(월)~8/30(일), 결과는 채점 다음 날 앱에서 확인하실 수 있습니다</div></div>
+      <div class="cs" style="margin:6px 0 0">📄 표시 항목(전국 백분위 등)은 매쓰플랫 보고서 PDF 업로드 시 표시됩니다</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+</body>
+</html>
