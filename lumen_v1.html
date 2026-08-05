@@ -44300,6 +44300,10 @@ function cpG9(top){ if(top==null||isNaN(top))return null; if(top<=4)return 1; if
 function cpG5Color(g){ return g===1?'#15803d':(g===2?'#0369a1':(g===3?'#b45309':(g===4?'#c2410c':'#b91c1c'))); }
 
 // ── 학생·입력 ──
+// v18-1: 초등부는 고교 예상 등급을 내지 않음 (원장 지시 2026-08-05)
+//   — 초6에게 고교 내신 예측은 시기적으로 이르고 학부모 오해 소지가 큼. 중1부터 표시.
+function cpIsElem(st){ return /초/.test(String((st&&st.grade)||'')); }
+
 function cpStudents(){ try{ return getSortedStudents(false); }catch(e){ return getSortedStudents(); } }
 function cpCur(){
   var list=cpStudents();
@@ -44696,13 +44700,16 @@ function cpPrintKmmOnly(st,kmm){
     +'<div class="r">'+esc(st.name)+' 학생 ('+esc(st.grade||'')+')<br>'+dstr+' · 루멘수학</div></div>';
   // 히어로
   var sc=(F&&F.score!=null)?F.score:null, aw=(F&&F.award&&F.award!=='해당없음')?F.award:'';
+  var isElem=cpIsElem(st);
   h+='<div style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:15px 18px;color:#fff;margin-bottom:12px">'
-    +'<div style="width:66px;height:66px;border-radius:16px;background:'+cpG5Color(g5)+';display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none"><b style="font-size:24px">'+g5+'</b><span style="font-size:8px;opacity:0.85">수학 등급권</span></div>'
+    +(isElem
+      ? '<div style="min-width:78px;padding:0 8px;height:66px;border-radius:16px;background:#0369a1;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none"><b style="font-size:20px">상위 '+Math.round(kmm.top)+'%</b><span style="font-size:8px;opacity:0.85">전국 위치</span></div>'
+      : '<div style="width:66px;height:66px;border-radius:16px;background:'+cpG5Color(g5)+';display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none"><b style="font-size:24px">'+g5+'</b><span style="font-size:8px;opacity:0.85">수학 등급권</span></div>')
     +'<div style="flex:1"><div style="font-size:16px;font-weight:900">KMM 경시대회 '+esc(kmm.label||'')+(aw?' <span style="background:#ffd54a;color:#7c2d12;border-radius:12px;padding:2px 10px;font-size:12px;vertical-align:2px">'+esc(aw)+'</span>':'')+'</div>'
     +'<div style="font-size:12px;opacity:0.88;margin-top:5px;line-height:1.75">'
     +(sc!=null?('<b style="font-size:15px;color:#ffd54a">'+sc+'점</b> · '):'')+'전국 백분위 '+kmm.pct+' → <b style="color:#ffd54a">전국 상위 '+Math.round(kmm.top)+'%</b>'
     +(F&&F.correctRate!=null?' · 정답률 '+F.correctRate+'%':'')
-    +'<br>고교 5등급제 기준 수학 '+g5+'등급권 (9등급제 '+g9+'등급권)'
+    +(isElem?'':'<br>고교 5등급제 기준 수학 '+g5+'등급권 (9등급제 '+g9+'등급권)')
     +(F&&F.nationalAvg!=null&&sc!=null?'<br>전국 평균 '+F.nationalAvg+'점 대비 <b style="color:#ffd54a">'+(sc-F.nationalAvg>=0?'+':'')+Math.round(sc-F.nationalAvg)+'점</b>'+(F.top30Avg!=null?' · 전국 상위 30% 평균 '+F.top30Avg+'점':''):'')
     +'</div></div></div>';
   // 다음 수상까지
@@ -44755,16 +44762,23 @@ function cpPrintKmmOnly(st,kmm){
       +(wU.length?wU.map(function(x){ return '<span class="chip cr">'+esc(x)+'</span>'; }).join(''):'<span style="font-size:10.5px;color:#94a3b8">없음 — 고른 성취</span>')+'</div></div>';
     h+='</div>';
   }
-  // 고교별 예상
-  h+='<div class="secb">진학 예정 고등학교별 수학 예상 (5등급제 · 괄호 9등급)</div>'
-    +'<table><tr><th>학교</th><th>예상 점수</th><th>예상 등급</th></tr>';
-  kmm.rows.forEach(function(r){
-    h+='<tr><td>'+esc(r.name.replace('등학교',''))+'</td><td>'+Math.round(r.exp)+'점</td>'
-      +'<td><b style="font-size:15px;color:'+cpG5Color(r.g5)+'">'+r.g5+'등급</b> <span style="font-size:10px;color:#94a3b8">('+r.g9+')</span></td></tr>';
-  });
-  h+='</table>'
-    +'<div class="foot">경시대회 전국 백분위(같은 학년 전국 응시생 대비 실측)를 각 고교 1학년 수학 성적 분포(학교알리미 공시)에 대입한 추정입니다. '
-    +'경시 응시 집단은 수학 학원 수강생 위주의 상위권이므로 실제 전국 위치는 표시보다 좋을 가능성이 높습니다(보수적 추정).</div></div>';
+  // 고교별 예상 — 중등부 이상만 (초등부 제외)
+  if(!cpIsElem(st)){
+    h+='<div class="secb">진학 예정 고등학교별 수학 예상 (5등급제 · 괄호 9등급)</div>'
+      +'<table><tr><th>학교</th><th>예상 점수</th><th>예상 등급</th></tr>';
+    kmm.rows.forEach(function(r){
+      h+='<tr><td>'+esc(r.name.replace('등학교',''))+'</td><td>'+Math.round(r.exp)+'점</td>'
+        +'<td><b style="font-size:15px;color:'+cpG5Color(r.g5)+'">'+r.g5+'등급</b> <span style="font-size:10px;color:#94a3b8">('+r.g9+')</span></td></tr>';
+    });
+    h+='</table>'
+      +'<div class="foot">경시대회 전국 백분위(같은 학년 전국 응시생 대비 실측)를 각 고교 1학년 수학 성적 분포(학교알리미 공시)에 대입한 추정입니다. '
+      +'경시 응시 집단은 수학 학원 수강생 위주의 상위권이므로 실제 전국 위치는 표시보다 좋을 가능성이 높습니다(보수적 추정).</div>';
+  } else {
+    h+='<div class="foot" style="border-top:1px solid #e8eef8;margin-top:14px">경시대회 백분위는 같은 학년 전국 응시생 대비 실측 위치입니다. '
+      +'응시 집단이 수학 학원 수강생 위주의 상위권이므로 실제 전국 위치는 표시보다 좋을 가능성이 높습니다(보수적 추정). '
+      +'고등학교 내신 예상은 중학교 성적이 쌓이는 중등부부터 안내드립니다.</div>';
+  }
+  h+='</div>';
 
   // ══ 2쪽: 문항별 ══
   var pbs=(F&&F.problems||[]).filter(function(p){ return p&&p.no!=null; });
@@ -44814,11 +44828,10 @@ function cpPrintKmmOnly(st,kmm){
     }
     h+='<div class="plan">🏫 <b>루멘수학 학습 플랜</b> — '+((cpInput(st).note||'').replace(/</g,'&lt;')
       ||('다음 회차까지 '+(wU.length?'「'+esc(wU[0])+'」 단원을 집중 보완하고, ':'')+'전국 정답률이 낮았던 고난도 문항 유형을 반복 훈련하겠습니다.'))+'</div>'
-      +'<div class="foot">학교알리미 공시 분포 기준 · 5등급제(1등급=상위 10%) · 본 자료는 현재 실력 유지를 전제로 한 참고용 추정이며 실제 결과는 달라질 수 있습니다. · 루멘수학</div>'
+      +'<div class="foot">'+(isElem
+        ? '전국 정답률은 같은 학년 전국 응시생 기준입니다. 본 자료는 현재 학습 상태를 보여드리는 참고 자료입니다.'
+        : '학교알리미 공시 분포 기준 · 5등급제(1등급=상위 10%) · 본 자료는 현재 실력 유지를 전제로 한 참고용 추정이며 실제 결과는 달라질 수 있습니다.')+' · 루멘수학</div>'
       +'</div>';
-  } else {
-    // 문항 데이터가 없을 때(수동 입력) — 1쪽 하단에 안내
-    h=h.replace('</div></body>','</div>'); // no-op 안전
   }
   h+='</body></html>';
   var w=window.open('','_blank');
@@ -44836,6 +44849,7 @@ window.cpPrint=function(){
     if(k0&&k0.rows.length){ cpPrintKmmOnly(st,k0); return; }
     alert('성적(또는 KMM 백분위)을 먼저 입력해 주세요'); return;
   }
+  if(cpIsElem(st)){ alert('초등부는 고교 예상 내신을 산출하지 않습니다.\n경시 백분위를 입력하시면 경시 나침반 리포트를 인쇄할 수 있습니다.'); return; }
   var names=cpSchoolList();
   var calcs=names.map(function(n){ return cpSchoolOf(st,n); }).filter(function(x){ return x&&x.overall5; });
   calcs.sort(function(a,b){ return a.avgTop-b.avgTop; });
@@ -44977,7 +44991,7 @@ function rCompass(){
     +'<label class="cp-btn" style="background:#a16207;color:#fff;display:inline-flex;align-items:center;gap:5px;cursor:pointer">📄 KMM 성적표 PDF 올리기 <span style="font-size:9.5px;opacity:0.85;font-weight:800">전체 학생 한번에</span>'
     +'<input type="file" accept="application/pdf" multiple style="display:none" onchange="cpUploadKmm(this)"></label>'
     +'<div style="margin-left:auto;display:flex;gap:8px">'
-    +'<button class="cp-btn" onclick="cpPrint()" style="background:#e8192c;color:#fff">🖨️ 학부모 리포트 (3쪽)</button>'
+    +'<button class="cp-btn" onclick="cpPrint()" style="background:#e8192c;color:#fff">🖨️ 학부모 리포트</button>'
     +'<button class="cp-btn" onclick="cpPublish()" style="background:#15803d;color:#fff">📱 학부모앱 발행</button>'
     +'</div></div>';
   h+=cpKmmPanel();
@@ -45047,8 +45061,16 @@ function rCompass(){
       +(ok?'✅ 두 잣대 일치, 추정 신뢰':'⚠️ 차이 큼 — 학교 시험 난이도·중학교 수준 확인 필요 (수준 보정 근거로 기록됩니다)')+'</div>';
   }
   h+='</div>';
-  // 학교 비교
-  if(anyNat){
+  // 초등부: 고교 예상 미표시 안내
+  if(cpIsElem(st)){
+    h+='<div class="cp-card" style="border:1.5px solid #93c5fd;background:linear-gradient(160deg,#f6fbff,#fff)">'
+      +'<div class="cp-h">🎒 초등부 — 고등학교 예상 내신은 표시하지 않습니다</div>'
+      +'<div class="cp-s" style="line-height:1.8">초등학생은 중학교 내신 기록이 아직 없고, 고교 진학까지 실력이 크게 달라지기 때문에 '
+      +'고교 등급 예측은 <b>중학생부터</b> 안내드립니다.<br>'
+      +'대신 <b>경시 백분위(전국 위치)·단원별 강약·문항별 결과</b>가 담긴 경시 나침반 리포트를 인쇄하실 수 있습니다.</div></div>';
+  }
+  // 학교 비교 (중등부 이상)
+  if(anyNat&&!cpIsElem(st)){
     var names=cpSchoolList();
     var calcs=names.map(function(n){ return cpSchoolOf(st,n); }).filter(function(x){ return x&&x.overall5; });
     calcs.sort(function(a,b){ return a.avgTop-b.avgTop; });
@@ -45095,7 +45117,7 @@ function rCompass(){
       +'<div style="font-size:9.5px;color:#94a3b8;font-weight:700;margin-top:7px;line-height:1.6">큰 숫자 = 5등급제(현행) · 괄호 = 9등급 환산(참고) · 각 학교 1학년 분포(학교알리미 공시) 기준 정규분포 추정 · '+(cpHs.srcNote||'')+'</div>';
     h+='</div>';
     // 경시 나침반
-    if(kmm&&kmm.rows.length){
+    if(kmm&&kmm.rows.length&&!cpIsElem(st)){
       h+='<div class="cp-card" style="border:1.5px solid #fde68a;background:linear-gradient(160deg,#fffdf5,#fff)"><div class="cp-h">🏆 경시 나침반 — 수학 전용 <span style="font-size:10px;color:#a16207;font-weight:800">KMM '+(kmm.label||'')+' 백분위 '+kmm.pct+' → 전국 상위 '+Math.round(kmm.top)+'%</span></div>'
         +'<div class="cp-s">경시는 전국 실측이라 나침반 1·2단계를 건너뜀 · 보조 지표 (공식 판정은 내신 기준) · 응시 집단 특성상 보수적 추정</div>'
         +'<div style="display:flex;gap:6px;flex-wrap:wrap">';
@@ -45107,8 +45129,34 @@ function rCompass(){
       });
       h+='</div></div>';
     }
-  }else{
-    h+='<div class="cp-card" style="text-align:center;padding:36px;color:#94a3b8;font-weight:700;font-size:13px">👈 왼쪽에 성적을 입력하면 학교별 예상 등급이 나타납니다<br><span style="font-size:11px">수학은 「자동」 버튼으로 기출모의 기록에서 바로 가져올 수 있어요</span></div>';
+  }
+  // 경시 백분위만 있는 경우(초등부 포함) — 전국 위치 요약 카드
+  if(kmm&&(cpIsElem(st)||!anyNat)){
+    var kg=cpG5(kmm.top);
+    var F0=inp.kmmFull||null;
+    h+='<div class="cp-card" style="border:1.5px solid #fde68a;background:linear-gradient(160deg,#fffdf5,#fff)">'
+      +'<div class="cp-h">🏆 경시 나침반 — KMM '+cpEsc(kmm.label||'')+'</div>'
+      +'<div class="cp-s">전국 단위 실측 위치입니다'+(cpIsElem(st)?' · 초등부는 고교 등급을 산출하지 않습니다':'')+'</div>'
+      +'<div style="display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:13px;padding:13px 15px;color:#fff;margin-bottom:9px">'
+      +'<div style="text-align:center;flex:none"><div style="font-size:22px;font-weight:900;color:#ffd54a">상위 '+Math.round(kmm.top)+'%</div><div style="font-size:9px;opacity:0.8">전국 백분위 '+kmm.pct+'</div></div>'
+      +'<div style="font-size:11px;opacity:0.9;line-height:1.75">'
+      +(F0&&F0.score!=null?('<b style="color:#ffd54a">'+F0.score+'점</b>'+(F0.award&&F0.award!=='해당없음'?' · '+cpEsc(F0.award):'')+(F0.correctRate!=null?' · 정답률 '+F0.correctRate+'%':'')+'<br>'):'')
+      +(F0&&F0.nationalAvg!=null&&F0.score!=null?('전국 평균 '+F0.nationalAvg+'점 대비 <b style="color:#ffd54a">'+(F0.score-F0.nationalAvg>=0?'+':'')+Math.round(F0.score-F0.nationalAvg)+'점</b>'):'같은 학년 전국 응시생 대비 위치')
+      +'</div></div>';
+    if(F0&&(F0.strongUnits||[]).length){
+      h+='<div style="font-size:10.5px;font-weight:900;color:#15803d;margin-bottom:4px">💪 우수 단원</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">'
+        +(F0.strongUnits||[]).filter(function(x){return x&&x!=='-';}).map(function(x){ return '<span style="background:#f0fdf4;color:#15803d;border:1.5px solid #bbf7d0;border-radius:14px;padding:3px 10px;font-size:10.5px;font-weight:800">'+cpEsc(x)+'</span>'; }).join('')+'</div>';
+    }
+    if(F0&&(F0.weakUnits||[]).filter(function(x){return x&&x!=='-';}).length){
+      h+='<div style="font-size:10.5px;font-weight:900;color:#b91c1c;margin-bottom:4px">📌 보완 단원</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">'
+        +(F0.weakUnits||[]).filter(function(x){return x&&x!=='-';}).map(function(x){ return '<span style="background:#fef2f2;color:#b91c1c;border:1.5px solid #fecaca;border-radius:14px;padding:3px 10px;font-size:10.5px;font-weight:800">'+cpEsc(x)+'</span>'; }).join('')+'</div>';
+    }
+    h+='<div style="font-size:10.5px;color:#64748b;font-weight:700;line-height:1.7">'
+      +(F0&&(F0.problems||[]).length?('📄 문항별 결과 '+(F0.problems||[]).length+'문항·단원별 정답률이 함께 저장되어 있습니다 — 「🖨️ 리포트」로 2쪽 인쇄'):'💡 KMM 성적표 PDF를 올리시면 단원별 정답률·문항별 결과까지 리포트에 담깁니다')
+      +'</div></div>';
+  }
+  if(!anyNat&&!kmm){
+    h+='<div class="cp-card" style="text-align:center;padding:36px;color:#94a3b8;font-weight:700;font-size:13px">👈 왼쪽에 성적을 입력하면 학교별 예상 등급이 나타납니다<br><span style="font-size:11px">수학은 「자동」 버튼으로 기출모의 기록에서 바로 가져올 수 있어요<br>경시 백분위만 있어도 경시 나침반 리포트를 만들 수 있습니다</span></div>';
   }
   h+='</div></div></div>';
   return h;
