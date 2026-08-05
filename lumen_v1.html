@@ -44447,9 +44447,20 @@ window.cpUploadKmm=async function(input){
       });
       var prompt='매쓰플랫 KMM 경시대회 월별 분석 보고서 PDF입니다. '
         +'이 PDF에는 학생이 한 명일 수도 있고, 여러 학생의 보고서가 이어붙어 있을 수도 있습니다. '
-        +'등장하는 모든 학생을 빠짐없이 찾아 JSON 배열로만 출력하세요.\n'
-        +'[{"name":"학생 이름","grade":"학년(예: 중1)","round":회차 숫자(예: 16),"month":월 숫자(예: 7),"percentile":백분위 숫자(예: 94.0),"score":점수 숫자,"award":"수상(대상/금상/은상/동상/장려상/해당없음)"}]\n'
-        +'백분위는 표지의 「백분위 N %」 값입니다. 같은 학생이 여러 쪽에 걸쳐 나오면 한 번만 넣으세요. 다른 텍스트 금지.';
+        +'등장하는 모든 학생을 빠짐없이 찾아 JSON 배열로만 출력하세요. 보고서에 있는 정보는 최대한 채우고, 없는 값은 null로 두세요.\n'
+        +'[{\n'
+        +' "name":"학생 이름","grade":"학년(예: 중1)","round":회차 숫자,"month":월 숫자,\n'
+        +' "percentile":백분위 숫자(표지 「백분위 N %」),"score":점수 숫자,"award":"대상/금상/은상/동상/장려상/해당없음",\n'
+        +' "correctRate":정답률 %숫자,"nationalAvg":전국 평균 점수 숫자(그래프에 보이면),"top30Avg":전국 상위 30% 평균 점수,\n'
+        +' "strongUnits":["대표 우수 단원 이름들"],"weakUnits":["대표 취약 단원 이름들"],\n'
+        +' "unitRates":[{"unit":"단원명","mine":내 정답률%,"national":전국평균 정답률%}],\n'
+        +' "history":[{"round":회차,"score":점수,"percentile":백분위}],\n'
+        +' "problems":[{"no":문항번호,"unit":"단원명","level":"하/중하/중/상/최상","point":배점,"nationalRate":전국정답률%,"result":"O 또는 X (채점결과 표시가 있으면, 없으면 null)"}]\n'
+        +'}]\n'
+        +'· unitRates는 「단원별 정답률」 그래프의 값입니다.\n'
+        +'· history는 「점수 변화 추이」·「백분위 변화 추이」 그래프에서 읽어 회차 순으로 넣으세요(이번 회차 포함).\n'
+        +'· problems는 2쪽 문항별 표를 번호 순으로 전부 넣으세요.\n'
+        +'같은 학생이 여러 쪽에 걸쳐 나오면 한 번만 넣으세요. 다른 텍스트 금지, JSON 배열만.';
       var resp=await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
         headers:{ 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
@@ -44477,8 +44488,15 @@ window.cpUploadKmm=async function(input){
         var inp=cpInput(st);
         inp.kmmPct=String(row.pct);
         inp.kmmLabel='제'+(row.round||'?')+'회('+(row.month||'?')+'월)';
+        // v18-1: 보고서 전체 내용 보관 → 경시 리포트를 2쪽으로 풍성하게
+        inp.kmmFull={ round:d.round, month:d.month, score:d.score, award:d.award||'', percentile:d.percentile,
+          correctRate:d.correctRate, nationalAvg:d.nationalAvg, top30Avg:d.top30Avg,
+          strongUnits:d.strongUnits||[], weakUnits:d.weakUnits||[],
+          unitRates:d.unitRates||[], history:d.history||[], problems:d.problems||[],
+          at:new Date().toISOString().slice(0,10) };
         cpSaveIn();
         row.status='ok'; row.grade=st.grade||''; row.sid=st.id;
+        row.detail=((d.problems||[]).length?((d.problems||[]).length+'문항'):'')+((d.unitRates||[]).length?' · 단원 '+(d.unitRates||[]).length:'');
         CP_KMM_LOG.rows.push(row);
       });
     }catch(e){
@@ -44527,7 +44545,7 @@ function cpKmmPanel(){
         +'<td style="font-weight:900">'+(r.pct!=null?r.pct:'-')+'</td>'
         +'<td>'+(r.score!=null?r.score+'점':'-')+'</td>'
         +'<td>'+(r.award&&r.award!=='해당없음'?cpEsc(r.award):'-')+'</td>'
-        +'<td style="color:'+color+';font-weight:800">'+badge+'</td></tr>';
+        +'<td style="color:'+color+';font-weight:800">'+badge+(r.detail?'<br><span style="font-size:9px;color:#64748b;font-weight:700">'+cpEsc(r.detail)+'</span>':'')+'</td></tr>';
     });
     h+='</table></div>';
     if(badN&&!L.running) h+='<div style="font-size:10.5px;color:#64748b;font-weight:700;margin-top:8px;line-height:1.7">⚠️ 표시된 건은 학생을 직접 고른 뒤 백분위를 손으로 입력해 주세요. (등록부 이름과 성적표 이름이 다르면 매칭이 안 됩니다)</div>';
@@ -44635,48 +44653,179 @@ window.cpPublish=async function(){
   }catch(e){ alert('발행 실패: '+(e.message||e)); }
 };
 
-// ── 인쇄: 경시 전용 1쪽 리포트 (내신 미입력 시) ──
+// ── 인쇄: 경시 나침반 리포트 (내신 미입력 시) — PDF 전체 데이터로 2쪽 ──
 function cpPrintKmmOnly(st,kmm){
+  var F=(cpInput(st).kmmFull)||null;
   var today=new Date(); var dstr=today.getFullYear()+'. '+(today.getMonth()+1)+'. '+today.getDate();
   var g5=cpG5(kmm.top), g9=cpG9(kmm.top);
+  var AWARD_CUT=[['대상',100],['금상',95],['은상',85],['동상',70],['장려상',60]];
   var css='*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;background:#eee;color:#0d2240;padding:20px}'
-    +'.paper{max-width:760px;margin:0 auto 20px;background:#fff;padding:34px 38px;box-shadow:0 4px 18px rgba(0,0,0,0.15)}'
-    +'@media print{body{background:#fff;padding:0}.paper{box-shadow:none;margin:0;max-width:none}.noprint{display:none}}'
-    +'.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #0d2240;padding-bottom:10px;margin-bottom:16px}'
+    +'.paper{max-width:760px;margin:0 auto 20px;background:#fff;padding:32px 36px;box-shadow:0 4px 18px rgba(0,0,0,0.15)}'
+    +'@media print{body{background:#fff;padding:0}.paper{box-shadow:none;margin:0;max-width:none;page-break-after:always}.paper:last-of-type{page-break-after:auto}.noprint{display:none}}'
+    +'.pgno{font-size:9px;color:#cbd5e1;font-weight:900;text-align:right;letter-spacing:1px;margin-bottom:4px}'
+    +'.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #0d2240;padding-bottom:10px;margin-bottom:14px}'
     +'.hd .a{font-size:11px;font-weight:900;color:#e8192c;letter-spacing:2px}.hd .b{font-size:21px;font-weight:900;margin-top:2px}'
     +'.hd .r{text-align:right;font-size:11px;color:#64748b;font-weight:700;line-height:1.7}'
-    +'.secb{font-size:12.5px;font-weight:900;border-left:4px solid #e8192c;padding-left:8px;margin:16px 0 9px}'
-    +'table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px}'
-    +'th{border-bottom:2px solid #0d2240;padding:7px 6px;font-size:11px;text-align:center}th:first-child{text-align:left}'
-    +'td{padding:7px 6px;border-bottom:1px solid #e8eef8;text-align:center;font-weight:800;color:#334155}td:first-child{text-align:left;font-weight:900;color:#0d2240}'
-    +'.foot{font-size:9.5px;color:#94a3b8;line-height:1.7;margin-top:14px;border-top:1px solid #e8eef8;padding-top:10px}'
-    +'.plan{background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#4c1d95;font-weight:700;line-height:1.85;margin-top:10px}';
+    +'.secb{font-size:12.5px;font-weight:900;border-left:4px solid #e8192c;padding-left:8px;margin:15px 0 8px}'
+    +'table{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:4px}'
+    +'th{border-bottom:2px solid #0d2240;padding:6px 5px;font-size:10.5px;text-align:center}th:first-child{text-align:left}'
+    +'td{padding:5px;border-bottom:1px solid #e8eef8;text-align:center;font-weight:800;color:#334155}td:first-child{text-align:left;font-weight:900;color:#0d2240}'
+    +'.foot{font-size:9.5px;color:#94a3b8;line-height:1.7;margin-top:12px;border-top:1px solid #e8eef8;padding-top:9px}'
+    +'.plan{background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#4c1d95;font-weight:700;line-height:1.85;margin-top:8px}'
+    +'.bar{display:grid;grid-template-columns:150px 1fr 96px;gap:8px;align-items:center;margin-bottom:5px;font-size:11px;font-weight:800}'
+    +'.track{height:14px;border-radius:99px;background:#f1f5f9;overflow:hidden;position:relative}'
+    +'.fill{height:100%;border-radius:99px}'
+    +'.natmark{position:absolute;top:-2px;bottom:-2px;width:2px;background:#0d2240;opacity:0.55}'
+    +'.chips{display:flex;gap:5px;flex-wrap:wrap}'
+    +'.chip{border-radius:14px;padding:4px 11px;font-size:11px;font-weight:900}'
+    +'.cg{background:#f0fdf4;color:#15803d;border:1.5px solid #bbf7d0}'
+    +'.cr{background:#fef2f2;color:#b91c1c;border:1.5px solid #fecaca}'
+    +'.oxg{display:grid;grid-template-columns:repeat(9,1fr);gap:4px}'
+    +'.ox{border-radius:7px;padding:5px 2px;text-align:center;border:1.5px solid #e2e8f0;background:#fbfcfe}'
+    +'.ox .n{font-size:11px;font-weight:900;color:#0d2240;line-height:1}'
+    +'.ox .m{font-size:8px;color:#94a3b8;font-weight:800;margin-top:2px}'
+    +'.ox.hard{background:#fefce8;border-color:#fde68a}'
+    +'.ox.o{background:#f0fdf4;border-color:#bbf7d0}.ox.x{background:#fef2f2;border-color:#fecaca}';
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   var h='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>경시 나침반 - '+st.name+'</title><style>'+css+'</style></head><body>';
   h+='<div class="noprint" style="max-width:760px;margin:0 auto 14px;text-align:right"><button onclick="window.print()" style="padding:10px 22px;font-size:14px;font-weight:900;font-family:inherit;background:#0d2240;color:#fff;border:none;border-radius:10px;cursor:pointer">🖨️ 인쇄</button></div>';
-  h+='<div class="paper">'
+
+  // ══ 1쪽 ══
+  h+='<div class="paper"><div class="pgno">PAGE 1 / '+(F&&(F.problems||[]).length?'2':'1')+'</div>'
     +'<div class="hd"><div><div class="a">LUMEN MATH</div><div class="b">🏆 경시 나침반 리포트 (수학)</div></div>'
-    +'<div class="r">'+st.name+' 학생 ('+(st.grade||'')+')<br>'+dstr+' · 루멘수학</div></div>'
-    +'<div style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:16px 18px;color:#fff;margin-bottom:14px">'
+    +'<div class="r">'+esc(st.name)+' 학생 ('+esc(st.grade||'')+')<br>'+dstr+' · 루멘수학</div></div>';
+  // 히어로
+  var sc=(F&&F.score!=null)?F.score:null, aw=(F&&F.award&&F.award!=='해당없음')?F.award:'';
+  h+='<div style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:15px 18px;color:#fff;margin-bottom:12px">'
     +'<div style="width:66px;height:66px;border-radius:16px;background:'+cpG5Color(g5)+';display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none"><b style="font-size:24px">'+g5+'</b><span style="font-size:8px;opacity:0.85">수학 등급권</span></div>'
-    +'<div><div style="font-size:16px;font-weight:900">KMM 경시대회 '+(kmm.label||'')+' — 전국 백분위 '+kmm.pct+'</div>'
-    +'<div style="font-size:12px;opacity:0.85;margin-top:4px;line-height:1.7">전국 단위 시험 실측으로 <b style="color:#ffd54a">전국 상위 '+Math.round(kmm.top)+'%</b><br>고교 5등급제 기준 수학 '+g5+'등급권 (9등급제 '+g9+'등급권)</div></div></div>'
-    +'<div class="secb">진학 예정 고등학교별 수학 예상 (5등급제 · 괄호 9등급)</div>'
+    +'<div style="flex:1"><div style="font-size:16px;font-weight:900">KMM 경시대회 '+esc(kmm.label||'')+(aw?' <span style="background:#ffd54a;color:#7c2d12;border-radius:12px;padding:2px 10px;font-size:12px;vertical-align:2px">'+esc(aw)+'</span>':'')+'</div>'
+    +'<div style="font-size:12px;opacity:0.88;margin-top:5px;line-height:1.75">'
+    +(sc!=null?('<b style="font-size:15px;color:#ffd54a">'+sc+'점</b> · '):'')+'전국 백분위 '+kmm.pct+' → <b style="color:#ffd54a">전국 상위 '+Math.round(kmm.top)+'%</b>'
+    +(F&&F.correctRate!=null?' · 정답률 '+F.correctRate+'%':'')
+    +'<br>고교 5등급제 기준 수학 '+g5+'등급권 (9등급제 '+g9+'등급권)'
+    +(F&&F.nationalAvg!=null&&sc!=null?'<br>전국 평균 '+F.nationalAvg+'점 대비 <b style="color:#ffd54a">'+(sc-F.nationalAvg>=0?'+':'')+Math.round(sc-F.nationalAvg)+'점</b>'+(F.top30Avg!=null?' · 전국 상위 30% 평균 '+F.top30Avg+'점':''):'')
+    +'</div></div></div>';
+  // 다음 수상까지
+  if(sc!=null){
+    var nx=null;
+    for(var ai=AWARD_CUT.length-1;ai>=0;ai--){ if(sc<AWARD_CUT[ai][1]){ nx=AWARD_CUT[ai]; break; } }
+    if(nx) h+='<div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:11px;padding:9px 13px;font-size:11.5px;font-weight:800;color:#9a3412;margin-bottom:12px">🎯 다음 목표 — <b>'+nx[0]+'</b>까지 '+(nx[1]-sc)+'점 (기준 '+nx[1]+'점)</div>';
+    else h+='<div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:11px;padding:9px 13px;font-size:11.5px;font-weight:800;color:#15803d;margin-bottom:12px">🏅 최고 등급입니다 — 이 수준을 유지하는 것이 목표입니다</div>';
+  }
+  // 회차 추이
+  var hist=(F&&F.history||[]).filter(function(x){ return x&&x.score!=null; });
+  if(hist.length>=2){
+    h+='<div class="secb">회차별 변화</div><table><tr><th>회차</th>';
+    hist.forEach(function(x){ h+='<th>제'+x.round+'회</th>'; }); h+='</tr>'
+      +'<tr><td>점수</td>';
+    hist.forEach(function(x,ix){
+      var d0=ix>0?(x.score-hist[ix-1].score):null;
+      h+='<td>'+x.score+'점'+(d0!=null?' <span style="font-size:9px;color:'+(d0>=0?'#15803d':'#b91c1c')+'">'+(d0>=0?'▲':'▼')+Math.abs(d0)+'</span>':'')+'</td>';
+    });
+    h+='</tr>';
+    if(hist.some(function(x){return x.percentile!=null;})){
+      h+='<tr><td>백분위</td>';
+      hist.forEach(function(x){ h+='<td>'+(x.percentile!=null?x.percentile:'-')+'</td>'; });
+      h+='</tr>';
+    }
+    h+='</table>';
+  }
+  // 단원별 정답률
+  var urs=(F&&F.unitRates||[]).filter(function(u){ return u&&u.mine!=null; });
+  if(urs.length){
+    h+='<div class="secb">단원별 정답률 <span style="font-size:10px;color:#94a3b8;font-weight:700">막대=우리 아이 · 세로선=전국 평균</span></div>';
+    urs.forEach(function(u){
+      var mine=Math.max(0,Math.min(100,u.mine));
+      var nat=(u.national!=null)?Math.max(0,Math.min(100,u.national)):null;
+      var col=mine>=80?'#15803d':(mine>=60?'#0369a1':(mine>=40?'#b45309':'#b91c1c'));
+      h+='<div class="bar"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(u.unit)+'</div>'
+        +'<div class="track"><div class="fill" style="width:'+mine+'%;background:'+col+'"></div>'
+        +(nat!=null?'<div class="natmark" style="left:'+nat+'%"></div>':'')+'</div>'
+        +'<div style="color:'+col+'">'+Math.round(mine)+'%'+(nat!=null?' <span style="font-size:9px;color:#94a3b8">('+Math.round(nat)+')</span>':'')+'</div></div>';
+    });
+  }
+  // 강약 단원
+  var sU=(F&&F.strongUnits||[]).filter(function(x){ return x&&x!=='-'; });
+  var wU=(F&&F.weakUnits||[]).filter(function(x){ return x&&x!=='-'; });
+  if(sU.length||wU.length){
+    h+='<div class="secb">진단 결과</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
+    h+='<div><div style="font-size:11px;font-weight:900;color:#15803d;margin-bottom:5px">💪 대표 우수 단원</div><div class="chips">'
+      +(sU.length?sU.map(function(x){ return '<span class="chip cg">'+esc(x)+'</span>'; }).join(''):'<span style="font-size:10.5px;color:#94a3b8">-</span>')+'</div></div>';
+    h+='<div><div style="font-size:11px;font-weight:900;color:#b91c1c;margin-bottom:5px">📌 대표 취약 단원</div><div class="chips">'
+      +(wU.length?wU.map(function(x){ return '<span class="chip cr">'+esc(x)+'</span>'; }).join(''):'<span style="font-size:10.5px;color:#94a3b8">없음 — 고른 성취</span>')+'</div></div>';
+    h+='</div>';
+  }
+  // 고교별 예상
+  h+='<div class="secb">진학 예정 고등학교별 수학 예상 (5등급제 · 괄호 9등급)</div>'
     +'<table><tr><th>학교</th><th>예상 점수</th><th>예상 등급</th></tr>';
   kmm.rows.forEach(function(r){
-    h+='<tr><td>'+r.name.replace('등학교','')+'</td><td>'+Math.round(r.exp)+'점</td><td><b style="font-size:15px;color:'+cpG5Color(r.g5)+'">'+r.g5+'등급</b> <span style="font-size:10px;color:#94a3b8">('+r.g9+')</span></td></tr>';
+    h+='<tr><td>'+esc(r.name.replace('등학교',''))+'</td><td>'+Math.round(r.exp)+'점</td>'
+      +'<td><b style="font-size:15px;color:'+cpG5Color(r.g5)+'">'+r.g5+'등급</b> <span style="font-size:10px;color:#94a3b8">('+r.g9+')</span></td></tr>';
   });
   h+='</table>'
-    +'<div style="font-size:11px;color:#475569;font-weight:600;line-height:1.8;margin-top:8px">'
-    +'· 산출 방법: 경시대회 전국 백분위(같은 학년 전국 응시생 대비 실측)를 각 고등학교 1학년 수학 성적 분포(학교알리미 공시 평균·표준편차)에 대입한 추정입니다.<br>'
-    +'· 경시 응시 집단은 수학 학원 수강생 위주의 상위권이므로, 실제 전국 위치는 표시보다 <b>좋을 가능성</b>이 높습니다 (보수적 추정).<br>'
-    +'· 중학교 내신을 반영한 5과목 종합 판정은 다음 리포트에서 제공됩니다.</div>'
-    +(cpInput(st).note?'<div class="plan">🏫 <b>루멘수학 상담 노트</b> — '+String(cpInput(st).note).replace(/</g,'&lt;')+'</div>':'')
-    +'<div class="foot">학교알리미 공시 분포 기준 · 5등급제(1등급=상위 10%) · 본 자료는 현재 실력 유지를 전제로 한 참고용 추정이며 실제 결과는 달라질 수 있습니다. · 루멘수학</div>'
-    +'</div></body></html>';
+    +'<div class="foot">경시대회 전국 백분위(같은 학년 전국 응시생 대비 실측)를 각 고교 1학년 수학 성적 분포(학교알리미 공시)에 대입한 추정입니다. '
+    +'경시 응시 집단은 수학 학원 수강생 위주의 상위권이므로 실제 전국 위치는 표시보다 좋을 가능성이 높습니다(보수적 추정).</div></div>';
+
+  // ══ 2쪽: 문항별 ══
+  var pbs=(F&&F.problems||[]).filter(function(p){ return p&&p.no!=null; });
+  if(pbs.length){
+    pbs.sort(function(a,b){ return a.no-b.no; });
+    h+='<div class="paper"><div class="pgno">PAGE 2 / 2</div>'
+      +'<div class="secb" style="margin-top:0">문항별 결과 — 전 '+pbs.length+'문항</div>'
+      +'<div class="oxg">';
+    pbs.forEach(function(p){
+      var hard=(p.nationalRate!=null&&p.nationalRate<40);
+      var cls=(p.result==='O')?'o':((p.result==='X')?'x':(hard?'hard':''));
+      h+='<div class="ox '+cls+'"><div class="n">'+p.no+(p.result==='O'?' ✓':(p.result==='X'?' ✗':''))+'</div>'
+        +'<div class="m">'+esc(p.level||'')+(p.nationalRate!=null?'<br>전국 '+p.nationalRate+'%':'')+'</div></div>';
+    });
+    h+='</div>'
+      +'<div style="font-size:9.5px;color:#94a3b8;font-weight:700;margin-top:7px;line-height:1.6">숫자 아래는 난이도와 전국 정답률 · 노란 칸 = 전국 정답률 40% 미만의 어려운 문항'
+      +(pbs.some(function(p){return p.result;})?' · ✓ 정답 / ✗ 오답':'')+'</div>';
+    // 난이도별 분포
+    var byLv={};
+    pbs.forEach(function(p){ var k=p.level||'기타'; byLv[k]=byLv[k]||{n:0,rate:0}; byLv[k].n++; byLv[k].rate+=(p.nationalRate||0); });
+    var lvOrder=['하','중하','중','상','최상'];
+    h+='<div class="secb">난이도 구성</div><table><tr><th>난이도</th>';
+    lvOrder.forEach(function(k){ if(byLv[k]) h+='<th>'+k+'</th>'; }); h+='</tr><tr><td>문항 수</td>';
+    lvOrder.forEach(function(k){ if(byLv[k]) h+='<td>'+byLv[k].n+'문항</td>'; }); h+='</tr><tr><td>전국 평균 정답률</td>';
+    lvOrder.forEach(function(k){ if(byLv[k]) h+='<td>'+Math.round(byLv[k].rate/byLv[k].n)+'%</td>'; }); h+='</tr></table>';
+    // 최고난도 문항
+    var hardest=pbs.slice().filter(function(p){ return p.nationalRate!=null; }).sort(function(a,b){ return a.nationalRate-b.nationalRate; }).slice(0,5);
+    if(hardest.length){
+      h+='<div class="secb">전국에서 가장 어려웠던 문항</div><table><tr><th>번호</th><th>단원</th><th>난이도</th><th>배점</th><th>전국 정답률</th>'
+        +(pbs.some(function(p){return p.result;})?'<th>결과</th>':'')+'</tr>';
+      hardest.forEach(function(p){
+        h+='<tr><td>'+p.no+'번</td><td style="text-align:center;font-weight:800">'+esc(p.unit||'-')+'</td><td>'+esc(p.level||'-')+'</td>'
+          +'<td>'+(p.point!=null?p.point+'점':'-')+'</td><td style="color:#b91c1c">'+p.nationalRate+'%</td>'
+          +(pbs.some(function(x){return x.result;})?'<td>'+(p.result==='O'?'<b style="color:#15803d">정답 🔥</b>':(p.result==='X'?'<span style="color:#b91c1c">오답</span>':'-'))+'</td>':'')+'</tr>';
+      });
+      h+='</table>';
+    }
+    // 취약 단원 처방
+    if(wU.length){
+      h+='<div class="secb">보완할 단원</div><table><tr><th>단원</th><th>이 시험 출제</th><th>전국 평균 정답률</th></tr>';
+      wU.forEach(function(u){
+        var rel=pbs.filter(function(p){ return (p.unit||'').indexOf(u)>=0||u.indexOf(p.unit||'@')>=0; });
+        var avg=rel.length?Math.round(rel.reduce(function(a,b){ return a+(b.nationalRate||0); },0)/rel.length):null;
+        h+='<tr><td>'+esc(u)+'</td><td>'+(rel.length?rel.map(function(p){ return p.no+'번'; }).join(', '):'-')+'</td><td>'+(avg!=null?avg+'%':'-')+'</td></tr>';
+      });
+      h+='</table>';
+    }
+    h+='<div class="plan">🏫 <b>루멘수학 학습 플랜</b> — '+((cpInput(st).note||'').replace(/</g,'&lt;')
+      ||('다음 회차까지 '+(wU.length?'「'+esc(wU[0])+'」 단원을 집중 보완하고, ':'')+'전국 정답률이 낮았던 고난도 문항 유형을 반복 훈련하겠습니다.'))+'</div>'
+      +'<div class="foot">학교알리미 공시 분포 기준 · 5등급제(1등급=상위 10%) · 본 자료는 현재 실력 유지를 전제로 한 참고용 추정이며 실제 결과는 달라질 수 있습니다. · 루멘수학</div>'
+      +'</div>';
+  } else {
+    // 문항 데이터가 없을 때(수동 입력) — 1쪽 하단에 안내
+    h=h.replace('</div></body>','</div>'); // no-op 안전
+  }
+  h+='</body></html>';
   var w=window.open('','_blank');
   if(!w){ alert('팝업이 차단되었습니다. 팝업 허용 후 다시 눌러 주세요.'); return; }
   w.document.write(h); w.document.close();
 }
+
 // ── 인쇄 (학부모용 3쪽 리포트) ──
 window.cpPrint=function(){
   var st=cpCur(); if(!st) return;
