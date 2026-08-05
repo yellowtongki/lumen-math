@@ -44520,11 +44520,58 @@ window.cpPublish=async function(){
   }catch(e){ alert('발행 실패: '+(e.message||e)); }
 };
 
+// ── 인쇄: 경시 전용 1쪽 리포트 (내신 미입력 시) ──
+function cpPrintKmmOnly(st,kmm){
+  var today=new Date(); var dstr=today.getFullYear()+'. '+(today.getMonth()+1)+'. '+today.getDate();
+  var g5=cpG5(kmm.top), g9=cpG9(kmm.top);
+  var css='*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;background:#eee;color:#0d2240;padding:20px}'
+    +'.paper{max-width:760px;margin:0 auto 20px;background:#fff;padding:34px 38px;box-shadow:0 4px 18px rgba(0,0,0,0.15)}'
+    +'@media print{body{background:#fff;padding:0}.paper{box-shadow:none;margin:0;max-width:none}.noprint{display:none}}'
+    +'.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #0d2240;padding-bottom:10px;margin-bottom:16px}'
+    +'.hd .a{font-size:11px;font-weight:900;color:#e8192c;letter-spacing:2px}.hd .b{font-size:21px;font-weight:900;margin-top:2px}'
+    +'.hd .r{text-align:right;font-size:11px;color:#64748b;font-weight:700;line-height:1.7}'
+    +'.secb{font-size:12.5px;font-weight:900;border-left:4px solid #e8192c;padding-left:8px;margin:16px 0 9px}'
+    +'table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:6px}'
+    +'th{border-bottom:2px solid #0d2240;padding:7px 6px;font-size:11px;text-align:center}th:first-child{text-align:left}'
+    +'td{padding:7px 6px;border-bottom:1px solid #e8eef8;text-align:center;font-weight:800;color:#334155}td:first-child{text-align:left;font-weight:900;color:#0d2240}'
+    +'.foot{font-size:9.5px;color:#94a3b8;line-height:1.7;margin-top:14px;border-top:1px solid #e8eef8;padding-top:10px}'
+    +'.plan{background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#4c1d95;font-weight:700;line-height:1.85;margin-top:10px}';
+  var h='<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>경시 나침반 - '+st.name+'</title><style>'+css+'</style></head><body>';
+  h+='<div class="noprint" style="max-width:760px;margin:0 auto 14px;text-align:right"><button onclick="window.print()" style="padding:10px 22px;font-size:14px;font-weight:900;font-family:inherit;background:#0d2240;color:#fff;border:none;border-radius:10px;cursor:pointer">🖨️ 인쇄</button></div>';
+  h+='<div class="paper">'
+    +'<div class="hd"><div><div class="a">LUMEN MATH</div><div class="b">🏆 경시 나침반 리포트 (수학)</div></div>'
+    +'<div class="r">'+st.name+' 학생 ('+(st.grade||'')+')<br>'+dstr+' · 루멘수학</div></div>'
+    +'<div style="display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:16px 18px;color:#fff;margin-bottom:14px">'
+    +'<div style="width:66px;height:66px;border-radius:16px;background:'+cpG5Color(g5)+';display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none"><b style="font-size:24px">'+g5+'</b><span style="font-size:8px;opacity:0.85">수학 등급권</span></div>'
+    +'<div><div style="font-size:16px;font-weight:900">KMM 경시대회 '+(kmm.label||'')+' — 전국 백분위 '+kmm.pct+'</div>'
+    +'<div style="font-size:12px;opacity:0.85;margin-top:4px;line-height:1.7">전국 단위 시험 실측으로 <b style="color:#ffd54a">전국 상위 '+Math.round(kmm.top)+'%</b><br>고교 5등급제 기준 수학 '+g5+'등급권 (9등급제 '+g9+'등급권)</div></div></div>'
+    +'<div class="secb">진학 예정 고등학교별 수학 예상 (5등급제 · 괄호 9등급)</div>'
+    +'<table><tr><th>학교</th><th>예상 점수</th><th>예상 등급</th></tr>';
+  kmm.rows.forEach(function(r){
+    h+='<tr><td>'+r.name.replace('등학교','')+'</td><td>'+Math.round(r.exp)+'점</td><td><b style="font-size:15px;color:'+cpG5Color(r.g5)+'">'+r.g5+'등급</b> <span style="font-size:10px;color:#94a3b8">('+r.g9+')</span></td></tr>';
+  });
+  h+='</table>'
+    +'<div style="font-size:11px;color:#475569;font-weight:600;line-height:1.8;margin-top:8px">'
+    +'· 산출 방법: 경시대회 전국 백분위(같은 학년 전국 응시생 대비 실측)를 각 고등학교 1학년 수학 성적 분포(학교알리미 공시 평균·표준편차)에 대입한 추정입니다.<br>'
+    +'· 경시 응시 집단은 수학 학원 수강생 위주의 상위권이므로, 실제 전국 위치는 표시보다 <b>좋을 가능성</b>이 높습니다 (보수적 추정).<br>'
+    +'· 중학교 내신을 반영한 5과목 종합 판정은 다음 리포트에서 제공됩니다.</div>'
+    +(cpInput(st).note?'<div class="plan">🏫 <b>루멘수학 상담 노트</b> — '+String(cpInput(st).note).replace(/</g,'&lt;')+'</div>':'')
+    +'<div class="foot">학교알리미 공시 분포 기준 · 5등급제(1등급=상위 10%) · 본 자료는 현재 실력 유지를 전제로 한 참고용 추정이며 실제 결과는 달라질 수 있습니다. · 루멘수학</div>'
+    +'</div></body></html>';
+  var w=window.open('','_blank');
+  if(!w){ alert('팝업이 차단되었습니다. 팝업 허용 후 다시 눌러 주세요.'); return; }
+  w.document.write(h); w.document.close();
+}
 // ── 인쇄 (학부모용 3쪽 리포트) ──
 window.cpPrint=function(){
   var st=cpCur(); if(!st) return;
   var nat=cpNatOf(st);
-  if(!CP_SUBS.some(function(s){return nat[s];})){ alert('성적을 먼저 입력해 주세요'); return; }
+  if(!CP_SUBS.some(function(s){return nat[s];})){
+    // 내신 미입력 → KMM 백분위만 있으면 경시 전용 1쪽 리포트
+    var k0=cpKmm(st);
+    if(k0&&k0.rows.length){ cpPrintKmmOnly(st,k0); return; }
+    alert('성적(또는 KMM 백분위)을 먼저 입력해 주세요'); return;
+  }
   var names=cpSchoolList();
   var calcs=names.map(function(n){ return cpSchoolOf(st,n); }).filter(function(x){ return x&&x.overall5; });
   calcs.sort(function(a,b){ return a.avgTop-b.avgTop; });
