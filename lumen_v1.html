@@ -44421,6 +44421,55 @@ window.cpRemoveSchool=function(n){
 window.cpToggleHow=function(){ CP_HOW=!CP_HOW; render(); };
 window.cpToggleData=function(){ CP_DATA=!CP_DATA; render(); };
 
+// ── KMM 성적표 PDF 업로드 → 백분위 자동 입력 ──
+window.cpUploadKmm=async function(input){
+  var files=Array.from(input.files||[]); input.value='';
+  if(!files.length) return;
+  if(!apiKey){ alert('설정 탭에서 Anthropic API 키를 먼저 등록해 주세요'); return; }
+  if(CP_BUSY) return; CP_BUSY=true;
+  var students=cpStudents();
+  var msgs=[], okCnt=0;
+  for(var i=0;i<files.length;i++){
+    try{
+      var b64=await new Promise(function(res,rej){
+        var r=new FileReader();
+        r.onload=function(){ res(String(r.result).split(',')[1]); };
+        r.onerror=rej; r.readAsDataURL(files[i]);
+      });
+      var prompt='매쓰플랫 KMM 경시대회 월별 분석 보고서 PDF입니다. JSON만 출력:\n'
+        +'{"name":"학생 이름","grade":"학년(예: 중1)","round":"회차 숫자(예: 16)","month":"월 숫자(예: 7)","percentile":백분위 숫자(예: 94.0),"score":점수 숫자,"award":"수상(대상/금상/은상/동상/장려상/해당없음)"}\n'
+        +'백분위는 표지의 「백분위 N %」 값. 다른 텍스트 금지.';
+      var resp=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{ 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
+        body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:800, messages:[{ role:'user', content:[
+          { type:'document', source:{ type:'base64', media_type:'application/pdf', data:b64 } },
+          { type:'text', text:prompt }
+        ]}]})
+      });
+      var j=await resp.json();
+      if(!resp.ok) throw new Error((j.error&&j.error.message)||('HTTP '+resp.status));
+      var txt=((j.content||[])[0]||{}).text||'';
+      var m=txt.match(/\{[\s\S]*\}/); if(!m) throw new Error('JSON 인식 실패');
+      var d=JSON.parse(m[0]);
+      if(!d.name||d.percentile==null) throw new Error('이름/백분위 인식 실패');
+      var hits=students.filter(function(s){ return s.name===String(d.name).trim(); });
+      if(!hits.length){ msgs.push('❌ '+files[i].name+': 학생 「'+d.name+'」 을(를) 등록부에서 못 찾음'); continue; }
+      if(hits.length>1){ msgs.push('⚠️ '+files[i].name+': 「'+d.name+'」 동명이인 '+hits.length+'명 — 직접 입력 필요'); continue; }
+      var st=hits[0];
+      var inp=cpInput(st);
+      inp.kmmPct=String(d.percentile);
+      inp.kmmLabel='제'+(d.round||'?')+'회('+(d.month||'?')+'월)';
+      cpSaveIn();
+      okCnt++;
+      msgs.push('✅ '+d.name+' — 제'+(d.round||'?')+'회 백분위 '+d.percentile+(d.score!=null?' · '+d.score+'점':'')+(d.award&&d.award!=='해당없음'?' · '+d.award:''));
+    }catch(e){ msgs.push('❌ '+files[i].name+': '+(e.message||e)); }
+  }
+  CP_BUSY=false;
+  alert('KMM 성적표 자동 입력 결과 ('+okCnt+'/'+files.length+')\n\n'+msgs.join('\n'));
+  render();
+};
+
 // ── 학교알리미 캡처 업로드 (AI 추출 → compass_hs_db 갱신) ──
 window.cpUpload=async function(input){
   var files=Array.from(input.files||[]); input.value='';
@@ -44747,6 +44796,8 @@ function rCompass(){
   // KMM
   h+='<div class="cp-card"><div class="cp-h">🏆 KMM 경시 백분위 (선택)</div>'
     +'<div class="cp-s">매쓰플랫 KMM 보고서의 「백분위」 숫자 — 입력하면 경시 나침반(수학)과 교차 검증이 켜집니다</div>'
+    +'<label class="cp-btn" style="background:#a16207;color:#fff;display:inline-block;margin-bottom:8px">📄 KMM 성적표 PDF 업로드 — AI 자동 입력 (여러 명 한번에)'
+    +'<input type="file" accept="application/pdf" multiple style="display:none" onchange="cpUploadKmm(this)"></label>'
     +'<div style="display:flex;gap:6px">'
     +'<input value="'+(inp.kmmPct||'')+'" placeholder="백분위 예: 94" onchange="cpMeta(\'kmmPct\',this.value);cpRecalc()" style="width:110px;border:1.5px solid #e2e8f0;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:800;font-family:inherit;outline:none;text-align:center">'
     +'<input value="'+(inp.kmmLabel||'').replace(/"/g,'&quot;')+'" placeholder="회차 예: 제16회(7월)" onchange="cpMeta(\'kmmLabel\',this.value)" style="flex:1;border:1.5px solid #e2e8f0;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:800;font-family:inherit;outline:none">'
