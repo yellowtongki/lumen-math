@@ -44421,54 +44421,120 @@ window.cpRemoveSchool=function(n){
 window.cpToggleHow=function(){ CP_HOW=!CP_HOW; render(); };
 window.cpToggleData=function(){ CP_DATA=!CP_DATA; render(); };
 
-// ── KMM 성적표 PDF 업로드 → 백분위 자동 입력 ──
+// ── KMM 성적표 PDF 업로드 → 백분위 자동 입력 (여러 학생·묶음 PDF 지원) ──
+var CP_KMM_LOG=null;   // {rows:[{file,name,round,month,pct,score,award,status,msg}], done:n, total:n, running:bool}
+function cpKmmSetStatus(txt){
+  var el=document.getElementById('cp-kmm-status');
+  if(el) el.innerHTML=txt;
+}
 window.cpUploadKmm=async function(input){
   var files=Array.from(input.files||[]); input.value='';
   if(!files.length) return;
   if(!apiKey){ alert('설정 탭에서 Anthropic API 키를 먼저 등록해 주세요'); return; }
-  if(CP_BUSY) return; CP_BUSY=true;
+  if(CP_BUSY){ alert('이미 처리 중입니다. 끝날 때까지 기다려 주세요.'); return; }
+  CP_BUSY=true;
+  CP_KMM_LOG={ rows:[], done:0, total:files.length, running:true };
+  render();
   var students=cpStudents();
-  var msgs=[], okCnt=0;
   for(var i=0;i<files.length;i++){
+    CP_KMM_LOG.done=i;
+    cpKmmSetStatus('⏳ '+(i+1)+' / '+files.length+' 처리 중 — '+cpEsc(files[i].name));
     try{
       var b64=await new Promise(function(res,rej){
         var r=new FileReader();
         r.onload=function(){ res(String(r.result).split(',')[1]); };
         r.onerror=rej; r.readAsDataURL(files[i]);
       });
-      var prompt='매쓰플랫 KMM 경시대회 월별 분석 보고서 PDF입니다. JSON만 출력:\n'
-        +'{"name":"학생 이름","grade":"학년(예: 중1)","round":"회차 숫자(예: 16)","month":"월 숫자(예: 7)","percentile":백분위 숫자(예: 94.0),"score":점수 숫자,"award":"수상(대상/금상/은상/동상/장려상/해당없음)"}\n'
-        +'백분위는 표지의 「백분위 N %」 값. 다른 텍스트 금지.';
+      var prompt='매쓰플랫 KMM 경시대회 월별 분석 보고서 PDF입니다. '
+        +'이 PDF에는 학생이 한 명일 수도 있고, 여러 학생의 보고서가 이어붙어 있을 수도 있습니다. '
+        +'등장하는 모든 학생을 빠짐없이 찾아 JSON 배열로만 출력하세요.\n'
+        +'[{"name":"학생 이름","grade":"학년(예: 중1)","round":회차 숫자(예: 16),"month":월 숫자(예: 7),"percentile":백분위 숫자(예: 94.0),"score":점수 숫자,"award":"수상(대상/금상/은상/동상/장려상/해당없음)"}]\n'
+        +'백분위는 표지의 「백분위 N %」 값입니다. 같은 학생이 여러 쪽에 걸쳐 나오면 한 번만 넣으세요. 다른 텍스트 금지.';
       var resp=await fetch('https://api.anthropic.com/v1/messages',{
         method:'POST',
         headers:{ 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
-        body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:800, messages:[{ role:'user', content:[
+        body:JSON.stringify({ model:'claude-sonnet-4-6', max_tokens:4000, messages:[{ role:'user', content:[
           { type:'document', source:{ type:'base64', media_type:'application/pdf', data:b64 } },
           { type:'text', text:prompt }
         ]}]})
       });
-      var j=await resp.json();
-      if(!resp.ok) throw new Error((j.error&&j.error.message)||('HTTP '+resp.status));
-      var txt=((j.content||[])[0]||{}).text||'';
-      var m=txt.match(/\{[\s\S]*\}/); if(!m) throw new Error('JSON 인식 실패');
-      var d=JSON.parse(m[0]);
-      if(!d.name||d.percentile==null) throw new Error('이름/백분위 인식 실패');
-      var hits=students.filter(function(s){ return s.name===String(d.name).trim(); });
-      if(!hits.length){ msgs.push('❌ '+files[i].name+': 학생 「'+d.name+'」 을(를) 등록부에서 못 찾음'); continue; }
-      if(hits.length>1){ msgs.push('⚠️ '+files[i].name+': 「'+d.name+'」 동명이인 '+hits.length+'명 — 직접 입력 필요'); continue; }
-      var st=hits[0];
-      var inp=cpInput(st);
-      inp.kmmPct=String(d.percentile);
-      inp.kmmLabel='제'+(d.round||'?')+'회('+(d.month||'?')+'월)';
-      cpSaveIn();
-      okCnt++;
-      msgs.push('✅ '+d.name+' — 제'+(d.round||'?')+'회 백분위 '+d.percentile+(d.score!=null?' · '+d.score+'점':'')+(d.award&&d.award!=='해당없음'?' · '+d.award:''));
-    }catch(e){ msgs.push('❌ '+files[i].name+': '+(e.message||e)); }
+      var j2=await resp.json();
+      if(!resp.ok) throw new Error((j2.error&&j2.error.message)||('HTTP '+resp.status));
+      var txt=((j2.content||[])[0]||{}).text||'';
+      var m=txt.match(/\[[\s\S]*\]/);
+      var arr;
+      if(m){ arr=JSON.parse(m[0]); }
+      else { var m1=txt.match(/\{[\s\S]*\}/); if(!m1) throw new Error('인식 실패 (형식 불명)'); arr=[JSON.parse(m1[0])]; }
+      if(!Array.isArray(arr)||!arr.length) throw new Error('학생 정보를 찾지 못함');
+      arr.forEach(function(d){
+        var row={ file:files[i].name, name:(d.name||'').trim(), round:d.round, month:d.month,
+                  pct:d.percentile, score:d.score, award:d.award||'' };
+        if(!row.name||row.pct==null){ row.status='fail'; row.msg='이름 또는 백분위 인식 실패'; CP_KMM_LOG.rows.push(row); return; }
+        var hits=students.filter(function(s){ return s.name===row.name; });
+        if(!hits.length){ row.status='nomatch'; row.msg='등록부에 없는 이름'; CP_KMM_LOG.rows.push(row); return; }
+        if(hits.length>1){ row.status='dup'; row.msg='동명이인 '+hits.length+'명 — 직접 입력 필요'; CP_KMM_LOG.rows.push(row); return; }
+        var st=hits[0];
+        var inp=cpInput(st);
+        inp.kmmPct=String(row.pct);
+        inp.kmmLabel='제'+(row.round||'?')+'회('+(row.month||'?')+'월)';
+        cpSaveIn();
+        row.status='ok'; row.grade=st.grade||''; row.sid=st.id;
+        CP_KMM_LOG.rows.push(row);
+      });
+    }catch(e){
+      CP_KMM_LOG.rows.push({ file:files[i].name, status:'fail', msg:(e.message||String(e)) });
+    }
   }
+  CP_KMM_LOG.done=files.length; CP_KMM_LOG.running=false;
   CP_BUSY=false;
-  alert('KMM 성적표 자동 입력 결과 ('+okCnt+'/'+files.length+')\n\n'+msgs.join('\n'));
   render();
 };
+window.cpKmmClear=function(){ CP_KMM_LOG=null; render(); };
+window.cpKmmGoto=function(sid){ CP_SEL=sid; render(); };
+function cpEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function cpKmmPanel(){
+  if(!CP_KMM_LOG) return '';
+  var L=CP_KMM_LOG;
+  var okN=L.rows.filter(function(r){ return r.status==='ok'; }).length;
+  var badN=L.rows.length-okN;
+  var h='<div class="cp-card" style="border:1.5px solid '+(L.running?'#fcd34d':(badN?'#fca5a5':'#86efac'))+'">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+    +'<div class="cp-h" style="margin:0">📄 KMM 성적표 자동 입력 결과</div>'
+    +(L.running?'':'<button class="cp-btn" onclick="cpKmmClear()" style="margin-left:auto;background:#f1f5f9;color:#475569;padding:5px 11px">닫기</button>')
+    +'</div>';
+  if(L.running){
+    var pct=Math.round(L.done/Math.max(1,L.total)*100);
+    h+='<div id="cp-kmm-status" style="font-size:11.5px;font-weight:800;color:#a16207;margin-bottom:6px">⏳ '+(L.done+1)+' / '+L.total+' 처리 중…</div>'
+      +'<div style="height:8px;border-radius:99px;background:#f1f5f9;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:#f59e0b;border-radius:99px;transition:width .3s"></div></div>'
+      +'<div style="font-size:10px;color:#94a3b8;font-weight:700;margin-top:6px">PDF 한 개당 5~15초 정도 걸립니다. 창을 닫지 마세요.</div>';
+  } else {
+    h+='<div style="font-size:12px;font-weight:900;color:'+(badN?'#b45309':'#15803d')+';margin-bottom:8px">'
+      +'✅ '+okN+'명 입력 완료'+(badN?' · ⚠️ '+badN+'건 확인 필요':'')+'</div>';
+  }
+  if(L.rows.length){
+    h+='<div style="max-height:280px;overflow-y:auto"><table class="cp-tbl" style="font-size:11px">'
+      +'<tr><th>학생</th><th>회차</th><th>백분위</th><th>점수</th><th>수상</th><th>결과</th></tr>';
+    L.rows.forEach(function(r){
+      var badge, color;
+      if(r.status==='ok'){ badge='✅ 입력됨'; color='#15803d'; }
+      else if(r.status==='nomatch'){ badge='❌ '+cpEsc(r.msg); color='#b91c1c'; }
+      else if(r.status==='dup'){ badge='⚠️ '+cpEsc(r.msg); color='#b45309'; }
+      else { badge='❌ '+cpEsc(r.msg); color='#b91c1c'; }
+      h+='<tr>'
+        +'<td>'+(r.status==='ok'?'<button onclick="cpKmmGoto(\''+r.sid+'\')" style="border:none;background:none;font-family:inherit;font-size:11px;font-weight:900;color:#0d2240;cursor:pointer;text-decoration:underline">'+cpEsc(r.name)+'</button>':cpEsc(r.name||r.file))+'</td>'
+        +'<td>'+(r.round?('제'+r.round+'회'):'-')+'</td>'
+        +'<td style="font-weight:900">'+(r.pct!=null?r.pct:'-')+'</td>'
+        +'<td>'+(r.score!=null?r.score+'점':'-')+'</td>'
+        +'<td>'+(r.award&&r.award!=='해당없음'?cpEsc(r.award):'-')+'</td>'
+        +'<td style="color:'+color+';font-weight:800">'+badge+'</td></tr>';
+    });
+    h+='</table></div>';
+    if(badN&&!L.running) h+='<div style="font-size:10.5px;color:#64748b;font-weight:700;margin-top:8px;line-height:1.7">⚠️ 표시된 건은 학생을 직접 고른 뒤 백분위를 손으로 입력해 주세요. (등록부 이름과 성적표 이름이 다르면 매칭이 안 됩니다)</div>';
+  }
+  h+='</div>';
+  return h;
+}
 
 // ── 학교알리미 캡처 업로드 (AI 추출 → compass_hs_db 갱신) ──
 window.cpUpload=async function(input){
@@ -44759,10 +44825,13 @@ function rCompass(){
   h+='</select>'
     +'<button class="cp-btn" onclick="cpToggleHow()" style="background:'+(CP_HOW?'#0d2240':'#eef2ff')+';color:'+(CP_HOW?'#fff':'#4338ca')+'">❓ 등급 산출 원리</button>'
     +'<button class="cp-btn" onclick="cpToggleData()" style="background:'+(CP_DATA?'#0d2240':'#f5f3ff')+';color:'+(CP_DATA?'#fff':'#5b21b6')+'">🗂 학교 데이터 관리</button>'
+    +'<label class="cp-btn" style="background:#a16207;color:#fff;display:inline-flex;align-items:center;gap:5px;cursor:pointer">📄 KMM 성적표 PDF 올리기 <span style="font-size:9.5px;opacity:0.85;font-weight:800">전체 학생 한번에</span>'
+    +'<input type="file" accept="application/pdf" multiple style="display:none" onchange="cpUploadKmm(this)"></label>'
     +'<div style="margin-left:auto;display:flex;gap:8px">'
     +'<button class="cp-btn" onclick="cpPrint()" style="background:#e8192c;color:#fff">🖨️ 학부모 리포트 (3쪽)</button>'
     +'<button class="cp-btn" onclick="cpPublish()" style="background:#15803d;color:#fff">📱 학부모앱 발행</button>'
     +'</div></div>';
+  h+=cpKmmPanel();
   // 원리 패널 (학원앱 전용)
   if(CP_HOW) h+=cpHowPanel();
   // 데이터 관리
@@ -44794,10 +44863,8 @@ function rCompass(){
   });
   h+='</table></div>';
   // KMM
-  h+='<div class="cp-card"><div class="cp-h">🏆 KMM 경시 백분위 (선택)</div>'
-    +'<div class="cp-s">매쓰플랫 KMM 보고서의 「백분위」 숫자 — 입력하면 경시 나침반(수학)과 교차 검증이 켜집니다</div>'
-    +'<label class="cp-btn" style="background:#a16207;color:#fff;display:inline-block;margin-bottom:8px">📄 KMM 성적표 PDF 업로드 — AI 자동 입력 (여러 명 한번에)'
-    +'<input type="file" accept="application/pdf" multiple style="display:none" onchange="cpUploadKmm(this)"></label>'
+  h+='<div class="cp-card"><div class="cp-h">🏆 KMM 경시 백분위 <span style="font-size:10px;color:#94a3b8;font-weight:700">— '+cpEsc(st.name)+' 개별 입력</span></div>'
+    +'<div class="cp-s">매쓰플랫 KMM 보고서의 「백분위」 숫자 — 입력하면 경시 나침반(수학)과 교차 검증이 켜집니다<br><b style="color:#a16207">여러 명을 한번에 넣으시려면 화면 위쪽 「📄 KMM 성적표 PDF 올리기」를 쓰세요</b></div>'
     +'<div style="display:flex;gap:6px">'
     +'<input value="'+(inp.kmmPct||'')+'" placeholder="백분위 예: 94" onchange="cpMeta(\'kmmPct\',this.value);cpRecalc()" style="width:110px;border:1.5px solid #e2e8f0;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:800;font-family:inherit;outline:none;text-align:center">'
     +'<input value="'+(inp.kmmLabel||'').replace(/"/g,'&quot;')+'" placeholder="회차 예: 제16회(7월)" onchange="cpMeta(\'kmmLabel\',this.value)" style="flex:1;border:1.5px solid #e2e8f0;border-radius:9px;padding:7px 10px;font-size:12px;font-weight:800;font-family:inherit;outline:none">'
