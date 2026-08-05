@@ -1,0 +1,299 @@
+<title>루멘수학 · 진학 나침반 미리보기</title>
+<style>
+:root{
+  --stage:#e9edf3; --ink:#0d2240; --ink-dim:#64748b;
+  --stage-card:#fffbe8; --stage-card-bd:#fbbf24; --stage-card-ink:#78350f; --stage-card-b:#92400e;
+  --stage-info:#eef6ff; --stage-info-bd:#93c5fd; --stage-info-ink:#1e3a8a; --stage-info-b:#1d4ed8;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --stage:#0f141c; --ink:#dbe4f0; --ink-dim:#8fa3bd;
+    --stage-card:#231d0c; --stage-card-bd:#8a6a1c; --stage-card-ink:#f5d78a; --stage-card-b:#ffd88a;
+    --stage-info:#101f36; --stage-info-bd:#2d5386; --stage-info-ink:#bcd6f7; --stage-info-b:#8fc0ff; }
+}
+:root[data-theme="dark"]{ --stage:#0f141c; --ink:#dbe4f0; --ink-dim:#8fa3bd;
+  --stage-card:#231d0c; --stage-card-bd:#8a6a1c; --stage-card-ink:#f5d78a; --stage-card-b:#ffd88a;
+  --stage-info:#101f36; --stage-info-bd:#2d5386; --stage-info-ink:#bcd6f7; --stage-info-b:#8fc0ff; }
+:root[data-theme="light"]{ --stage:#e9edf3; --ink:#0d2240; --ink-dim:#64748b;
+  --stage-card:#fffbe8; --stage-card-bd:#fbbf24; --stage-card-ink:#78350f; --stage-card-b:#92400e;
+  --stage-info:#eef6ff; --stage-info-bd:#93c5fd; --stage-info-ink:#1e3a8a; --stage-info-b:#1d4ed8; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;background:var(--stage);color:var(--ink);padding:24px 12px 80px;display:flex;flex-direction:column;align-items:center;gap:26px}
+.note{max-width:1100px;width:100%;background:var(--stage-card);border:1.5px solid var(--stage-card-bd);border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.8;color:var(--stage-card-ink);font-weight:600}
+.note b{color:var(--stage-card-b)}
+.src{max-width:1100px;width:100%;background:var(--stage-info);border:1.5px solid var(--stage-info-bd);border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.8;color:var(--stage-info-ink);font-weight:600}
+.src b{color:var(--stage-info-b)}
+.lbl{max-width:1100px;width:100%;font-size:14px;font-weight:900;color:var(--ink);padding-left:4px}
+.lbl .s{font-size:11px;color:var(--ink-dim);font-weight:700;margin-left:8px}
+/* ── 학원앱 데스크톱 ── */
+.desk{max-width:1100px;width:100%;background:#f6f8fb;border-radius:18px;box-shadow:0 10px 34px rgba(13,34,64,0.18);overflow:hidden;border:1px solid #dbe3ee;color-scheme:light;color:#0d2240}
+.dhd{background:#0d2240;color:#fff;padding:14px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dhd .t{font-size:16px;font-weight:900}
+.chip{background:rgba(255,255,255,0.14);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:800}
+.chip.on{background:#ffd54a;color:#0d2240}
+.dhd .print{margin-left:auto;background:#e8192c;color:#fff;border:none;border-radius:20px;padding:7px 14px;font-size:11.5px;font-weight:900;font-family:inherit}
+.dhd .yr{font-size:10px;color:#94c5ff;font-weight:700}
+.dbody{display:grid;grid-template-columns:330px 1fr;gap:0}
+@media(max-width:880px){.dbody{grid-template-columns:1fr}}
+/* 좌: 입력 */
+.inpanel{background:#fff;border-right:1px solid #e8eef8;padding:14px}
+.pt{font-size:13px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.ps{font-size:10.5px;color:#94a3b8;margin-bottom:10px;line-height:1.6}
+.stusel{display:flex;gap:6px;align-items:center;margin-bottom:10px}
+.stusel .who{flex:1;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:900;color:#0d2240}
+.stusel .lv{background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:10px;padding:8px 10px;font-size:11px;font-weight:900;color:#4338ca}
+.ingrid{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px}
+.ingrid th{background:#f1f5f9;color:#475569;font-size:9.5px;font-weight:900;padding:5px 4px;text-align:center}
+.ingrid td{padding:5px 4px;border-bottom:1px solid #f8fafc;text-align:center;font-weight:800;color:#334155}
+.ingrid td.sub{text-align:left;font-weight:900;color:#0d2240;white-space:nowrap}
+.ingrid input{width:44px;border:1.5px solid #e2e8f0;border-radius:7px;padding:4px 2px;font-size:11px;font-weight:800;text-align:center;font-family:inherit;color:#0d2240;background:#fff}
+.auto{display:inline-block;background:#dcfce7;color:#15803d;border-radius:8px;font-size:8.5px;font-weight:900;padding:1px 5px;margin-left:3px;vertical-align:1px}
+.natrow{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.nat{flex:1;min-width:52px;background:#f8fafc;border:1.5px solid #eef2f7;border-radius:10px;padding:6px 4px;text-align:center}
+.nat .k{font-size:9px;font-weight:800;color:#94a3b8}
+.nat .g{font-size:15px;font-weight:900;margin-top:1px}
+.nat .p{font-size:8.5px;color:#64748b;font-weight:700}
+.g1{color:#15803d}.g2{color:#0369a1}.g3{color:#b45309}.g4{color:#c2410c}.g5c{color:#b91c1c}
+.curvebox{background:#fbfcff;border:1.5px solid #eef2f7;border-radius:12px;padding:10px 8px 4px;margin-bottom:10px}
+.curvebox .ttl{font-size:10.5px;font-weight:900;color:#475569;padding-left:6px;margin-bottom:2px}
+.upbar{background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:11px;padding:9px 11px;font-size:10.5px;color:#4c1d95;font-weight:700;line-height:1.6}
+.upbar b{color:#5b21b6}
+.upbar button{border:none;border-radius:8px;padding:5px 10px;font-size:10px;font-weight:900;font-family:inherit;background:#5b21b6;color:#fff;margin-top:6px}
+/* 우: 결과 */
+.res{padding:14px 16px;background:#fbfcff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:9px;margin-bottom:14px}
+.sc{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:11px 12px;position:relative}
+.sc.best{border-color:#86efac;background:linear-gradient(160deg,#f0fdf4,#fff)}
+.sc .nm{font-size:12px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sc .row{display:flex;align-items:center;gap:9px}
+.sc .big{width:44px;height:44px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;flex:none}
+.sc .big b{font-size:17px;line-height:1}
+.sc .big span{font-size:7.5px;opacity:0.85;margin-top:1px}
+.b1{background:#15803d}.b2{background:#0369a1}
+.sc .mini{display:flex;gap:3px;flex-wrap:wrap}
+.mg{width:22px;height:22px;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff}
+.mg span{font-size:6.5px;font-weight:800;opacity:0.9;line-height:1}
+.mg.m1{background:#15803d}.mg.m2{background:#0e7490}
+.sc .note2{font-size:9.5px;color:#64748b;font-weight:700;margin-top:7px;line-height:1.5}
+.sc .bestbdg{position:absolute;top:-8px;right:8px;background:#15803d;color:#fff;border-radius:10px;font-size:9px;font-weight:900;padding:2px 8px}
+.dtbl{width:100%;border-collapse:collapse;font-size:11.5px;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(13,34,64,0.06)}
+.dtbl th{background:#0d2240;color:#fff;font-size:10.5px;font-weight:900;padding:8px 6px;text-align:center}
+.dtbl th:first-child{text-align:left;padding-left:12px}
+.dtbl td{padding:7px 6px;border-bottom:1px solid #f1f5f9;text-align:center}
+.dtbl td:first-child{text-align:left;padding-left:12px;font-weight:900;color:#0d2240;white-space:nowrap}
+.cell b{font-size:14px}
+.cell .nine{font-size:8.5px;color:#94a3b8;font-weight:800}
+.cell .pts{font-size:9px;color:#64748b;font-weight:700}
+.tblnote{font-size:10px;color:#94a3b8;font-weight:700;margin-top:7px;line-height:1.6}
+/* ── 인쇄 리포트 ── */
+.paper{max-width:760px;width:100%;background:#fff;border-radius:6px;box-shadow:0 10px 34px rgba(13,34,64,0.22);padding:34px 38px;color-scheme:light;color:#0d2240}
+.php{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #0d2240;padding-bottom:10px;margin-bottom:16px}
+.php .l .a{font-size:11px;font-weight:900;color:#e8192c;letter-spacing:2px}
+.php .l .b{font-size:21px;font-weight:900;color:#0d2240;margin-top:2px}
+.php .r{text-align:right;font-size:11px;color:#64748b;font-weight:700;line-height:1.7}
+.verdict{background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:13px 16px;font-size:13px;font-weight:800;color:#14532d;line-height:1.8;margin-bottom:14px}
+.verdict b{color:#15803d}
+.ptbl{width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:6px}
+.ptbl th{border-bottom:2px solid #0d2240;padding:7px 6px;font-size:10.5px;color:#0d2240;text-align:center}
+.ptbl th:first-child{text-align:left}
+.ptbl td{padding:7px 6px;border-bottom:1px solid #e8eef8;text-align:center;font-weight:800;color:#334155}
+.ptbl td:first-child{text-align:left;font-weight:900;color:#0d2240}
+.pfoot{font-size:9.5px;color:#94a3b8;line-height:1.7;margin-top:12px;border-top:1px solid #e8eef8;padding-top:10px}
+/* ── 학부모앱 ── */
+.phone{width:390px;max-width:100%;background:#f0f4f8;border-radius:28px;box-shadow:0 12px 40px rgba(13,34,64,0.25);overflow:hidden;border:6px solid #0d2240;color-scheme:light;color:#0d2240}
+.hd{background:linear-gradient(135deg,#3b2f63,#0d2240);padding:36px 20px 16px;color:#fff}
+.hd .t{font-size:18px;font-weight:800}
+.hd .s{font-size:11px;opacity:0.65;margin-top:2px}
+.wrap{padding:14px 14px 26px}
+.card{background:#fff;border-radius:16px;padding:15px;box-shadow:0 2px 10px rgba(13,34,64,0.06)}
+.ct{font-size:14px;font-weight:800;color:#0d2240;display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.cs{font-size:11px;color:#94a3b8;margin-bottom:10px;line-height:1.6}
+.schsel{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.ss{border:1.5px solid #e2e8f0;border-radius:16px;padding:4px 11px;font-size:10.5px;font-weight:800;color:#64748b;background:#fff}
+.ss.on{background:#0d2240;color:#fff;border-color:#0d2240}
+.hero{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:14px;color:#fff;margin-bottom:10px}
+.hero .big2{width:62px;height:62px;border-radius:16px;background:#15803d;display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none}
+.hero .big2 b{font-size:22px}
+.hero .big2 span{font-size:8px;opacity:0.85}
+.hero .m .a{font-size:15px;font-weight:900}
+.hero .m .b{font-size:10.5px;opacity:0.8;margin-top:3px;line-height:1.6}
+.subrow{display:flex;gap:5px;margin-bottom:10px}
+.su{flex:1;background:#f8fafc;border:1.5px solid #eef2f7;border-radius:11px;padding:7px 3px;text-align:center}
+.su .k{font-size:9px;font-weight:800;color:#94a3b8}
+.su .g{font-size:14px;font-weight:900}
+.su .n{font-size:7.5px;color:#94a3b8;font-weight:800}
+.pplan{background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:12px;padding:11px 12px;font-size:11px;color:#4c1d95;font-weight:700;line-height:1.7;margin-bottom:8px}
+.pplan b{color:#5b21b6}
+.warn{font-size:10px;color:#94a3b8;font-weight:700;background:#fafafa;border-radius:8px;padding:7px 9px;line-height:1.6}
+.hook{max-width:1100px;width:100%;background:var(--stage-info);border:1.5px dashed var(--stage-info-bd);border-radius:12px;padding:11px 14px;font-size:12px;color:var(--stage-info-ink);font-weight:700;line-height:1.7}
+.hook b{color:var(--stage-info-b)}
+svg text{font-family:inherit}
+</style>
+
+<div class="note">
+  🧪 <b>상의용 미리보기 — 학원앱 새 탭 「🧭 진학 나침반」</b> · 실제 저장·동작 없음. 학생 이름은 <b>가명</b>,
+  고등학교 평균·표준편차는 <b>업로드해주신 나침반 엑셀의 실제 부천 데이터</b>(학교알리미 공시)이며 최신값은 원장님이 학교알리미에서 주시면 갱신합니다.<br>
+  ✅ 나침반 방식을 <b>자체 구현</b>하므로 원본 엑셀의 만료 잠금(2026.3.19) 없이 영구 사용 · 수학 성적은 기존 학교성적 데이터로 자동 입력.
+</div>
+<div class="src">
+  🔎 <b>계산 방식 (나침반 동일)</b> — 중학교 성적(원점수·평균·표준편차·전체학생수) → 정규분포로 전국 위치(백분위) 계산 →
+  목표 고교의 과목별 평균·표준편차에 대입 → <b>그 학교에서의 예상 원점수·상위%·내신 등급</b> (5등급제 중심 + 9등급 병기).
+  표준편차 미공개 학교는 중학교 수준(A/B/C) 보정표 사용.
+</div>
+
+<!-- ═══ 학원앱 탭 ═══ -->
+<div class="lbl">🖥️ 학원앱 — 새 탭 「🧭 진학 나침반」 <span class="s">5과목 종합 · 지정 6개교 비교 · 학교알리미 데이터 관리</span></div>
+<div class="desk">
+  <div class="dhd">
+    <div class="t">🧭 진학 나침반</div>
+    <div class="chip on">김하람 · 중3</div>
+    <div class="chip">학생 선택 ▾</div>
+    <div class="chip">＋ 학교 추가</div>
+    <button class="print">🖨️ 인쇄 리포트</button>
+    <div class="yr">학교알리미 2025 공시 · 6개교</div>
+  </div>
+  <div class="dbody">
+    <div class="inpanel">
+      <div class="pt">📥 중학교 성적 입력</div>
+      <div class="ps">최근 시험 기준 · 수학은 학교성적 데이터에서 자동, 나머지는 상담 때 입력</div>
+      <div class="stusel"><div class="who">김하람 (부천OO중 3학년)</div><div class="lv">중학교 수준 B ▾</div></div>
+      <table class="ingrid">
+        <tr><th>과목</th><th>원점수</th><th>평균</th><th>표준편차</th><th>학생수</th></tr>
+        <tr><td class="sub">국어</td><td><input value="88"></td><td><input value="74"></td><td><input value="13"></td><td><input value="287"></td></tr>
+        <tr><td class="sub">수학<span class="auto">자동</span></td><td><input value="94" style="border-color:#86efac;background:#f0fdf4"></td><td><input value="66" style="border-color:#86efac;background:#f0fdf4"></td><td><input value="17" style="border-color:#86efac;background:#f0fdf4"></td><td><input value="287" style="border-color:#86efac;background:#f0fdf4"></td></tr>
+        <tr><td class="sub">영어</td><td><input value="90"></td><td><input value="71"></td><td><input value="19"></td><td><input value="287"></td></tr>
+        <tr><td class="sub">사회</td><td><input value="85"></td><td><input value="72"></td><td><input value="15"></td><td><input value="287"></td></tr>
+        <tr><td class="sub">과학</td><td><input value="87"></td><td><input value="70"></td><td><input value="16"></td><td><input value="287"></td></tr>
+      </table>
+      <div class="pt" style="font-size:11.5px">🇰🇷 전국 위치 (고교 5등급제 기준)</div>
+      <div class="natrow">
+        <div class="nat"><div class="k">국어</div><div class="g g2">2</div><div class="p">상위 14%</div></div>
+        <div class="nat" style="border-color:#bbf7d0;background:#f0fdf4"><div class="k">수학</div><div class="g g1">1</div><div class="p">상위 5%</div></div>
+        <div class="nat"><div class="k">영어</div><div class="g g2">2</div><div class="p">상위 16%</div></div>
+        <div class="nat"><div class="k">사회</div><div class="g g2">2</div><div class="p">상위 19%</div></div>
+        <div class="nat"><div class="k">과학</div><div class="g g2">2</div><div class="p">상위 14%</div></div>
+      </div>
+      <div class="curvebox">
+        <div class="ttl">수학 — 전국 분포에서 김하람의 위치</div>
+        <svg viewBox="0 0 330 96" width="100%" height="96">
+          <line x1="10" y1="80" x2="310" y2="80" stroke="#e2e8f0" stroke-width="1"/>
+          <polygon points="242.5,62.1 247.5,64.9 260,70.5 272.5,74.4 285,76.9 297.5,78.4 310,79.2 310,80 242.5,80" fill="#fecdd3"/>
+          <polyline points="10,79.2 22.5,78.4 35,76.9 47.5,74.4 60,70.5 72.5,64.9 85,57.3 97.5,48.0 110,37.5 122.5,27.1 135,18.2 147.5,12.2 160,10 172.5,12.2 185,18.2 197.5,27.1 210,37.5 222.5,48.0 235,57.3 247.5,64.9 260,70.5 272.5,74.4 285,76.9 297.5,78.4 310,79.2" fill="none" stroke="#0d2240" stroke-width="2"/>
+          <line x1="242.5" y1="18" x2="242.5" y2="80" stroke="#e8192c" stroke-width="2" stroke-dasharray="3 2"/>
+          <circle cx="242.5" cy="62.1" r="4" fill="#e8192c" stroke="#fff" stroke-width="2"/>
+          <text x="242.5" y="12" font-size="9.5" fill="#e8192c" font-weight="900" text-anchor="middle">김하람 · 상위 5%</text>
+          <text x="160" y="92" font-size="8" fill="#94a3b8" text-anchor="middle">전국 평균</text>
+        </svg>
+      </div>
+      <div class="upbar">📄 <b>학교알리미 데이터 갱신</b> — 학교별 성적 분포 화면 캡처/PDF를 올리면 AI가 평균·표준편차를 읽어 자동 저장<br><button>⬆️ 학교알리미 자료 업로드</button></div>
+    </div>
+    <div class="res">
+      <div class="pt" style="margin-bottom:8px">🏫 지정 6개교 예상 내신 (5등급제 종합)</div>
+      <div class="cards">
+        <div class="sc best"><div class="bestbdg">유리</div><div class="nm">소사고</div><div class="row"><div class="big b1"><b>1</b><span>종합등급</span></div><div class="mini"><div class="mg m1">1<span>국</span></div><div class="mg m1">1<span>수</span></div><div class="mg m2">2<span>영</span></div><div class="mg m2">2<span>사</span></div><div class="mg m1">1<span>과</span></div></div></div><div class="note2">평균 상위 7.8% · 수학 예상 만점권</div></div>
+        <div class="sc best"><div class="bestbdg">유리</div><div class="nm">부천고</div><div class="row"><div class="big b1"><b>1</b><span>종합등급</span></div><div class="mini"><div class="mg m1">1<span>국</span></div><div class="mg m1">1<span>수</span></div><div class="mg m2">2<span>영</span></div><div class="mg m2">2<span>사</span></div><div class="mg m2">2<span>과</span></div></div></div><div class="note2">평균 상위 9.6% · 국어도 1등급권</div></div>
+        <div class="sc"><div class="nm">범박고</div><div class="row"><div class="big b2"><b>2</b><span>종합등급</span></div><div class="mini"><div class="mg m2">2<span>국</span></div><div class="mg m1">1<span>수</span></div><div class="mg m2">2<span>영</span></div><div class="mg m2">2<span>사</span></div><div class="mg m2">2<span>과</span></div></div></div><div class="note2">평균 상위 11.4% · 수학 상위 3.8%</div></div>
+        <div class="sc"><div class="nm">정명고</div><div class="row"><div class="big b2"><b>2</b><span>종합등급</span></div><div class="mini"><div class="mg m2">2<span>국</span></div><div class="mg m1">1<span>수</span></div><div class="mg m2">2<span>영</span></div><div class="mg m2">2<span>사</span></div><div class="mg m1">1<span>과</span></div></div></div><div class="note2">평균 상위 11.8% · 수·과학 강세</div></div>
+        <div class="sc"><div class="nm">시온고</div><div class="row"><div class="big b2"><b>2</b><span>종합등급</span></div><div class="mini"><div class="mg m1">1<span>국</span></div><div class="mg m1">1<span>수</span></div><div class="mg m2">2<span>영</span></div><div class="mg m2">2<span>사</span></div><div class="mg m2">2<span>과</span></div></div></div><div class="note2">평균 상위 13.0% · 국·수 1등급권</div></div>
+        <div class="sc"><div class="nm">중원고</div><div class="row"><div class="big b2"><b>2</b><span>종합등급</span></div><div class="mini"><div class="mg m2">2<span>국</span></div><div class="mg m1">1<span>수</span></div><div class="mg m2">2<span>영</span></div><div class="mg m2">2<span>사</span></div><div class="mg m2">2<span>과</span></div></div></div><div class="note2">평균 상위 13.3% · 수학 상위 3.3%</div></div>
+      </div>
+      <table class="dtbl">
+        <tr><th>학교 \ 과목</th><th>국어</th><th>수학</th><th>영어</th><th>통합사회</th><th>통합과학</th></tr>
+        <tr><td>소사고</td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 1)</span><br><span class="pts">예상 100점</span></td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 1)</span><br><span class="pts">예상 100점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 90점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 91점</span></td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 2)</span><br><span class="pts">예상 91점</span></td></tr>
+        <tr><td>부천고</td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 2)</span><br><span class="pts">예상 96점</span></td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 2)</span><br><span class="pts">예상 94점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 89점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 89점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 2)</span><br><span class="pts">예상 94점</span></td></tr>
+        <tr><td>범박고</td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 89점</span></td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 1)</span><br><span class="pts">예상 98점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 89점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 91점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 93점</span></td></tr>
+        <tr><td>정명고</td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 94점</span></td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 2)</span><br><span class="pts">예상 98점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 92점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 91점</span></td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 2)</span><br><span class="pts">예상 94점</span></td></tr>
+        <tr><td>시온고</td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 2)</span><br><span class="pts">예상 95점</span></td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 2)</span><br><span class="pts">예상 90점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 85점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 88점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 85점</span></td></tr>
+        <tr><td>중원고</td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 2)</span><br><span class="pts">예상 97점</span></td>
+          <td class="cell"><b class="g1">1</b> <span class="nine">(9등급 1)</span><br><span class="pts">예상 100점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 86점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 4)</span><br><span class="pts">예상 82점</span></td>
+          <td class="cell"><b class="g2">2</b> <span class="nine">(9등급 3)</span><br><span class="pts">예상 92점</span></td></tr>
+      </table>
+      <div class="tblnote">큰 숫자 = 5등급제(현행) · 괄호 = 9등급 환산(참고) · 예상 점수는 각 학교 1학년 1학기 분포(학교알리미 공시) 기준 정규분포 추정</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 인쇄 리포트 ═══ -->
+<div class="lbl">🖨️ 인쇄 리포트 (상담·학부모용 A4) <span class="s">나침반 리포트를 루멘수학 브랜드로</span></div>
+<div class="paper">
+  <div class="php">
+    <div class="l"><div class="a">LUMEN MATH</div><div class="b">🧭 고등학교 진학 나침반 리포트</div></div>
+    <div class="r">김하람 학생 (중3) · 가명<br>2026. 8. 5 · 루멘수학</div>
+  </div>
+  <div class="verdict">
+    📌 <b>종합 판정</b> — 현재 성적 유지 시, 비교 6개교 중 <b>소사고·부천고에서 종합 1등급</b>이 예상되며
+    나머지 4개교에서도 종합 2등급 이내입니다. <b>수학은 6개교 전체에서 1등급권</b>(전국 상위 5%)으로 가장 강력한 무기입니다.
+    영어(상위 16%)를 끌어올리면 전 학교 종합 1등급권에 진입합니다.
+  </div>
+  <table class="ptbl">
+    <tr><th>학교</th><th>종합(5등급)</th><th>국어</th><th>수학</th><th>영어</th><th>통합사회</th><th>통합과학</th></tr>
+    <tr><td>소사고등학교</td><td><b class="g1">1등급</b></td><td>1</td><td><b class="g1">1</b></td><td>2</td><td>2</td><td>1</td></tr>
+    <tr><td>부천고등학교</td><td><b class="g1">1등급</b></td><td>1</td><td><b class="g1">1</b></td><td>2</td><td>2</td><td>2</td></tr>
+    <tr><td>범박고등학교</td><td><b class="g2">2등급</b></td><td>2</td><td><b class="g1">1</b></td><td>2</td><td>2</td><td>2</td></tr>
+    <tr><td>정명고등학교</td><td><b class="g2">2등급</b></td><td>2</td><td><b class="g1">1</b></td><td>2</td><td>2</td><td>1</td></tr>
+    <tr><td>시온고등학교</td><td><b class="g2">2등급</b></td><td>1</td><td><b class="g1">1</b></td><td>2</td><td>2</td><td>2</td></tr>
+    <tr><td>중원고등학교</td><td><b class="g2">2등급</b></td><td>2</td><td><b class="g1">1</b></td><td>2</td><td>2</td><td>2</td></tr>
+  </table>
+  <div class="pfoot">
+    산출 근거: 중학교 내신(원점수·평균·표준편차·전체학생수) 기반 정규분포 위치 추정 × 각 고교 1학년 1학기 과목별 성적 분포(학교알리미 2025 공시) ·
+    5등급제(1등급 상위 10%) 기준, 9등급 환산 병기 · 본 자료는 현재 실력 유지를 전제로 한 참고용 추정이며 실제 결과는 달라질 수 있습니다. · 루멘수학
+  </div>
+</div>
+
+<!-- ═══ 학부모앱 ═══ -->
+<div class="lbl">📱 학부모앱 — 「진학 나침반」 카드 <span class="s">원장님이 발행한 학생만 표시</span></div>
+<div class="phone">
+  <div class="hd"><div class="t">루멘수학 · 학부모</div><div class="s">김하람 학생 · 중3 (가명)</div></div>
+  <div class="wrap">
+    <div class="card">
+      <div class="ct">🧭 고등학교 진학 나침반</div>
+      <div class="cs">우리 아이가 이 고등학교에 가면 내신 몇 등급일까? · 8/5 루멘수학 발행</div>
+      <div class="schsel">
+        <div class="ss on">범박고</div><div class="ss">소사고</div><div class="ss">정명고</div><div class="ss">시온고</div><div class="ss">부천고</div><div class="ss">중원고</div>
+      </div>
+      <div class="hero">
+        <div class="big2"><b>1</b><span>수학 등급</span></div>
+        <div class="m"><div class="a">범박고 진학 시 수학 1등급</div><div class="b">상위 3.8% · 예상 98점<br>5과목 종합 2등급 (상위 11.4%)</div></div>
+      </div>
+      <div class="subrow">
+        <div class="su"><div class="k">국어</div><div class="g g2">2</div><div class="n">9등급제 3</div></div>
+        <div class="su" style="border-color:#bbf7d0;background:#f0fdf4"><div class="k">수학</div><div class="g g1">1</div><div class="n">9등급제 1</div></div>
+        <div class="su"><div class="k">영어</div><div class="g g2">2</div><div class="n">9등급제 3</div></div>
+        <div class="su"><div class="k">사회</div><div class="g g2">2</div><div class="n">9등급제 3</div></div>
+        <div class="su"><div class="k">과학</div><div class="g g2">2</div><div class="n">9등급제 3</div></div>
+      </div>
+      <div class="pplan">🏫 <b>루멘수학 상담 노트</b> — 수학은 어느 학교를 가도 1등급권입니다. 소사고·부천고 진학 시 <b>전 과목 종합 1등급</b>이 가능한 위치라, 고교 선택 상담을 권장드립니다. 자세한 내용은 첨부된 리포트를 확인해 주세요.</div>
+      <div class="warn">⚠️ 학교알리미 공시 분포 기반 참고용 추정입니다. 실제 내신은 입학 연도 응시집단·시험 난이도에 따라 달라질 수 있습니다.</div>
+    </div>
+  </div>
+</div>
+
+<div class="hook">🔗 <b>다음 단계 (추후 진행)</b> — KMM 경시대회 전국 백분위와 이 나침반의 전국 위치를 <b>교차 검증</b>해 추정 신뢰도를 높이고,
+매쓰플랫 문항 데이터로 "1등급까지 부족한 과목·단원"을 자동 진단하는 것까지가 다음 로드맵입니다.</div>
