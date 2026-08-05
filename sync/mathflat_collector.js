@@ -129,6 +129,7 @@ function mkRec(partial) {
 // history component.studentBookId가 곧 studentWorksheetId (assign API에 그대로 사용 가능 확인).
 const WS_TAGS = {}; // worksheet_id → {tag,type,titleTag} — 숙제(HOMEWORK) 등 태그 구분용
 const WS_BEHAV = {}; // studentWorksheetId → {sid,wid,date,b:[{name,score,grade}]} — 원클릭 보고서 행동영역(역량)
+const WS_ASSIGN = {}; // worksheet_id → { sid → {st,tot,cor,wrg,dt} } — 채점 미완료(이어 채점·미채점) 포함 배정 현황
 
 // 원클릭 보고서 PDF에서 행동영역(역량별 성취율·등급) 추출
 // GET /report/worksheet/download?studentWorksheetId={swId} → 서버 생성 PDF (텍스트 레이어 있음)
@@ -180,6 +181,12 @@ async function collectAnswerRecords(me, students, cutoff) {
       for (const c of it.components || []) {
         const swId = c.studentBookId; // = studentWorksheetId
         if (!swId || seen.has(swId)) continue;
+        // 배정 현황(채점 미완료 포함) — 명예의 전당 응시 명단용. COMPLETE 필터보다 먼저 기록.
+        if (it.bookId && !(c.updateDatetime && new Date(c.updateDatetime) < cutoff)) {
+          const W = WS_ASSIGN[it.bookId] = WS_ASSIGN[it.bookId] || {};
+          W[st.id] = { st: c.status || null, tot: c.assignedCount != null ? c.assignedCount : null,
+            cor: c.correctCount || 0, wrg: c.wrongCount || 0, dt: (c.updateDatetime || '').slice(0, 10) };
+        }
         if (c.status !== 'COMPLETE') continue;
         if (c.updateDatetime && new Date(c.updateDatetime) < cutoff) continue;
         seen.add(swId);
@@ -244,6 +251,30 @@ async function saveWsBehaviors() {
     });
     log(`역량 행동영역(mf_ws_behaviors): 신규 ${Object.keys(WS_BEHAV).length} · 총 ${Object.keys(cur).length}개 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('역량 저장 실패(치명적 아님):', e.message); }
+}
+
+// 배정 현황(채점 미완료 포함)을 lumen_store 'mf_ws_assign'에 병합 저장 (35일 이전 정리)
+async function saveWsAssign() {
+  const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key || !Object.keys(WS_ASSIGN).length) return;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    let cur = {};
+    const rc = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_assign&select=value`, { headers: sbHeaders });
+    if (rc.ok) { const j = await rc.json(); if (j[0] && j[0].value && j[0].value.map) cur = j[0].value.map; }
+    Object.keys(WS_ASSIGN).forEach((wid) => { cur[wid] = Object.assign(cur[wid] || {}, WS_ASSIGN[wid]); });
+    const cutoff35 = new Date(Date.now() - 35 * 86400000).toISOString().slice(0, 10);
+    Object.keys(cur).forEach((wid) => {
+      const latest = Object.values(cur[wid]).reduce((a, s) => (s.dt > a ? s.dt : a), '');
+      if (latest && latest < cutoff35) delete cur[wid];
+    });
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST',
+      headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_ws_assign', value: { map: cur, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
+    });
+    log(`배정 현황(mf_ws_assign): 학습지 ${Object.keys(cur).length}개 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('배정 현황 저장 실패(치명적 아님):', e.message); }
 }
 
 // 학습지 태그 사전을 lumen_store 'mf_ws_tags'에 병합 저장 (숙제 제외 필터용)
@@ -644,6 +675,7 @@ async function main() {
     if (answers.length) await upsert('mf_answer_records', answers, 'record_key');
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
     await saveWsTags();
+    await saveWsAssign();
     await saveWsBehaviors();
     await backfillBehaviors(14); // 놓친 행동영역·전국등수 매일 자동 재시도 (v16-43)
     await refreshConceptNames();
@@ -1214,6 +1246,12 @@ async function refreshWeekly() {
       if (batch.length < 1000) break;
     }
     if (!rows.length) { log('주간테스트: WEEKLY 기록 없음 → 건너뜀'); return; }
+    // 배정 현황(채점 미완료 포함) — 이어 채점·미채점 학생도 명단에 넣기 위함
+    let assign = {};
+    try {
+      const ra = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_assign&select=value`, { headers: sbHeaders });
+      if (ra.ok) { const ja = await ra.json(); assign = ((ja[0] && ja[0].value) || {}).map || {}; }
+    } catch (e) {}
     // 유형명 사전 (오답 유형 이름 표시용)
     let cname = {};
     try {
@@ -1253,6 +1291,17 @@ async function refreshWeekly() {
         return { sid: s.sid, score: s.score, correct: s.correct, total: s.total, date: s.dt,
           wrongConcepts, acadRank: rank, acadN: scored.length, acadAvg: avg,
           natAvg: null, natRank: null, natN: null }; // 전국은 보고서 API 확보 후
+      });
+      // 채점 미완료(이어 채점·미채점) 학생 추가 — 문항 기록은 없어도 명단·진행 상황 표시
+      const am = assign[wid] || {};
+      Object.keys(am).forEach((sid) => {
+        if (T.students[sid]) return;                      // 채점 완료 학생은 이미 포함
+        const a = am[sid];
+        if (a.st === 'COMPLETE') return;                  // 완료인데 기록 미수집 → 다음 수집에서 정식 반영
+        students.push({ sid: Number(sid), score: null, st: a.st || 'PROGRESS',
+          done: (a.cor || 0) + (a.wrg || 0), correct: a.cor || 0, total: a.tot,
+          date: a.dt || '', wrongConcepts: [], acadRank: null, acadN: scored.length, acadAvg: avg,
+          natAvg: null, natRank: null, natN: null });
       });
       out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, type: T.type, date: T.date,
         paper: paperOf(T.school, T.grade, T.chapter, T.title), students });
