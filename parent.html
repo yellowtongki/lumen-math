@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#0d2240">
 <link rel="apple-touch-icon" href="lumen_icon.png">
 <link rel="icon" type="image/png" href="lumen_icon.png">
-<title>루멘수학 학부모 v1-6</title>
+<title>루멘수학 학부모 v1-8</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -430,15 +430,16 @@ async function loadAll(code){
     P.st=st; P.code=code;
     localStorage.setItem('lumen_parent_code', code);
     // 발행 리포트 메타 + 매쓰플랫 진도 (병렬)
-    var q1=c.from('lumen_store').select('key,value').in('key',['pub_reports_'+code,'typeach_pub_'+code,'mf_progress','mf_books']);
+    var q1=c.from('lumen_store').select('key,value').in('key',['pub_reports_'+code,'typeach_pub_'+code,'compass_pub_'+code,'mf_progress','mf_books']);
     var q2=c.from('mf_students').select('mf_student_id,name,lumen_rec_code');
     var q3=c.storage.from('recordings').list(code, { limit:60, sortBy:{ column:'created_at', order:'desc' } });
     var res=await Promise.all([q1,q2,q3]);
-    P.pub=null; P.prog=null; P.books=null; P.typeach=null;
+    P.pub=null; P.prog=null; P.books=null; P.typeach=null; P.compass=null;
     ((res[0].data)||[]).forEach(function(row){
       var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
       if(row.key==='pub_reports_'+code) P.pub=v;
       else if(row.key==='typeach_pub_'+code) P.typeach=v; // v1-5: 유형 성취 리포트 (발행분만)
+      else if(row.key==='compass_pub_'+code) P.compass=v; // v1-8: 진학 나침반 (원장 발행분만)
       else if(row.key==='mf_progress') P.prog=v;
       else if(row.key==='mf_books') P.books=v;
     });
@@ -506,7 +507,7 @@ function render(){
       +'<input id="pcode" maxlength="6" placeholder="ABC123" value="'+esc(saved)+'" onkeydown="if(event.key===\'Enter\')doLogin()">'
       +'<button onclick="doLogin()">'+(P.loading?'확인 중…':'우리 아이 보러가기')+'</button>'
       +'<div class="err">'+esc(P.loginErr||'')+'</div>'
-      +'<div class="ft">Lumen Math Academy · parent v1-6</div></div>';
+      +'<div class="ft">Lumen Math Academy · parent v1-8</div></div>';
     return;
   }
   var h='';
@@ -581,6 +582,12 @@ function vRankCard(){
   var h='<div class="rkc">';
   h+='<div class="t">🏅 우리 아이 등수</div>';
   h+='<div class="sub">'+esc(rec.date||'')+' · '+(isWeekly?'전국 주간테스트 · 같은 시험지를 푼 학생 기준':'일일테스트')+'</div>';
+  // v1-7: 응시한 시험지 (학년·학기 + 범위) — 어느 학년 시험지에서의 등수인지 함께 읽히도록
+  if(rec.paper&&rec.paper.label){
+    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:8px 12px;margin:8px 0 2px;font-size:12.5px;font-weight:700;color:#9a3412">'
+      +'<span style="background:#f59e0b;color:#fff;border-radius:7px;padding:2px 9px;font-size:12px;font-weight:900">'+esc(rec.paper.label)+' 과정</span>'
+      +'<span>시험지'+(rec.paper.range?' · '+esc(rec.paper.range):'')+'</span></div>';
+  }
   h+='<div class="rk3">';
   h+='<div class="rkb s"><div class="l">점수</div><div class="v">'+esc(rec.score!=null?rec.score:'-')+'<small>점</small></div>'+(avgDiff!=null?'<div class="d" style="color:'+(avgDiff>=0?'#059669':'#dc2626')+'">평균 '+(avgDiff>=0?'+':'')+avgDiff+'점</div>':'')+'</div>';
   if(acadOk) h+='<div class="rkb a"><div class="l">🏫 학원 등수</div><div class="v">'+rec.acadRank+'<small>등/'+rec.acadN+'명</small></div>'+(delta?'<div class="d" style="color:'+(delta.charAt(0)==='▼'?'#dc2626':'#059669')+'">'+delta+'</div>':'')+'</div>';
@@ -606,6 +613,55 @@ function vRankCard(){
   return h;
 }
 
+/* ── v1-8: 진학 나침반 카드 (원장님이 발행한 학생만) ── */
+var CP_SEL_SCH = 0;
+window.cpSelSch = function(i){ CP_SEL_SCH = i; render(); };
+function cpg5c(g){ return g===1?'#15803d':(g===2?'#0369a1':(g===3?'#b45309':(g===4?'#c2410c':'#b91c1c'))); }
+function vCompassCard(){
+  var C = P.compass;
+  if(!C || !C.schools || !C.schools.length) return '';
+  if(CP_SEL_SCH >= C.schools.length) CP_SEL_SCH = 0;
+  var sc = C.schools[CP_SEL_SCH];
+  var subs = ['국어','수학','영어','통합사회','통합과학'];
+  var shorts = {'국어':'국어','수학':'수학','영어':'영어','통합사회':'사회','통합과학':'과학'};
+  var mv = sc.subs && sc.subs['수학'];
+  var h = '<div class="sec"><div class="st">🧭 고등학교 진학 나침반</div>'
+    + '<div style="font-size:10px;color:#94a3b8;font-weight:700;margin:2px 0 9px">우리 아이가 이 고등학교에 가면 내신 몇 등급일까? · ' + esc(C.date||'') + ' 루멘수학 발행</div>';
+  // 학교 칩
+  h += '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">';
+  C.schools.forEach(function(s,i){
+    var on = i===CP_SEL_SCH;
+    h += '<button onclick="cpSelSch('+i+')" style="border:1.5px solid '+(on?'#0d2240':'#e2e8f0')+';border-radius:16px;padding:5px 12px;font-size:10.5px;font-weight:800;font-family:inherit;background:'+(on?'#0d2240':'#fff')+';color:'+(on?'#fff':'#64748b')+'">'+esc(s.name)+'</button>';
+  });
+  h += '</div>';
+  // 히어로
+  if(mv){
+    h += '<div style="display:flex;align-items:center;gap:13px;background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:13px;color:#fff;margin-bottom:9px">'
+      + '<div style="width:58px;height:58px;border-radius:15px;background:'+cpg5c(mv.g5)+';display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none"><b style="font-size:21px">'+mv.g5+'</b><span style="font-size:8px;opacity:0.85">수학 등급</span></div>'
+      + '<div><div style="font-size:14px;font-weight:900">'+esc(sc.name)+' 진학 시 수학 '+mv.g5+'등급</div>'
+      + '<div style="font-size:10px;opacity:0.8;margin-top:3px;line-height:1.6">상위 '+mv.top+'% · 예상 '+mv.exp+'점'
+      + (sc.overall5?'<br>5과목 종합 <b style="color:#ffd54a">'+sc.overall5+'등급</b>':'')+'</div></div></div>';
+  }
+  // 과목 행
+  h += '<div style="display:flex;gap:5px;margin-bottom:9px">';
+  subs.forEach(function(s){
+    var v = sc.subs && sc.subs[s];
+    h += '<div style="flex:1;background:'+(v&&v.g5===1?'#f0fdf4':'#f8fafc')+';border:1.5px solid '+(v&&v.g5===1?'#bbf7d0':'#eef2f7')+';border-radius:11px;padding:7px 2px;text-align:center">'
+      + '<div style="font-size:8.5px;font-weight:800;color:#94a3b8">'+shorts[s]+'</div>'
+      + (v?('<div style="font-size:14px;font-weight:900;color:'+cpg5c(v.g5)+'">'+v.g5+'</div><div style="font-size:7px;color:#94a3b8;font-weight:800">9등급제 '+v.g9+'</div>'):'<div style="font-size:12px;color:#cbd5e1">-</div>')
+      + '</div>';
+  });
+  h += '</div>';
+  if(C.kmm){
+    h += '<div style="background:#fffdf5;border:1.5px solid #fde68a;border-radius:11px;padding:8px 11px;font-size:10.5px;font-weight:700;color:#78350f;line-height:1.6;margin-bottom:8px">🏆 KMM 경시 '+esc(C.kmm.label||'')+' — 전국 상위 '+C.kmm.top+'% 실측으로도 수학 등급을 교차 확인했습니다</div>';
+  }
+  if(C.note){
+    h += '<div style="background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:11px;padding:10px 12px;font-size:11px;color:#4c1d95;font-weight:700;line-height:1.7;margin-bottom:8px">🏫 <b style="color:#5b21b6">루멘수학 상담 노트</b> — '+esc(C.note)+'</div>';
+  }
+  h += '<div style="font-size:9.5px;color:#94a3b8;font-weight:700;background:#fafafa;border-radius:8px;padding:7px 9px;line-height:1.6">⚠️ '+esc(C.src||'학교알리미 공시 분포 기준')+' · 참고용 추정으로, 실제 내신은 입학 연도 응시집단·시험 난이도에 따라 달라질 수 있습니다</div>';
+  h += '</div>';
+  return h;
+}
 function vHome(){
   var st=P.st;
   var pl=plannerToday(), rc=recToday();
@@ -625,8 +681,10 @@ function vHome(){
       +'<div class="nm">최근 학습 리포트'+(isNew?' <span style="font-size:9px;background:#ffd54a;color:#7f1d1d;border-radius:50px;padding:2px 8px;vertical-align:3px;font-weight:900">NEW</span>':'')+'</div>'
       +'<div class="tags"><span class="tg">📅 '+esc(rec0.date||'')+'</span>'
       +(isWeekly?'<span class="tg gold">🌐 전국주간테스트</span>':'<span class="tg">📝 일일테스트</span>')
-      +(rec0.bookname?'<span class="tg">'+esc(String(rec0.bookname).slice(0,18))+'</span>':'')
-      +'</div></div>'
+      +(rec0.paper&&rec0.paper.label?'<span class="tg" style="background:#fbbf24;color:#7c2d12;font-weight:900">'+esc(rec0.paper.label)+' 과정</span>':(rec0.bookname?'<span class="tg">'+esc(String(rec0.bookname).slice(0,18))+'</span>':''))
+      +'</div>'
+      +(rec0.paper&&rec0.paper.range?'<div style="font-size:10.5px;opacity:0.85;margin-top:6px;font-weight:600">📖 '+esc(rec0.paper.range)+'</div>':'')
+      +'</div>'
       +'<div class="hero-bd">'
       +'<div style="display:flex;align-items:center;gap:13px">'
       +'<div class="ring" style="background:conic-gradient('+gcolor(rec0.level)+' 0 '+(Number(rec0.score)||0)+'%,#e8eef8 '+(Number(rec0.score)||0)+'% 100%)"><div><b>'+esc(rec0.score||'-')+'</b><span>'+esc(rec0.level||'-')+'등급</span></div></div>'
@@ -647,6 +705,7 @@ function vHome(){
     h+='<div class="sec"><div class="st">📋 학습 리포트</div><div class="empty">아직 발행된 리포트가 없어요.<br>선생님이 발행하면 이곳에 바로 나타납니다.</div></div>';
   }
   h+=vRankCard(); // v1-6: 우리 아이 등수
+  h+=vCompassCard(); // v1-8: 진학 나침반
   // 플래너 주간
   var wk=weekPlanner();
   h+='<div class="sec"><div class="st">📓 이번 주 플래너 <button class="more" onclick="goTab(\'planner\')">기록 ›</button></div><div class="wk">';
