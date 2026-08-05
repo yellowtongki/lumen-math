@@ -141,7 +141,9 @@ svg text{font-family:inherit}
   🔎 <b>API로 자동으로 가져와지는 것 (버튼 1번)</b> — ① 회차·학년별 시험 목록(2025.4 제1회부터 전부) ② 학생별 점수·정답/오답 수·<b>수상 등급</b>(금·은·동·장려)
   ③ <b>문항별 O/X + 채점 시각</b> ④ 문항별 배점·난이도·단원(유형DB 연결) ⑤ <b>문제·정답·풀이 원본 이미지</b> ⑥ 다음 회차 일정(시험기간·채점기간)
   ⑦ 위 학년 도전 응시 기록<br>
-  📄 <b>PDF 업로드 시에만 추가되는 것</b> — 전국 백분위 · 전국 평균 점수 · 문항별 전국 정답률 (매쓰플랫이 보고서 PDF에만 넣어주는 값)
+  📄 <b>PDF 업로드 시에만 추가되는 것</b> — 전국 백분위 · 전국 평균 점수 · 문항별 전국 정답률 (매쓰플랫이 보고서 PDF에만 넣어주는 값)<br>
+  🎓 <b>진학 전망에 추가로 쓰는 공공데이터</b> — 수능 등급 비율(전국 고정: 1등급 4%·2등급 11%…), 고교 내신 5등급제 비율(1등급 10%·2등급 34%…, 현 중1부터 적용),
+  학교알리미의 <b>학교별 수학 성취도 분포</b>(내신 추정 보정용, 연 1회 갱신)
 </div>
 
 <!-- ═══════════ 학원앱 ═══════════ -->
@@ -321,6 +323,38 @@ svg text{font-family:inherit}
         <div class="box good"><div class="k">💪 우수 단원</div><li>일차식의 덧셈과 뺄셈</li><li>반비례</li><li>방정식과 항등식</li></div>
         <div class="box bad"><div class="k">📌 보완 단원</div><li>그래프 (2문항 오답)</li><li style="color:#94a3b8">학원 차원 취약 단원과 동일</li></div>
       </div>
+      <div class="ct" style="margin-top:4px">🎓 진학 전망 <span style="font-size:10px;color:#94a3b8;font-weight:700">참고용 추정 · 현재 실력 기준</span></div>
+      <div class="chart" style="padding:10px 10px 8px">
+        <div class="ttl">수능(정시) 척도로 보면 — 전국 상위 6% 📄</div>
+        <svg viewBox="0 0 330 72" width="100%" height="72">
+          <rect x="10" y="26" width="12.8" height="14" rx="3" fill="#0d2240"/>
+          <rect x="24.8" y="26" width="22.4" height="14" fill="#3b5a86"/>
+          <rect x="49.2" y="26" width="38.4" height="14" fill="#7d97b8"/>
+          <rect x="89.6" y="26" width="54.4" height="14" fill="#b9c8da"/>
+          <rect x="146" y="26" width="174" height="14" rx="3" fill="#e8edf3"/>
+          <text x="16" y="52" font-size="8.5" fill="#475569" font-weight="800" text-anchor="middle">1등급</text>
+          <text x="36" y="64" font-size="8.5" fill="#475569" font-weight="800" text-anchor="middle">2등급</text>
+          <text x="68" y="54" font-size="8.5" fill="#64748b" text-anchor="middle">3등급</text>
+          <text x="116" y="54" font-size="8.5" fill="#94a3b8" text-anchor="middle">4등급</text>
+          <text x="230" y="54" font-size="8.5" fill="#94a3b8" text-anchor="middle">5등급 이하</text>
+          <polygon points="29.2,24 24.2,14 34.2,14" fill="#e8192c"/>
+          <text x="29.2" y="10" font-size="9.5" fill="#e8192c" font-weight="900" text-anchor="middle">지금 위치 · 2등급 (1등급까지 2%)</text>
+        </svg>
+      </div>
+      <div class="chart" style="padding:10px 10px 8px;background:#fbfdf9;border-color:#d9e7d4">
+        <div class="ttl" style="display:flex;align-items:center;gap:6px">진학 예정 고교 내신 추정 (5등급제)
+          <span style="background:#fff;border:1.5px solid #cbd5e1;border-radius:14px;padding:2px 9px;font-size:9.5px;color:#334155">🏫 범박고 ▾</span></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:6px 4px 2px">
+          <div style="flex:none;width:58px;height:58px;border-radius:50%;background:conic-gradient(#15803d 0 78%,#e2e8f0 78% 100%);display:flex;align-items:center;justify-content:center">
+            <div style="width:44px;height:44px;border-radius:50%;background:#fbfdf9;display:flex;flex-direction:column;align-items:center;justify-content:center">
+              <b style="font-size:14px;color:#15803d">1등급</b><span style="font-size:7.5px;color:#64748b">추정 78%</span>
+            </div>
+          </div>
+          <div style="font-size:10.5px;color:#334155;font-weight:700;line-height:1.65">범박고 진학 시 수학 내신 <b style="color:#15803d">1등급(상위 10%) 유력</b>, 컨디션 변수 감안 시 1~2등급.<br>
+          <span style="font-size:9.5px;color:#94a3b8">근거: 전국 상위 6% × 범박고 수학 성취도 분포(학교알리미 2025 · 예시값) · 2028년 입학부터 5등급제</span></div>
+        </div>
+      </div>
+      <div class="cs" style="margin:0 0 8px;background:#fafafa;border-radius:8px;padding:7px 9px">⚠️ 진학 전망은 <b>현재 실력이 유지될 때의 참고용 추정</b>입니다. 경시대회 응시 집단 특성상 실제 위치는 이보다 좋을 수 있으며, 고교 진학까지의 성장에 따라 달라집니다.</div>
       <div class="plan">🏫 <b>루멘수학의 다음 계획</b> — 틀린 2문항의 원본 문제로 재풀이를 진행하고, 「그래프」 유사문항 보충 후 <b>제17회(8/24~30) 응시 전 완성</b>을 목표로 합니다. 금상까지 단 2점입니다.</div>
       <div class="dday"><div class="b">📅</div><div class="d"><b>제17회 접수 일정</b> — 응시 8/24(월)~8/30(일), 결과는 채점 다음 날 앱에서 확인하실 수 있습니다</div></div>
       <div class="cs" style="margin:6px 0 0">📄 표시 항목(전국 백분위 등)은 매쓰플랫 보고서 PDF 업로드 시 표시됩니다</div>
