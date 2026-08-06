@@ -1,0 +1,192 @@
+<title>성취도 신호등 — 학생앱·학부모앱 공유 디자인 시안 (상의용)</title>
+<style>
+  :root{
+    --bg:#eef1f7; --card:#ffffff; --ink:#0d2240; --sub:#64748b; --line:#e6eaf1;
+    --blue:#1d6fe8; --gold:#f59e0b; --gold-soft:#fef3c7;
+    --g:#16a34a; --g-soft:#dcfce7; --y:#eab308; --y-soft:#fef9c3; --r:#dc2626; --r-soft:#fee2e2;
+    --frame:#0d2240;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#8fa3bd; --line:#20355c;
+      --blue:#5b9bff; --gold:#fbbf24; --gold-soft:#3a2e10;
+      --g:#34d399; --g-soft:#0c2e22; --y:#facc15; --y-soft:#37300b; --r:#f87171; --r-soft:#3b1212;
+      --frame:#060d1a; }
+  }
+  :root[data-theme="dark"]{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#8fa3bd; --line:#20355c;
+    --blue:#5b9bff; --gold:#fbbf24; --gold-soft:#3a2e10;
+    --g:#34d399; --g-soft:#0c2e22; --y:#facc15; --y-soft:#37300b; --r:#f87171; --r-soft:#3b1212; --frame:#060d1a; }
+  :root[data-theme="light"]{ --bg:#eef1f7; --card:#ffffff; --ink:#0d2240; --sub:#64748b; --line:#e6eaf1;
+    --blue:#1d6fe8; --gold:#f59e0b; --gold-soft:#fef3c7;
+    --g:#16a34a; --g-soft:#dcfce7; --y:#eab308; --y-soft:#fef9c3; --r:#dc2626; --r-soft:#fee2e2; --frame:#0d2240; }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif; }
+  .wrap{ max-width:1240px; margin:0 auto; padding:28px 18px 60px; }
+  h1{ font-size:20px; font-weight:900; margin:0 0 4px; letter-spacing:-0.3px; }
+  .note{ font-size:13.5px; color:var(--sub); font-weight:600; line-height:1.65; margin-bottom:22px; max-width:900px; }
+  .note b{ color:var(--ink); }
+  .cols{ display:flex; gap:30px; flex-wrap:wrap; justify-content:center; align-items:flex-start; }
+
+  .phone{ width:400px; max-width:100%; background:var(--frame); border-radius:34px; padding:14px 12px 18px;
+    box-shadow:0 18px 50px rgba(13,34,64,0.25); }
+  .screen{ background:var(--bg); border-radius:24px; overflow:hidden; }
+  .appbar{ display:flex; align-items:center; gap:8px; padding:14px 16px 10px; }
+  .appbar .tt{ font-size:15px; font-weight:900; }
+  .appbar .bk{ font-size:13px; color:var(--sub); font-weight:800; }
+  .pad{ padding:4px 12px 18px; display:flex; flex-direction:column; gap:12px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 15px; }
+  .cap{ text-align:center; font-size:12px; font-weight:800; color:var(--sub); margin-top:12px; max-width:400px; }
+
+  /* ── 공통: 요약 스트립 ── */
+  .sum{ display:flex; align-items:center; gap:12px; }
+  .gauge{ position:relative; width:78px; height:78px; border-radius:50%; flex-shrink:0;
+    background:conic-gradient(var(--g) 0 76%, var(--line) 76% 100%); }
+  .gauge::after{ content:'76%'; position:absolute; inset:9px; background:var(--card); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:900; }
+  .sum .s1{ font-size:13.5px; font-weight:900; }
+  .lights{ display:flex; gap:6px; margin-top:6px; }
+  .lt{ display:inline-flex; align-items:center; gap:4px; border-radius:50px; padding:3px 10px; font-size:11.5px; font-weight:900; }
+  .lt.g{ background:var(--g-soft); color:var(--g); } .lt.y{ background:var(--y-soft); color:#a16207; } .lt.r{ background:var(--r-soft); color:var(--r); }
+  .delta{ font-size:10.5px; font-weight:800; color:var(--g); margin-top:5px; }
+
+  /* ── 학생앱: 정복 맵 ── */
+  .unit{ margin-top:4px; }
+  .unit .uh{ display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:900; margin-bottom:7px; }
+  .unit .uh .pct{ margin-left:auto; font-size:11px; color:var(--sub); font-weight:800; }
+  .tiles{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+  .tile{ border-radius:11px; padding:9px 9px 8px; min-height:64px; position:relative; }
+  .tile .tn{ font-size:10.5px; font-weight:800; line-height:1.35; }
+  .tile .tp{ font-size:13px; font-weight:900; margin-top:4px; }
+  .tile.g{ background:var(--g-soft); color:#14532d; } .tile.g .tp{ color:var(--g); }
+  .tile.y{ background:var(--y-soft); color:#713f12; } .tile.y .tp{ color:#a16207; }
+  .tile.r{ background:var(--r-soft); color:#7f1d1d; } .tile.r .tp{ color:var(--r); }
+  .tile .win{ position:absolute; top:-7px; right:-5px; font-size:16px; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.2)); }
+  .quest{ background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; border-radius:14px; padding:12px 14px; }
+  .quest .q1{ font-size:12.5px; font-weight:900; }
+  .quest .q2{ font-size:10.5px; font-weight:700; opacity:0.9; margin-top:3px; line-height:1.5; }
+
+  /* ── 학부모앱: 신호등 리포트 ── */
+  .prow{ display:flex; align-items:center; gap:9px; padding:7px 2px; border-bottom:1px solid var(--bg); }
+  .dot{ width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .dot.g{ background:var(--g); box-shadow:0 0 0 3px var(--g-soft); }
+  .dot.y{ background:var(--y); box-shadow:0 0 0 3px var(--y-soft); }
+  .dot.r{ background:var(--r); box-shadow:0 0 0 3px var(--r-soft); }
+  .prow .nm{ flex:1; min-width:0; font-size:12.5px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar{ width:86px; height:8px; background:var(--line); border-radius:5px; overflow:hidden; flex-shrink:0; }
+  .bar i{ display:block; height:100%; border-radius:5px; }
+  .prow .pv{ width:38px; text-align:right; font-size:12px; font-weight:900; font-variant-numeric:tabular-nums; }
+  .prow .ar{ font-size:10px; font-weight:900; width:30px; text-align:right; }
+  .tagrow{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .tg{ font-size:11px; font-weight:900; border-radius:50px; padding:4px 11px; }
+  .tg.s{ background:var(--g-soft); color:var(--g); } .tg.w{ background:var(--r-soft); color:var(--r); }
+  .ai{ background:var(--gold-soft); border-radius:12px; padding:10px 12px; font-size:11.5px; font-weight:700;
+    line-height:1.6; color:#713f12; margin-top:10px; }
+  :root[data-theme="dark"] .ai, @media (prefers-color-scheme: dark){ .ai{ color:#fde68a; } }
+  .ai b{ color:inherit; }
+</style>
+
+<div class="wrap">
+  <h1>성취도 신호등 🟢🟡🔴 — 학생앱·학부모앱 공유 디자인 시안</h1>
+  <div class="note">
+    학원앱 유형성취도 데이터를 그대로 쓰되, 보는 사람에 맞게 두 가지 디자인입니다.
+    <b>왼쪽 = 학생앱 「성취도 맵」</b>: 유형이 타일로 깔리고 정답률에 따라 색이 물듭니다 — 빨강을 초록으로 만드는 게임처럼.
+    <b>오른쪽 = 학부모앱 「성취도」</b>: 신호등 리스트 + 2주 전 대비 변화 + AI 한마디, 차분한 리포트 톤.
+    데이터는 수집기가 매일 저장하는 학생별 성취도(2주 단위)라 발행 없이 항상 최신입니다. 이름은 가명.
+  </div>
+
+  <div class="cols">
+
+    <!-- 학생앱: 정복 맵 -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="bk">‹</span><span class="tt">🗺️ 성취도 맵</span></div>
+        <div class="pad">
+
+          <div class="card">
+            <div class="sum">
+              <div class="gauge"></div>
+              <div>
+                <div class="s1">최근 2주 정답률 76%</div>
+                <div class="lights"><span class="lt g">🟢 12</span><span class="lt y">🟡 5</span><span class="lt r">🔴 3</span></div>
+                <div class="delta">▲ 지난 2주보다 초록 +2개!</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="quest">
+            <div class="q1">🎯 이번 주 정복 퀘스트</div>
+            <div class="q2">🔴 「일차방정식의 활용」을 🟢으로 만들면 <b>+80 XP</b>! 지금 58% → 80%까지 4문제 남았어요</div>
+          </div>
+
+          <div class="card unit">
+            <div class="uh">📕 문자와 식 <span class="pct">평균 71%</span></div>
+            <div class="tiles">
+              <div class="tile g"><span class="win">🏆</span><div class="tn">일차식의 계산</div><div class="tp">92%</div></div>
+              <div class="tile g"><div class="tn">등식의 성질</div><div class="tp">85%</div></div>
+              <div class="tile y"><div class="tn">복잡한 일차방정식</div><div class="tp">70%</div></div>
+              <div class="tile r"><div class="tn">일차방정식의 활용</div><div class="tp">58%</div></div>
+              <div class="tile y"><div class="tn">비례식 활용</div><div class="tp">67%</div></div>
+              <div class="tile g"><div class="tn">문자를 사용한 식</div><div class="tp">88%</div></div>
+            </div>
+          </div>
+
+          <div class="card unit">
+            <div class="uh">📗 좌표평면과 그래프 <span class="pct">평균 82%</span></div>
+            <div class="tiles">
+              <div class="tile g"><div class="tn">순서쌍과 좌표</div><div class="tp">95%</div></div>
+              <div class="tile g"><div class="tn">그래프 해석</div><div class="tp">83%</div></div>
+              <div class="tile y"><div class="tn">정비례·반비례</div><div class="tp">72%</div></div>
+            </div>
+          </div>
+
+        </div>
+      </div></div>
+      <div class="cap">학생앱 「🗺️ 성취도 맵」 — 타일 색을 초록으로 바꾸는 정복 게임. 🏆=최근 정복(빨강→초록), 기존 정복 퀘스트·XP와 연동</div>
+    </div>
+
+    <!-- 학부모앱: 신호등 리포트 -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="appbar"><span class="bk">‹</span><span class="tt">📊 우리 아이 성취도</span></div>
+        <div class="pad">
+
+          <div class="card">
+            <div class="sum">
+              <div class="gauge"></div>
+              <div>
+                <div class="s1">최근 2주 정답률 76%</div>
+                <div class="lights"><span class="lt g">🟢 잘함 12</span><span class="lt y">🟡 연습 5</span><span class="lt r">🔴 보완 3</span></div>
+                <div class="delta">▲ 지난 2주 대비 +4%p 상승</div>
+              </div>
+            </div>
+            <div class="tagrow">
+              <span class="tg s">강점 · 순서쌍과 좌표 95%</span>
+              <span class="tg s">강점 · 일차식의 계산 92%</span>
+              <span class="tg w">보완 중 · 일차방정식의 활용 58%</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="font-size:12.5px;font-weight:900;margin-bottom:7px">📕 문자와 식</div>
+            <div class="prow"><span class="dot g"></span><span class="nm">일차식의 계산</span><span class="bar"><i style="width:92%;background:var(--g)"></i></span><span class="pv">92%</span><span class="ar" style="color:var(--g)">▲8</span></div>
+            <div class="prow"><span class="dot g"></span><span class="nm">등식의 성질</span><span class="bar"><i style="width:85%;background:var(--g)"></i></span><span class="pv">85%</span><span class="ar" style="color:var(--sub)">—</span></div>
+            <div class="prow"><span class="dot y"></span><span class="nm">복잡한 일차방정식</span><span class="bar"><i style="width:70%;background:var(--y)"></i></span><span class="pv">70%</span><span class="ar" style="color:var(--g)">▲5</span></div>
+            <div class="prow"><span class="dot r"></span><span class="nm">일차방정식의 활용</span><span class="bar"><i style="width:58%;background:var(--r)"></i></span><span class="pv">58%</span><span class="ar" style="color:var(--r)">▼3</span></div>
+          </div>
+
+          <div class="card">
+            <div style="font-size:12.5px;font-weight:900;margin-bottom:7px">📗 좌표평면과 그래프</div>
+            <div class="prow"><span class="dot g"></span><span class="nm">순서쌍과 좌표</span><span class="bar"><i style="width:95%;background:var(--g)"></i></span><span class="pv">95%</span><span class="ar" style="color:var(--g)">▲2</span></div>
+            <div class="prow"><span class="dot y"></span><span class="nm">정비례·반비례</span><span class="bar"><i style="width:72%;background:var(--y)"></i></span><span class="pv">72%</span><span class="ar" style="color:var(--sub)">—</span></div>
+            <div class="ai">💬 <b>이번 2주</b> — 일차식 계산이 눈에 띄게 좋아졌어요(▲8%p).
+              「일차방정식의 활용」은 학원에서 집중 보완 중이며, 주말 리커버리에서 다시 다집니다.</div>
+          </div>
+
+        </div>
+      </div></div>
+      <div class="cap">학부모앱 「📊 성취도」 — 신호등 + 미니 막대 + 2주 대비 ▲▼ + AI 한마디. 홈에 요약 카드, 누르면 이 화면</div>
+    </div>
+
+  </div>
+</div>
