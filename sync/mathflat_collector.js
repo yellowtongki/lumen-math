@@ -615,6 +615,15 @@ async function main() {
     await refreshRoadmap();
     return;
   }
+  // --wkcat-only: 주간 TEST 카탈로그(다음 시험 예고용)만 수집 (매쓰플랫 로그인 필요)
+  if (has('--wkcat-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meW = await login();
+    log(`로그인 성공 · 학원 ${meW.academyId}`);
+    await refreshWkCatalog();
+    return;
+  }
   // --weekly-only: 매쓰플랫 로그인 없이 주간테스트 집계만 (Supabase 기존 기록 사용)
   if (has('--weekly-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -683,6 +692,7 @@ async function main() {
     await refreshTypeDb();
     await refreshRoadmap();
     await refreshWeekly();
+    await refreshWkCatalog();
     await refreshMonthCounts();
     await refreshMonthScores(students);
     await refreshTypeAch();
@@ -1183,6 +1193,34 @@ async function refreshRoadmap() {
     const nRe = Object.values(out).reduce((a, bks) => a + Object.values(bks).filter((b) => b.roundN > 1).length, 0);
     log(`로드맵(mf_progress): 학생 ${Object.keys(out).length} · 재수강(2회차+) 교재 ${nRe}권 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('로드맵 갱신 실패(치명적 아님):', e.message); }
+}
+
+// ── 주간 TEST 카탈로그(전 학년, 미래 시험 포함) — 학생앱 「다음 시험 예고」용 ──
+// GET /worksheet/weekly (매쓰플랫 제공 시험지 라이브러리): id·학년·개정·제목(날짜)·범위(chapter)·문항수.
+// lumen_store 'mf_wk_catalog'에 저장. 학생앱은 "내가 최근 본 시험지의 다음 순서"로 다음 범위를 찾는다.
+async function refreshWkCatalog() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    const items = [];
+    for (let pg = 0; pg < 6; pg++) {
+      const d = await api(`/worksheet/weekly?size=1000&page=${pg}`);
+      const list = (d && d.content) || (Array.isArray(d) ? d : []);
+      list.forEach((w) => {
+        if (!w || !w.id) return;
+        items.push({ id: w.id, sc: w.schoolType || '', g: String(w.grade || ''), rev: w.revision || '',
+          t: w.title || '', ch: w.chapter || '', n: w.problemCount || null });
+      });
+      if (list.length < 1000) break;
+      await sleep(150);
+    }
+    if (!items.length) { log('주간 카탈로그: 조회 결과 없음 → 건너뜀'); return; }
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_wk_catalog', value: { updated: new Date().toISOString(), items }, updated_at: new Date().toISOString() }]),
+    });
+    log(`주간 카탈로그(mf_wk_catalog): 시험지 ${items.length}개 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('주간 카탈로그 갱신 실패(치명적 아님):', e.message); }
 }
 
 // ── 주간·단원테스트(WEEKLY·CHAPTER) 리포트 데이터 집계 ────────────────────
