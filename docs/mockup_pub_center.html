@@ -1,0 +1,150 @@
+<title>학원앱 「발행 센터」 — 울트라 피드백 날짜별 발행·확인 시안 (상의용)</title>
+<style>
+  :root{
+    --bg:#f2f5fa; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#e3e9f2;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --gold:#f59e0b; --gold-soft:#fef3c7;
+    --g:#16a34a; --g-soft:#dcfce7; --r:#dc2626; --r-soft:#fee2e2; --y-soft:#fef9c3; --y-ink:#a16207;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+      --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10;
+      --g:#34d399; --g-soft:#0c2e22; --r:#f87171; --r-soft:#3b1212; --y-soft:#37300b; --y-ink:#fbbf24; }
+  }
+  :root[data-theme="dark"]{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+    --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10;
+    --g:#34d399; --g-soft:#0c2e22; --r:#f87171; --r-soft:#3b1212; --y-soft:#37300b; --y-ink:#fbbf24; }
+  :root[data-theme="light"]{ --bg:#f2f5fa; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#e3e9f2;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --gold:#f59e0b; --gold-soft:#fef3c7;
+    --g:#16a34a; --g-soft:#dcfce7; --r:#dc2626; --r-soft:#fee2e2; --y-soft:#fef9c3; --y-ink:#a16207; }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-size:15px;
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif; }
+  .wrap{ max-width:1460px; margin:0 auto; padding:26px 20px 70px; }
+  h1{ font-size:22px; font-weight:900; margin:0 0 5px; letter-spacing:-0.4px; }
+  .note{ font-size:14px; color:var(--sub); font-weight:600; line-height:1.65; margin-bottom:20px; max-width:980px; }
+  .note b{ color:var(--ink); }
+
+  .head{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .head .tt{ font-size:19px; font-weight:900; }
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{ border:1.5px solid var(--line); background:var(--card); border-radius:50px; padding:7px 15px; font-size:13.5px; font-weight:800; color:var(--sub); }
+  .chip.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+
+  .sumbar{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .st{ background:var(--card); border:1.5px solid var(--line); border-radius:14px; padding:11px 17px; }
+  .st .v{ font-size:19px; font-weight:900; }
+  .st .l{ font-size:11.5px; color:var(--sub); font-weight:800; margin-top:1px; }
+  .st.ok .v{ color:var(--g); } .st.no .v{ color:var(--sub); } .st.warn .v{ color:var(--r); }
+  .bigbtn{ margin-left:auto; align-self:center; background:linear-gradient(135deg,#0d2240,#1d6fe8); color:#fff;
+    border-radius:13px; padding:14px 24px; font-size:15px; font-weight:900; box-shadow:0 5px 16px rgba(29,110,232,0.35); }
+
+  .grid{ display:grid; grid-template-columns:minmax(0,1.8fr) minmax(330px,1fr); gap:16px; align-items:start; }
+  @media (max-width:1050px){ .grid{ grid-template-columns:1fr; } }
+  .card{ background:var(--card); border:1.5px solid var(--line); border-radius:16px; padding:16px 18px; }
+  .card h3{ font-size:15px; font-weight:900; margin:0 0 4px; }
+  .card .cp{ font-size:12px; color:var(--sub); font-weight:700; margin-bottom:11px; }
+
+  .row{ display:flex; align-items:center; gap:10px; padding:9px 6px; border-bottom:1px solid var(--bg); }
+  .row .nm{ width:70px; font-size:14px; font-weight:900; flex-shrink:0; }
+  .row .meta{ flex:1; min-width:0; font-size:12px; color:var(--sub); font-weight:700;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .pill{ font-size:11.5px; font-weight:900; border-radius:50px; padding:4px 12px; white-space:nowrap; }
+  .pill.ok{ background:var(--g-soft); color:var(--g); }
+  .pill.no{ background:var(--bg); color:var(--sub); }
+  .pill.chg{ background:var(--y-soft); color:var(--y-ink); }
+  .pill.none{ background:var(--r-soft); color:var(--r); }
+  .mini{ border:1.5px solid var(--line); background:var(--card); border-radius:9px; padding:5px 12px;
+    font-size:12px; font-weight:900; color:var(--blue); white-space:nowrap; }
+  .mini.pub{ background:var(--blue); color:#fff; border-color:var(--blue); }
+
+  .veri{ background:var(--g-soft); border:1.5px solid #86efac; border-radius:12px; padding:11px 13px;
+    font-size:12.5px; font-weight:800; color:#14532d; line-height:1.7; }
+  :root[data-theme="dark"] .veri{ color:#bbf7d0; border-color:#14532d; }
+  .mtx{ font-variant-numeric:tabular-nums; border-collapse:collapse; width:100%; }
+  .mtx th{ font-size:10.5px; color:var(--sub); font-weight:800; padding:4px 2px; text-align:center; }
+  .mtx td{ text-align:center; padding:5px 2px; font-size:13px; border-top:1px solid var(--bg); }
+  .mtx td.nm{ text-align:left; font-size:12px; font-weight:900; white-space:nowrap; }
+  .legend{ margin-top:22px; background:var(--card); border:1.5px solid var(--line); border-radius:15px;
+    padding:17px 21px; font-size:14px; line-height:1.8; color:var(--sub); font-weight:600; max-width:1120px; }
+  .legend b{ color:var(--ink); }
+</style>
+
+<div class="wrap">
+  <h1>📤 발행 센터 — 울트라 피드백 날짜별 발행 + 발행 확인</h1>
+  <div class="note">
+    <b>왼쪽</b>: 날짜를 고르면 그날 피드백이 있는 학생이 전부 나오고, 「📣 전체 발행」 한 번이면 끝.
+    <b>오른쪽</b>: 발행 직후 <b>학부모앱이 실제로 읽는 데이터를 그대로 다시 읽어와</b> ✅를 붙입니다 —
+    학부모앱에 들어가 볼 필요가 없습니다. 최근 7일 현황판으로 빠뜨린 날도 한눈에. 이름은 가명입니다.
+  </div>
+
+  <div class="head">
+    <span class="tt">⚡ 울트라 피드백</span>
+    <div class="chips"><span class="chip">8/4 (월)</span><span class="chip">8/5 (수)</span><span class="chip on">8/6 (목) 오늘</span><span class="chip">📅</span></div>
+  </div>
+
+  <div class="sumbar">
+    <div class="st"><div class="v">9명</div><div class="l">오늘 피드백 작성됨</div></div>
+    <div class="st ok"><div class="v">✅ 6명</div><div class="l">발행 확인됨</div></div>
+    <div class="st no"><div class="v">⬜ 2명</div><div class="l">미발행</div></div>
+    <div class="st warn"><div class="v">🔄 1명</div><div class="l">수정 후 재발행 필요</div></div>
+    <div class="bigbtn">📣 미발행 3명 한번에 발행</div>
+  </div>
+
+  <div class="grid">
+    <!-- 왼쪽: 날짜별 발행 목록 -->
+    <div class="card">
+      <h3>8/6 (목) 피드백 발행 목록</h3>
+      <div class="cp">피드백(총평)이 작성된 학생만 표시 · 발행하면 학부모앱 「리포트」에 날짜별로 쌓입니다</div>
+
+      <div class="row"><span class="nm">김하늘</span><span class="meta">✍️ "오늘 일차방정식 활용 문제에서 식 세우기가 훨씬 안정적…"</span><span class="pill ok">✅ 발행 확인 20:12</span><span class="mini">👁 미리보기</span></div>
+      <div class="row"><span class="nm">이도윤</span><span class="meta">✍️ "삼각비 기본 개념이 자리 잡혀서 오늘은 심화 문제까지…"</span><span class="pill ok">✅ 발행 확인 20:12</span><span class="mini">👁 미리보기</span></div>
+      <div class="row"><span class="nm">박서준</span><span class="meta">✍️ "채점 후 오답 정리를 스스로 해낸 점이 인상적…"</span><span class="pill chg">🔄 발행 후 수정됨 — 재발행 필요</span><span class="mini pub">📣 재발행</span></div>
+      <div class="row"><span class="nm">최지우</span><span class="meta">✍️ "집중력이 좋아지고 있어요. 소인수분해 속도가…"</span><span class="pill no">⬜ 미발행</span><span class="mini pub">📣 발행</span></div>
+      <div class="row"><span class="nm">정하린</span><span class="meta">✍️ "부등호 방향 실수를 오늘 완전히 잡았습니다…"</span><span class="pill no">⬜ 미발행</span><span class="mini pub">📣 발행</span></div>
+      <div class="row"><span class="nm">한시우</span><span class="meta" style="color:#dc2626">피드백 미작성 — 울트라에서 총평을 먼저 승인해 주세요</span><span class="pill none">✍️ 총평 없음</span></div>
+
+      <div class="cp" style="margin:12px 0 0">… 나머지 3명 ✅ 발행 확인됨 (접힘)</div>
+    </div>
+
+    <!-- 오른쪽: 발행 확인 -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <h3>🔎 발행 검증 <span style="font-size:11px;color:var(--sub);font-weight:700">학부모앱과 같은 방법으로 다시 읽어 확인</span></h3>
+        <div class="veri">
+          방금 발행한 6명 —<br>
+          ✅ 저장 확인 6/6 · 날짜 일치 6/6 · 리포트 파일 열림 6/6<br>
+          <b>학부모앱에서 보이는 것과 동일합니다</b> (20:12 검증)
+        </div>
+        <div class="cp" style="margin-top:10px">발행 버튼을 누르면 ① 저장 → ② 학부모앱 방식으로 재조회 → ③ 날짜·내용 대조까지 자동으로 하고 ✅를 붙입니다. 하나라도 실패하면 🔴로 표시하고 다시 시도 버튼이 나옵니다.</div>
+      </div>
+
+      <div class="card">
+        <h3>🗓️ 최근 7일 발행 현황판</h3>
+        <div class="cp">✅ 발행 확인 · ⬜ 미발행 · ✍️ 피드백 없던 날 (회색)</div>
+        <table class="mtx">
+          <tr><th style="text-align:left">학생</th><th>7/31</th><th>8/1</th><th>8/4</th><th>8/5</th><th>8/6</th></tr>
+          <tr><td class="nm">김하늘</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td class="nm">이도윤</td><td>✅</td><td style="color:#cbd5e1">—</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td class="nm">박서준</td><td>✅</td><td>✅</td><td style="background:var(--r-soft)">⬜</td><td>✅</td><td>🔄</td></tr>
+          <tr><td class="nm">최지우</td><td style="color:#cbd5e1">—</td><td>✅</td><td>✅</td><td style="background:var(--r-soft)">⬜</td><td>⬜</td></tr>
+        </table>
+        <div class="cp" style="margin-top:8px">⬜가 남은 날은 칸을 눌러 그 자리에서 바로 발행할 수 있습니다</div>
+      </div>
+
+      <div class="card">
+        <h3>👁 학부모앱 미리보기</h3>
+        <div class="cp">「미리보기」를 누르면 그 학생의 학부모앱 리포트 화면이 팝업으로 그대로 열립니다 — 코드 입력 없이 원장님 확인용</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <b>동작 정리</b> —
+    ① 위치: 울트라일일피드백 안 「📤 발행 센터」 단계로 추가 (승인 끝낸 뒤 자연스럽게 이어짐).
+    ② 발행 데이터: 지금도 쓰는 학부모앱 리포트 채널(pub_reports)에 날짜별로 쌓음 — 학부모앱은 수정 없이 그대로 표시.
+    ③ <b>발행 확인이 핵심</b>: 발행 직후 학부모앱과 똑같은 방법으로 서버에서 다시 읽어 날짜·내용을 대조 → ✅.
+    앱을 열 때마다 오늘 날짜 기준으로 자동 재검증하므로, 홈 「오늘 챙길 것」에 「📤 피드백 미발행 N명」 행도 함께 추가합니다.
+    ④ 수정 감지: 발행 후 총평을 고치면 🔄 재발행 필요로 자동 표시.
+  </div>
+</div>
