@@ -1,0 +1,156 @@
+<title>주간테스트 「시험 그룹」 배분 — 상의용 미리보기</title>
+<style>
+  :root{
+    --bg:#f2f5fa; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#e3e9f2;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --gold:#f59e0b; --gold-soft:#fef3c7; --amber-ink:#b45309;
+    --g:#16a34a; --g-soft:#dcfce7; --purple:#7c3aed; --purple-soft:#f3e8ff;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+      --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10; --amber-ink:#fbbf24;
+      --g:#34d399; --g-soft:#0c2e22; --purple:#c4a3ff; --purple-soft:#2c1e4a; }
+  }
+  :root[data-theme="dark"]{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+    --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10; --amber-ink:#fbbf24;
+    --g:#34d399; --g-soft:#0c2e22; --purple:#c4a3ff; --purple-soft:#2c1e4a; }
+  :root[data-theme="light"]{ --bg:#f2f5fa; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#e3e9f2;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --gold:#f59e0b; --gold-soft:#fef3c7; --amber-ink:#b45309;
+    --g:#16a34a; --g-soft:#dcfce7; --purple:#7c3aed; --purple-soft:#f3e8ff; }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-size:15px;
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif; }
+  .wrap{ max-width:1240px; margin:0 auto; padding:26px 20px 70px; }
+  h1{ font-size:21px; font-weight:900; margin:0 0 5px; letter-spacing:-0.4px; }
+  .note{ font-size:13.5px; color:var(--sub); font-weight:600; line-height:1.65; margin-bottom:20px; max-width:960px; }
+  .note b{ color:var(--ink); }
+  .cols{ display:flex; gap:24px; flex-wrap:wrap; align-items:flex-start; }
+  .col{ flex:1; min-width:420px; }
+  .card{ background:var(--card); border:1.5px solid var(--line); border-radius:16px; padding:16px 18px; }
+  .card h3{ font-size:15px; font-weight:900; margin:0 0 3px; }
+  .cp{ font-size:11.5px; color:var(--sub); font-weight:700; margin-bottom:11px; }
+  .cap{ text-align:center; font-size:12px; font-weight:800; color:var(--sub); margin-top:10px; }
+
+  /* 그룹 카드 */
+  .gc{ border:2px solid var(--gold); background:var(--card); border-radius:15px; padding:13px 15px; margin-bottom:12px; }
+  .gc .gh{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .gc .gname{ font-size:15.5px; font-weight:900; }
+  .gc .gn{ font-size:11px; color:var(--sub); font-weight:800; }
+  .gc .edit{ margin-left:auto; font-size:11px; font-weight:900; color:var(--sub); border:1px solid var(--line); border-radius:8px; padding:4px 10px; }
+  .mem{ display:flex; gap:5px; flex-wrap:wrap; margin:8px 0 9px; }
+  .mem span{ background:var(--blue-soft); color:var(--blue); border-radius:50px; padding:3px 11px; font-size:11.5px; font-weight:900; }
+  .mem span.minus{ background:var(--bg); color:var(--sub); text-decoration:line-through; }
+  .nxt{ background:var(--gold-soft); border-radius:11px; padding:9px 12px; }
+  .nxt .nl{ display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+  .nxt .nt{ font-size:13.5px; font-weight:900; }
+  .nxt .why{ font-size:9.5px; font-weight:900; border-radius:50px; padding:2px 8px; background:var(--card); color:var(--amber-ink); }
+  .nxt .rng{ font-size:12.5px; font-weight:800; color:var(--sub); margin-top:3px; }
+  .gbtns{ display:flex; gap:7px; margin-top:9px; }
+  .gb{ flex:1; text-align:center; border-radius:9px; padding:8px 0; font-size:12px; font-weight:900; }
+  .gb.b1{ background:var(--blue); color:#fff; }
+  .gb.b2{ border:1px solid var(--line); color:var(--sub); background:var(--card); }
+  .auto{ border:1.5px dashed var(--purple); background:var(--purple-soft); border-radius:13px; padding:11px 14px;
+    font-size:12.5px; font-weight:800; color:var(--purple); line-height:1.65; margin-bottom:12px; }
+
+  /* 팝업 */
+  .pop{ background:var(--card); border:1.5px solid var(--line); border-radius:18px; padding:19px 21px;
+    box-shadow:0 16px 46px rgba(13,34,64,0.18); }
+  .scopes{ display:flex; gap:7px; margin:12px 0; }
+  .scopes span{ flex:1; text-align:center; border:1.5px solid var(--line); border-radius:11px; padding:9px 0;
+    font-size:12.5px; font-weight:900; color:var(--sub); }
+  .scopes span.on{ background:var(--gold); border-color:var(--gold); color:#7c2d12; }
+  .gopt{ display:flex; align-items:center; gap:9px; border:1.5px solid var(--line); border-radius:12px;
+    padding:10px 13px; margin-bottom:8px; }
+  .gopt.on{ border-color:var(--gold); background:var(--gold-soft); }
+  .gopt .ck{ width:20px; height:20px; border-radius:6px; border:1.5px solid #cbd5e1; background:var(--card);
+    display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:900; flex-shrink:0; }
+  .gopt.on .ck{ background:var(--gold); border-color:var(--gold); }
+  .gopt .gt{ font-size:13.5px; font-weight:900; }
+  .gopt .gm{ font-size:10.5px; color:var(--sub); font-weight:700; }
+  .save{ background:var(--blue); color:#fff; border-radius:11px; padding:12px 0; text-align:center;
+    font-size:14px; font-weight:900; margin-top:6px; }
+  .legend{ margin-top:22px; background:var(--card); border:1.5px solid var(--line); border-radius:15px;
+    padding:16px 20px; font-size:13.5px; line-height:1.8; color:var(--sub); font-weight:600; max-width:1050px; }
+  .legend b{ color:var(--ink); }
+</style>
+
+<div class="wrap">
+  <h1>👥 시험 그룹 — 그룹으로 묶어 시험지 배분</h1>
+  <div class="note">
+    <b>왼쪽</b>: 「다음 시험 예고」 분할이 <b>그룹 카드</b>로 바뀝니다 — 그룹을 누르면 구성원과 예정 시험이 바로 보이고,
+    카드에서 예고 지정·해지까지 끝납니다. 그룹은 <b>최근 같은 시험지를 푼 학생들로 자동 제안</b>되고 원장님은 이름·구성원만 다듬습니다.
+    <b>오른쪽</b>: 「예고 지정」 팝업에 <b>시험 그룹</b> 선택이 추가된 모습. 이름은 가명입니다.
+  </div>
+
+  <div class="cols">
+    <!-- ③ 분할: 그룹 카드 -->
+    <div class="col">
+      <div class="card">
+        <h3>📅 다음 시험 예고 — 시험 그룹별</h3>
+        <div class="cp">그룹 카드를 누르면 구성원·예정 시험이 펼쳐집니다 · 학생앱엔 각자 자기 것만 표시</div>
+
+        <div class="auto">✨ <b>자동 제안</b> — 최근 4주 응시 기록으로 3개 그룹을 만들었어요.
+          이름을 정하고 「확정」을 누르면 이 그룹으로 배분할 수 있습니다.</div>
+
+        <div class="gc">
+          <div class="gh"><span style="font-size:16px">👥</span><span class="gname">중1 현행팀</span>
+            <span class="gn">5명 · 중1 (22개정) 과정</span><span class="edit">✏️ 이름·구성원</span></div>
+          <div class="mem"><span>유현준</span><span>오시안</span><span>최우진</span><span>김가희</span><span>서민수</span></div>
+          <div class="nxt">
+            <div class="nl"><span class="nt">중1 (2026.01.24)</span><span class="why">자동 — 다음 순서</span></div>
+            <div class="rng">📖 양수와 음수 ~ 부등호의 사용 · 20문항</div>
+          </div>
+          <div class="gbtns"><span class="gb b1">📅 이 그룹 예고 지정</span><span class="gb b2">시험 로드맵 보기</span></div>
+        </div>
+
+        <div class="gc">
+          <div class="gh"><span style="font-size:16px">👥</span><span class="gname">중1 선행팀 🚀</span>
+            <span class="gn">2명 · 중2 (22개정) 과정</span><span class="edit">✏️ 이름·구성원</span></div>
+          <div class="mem"><span>옥서정</span><span>한소율</span></div>
+          <div class="nxt" style="border:1.5px solid var(--gold)">
+            <div class="nl"><span class="nt">중2 (2025.02.08)</span><span class="why" style="background:var(--gold);color:#7c2d12">원장 지정</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:900;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;padding:2px 9px;background:var(--card)">해지</span></div>
+            <div class="rng">📖 일차방정식 ~ 여러 가지 연립방정식의 풀이 · 20문항</div>
+          </div>
+          <div class="gbtns"><span class="gb b1">📅 이 그룹 예고 지정</span><span class="gb b2">시험 로드맵 보기</span></div>
+        </div>
+
+        <div class="gc" style="border-style:dashed;opacity:0.8">
+          <div class="gh"><span style="font-size:16px">✨</span><span class="gname" style="color:var(--sub)">초4팀 (자동 제안 — 미확정)</span>
+            <span class="gn">2명 · 초4 (22개정)</span><span class="edit">✔️ 확정</span></div>
+          <div class="mem"><span>홍세원</span><span>유지아</span></div>
+          <div class="nxt"><div class="nl"><span class="nt">초4 (2026.08.08)</span><span class="why">자동</span></div>
+            <div class="rng">📖 소수 두 자리 수 ~ 소수의 덧셈과 뺄셈의 활용</div></div>
+        </div>
+      </div>
+      <div class="cap">③ 분할이 이렇게 바뀝니다 — 기존 자동/개인 배분은 그대로 유지 (우선순위: 개인 › 시험 그룹 › 반 › 학년 › 자동)</div>
+    </div>
+
+    <!-- 예고 지정 팝업 -->
+    <div class="col" style="max-width:470px">
+      <div class="pop">
+        <div style="font-size:16px;font-weight:900">📅 예고 지정 — 누구에게 보여줄까요?</div>
+        <div style="background:var(--gold-soft);border:1.5px solid var(--gold);border-radius:11px;padding:9px 13px;margin-top:10px">
+          <div style="font-size:14px;font-weight:900">중1 (2026.01.24)</div>
+          <div style="font-size:12px;font-weight:800;color:var(--sub);margin-top:2px">📖 양수와 음수 ~ 부등호의 사용 · 20문항</div>
+        </div>
+        <div class="scopes"><span class="on">👥 시험 그룹</span><span>🎓 학년별</span><span>🏫 반별</span><span>🙋 개인별</span></div>
+        <div class="gopt on"><span class="ck">✓</span><div><div class="gt">중1 현행팀</div><div class="gm">유현준 오시안 최우진 김가희 서민수 · 5명</div></div></div>
+        <div class="gopt"><span class="ck"></span><div><div class="gt">중1 선행팀 🚀</div><div class="gm">옥서정 한소율 · 2명 (중2 과정 진행 중)</div></div></div>
+        <div class="gopt"><span class="ck"></span><div><div class="gt">초4팀</div><div class="gm">홍세원 유지아 · 2명</div></div></div>
+        <div class="save">📅 예고 저장</div>
+        <div style="font-size:10.5px;color:var(--sub);font-weight:700;margin-top:8px">같은 그룹·같은 과정의 기존 예고는 교체 · 그룹에서 빠진 학생은 학년/자동 규칙으로 내려갑니다</div>
+      </div>
+      <div class="cap">「예고 지정」 팝업 — 시험 그룹이 기본 선택지가 되고, 시험지 학년과 맞는 그룹이 자동 선택됩니다</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <b>의견 정리</b> —
+    ① <b>찬성</b>: 실제 출제 단위가 "학년"이 아니라 "같은 시험지를 푸는 무리"이므로 그룹이 정확한 단위입니다.
+    ② <b>자동 제안</b>: 최근 4주 응시 기록에서 같은 시험지를 푼 학생끼리 자동으로 묶어 제안 — 원장님은 이름 붙이고 확정만.
+    새 학생이 그룹 시험지를 처음 풀면 "이 그룹에 추가할까요?" 제안도 가능합니다.
+    ③ <b>그룹 클릭 = 예정 시험</b>: 카드에 구성원 + 다음 시험(자동/지정 배지) + 범위가 바로 보이고, 지정·해지·로드맵까지 카드 안에서 해결.
+    ④ 기존 체계와 충돌 없음 — 우선순위에 「시험 그룹」이 반(그룹명 M3 등)보다 위, 개인보다 아래로 들어갑니다.
+  </div>
+</div>
