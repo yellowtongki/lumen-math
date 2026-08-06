@@ -1,0 +1,180 @@
+<title>학원앱 📱 원장 모바일 모드 — 상의용 미리보기</title>
+<style>
+  :root{
+    --bg:#eef1f7; --card:#ffffff; --ink:#0d2240; --sub:#64748b; --line:#e6eaf1;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --gold:#f59e0b; --gold-soft:#fef3c7;
+    --g:#16a34a; --g-soft:#dcfce7; --r:#dc2626; --r-soft:#fee2e2;
+    --purple:#7c3aed; --navy:#0d2240; --frame:#0d2240;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#8fa3bd; --line:#20355c;
+      --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10;
+      --g:#34d399; --g-soft:#0c2e22; --r:#f87171; --r-soft:#3b1212;
+      --purple:#c4a3ff; --navy:#eaf1fb; --frame:#060d1a; }
+  }
+  :root[data-theme="dark"]{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#8fa3bd; --line:#20355c;
+    --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10;
+    --g:#34d399; --g-soft:#0c2e22; --r:#f87171; --r-soft:#3b1212;
+    --purple:#c4a3ff; --navy:#eaf1fb; --frame:#060d1a; }
+  :root[data-theme="light"]{ --bg:#eef1f7; --card:#ffffff; --ink:#0d2240; --sub:#64748b; --line:#e6eaf1;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --gold:#f59e0b; --gold-soft:#fef3c7;
+    --g:#16a34a; --g-soft:#dcfce7; --r:#dc2626; --r-soft:#fee2e2;
+    --purple:#7c3aed; --navy:#0d2240; --frame:#0d2240; }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif; }
+  .wrap{ max-width:1300px; margin:0 auto; padding:28px 18px 60px; }
+  h1{ font-size:20px; font-weight:900; margin:0 0 4px; letter-spacing:-0.3px; }
+  .note{ font-size:13.5px; color:var(--sub); font-weight:600; line-height:1.65; margin-bottom:22px; max-width:940px; }
+  .note b{ color:var(--ink); }
+  .cols{ display:flex; gap:26px; flex-wrap:wrap; justify-content:center; align-items:flex-start; }
+
+  .phone{ width:390px; max-width:100%; background:var(--frame); border-radius:34px; padding:14px 12px 18px;
+    box-shadow:0 18px 50px rgba(13,34,64,0.25); }
+  .screen{ background:var(--bg); border-radius:24px; overflow:hidden; }
+  .bar{ background:linear-gradient(135deg,#0d2240,#173a6e); color:#fff; padding:15px 16px 12px;
+    display:flex; align-items:center; gap:9px; }
+  .bar .t{ font-size:15px; font-weight:900; }
+  .bar .s{ font-size:10px; opacity:0.75; font-weight:700; }
+  .bar .pc{ margin-left:auto; font-size:10px; font-weight:800; background:rgba(255,255,255,0.15); border-radius:50px; padding:4px 10px; }
+  .pad{ padding:12px; display:flex; flex-direction:column; gap:11px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 15px; }
+  .cap{ text-align:center; font-size:12px; font-weight:800; color:var(--sub); margin-top:11px; max-width:390px; }
+
+  /* 모바일 홈 타일 */
+  .tiles{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tile{ border-radius:18px; padding:16px 14px; color:#fff; min-height:108px; position:relative; }
+  .tile .ic{ font-size:26px; }
+  .tile .tn{ font-size:15.5px; font-weight:900; margin-top:6px; }
+  .tile .td{ font-size:10.5px; font-weight:700; opacity:0.85; margin-top:2px; line-height:1.4; }
+  .tile .bdg{ position:absolute; top:11px; right:12px; background:#fff; color:#dc2626; font-size:11.5px;
+    font-weight:900; border-radius:50px; padding:3px 10px; }
+  .t1{ background:linear-gradient(135deg,#6d28d9,#8b5cf6); }
+  .t2{ background:linear-gradient(135deg,#b91c1c,#ef4444); }
+  .t3{ background:linear-gradient(135deg,#0e7490,#06b6d4); }
+  .t4{ background:linear-gradient(135deg,#b45309,#f59e0b); }
+  .today{ display:flex; gap:8px; }
+  .today .tb{ flex:1; background:var(--card); border:1px solid var(--line); border-radius:13px; padding:10px 8px; text-align:center; }
+  .today .v{ font-size:17px; font-weight:900; }
+  .today .l{ font-size:9.5px; color:var(--sub); font-weight:800; margin-top:1px; }
+
+  /* 울트라 모바일 */
+  .stu{ border:1.5px solid var(--line); border-radius:14px; padding:12px 13px; }
+  .stu.sel{ border-color:var(--purple); }
+  .stu .sh{ display:flex; align-items:center; gap:8px; }
+  .stu .nm{ font-size:15px; font-weight:900; }
+  .stu .sc{ font-size:13px; font-weight:900; color:var(--blue); }
+  .stu .st{ margin-left:auto; font-size:10.5px; font-weight:900; border-radius:50px; padding:3px 10px; }
+  .st.done{ background:var(--g-soft); color:var(--g); } .st.wait{ background:var(--gold-soft); color:#b45309; }
+  .auto{ background:var(--blue-soft); border-radius:10px; padding:8px 11px; font-size:11px; font-weight:700;
+    color:var(--sub); margin-top:8px; line-height:1.55; }
+  .fb{ margin-top:8px; border:1.5px solid var(--line); border-radius:11px; padding:10px 12px;
+    font-size:12.5px; font-weight:600; line-height:1.6; min-height:74px; }
+  .btns{ display:flex; gap:7px; margin-top:9px; }
+  .b{ flex:1; text-align:center; border-radius:10px; padding:11px 0; font-size:13px; font-weight:900; }
+  .b1{ background:var(--purple); color:#fff; }
+  .b2{ border:1.5px solid var(--line); color:var(--sub); background:var(--card); }
+  .prog{ text-align:center; font-size:11px; font-weight:800; color:var(--sub); }
+
+  /* 아하/플래너 콤보 */
+  .aha{ display:flex; gap:10px; }
+  .aha .ph{ width:86px; height:86px; border-radius:11px; background:linear-gradient(135deg,#cbd5e1,#94a3b8);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:24px; }
+  .aha .q1{ font-size:13px; font-weight:900; }
+  .aha .q2{ font-size:11px; color:var(--sub); font-weight:700; margin-top:2px; line-height:1.5; }
+  .aha .qb{ display:inline-block; margin-top:7px; background:var(--g); color:#fff; border-radius:9px;
+    padding:6px 14px; font-size:12px; font-weight:900; }
+  .pl{ display:flex; gap:8px; align-items:center; }
+  .pl .pp{ width:52px; height:66px; border-radius:9px; background:linear-gradient(135deg,#e2e8f0,#cbd5e1);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .pl .n{ font-size:13.5px; font-weight:900; }
+  .pl .d{ font-size:10.5px; color:var(--sub); font-weight:700; margin-top:1px; }
+  .pl .ok{ margin-left:auto; background:var(--g); color:#fff; border-radius:9px; padding:7px 13px; font-size:12px; font-weight:900; }
+  .rec{ display:flex; align-items:center; gap:9px; padding:8px 2px; border-bottom:1px solid var(--bg); }
+  .rec .play{ width:34px; height:34px; border-radius:50%; background:var(--blue); color:#fff; display:flex;
+    align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+  .rec .n{ font-size:13px; font-weight:900; }
+  .rec .d{ font-size:10px; color:var(--sub); font-weight:700; }
+  .rec .len{ margin-left:auto; font-size:11px; color:var(--sub); font-weight:800; }
+</style>
+
+<div class="wrap">
+  <h1>📱 학원앱 원장 모바일 모드 — 미리보기</h1>
+  <div class="note">
+    <b>같은 주소, 같은 로그인</b> — 폰에서 학원앱을 열면 자동으로 이 모바일 홈이 뜹니다 (데스크톱은 지금 그대로).
+    승인·발행·해결 처리 모두 기존 학원앱 로직을 그대로 쓰므로 안전합니다. 폰 홈화면에 아이콘 추가 가능. 이름은 가명입니다.
+  </div>
+
+  <div class="cols">
+
+    <!-- 모바일 홈 -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span style="font-size:17px">🏫</span><div><div class="t">루멘수학 원장</div><div class="s">8월 6일 목요일 · 화목반 수업일</div></div><span class="pc">🖥 PC 화면</span></div>
+        <div class="pad">
+          <div class="today">
+            <div class="tb"><div class="v" style="color:var(--purple)">4</div><div class="l">피드백 대기</div></div>
+            <div class="tb"><div class="v" style="color:var(--r)">3</div><div class="l">녹음 새 제출</div></div>
+            <div class="tb"><div class="v" style="color:#0e7490">5</div><div class="l">플래너 검토</div></div>
+            <div class="tb"><div class="v" style="color:#b45309">2</div><div class="l">아하 질문</div></div>
+          </div>
+          <div class="tiles">
+            <div class="tile t1"><span class="bdg">4</span><div class="ic">⚡</div><div class="tn">울트라 피드백</div><div class="td">초안 검토 · 승인 · 발행</div></div>
+            <div class="tile t2"><span class="bdg">3</span><div class="ic">🎙️</div><div class="tn">녹음 확인</div><div class="td">오늘 하브루타 듣기</div></div>
+            <div class="tile t3"><span class="bdg">5</span><div class="ic">📓</div><div class="tn">플래너 확인</div><div class="td">사진 · AI 분석 승인</div></div>
+            <div class="tile t4"><span class="bdg">2</span><div class="ic">💡</div><div class="tn">아하노트</div><div class="td">질문 확인 · 해결 처리</div></div>
+          </div>
+          <div class="card" style="padding:11px 14px">
+            <div style="font-size:11.5px;font-weight:900;color:var(--sub)">📤 오늘 피드백 발행: <b style="color:var(--g)">6명 ✅</b> · 대기 <b style="color:var(--r)">3명</b> — 탭 한 번으로 일괄 발행</div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap">📱 모바일 홈 — 폰으로 열면 이 화면, 「🖥 PC 화면」을 누르면 기존 화면으로</div>
+    </div>
+
+    <!-- 울트라 모바일 -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span style="font-size:15px">‹</span><div><div class="t">⚡ 울트라 피드백</div><div class="s">8/6 (목) · 9명 중 6명 승인됨</div></div><span class="pc">3명 남음</span></div>
+        <div class="pad">
+          <div class="prog">◀ 이전 학생 &nbsp;·&nbsp; <b style="color:var(--ink)">7 / 9</b> &nbsp;·&nbsp; 다음 학생 ▶</div>
+          <div class="stu sel">
+            <div class="sh"><span class="nm">김하늘</span><span class="sc">85점 · 중1</span><span class="st wait">검토 대기</span></div>
+            <div class="auto">📊 오늘: 주간TEST 85점(오답 3) · 플래너 제출 ✓ · 오답 유형: 일차방정식의 활용</div>
+            <div class="fb">오늘 일차방정식 활용 문제에서 식 세우기가 훨씬 안정적이었습니다. 특히 검산 과정을 스스로 챙긴 점이 좋았어요. 내일은 틀린 3문항을 다시 풀어보며…
+              <span style="color:var(--sub);font-size:10.5px">(AI 초안 — 눌러서 수정)</span></div>
+            <div class="btns"><span class="b b1">✅ 승인 + 발행</span><span class="b b2">🤖 재생성</span></div>
+          </div>
+          <div class="stu"><div class="sh"><span class="nm">박서준</span><span class="sc">90점 · 중2</span><span class="st done">✅ 발행됨</span></div></div>
+          <div class="stu"><div class="sh"><span class="nm">최지우</span><span class="sc">75점 · 초6</span><span class="st wait">검토 대기</span></div></div>
+        </div>
+      </div></div>
+      <div class="cap">⚡ 울트라 — 한 학생씩 카드로 검토, 승인하면 자동으로 다음 학생 · 발행 센터 검증도 그대로</div>
+    </div>
+
+    <!-- 녹음+플래너+아하 -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span style="font-size:15px">‹</span><div><div class="t">🎙️ 녹음 · 📓 플래너 · 💡 아하</div><div class="s">확인 화면 (탭 전환)</div></div></div>
+        <div class="pad">
+          <div class="card">
+            <div style="font-size:12.5px;font-weight:900;margin-bottom:6px">🎙️ 오늘 하브루타 녹음 <span style="font-size:10px;color:var(--sub);font-weight:700">3건</span></div>
+            <div class="rec"><span class="play">▶</span><div><div class="n">김하늘</div><div class="d">오후 7:12 · 비와 비율 설명하기</div></div><span class="len">1:42</span></div>
+            <div class="rec"><span class="play">▶</span><div><div class="n">최지우</div><div class="d">오후 6:55 · 소인수분해 설명하기</div></div><span class="len">2:10</span></div>
+          </div>
+          <div class="card">
+            <div style="font-size:12.5px;font-weight:900;margin-bottom:6px">📓 플래너 검토 대기 <span style="font-size:10px;color:var(--sub);font-weight:700">AI 분석 완료 · 승인만</span></div>
+            <div class="pl"><span class="pp">📷</span><div><div class="n">박서준 <b style="color:var(--blue)">92점</b></div><div class="d">계획 6개 중 6개 완료 · 사진 눌러 크게</div></div><span class="ok">승인</span></div>
+          </div>
+          <div class="card">
+            <div style="font-size:12.5px;font-weight:900;margin-bottom:8px">💡 아하노트 질문 <span style="font-size:10px;color:var(--sub);font-weight:700">2건 미해결</span></div>
+            <div class="aha"><span class="ph">📷</span><div><div class="q1">최지우 · 쎈 중1-2 p.84 12번</div><div class="q2">"식 세우는 것까진 했는데 이항에서 부호가 헷갈려요" · 틀린 이유: 계산 실수</div><span class="qb">✅ 해결 처리</span></div></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap">🎙️📓💡 — 재생·승인·해결 처리를 폰에서 바로 (엄지 닿는 큰 버튼)</div>
+    </div>
+
+  </div>
+</div>
