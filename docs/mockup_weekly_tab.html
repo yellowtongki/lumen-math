@@ -1,0 +1,213 @@
+<title>학원앱 「주간테스트」 독립 탭 — 3분할 미리보기 (상의용)</title>
+<style>
+  :root{
+    --bg:#f2f5fa; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#e3e9f2;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --gold:#f59e0b; --gold-soft:#fef3c7;
+    --green:#16a34a; --green-soft:#ecfdf5; --red:#dc2626; --amber-ink:#b45309;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+      --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10;
+      --green:#34d399; --green-soft:#0c2e22; --amber-ink:#fbbf24; }
+  }
+  :root[data-theme="dark"]{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+    --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10;
+    --green:#34d399; --green-soft:#0c2e22; --amber-ink:#fbbf24; }
+  :root[data-theme="light"]{ --bg:#f2f5fa; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#e3e9f2;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --gold:#f59e0b; --gold-soft:#fef3c7;
+    --green:#16a34a; --green-soft:#ecfdf5; --amber-ink:#b45309; }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-size:16px;
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif; }
+  .wrap{ max-width:1560px; margin:0 auto; padding:26px 20px 70px; }
+  h1{ font-size:23px; font-weight:900; margin:0 0 6px; letter-spacing:-0.4px; }
+  .note{ font-size:14.5px; color:var(--sub); font-weight:600; line-height:1.65; margin-bottom:20px; max-width:960px; }
+  .note b{ color:var(--ink); }
+  .tabbar{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+  .tabbar .t{ background:var(--card); border:1.5px solid var(--line); border-radius:11px;
+    padding:9px 18px; font-size:14.5px; font-weight:800; color:var(--sub); }
+  .tabbar .t.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+  .tabbar .loc{ font-size:12.5px; color:var(--sub); font-weight:700; margin-left:6px; }
+
+  .grid{ display:grid; grid-template-columns:1.15fr 1.25fr 1fr; gap:16px; align-items:start; }
+  @media (max-width:1150px){ .grid{ grid-template-columns:1fr; } }
+  .pane{ background:var(--card); border:1.5px solid var(--line); border-radius:18px; padding:18px 19px; }
+  .pane h2{ font-size:17.5px; font-weight:900; margin:0 0 4px; display:flex; align-items:center; gap:8px; }
+  .pane .cap{ font-size:12.5px; color:var(--sub); font-weight:700; margin-bottom:13px; }
+
+  /* ① 카탈로그 */
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:11px; }
+  .chip{ border:1.5px solid var(--line); background:var(--card); border-radius:50px;
+    padding:6px 14px; font-size:13.5px; font-weight:800; color:var(--sub); }
+  .chip.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+  .cat-row{ display:flex; align-items:center; gap:10px; padding:11px 10px; border-radius:12px;
+    border-bottom:1px solid var(--line); }
+  .cat-row.sel{ background:var(--blue-soft); outline:2px solid var(--blue); border-radius:12px; }
+  .cat-row .dt{ font-size:15.5px; font-weight:900; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .cat-row .rng{ flex:1; min-width:0; font-size:14.5px; font-weight:700; color:var(--sub);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cat-row .n{ font-size:12.5px; color:var(--sub); font-weight:800; white-space:nowrap; }
+  .tagg{ font-size:11.5px; font-weight:900; border-radius:50px; padding:3px 10px; white-space:nowrap; }
+  .tagg.done{ background:var(--green-soft); color:var(--green); }
+  .tagg.next{ background:var(--gold-soft); color:var(--amber-ink); }
+  .pick{ background:var(--blue); color:#fff; border-radius:9px; font-size:12.5px; font-weight:900; padding:6px 12px; white-space:nowrap; }
+
+  /* ② 이번 주 */
+  .test-card{ border:1.5px solid var(--line); border-radius:14px; padding:13px 15px; margin-bottom:11px; background:var(--card); }
+  .test-card .tt{ display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+  .badge-course{ background:var(--gold); color:#7c2d12; border-radius:8px; padding:3px 11px; font-size:13px; font-weight:900; }
+  .test-card .nm{ font-size:16.5px; font-weight:900; }
+  .test-card .meta{ font-size:13px; color:var(--sub); font-weight:700; }
+  .test-card .rangeln{ font-size:13.5px; color:var(--sub); font-weight:700; margin-top:6px; }
+  .first{ display:flex; align-items:center; gap:9px; margin-top:9px; background:var(--gold-soft);
+    border-radius:11px; padding:9px 12px; flex-wrap:wrap; }
+  .first .who{ font-size:16px; font-weight:900; }
+  .first .sc{ font-size:15.5px; font-weight:900; color:var(--blue); }
+  .first .nat{ font-size:12.5px; font-weight:800; color:var(--amber-ink); }
+  .roster{ font-size:13.5px; font-weight:800; color:var(--blue); margin-top:8px; }
+  .grading{ font-size:13px; font-weight:800; color:var(--amber-ink); margin-top:5px; }
+  .announce{ display:flex; align-items:center; gap:12px; margin-top:6px; flex-wrap:wrap; }
+  .announce .btn{ background:var(--green); color:#fff; border-radius:12px; padding:12px 20px;
+    font-size:15px; font-weight:900; box-shadow:0 3px 10px rgba(22,163,74,0.3); }
+  .announce .hint{ font-size:12px; color:var(--sub); font-weight:700; line-height:1.5; }
+
+  /* ③ 예고 */
+  .fore-card{ border:2px solid var(--gold); background:var(--gold-soft); border-radius:14px;
+    padding:14px 15px; margin-bottom:11px; }
+  .fore-card .cls{ display:flex; align-items:center; gap:8px; margin-bottom:7px; flex-wrap:wrap; }
+  .fore-card .day{ font-size:13px; font-weight:900; color:var(--amber-ink); }
+  .fore-card .nm{ font-size:16.5px; font-weight:900; }
+  .fore-card .rng{ font-size:14.5px; font-weight:800; margin-top:4px; line-height:1.5; }
+  .fore-card .src{ font-size:11.5px; font-weight:800; color:var(--sub); margin-top:7px; }
+  .fore-card .src b{ color:var(--amber-ink); }
+  .flow{ margin-top:4px; background:var(--blue-soft); border-radius:12px; padding:11px 13px;
+    font-size:13px; font-weight:700; color:var(--sub); line-height:1.7; }
+  .flow b{ color:var(--blue); }
+
+  .legend{ margin-top:22px; background:var(--card); border:1.5px solid var(--line); border-radius:15px;
+    padding:17px 21px; font-size:14.5px; line-height:1.8; color:var(--sub); font-weight:600; max-width:1100px; }
+  .legend b{ color:var(--ink); }
+</style>
+
+<div class="wrap">
+  <h1>학원앱 「📝 주간테스트」 독립 탭 — 3분할 미리보기</h1>
+  <div class="note">
+    <b>성적·분석 그룹, 주간리포트 옆</b>에 새 탭으로 들어가는 안입니다 (사이드바 🏆 버튼도 이 탭으로 연결).
+    왼쪽에서 매쓰플랫과 똑같은 전체 시험지 목록을 보고 → 클릭 한 번으로 오른쪽 「다음 시험 예고」에 지정하는 흐름입니다.
+    글씨는 지금 홈 카드보다 한 단계 크게 잡았습니다. 이름은 가명입니다.
+  </div>
+
+  <div class="tabbar">
+    <span class="t">기출모의</span><span class="t">학교성적</span><span class="t">자체시험</span>
+    <span class="t">주간리포트</span><span class="t on">📝 주간테스트</span><span class="t">🧭 진학 나침반</span>
+    <span class="loc">← 성적·분석 그룹에 새 탭</span>
+  </div>
+
+  <div class="grid">
+
+    <!-- ① 시험지 카탈로그 -->
+    <div class="pane">
+      <h2>📚 시험지 목록 <span style="font-size:12px;color:var(--sub);font-weight:700">매쓰플랫 주간 TEST 카탈로그 · 매일 새벽 자동 갱신</span></h2>
+      <div class="cap">학년을 고르면 전체 시험지가 날짜순으로 — 매쓰플랫 화면과 같은 목록</div>
+      <div class="chips">
+        <span class="chip">초4</span><span class="chip">초5</span><span class="chip">초6</span>
+        <span class="chip on">중1</span><span class="chip">중2</span><span class="chip">중3</span>
+      </div>
+      <div class="cat-row">
+        <span class="dt">07.18</span><span class="rng">점, 직선, 평면의 위치 관계 ~ 평행선의 성질</span>
+        <span class="tagg done">✓ 응시함</span>
+      </div>
+      <div class="cat-row">
+        <span class="dt">07.25</span><span class="rng">삼각형의 작도 ~ 삼각형의 합동</span>
+        <span class="tagg done">✓ 응시함</span>
+      </div>
+      <div class="cat-row">
+        <span class="dt">08.01</span><span class="rng">다각형 ~ 부채꼴의 호의 길이와 넓이</span>
+        <span class="tagg done">✓ 응시함</span>
+      </div>
+      <div class="cat-row sel">
+        <span class="dt">08.08</span><span class="rng">다면체 ~ 회전체</span>
+        <span class="n">20문항</span><span class="tagg next">📅 다음 예고</span>
+      </div>
+      <div class="cat-row">
+        <span class="dt">08.22</span><span class="rng">점, 선, 면 ~ 각</span>
+        <span class="n">20문항</span><span class="pick">이걸로 예고 지정</span>
+      </div>
+      <div class="cat-row" style="border-bottom:none">
+        <span class="dt">08.29</span><span class="rng">점, 직선, 평면의 위치 관계 ~ 평행선의 성질</span>
+        <span class="n">20문항</span><span class="pick">이걸로 예고 지정</span>
+      </div>
+    </div>
+
+    <!-- ② 이번 주 시험 · 발표 -->
+    <div class="pane">
+      <h2>🏆 이번 주 시험 · 발표</h2>
+      <div class="cap">홈에 있던 명예의 전당 관리가 이 탭으로 — 홈에는 요약 카드만 남음</div>
+
+      <div class="test-card">
+        <div class="tt"><span class="badge-course">중1-1 과정</span><span class="nm">중1 (2026.01.17)</span>
+          <span class="meta">8/5 · 완료 5명 · 평균 76점</span></div>
+        <div class="rangeln">📖 공약수와 최대공약수 ~ 최대공약수와 최소공배수</div>
+        <div class="first"><span>👑</span><span class="who">김하늘</span><span class="sc">95점</span>
+          <span class="nat">🌐 전국 12등/195명 · 상위 6%</span></div>
+        <div class="roster">👥 응시 명단 보기 ▼</div>
+      </div>
+
+      <div class="test-card">
+        <div class="tt"><span class="badge-course">중2-2 과정</span><span class="nm">중2 (2026.07.11)</span>
+          <span class="meta">8/5 · 완료 1명 · 채점중 1명</span></div>
+        <div class="rangeln">📖 이등변삼각형의 성질 ~ 삼각형의 외심과 내심</div>
+        <div class="first"><span>👑</span><span class="who">이도윤</span><span class="sc">90점</span>
+          <span class="nat">🌐 전국 121등/364명 · 상위 33%</span></div>
+        <div class="grading">🖊️ 박서준 — 채점 중 12/20문항 (내일 새벽 반영)</div>
+        <div class="roster">👥 응시 명단 보기 ▼</div>
+      </div>
+
+      <div class="announce">
+        <span class="btn">📣 학생앱에 발표하기</span>
+        <span class="hint">원장님이 눌러야 학생앱에 공개됩니다 (1등·마스킹만)<br>두 반 모두 응시 후 권장</span>
+      </div>
+    </div>
+
+    <!-- ③ 다음 시험 예고 -->
+    <div class="pane">
+      <h2>📅 다음 시험 예고</h2>
+      <div class="cap">학생앱 「주간테스트」에 D-day·범위로 표시되는 내용</div>
+
+      <div class="fore-card">
+        <div class="cls"><span class="badge-course">중1</span><span class="day">M반 수요일 (8/12) · T반 목요일 (8/13)</span></div>
+        <div class="nm">중1 (2026.01.24)</div>
+        <div class="rng">📖 양수와 음수 ~ 부등호의 사용 · 20문항</div>
+        <div class="src">자동 제안 — 최근 응시(01.17)의 다음 순서 · 왼쪽 목록에서 클릭하면 교체</div>
+      </div>
+
+      <div class="fore-card">
+        <div class="cls"><span class="badge-course">중2</span><span class="day">T반 목요일 (8/13)</span></div>
+        <div class="nm">중2 (2026.07.18)</div>
+        <div class="rng">📖 평행사변형의 성질 ~ 여러 가지 사각형 · 20문항</div>
+        <div class="src"><b>원장 지정</b> — 왼쪽 목록에서 직접 고른 시험지</div>
+      </div>
+
+      <div class="fore-card">
+        <div class="cls"><span class="badge-course">초4</span><span class="day">M반 수요일 (8/12)</span></div>
+        <div class="nm">초4 (2026.08.08)</div>
+        <div class="rng">📖 소수 두 자리 수 ~ 소수의 뺄셈 · 15문항</div>
+        <div class="src">자동 제안 — 최근 응시(08.01)의 다음 순서</div>
+      </div>
+
+      <div class="flow">
+        <b>흐름</b> — ① 왼쪽에서 학년 선택 → ② 시험지 옆 「이걸로 예고 지정」 클릭 →
+        ③ 이 칸과 학생앱에 바로 반영. 아무것도 안 하면 항상 <b>다음 순서 자동</b>.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <b>홈 화면은 이렇게 정리됩니다</b> — 명예의 전당 상세 관리(응시 명단·노출 스위치·예고 드롭다운)는 이 탭으로 옮기고,
+    홈 오른쪽 레일에는 <b>요약 카드</b>(이번 주 1등 + 발표 대기 배지 + 「주간테스트 탭 열기」 버튼)만 남깁니다.
+    사이드바 🏆 버튼과 「오늘 챙길 것」의 발표 대기 행도 이 탭으로 연결됩니다.
+    지금처럼 드롭다운 14개 제한 없이 <b>매쓰플랫과 동일한 전체 목록</b>에서 자유롭게 고를 수 있습니다.
+  </div>
+</div>
