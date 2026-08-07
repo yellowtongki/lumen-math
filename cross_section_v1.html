@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>루멘수학 · 입체도형 단면 실험실</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
+  body {
+    font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+    background:#f1f5f9; color:#1e293b; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  header {
+    background:#0f172a; color:#fff; padding:10px 16px;
+    display:flex; align-items:center; gap:10px; flex-shrink:0;
+  }
+  header .logo { font-size:20px; }
+  header h1 { font-size:16px; font-weight:700; }
+  header .sub { font-size:11px; color:#94a3b8; margin-left:auto; text-align:right; }
+
+  #layout { flex:1; display:flex; min-height:0; }
+
+  /* ---- 3D 뷰 ---- */
+  #viewport { flex:1; position:relative; min-width:0; background:linear-gradient(#e0f2fe,#f8fafc); }
+  #viewport canvas { display:block; }
+  #shapeBadge {
+    position:absolute; top:12px; left:12px; background:rgba(255,255,255,.92);
+    border:1px solid #cbd5e1; border-radius:12px; padding:8px 14px;
+    font-size:14px; font-weight:700; color:#0f172a; box-shadow:0 2px 8px rgba(0,0,0,.08);
+    pointer-events:none; max-width:70%;
+  }
+  #shapeBadge small { display:block; font-size:10px; font-weight:500; color:#64748b; margin-top:2px; }
+  #hint {
+    position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+    background:rgba(15,23,42,.65); color:#fff; font-size:11px;
+    padding:5px 12px; border-radius:99px; pointer-events:none; white-space:nowrap;
+  }
+
+  /* ---- 사이드 패널 ---- */
+  #panel {
+    width:320px; flex-shrink:0; background:#ffffff; border-left:1px solid #e2e8f0;
+    overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:14px;
+  }
+  .card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:12px; }
+  .card h2 { font-size:12px; font-weight:700; color:#475569; margin-bottom:8px; letter-spacing:.02em; }
+
+  #solidGrid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+  #solidGrid button {
+    border:1.5px solid #e2e8f0; background:#fff; border-radius:10px;
+    padding:8px 2px; font-size:11px; font-weight:600; color:#334155; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  #solidGrid button .ico { font-size:20px; line-height:1; }
+  #solidGrid button.on { border-color:#0284c7; background:#e0f2fe; color:#0369a1; }
+  #solidTip { font-size:11px; color:#64748b; margin-top:8px; line-height:1.5; }
+  .revTag { display:inline-block; font-size:9px; background:#fef3c7; color:#b45309; border-radius:6px; padding:1px 5px; margin-left:4px; vertical-align:1px; }
+
+  #presetRow { display:flex; flex-wrap:wrap; gap:6px; }
+  #presetRow button {
+    border:none; background:#0284c7; color:#fff; border-radius:8px;
+    padding:7px 10px; font-size:11.5px; font-weight:600; cursor:pointer;
+  }
+  #presetRow button.star { background:#f59e0b; }
+
+  .sliderRow { margin-bottom:10px; }
+  .sliderRow:last-child { margin-bottom:0; }
+  .sliderRow label { display:flex; justify-content:space-between; font-size:11.5px; font-weight:600; color:#334155; margin-bottom:3px; }
+  .sliderRow label span { color:#0284c7; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:#0284c7; height:26px; }
+
+  .toggleRow { display:flex; flex-direction:column; gap:7px; }
+  .toggleRow label { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:600; color:#334155; cursor:pointer; }
+  .toggleRow input { width:16px; height:16px; accent-color:#0284c7; }
+  .modeBtns { display:flex; gap:6px; margin-bottom:9px; }
+  .modeBtns button { flex:1; border:1.5px solid #e2e8f0; background:#fff; border-radius:8px; padding:7px 0; font-size:11.5px; font-weight:700; color:#64748b; cursor:pointer; }
+  .modeBtns button.on { border-color:#0284c7; background:#e0f2fe; color:#0369a1; }
+
+  #sec2dWrap { text-align:center; }
+  #sec2d { width:100%; max-width:240px; aspect-ratio:1; background:#fff; border:1px solid #e2e8f0; border-radius:10px; }
+  #secName { font-size:16px; font-weight:800; color:#0f172a; margin-top:8px; }
+  #secNote { font-size:10.5px; color:#94a3b8; margin-top:3px; }
+
+  footer { font-size:10px; color:#94a3b8; text-align:center; padding-bottom:4px; }
+
+  /* ---- 좁은 화면(세로) ---- */
+  @media (max-width:760px) {
+    #layout { flex-direction:column; }
+    #viewport { flex:none; height:46vh; }
+    #panel { width:100%; flex:1; border-left:none; border-top:1px solid #e2e8f0; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">🔷</span>
+  <h1>입체도형 단면 실험실</h1>
+  <div class="sub">루멘수학<br>중1 · 입체도형의 단면</div>
+</header>
+
+<div id="layout">
+  <div id="viewport">
+    <div id="shapeBadge">단면: <span id="badgeName">-</span><small id="badgeSub"></small></div>
+    <div id="hint">한 손가락으로 돌리기 · 두 손가락으로 확대</div>
+  </div>
+
+  <div id="panel">
+    <div class="card">
+      <h2>① 입체도형 고르기</h2>
+      <div id="solidGrid"></div>
+      <div id="solidTip"></div>
+    </div>
+
+    <div class="card">
+      <h2>② 한 번에 잘라 보기 (추천 단면)</h2>
+      <div id="presetRow"></div>
+    </div>
+
+    <div class="card">
+      <h2>③ 자르는 평면 직접 움직이기</h2>
+      <div class="sliderRow">
+        <label>평면 기울기 <span id="vTilt">0°</span></label>
+        <input type="range" id="sTilt" min="0" max="90" step="1" value="0">
+      </div>
+      <div class="sliderRow">
+        <label>평면 돌리기 <span id="vRot">0°</span></label>
+        <input type="range" id="sRot" min="0" max="360" step="1" value="0">
+      </div>
+      <div class="sliderRow">
+        <label>평면 위치 <span id="vPos">0.00</span></label>
+        <input type="range" id="sPos" min="-1.4" max="1.4" step="0.01" value="0">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>④ 보기 방식</h2>
+      <div class="modeBtns">
+        <button id="modeCut" class="on">🔪 잘라서 보기</button>
+        <button id="modeWhole">👻 통째로 보기</button>
+      </div>
+      <div class="toggleRow">
+        <label><input type="checkbox" id="ckGhost" checked> 잘려 나간 부분 흐리게 남기기</label>
+        <label><input type="checkbox" id="ckPlane" checked> 자르는 평면 보이기</label>
+        <label><input type="checkbox" id="ckSweep"> ▶ 자동으로 위아래 훑어보기</label>
+      </div>
+    </div>
+
+    <div class="card" id="sec2dWrap">
+      <h2>⑤ 단면의 실제 모양 (정면에서 본 모습)</h2>
+      <canvas id="sec2d" width="480" height="480"></canvas>
+      <div id="secName">-</div>
+      <div id="secNote">모양 이름은 자동 판별이라 참고용이에요</div>
+    </div>
+
+    <footer>루멘수학 · 입체도형 단면 실험실 v1</footer>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* ============================================================
+   입체도형 정의
+   ============================================================ */
+const SOLIDS = [
+  { id:'cone',   name:'원뿔',   ico:'🍦', rev:true,
+    tip:'밑면에 평행하게 자르면 <b>원</b>, 꼭짓점을 지나 세로로 자르면 <b>이등변삼각형</b>, 비스듬히 자르면 <b>타원</b>이 나와요.',
+    make:()=> new THREE.ConeGeometry(1, 1.7, 96) },
+  { id:'cyl',    name:'원기둥', ico:'🥫', rev:true,
+    tip:'가로로 자르면 <b>원</b>, 세로로 자르면 <b>직사각형</b>, 비스듬히 자르면 <b>타원</b>이 나와요.',
+    make:()=> new THREE.CylinderGeometry(0.85, 0.85, 1.7, 96) },
+  { id:'sphere', name:'구',     ico:'⚽', rev:true,
+    tip:'구는 어느 방향으로 잘라도 <b>항상 원</b>! 중심을 지나도록 자를 때 가장 큰 원이 나와요.',
+    make:()=> new THREE.SphereGeometry(1.05, 96, 64) },
+  { id:'cube',   name:'정육면체', ico:'🎲', rev:false,
+    tip:'자르는 방향에 따라 <b>삼각형부터 육각형까지</b> 나올 수 있어요. ⭐버튼으로 정육각형 단면에 도전!',
+    make:()=> new THREE.BoxGeometry(1.5, 1.5, 1.5) },
+  { id:'pyr',    name:'사각뿔', ico:'🔺', rev:false,
+    tip:'밑면에 평행하게 자르면 <b>정사각형</b>, 꼭짓점을 지나게 자르면 <b>삼각형</b>이 나와요.',
+    make:()=>{ const g = new THREE.ConeGeometry(1.15, 1.6, 4, 1); g.rotateY(Math.PI/4); return g; } },
+  { id:'prism',  name:'삼각기둥', ico:'⛺', rev:false,
+    tip:'가로로 자르면 <b>삼각형</b>, 세로로 자르면 <b>직사각형</b>이 나와요.',
+    make:()=>{ const g = new THREE.CylinderGeometry(1.0, 1.0, 1.6, 3, 1); g.rotateY(Math.PI/6); return g; } },
+  { id:'torus',  name:'도넛',   ico:'🍩', rev:true,
+    tip:'가로로 자르면 <b>고리 모양</b>, 세로로 중심을 지나게 자르면 <b>원 2개</b>가 나와요. (회전체 심화)',
+    make:()=>{ const g = new THREE.TorusGeometry(0.72, 0.34, 48, 96); g.rotateX(Math.PI/2); return g; } },
+];
+
+// 도형별 추천 단면 버튼 (t:기울기°, r:돌리기°, d:위치, star:특별 단면)
+const PRESETS = {
+  cone:   [ {n:'가로로 자르기 → 원', t:0, r:0, d:0.25},
+            {n:'꼭짓점 지나 세로로 → 삼각형', t:90, r:0, d:0},
+            {n:'비스듬히 → 타원', t:32, r:20, d:0.28, star:true} ],
+  cyl:    [ {n:'가로로 → 원', t:0, r:0, d:0.3},
+            {n:'세로로 → 직사각형', t:90, r:0, d:0},
+            {n:'비스듬히 → 타원', t:35, r:20, d:0, star:true} ],
+  sphere: [ {n:'중심을 지나게 → 가장 큰 원', t:0, r:0, d:0},
+            {n:'가장자리 쪽 → 작은 원', t:0, r:0, d:0.7},
+            {n:'비스듬히 → 그래도 원!', t:45, r:30, d:0.3} ],
+  cube:   [ {n:'가로로 → 정사각형', t:0, r:0, d:0.2},
+            {n:'비스듬히 → 직사각형', t:90, r:30, d:0},
+            {n:'⭐ 정육각형 단면!', t:54.7, r:45, d:0, star:true} ],
+  pyr:    [ {n:'가로로 → 정사각형', t:0, r:0, d:0.2},
+            {n:'꼭짓점 지나 세로로 → 삼각형', t:90, r:0, d:0},
+            {n:'비스듬히 자르기', t:40, r:15, d:0.15} ],
+  prism:  [ {n:'가로로 → 삼각형', t:0, r:0, d:0.2},
+            {n:'세로로 → 직사각형', t:90, r:0, d:0},
+            {n:'비스듬히 자르기', t:40, r:15, d:0.1} ],
+  torus:  [ {n:'가로로 → 고리 모양', t:0, r:0, d:0, star:true},
+            {n:'세로로 중심 지나게 → 원 2개', t:90, r:0, d:0, star:true},
+            {n:'세로로 가장자리 → 원 1개', t:90, r:0, d:0.72} ],
+};
+
+/* ============================================================
+   3D 장면 준비
+   ============================================================ */
+const viewport = document.getElementById('viewport');
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.localClippingEnabled = true;
+viewport.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+camera.position.set(3.1, 2.1, 3.8);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 2.2;
+controls.maxDistance = 10;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xcfd8e3, 1.1));
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
+dirLight.position.set(4, 6, 3);
+scene.add(dirLight);
+const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+dirLight2.position.set(-4, -2, -3);
+scene.add(dirLight2);
+
+// 바닥 그리드 (은은하게)
+const grid = new THREE.GridHelper(6, 12, 0xbcd3e6, 0xd8e6f2);
+grid.position.y = -1.35;
+scene.add(grid);
+
+/* ---- 상태 ---- */
+const state = { solid:'cone', tilt:0, rot:0, pos:0, mode:'cut', ghost:true, showPlane:true, sweep:false };
+
+const clipPlane = new THREE.Plane(new THREE.Vector3(0,-1,0), 0);
+
+const MAT_SOLID = new THREE.MeshStandardMaterial({
+  color:0xe8935a, roughness:0.55, metalness:0.05,
+  side:THREE.DoubleSide, clippingPlanes:[clipPlane], clipShadows:true });
+const MAT_WHOLE = new THREE.MeshStandardMaterial({
+  color:0xe8935a, roughness:0.55, metalness:0.05, transparent:true, opacity:0.32,
+  side:THREE.DoubleSide, depthWrite:false });
+const MAT_GHOST = new THREE.MeshStandardMaterial({
+  color:0xe8935a, roughness:0.7, transparent:true, opacity:0.13,
+  side:THREE.DoubleSide, depthWrite:false });
+const MAT_SECTION = new THREE.MeshBasicMaterial({
+  color:0x38bdf8, side:THREE.DoubleSide, transparent:true, opacity:0.92,
+  polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2 });
+const MAT_OUTLINE = new THREE.LineBasicMaterial({ color:0x1d4ed8 });
+
+let solidMesh = null, ghostMesh = null, currentGeom = null;
+
+// 자르는 평면 (하늘색 반투명 판)
+const planeMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(4.2, 4.2),
+  new THREE.MeshBasicMaterial({ color:0x7dd3fc, transparent:true, opacity:0.28, side:THREE.DoubleSide, depthWrite:false }));
+const planeEdge = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.PlaneGeometry(4.2, 4.2)),
+  new THREE.LineBasicMaterial({ color:0x38bdf8, transparent:true, opacity:0.6 }));
+planeMesh.add(planeEdge);
+scene.add(planeMesh);
+
+const sectionGroup = new THREE.Group();
+scene.add(sectionGroup);
+
+/* ============================================================
+   단면 계산: 평면과 삼각형들의 교선을 이어 고리(loop)로 만든다
+   ============================================================ */
+function computeSectionLoops(geom, plane) {
+  const pos = geom.attributes.position;
+  const index = geom.index ? geom.index.array : null;
+  const triCount = index ? index.length / 3 : pos.count / 3;
+
+  // 꼭짓점별 평면까지의 거리 미리 계산
+  const nv = pos.count;
+  const dists = new Float64Array(nv);
+  const tmp = new THREE.Vector3();
+  for (let i = 0; i < nv; i++) {
+    tmp.fromBufferAttribute(pos, i);
+    dists[i] = plane.distanceToPoint(tmp);
+  }
+
+  // 모서리(edge)마다 교차점을 딱 한 번만 계산해 이웃 삼각형이 같은 점을 공유하게 한다
+  const vP = new THREE.Vector3(), vQ = new THREE.Vector3();
+  const edgeCache = new Map();
+  const edgePoint = (i, j) => {
+    const k = i < j ? i + '_' + j : j + '_' + i;
+    if (edgeCache.has(k)) return edgeCache.get(k);
+    const di = dists[i], dj = dists[j];
+    let p = null;
+    if ((di < 0 && dj >= 0) || (di >= 0 && dj < 0)) {
+      vP.fromBufferAttribute(pos, i);
+      vQ.fromBufferAttribute(pos, j);
+      p = new THREE.Vector3().lerpVectors(vP, vQ, di / (di - dj));
+    }
+    edgeCache.set(k, p);
+    return p;
+  };
+
+  const segs = [];
+  for (let t = 0; t < triCount; t++) {
+    const i0 = index ? index[t*3] : t*3;
+    const i1 = index ? index[t*3+1] : t*3+1;
+    const i2 = index ? index[t*3+2] : t*3+2;
+    const pts = [edgePoint(i0,i1), edgePoint(i1,i2), edgePoint(i2,i0)].filter(Boolean);
+    if (pts.length >= 2 && pts[0].distanceToSquared(pts[1]) > 1e-12) segs.push([pts[0], pts[1]]);
+  }
+
+  // 끝점이 같은 선분끼리 이어 붙여 닫힌 고리 만들기
+  const key = v => Math.round(v.x*20000) + ',' + Math.round(v.y*20000) + ',' + Math.round(v.z*20000);
+  const map = new Map();
+  segs.forEach((s, i) => [0,1].forEach(e => {
+    const k = key(s[e]);
+    if (!map.has(k)) map.set(k, []);
+    map.get(k).push([i, e]);
+  }));
+
+  const used = new Array(segs.length).fill(false);
+  const loops = [];
+  for (let i = 0; i < segs.length; i++) {
+    if (used[i]) continue;
+    used[i] = true;
+    const loop = [segs[i][0], segs[i][1]];
+    const startKey = key(loop[0]);
+    for (let guard = 0; guard < segs.length + 2; guard++) {
+      const k = key(loop[loop.length-1]);
+      const cands = (map.get(k) || []).filter(([j]) => !used[j]);
+      if (!cands.length) break;
+      const [j, e] = cands[0];
+      used[j] = true;
+      const nxt = segs[j][1-e];
+      if (key(nxt) === startKey) break;
+      loop.push(nxt);
+    }
+    if (loop.length >= 3) loops.push(loop);
+  }
+  return loops;
+}
+
+/* ---- 평면 위 2D 좌표계로 투영 ---- */
+function projectLoops(loops, plane, d) {
+  const n = plane.normal;
+  const u = new THREE.Vector3(1,0,0);
+  if (Math.abs(n.dot(u)) > 0.9) u.set(0,0,1);
+  u.crossVectors(n, u).normalize();          // n에 수직인 축 1
+  const v = new THREE.Vector3().crossVectors(n, u); // 축 2
+  const c = n.clone().multiplyScalar(d);     // 평면 위 기준점
+  const tmp = new THREE.Vector3();
+  return { basis:{u, v, n, c},
+    loops2d: loops.map(lp => lp.map(p => {
+      tmp.subVectors(p, c);
+      return { x: tmp.dot(u), y: tmp.dot(v) };
+    })) };
+}
+
+const shoelace = pts => {
+  let a = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i], q = pts[(i+1) % pts.length];
+    a += p.x*q.y - q.x*p.y;
+  }
+  return a / 2;
+};
+const pointInPoly = (pt, poly) => {
+  let inside = false;
+  for (let i = 0, j = poly.length-1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.y > pt.y) !== (b.y > pt.y) &&
+        pt.x < (b.x-a.x)*(pt.y-a.y)/(b.y-a.y) + a.x) inside = !inside;
+  }
+  return inside;
+};
+
+/* ---- 바깥 고리 / 구멍 고리 구분 ---- */
+function groupLoops(loops2d) {
+  const info = loops2d.map((pts, i) => ({ i, pts, area: Math.abs(shoelace(pts)) }));
+  info.sort((a,b) => b.area - a.area);
+  const groups = [];
+  for (const it of info) {
+    let placed = false;
+    for (const g of groups) {
+      if (pointInPoly(it.pts[0], g.outer)) { g.holes.push(it.pts); placed = true; break; }
+    }
+    if (!placed) groups.push({ outer: it.pts, holes: [] });
+  }
+  return groups;
+}
+
+/* ---- 단면 모양 이름 자동 판별 (참고용) ----
+   더글러스-포이커(Douglas-Peucker) 단순화로 꼭짓점 수를 세어 다각형/곡선을 구분한다 */
+const dist2d = (a, b) => Math.hypot(a.x-b.x, a.y-b.y);
+const lineDist = (p, a, b) => {
+  const L = dist2d(a, b);
+  if (L < 1e-12) return dist2d(p, a);
+  return Math.abs((b.x-a.x)*(a.y-p.y) - (a.x-p.x)*(b.y-a.y)) / L;
+};
+function dpChain(chain, tol) {
+  if (chain.length < 3) return chain.slice();
+  const a = chain[0], b = chain[chain.length-1];
+  let maxD = 0, idx = 0;
+  for (let i = 1; i < chain.length-1; i++) {
+    const d = lineDist(chain[i], a, b);
+    if (d > maxD) { maxD = d; idx = i; }
+  }
+  if (maxD <= tol) return [a, b];
+  return dpChain(chain.slice(0, idx+1), tol).slice(0, -1).concat(dpChain(chain.slice(idx), tol));
+}
+function dpSimplifyLoop(pts, tol) {
+  // 닫힌 고리는 서로 가장 먼 두 점에서 잘라 두 사슬로 나눠 단순화
+  let i1 = 0, maxD = -1;
+  for (let i = 0; i < pts.length; i++) { const d = dist2d(pts[0], pts[i]); if (d > maxD) { maxD = d; i1 = i; } }
+  let i2 = 0; maxD = -1;
+  for (let i = 0; i < pts.length; i++) { const d = dist2d(pts[i1], pts[i]); if (d > maxD) { maxD = d; i2 = i; } }
+  const a = Math.min(i1, i2), b = Math.max(i1, i2);
+  if (b - a < 1 || a === b) return pts.slice();
+  const c1 = dpChain(pts.slice(a, b+1), tol);
+  const c2 = dpChain(pts.slice(b).concat(pts.slice(0, a+1)), tol);
+  return c1.slice(0, -1).concat(c2.slice(0, -1));
+}
+
+function classifySection(loops2d) {
+  if (!loops2d.length) return { name:'단면 없음', sub:'평면이 도형을 지나지 않아요' };
+  const groups = groupLoops(loops2d);
+
+  if (groups.length === 1 && groups[0].holes.length >= 1)
+    return { name:'고리 모양', sub:'가운데가 뚫린 단면이에요' };
+  if (groups.length >= 2) {
+    const one = classifySection([groups[0].outer]).name;
+    return { name:`${one} ${groups.length}개`, sub:'단면이 여러 조각으로 나뉘었어요' };
+  }
+
+  // 연속 중복점 제거
+  const raw = loops2d[0].filter((p, i, arr) => dist2d(p, arr[(i+1) % arr.length]) > 1e-6);
+  if (raw.length < 3) return { name:'단면 없음', sub:'평면이 도형을 지나지 않아요' };
+
+  let minX=1e9, maxX=-1e9, minY=1e9, maxY=-1e9;
+  raw.forEach(p => { minX=Math.min(minX,p.x); maxX=Math.max(maxX,p.x); minY=Math.min(minY,p.y); maxY=Math.max(maxY,p.y); });
+  const diag = Math.hypot(maxX-minX, maxY-minY);
+  const sim = dpSimplifyLoop(raw, diag * 0.012);
+  const n = sim.length;
+
+  // 꼭짓점이 적고 모든 꺾임이 뚜렷하면 → 다각형
+  if (n >= 3 && n <= 8) {
+    let sharp = true;
+    for (let i = 0; i < n; i++) {
+      const a = sim[(i-1+n)%n], b = sim[i], c = sim[(i+1)%n];
+      const v1 = Math.atan2(b.y-a.y, b.x-a.x), v2 = Math.atan2(c.y-b.y, c.x-b.x);
+      let turn = Math.abs(v2 - v1);
+      if (turn > Math.PI) turn = 2*Math.PI - turn;
+      if (turn < 12 * Math.PI/180) { sharp = false; break; }
+    }
+    if (sharp) {
+      if (n === 3) return { name:'삼각형', sub:'' };
+      if (n === 4) return { name: quadName(sim), sub:'' };
+      return { name: ['','','','','','오각형','육각형','칠각형','팔각형'][n], sub:'' };
+    }
+  }
+
+  // 곡선 단면: 원 판별 — 중심은 경계상자 중앙 (점 평균은 점이 몰린 곳으로 치우침)
+  const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
+  const rs = raw.map(p => Math.hypot(p.x-cx, p.y-cy));
+  const rMin = Math.min(...rs), rMax = Math.max(...rs), rAvg = rs.reduce((s,r)=>s+r,0)/rs.length;
+  if ((rMax - rMin) / rAvg < 0.06) return { name:'원', sub:'' };
+
+  // 단순화 후에도 남은 긴 변 = 진짜 직선 부분 (곡선 근사 변은 둘레의 ~7% 이하)
+  let per = 0, maxEdge = 0;
+  for (let i = 0; i < sim.length; i++) {
+    const L = dist2d(sim[i], sim[(i+1)%sim.length]);
+    per += L; maxEdge = Math.max(maxEdge, L);
+  }
+  if (maxEdge > per * 0.14) return { name:'곡선+직선 단면', sub:'곡선과 직선이 섞인 모양이에요' };
+  return { name:'타원', sub:'찌그러진 원(타원) 모양의 곡선 단면' };
+}
+
+function quadName(p) {
+  const e = [0,1,2,3].map(i => ({ x:p[(i+1)%4].x-p[i].x, y:p[(i+1)%4].y-p[i].y }));
+  const len = e.map(v => Math.hypot(v.x,v.y));
+  const ang = [0,1,2,3].map(i => {
+    const a = e[(i+3)%4], b = e[i];
+    const cos = (-(a.x*b.x + a.y*b.y)) / (Math.hypot(a.x,a.y)*Math.hypot(b.x,b.y));
+    return Math.acos(Math.max(-1, Math.min(1, cos))) * 180/Math.PI;
+  });
+  const allRight = ang.every(a => Math.abs(a-90) < 6);
+  const eq = (a,b) => Math.abs(a-b) / Math.max(a,b) < 0.06;
+  const par = (a,b) => Math.abs(a.x*b.y - a.y*b.x) / (Math.hypot(a.x,a.y)*Math.hypot(b.x,b.y)) < 0.06;
+  if (allRight) return (eq(len[0],len[1]) && eq(len[1],len[2])) ? '정사각형' : '직사각형';
+  const p02 = par(e[0], e[2]), p13 = par(e[1], e[3]);
+  if (p02 && p13) return '평행사변형';
+  if (p02 || p13) return '사다리꼴';
+  return '사각형';
+}
+
+/* ============================================================
+   장면 갱신
+   ============================================================ */
+const secCanvas = document.getElementById('sec2d');
+const secCtx = secCanvas.getContext('2d');
+
+function rebuildSolid() {
+  if (solidMesh) { scene.remove(solidMesh); scene.remove(ghostMesh); }
+  const def = SOLIDS.find(s => s.id === state.solid);
+  currentGeom = def.make();
+  solidMesh = new THREE.Mesh(currentGeom, MAT_SOLID);
+  ghostMesh = new THREE.Mesh(currentGeom, MAT_GHOST);
+  scene.add(solidMesh); scene.add(ghostMesh);
+  updateAll();
+}
+
+function updateAll() {
+  // 평면: 기울기(tilt) 0°=수평, 90°=수직 / rot=수평 방향 회전 / pos=법선 방향 이동
+  const t = state.tilt * Math.PI/180, r = state.rot * Math.PI/180;
+  const n = new THREE.Vector3(Math.sin(t)*Math.cos(r), Math.cos(t), Math.sin(t)*Math.sin(r)).normalize();
+  const d = state.pos + 0.00013; // 꼭짓점과 정확히 겹치는 특이 상황 방지용 아주 작은 오차
+
+  // three.js 클리핑: n·p + c < 0 인 쪽이 잘려 나감 → n·p > d 쪽(윗부분)을 잘라냄
+  clipPlane.normal.copy(n).negate();
+  clipPlane.constant = d;
+
+  // 평면 판 위치/방향
+  planeMesh.position.copy(n).multiplyScalar(d);
+  planeMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), n);
+  planeMesh.visible = state.showPlane;
+
+  // 보기 모드
+  if (state.mode === 'cut') {
+    solidMesh.material = MAT_SOLID;
+    ghostMesh.visible = state.ghost;
+    // 잘려 나간(위쪽) 부분만 흐리게: 반대 방향 클리핑
+    MAT_GHOST.clippingPlanes = [ new THREE.Plane(n.clone(), -d) ];
+  } else {
+    solidMesh.material = MAT_WHOLE;
+    ghostMesh.visible = false;
+  }
+
+  // 단면 계산
+  const cutPlane = new THREE.Plane(n.clone(), -d); // n·p - d = 0
+  const loops = computeSectionLoops(currentGeom, cutPlane);
+  const { basis, loops2d } = projectLoops(loops, cutPlane, d);
+
+  // 3D 단면 그리기
+  sectionGroup.clear();
+  if (loops2d.length) {
+    const groups = groupLoops(loops2d);
+    const m = new THREE.Matrix4().makeBasis(basis.u, basis.v, basis.n);
+    m.setPosition(basis.c.clone().add(basis.n.clone().multiplyScalar(0.0015)));
+    for (const g of groups) {
+      const shape = new THREE.Shape(g.outer.map(p => new THREE.Vector2(p.x, p.y)));
+      for (const h of g.holes) shape.holes.push(new THREE.Path(h.map(p => new THREE.Vector2(p.x, p.y))));
+      const mesh = new THREE.Mesh(new THREE.ShapeGeometry(shape, 4), MAT_SECTION);
+      mesh.matrixAutoUpdate = false; mesh.matrix.copy(m);
+      sectionGroup.add(mesh);
+    }
+    for (const lp of loops) {
+      const line = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(lp), MAT_OUTLINE);
+      sectionGroup.add(line);
+    }
+  }
+
+  // 이름 + 2D 그림
+  const cls = classifySection(loops2d);
+  document.getElementById('badgeName').textContent = cls.name;
+  document.getElementById('badgeSub').textContent = cls.sub || '';
+  document.getElementById('secName').textContent = cls.name;
+  draw2D(loops2d);
+}
+
+function draw2D(loops2d) {
+  const W = secCanvas.width, H = secCanvas.height;
+  secCtx.clearRect(0, 0, W, H);
+  // 모눈 배경
+  secCtx.strokeStyle = '#eef4f9'; secCtx.lineWidth = 1;
+  for (let x = 0; x <= W; x += 40) { secCtx.beginPath(); secCtx.moveTo(x,0); secCtx.lineTo(x,H); secCtx.stroke(); }
+  for (let y = 0; y <= H; y += 40) { secCtx.beginPath(); secCtx.moveTo(0,y); secCtx.lineTo(W,y); secCtx.stroke(); }
+  if (!loops2d.length) {
+    secCtx.fillStyle = '#94a3b8'; secCtx.font = '600 22px sans-serif'; secCtx.textAlign = 'center';
+    secCtx.fillText('단면이 없어요', W/2, H/2);
+    return;
+  }
+  let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
+  loops2d.forEach(lp => lp.forEach(p => {
+    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
+    minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
+  }));
+  const span = Math.max(maxX-minX, maxY-minY, 0.01);
+  const scale = (W - 90) / span;
+  const ox = W/2 - (minX+maxX)/2*scale, oy = H/2 + (minY+maxY)/2*scale;
+  const px = p => [ox + p.x*scale, oy - p.y*scale];
+
+  secCtx.beginPath();
+  loops2d.forEach(lp => {
+    lp.forEach((p, i) => { const [x,y] = px(p); i ? secCtx.lineTo(x,y) : secCtx.moveTo(x,y); });
+    secCtx.closePath();
+  });
+  secCtx.fillStyle = 'rgba(56,189,248,.55)';
+  secCtx.fill('evenodd');
+  secCtx.strokeStyle = '#0369a1'; secCtx.lineWidth = 3; secCtx.stroke();
+}
+
+/* ============================================================
+   UI 연결
+   ============================================================ */
+const $ = id => document.getElementById(id);
+
+// 도형 버튼
+const solidGridEl = $('solidGrid');
+SOLIDS.forEach(s => {
+  const b = document.createElement('button');
+  b.innerHTML = `<span class="ico">${s.ico}</span>${s.name}`;
+  b.onclick = () => selectSolid(s.id);
+  b.dataset.id = s.id;
+  solidGridEl.appendChild(b);
+});
+
+function selectSolid(id) {
+  state.solid = id;
+  solidGridEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+  const def = SOLIDS.find(s => s.id === id);
+  $('solidTip').innerHTML = def.tip + (def.rev ? ' <span class="revTag">회전체</span>' : '');
+  buildPresets(id);
+  rebuildSolid();
+}
+
+function buildPresets(id) {
+  const row = $('presetRow');
+  row.innerHTML = '';
+  PRESETS[id].forEach(p => {
+    const b = document.createElement('button');
+    b.textContent = p.n;
+    if (p.star) b.classList.add('star');
+    b.onclick = () => {
+      state.sweep = false; $('ckSweep').checked = false;
+      setSliders(p.t, p.r, p.d);
+    };
+    row.appendChild(b);
+  });
+}
+
+function setSliders(t, r, d) {
+  state.tilt = t; state.rot = r; state.pos = d;
+  $('sTilt').value = t; $('sRot').value = r; $('sPos').value = d;
+  refreshLabels(); updateAll();
+}
+function refreshLabels() {
+  $('vTilt').textContent = Math.round(state.tilt) + '°';
+  $('vRot').textContent = Math.round(state.rot) + '°';
+  $('vPos').textContent = (+state.pos).toFixed(2);
+}
+
+$('sTilt').oninput = e => { state.tilt = +e.target.value; refreshLabels(); updateAll(); };
+$('sRot').oninput  = e => { state.rot  = +e.target.value; refreshLabels(); updateAll(); };
+$('sPos').oninput  = e => { state.pos  = +e.target.value; state.sweep = false; $('ckSweep').checked = false; refreshLabels(); updateAll(); };
+
+$('modeCut').onclick   = () => setMode('cut');
+$('modeWhole').onclick = () => setMode('whole');
+function setMode(m) {
+  state.mode = m;
+  $('modeCut').classList.toggle('on', m === 'cut');
+  $('modeWhole').classList.toggle('on', m === 'whole');
+  updateAll();
+}
+$('ckGhost').onchange = e => { state.ghost = e.target.checked; updateAll(); };
+$('ckPlane').onchange = e => { state.showPlane = e.target.checked; updateAll(); };
+$('ckSweep').onchange = e => { state.sweep = e.target.checked; };
+
+/* ---- 크기 조절 & 렌더 루프 ---- */
+function resize() {
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+
+let clock = 0;
+function tick() {
+  requestAnimationFrame(tick);
+  if (state.sweep) {
+    clock += 0.012;
+    state.pos = Math.sin(clock) * 0.95;
+    $('sPos').value = state.pos;
+    refreshLabels(); updateAll();
+  }
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+selectSolid('cone');
+resize();
+tick();
+</script>
+</body>
+</html>
