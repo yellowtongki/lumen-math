@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 — 👁 학부모 리포트 열람 확인 (상의용)</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f8;color:#0d2240;padding:22px}
+.sec{max-width:980px;margin:0 auto 28px}
+.sec h2{font-size:16px;margin:0 0 4px}
+.cap{font-size:11.5px;color:#64748b;font-weight:700;margin:0 0 10px;line-height:1.6}
+.card{background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:16px}
+.badge{display:inline-block;font-size:11px;font-weight:900;border-radius:50px;padding:4px 11px}
+td,th{padding:7px 6px;border-top:1px solid #f6f8fc;text-align:center;font-size:19px}
+th{font-size:14px;color:#94a3b8;text-align:center}
+td.nm{text-align:left;font-weight:900;font-size:19px;white-space:nowrap}
+.grp{font-size:14px;font-weight:900;background:#0d2240;color:#ffd54a;border-radius:8px;padding:3px 12px}
+.eye{font-size:12px;font-weight:900;border-radius:50px;padding:2px 9px}
+.note{font-size:11.5px;color:#64748b;font-weight:700;background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:11px 14px;margin-top:10px;line-height:1.8}
+</style></head><body>
+
+<div class="sec">
+  <h2>① 발행 현황판에 👁 열람 표시</h2>
+  <div class="cap">발행(✅)에 더해, <b>학부모가 실제로 리포트를 열어봤는지</b>가 이름 옆에 바로 보입니다.</div>
+  <div class="card">
+    <table style="border-collapse:collapse;width:100%">
+      <tr><th style="text-align:left">학생</th><th>8/5</th><th>8/6</th><th>8/7</th><th style="min-width:150px">학부모 열람</th></tr>
+      <tr><td colspan="5" style="text-align:left;padding:10px 6px 5px"><span class="grp">M4</span> <span style="font-size:12px;color:#94a3b8;font-weight:800">2명</span></td></tr>
+      <tr><td class="nm">김하늘</td><td>✅</td><td>✅</td><td>✅</td>
+        <td><span class="eye" style="background:#dcfce7;color:#15803d">👁 8/7 21:32 열람</span></td></tr>
+      <tr><td class="nm">이지우</td><td>✅</td><td>—</td><td>✅</td>
+        <td><span class="eye" style="background:#fef3c7;color:#b45309">🙈 8/5 이후 안 봄</span></td></tr>
+      <tr><td colspan="5" style="text-align:left;padding:10px 6px 5px"><span class="grp">T5</span> <span style="font-size:12px;color:#94a3b8;font-weight:800">1명</span></td></tr>
+      <tr><td class="nm">박서준</td><td>✅</td><td>✅</td><td>—</td>
+        <td><span class="eye" style="background:#f1f5f9;color:#94a3b8">👁 기록 없음</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="sec">
+  <h2>② 발행 목록에도 뱃지</h2>
+  <div class="cap">발행 확인(서버 저장 확인)과 별개로, 학부모가 봤는지가 한 줄 더.</div>
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #f6f8fc;flex-wrap:wrap">
+      <span style="width:84px;font-size:15.5px;font-weight:900">김하늘</span>
+      <span style="flex:1;min-width:120px;font-size:13.5px;color:#64748b;font-weight:700">✍️ 안녕하세요. 루멘수학입니다. 하늘이의 일일테스트…</span>
+      <span class="badge" style="background:#dcfce7;color:#059669">✅ 발행 확인</span>
+      <span class="badge" style="background:#dcfce7;color:#15803d">👁 어제 21:32 열람</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 4px;flex-wrap:wrap">
+      <span style="width:84px;font-size:15.5px;font-weight:900">이지우</span>
+      <span style="flex:1;min-width:120px;font-size:13.5px;color:#64748b;font-weight:700">✍️ 안녕하세요. 루멘수학입니다. 지우의 일일테스트…</span>
+      <span class="badge" style="background:#dcfce7;color:#059669">✅ 발행 확인</span>
+      <span class="badge" style="background:#fef3c7;color:#b45309">🙈 발행 후 아직 안 봄 (3일)</span>
+    </div>
+  </div>
+</div>
+
+<div class="sec">
+  <h2>③ 어떻게 동작하나 (기술적으로 가능합니다)</h2>
+  <div class="note">
+    · 학부모앱이 「리포트」 화면을 여는 순간, 조용히 열람 시각을 클라우드에 기록 — 공지 읽음(announcement_reads)·VOD 시청 기록과 <b>이미 쓰고 있는 것과 같은 방식</b>이라 안정적입니다<br>
+    · 학부모앱 화면에는 아무것도 표시되지 않음 (카톡 「읽음」처럼 학원만 봄)<br>
+    · 리포트는 학생별 한 화면이므로 기록 단위는 <b>「마지막으로 연 시각」</b> — 그 시각보다 나중에 발행한 피드백은 「🙈 아직 안 봄」으로 판정<br>
+    · 형제는 자녀 전환 시 각 자녀별로 따로 기록<br>
+    · <b>지난 기록은 소급 안 됨</b> — 기능을 켠 이후의 열람부터 쌓입니다
+  </div>
+</div>
+
+</body></html>
