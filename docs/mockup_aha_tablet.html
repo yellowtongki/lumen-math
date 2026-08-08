@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 — 💡 아하노트 태블릿 수업 모드</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#0f172a;color:#0d2240;height:100vh;display:flex;flex-direction:column}
+.top{background:#0d2240;color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.top .t{font-size:16px;font-weight:900}
+.stuchips{display:flex;gap:7px;overflow-x:auto;padding:10px 14px;background:#132c4f;flex-shrink:0}
+.chip{flex-shrink:0;border-radius:50px;padding:9px 15px;font-size:14px;font-weight:900;background:rgba(255,255,255,0.1);color:#cbd5e1;border:1.5px solid transparent;display:flex;align-items:center;gap:7px}
+.chip.on{background:#ffd54a;color:#0d2240;border-color:#ffd54a}
+.chip .n{background:#dc2626;color:#fff;border-radius:50px;font-size:11px;padding:1px 8px}
+.chip.on .n{background:#0d2240;color:#ffd54a}
+.main{flex:1;display:flex;min-height:0}
+.qlist{width:290px;background:#f4f6fb;padding:12px;overflow-y:auto;flex-shrink:0}
+.qhead{font-size:13px;font-weight:900;color:#334155;margin:2px 2px 9px}
+.qcard{background:#fff;border-radius:13px;padding:11px 12px;margin-bottom:8px;border:2px solid transparent;cursor:pointer}
+.qcard.on{border-color:#7c3aed;box-shadow:0 4px 14px rgba(124,58,237,0.2)}
+.qcard .src{font-size:13.5px;font-weight:900;color:#0d2240}
+.qcard .mt{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:3px;display:flex;gap:5px;align-items:center}
+.tag{background:#fef3c7;color:#b45309;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:900}
+.done{background:#f0fdf4;border:1px dashed #bbf7d0}
+.done .src{color:#94a3b8;text-decoration:line-through}
+.viewer{flex:1;background:#1e293b;display:flex;flex-direction:column;min-width:0}
+.vbar{display:flex;align-items:center;gap:10px;padding:10px 16px;color:#fff}
+.vbar .info{font-size:15px;font-weight:900}
+.vbar .sub{font-size:11.5px;color:#94a3b8;font-weight:700}
+.navb{border:1.5px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;border-radius:11px;width:52px;height:44px;font-size:18px;font-weight:900;font-family:inherit}
+.resolve{margin-left:auto;border:none;background:linear-gradient(135deg,#059669,#10b981);color:#fff;border-radius:12px;padding:12px 22px;font-size:15px;font-weight:900;font-family:inherit}
+.photo{flex:1;margin:0 16px 14px;background:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.photo svg{width:94%;height:92%}
+.zoom{position:absolute;right:12px;bottom:12px;background:rgba(13,34,64,0.75);color:#fff;font-size:11px;font-weight:800;border-radius:50px;padding:6px 13px}
+</style></head><body>
+
+<div class="top">
+  <div class="t">💡 아하노트 — 수업 모드 <span style="font-size:11px;opacity:0.6;font-weight:700">태블릿 · 종이 출력 없이</span></div>
+  <span style="margin-left:auto;font-size:11.5px;font-weight:800;background:rgba(255,255,255,0.12);border-radius:50px;padding:6px 13px">오늘 수업 5명 · 미해결 9건</span>
+  <span style="font-size:11.5px;font-weight:800;background:rgba(255,255,255,0.12);border-radius:50px;padding:6px 13px">🖨 프린트(기존)</span>
+</div>
+
+<!-- 학생 선택 칩 — 오늘 수업 학생 자동 + 질문 개수 -->
+<div class="stuchips">
+  <div class="chip on">김하늘 <span class="n">3</span></div>
+  <div class="chip">나예준 <span class="n">2</span></div>
+  <div class="chip">문서연 <span class="n">2</span></div>
+  <div class="chip">박도윤 <span class="n">1</span></div>
+  <div class="chip">최지우 <span class="n">1</span></div>
+  <div class="chip" style="opacity:0.55">+ 다른 학생</div>
+</div>
+
+<div class="main">
+  <!-- 질문 목록: 교재·쪽·번호 정리 -->
+  <div class="qlist">
+    <div class="qhead">김하늘 — 질문 3건 <span style="color:#94a3b8;font-weight:700">· 교재별 정리</span></div>
+    <div class="qcard on">
+      <div class="src">쎈 중1-2 · p84 #12</div>
+      <div class="mt"><span class="tag">개념 헷갈림</span> 8/6 21:40 · 📷 사진</div>
+    </div>
+    <div class="qcard">
+      <div class="src">쎈 중1-2 · p91 #7</div>
+      <div class="mt"><span class="tag">계산 실수</span> 8/6 21:52 · 📷 사진</div>
+    </div>
+    <div class="qcard done">
+      <div class="src">개념+유형 · p55 #3</div>
+      <div class="mt">✔ 해결 8/5 · 다시 보기</div>
+    </div>
+    <div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:10px;line-height:1.7">질문을 누르면 오른쪽에 사진이 크게 ·<br>해결하면 학생앱에도 바로 반영</div>
+  </div>
+
+  <!-- 큰 사진 뷰어 -->
+  <div class="viewer">
+    <div class="vbar">
+      <button class="navb">◀</button>
+      <div>
+        <div class="info">김하늘 · 쎈 중1-2 p84 #12 <span style="font-size:11px;color:#ffd54a">1 / 3</span></div>
+        <div class="sub">"이등변삼각형에서 왜 수직이등분이 되는지 모르겠어요" · 개념 헷갈림</div>
+      </div>
+      <button class="navb">▶</button>
+      <button class="resolve">✔ 해결 처리</button>
+    </div>
+    <div class="photo">
+      <!-- 학생이 찍은 문제 사진 (예시) -->
+      <svg viewBox="0 0 800 520">
+        <rect width="800" height="520" fill="#fdfdf8"/>
+        <text x="40" y="60" font-size="26" font-weight="bold" fill="#1e293b">12. 이등변삼각형 ABC에서 ∠A의 이등분선이</text>
+        <text x="70" y="95" font-size="26" fill="#1e293b">밑변 BC와 만나는 점을 D라 할 때,</text>
+        <text x="70" y="130" font-size="26" fill="#1e293b">BD = CD 임을 설명하시오.</text>
+        <polygon points="400,190 300,420 500,420" fill="none" stroke="#334155" stroke-width="3"/>
+        <line x1="400" y1="190" x2="400" y2="420" stroke="#334155" stroke-width="2" stroke-dasharray="7,6"/>
+        <text x="392" y="178" font-size="24" fill="#334155">A</text>
+        <text x="278" y="445" font-size="24" fill="#334155">B</text>
+        <text x="508" y="445" font-size="24" fill="#334155">C</text>
+        <text x="392" y="450" font-size="24" fill="#334155">D</text>
+        <path d="M540 250 q60 -30 120 8" fill="none" stroke="#2563eb" stroke-width="3"/>
+        <text x="545" y="300" font-size="24" fill="#2563eb" transform="rotate(-4 545 300)">SAS 합동??</text>
+        <text x="545" y="335" font-size="24" fill="#2563eb" transform="rotate(-3 545 335)">각도가 왜 같지</text>
+        <circle cx="400" cy="420" r="34" fill="none" stroke="#dc2626" stroke-width="3"/>
+      </svg>
+      <div class="zoom">🔍 두 손가락으로 확대 · 사진 탭=전체화면</div>
+    </div>
+  </div>
+</div>
+
+</body></html>
