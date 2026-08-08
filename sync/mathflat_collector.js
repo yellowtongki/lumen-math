@@ -203,7 +203,10 @@ async function collectAnswerRecords(me, students, cutoff) {
         if (ws.tag !== 'HOMEWORK' && ws.tag !== 'ENTRANCE_TEST') {
           try {
             const stat = await fetchReportStats(swId);
-            if (stat) WS_BEHAV[swId] = { sid: st.id, wid: ws.id, date: (summary.scoreDatetime || '').slice(0, 10), b: stat.b, nat: stat.nat, acad: stat.acad };
+            // 전국(nat)은 매쓰플랫 제공 시험지(WEEKLY·CHAPTER)에서만 저장 —
+            // 학원 자체 학습지(오답지 등)는 기출 문항 때문에 PDF에 전국 수치가 실려도 허수(비교 기준이 다름)
+            const natOk = ws.type === 'WEEKLY' || ws.type === 'CHAPTER';
+            if (stat) WS_BEHAV[swId] = { sid: st.id, wid: ws.id, date: (summary.scoreDatetime || '').slice(0, 10), b: stat.b, nat: natOk ? stat.nat : null, acad: stat.acad };
           } catch (e) { log(`  · 역량·등수 추출 실패 sw=${swId}: ${e.message}`); }
         }
         problems.forEach((pr, idx) => {
@@ -573,15 +576,18 @@ async function backfillBehaviors(days) {
       for (let att = 1; att <= 3; att++) {
         try {
           const s2 = await fetchReportStats(swId);
-          if (s2) { best = best || {}; if (s2.b && !best.b) best.b = s2.b; if (s2.nat && !best.nat) best.nat = s2.nat; if (s2.acad && !best.acad) best.acad = s2.acad; }
+          // 전국(nat)은 WEEKLY·CHAPTER만 채택 (자체 학습지의 기출 유래 전국 수치는 허수)
+          const natOk2 = sws[swId].type === 'WEEKLY' || sws[swId].type === 'CHAPTER';
+          if (s2) { best = best || {}; if (s2.b && !best.b) best.b = s2.b; if (s2.nat && !best.nat && natOk2) best.nat = s2.nat; if (s2.acad && !best.acad) best.acad = s2.acad; }
         } catch (e) {}
         const needMore = !best || !best.b || ((sws[swId].type === 'WEEKLY' || sws[swId].type === 'CHAPTER') && !best.nat);
         if (!needMore) break;
         await sleep(best ? 700 : 2000); // 실패(속도제한 의심)면 길게 쉼
       }
       if (best && (best.b || best.nat || best.acad)) {
+        const natKeep = (sws[swId].type === 'WEEKLY' || sws[swId].type === 'CHAPTER') ? (best.nat || prev.nat || null) : null;
         cur[String(swId)] = { sid: sws[swId].sid, wid: sws[swId].wid, date: sws[swId].date,
-          b: best.b || prev.b || null, nat: best.nat || prev.nat || null, acad: best.acad || prev.acad || null };
+          b: best.b || prev.b || null, nat: natKeep, acad: best.acad || prev.acad || null };
         got++;
       }
       await sleep(450);
