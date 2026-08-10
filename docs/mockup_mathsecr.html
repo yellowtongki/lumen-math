@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 — 수학비서 자산 활용 (상의용)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef1f6;color:#0d2240;padding:22px 16px 60px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto}
+.head{background:linear-gradient(135deg,#0d2240,#1e3a6b);color:#fff;border-radius:20px;padding:26px 28px;margin-bottom:20px}
+.head h1{font-size:23px;font-weight:900;margin-bottom:6px}
+.head p{font-size:13.5px;opacity:.85;font-weight:600}
+.stat{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.stat div{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:13px;padding:11px 15px;flex:1;min-width:130px}
+.stat b{font-size:22px;font-weight:900;display:block}
+.stat span{font-size:11px;opacity:.8;font-weight:700}
+.sec-t{font-size:16px;font-weight:900;margin:26px 4px 12px;display:flex;align-items:center;gap:8px}
+.sec-t .n{background:#1d6fe8;color:#fff;width:24px;height:24px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+@media(max-width:720px){.cards{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid #e3e8f0;border-radius:16px;padding:18px 19px;position:relative}
+.card .ic{font-size:26px}
+.card h3{font-size:15.5px;font-weight:900;margin:8px 0 6px}
+.card p{font-size:12.8px;color:#4a5568;font-weight:600;line-height:1.65}
+.card .tag{display:inline-block;font-size:10.5px;font-weight:900;border-radius:50px;padding:3px 10px;margin-top:10px}
+.t-now{background:#dcfce7;color:#15803d}
+.t-hi{background:#fef3c7;color:#b45309}
+.badge-star{position:absolute;top:14px;right:14px;font-size:10px;font-weight:900;background:#fef2f2;color:#dc2626;border:1px solid #fbcfcf;border-radius:50px;padding:3px 9px}
+/* flagship mock */
+.flag{background:#fff;border:1.5px solid #d7deea;border-radius:20px;overflow:hidden;margin-top:6px}
+.flag-top{background:linear-gradient(135deg,#5b21b6,#7c3aed);color:#fff;padding:16px 20px}
+.flag-top h2{font-size:16px;font-weight:900}
+.flag-top p{font-size:11.5px;opacity:.85;font-weight:600;margin-top:2px}
+.flag-body{display:grid;grid-template-columns:1fr 1.4fr;gap:0}
+@media(max-width:720px){.flag-body{grid-template-columns:1fr}}
+.flag-l{border-right:1px solid #eef1f6;padding:16px}
+@media(max-width:720px){.flag-l{border-right:none;border-bottom:1px solid #eef1f6}}
+.flag-r{padding:16px;background:#fafbfd}
+.sch{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:12px;margin-bottom:7px;cursor:default;border:1.5px solid transparent}
+.sch.on{background:#f3e8ff;border-color:#c4a5f0}
+.sch .nm{font-size:13.5px;font-weight:900;flex-shrink:0;width:58px}
+.sch .bar{flex:1;height:9px;background:#eef1f7;border-radius:99px;overflow:hidden;display:flex}
+.sch .bar i{height:100%;display:block}
+.sch .pct{font-size:11px;font-weight:900;width:38px;text-align:right}
+.lbl{font-size:10.5px;color:#94a3b8;font-weight:800;margin:2px 0 9px}
+.leg{display:flex;gap:12px;font-size:10px;font-weight:800;color:#64748b;margin-top:8px;flex-wrap:wrap}
+.leg span{display:flex;align-items:center;gap:4px}
+.leg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.rtitle{font-size:13px;font-weight:900;margin-bottom:3px}
+.rsub{font-size:11px;color:#64748b;font-weight:700;margin-bottom:12px}
+.paper{background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:11px}
+.paper .th{width:38px;height:44px;border-radius:7px;background:linear-gradient(135deg,#f87171,#ef4444);flex-shrink:0}
+.paper .th.b{background:linear-gradient(135deg,#60a5fa,#3b82f6)}
+.paper .info{flex:1;min-width:0}
+.paper .pt{font-size:12.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.paper .pm{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:2px}
+.paper .dchips{display:flex;gap:3px;margin-top:5px}
+.paper .dc{font-size:8.5px;font-weight:900;border-radius:5px;padding:1px 6px}
+.act{border:none;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-family:inherit;font-size:11px;font-weight:900;border-radius:9px;padding:8px 11px;cursor:pointer;flex-shrink:0}
+.note{background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:12px 14px;font-size:11.5px;color:#9a3412;font-weight:700;line-height:1.65;margin-top:16px}
+.foot{text-align:center;font-size:11px;color:#94a3b8;font-weight:700;margin-top:24px;line-height:1.7}
+.pill{display:inline-block;background:#e0e7ff;color:#4338ca;font-size:10px;font-weight:900;border-radius:50px;padding:2px 9px;margin-left:6px}
+</style></head><body>
+<div class="wrap">
+
+  <div class="head">
+    <h1>🗄️ 수학비서 자산으로 할 수 있는 것들</h1>
+    <p>원장님이 천만 원 이상 투자한 「나만의 DB」를 학원앱과 연결한 그림입니다 — 상의용 미리보기</p>
+    <div class="stat">
+      <div><b>1,489</b><span>시험지 DB</span></div>
+      <div><b>59,153</b><span>문항</span></div>
+      <div><b>42,352</b><span>해설</span></div>
+      <div><b>10개교</b><span>부천 고교 기출</span></div>
+    </div>
+  </div>
+
+  <div class="sec-t"><span class="n">1</span>무엇을 만들 수 있나 — 5가지 아이디어</div>
+  <div class="cards">
+    <div class="card">
+      <span class="badge-star">⭐ 1순위 추천</span>
+      <div class="ic">🏫</div>
+      <h3>학교별 내신 대비 엔진</h3>
+      <p>목표고(예: 범박고)의 최근 기출을 자동으로 시험지 세트로 구성. 학교마다 난이도가 달라요 — <b>부천고·상원고는 킬러 40%대, 소사고·시온고는 22~24%</b>. 이 프로파일에 맞춰 개인 맞춤 대비.</p>
+      <span class="tag t-now">기출 데이터 이미 있음</span>
+    </div>
+    <div class="card">
+      <div class="ic">📝</div>
+      <h3>고등부 주간테스트 자동 연동</h3>
+      <p>수학비서에서 만든 고등 시험지를 학원앱 주간테스트 탭에 바로 등록. 매쓰플랫이 못 하는 고등부를 여기서 해결 — 학원 등수·명예의 전당까지 그대로.</p>
+      <span class="tag t-now">폴더 연동만 하면 됨</span>
+    </div>
+    <div class="card">
+      <div class="ic">✅</div>
+      <h3>자체시험 정답·배점·해설 자동</h3>
+      <p>지금 손으로 넣는 O/X 정답표를 문항 데이터에서 자동으로. 채점 후 <b>해설(42,352개)</b>까지 학생에게 자동 첨부.</p>
+      <span class="tag t-now">문항·해설 데이터 있음</span>
+    </div>
+    <div class="card">
+      <div class="ic">🔗</div>
+      <h3>오답 → 유사문항·해설 연결</h3>
+      <p>아하노트·오답에서 그 문항의 단원·난이도로 수학비서에서 <b>비슷한 문제 + 해설</b>을 자동 추천. 문제 자산 라이브러리의 고등부 확장.</p>
+      <span class="tag t-hi">2단계</span>
+    </div>
+    <div class="card">
+      <div class="ic">📊</div>
+      <h3>우리 학원 문제 자산 지도</h3>
+      <p>5.9만 문항을 단원별·난이도별로 지도화. "우리는 미적분 킬러가 부족" 같은 <b>빈틈을 자동으로</b> 찾아 보강 방향 제시.</p>
+      <span class="tag t-hi">2단계</span>
+    </div>
+    <div class="card">
+      <div class="ic">👪</div>
+      <h3>학부모 리포트에 목표고 대비</h3>
+      <p>학부모앱에 "우리 아이가 목표고(범박고) 최근 기출 난이도에서 상위 O%" 카드. 진학 나침반과 결합.</p>
+      <span class="tag t-hi">2단계</span>
+    </div>
+  </div>
+
+  <div class="sec-t"><span class="n">2</span>1순위 기능 미리보기 — 학교별 내신 대비 엔진 <span class="pill">실데이터로 그림</span></div>
+  <div class="flag">
+    <div class="flag-top">
+      <h2>🏫 학교별 내신 대비</h2>
+      <p>부천 고교 실제 기출 난이도 프로파일 — 목표고를 고르면 맞춤 대비 세트가 자동으로</p>
+    </div>
+    <div class="flag-body">
+      <div class="flag-l">
+        <div class="rtitle">부천 고교 난이도 지도</div>
+        <div class="lbl">막대 = 어려움+최상 문항 비중 (실제 기출 집계)</div>
+        <div class="sch"><span class="nm">부천고</span><span class="bar"><i style="width:59%;background:#cbd5e1"></i><i style="width:41%;background:#dc2626"></i></span><span class="pct" style="color:#dc2626">41%</span></div>
+        <div class="sch on"><span class="nm">상원고</span><span class="bar"><i style="width:60%;background:#cbd5e1"></i><i style="width:40%;background:#dc2626"></i></span><span class="pct" style="color:#dc2626">40%</span></div>
+        <div class="sch"><span class="nm">중흥고</span><span class="bar"><i style="width:65%;background:#cbd5e1"></i><i style="width:35%;background:#ea580c"></i></span><span class="pct" style="color:#ea580c">35%</span></div>
+        <div class="sch"><span class="nm">정명고</span><span class="bar"><i style="width:66%;background:#cbd5e1"></i><i style="width:34%;background:#ea580c"></i></span><span class="pct" style="color:#ea580c">34%</span></div>
+        <div class="sch"><span class="nm">범박고</span><span class="bar"><i style="width:71%;background:#cbd5e1"></i><i style="width:29%;background:#f59e0b"></i></span><span class="pct" style="color:#d97706">29%</span></div>
+        <div class="sch"><span class="nm">시온고</span><span class="bar"><i style="width:76%;background:#cbd5e1"></i><i style="width:24%;background:#16a34a"></i></span><span class="pct" style="color:#16a34a">24%</span></div>
+        <div class="sch"><span class="nm">소사고</span><span class="bar"><i style="width:78%;background:#cbd5e1"></i><i style="width:22%;background:#16a34a"></i></span><span class="pct" style="color:#16a34a">22%</span></div>
+        <div class="leg"><span><i style="background:#dc2626"></i>킬러 많음</span><span><i style="background:#ea580c"></i>중상</span><span><i style="background:#16a34a"></i>평이</span></div>
+      </div>
+      <div class="flag-r">
+        <div class="rtitle">📌 상원고 대비 세트 <span style="font-size:10px;color:#7c3aed">(자동 구성)</span></div>
+        <div class="rsub">최근 기출 58개 · 1,199문항에서 · 킬러 40% 반영</div>
+        <div class="paper">
+          <div class="th"></div>
+          <div class="info">
+            <div class="pt">내신 2025 상원고 고2 1학기중간 대수</div>
+            <div class="pm">20문항 · 평균난이도 ★4.6 · 정답·배점 포함</div>
+            <div class="dchips"><span class="dc" style="background:#dcfce7;color:#15803d">쉬움 2</span><span class="dc" style="background:#e0f2fe;color:#0369a1">보통 10</span><span class="dc" style="background:#fef3c7;color:#b45309">어려움 6</span><span class="dc" style="background:#fee2e2;color:#b91c1c">최상 2</span></div>
+          </div>
+          <button class="act">주간테스트<br>등록</button>
+        </div>
+        <div class="paper">
+          <div class="th b"></div>
+          <div class="info">
+            <div class="pt">내신 2024 상원고 고2 1학기기말 대수</div>
+            <div class="pm">22문항 · 평균난이도 ★4.9 · 해설 포함</div>
+            <div class="dchips"><span class="dc" style="background:#dcfce7;color:#15803d">쉬움 1</span><span class="dc" style="background:#e0f2fe;color:#0369a1">보통 12</span><span class="dc" style="background:#fef3c7;color:#b45309">어려움 6</span><span class="dc" style="background:#fee2e2;color:#b91c1c">최상 3</span></div>
+          </div>
+          <button class="act">주간테스트<br>등록</button>
+        </div>
+        <div class="paper">
+          <div class="th"></div>
+          <div class="info">
+            <div class="pt">🎯 킬러 골라담기 — 상원고 최상 문항 12선</div>
+            <div class="pm">여러 기출에서 최상 난이도만 자동 수집</div>
+            <div class="dchips"><span class="dc" style="background:#fee2e2;color:#b91c1c">최상 12</span></div>
+          </div>
+          <button class="act">세트<br>만들기</button>
+        </div>
+        <div class="note">💡 학생마다 목표고가 다르면(진학 나침반에 이미 있음), 그 학교 난이도에 맞춰 <b>대비 세트가 자동으로 달라집니다.</b> 소사고 지망생은 평이하게, 상원고 지망생은 킬러 위주로.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    이 미리보기는 실제 수학비서 데이터(1,489 DB·부천 10개교 난이도 집계)로 그렸습니다.<br>
+    어떤 순서로 만들지 원장님이 정해 주시면 그 기능부터 구현합니다. · 루멘수학 × 수학비서
+  </div>
+</div>
+</body></html>

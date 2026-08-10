@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 v2 — 수학비서 연동 3축 (상의용)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef1f6;color:#0d2240;padding:22px 14px 60px;line-height:1.5}
+.wrap{max-width:1060px;margin:0 auto}
+.head{background:linear-gradient(135deg,#0d2240,#1e3a6b);color:#fff;border-radius:20px;padding:24px 26px;margin-bottom:18px}
+.head h1{font-size:21px;font-weight:900;margin-bottom:5px}
+.head p{font-size:13px;opacity:.85;font-weight:600}
+.sec{background:#fff;border:1.5px solid #d7deea;border-radius:20px;overflow:hidden;margin-bottom:26px}
+.sec-hd{padding:15px 20px;color:#fff}
+.sec-hd h2{font-size:16.5px;font-weight:900}
+.sec-hd p{font-size:11.5px;opacity:.88;font-weight:600;margin-top:2px}
+.sec-bd{padding:18px}
+.auto{display:inline-block;font-size:9.5px;font-weight:900;border-radius:50px;padding:2px 9px;vertical-align:2px}
+.a-auto{background:#dcfce7;color:#15803d}
+.a-hand{background:#fef3c7;color:#b45309}
+.a-click{background:#e0f2fe;color:#0369a1}
+/* flow */
+.flow{display:flex;gap:0;align-items:stretch;flex-wrap:wrap;margin-bottom:16px}
+.fstep{flex:1;min-width:150px;background:#f8fafc;border:1px solid #e6eaf1;border-radius:13px;padding:12px 13px;position:relative;margin-right:26px}
+.fstep:last-child{margin-right:0}
+.fstep::after{content:"→";position:absolute;right:-21px;top:50%;transform:translateY(-50%);font-size:16px;font-weight:900;color:#94a3b8}
+.fstep:last-child::after{content:""}
+.fstep .fi{font-size:19px}
+.fstep b{display:block;font-size:12.5px;font-weight:900;margin:4px 0 3px}
+.fstep span{font-size:10.5px;color:#64748b;font-weight:700;line-height:1.5;display:block}
+/* paper cards */
+.papers{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:700px){.papers{grid-template-columns:1fr}}
+.pp{background:#fff;border:1.5px solid #e6eaf1;border-radius:13px;padding:12px 14px}
+.pp .t{font-size:13px;font-weight:900}
+.pp .m{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:3px}
+.pp .row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.dc{font-size:9px;font-weight:900;border-radius:5px;padding:2px 7px}
+.btn{border:none;font-family:inherit;font-size:11px;font-weight:900;border-radius:9px;padding:7px 12px;cursor:pointer}
+.b-p{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff}
+.b-o{background:#fff;border:1.5px solid #cbd5e1;color:#475569}
+/* phone */
+.duo{display:grid;grid-template-columns:1.15fr 1fr;gap:16px}
+@media(max-width:700px){.duo{grid-template-columns:1fr}}
+.phone{background:#f4f7fc;border:7px solid #0d2240;border-radius:28px;padding:14px 12px;max-width:390px}
+.ph-t{font-size:13.5px;font-weight:900;margin-bottom:9px}
+.qcard{background:#fff;border:1.5px solid #e6eaf1;border-radius:14px;padding:12px 13px;margin-bottom:9px}
+.qcard .qh{display:flex;align-items:center;gap:7px}
+.qcard .qn{background:#0d2240;color:#ffd54a;font-size:10.5px;font-weight:900;border-radius:6px;padding:2px 8px}
+.qcard .qt{font-size:12px;font-weight:900}
+.qcard .qm{font-size:10px;color:#94a3b8;font-weight:700;margin-top:4px}
+.act2{display:flex;gap:6px;margin-top:9px}
+.act2 button{flex:1;border:none;font-family:inherit;font-size:11px;font-weight:900;border-radius:9px;padding:9px 0;cursor:pointer}
+.expl{background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:11px;padding:10px 12px;margin-top:8px;font-size:11px;color:#166534;font-weight:700;line-height:1.6}
+.sim{display:flex;gap:7px;margin-top:8px}
+.sim div{flex:1;background:#faf5ff;border:1.5px solid #e9d5ff;border-radius:10px;padding:8px 9px;font-size:10px;font-weight:800;color:#6d28d9;line-height:1.5}
+/* report */
+.rep{background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e6eaf1;max-width:520px}
+.rep-h{background:linear-gradient(135deg,#b91c1c,#dc2626);color:#fff;padding:14px 17px}
+.rep-h b{font-size:14.5px;font-weight:900}
+.rep-h span{font-size:10.5px;opacity:.85;display:block;margin-top:2px;font-weight:700}
+.rep-b{padding:14px 16px}
+.gauge{margin:10px 0 14px}
+.gauge .gl{display:flex;justify-content:space-between;font-size:10px;font-weight:800;color:#64748b;margin-bottom:4px}
+.gauge .gbar{height:14px;background:#eef1f7;border-radius:99px;position:relative;overflow:visible}
+.gauge .gfill{height:100%;border-radius:99px;background:linear-gradient(90deg,#16a34a,#f59e0b,#dc2626)}
+.gauge .gme{position:absolute;top:-7px;width:4px;height:28px;background:#0d2240;border-radius:2px}
+.gauge .gtag{position:absolute;top:-30px;transform:translateX(-50%);background:#0d2240;color:#fff;font-size:9.5px;font-weight:900;border-radius:6px;padding:2px 8px;white-space:nowrap}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.kv div{background:#f8fafc;border:1px solid #eef1f6;border-radius:11px;padding:9px 11px}
+.kv b{font-size:16px;font-weight:900;display:block}
+.kv span{font-size:9.5px;color:#94a3b8;font-weight:800}
+.vnote{background:#fff7ed;border:1px solid #fed7aa;border-radius:11px;padding:10px 13px;font-size:11px;color:#9a3412;font-weight:700;line-height:1.65;margin-top:12px}
+.foot{text-align:center;font-size:11px;color:#94a3b8;font-weight:700;margin-top:8px;line-height:1.7}
+.legend{background:#fff;border:1px solid #e3e8f0;border-radius:13px;padding:11px 15px;margin-bottom:18px;font-size:11.5px;font-weight:800;color:#475569;display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+</style></head><body>
+<div class="wrap">
+
+  <div class="head">
+    <h1>🗄️ 수학비서 연동 — 원장님이 고른 3가지 (미리보기 v2)</h1>
+    <p>만들기는 수학비서 · 배포/채점/데이터는 학원앱 — 각 단계에 자동/손 표시를 붙였습니다</p>
+  </div>
+
+  <div class="legend">
+    표기 안내:
+    <span><span class="auto a-hand">✍️ 원장님 손</span> 원장님이 하는 일</span>
+    <span><span class="auto a-click">👆 1클릭</span> 버튼 하나</span>
+    <span><span class="auto a-auto">🤖 자동</span> 앱·수집기가 알아서</span>
+  </div>
+
+  <!-- ① 고등부 주간테스트 -->
+  <div class="sec">
+    <div class="sec-hd" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">
+      <h2>① 고등부 주간테스트 연동 — 배포·채점·등수</h2>
+      <p>매쓰플랫이 못 하는 고등부를 수학비서 시험지로 · 기존 주간테스트 체계(등수·명예의 전당) 그대로</p>
+    </div>
+    <div class="sec-bd">
+      <div class="flow">
+        <div class="fstep"><span class="fi">✍️</span><b>시험지 제작 <span class="auto a-hand">원장님 손</span></b><span>수학비서에서 평소처럼.<br>지금 하시는 그대로</span></div>
+        <div class="fstep"><span class="fi">📁</span><b>「주간」 폴더에 담기 <span class="auto a-hand">원장님 손</span></b><span>수학비서 폴더에<br>넣기만 하면 끝</span></div>
+        <div class="fstep"><span class="fi">🌙</span><b>새벽 수집 <span class="auto a-auto">자동</span></b><span>수집기가 매일 새벽<br>시험지·정답·배점·난이도 수집</span></div>
+        <div class="fstep"><span class="fi">📝</span><b>주간테스트 등록 <span class="auto a-auto">자동</span></b><span>학원앱 주간테스트 탭에<br>고등부 시험지로 표시</span></div>
+        <div class="fstep"><span class="fi">✅</span><b>채점 <span class="auto a-click">O/X만 입력</span></b><span>정답표는 이미 채워져 있음.<br>학생 답 O/X만 체크</span></div>
+        <div class="fstep"><span class="fi">🏆</span><b>등수·발표·기록 <span class="auto a-auto">자동</span></b><span>학원 등수 → 명예의 전당<br>→ 학생앱 내 기록</span></div>
+      </div>
+      <div class="papers">
+        <div class="pp">
+          <div class="t">📄 내신대비 부천여고 고2 대수 — 주간 12회</div>
+          <div class="m">20문항 · 예상 90분 · 정답·배점 자동 · 8/14(금) 예정</div>
+          <div class="row">
+            <span class="dc" style="background:#dcfce7;color:#15803d">쉬움 3</span>
+            <span class="dc" style="background:#e0f2fe;color:#0369a1">보통 10</span>
+            <span class="dc" style="background:#fef3c7;color:#b45309">어려움 5</span>
+            <span class="dc" style="background:#fee2e2;color:#b91c1c">최상 2</span>
+            <button class="btn b-p" style="margin-left:auto">예고 지정</button>
+            <button class="btn b-o">채점 열기</button>
+          </div>
+        </div>
+        <div class="pp">
+          <div class="t">📄 상원고 대비 미적분 — 주간 13회</div>
+          <div class="m">22문항 · 예상 100분 · 해설 포함 · 다음 주</div>
+          <div class="row">
+            <span class="dc" style="background:#dcfce7;color:#15803d">쉬움 2</span>
+            <span class="dc" style="background:#e0f2fe;color:#0369a1">보통 11</span>
+            <span class="dc" style="background:#fef3c7;color:#b45309">어려움 6</span>
+            <span class="dc" style="background:#fee2e2;color:#b91c1c">최상 3</span>
+            <button class="btn b-p" style="margin-left:auto">예고 지정</button>
+            <button class="btn b-o">채점 열기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 해설·유사문항 학생앱 통합 -->
+  <div class="sec">
+    <div class="sec-hd" style="background:linear-gradient(135deg,#059669,#10b981)">
+      <h2>② 해설·유사문항 학생앱 통합</h2>
+      <p>수학비서 학생앱은 안 켜도 됩니다 — 해설 4.2만 개·유사문항이 루멘 학생앱 안으로</p>
+    </div>
+    <div class="sec-bd">
+      <div class="duo">
+        <div>
+          <div class="ph-t">📱 학생앱 — 오답·아하노트에서</div>
+          <div class="phone">
+            <div class="qcard">
+              <div class="qh"><span class="qn">14번 ❌</span><span class="qt">등비수열의 합 활용</span></div>
+              <div class="qm">주간 12회 · 난이도 어려움 · 예상 4분 → 내가 쓴 시간 9분</div>
+              <div class="act2">
+                <button style="background:#fef3c7;color:#b45309">💡 힌트 (AI)</button>
+                <button style="background:#dcfce7;color:#15803d">📖 해설 보기</button>
+              </div>
+              <div class="expl">📖 <b>수학비서 해설</b> — 첫째항을 a, 공비를 r로 두면 조건에서 S₄=... (재풀이 제출 후 열람 — 아하 힌트 규칙 그대로) <span class="auto a-auto">자동 연결</span></div>
+              <div style="font-size:10.5px;font-weight:900;color:#6d28d9;margin-top:9px">🎯 이 문제와 유사한 기출 <span class="auto a-auto">자동 추천</span></div>
+              <div class="sim">
+                <div>2024 상원고 고2 기말 17번<br><span style="color:#94a3b8">같은 단원 · 어려움</span></div>
+                <div>2025 교육청 고2 6월 15번<br><span style="color:#94a3b8">같은 단원 · 최상</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="ph-t">동작 방식</div>
+          <div class="pp" style="margin-bottom:9px">
+            <div class="t">오답 문항 → 수학비서 문항 자동 매칭 <span class="auto a-auto">자동</span></div>
+            <div class="m">주간테스트가 수학비서 시험지라서 문항 번호로 정확히 연결 — 해설·난이도·풀이시간이 그대로 붙습니다</div>
+          </div>
+          <div class="pp" style="margin-bottom:9px">
+            <div class="t">해설 공개 규칙은 아하 힌트와 동일 <span class="auto a-click">원장님 규칙</span></div>
+            <div class="m">힌트 먼저 → 재풀이 제출 → 해설 열람. 답만 베끼는 것 방지 (기존 철학 유지)</div>
+          </div>
+          <div class="pp">
+            <div class="t">유사문항 = 같은 단원 × 비슷한 난이도 <span class="auto a-auto">자동</span></div>
+            <div class="m">5.9만 문항에서 자동 검색 — 원장님이 원하면 프린트 세트로도 (수학비서에서 조립)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 목표고 난이도 대비 리포트 -->
+  <div class="sec">
+    <div class="sec-hd" style="background:linear-gradient(135deg,#b91c1c,#dc2626)">
+      <h2>③ 목표고 난이도 대비 리포트 — 진학 나침반 정밀화</h2>
+      <p>학교별 기출 난이도(실측) × 학생 실제 정답률 → "그 학교 시험에서 어디쯤인가"</p>
+    </div>
+    <div class="sec-bd">
+      <div class="duo">
+        <div class="rep">
+          <div class="rep-h">
+            <b>🧭 상원고 대비 리포트 — 김OO</b>
+            <span>상원고 기출 58개·1,199문항 실측 기준 (킬러 비중 40%)</span>
+          </div>
+          <div class="rep-b">
+            <div class="gauge">
+              <div style="height:26px"></div>
+              <div class="gbar">
+                <div class="gfill" style="width:100%"></div>
+                <div class="gme" style="left:62%"><span class="gtag">김OO 위치</span></div>
+              </div>
+              <div class="gl" style="margin-top:5px"><span>쉬움</span><span>보통</span><span>어려움</span><span>최상(킬러)</span></div>
+            </div>
+            <div class="kv">
+              <div><b style="color:#16a34a">92%</b><span>쉬움·보통 문항 정답률</span></div>
+              <div><b style="color:#d97706">64%</b><span>어려움 문항 정답률</span></div>
+              <div><b style="color:#dc2626">31%</b><span>최상(킬러) 정답률</span></div>
+              <div><b>2~3등급</b><span>상원고 내신 예상 범위</span></div>
+            </div>
+            <div class="vnote">💬 상원고는 킬러가 40%라 <b>킬러 정답률이 등급을 가릅니다.</b> 지금 31% → 45%가 되면 1~2등급 범위로 올라갑니다. 이번 달 처방: 등비수열·삼각함수 킬러 6문항.</div>
+          </div>
+        </div>
+        <div>
+          <div class="ph-t">어떻게 계산되나</div>
+          <div class="pp" style="margin-bottom:9px">
+            <div class="t">학교 난이도 프로파일 <span class="auto a-auto">자동 (실측 완료)</span></div>
+            <div class="m">부천 10개교 기출을 이미 집계 — 부천고 41% · 상원고 40% · 중흥고 35% · 소사고 22% (킬러+어려움 비중)</div>
+          </div>
+          <div class="pp" style="margin-bottom:9px">
+            <div class="t">학생 난이도별 정답률 <span class="auto a-auto">자동</span></div>
+            <div class="m">주간테스트(①번 연동) 채점 결과가 문항 난이도와 붙어 있어, 난이도별 정답률이 저절로 쌓입니다</div>
+          </div>
+          <div class="pp" style="margin-bottom:9px">
+            <div class="t">목표고 설정 <span class="auto a-hand">원장님 손 (이미 있음)</span></div>
+            <div class="m">진학 나침반에 이미 목표고가 있으므로 추가 입력 없음</div>
+          </div>
+          <div class="pp">
+            <div class="t">학부모앱 발행 <span class="auto a-click">승인 후 발행</span></div>
+            <div class="m">기존 발행 센터 규칙 그대로 — 원장님이 검토·승인한 것만 나갑니다</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    ①을 먼저 깔면 ②·③에 필요한 "학생별 채점 데이터"가 저절로 쌓입니다 — 그래서 구현 순서는 ① → ② → ③ 권장.<br>
+    수치는 예시(학교 난이도는 실측)이며, 승인해 주시면 ①부터 구현에 들어갑니다. · 루멘수학 × 수학비서
+  </div>
+</div>
+</body></html>
