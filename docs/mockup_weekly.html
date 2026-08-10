@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 수학비서→매쓰플랫 주간테스트 자동 파이프라인</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 80px}
+.wrap{max-width:880px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.6;margin-bottom:22px}
+.mock{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,0.08);padding:22px;margin-bottom:26px;border:1px solid #e2e8f0}
+.mtitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:4px}
+.mdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px}
+.badge{display:inline-block;font-size:11px;font-weight:800;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-new{background:#dbeafe;color:#1d4ed8}
+.b-auto{background:#dcfce7;color:#15803d}
+.b-wait{background:#fef3c7;color:#b45309}
+.card{border:1.5px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:12px}
+.card h4{font-size:14px;font-weight:900;color:#0d2240;margin-bottom:8px}
+.folder-now{display:flex;align-items:center;gap:10px;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:12px 14px;font-size:14.5px;font-weight:800;color:#0369a1}
+.folder-now .chg{margin-left:auto;font-size:12px;font-weight:800;color:#1d6fe8;border:1.5px solid #93c5fd;border-radius:9px;padding:6px 12px;background:#fff;white-space:nowrap}
+.tree{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:12px 16px;margin-top:10px;font-size:13px;line-height:2;color:#475569;font-weight:600}
+.tree .sel{background:#dbeafe;border-radius:6px;padding:2px 8px;color:#1d4ed8;font-weight:900}
+.tl{list-style:none}
+.tl li{display:flex;gap:10px;padding:7px 0;font-size:13.5px;font-weight:600;color:#334155;line-height:1.55;border-bottom:1px dashed #f1f5f9}
+.tl li:last-child{border-bottom:none}
+.tl .t{color:#94a3b8;font-weight:800;font-size:12px;min-width:44px;padding-top:2px}
+.chk{background:#fff7ed;border:1.5px solid #fed7aa;border-radius:14px;padding:16px}
+.chk h4{color:#c2410c}
+.qrow{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #fed7aa;border-radius:10px;padding:10px 12px;margin-bottom:8px;font-size:13px;font-weight:700;flex-wrap:wrap}
+.qrow .no{background:#ea580c;color:#fff;border-radius:8px;font-size:12px;font-weight:900;padding:3px 8px;white-space:nowrap}
+.qrow .vs{color:#64748b;font-weight:600}
+.qrow .fix{margin-left:auto;background:#0d2240;color:#fff;border-radius:8px;font-size:12px;font-weight:800;padding:6px 11px;white-space:nowrap}
+.bigbtn{display:block;width:100%;text-align:center;background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;font-size:15px;font-weight:900;border-radius:13px;padding:14px 0;margin-top:10px}
+.note{background:#f8fafc;border-left:4px solid #94a3b8;border-radius:0 10px 10px 0;padding:10px 14px;font-size:12.5px;color:#475569;font-weight:600;line-height:1.7;margin-top:12px}
+.wk-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.wk-cards{grid-template-columns:1fr}}
+.wk{border:1.5px solid #e2e8f0;border-radius:14px;padding:16px}
+.wk.hs{border-color:#a5b4fc;background:#f5f7ff}
+.wk .g{font-size:12px;font-weight:900;color:#64748b;margin-bottom:4px}
+.wk .nm{font-size:15.5px;font-weight:900;color:#0d2240;margin-bottom:8px;line-height:1.4}
+.wk .meta{font-size:12.5px;color:#475569;font-weight:700;line-height:1.9}
+.stu{max-width:390px;margin:0 auto;background:#0f1b2d;border-radius:22px;padding:18px 16px}
+.stu .scard{background:linear-gradient(135deg,#4338ca,#1d6fe8);border-radius:16px;padding:16px;color:#fff}
+.stu .dd{font-size:11.5px;font-weight:900;background:rgba(255,255,255,0.22);display:inline-block;border-radius:16px;padding:3px 10px;margin-bottom:8px}
+.stu .tt{font-size:16px;font-weight:900;margin-bottom:5px}
+.stu .rr{font-size:12.5px;font-weight:700;opacity:0.9;line-height:1.6}
+.map{display:grid;gap:10px}
+.mrow{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1.5px solid #e2e8f0;border-radius:13px;padding:14px}
+.mrow .ic{font-size:22px}
+.mrow b{font-size:14px;color:#0d2240;display:block;margin-bottom:3px}
+.mrow p{font-size:12.5px;color:#475569;font-weight:600;line-height:1.65}
+.mrow .st{margin-left:auto;font-size:11px;font-weight:900;border-radius:14px;padding:3px 10px;white-space:nowrap}
+.st1{background:#dcfce7;color:#15803d}.st2{background:#e0e7ff;color:#4338ca}.st3{background:#f1f5f9;color:#64748b}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🌙 수학비서 → 매쓰플랫 주간테스트 자동 파이프라인</h1>
+<div class="sub">미리보기(목업)입니다 — 실제 기능이 아니라 화면 시안입니다. 승인해 주시면 이 모습대로 구현합니다.<br>
+원장님이 하실 일: <b>수학비서 지정폴더에 시험지 넣기 → 아침에 빨간불 문항만 확인</b>. 나머지는 전부 새벽 자동.</div>
+
+<!-- 화면 1: 학원앱 새벽 자동 등록 관리 -->
+<div class="mock">
+  <div class="mtitle">화면 1 — 학원앱 · 주간테스트 탭 안의 「🌙 새벽 자동 등록」 패널 <span class="badge b-new">신설</span></div>
+  <div class="mdesc">지정폴더가 무엇인지 항상 보이고, 어젯밤 작업 내역과 확인할 문항이 한 화면에 나옵니다.</div>
+
+  <div class="card">
+    <h4>📁 수학비서 지정폴더 <span class="badge b-auto">새벽 3시 자동 확인</span></h4>
+    <div class="folder-now">📁 작업공간 › <u>주간테스트(자동)</u> <span class="chg">폴더 변경</span></div>
+    <div class="tree">
+      「폴더 변경」을 누르면 원장님의 실제 수학비서 폴더가 그대로 나옵니다:<br>
+      📁 작업공간 (1,491개)<br>
+      &nbsp;&nbsp;├ 📁 교육청, 평가원 (635) &nbsp;├ 📁 고등학교 (532) &nbsp;├ 📁 교과서 (73)<br>
+      &nbsp;&nbsp;├ 📁 시험대비 &nbsp;├ 📁 중학교 (107) &nbsp;├ 📁 EBS (16) &nbsp;├ 📁 봉쌤모의고사 (14)<br>
+      &nbsp;&nbsp;└ <span class="sel">📁 주간테스트(자동) ← 새로 만들 지정폴더</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h4>🕒 어젯밤 작업 내역 (8월 11일 새벽)</h4>
+    <ul class="tl">
+      <li><span class="t">03:00</span>수학비서 「주간테스트(자동)」 폴더 확인 → <b>새 시험지 1개 발견</b>: 「고1 주간 8월 2주」 (22문항)</li>
+      <li><span class="t">03:01</span>시험지 PDF 내려받기 ✅</li>
+      <li><span class="t">03:02</span>매쓰플랫에 업로드 → AI가 문항 인식 (22문항) ✅</li>
+      <li><span class="t">03:04</span><b>수학비서 원본과 자동 대조</b> → 19문항 일치 ✅ · <b style="color:#dc2626">3문항 확인 필요 🔴</b></li>
+      <li><span class="t">03:05</span>매쓰플랫 학습지로 임시 저장 (출제 전) — 원장님 확인 대기 <span class="badge b-wait">아침 확인</span></li>
+    </ul>
+  </div>
+
+  <div class="chk card">
+    <h4>🔴 원장님 확인 필요 — 3문항만 보시면 됩니다 (22문항 중)</h4>
+    <div class="qrow"><span class="no">7번</span> AI 인식: 답 ③ <span class="vs">↔ 수학비서 원본: 답 ⑤</span> <span class="fix">원본으로 교체</span></div>
+    <div class="qrow"><span class="no">12번</span> AI 인식: 보기 ㄱㄴㄷ 중 ㄷ 누락 <span class="vs">↔ 원본: 보기 4개</span> <span class="fix">원본으로 교체</span></div>
+    <div class="qrow"><span class="no">19번</span> 그래프 그림이 잘린 것으로 의심 <span class="vs">(자동 판단 불가)</span> <span class="fix">문항 열어 확인</span></div>
+    <div class="bigbtn">✅ 확인 끝 — 「고1 주간 8월 2주」 출제 준비 완료</div>
+  </div>
+
+  <div class="note">
+    <b>주간테스트 인식 규칙(3중)</b> — 하나만 걸려도 주간테스트로 자동 분류합니다:<br>
+    ① 매쓰플랫 태그가 「주간 TEST」 &nbsp;② 학습지 제목에 「주간」 포함 &nbsp;③ 위 지정폴더에서 자동 등록된 학습지<br>
+    ※ 매쓰플랫 태그는 정해진 목록(일일 TEST·숙제·주간 TEST·단원 TEST 등)에서 고르는 방식입니다. 직접 만든 학습지에
+    「주간 TEST」 태그 선택이 가능한지는 새벽 실험 때 확인하고, 안 되면 ②·③ 규칙이 대신 잡아냅니다.
+  </div>
+</div>
+
+<!-- 화면 2: 주간테스트 탭에 고등부 -->
+<div class="mock">
+  <div class="mtitle">화면 2 — 학원앱 · 주간테스트 탭에 고등부 등장</div>
+  <div class="mdesc">지금은 매쓰플랫이 중등까지만 주간 TEST를 제공하지만, 위 파이프라인을 거친 고등부 시험지가 같은 자리에 나란히 섭니다.</div>
+  <div class="wk-cards">
+    <div class="wk">
+      <div class="g">중1-2 (매쓰플랫 제공)</div>
+      <div class="nm">주간 TEST 소인수분해 ~ 최소공배수</div>
+      <div class="meta">응시 8명 · 평균 76점 · 채점 완료<br>🏆 명예의 전당 발표 대기</div>
+    </div>
+    <div class="wk hs">
+      <div class="g">고1 (수학비서 제작) <span class="badge b-new">NEW</span></div>
+      <div class="nm">고1 주간 8월 2주 — 함수의 극한 ~ 연속</div>
+      <div class="meta">응시 5명 · 평균 68점 · 채점 완료<br>🏆 명예의 전당 발표 대기 · 정오답 자동 수집됨</div>
+    </div>
+  </div>
+</div>
+
+<!-- 화면 3: 학생앱 예고 -->
+<div class="mock">
+  <div class="mtitle">화면 3 — 학생앱 · 고등부에도 주간테스트 예고</div>
+  <div class="mdesc">중등부 학생들이 보던 D-day 예고 카드를 고등부 학생도 똑같이 받습니다.</div>
+  <div class="stu">
+    <div class="scard">
+      <div class="dd">📅 D-2 · 이번 주 토요일</div>
+      <div class="tt">고1 주간테스트</div>
+      <div class="rr">범위: 함수의 극한 ~ 함수의 연속<br>22문항 · 원장님 출제 (수학비서)</div>
+    </div>
+  </div>
+</div>
+
+<!-- 수학비서 연동 전체 지도 -->
+<div class="mock">
+  <div class="mtitle">📚 수학비서 연동 — 전체 데이터 작업 지도</div>
+  <div class="mdesc">주간테스트는 첫 단추입니다. 원장님이 고르신 3가지 방향이 이렇게 이어집니다.</div>
+  <div class="map">
+    <div class="mrow"><span class="ic">🌙</span><div><b>① 주간테스트 자동 파이프라인 (이번 작업)</b>
+      <p>수학비서 지정폴더 → 새벽 자동 업로드·AI 인식·원본 대조 → 아침 3분 검수 → 학생은 매쓰플랫로 응시 → 정오답 자동 수집 → 명예의 전당·리포트.</p></div><span class="st st1">승인 대기</span></div>
+    <div class="mrow"><span class="ic">💡</span><div><b>② 해설·유사문항 학생앱 통합 (다음)</b>
+      <p>수학비서 59,153문항·42,352개 해설을 활용 — 학생이 아하노트로 질문한 문제의 해설을 바로 붙여주고, 유사문항을 뽑아 재풀이 숙제로 연결.</p></div><span class="st st2">다음 순서</span></div>
+    <div class="mrow"><span class="ic">🎯</span><div><b>③ 목표고 난이도 대비 리포트 (그다음)</b>
+      <p>부천 10개교 기출 실측 난이도(부천고 어려움+최상 41% 등)와 학생의 현재 정답률을 비교 — "목표 학교 시험 기준으로 지금 어디까지 왔는지" 학부모 리포트.</p></div><span class="st st3">대기</span></div>
+  </div>
+</div>
+
+<div class="sub" style="text-align:center">— 목업 끝 · 루멘수학 —</div>
+</div>
+</body>
+</html>
