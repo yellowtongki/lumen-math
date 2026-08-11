@@ -107,7 +107,29 @@ function subtreeIds(node) {
   return out;
 }
 
-// 나의 DB 전체 목록 (커서 페이지네이션) → 폴더로 필터
+// v2 (2026-08-12): 시험지 폴더는 「나의 DB(mydb)」가 아니라 「시험지(mypaper)」다.
+//   원장님 확인 — 처음엔 mydb 트리(교육청·고등학교 등 자료 폴더)를 보여줘서 시험지 폴더가 없었다.
+//   실측: /bms/api/v1/folders?folderType=mypaper → 작업공간(140개) 아래 「주간테스트」 폴더 존재.
+//   시험지 목록: /bms/api/v1/my-papers?folderId=<id>&needPaging=false → [{id,title,category}]
+//   시험지 상세: /bms/api/v1/my-papers/<id> → {folders[], title, category, ...}
+const MS_FOLDER_TYPE = 'mypaper';
+async function msListPapers(folderIds) {
+  const out = [];
+  for (const fid of folderIds) {
+    const r = await msGet(`/bms/api/v1/my-papers?folderId=${fid}&needPaging=false`);
+    if (!r.ok || !r.j) continue;
+    const arr = r.j.data || r.j;
+    if (Array.isArray(arr)) arr.forEach((p) => { if (p && p.id) out.push(Object.assign({ folderId: fid }, p)); });
+  }
+  return out;
+}
+async function msPaperDetail(id) {
+  const r = await msGet(`/bms/api/v1/my-papers/${id}`);
+  if (!r.ok || !r.j) return null;
+  return r.j.data || r.j;
+}
+
+// 나의 DB 전체 목록 (커서 페이지네이션) — 참고용(문항 대조 재료)
 async function msListMydbs() {
   const all = [];
   let cursor = '';
@@ -261,7 +283,7 @@ async function runPipeline(opts) {
   log('수학비서 로그인 성공');
 
   // 1) 폴더 트리 캐시
-  const fr = await msGet('/bms/api/v1/folders?folderType=mydb');
+  const fr = await msGet(`/bms/api/v1/folders?folderType=${MS_FOLDER_TYPE}`);
   const tree = fr.j && (fr.j.data || fr.j);
   if (tree && tree.id) {
     await kvSet('msecr_folders', { updated: new Date().toISOString(), tree: slimFolder(tree) });
@@ -270,6 +292,15 @@ async function runPipeline(opts) {
 
   // 2) 지정폴더 결정
   let cfg = await kvGet('msecr_weekly_cfg');
+  // v2: 저장된 지정폴더가 지금 트리(시험지)에 없으면 버리고 다시 찾는다.
+  //   («나의 DB» 트리에서 고른 옛 폴더 id가 남아 시험지가 0개로 잡히던 문제)
+  if (cfg && cfg.folderId && tree) {
+    const still = findFolder(tree, (f) => f.id === cfg.folderId);
+    if (!still) {
+      log(`지정폴더(id ${cfg.folderId} · ${cfg.folderName || ''})가 시험지 폴더에 없습니다 → 다시 찾습니다`);
+      cfg = null;
+    }
+  }
   if ((!cfg || !cfg.folderId) && tree) {
     const hit = findFolder(tree, (f) => /주간테스트/.test(f.name || ''));
     if (hit) {
@@ -279,7 +310,7 @@ async function runPipeline(opts) {
     }
   }
   if (!cfg || !cfg.folderId) {
-    log('⚠️ 지정폴더가 없습니다 — 수학비서에 「주간테스트(자동)」 폴더를 만들어 주세요. (또는 학원앱에서 폴더 선택)');
+    log('⚠️ 지정폴더가 없습니다 — 수학비서 「시험지」에 「주간테스트」 폴더를 만들어 주세요. (또는 학원앱에서 폴더 선택)');
     await flushLog();
     return;
   }
@@ -290,19 +321,20 @@ async function runPipeline(opts) {
   const queueDoc = (await kvGet('msecr_weekly_queue')) || { items: [] };
   const folderNode = tree ? findFolder(tree, (f) => f.id === cfg.folderId) : null;
   const idSet = new Set(folderNode ? subtreeIds(folderNode.node) : [cfg.folderId]);
-  const all = await msListMydbs();
-  const inFolder = all.filter((m) => idSet.has(m.folderId));
+  const inFolder = await msListPapers(Array.from(idSet));
   const fresh = inFolder.filter((m) => !state.processed[m.id]);
   log(`폴더 내 시험지 ${inFolder.length}개 · 새 시험지 ${fresh.length}개`);
 
   for (const m of fresh) {
+    const det = await msPaperDetail(m.id) || {};
     const item = {
-      mydbId: m.id, title: m.title, qCount: m.questionCount || null,
-      difficultyCount: m.difficultyCount || null, scopes: m.scopes || [],
-      hasAnswer: !!m.isAnswer, detectedAt: new Date().toISOString(),
+      mydbId: m.id, title: m.title || det.title || '', qCount: det.questionCount || m.questionCount || null,
+      category: m.category || det.category || null,
+      difficultyCount: det.difficultyCount || null, scopes: det.scopes || [],
+      hasAnswer: !!(det.isAnswer || det.hasAnswer), detectedAt: new Date().toISOString(),
       status: 'new', mismatches: [], debug: {},
     };
-    log(`새 시험지: 「${m.title}」 (${m.questionCount || '?'}문항)`);
+    log(`새 시험지: 「${item.title}」 (${item.qCount || '?'}문항)`);
 
     // 원본 문항 정보(정답 등)
     try {
