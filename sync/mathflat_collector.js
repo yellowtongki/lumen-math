@@ -633,6 +633,7 @@ async function main() {
   // --weekly-only: 매쓰플랫 로그인 없이 주간테스트 집계만 (Supabase 기존 기록 사용)
   if (has('--weekly-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    await refreshWkCand();
     await refreshWeekly();
     return;
   }
@@ -699,6 +700,7 @@ async function main() {
     await refreshRoadmap();
     await refreshWeekly();
     await refreshWkCatalog();
+    await refreshWkCand();
     await refreshMonthCounts();
     await refreshMonthScores(students);
     await refreshTypeAch();
@@ -1211,6 +1213,57 @@ async function refreshRoadmap() {
 // ── 주간 TEST 카탈로그(전 학년, 미래 시험 포함) — 학생앱 「다음 시험 예고」용 ──
 // GET /worksheet/weekly (매쓰플랫 제공 시험지 라이브러리): id·학년·개정·제목(날짜)·범위(chapter)·문항수.
 // lumen_store 'mf_wk_catalog'에 저장. 학생앱은 "내가 최근 본 시험지의 다음 순서"로 다음 범위를 찾는다.
+// ── v18-42: 「주간테스트로 쓸 학습지」 후보 목록 (lumen_store 'mf_wk_cand') ──
+// 고등부는 매쓰플랫이 주간 TEST를 제공하지 않아, 원장님이 「내신대비」 학습지를 주간테스트로 쓰기도 한다.
+// 태그만 보고 자동 포함하면 1~2명이 푼 개인 숙제까지 섞이므로, 앱에서 고를 수 있게 후보만 모아 둔다.
+// 대상: 최근 90일 채점 기록이 있는 학습지 중 숙제·입학테스트가 아닌 것. 이미 주간(WEEKLY)인 것은 제외.
+async function refreshWkCand() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    let tags = {};
+    try {
+      const rt = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_tags&select=value`, { headers: sbHeaders });
+      if (rt.ok) { const j = await rt.json(); tags = ((j[0] || {}).value || {}).tags || {}; }
+    } catch (e) {}
+    const since = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+    const rows = [];
+    for (let off = 0; off < 200000; off += 1000) {
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=worksheet_id,worksheet_title,worksheet_type,mf_student_id,score_datetime,school,grade,chapter&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${since}&limit=1000&offset=${off}`, { headers: sbHeaders });
+      if (!res.ok) break;
+      const batch = await res.json();
+      rows.push(...batch);
+      if (batch.length < 1000) break;
+    }
+    const map = {};
+    rows.forEach((r) => {
+      if (!r.worksheet_id) return;
+      const tg = tags[r.worksheet_id] || {};
+      if (tg.tag === 'HOMEWORK' || tg.tag === 'ENTRANCE_TEST') return;      // 숙제·입학테스트 제외
+      if (r.worksheet_type === 'WEEKLY') return;                            // 이미 주간이면 후보 불필요
+      const m = map[r.worksheet_id] = map[r.worksheet_id] || {
+        wid: Number(r.worksheet_id), t: r.worksheet_title || '', type: r.worksheet_type || '',
+        tag: tg.tag || null, tagName: tg.titleTag || null,
+        sc: r.school || null, g: r.grade != null ? Number(r.grade) : null, ch: r.chapter || null,
+        d: '', sids: {},
+      };
+      m.sids[r.mf_student_id] = 1;
+      const dt = (r.score_datetime || '').slice(0, 10);
+      if (dt > m.d) m.d = dt;
+      if (!m.ch && r.chapter) m.ch = r.chapter;
+    });
+    const items = Object.values(map).map((m) => ({ wid: m.wid, t: m.t, type: m.type, tag: m.tag, tagName: m.tagName,
+      sc: m.sc, g: m.g, ch: m.ch, d: m.d, n: Object.keys(m.sids).length }))
+      .sort((a, b) => String(b.d).localeCompare(String(a.d)))
+      .slice(0, 300);
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_wk_cand', value: { updated: new Date().toISOString(), items }, updated_at: new Date().toISOString() }]),
+    });
+    log(`주간테스트 후보(mf_wk_cand): 학습지 ${items.length}개 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('주간테스트 후보 갱신 실패(치명적 아님):', e.message); }
+}
+
 async function refreshWkCatalog() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
@@ -1296,9 +1349,12 @@ async function refreshWeekly() {
       rows.push(...batch);
       if (batch.length < 1000) break;
     }
-    // v18-38: 커스텀 주간테스트(고등부 등) 3중 인식 — 매쓰플랫이 주간 TEST를 중등까지만 제공하므로
-    // 원장이 직접 만든(CUSTOM) 학습지도 다음 세 규칙 중 하나면 주간테스트로 집계에 포함한다:
+    // v18-38: 커스텀 주간테스트(고등부 등) 인식 — 매쓰플랫이 주간 TEST를 중등까지만 제공하므로
+    // 원장이 직접 만든 학습지도 다음 규칙 중 하나면 주간테스트로 집계에 포함한다:
     //   ① 학습지 태그가 WEEKLY_TEST  ② 제목에 '주간' 포함  ③ 수학비서 파이프라인이 등록한 학습지
+    //   ④ v18-42: 원장이 학원앱에서 직접 고른 학습지(wk_manual_ids) — 고등부 「내신대비」 학습지를
+    //      주간테스트로 쓰는 경우. 태그만으로 자동 포함하면 1~2명이 푼 개인 숙제까지 주간테스트가
+    //      되어 발표·명예의 전당이 오염되므로, 반드시 원장이 고른 것만 넣는다.
     try {
       const rowKey = (r) => [r.mf_student_id, r.student_worksheet_id, r.concept_id, r.score_datetime, r.result].join('|');
       const seen = new Set(rows.map(rowKey));
@@ -1313,16 +1369,23 @@ async function refreshWeekly() {
         if (rs.ok) { const j = await rs.json(); const st = ((j[0] || {}).value || {}).processed || {};
           Object.values(st).forEach((p) => { if (p && p.worksheetId) wkIds.add(Number(p.worksheetId)); }); }
       } catch (e) {}
+      // ④ 원장이 직접 고른 학습지 (태그·종류 무관 — 내신대비 등)
+      const manIds = new Set();
+      try {
+        const rm = await fetch(`${url}/rest/v1/lumen_store?key=eq.wk_manual_ids&select=value`, { headers: sbHeaders });
+        if (rm.ok) { const j = await rm.json(); ((j[0] || {}).value || {}).ids?.forEach((id) => manIds.add(Number(id))); }
+      } catch (e) {}
       const sel = 'select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade';
       const urls = [`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.CUSTOM&worksheet_title=ilike.${encodeURIComponent('*주간*')}&limit=5000`];
       if (wkIds.size) urls.push(`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.CUSTOM&worksheet_id=in.(${Array.from(wkIds).join(',')})&limit=5000`);
+      if (manIds.size) urls.push(`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_id=in.(${Array.from(manIds).join(',')})&limit=8000`);
       let extraN = 0;
       for (const u of urls) {
         const re = await fetch(u, { headers: sbHeaders });
         if (!re.ok) continue;
         (await re.json()).forEach((r) => { const k = rowKey(r); if (!seen.has(k)) { seen.add(k); rows.push(r); extraN++; } });
       }
-      if (extraN) log(`주간테스트: 커스텀(고등부 등) 기록 ${extraN}건 포함 (3중 인식)`);
+      if (extraN) log(`주간테스트: 커스텀·직접지정(고등부 등) 기록 ${extraN}건 포함 (원장 지정 ${manIds.size}개 포함)`);
     } catch (e) { log('커스텀 주간 인식 실패(치명적 아님):', e.message); }
     if (!rows.length) { log('주간테스트: WEEKLY 기록 없음 → 건너뜀'); return; }
     // 배정 현황(채점 미완료 포함) — 이어 채점·미채점 학생도 명단에 넣기 위함
