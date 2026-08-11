@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 녹음 주제: 현재 원리 + 단원별 주제 은행</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 80px}
+.wrap{max-width:960px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,0.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-now{background:#f1f5f9;color:#475569}.b-new{background:#dbeafe;color:#1d4ed8}.b-fix{background:#fef3c7;color:#b45309}
+
+/* 우선순위 계단 */
+.prio{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.prow{display:flex;align-items:center;gap:12px;border-radius:13px;padding:13px 15px;border:1.5px solid}
+.p1{background:#fff7ed;border-color:#fed7aa}.p2{background:#eff6ff;border-color:#bfdbfe}.p3{background:#f8fafc;border-color:#e2e8f0}
+.pnum{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:900;color:#fff;flex-shrink:0}
+.n1{background:#ea580c}.n2{background:#1d6fe8}.n3{background:#94a3b8}
+.prow b{font-size:14px;color:#0d2240;display:block;margin-bottom:2px}
+.prow p{font-size:12.5px;color:#475569;font-weight:600;line-height:1.6}
+/* 재료 박스 */
+.mat{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:13px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.9}
+.mat b{color:#0d2240}
+.chip{display:inline-block;background:#e0e7ff;color:#4338ca;border-radius:20px;padding:2px 9px;font-size:11.5px;font-weight:800;margin:0 2px}
+/* 문제점 */
+.prob{display:flex;gap:11px;background:#fef2f2;border:1.5px solid #fecaca;border-radius:13px;padding:13px 15px;margin-bottom:9px}
+.prob .ic{font-size:19px}
+.prob b{font-size:13.5px;color:#b91c1c;display:block;margin-bottom:3px}
+.prob p{font-size:12.5px;color:#7f1d1d;font-weight:600;line-height:1.65}
+/* 3분할 관리 화면 */
+.mgr{display:grid;grid-template-columns:130px 1fr 1.25fr;gap:12px;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px;background:#fbfdff}
+@media(max-width:760px){.mgr{grid-template-columns:1fr}}
+.col h5{font-size:11.5px;font-weight:900;color:#94a3b8;margin-bottom:8px;letter-spacing:0.02em}
+.gchip{display:block;border:1.5px solid #e2e8f0;background:#fff;border-radius:10px;padding:8px 11px;font-size:13px;font-weight:800;color:#475569;margin-bottom:6px}
+.gchip.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.urow{display:flex;align-items:center;gap:8px;border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:10px 12px;margin-bottom:6px}
+.urow.on{border-color:#1d6fe8;background:#eff6ff}
+.urow .nm{flex:1;min-width:0;font-size:13.5px;font-weight:800;color:#0d2240;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cnt{font-size:10.5px;font-weight:900;border-radius:20px;padding:2px 8px;white-space:nowrap}
+.c-ok{background:#dcfce7;color:#15803d}.c-few{background:#fef3c7;color:#b45309}.c-no{background:#fee2e2;color:#b91c1c}
+.tcard{border:1.5px solid #e2e8f0;border-radius:12px;padding:11px 13px;margin-bottom:8px;background:#fff}
+.tcard .tt{font-size:13.5px;font-weight:800;color:#0d2240;line-height:1.5;margin-bottom:5px}
+.tcard .hint{font-size:11.5px;color:#64748b;font-weight:600;line-height:1.6}
+.tcard .bar{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:10px;font-weight:900;border-radius:20px;padding:2px 8px}
+.t-me{background:#e0e7ff;color:#4338ca}.t-ai{background:#f3e8ff;color:#7c3aed}
+.mini{font-size:10.5px;font-weight:800;border:1px solid #e2e8f0;background:#fff;color:#64748b;border-radius:7px;padding:4px 9px;margin-left:auto}
+.addbtn{width:100%;border:1.5px dashed #cbd5e1;background:#fff;color:#64748b;border-radius:11px;padding:10px 0;font-size:12.5px;font-weight:800;text-align:center;margin-top:2px}
+.aibtn{width:100%;background:linear-gradient(135deg,#7c3aed,#4338ca);color:#fff;border-radius:11px;padding:11px 0;font-size:13px;font-weight:900;text-align:center;margin-top:8px}
+/* 자동 배정 규칙 */
+.rule{display:flex;gap:11px;align-items:flex-start;border:1.5px solid #e2e8f0;border-radius:13px;padding:13px 15px;margin-bottom:9px;background:#fff}
+.rule .ic{font-size:20px}
+.rule b{font-size:13.5px;color:#0d2240;display:block;margin-bottom:3px}
+.rule p{font-size:12.5px;color:#475569;font-weight:600;line-height:1.65}
+.rule .sw{margin-left:auto;background:#dcfce7;color:#15803d;border-radius:20px;padding:3px 10px;font-size:10.5px;font-weight:900;white-space:nowrap}
+/* 학생앱 목업 */
+.phone{max-width:380px;margin:0 auto;background:#0f1b2d;border-radius:24px;padding:18px 15px}
+.pw{background:#fff;border-radius:16px;padding:15px}
+.wkbar{display:flex;align-items:center;gap:9px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:10px 13px;margin-bottom:13px}
+.dots{display:flex;gap:5px}
+.dot{width:13px;height:13px;border-radius:50%;background:#d1fae5;border:2px solid #86efac}
+.dot.done{background:#22c55e;border-color:#22c55e}
+.pick{border:2px solid #e2e8f0;border-radius:13px;padding:12px 13px;margin-bottom:8px}
+.pick.sel{border-color:#1d6fe8;background:#eff6ff}
+.pick.used{opacity:0.45;background:#f8fafc}
+.pick .pt{font-size:13.5px;font-weight:800;color:#0d2240;line-height:1.5;margin-bottom:4px}
+.pick .ph{font-size:11.5px;color:#64748b;font-weight:600;line-height:1.6}
+.pick .pu{font-size:10.5px;font-weight:900;color:#059669;margin-top:5px}
+.recbtn{background:linear-gradient(135deg,#e8192c,#b91220);color:#fff;border-radius:13px;padding:13px 0;text-align:center;font-size:14.5px;font-weight:900;margin-top:10px}
+.note{background:#f8fafc;border-left:4px solid #94a3b8;border-radius:0 10px 10px 0;padding:11px 14px;font-size:12.5px;color:#475569;font-weight:600;line-height:1.75;margin-top:13px}
+.qa{border-left:4px solid #1d6fe8;background:#f8fbff;border-radius:0 10px 10px 0;padding:12px 15px;margin-bottom:10px}
+.qa .q{font-size:13.5px;font-weight:900;color:#0d2240;margin-bottom:5px}
+.qa .a{font-size:12.5px;color:#475569;font-weight:600;line-height:1.75}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🎙️ 녹음 주제 — 지금 원리 + 「단원별 주제 은행」 제안</h1>
+<div class="sub">앞부분은 <b>지금 실제로 돌아가는 방식</b>(코드 확인 완료)이고, 뒤는 원장님 아이디어를 구체화한 <b>미리보기(목업)</b>입니다.<br>승인해 주시면 이 모습대로 구현합니다.</div>
+
+<!-- ══ 1. 현재 원리 ══ -->
+<div class="sec">
+  <div class="stitle">① 지금은 이렇게 정해집니다 <span class="badge b-now">현재 동작</span></div>
+  <div class="sdesc">학생앱은 <b>그날 주제 딱 1개</b>를 보여줍니다. 아래 3단계 중 위쪽이 있으면 그것을 씁니다.</div>
+  <div class="prio">
+    <div class="prow p1"><span class="pnum n1">1</span><div><b>선생님 수동 미션</b><p>학생 정보에 직접 적어둔 미션 — 있으면 무조건 이것</p></div></div>
+    <div class="prow p2"><span class="pnum n2">2</span><div><b>개인 맞춤 주제</b><p>그 학생의 <b>최근 7일 리포트 오답 유형</b>으로 AI가 만든 1문장</p></div></div>
+    <div class="prow p3"><span class="pnum n3">3</span><div><b>학년 공통 주제</b><p>그 학년의 <b>최근 2주 취약 유형 상위 8개</b>를 재료로 AI가 만든 1문장 (+말할 힌트)</p></div></div>
+  </div>
+  <div class="mat">
+    <b>수업일 계산</b> — 그 학년 학생들이 속한 반의 수업요일을 모두 합침 (설정 없으면 월·수·금)<br>
+    <b>학년 공통 재료</b> — 최근 2주 리포트의 <span class="chip">취약 유형</span> 상위 8개 · 같은 학년은 날짜마다 다른 주제로 요청<br>
+    <b>개인 맞춤 재료</b> — 최근 7일 리포트의 <span class="chip">오답 유형</span> 상위 5개 · 다음 수업일 1칸만 생성<br>
+    <b>새벽 4시</b> — 그날 수업 학년·오답 학생의 빈 칸을 자동으로 미리 채움 (원장님은 아침에 수정만)
+  </div>
+</div>
+
+<!-- ══ 2. 원장님 질문에 대한 답 ══ -->
+<div class="sec">
+  <div class="stitle">② 원장님 질문에 대한 답</div>
+  <div class="sdesc">코드를 직접 확인한 사실입니다.</div>
+  <div class="qa"><div class="q">Q. 개별 녹음 숙제일 때 주제는 어떻게 정해지나? 최근 매쓰플랫에서 체크한 단원 내용인가?</div>
+    <div class="a"><b>아니요 — 지금은 「리포트의 취약·오답 유형」입니다.</b> 매쓰플랫에서 지금 나가고 있는 진도(교재·단원)와는 직접 연결돼 있지 않습니다. 그래서 <b>진도와 어긋난 주제</b>가 나올 수 있는 것이 현재 구조의 약점입니다.</div></div>
+  <div class="qa"><div class="q">Q. 주 3회면 되는데, 제시된 녹음 중에서 골라서 하면 되나?</div>
+    <div class="a"><b>지금은 고를 수 없습니다.</b> 그날 주제 1개만 표시되고, 학생은 그걸 하거나 (자유 제출이 열려 있어) 아무 내용이나 녹음할 수 있습니다. <b>「3개 중 선택」과 「주 3회 진행 표시」는 아직 없습니다</b> — 아래에서 제안드립니다.</div></div>
+  <div class="qa"><div class="q">Q. 단원마다 정해진 주제가 있으면 관리가 편할 것 같다.</div>
+    <div class="a"><b>정확한 지적이고, 지금 구조의 가장 큰 개선점입니다.</b> 이미 학원앱 안에 <b>학기별 단원 데이터(초1-1~고등, 유형 3,751개)</b>가 들어와 있어서, 단원마다 주제를 미리 등록해 두는 「주제 은행」을 그 위에 바로 얹을 수 있습니다.</div></div>
+</div>
+
+<!-- ══ 3. 현재 방식의 문제 ══ -->
+<div class="sec">
+  <div class="stitle">③ 지금 방식의 아쉬운 점 3가지</div>
+  <div class="sdesc">아래 제안이 이 3가지를 해결합니다.</div>
+  <div class="prob"><span class="ic">🎲</span><div><b>매번 새로 만들어서 품질이 들쭉날쭉</b><p>같은 단원이라도 그날그날 AI가 새로 문장을 만듭니다. 좋은 주제가 나와도 <b>다시 쓸 수가 없습니다.</b></p></div></div>
+  <div class="prob"><span class="ic">🔀</span><div><b>진도와 어긋날 수 있음</b><p>재료가 「최근 오답 유형」뿐이라, 지금 배우는 단원과 다른 주제가 나올 수 있습니다.</p></div></div>
+  <div class="prob"><span class="ic">🔒</span><div><b>학생이 고를 수 없음 · 주 3회 관리 없음</b><p>하루 1개 고정이고, 이번 주에 몇 번 했는지 학생도 원장님도 한눈에 안 보입니다.</p></div></div>
+</div>
+
+<!-- ══ 4. 제안: 주제 은행 관리 화면 ══ -->
+<div class="sec">
+  <div class="stitle">④ 제안 — 📚 단원별 주제 은행 (관리 화면) <span class="badge b-new">신설</span></div>
+  <div class="sdesc">녹음관리에 서브탭 하나 추가. <b>학년 → 단원 → 주제 카드</b> 3분할. 한 번 만들어 두면 매년 재사용합니다.</div>
+  <div class="mgr">
+    <div class="col">
+      <h5>학년·학기</h5>
+      <div class="gchip">중1-1</div>
+      <div class="gchip">중1-2</div>
+      <div class="gchip on">중2-1</div>
+      <div class="gchip">중2-2</div>
+      <div class="gchip">중3-1</div>
+      <div class="gchip">공통수학1</div>
+    </div>
+    <div class="col">
+      <h5>단원 (학원앱에 이미 있는 단원 그대로)</h5>
+      <div class="urow"><span class="nm">유리수와 순환소수</span><span class="cnt c-ok">4개</span></div>
+      <div class="urow"><span class="nm">단항식의 계산</span><span class="cnt c-ok">3개</span></div>
+      <div class="urow on"><span class="nm">연립일차방정식</span><span class="cnt c-ok">4개</span></div>
+      <div class="urow"><span class="nm">연립방정식의 활용</span><span class="cnt c-few">1개</span></div>
+      <div class="urow"><span class="nm">일차함수와 그래프</span><span class="cnt c-no">0개</span></div>
+      <div class="urow"><span class="nm">일차함수와 일차방정식</span><span class="cnt c-no">0개</span></div>
+    </div>
+    <div class="col">
+      <h5>「연립일차방정식」 주제 4개</h5>
+      <div class="tcard">
+        <div class="tt">가감법과 대입법 중 어느 것을 쓸지 어떻게 정하는지 설명해 보기</div>
+        <div class="hint">계수를 맞추기 쉬운 경우 / 한 문자가 이미 정리된 경우 / 내가 고른 이유</div>
+        <div class="bar"><span class="tag t-me">원장님 작성</span><span class="mini">수정</span></div>
+      </div>
+      <div class="tcard">
+        <div class="tt">연립방정식의 해가 「두 직선의 교점」인 이유를 설명해 보기</div>
+        <div class="hint">직선 위의 점의 뜻 / 두 식을 동시에 만족 / 해가 없을 때의 그래프</div>
+        <div class="bar"><span class="tag t-ai">AI 초안 · 승인함</span><span class="mini">수정</span></div>
+      </div>
+      <div class="tcard">
+        <div class="tt">해가 없는 연립방정식과 해가 무수히 많은 경우를 구별해 설명해 보기</div>
+        <div class="hint">계수의 비 비교 / 평행 vs 일치 / 예시 한 개 만들기</div>
+        <div class="bar"><span class="tag t-me">원장님 작성</span><span class="mini">수정</span></div>
+      </div>
+      <div class="tcard">
+        <div class="tt">A=B=C 꼴을 어떻게 두 개의 식으로 나누는지 설명해 보기</div>
+        <div class="hint">세 가지 짝 짓는 방법 / 어느 짝이 편한지 / 검산</div>
+        <div class="bar"><span class="tag t-ai">AI 초안 · 승인함</span><span class="mini">수정</span></div>
+      </div>
+      <div class="addbtn">＋ 주제 직접 추가</div>
+      <div class="aibtn">✨ 이 단원 주제 AI로 3개 초안 만들기</div>
+    </div>
+  </div>
+  <div class="note">
+    <b>왜 편해지나</b> — 「일차함수와 그래프 0개」처럼 <b>빈 단원이 빨간 배지로 바로 보입니다.</b> 진도 나가기 전에 미리 채워두면,
+    그 단원 수업 기간에는 원장님이 손대지 않아도 자동으로 배정됩니다. AI는 <b>초안만</b> 만들고 원장님이 승인·수정하므로 품질이 원장님 손에 있습니다.
+  </div>
+</div>
+
+<!-- ══ 5. 자동 배정 규칙 ══ -->
+<div class="sec">
+  <div class="stitle">⑤ 은행이 있으면 — 배정은 이렇게 자동 <span class="badge b-fix">규칙 변경</span></div>
+  <div class="sdesc">새벽 4시 자동 실행이 아래 순서로 그날 주제를 채웁니다. 은행이 비어 있으면 지금처럼 AI가 즉석 생성(폴백).</div>
+  <div class="rule"><span class="ic">📖</span><div><b>1순위 · 진도 연동</b><p>매쓰플랫에서 그 학생(또는 그 학년)이 <b>지금 나가고 있는 단원</b>을 찾아 → 그 단원 은행에서 주제를 꺼냅니다. 원장님이 지적하신 「진도와 맞는 주제」가 이걸로 해결됩니다.</p></div><span class="sw">기본 켬</span></div>
+  <div class="rule"><span class="ic">🎯</span><div><b>2순위 · 오답 연동</b><p>최근 틀린 유형이 속한 단원에 주제가 있으면 그것을 우선 꺼냅니다 (지금의 개인 맞춤을 은행 기반으로 교체).</p></div><span class="sw">기본 켬</span></div>
+  <div class="rule"><span class="ic">🔁</span><div><b>중복 방지 · 순환</b><p>같은 학생이 <b>이미 녹음한 주제는 다시 나오지 않습니다.</b> 단원 주제를 다 쓰면 그때 다시 처음부터 돕니다.</p></div><span class="sw">기본 켬</span></div>
+  <div class="rule"><span class="ic">✨</span><div><b>폴백 · 즉석 생성</b><p>그 단원 은행이 비어 있으면 지금 방식대로 AI가 그 자리에서 만들고, <b>「은행에 저장할까요?」</b>를 물어봅니다 → 쓸수록 은행이 차오릅니다.</p></div><span class="sw">기본 켬</span></div>
+</div>
+
+<!-- ══ 6. 학생앱 ══ -->
+<div class="sec">
+  <div class="stitle">⑥ 학생앱 — 3개 중 골라서, 주 3회 <span class="badge b-new">신설</span></div>
+  <div class="sdesc">원장님이 말씀하신 「제시된 것 중 선택」 + 「주 3회」를 그대로 화면으로 만든 모습입니다.</div>
+  <div class="phone">
+    <div class="pw">
+      <div class="wkbar">
+        <div class="dots"><span class="dot done"></span><span class="dot done"></span><span class="dot"></span></div>
+        <div style="font-size:13px;font-weight:900;color:#15803d">이번 주 2 / 3회 · 한 번 남았어요!</div>
+      </div>
+      <div style="font-size:12px;font-weight:900;color:#94a3b8;margin-bottom:8px">📖 지금 배우는 단원 · 연립일차방정식</div>
+      <div class="pick sel">
+        <div class="pt">가감법과 대입법 중 어느 것을 쓸지 어떻게 정하는지 설명해 보기</div>
+        <div class="ph">계수를 맞추기 쉬운 경우 / 한 문자가 이미 정리된 경우 / 내가 고른 이유</div>
+      </div>
+      <div class="pick">
+        <div class="pt">해가 없는 경우와 무수히 많은 경우를 구별해 설명해 보기</div>
+        <div class="ph">계수의 비 비교 / 평행 vs 일치 / 예시 한 개</div>
+      </div>
+      <div class="pick used">
+        <div class="pt">연립방정식의 해가 「두 직선의 교점」인 이유를 설명해 보기</div>
+        <div class="pu">✓ 지난주에 이미 녹음했어요</div>
+      </div>
+      <div class="recbtn">🎙️ 고른 주제로 녹음 시작</div>
+      <div style="font-size:11px;color:#94a3b8;font-weight:700;text-align:center;margin-top:9px;line-height:1.6">주제와 상관없는 자유 녹음도 그대로 제출할 수 있어요</div>
+    </div>
+  </div>
+  <div class="note">
+    학원앱 「그리드」에도 <b>학생별 주간 진행(●●○)</b>이 같이 표시돼서, 이번 주 3회를 못 채운 학생이 한눈에 보입니다.
+  </div>
+</div>
+
+<div class="sub" style="text-align:center">— 목업 끝 · 루멘수학 —</div>
+</div>
+</body>
+</html>
