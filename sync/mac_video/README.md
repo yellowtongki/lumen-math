@@ -35,7 +35,7 @@
 아래 한 줄을 **통째로 복사해 붙여넣고 엔터**를 누르세요.
 
 ```
-mkdir -p ~/Desktop/영상이름정리 && cd ~/Desktop/영상이름정리 && B=https://raw.githubusercontent.com/yellowtongki/lumen-math/refs/heads/claude/mac-mini-lecture-video-rename-6ie3vv/sync/mac_video && for f in 1_scan.command 2_rename.command 3_autoname.command 4_matchedit.command README.md; do curl -fsSLO "$B/$f"; done && { [ -f timetable.txt ] || curl -fsSLO "$B/timetable.txt"; } && chmod +x *.command && open .
+mkdir -p ~/Desktop/영상이름정리 && cd ~/Desktop/영상이름정리 && B=https://raw.githubusercontent.com/yellowtongki/lumen-math/refs/heads/claude/mac-mini-lecture-video-rename-6ie3vv/sync/mac_video && for f in 1_scan.command 2_rename.command 3_autoname.command 4_matchedit.command 5_unit.command README.md; do curl -fsSLO "$B/$f"; done && { [ -f timetable.txt ] || curl -fsSLO "$B/timetable.txt"; } && chmod +x *.command && open .
 ```
 
 바탕화면에 **`영상이름정리`** 폴더가 생기고 창이 열립니다. 준비 끝입니다.
@@ -54,6 +54,7 @@ mkdir -p ~/Desktop/영상이름정리 && cd ~/Desktop/영상이름정리 && B=ht
    |---|---|
    | `1_scan.command` | 영상 목록 CSV 만들기 |
    | `3_autoname.command` | 날짜 + 시간표로 이름 자동 생성 |
+   | `5_unit.command` | **단원·페이지를 터미널에서 직접 입력** (넘버스 불필요) |
    | `4_matchedit.command` | 강의편집 폴더 이름 가져오기 (단원명) |
    | `2_rename.command` | 실제 이름 변경 / 되돌리기 |
    | `timetable.txt` | **강의 시간표** — 반 이름의 근거 |
@@ -230,9 +231,32 @@ CSV에는 이런 정보가 들어갑니다 — 이름을 정할 때 참고하시
 > 편집이 자정을 넘겼거나 날짜를 하루 뒤로 적으신 듯합니다.
 > 이런 날은 자동 매칭이 되지 않으니 직접 적어 주세요.
 
+#### 방법 ①-3 단원·페이지 입력 — `5_unit.command` (추천)
+
+**넘버스를 쓰지 않고** 터미널에서 하나씩 입력합니다.
+
+```
+ [1/54]  IMG_9604.MOV
+         반 중3-2   녹화 2026-08-04 10:02   길이 17:31
+   단원 → 예각의 삼각비의 값
+   페이지 → 21
+         ✓ 예각의 삼각비의 값 / 21
+```
+
+- **반·녹화시각·길이를 같이 보여주므로** 어떤 강의인지 짚기 쉽습니다
+- 그냥 **엔터**를 치면 그 영상은 건너뜁니다
+- **`q`** 를 입력하면 거기까지 저장하고 끝냅니다 — 다음에 이어서 하면 됩니다
+- 이미 적힌 단원은 기본적으로 건너뛰고, 고치고 싶을 때만 「다시 물어보기 `y`」
+
+> ⚠️ **넘버스(Numbers)로 CSV를 편집하면 저장이 안 됩니다.**
+> 넘버스는 CSV를 열 때 자기 형식(`.numbers`) 문서로 바꿔서 열기 때문에,
+> "저장"을 눌러도 **원래 CSV 파일에는 반영되지 않습니다.**
+> 굳이 넘버스를 쓰시려면 **파일 → 내보내기 → CSV** 로 내보내
+> 기존 파일을 덮어써야 합니다. 그래서 `5_unit.command` 를 권합니다.
+
 #### 방법 ② 직접 적기
 
-`_강의영상_목록.csv` 를 **넘버스(Numbers)나 엑셀**로 열어
+`_강의영상_목록.csv` 를 **엑셀**(넘버스 말고)로 열어
 「새파일명」 칸을 채우고 **저장**합니다.
 
 - **비워두면 그 영상은 이름을 바꾸지 않습니다** (안 바꿀 건 그냥 비워두세요)
