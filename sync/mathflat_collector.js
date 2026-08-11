@@ -702,6 +702,13 @@ async function main() {
     await refreshMonthCounts();
     await refreshMonthScores(students);
     await refreshTypeAch();
+    // v18-38: 수학비서 주간테스트 파이프라인 — 지정폴더 스캔·매쓰플랫 업로드 (새벽 전체 수집에 편승)
+    if (process.env.MATHSECR_ID && process.env.MATHSECR_PASSWORD) {
+      try {
+        const { runPipeline } = require('./mathsecr_weekly_pipeline.js');
+        await runPipeline({ upload: true });   // 새벽 실행이므로 매쓰플랫 업로드 단계까지
+      } catch (e) { log('수학비서 파이프라인 실패(치명적 아님):', e.message); }
+    }
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
@@ -1289,6 +1296,34 @@ async function refreshWeekly() {
       rows.push(...batch);
       if (batch.length < 1000) break;
     }
+    // v18-38: 커스텀 주간테스트(고등부 등) 3중 인식 — 매쓰플랫이 주간 TEST를 중등까지만 제공하므로
+    // 원장이 직접 만든(CUSTOM) 학습지도 다음 세 규칙 중 하나면 주간테스트로 집계에 포함한다:
+    //   ① 학습지 태그가 WEEKLY_TEST  ② 제목에 '주간' 포함  ③ 수학비서 파이프라인이 등록한 학습지
+    try {
+      const rowKey = (r) => [r.mf_student_id, r.student_worksheet_id, r.concept_id, r.score_datetime, r.result].join('|');
+      const seen = new Set(rows.map(rowKey));
+      const wkIds = new Set();
+      try {
+        const rt = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_tags&select=value`, { headers: sbHeaders });
+        if (rt.ok) { const j = await rt.json(); const tags = ((j[0] || {}).value || {}).tags || {};
+          Object.keys(tags).forEach((id) => { if (tags[id] && tags[id].tag === 'WEEKLY_TEST' && tags[id].type === 'CUSTOM') wkIds.add(Number(id)); }); }
+      } catch (e) {}
+      try {
+        const rs = await fetch(`${url}/rest/v1/lumen_store?key=eq.msecr_weekly_state&select=value`, { headers: sbHeaders });
+        if (rs.ok) { const j = await rs.json(); const st = ((j[0] || {}).value || {}).processed || {};
+          Object.values(st).forEach((p) => { if (p && p.worksheetId) wkIds.add(Number(p.worksheetId)); }); }
+      } catch (e) {}
+      const sel = 'select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade';
+      const urls = [`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.CUSTOM&worksheet_title=ilike.${encodeURIComponent('*주간*')}&limit=5000`];
+      if (wkIds.size) urls.push(`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.CUSTOM&worksheet_id=in.(${Array.from(wkIds).join(',')})&limit=5000`);
+      let extraN = 0;
+      for (const u of urls) {
+        const re = await fetch(u, { headers: sbHeaders });
+        if (!re.ok) continue;
+        (await re.json()).forEach((r) => { const k = rowKey(r); if (!seen.has(k)) { seen.add(k); rows.push(r); extraN++; } });
+      }
+      if (extraN) log(`주간테스트: 커스텀(고등부 등) 기록 ${extraN}건 포함 (3중 인식)`);
+    } catch (e) { log('커스텀 주간 인식 실패(치명적 아님):', e.message); }
     if (!rows.length) { log('주간테스트: WEEKLY 기록 없음 → 건너뜀'); return; }
     // 배정 현황(채점 미완료 포함) — 이어 채점·미채점 학생도 명단에 넣기 위함
     let assign = {};
