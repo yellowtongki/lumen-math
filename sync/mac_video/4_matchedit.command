@@ -28,9 +28,16 @@ echo "════════════════════════�
 echo ""
 echo " ① 원본 목록 CSV('_강의영상_목록.csv')를 끌어다 놓고 엔터."
 echo ""
-printf " CSV → "
-read -r RAWCSV
-CSV=$(unescape_path "$RAWCSV")
+TRY=0
+while :; do
+  printf " CSV → "
+  read -r RAWCSV
+  CSV=$(unescape_path "$RAWCSV")
+  [ -n "$CSV" ] && break
+  TRY=$((TRY + 1))
+  [ "$TRY" -ge 3 ] && break
+  echo " (비어 있습니다. 파일을 이 창 위에 놓은 뒤 엔터를 눌러주세요)"
+done
 
 if [ ! -f "$CSV" ]; then
   echo ""
@@ -44,10 +51,17 @@ echo ""
 echo " ② '강의편집' 폴더를 끌어다 놓고 엔터."
 echo "    (예: /Users/강의편집)"
 echo ""
-printf " 강의편집 폴더 → "
-read -r RAWEDIT
-EDITDIR=$(unescape_path "$RAWEDIT")
-EDITDIR="${EDITDIR%/}"
+TRY=0
+while :; do
+  printf " 강의편집 폴더 → "
+  read -r RAWEDIT
+  EDITDIR=$(unescape_path "$RAWEDIT")
+  EDITDIR="${EDITDIR%/}"
+  [ -n "$EDITDIR" ] && break
+  TRY=$((TRY + 1))
+  [ "$TRY" -ge 3 ] && break
+  echo " (비어 있습니다. 폴더를 이 창 위에 놓은 뒤 엔터를 눌러주세요)"
+done
 
 if [ ! -d "$EDITDIR" ]; then
   echo ""

@@ -40,9 +40,16 @@ fi
 echo ""
 echo " '_강의영상_목록.csv' 를 창에 끌어다 놓고 엔터."
 echo ""
-printf " CSV → "
-read -r RAWCSV
-CSV=$(unescape_path "$RAWCSV")
+TRY=0
+while :; do
+  printf " CSV → "
+  read -r RAWCSV
+  CSV=$(unescape_path "$RAWCSV")
+  [ -n "$CSV" ] && break
+  TRY=$((TRY + 1))
+  [ "$TRY" -ge 3 ] && break
+  echo " (비어 있습니다. 파일을 이 창 위에 놓은 뒤 엔터를 눌러주세요)"
+done
 
 if [ ! -f "$CSV" ]; then
   echo ""
