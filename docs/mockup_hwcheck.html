@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>미리보기 — 숙제체크: 아하노트 자동 구분 (억울한 감점 없이)</title>
+<title>미리보기 — 숙제체크 + 아하노트: 막힌 문제를 질문했는가</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
@@ -15,38 +15,40 @@ h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
 .sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
 .badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
 .b-new{background:#dbeafe;color:#1d4ed8}.b-key{background:#fef3c7;color:#b45309}
-.b-auto{background:#f3e8ff;color:#7c3aed}.b-fix{background:#ffedd5;color:#c2410c}
+.b-auto{background:#f3e8ff;color:#7c3aed}.b-fix{background:#ffedd5;color:#c2410c}.b-find{background:#dcfce7;color:#15803d}
 
-.prob{display:flex;gap:11px;background:#fef2f2;border:1.5px solid #fecaca;border-radius:13px;padding:13px 15px;margin-bottom:9px}
-.prob .ic{font-size:19px;flex-shrink:0}
-.prob b{font-size:13.5px;color:#b91c1c;display:block;margin-bottom:3px}
-.prob p{font-size:12.5px;color:#7f1d1d;font-weight:600;line-height:1.65}
-.good{display:flex;gap:11px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:13px;padding:13px 15px;margin-bottom:9px}
-.good .ic{font-size:19px;flex-shrink:0}
-.good b{font-size:13.5px;color:#15803d;display:block;margin-bottom:3px}
-.good p{font-size:12.5px;color:#166534;font-weight:600;line-height:1.65}
-.purp{display:flex;gap:11px;background:#faf5ff;border:1.5px solid #e9d5ff;border-radius:13px;padding:13px 15px;margin-bottom:9px}
-.purp .ic{font-size:19px;flex-shrink:0}
-.purp b{font-size:13.5px;color:#7c3aed;display:block;margin-bottom:3px}
-.purp p{font-size:12.5px;color:#6b21a8;font-weight:600;line-height:1.65}
-.warnb{display:flex;gap:11px;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:13px;padding:13px 15px;margin-bottom:9px}
-.warnb .ic{font-size:19px;flex-shrink:0}
-.warnb b{font-size:13.5px;color:#c2410c;display:block;margin-bottom:3px}
-.warnb p{font-size:12.5px;color:#9a3412;font-weight:600;line-height:1.65}
-.prob p b,.good p b,.purp p b,.warnb p b,.step p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-red{background:#fef2f2;border-color:#fecaca}.x-red b{color:#b91c1c}.x-red p{color:#7f1d1d}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-pur{background:#faf5ff;border-color:#e9d5ff}.x-pur b{color:#7c3aed}.x-pur p{color:#6b21a8}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
 
 .rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
 .rule b{color:#0d2240}
+.quote{background:#0d2240;color:#fff;border-radius:13px;padding:15px 18px;font-size:14px;font-weight:800;line-height:1.75;margin-bottom:14px}
+.quote small{display:block;font-size:11.5px;font-weight:700;opacity:.65;margin-top:6px}
 
-/* 실측 막대 */
+/* 사슬 */
+.chain{display:flex;align-items:stretch;gap:7px;flex-wrap:wrap;margin:6px 0 12px}
+.ch{flex:1;min-width:120px;border-radius:12px;padding:11px 12px;border:1.5px solid;text-align:center}
+.ch b{font-size:13.5px;display:block;margin-bottom:3px}
+.ch span{font-size:11px;font-weight:700;line-height:1.5;display:block}
+.arrow{display:flex;align-items:center;font-size:16px;color:#cbd5e1;font-weight:900}
+
+/* 막대 */
 .bars{display:flex;flex-direction:column;gap:5px;margin:4px 0 12px}
 .brow{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:700;color:#475569}
-.blab{width:52px;text-align:right;color:#94a3b8;font-size:11.5px;flex-shrink:0}
-.btrack{flex:1;height:19px;background:#f1f5f9;border-radius:6px;position:relative;overflow:hidden}
+.blab{width:120px;text-align:right;color:#64748b;font-size:11.5px;flex-shrink:0;font-weight:800}
+.btrack{flex:1;height:20px;background:#f1f5f9;border-radius:6px;position:relative;overflow:hidden}
 .bfill{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
-.bnum{width:158px;font-size:11.5px;font-weight:800;flex-shrink:0}
+.bnum{width:170px;font-size:11.5px;font-weight:800;flex-shrink:0}
 
-/* ── 데모 그리드 ── */
+/* 그리드 */
 .demobar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:11px}
 .demobar .tag{font-size:11px;font-weight:800;color:#0369a1;background:#e0f2fe;border-radius:50px;padding:5px 12px}
 .gwrap{background:#fff;border:1px solid #e8eef8;border-radius:14px;padding:12px;overflow-x:auto;position:relative}
@@ -60,38 +62,45 @@ table.g td{padding:2px 2px;text-align:center;border-bottom:1px solid #f8fafc}
 .cell.off{background:#fafafa;border-color:#f5f5f5;cursor:default}
 .cell.off:hover{transform:none}
 .pctdot{position:absolute;bottom:-2px;right:1px;font-size:7.5px;font-weight:900;color:#64748b;line-height:1}
-.bdg{position:absolute;top:-6px;right:-6px;width:16px;height:16px;border-radius:50%;font-size:9px;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff;color:#fff;font-weight:900}
-.bdg.aha{background:#a855f7;box-shadow:0 1px 4px rgba(168,85,247,0.5)}
-.bdg.miss{background:#f97316;box-shadow:0 1px 4px rgba(249,115,22,0.5)}
-.bdg.man{background:#0d9488}
+.bdg{position:absolute;top:-6px;right:-6px;min-width:16px;height:16px;padding:0 2px;border-radius:9px;font-size:9px;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff;color:#fff;font-weight:900}
+.bdg.aha{background:#a855f7}.bdg.stuck{background:#f97316}.bdg.man{background:#0d9488}
 .colbtn{border:1px solid #cbd5e1;background:#fff;border-radius:7px;padding:2px 5px;font-size:9.5px;font-weight:900;color:#1d6fe8;cursor:pointer;font-family:inherit;white-space:nowrap}
-.colbtn:hover{background:#eff6ff}
 .sumc{font-size:10.5px;font-weight:800;white-space:nowrap;padding:3px 8px!important;text-align:left!important}
 
 /* 팝오버 */
-.pop{position:absolute;z-index:30;background:#fff;border:2px solid #1d6fe8;border-radius:14px;box-shadow:0 12px 34px rgba(13,34,64,0.24);padding:13px 14px;width:300px}
+.pop{position:absolute;z-index:30;background:#fff;border:2px solid #1d6fe8;border-radius:14px;box-shadow:0 12px 34px rgba(13,34,64,0.24);padding:13px 14px;width:302px}
 .pop h6{font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:2px}
 .pop .ph{font-size:10.5px;color:#94a3b8;font-weight:700;margin-bottom:8px;line-height:1.5}
 .stagerow{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
 .sbtn{border:1.5px solid #e2e8f0;background:#fff;border-radius:9px;padding:7px 1px;font-size:11px;font-weight:800;color:#94a3b8;cursor:pointer;font-family:inherit;text-align:center;line-height:1.2}
 .sbtn small{display:block;font-size:8.5px;font-weight:700;opacity:.75;margin-top:1px}
-.ahabox{margin-top:9px;border-radius:10px;padding:8px 10px;border:1.5px solid}
-.ahabox .t{font-size:11px;font-weight:900;margin-bottom:3px}
-.ahabox .d{font-size:10.5px;font-weight:700;line-height:1.55}
+.ahabox{margin-top:9px;border-radius:10px;padding:9px 10px;border:1.5px solid}
+.ahabox .t{font-size:11px;font-weight:900;margin-bottom:4px}
+.ahabox .d{font-size:10.5px;font-weight:700;line-height:1.6}
+.stucklist{margin-top:6px;background:rgba(255,255,255,.75);border-radius:7px;padding:6px 8px;font-size:10px;font-weight:700;line-height:1.65;color:#7c2d12}
 .ahatog{margin-top:6px;border:1.5px solid #cbd5e1;background:#fff;border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit;width:100%}
 .hint{font-size:10.5px;color:#64748b;font-weight:700;line-height:1.5;margin-top:8px;background:#f8fafc;border-radius:8px;padding:6px 9px}
 .popfoot{display:flex;gap:6px;margin-top:8px}
 .popfoot button{flex:1;border:none;border-radius:9px;padding:8px 4px;font-size:11.5px;font-weight:900;cursor:pointer;font-family:inherit}
-.pf-x{background:#f1f5f9;color:#475569}
-.pf-ok{background:#1d6fe8;color:#fff}
+.pf-x{background:#f1f5f9;color:#475569}.pf-ok{background:#1d6fe8;color:#fff}
 
-/* 요약바 */
-.ahabar{margin-top:12px;background:#faf5ff;border:1.5px solid #e9d5ff;border-radius:13px;padding:12px 15px}
-.ahabar .h{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px}
-.ahabar .h b{font-size:14px;font-weight:900;color:#7c3aed}
+/* 요약 */
+.ahabar{margin-top:12px;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:13px;padding:12px 15px}
+.ahabar .h{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:9px}
+.ahabar .h b{font-size:14px;font-weight:900;color:#c2410c}
 .pill{border-radius:20px;padding:3px 11px;font-size:11.5px;font-weight:900;color:#fff}
-.ahabar button{border:none;background:#7c3aed;color:#fff;border-radius:9px;padding:7px 14px;font-size:11.5px;font-weight:900;cursor:pointer;font-family:inherit;margin-left:auto}
-.ahabar .list{font-size:12px;font-weight:700;line-height:1.85}
+.ahabar button{border:none;background:#ea580c;color:#fff;border-radius:9px;padding:7px 14px;font-size:11.5px;font-weight:900;cursor:pointer;font-family:inherit;margin-left:auto}
+.qrow{display:flex;gap:9px;align-items:center;background:#fff;border:1px solid #fed7aa;border-radius:10px;padding:8px 11px;margin-bottom:5px;font-size:12px;font-weight:700;color:#7c2d12;flex-wrap:wrap}
+.qtag{border-radius:6px;padding:2px 7px;font-size:10px;font-weight:900;color:#fff;white-space:nowrap}
+
+/* 학생앱 카드 */
+.phone{max-width:330px;margin:0 auto;background:#0d2240;border-radius:24px;padding:12px 10px 16px;box-shadow:0 12px 34px rgba(13,34,64,.28)}
+.phone .scr{background:#f6f8fc;border-radius:16px;padding:13px 12px}
+.pcard{background:#fff;border-radius:14px;padding:13px 14px;border:1.5px solid #fed7aa;margin-bottom:9px}
+.pcard .t{font-size:13.5px;font-weight:900;color:#c2410c;margin-bottom:3px}
+.pcard .s{font-size:11px;color:#94a3b8;font-weight:700;margin-bottom:9px;line-height:1.5}
+.pitem{display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;color:#0d2240;padding:7px 9px;background:#fff7ed;border-radius:9px;margin-bottom:5px}
+.pbtn2{width:100%;border:none;background:linear-gradient(135deg,#ea580c,#f97316);color:#fff;border-radius:11px;padding:11px;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;margin-top:4px}
 
 .leg{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;font-weight:700;color:#475569;margin-top:12px;align-items:center}
 .leg span.k{display:inline-flex;align-items:center;gap:6px}
@@ -101,297 +110,328 @@ table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
 table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
 table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
 table.cmp td b{color:#0d2240}
-.pick{background:#f5f3ff}
+.pick{background:#f0fdf4}
 .count{display:inline-block;background:#0d2240;color:#fff;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:900}
-
-.step{display:flex;gap:12px;align-items:flex-start;margin-bottom:11px}
-.stepn{width:24px;height:24px;border-radius:50%;background:#1d6fe8;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.step b{font-size:13.5px;color:#0d2240;display:block;margin-bottom:2px}
-.step p{font-size:12.5px;color:#475569;font-weight:600;line-height:1.65}
+code{background:#f1f5f9;border-radius:5px;padding:1px 6px;font-size:11.5px;font-family:ui-monospace,monospace;color:#0d2240}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<h1>📋 숙제체크 — 아하노트를 자동 구분하되, 억울한 감점은 없게</h1>
+<h1>📋 숙제체크 + 아하노트 — “막힌 문제를 질문했는가”</h1>
 <p class="sub">
-숙제(풀이·채점·오답)는 <b>원장님이 1클릭</b>, 아하노트는 <b>학생앱 제출 기록</b>으로 자동 판정합니다.<br>
-그리고 <b>“질문이 없어서 안 올린 학생”은 매쓰플랫 채점 기록으로 가려내</b> 감점하지 않습니다.<br>
+아하노트의 정의를 바로잡아 다시 설계했습니다. 그리고 그 과정에서 <b>매쓰플랫의 「모름」 체크를 찾았습니다</b>.<br>
 아래 그리드는 <b>실제로 눌러볼 수 있습니다</b>.
 </p>
 
-<!-- ① 지적 반영 -->
+<!-- ① 정의 바로잡기 -->
 <div class="sec">
-  <div class="stitle">① “질문이 없어서 안 올리는 학생” — 실제로 몇 명인지 세어봤습니다 <span class="badge b-fix">지적 반영</span></div>
-  <div class="sdesc">감점 기준을 정하려면 이 숫자가 먼저 필요합니다</div>
+  <div class="stitle">① 정의를 바로잡습니다 <span class="badge b-fix">지적 반영</span></div>
+  <div class="sdesc">이 한 문장이 설계 전체를 바꿉니다</div>
 
-  <div class="warnb"><div class="ic">⚠️</div><div>
-    <b>지난번 미리보기는 이 부분이 틀렸습니다</b>
-    <p>“아하노트 미제출 = 미흡”으로 만들면, <b>다 맞아서 쓸 게 없었던 학생</b>까지 감점됩니다.
-    실제로 그런 학생이 있다는 말씀이 맞습니다. 그래서 <b>“쓸 게 있었는가”를 먼저 확인</b>하도록 고쳤습니다.</p>
+  <div class="quote">
+    “아하노트는 오답을 하고 <b style="color:#fbbf24">해결 안 되는 문제</b>를 질문하는 것이다.”
+    <small>— 원장님</small>
+  </div>
+
+  <div class="chain">
+    <div class="ch" style="background:#eff6ff;border-color:#bfdbfe"><b style="color:#1d4ed8">① 풀이</b><span style="color:#1e40af">문제를 푼다</span></div>
+    <div class="arrow">→</div>
+    <div class="ch" style="background:#fef9c3;border-color:#fde047"><b style="color:#92400e">② 채점</b><span style="color:#78350f">맞았는지 확인</span></div>
+    <div class="arrow">→</div>
+    <div class="ch" style="background:#dcfce7;border-color:#86efac"><b style="color:#15803d">③ 오답</b><span style="color:#166534">틀린 걸 <b>스스로</b> 정리</span></div>
+    <div class="arrow">→</div>
+    <div class="ch" style="background:#fff7ed;border-color:#fed7aa"><b style="color:#c2410c">④ 아하노트</b><span style="color:#9a3412"><b>그래도 안 되는 것만</b> 질문</span></div>
+  </div>
+
+  <div class="box x-red"><div class="ic">❌</div><div>
+    <b>지난 미리보기가 틀렸던 부분</b>
+    <p>저는 “오답이 3개 이상이면 아하노트를 써야 한다”로 잡았습니다. 이건 <b>③단계와 ④단계를 헷갈린 것</b>입니다.<br>
+    오답이 20개여도 <b>스스로 정리해서 다 이해했다면 아하노트는 0개가 정상</b>입니다.</p>
+  </div></div>
+
+  <div class="box x-grn"><div class="ic">✅</div><div>
+    <b>그래서 두 가지를 바꿉니다</b>
+    <p><b>1. 아하노트를 퍼센트에서 뺍니다.</b> 숙제 100% = 풀이 + 채점 + 오답. 아하노트는 조건부라서 점수 항목이 될 수 없습니다.<br>
+    <b>2. 봐야 할 것은 딱 하나</b> — “<b>해결 안 된 문제가 있는데 질문하지 않았는가</b>”.</p>
+  </div></div>
+</div>
+
+<!-- ② 모름 체크 발견 -->
+<div class="sec">
+  <div class="stitle">② 매쓰플랫 「모름」 체크 — 찾았습니다 <span class="badge b-find">발견</span></div>
+  <div class="sdesc">“모름 체크가 있기는 한데 찾을 방법이 없다”고 하신 그것입니다</div>
+
+  <div class="box x-grn"><div class="ic">🔎</div><div>
+    <b>매쓰플랫 서버가 문항마다 4가지 상태를 돌려줍니다</b>
+    <p><code>CORRECT</code> 정답 · <code>WRONG</code> 오답 · <code>NONE</code> 미채점 · <b><code>UNKNOWN</code> 모름</b><br>
+    오늘 새벽 실제로 로그인해 확인했습니다. <b>「모름」은 API로 가져올 수 있습니다.</b></p>
+  </div></div>
+
+  <div class="box x-red"><div class="ic">🗑️</div><div>
+    <b>그런데 우리 수집기가 그걸 버리고 있었습니다</b>
+    <p>수집기가 <code>CORRECT→O</code>, <code>WRONG→X</code>, <b>나머지는 전부 <code>-</code></b> 로 뭉개고 있었습니다.
+    그래서 「모름」이 「미채점」과 섞여 사라졌습니다. <b>이미 고쳤습니다.</b></p>
   </div></div>
 
   <div style="font-size:13px;font-weight:800;color:#0d2240;margin:16px 0 6px">
-    📊 매쓰플랫 채점 기록 실측 <span style="font-weight:600;color:#94a3b8">— 7/20~8/12 · 23,707문항 · 학생·날짜 조합 341건</span>
+    📊 「모름」 실제 사용량 <span style="font-weight:600;color:#94a3b8">— 오늘 새벽 25명 전원 · 최근 30일 · 2,707문항 실측</span>
   </div>
   <div class="bars" id="bars"></div>
 
-  <div class="purp"><div class="ic">🔎</div><div>
-    <b>그날 “틀린 문제가 하나도 없던” 경우는 6%(21건)뿐입니다</b>
-    <p>오답 <b>1~2개</b>까지 “질문 없을 만하다”로 넓게 봐도 <b>16%(54건)</b>입니다.<br>
-    → 즉 <b>질문이 없어서 못 쓴 학생은 분명히 있고(6~16%), 앱이 그들을 정확히 가려낼 수 있습니다.</b><br>
-    → 나머지 84~94%는 <b>틀린 문제가 있었는데도 안 쓴</b> 경우입니다.</p>
-  </div></div>
-
-  <div class="good"><div class="ic">✅</div><div>
-    <b>가려낼 준비는 이미 끝나 있습니다</b>
-    <p>매쓰플랫 학생 <b>29명 중 28명</b>이 학원앱 학생과 이미 연결(<span style="font-family:monospace">lumen_rec_code</span>)되어 있고,
-    문항 단위 정오답이 <b>31,462건</b> 쌓여 있습니다. 새로 만들 것 없이 <b>지금 바로 쓸 수 있습니다.</b></p>
+  <div class="box x-org"><div class="ic">😐</div><div>
+    <b>문제는 — 학생들이 「모름」을 거의 안 씁니다</b>
+    <p>30일 동안 <b>9번</b>뿐입니다(25명 중 7명만 사용). 기능이 있는 줄 모르거나, 귀찮아서 그냥 넘어갑니다.<br>
+    <b>“모르는 걸 모른다고 말하지 않는 것”</b> — 원장님이 느끼신 「아하노트 미흡」의 진짜 정체가 이것입니다.</p>
   </div></div>
 </div>
 
-<!-- ② 3상태 -->
+<!-- ③ 막힘 판정 -->
 <div class="sec">
-  <div class="stitle">② 아하노트를 <b>세 가지</b>로 나눕니다 <span class="badge b-auto">자동</span></div>
-  <div class="sdesc">“안 올림”을 하나로 뭉뚱그리지 않는 것이 핵심입니다</div>
-
+  <div class="stitle">③ “해결 안 됨”을 알아내는 네 가지 근거</div>
+  <div class="sdesc">모름 체크만으로는 부족하니, 데이터가 대신 찾아줍니다</div>
   <table class="cmp">
-    <tr><th style="width:130px">상태</th><th style="width:180px">언제</th><th style="width:90px">퍼센트</th><th>리포트에 나가는 말</th></tr>
-    <tr>
-      <td><span class="bdg aha" style="position:static;display:inline-flex;width:19px;height:19px">💡</span> <b>작성함</b></td>
-      <td>그날 학생앱에 올림</td>
-      <td><b style="color:#7c3aed">+20%</b></td>
-      <td>“아하노트를 성실히 작성했습니다”</td>
+    <tr><th style="width:44px"></th><th style="width:170px">근거</th><th style="width:130px">실측</th><th>확실한 정도</th></tr>
+    <tr class="pick">
+      <td style="font-size:19px">❓</td>
+      <td><b>「모름」 체크</b><br><span style="font-size:11px;color:#94a3b8">학생이 직접 표시</span></td>
+      <td>30일 9건 · 7명</td>
+      <td>⭐⭐⭐ <b>가장 확실</b> — 학생 본인이 모른다고 말한 것. 단, 아직 드묾</td>
     </tr>
-    <tr style="background:#fff7ed">
-      <td><span class="bdg miss" style="position:static;display:inline-flex;width:19px;height:19px">!</span> <b>미작성</b></td>
-      <td><b>틀린 문제가 있었는데</b> 안 올림</td>
-      <td><b style="color:#c2410c">+0%</b></td>
-      <td>“오답 <b>12문항</b>이 있었으나 아하노트를 쓰지 않았습니다”</td>
-    </tr>
-    <tr style="background:#f0fdf4">
-      <td>(뱃지 없음) <b>질문 없음</b></td>
-      <td><b>다 맞아서</b> 쓸 게 없었음</td>
-      <td><b style="color:#059669">+20%</b><br><span style="font-size:11px;color:#94a3b8">감점 없음</span></td>
-      <td>“전 문항 정답 — 아하노트 작성 대상 없음”</td>
+    <tr class="pick">
+      <td style="font-size:19px">🔁</td>
+      <td><b>재오답</b><br><span style="font-size:11px;color:#94a3b8">같은 문제 또 틀림</span></td>
+      <td>127건 · 하루 1.4명</td>
+      <td>⭐⭐⭐ 스스로 정리했는데도 또 틀림 = <b>해결 못 한 것이 확실</b></td>
     </tr>
     <tr>
-      <td>(뱃지 없음) <b>확인 안 됨</b></td>
-      <td>그날 매쓰플랫 채점 기록이 없음</td>
-      <td><b style="color:#059669">+20%</b><br><span style="font-size:11px;color:#94a3b8">감점 없음</span></td>
-      <td>아하노트 언급 안 함</td>
+      <td style="font-size:19px">📉</td>
+      <td><b>같은 유형 3회 오답</b></td>
+      <td>하루 6.5명</td>
+      <td>⭐⭐ 특정 유형에서 계속 막힘. 문제 하나가 아니라 <b>개념이 안 잡힘</b></td>
     </tr>
-  </table>
-
-  <div class="rule" style="margin-top:14px">
-    <b>가장 중요한 원칙 — 확실하지 않으면 감점하지 않습니다.</b><br>
-    채점 기록이 없거나 판단이 애매하면 <b>그냥 넘어갑니다</b>. 억울하게 깎이는 학생이 생기는 쪽보다,
-    몇 명 놓치는 쪽이 낫습니다. (놓친 경우는 원장님이 창에서 직접 표시하실 수 있습니다.)
-  </div>
-</div>
-
-<!-- ③ 기준 선택 -->
-<div class="sec">
-  <div class="stitle">③ 여기만 정해주시면 됩니다 — “몇 개 틀리면 아하노트를 써야 하나” <span class="badge b-key">결정 필요</span></div>
-  <div class="sdesc">실제 데이터로 각 기준의 결과를 계산했습니다 (341건 기준)</div>
-  <table class="cmp">
-    <tr><th style="width:150px">기준</th><th style="width:130px">❗ 미작성</th><th style="width:150px">⚪ 질문 없음(면제)</th><th>판단</th></tr>
-    <tr><td><b>오답 1개 이상</b></td><td>276건</td><td>21건 <b>(6%)</b></td><td>🔶 엄격 — 1개 틀린 날도 써야 함</td></tr>
-    <tr class="pick"><td><b>오답 3개 이상 ⭐</b></td><td>247건</td><td>54건 <b>(16%)</b></td><td>✅ <b>추천</b> — 1~2개는 스스로 이해했을 수 있다고 봄</td></tr>
-    <tr><td><b>오답 5개 이상</b></td><td>213건</td><td>90건 <b>(26%)</b></td><td>🔶 느슨 — 4개 틀려도 면제</td></tr>
-    <tr><td><b>정답률 80% 미만</b></td><td>137건</td><td>183건 <b>(54%)</b></td><td>❌ 문항 수가 많으면 10개 틀려도 면제됨</td></tr>
+    <tr>
+      <td style="font-size:19px">✋</td>
+      <td><b>원장님이 「오답」 미완료로 찍음</b></td>
+      <td>—</td>
+      <td>⭐⭐⭐ 오답 정리 자체를 못 한 것 — 원장님 판단이 가장 정확</td>
+    </tr>
   </table>
   <div class="rule" style="margin-top:13px">
-    <b>추천: 오답 3개 이상.</b> 1~2개는 학생이 스스로 이해하고 넘어갈 수 있는 범위이고,
-    3개부터는 정리할 가치가 있다고 보는 것입니다. <b>나중에 설정에서 언제든 바꾸실 수 있게</b> 만들겠습니다.
+    <b>추천: ❓모름 + 🔁재오답 + ✋원장 판단 (3가지).</b> 하루 <b>2~3명</b> 정도로 좁혀집니다.<br>
+    📉유형 3회는 하루 6~7명이라 조금 넓습니다 — 넣을지는 원장님이 정해주세요.<br>
+    <b>이 중 아무 근거도 없으면 아하노트가 없어도 정상</b>으로 봅니다. 감점하지 않습니다.
   </div>
 </div>
 
 <!-- ④ 데모 -->
 <div class="sec">
   <div class="stitle">④ 직접 눌러보세요 <span class="badge b-key">실제 동작</span></div>
-  <div class="sdesc">칸을 클릭하면 <b>빈칸 → 🟢숙제완료 → 🔴미흡(창 뜸) → 지움</b> 순으로 돕니다</div>
+  <div class="sdesc">칸 클릭 = <b>빈칸 → 🟢숙제완료 → 🔴미흡(창) → 지움</b>. 아하노트는 점수가 아니라 <b>뱃지</b>입니다</div>
 
   <div class="demobar">
-    <span class="tag">클릭 순환: 🟢 숙제완료 → 🔴 미흡 → 지움</span>
-    <span class="tag" style="background:#f3e8ff;color:#7c3aed">💡 · ❗ 뱃지는 <b>자동</b> — 누를 필요 없음</span>
-    <span class="tag" style="background:#fef3c7;color:#b45309">날짜 아래 <b>[전원✅]</b> 도 눌러보세요</span>
+    <span class="tag">퍼센트 = 풀이 40 · 채점 70 · 오답 100 <b>(아하노트 제외)</b></span>
+    <span class="tag" style="background:#fff7ed;color:#c2410c">❓ 뱃지 = 막혔는데 질문 안 함</span>
+    <span class="tag" style="background:#f3e8ff;color:#7c3aed">💡 뱃지 = 질문함</span>
   </div>
 
   <div class="gwrap" id="gwrap"></div>
 
   <div class="leg">
-    <span class="k"><span class="sw" style="background:#dcfce7;border-color:#22c55e">🟢<span class="bdg aha" style="width:13px;height:13px;font-size:7px;top:-5px;right:-5px">💡</span></span> <b>100%</b> 아하노트 작성</span>
-    <span class="k"><span class="sw" style="background:#dcfce7;border-color:#86efac">🟢<span class="bdg miss" style="width:13px;height:13px;font-size:7px;top:-5px;right:-5px">!</span></span> <b>80%</b> 틀렸는데 안 씀</span>
-    <span class="k"><span class="sw" style="background:#dcfce7;border-color:#86efac">🟢</span> <b>100%</b> 질문 없음 / 확인 안 됨</span>
-    <span class="k"><span class="sw" style="background:#fef9c3;border-color:#f59e0b;color:#92400e">채</span> 채점까지</span>
-    <span class="k"><span class="sw" style="background:#fee2e2;border-color:#fca5a5">🔴</span> 안 해옴</span>
+    <span class="k"><span class="sw" style="background:#dcfce7;border-color:#22c55e">🟢<span class="bdg aha" style="width:13px;height:13px;font-size:7px;top:-5px;right:-5px">💡</span></span> 숙제완료 + <b>질문함</b></span>
+    <span class="k"><span class="sw" style="background:#dcfce7;border-color:#86efac">🟢<span class="bdg stuck" style="width:13px;height:13px;font-size:7px;top:-5px;right:-5px">?</span></span> 숙제완료지만 <b>막힌 채 질문 안 함</b></span>
+    <span class="k"><span class="sw" style="background:#dcfce7;border-color:#86efac">🟢</span> 막힌 것 없음 — <b>정상</b></span>
+    <span class="k"><span class="sw" style="background:#fef9c3;border-color:#f59e0b;color:#92400e">채</span> 채점까지 70%</span>
   </div>
   <div style="font-size:11.5px;color:#64748b;font-weight:700;margin-top:10px;line-height:1.7">
-    · <b style="color:#c2410c">주황 ❗</b>가 붙은 칸만 아하노트로 감점됩니다 — <b>뱃지가 없으면 감점 없음</b><br>
-    · 칸에 마우스를 올리면 「오답 12문항 있었는데 아하노트 없음」처럼 <b>이유를 말로</b> 보여줍니다<br>
-    · <b style="color:#0d9488">청록 뱃지</b> = 원장님이 직접 표시하신 것 (종이로 받은 경우 등)
+    · <b style="color:#c2410c">주황 ❓</b> 옆 숫자 = 막힌 문제 개수입니다. 칸에 마우스를 올리면 <b>어느 문제인지</b> 나옵니다<br>
+    · 🟢인데 뱃지가 없으면 <b>완전히 정상</b>입니다 — 아하노트가 없어도 아무 문제 없습니다<br>
+    · 퍼센트에 아하노트가 안 들어가므로, 다 맞은 학생도 <b>100%</b>입니다
   </div>
 </div>
 
-<!-- ⑤ 요약바 -->
+<!-- ⑤ 오늘 막힌 문제 -->
 <div class="sec">
-  <div class="stitle">⑤ 하루 요약 — 진짜 챙겨야 할 학생만 걸러줍니다</div>
-  <div class="sdesc">“미제출 23명”이 아니라 “진짜 미작성 19명”으로</div>
+  <div class="stitle">⑤ 「오늘 막힌 문제」 — 수업 중에 바로 쓰는 목록 <span class="badge b-new">신규</span></div>
+  <div class="sdesc">“누가 안 냈나”가 아니라 “<b>무슨 문제에서 막혔나</b>”를 보여줍니다</div>
 
   <div class="ahabar">
     <div class="h">
-      <b>💡 오늘(8/12) 아하노트</b>
-      <span class="pill" style="background:#a855f7">작성 2명</span>
-      <span class="pill" style="background:#f97316">❗ 미작성 19명</span>
-      <span class="pill" style="background:#059669">질문 없음 3명</span>
-      <span class="pill" style="background:#94a3b8">확인 안 됨 1명</span>
-      <button onclick="alert('미리보기입니다 — 실제로는 ❗ 19명에게만 학생앱 공지가 갑니다')">📣 ❗ 19명에게만 공지</button>
+      <b>🚧 오늘(8/12) 막힌 문제</b>
+      <span class="pill" style="background:#ea580c">❓ 질문 안 한 학생 3명</span>
+      <span class="pill" style="background:#a855f7">💡 질문한 학생 2명</span>
+      <span class="pill" style="background:#059669">막힌 것 없음 20명</span>
+      <button onclick="alert('미리보기입니다 — 실제로는 그 3명의 학생앱에만 알림이 갑니다')">📣 3명에게 질문 권유</button>
     </div>
-    <div class="list">
-      <span style="color:#c2410c"><b>❗ 미작성 19명</b> (틀린 문제가 있었는데 안 씀) — 오시안(오답 14), 유은상(9), 윤이솔(21), 서규리(5), 옥서정(11) …</span><br>
-      <span style="color:#059669"><b>⚪ 질문 없음 3명</b> (전 문항 정답) — 한소율, 유지아, 최우진 <span style="color:#94a3b8">→ 감점 없음</span></span><br>
-      <span style="color:#94a3b8"><b>⋯ 확인 안 됨 1명</b> (매쓰플랫 채점 기록 없음) — 서민수 <span>→ 감점 없음</span></span><br>
-      <span style="color:#a855f7">⚠️ <b>7일 연속 ❗</b>: 곽선우 · 우정민</span>
+    <div class="qrow"><span class="qtag" style="background:#ea580c">❓ 모름</span><b>오시안</b> · 쎈 초6-2 · 82p 14번 <span style="color:#94a3b8">— 학생이 직접 「모름」 표시함</span></div>
+    <div class="qrow"><span class="qtag" style="background:#dc2626">🔁 재오답</span><b>윤이솔</b> · 개념유형 중1-1 · 55p 7번 <span style="color:#94a3b8">— 7/29에도 틀렸던 문제를 또 틀림</span></div>
+    <div class="qrow"><span class="qtag" style="background:#d97706">📉 3회</span><b>홍세원</b> · 일차방정식의 활용 <span style="color:#94a3b8">— 이 유형에서 3번째 오답</span></div>
+    <div style="font-size:11.5px;color:#9a3412;font-weight:700;margin-top:8px;line-height:1.7">
+      💡 이 목록이 그대로 <b>수업 전 브리핑</b>이 됩니다 — 오늘 이 3명에게 이 문제를 물어보면 됩니다.
     </div>
-  </div>
-
-  <div class="rule" style="margin-top:14px">
-    <b>이 한 줄이 하는 일</b><br>
-    · 「📣 공지」를 눌러도 <b>❗ 19명에게만</b> 갑니다 — 다 맞은 학생에게 “아하노트 쓰세요”라고 하지 않습니다<br>
-    · <b>7일 연속 ❗</b>는 따로 표시 — 틀린 게 계속 있는데도 계속 안 쓰는 학생이라 진짜 위험 신호입니다<br>
-    · 「⚪ 질문 없음」에 계속 이름이 오르는 학생은 <b>교재 난이도를 올려야 한다</b>는 신호이기도 합니다
   </div>
 </div>
 
-<!-- ⑥ 입력 흐름 -->
+<!-- ⑥ 학생앱 -->
 <div class="sec">
-  <div class="stitle">⑥ 실제 수업날 입력 순서 — 25명이 <span class="count">약 40초</span></div>
-  <div class="sdesc">아하노트가 전부 자동이라 클릭이 늘지 않습니다</div>
-  <div class="step"><div class="stepn">1</div><div>
-    <b>날짜 아래 [전원✅] 을 반마다 한 번씩 <span class="badge b-new">신규</span></b>
-    <p>그 반 전원이 🟢 숙제완료로 채워집니다. 반이 8개면 <b>8클릭</b>. 💡·❗ 뱃지는 앱이 알아서 붙입니다.</p>
+  <div class="stitle">⑥ 진짜 해법 — 학생이 질문하게 만들기 <span class="badge b-new">신규</span></div>
+  <div class="sdesc">원장님이 매번 독촉하는 대신, 앱이 먼저 물어봅니다</div>
+
+  <div class="box x-blu"><div class="ic">🎯</div><div>
+    <b>학생이 아하노트를 안 쓰는 진짜 이유는 “뭘 질문해야 할지 모르기 때문”입니다</b>
+    <p>“모르는 거 있으면 올려라”는 막연합니다. 그런데 앱은 <b>어느 문제에서 막혔는지 이미 알고 있습니다.</b>
+    그러면 <b>그 문제를 콕 집어 보여주고 버튼 하나로 올리게</b> 하면 됩니다.</p>
   </div></div>
-  <div class="step"><div class="stepn">2</div><div>
-    <b>숙제를 덜 해온 학생 칸만 두 번 더 눌러 🔴 로</b>
-    <p>보통 반당 0~2명. 3명이면 <b>6클릭</b>.</p>
-  </div></div>
-  <div class="step"><div class="stepn">3</div><div>
-    <b>자동으로 뜬 창에서 「어디까지」 한 칸만</b>
-    <p>[안함] [풀이] [채점] [오답까지] 중 하나. <b>3~6클릭</b>.</p>
-  </div></div>
-  <div class="rule" style="margin-top:6px">
-    <b>합계 약 17~20클릭 / 25명.</b> 지금 그리드(25클릭, 단계·%·아하노트 없음)보다 <b>적으면서</b>
-    아하노트 3상태 구분까지 들어갑니다.
+
+  <div class="phone">
+    <div class="scr">
+      <div style="font-size:11px;font-weight:900;color:#94a3b8;margin-bottom:8px">학생앱 · 홈</div>
+      <div class="pcard">
+        <div class="t">🚧 아직 안 풀린 문제 2개</div>
+        <div class="s">오답 정리를 했는데도 막힌 문제예요.<br>선생님께 물어보면 금방 풀려요!</div>
+        <div class="pitem">❓ 쎈 초6-2 · 82p 14번 <span style="margin-left:auto;color:#c2410c;font-size:10px">모름 표시함</span></div>
+        <div class="pitem">🔁 개념유형 중1-1 · 55p 7번 <span style="margin-left:auto;color:#dc2626;font-size:10px">또 틀림</span></div>
+        <button class="pbtn2" onclick="alert('미리보기입니다 — 실제로는 아하노트 작성 화면이 열리고 교재·페이지·번호가 미리 채워집니다')">📸 아하노트에 올리기</button>
+        <div style="font-size:10px;color:#94a3b8;font-weight:700;text-align:center;margin-top:7px">올리면 <b style="color:#7c3aed">+30 XP</b> · 선생님이 바로 확인해요</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule" style="margin-top:16px">
+    <b>왜 이게 효과가 있나</b><br>
+    · 학생은 <b>사진만 찍으면</b> 됩니다 — 교재·페이지·문항번호가 이미 채워져 있습니다<br>
+    · <b>“모른다고 말하는 것”이 쉬워집니다</b> — 지금은 학생이 스스로 판단해서 올려야 합니다<br>
+    · 기존 <b>XP·뱃지</b>에 그대로 연결됩니다 — 올릴 이유가 생깁니다<br>
+    · 그리고 학생이 「모름」을 누르면 바로 여기에 뜨므로, <b>「모름」 체크도 같이 살아납니다</b>
   </div>
 </div>
 
-<!-- ⑦ 구현 -->
+<!-- ⑦ 이미 한 일 -->
 <div class="sec">
-  <div class="stitle">⑦ 구현 시 확인 사항</div>
-  <div class="sdesc">승인해 주시면 이 범위로 만들겠습니다</div>
+  <div class="stitle">⑦ 오늘 이미 해둔 것 <span class="badge b-find">완료</span></div>
+  <div class="sdesc">데이터가 계속 버려지고 있어서 이 부분은 먼저 고쳐뒀습니다</div>
   <div class="rule">
-    <b>· 그리드 화면만 바뀝니다.</b> 2번째 화면(빠른입력 상세)은 <b>그대로 둡니다</b>.<br>
-    <b>· 기존 🟢🔴 기록은 그대로 유지</b>됩니다.<br>
-    <b>· 오답 개수·아하노트는 한 달치를 한 번에</b> 받아 캐시합니다 — 칸마다 서버를 찌르지 않습니다.<br>
-    <b>· 매쓰플랫 채점 기록은 새벽에 자동 수집</b>되므로, 당일 수업 직후엔 아직 없을 수 있습니다.
-    그때는 <b>「확인 안 됨」(감점 없음)</b>으로 두고, 다음 날 자동으로 채워집니다.<br>
-    <b>· 매쓰플랫과 연결 안 된 학생 1명</b>은 항상 「확인 안 됨」이 됩니다 — 등록부에서 연결해 주시면 해결됩니다.<br>
-    <b>· 감점 기준(오답 3개)은 설정에서 변경 가능</b>하게 만듭니다.
+    <b>1. 수집기가 「모름」을 살려서 저장하도록 고쳤습니다</b> <span style="color:#94a3b8">(sync/mathflat_collector.js)</span><br>
+    이제 <code>UNKNOWN</code> → <code>?</code> 로 따로 저장됩니다. 지금까지는 미채점과 섞여 사라졌습니다.<br><br>
+    <b>2. 원장님이 한 번만 해주실 일이 있습니다</b><br>
+    Supabase 저장소가 <code>O</code>·<code>X</code>·<code>-</code> 세 값만 허용하도록 잠겨 있어, <code>?</code>를 넣으려면 잠금을 한 번 풀어야 합니다.<br>
+    → <b>Supabase → SQL Editor → <code>docs/supabase_unknown_result.sql</code> 붙여넣고 Run</b> (한 번이면 끝)<br><br>
+    <b>3. 그때까지도 수집은 안 멈춥니다</b><br>
+    잠금이 안 풀린 상태면 수집기가 자동으로 <code>-</code>로 낮춰 저장하고, 로그에 안내만 남깁니다.<br>
+    잠금을 푸신 뒤 <code>--days 60</code> 으로 한 번 다시 돌리면 <b>지난 두 달치 「모름」도 복구</b>됩니다.
+  </div>
+</div>
+
+<!-- ⑧ 정해주실 것 -->
+<div class="sec">
+  <div class="stitle">⑧ 정해주실 것 두 가지</div>
+  <div class="sdesc">이것만 알려주시면 구현하겠습니다</div>
+  <div class="rule">
+    <b>①  「막힘」 판정에 📉유형 3회 오답을 넣을까요?</b><br>
+    · 넣으면 하루 <b>6~7명</b> — 넓게 챙기지만 “그냥 어려운 단원”도 걸립니다<br>
+    · 빼면 하루 <b>2~3명</b> — ❓모름 + 🔁재오답 + ✋원장 판단만. <b>추천</b><br><br>
+    <b>②  숙제 퍼센트를 어떻게 나눌까요?</b><br>
+    · <b>풀이 40 · 채점 70 · 오답 100</b> — 추천 (오답 정리까지 하면 100점)<br>
+    · 풀이 30 · 채점 60 · 오답 100 도 가능합니다<br><br>
+    <span style="color:#94a3b8">그 외에는 지금까지 보여드린 대로 만들면 됩니다 — 그리드 1클릭 입력, [전원✅], 미흡 시 자동 창.</span>
   </div>
 </div>
 
 <div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
-  이 화면은 <b>미리보기(목업)</b>입니다 — 실제 앱에는 아직 반영되지 않았습니다
+  ①~⑥은 <b>미리보기(목업)</b>입니다 — 실제 앱에는 아직 반영되지 않았습니다 · ⑦은 이미 반영됨
 </div>
 </div>
 
 <script>
-/* ① 실측 막대 — 그날 오답 개수 분포 (매쓰플랫 실제 집계) */
-var DIST=[['0개',21,'#059669'],['1~2개',33,'#22c55e'],['3~5개',57,'#f59e0b'],['6~10개',75,'#f97316'],['11개+',155,'#dc2626']];
+/* ② 실측 막대 — 최근 30일 2,707문항 */
+var RES=[['정답 CORRECT',2332,'#22c55e'],['오답 WRONG',320,'#f97316'],['미채점 NONE',27,'#cbd5e1'],['❓ 모름 UNKNOWN',28,'#dc2626']];
 (function(){
-  var tot=341, h='';
-  DIST.forEach(function(x){
-    var pct=Math.round(x[1]/tot*100);
+  var tot=2707, h='';
+  RES.forEach(function(x){
+    var pct=x[1]/tot*100;
     h+='<div class="brow"><span class="blab">'+x[0]+'</span>'
-      +'<span class="btrack"><span class="bfill" style="width:'+Math.max(pct,2)+'%;background:'+x[2]+'"></span></span>'
-      +'<span class="bnum" style="color:'+x[2]+'">'+x[1]+'건 <span style="color:#94a3b8">('+pct+'%)</span></span></div>';
+      +'<span class="btrack"><span class="bfill" style="width:'+Math.max(pct,1.2)+'%;background:'+x[2]+'"></span></span>'
+      +'<span class="bnum" style="color:'+x[2]+'">'+x[1]+'건 <span style="color:#94a3b8">('+pct.toFixed(1)+'%)</span></span></div>';
   });
-  h+='<div style="font-size:11px;color:#94a3b8;font-weight:700;margin-top:6px;padding-left:61px">'
-    +'↑ 「그날 그 학생이 몇 문제 틀렸나」의 분포입니다. <b style="color:#059669">0개</b>인 경우만 “질문이 없어서 못 쓴” 경우입니다.</div>';
+  h+='<div style="font-size:11.5px;color:#64748b;font-weight:700;margin-top:8px;padding-left:129px;line-height:1.7">'
+    +'「모름」 <b style="color:#dc2626">28건</b> — <b>25명 중 7명</b>만 사용 · 30일 동안 <b>9번</b><br>'
+    +'한 번 누를 때는 평균 3개(최대 8개)를 함께 표시합니다</div>';
   document.getElementById('bars').innerHTML=h;
 })();
 
-/* ────────── 데모 데이터 ────────── */
-var GROUPS = [
-  {name:'M3 (월·수·금)', days:[1,3,5], students:['오시안','유은상','윤이솔','홍세원']},
-  {name:'M4 (월·수·금)', days:[1,3,5], students:['서규리','옥서정','한소율','최우진']},
-  {name:'T3 (화·목)',   days:[2,4],   students:['유지아','서민수']}
+/* ────────── 데모 ────────── */
+var GROUPS=[
+  {name:'M3 (월·수·금)',days:[1,3,5],students:['오시안','유은상','윤이솔','홍세원']},
+  {name:'M4 (월·수·금)',days:[1,3,5],students:['서규리','옥서정','한소율','최우진']},
+  {name:'T3 (화·목)',days:[2,4],students:['유지아','서민수']}
 ];
 var DOW=['일','월','화','수','목','금','토'];
-var Y=2026, M=8, DAYS=[3,4,5,6,7,10,11,12,13,14];
-var TODAY='2026-08-12';
-var WRONG_MIN=3;   // ③에서 정한 기준
+var Y=2026,M=8,DAYS=[3,4,5,6,7,10,11,12,13,14],TODAY='2026-08-12';
+var USE_TOPIC3=false;   // ⑧-① 기본: 유형 3회는 빼고
 
-/* 숙제 상태 — 원장이 찍음 */
-var ST = {
-  '오시안|2026-08-03':{v:'st1'}, '오시안|2026-08-05':{v:'done'}, '오시안|2026-08-07':{v:'st2'}, '오시안|2026-08-10':{v:'none'},
-  '유은상|2026-08-03':{v:'st2'}, '유은상|2026-08-05':{v:'done'}, '유은상|2026-08-10':{v:'done'},
+var ST={
+  '오시안|2026-08-03':{v:'st1'},'오시안|2026-08-05':{v:'done'},'오시안|2026-08-07':{v:'st2'},'오시안|2026-08-10':{v:'none'},
+  '유은상|2026-08-03':{v:'st2'},'유은상|2026-08-05':{v:'done'},'유은상|2026-08-10':{v:'done'},
   '윤이솔|2026-08-10':{v:'done'},
-  '홍세원|2026-08-03':{v:'none'}, '홍세원|2026-08-05':{v:'st1'}, '홍세원|2026-08-07':{v:'none'}, '홍세원|2026-08-10':{v:'done'},
+  '홍세원|2026-08-03':{v:'none'},'홍세원|2026-08-05':{v:'st1'},'홍세원|2026-08-07':{v:'none'},'홍세원|2026-08-10':{v:'done'},
   '서규리|2026-08-03':{v:'done'},'서규리|2026-08-05':{v:'done'},'서규리|2026-08-07':{v:'done'},
-  '옥서정|2026-08-03':{v:'st1'}, '옥서정|2026-08-10':{v:'none'},
+  '옥서정|2026-08-03':{v:'st1'},'옥서정|2026-08-10':{v:'none'},
   '한소율|2026-08-03':{v:'done'},'한소율|2026-08-05':{v:'done'},
-  '최우진|2026-08-03':{v:'st2'}, '최우진|2026-08-05':{v:'done'}, '최우진|2026-08-07':{v:'done'}, '최우진|2026-08-10':{v:'done'},
+  '최우진|2026-08-03':{v:'st2'},'최우진|2026-08-05':{v:'done'},'최우진|2026-08-07':{v:'done'},'최우진|2026-08-10':{v:'done'},
   '유지아|2026-08-04':{v:'done'},'유지아|2026-08-06':{v:'done'},'유지아|2026-08-11':{v:'done'},
-  '서민수|2026-08-04':{v:'none'}, '서민수|2026-08-06':{v:'st1'}, '서민수|2026-08-11':{v:'none'}
+  '서민수|2026-08-04':{v:'none'},'서민수|2026-08-06':{v:'st1'},'서민수|2026-08-11':{v:'none'}
 };
-/* 아하노트 제출 — 학생앱 기록 (자동) */
-var AHA = {
-  '서규리|2026-08-03':1, '유지아|2026-08-04':1, '최우진|2026-08-05':1,
-  '유지아|2026-08-06':1, '유은상|2026-08-05':1, '최우진|2026-08-10':1, '오시안|2026-08-05':1
+/* 아하노트 제출 (학생앱) */
+var AHA={'서규리|2026-08-03':1,'유지아|2026-08-04':1,'최우진|2026-08-05':1,'유은상|2026-08-05':1,'최우진|2026-08-10':1};
+/* 막힌 문제 — 근거별 (매쓰플랫 자동) */
+var STUCK={
+  '오시안|2026-08-05':[{k:'unk',t:'쎈 초6-2 · 82p 14번'}],
+  '오시안|2026-08-07':[{k:'re',t:'디딤돌 6-2 · 40p 9번'}],
+  '윤이솔|2026-08-10':[{k:'re',t:'개념유형 중1-1 · 55p 7번'},{k:'unk',t:'RPM 중1-1 · 31p 3번'}],
+  '홍세원|2026-08-10':[{k:'t3',t:'일차방정식의 활용 (3회째 오답)'}],
+  '유은상|2026-08-05':[{k:'unk',t:'쎈 초6-2 · 77p 6번'}],
+  '최우진|2026-08-03':[{k:'re',t:'개념유형 중1-1 · 22p 11번'}],
+  '서민수|2026-08-06':[{k:'t3',t:'소인수분해 (3회째 오답)'}],
+  '유지아|2026-08-11':[{k:'t3',t:'함수의 그래프 (3회째 오답)'}]
 };
-/* 그날 오답 개수 — 매쓰플랫 (자동). undefined = 채점 기록 없음 */
-var WRONG = {
-  '오시안|2026-08-03':14,'오시안|2026-08-05':6,'오시안|2026-08-07':9,'오시안|2026-08-10':11,
-  '유은상|2026-08-03':7,'유은상|2026-08-05':4,'유은상|2026-08-10':9,
-  '윤이솔|2026-08-10':21,
-  '홍세원|2026-08-03':18,'홍세원|2026-08-05':13,'홍세원|2026-08-07':16,'홍세원|2026-08-10':8,
-  '서규리|2026-08-03':5,'서규리|2026-08-05':0,'서규리|2026-08-07':2,
-  '옥서정|2026-08-03':11,'옥서정|2026-08-10':7,
-  '한소율|2026-08-03':0,'한소율|2026-08-05':1,
-  '최우진|2026-08-03':6,'최우진|2026-08-05':3,'최우진|2026-08-07':0,'최우진|2026-08-10':5,
-  '유지아|2026-08-04':4,'유지아|2026-08-06':2,'유지아|2026-08-11':0
-  /* 서민수 = 전부 없음 → 확인 안 됨 */
-};
-var AHA_MAN = {};
+var KTAG={'unk':['❓','모름 표시','#ea580c'],'re':['🔁','같은 문제 또 틀림','#dc2626'],'t3':['📉','같은 유형 3회째','#d97706']};
 
-var LOOK = {
-  'done':{ic:'🟢', bg:'#dcfce7', bd:'#86efac', fg:'#15803d', label:'숙제완료', base:80},
-  'st2' :{ic:'채', bg:'#fef9c3', bd:'#f59e0b', fg:'#92400e', label:'채점까지', base:60},
-  'st1' :{ic:'풀', bg:'#dbeafe', bd:'#3b82f6', fg:'#1d4ed8', label:'풀이까지', base:30},
-  'none':{ic:'🔴', bg:'#fee2e2', bd:'#fca5a5', fg:'#b91c1c', label:'안 해옴',   base:0}
+var LOOK={
+  'done':{ic:'🟢',bg:'#dcfce7',bd:'#86efac',fg:'#15803d',label:'숙제완료(오답정리까지)',pct:100},
+  'st2':{ic:'채',bg:'#fef9c3',bd:'#f59e0b',fg:'#92400e',label:'채점까지',pct:70},
+  'st1':{ic:'풀',bg:'#dbeafe',bd:'#3b82f6',fg:'#1d4ed8',label:'풀이까지',pct:40},
+  'none':{ic:'🔴',bg:'#fee2e2',bd:'#fca5a5',fg:'#b91c1c',label:'안 해옴',pct:0}
 };
-var MISS = {'done':[], 'st2':['오답'], 'st1':['채점','오답'], 'none':['풀이','채점','오답']};
-var iso=function(d){ return Y+'-08-'+String(d).padStart(2,'0'); };
+var MISS={'done':[],'st2':['오답'],'st1':['채점','오답'],'none':['풀이','채점','오답']};
+var iso=function(d){return Y+'-08-'+String(d).padStart(2,'0');};
+var AHA_MAN={};
 
-/* 아하노트 판정 → 'aha'(작성) | 'man'(원장 직접) | 'miss'(틀렸는데 안 씀) | 'free'(질문 없음) | 'unk'(확인 안 됨) */
-function ahaState(k){
-  if(AHA_MAN[k]!==undefined) return AHA_MAN[k]?'man':'miss';
-  if(AHA[k]) return 'aha';
-  var w=WRONG[k];
-  if(w===undefined) return 'unk';
-  return w>=WRONG_MIN ? 'miss' : 'free';
+function stuckOf(k){
+  var a=(STUCK[k]||[]).filter(function(x){ return USE_TOPIC3 || x.k!=='t3'; });
+  if(!ST[k]) return [];
+  if(ST[k].v!=='done') a=a.concat([{k:'sn',t:'오답 정리를 못 함 (원장님 표시)'}]);   // ✋ 근거
+  return a;
 }
-var AHA_OK={'aha':1,'man':1,'free':1,'unk':1,'miss':0};
-function pctOf(k){ var s=ST[k]; if(!s) return 0; return LOOK[s.v].base + (AHA_OK[ahaState(k)]?20:0); }
+/* 상태: 'aha'(질문함) | 'man' | 'stuck'(막혔는데 질문 안 함) | 'ok'(막힌 것 없음) */
+function ahaState(k){
+  if(AHA_MAN[k]!==undefined) return AHA_MAN[k]?'man':'stuck';
+  if(AHA[k]) return 'aha';
+  return stuckOf(k).length ? 'stuck' : 'ok';
+}
+function pctOf(k){ var s=ST[k]; return s?LOOK[s.v].pct:0; }
 
 var POP=null;
+window.toggleTopic3=function(){ USE_TOPIC3=!USE_TOPIC3; POP=null; draw(); };
 
 function draw(){
-  var h='<table class="g"><tr><th style="text-align:left;padding-left:4px">학생</th>';
+  var h='<div style="display:flex;align-items:center;gap:8px;margin-bottom:9px;flex-wrap:wrap">'
+    +'<span style="font-size:11.5px;font-weight:800;color:#64748b">막힘 판정에 📉유형 3회 포함:</span>'
+    +'<button onclick="toggleTopic3()" style="border:1.5px solid '+(USE_TOPIC3?'#d97706':'#cbd5e1')+';background:'+(USE_TOPIC3?'#fef3c7':'#fff')+';color:'+(USE_TOPIC3?'#b45309':'#94a3b8')+';border-radius:8px;padding:4px 12px;font-size:11.5px;font-weight:900;cursor:pointer;font-family:inherit">'
+    +(USE_TOPIC3?'✅ 포함 (하루 6~7명)':'⬜ 제외 (하루 2~3명)')+'</button>'
+    +'<span style="font-size:11px;color:#94a3b8;font-weight:700">← 눌러서 ⑧-①을 비교해 보세요</span></div>';
+  h+='<table class="g"><tr><th style="text-align:left;padding-left:4px">학생</th>';
   DAYS.forEach(function(d){
-    var dw=new Date(Y,M-1,d).getDay(), t=(iso(d)===TODAY);
+    var dw=new Date(Y,M-1,d).getDay(),t=(iso(d)===TODAY);
     h+='<th style="'+(t?'background:#0d2240;color:#fff;border-radius:6px;padding:3px 4px':'color:'+(dw===0?'#ef4444':dw===6?'#3b82f6':'#94a3b8'))+'">'+DOW[dw]+'<br>'+d+'</th>';
   });
   h+='<th style="padding-left:10px">이번달</th></tr>';
@@ -405,38 +445,38 @@ function draw(){
     h+='<td style="background:#faf5ff"></td></tr>';
 
     g.students.forEach(function(n){
-      var done=0, weak=0, sum=0, cnt=0, aN=0, mN=0;
+      var done=0,weak=0,sum=0,cnt=0,aN=0,sN=0;
       DAYS.forEach(function(d){
-        var k=n+'|'+iso(d), s=ST[k]; if(!s) return;
-        if(s.v==='done')done++; else weak++;
+        var k=n+'|'+iso(d); if(!ST[k]) return;
+        if(ST[k].v==='done')done++; else weak++;
         sum+=pctOf(k); cnt++;
-        var a=ahaState(k); if(a==='aha'||a==='man')aN++; if(a==='miss')mN++;
+        var a=ahaState(k); if(a==='aha'||a==='man')aN++; if(a==='stuck')sN++;
       });
       h+='<tr><td class="nm">'+n+'</td>';
       DAYS.forEach(function(d){
-        var dw=new Date(Y,M-1,d).getDay(), k=n+'|'+iso(d), s=ST[k], on=g.days.indexOf(dw)>=0;
+        var dw=new Date(Y,M-1,d).getDay(),k=n+'|'+iso(d),s=ST[k],on=g.days.indexOf(dw)>=0;
         if(!on&&!s){ h+='<td><span class="cell off"></span></td>'; return; }
-        var L=s?LOOK[s.v]:null, a=s?ahaState(k):'', p=pctOf(k), w=WRONG[k];
+        var L=s?LOOK[s.v]:null,a=s?ahaState(k):'',p=pctOf(k),sk=s?stuckOf(k):[];
         var sty=L?('background:'+L.bg+';border-color:'+((a==='aha'||a==='man')&&s.v==='done'?'#22c55e':L.bd)+';color:'+L.fg):'';
         if(iso(d)===TODAY) sty+=';box-shadow:0 0 0 2px #ffd54a';
-        var atxt = a==='aha'?'아하노트 작성함'
-                 : a==='man'?'아하노트 — 원장님이 직접 「했음」 표시'
-                 : a==='miss'?('❗ 오답 '+(AHA_MAN[k]!==undefined?'':(w===undefined?'':w+'문항 있었는데 '))+'아하노트 없음')
-                 : a==='free'?('⚪ 오답 '+w+'문항 — 질문 없음(감점 없음)')
-                 : '⋯ 매쓰플랫 채점 기록 없음(감점 없음)';
-        var miss=(L?MISS[s.v].slice():[]);
-        var tip=L?(n+' · '+M+'/'+d+' — '+L.label+' · '+p+'% · '+atxt+(miss.length?' · 미완료: '+miss.join('·'):'')):(n+' · 미체크');
+        var atxt = a==='aha'?'💡 아하노트로 질문함'
+                 : a==='man'?'✋ 원장님이 「질문 받음」으로 표시'
+                 : a==='stuck'?('❓ 막힌 문제 '+sk.length+'개 — '+sk.map(function(x){return KTAG[x.k]?KTAG[x.k][1]:'원장님 표시';}).join(', '))
+                 : '막힌 문제 없음 — 아하노트 없어도 정상';
+        var mi=(L?MISS[s.v]:[]);
+        var tip=L?(n+' · '+M+'/'+d+' — '+L.label+' · '+p+'%'+(mi.length?' · 미완료: '+mi.join('·'):'')+'\n'+atxt
+                  +(sk.length?'\n'+sk.map(function(x){return '  · '+x.t;}).join('\n'):'')):(n+' · 미체크');
         var pd=(s&&p>0&&p<100)?'<span class="pctdot">'+p+'</span>':'';
         var ab='';
-        if(s&&(a==='aha')) ab='<span class="bdg aha">💡</span>';
+        if(s&&a==='aha') ab='<span class="bdg aha">💡</span>';
         else if(s&&a==='man') ab='<span class="bdg man">💡</span>';
-        else if(s&&a==='miss') ab='<span class="bdg miss">!</span>';
-        h+='<td><span class="cell" style="'+sty+'" title="'+tip+'" onclick="tap(\''+k+'\',event)">'+(L?L.ic:'')+pd+ab+'</span></td>';
+        else if(s&&a==='stuck') ab='<span class="bdg stuck">'+(sk.length>1?sk.length:'?')+'</span>';
+        h+='<td><span class="cell" style="'+sty+'" title="'+tip.replace(/"/g,'&quot;')+'" onclick="tap(\''+k+'\',event)">'+(L?L.ic:'')+pd+ab+'</span></td>';
       });
       h+='<td class="sumc"><span style="color:#059669">완료 '+done+'</span> · <span style="color:'+(weak?'#dc2626':'#94a3b8')+'">미흡 '+weak+'</span>'
         +(cnt?' · <span style="color:#1d6fe8">평균 '+Math.round(sum/cnt)+'%</span>':'')
         +' · <span style="color:'+(aN?'#7c3aed':'#cbd5e1')+'">💡'+aN+'</span>'
-        +' · <span style="color:'+(mN?'#f97316':'#cbd5e1')+'">❗'+mN+'</span></td></tr>';
+        +' · <span style="color:'+(sN?'#f97316':'#cbd5e1')+'">❓'+sN+'</span></td></tr>';
     });
   });
   h+='</table>';
@@ -452,74 +492,70 @@ window.tap=function(k,ev){
   else { delete ST[k]; delete AHA_MAN[k]; POP=null; }
   draw();
 };
-window.allDone=function(gi,d){
-  GROUPS[gi].students.forEach(function(n){ ST[n+'|'+iso(d)]={v:'done'}; });
-  POP=null; draw();
-};
-window.setStage=function(v){ if(!POP) return; ST[POP]={v:v}; draw(); };
+window.allDone=function(gi,d){ GROUPS[gi].students.forEach(function(n){ ST[n+'|'+iso(d)]={v:'done'}; }); POP=null; draw(); };
+window.setStage=function(v){ if(POP){ ST[POP]={v:v}; draw(); } };
 window.ahaOn=function(){ if(POP){ AHA_MAN[POP]=1; draw(); } };
 window.ahaOff=function(){ if(POP){ AHA_MAN[POP]=0; draw(); } };
 window.ahaAuto=function(){ if(POP){ delete AHA_MAN[POP]; draw(); } };
 window.closePop=function(){ POP=null; draw(); };
 
 function drawPop(){
-  var k=POP, s=ST[k]; if(!s) return;
-  var parts=k.split('|'), name=parts[0], day=parseInt(parts[1].slice(8),10);
-  var cell=null, cells=document.querySelectorAll('#gwrap .cell');
+  var k=POP,s=ST[k]; if(!s) return;
+  var parts=k.split('|'),name=parts[0],day=parseInt(parts[1].slice(8),10);
+  var cell=null,cells=document.querySelectorAll('#gwrap .cell');
   for(var i=0;i<cells.length;i++){ if((cells[i].getAttribute('onclick')||'').indexOf("'"+k+"'")>=0){ cell=cells[i]; break; } }
   if(!cell) return;
   var wrap=document.getElementById('gwrap');
-  var cr=cell.getBoundingClientRect(), wr=wrap.getBoundingClientRect();
+  var cr=cell.getBoundingClientRect(),wr=wrap.getBoundingClientRect();
   var left=cr.left-wr.left+wrap.scrollLeft-130;
   if(left<6) left=6;
-  if(left+300>wrap.clientWidth+wrap.scrollLeft-6) left=Math.max(6, wrap.clientWidth+wrap.scrollLeft-306);
+  if(left+302>wrap.clientWidth+wrap.scrollLeft-6) left=Math.max(6,wrap.clientWidth+wrap.scrollLeft-308);
   var top=cr.top-wr.top+wrap.scrollTop+38;
 
-  var a=ahaState(k), p=pctOf(k), L=LOOK[s.v], w=WRONG[k];
-  var STG=[['none','안함','0%'],['st1','풀이','30%'],['st2','채점','60%'],['done','오답까지','80%']];
+  var a=ahaState(k),p=pctOf(k),L=LOOK[s.v],sk=stuckOf(k);
+  var STG=[['none','안함','0%'],['st1','풀이','40%'],['st2','채점','70%'],['done','오답정리','100%']];
   var ph='<div class="pop" style="left:'+left+'px;top:'+top+'px" onclick="event.stopPropagation()">';
   ph+='<h6>'+name+' · 8/'+day+' 숙제</h6>';
-  ph+='<div class="ph"><b>어디까지 했나</b> — 한 칸만 누르면 나머지는 자동으로 「미완료」</div>';
+  ph+='<div class="ph"><b>어디까지 했나</b> — 오답 정리까지 하면 100%입니다</div>';
   ph+='<div class="stagerow">';
   STG.forEach(function(x){
-    var on=(s.v===x[0]), C=LOOK[x[0]];
+    var on=(s.v===x[0]),C=LOOK[x[0]];
     ph+='<button class="sbtn" style="'+(on?'background:'+C.bg+';border-color:'+C.bd+';color:'+C.fg:'')+'" onclick="setStage(\''+x[0]+'\')">'+x[1]+'<small>'+x[2]+'</small></button>';
   });
   ph+='</div>';
 
-  var boxSty={'aha':['#e9d5ff','#faf5ff','#7c3aed'],'man':['#99f6e4','#f0fdfa','#0d9488'],
-              'miss':['#fed7aa','#fff7ed','#c2410c'],'free':['#bbf7d0','#f0fdf4','#15803d'],
-              'unk':['#e2e8f0','#f8fafc','#64748b']}[a];
-  ph+='<div class="ahabox" style="border-color:'+boxSty[0]+';background:'+boxSty[1]+'">';
-  ph+='<div class="t" style="color:'+boxSty[2]+'">💡 아하노트 — 자동 판정</div>';
-  ph+='<div class="d" style="color:'+boxSty[2]+'">';
-  if(a==='aha')       ph+='✅ 8/'+day+'에 <b>학생앱에 올렸습니다</b> → 감점 없음';
-  else if(a==='man')  ph+='✋ <b>원장님이 직접 「했음」으로 표시</b>했습니다 → 감점 없음<br><span style="opacity:.7">학생앱 기록: '+(AHA[k]?'있음':'없음')+'</span>';
-  else if(a==='miss') ph+= (AHA_MAN[k]===0 ? '✋ <b>원장님이 직접 「안 함」으로 표시</b>했습니다 → −20%'
-                          : '❗ 그날 <b>오답 '+w+'문항</b>이 있었는데 아하노트가 없습니다 → <b>−20%</b>');
-  else if(a==='free') ph+='⚪ 그날 오답이 <b>'+w+'문항</b>뿐입니다(기준 '+WRONG_MIN+'개 미만)<br><b>질문이 없을 만한 날 → 감점하지 않습니다</b>';
-  else                ph+='⋯ 그날 <b>매쓰플랫 채점 기록이 없습니다</b><br><b>확실하지 않으므로 감점하지 않습니다</b>';
+  var B={'aha':['#e9d5ff','#faf5ff','#7c3aed'],'man':['#99f6e4','#f0fdfa','#0d9488'],
+         'stuck':['#fed7aa','#fff7ed','#c2410c'],'ok':['#bbf7d0','#f0fdf4','#15803d']}[a];
+  ph+='<div class="ahabox" style="border-color:'+B[0]+';background:'+B[1]+'">';
+  ph+='<div class="t" style="color:'+B[2]+'">💡 아하노트 — 점수 아님 · 참고용</div>';
+  ph+='<div class="d" style="color:'+B[2]+'">';
+  if(a==='aha')        ph+='✅ 이 날 <b>아하노트로 질문했습니다</b>';
+  else if(a==='man')   ph+='✋ <b>원장님이 「질문 받음」으로 표시</b>했습니다';
+  else if(a==='stuck') ph+='❓ <b>막힌 문제 '+sk.length+'개</b>가 있는데 질문하지 않았습니다';
+  else                 ph+='✅ <b>막힌 문제가 없습니다</b> — 아하노트가 없어도 <b>정상</b>입니다';
   ph+='</div>';
-  if(AHA_MAN[k]!==undefined) ph+='<button class="ahatog" onclick="ahaAuto()">↩ 자동 판정으로 되돌리기</button>';
-  else if(a==='miss')        ph+='<button class="ahatog" onclick="ahaOn()">✋ 종이로 받았음 — 「했음」으로 표시</button>';
-  else                       ph+='<button class="ahatog" onclick="ahaOff()">✋ 그래도 「안 함」으로 표시</button>';
+  if(sk.length){
+    ph+='<div class="stucklist">';
+    sk.forEach(function(x){ var t=KTAG[x.k]||['✋','원장님 표시','#64748b'];
+      ph+='<div>'+t[0]+' <b>'+t[1]+'</b> — '+x.t+'</div>'; });
+    ph+='</div>';
+  }
+  if(AHA_MAN[k]!==undefined)   ph+='<button class="ahatog" onclick="ahaAuto()">↩ 자동 판정으로 되돌리기</button>';
+  else if(a==='stuck')         ph+='<button class="ahatog" onclick="ahaOn()">✋ 수업 중에 물어봤음 — 해결로 표시</button>';
+  else if(a==='ok')            ph+='<button class="ahatog" onclick="ahaOff()">✋ 그래도 막힌 게 있음으로 표시</button>';
   ph+='</div>';
 
-  var mi=MISS[s.v].slice(); if(a==='miss') mi.push('아하노트');
-  ph+='<div class="hint">기록됨 → <b>'+L.label+' · '+p+'%</b><br>'
-     +(mi.length?'<span style="color:#b91c1c">미완료: '+mi.join(' · ')+'</span>':'<span style="color:#059669">미완료 없음</span>')+'</div>';
+  ph+='<div class="hint">기록됨 → <b>'+L.label+' · '+p+'%</b>'
+     +(MISS[s.v].length?' <span style="color:#b91c1c">(미완료: '+MISS[s.v].join('·')+')</span>':' <span style="color:#059669">(미완료 없음)</span>')
+     +'<br><span style="color:#94a3b8">아하노트는 퍼센트에 들어가지 않습니다</span></div>';
   ph+='<div class="popfoot"><button class="pf-x" onclick="closePop()">교재별로 따로 적기</button><button class="pf-ok" onclick="closePop()">확인</button></div>';
   ph+='</div>';
-  wrap.insertAdjacentHTML('beforeend', ph);
-  // 아래쪽 학생이면 창이 잘리므로 칸 위쪽으로 뒤집는다
-  var el=wrap.lastElementChild, ph2=el.offsetHeight;
-  if(top+ph2 > wrap.scrollHeight-4){
-    var up=cr.top-wr.top+wrap.scrollTop-ph2-6;
-    el.style.top = Math.max(4, up)+'px';
-  }
+  wrap.insertAdjacentHTML('beforeend',ph);
+  var el=wrap.lastElementChild,hh=el.offsetHeight;
+  if(top+hh>wrap.scrollHeight-4) el.style.top=Math.max(4,cr.top-wr.top+wrap.scrollTop-hh-6)+'px';
 }
 
-document.addEventListener('click', function(){ if(POP){ POP=null; draw(); } });
+document.addEventListener('click',function(){ if(POP){ POP=null; draw(); } });
 draw();
 </script>
 </body>

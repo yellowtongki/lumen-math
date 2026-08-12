@@ -41,7 +41,7 @@
 | `topic_id` | bigint | 토픽 ID |
 | `sub_topic_id` | bigint | 세부 토픽 ID |
 | `level` | int | 난이도(1~5) |
-| `result` | text | **`O`(정답) / `X`(오답) / `-`(미채점)** |
+| `result` | text | **`O`(정답) / `X`(오답) / `?`(모름 — 학생이 직접 누름) / `-`(미채점)** |
 | `score` | int | 그 학습지 총점 |
 | `score_datetime` | timestamptz | **채점 시각** (복습 스케줄 계산의 기준) |
 | `assign_datetime` | timestamptz | 출제(배정) 시각 |
@@ -80,7 +80,7 @@ create table if not exists mf_answer_records (
   topic_id bigint,
   sub_topic_id bigint,
   level int,
-  result text check (result in ('O','X','-')),
+  result text check (result in ('O','X','-','?')),   -- '?' = 매쓰플랫 「모름」(docs/supabase_unknown_result.sql)
   score int,
   score_datetime timestamptz,
   assign_datetime timestamptz,
@@ -89,6 +89,7 @@ create table if not exists mf_answer_records (
 );
 create index on mf_answer_records (mf_student_id, score_datetime);
 create index on mf_answer_records (result) where result = 'X';
+create index on mf_answer_records (mf_student_id, score_datetime) where result = '?';
 create index on mf_answer_records (concept_id);
 ```
 
