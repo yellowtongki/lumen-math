@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 학부모앱 과제 완성도 (접기·날짜·월별 통계)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1040px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,0.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-new{background:#dbeafe;color:#1d4ed8}.b-key{background:#fef3c7;color:#b45309}.b-ok{background:#dcfce7;color:#15803d}
+
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-red{background:#fef2f2;border-color:#fecaca}.x-red b{color:#b91c1c}.x-red p{color:#7f1d1d}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+
+.phones{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.phone{width:340px;background:#0d2240;border-radius:28px;padding:12px 10px 18px;box-shadow:0 14px 38px rgba(13,34,64,.3);flex-shrink:0}
+.phone .bar{display:flex;justify-content:center;margin-bottom:9px}
+.phone .notch{width:78px;height:5px;border-radius:9px;background:rgba(255,255,255,.25)}
+.scr{background:#f6f8fc;border-radius:19px;padding:13px 12px 16px;min-height:120px}
+.phlab{text-align:center;font-size:11.5px;font-weight:800;color:#64748b;margin-top:9px}
+.hint{text-align:center;font-size:11px;font-weight:800;color:#1d6fe8;background:#eff6ff;border-radius:50px;padding:5px 12px;margin:0 auto 12px;width:max-content}
+
+/* 상단 미니 캡 */
+.caps{display:flex;gap:7px;margin-bottom:11px}
+.cap{flex:1;background:#fff;border-radius:13px;padding:9px 10px;display:flex;gap:8px;align-items:center;box-shadow:0 2px 8px rgba(13,34,64,.05)}
+.cap .ci{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.cap .ct{font-size:10px;font-weight:800;color:#94a3b8}
+.cap .cs{font-size:11.5px;font-weight:900;margin-top:1px}
+
+/* 카드 */
+.hwcard{background:#fff;border-radius:16px;box-shadow:0 3px 12px rgba(13,34,64,.07);overflow:hidden;margin-bottom:11px}
+.hwhd{padding:12px 14px;color:#fff;cursor:pointer;user-select:none}
+.hwtop{display:flex;align-items:center;gap:8px}
+.hw1{font-size:10.5px;font-weight:800;opacity:.85}
+.hwdate{font-size:10.5px;font-weight:900;background:rgba(255,255,255,.22);border-radius:50px;padding:2px 9px;margin-left:6px}
+.hwcar{margin-left:auto;font-size:14px;opacity:.85;transition:transform .25s}
+.hwcar.open{transform:rotate(180deg)}
+.hw2{font-size:15px;font-weight:900;margin-top:5px;display:flex;align-items:flex-end;gap:8px}
+.hw2 b{margin-left:auto;font-size:28px;font-weight:900;line-height:1}
+.hw2 b span{font-size:13px;opacity:.8}
+.hwbar{height:7px;border-radius:5px;background:rgba(255,255,255,.28);margin-top:9px;overflow:hidden}
+.hwbar i{display:block;height:100%;border-radius:5px;background:#fff;transition:width .5s}
+.hwbd{padding:13px 15px 14px;display:none}
+.hwbd.open{display:block}
+.hwrow{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.hwn{width:20px;height:20px;border-radius:50%;font-size:10.5px;font-weight:900;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hwl{font-size:11.5px;font-weight:900;color:#0d2240;width:72px;flex-shrink:0;white-space:nowrap;letter-spacing:-.02em}
+.hwt{flex:1;height:9px;border-radius:6px;background:#eef2f7;overflow:hidden;position:relative}
+.hwt i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;transition:width .4s}
+.hwp{width:40px;text-align:right;font-size:12px;font-weight:900;flex-shrink:0}
+.hwnote{font-size:10px;font-weight:700;color:#94a3b8;margin:-4px 0 9px 101px;line-height:1.5}
+.hwnote b{color:#c2410c}
+.hwco{border-radius:12px;padding:11px 13px;font-size:12px;font-weight:700;line-height:1.7;display:flex;gap:9px;margin-top:3px}
+.hwco span:first-child{font-size:16px;flex-shrink:0}
+.hwsub{margin-top:11px;padding-top:11px;border-top:1px solid #f1f5f9}
+.hwsubt{font-size:10.5px;font-weight:900;color:#94a3b8;margin-bottom:8px}
+.hwitem{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;padding:7px 9px;border-radius:9px;margin-bottom:5px}
+.hwitem .st{margin-left:auto;font-size:11px;font-weight:900}
+.morebtn{width:100%;border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:10px;font-size:12px;font-weight:900;color:#1d6fe8;cursor:pointer;font-family:inherit;margin-top:10px}
+.morebtn:hover{background:#eff6ff}
+
+/* 월별 통계 */
+.mnav{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:11px}
+.mnav button{width:28px;height:28px;border-radius:9px;border:1px solid #e2e8f0;background:#fff;font-size:12px;font-weight:900;color:#64748b;cursor:pointer;font-family:inherit}
+.mnav .ym{font-size:14.5px;font-weight:900;color:#0d2240}
+.bigstat{background:#fff;border-radius:16px;padding:15px;text-align:center;box-shadow:0 3px 12px rgba(13,34,64,.07);margin-bottom:11px}
+.bigstat .n{font-size:38px;font-weight:900;line-height:1}
+.bigstat .l{font-size:11px;font-weight:800;color:#94a3b8;margin-top:4px}
+.bigstat .k{display:flex;gap:7px;margin-top:12px}
+.bigstat .kk{flex:1;background:#f8fafc;border-radius:10px;padding:8px 4px}
+.bigstat .kk b{display:block;font-size:15px;font-weight:900;color:#0d2240}
+.bigstat .kk span{font-size:9.5px;font-weight:800;color:#94a3b8}
+.mchart{background:#fff;border-radius:16px;padding:14px;box-shadow:0 3px 12px rgba(13,34,64,.07);margin-bottom:11px}
+.mct{font-size:11.5px;font-weight:900;color:#0d2240;margin-bottom:10px}
+.mbars{display:flex;gap:3px;align-items:flex-end;height:82px}
+.mb{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.mb .bx{width:100%;border-radius:5px 5px 3px 3px;position:relative;min-height:4px;transition:opacity .2s}
+.mb .dl{font-size:8.5px;font-weight:800;color:#94a3b8;white-space:nowrap}
+.mb.sel .bx{outline:2px solid #0d2240;outline-offset:1px}
+.mb:hover .bx{opacity:.8}
+.mday{margin-top:11px;padding-top:11px;border-top:1px solid #f1f5f9;font-size:11px;font-weight:700;color:#64748b;line-height:1.7}
+.mday b{color:#0d2240}
+.mfoot{background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:11px 13px;font-size:11.5px;font-weight:700;color:#075985;line-height:1.7}
+.mfoot b{color:#0c4a6e}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>👨‍👩‍👧 학부모앱 과제 완성도 — 접기 · 날짜 · 월별 통계</h1>
+<p class="sub">
+요청하신 네 가지를 담았습니다. <b>폰 화면을 직접 눌러보실 수 있습니다</b> —
+카드 머리를 누르면 접히고 펼쳐지고, 「기록 보기」를 누르면 월별 통계로 넘어갑니다.
+</p>
+
+<!-- ① 플래너/녹음 확인 -->
+<div class="sec">
+  <div class="stitle">① 먼저 — 「오늘 플래너·녹음 숙제」는 어긋난 게 아니었습니다 <span class="badge b-ok">데이터 확인</span></div>
+  <div class="sdesc">서버 기록을 직접 확인했습니다</div>
+
+  <div class="box x-grn"><div class="ic">🔎</div><div>
+    <b>숫자는 정확합니다</b>
+    <p>화면에 나온 학생의 <b>오늘(8/12)</b> 기록을 서버에서 확인했습니다 —
+    숙제체크는 <b>풀이·채점·오답 100%</b>로 찍혀 있고, 아하노트는 <b>9개 중 5개(56%)</b>.
+    <b>종합 89%가 맞습니다.</b><br>
+    그리고 <b>오늘 플래너·녹음은 정말로 아직 안 올라왔습니다</b>(마지막 제출 8/11 밤 9시대).</p>
+  </div></div>
+
+  <div class="box x-org"><div class="ic">🤔</div><div>
+    <b>그런데 왜 어긋나 보였을까</b>
+    <p><b>올리는 사람과 시각이 다르기 때문</b>입니다.<br>
+    · <b>숙제(풀이·채점·오답)</b> — 학원에서 <b>원장님이</b> 수업 중에 확인<br>
+    · <b>플래너·녹음</b> — 집에서 <b>학생이</b> 주로 밤 9~11시에 제출<br>
+    그래서 낮에는 「완성도 89%」와 「아직이에요」가 나란히 떠서 <b>모순처럼</b> 보입니다.</p>
+  </div></div>
+
+  <div class="box x-blu"><div class="ic">🧩</div><div>
+    <b>해결 — 플래너·녹음을 「오늘의 과제」 안으로 넣습니다</b>
+    <p>따로 떠 있던 두 칸을 카드 안 <b>「집에서 할 것」</b> 칸으로 옮깁니다.
+    그러면 모순이 아니라 <b>“학원 몫은 끝났고, 집에서 할 게 2개 남았다”</b>로 자연스럽게 읽힙니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 폰 데모 -->
+<div class="sec">
+  <div class="stitle">② 직접 눌러보세요 <span class="badge b-key">실제 동작</span></div>
+  <div class="sdesc">카드 머리 = 접기·펼치기 · 「기록 보기」 = 월별 통계 · 막대 = 그 날 상세</div>
+  <div class="hint">👆 카드의 <b>파란/초록 머리 부분</b>을 눌러보세요</div>
+  <div class="phones">
+    <div>
+      <div class="phone"><div class="bar"><div class="notch"></div></div><div class="scr" id="scr1"></div></div>
+      <div class="phlab">홈 — 접힌 상태(기본) / 펼친 상태</div>
+    </div>
+    <div>
+      <div class="phone"><div class="bar"><div class="notch"></div></div><div class="scr" id="scr2"></div></div>
+      <div class="phlab">월별 통계 — 「기록 보기」로 이동</div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 무엇이 바뀌나 -->
+<div class="sec">
+  <div class="stitle">③ 바뀌는 점 정리</div>
+  <div class="sdesc">요청하신 네 가지가 각각 어디에 들어갔는지</div>
+  <table class="cmp">
+    <tr><th style="width:150px">요청</th><th>어떻게 만들었나</th></tr>
+    <tr><td><b>눌러서 펼치기</b></td><td>
+      기본은 <b>한 줄로 접힘</b> — 날짜·요일·종합%·진행 막대만. 머리를 누르면 4단계와 안내 문구가 펼쳐집니다.<br>
+      <span style="color:#94a3b8">한 번 펼치면 그 상태를 기억해, 다음에 열 때도 펼쳐진 채로 뜹니다</span></td></tr>
+    <tr><td><b>날짜·요일 표시</b></td><td>
+      머리에 <b>「8/12 (수)」</b> 알약 배지. 오늘이면 <b>「오늘 · 8/12 (수)」</b>,
+      며칠 전 것이면 <b>「8/10 (월)」</b>로 그 날짜를 분명히 밝힙니다.<br>
+      <span style="color:#94a3b8">지금은 그냥 「오늘의 과제」라고만 떠서, 며칠 전 기록을 보고 있어도 알 수 없었습니다</span></td></tr>
+    <tr><td><b>최근 기록 / 월별 통계</b></td><td>
+      카드 아래 <b>「📊 8월 기록 보기」</b> 버튼 → 월별 화면.
+      월 평균 · 100% 달성 일수 · <b>날짜별 막대</b>(누르면 그 날 상세) · 단계별 평균 · 한 줄 총평.
+      <b>◀ ▶ 로 지난 달</b>도 볼 수 있습니다</td></tr>
+    <tr style="background:#eff6ff"><td><b>플래너·녹음 통합</b></td><td>
+      위에 따로 있던 두 칸을 카드 안 <b>「집에서 할 것」</b>으로 이동.
+      제출하면 초록 ✓, 아직이면 회색 — <b>빨간 글씨를 쓰지 않아</b> 불안하게 보이지 않습니다</td></tr>
+  </table>
+</div>
+
+<!-- ④ 월 총평 -->
+<div class="sec">
+  <div class="stitle">④ 월별 화면의 한 줄 총평 — 자동 생성</div>
+  <div class="sdesc">이번 달에 가장 낮은 단계를 찾아 문장을 만듭니다 (말투는 정하신 대로 학원이 맡는 톤)</div>
+  <table class="cmp">
+    <tr><th style="width:170px">이번 달 상태</th><th>문장</th></tr>
+    <tr><td><b>평균 95% 이상</b></td><td>8월은 <b>12일 중 10일</b>을 100%로 마쳤습니다. 지금 습관을 그대로 이어가면 됩니다.</td></tr>
+    <tr><td><b>③ 틀린 문제가 최저</b></td><td>8월 평균 <b>89%</b>. 풀이·채점은 안정적이고 <b>오답 정리</b>가 가장 낮습니다 — <b>학원에서 오답 시간을 늘려 지도합니다.</b></td></tr>
+    <tr><td><b>④ 모르는 문제가 최저</b></td><td>8월 평균 <b>89%</b>. 숙제는 잘 하고 있고 <b>모르는 문제를 질문하는 횟수</b>가 가장 낮습니다 — <b>학원에서 먼저 물어보고 챙기겠습니다.</b></td></tr>
+    <tr><td><b>평균 60% 미만</b></td><td>8월 평균 <b>52%</b>로 숙제량을 채우지 못한 날이 많습니다 — <b>학원에서 분량을 조정하고 수업 중 시간을 확보하겠습니다.</b></td></tr>
+  </table>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 — 학부모앱에는 아직 반영되지 않았습니다
+</div>
+</div>
+
+<script>
+/* 예시 데이터 (실제 학생 자료 아님) */
+var TODAY={ y:2026, m:8, d:12, dow:3 };
+var DAYS=[   // 8월 수업일 기록
+  {d:3, dow:1, p:100,c:100,w:60,  stuck:3, asked:1},
+  {d:5, dow:3, p:100,c:100,w:100, stuck:0, asked:0},
+  {d:7, dow:5, p:100,c:60, w:30,  stuck:5, asked:0},
+  {d:10,dow:1, p:100,c:100,w:100, stuck:2, asked:2},
+  {d:11,dow:2, p:60, c:30, w:0,   stuck:4, asked:1},
+  {d:12,dow:3, p:100,c:100,w:100, stuck:9, asked:5}
+];
+var DOWN=['일','월','화','수','목','금','토'];
+var OPEN=false, VIEW='home', SEL=5, MON=8;
+var HOME={ planner:false, rec:false };   // 오늘 플래너·녹음 제출 여부
+
+function ahaPct(x){ if(!x.stuck) return null; return Math.min(100,Math.round(x.asked/x.stuck*100)); }
+function total(x){
+  var a=[x.p,x.c,x.w], ap=ahaPct(x);
+  if(ap!==null) a.push(ap);
+  return Math.round(a.reduce(function(u,v){return u+v;},0)/a.length);
+}
+function grad(t){
+  return t>=100?'linear-gradient(135deg,#059669,#10b981)'
+       : t>=80?'linear-gradient(135deg,#4d7c0f,#84cc16)'
+       : t>=50?'linear-gradient(135deg,#b45309,#f59e0b)'
+       : 'linear-gradient(135deg,#b91c1c,#ef4444)';
+}
+function col(t){ return t>=100?'#059669':t>=80?'#65a30d':t>=50?'#d97706':'#dc2626'; }
+function dateLabel(x){
+  var isToday=(x.d===TODAY.d);
+  return (isToday?'오늘 · ':'')+TODAY.m+'/'+x.d+' ('+DOWN[x.dow]+')';
+}
+/* 한 줄 안내 — 다 해온 날 T1, 나머지 T2 */
+function line(x){
+  var ap=ahaPct(x);
+  if(x.p>=100&&x.c>=100&&x.w>=100&&(ap===null||ap>=100))
+    return ['🎉','#ecfdf5','#065f46','오늘 숙제를 빠짐없이 마쳤습니다. <b>학원에서도 크게 칭찬했습니다.</b>'];
+  if(x.p<100) return ['📘','#eff6ff','#1e3a8a','숙제 진행 <b>'+x.p+'%</b>. 남은 분량은 <b>다음 수업에서 이어갑니다.</b>'];
+  if(x.c<100) return ['✏️','#fffbeb','#78350f','풀이 완료 · 채점 <b>'+x.c+'%</b>. 나머지는 <b>수업 중 처리합니다.</b>'];
+  if(x.w<100) return ['🔁','#fff7ed','#7c2d12','풀이·채점 완료 · 오답 정리 <b>'+x.w+'%</b>. 남은 오답은 <b>수업에서 다룹니다.</b>'];
+  return ['🙋','#faf5ff','#5b21b6','숙제 전 단계 완료. 미해결 문항 <b>'+x.stuck+'개</b>는 <b>학원에서 확인해 지도합니다.</b>'];
+}
+function row(n,name,c,pct,note){
+  var h='<div class="hwrow"><span class="hwn" style="background:'+c+'">'+n+'</span>'
+    +'<span class="hwl">'+name+'</span>'
+    +'<span class="hwt"><i style="width:'+(pct===null?0:pct)+'%;background:'+c+'"></i></span>'
+    +'<span class="hwp" style="color:'+(pct===null?'#94a3b8':c)+'">'+(pct===null?'—':pct+'%')+'</span></div>';
+  if(note) h+='<div class="hwnote">'+note+'</div>';
+  return h;
+}
+
+function viewHome(){
+  var x=DAYS[DAYS.length-1], t=total(x), ap=ahaPct(x), co=line(x);
+  var h='';
+  h+='<div class="hwcard">';
+  h+='<div class="hwhd" style="background:'+grad(t)+'" onclick="toggleOpen()">';
+  h+='<div class="hwtop"><span class="hw1">루멘수학 · 과제 완성도</span>'
+    +'<span class="hwdate">'+dateLabel(x)+'</span>'
+    +'<span class="hwcar'+(OPEN?' open':'')+'">⌄</span></div>';
+  h+='<div class="hw2">'+(OPEN?'단계별로 보기':'눌러서 자세히 보기')+'<b>'+t+'<span>%</span></b></div>';
+  h+='<div class="hwbar"><i style="width:'+t+'%"></i></div>';
+  h+='</div>';
+  h+='<div class="hwbd'+(OPEN?' open':'')+'">';
+  h+=row(1,'문제 풀기','#3b82f6',x.p,null);
+  h+=row(2,'채점하기','#f59e0b',x.c,null);
+  h+=row(3,'틀린 문제','#22c55e',x.w,null);
+  h+=row(4,'모르는 문제','#a855f7',ap, ap===null
+        ? '질문할 문제가 없었어요 — <b style="color:#059669">아주 좋습니다</b> · 완성도 점수에 들어가지 않아요'
+        : '혼자 안 풀린 문제 <b>'+x.stuck+'개</b> 중 <b>'+x.asked+'개</b>를 선생님께 질문했어요');
+  h+='<div class="hwco" style="background:'+co[1]+';color:'+co[2]+'"><span>'+co[0]+'</span><span>'+co[3]+'</span></div>';
+  // 집에서 할 것 (플래너·녹음 통합)
+  h+='<div class="hwsub"><div class="hwsubt">🏠 집에서 할 것</div>';
+  [['📓','오늘 플래너',HOME.planner],['🎙️','녹음 숙제',HOME.rec]].forEach(function(it){
+    var done=it[2];
+    h+='<div class="hwitem" style="background:'+(done?'#f0fdf4':'#f8fafc')+';color:'+(done?'#15803d':'#64748b')+'">'
+      +'<span>'+it[0]+'</span><span>'+it[1]+'</span>'
+      +'<span class="st" style="color:'+(done?'#059669':'#94a3b8')+'">'+(done?'제출 완료 ✓':'아직 안 했어요')+'</span></div>';
+  });
+  h+='<div style="font-size:10px;color:#94a3b8;font-weight:700;line-height:1.6;margin-top:3px">플래너·녹음은 <b>학생이 집에서</b> 올리는 것이라, 저녁에 올리면 이곳이 초록으로 바뀝니다</div>';
+  h+='</div>';
+  h+='<button class="morebtn" onclick="event.stopPropagation();go(\'stat\')">📊 '+TODAY.m+'월 기록 보기</button>';
+  h+='</div></div>';
+  return h;
+}
+
+function viewStat(){
+  var vals=DAYS.map(total);
+  var avg=Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length);
+  var full=vals.filter(function(v){return v>=100;}).length;
+  var sp=0,sc=0,sw=0,sa=0,na=0;
+  DAYS.forEach(function(x){ sp+=x.p; sc+=x.c; sw+=x.w; var ap=ahaPct(x); if(ap!==null){ sa+=ap; na++; } });
+  var k=DAYS.length;
+  var avgs={ p:Math.round(sp/k), c:Math.round(sc/k), w:Math.round(sw/k), a:na?Math.round(sa/na):null };
+  var h='';
+  h+='<div class="mnav"><button onclick="event.stopPropagation();shiftMon(-1)">◀</button>'
+    +'<span class="ym">'+TODAY.y+'년 '+MON+'월</span>'
+    +'<button onclick="event.stopPropagation();shiftMon(1)">▶</button></div>';
+  h+='<div class="bigstat"><div class="n" style="color:'+col(avg)+'">'+avg+'<span style="font-size:18px">%</span></div>'
+    +'<div class="l">'+MON+'월 과제 완성도 평균</div>'
+    +'<div class="k">'
+    +'<div class="kk"><b>'+k+'일</b><span>수업</span></div>'
+    +'<div class="kk"><b style="color:#059669">'+full+'일</b><span>100% 달성</span></div>'
+    +'<div class="kk"><b style="color:#a855f7">'+DAYS.reduce(function(a,x){return a+x.asked;},0)+'개</b><span>질문 올림</span></div>'
+    +'</div></div>';
+  // 날짜별 막대
+  h+='<div class="mchart"><div class="mct">날짜별 완성도 <span style="font-weight:700;color:#94a3b8">— 막대를 누르면 그 날 기록이 보여요</span></div>';
+  h+='<div class="mbars">';
+  DAYS.forEach(function(x,i){
+    var t=total(x);
+    h+='<div class="mb'+(i===SEL?' sel':'')+'" onclick="event.stopPropagation();selDay('+i+')">'
+      +'<div class="bx" style="height:'+Math.max(t,5)+'%;background:'+grad(t)+'"></div>'
+      +'<div class="dl">'+x.d+'</div></div>';
+  });
+  h+='</div>';
+  var s=DAYS[SEL], st=total(s), sap=ahaPct(s);
+  h+='<div class="mday"><b>'+TODAY.m+'/'+s.d+' ('+DOWN[s.dow]+')</b> — 종합 <b style="color:'+col(st)+'">'+st+'%</b><br>'
+    +'문제 풀기 '+s.p+'% · 채점 '+s.c+'% · 틀린 문제 '+s.w+'% · 모르는 문제 '+(sap===null?'해당 없음':sap+'% ('+s.asked+'/'+s.stuck+')')+'</div>';
+  h+='</div>';
+  // 단계별 평균
+  h+='<div class="mchart"><div class="mct">'+MON+'월 단계별 평균</div>';
+  h+=row(1,'문제 풀기','#3b82f6',avgs.p,null);
+  h+=row(2,'채점하기','#f59e0b',avgs.c,null);
+  h+=row(3,'틀린 문제','#22c55e',avgs.w,null);
+  h+=row(4,'모르는 문제','#a855f7',avgs.a,null);
+  h+='</div>';
+  // 총평
+  var lows=[['문제 풀기',avgs.p,'p'],['채점하기',avgs.c,'c'],['틀린 문제',avgs.w,'w']];
+  if(avgs.a!==null) lows.push(['모르는 문제',avgs.a,'a']);
+  lows.sort(function(a,b){ return a[1]-b[1]; });
+  var lo=lows[0], msg;
+  if(avg>=95) msg=MON+'월은 <b>'+k+'일 중 '+full+'일</b>을 100%로 마쳤습니다. 지금 습관을 그대로 이어가면 됩니다.';
+  else if(avg<60) msg=MON+'월 평균 <b>'+avg+'%</b>로 숙제량을 채우지 못한 날이 많습니다 — <b>학원에서 분량을 조정하고 수업 중 시간을 확보하겠습니다.</b>';
+  else if(lo[2]==='a') msg=MON+'월 평균 <b>'+avg+'%</b>. 숙제는 잘 하고 있고 <b>모르는 문제를 질문하는 횟수</b>가 가장 낮습니다 — <b>학원에서 먼저 물어보고 챙기겠습니다.</b>';
+  else if(lo[2]==='w') msg=MON+'월 평균 <b>'+avg+'%</b>. 풀이·채점은 안정적이고 <b>오답 정리</b>가 가장 낮습니다 — <b>학원에서 오답 시간을 늘려 지도합니다.</b>';
+  else if(lo[2]==='c') msg=MON+'월 평균 <b>'+avg+'%</b>. <b>채점</b>이 가장 낮습니다 — <b>수업 중에 함께 채점하고 넘어가겠습니다.</b>';
+  else msg=MON+'월 평균 <b>'+avg+'%</b>. <b>숙제 분량</b>을 채우는 것이 가장 낮습니다 — <b>학원에서 진도와 분량을 다시 맞추겠습니다.</b>';
+  h+='<div class="mfoot">💬 '+msg+'</div>';
+  h+='<button class="morebtn" onclick="event.stopPropagation();go(\'home\')" style="margin-top:11px">← 홈으로</button>';
+  return h;
+}
+
+function draw(){
+  var caps='<div class="caps">'
+    +'<div class="cap"><div class="ci" style="background:'+(HOME.planner?'#ecfdf5':'#f8fafc')+'">📓</div><div><div class="ct">오늘 플래너</div><div class="cs" style="color:'+(HOME.planner?'#059669':'#94a3b8')+'">'+(HOME.planner?'제출 완료 ✓':'아직')+'</div></div></div>'
+    +'<div class="cap"><div class="ci" style="background:'+(HOME.rec?'#ecfdf5':'#f8fafc')+'">🎙️</div><div><div class="ct">녹음 숙제</div><div class="cs" style="color:'+(HOME.rec?'#059669':'#94a3b8')+'">'+(HOME.rec?'제출 완료 ✓':'아직')+'</div></div></div>'
+    +'</div>';
+  // 왼쪽 폰: 홈 (통합안 — 위 두 칸은 없애고 카드 안으로)
+  document.getElementById('scr1').innerHTML=viewHome();
+  document.getElementById('scr2').innerHTML=viewStat();
+}
+window.toggleOpen=function(){ OPEN=!OPEN; draw(); };
+window.go=function(v){ VIEW=v; draw(); };
+window.selDay=function(i){ SEL=i; draw(); };
+window.shiftMon=function(n){ MON=Math.max(1,Math.min(12,MON+n)); draw(); };
+draw();
+</script>
+</body>
+</html>
