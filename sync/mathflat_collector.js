@@ -654,6 +654,12 @@ async function main() {
     await refreshTypeAch();
     return;
   }
+  // --stuck-only: 매쓰플랫 로그인 없이 「막힌 문제」만 재계산 (Supabase 기존 기록 사용)
+  if (has('--stuck-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    await refreshStuck();
+    return;
+  }
   // --scores-only: 월간보고서 점수·티어만 수집 (매쓰플랫 로그인 필요)
   if (has('--scores-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -709,6 +715,7 @@ async function main() {
     await refreshMonthCounts();
     await refreshMonthScores(students);
     await refreshTypeAch();
+    await refreshStuck();          // v18-46: 「막힌 문제」 사전 계산 (아하노트 퍼센트의 분모)
     // v18-38: 수학비서 주간테스트 파이프라인 — 지정폴더 스캔·매쓰플랫 업로드 (새벽 전체 수집에 편승)
     if (process.env.MATHSECR_ID && process.env.MATHSECR_PASSWORD) {
       try {
@@ -1502,6 +1509,81 @@ async function refreshConceptNames() {
     });
     log(`유형사전(mf_concept_names): ${Object.keys(val).length}/${usedIds.size}개 매핑 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('유형사전 갱신 실패(치명적 아님):', e.message); }
+}
+
+// ── 「막힌 문제」 사전 계산 → lumen_store 'mf_stuck' (v18-46) ──────────────
+//   아하노트는 “오답 정리를 해도 해결 안 되는 문제를 질문하는 것”이므로,
+//   학생이 그 날 실제로 막혔는지를 먼저 알아야 아하노트 퍼센트를 매길 수 있다.
+//   막힘 근거 3가지 (원장님 승인 2026-08-12 — 유형 3회 포함):
+//     ❓ unk : 매쓰플랫 「모름」 체크 (학생이 직접 누름 — 가장 확실)
+//     🔁 re  : 예전에 틀린 문제를 또 틀림 (스스로 정리했는데도 해결 못 함)
+//     📉 t3  : 같은 유형에서 3번째 오답 (문제 하나가 아니라 개념이 안 잡힘)
+//   결과: { "학생코드|YYYY-MM-DD": [{k,t}] } — 최근 120일, 하루 최대 12개
+const STUCK_DAYS = 120, STUCK_PER_DAY = 12;
+async function refreshStuck() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    const sidCode = await buildSidCodeMap();
+    // 판정에는 전 기간 이력이 필요하다(“예전에 틀린 문제”, “유형 누적 오답”)
+    let rows = [], off = 0;
+    while (off < 200000) {
+      const sel = 'select=mf_student_id,problem_id,workbook_problem_id,topic_id,result,score_datetime,'
+        + 'worksheet_title,chapter,page,number,source';
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?${sel}&order=score_datetime.asc,id.asc&offset=${off}&limit=1000`, { headers: sbHeaders });
+      if (!res.ok) break;
+      const j = await res.json();
+      if (!Array.isArray(j) || !j.length) break;
+      rows = rows.concat(j); off += 1000;
+      if (j.length < 1000) break;
+    }
+    const since = new Date(Date.now() - STUCK_DAYS * 86400000).toISOString().slice(0, 10);
+    const seenWrong = new Set();   // 학생|문제 — 이미 틀린 적 있음
+    const topicWrong = {};         // 학생|유형 — 누적 오답 수
+    const out = {};
+    const label = (r) => {
+      const book = String(r.worksheet_title || r.chapter || '').trim().slice(0, 30);
+      const no = r.number != null && String(r.number).trim() ? String(r.number).trim() + '번' : '';
+      // ⚠ 학습지 행의 page 컬럼은 전국 정답률로 재활용되고 있어 쪽수로 쓰면 안 된다
+      // ⚠ 교재 page는 회차 전체 범위('8~146')가 들어오는 경우가 있어, 범위면 쪽수로 쓰지 않는다
+      const pRaw = (r.source === '교재' && r.page != null) ? String(r.page).trim() : '';
+      const pg = (pRaw && /^\d+$/.test(pRaw)) ? pRaw + 'p ' : '';
+      return [book, (pg + no).trim()].filter(Boolean).join(' · ') || '문항';
+    };
+    const push = (code, day, k, r) => {
+      if (day < since) return;
+      const key2 = code + '|' + day;
+      const a = out[key2] || (out[key2] = []);
+      if (a.length >= STUCK_PER_DAY) return;
+      a.push({ k, t: label(r) });
+    };
+    rows.forEach((r) => {
+      const code = sidCode[r.mf_student_id];
+      const day = String(r.score_datetime || '').slice(0, 10);
+      if (!code || !day) return;
+      if (r.result === '?') { push(code, day, 'unk', r); return; }
+      if (r.result !== 'X') return;
+      const pid = r.problem_id || (r.workbook_problem_id ? 'wb' + r.workbook_problem_id : null);
+      if (pid) {
+        const pk = code + '|' + pid;
+        if (seenWrong.has(pk)) push(code, day, 're', r);
+        seenWrong.add(pk);
+      }
+      if (r.topic_id) {
+        const tk = code + '|' + r.topic_id;
+        topicWrong[tk] = (topicWrong[tk] || 0) + 1;
+        if (topicWrong[tk] === 3) push(code, day, 't3', r);   // 3번째 오답에서 한 번만
+      }
+    });
+    const nDays = Object.keys(out).length;
+    const nItems = Object.values(out).reduce((a, b) => a + b.length, 0);
+    const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST',
+      headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_stuck', value: { map: out, days: STUCK_DAYS, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
+    });
+    log(`막힌 문제(mf_stuck): ${nItems}건 / 학생·날짜 ${nDays}건 (최근 ${STUCK_DAYS}일) ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+  } catch (e) { log('막힌 문제 계산 실패(치명적 아님):', e.message); }
 }
 
 async function upsert(table, records, onConflict) {
