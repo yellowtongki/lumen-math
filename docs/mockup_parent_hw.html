@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 학부모앱 「과제 완성도」</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1000px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,0.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-new{background:#dbeafe;color:#1d4ed8}.b-key{background:#fef3c7;color:#b45309}
+
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-red{background:#fef2f2;border-color:#fecaca}.x-red b{color:#b91c1c}.x-red p{color:#7f1d1d}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+
+/* 학생 전환 */
+.picker{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;justify-content:center}
+.pk{border:1.5px solid #cbd5e1;background:#fff;border-radius:11px;padding:9px 16px;font-size:12.5px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit;line-height:1.3}
+.pk small{display:block;font-size:10px;font-weight:700;opacity:.7;margin-top:2px}
+.pk.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.pk.on small{opacity:.75}
+
+/* 폰 */
+.phones{display:flex;gap:22px;flex-wrap:wrap;justify-content:center}
+.phone{width:340px;background:#0d2240;border-radius:28px;padding:12px 10px 18px;box-shadow:0 14px 38px rgba(13,34,64,.3);flex-shrink:0}
+.phone .bar{display:flex;justify-content:center;margin-bottom:9px}
+.phone .notch{width:78px;height:5px;border-radius:9px;background:rgba(255,255,255,.25)}
+.scr{background:#f6f8fc;border-radius:19px;padding:13px 12px 16px;min-height:100px}
+.phlab{text-align:center;font-size:11.5px;font-weight:800;color:#64748b;margin-top:9px}
+
+/* 카드 */
+.card{background:#fff;border-radius:16px;box-shadow:0 3px 12px rgba(13,34,64,.07);overflow:hidden;margin-bottom:11px}
+.chd{padding:13px 15px 12px;color:#fff}
+.chd .t1{font-size:10.5px;font-weight:800;opacity:.8;letter-spacing:.02em}
+.chd .t2{font-size:15.5px;font-weight:900;margin-top:2px;display:flex;align-items:flex-end;gap:8px}
+.chd .t2 b{margin-left:auto;font-size:30px;font-weight:900;line-height:1}
+.chd .t2 b span{font-size:14px;opacity:.8}
+.chd .prog{height:7px;border-radius:5px;background:rgba(255,255,255,.28);margin-top:10px;overflow:hidden}
+.chd .prog i{display:block;height:100%;border-radius:5px;background:#fff}
+.cbd{padding:13px 15px 14px}
+
+/* 단계 줄 */
+.srow{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.snum{width:20px;height:20px;border-radius:50%;font-size:10.5px;font-weight:900;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sname{font-size:11.5px;font-weight:900;color:#0d2240;width:72px;flex-shrink:0;white-space:nowrap;letter-spacing:-0.02em}
+.strack{flex:1;height:9px;border-radius:6px;background:#eef2f7;overflow:hidden;position:relative}
+.strack i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;transition:width .4s}
+.spct{width:40px;text-align:right;font-size:12px;font-weight:900;flex-shrink:0}
+.snote{font-size:10px;font-weight:700;color:#94a3b8;margin:-4px 0 9px 101px;line-height:1.5}
+.snote b{color:#c2410c}
+
+/* 코칭 */
+.coach{border-radius:12px;padding:11px 13px;font-size:12px;font-weight:700;line-height:1.7;display:flex;gap:9px}
+.coach .ci{font-size:16px;flex-shrink:0}
+
+/* 주간 */
+.wk{display:flex;gap:5px;margin-top:4px}
+.wd{flex:1;text-align:center}
+.wd .dl{font-size:9.5px;font-weight:800;color:#94a3b8;margin-bottom:4px}
+.wd .bx{height:44px;border-radius:8px;display:flex;align-items:flex-end;justify-content:center;background:#eef2f7;overflow:hidden;position:relative}
+.wd .bx i{position:absolute;left:0;right:0;bottom:0;border-radius:8px}
+.wd .bx span{position:relative;font-size:10px;font-weight:900;color:#fff;padding-bottom:3px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+.wd .bx.empty{background:#f8fafc;border:1px dashed #e2e8f0}
+.wd .bx.empty span{color:#cbd5e1;text-shadow:none}
+
+/* 설명 아코디언 */
+.faq{background:#f8fafc;border-radius:12px;padding:11px 13px;font-size:11px;font-weight:700;color:#64748b;line-height:1.75}
+.faq b{color:#0d2240}
+.faq .q{font-size:11.5px;font-weight:900;color:#0d2240;margin-bottom:4px}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>👨‍👩‍👧 학부모앱 「과제 완성도」 — 미리보기</h1>
+<p class="sub">
+학원앱에 새로 들어간 <b>단계별 퍼센트(풀이·채점·오답·아하노트)</b>를 학부모님께 어떻게 보여드릴지입니다.<br>
+아래 <b>학생 예시를 눌러 바꿔가며</b> 세 가지 상황을 다 보실 수 있습니다.
+</p>
+
+<!-- ① 원칙 -->
+<div class="sec">
+  <div class="stitle">① 학부모님께 보여드릴 때의 원칙</div>
+  <div class="sdesc">같은 숫자라도 학부모가 보면 의미가 달라집니다</div>
+
+  <div class="box x-red"><div class="ic">⚠️</div><div>
+    <b>그냥 퍼센트만 보여주면 「점수표」가 됩니다</b>
+    <p>“오답 30%”만 보이면 학부모님은 <b>혼내야 할 일</b>로 받아들이십니다.
+    우리가 알려드리고 싶은 건 <b>“어느 단계에서 멈췄는지, 집에서 뭘 도와주면 되는지”</b>입니다.</p>
+  </div></div>
+
+  <div class="box x-grn"><div class="ic">✅</div><div>
+    <b>그래서 세 가지를 함께 담습니다</b>
+    <p><b>1. 네 단계를 그림으로</b> — 어디까지 갔고 어디서 멈췄는지 한눈에<br>
+    <b>2. 한 줄 코칭</b> — “집에서 이것만 봐주세요” 한 문장 (자동 생성)<br>
+    <b>3. 아하노트는 특별 설명</b> — 학부모님은 이 말을 모르십니다</p>
+  </div></div>
+
+  <div class="box x-org"><div class="ic">🛡️</div><div>
+    <b>아하노트는 「해당 없음」을 반드시 밝힙니다</b>
+    <p>막힌 문제가 없어서 질문할 게 없던 날은 <b>“질문할 문제가 없었어요 — 아주 좋습니다”</b>로 표시합니다.
+    <b>0%가 아닙니다.</b> 잘한 아이가 못한 것처럼 보이면 안 됩니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 메인 디자인 -->
+<div class="sec">
+  <div class="stitle">② 화면 디자인 <span class="badge b-key">눌러서 학생 전환</span></div>
+  <div class="sdesc">학부모앱 홈의 「오늘 플래너 / 녹음 숙제」 카드 바로 아래에 들어갑니다</div>
+
+  <div class="picker" id="picker"></div>
+  <div class="phones">
+    <div>
+      <div class="phone"><div class="bar"><div class="notch"></div></div><div class="scr" id="scr1"></div></div>
+      <div class="phlab">오늘 (홈 화면)</div>
+    </div>
+    <div>
+      <div class="phone"><div class="bar"><div class="notch"></div></div><div class="scr" id="scr2"></div></div>
+      <div class="phlab">이번 주 (리포트 안)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 단계 설명 -->
+<div class="sec">
+  <div class="stitle">③ 학부모님께는 이렇게 풀어서 씁니다</div>
+  <div class="sdesc">학원에서 쓰는 말과 학부모님이 이해하는 말이 다릅니다</div>
+  <table class="cmp">
+    <tr><th style="width:120px">학원 용어</th><th style="width:150px">학부모앱 표기</th><th>설명 문구 (물음표를 누르면 나옴)</th></tr>
+    <tr><td><b>풀이</b></td><td><b>① 문제 풀기</b></td><td>내준 숙제 분량 중 실제로 푼 비율입니다</td></tr>
+    <tr><td><b>채점</b></td><td><b>② 채점하기</b></td><td>푼 문제를 답과 맞춰 보고 O·X를 표시한 비율입니다</td></tr>
+    <tr><td><b>오답</b></td><td><b>③ 틀린 문제 정리</b></td><td>틀린 문제를 다시 풀어보고 왜 틀렸는지 정리한 비율입니다</td></tr>
+    <tr style="background:#fff7ed"><td><b>아하노트</b></td><td><b>④ 모르는 문제 질문</b></td><td>
+      혼자 다시 풀어봐도 <b>끝내 안 풀린 문제</b>를 사진 찍어 선생님께 질문하는 것입니다.<br>
+      <b style="color:#c2410c">막힌 문제가 없었던 날은 「해당 없음」으로 표시되고 점수에 들어가지 않습니다.</b>
+    </td></tr>
+  </table>
+</div>
+
+<!-- ④ 코칭 문구 -->
+<div class="sec">
+  <div class="stitle">④ 한 줄 코칭 — 자동으로 만들어집니다 <span class="badge b-new">신규</span></div>
+  <div class="sdesc">가장 낮은 단계를 찾아 그 단계에 맞는 문장을 붙입니다</div>
+  <table class="cmp">
+    <tr><th style="width:150px">멈춘 지점</th><th>학부모앱에 나가는 문장</th></tr>
+    <tr><td><b>전부 100%</b></td><td>🎉 오늘 숙제를 <b>빠짐없이</b> 마쳤습니다. 칭찬해 주세요!</td></tr>
+    <tr><td><b>①풀이가 낮음</b></td><td>숙제를 <b>다 풀지 못했습니다.</b> 오늘은 남은 분량부터 함께 확인해 주세요.</td></tr>
+    <tr><td><b>②채점이 낮음</b></td><td>문제는 다 풀었는데 <b>채점을 안 했습니다.</b> 답을 맞춰보는 것까지가 숙제라고 알려주세요.</td></tr>
+    <tr><td><b>③오답이 낮음</b></td><td>채점까지는 꼼꼼히 했는데 <b>틀린 문제 정리에서 멈췄습니다.</b> 틀린 문제를 다시 풀어보게 해주세요.</td></tr>
+    <tr style="background:#fff7ed"><td><b>④아하노트가 낮음</b></td><td>혼자 풀리지 않은 문제가 <b>2개</b> 있었는데 <b>질문하지 않았습니다.</b> “모르면 물어봐도 된다”고 한마디 해주세요.</td></tr>
+  </table>
+  <div class="rule" style="margin-top:13px">
+    <b>말투 규칙</b> — 아이를 탓하는 말은 쓰지 않습니다. <b>“무엇을 안 했다”</b>가 아니라
+    <b>“어디까지 했고, 집에서 뭘 도와주면 되는지”</b>로 씁니다.
+    ①~③이 모두 100%인데 ④만 낮으면, <b>먼저 잘한 점을 말한 뒤</b> 질문을 권합니다.
+  </div>
+</div>
+
+<!-- ⑤ 어디에 -->
+<div class="sec">
+  <div class="stitle">⑤ 어디에 들어가나</div>
+  <div class="sdesc">두 군데에 같은 데이터로 들어갑니다</div>
+  <div class="rule">
+    <b>1. 홈 화면</b> — 「오늘 플래너 / 녹음 숙제」 카드 바로 아래에 <b>오늘 과제 완성도</b> 카드<br>
+    <span style="color:#94a3b8">숙제 기록이 없는 날은 카드가 아예 안 뜹니다(빈 카드로 불안하게 만들지 않음)</span><br><br>
+    <b>2. 학습 리포트 안</b> — 총평 위에 <b>이번 주 7일 막대</b> + 주간 평균<br>
+    <span style="color:#94a3b8">리포트를 발행할 때 그 시점 값이 함께 저장되어, 나중에 열어도 그날 숫자가 그대로 남습니다</span><br><br>
+    <b>3. 학원앱과 같은 데이터</b> — 원장님이 숙제체크 그리드에서 찍으신 값이 그대로 나갑니다.
+    따로 입력하실 것은 없습니다.
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 — 학부모앱에는 아직 반영되지 않았습니다
+</div>
+</div>
+
+<script>
+var CASES=[
+  { key:'good', who:'서규리', tag:'다 해온 날', sub:'전부 100%',
+    p:100,c:100,w:100, stuck:0, asked:0,
+    week:[{d:'월',v:100},{d:'화',v:null},{d:'수',v:100},{d:'목',v:null},{d:'금',v:100},{d:'토',v:null},{d:'일',v:null}] },
+  { key:'mid', who:'오시안', tag:'오답에서 멈춘 날', sub:'오답 60% · 질문 1/2',
+    p:100,c:100,w:60, stuck:2, asked:1,
+    week:[{d:'월',v:88},{d:'화',v:null},{d:'수',v:78},{d:'목',v:null},{d:'금',v:65},{d:'토',v:null},{d:'일',v:null}] },
+  { key:'ask', who:'윤이솔', tag:'질문을 안 한 날', sub:'숙제는 다 했지만 막힌 2개를 안 물어봄',
+    p:100,c:100,w:100, stuck:2, asked:0,
+    week:[{d:'월',v:75},{d:'화',v:null},{d:'수',v:100},{d:'목',v:null},{d:'금',v:75},{d:'토',v:null},{d:'일',v:null}] },
+  { key:'low', who:'홍세원', tag:'많이 못 한 날', sub:'풀이 30%',
+    p:30,c:0,w:0, stuck:0, asked:0,
+    week:[{d:'월',v:10},{d:'화',v:null},{d:'수',v:33},{d:'목',v:null},{d:'금',v:20},{d:'토',v:null},{d:'일',v:null}] }
+];
+var CUR=0;
+
+function ahaPct(c){ if(!c.stuck) return null; return Math.min(100, Math.round(c.asked/c.stuck*100)); }
+function total(c){
+  var a=[c.p,c.c,c.w], ap=ahaPct(c);
+  if(ap!==null) a.push(ap);
+  return Math.round(a.reduce(function(x,y){return x+y;},0)/a.length);
+}
+function tColor(t){ return t>=100?'#059669':t>=80?'#65a30d':t>=50?'#d97706':'#dc2626'; }
+function tGrad(t){
+  return t>=100?'linear-gradient(135deg,#059669,#10b981)'
+       : t>=80?'linear-gradient(135deg,#4d7c0f,#84cc16)'
+       : t>=50?'linear-gradient(135deg,#b45309,#f59e0b)'
+       : 'linear-gradient(135deg,#b91c1c,#ef4444)';
+}
+/* 한 줄 코칭 — 가장 낮은 단계를 찾아 그 단계 문장을 붙인다 */
+function coach(c){
+  var ap=ahaPct(c);
+  if(c.p>=100&&c.c>=100&&c.w>=100&&(ap===null||ap>=100))
+    return ['🎉','#ecfdf5','#065f46','오늘 숙제를 <b>빠짐없이</b> 마쳤습니다. 칭찬해 주세요!'];
+  if(c.p<100)
+    return ['📘','#fef2f2','#7f1d1d','숙제를 <b>다 풀지 못했습니다</b>(푼 분량 '+c.p+'%). 오늘은 남은 분량부터 함께 확인해 주세요.'];
+  if(c.c<100)
+    return ['✏️','#fffbeb','#78350f','문제는 다 풀었는데 <b>채점을 마치지 못했습니다.</b> 답을 맞춰보는 것까지가 숙제라고 알려주세요.'];
+  if(c.w<100)
+    return ['🔁','#fff7ed','#7c2d12','채점까지는 꼼꼼히 했는데 <b>틀린 문제 정리에서 멈췄습니다</b>('+c.w+'%). 틀린 문제를 다시 풀어보게 해주세요.'];
+  return ['🙋','#fff7ed','#7c2d12','숙제는 <b>완벽하게</b> 했어요. 다만 혼자 풀리지 않은 문제가 <b>'+c.stuck+'개</b> 있었는데 질문하지 않았습니다. “모르면 물어봐도 된다”고 한마디 해주세요.'];
+}
+
+function stageRow(n, name, color, pct, note){
+  var h='<div class="srow">'
+    +'<span class="snum" style="background:'+color+'">'+n+'</span>'
+    +'<span class="sname">'+name+'</span>'
+    +'<span class="strack"><i style="width:'+(pct===null?0:pct)+'%;background:'+color+'"></i></span>'
+    +'<span class="spct" style="color:'+(pct===null?'#94a3b8':color)+'">'+(pct===null?'—':pct+'%')+'</span>'
+    +'</div>';
+  if(note) h+='<div class="snote">'+note+'</div>';
+  return h;
+}
+
+function cardToday(c){
+  var t=total(c), ap=ahaPct(c), co=coach(c);
+  var ahaNote = ap===null
+    ? '질문할 문제가 없었어요 — <b style="color:#059669">아주 좋습니다</b> · 점수에 들어가지 않아요'
+    : '혼자 안 풀린 문제 <b>'+c.stuck+'개</b> 중 <b>'+c.asked+'개</b>를 선생님께 질문했어요';
+  var h='<div class="card">';
+  h+='<div class="chd" style="background:'+tGrad(t)+'">';
+  h+='<div class="t1">루멘수학 · 오늘의 과제</div>';
+  h+='<div class="t2">과제 완성도 <b>'+t+'<span>%</span></b></div>';
+  h+='<div class="prog"><i style="width:'+t+'%"></i></div>';
+  h+='</div><div class="cbd">';
+  h+=stageRow(1,'문제 풀기','#3b82f6',c.p,null);
+  h+=stageRow(2,'채점하기','#f59e0b',c.c,null);
+  h+=stageRow(3,'틀린 문제','#22c55e',c.w,null);
+  h+=stageRow(4,'모르는 문제','#a855f7',ap,ahaNote);
+  h+='<div class="coach" style="background:'+co[1]+';color:'+co[2]+'"><span class="ci">'+co[0]+'</span><span>'+co[3]+'</span></div>';
+  h+='</div></div>';
+  // 아하노트 설명
+  h+='<div class="faq"><div class="q">❓ 「모르는 문제 질문」이 뭔가요?</div>'
+    +'혼자 다시 풀어봐도 <b>끝내 안 풀린 문제</b>를 사진 찍어 선생님께 올리는 것입니다(아하노트).<br>'
+    +'막힌 문제가 없었던 날은 <b>「—(해당 없음)」</b>으로 표시되고 <b>완성도 점수에 들어가지 않습니다.</b></div>';
+  return h;
+}
+
+function cardWeek(c){
+  var vals=c.week.filter(function(x){ return x.v!==null; });
+  var avg=vals.length?Math.round(vals.reduce(function(a,b){return a+b.v;},0)/vals.length):0;
+  var h='<div class="card">';
+  h+='<div class="chd" style="background:linear-gradient(135deg,#0d2240,#1d6fe8)">';
+  h+='<div class="t1">루멘수학 · 이번 주</div>';
+  h+='<div class="t2">주간 평균 <b>'+avg+'<span>%</span></b></div>';
+  h+='</div><div class="cbd">';
+  h+='<div class="wk">';
+  c.week.forEach(function(x){
+    if(x.v===null){ h+='<div class="wd"><div class="dl">'+x.d+'</div><div class="bx empty"><span>—</span></div></div>'; return; }
+    h+='<div class="wd"><div class="dl">'+x.d+'</div><div class="bx"><i style="height:'+Math.max(x.v,12)+'%;background:'+tGrad(x.v)+'"></i><span>'+x.v+'</span></div></div>';
+  });
+  h+='</div>';
+  h+='<div style="margin-top:11px;font-size:10.5px;color:#94a3b8;font-weight:700;line-height:1.6">수업이 있는 날만 표시됩니다 · <b style="color:#64748b">—</b> 는 수업이 없던 날이에요</div>';
+  // 이번 주 단계별 평균
+  h+='<div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9">';
+  h+='<div style="font-size:11.5px;font-weight:900;color:#0d2240;margin-bottom:9px">이번 주 단계별 평균</div>';
+  h+=stageRow(1,'문제 풀기','#3b82f6',Math.min(100,c.p),null);
+  h+=stageRow(2,'채점하기','#f59e0b',Math.min(100,c.c),null);
+  h+=stageRow(3,'틀린 문제','#22c55e',Math.min(100,c.w),null);
+  var ap=ahaPct(c);
+  h+=stageRow(4,'모르는 문제','#a855f7',ap,null);
+  h+='</div>';
+  h+='</div></div>';
+  return h;
+}
+
+function draw(){
+  var c=CASES[CUR];
+  var ph='';
+  CASES.forEach(function(x,i){
+    ph+='<button class="pk'+(i===CUR?' on':'')+'" onclick="pick('+i+')">'+x.who+'<small>'+x.tag+'</small></button>';
+  });
+  document.getElementById('picker').innerHTML=ph;
+  document.getElementById('scr1').innerHTML=cardToday(c);
+  document.getElementById('scr2').innerHTML=cardWeek(c);
+}
+window.pick=function(i){ CUR=i; draw(); };
+draw();
+</script>
+</body>
+</html>
