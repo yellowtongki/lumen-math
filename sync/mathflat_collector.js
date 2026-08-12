@@ -1583,6 +1583,29 @@ async function refreshStuck() {
       body: JSON.stringify([{ key: 'mf_stuck', value: { map: out, days: STUCK_DAYS, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
     });
     log(`막힌 문제(mf_stuck): ${nItems}건 / 학생·날짜 ${nDays}건 (최근 ${STUCK_DAYS}일) ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+
+    // 학부모앱용 — 학생별로 쪼개 저장한다(자기 아이 것만 내려받게, 최근 60일)
+    const cut60 = new Date(Date.now() - 60 * 86400000).toISOString().slice(0, 10);
+    const per = {};
+    Object.keys(out).forEach((k) => {
+      const i = k.lastIndexOf('|');
+      const code = k.slice(0, i), day = k.slice(i + 1);
+      if (day < cut60) return;
+      (per[code] || (per[code] = {}))[day] = out[k];
+    });
+    const perRows = Object.keys(per).map((code) => ({
+      key: 'stuck_' + code,
+      value: { map: per[code], updated: new Date().toISOString() },
+      updated_at: new Date().toISOString(),
+    }));
+    if (perRows.length) {
+      const r2 = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+        method: 'POST',
+        headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(perRows),
+      });
+      log(`  학부모앱용 학생별 분할(stuck_<코드>): ${perRows.length}명 ${r2.ok ? '저장 완료' : '저장 실패 ' + r2.status}`);
+    }
   } catch (e) { log('막힌 문제 계산 실패(치명적 아님):', e.message); }
 }
 
