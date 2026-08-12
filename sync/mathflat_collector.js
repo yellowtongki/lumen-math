@@ -65,7 +65,12 @@ const SKIP_WORKBOOK = has('--skip-workbook'); // 교재 문항단위 수집 건�
 function log(...a) { const t = new Date().toISOString().replace('T', ' ').slice(0, 19); console.log(`[${t}]`, ...a); }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const fmt = (d) => d.toISOString().slice(0, 10);
-const toOX = (r) => (r === 'CORRECT' ? 'O' : (r === 'WRONG' || r === 'INCORRECT') ? 'X' : '-');
+// 매쓰플랫 원본 result: CORRECT / WRONG(INCORRECT) / UNKNOWN(학생이 누른 「모름」) / NONE(미채점)
+//   「모름」은 학생이 스스로 “이건 모르겠다”고 표시한 것 = 아하노트에 올려야 할 문제 그 자체라
+//   오답(X)·미채점(-)과 반드시 구분해 '?'로 저장한다. (이전에는 '-'로 뭉개져 정보가 버려졌다)
+//   ⚠ Supabase 제약을 먼저 풀어야 저장된다 → docs/supabase_unknown_result.sql
+//      (안 풀린 상태에서도 수집이 멈추지 않도록 upsert()가 '?'→'-'로 자동 강등한다)
+const toOX = (r) => (r === 'CORRECT' ? 'O' : (r === 'WRONG' || r === 'INCORRECT') ? 'X' : r === 'UNKNOWN' ? '?' : '-');
 
 let TOKEN = null;
 function _apiHeaders() {
@@ -1501,18 +1506,31 @@ async function refreshConceptNames() {
 
 async function upsert(table, records, onConflict) {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
-  const CH = 500; let ok = 0;
+  const CH = 500; let ok = 0, downgraded = 0;
+  const send = (batch) => fetch(`${url}/rest/v1/${table}?on_conflict=${encodeURIComponent(onConflict)}`, {
+    method: 'POST',
+    headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json', prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(batch),
+  });
   for (let i = 0; i < records.length; i += CH) {
-    const batch = records.slice(i, i + CH);
-    const res = await fetch(`${url}/rest/v1/${table}?on_conflict=${encodeURIComponent(onConflict)}`, {
-      method: 'POST',
-      headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json', prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(batch),
-    });
-    if (res.ok) ok += batch.length; else log(`  ${table} upsert 실패(${res.status}): ${(await res.text()).slice(0, 160)}`);
+    let batch = records.slice(i, i + CH);
+    let res = await send(batch);
+    if (!res.ok) {
+      const body = (await res.text()).slice(0, 300);
+      // 「모름(?)」 제약이 아직 안 풀린 DB — 수집을 멈추지 말고 '-'로 강등해 재시도
+      if (res.status === 400 && body.includes('23514') && batch.some((r) => r.result === '?')) {
+        const n = batch.filter((r) => r.result === '?').length;
+        batch = batch.map((r) => (r.result === '?' ? Object.assign({}, r, { result: '-' }) : r));
+        res = await send(batch);
+        if (res.ok) downgraded += n;
+      }
+      if (!res.ok) { log(`  ${table} upsert 실패(${res.status}): ${body.slice(0, 160)}`); await sleep(100); continue; }
+    }
+    ok += batch.length;
     await sleep(100);
   }
   log(`Supabase ${table}: ${ok}/${records.length}개 저장`);
+  if (downgraded) log(`  ⚠ 「모름」 ${downgraded}건이 '-'로 저장됐습니다 — docs/supabase_unknown_result.sql 을 한 번 실행하면 '?'로 구분 저장됩니다`);
 }
 
 main().catch((e) => { log('❌ 오류:', e.message); process.exit(1); });
