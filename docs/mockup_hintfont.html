@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 힌트 손글씨체</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Pen+Script&family=Gamja+Flower&family=Hi+Melody&family=Poor+Story&family=Single+Day&family=Nanum+Brush+Script&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1140px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-key{background:#fef3c7;color:#b45309}.b-live{background:#dcfce7;color:#15803d}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box b b{display:inline;font-size:inherit;margin:0}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+
+/* 폰트 카드 */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:12px}
+.card{border:2px solid #e6eaf1;border-radius:14px;padding:14px 15px;cursor:pointer;background:#fff;transition:border-color .15s,box-shadow .15s}
+.card.on{border-color:#7c3aed;box-shadow:0 6px 18px rgba(124,58,237,.16)}
+.chead{display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.chead b{font-size:13.5px;color:#0d2240}
+.chead .tag{font-size:10px;font-weight:900;border-radius:20px;padding:2px 8px}
+.t-rec{background:#dcfce7;color:#15803d}.t-now{background:#e0f2fe;color:#0369a1}
+.chead .pick{margin-left:auto;font-size:11px;font-weight:900;color:#94a3b8}
+.card.on .pick{color:#7c3aed}
+.samp{font-size:19px;color:#334155;line-height:1.62}
+.samp .math{white-space:nowrap}
+.small{margin-top:7px;font-size:11px;color:#94a3b8;font-weight:700}
+
+/* 학생앱 프레임 */
+.stage{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.phone{width:390px;background:#f2f5f9;border-radius:34px;border:9px solid #0d2240;box-shadow:0 16px 40px rgba(13,34,64,.28);overflow:hidden;flex-shrink:0}
+.pbar{background:#0d2240;color:#fff;padding:12px 15px;font-size:15px;font-weight:900}
+.pbody{padding:13px;max-height:600px;overflow:auto}
+.qcard{background:#fff;border:1px solid #e8eef8;border-radius:14px;padding:12px 13px;margin-bottom:10px}
+.qcard .src{font-size:11.5px;font-weight:800;color:#1d6fe8;margin-bottom:3px}
+.qcard .memo{font-size:12px;color:#94a3b8;font-weight:700}
+.hbox{border:1.5px solid #ddd6fe;background:#faf8ff;border-radius:13px;padding:11px 13px;margin-bottom:9px}
+.hbox b{color:#6d28d9;font-size:12px;font-weight:900;display:block;margin-bottom:3px}
+.hbox .txt{color:#334155;line-height:1.62}
+.hlock{border:1.5px dashed #e2e8f0;background:#fbfcfe;border-radius:13px;padding:13px;text-align:center;font-size:12px;font-weight:800;color:#cbd5e1}
+
+.ctl{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.ctl label{font-size:11.5px;font-weight:800;color:#94a3b8}
+input[type=range]{width:170px}
+.tg{border:1.5px solid #cbd5e1;background:#fff;border-radius:50px;padding:7px 14px;font-size:12px;font-weight:800;color:#64748b;cursor:pointer;font-family:inherit}
+.tg.on{background:#7c3aed;border-color:#7c3aed;color:#fff}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+.pickrow{background:#f0fdf4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div id="fontwarn" style="display:none;background:#fef2f2;border:1.5px solid #fecaca;border-radius:13px;padding:13px 15px;margin-bottom:16px">
+  <b style="font-size:13.5px;color:#b91c1c;display:block;margin-bottom:3px">⚠️ 글씨체를 불러오지 못했습니다</b>
+  <p style="font-size:12.5px;color:#991b1b;font-weight:600;line-height:1.68">
+  아래 예시가 <b>전부 똑같은 글씨</b>로 보인다면 인터넷에서 글씨체를 못 받아온 것입니다.
+  잠시 뒤 새로고침해 보시고, 그래도 같으면 말씀해 주세요 — 글씨체 파일을 앱에 직접 넣는 방법으로 바꾸겠습니다.</p>
+</div>
+<h1>✍️ 힌트 손글씨체</h1>
+<p class="sub">
+학생앱에 뜨는 힌트를 <b>선생님이 손으로 써준 것처럼</b> 보이게 하는 것입니다. 됩니다.<br>
+아래 <b>실제 원장님 힌트 문장</b>(오시안 #103)으로 7가지를 비교해 보세요 — <b>눌러서 고르시면</b> 아래 학생앱 화면에 바로 적용됩니다.
+</p>
+
+<!-- ① 주의 -->
+<div class="sec">
+  <div class="stitle">① 먼저 짚어둘 것 — 수식</div>
+  <div class="sdesc">수학이라 다른 과목과 사정이 다릅니다</div>
+  <div class="box x-org"><div class="ic">🔢</div><div>
+    <b>손글씨체는 <b>숫자와 기호</b>가 흐려질 수 있습니다</b>
+    <p>힌트에는 <b>2×3²×5²×7</b> 같은 식이 자주 들어갑니다. 글씨체에 따라 <b>지수(²)가 뭉개지거나</b>
+    5와 6, 1과 7이 헷갈립니다. 그래서 아래 예시에는 <b>일부러 수식이 든 힌트</b>를 넣었습니다.</p>
+  </div></div>
+  <div class="box x-grn"><div class="ic">💡</div><div>
+    <b>그래서 <b>「글자만 손글씨, 수식은 또박또박」</b>도 만들었습니다</b>
+    <p>아래 <b>「수식은 기본 글씨로」</b> 스위치를 켜보세요. 설명 문장은 손글씨인데
+    <b>숫자·수식만 원래 글씨</b>로 나옵니다. 분위기는 살리고 오독은 막는 방법입니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 폰트 비교 -->
+<div class="sec">
+  <div class="stitle">② 글씨체 고르기 <span class="badge b-live">눌러보세요</span></div>
+  <div class="sdesc">실제 힌트 문장 그대로입니다</div>
+  <div class="ctl">
+    <label>글자 크기</label>
+    <input type="range" id="sz" min="15" max="26" value="19" oninput="setSz(this.value)">
+    <span id="szv" style="font-size:12px;font-weight:900;color:#0d2240">19px</span>
+    <button class="tg" id="tgMath" onclick="toggleMath()">🔢 수식은 기본 글씨로</button>
+  </div>
+  <div class="cards" id="cards"></div>
+</div>
+
+<!-- ③ 학생앱 -->
+<div class="sec">
+  <div class="stitle">③ 학생앱에서 이렇게 보입니다</div>
+  <div class="sdesc">고른 글씨체가 바로 적용됩니다 · 오른쪽은 지금(기본 글씨)</div>
+  <div class="stage">
+    <div>
+      <div class="phone" id="ph1"></div>
+      <div style="text-align:center;font-size:11.5px;font-weight:800;color:#7c3aed;margin-top:9px" id="lab1"></div>
+    </div>
+    <div>
+      <div class="phone" id="ph2"></div>
+      <div style="text-align:center;font-size:11.5px;font-weight:800;color:#94a3b8;margin-top:9px">지금 — 기본 글씨</div>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 힌트 수정 -->
+<div class="sec">
+  <div class="stitle">④ 「힌트를 내가 수정할 수 있나?」 — <span style="color:#15803d">이미 됩니다</span></div>
+  <div class="sdesc">기능이 이미 들어가 있는데 눈에 안 띄었던 것 같습니다</div>
+  <div class="box x-grn"><div class="ic">✏️</div><div>
+    <b>힌트 글을 <b>그냥 누르면</b> 바로 고쳐집니다</b>
+    <p>힌트 창에서 <b>힌트1·2·3 글자를 손가락으로 누르면</b> 커서가 생기고 그 자리에서 고칠 수 있습니다.
+    다 고치면 <b>「💾 초안 저장」</b>을 누르시면 됩니다. 창 아래에 작게
+    <b>「글을 클릭하면 바로 고칠 수 있어요」</b>라고 안내가 있는데 글씨가 작아 놓치기 쉽습니다.</p>
+  </div></div>
+  <div class="rule">
+    <b>지금 할 수 있는 것</b><br>
+    ✏️ 힌트 글 직접 고치기 (누르면 바로) · 🔄 다시 생성 (AI에게 새로 시키기) ·
+    💾 초안 저장 · 💡 승인·학생앱에 힌트 보내기<br><br>
+    <span style="color:#64748b">고친 힌트는 <b>승인하는 순간</b> 그 문제의 자산으로 저장돼서,
+    다음에 다른 학생이 같은 문제를 물으면 <b>고친 그대로</b> 다시 쓰입니다.</span>
+  </div>
+  <div class="box x-blu" style="margin-top:11px"><div class="ic">🔍</div><div>
+    <b>안내 문구를 <b>더 잘 보이게</b> 바꿀까요?</b>
+    <p>지금은 회색 작은 글씨라 놓치기 쉽습니다. 힌트 상자 옆에 <b>「✏️ 눌러서 수정」</b> 딱지를
+    붙이면 바로 아실 것 같습니다. 원하시면 같이 넣겠습니다.</p>
+  </div></div>
+</div>
+
+<!-- ⑤ 정리 -->
+<div class="sec">
+  <div class="stitle">⑤ 어느 것을 쓸까</div>
+  <div class="sdesc">제 생각입니다</div>
+  <table class="cmp">
+    <tr><th style="width:170px">글씨체</th><th style="width:130px">느낌</th><th>수식 읽기</th></tr>
+    <tr class="pickrow"><td><b>개구 (Gaegu)</b></td><td>연필로 또박또박</td>
+      <td><b>가장 무난합니다</b> — 숫자가 살아 있고 지수도 버팁니다. <b>추천</b></td></tr>
+    <tr><td><b>나눔손글씨 펜</b></td><td>빠르게 쓴 펜글씨</td><td>분위기는 제일 좋은데 <b>숫자가 얇아</b> 작게 보면 흐립니다</td></tr>
+    <tr><td><b>감자꽃</b></td><td>동글동글 귀여움</td><td>초등에게 좋습니다 · 중등엔 조금 어려 보일 수 있습니다</td></tr>
+    <tr><td><b>하이멜로디</b></td><td>부드러운 손글씨</td><td>무난 · 개구보다 살짝 흐립니다</td></tr>
+    <tr><td><b>푸어스토리</b></td><td>또박또박 각진</td><td>읽기 쉬움 · 손글씨 느낌은 약합니다</td></tr>
+    <tr><td><b>싱글데이</b></td><td>얇고 가벼움</td><td>수식이 <b>잘 안 보입니다</b> — 권하지 않습니다</td></tr>
+    <tr><td><b>나눔손글씨 붓</b></td><td>붓글씨</td><td>수학 힌트엔 <b>안 맞습니다</b> — 참고용</td></tr>
+  </table>
+  <div class="rule" style="margin-top:13px">
+    <b>제 추천은 「개구 + 수식은 기본 글씨로」입니다.</b>
+    손으로 써준 느낌은 나는데 <b>숫자를 잘못 읽을 일이 없습니다.</b><br><br>
+    <span style="color:#64748b">글씨체는 <b>학생앱에만</b> 적용하고, 원장님이 검토하시는 학원앱 힌트 창은
+    지금 글씨를 유지하는 게 좋겠습니다 — 고칠 때는 또박또박한 게 편하니까요.</span>
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 · 글씨체는 구글 폰트(무료·상업적 사용 가능)입니다
+</div>
+</div>
+
+<script>
+var FONTS=[
+  {k:'gaegu', n:'개구 (Gaegu)',        f:"'Gaegu', cursive",             w:700, tag:'추천', note:'연필로 또박또박 쓴 느낌'},
+  {k:'pen',   n:'나눔손글씨 펜',        f:"'Nanum Pen Script', cursive",  w:400, note:'빠르게 쓴 펜글씨 · 글자가 큼직'},
+  {k:'gamja', n:'감자꽃',              f:"'Gamja Flower', cursive",      w:400, note:'동글동글 · 초등에 잘 어울림'},
+  {k:'melody',n:'하이멜로디',           f:"'Hi Melody', cursive",         w:400, note:'부드러운 손글씨'},
+  {k:'poor',  n:'푸어스토리',           f:"'Poor Story', cursive",        w:400, note:'또박또박 각진 손글씨'},
+  {k:'single',n:'싱글데이',            f:"'Single Day', cursive",        w:400, note:'얇고 가벼움'},
+  {k:'brush', n:'나눔손글씨 붓',        f:"'Nanum Brush Script', cursive",w:400, note:'붓글씨 — 참고용'},
+  {k:'now',   n:'지금 글씨 (기본)',     f:"'Apple SD Gothic Neo','Noto Sans KR',sans-serif", w:600, tag:'현재', note:'또박또박한 기본 고딕'}
+];
+var SEL='gaegu', SZ=19, MATHOFF=false;
+
+/* 실제 힌트 (오시안 · RPM 중등수학1(상) p17 #103) */
+var H=[
+  ['개념 떠올리기','두 수의 최소공배수를 소인수분해로 나타낼 때, 각 소인수의 지수 중 \'가장 큰 것\'을 골라서 곱한다는 규칙을 떠올려 보자.'],
+  ['첫 단추','103번은 두 수 §2×3²×5²×7§ 형태의 최소공배수가 주어진 거니까, 먼저 주어진 두 수를 각각 소인수분해해서 어떤 소인수들이 등장하는지 확인해 보자.'],
+  ['핵심 스텝','두 수를 소인수분해했을 때 각 소인수(§2, 3, 5, 7§ 등)의 지수를 비교해서, 최소공배수의 지수와 맞추려면 §a§와 §b§ 자리에 어떤 수가 들어가야 지수가 딱 맞는지 따져 보자.']
+];
+/* §…§ 안은 수식 — 「수식은 기본 글씨로」를 켜면 이 부분만 기본 글씨 */
+function render1(txt){
+  var parts=String(txt).split('§'), out='';
+  parts.forEach(function(s,i){
+    if(i%2===1){
+      out += MATHOFF
+        ? '<span class="math" style="font-family:\'Apple SD Gothic Neo\',sans-serif;font-weight:700;color:#0d2240">'+s+'</span>'
+        : '<span class="math">'+s+'</span>';
+    } else out+=s;
+  });
+  return out;
+}
+function fontOf(k){ var f=FONTS.find(function(x){ return x.k===k; }); return f||FONTS[0]; }
+
+function drawCards(){
+  document.getElementById('cards').innerHTML=FONTS.map(function(f){
+    var on=(SEL===f.k);
+    return '<div class="card'+(on?' on':'')+'" onclick="pick(\''+f.k+'\')">'
+      +'<div class="chead"><b>'+f.n+'</b>'
+      +(f.tag?'<span class="tag '+(f.tag==='추천'?'t-rec':'t-now')+'">'+f.tag+'</span>':'')
+      +'<span class="pick">'+(on?'✓ 고름':'누르면 적용')+'</span></div>'
+      +'<div class="samp" style="font-family:'+f.f+';font-weight:'+f.w+';font-size:'+SZ+'px">'+render1(H[1][1])+'</div>'
+      +'<div class="small">'+f.note+'</div></div>';
+  }).join('');
+}
+function phoneHtml(fk, label){
+  var f=fontOf(fk);
+  var h='<div class="pbar">💡 '+label+'</div><div class="pbody">';
+  h+='<div class="qcard"><div class="src">RPM - 중등수학1(상) p17 #103</div>'
+    +'<div class="memo">내 질문 — "a,b 못 구하겠어요."</div></div>';
+  h+='<div class="hbox"><b>💡 힌트 1 — '+H[0][0]+'</b>'
+    +'<div class="txt" style="font-family:'+f.f+';font-weight:'+f.w+';font-size:'+SZ+'px">'+render1(H[0][1])+'</div></div>';
+  h+='<div class="hbox"><b>💡 힌트 2 — '+H[1][0]+'</b>'
+    +'<div class="txt" style="font-family:'+f.f+';font-weight:'+f.w+';font-size:'+SZ+'px">'+render1(H[1][1])+'</div></div>';
+  h+='<div class="hlock">🔒 힌트 3은 힌트 2를 보고 다시 풀어본 뒤 열려요</div>';
+  h+='</div>';
+  return h;
+}
+function draw(){
+  drawCards();
+  var f=fontOf(SEL);
+  document.getElementById('ph1').innerHTML=phoneHtml(SEL, '힌트');
+  document.getElementById('ph2').innerHTML=phoneHtml('now', '힌트');
+  document.getElementById('lab1').textContent='고른 글씨체 — '+f.n+(MATHOFF?' + 수식은 기본 글씨':'');
+  document.getElementById('szv').textContent=SZ+'px';
+  document.getElementById('tgMath').className='tg'+(MATHOFF?' on':'');
+}
+window.pick=function(k){ SEL=k; draw(); };
+window.setSz=function(v){ SZ=+v; draw(); };
+window.toggleMath=function(){ MATHOFF=!MATHOFF; draw(); };
+draw();
+
+/* 글씨체가 실제로 적용됐는지 확인 — 안 되면 위에 안내를 띄운다
+ * (글씨체는 인터넷에서 받아오므로 망이 막힌 곳에서는 기본 글씨로 나온다) */
+function fontWidth(fam){
+  var d=document.createElement('span');
+  d.style.cssText='position:absolute;visibility:hidden;white-space:nowrap;font-size:60px;font-family:'+fam;
+  d.textContent='가나다라마바사123';
+  document.body.appendChild(d);
+  var w=d.getBoundingClientRect().width; d.remove(); return w;
+}
+function checkFonts(tries){
+  var base=fontWidth('serif');
+  var any=FONTS.some(function(f){
+    if(f.k==='now') return false;
+    return Math.abs(fontWidth(f.f+',serif')-base)>1.5;
+  });
+  if(any) return;
+  if(tries>0){ setTimeout(function(){ checkFonts(tries-1); }, 900); return; }
+  var el=document.getElementById('fontwarn'); if(el) el.style.display='';
+}
+if(document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ checkFonts(4); });
+else setTimeout(function(){ checkFonts(4); }, 1200);
+</script>
+</body>
+</html>
