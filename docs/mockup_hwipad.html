@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 아이패드 숙제체크 「수업 모드」</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1300px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-key{background:#fef3c7;color:#b45309}.b-live{background:#dcfce7;color:#15803d}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box b b{display:inline;font-size:inherit;margin:0}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+
+table.meas{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+table.meas th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.meas td{padding:9px 10px;border-bottom:1px solid #f1f5f9;font-weight:700;color:#475569}
+table.meas td b{color:#0d2240}
+.short{color:#b91c1c;font-weight:900}.fit{color:#15803d;font-weight:900}
+
+.pick{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.pick .lab{font-size:11.5px;font-weight:800;color:#94a3b8}
+.kb{border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:9px 15px;font-size:12.5px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit;line-height:1.3;text-align:left}
+.kb small{display:block;font-size:10px;font-weight:700;opacity:.65;margin-top:2px}
+.kb.on{background:#0d2240;border-color:#0d2240;color:#fff}.kb.on small{opacity:.8}
+
+/* 아이패드 프레임 */
+.ipadbox{background:#dbe3ee;border-radius:16px;padding:16px;overflow:hidden}
+.ipadscale{position:relative;overflow:hidden}
+.ipad{width:1194px;height:834px;background:#f2f5f9;border:12px solid #1a1a1c;border-radius:22px;overflow:hidden;position:relative;transform-origin:top left;display:flex;flex-direction:column;box-shadow:0 14px 34px rgba(13,34,64,.25)}
+.ipadlab{text-align:center;font-size:11.5px;font-weight:800;color:#64748b;margin-top:11px}
+
+/* 앱 재현 */
+.topnav{background:#0d2240;display:flex;flex-shrink:0}
+.tn{padding:9px 20px;font-size:12px;font-weight:800;color:rgba(255,255,255,.55);text-align:center;line-height:1.3}
+.tn .e{display:block;font-size:15px;margin-bottom:1px}
+.tn.on{background:#16305a;color:#fff;box-shadow:inset 0 -3px 0 #e23434}
+.body{flex:1;display:flex;min-height:0}
+.side{width:270px;flex-shrink:0;background:#0d2240;padding:11px;overflow:hidden}
+.sideh{color:#fff;font-size:15px;font-weight:900;margin-bottom:2px}
+.sidev{color:rgba(255,255,255,.45);font-size:10.5px;font-weight:700;margin-bottom:11px}
+.keybox{background:#fefce8;border-radius:10px;padding:9px;margin-bottom:9px}
+.keybox b{font-size:10.5px;color:#a16207;font-weight:900;display:block;margin-bottom:5px}
+.keyin{background:#fff;border:1px solid #e5e7eb;border-radius:7px;height:26px;margin-bottom:5px}
+.scard{border-radius:11px;padding:10px 11px;margin-bottom:7px}
+.scard b{font-size:12.5px;font-weight:900;display:block}
+.scard span{font-size:10px;font-weight:700;opacity:.75}
+.main{flex:1;min-width:0;background:#f5f8fc;display:flex;flex-direction:column}
+.subtabs{display:flex;gap:7px;padding:9px 13px;background:#fff;border-bottom:1px solid #e8eef8;flex-shrink:0;overflow:hidden}
+.stb{border:1.5px solid #e8eef8;background:#fff;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:900;color:#475569;white-space:nowrap}
+.stb.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.notes{padding:9px 15px 4px;font-size:11px;color:#64748b;font-weight:700;line-height:1.75}
+.notes .h{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.mon{font-size:19px;font-weight:900;color:#0d2240}
+.pill{background:#eff6ff;color:#1e40af;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:800}
+.pill.p{background:#faf5ff;color:#7e22ce}
+.gridwrap{margin:8px 13px 12px;background:#fff;border:1px solid #e8eef8;border-radius:14px;padding:11px;overflow-x:auto;flex:1;min-height:0}
+table.g{border-collapse:collapse}
+table.g th{font-size:10px;font-weight:800;color:#94a3b8;padding:3px 1px;text-align:center;line-height:1.25}
+table.g th.sun{color:#ef4444}table.g th.sat{color:#3b82f6}
+table.g th.today{background:#0d2240;color:#fff;border-radius:6px}
+table.g th.nm{text-align:left;padding-left:7px;font-size:11px}
+table.g td{padding:2px 1px;text-align:center}
+table.g td.nm{font-size:13px;font-weight:800;color:#0d2240;white-space:nowrap;padding:3px 7px;text-align:left}
+.cel{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px solid #eef2f7;background:#fbfcfe;border-radius:8px;cursor:pointer;font-weight:900;color:#0d2240}
+.cel.dn{background:#dcfce7;border-color:#4ade80}
+.cel.pt{background:#fee2e2;border-color:#f87171;color:#b91c1c}
+.cel.off{background:#fafafa;border-color:#f5f5f5;cursor:default}
+.cel.td{box-shadow:0 0 0 2.5px #ffd54a}
+.bars{display:flex;gap:2px;margin-top:3px}
+.bars i{display:block;height:3px;border-radius:2px}
+.sumc{font-size:11px;font-weight:900;color:#475569;white-space:nowrap;padding:0 6px}
+.cutmark{position:absolute;top:0;bottom:0;width:38px;background:linear-gradient(90deg,rgba(185,28,28,0),rgba(185,28,28,.22));pointer-events:none}
+.cuthint{position:absolute;right:0;top:50%;transform:translateY(-50%) rotate(90deg);transform-origin:center;font-size:11px;font-weight:900;color:#b91c1c;white-space:nowrap}
+/* 수업 모드 머리줄 */
+.cmbar{display:flex;align-items:center;gap:11px;background:#0d2240;color:#fff;padding:10px 15px;flex-shrink:0}
+.cmbar .t{font-size:17px;font-weight:900}
+.cmbar .d{font-size:12px;font-weight:700;opacity:.7}
+.cmchips{display:flex;gap:6px;margin-left:6px}
+.cmchip{background:rgba(255,255,255,.14);color:#cbd5e1;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:900;cursor:pointer}
+.cmchip.on{background:#fff;color:#0d2240}
+.cmprog{margin-left:auto;display:flex;align-items:center;gap:9px}
+.cmprog .n{font-size:13px;font-weight:900}
+.cmtrk{width:140px;height:7px;background:rgba(255,255,255,.18);border-radius:20px;overflow:hidden}
+.cmbf{height:100%;background:linear-gradient(90deg,#38bdf8,#22c55e);border-radius:20px;transition:width .25s}
+.cmexit{background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:9px;padding:6px 13px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit}
+.leg{padding:7px 15px 0;font-size:11.5px;font-weight:700;color:#94a3b8}
+
+.chg{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #f1f5f9}
+.chgn{flex-shrink:0;width:25px;height:25px;border-radius:50%;background:#1d6fe8;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.chg b{font-size:13.5px;color:#0d2240;display:block;margin-bottom:2px}
+.chg b b{display:inline;font-size:inherit;margin:0}
+.chg p{font-size:12.5px;color:#64748b;font-weight:600;line-height:1.62}
+.chg p b{display:inline;font-size:inherit}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>📐 아이패드 숙제체크 — 실측하고 조정안을 만들었습니다</h1>
+<p class="sub">
+말씀대로 <b>가로로 쓰시면 거의 그대로 쓸 만합니다.</b> 다만 실제로 재보니 <b>한 달 표가 옆으로 조금 잘립니다.</b><br>
+잘리는 폭을 없애면서 <b>칸도 크게</b> 만드는 방법이 있어서 만들어 봤습니다 — <b>버튼으로 비교</b>해 보세요.
+</p>
+
+<!-- ① 실측 -->
+<div class="sec">
+  <div class="stitle">① 실제 앱을 아이패드 크기로 열어서 재봤습니다</div>
+  <div class="sdesc">지금 배포된 v18-51을 그대로 아이패드 화면 크기로 띄워 픽셀을 잰 값입니다</div>
+  <table class="meas">
+    <tr><th style="width:180px">아이패드</th><th style="width:150px">표에 쓸 수 있는 폭</th><th style="width:150px">한 달 표에 필요한 폭</th><th>결과</th></tr>
+    <tr><td><b>10.9형 가로</b><br><span style="font-size:11px;color:#94a3b8">1180 × 820</span></td><td>854px</td><td>1193px</td><td><span class="short">339px 모자람</span> — 26일부터 잘림</td></tr>
+    <tr><td><b>11형 가로</b><br><span style="font-size:11px;color:#94a3b8">1194 × 834</span></td><td>868px</td><td>1193px</td><td><span class="short">325px 모자람</span> — 26일부터 잘림</td></tr>
+    <tr><td><b>13형 가로</b><br><span style="font-size:11px;color:#94a3b8">1366 × 1024</span></td><td>980px</td><td>1193px</td><td><span class="short">213px 모자람</span> — 28일부터 잘림</td></tr>
+    <tr style="background:#fff7ed"><td><b>세로로 들면</b></td><td colspan="3">앱이 <b>폰 화면(모바일 모드)</b>으로 바뀝니다 — 가로 900px이 기준선입니다. <b>가로로 쓰셔야 합니다.</b></td></tr>
+  </table>
+  <div class="box x-grn" style="margin-top:14px"><div class="ic">✅</div><div>
+    <b>좋은 소식 — <b>오늘 칸은 잘리지 않습니다</b></b>
+    <p>13일까지는 화면에 들어옵니다. 잘리는 건 <b>월말 쪽</b>이라 그날그날 찍는 데는 지장이 없습니다.
+    <b>원장님 말씀대로 지금도 쓸 수 있습니다.</b></p>
+  </div></div>
+  <div class="box x-org"><div class="ic">👆</div><div>
+    <b>다만 두 가지가 걸립니다</b>
+    <p>① 칸이 <b>30px</b>입니다 — 애플이 권하는 손가락 크기는 <b>44px</b>이라 오눌림이 납니다.<br>
+    ② 31칸 중 <b>수업 없는 날이 절반 이상</b>인데 그 빈 칸이 자리를 다 먹고 있습니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 비교 -->
+<div class="sec">
+  <div class="stitle">② 지금 화면 ↔ 「수업 모드」 <span class="badge b-live">칸을 눌러보세요</span></div>
+  <div class="sdesc">둘 다 아이패드 11형 가로(1194 × 834) 실제 비율입니다 · 화면에 맞게 축소해 보여드립니다</div>
+
+  <div class="pick" id="pk"></div>
+  <div class="ipadbox"><div class="ipadscale" id="scaler"><div class="ipad" id="ip"></div></div></div>
+  <div class="ipadlab" id="ilab"></div>
+</div>
+
+<!-- ③ 무엇을 바꾸나 -->
+<div class="sec">
+  <div class="stitle">③ 「수업 모드」에서 바뀌는 것 — 네 가지</div>
+  <div class="sdesc">기존 화면은 그대로 두고, 버튼 하나로 켜고 끄는 방식입니다</div>
+  <div class="chg"><div class="chgn">1</div><div>
+    <b>수업 없는 날을 뺍니다</b>
+    <p>M3가 주 3회면 <b>31칸이 13칸으로</b> 줄어듭니다. 없앤 자리를 칸 크기에 씁니다.
+    <b>잘리는 문제가 사라집니다</b> — 13칸이면 폭이 남습니다.</p></div></div>
+  <div class="chg"><div class="chgn">2</div><div>
+    <b>칸을 30px → <b>52px</b>로 키웁니다</b>
+    <p>애플 권장(44px)보다 크게 잡았습니다. <b>손가락으로 눌러도 옆 칸이 안 눌립니다.</b>
+    숫자와 막대도 커져서 멀리서도 보입니다.</p></div></div>
+  <div class="chg"><div class="chgn">3</div><div>
+    <b>왼쪽 사이드바와 설명문을 접습니다</b>
+    <p>API 키 입력·진도 현황·리커버리는 <b>수업 중에 쓰지 않습니다.</b> 접으면 <b>270px</b>이 표로 갑니다.
+    설명 문구 네 줄도 접어서 표가 화면 위로 올라옵니다.</p></div></div>
+  <div class="chg" style="border:none"><div class="chgn">4</div><div>
+    <b>맨 위에 <b>반 버튼 + 진행 막대</b>를 둡니다</b>
+    <p><b>「M3 · 8명 중 5명 · 3명 남음」</b> — 빠뜨린 학생이 바로 보입니다.
+    반을 누르면 그 반으로 바뀝니다. <b>「나가기」</b>를 누르면 원래 화면으로 돌아옵니다.</p></div></div>
+  <div class="rule" style="margin-top:14px">
+    <b>지금 화면은 그대로 남습니다.</b> 한 달 흐름을 보실 때는 원래 화면이 낫습니다 —
+    「수업 모드」는 <b>수업 중에만</b> 켜는 버튼 하나입니다.<br><br>
+    <b>종이 체크표</b>는 v18-51에 이미 들어가 있으니 백업으로 그대로 두겠습니다.
+    <b>월간 종이 A/B/C안은 접습니다.</b>
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 · 예시 학생 자료는 실제 학생이 아닙니다
+</div>
+</div>
+
+<script>
+var MODE='cm';   /* now | cm */
+var CUR='M3';
+var CLS={
+  M3:{days:[1,4,5], stu:['오시안','유은상','윤이솔','홍세원','강도현','서예린','임하준','정소미']},
+  M2:{days:[2,4],   stu:['권나린','백주안','최이한']},
+  H1:{days:[1,3],   stu:['남시우','조하윤']}
+};
+var DOW=['일','월','화','수','목','금','토'];
+var TODAY=13;
+/* 체크 상태: '반|일' → {p,c,w} */
+var HW={};
+(function seed(){
+  [3,6,7,10].forEach(function(d){
+    CLS.M3.stu.forEach(function(n,i){
+      HW['M3|'+n+'|'+d] = (i===3)?{p:30,c:0,w:0}:{p:100,c:100,w:100};
+    });
+  });
+  HW['M3|오시안|13']={p:100,c:100,w:100};
+  HW['M3|유은상|13']={p:100,c:100,w:100};
+  HW['M3|윤이솔|13']={p:100,c:60,w:0};
+  HW['M3|홍세원|13']={p:0,c:0,w:0};
+  HW['M3|강도현|13']={p:100,c:100,w:100};
+})();
+
+function daysOfMonth(){ var a=[]; for(var d=1;d<=31;d++) a.push(d); return a; }
+function classDays(){
+  return daysOfMonth().filter(function(d){ return CLS[CUR].days.indexOf(new Date(2026,7,d).getDay())>=0; });
+}
+function tot(v){ if(!v) return null; return Math.round((v.p+v.c+v.w)/3); }
+function key(n,d){ return CUR+'|'+n+'|'+d; }
+
+function cell(n, d, size, active){
+  var v=HW[key(n,d)];
+  var t=tot(v);
+  var k='cel'+(!active?' off':(v?(t>=100?' dn':' pt'):''))+(d===TODAY&&active?' td':'');
+  var st='width:'+size+'px;height:'+size+'px;font-size:'+(size>=44?13:10.5)+'px';
+  var inner='';
+  if(v && active){
+    inner=t+'<div class="bars">'
+      +'<i style="width:'+(size*0.26)+'px;height:'+(size>=44?5:3)+'px;background:'+(v.p>=100?'#3b82f6':'#cbd5e1')+'"></i>'
+      +'<i style="width:'+(size*0.26)+'px;height:'+(size>=44?5:3)+'px;background:'+(v.c>=100?'#f59e0b':'#cbd5e1')+'"></i>'
+      +'<i style="width:'+(size*0.26)+'px;height:'+(size>=44?5:3)+'px;background:'+(v.w>=100?'#22c55e':'#cbd5e1')+'"></i></div>';
+  }
+  var on = active ? ' onclick="tap(\''+n+'\','+d+')"' : '';
+  return '<td><span class="'+k+'" style="'+st+'"'+on+'>'+inner+'</span></td>';
+}
+
+function sumOf(n){
+  var ds=classDays(), done=0, cnt=0, sum=0;
+  ds.forEach(function(d){ var v=HW[key(n,d)]; if(!v) return; cnt++; sum+=tot(v); if(tot(v)>=100) done++; });
+  return cnt? (done+'/'+cnt+' · '+Math.round(sum/cnt)+'%') : '—';
+}
+
+/* ── 지금 화면 ── */
+function viewNow(){
+  var h='<div class="topnav">'
+    +[['🏠','홈',0],['✅','오늘의 확인',1],['📅','수업·출결',0],['📈','성적·분석',0],['📱','학생앱',0],['🏫','운영',0]]
+      .map(function(x){ return '<div class="tn'+(x[2]?' on':'')+'"><span class="e">'+x[0]+'</span>'+x[1]+'</div>'; }).join('')
+    +'</div>';
+  h+='<div class="body"><div class="side">'
+    +'<div class="sideh">LUMEN <span style="font-size:11px;opacity:.5">v18-51</span></div>'
+    +'<div class="sidev">🟣 Claude ✓ · ⚪ Gemini</div>'
+    +'<div class="keybox"><b>🔑 AI 피드백 API 키</b><div class="keyin"></div><div class="keyin"></div></div>'
+    +'<div class="scard" style="background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff"><b>📚 진도 현황</b><span>교재 진행·지연 경고</span></div>'
+    +'<div class="scard" style="background:#fbbf24;color:#78350f"><b>🚑 리커버리</b><span>주말 보충 · 호출 · 장부</span></div>'
+    +'<div class="scard" style="background:#fef3c7;color:#92400e"><b>🏆 명예의 전당</b><span>주간테스트 1등</span></div>'
+    +'<div class="scard" style="background:#dc2626;color:#fff"><b>📝 수학풀이분석</b><span>AI 풀이 분석</span></div>'
+    +'</div>';
+  h+='<div class="main">';
+  h+='<div class="subtabs">'
+    +['✅ 오늘의 확인','⚡ 울트라일일','📤 발행 센터','📋 플래너','📋 숙제체크','🎙 녹음관리','💡 아하노트']
+      .map(function(t,i){ return '<div class="stb'+(i===4?' on':'')+'">'+t+'</div>'; }).join('')
+    +'</div>';
+  h+='<div class="notes"><div class="h"><span class="mon">◀ 2026년 8월 ▶</span>'
+    +'<span class="pill">칸 클릭: 🟢 전부 100% → 🔴 전부 0%(창) → 지움</span>'
+    +'<span class="pill p">💡 아하노트는 자동 계산</span></div>'
+    +'칸 안 숫자 = 종합 % (풀이·채점·오답+아하노트 평균) · 막대 색: 풀이 · 채점 · 오답<br>'
+    +'🔗 체크하면 그 날짜 리포트 경고등에 자동 반영</div>';
+  h+='<div class="gridwrap" style="position:relative"><table class="g"><tr><th class="nm">학생</th>';
+  daysOfMonth().forEach(function(d){
+    var dw=new Date(2026,7,d).getDay();
+    h+='<th class="'+(d===TODAY?'today':dw===0?'sun':dw===6?'sat':'')+'" style="width:32px">'+DOW[dw]+'<br>'+d+'</th>';
+  });
+  h+='<th style="width:60px">이번달</th></tr>';
+  CLS[CUR].stu.forEach(function(n){
+    h+='<tr><td class="nm">'+n+'</td>';
+    daysOfMonth().forEach(function(d){ h+=cell(n,d,30,true); });
+    h+='<td class="sumc">'+sumOf(n)+'</td></tr>';
+  });
+  h+='</table>';
+  h+='<div class="cutmark" style="right:0"></div>';
+  h+='</div>';
+  h+='<div class="leg" style="color:#b91c1c;padding-bottom:9px">↔️ 26일부터는 화면 밖 — <b>가로로 밀어야</b> 보입니다 · 칸 30px</div>';
+  h+='</div></div>';
+  return h;
+}
+
+/* ── 수업 모드 ── */
+function viewCM(){
+  var L=CLS[CUR].stu;
+  var ds=classDays();
+  var doneN=L.filter(function(n){ var v=HW[key(n,TODAY)]; return !!v; }).length;
+  var pct=Math.round(doneN/L.length*100);
+  var h='<div class="cmbar"><div class="t">✅ 수업 모드</div><div class="d">8월 13일 (목)</div>'
+    +'<div class="cmchips">'
+    + Object.keys(CLS).map(function(k){
+        return '<div class="cmchip'+(CUR===k?' on':'')+'" onclick="setCls(\''+k+'\')">'+k+'</div>'; }).join('')
+    +'</div>'
+    +'<div class="cmprog"><div class="n">'+L.length+'명 중 '+doneN+'명'
+    +(doneN===L.length?' · ✅ 완료':' · '+(L.length-doneN)+'명 남음')+'</div>'
+    +'<div class="cmtrk"><div class="cmbf" style="width:'+pct+'%"></div></div>'
+    +'<button class="cmexit" onclick="setMode(\'now\')">나가기</button></div></div>';
+  h+='<div class="main" style="flex:1"><div class="gridwrap" style="margin:13px 15px">';
+  h+='<table class="g" style="width:100%"><tr><th class="nm" style="width:92px">학생</th>';
+  ds.forEach(function(d){
+    var dw=new Date(2026,7,d).getDay();
+    h+='<th class="'+(d===TODAY?'today':'')+'" style="width:58px;font-size:12px;padding:5px 2px">'+DOW[dw]+'<br><span style="font-size:14px">'+d+'</span></th>';
+  });
+  h+='<th style="width:96px;font-size:11px">이번 달<br><span style="font-weight:600;opacity:.7">완료 · 평균</span></th></tr>';
+  L.forEach(function(n){
+    h+='<tr><td class="nm" style="font-size:15px">'+n+'</td>';
+    ds.forEach(function(d){ h+=cell(n,d,52,true); });
+    h+='<td class="sumc" style="font-size:12.5px">'+sumOf(n)+'</td></tr>';
+  });
+  h+='</table></div>';
+  h+='<div class="leg" style="padding:0 15px 12px">칸을 누르면 <b>전부 100%</b> → 다시 누르면 <b>전부 0%</b>(세부 창) → 다시 누르면 지움 · '
+    +'<b style="color:#15803d">수업 없는 날은 아예 빼서</b> 31칸 → '+ds.length+'칸 · 칸 <b>52px</b> (지금은 30px)</div>';
+  h+='</div>';
+  return h;
+}
+
+function draw(){
+  var ph='<span class="lab">보기</span>';
+  [['now','지금 화면','v18-51 그대로'],['cm','「수업 모드」 ⭐','조정안']].forEach(function(x){
+    ph+='<button class="kb'+(MODE===x[0]?' on':'')+'" onclick="setMode(\''+x[0]+'\')">'+x[1]+'<small>'+x[2]+'</small></button>';
+  });
+  document.getElementById('pk').innerHTML=ph;
+  document.getElementById('ip').innerHTML = MODE==='now'?viewNow():viewCM();
+  document.getElementById('ilab').textContent = MODE==='now'
+    ? '📱 아이패드 11형 가로 — 지금 화면 (26일부터 잘림 · 칸 30px)'
+    : '📱 아이패드 11형 가로 — 「수업 모드」 (잘림 없음 · 칸 52px)';
+  fit();
+}
+function fit(){
+  var box=document.getElementById('scaler');
+  var s=Math.min(1, box.clientWidth/1194);
+  var ip=document.getElementById('ip');
+  ip.style.transform='scale('+s+')';
+  box.style.height=(834*s)+'px';
+}
+window.addEventListener('resize', fit);
+window.setMode=function(m){ MODE=m; draw(); };
+window.setCls=function(k){ CUR=k; draw(); };
+window.tap=function(n,d){
+  var k=key(n,d), v=HW[k];
+  if(!v) HW[k]={p:100,c:100,w:100};
+  else if(v.p===100&&v.c===100&&v.w===100) HW[k]={p:0,c:0,w:0};
+  else delete HW[k];
+  draw();
+};
+draw();
+</script>
+</body>
+</html>
