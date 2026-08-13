@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 수업 중 「오늘 체크」 화면</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1120px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-key{background:#fef3c7;color:#b45309}.b-live{background:#dcfce7;color:#15803d}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box b b{display:inline;font-size:inherit;margin:0}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-red{background:#fef2f2;border-color:#fecaca}.x-red b{color:#b91c1c}.x-red p{color:#991b1b}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+
+.stage{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;justify-content:center}
+.phonebox{flex-shrink:0}
+.phone{width:390px;background:#f2f5f9;border-radius:34px;border:9px solid #0d2240;box-shadow:0 16px 40px rgba(13,34,64,.28);overflow:hidden;position:relative;height:700px;display:flex;flex-direction:column}
+.plab{text-align:center;font-size:11.5px;font-weight:800;color:#94a3b8;margin-top:9px}
+.sideinfo{flex:1;min-width:280px;max-width:420px}
+.step{display:flex;gap:10px;margin-bottom:13px}
+.stepn{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#0d2240;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.step b{font-size:13.5px;color:#0d2240;display:block;margin-bottom:2px}
+.step p{font-size:12.5px;color:#64748b;font-weight:600;line-height:1.6}
+
+/* ── 앱 화면 ── */
+.appbar{background:#0d2240;color:#fff;padding:13px 15px 12px;flex-shrink:0}
+.abrow{display:flex;align-items:center;gap:8px}
+.abt{font-size:16px;font-weight:900}
+.abd{font-size:11.5px;font-weight:700;opacity:.72;margin-left:auto}
+.chips{display:flex;gap:6px;margin-top:10px;overflow-x:auto;padding-bottom:2px}
+.chip{border:none;background:rgba(255,255,255,.13);color:#cbd5e1;border-radius:20px;padding:6px 14px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit;white-space:nowrap}
+.chip.on{background:#fff;color:#0d2240}
+.prog{background:#fff;border-bottom:1px solid #e8eef8;padding:9px 15px 10px;flex-shrink:0}
+.ptxt{display:flex;align-items:baseline;font-size:12px;font-weight:800;color:#475569;margin-bottom:6px}
+.ptxt b{color:#0d2240;font-size:13.5px}
+.ptxt .rest{margin-left:auto;font-size:11.5px;font-weight:800;color:#94a3b8}
+.ptrk{height:7px;background:#eef2f7;border-radius:20px;overflow:hidden}
+.pbar{height:100%;background:linear-gradient(90deg,#1d6fe8,#22c55e);border-radius:20px;transition:width .28s}
+.list{flex:1;overflow-y:auto;padding:10px 12px 90px}
+.card{background:#fff;border:1.5px solid #e8eef8;border-radius:15px;padding:11px 12px;margin-bottom:9px;display:flex;align-items:center;gap:10px;transition:background .16s,border-color .16s}
+.card.done{background:#f0fdf6;border-color:#a7f3d0}
+.card.part{background:#fffbeb;border-color:#fde68a}
+.cl{flex:1;min-width:0}
+.cnm{font-size:16.5px;font-weight:900;color:#0d2240;display:flex;align-items:center;gap:5px}
+.cnm .mk{font-size:14px}
+.csub{font-size:11.5px;font-weight:700;color:#94a3b8;margin-top:3px;line-height:1.45}
+.csub .q{display:inline-block;background:#f97316;color:#fff;border-radius:9px;padding:1px 6px;font-size:10.5px;font-weight:900;margin-left:3px}
+.csub .g{color:#15803d}.csub .y{color:#b45309}.csub .r{color:#dc2626}
+.csub .st{color:#b45309;font-weight:900}
+.cr{display:flex;flex-direction:column;gap:5px;align-items:stretch;flex-shrink:0}
+.bmain{border:none;border-radius:12px;padding:11px 17px;font-size:14.5px;font-weight:900;cursor:pointer;font-family:inherit;background:#1d6fe8;color:#fff;box-shadow:0 3px 9px rgba(29,110,232,.28);white-space:nowrap}
+.bmain:active{transform:translateY(1px)}
+.bsub{border:1.5px solid #dbe3ee;background:#fff;border-radius:10px;padding:5px 12px;font-size:11.5px;font-weight:900;color:#64748b;cursor:pointer;font-family:inherit;white-space:nowrap}
+.pctbig{font-size:21px;font-weight:900;line-height:1;text-align:right}
+.pctbig.g{color:#15803d}.pctbig.y{color:#b45309}.pctbig.r{color:#dc2626}
+.bundo{border:none;background:transparent;color:#94a3b8;font-size:11px;font-weight:900;cursor:pointer;font-family:inherit;padding:3px 0 0;text-align:right}
+.allok{text-align:center;padding:16px 10px 6px;font-size:13px;font-weight:900;color:#15803d}
+.allok span{display:block;font-size:11.5px;font-weight:700;color:#94a3b8;margin-top:4px}
+
+/* 시트 */
+.dim{position:absolute;inset:0;background:rgba(13,34,64,.45);display:flex;align-items:flex-end;z-index:5}
+.sheet{background:#fff;width:100%;border-radius:22px 22px 0 0;padding:16px 15px 18px;max-height:92%;overflow-y:auto}
+.shd{display:flex;align-items:baseline;margin-bottom:3px}
+.shd b{font-size:17px;font-weight:900;color:#0d2240}
+.shd span{margin-left:auto;font-size:11.5px;font-weight:800;color:#94a3b8}
+.shs{font-size:11.5px;font-weight:700;color:#94a3b8;margin-bottom:13px}
+.stg{margin-bottom:11px}
+.stgt{font-size:12.5px;font-weight:900;color:#334155;margin-bottom:6px}
+.opts{display:flex;gap:6px}
+.opt{flex:1;border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:11px 0;font-size:14px;font-weight:900;color:#94a3b8;cursor:pointer;font-family:inherit}
+.opt.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.opt.on.zero{background:#dc2626;border-color:#dc2626}
+.autob{background:#faf5ff;border:1.5px solid #e9d5ff;border-radius:12px;padding:10px 12px;margin:13px 0 11px}
+.autob b{font-size:12px;font-weight:900;color:#6b21a8;display:block;margin-bottom:3px}
+.autob p{font-size:11.5px;font-weight:700;color:#7e22ce;line-height:1.55}
+.autob p b{display:inline;font-size:inherit;color:inherit;font-weight:900;margin:0}
+.totrow{display:flex;align-items:center;background:#f8fafc;border-radius:12px;padding:11px 13px;margin-bottom:13px}
+.totrow b{font-size:12.5px;font-weight:900;color:#475569}
+.totrow .v{margin-left:auto;font-size:23px;font-weight:900}
+.sbtns{display:flex;gap:8px}
+.sbtns button{flex:1;border:none;border-radius:12px;padding:13px 0;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit}
+.bcan{background:#f1f5f9;color:#64748b}
+.bsav{background:#0d2240;color:#fff}
+
+/* 지금 화면(비교) */
+.oldgrid{background:#fff;flex:1;overflow:auto;padding:10px}
+.oldgrid table{border-collapse:collapse}
+.oldgrid th{font-size:9.5px;font-weight:800;color:#94a3b8;padding:3px 1px;text-align:center}
+.oldgrid th.today{background:#0d2240;color:#fff;border-radius:5px}
+.oldgrid td.n{font-size:12.5px;font-weight:800;color:#0d2240;white-space:nowrap;padding:3px 7px;position:sticky;left:0;background:#fff}
+.oldgrid td{padding:2px 1px;border-bottom:1px solid #f8fafc}
+.cellx{width:30px;height:30px;border-radius:8px;display:inline-block;border:1.5px solid #eef2f7;background:#fbfcfe}
+.cellx.dn{background:#dcfce7;border-color:#86efac}
+.hintl{position:absolute;left:0;right:0;bottom:0;background:rgba(185,28,28,.95);color:#fff;font-size:11.5px;font-weight:800;padding:9px 13px;line-height:1.5}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+.pickrow{background:#f0fdf4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>📱 수업 중 「오늘 체크」 화면</h1>
+<p class="sub">
+종이가 하려던 일을 <b>앱이 그대로</b> 하되, <b>옮겨 적는 작업이 사라지게</b> 만든 화면입니다.<br>
+<b>실제로 눌러보실 수 있습니다</b> — 「다 함」도, 「일부만」도 동작합니다.
+</p>
+
+<!-- ① 왜 -->
+<div class="sec">
+  <div class="stitle">① 지금 화면은 왜 수업 중에 불편한가</div>
+  <div class="sdesc">앱이 나쁜 게 아니라, 화면이 「한 달 보기」용이라 그렇습니다</div>
+  <div class="box x-red"><div class="ic">↔️</div><div>
+    <b>지금 숙제체크는 <b>한 달 31칸이 가로로</b> 늘어선 표입니다</b>
+    <p>오늘 칸에 진한 표시가 있긴 하지만, 폰에서는 <b>가로로 밀어서 오늘 열을 찾아야</b> 합니다.
+    학생 8명을 훑는 동안 계속 좌우로 밀게 됩니다. 아래 오른쪽에서 직접 밀어보세요.</p>
+  </div></div>
+  <div class="box x-blu"><div class="ic">💡</div><div>
+    <b>한 달 보기는 <b>그대로 두고</b>, 수업용 화면을 따로 만듭니다</b>
+    <p>월간표는 흐름을 볼 때 여전히 필요합니다. 다만 <b>수업 중에는</b>
+    오늘 하루만, 그 반만, 세로로 보이면 됩니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 화면 -->
+<div class="sec">
+  <div class="stitle">② 「오늘 체크」 화면 <span class="badge b-live">직접 눌러보세요</span></div>
+  <div class="sdesc">왼쪽이 새 화면, 오른쪽이 지금 화면입니다 — 같은 폰 크기</div>
+
+  <div class="stage">
+    <div class="phonebox">
+      <div class="phone" id="ph"></div>
+      <div class="plab">새 화면 — 「오늘 체크」</div>
+    </div>
+    <div class="phonebox">
+      <div class="phone" id="phOld"></div>
+      <div class="plab">지금 화면 — 한 달 보기 (좌우로 밀어보세요)</div>
+    </div>
+    <div class="sideinfo">
+      <div class="stitle" style="font-size:14px;margin-bottom:12px">이렇게 씁니다</div>
+      <div class="step"><div class="stepn">1</div><div>
+        <b>반을 하나 누릅니다</b><p>오늘 수업 있는 반이 앞에 나옵니다. 그 반 학생만 세로로 뜹니다.</p></div></div>
+      <div class="step"><div class="stepn">2</div><div>
+        <b>다 해온 학생은 「다 함」 한 번</b><p>대부분이 여기서 끝납니다. 누르는 즉시 저장되고 학부모앱에 반영됩니다.</p></div></div>
+      <div class="step"><div class="stepn">3</div><div>
+        <b>덜 해온 학생만 「일부만」</b><p>풀이·채점·오답을 각각 <b>0·30·60·100</b> 중에 누릅니다. 큰 버튼이라 수업 중에도 눌립니다.</p></div></div>
+      <div class="step"><div class="stepn">4</div><div>
+        <b>아래 막대로 남은 인원을 봅니다</b><p><b>「8명 중 5명 · 3명 남음」</b> — 빠뜨린 학생이 없는지 바로 보입니다.</p></div></div>
+      <div class="rule" style="margin-top:6px;font-size:12.5px;line-height:1.85">
+        <b>이름 밑 회색 글씨</b>가 종이 「참고」 칸에 넣으려던 정보입니다 —<br>
+        <b>지난 회차 %</b>와 <b class="q" style="color:#ea580c">❓막힌 문제 수</b>.
+        ❓가 있는 학생은 수업 중에 먼저 물어봐 주시면 됩니다.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 무엇이 사라지나 -->
+<div class="sec">
+  <div class="stitle">③ 종이 대신 이걸 쓰면 무엇이 달라지나</div>
+  <div class="sdesc">솔직하게 양쪽 다 적었습니다</div>
+  <table class="cmp">
+    <tr><th style="width:150px"></th><th>종이 체크표</th><th>「오늘 체크」 화면</th></tr>
+    <tr class="pickrow"><td><b>앱에 옮겨 적기</b></td>
+      <td><b style="color:#b91c1c">매일 필요합니다</b><br><span style="font-size:11.5px;color:#94a3b8">안 하면 학부모앱 완성도가 안 나갑니다</span></td>
+      <td><b style="color:#15803d">필요 없습니다</b><br><span style="font-size:11.5px;color:#94a3b8">누르는 순간 저장·반영</span></td></tr>
+    <tr><td><b>손 가는 횟수</b></td><td>✔ 하나 (빠름)</td><td><b>탭 하나</b> (같음)</td></tr>
+    <tr><td><b>지난 기록 · ❓</b></td><td>인쇄 시점에 고정</td><td><b>항상 최신</b></td></tr>
+    <tr><td><b>빠뜨림 확인</b></td><td>눈으로 셈</td><td><b>「3명 남음」 자동</b></td></tr>
+    <tr><td><b>한눈에 전체</b></td><td><b>종이가 낫습니다</b><br><span style="font-size:11.5px;color:#94a3b8">펼쳐놓고 반 전체가 보임</span></td>
+      <td>스크롤해야 합니다</td></tr>
+    <tr><td><b>기기 없이</b></td><td><b>종이가 낫습니다</b></td><td>폰이 있어야 합니다</td></tr>
+  </table>
+  <div class="rule" style="margin-top:13px">
+    <b>정리하면</b> — 「한눈에 전체」와 「기기 없이」 두 가지는 종이가 낫습니다.
+    나머지는 앱이 낫고, 그중 <b>「옮겨 적기가 사라진다」</b> 하나가 가장 큽니다.<br><br>
+    <b>제안</b> — <b>앱을 기본</b>으로 쓰시고, 이미 만들어 둔 <b>하루형 종이는 백업</b>으로 남겨 두시는 것.
+    월간 종이 A/B/C안은 <b>보류</b>하겠습니다.
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 · 예시 학생 자료는 실제 학생이 아닙니다
+</div>
+</div>
+
+<script>
+var TODAY='8월 13일 (목)';
+var CLS=[{k:'M3',t:'M3',n:'월·수·금'},{k:'M2',t:'M2',n:'화·목'},{k:'H1',t:'H1',n:'월·수'}];
+var CUR='M3';
+/* v: null=미체크, {p,c,w} */
+var ROSTER={
+  M3:[
+    {n:'오시안', prev:87, q:2, aha:2, book:'쎈 수학(중3) 82p', v:null},
+    {n:'유은상', prev:100, q:0, aha:0, book:'쎈 수학(중3) 84p', v:null},
+    {n:'윤이솔', prev:null, q:0, aha:0, book:'개념원리 61p', v:null},
+    {n:'홍세원', prev:35, q:3, aha:0, book:'쎈 수학(중3) 70p', v:null},
+    {n:'강도현', prev:92, q:1, aha:1, book:'쎈 수학(중3) 84p', v:null},
+    {n:'서예린', prev:78, q:0, aha:0, book:'개념원리 63p', v:null},
+    {n:'임하준', prev:100, q:0, aha:0, book:'일품 수학 44p', v:null},
+    {n:'정소미', prev:61, q:2, aha:1, book:'쎈 수학(중3) 78p', v:null}
+  ],
+  M2:[
+    {n:'권나린', prev:95, q:0, aha:0, book:'쎈 수학(중2) 55p', v:null},
+    {n:'백주안', prev:72, q:1, aha:1, book:'쎈 수학(중2) 51p', v:null},
+    {n:'최이한', prev:88, q:0, aha:0, book:'개념원리 40p', v:null}
+  ],
+  H1:[
+    {n:'남시우', prev:80, q:1, aha:0, book:'수학(상) 118p', v:null},
+    {n:'조하윤', prev:100, q:0, aha:0, book:'수학(상) 124p', v:null}
+  ]
+};
+var SHEET=null;   /* {idx, p, c, w} */
+
+function stu(){ return ROSTER[CUR]; }
+/* 아하노트 % — 앱이 자동 계산: 올린 아하노트 수 ÷ 막힌 문제 수 */
+function ahaPct(s){
+  if(!s.q) return null;                       /* 막힌 문제가 없으면 해당 없음 (감점 없음) */
+  return Math.min(100, Math.round(s.aha/s.q*100));
+}
+function tot(v, s){
+  if(!v) return null;
+  var arr=[v.p, v.c, v.w];
+  var a=ahaPct(s);
+  if(a!==null) arr.push(a);                   /* 막힌 문제가 있을 때만 평균에 들어감 */
+  return Math.round(arr.reduce(function(x,y){ return x+y; },0)/arr.length);
+}
+function cls(p){ return p>=80?'g':p>=50?'y':'r'; }
+
+function subLine(s){
+  if(s.v){
+    var a=ahaPct(s);
+    var tail = (a===null) ? '' :
+      ' · 아하노트 <b style="color:'+(a>=100?'#15803d':'#ea580c')+'">'+s.aha+'/'+s.q+'</b>';
+    if(s.v.p>=100&&s.v.c>=100&&s.v.w>=100) return '숙제 완료'+tail;
+    return '<span class="st">풀이 '+s.v.p+' · 채점 '+s.v.c+' · 오답 '+s.v.w+'</span>'+tail;
+  }
+  var h='';
+  h += (s.prev===null) ? '<span style="color:#cbd5e1">첫 기록</span>'
+     : '지난 8/11 <span class="'+cls(s.prev)+'">'+s.prev+'%</span>';
+  if(s.q) h+='<span class="q">❓'+s.q+'</span>';
+  return h;
+}
+
+function drawApp(){
+  var L=stu();
+  var doneN=L.filter(function(s){ return s.v; }).length;
+  var h='';
+  /* 상단 */
+  h+='<div class="appbar"><div class="abrow"><div class="abt">✅ 오늘 체크</div>'
+    +'<div class="abd">'+TODAY+'</div></div><div class="chips">';
+  CLS.forEach(function(c){
+    h+='<button class="chip'+(CUR===c.k?' on':'')+'" onclick="setCls(\''+c.k+'\')">'+c.t
+      +' <span style="opacity:.6;font-weight:700">'+ROSTER[c.k].length+'</span></button>';
+  });
+  h+='</div></div>';
+  /* 진행 */
+  var pct=Math.round(doneN/L.length*100);
+  h+='<div class="prog"><div class="ptxt"><b>'+L.length+'명 중 '+doneN+'명</b>'
+    +'<span style="margin-left:5px">체크</span>'
+    +'<span class="rest">'+(doneN===L.length?'✅ 다 끝났습니다':(L.length-doneN)+'명 남음')+'</span></div>'
+    +'<div class="ptrk"><div class="pbar" style="width:'+pct+'%"></div></div></div>';
+  /* 목록 */
+  h+='<div class="list">';
+  L.forEach(function(s,i){
+    var t=tot(s.v, s);
+    var full = s.v && s.v.p>=100 && s.v.c>=100 && s.v.w>=100;
+    var k = !s.v ? '' : (full?' done':' part');
+    h+='<div class="card'+k+'"><div class="cl">'
+      +'<div class="cnm">'+(s.v?'<span class="mk">'+(full?'✅':'🟡')+'</span>':'')+s.n+'</div>'
+      +'<div class="csub">'+subLine(s)+'</div></div><div class="cr">';
+    if(!s.v){
+      h+='<button class="bmain" onclick="tapDone('+i+')">다 함</button>'
+        +'<button class="bsub" onclick="openSheet('+i+')">일부만</button>';
+    }else{
+      h+='<div class="pctbig '+cls(t)+'">'+t+'%</div>'
+        +'<button class="bundo" onclick="openSheet('+i+')">고치기 ›</button>'
+        +'<button class="bundo" onclick="clr('+i+')">↺ 지우기</button>';
+    }
+    h+='</div></div>';
+  });
+  if(doneN===L.length) h+='<div class="allok">🎉 '+CUR+' 반 체크 완료<br><span>학부모앱에 바로 반영되었습니다</span></div>';
+  h+='</div>';
+  /* 시트 */
+  if(SHEET) h+=sheetHtml();
+  document.getElementById('ph').innerHTML=h;
+}
+
+function sheetHtml(){
+  var s=stu()[SHEET.idx];
+  var v={p:SHEET.p, c:SHEET.c, w:SHEET.w};
+  var t=tot(v, s);
+  var full=(v.p>=100&&v.c>=100&&v.w>=100);
+  var h='<div class="dim" onclick="if(event.target===this)closeSheet()"><div class="sheet">';
+  h+='<div class="shd"><b>'+s.n+'</b><span>'+TODAY+'</span></div>';
+  h+='<div class="shs">얼마나 해왔는지 눌러주세요 · 0 · 30 · 60 · 100</div>';
+  [['p','① 문제 풀이'],['c','② 채점'],['w','③ 오답 정리']].forEach(function(x){
+    h+='<div class="stg"><div class="stgt">'+x[1]+'</div><div class="opts">';
+    [0,30,60,100].forEach(function(n){
+      var on=SHEET[x[0]]===n;
+      h+='<button class="opt'+(on?' on':'')+(on&&n===0?' zero':'')+'" onclick="setV(\''+x[0]+'\','+n+')">'+n+'</button>';
+    });
+    h+='</div></div>';
+  });
+  var ap=ahaPct(s);
+  if(ap!==null){
+    h+='<div class="autob"><b>💡 아하노트 — 앱이 자동 계산 (적지 않으셔도 됩니다)</b>'
+      +'<p>어제 <b>막힌 문제 '+s.q+'개</b> 중 아하노트를 <b>'+s.aha+'개</b> 올렸습니다 → <b>'+ap+'%</b><br>'
+      +'이 값이 위 세 단계와 <b>함께 평균</b>이 되어 종합 %가 나옵니다.'
+      +(ap<100?' <b>❓가 남은 학생</b>이니 수업 중에 먼저 물어봐 주세요.':'')
+      +'</p></div>';
+  }
+  h+='<div class="totrow"><b>이 학생 오늘 종합<br><span style="font-weight:700;color:#94a3b8;font-size:10.5px">풀이·채점·오답'+(ap!==null?" · 아하노트":"")+' 단순 평균</span></b><div class="v '+cls(t)+'">'+t+'%</div></div>';
+  h+='<div class="sbtns"><button class="bcan" onclick="closeSheet()">취소</button>'
+    +'<button class="bsav" onclick="saveSheet()">저장</button></div>';
+  return h+'</div></div>';
+}
+
+/* 지금 화면 (비교) */
+function drawOld(){
+  var L=ROSTER.M3, DOW=['일','월','화','수','목','금','토'];
+  var h='<div class="appbar"><div class="abrow"><div class="abt">숙제체크</div>'
+    +'<div class="abd">2026년 8월</div></div></div>';
+  h+='<div class="oldgrid"><table><tr><th style="position:sticky;left:0;background:#fff"></th>';
+  for(var d=1;d<=31;d++){
+    var dw=new Date(2026,7,d).getDay();
+    h+='<th'+(d===13?' class="today"':'')+'>'+DOW[dw]+'<br>'+d+'</th>';
+  }
+  h+='</tr>';
+  L.forEach(function(s){
+    h+='<tr><td class="n">'+s.n+'</td>';
+    for(var d=1;d<=31;d++){
+      var dw=new Date(2026,7,d).getDay();
+      var on=(dw===1||dw===3||dw===5)&&d<13;
+      h+='<td><span class="cellx'+(on?' dn':'')+'"></span></td>';
+    }
+    h+='</tr>';
+  });
+  h+='</table></div>';
+  h+='<div class="hintl">↔️ 오늘(13일) 칸을 찾으려면 <b>가로로 밀어야</b> 합니다 — 학생 8명 내내</div>';
+  document.getElementById('phOld').innerHTML=h;
+}
+
+window.setCls=function(k){ CUR=k; SHEET=null; drawApp(); };
+window.tapDone=function(i){ stu()[i].v={p:100,c:100,w:100}; drawApp(); };
+window.clr=function(i){ stu()[i].v=null; drawApp(); };
+window.openSheet=function(i){
+  var v=stu()[i].v||{p:100,c:60,w:0};
+  SHEET={idx:i, p:v.p, c:v.c, w:v.w}; drawApp();
+};
+window.closeSheet=function(){ SHEET=null; drawApp(); };
+window.setV=function(k,n){ SHEET[k]=n; drawApp(); };
+window.saveSheet=function(){
+  stu()[SHEET.idx].v={p:SHEET.p, c:SHEET.c, w:SHEET.w};
+  SHEET=null; drawApp();
+};
+
+drawApp(); drawOld();
+/* 비교 화면은 오늘 칸이 안 보이게 왼쪽에서 시작 */
+setTimeout(function(){ var g=document.querySelector('#phOld .oldgrid'); if(g) g.scrollLeft=0; },50);
+</script>
+</body>
+</html>
