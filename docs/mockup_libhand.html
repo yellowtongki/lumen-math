@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 힌트 현황판 + 손풀이 추가</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1120px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-key{background:#fef3c7;color:#b45309}.b-live{background:#dcfce7;color:#15803d}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box b b{display:inline;font-size:inherit;margin:0}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+
+/* 앱 창 재현 */
+.appwin{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 10px 30px rgba(13,34,64,.14);padding:16px 18px;max-width:880px;margin:0 auto}
+.hd{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.hd b{font-size:16px;color:#0d2240}
+.hd .cnt{font-size:11px;color:#94a3b8;font-weight:700}
+.srch{margin-left:auto;border:1.5px solid #e2e8f0;border-radius:50px;padding:7px 14px;font-size:12px;font-family:inherit;width:180px}
+.xbtn{border:none;background:#f1f5f9;color:#475569;border-radius:50px;padding:7px 14px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer}
+
+.filt{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:11px;align-items:center}
+.fb{border:1.5px solid #e2e8f0;background:#fff;border-radius:50px;padding:6px 14px;font-size:11.5px;font-weight:900;color:#64748b;cursor:pointer;font-family:inherit}
+.fb.on{background:#0d2240;border-color:#0d2240;color:#fff}
+
+.bookrow{display:flex;align-items:center;gap:9px;border:1px solid #e6eaf1;background:#fbfaff;border-radius:12px;padding:10px 13px;margin-bottom:6px;cursor:pointer;flex-wrap:wrap}
+.bookrow b{font-size:13.5px}
+.pill{border-radius:50px;padding:3px 10px;font-size:10.5px;font-weight:900;white-space:nowrap}
+.p-draft{background:#fef3c7;color:#b45309}
+.p-sent{background:#ede9fe;color:#6d28d9}
+.p-hand{background:#dcfce7;color:#15803d}
+.p-none{background:#f1f5f9;color:#94a3b8}
+.arrow{margin-left:auto;font-size:10px;color:#94a3b8;font-weight:700}
+
+.prow{display:flex;align-items:center;gap:9px;border:1px solid #eef1f6;border-radius:10px;padding:8px 12px;margin:0 0 5px 16px;flex-wrap:wrap}
+.prow .no{font-size:13px;color:#1d6fe8;font-weight:900;min-width:74px}
+.prow .who{font-size:11px;color:#94a3b8;font-weight:700}
+.mini{border:1px solid #cbd5e1;background:#fff;color:#475569;border-radius:50px;padding:5px 12px;font-size:10.5px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap}
+.mini.go{border:none;background:#15803d;color:#fff}
+.prow .r{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}
+
+/* 상세 */
+.det{border:1px solid #e6eaf1;border-radius:14px;padding:14px;margin-top:4px}
+.dhd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.dhd b{font-size:15px}
+.hintbox{border:1.5px solid #ddd6fe;background:#faf8ff;border-radius:12px;padding:10px 12px;margin-bottom:7px}
+.hintbox b{color:#6d28d9;font-size:12px}
+.hintbox div{font-size:13px;color:#334155;line-height:1.65;margin-top:2px}
+.handbox{border:1.5px solid #bbf7d0;background:#f0fdf4;border-radius:12px;padding:12px;margin-bottom:9px}
+.handbox b{color:#15803d;font-size:12.5px}
+
+/* 손풀이 3가지 */
+.ways{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.way{flex:1;min-width:190px;border:1.5px solid #e2e8f0;background:#fff;border-radius:13px;padding:12px 14px;cursor:pointer;font-family:inherit;text-align:left}
+.way.on{border-color:#0d2240;background:#0d2240;color:#fff}
+.way .t{font-size:13.5px;font-weight:900;display:block;margin-bottom:3px}
+.way .d{font-size:11.5px;font-weight:700;opacity:.7;line-height:1.5}
+.way.on .d{opacity:.8}
+
+.canvwrap{border:2px dashed #cbd5e1;border-radius:14px;background:#fff;padding:10px;position:relative}
+.canvbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.tool{border:1.5px solid #e2e8f0;background:#fff;border-radius:9px;padding:6px 12px;font-size:11.5px;font-weight:900;color:#64748b;cursor:pointer;font-family:inherit}
+.tool.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.sw{width:24px;height:24px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1.5px #cbd5e1;cursor:pointer}
+.sw.on{box-shadow:0 0 0 3px #0d2240}
+canvas{width:100%;height:330px;border-radius:10px;background:#fff;touch-action:none;display:block;border:1px solid #eef2f7}
+.canvhint{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);font-size:14px;font-weight:800;color:#cbd5e1;pointer-events:none;text-align:center;line-height:1.7}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+.pickrow{background:#f0fdf4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>📚 힌트 현황판 + ✍️ 손풀이 추가</h1>
+<p class="sub">
+「어느 문제에 초안이 있나」를 <b>교재별·번호순</b>으로 한눈에 보고, 그 자리에서 <b>손풀이를 붙이는</b> 화면입니다.<br>
+아래 <b>③번에서 직접 그려보실 수 있습니다</b> — 아이패드면 애플펜슬로 그대로 써보세요.
+</p>
+
+<!-- ① 지금 -->
+<div class="sec">
+  <div class="stitle">① 지금은 왜 안 보이나</div>
+  <div class="sdesc">기능이 없는 게 아니라, 초안이 들어가는 자리가 다릅니다</div>
+  <div class="box x-org"><div class="ic">📦</div><div>
+    <b>라이브러리는 <b>승인·발송한 것만</b> 담습니다</b>
+    <p>지금 원장님 자료를 보면 <b>초안 1건</b>(오시안 #103)이 있고 <b>라이브러리는 비어 있습니다.</b>
+    「💡 승인·학생앱에 힌트 보내기」를 눌러야 그때 라이브러리로 넘어가는 구조라서 그렇습니다.</p>
+  </div></div>
+  <div class="box x-org"><div class="ic">✍️</div><div>
+    <b>손풀이는 <b>PDF 통째로 올리는 방법</b>밖에 없습니다</b>
+    <p>굿노트에 여러 문제를 쓰고 PDF로 내보내 올리면, 각 장 첫머리의 「17쪽 103번」을 읽어 자동으로 붙습니다.
+    <b>문제 하나에 한 장만</b> 붙이고 싶을 때는 방법이 없었습니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 현황판 -->
+<div class="sec">
+  <div class="stitle">② 힌트 현황판 <span class="badge b-live">눌러서 펼쳐보세요</span></div>
+  <div class="sdesc">초안도 함께 보이고, 교재별 · 번호순으로 정렬됩니다</div>
+  <div class="appwin" id="lib"></div>
+</div>
+
+<!-- ③ 손풀이 -->
+<div class="sec">
+  <div class="stitle">③ 손풀이를 어떻게 붙일까 <span class="badge b-key">직접 그려보세요</span></div>
+  <div class="sdesc">세 가지를 다 넣을 생각입니다 — 상황에 맞게 고르시면 됩니다</div>
+  <div class="ways" id="ways"></div>
+  <div id="waybody"></div>
+</div>
+
+<!-- ④ 비교 -->
+<div class="sec">
+  <div class="stitle">④ 정리</div>
+  <div class="sdesc">무엇이 새로 생기나</div>
+  <table class="cmp">
+    <tr><th style="width:150px"></th><th>지금</th><th>바뀌면</th></tr>
+    <tr class="pickrow"><td><b>초안 확인</b></td>
+      <td>아하노트를 하나씩 열어봐야 앎</td>
+      <td><b>교재별 · 번호순 목록</b>에서 한눈에<br><span style="font-size:11.5px;color:#94a3b8">✍️초안 / 💡발송됨 / ✍️손풀이 딱지로 구분</span></td></tr>
+    <tr><td><b>손풀이 붙이기</b></td>
+      <td>굿노트 PDF 통째로만</td>
+      <td><b>문제 하나에 바로</b> — 화면에 그리기 · 사진 찍기 · PDF 일괄</td></tr>
+    <tr><td><b>재사용</b></td>
+      <td>발송한 것만 쌓임</td>
+      <td>초안·손풀이도 쌓여서 <b>다음에 같은 문제</b>를 물으면 바로 씀</td></tr>
+    <tr><td><b>발송</b></td>
+      <td colspan="2"><b>지금과 같습니다</b> — 원장님이 「승인」을 눌러야만 학생에게 갑니다</td></tr>
+  </table>
+  <div class="rule" style="margin-top:13px">
+    <b>손풀이는 「문제」에 붙습니다.</b> 오시안이 물어본 <b>#103</b>에 손풀이를 한 번 그려두면,
+    다음에 <b>다른 학생이 같은 문제</b>를 물어올 때 <b>그리실 필요가 없습니다.</b>
+    쌓일수록 편해집니다.
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 · 예시 학생 자료는 실제 학생이 아닙니다
+</div>
+</div>
+
+<script>
+/* ── 현황판 ── */
+var FILT='all', OPEN={'RPM - 중등수학1(상)':1}, SEL=null;
+var BOOKS={
+  'RPM - 중등수학1(상)':[
+    {p:17, n:103, st:'draft', hand:false, who:'오시안', at:'8/13'},
+    {p:16, n:92,  st:'sent',  hand:true,  who:'오시안', at:'8/4', asked:2},
+    {p:48, n:338, st:'draft', hand:false, who:'오시안', at:'8/13'},
+    {p:32, n:205, st:'sent',  hand:false, who:'윤이솔', at:'8/9'},
+    {p:9,  n:37,  st:'sent',  hand:true,  who:'유은상', at:'7/28', asked:3}
+  ],
+  '개념+유형 중등수학1(상)':[
+    {p:68, n:412, st:'draft', hand:false, who:'한소율', at:'8/12'},
+    {p:44, n:271, st:'sent',  hand:false, who:'서민수', at:'8/6'}
+  ],
+  '쎈 중1-1':[
+    {p:55, n:520, st:'sent',  hand:true,  who:'이상은', at:'8/11', asked:1}
+  ]
+};
+function allRows(){
+  var out=[];
+  Object.keys(BOOKS).forEach(function(b){ BOOKS[b].forEach(function(r){ out.push({b:b, r:r}); }); });
+  return out;
+}
+function pass(r){
+  if(FILT==='draft') return r.st==='draft';
+  if(FILT==='nohand') return !r.hand;
+  if(FILT==='hand') return r.hand;
+  return true;
+}
+function drawLib(){
+  var rows=allRows(), nD=rows.filter(function(x){return x.r.st==='draft';}).length;
+  var nS=rows.filter(function(x){return x.r.st==='sent';}).length;
+  var nH=rows.filter(function(x){return x.r.hand;}).length;
+  var h='<div class="hd"><b>📚 힌트 현황판</b>'
+    +'<span class="cnt">문제 '+rows.length+'개 · 초안 '+nD+' · 발송 '+nS+' · 손풀이 '+nH+'</span>'
+    +'<input class="srch" placeholder="🔍 쪽·번호·교재 검색">'
+    +'<button class="xbtn">✕ 닫기</button></div>';
+  h+='<div class="filt"><span style="font-size:11px;font-weight:800;color:#94a3b8">보기</span>';
+  [['all','전체'],['draft','✍️ 초안만'],['nohand','손풀이 없는 것'],['hand','✍️ 손풀이 있는 것']].forEach(function(x){
+    h+='<button class="fb'+(FILT===x[0]?' on':'')+'" onclick="setF(\''+x[0]+'\')">'+x[1]+'</button>';
+  });
+  h+='</div>';
+  Object.keys(BOOKS).forEach(function(b){
+    var arr=BOOKS[b].filter(pass);
+    if(!arr.length) return;
+    arr=arr.slice().sort(function(x,y){ return x.n-y.n; });
+    var d=arr.filter(function(r){return r.st==='draft';}).length;
+    var s=arr.filter(function(r){return r.st==='sent';}).length;
+    var hd=arr.filter(function(r){return r.hand;}).length;
+    var op=!!OPEN[b];
+    h+='<div class="bookrow" onclick="tog(\''+b+'\')"><b>'+b+'</b>'
+      +(d?'<span class="pill p-draft">✍️ 초안 '+d+'</span>':'')
+      +(s?'<span class="pill p-sent">💡 발송 '+s+'</span>':'')
+      +(hd?'<span class="pill p-hand">✍️ 손풀이 '+hd+'</span>':'<span class="pill p-none">손풀이 없음</span>')
+      +'<span class="arrow">'+(op?'▾':'▸')+'</span></div>';
+    if(op) arr.forEach(function(r){
+      h+='<div class="prow"><span class="no">#'+r.n+'</span>'
+        +'<span class="pill '+(r.st==='draft'?'p-draft">✍️ 초안':'p-sent">💡 발송됨')+'</span>'
+        +(r.hand?'<span class="pill p-hand">✍️ 손풀이</span>':'')
+        +'<span class="who">p'+r.p+' · '+r.who+' '+r.at+(r.asked?' · 질문 '+r.asked+'회':'')+'</span>'
+        +'<span class="r">'
+        +'<button class="mini" onclick="sel(\''+b+'\','+r.n+')">보기</button>'
+        +(r.hand?'':'<button class="mini go" onclick="sel(\''+b+'\','+r.n+')">✍️ 손풀이 추가</button>')
+        +'</span></div>';
+    });
+  });
+  if(SEL){
+    var r=null; (BOOKS[SEL.b]||[]).forEach(function(x){ if(x.n===SEL.n) r=x; });
+    if(r){
+      h+='<div class="det"><div class="dhd"><b>'+SEL.b+' p'+r.p+' #'+r.n+'</b>'
+        +'<span class="pill '+(r.st==='draft'?'p-draft">✍️ 초안 — 발송 전':'p-sent">💡 발송됨')+'</span>'
+        +(r.asked?'<span class="pill p-draft">질문 '+r.asked+'회</span>':'')
+        +'<button class="xbtn" style="margin-left:auto" onclick="sel(null)">닫기</button></div>';
+      h+='<div class="hintbox"><b>💡 힌트 1 — 개념 떠올리기</b><div>두 수의 최소공배수를 소인수분해로 나타낼 때, 각 소인수의 지수 중 \'가장 큰 것\'을 골라서 곱한다는 규칙을 떠올려 보자.</div></div>';
+      h+='<div class="hintbox"><b>💡 힌트 2 — 첫 단추</b><div>먼저 주어진 두 수를 각각 소인수분해해서 어떤 소인수들이 등장하는지 확인해 보자.</div></div>';
+      h+='<div class="hintbox"><b>💡 힌트 3 — 핵심 스텝</b><div>각 소인수의 지수를 비교해서, 최소공배수의 지수와 맞추려면 a와 b 자리에 어떤 수가 들어가야 하는지 따져 보자.</div></div>';
+      if(r.hand) h+='<div class="handbox"><b>✍️ 원장님 손풀이</b><div style="font-size:11.5px;color:#166534;font-weight:700;margin-top:4px">등록되어 있습니다 — 발송할 때 함께 갑니다(학생은 재풀이 제출 후 열람)</div></div>';
+      else h+='<div class="handbox" style="border-color:#fde68a;background:#fffbeb"><b style="color:#b45309">✍️ 손풀이 없음</b><div style="font-size:11.5px;color:#92400e;font-weight:700;margin-top:4px">아래 ③번에서 <b>바로 그려서</b> 붙일 수 있게 됩니다</div></div>';
+      h+='</div>';
+    }
+  }
+  document.getElementById('lib').innerHTML=h;
+}
+window.setF=function(f){ FILT=f; drawLib(); };
+window.tog=function(b){ OPEN[b]=!OPEN[b]; drawLib(); };
+window.sel=function(b,n){ SEL=(b===null)?null:{b:b,n:n}; drawLib(); };
+
+/* ── 손풀이 3가지 ── */
+var WAY='draw';
+var WAYS=[
+  {k:'draw', t:'① 화면에 바로 그리기', d:'아이패드 + 애플펜슬 · 문제 하나에 한 장'},
+  {k:'photo',t:'② 사진으로 찍기', d:'종이에 풀고 촬영 · 아이패드 카메라'},
+  {k:'pdf',  t:'③ PDF 일괄 (지금 방식)', d:'굿노트로 여러 문제 한꺼번에'}
+];
+function drawWays(){
+  document.getElementById('ways').innerHTML=WAYS.map(function(w){
+    return '<button class="way'+(WAY===w.k?' on':'')+'" onclick="setW(\''+w.k+'\')">'
+      +'<span class="t">'+w.t+'</span><span class="d">'+w.d+'</span></button>';
+  }).join('');
+  var b=document.getElementById('waybody');
+  if(WAY==='draw'){
+    b.innerHTML='<div class="rule" style="margin-bottom:12px">'
+      +'<b>RPM - 중등수학1(상) · #103</b>에 손풀이를 그리는 화면입니다. '
+      +'<b>손가락이나 애플펜슬로 아래에 그려보세요.</b> 실제로 그려집니다.</div>'
+      +'<div class="canvwrap"><div class="canvbar">'
+      +'<button class="tool on" id="t-pen" onclick="setTool(\'pen\')">✏️ 펜</button>'
+      +'<button class="tool" id="t-era" onclick="setTool(\'era\')">🩹 지우개</button>'
+      +'<span style="width:8px"></span>'
+      +'<span class="sw on" data-c="#111827" style="background:#111827" onclick="setColor(this)"></span>'
+      +'<span class="sw" data-c="#dc2626" style="background:#dc2626" onclick="setColor(this)"></span>'
+      +'<span class="sw" data-c="#1d6fe8" style="background:#1d6fe8" onclick="setColor(this)"></span>'
+      +'<span style="width:8px"></span>'
+      +'<button class="tool" onclick="undoStroke()">↩ 되돌리기</button>'
+      +'<button class="tool" onclick="clearCanvas()">전체 지우기</button>'
+      +'<button class="tool" style="margin-left:auto;background:#15803d;border-color:#15803d;color:#fff" onclick="alert(\'미리보기라 저장은 되지 않습니다.\\n실제로는 이 그림이 #103 문제에 붙습니다.\')">💾 이 문제에 저장</button>'
+      +'</div><canvas id="cv"></canvas>'
+      +'<div class="canvhint" id="ch">여기에 손풀이를 써보세요<br><span style="font-size:12px">손가락 · 애플펜슬 모두 됩니다</span></div>'
+      +'</div>'
+      +'<div class="box x-grn" style="margin-top:12px"><div class="ic">💡</div><div>'
+      +'<b>이 방식이 가장 빠를 것 같습니다</b>'
+      +'<p>수업 중에 아이패드로 힌트를 검토하시다가 <b>그 자리에서 바로</b> 그려 붙일 수 있습니다. '
+      +'종이도, 굿노트도, 파일 옮기기도 필요 없습니다.</p></div></div>';
+    setTimeout(initCanvas,30);
+  } else if(WAY==='photo'){
+    b.innerHTML='<div class="rule">'
+      +'<b>종이에 풀고 아이패드로 찍는 방식</b>입니다.<br><br>'
+      +'문제 상세 화면의 <b>「📷 손풀이 사진」</b> 버튼을 누르면 아이패드 카메라가 바로 열리고, '
+      +'찍는 순간 <b>#103 문제에 붙습니다.</b><br><br>'
+      +'<span style="color:#64748b">종이에 쓰는 게 더 편하실 때 · 이미 풀어둔 종이가 있을 때 좋습니다. '
+      +'다만 <b>빛·그림자</b>에 따라 잘 안 보일 수 있습니다.</span></div>'
+      +'<div class="box x-blu" style="margin-top:12px"><div class="ic">📷</div><div>'
+      +'<b>이미 학생앱이 쓰는 방식과 같습니다</b>'
+      +'<p>학생들이 아하노트에 사진을 올리는 것과 똑같은 방법이라 <b>새로 배우실 게 없습니다.</b></p></div></div>';
+  } else {
+    b.innerHTML='<div class="rule">'
+      +'<b>지금 있는 방식 — 그대로 둡니다.</b><br><br>'
+      +'굿노트에 여러 문제를 풀고 PDF로 내보내 올리면, 각 장 첫머리의 <b>「17쪽 103번」</b>을 읽어 문제마다 자동으로 붙습니다. '
+      +'교재에 <b>🔢 번호 이어짐</b>을 켜두면 <b>「103번」</b>만 적어도 됩니다.<br><br>'
+      +'<span style="color:#64748b">한 번에 <b>10문제, 20문제</b>를 몰아서 만들 때는 이게 제일 빠릅니다. '
+      +'주말에 몰아서 작업하실 때 쓰시면 됩니다.</span></div>'
+      +'<div class="box x-blu" style="margin-top:12px"><div class="ic">📚</div><div>'
+      +'<b>셋은 서로 대체가 아니라 <b>보완</b>입니다</b>'
+      +'<p>수업 중엔 ①번, 종이가 편할 땐 ②번, 몰아서 만들 땐 ③번. <b>셋 다 넣겠습니다.</b></p></div></div>';
+  }
+}
+window.setW=function(k){ WAY=k; drawWays(); };
+
+/* ── 캔버스 ── */
+var CV,CX,TOOL='pen',COLOR='#111827',STROKES=[],CUR=null,DPR=1;
+function initCanvas(){
+  CV=document.getElementById('cv'); if(!CV) return;
+  DPR=window.devicePixelRatio||1;
+  var r=CV.getBoundingClientRect();
+  CV.width=Math.round(r.width*DPR); CV.height=Math.round(r.height*DPR);
+  CX=CV.getContext('2d'); CX.scale(DPR,DPR);
+  CX.lineCap='round'; CX.lineJoin='round';
+  STROKES=[]; redraw();
+  CV.onpointerdown=function(e){
+    CV.setPointerCapture(e.pointerId);
+    var p=pt(e);
+    CUR={c:(TOOL==='era'?'#ffffff':COLOR), w:(TOOL==='era'?18:(e.pressure&&e.pressure>0?1.4+e.pressure*3.2:2.4)), pts:[p]};
+    var ch=document.getElementById('ch'); if(ch) ch.style.display='none';
+  };
+  CV.onpointermove=function(e){
+    if(!CUR) return;
+    CUR.pts.push(pt(e)); redraw(); drawStroke(CUR);
+  };
+  CV.onpointerup=CV.onpointercancel=function(){
+    if(CUR&&CUR.pts.length>1) STROKES.push(CUR);
+    CUR=null; redraw();
+  };
+}
+function pt(e){ var r=CV.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
+function drawStroke(s){
+  if(!s||s.pts.length<2) return;
+  CX.strokeStyle=s.c; CX.lineWidth=s.w;
+  CX.beginPath(); CX.moveTo(s.pts[0].x,s.pts[0].y);
+  for(var i=1;i<s.pts.length;i++) CX.lineTo(s.pts[i].x,s.pts[i].y);
+  CX.stroke();
+}
+function redraw(){
+  if(!CX) return;
+  CX.fillStyle='#fff'; CX.fillRect(0,0,CV.width/DPR,CV.height/DPR);
+  STROKES.forEach(drawStroke);
+}
+window.setTool=function(t){
+  TOOL=t;
+  var a=document.getElementById('t-pen'), b=document.getElementById('t-era');
+  if(a) a.className='tool'+(t==='pen'?' on':'');
+  if(b) b.className='tool'+(t==='era'?' on':'');
+};
+window.setColor=function(el){
+  COLOR=el.getAttribute('data-c'); TOOL='pen'; setTool('pen');
+  Array.prototype.forEach.call(document.querySelectorAll('.sw'),function(s){ s.className='sw'+(s===el?' on':''); });
+};
+window.undoStroke=function(){ STROKES.pop(); redraw(); };
+window.clearCanvas=function(){ STROKES=[]; redraw(); var ch=document.getElementById('ch'); if(ch) ch.style.display=''; };
+window.addEventListener('resize',function(){ if(WAY==='draw') setTimeout(initCanvas,50); });
+
+drawLib(); drawWays();
+</script>
+</body>
+</html>
