@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 월간 숙제체크표 개선안</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1300px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,0.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-key{background:#fef3c7;color:#b45309}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box b b{display:inline;font-size:inherit;margin:0}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-red{background:#fef2f2;border-color:#fecaca}.x-red b{color:#b91c1c}.x-red p{color:#991b1b}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+
+.pick{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.pick .lab{font-size:11.5px;font-weight:800;color:#94a3b8}
+.kb{border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:9px 15px;font-size:12.5px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit;line-height:1.3;text-align:left}
+.kb small{display:block;font-size:10px;font-weight:700;opacity:.65;margin-top:2px}
+.kb.on{background:#0d2240;border-color:#0d2240;color:#fff}.kb.on small{opacity:.8}
+.kb.old{border-style:dashed;color:#94a3b8}
+.tg{border:1.5px solid #cbd5e1;background:#fff;border-radius:50px;padding:7px 14px;font-size:12px;font-weight:800;color:#64748b;cursor:pointer;font-family:inherit}
+.tg.on{background:#1d6fe8;border-color:#1d6fe8;color:#fff}
+
+.paperwrap{background:#e2e8f0;border-radius:14px;padding:18px;overflow-x:auto}
+.paper{background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.18);margin:0 auto;color:#111;padding:9mm 8mm;width:297mm;min-height:180mm}
+.psize{text-align:center;font-size:11.5px;font-weight:800;color:#64748b;margin-top:10px}
+.note{text-align:center;font-size:12px;font-weight:700;color:#1d4ed8;margin-top:6px}
+
+.hd{display:flex;align-items:flex-end;gap:10px;border-bottom:2.5px solid #111;padding-bottom:5px;margin-bottom:7px}
+.t1{font-size:14px;font-weight:900}.t1 span{font-weight:700;opacity:.75}
+.t2{font-size:19px;font-weight:900}.t2 .dw{font-size:11px;font-weight:700;opacity:.6}
+.t3{margin-left:auto;font-size:14px;font-weight:800}
+table.sheet{width:100%;border-collapse:collapse;table-layout:fixed}
+table.sheet th{font-size:9.5px;font-weight:800;padding:2px 1px;border:1px solid #111;background:#f2f2f2;text-align:center;line-height:1.22}
+table.sheet th span{font-size:8px;font-weight:600;opacity:.6;display:block}
+table.sheet th.l{text-align:left;padding-left:5px}
+table.sheet th.wk{background:#e6e6e6;font-size:9px;letter-spacing:-.3px}
+table.sheet td{border:1px solid #111;padding:2px 3px;vertical-align:middle;text-align:center}
+tr.zeb td{background:#f7f7f7}
+td.nm{font-size:12.5px;font-weight:900;padding-left:5px;white-space:nowrap;text-align:left}
+/* 주 구분 굵은 선 */
+.wsep{border-left:2.4px solid #111 !important}
+.off{background:#dcdcdc !important}
+.bx{display:inline-block;border:1.6px solid #111;border-radius:2px}
+td.sum{font-size:8.5px;font-weight:800;line-height:1.4;overflow:hidden}
+td.sum .big{font-size:11px;font-weight:900}
+td.sum .q{display:inline-block;background:#111;color:#fff;border-radius:8px;padding:0 4px;font-size:8px}
+.g{color:#137a3f}.y{color:#a15c00}.r{color:#b31414}
+td.memo{text-align:left;font-size:8.5px}
+.ft{margin-top:6px;font-size:9px;line-height:1.65;color:#333;border-top:1px dashed #999;padding-top:5px}
+/* 하단 기록란 */
+.logbox{margin-top:7px;border:1.6px solid #111;border-radius:2px;padding:4px 6px 5px}
+.logttl{font-size:9.5px;font-weight:900;margin-bottom:3px}
+.logttl span{font-weight:600;opacity:.6;font-size:8.5px;margin-left:5px}
+
+.logcols{display:flex;gap:5mm}
+.logcols>div{flex:1;min-width:0}
+table.logt{width:100%;border-collapse:collapse;table-layout:fixed}
+table.logt th{font-size:8px;font-weight:800;background:#f2f2f2;border:1px solid #666;padding:1px;text-align:center}
+table.logt td{border:1px solid #666;height:6.5mm;padding:1px 4px;text-align:left;font-size:9px}
+/* 손글씨 */
+.ink{color:#1d4ed8;font-family:'Comic Sans MS','Apple SD Gothic Neo',cursive;font-weight:800}
+.ink.ck{line-height:1}
+.slash{color:#1d4ed8;font-weight:900;letter-spacing:-.2px}
+.stack{color:#1d4ed8;font-weight:900;line-height:1.12;font-size:7.5px;display:block}
+.memoink{color:#1d4ed8;font-weight:700}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+.pickrow{background:#f0fdf4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>🗓️ 월간 숙제체크표 — 개선안</h1>
+<p class="sub">
+지난 월간형의 <b>진짜 문제</b>는 「한 달이 안 들어간다」가 아니라 <b>「칸이 좁아 숫자를 못 쓴다」</b>였습니다.<br>
+그 문제를 각각 다른 방식으로 푸는 <b>세 가지 개선안</b>을 만들었습니다. 버튼으로 비교해 보세요.
+</p>
+
+<!-- ① 문제 -->
+<div class="sec">
+  <div class="stitle">① 지금 월간형의 문제 3가지</div>
+  <div class="sdesc">앞 미리보기를 보면서 발견한 것들입니다</div>
+  <div class="box x-red"><div class="ic">✍️</div><div>
+    <b>1. 칸이 가로 <b>14mm</b> — 「100/60/0」을 손으로 못 씁니다</b>
+    <p>글자 8개를 14mm에 넣으면 <b>글자당 1.7mm</b>입니다. 결국 ✔·✗만 쓰시게 되고,
+    그러면 <b>단계별 기록이 통째로 사라집니다.</b> 학부모앱 완성도도 뭉툭해집니다.</p>
+  </div></div>
+  <div class="box x-org"><div class="ic">👀</div><div>
+    <b>2. 열이 13개가 똑같이 생겨서 <b>어느 날짜인지 헷갈립니다</b></b>
+    <p>가로로 짚어가다 한 칸 밀리면 엉뚱한 날에 체크하게 됩니다.
+    <b>주 구분선</b>과 <b>줄무늬</b>가 없어서 눈이 줄을 놓칩니다.</p>
+  </div></div>
+  <div class="box x-org"><div class="ic">📊</div><div>
+    <b>3. 한 달을 봐도 <b>「이 학생이 이번 달 어땠나」</b>가 안 보입니다</b>
+    <p>✔이 몇 개인지 일일이 세야 합니다. <b>월간표의 진짜 값어치</b>는 흐름 파악인데
+    그 요약이 없습니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 공통 개선 -->
+<div class="sec">
+  <div class="stitle">② 세 안에 <b>공통으로</b> 넣은 개선</div>
+  <div class="sdesc">어느 것을 고르셔도 아래는 다 들어갑니다</div>
+  <div class="rule">
+    <b>① 주차 머리줄</b> — 위에 <b>1주 / 2주 / 3주…</b>가 묶여서 표시됩니다<br>
+    <b>② 주 구분 굵은 선</b> — 주가 바뀌는 자리에 <b>진한 세로선</b>. 한 칸 밀릴 일이 없습니다<br>
+    <b>③ 줄무늬</b> — 한 줄 걸러 연회색. 가로로 짚어가기 쉽습니다<br>
+    <b>④ 이번 달 요약 열</b> — <b>「다 함 11/13 · 평균 92%」</b>가 오른쪽 끝에 자동으로 인쇄됩니다<br>
+    <b>⑤ 수업 없는 날</b> — 회색으로 막습니다 (공휴일·휴강)
+  </div>
+</div>
+
+<!-- ③ 개선안 -->
+<div class="sec">
+  <div class="stitle">③ 세 가지 개선안 <span class="badge b-key">눌러서 비교</span></div>
+  <div class="sdesc">「숫자를 어디에 적느냐」가 서로 다릅니다</div>
+
+  <div class="pick" id="pk"></div>
+  <div class="pick">
+    <span class="lab">보기</span>
+    <button class="tg" id="tgInk" onclick="toggleInk()">✍️ 적은 예시 보기</button>
+    <span style="font-size:11.5px;font-weight:700;color:#94a3b8" id="hint"></span>
+  </div>
+
+  <div class="paperwrap"><div id="paper"></div></div>
+  <div class="psize" id="psize"></div>
+  <div class="note" id="pnote"></div>
+</div>
+
+<!-- ④ 비교 -->
+<div class="sec">
+  <div class="stitle">④ 어느 것을 쓸까</div>
+  <div class="sdesc">단계별 기록을 지키면서 칸 문제를 푸는 세 가지 길</div>
+  <table class="cmp">
+    <tr><th style="width:120px">안</th><th style="width:150px">숫자를 어디에</th><th style="width:100px">칸 크기</th><th>장단점</th></tr>
+    <tr><td><b>지금 것</b><br><span style="font-size:11px;color:#94a3b8">비교용</span></td>
+      <td>칸 안에 가로로</td><td>14mm</td>
+      <td>사실상 <b>못 씁니다.</b> ✔·✗만 쓰게 됨</td></tr>
+    <tr class="pickrow"><td><b>A안 · 기록란형 ⭐</b></td>
+      <td><b>종이 아래</b> 기록란에<br>몰아서</td><td><b>18mm</b></td>
+      <td><b>추천</b> — 표에는 <b>✔·✗만</b>. 수업 중 손이 제일 빠릅니다.
+      덜 해온 학생만 아래에 <b>「8/12 오시안 100/60/0」</b> 식으로 한 줄.
+      <b>어차피 덜 해오는 건 드뭅니다</b> · 기록란은 <b>2단 10줄</b><br>
+      <span style="color:#94a3b8">단점: 아래를 또 봐야 함 · <b>상습적으로 밀리는 학생</b>이 있으면 10줄이 모자랄 수 있습니다
+      (그런 학생은 어차피 상담 대상이라 따로 보시게 됩니다)</span></td></tr>
+    <tr><td><b>B안 · 세로쌓기형</b></td>
+      <td>칸 안에 <b>세로로 3줄</b></td><td>18mm<br><span style="font-size:11px;color:#94a3b8">줄당 4mm</span></td>
+      <td>가로로 못 쓰니 <b>세로로 쌓습니다.</b> 100 / 60 / 0 을 위아래로.
+      <b>한 곳에서 다 보입니다</b> · 단점: 12명이 한계, 글씨가 작음</td></tr>
+    <tr><td><b>C안 · 반달형</b></td>
+      <td>칸 안에 가로로<br>(원래대로)</td><td><b>29mm</b></td>
+      <td>한 달을 <b>2주씩 2장</b>으로. 칸이 넉넉해 <b>주간형만큼 편합니다.</b>
+      메모 칸도 살아납니다 · 단점: <b>월 2장</b>이라 「한 장에 한 달」은 포기</td></tr>
+  </table>
+  <div class="rule" style="margin-top:13px">
+    <b>제 추천은 A안입니다.</b> 수업 중에 12명을 훑을 때 <b>손이 멈추지 않는 것</b>이 제일 중요합니다.
+    ✔ 하나면 끝이고, 덜 해온 <b>한두 명만</b> 아래에 적으시면 됩니다.<br>
+    <b>단계별 기록도 그대로 남습니다</b> — 위치만 아래로 옮긴 것이니까요.<br><br>
+    <span style="color:#64748b">B안은 「한 자리에서 다 보고 싶다」 하실 때, C안은 「글씨를 편히 쓰고 싶다」 하실 때입니다.</span>
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 · 예시 학생 자료는 실제 학생이 아닙니다
+</div>
+</div>
+
+<script>
+var KIND='a', INK=false;
+var KINDS=[
+  {k:'old', t:'지금 것', s:'칸 14mm · 비교용', old:1},
+  {k:'a',   t:'A안 · 기록란형 ⭐', s:'표는 ✔만 · 아래에 기록'},
+  {k:'b',   t:'B안 · 세로쌓기형', s:'칸 안에 세로 3줄'},
+  {k:'c',   t:'C안 · 반달형', s:'2주씩 2장 · 칸 29mm'}
+];
+/* 2026년 8월 수업일 (월·수·금) — 8/14는 휴강 예시 */
+var DAYS=[
+  {d:'3', w:'월', wk:1},{d:'5', w:'수', wk:1},{d:'7', w:'금', wk:1},
+  {d:'10',w:'월', wk:2},{d:'12',w:'수', wk:2},{d:'14',w:'금', wk:2},
+  {d:'17',w:'월', wk:3},{d:'19',w:'수', wk:3, off:1},{d:'21',w:'금', wk:3},
+  {d:'24',w:'월', wk:4},{d:'26',w:'수', wk:4},{d:'28',w:'금', wk:4},
+  {d:'31',w:'월', wk:5}
+];
+var STU=[
+  {n:'오시안', q:2, memo:'오답 시간 부족',
+   v:['ck','ck','100/60/0','ck','ck','ck','ck','off','ck','100/100/60','ck','ck','ck']},
+  {n:'유은상', q:0, memo:'',
+   v:['ck','ck','ck','ck','ck','ck','ck','off','ck','ck','ck','ck','ck']},
+  {n:'윤이솔', q:0, memo:'',
+   v:['ck','ck','ck','ck','ck','100/100/60','ck','off','ck','ck','ck','ck','ck']},
+  {n:'홍세원', q:3, memo:'분량 조정',
+   v:['x','30/0/0','x','60/30/0','x','30/0/0','60/60/30','off','x','60/30/0','ck','x','30/0/0']},
+  {n:'강도현', q:1, memo:'',
+   v:['ck','ck','ck','100/100/60','ck','ck','ck','off','ck','ck','100/60/0','ck','ck']},
+  {n:'서예린', q:0, memo:'',
+   v:['ck','100/60/0','ck','ck','ck','ck','100/100/0','off','ck','ck','ck','ck','ck']},
+  {n:'임하준', q:0, memo:'',
+   v:['ck','ck','ck','ck','ck','ck','ck','off','ck','ck','ck','ck','ck']},
+  {n:'정소미', q:2, memo:'월요일 밀림',
+   v:['ck','ck','60/30/0','ck','ck','100/60/0','ck','off','x','ck','ck','60/60/30','ck']}
+];
+
+/* ── 계산 ── */
+function pctOf(v){
+  if(v==='ck') return 100;
+  if(v==='x') return 0;
+  if(v&&v.indexOf('/')>0){
+    var a=v.split('/').map(Number);
+    return Math.round((a[0]+a[1]+a[2])/3);
+  }
+  return null;
+}
+function summary(s, from, to){
+  var done=0, tot=0, sum=0;
+  s.v.slice(from||0, to==null?s.v.length:to).forEach(function(v){
+    if(v==='off'||v==null) return;
+    tot++; var p=pctOf(v); sum+=p; if(p===100) done++;
+  });
+  return {done:done, tot:tot, avg: tot?Math.round(sum/tot):null};
+}
+function sumCell(s, from, to){
+  var g=summary(s, from, to);
+  var cls = g.avg>=80?'g':g.avg>=50?'y':'r';
+  var h='';
+  if(INK||true){ /* 요약은 앱이 인쇄 시 자동으로 찍는 값 */
+    h+='다 함 <b>'+g.done+'/'+g.tot+'</b><br>'
+      +'<span class="big '+cls+'">'+g.avg+'%</span>';
+    if(s.q) h+=' <span class="q">❓'+s.q+'</span>';
+  }
+  return h;
+}
+
+/* ── 셀 렌더 ── */
+function emptyBox(mm){ return '<span class="bx" style="width:'+mm+'mm;height:'+mm+'mm"></span>'; }
+function inkFlat(v, fs){
+  if(v==='ck') return '<span class="ink ck" style="font-size:'+fs+'px">✔</span>';
+  if(v==='x')  return '<span class="ink" style="font-size:'+(fs-2)+'px">✗</span>';
+  return '<span class="slash" style="font-size:'+(fs-6)+'px">'+v+'</span>';
+}
+function inkStack(v, fs){
+  if(v==='ck') return '<span class="ink ck" style="font-size:'+fs+'px">✔</span>';
+  if(v==='x')  return '<span class="ink" style="font-size:'+(fs-2)+'px">✗</span>';
+  return '<span class="stack">'+v.split('/').join('<br>')+'</span>';
+}
+function dayTd(s, i, opt){
+  var v=s.v[i], D=DAYS[i];
+  var cls='' + (D.wk!==(DAYS[i-1]&&DAYS[i-1].wk)?' wsep':'') + (D.off?' off':'');
+  if(D.off) return '<td class="'+cls+'"></td>';
+  var inner;
+  if(INK && v) inner = opt.stack?inkStack(v,opt.fs):inkFlat(v,opt.fs);
+  else inner = emptyBox(opt.bx);
+  return '<td class="'+cls+'">'+inner+'</td>';
+}
+
+function head(title, sub){
+  return '<div class="hd"><div class="t1">루멘수학 <span>'+title+'</span></div>'
+    +'<div class="t2">M3 <span class="dw">(월·수·금)</span></div>'
+    +'<div class="t3">'+sub+'</div></div>';
+}
+function weekHead(days, nameW, tailCols){
+  /* 주차 머리줄 */
+  var h='<tr><th class="l" rowspan="2" style="vertical-align:middle">이름</th>';
+  var i=0;
+  while(i<days.length){
+    var wk=days[i].wk, n=0;
+    while(i+n<days.length && days[i+n].wk===wk) n++;
+    h+='<th class="wk wsep" colspan="'+n+'">'+wk+'주</th>';
+    i+=n;
+  }
+  tailCols.forEach(function(t){ h+='<th rowspan="2" style="vertical-align:middle">'+t+'</th>'; });
+  h+='</tr><tr>';
+  days.forEach(function(d,ix){
+    var sep = (ix===0||d.wk!==days[ix-1].wk)?' wsep':'';
+    h+='<th class="'+sep+(d.off?' off':'')+'">'+d.d+'<span>'+d.w+'</span></th>';
+  });
+  return h+'</tr>';
+}
+
+/* ── 지금 것 ── */
+function paperOld(){
+  var h='<div class="paper">'+head('숙제체크 · 월간','2026년 8월');
+  h+='<table class="sheet"><colgroup><col style="width:22mm">'
+    +DAYS.map(function(){ return '<col style="width:14mm">'; }).join('')
+    +'<col style="width:22mm"><col></colgroup>';
+  h+='<thead><tr><th class="l">이름</th>'
+    +DAYS.map(function(d){ return '<th>'+d.d+'<span>'+d.w+'</span></th>'; }).join('')
+    +'<th>참고</th><th class="l">메모</th></tr></thead><tbody>';
+  STU.forEach(function(s){
+    h+='<tr><td class="nm" style="height:13mm">'+s.n+'</td>';
+    s.v.forEach(function(v,i){
+      var inner = DAYS[i].off ? '' : ((INK&&v&&v!=='off')?inkFlat(v,13):emptyBox(6));
+      h+='<td'+(DAYS[i].off?' class="off"':'')+'>'+inner+'</td>';
+    });
+    h+='<td class="sum">지난달 <b>87%</b></td>'
+      +'<td class="memo">'+(INK&&s.memo?'<span class="memoink" style="font-size:8px">'+s.memo+'</span>':'')+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div class="ft"><b>문제</b> — 칸이 14mm라 「100/60/0」이 이렇게 작게 들어갑니다. 주 구분도 요약도 없습니다.</div>';
+  return h+'</div>';
+}
+
+/* ── A안 · 기록란형 ── */
+function paperA(){
+  var h='<div class="paper">'+head('숙제체크 · 월간','2026년 8월');
+  h+='<table class="sheet"><colgroup><col style="width:20mm">'
+    +DAYS.map(function(){ return '<col style="width:18mm">'; }).join('')
+    +'<col style="width:27mm"></colgroup>';
+  h+='<thead>'+weekHead(DAYS,20,['이번 달'])+'</thead><tbody>';
+  STU.forEach(function(s,r){
+    /* A안: 표에는 ✔ 아니면 ✗ 만 — 숫자는 아래 기록란으로 */
+    var flat={ v: s.v.map(function(x){ return (x&&x.indexOf('/')>0)?'x':x; }) };
+    h+='<tr'+(r%2?' class="zeb"':'')+'><td class="nm" style="height:9mm">'+s.n+'</td>';
+    s.v.forEach(function(v,i){ h+=dayTd(flat, i, {bx:6.5, fs:14}); });
+    h+='<td class="sum">'+sumCell(s)+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  /* 하단 기록란 */
+  var logs=[];
+  STU.forEach(function(s){
+    s.v.forEach(function(v,i){
+      if(v&&v!=='off'&&v!=='ck') logs.push({d:'8/'+DAYS[i].d, n:s.n, v:(v==='x'?'0/0/0':v), m:''});
+    });
+  });
+  logs=logs.slice(0,10);
+  var REASON={0:'오답 정리 시간 부족 → 수업 중 처리', 5:'결석 → 보충일에 확인'};
+  function logHalf(from){
+    var t='<table class="logt"><colgroup><col style="width:15mm"><col style="width:24mm"><col style="width:28mm"><col></colgroup>'
+      +'<thead><tr><th>날짜</th><th>이름</th><th>풀이 / 채점 / 오답</th><th>사유 · 조치</th></tr></thead><tbody>';
+    for(var i=from;i<from+5;i++){
+      var L=logs[i];
+      t+='<tr><td>'+(INK&&L?'<span class="memoink">'+L.d+'</span>':'')+'</td>'
+        +'<td>'+(INK&&L?'<span class="memoink">'+L.n+'</span>':'')+'</td>'
+        +'<td>'+(INK&&L?'<span class="slash" style="font-size:10px">'+L.v+'</span>':'')+'</td>'
+        +'<td>'+(INK&&REASON[i]?'<span class="memoink">'+REASON[i]+'</span>':'')+'</td></tr>';
+    }
+    return t+'</tbody></table>';
+  }
+  h+='<div class="logbox"><div class="logttl">덜 해온 날만 여기에 적습니다'
+    +'<span>표에는 ✗ 하나, 자세한 건 아래에 — 풀이 / 채점 / 오답 순서 · 좌 → 우 순으로 채웁니다</span></div>'
+    +'<div class="logcols"><div>'+logHalf(0)+'</div><div>'+logHalf(5)+'</div></div></div>';
+  h+='<div class="ft"><b>쓰는 법</b> — 다 해왔으면 칸에 <b>✔</b>, 아니면 <b>✗</b>. 그게 전부입니다. '
+    +'<b>✗ 인 학생만</b> 아래 기록란에 한 줄 적으시면 단계별 기록이 남습니다 (<b>한 달 10줄</b>).<br>'
+    +'<b>이번 달</b> 열은 앱이 인쇄할 때 자동으로 찍습니다 (다 함 횟수 · 평균% · ❓ 미해결 문항).</div>';
+  return h+'</div>';
+}
+
+/* ── B안 · 세로쌓기형 ── */
+function paperB(){
+  var h='<div class="paper">'+head('숙제체크 · 월간','2026년 8월');
+  h+='<table class="sheet"><colgroup><col style="width:20mm">'
+    +DAYS.map(function(){ return '<col style="width:18mm">'; }).join('')
+    +'<col style="width:27mm"></colgroup>';
+  h+='<thead>'+weekHead(DAYS,20,['이번 달'])+'</thead><tbody>';
+  STU.forEach(function(s,r){
+    h+='<tr'+(r%2?' class="zeb"':'')+'><td class="nm" style="height:13mm">'+s.n+'</td>';
+    s.v.forEach(function(v,i){ h+=dayTd(s, i, {bx:7, fs:15, stack:1}); });
+    h+='<td class="sum">'+sumCell(s)+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div class="ft"><b>쓰는 법</b> — 다 해왔으면 <b>✔</b>, 안 해왔으면 <b>✗</b>. '
+    +'덜 해왔으면 <b>세로로 세 줄</b> — 위부터 <b>풀이 / 채점 / 오답</b> (0·30·60·100).<br>'
+    +'가로로는 안 들어가지만 <b>세로로는 들어갑니다.</b> 한 자리에서 다 보이는 대신 글씨가 작습니다 · <b>12명까지</b> 한 장.</div>';
+  return h+'</div>';
+}
+
+/* ── C안 · 반달형 ── */
+function paperC(){
+  var days=DAYS.slice(6);   /* 후반부 7회: 17~31 */
+  var h='<div class="paper">'+head('숙제체크 · 반달','2026년 8월 <b style="font-size:12px">후반</b> (17~31) · 2장 중 2장');
+  h+='<table class="sheet"><colgroup><col style="width:22mm">'
+    +days.map(function(){ return '<col style="width:29mm">'; }).join('')
+    +'<col style="width:24mm"><col></colgroup>';
+  h+='<thead>'+weekHead(days,22,['반달 요약','메모'])+'</thead><tbody>';
+  STU.forEach(function(s,r){
+    h+='<tr'+(r%2?' class="zeb"':'')+'><td class="nm" style="height:13mm">'+s.n+'</td>';
+    days.forEach(function(d,j){
+      var i=j+6, v=s.v[i];
+      var cls=(d.wk!==(days[j-1]&&days[j-1].wk)?' wsep':'')+(d.off?' off':'');
+      var inner = d.off ? '' : ((INK&&v)?inkFlat(v,17):emptyBox(9));
+      h+='<td class="'+cls+'">'+inner+'</td>';
+    });
+    h+='<td class="sum">'+sumCell(s,6)+'</td>'
+      +'<td class="memo">'+(INK&&s.memo?'<span class="memoink">'+s.memo+'</span>':'')+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div class="ft"><b>쓰는 법</b> — 칸이 <b>29mm</b>라 <b>100/60/0</b>을 가로로 편하게 적으실 수 있습니다. '
+    +'주간형과 똑같은 감각인데 <b>2주치</b>가 한 장입니다.<br>'
+    +'월초에 <b>전반(1~14일) 1장</b>, 중순에 <b>후반(17~31일) 1장</b> — 한 달에 2장입니다. 메모 칸이 살아 있습니다.</div>';
+  return h+'</div>';
+}
+
+var NOTES={
+  old:'👆 「적은 예시」를 켜 보시면 숫자가 얼마나 작은지 바로 보입니다',
+  a:'👆 표는 ✔·✗만 — 손이 멈추지 않습니다. 자세한 건 아래 기록란에',
+  b:'👆 가로로 못 쓰니 세로로 쌓았습니다 — 100 / 60 / 0',
+  c:'👆 칸 29mm — 주간형과 똑같이 편하게 쓰실 수 있습니다 (대신 월 2장)'
+};
+var SIZES={
+  old:'A4 가로 (297 × 210mm) · 반마다 1장 · 한 달',
+  a:'A4 가로 (297 × 210mm) · 반마다 1장 · 한 달 · 12명까지',
+  b:'A4 가로 (297 × 210mm) · 반마다 1장 · 한 달 · 12명까지',
+  c:'A4 가로 (297 × 210mm) · 반마다 2장 (전반 · 후반) · 12명까지'
+};
+function draw(){
+  var ph='<span class="lab">양식</span>';
+  KINDS.forEach(function(x){
+    ph+='<button class="kb'+(x.old?' old':'')+(KIND===x.k?' on':'')+'" onclick="pick(\''+x.k+'\')">'
+      +x.t+'<small>'+x.s+'</small></button>';
+  });
+  document.getElementById('pk').innerHTML=ph;
+  document.getElementById('tgInk').className='tg'+(INK?' on':'');
+  document.getElementById('tgInk').textContent = INK?'✍️ 적은 예시 (켜짐)':'✍️ 적은 예시 보기';
+  document.getElementById('hint').textContent = INK?'파란 글씨가 볼펜으로 적은 부분입니다':'';
+  document.getElementById('paper').innerHTML =
+    KIND==='old'?paperOld():KIND==='a'?paperA():KIND==='b'?paperB():paperC();
+  document.getElementById('psize').textContent='📄 '+SIZES[KIND];
+  document.getElementById('pnote').textContent=NOTES[KIND];
+}
+window.pick=function(k){ KIND=k; draw(); };
+window.toggleInk=function(){ INK=!INK; draw(); };
+draw();
+</script>
+</body>
+</html>
