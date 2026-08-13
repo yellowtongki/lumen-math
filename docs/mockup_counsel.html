@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 학부모 전화상담 스크립트</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1120px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,0.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-new{background:#dbeafe;color:#1d4ed8}.b-key{background:#fef3c7;color:#b45309}.b-ok{background:#dcfce7;color:#15803d}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-red{background:#fef2f2;border-color:#fecaca}.x-red b{color:#b91c1c}.x-red p{color:#7f1d1d}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+
+/* 재료 칩 */
+.mats{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.mat{background:#f1f5f9;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:800;color:#475569}
+.mat b{color:#0d2240}
+
+/* 앱 프레임 */
+.app{background:#f6f8fc;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden}
+.appbar{background:#0d2240;color:#fff;padding:10px 16px;font-size:13px;font-weight:900;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.appbd{padding:16px}
+.pick{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.pick .lab{font-size:11.5px;font-weight:800;color:#94a3b8}
+.chip{border:1.5px solid #e2e8f0;background:#fff;border-radius:50px;padding:7px 14px;font-size:12px;font-weight:800;color:#64748b;cursor:pointer;font-family:inherit}
+.chip.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.kind{border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:9px 14px;font-size:12.5px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit;line-height:1.3;text-align:left}
+.kind small{display:block;font-size:10px;font-weight:700;opacity:.65;margin-top:2px}
+.kind.on{background:#1d6fe8;border-color:#1d6fe8;color:#fff}
+.kind.on small{opacity:.8}
+
+/* 스크립트 2분할 */
+.sgrid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}
+@media(max-width:900px){.sgrid{grid-template-columns:1fr}}
+.card{background:#fff;border-radius:14px;border:1px solid #e8eef8;padding:15px 16px;margin-bottom:12px}
+.ch{font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.ch .n{width:20px;height:20px;border-radius:50%;background:#1d6fe8;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ch .tm{margin-left:auto;font-size:10.5px;font-weight:800;color:#94a3b8;background:#f8fafc;border-radius:20px;padding:2px 9px}
+.say{background:#f8fafc;border-left:3px solid #1d6fe8;border-radius:0 10px 10px 0;padding:11px 13px;font-size:13.5px;font-weight:600;color:#1e293b;line-height:1.85;margin-bottom:8px}
+.say b{color:#0d2240;font-weight:900}
+.say .hl{background:#fef9c3;border-radius:4px;padding:0 3px;font-weight:900;color:#854d0e}
+.why{font-size:11px;font-weight:700;color:#94a3b8;line-height:1.6;padding-left:4px}
+.why b{color:#64748b}
+
+/* 30초 브리핑 */
+.brief{background:linear-gradient(135deg,#0d2240,#1d3a6b);color:#fff;border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.brief .t{font-size:11px;font-weight:800;opacity:.75;letter-spacing:.02em}
+.brief .nm{font-size:20px;font-weight:900;margin-top:2px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.brief .tag{font-size:10.5px;font-weight:900;border-radius:50px;padding:3px 10px}
+.bstat{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.bs{flex:1;min-width:96px;background:rgba(255,255,255,.1);border-radius:11px;padding:9px 11px}
+.bs b{display:block;font-size:19px;font-weight:900;line-height:1.1}
+.bs span{font-size:10px;font-weight:800;opacity:.72}
+.bline{margin-top:11px;background:rgba(255,255,255,.13);border-radius:11px;padding:10px 12px;font-size:12.5px;font-weight:700;line-height:1.7}
+
+/* 근거 카드 */
+.ev{background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:11px 13px;margin-bottom:9px}
+.evh{font-size:11.5px;font-weight:900;color:#92400e;margin-bottom:6px}
+.evr{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#78350f;padding:4px 0;line-height:1.5}
+.evr b{color:#0d2240;margin-left:auto;font-weight:900;white-space:nowrap}
+
+/* 예상 질문 */
+.qa{border:1px solid #e8eef8;border-radius:11px;margin-bottom:8px;overflow:hidden}
+.qq{background:#f8fafc;padding:10px 12px;font-size:12.5px;font-weight:900;color:#0d2240;cursor:pointer;display:flex;gap:8px;align-items:flex-start}
+.qq .q{color:#dc2626;flex-shrink:0}
+.qq .car{margin-left:auto;color:#94a3b8;font-size:12px;transition:transform .2s}
+.qq.open .car{transform:rotate(180deg)}
+.qb{padding:11px 13px;font-size:12.5px;font-weight:600;color:#334155;line-height:1.85;display:none;border-top:1px solid #f1f5f9}
+.qb.open{display:block}
+.qb b{color:#0d2240;font-weight:900}
+.qb .hl{background:#dcfce7;border-radius:4px;padding:0 3px;font-weight:900;color:#166534}
+
+/* 통화 후 */
+.after{background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:12px 14px}
+.afh{font-size:12px;font-weight:900;color:#15803d;margin-bottom:8px}
+.aft{width:100%;border:1px solid #bbf7d0;border-radius:9px;padding:9px 11px;font-size:12.5px;font-family:inherit;font-weight:600;color:#334155;min-height:70px;resize:vertical}
+.afb{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.afb button{border:none;border-radius:9px;padding:8px 13px;font-size:11.5px;font-weight:900;cursor:pointer;font-family:inherit}
+.b1{background:#15803d;color:#fff}.b2{background:#fff;color:#15803d;border:1.5px solid #bbf7d0!important}
+
+.tools{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tools button{border:1.5px solid #cbd5e1;background:#fff;border-radius:10px;padding:8px 13px;font-size:12px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit}
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>📞 학부모 전화상담 스크립트 — 미리보기</h1>
+<p class="sub">
+<b>충분히 가능합니다.</b> 오히려 지금 앱이 가진 데이터로 <b>가장 잘 만들 수 있는 기능</b>입니다 —
+성적·숙제 완성도·아하노트·출결·진도가 이미 다 모여 있으니까요.<br>
+아래는 <b>실제로 눌러볼 수 있습니다</b> — 학생과 상담 종류를 바꿔보세요.
+</p>
+
+<!-- ① 재료 -->
+<div class="sec">
+  <div class="stitle">① 이미 가진 재료 <span class="badge b-ok">추가 입력 없음</span></div>
+  <div class="sdesc">상담 스크립트에 필요한 건 전부 앱 안에 있습니다</div>
+  <div class="mats">
+    <span class="mat">📊 <b>과제 완성도</b> 풀이·채점·오답·아하노트</span>
+    <span class="mat">📝 <b>일일/주간테스트</b> 점수·등급·전국/학원 등수</span>
+    <span class="mat">🎯 <b>취약 유형</b> 매쓰플랫 유형별 정답률</span>
+    <span class="mat">❓ <b>모름 체크·재오답</b> 막힌 문제</span>
+    <span class="mat">💡 <b>아하노트</b> 질문 습관</span>
+    <span class="mat">📓 <b>플래너</b> 순공 시간·제출률</span>
+    <span class="mat">🎙️ <b>녹음</b> 하브루타 제출</span>
+    <span class="mat">📅 <b>출결·보충</b></span>
+    <span class="mat">📚 <b>진도·로드맵</b> 목표 도달 시점</span>
+    <span class="mat">🧭 <b>진학 나침반</b> 예상 내신 등급</span>
+    <span class="mat">📄 <b>지난 리포트 총평</b> 이력</span>
+  </div>
+  <div class="box x-blu" style="margin-top:14px"><div class="ic">💬</div><div>
+    <b>지금은 이 데이터가 「리포트」로만 나갑니다</b>
+    <p>그런데 <b>전화는 글이 아니라 말</b>입니다. 순서·말투·근거 숫자가 손에 있어야 하고,
+    학부모가 되물을 때 <b>바로 댈 수 있어야</b> 합니다. 그걸 통화 전에 30초로 만들어 드리는 기능입니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 데모 -->
+<div class="sec">
+  <div class="stitle">② 직접 눌러보세요 <span class="badge b-key">실제 동작</span></div>
+  <div class="sdesc">학생과 상담 종류를 바꾸면 스크립트가 통째로 바뀝니다</div>
+
+  <div class="app">
+    <div class="appbar">
+      <span>📞 학부모 상담 준비</span>
+      <span style="margin-left:auto;font-size:11px;font-weight:700;opacity:.7">데이터 기준: 최근 8회 · 8월</span>
+    </div>
+    <div class="appbd">
+      <div class="pick" id="pickStu"></div>
+      <div class="pick" id="pickKind"></div>
+      <div class="tools">
+        <button onclick="alert('미리보기입니다 — 실제로는 A4 1장으로 인쇄됩니다')">🖨️ 인쇄 (A4 1장)</button>
+        <button onclick="alert('미리보기입니다 — 실제로는 아이패드 전체화면으로 크게 봅니다')">📱 통화 모드 (큰 글씨)</button>
+        <button onclick="alert('미리보기입니다 — 실제로는 AI가 이 학생 데이터로 다시 씁니다')">🔄 다시 생성</button>
+      </div>
+      <div id="out"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 설계 원칙 -->
+<div class="sec">
+  <div class="stitle">③ 설계 원칙 — 말하기 좋은 순서</div>
+  <div class="sdesc">글을 읽는 게 아니라 「말할 순서」를 드립니다</div>
+  <div class="rule">
+    <b>1. 사실 먼저, 숫자로.</b> “열심히 합니다” 같은 말은 빼고 <b>“8월 6번 중 4번 100%”</b>처럼 셀 수 있는 것으로.<br><br>
+    <b>2. 좋은 것 → 걱정 → 계획 순서.</b> 걱정부터 꺼내면 학부모가 방어적이 됩니다.
+    <b>먼저 인정할 것을 인정</b>하고, 걱정은 <b>학원이 어떻게 하겠다</b>는 계획과 붙여서 말합니다.<br><br>
+    <b>3. 학부모께 숙제를 드리지 않습니다.</b> (앞서 정하신 톤 그대로)
+    “집에서 시켜주세요”가 아니라 <b>“학원에서 이렇게 하겠습니다”</b>로.
+    가정 협조는 <b>맨 마지막에 딱 하나만</b>, 아주 가볍게.<br><br>
+    <b>4. 예상 질문에 미리 답을 준비.</b> 학부모가 자주 묻는 것 5가지에 대한 답을
+    <b>이 학생 숫자로</b> 미리 만들어 둡니다 — 통화 중에 당황하지 않게.<br><br>
+    <b>5. 통화 시간을 표시.</b> 각 단락에 <b>예상 초</b>를 붙여, 전체 <b>5~7분</b>에 맞춥니다.
+  </div>
+</div>
+
+<!-- ④ 통화 후 -->
+<div class="sec">
+  <div class="stitle">④ 통화 후 — 기록이 다음 상담으로 이어집니다 <span class="badge b-new">신규</span></div>
+  <div class="sdesc">한 번 쓰고 버리는 스크립트가 아니라 상담 이력이 됩니다</div>
+  <table class="cmp">
+    <tr><th style="width:150px">저장되는 것</th><th>어디에 쓰이나</th></tr>
+    <tr><td><b>통화 날짜·시간</b></td><td>학생 카드에 「마지막 상담 8/12」 배지 — <b>3개월 넘은 학생</b>이 자동으로 뜹니다</td></tr>
+    <tr><td><b>학부모가 한 말</b></td><td>다음 상담 스크립트에 <b>“지난번에 ○○를 걱정하셨습니다”</b>로 자동 반영</td></tr>
+    <tr><td><b>약속한 것</b></td><td>다음 상담에서 <b>“지난번 약속: 오답 시간 늘리기 → 실제로 오답 정리 30%→80%”</b> 로 결과 확인</td></tr>
+    <tr><td><b>분위기</b> (좋음/보통/우려)</td><td>재등록 시기 전에 <b>우려 학부모</b>를 먼저 챙길 수 있게</td></tr>
+  </table>
+  <div class="rule" style="margin-top:13px">
+    <b>진학 나침반의 「상담 노트」와 연결됩니다.</b> 여기서 적은 내용이 학부모 리포트 3쪽 「학습 플랜」에도
+    그대로 들어가, <b>전화로 한 말과 리포트에 쓴 말이 어긋나지 않습니다.</b>
+  </div>
+</div>
+
+<!-- ⑤ 어디에 -->
+<div class="sec">
+  <div class="stitle">⑤ 어디에 넣을까 · 무엇을 정할까</div>
+  <div class="sdesc">알려주시면 그대로 만들겠습니다</div>
+  <div class="rule">
+    <b>위치 (추천)</b> — 학생 카드에서 <b>「📞 상담 준비」</b> 버튼 하나.
+    학생별 보기·아하노트·발행센터 어디서든 학생을 고른 상태면 바로 누를 수 있게.<br>
+    사이드바에는 <b>「📞 상담 대기 N명」</b>(3개월 넘은 학생) 바로가기.<br><br>
+    <b>정해주실 것</b><br>
+    ① 상담 종류를 지금 <b>4가지</b>(정기 / 성적 하락 / 학부모 문의 / 진학)로 잡았는데 더 필요한 게 있을까요?<br>
+    ② 통화 목표 시간 — <b>5~7분</b>으로 잡았습니다. 더 길게/짧게?<br>
+    ③ 스크립트를 <b>존댓말 그대로</b> 읽을 수 있게 쓸지, <b>요점만</b> 적을지<br>
+    <span style="color:#94a3b8">(지금 미리보기는 「그대로 읽어도 되는」 형태입니다)</span>
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 · 예시 학생 자료는 실제 학생이 아닙니다
+</div>
+</div>
+
+<script>
+var STU=[
+  { id:'a', name:'오시안', grp:'M3', grade:'초6',
+    hw:{avg:61,a3:18,delta:-59,full:1,days:6, p:72,c:55,w:28,a:0},
+    test:{last:60, avg:71, best:86, grade:4, rank:'학원 8/11'},
+    weak:['식의 값','문자를 사용한 식','도형의 둘레·넓이·부피'],
+    stuck:5, aha:{sent:0, asked:0}, planner:{rate:83, min:160}, rec:{rate:67},
+    att:{ok:11,late:1,absent:0}, book:'개념+유형 중1(상) 64~71p', pace:'계획 대비 -1주',
+    last:'6/2 · 어머니 — “집에서 스스로 안 해요”' },
+  { id:'b', name:'윤이솔', grp:'M3', grade:'초6',
+    hw:{avg:100,a3:100,delta:0,full:8,days:8, p:100,c:100,w:100,a:0},
+    test:{last:86, avg:84, best:95, grade:2, rank:'학원 2/11'},
+    weak:['이차방정식 활용'],
+    stuck:9, aha:{sent:0, asked:0}, planner:{rate:100, min:210}, rec:{rate:100},
+    att:{ok:12,late:0,absent:0}, book:'RPM 중1(상) 9~23p', pace:'계획보다 +2주 빠름',
+    last:'(첫 상담)' },
+  { id:'c', name:'한소율', grp:'M4', grade:'초6',
+    hw:{avg:67,a3:100,delta:41,full:3,days:8, p:88,c:80,w:62,a:75},
+    test:{last:78, avg:65, best:78, grade:3, rank:'학원 5/11'},
+    weak:['비와 비율'],
+    stuck:1, aha:{sent:2, asked:2}, planner:{rate:75, min:140}, rec:{rate:83},
+    att:{ok:10,late:2,absent:0}, book:'쎈 초6-2 82~96p', pace:'계획대로',
+    last:'5/20 · 아버지 — “수학을 싫어해요”' }
+];
+var KINDS=[
+  {k:'reg',  t:'정기 상담',    s:'분기별 · 특별한 일 없음'},
+  {k:'drop', t:'성적 하락',    s:'요즘 처지는 학생'},
+  {k:'ask',  t:'학부모 문의',  s:'먼저 전화 오셨을 때'},
+  {k:'exam', t:'진학·시험',    s:'고입·내신 대비'}
+];
+var CUR=0, KIND='reg';
+
+function tone(v,good,bad){ return v>=good?'#059669':v<=bad?'#dc2626':'#d97706'; }
+function seg(n,t,tm,html,why){
+  var h='<div class="card"><div class="ch"><span class="n">'+n+'</span>'+t+'<span class="tm">'+tm+'</span></div>';
+  h+='<div class="say">'+html+'</div>';
+  if(why) h+='<div class="why">'+why+'</div>';
+  h+='</div>';
+  return h;
+}
+function evRow(l,v,c){ return '<div class="evr">'+l+'<b style="color:'+(c||'#0d2240')+'">'+v+'</b></div>'; }
+
+function briefOf(s){
+  var risk = s.hw.a3<60 ? ['🔴 최근 저조','#fee2e2','#b91c1c']
+           : s.stuck>3 && s.aha.asked===0 ? ['🙋 질문 안 함','#f3e8ff','#7c3aed']
+           : s.hw.delta>=20 ? ['🌱 좋아짐','#dcfce7','#15803d'] : ['✅ 안정','#dbeafe','#1d4ed8'];
+  var h='<div class="brief">';
+  h+='<div class="t">📞 통화 전 30초 브리핑</div>';
+  h+='<div class="nm">'+s.name+' <span style="font-size:12px;opacity:.75;font-weight:800">'+s.grade+' · '+s.grp+'반</span>'
+    +'<span class="tag" style="background:'+risk[1]+';color:'+risk[2]+'">'+risk[0]+'</span></div>';
+  h+='<div class="bstat">'
+    +'<div class="bs"><b style="color:'+tone(s.hw.a3,80,50)+'">'+s.hw.a3+'%</b><span>최근 과제 완성도</span></div>'
+    +'<div class="bs"><b>'+s.test.last+'점</b><span>최근 테스트 ('+s.test.grade+'등급)</span></div>'
+    +'<div class="bs"><b style="color:'+(s.stuck>3?'#fca5a5':'#a7f3d0')+'">'+s.stuck+'개</b><span>안 풀린 문제</span></div>'
+    +'<div class="bs"><b>'+s.planner.rate+'%</b><span>플래너 제출</span></div>'
+    +'</div>';
+  var line = s.last==='(첫 상담)'
+    ? '📌 <b>첫 상담</b>입니다 — 학원 방식(4단계 숙제·아하노트)을 먼저 설명하면 좋습니다.'
+    : '📌 <b>지난 상담</b> '+s.last+' → 오늘 이 부분에 대한 <b>변화</b>를 먼저 말씀드리세요.';
+  h+='<div class="bline">'+line+'</div>';
+  h+='</div>';
+  return h;
+}
+
+function scriptOf(s,kind){
+  var L=[];
+  var strong = s.hw.p>=90 ? '문제를 끝까지 다 푸는 것' : s.planner.rate>=90 ? '플래너를 하루도 안 빠뜨리는 것'
+             : s.att.absent===0 ? '한 번도 결석하지 않는 것' : '수업에 꾸준히 나오는 것';
+  var weakStage = (function(){
+    var a=[['문제를 다 푸는 것',s.hw.p],['채점하는 것',s.hw.c],['틀린 문제를 정리하는 것',s.hw.w]];
+    if(s.stuck>0) a.push(['모르는 걸 질문하는 것',s.hw.a]);
+    a.sort(function(x,y){return x[1]-y[1];});
+    return a[0];
+  })();
+
+  // ① 인사
+  L.push(seg(1,'인사 · 통화 목적','20초',
+    '안녕하세요, 루멘수학 <b>김정수</b>입니다. <b>'+s.name+'</b> 어머님 되시죠?<br>'
+    + (kind==='ask' ? '전화 주셔서 감사합니다. 편하게 말씀해 주세요.'
+      : kind==='drop' ? '통화 괜찮으실까요? 최근 '+s.name+' 학습 상황을 한 번 짚어드리고 싶어서 연락드렸습니다.'
+      : kind==='exam' ? '통화 괜찮으실까요? '+s.name+' 진학 준비 방향을 말씀드리려고 연락드렸습니다.'
+      : '통화 괜찮으실까요? 이번 분기 '+s.name+' 학습 상황을 정리해서 말씀드리려고 합니다.'),
+    kind==='ask' ? '<b>학부모가 먼저 전화하신 경우</b> — 설명보다 <b>듣기</b>가 먼저입니다. 다 들으신 뒤 ②로 넘어가세요.'
+                 : '<b>5~7분</b> 예상이라고 미리 말씀드리면 서로 편합니다.'));
+
+  // ② 잘하는 것
+  L.push(seg(2,'먼저 인정할 것','40초',
+    '먼저 좋은 점부터 말씀드리면, <b>'+s.name+'</b>은 <span class="hl">'+strong+'</span>을 잘합니다.<br>'
+    +'8월에 수업 <b>'+s.hw.days+'번</b> 중 <b>'+s.hw.full+'번</b>은 숙제를 <b>빠짐없이</b> 마쳤고, '
+    +'플래너도 <b>'+s.planner.rate+'%</b> 올렸습니다. 하루 순공 시간이 평균 <b>'+s.planner.min+'분</b>입니다.'
+    +(s.att.absent===0?'<br>결석은 <b>한 번도</b> 없습니다.':''),
+    '<b>걱정부터 꺼내지 않습니다.</b> 인정할 것을 먼저 인정해야 뒤의 이야기가 들립니다.'));
+
+  // ③ 사실 (종류별로 다름)
+  if(kind==='drop'){
+    L.push(seg(3,'걱정되는 것 — 사실만','60초',
+      '다만 오늘 연락드린 이유는 <span class="hl">최근 흐름</span> 때문입니다.<br>'
+      +'7월까지는 과제 완성도가 평균 <b>'+(s.hw.a3-s.hw.delta)+'%</b>였는데, 최근 세 번은 <b>'+s.hw.a3+'%</b>입니다. '
+      +'<b>'+Math.abs(s.hw.delta)+'%포인트</b> 떨어졌습니다.<br>'
+      +'단계별로 보면 <span class="hl">'+weakStage[0]+'</span>이 <b>'+weakStage[1]+'%</b>로 가장 낮습니다.',
+      '<b>“열심히 안 한다”가 아니라 “어느 단계에서 멈추는지”</b>를 말합니다. 학부모가 방어하지 않고 같이 봅니다.'));
+  } else if(kind==='exam'){
+    L.push(seg(3,'현재 위치','60초',
+      '지금 <b>'+s.book+'</b>을 하고 있고, <b>'+s.pace+'</b>입니다.<br>'
+      +'최근 테스트는 <b>'+s.test.last+'점</b>, 평균 <b>'+s.test.avg+'점</b>으로 <b>'+s.test.grade+'등급</b>대입니다. '
+      +'학원 안에서는 <b>'+s.test.rank+'</b>입니다.<br>'
+      +'약한 단원은 <span class="hl">'+s.weak.join(' · ')+'</span>입니다.',
+      '진학 상담은 <b>위치 → 목표 → 격차 → 계획</b> 순서가 가장 잘 통합니다.'));
+  } else if(kind==='ask'){
+    L.push(seg(3,'물어보신 것에 대한 답','60초',
+      '말씀하신 부분, 저희 기록으로 확인해 보면 이렇습니다.<br>'
+      +'최근 과제 완성도는 <b>'+s.hw.a3+'%</b>이고, 단계별로는 '
+      +'문제 풀이 <b>'+s.hw.p+'%</b> · 채점 <b>'+s.hw.c+'%</b> · 오답 정리 <b>'+s.hw.w+'%</b>입니다.<br>'
+      +'가장 낮은 건 <span class="hl">'+weakStage[0]+'</span>입니다.',
+      '<b>기록으로 답합니다.</b> “그럴 리가요”가 아니라 숫자를 보여드리면 대화가 정리됩니다.'));
+  } else {
+    L.push(seg(3,'이번 분기 학습 상황','60초',
+      '이번 분기 과제 완성도는 평균 <b>'+s.hw.avg+'%</b>이고, 최근 세 번은 <b>'+s.hw.a3+'%</b>입니다.<br>'
+      +'테스트는 평균 <b>'+s.test.avg+'점</b>, 최고 <b>'+s.test.best+'점</b>으로 <b>'+s.test.grade+'등급</b>대를 유지하고 있습니다.<br>'
+      +'단계별로는 <span class="hl">'+weakStage[0]+'</span>이 <b>'+weakStage[1]+'%</b>로 가장 낮습니다.',
+      '분기 상담은 <b>추세</b>가 핵심입니다. 한 번의 점수보다 흐름을 말씀드리세요.'));
+  }
+
+  // ④ 아하노트 / 막힌 문제
+  if(s.stuck>0 && s.aha.asked===0){
+    L.push(seg(4,'꼭 짚어야 할 것','50초',
+      '한 가지 더 말씀드리고 싶은 게 있습니다.<br>'
+      +''+s.name+'이 최근에 <span class="hl">스스로 「모르겠다」고 표시한 문제가 '+s.stuck+'개</span> 있는데, '
+      +'그 중 <b>선생님께 질문한 건 없습니다.</b><br>'
+      +'실력이 없어서가 아니라 <b>모른다고 말하는 걸 어려워하는</b> 것으로 보입니다. '
+      +'<b>학원에서 먼저 물어보고 같이 풀겠습니다.</b>',
+      '<b>이 학원의 차별점</b>입니다 — 다른 데서는 알 수 없는 이야기라 학부모가 가장 인상 깊게 듣습니다.'));
+  } else if(s.aha.asked>0){
+    L.push(seg(4,'좋아지고 있는 신호','40초',
+      '그리고 최근에 <span class="hl">'+s.name+'이 모르는 문제를 스스로 질문하기 시작했습니다.</span> '
+      +'막힌 문제 중 <b>'+s.aha.asked+'개</b>를 직접 올렸습니다.<br>'
+      +'이게 <b>가장 중요한 변화</b>입니다. 성적은 이 습관을 따라옵니다.',
+      '<b>칭찬은 구체적으로.</b> “열심히 해요”보다 이 문장이 훨씬 힘이 셉니다.'));
+  }
+
+  // ⑤ 학원 계획
+  L.push(seg(5,'학원이 할 것','50초',
+    '그래서 저희가 이렇게 하겠습니다.<br>'
+    +'① <b>'+weakStage[0]+'</b>을 수업 안에서 시간을 따로 잡아 같이 하겠습니다.<br>'
+    +'② 약한 단원(<b>'+s.weak[0]+'</b>)은 다음 주 보충에서 다시 다루겠습니다.<br>'
+    +(s.stuck>0?'③ 안 풀린 문제 <b>'+s.stuck+'개</b>는 제가 먼저 불러서 같이 풀겠습니다.<br>':'')
+    +'<b>다음 상담 때 이 부분이 어떻게 바뀌었는지 숫자로 말씀드리겠습니다.</b>',
+    '<b>학부모께 숙제를 드리지 않습니다.</b> “학원이 하겠다”가 신뢰를 만듭니다.'));
+
+  // ⑥ 마무리
+  L.push(seg(6,'마무리 · 가정 협조 한 가지','30초',
+    '집에서는 <span class="hl">'
+    +(s.stuck>0&&s.aha.asked===0 ? '“모르면 선생님한테 물어봐도 돼”라고 한마디만'
+      : s.planner.rate<80 ? '플래너 올렸는지만 가볍게 한 번'
+      : '오늘 잘한 걸 한 번 칭찬해 주시는 것')
+    +'</span>이면 충분합니다.<br>'
+    +'더 궁금하신 점 있으실까요? 학부모앱에서 매일 기록을 보실 수 있으니 언제든 연락 주세요.',
+    '<b>부탁은 하나만.</b> 여러 개를 드리면 아무것도 안 하십니다.'));
+  return L.join('');
+}
+
+function evidenceOf(s){
+  var h='<div class="ev"><div class="evh">📊 숫자 근거 — “왜요?”라고 물으시면</div>';
+  h+=evRow('최근 과제 완성도 (3회)', s.hw.a3+'%', tone(s.hw.a3,80,50));
+  h+=evRow('8월 평균', s.hw.avg+'%');
+  h+=evRow('100% 마친 날', s.hw.full+'일 / '+s.hw.days+'일');
+  h+=evRow('문제 풀이 · 채점 · 오답', s.hw.p+' · '+s.hw.c+' · '+s.hw.w+'%');
+  h+='</div>';
+  h+='<div class="ev" style="background:#eff6ff;border-color:#bfdbfe"><div class="evh" style="color:#1d4ed8">📝 성적</div>';
+  h+=evRow('최근 테스트', s.test.last+'점 ('+s.test.grade+'등급)');
+  h+=evRow('평균 · 최고', s.test.avg+'점 · '+s.test.best+'점');
+  h+=evRow('학원 등수', s.test.rank);
+  h+=evRow('약한 단원', s.weak.join(', '));
+  h+='</div>';
+  h+='<div class="ev" style="background:#faf5ff;border-color:#e9d5ff"><div class="evh" style="color:#7c3aed">🏠 생활 습관</div>';
+  h+=evRow('플래너 제출', s.planner.rate+'%');
+  h+=evRow('하루 순공', s.planner.min+'분');
+  h+=evRow('녹음 숙제', s.rec.rate+'%');
+  h+=evRow('출결', '정상 '+s.att.ok+' · 지각 '+s.att.late+' · 결석 '+s.att.absent);
+  h+=evRow('진도', s.pace);
+  h+='</div>';
+  return h;
+}
+
+function qaOf(s){
+  var weakStage=(function(){
+    var a=[['문제를 다 푸는 것',s.hw.p],['채점하는 것',s.hw.c],['틀린 문제를 정리하는 것',s.hw.w]];
+    a.sort(function(x,y){return x[1]-y[1];}); return a[0];
+  })();
+  var QA=[
+    ['우리 애 잘하고 있나요?',
+     '숫자로 말씀드리면, 8월 과제 완성도 평균 <b>'+s.hw.avg+'%</b>, 테스트 평균 <b>'+s.test.avg+'점</b>('+s.test.grade+'등급)입니다.<br>'
+     +'<span class="hl">잘하는 건</span> 수업에 빠지지 않고 플래너를 '+s.planner.rate+'% 올리는 성실함이고, '
+     +'<span class="hl">보완할 건</span> '+weakStage[0]+'입니다.'],
+    ['성적이 오를까요?',
+     '지금 흐름으로 보면 '+(s.hw.delta>=0
+       ? '<span class="hl">이미 올라가는 중</span>입니다 — 최근 3회가 그 전보다 <b>'+Math.abs(s.hw.delta)+'%포인트</b> 좋아졌습니다.'
+       : '<span class="hl">숙제 완성도부터 돌려놓는 게 먼저</span>입니다. 최근 3회가 <b>'+Math.abs(s.hw.delta)+'%포인트</b> 떨어졌는데, 성적은 보통 이걸 두세 주 뒤에 따라옵니다.')
+     +'<br>확답은 드리기 어렵지만, <b>무엇을 바꾸면 오르는지는 정확히 말씀드릴 수 있습니다.</b>'],
+    ['집에서 공부를 안 해요',
+     '학원 기록으로는 플래너를 <b>'+s.planner.rate+'%</b> 올리고 하루 평균 <b>'+s.planner.min+'분</b> 공부합니다. '
+     +'<span class="hl">아예 안 하는 건 아닙니다.</span><br>'
+     +'다만 '+weakStage[0]+'이 <b>'+weakStage[1]+'%</b>라, <b>혼자 할 때 막히면 거기서 멈추는</b> 것으로 보입니다. '
+     +'그 부분은 <b>학원에서 붙잡겠습니다.</b>'],
+    ['숙제가 너무 많은 것 같아요',
+     '지금 분량은 하루 평균 <b>'+s.planner.min+'분</b> 기준으로 맞춰져 있습니다. '
+     +(s.hw.p<80 ? '실제로 <b>문제 풀이가 '+s.hw.p+'%</b>라 분량이 버거울 수 있습니다 — <span class="hl">조정하겠습니다.</span>'
+                 : '문제 풀이는 <b>'+s.hw.p+'%</b>로 분량 자체는 소화하고 있습니다. 힘든 건 <b>'+weakStage[0]+'</b> 쪽으로 보입니다.')],
+    ['다른 학원은 어떤가요 / 옮겨야 할까요',
+     '결정은 어머님 몫이지만, 저희가 드릴 수 있는 건 <span class="hl">이만큼의 기록</span>입니다 — '
+     +'문항 단위 정오답, 숙제 4단계, 아이가 모른다고 표시한 문제까지 남습니다.<br>'
+     +'<b>'+s.name+'에게 지금 필요한 건 '+weakStage[0]+'</b>이고, 그건 <b>사람이 붙어야</b> 됩니다. 저희가 그걸 하겠습니다.']
+  ];
+  var h='<div class="card"><div class="ch"><span class="n">?</span>예상 질문 — 미리 준비<span class="tm">필요할 때만</span></div>';
+  QA.forEach(function(x,i){
+    h+='<div class="qa"><div class="qq" id="qq'+i+'" onclick="tq('+i+')"><span class="q">Q</span><span>'+x[0]+'</span><span class="car">⌄</span></div>'
+      +'<div class="qb" id="qb'+i+'">'+x[1]+'</div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+window.tq=function(i){
+  var q=document.getElementById('qq'+i), b=document.getElementById('qb'+i);
+  q.classList.toggle('open'); b.classList.toggle('open');
+};
+
+function afterOf(s){
+  return '<div class="card"><div class="ch"><span class="n">✓</span>통화 후 기록<span class="tm">30초</span></div>'
+    +'<div class="after"><div class="afh">📝 통화가 끝나면 여기에 (다음 상담에 자동으로 이어집니다)</div>'
+    +'<textarea class="aft" placeholder="어머님이 하신 말씀 / 오늘 약속한 것 …">'+(s.id==='a'?'어머님: 집에서 스스로 안 한다고 걱정.\n약속: 오답 정리 시간을 수업 안에 확보하겠다고 말씀드림.':'')+'</textarea>'
+    +'<div class="afb">'
+    +'<button class="b1" onclick="alert(\'미리보기입니다 — 상담 이력에 저장되고 다음 상담 스크립트에 반영됩니다\')">💾 저장</button>'
+    +'<button class="b2" onclick="alert(\'미리보기입니다\')">🙂 분위기 좋음</button>'
+    +'<button class="b2" onclick="alert(\'미리보기입니다\')">😐 보통</button>'
+    +'<button class="b2" onclick="alert(\'미리보기입니다\')">😟 우려</button>'
+    +'</div></div></div>';
+}
+
+function draw(){
+  var s=STU[CUR];
+  var ph='<span class="lab">학생</span>';
+  STU.forEach(function(x,i){ ph+='<button class="chip'+(i===CUR?' on':'')+'" onclick="pickStu('+i+')">'+x.name+' <span style="opacity:.6;font-size:10.5px">'+x.grp+'</span></button>'; });
+  document.getElementById('pickStu').innerHTML=ph;
+  var kh='<span class="lab">상담 종류</span>';
+  KINDS.forEach(function(x){ kh+='<button class="kind'+(KIND===x.k?' on':'')+'" onclick="pickKind(\''+x.k+'\')">'+x.t+'<small>'+x.s+'</small></button>'; });
+  document.getElementById('pickKind').innerHTML=kh;
+  var h=briefOf(s);
+  h+='<div class="sgrid"><div>'+scriptOf(s,KIND)+afterOf(s)+'</div><div>'+evidenceOf(s)+qaOf(s)+'</div></div>';
+  document.getElementById('out').innerHTML=h;
+}
+window.pickStu=function(i){ CUR=i; draw(); };
+window.pickKind=function(k){ KIND=k; draw(); };
+draw();
+</script>
+</body>
+</html>
