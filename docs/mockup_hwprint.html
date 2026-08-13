@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 숙제체크 종이 양식 (하루 / 주간 / 월간)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1240px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,0.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-key{background:#fef3c7;color:#b45309}.b-ok{background:#dcfce7;color:#15803d}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box b b{display:inline;font-size:inherit;margin:0}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+
+.pick{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.pick .lab{font-size:11.5px;font-weight:800;color:#94a3b8}
+.kb{border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:9px 15px;font-size:12.5px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit;line-height:1.3;text-align:left}
+.kb small{display:block;font-size:10px;font-weight:700;opacity:.65;margin-top:2px}
+.kb.on{background:#0d2240;border-color:#0d2240;color:#fff}.kb.on small{opacity:.8}
+.tg{border:1.5px solid #cbd5e1;background:#fff;border-radius:50px;padding:7px 14px;font-size:12px;font-weight:800;color:#64748b;cursor:pointer;font-family:inherit}
+.tg.on{background:#1d6fe8;border-color:#1d6fe8;color:#fff}
+
+/* 종이 미리보기 */
+.paperwrap{background:#e2e8f0;border-radius:14px;padding:18px;overflow-x:auto}
+.paper{background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.18);margin:0 auto;color:#111;padding:9mm 8mm}
+.paper.p-a4v{width:210mm;min-height:250mm}
+.paper.p-a4h{width:297mm;min-height:180mm}
+.psize{text-align:center;font-size:11.5px;font-weight:800;color:#64748b;margin-top:10px}
+
+.hd{display:flex;align-items:flex-end;gap:10px;border-bottom:2.5px solid #111;padding-bottom:5px;margin-bottom:8px}
+.t1{font-size:15px;font-weight:900}.t1 span{font-weight:700;opacity:.75}
+.t2{font-size:20px;font-weight:900}.t2 .dw{font-size:12px;font-weight:700;opacity:.6}
+.t3{margin-left:auto;font-size:15px;font-weight:800}
+table.sheet{width:100%;border-collapse:collapse;table-layout:fixed}
+table.sheet th{font-size:10px;font-weight:800;padding:3px 2px;border:1px solid #111;background:#f2f2f2;text-align:center;line-height:1.25}
+table.sheet th span{font-size:8px;font-weight:600;opacity:.65;display:block}
+table.sheet th.l{text-align:left;padding-left:5px}
+table.sheet td{border:1px solid #111;padding:2px 3px;vertical-align:middle}
+td.nm{font-size:13px;font-weight:900;padding-left:5px;white-space:nowrap}
+td.ok{text-align:center}
+.bx{display:inline-block;border:1.8px solid #111;border-radius:2px}
+td.st{text-align:center;white-space:nowrap;padding:2px 1mm;overflow:hidden}
+.p{display:inline-block;border:1.3px solid #666;border-radius:50%;font-weight:800;color:#333;letter-spacing:-.3px;text-align:center}
+td.ref{font-size:8.5px;font-weight:800;text-align:center;line-height:1.45;overflow:hidden;padding:2px 1mm}
+td.ref .pv{display:block}.pv.dim{color:#999;font-weight:600}
+td.ref .pv b{font-size:10px}.g{color:#137a3f}.y{color:#a15c00}.r{color:#b31414}
+td.ref .q{display:inline-block;background:#111;color:#fff;border-radius:8px;padding:0 4px;font-size:8.5px}
+.ft{margin-top:6px;font-size:9px;line-height:1.65;color:#333;border-top:1px dashed #999;padding-top:5px}
+/* 손글씨 */
+.ink{color:#1d4ed8;font-family:'Comic Sans MS','Apple SD Gothic Neo',cursive;font-weight:800}
+.ink.ck{font-size:14px;line-height:1}
+.circ{position:relative;display:inline-block}
+.circ::after{content:'';position:absolute;left:-2px;top:-2px;right:-2px;bottom:-2px;border:2px solid #1d4ed8;border-radius:50%}
+.slash{color:#1d4ed8;font-weight:900;font-size:9px;letter-spacing:-.2px}
+.memo{font-size:9px;color:#1d4ed8;font-weight:700}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+.pickrow{background:#f0fdf4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>🖨️ 숙제체크 종이 양식 — 하루 / 주간 / 월간</h1>
+<p class="sub">
+한 장에 여러 날을 담으려면 <b>기입 방식을 바꿔야</b> 합니다. 세 가지를 만들어 비교해 보시게 했습니다.<br>
+<b>「적은 예시」를 켜면</b> 실제로 볼펜으로 적었을 때 어떻게 보이는지 나옵니다.
+</p>
+
+<!-- ① 왜 -->
+<div class="sec">
+  <div class="stitle">① 왜 양식을 바꿔야 하나</div>
+  <div class="sdesc">칸 수를 세어보면 답이 나옵니다</div>
+  <div class="box x-org"><div class="ic">📐</div><div>
+    <b>지금 양식(하루형)은 학생당 <b>12개의 동그라미</b>를 씁니다</b>
+    <p>① 풀이 4개 + ② 채점 4개 + ③ 오답 4개. 하루치라 여유롭지만,
+    <b>이걸 한 달(수업 13회)로 곱하면 156칸</b> — A4에 절대 안 들어갑니다.</p>
+  </div></div>
+  <div class="box x-grn"><div class="ic">✅</div><div>
+    <b>그래서 「대부분은 다 해온다」는 사실을 이용합니다</b>
+    <p>실제로 100%인 날이 대다수입니다. 그러니 <b>기본은 ✔ 하나</b>로 하고,
+    <b>다른 날만 숫자를 적는</b> 방식으로 바꾸면 한 달이 한 장에 들어갑니다.</p>
+  </div></div>
+  <div class="box x-blu"><div class="ic">📄</div><div>
+    <b>한 장에 몇 명까지 들어가나</b>
+    <p>아래 예시는 <b>8명 반</b>입니다. 줄 높이 기준으로 <b>주간형은 14명, 월간형은 12명</b>까지
+    한 장에 들어갑니다. 그보다 많은 반은 <b>자동으로 2장</b>으로 나뉩니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 양식 비교 -->
+<div class="sec">
+  <div class="stitle">② 세 가지 양식 <span class="badge b-key">눌러서 비교</span></div>
+  <div class="sdesc">종이 크기와 기입 방식이 다릅니다</div>
+
+  <div class="pick" id="pk"></div>
+  <div class="pick">
+    <span class="lab">보기</span>
+    <button class="tg" id="tgInk" onclick="toggleInk()">✍️ 적은 예시 보기</button>
+    <span style="font-size:11.5px;font-weight:700;color:#94a3b8" id="hint"></span>
+  </div>
+
+  <div class="paperwrap"><div id="paper"></div></div>
+  <div class="psize" id="psize"></div>
+</div>
+
+<!-- ③ 기입 규칙 -->
+<div class="sec">
+  <div class="stitle">③ 기입 규칙 — 주간·월간형</div>
+  <div class="sdesc">한 칸에 세 단계를 담는 방법</div>
+  <div class="rule">
+    <b>다 해왔으면</b> — 칸에 <span class="ink ck">✔</span> 하나. 끝입니다. (풀이·채점·오답 100%)<br><br>
+    <b>덜 해왔으면</b> — 그 칸에만 <span class="slash">100/60/0</span> 처럼 <b>슬래시로 세 숫자</b>를 적습니다.<br>
+    <span style="color:#64748b">순서는 항상 <b>풀이 / 채점 / 오답</b>. 0·30·60·100 네 가지만 씁니다.</span><br><br>
+    <b>아예 안 해왔으면</b> — <span class="ink" style="font-size:13px">✗</span> 하나. (0/0/0)<br><br>
+    <b>수업이 없는 날</b>은 칸이 <b>회색</b>으로 막혀 있습니다.<br><br>
+    <span style="color:#94a3b8">※ 아하노트는 앱이 자동 계산하므로 종이에 적지 않습니다.</span>
+  </div>
+</div>
+
+<!-- ④ 어느 걸 -->
+<div class="sec">
+  <div class="stitle">④ 어느 것을 쓸까</div>
+  <div class="sdesc">셋 다 만들어 두고 상황에 맞게 뽑으실 수 있게 하겠습니다</div>
+  <table class="cmp">
+    <tr><th style="width:110px">양식</th><th style="width:100px">종이</th><th style="width:120px">담기는 양</th><th>이럴 때</th></tr>
+    <tr><td><b>하루형</b><br><span style="font-size:11px;color:#94a3b8">지금 v18-51</span></td><td>A4 세로<br>반마다 1장</td><td>하루 · 한 반</td>
+      <td>단계별로 <b>정확히</b> 남기고 싶을 때. 동그라미라 손이 가장 편합니다</td></tr>
+    <tr class="pickrow"><td><b>주간형 ⭐</b></td><td>A4 세로<br>반마다 1장</td><td><b>한 주(수업 3회)</b><br>한 반</td>
+      <td><b>추천</b> — 월요일에 한 장 뽑아 <b>일주일 내내</b> 들고 다닙니다.
+      칸이 넉넉해 숫자를 적기도 편하고, 옆 날짜와 비교가 됩니다</td></tr>
+    <tr><td><b>월간형</b></td><td><b>A4 가로</b><br>반마다 1장</td><td>한 달(13회)<br>한 반</td>
+      <td>월초에 한 장. <b>한 달 흐름이 한눈에</b> 보이지만 칸이 좁아
+      대부분 ✔ 위주로 쓰게 됩니다</td></tr>
+  </table>
+  <div class="rule" style="margin-top:13px">
+    <b>추천은 주간형입니다.</b> 월간형은 칸이 <b>가로 14mm</b>라 「100/60/0」을 적기 빠듯합니다 —
+    ✔·✗ 위주로 쓰시게 될 텐데, 그러면 <b>단계별 기록이 사라집니다.</b><br>
+    주간형은 칸이 <b>가로 34mm</b>라 숫자를 적어도 여유가 있고, 한 장으로 일주일을 버팁니다.
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 · 예시 학생 자료는 실제 학생이 아닙니다
+</div>
+</div>
+
+<script>
+var KIND='week', INK=false;
+var KINDS=[
+  {k:'day', t:'하루형', s:'A4 세로 · 하루'},
+  {k:'week', t:'주간형 ⭐', s:'A4 세로 · 한 주(3회)'},
+  {k:'month', t:'월간형', s:'A4 가로 · 한 달(13회)'}
+];
+var STU=[
+  {n:'오시안', prev:87, q:2, ink:{day:['ck'], week:['ck','100/60/0','ck'], month:['ck','ck','100/60/0','ck','x','ck','ck','ck','100/100/60','ck','ck','ck','ck']}, memo:'오답 정리 시간 부족'},
+  {n:'유은상', prev:100, q:0, ink:{day:['ck'], week:['ck','ck','ck'], month:['ck','ck','ck','ck','ck','ck','ck','ck','ck','ck','ck','ck','ck']}, memo:''},
+  {n:'윤이솔', prev:null, q:0, ink:{day:['100/100/60'], week:['ck','ck','100/100/60'], month:['ck','ck','ck','ck','ck','ck','100/100/60','ck','ck','ck','ck','ck','ck']}, memo:''},
+  {n:'홍세원', prev:35, q:3, ink:{day:['x'], week:['x','30/0/0','60/30/0'], month:['x','30/0/0','x','60/30/0','x','30/0/0','60/60/30','x','60/30/0','ck','x','30/0/0','60/60/0']}, memo:'분량 조정 필요'},
+  {n:'강도현', prev:92, q:1, ink:{day:['ck'], week:['ck','ck','100/100/60'], month:['ck','ck','ck','100/100/60','ck','ck','ck','ck','ck','ck','100/60/0','ck','ck']}, memo:''},
+  {n:'서예린', prev:78, q:0, ink:{day:['ck'], week:['100/60/0','ck','ck'], month:['ck','100/60/0','ck','ck','ck','ck','ck','100/100/0','ck','ck','ck','ck','ck']}, memo:''},
+  {n:'임하준', prev:100, q:0, ink:{day:['ck'], week:['ck','ck','ck'], month:['ck','ck','ck','ck','ck','ck','ck','ck','ck','ck','ck','ck','ck']}, memo:''},
+  {n:'정소미', prev:61, q:2, ink:{day:['100/60/0'], week:['ck','60/30/0','ck'], month:['ck','ck','60/30/0','ck','ck','100/60/0','ck','x','ck','ck','ck','60/60/30','ck']}, memo:'월요일 자주 밀림'}
+];
+var DOWN=['일','월','화','수','목','금','토'];
+
+function refCell(s){
+  var h='';
+  if(s.prev===null) h+='<span class="pv dim">첫 기록</span>';
+  else h+='<span class="pv">지난 8/11 <b class="'+(s.prev>=80?'g':s.prev>=50?'y':'r')+'">'+s.prev+'%</b></span>';
+  if(s.q) h+='<span class="q">❓'+s.q+'</span>';
+  return h;
+}
+function inkCell(v, big){
+  if(!INK||!v) return '';
+  if(v==='ck') return '<span class="ink ck" style="font-size:'+(big?16:13)+'px">✔</span>';
+  if(v==='x') return '<span class="ink" style="font-size:'+(big?15:12)+'px">✗</span>';
+  return '<span class="slash" style="font-size:'+(big?10:7.5)+'px">'+v+'</span>';
+}
+function circles(sz, fs, mg, inked){
+  var out='';
+  [0,30,60,100].forEach(function(v,i){
+    var on = INK && inked!=null && inked===i;
+    out+='<span class="p'+(on?' circ':'')+'" style="width:'+sz+'mm;height:'+sz+'mm;line-height:'+sz+'mm;font-size:'+fs+'px;margin:0 '+mg+'mm">'+v+'</span>';
+  });
+  return out;
+}
+
+function paperDay(){
+  var h='<div class="paper p-a4v">';
+  h+='<div class="hd"><div class="t1">루멘수학 <span>숙제체크</span></div>'
+    +'<div class="t2">M3 <span class="dw">(월·수·금)</span></div>'
+    +'<div class="t3">2026. 8. 13 (목)</div></div>';
+  h+='<table class="sheet"><colgroup><col style="width:20mm"><col style="width:15mm"><col style="width:30mm"><col style="width:30mm"><col style="width:30mm"><col style="width:24mm"><col></colgroup>';
+  h+='<thead><tr><th class="l">이름</th><th>다 함<span>100·100·100</span></th>'
+    +'<th>① 문제 풀이</th><th>② 채점</th><th>③ 오답 정리</th><th>참고</th><th class="l">메모</th></tr></thead><tbody>';
+  STU.forEach(function(s){
+    var v=s.ink.day[0];
+    var ck = v==='ck';
+    var parts = v==='x' ? [0,0,0] : (v&&v.indexOf('/')>0)?v.split('/').map(Number):null;
+    var idx=function(x){ return [0,30,60,100].indexOf(x); };
+    h+='<tr><td class="nm" style="height:13mm">'+s.n+'</td>'
+      +'<td class="ok">'+(INK&&ck?'<span class="ink ck" style="font-size:15px">✔</span>':'<span class="bx" style="width:8mm;height:8mm"></span>')+'</td>'
+      +'<td class="st">'+circles(6,7.5,0.55, parts?idx(parts[0]):null)+'</td>'
+      +'<td class="st">'+circles(6,7.5,0.55, parts?idx(parts[1]):null)+'</td>'
+      +'<td class="st">'+circles(6,7.5,0.55, parts?idx(parts[2]):null)+'</td>'
+      +'<td class="ref">'+refCell(s)+'</td>'
+      +'<td>'+(INK&&s.memo?'<span class="memo">'+s.memo+'</span>':'')+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div class="ft"><b>쓰는 법</b> — 다 해왔으면 <b>「다 함」</b>에 ✔ 한 번이면 끝. 그렇지 않은 학생만 ①②③에서 해당 숫자에 ○.<br>'
+    +'<b>참고</b> — 지난 회차 종합%와 <b>❓</b>(「모르겠다」 표시했거나 또 틀린 문제 수). ❓가 있으면 수업 중에 먼저 물어봐 주세요.</div>';
+  h+='</div>';
+  return h;
+}
+function paperWeek(){
+  var days=[['8/10','월'],['8/12','수'],['8/14','금']];
+  var h='<div class="paper p-a4v">';
+  h+='<div class="hd"><div class="t1">루멘수학 <span>숙제체크 · 주간</span></div>'
+    +'<div class="t2">M3 <span class="dw">(월·수·금)</span></div>'
+    +'<div class="t3">2026. 8. 10 ~ 8. 16</div></div>';
+  h+='<table class="sheet"><colgroup><col style="width:22mm">'
+    +days.map(function(){ return '<col style="width:34mm">'; }).join('')
+    +'<col style="width:24mm"><col></colgroup>';
+  h+='<thead><tr><th class="l">이름</th>'
+    +days.map(function(d){ return '<th>'+d[0]+' ('+d[1]+')<span>풀이 / 채점 / 오답</span></th>'; }).join('')
+    +'<th>참고</th><th class="l">메모</th></tr></thead><tbody>';
+  STU.forEach(function(s){
+    h+='<tr><td class="nm" style="height:15mm">'+s.n+'</td>';
+    days.forEach(function(d,i){
+      h+='<td class="ok" style="text-align:center">'
+        +(INK&&s.ink.week[i]?inkCell(s.ink.week[i],true):'<span class="bx" style="width:9mm;height:9mm"></span>')+'</td>';
+    });
+    h+='<td class="ref">'+refCell(s)+'</td>'
+      +'<td>'+(INK&&s.memo?'<span class="memo">'+s.memo+'</span>':'')+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div class="ft"><b>쓰는 법</b> — 다 해왔으면 칸에 <b>✔</b> 하나(풀이·채점·오답 100). 덜 해왔으면 그 칸에 <b>100/60/0</b> 처럼 <b>풀이/채점/오답</b> 순서로. 아예 안 해왔으면 <b>✗</b>.<br>'
+    +'<b>참고</b> — 지난 회차 종합%와 <b>❓</b>(「모르겠다」 표시했거나 또 틀린 문제 수). ❓가 있으면 수업 중에 먼저 물어봐 주세요.</div>';
+  h+='</div>';
+  return h;
+}
+function paperMonth(){
+  var days=[['3','월'],['5','수'],['7','금'],['10','월'],['12','수'],['14','금'],['17','월'],['19','수'],['21','금'],['24','월'],['26','수'],['28','금'],['31','월']];
+  var h='<div class="paper p-a4h">';
+  h+='<div class="hd"><div class="t1">루멘수학 <span>숙제체크 · 월간</span></div>'
+    +'<div class="t2">M3 <span class="dw">(월·수·금)</span></div>'
+    +'<div class="t3">2026년 8월</div></div>';
+  h+='<table class="sheet"><colgroup><col style="width:22mm">'
+    +days.map(function(){ return '<col style="width:14mm">'; }).join('')
+    +'<col style="width:22mm"><col></colgroup>';
+  h+='<thead><tr><th class="l">이름</th>'
+    +days.map(function(d){ return '<th style="font-size:9px">'+d[0]+'<span>'+d[1]+'</span></th>'; }).join('')
+    +'<th style="font-size:9px">참고</th><th class="l" style="font-size:9px">메모</th></tr></thead><tbody>';
+  STU.forEach(function(s){
+    h+='<tr><td class="nm" style="height:13mm">'+s.n+'</td>';
+    days.forEach(function(d,i){
+      h+='<td class="ok" style="text-align:center">'
+        +(INK&&s.ink.month[i]?inkCell(s.ink.month[i],false):'<span class="bx" style="width:6mm;height:6mm"></span>')+'</td>';
+    });
+    h+='<td class="ref">'+refCell(s)+'</td>'
+      +'<td>'+(INK&&s.memo?'<span class="memo" style="font-size:8px">'+s.memo+'</span>':'')+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div class="ft"><b>쓰는 법</b> — 다 해왔으면 <b>✔</b>, 아예 안 해왔으면 <b>✗</b>, 덜 해왔으면 <b>100/60/0</b>(풀이/채점/오답). 칸이 좁아 숫자는 빠듯합니다.<br>'
+    +'<b>참고</b> — 지난달 마지막 회차 종합%와 <b>❓</b>. 이번 달이 시작되면 참고 칸은 그 달 첫 회차 기준으로 바뀝니다.</div>';
+  h+='</div>';
+  return h;
+}
+
+function draw(){
+  var ph='<span class="lab">양식</span>';
+  KINDS.forEach(function(x){
+    ph+='<button class="kb'+(KIND===x.k?' on':'')+'" onclick="pick(\''+x.k+'\')">'+x.t+'<small>'+x.s+'</small></button>';
+  });
+  document.getElementById('pk').innerHTML=ph;
+  document.getElementById('tgInk').className='tg'+(INK?' on':'');
+  document.getElementById('tgInk').textContent = INK?'✍️ 적은 예시 (켜짐)':'✍️ 적은 예시 보기';
+  document.getElementById('hint').textContent = INK?'파란 글씨가 볼펜으로 적은 부분입니다':'';
+  var el=document.getElementById('paper');
+  el.innerHTML = KIND==='day'?paperDay():KIND==='week'?paperWeek():paperMonth();
+  var sz={day:'A4 세로 (210 × 297mm) · 반마다 1장',week:'A4 세로 (210 × 297mm) · 반마다 1장 · 한 주',month:'A4 가로 (297 × 210mm) · 반마다 1장 · 한 달'}[KIND];
+  document.getElementById('psize').textContent='📄 '+sz;
+}
+window.pick=function(k){ KIND=k; draw(); };
+window.toggleInk=function(){ INK=!INK; draw(); };
+draw();
+</script>
+</body>
+</html>
