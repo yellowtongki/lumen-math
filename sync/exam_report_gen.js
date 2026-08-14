@@ -91,7 +91,7 @@ exams.forEach(e => e.cells.forEach(c => {
   const k = clean(c.chapters[3]);
   if (!k) return;
   const t = typeMap[k] = typeMap[k] || { name: k, unit: clean(c.chapters[1]), items: [] };
-  t.items.push({ year: e.year, no: c.no, img: c.img, diff: c.difficulty, essay: isEssay(c.answerType), score: c.score || null });
+  t.items.push({ year: e.year, no: c.no, img: c.img, diff: c.difficulty, essay: isEssay(c.answerType), score: c.score || null, time: c.solvingTime || null, answer: c.answer });
 }));
 const repeated = Object.values(typeMap)
   .filter(t => new Set(t.items.map(i => i.year)).size >= years.length && years.length >= 2)
@@ -106,13 +106,38 @@ exams.forEach(e => {
 
 const essays = [];
 exams.forEach(e => e.cells.forEach(c => {
-  if (isEssay(c.answerType)) essays.push({ year: e.year, no: c.no, unit: clean(c.chapters[1]), type: clean(c.chapters[3]) || clean(c.chapters[2]), diff: diffBand(c.difficulty), score: c.score || null, img: c.img });
+  if (isEssay(c.answerType)) essays.push({ year: e.year, no: c.no, unit: clean(c.chapters[1]), type: clean(c.chapters[3]) || clean(c.chapters[2]), diff: diffBand(c.difficulty), score: c.score || null, img: c.img, essay: true, answer: c.answer });
 }));
 const hard = [];
 exams.forEach(e => e.cells.forEach(c => {
   const b = diffBand(c.difficulty);
-  if (b === '상' || b === '최상') hard.push({ year: e.year, no: c.no, unit: clean(c.chapters[1]), type: clean(c.chapters[3]) || clean(c.chapters[2]), band: b, essay: isEssay(c.answerType), img: c.img });
+  if (b === '상' || b === '최상') hard.push({ year: e.year, no: c.no, unit: clean(c.chapters[1]), type: clean(c.chapters[3]) || clean(c.chapters[2]), band: b, essay: isEssay(c.answerType), img: c.img, answer: c.answer });
 }));
+
+// ── 요점정리 A: 공부 우선순위 (데이터 기반) ────────────
+const repNames = new Set(repeated.map(t => t.name));
+let repScoreLatest = 0;
+latestExam.cells.forEach(c => { if (repNames.has(clean(c.chapters[3])) && c.score) repScoreLatest += c.score; });
+const repPct = unitScoreTotal >= 90 ? Math.round(repScoreLatest / unitScoreTotal * 100) : null;
+// 반복 유형별 대표값(최신 연도 기준)
+const repRep = repeated.map(t => {
+  const yr = t.items.filter(it => it.year === latest);
+  const r = yr[0] || t.items[t.items.length - 1];
+  return { name: t.name, unit: t.unit, score: r.score, diff: r.diff, time: r.time, essay: t.items.some(it => it.essay), count: t.items.length };
+});
+
+// ── 요점정리 B: 유형별 핵심 개념 (루멘수학 작성 · 원장님 검수) ──
+// 문항 데이터가 아니라 교과 지식으로 쓴 요약이므로, 새 유형은 아래에 추가하면 된다.
+const CONCEPTS = {
+  '삼각형의 결정조건1 (기본 조건)': '삼각형이 하나로 정해지는 경우는 딱 셋 — ① 세 변, ② 두 변과 그 끼인각, ③ 한 변과 그 양 끝 각. 세 각만 주면 크기가 안 정해지고, 두 변과 "끼인각이 아닌" 각을 주면 삼각형이 두 개 생길 수 있어 안 된다. 세 변으로 줄 때는 (가장 긴 변) < (나머지 두 변의 합)을 만족해야 삼각형이 만들어진다.',
+  '간단한 도형의 작도4 (평행선의 작도)': '"동위각(또는 엇각)이 같으면 두 직선은 평행하다"는 성질을 거꾸로 이용한다. 주어진 직선의 각과 크기가 같은 각을 다른 점에 컴퍼스로 옮겨 그리면 그 점을 지나는 평행선이 작도된다. 바탕이 되는 것은 "크기가 같은 각 옮기기" 작도. 작도 순서와 "왜 평행한가"의 근거를 설명하는 문제가 나온다.',
+  '삼각형의 합동의 활용1 (정삼각형)': '정삼각형은 세 변이 모두 같고 세 각이 모두 60°. 이 성질로 두 삼각형이 SAS(두 변과 끼인각) 합동임을 보이는 문제가 단골이다. 합동이 증명되면 대응하는 변·각이 같음을 이용해 값을 구한다. 서술형으로 자주 나오므로 "어떤 합동조건(SSS·SAS·ASA)인지"를 근거로 쓰는 연습이 중요.',
+  '위치 관계6 (직선과 평면)': '공간에서 두 직선·직선과 평면·두 평면의 관계를 따진다. 핵심은 "꼬인 위치" — 만나지도 평행하지도 않는(한 평면에 없는) 경우. 직육면체 그림에서 한 모서리를 기준으로 평행·수직·꼬인 위치 모서리의 개수를 정확히 세는 연습이 필수다.',
+  '두 점 사이의 거리2 (관계식이 주어진 두 점)': '좌표평면에서 두 점의 좌표를 먼저 구한 뒤 거리를 계산한다. 정비례·반비례 식(y=ax, y=a/x)이 주어지면 x값을 대입해 점의 좌표를 얻는다. 두 점이 같은 세로선(또는 가로선) 위에 있으면 거리는 좌표의 차이. 그래프 위 점의 좌표를 식으로 구하는 것이 첫걸음.',
+  '반비례 관계4 (y=a/x에서 a의 값 구하기)': '그래프나 표에서 지나는 점 (x, y) 하나만 알면 a = x × y로 비례상수 a가 바로 나온다. 반비례에서 곱 xy는 항상 a로 일정하다는 것이 핵심. 가장 기본 유형이니 실수 없이 득점해야 한다.',
+  '반비례 관계7 (y=a/x의 그래프 위의 점의 좌표가 정수인 경우)': 'y=a/x 위의 점 중 x, y가 모두 정수인 점의 개수는 a의 약수 개수와 같다. xy=a이므로 (x, y)는 곱이 a가 되는 정수쌍 — a의 약수가 몇 개인지 세면 된다. 음수 약수(음의 정수쌍)도 빠뜨리지 말 것.',
+  '반비례 관계9 (y=ax, y=a/x의 그래프가 만나는 점)': '정비례 y=ax와 반비례 y=b/x의 교점은 두 식을 연립 — ax=b/x → x²=b/a. 교점은 원점에 대해 대칭인 두 점이다. 한 교점의 좌표가 주어지면 대입해 상수를 구한다. "두 그래프가 만나는 점"이 나오면 연립을 떠올린다.',
+};
 
 // 한눈에 보기 — 자동 요약 3줄
 const topUnit = unitSet[0];
@@ -168,9 +193,12 @@ const probImg = (it, label) => {
   if (!it.img || !EMBED) return '';
   const src = imgSrc(it.img);
   if (src === it.img) return '';   // 로컬 파일이 없어 CDN 원주소로 떨어진 경우 → 표시 안 함
+  // 정답 배지 — 객관식은 기호(①~⑤), 서술형은 LaTeX라 "서술형"으로 표기
+  const ans = it.answer ? (it.essay ? '서술형' : esc(String(it.answer))) : '';
+  const cap = `${esc(label)}${ans ? ` <span class="ans">정답 ${ans}</span>` : ''}`;
   // base64 인라인이므로 loading="lazy" 안 씀 — 일부 파일 뷰어가 스크롤 로드를 안 걸어
   // 아래쪽 이미지가 빈 채로 보이던 문제를 막는다.
-  return `<figure class="prob"><figcaption>${esc(label)}</figcaption><img src="${src}" alt="${esc(label)} 문제"></figure>`;
+  return `<figure class="prob"><figcaption>${cap}</figcaption><img src="${src}" alt="문제"></figure>`;
 };
 
 const repCards = repeated.map((t, i) => {
@@ -194,6 +222,27 @@ const hardRows = hard.map(e => `<tr><td>${esc(e.year)}년</td><td>${e.no}번</td
 const hardImgs = hard.map(e => probImg(e, `${e.year}년 · ${e.no}번 · ${e.type}`)).join('');
 const essayRows = essays.map(e => `<tr><td>${esc(e.year)}년</td><td>${e.no}번</td><td>${esc(e.unit)}</td><td>${esc(e.type)}</td><td>${e.diff || '-'}${e.score ? ` · ${e.score}점` : ''}</td></tr>`).join('');
 const essayImgs = essays.map(e => probImg(e, `${e.year}년 · ${e.no}번 · ${e.type}`)).join('');
+
+// 요점정리 A — 공부 우선순위 표
+const bandPill = b => b ? `<span class="pill p-${b === '하' ? 'lo' : b === '중' ? 'md' : 'hi'}">${b}</span>` : '-';
+const strategyRows = repRep.map((r, i) => `<tr>
+  <td><span class="repno sm">${i + 1}</span></td>
+  <td><b>${esc(r.name)}</b></td>
+  <td>${esc(r.unit)}</td>
+  <td>${r.score ? r.score + '점' : '-'}</td>
+  <td>${bandPill(diffBand(r.diff))}</td>
+  <td>${r.time ? r.time + '분' : '-'}${r.essay ? ' <span class="pill p-es">서술형</span>' : ''}</td>
+</tr>`).join('');
+
+// 요점정리 B — 유형별 핵심 개념
+const conceptCards = repRep.map((r, i) => {
+  const c = CONCEPTS[r.name];
+  return `<div class="concept">
+    <div class="chd"><span class="repno sm">${i + 1}</span>
+      <div><div class="repname">${esc(r.name)}</div><div class="repunit">${esc(r.unit)}</div></div></div>
+    <p class="cbody">${c ? esc(c) : '<span style="color:var(--mut)">핵심 정리 준비 중입니다.</span>'}</p>
+  </div>`;
+}).join('');
 
 const tiles = perExam.map(p => `
   <div class="tile"><div class="tyear">${esc(p.year)}년</div>
@@ -266,6 +315,14 @@ td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .probs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;padding:14px 16px}
 .prob{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
 .prob figcaption{font-size:11.5px;font-weight:800;color:var(--ink2);background:#f2f5fa;padding:5px 10px;border-bottom:1px solid var(--line)}
+.ans{display:inline-block;background:#e6f6ee;color:#0f7a48;font-weight:800;border-radius:5px;padding:0 6px;margin-left:2px}
+.repno.sm{width:22px;height:22px;font-size:12px}
+/* 요점정리 */
+.hlstat{background:#eef4fd;border:1px solid #cfe0f7;border-radius:11px;padding:12px 16px;font-size:14.5px;margin-bottom:14px}
+.hlstat b{color:var(--s1)}
+.concept{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+.concept .chd{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.cbody{font-size:14px;color:var(--ink2);line-height:1.75}
 .prob img{display:block;width:100%;height:auto;padding:8px;background:#fff}
 .prob.broken{display:none}
 /* 이미지 안내 배너 */
@@ -332,11 +389,23 @@ td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
     <table><tr><th>연도</th><th>번호</th><th>단원</th><th>세부유형</th><th>난이도·배점</th></tr>${essayRows}</table>
     ${essayImgs ? `<div class="probs" style="padding:14px 0 0">${essayImgs}</div>` : ''}</div>` : ''}
 
+  <div class="sec"><div class="shead"><span class="snum">08</span><h2 class="st">시험 대비 요점정리 ① — 공부 우선순위</h2></div>
+    <div class="desc">매년 빠짐없이 나온 유형만 모았습니다. 여기부터 완벽히 잡는 것이 가장 효율적입니다.</div>
+    ${repPct != null ? `<div class="hlstat">매년 반복된 <b>${repeated.length}개 유형</b>에서 ${esc(latest)}년 시험 <b>${repScoreLatest}점</b>${repPct ? `(전체의 <b>${repPct}%</b>)` : ''}이 출제됐습니다. <b>이것부터</b> 잡으세요.</div>` : ''}
+    <table><tr><th>번호</th><th>유형</th><th>단원</th><th>배점</th><th>난이도</th><th>예상 풀이시간</th></tr>${strategyRows}</table>
+    <div class="note">배점·난이도·풀이시간은 ${esc(latest)}년 기출 기준입니다. 번호는 아래 개념 정리·반복유형 카드와 같습니다.</div>
+  </div>
+
+  <div class="sec"><div class="shead"><span class="snum">09</span><h2 class="st">시험 대비 요점정리 ② — 유형별 핵심 개념</h2></div>
+    <div class="desc">위 반복 유형마다 꼭 알아야 할 개념과 접근법입니다. 문제를 풀기 전에 먼저 읽어 두세요.</div>
+    ${conceptCards}
+  </div>
+
   <div class="final"><h2>💡 루멘수학 대비 포인트</h2><ul>
     <li><b>${esc(topUnit)}</b> 단원을 가장 먼저, 가장 깊게 — 배점 비중이 제일 큽니다.</li>
     <li>위 <b>반복 유형 ${repeated.length}개</b>는 유사 문제까지 반드시 연습합니다.</li>
     ${essays.length ? `<li>서술형 대비: <b>${esc(essayUnits.join(', '))}</b>은 풀이 과정을 쓰는 연습까지.</li>` : ''}
-    <li>이 분석을 바탕으로 한 <b>시험대비 요점정리</b>는 루멘수학에서 배부합니다.</li>
+    <li>위 <b>요점정리 ①·②</b>대로 우선순위를 잡고, 반복 유형은 유사 문제까지 반복 연습하세요.</li>
   </ul></div>
 
   <div class="foot">
