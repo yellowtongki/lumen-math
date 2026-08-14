@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 학원 달력 두 가지 안</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1280px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-key{background:#fef3c7;color:#b45309}.b-live{background:#dcfce7;color:#15803d}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box b b{display:inline;font-size:inherit;margin:0}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-org{background:#fff7ed;border-color:#fed7aa}.x-org b{color:#c2410c}.x-org p{color:#9a3412}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+
+.pick{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.pick .lab{font-size:11.5px;font-weight:800;color:#94a3b8}
+.kb{border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:9px 16px;font-size:12.5px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit;line-height:1.3;text-align:left}
+.kb small{display:block;font-size:10px;font-weight:700;opacity:.65;margin-top:2px}
+.kb.on{background:#0d2240;border-color:#0d2240;color:#fff}.kb.on small{opacity:.8}
+
+/* 앱 창 */
+.appwin{background:#f5f8fc;border:1px solid #dbe3ee;border-radius:14px;overflow:hidden}
+.tabbar{background:#0d2240;display:flex;flex-wrap:wrap}
+.tb{padding:9px 18px;font-size:12.5px;font-weight:800;color:rgba(255,255,255,.55);cursor:pointer}
+.tb.on{background:#16305a;color:#fff;box-shadow:inset 0 -3px 0 #e23434}
+.subbar{display:flex;gap:7px;padding:9px 13px;background:#fff;border-bottom:1px solid #e8eef8;flex-wrap:wrap;align-items:center}
+.sb{border:1.5px solid #e8eef8;background:#fff;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit}
+.sb.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.body{padding:14px}
+
+/* 달력 */
+.calhd{display:flex;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap}
+.calhd .mon{font-size:18px;font-weight:900;color:#0d2240}
+.nav{width:28px;height:28px;border-radius:9px;border:1px solid #e2e8f0;background:#fff;font-size:12px;font-weight:900;color:#64748b;cursor:pointer}
+.legend{display:flex;gap:11px;flex-wrap:wrap;font-size:11px;font-weight:800;color:#64748b;margin-bottom:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+table.cal{width:100%;border-collapse:separate;border-spacing:5px;table-layout:fixed}
+table.cal th{font-size:12px;font-weight:800;color:#94a3b8;padding:3px 0}
+table.cal th.sun{color:#ef4444}table.cal th.sat{color:#3b82f6}
+td.d{background:#fff;border:1px solid #eef2f7;border-radius:11px;height:96px;vertical-align:top;padding:6px 7px;position:relative}
+td.d.off{background:#fafbfc}
+td.d.hol{background:#fff1f2;border-color:#fecdd3}
+td.d.exam{background:#fffbeb;border-color:#fde68a}
+td.d.today{outline:2.5px solid #ffd54a}
+.dn{font-size:12.5px;font-weight:900;color:#334155}
+.dn.sun{color:#ef4444}.dn.sat{color:#3b82f6}
+.holn{font-size:10px;font-weight:900;color:#e11d48;margin-top:1px}
+.ev{display:block;font-size:10.5px;font-weight:800;border-radius:5px;padding:2px 5px;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.e-ten{background:#dbeafe;color:#1d4ed8}
+.e-exam{background:#fef3c7;color:#b45309}
+.e-off{background:#fee2e2;color:#b91c1c}
+.e-sp{background:#e9d5ff;color:#6d28d9}
+.att{display:inline-block;font-size:11px;font-weight:900;border-radius:6px;padding:2px 8px;margin-top:4px}
+.a-ok{background:#dcfce7;color:#15803d}.a-no{background:#fee2e2;color:#b91c1c}.a-mk{background:#dbeafe;color:#1d4ed8}
+
+.stusel{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.stub{border:1.5px solid #e2e8f0;background:#fff;border-radius:20px;padding:5px 13px;font-size:11.5px;font-weight:900;color:#64748b;cursor:pointer;font-family:inherit}
+.stub.on{background:#1d6fe8;border-color:#1d6fe8;color:#fff}
+
+.note{font-size:11.5px;font-weight:800;color:#7c3aed;text-align:center;margin-top:10px}
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+.pickrow{background:#f0fdf4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>🗓️ 학원 달력 — 두 가지 안</h1>
+<p class="sub">
+공휴일 · 학교별 시험기간 · 텐투텐 · 휴강을 달력에 넣는 방법입니다.<br>
+원장님 생각은 <b>「하나의 달력」</b>이라 하셨으니, <b>하나로 하는 안을 제대로 만들어</b> 따로 만드는 안과 나란히 놓았습니다. <b>둘 다 눌러보실 수 있습니다.</b>
+</p>
+
+<!-- ① 비교 -->
+<div class="sec">
+  <div class="stitle">① 두 안을 눌러서 비교 <span class="badge b-live">학생도 바꿔보세요</span></div>
+  <div class="sdesc">2026년 8월 · 같은 자료를 두 방식으로 보여줍니다</div>
+  <div class="pick" id="pk"></div>
+  <div class="appwin" id="app"></div>
+  <div class="note" id="note"></div>
+</div>
+
+<!-- ② 하나로 안 설명 -->
+<div class="sec">
+  <div class="stitle">② A안 — 하나의 달력</div>
+  <div class="sdesc">지금 「수업·출결」 달력에 학원 일정을 함께 얹습니다</div>
+  <div class="box x-grn"><div class="ic">✅</div><div>
+    <b>핵심은 <b>「전체 일정」 단추</b>입니다</b>
+    <p>학생을 <b>안 고른 상태</b>가 기본이고, 이때는 <b>학원 일정만</b> 큼직하게 보입니다.
+    학생을 고르면 그 학생의 <b>출석·결석·보충</b>이 같은 칸에 함께 들어옵니다.
+    <b>달력은 하나</b>이고 보는 방식만 바뀝니다.</p>
+  </div></div>
+  <div class="box x-org"><div class="ic">⚠️</div><div>
+    <b>한 칸에 두 가지가 겹칩니다</b>
+    <p>학생을 고르면 한 칸에 <b>출결 + 일정</b>이 같이 들어가 칸이 빽빽해집니다.
+    위 미리보기에서 <b>학생을 골라보시면</b> 바로 보입니다.
+    특히 텐투텐·시험기간이 겹치는 주에 답답해집니다.</p>
+  </div></div>
+</div>
+
+<!-- ③ 따로 안 -->
+<div class="sec">
+  <div class="stitle">③ B안 — 학원 달력을 따로</div>
+  <div class="sdesc">「운영」에 학원 달력을 새로 만들고, 출결 달력에는 배경만 얹습니다</div>
+  <div class="box x-blu"><div class="ic">🗂️</div><div>
+    <b>일정은 <b>한 곳에서만</b> 관리합니다</b>
+    <p>학원 달력에서 넣은 공휴일·시험기간은 <b>출결 달력에도 옅은 배경으로</b> 자동으로 깔립니다.
+    두 번 입력하지 않습니다. <b>출결 칸은 깨끗하게</b> 유지됩니다.</p>
+  </div></div>
+  <div class="box x-org"><div class="ic">🔀</div><div>
+    <b>화면을 <b>오가야</b> 합니다</b>
+    <p>일정을 고치려면 「운영 → 학원 달력」으로 가야 합니다.
+    출결 보다가 바로 일정을 못 고칩니다.</p>
+  </div></div>
+</div>
+
+<!-- ④ 공휴일 -->
+<div class="sec">
+  <div class="stitle">④ 공휴일은 어떻게 넣나</div>
+  <div class="sdesc">인터넷 없이도 되게 하려 합니다</div>
+  <div class="rule">
+    <b>2026~2028년 공휴일을 앱 안에 표로 넣어둡니다.</b> 설날·추석·부처님오신날은 음력이라
+    해마다 날짜가 달라지는데, 미리 넣어두면 <b>인터넷이 끊겨도</b> 달력에 그대로 뜹니다.<br><br>
+    <b>대체공휴일</b>도 함께 넣습니다 — 위 8월 달력의 <b>8/17(월)</b>이 그것입니다
+    (8/15 광복절이 토요일이라 월요일로 옮겨짐).<br><br>
+    <span style="color:#94a3b8">※ 실제로 넣기 전에 <b>연도별 날짜를 다시 한 번 확인</b>하겠습니다.
+    위 달력의 날짜는 미리보기용입니다.</span>
+  </div>
+</div>
+
+<!-- ⑤ 정리 -->
+<div class="sec">
+  <div class="stitle">⑤ 정리 — 상의할 것</div>
+  <div class="sdesc">제 의견도 적었습니다</div>
+  <table class="cmp">
+    <tr><th style="width:150px"></th><th>A안 · 하나로</th><th>B안 · 따로</th></tr>
+    <tr><td><b>일정만 보고 싶을 때</b></td>
+      <td>「전체 일정」 단추 한 번 <b>편함</b></td>
+      <td>운영 → 학원 달력 <b>한 단계 더</b></td></tr>
+    <tr><td><b>출결 보다가 일정 고치기</b></td>
+      <td><b>그 자리에서</b> 됨</td><td>화면을 옮겨야 함</td></tr>
+    <tr><td><b>칸 여유</b></td>
+      <td>학생 고르면 <b>빽빽</b></td><td><b>깨끗</b></td></tr>
+    <tr><td><b>화면 수</b></td><td><b>안 늘어남</b></td><td>하나 늘어남</td></tr>
+    <tr class="pickrow"><td><b>학생 공유(나중)</b></td>
+      <td>출결이 섞여 있어 <b>내보낼 것만 골라내야</b> 함</td>
+      <td>학원 달력을 <b>그대로</b> 내보내면 끝</td></tr>
+  </table>
+  <div class="rule" style="margin-top:13px">
+    <b>원장님 말씀대로 A안(하나)이 쓰기에 편합니다.</b> 저도 처음엔 따로가 낫다고 봤는데,
+    <b>「전체 일정」 단추</b>를 두면 걱정하던 문제(학생마다 반복·일정만 보기 어려움)가 대부분 사라집니다.<br><br>
+    <b>하나 남는 것이 나중의 학생 공유입니다.</b> A안은 달력 안에 출결이 섞여 있어서,
+    학생에게 보낼 때 <b>「학원 일정만」 골라내는 작업</b>이 한 번 더 필요합니다.
+    다만 이건 <b>지금 결정하지 않아도</b> 됩니다 — 공유는 나중 문제라고 하셨으니
+    <b>A안으로 시작</b>하고, 공유를 만들 때 그 부분만 손보면 됩니다.<br><br>
+    <span style="color:#64748b">즉 <b>A안 추천</b>입니다. 위에서 학생을 골라 칸이 얼마나 빽빽해지는지 보시고,
+    괜찮으시면 A안으로 만들겠습니다.</span>
+  </div>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 · 예시 학생 자료는 실제 학생이 아닙니다
+</div>
+</div>
+
+<script>
+var PLAN='A', STU='';   // STU '' = 전체 일정
+var STUS=['정지민','옥서희','윤유솔','우정민'];
+/* 2026년 8월 (미리보기용) */
+var HOL={ 15:'광복절', 17:'광복절 대체' };
+var EVENTS={
+  3:[{k:'ten',t:'텐투텐 10~22시'}],
+  10:[{k:'ten',t:'텐투텐 10~22시'}],
+  17:[{k:'off',t:'휴강 (대체공휴일)'}],
+  18:[{k:'exam',t:'부천중 기말 D-7'}],
+  24:[{k:'exam',t:'부천중 기말 시작'},{k:'sp',t:'시험대비 특강'}],
+  25:[{k:'exam',t:'부천중 기말'},{k:'sp',t:'시험대비 특강'}],
+  26:[{k:'exam',t:'부천중 기말'},{k:'sp',t:'시험대비 특강'}],
+  27:[{k:'exam',t:'상동중 기말 시작'}],
+  28:[{k:'exam',t:'상동중 기말'}],
+  31:[{k:'ten',t:'텐투텐 10~22시'}]
+};
+/* 학생별 출결 (월·수·금 수업 가정) */
+var ATT={
+  '정지민':{3:'ok',5:'ok',7:'ok',10:'no',12:'ok',14:'ok',17:'ok',19:'ok',21:'ok',24:'ok',26:'ok',28:'ok',31:'ok'},
+  '옥서희':{3:'ok',5:'ok',7:'no',10:'ok',12:'ok',14:'ok',17:'mk',19:'ok',21:'ok',24:'ok',26:'ok',28:'ok',31:'ok'},
+  '윤유솔':{3:'ok',5:'ok',7:'ok',10:'ok',12:'no',14:'ok',17:'ok',19:'ok',21:'mk',24:'ok',26:'ok',28:'ok',31:'ok'},
+  '우정민':{3:'no',5:'ok',7:'ok',10:'ok',12:'ok',14:'ok',17:'ok',19:'ok',21:'ok',24:'ok',26:'no',28:'ok',31:'ok'}
+};
+var ATTL={ok:['출석','a-ok'],no:['결석','a-no'],mk:['보충','a-mk']};
+var DOW=['일','월','화','수','목','금','토'];
+
+function calHtml(opts){
+  var showEv=opts.showEv, showAtt=opts.showAtt, faint=opts.faint;
+  var first=new Date(2026,7,1).getDay(), dim=31;
+  var h='<div class="calhd"><button class="nav">‹</button><span class="mon">2026년 8월</span><button class="nav">›</button></div>';
+  h+='<div class="legend">';
+  if(showEv){
+    h+='<span><i style="background:#dbeafe"></i>텐투텐</span><span><i style="background:#fef3c7"></i>시험기간</span>'
+      +'<span><i style="background:#fee2e2"></i>휴강</span><span><i style="background:#e9d5ff"></i>특강</span>';
+  }
+  if(faint) h+='<span><i style="background:#fff1f2;border:1px solid #fecdd3"></i>공휴일</span><span><i style="background:#fffbeb;border:1px solid #fde68a"></i>시험기간</span>';
+  if(showAtt) h+='<span><i style="background:#dcfce7"></i>출석</span><span><i style="background:#fee2e2"></i>결석</span><span><i style="background:#dbeafe"></i>보충</span>';
+  h+='</div>';
+  h+='<table class="cal"><tr>'+DOW.map(function(d,i){ return '<th class="'+(i===0?'sun':i===6?'sat':'')+'">'+d+'</th>'; }).join('')+'</tr>';
+  var day=1;
+  for(var w=0; w<6 && day<=dim; w++){
+    h+='<tr>';
+    for(var c=0;c<7;c++){
+      if((w===0&&c<first)||day>dim){ h+='<td class="d off"></td>'; continue; }
+      var d=day, isHol=!!HOL[d];
+      var evs=EVENTS[d]||[];
+      var isExam=evs.some(function(e){ return e.k==='exam'; });
+      var cls='d'+(isHol?' hol':'')+((faint&&isExam)?' exam':'')+(d===14?' today':'');
+      h+='<td class="'+cls+'">';
+      h+='<span class="dn '+(c===0?'sun':c===6?'sat':'')+'">'+d+'</span>';
+      if(isHol) h+='<span class="holn">'+HOL[d]+'</span>';
+      if(showEv) evs.forEach(function(e){ h+='<span class="ev e-'+e.k+'" onclick="alert(\'일정 편집 — '+e.t+'\')">'+e.t+'</span>'; });
+      if(showAtt && STU){
+        var a=(ATT[STU]||{})[d];
+        if(a) h+='<span class="att '+ATTL[a][1]+'">'+ATTL[a][0]+'</span>';
+      }
+      h+='</td>';
+      day++;
+    }
+    h+='</tr>';
+  }
+  h+='</table>';
+  return h;
+}
+function stuBar(){
+  var h='<div class="stusel"><span style="font-size:11.5px;font-weight:800;color:#94a3b8">보기</span>';
+  h+='<button class="stub'+(STU===''?' on':'')+'" onclick="setStu(\'\')">📅 전체 일정</button>';
+  STUS.forEach(function(n){ h+='<button class="stub'+(STU===n?' on':'')+'" onclick="setStu(\''+n+'\')">'+n+'</button>'; });
+  h+='</div>';
+  return h;
+}
+function draw(){
+  document.getElementById('pk').innerHTML=
+    [['A','A안 · 하나의 달력','출결 달력에 일정을 함께'],['B','B안 · 따로','학원 달력을 새로 만들기']]
+    .map(function(x){ return '<button class="kb'+(PLAN===x[0]?' on':'')+'" onclick="setPlan(\''+x[0]+'\')">'+x[1]+'<small>'+x[2]+'</small></button>'; }).join('');
+  var h='';
+  if(PLAN==='A'){
+    h+='<div class="tabbar">'+['🏠 홈','✅ 오늘의 확인','📅 수업·출결','📈 성적·분석','📱 학생앱','🏫 운영']
+      .map(function(t,i){ return '<div class="tb'+(i===2?' on':'')+'">'+t+'</div>'; }).join('')+'</div>';
+    h+='<div class="subbar">'+['복습·브리핑','출결·보충','빠른입력','기록'].map(function(t,i){ return '<div class="sb'+(i===1?' on':'')+'">'+t+'</div>'; }).join('')+'</div>';
+    h+='<div class="body">'+stuBar()
+      +'<div style="font-size:12px;font-weight:800;color:#64748b;margin-bottom:8px">'
+      +(STU?('👤 <b style="color:#0d2240">'+STU+'</b> 출결 + 학원 일정 — 한 칸에 함께 들어갑니다')
+           :'📅 <b style="color:#0d2240">학원 일정</b>만 — 학생을 고르면 그 학생 출결이 함께 들어옵니다')
+      +'</div>'
+      +calHtml({showEv:true, showAtt:true})
+      +'<div style="margin-top:9px;font-size:11.5px;color:#94a3b8;font-weight:700">일정을 누르면 그 자리에서 고칠 수 있습니다 · 빈 칸을 누르면 일정 추가</div>'
+      +'</div>';
+  }else{
+    h+='<div class="tabbar">'+['🏠 홈','✅ 오늘의 확인','📅 수업·출결','📈 성적·분석','📱 학생앱','🏫 운영']
+      .map(function(t,i){ return '<div class="tb'+(i===5?' on':'')+'">'+t+'</div>'; }).join('')+'</div>';
+    h+='<div class="subbar">'+['학원 달력','교재 관리','설정'].map(function(t,i){ return '<div class="sb'+(i===0?' on':'')+'">'+t+'</div>'; }).join('')
+      +'<span style="margin-left:auto;font-size:11px;font-weight:800;color:#15803d;background:#dcfce7;border-radius:20px;padding:4px 12px">🆕 새 화면</span></div>';
+    h+='<div class="body">'
+      +'<div style="font-size:12px;font-weight:800;color:#64748b;margin-bottom:8px">📅 <b style="color:#0d2240">학원 달력</b> — 일정만 관리합니다 (출결은 수업·출결 탭)</div>'
+      +calHtml({showEv:true, showAtt:false})
+      +'<div style="margin-top:12px;border-top:1px dashed #dbe3ee;padding-top:12px">'
+      +'<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:7px">↓ 같은 자료가 「수업·출결」 달력에는 이렇게 깔립니다</div>'
+      +stuBar()
+      +calHtml({showEv:false, showAtt:true, faint:true})
+      +'<div style="margin-top:9px;font-size:11.5px;color:#94a3b8;font-weight:700">공휴일(분홍) · 시험기간(노랑)이 <b>배경으로만</b> — 출결 칸은 깨끗합니다</div>'
+      +'</div></div>';
+  }
+  document.getElementById('app').innerHTML=h;
+  document.getElementById('note').textContent = PLAN==='A'
+    ? (STU?'👆 한 칸에 출결과 일정이 함께 — 24~26일처럼 겹치는 주를 보세요':'👆 학생을 골라보시면 칸이 얼마나 빽빽해지는지 보입니다')
+    : '👆 위는 학원 달력, 아래는 같은 자료가 배경으로 깔린 출결 달력';
+}
+window.setPlan=function(p){ PLAN=p; draw(); };
+window.setStu=function(n){ STU=n; draw(); };
+draw();
+</script>
+</body>
+</html>
