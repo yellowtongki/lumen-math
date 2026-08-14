@@ -20,6 +20,7 @@ function arg(n, d) { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 
 const DATA = arg('data'); const SCHOOL = arg('school', '');
 const GRADE = arg('grade'); const SEM = arg('semester'); const TERM = arg('term');
 const OUT = arg('out');
+const EMBED = args.includes('--embed');   // 문항 이미지를 base64로 인라인 (자체 포함 배포본)
 if (!DATA || !GRADE || !SEM || !TERM || !OUT) {
   console.error('필수 인자: --data --grade --semester --term --out'); process.exit(1);
 }
@@ -29,6 +30,24 @@ const exams = all
   .filter(e => e.grade === GRADE && e.semester === SEM && e.term === TERM)
   .sort((a, b) => Number(a.year) - Number(b.year));
 if (!exams.length) { console.error('해당 조건의 시험지가 없습니다'); process.exit(1); }
+
+// 이미지 인라인용 — 다운로드된 로컬 파일을 base64 data URI로
+let IMGMAP = {};
+if (EMBED) {
+  const mf = path.join(__dirname, '_debug', 'ms_exam_images_map.json');
+  if (fs.existsSync(mf)) IMGMAP = JSON.parse(fs.readFileSync(mf, 'utf8'));
+}
+function imgSrc(url) {
+  if (!url) return null;
+  if (EMBED && IMGMAP[url]) {
+    const fp = path.join(__dirname, '_debug', 'exam_images', IMGMAP[url]);
+    if (fs.existsSync(fp)) {
+      const ext = IMGMAP[url].endsWith('webp') ? 'webp' : 'png';
+      return `data:image/${ext};base64,${fs.readFileSync(fp).toString('base64')}`;
+    }
+  }
+  return url;   // 임베드 안 하면 CDN 원주소(로그인 필요)
+}
 
 const clean = s => String(s || '').replace(/^\d+ /, '');
 function diffBand(d) { if (d == null) return null; if (d <= 2) return '하'; if (d <= 4) return '중'; if (d <= 6) return '상'; return '최상'; }
@@ -143,9 +162,14 @@ let diffBars = '';
 }
 
 const pillD = d => { const b = diffBand(d); return b ? `<span class="pill p-${b === '하' ? 'lo' : b === '중' ? 'md' : 'hi'}">${b}</span>` : ''; };
-const probImg = (it, label) => it.img
-  ? `<figure class="prob"><figcaption>${esc(label)}</figcaption><img src="${esc(it.img)}" alt="${esc(label)} 문제" loading="lazy" referrerpolicy="no-referrer" onerror="imgFail(this)"></figure>`
-  : '';
+// 이미지는 임베드 모드(--embed)에서만 넣는다. 비임베드(공개 링크)에서는
+// CDN 직접 링크가 로그인 없이는 안 열려 깨지므로 아예 표시하지 않는다.
+const probImg = (it, label) => {
+  if (!it.img || !EMBED) return '';
+  const src = imgSrc(it.img);
+  if (src === it.img) return '';   // 로컬 파일이 없어 CDN 원주소로 떨어진 경우 → 표시 안 함
+  return `<figure class="prob"><figcaption>${esc(label)}</figcaption><img src="${src}" alt="${esc(label)} 문제" loading="lazy"></figure>`;
+};
 
 const repCards = repeated.map((t, i) => {
   const byYear = {};
@@ -160,7 +184,7 @@ const repCards = repeated.map((t, i) => {
     <div class="rephead"><span class="repno">${i + 1}</span>
       <div><div class="repname">${esc(t.name)}</div><div class="repunit">${esc(t.unit)}</div></div>
       <div class="repmeta">${pillD(maxD)}${meta}</div></div>
-    <div class="probs">${imgs}</div>
+    ${imgs ? `<div class="probs">${imgs}</div>` : ''}
   </div>`;
 }).join('');
 
@@ -299,12 +323,12 @@ td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
   ${hardRows ? `<div class="sec"><div class="shead"><span class="snum">06</span><h2 class="st">고난도 문항 — 변별력이 갈리는 자리</h2></div>
     <div class="desc">난이도 상 이상 문항이 출제된 위치입니다. 상위권 목표라면 이 유형을 집중 대비하세요.</div>
     <table><tr><th>연도</th><th>번호</th><th>단원</th><th>세부유형</th><th>비고</th></tr>${hardRows}</table>
-    <div class="probs" style="padding:14px 0 0">${hardImgs}</div></div>` : ''}
+    ${hardImgs ? `<div class="probs" style="padding:14px 0 0">${hardImgs}</div>` : ''}</div>` : ''}
 
   ${essayRows ? `<div class="sec"><div class="shead"><span class="snum">07</span><h2 class="st">서술형 출제 위치</h2></div>
     <div class="desc">풀이 과정을 채점하는 서술형이 나온 자리입니다. 답만 맞히는 연습으로는 부족합니다.</div>
     <table><tr><th>연도</th><th>번호</th><th>단원</th><th>세부유형</th><th>난이도·배점</th></tr>${essayRows}</table>
-    <div class="probs" style="padding:14px 0 0">${essayImgs}</div></div>` : ''}
+    ${essayImgs ? `<div class="probs" style="padding:14px 0 0">${essayImgs}</div>` : ''}</div>` : ''}
 
   <div class="final"><h2>💡 루멘수학 대비 포인트</h2><ul>
     <li><b>${esc(topUnit)}</b> 단원을 가장 먼저, 가장 깊게 — 배점 비중이 제일 큽니다.</li>
