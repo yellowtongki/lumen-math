@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미리보기 — 성장 추이 그래프 개선</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f7;color:#1e293b;padding:26px 14px 90px}
+.wrap{max-width:1200px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:#0d2240;margin-bottom:6px}
+.sub{font-size:13.5px;color:#64748b;font-weight:600;line-height:1.65;margin-bottom:22px}
+.sec{background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(13,34,64,.08);padding:22px;margin-bottom:24px;border:1px solid #e2e8f0}
+.stitle{font-size:16.5px;font-weight:900;color:#0d2240;margin-bottom:3px}
+.sdesc{font-size:12.5px;color:#94a3b8;font-weight:700;margin-bottom:16px;line-height:1.6}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;padding:3px 9px;border-radius:20px;vertical-align:middle;margin-left:6px}
+.b-live{background:#dcfce7;color:#15803d}.b-key{background:#fef3c7;color:#b45309}
+.rule{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:14px 16px;font-size:13px;color:#475569;font-weight:600;line-height:1.95}
+.rule b{color:#0d2240}
+.box{display:flex;gap:11px;border-radius:13px;padding:13px 15px;margin-bottom:9px;border:1.5px solid}
+.box .ic{font-size:19px;flex-shrink:0}
+.box b{font-size:13.5px;display:block;margin-bottom:3px}
+.box b b{display:inline;font-size:inherit;margin:0}
+.box p{font-size:12.5px;font-weight:600;line-height:1.68}
+.box p b{display:inline;font-size:inherit;color:inherit;margin:0;font-weight:900}
+.x-red{background:#fef2f2;border-color:#fecaca}.x-red b{color:#b91c1c}.x-red p{color:#991b1b}
+.x-grn{background:#f0fdf4;border-color:#bbf7d0}.x-grn b{color:#15803d}.x-grn p{color:#166534}
+.x-blu{background:#eff6ff;border-color:#bfdbfe}.x-blu b{color:#1d4ed8}.x-blu p{color:#1e40af}
+
+.pick{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.pick .lab{font-size:11.5px;font-weight:800;color:#94a3b8}
+.kb{border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:9px 15px;font-size:12.5px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit;line-height:1.3;text-align:left}
+.kb small{display:block;font-size:10px;font-weight:700;opacity:.65;margin-top:2px}
+.kb.on{background:#0d2240;border-color:#0d2240;color:#fff}.kb.on small{opacity:.8}
+.kb.bad{border-style:dashed;color:#b91c1c}
+
+.stage{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.phone{width:390px;background:#f2f5f9;border-radius:32px;border:9px solid #0d2240;box-shadow:0 14px 36px rgba(13,34,64,.26);overflow:hidden;flex-shrink:0}
+.pbar{background:#0d2240;color:#fff;padding:11px 15px;font-size:14.5px;font-weight:900;display:flex;align-items:center;gap:7px}
+.pbar .sm{margin-left:auto;font-size:11px;font-weight:700;opacity:.7}
+.pbody{padding:12px;max-height:620px;overflow:auto}
+.card{background:#fff;border:1px solid #e8eef8;border-radius:15px;padding:13px 14px;margin-bottom:10px}
+.card h3{font-size:15px;font-weight:900;color:#0d2240;margin-bottom:10px}
+.lg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.lg span{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#64748b}
+.lg i{display:inline-block;width:22px;height:4px;border-radius:99px}
+.lg b{font-size:13.5px;font-weight:900}
+.up{color:#10b981}.dn{color:#ef4444}.fl{color:#94a3b8}
+.tabs{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.tb{border:1.5px solid #e2e8f0;background:#fff;border-radius:20px;padding:5px 13px;font-size:11.5px;font-weight:900;color:#64748b;cursor:pointer;font-family:inherit}
+.tb.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.moreb{width:100%;border:1.5px solid #e2e8f0;background:#fff;border-radius:11px;padding:9px 0;font-size:12.5px;font-weight:900;color:#1d6fe8;cursor:pointer;font-family:inherit;margin-top:6px}
+.bnav{display:flex;background:#fff;border-top:1px solid #e8eef8}
+.bn{flex:1;text-align:center;padding:9px 0 10px;font-size:10.5px;font-weight:800;color:#94a3b8}
+.bn .e{display:block;font-size:19px;margin-bottom:1px}
+.bn.on{color:#1d6fe8}
+.plab{text-align:center;font-size:11.5px;font-weight:800;color:#64748b;margin-top:10px}
+.tip{font-size:11.5px;font-weight:700;color:#94a3b8;margin-top:7px;line-height:1.55}
+
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th{background:#f8fafc;color:#64748b;font-weight:800;font-size:11.5px;padding:9px 10px;text-align:left;border-bottom:1.5px solid #e2e8f0}
+table.cmp td{padding:10px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#475569;line-height:1.6;vertical-align:top}
+table.cmp td b{color:#0d2240}
+.pickrow{background:#f0fdf4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>📈 성장 추이 그래프 — 개선안</h1>
+<p class="sub">
+지금은 <b>점마다 숫자를 다 찍어서</b> 20회가 넘어가면 글자가 겹쳐 읽을 수 없습니다.<br>
+<b>네 가지 안</b>을 만들었습니다 — 폰 화면 그대로이니 <b>눌러서 비교</b>해 보세요.
+</p>
+
+<!-- ① 문제 -->
+<div class="sec">
+  <div class="stitle">① 왜 안 보이나</div>
+  <div class="sdesc">그래프가 나쁜 게 아니라 담는 양이 화면보다 많습니다</div>
+  <div class="box x-red"><div class="ic">🔢</div><div>
+    <b>점 <b>20개</b>에 숫자를 <b>20개</b> 다 찍습니다</b>
+    <p>폰 화면 가로가 350px 남짓인데 점 사이가 <b>17px</b>밖에 안 됩니다.
+    두 자리 숫자 폭이 20px이라 <b>옆 숫자와 겹칠 수밖에</b> 없습니다.</p>
+  </div></div>
+  <div class="box x-red"><div class="ic">📏</div><div>
+    <b>두 선을 <b>각자 다른 눈금</b>으로 그립니다</b>
+    <p>전국주간은 70~100점, 일일은 28~88점인데 <b>각각 자기 범위에 맞춰</b> 늘려 그립니다.
+    그래서 <b>80점과 30점이 비슷한 높이</b>에 찍히기도 합니다. 개선안에서는 <b>두 선을 같은 눈금</b>으로 맞췄습니다.</p>
+  </div></div>
+  <div class="box x-red"><div class="ic">🔀</div><div>
+    <b>두 종류를 <b>한 그래프에</b> 겹쳐 그립니다</b>
+    <p>전국주간(파랑)과 일일(초록)은 <b>시험도 다르고 날짜도 다릅니다.</b>
+    한 판에 겹치니 선이 엉키고, 숫자는 위·아래로 나뉘어 더 빽빽해집니다.</p>
+  </div></div>
+</div>
+
+<!-- ② 비교 -->
+<div class="sec">
+  <div class="stitle">② 네 가지 안 <span class="badge b-live">눌러보세요</span></div>
+  <div class="sdesc">왼쪽이 고른 안, 오른쪽이 지금 모습입니다</div>
+  <div class="pick" id="pk"></div>
+  <div class="stage">
+    <div><div class="phone" id="ph1"></div><div class="plab" id="lab1"></div></div>
+    <div><div class="phone" id="ph2"></div><div class="plab">지금 — 리포트 안 (숫자 20개)</div></div>
+  </div>
+</div>
+
+<!-- ③ 리포트 vs 탭 -->
+<div class="sec">
+  <div class="stitle">③ 리포트 안에 둘까, 탭을 새로 만들까</div>
+  <div class="sdesc">원장님이 물어보신 부분입니다</div>
+  <table class="cmp">
+    <tr><th style="width:160px"></th><th>리포트 안에서 고치기 (A·B·C안)</th><th>독립 탭 (D안)</th></tr>
+    <tr><td><b>학부모가 보는 흐름</b></td>
+      <td>날짜별 피드백을 읽다가 <b>그 자리에서</b> 봄</td>
+      <td>탭을 눌러 <b>따로</b> 봄</td></tr>
+    <tr><td><b>화면 크기</b></td><td>리포트 한 칸 (좁음)</td><td><b>화면 전체</b> (넓음)</td></tr>
+    <tr><td><b>넣을 수 있는 것</b></td><td>그래프 하나</td>
+      <td>기간 선택 · 과목별 · <b>등수 추이</b> · 단원별 성취도까지</td></tr>
+    <tr><td><b>만드는 일</b></td><td><b>작음</b> — 그래프만 손봄</td><td>큼 — 새 화면 + 학부모앱 탭</td></tr>
+    <tr class="pickrow"><td><b>학부모가 볼까</b></td>
+      <td><b>봅니다</b> — 피드백 읽으러 들어오니 자연히 보임</td>
+      <td>탭을 <b>눌러야</b> 봄 — 안 누르면 안 봄</td></tr>
+  </table>
+  <div class="rule" style="margin-top:13px">
+    <b>제 생각은 「리포트 안에서 먼저 고치기」입니다.</b>
+    학부모는 <b>피드백을 읽으러</b> 학부모앱에 들어옵니다. 그 흐름 안에 있어야 보게 됩니다.
+    탭을 새로 만들면 넓게 쓸 수 있지만 <b>눌러야만</b> 보입니다.<br><br>
+    <b>순서를 이렇게 제안드립니다</b> — ① 지금 그래프를 <b>A안</b>으로 고쳐 바로 읽히게 하고,
+    ② 나중에 등수 추이·단원별까지 넣고 싶어지면 그때 <b>독립 탭</b>을 만듭니다.
+    A안으로 고친 그래프는 탭을 만들 때 <b>그대로 옮겨</b> 쓸 수 있습니다.
+  </div>
+</div>
+
+<!-- ④ 정리 -->
+<div class="sec">
+  <div class="stitle">④ 네 안 정리</div>
+  <div class="sdesc">고르시면 그대로 만들겠습니다</div>
+  <table class="cmp">
+    <tr><th style="width:150px">안</th><th style="width:130px">핵심</th><th>이럴 때 좋습니다</th></tr>
+    <tr class="pickrow"><td><b>A안 · 최근 8회 ⭐</b></td><td>점을 <b>8개</b>로 줄임</td>
+      <td><b>추천</b> — 점 8개 · 숫자는 <b>최근 3회</b>만. 겹침이 없고 <b>최근 흐름</b>이 바로 보입니다.
+      「전체 보기」로 옛 기록까지 펼쳐집니다. <b>고치는 일도 가장 작습니다</b></td></tr>
+    <tr><td><b>B안 · 둘로 나눔</b></td><td>전국주간·일일을 <b>위아래로</b></td>
+      <td>두 시험을 <b>따로</b> 보고 싶을 때. 선이 안 엉킵니다 · 세로로 길어집니다</td></tr>
+    <tr><td><b>C안 · 숫자 줄이기</b></td><td>숫자는 <b>처음·최고·최근</b>만</td>
+      <td>기록을 <b>전부</b> 보여주면서 겹침만 없앱니다 · 중간 점수는 눌러야 보입니다</td></tr>
+    <tr><td><b>D안 · 독립 탭</b></td><td>학부모앱에 <b>새 탭</b></td>
+      <td>기간·과목·등수까지 <b>크게</b>. 대신 학부모가 눌러야 봅니다</td></tr>
+  </table>
+</div>
+
+<div style="text-align:center;font-size:12px;color:#94a3b8;font-weight:700;padding:8px 0 20px">
+  이 화면은 <b>미리보기(목업)</b>입니다 · 예시 자료는 실제 학생이 아닙니다
+</div>
+</div>
+
+<script>
+var PLAN='A', EXPAND=false, BTAB='wk';
+/* 실제 화면과 비슷한 분량 — 전국주간 20회 · 일일 20회 */
+var WK=[95,80,80,80,100,95,95,95,95,95,80,80,95,85,80,86,85,75,70,70];
+var DL=[80,80,88,60,54,30,28,80,70,84,83,57,75,75,62,62,75,61,55,66];
+var W=350, H=120, PAD=14;
+/* 두 계열을 같은 눈금으로 그린다 — 각자 정규화하면 80점과 30점이 비슷한 높이에 놓여 오해를 부른다 */
+function common(a,b){
+  var all=a.concat(b), mn=Math.min.apply(null,all), mx=Math.max.apply(null,all);
+  var pad=Math.max(4,Math.round((mx-mn)*0.08));
+  return [Math.max(0,mn-pad), Math.min(100,mx+pad)];
+}
+
+function pts(arr, w, h, pad, scale){
+  if(!arr.length) return [];
+  var mn = scale?scale[0]:Math.min.apply(null,arr), mx = scale?scale[1]:Math.max.apply(null,arr);
+  if(mx===mn){ mx=mn+10; }
+  return arr.map(function(v,i){
+    var x=pad+(arr.length===1?(w-pad*2)/2:(w-pad*2)*i/(arr.length-1));
+    var y=pad+(h-pad*2)*(1-(v-mn)/(mx-mn));
+    return [x,y,v];
+  });
+}
+function line(p,color,wd){
+  if(p.length<2) return '';
+  return '<polyline points="'+p.map(function(q){return q[0]+','+q[1];}).join(' ')+'" fill="none" stroke="'+color+'" stroke-width="'+(wd||3)+'" stroke-linecap="round" stroke-linejoin="round"/>';
+}
+function dots(p,c1,c2,labelMode,dy){
+  return p.map(function(q,i){
+    var last=(i===p.length-1);
+    var showN = labelMode==='all' ? true
+      : labelMode==='none' ? last
+      : labelMode==='recent3' ? (i>=p.length-3)
+      : /* key */ (last||i===0|| q[2]===Math.max.apply(null,p.map(function(z){return z[2];})));
+    var s='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="'+(last?6.5:3.6)+'" fill="'+(last?c1:c2)+'" stroke="#fff" stroke-width="2"/>';
+    if(showN) s+='<text x="'+q[0]+'" y="'+(q[1]+(dy||-11))+'" text-anchor="middle" fill="'+(last?c1:'#64748b')+'" font-size="'+(last?14:11.5)+'" font-weight="'+(last?'800':'500')+'" font-family="sans-serif">'+q[2]+'</text>';
+    return s;
+  }).join('');
+}
+function svg(inner,w,h){ return '<svg width="100%" height="'+h+'" viewBox="0 0 '+w+' '+h+'" style="overflow:visible;display:block">'+inner+'</svg>'; }
+function legend(wl,dl){
+  var f=function(a){ if(a.length<2) return ['','fl']; var d=a[a.length-1]-a[a.length-2];
+    return [(d>0?'↑'+d+'점':d<0?'↓'+(-d)+'점':'→')+' '+a[a.length-1]+'점', d>0?'up':d<0?'dn':'fl']; };
+  var w=f(wl), c=f(dl);
+  return '<div class="lg">'
+    +'<span><i style="background:#0ea5e9"></i>전국주간 <b class="'+w[1]+'">'+w[0]+'</b></span>'
+    +'<span><i style="background:#22c55e"></i>일일 <b class="'+c[1]+'">'+c[0]+'</b></span></div>';
+}
+
+/* 지금 모습 */
+function chartNow(){
+  var pw=pts(WK,W,H,PAD), pd=pts(DL,W,H,PAD);   // 지금 모습 — 각자 정규화(문제 재현)
+  return '<div class="card"><h3>📈 성장 추이</h3>'+legend(WK,DL)
+    +svg(line(pw,'#0ea5e9')+line(pd,'#22c55e')
+        +dots(pw,'#0369a1','#7dd3fc','all',-11)+dots(pd,'#15803d','#86efac','all',20), W,H)
+    +'<div class="tip" style="color:#b91c1c">↑ 숫자 40개가 좁은 폭에 겹칩니다</div></div>';
+}
+/* A안 — 최근 8회 */
+function chartA(){
+  var n=EXPAND?WK.length:8;
+  var wk=WK.slice(-n), dl=DL.slice(-n);
+  var sc=common(wk,dl);
+  var pw=pts(wk,W,H,PAD,sc), pd=pts(dl,W,H,PAD,sc);
+  return '<div class="card"><h3>📈 성장 추이 <span style="font-size:11.5px;font-weight:800;color:#94a3b8">'+(EXPAND?'전체 '+WK.length+'회':'최근 8회')+'</span></h3>'
+    +legend(wk,dl)
+    +svg(line(pw,'#0ea5e9')+line(pd,'#22c55e')
+        +dots(pw,'#0369a1','#7dd3fc',EXPAND?'key':'recent3',-15)+dots(pd,'#15803d','#86efac',EXPAND?'key':'recent3',26), W,H)
+    +'<button class="moreb" onclick="toggleExpand()">'+(EXPAND?'↩ 최근 8회만 보기':'📊 전체 '+WK.length+'회 보기')+'</button>'
+    +'<div class="tip">최근 8회만 크게 · 숫자는 <b>최근 3회</b>만 찍어 겹치지 않습니다'+(EXPAND?' · 전체 보기에서는 처음·최고·최근만':'')+' · 점을 누르면 그 회차 점수가 뜹니다</div></div>';
+}
+/* B안 — 둘로 나눔 */
+function chartB(){
+  var h2=92;
+  var pw=pts(WK,W,h2,12,common(WK,WK)), pd=pts(DL,W,h2,12,common(DL,DL));
+  var f=function(a){ var d=a[a.length-1]-a[a.length-2]; return [(d>0?'↑'+d:d<0?'↓'+(-d):'→')+' '+a[a.length-1]+'점', d>0?'up':d<0?'dn':'fl']; };
+  var w=f(WK), c=f(DL);
+  return '<div class="card"><h3>📈 성장 추이</h3>'
+    +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i style="display:inline-block;width:22px;height:4px;border-radius:99px;background:#0ea5e9"></i>'
+    +'<span style="font-size:12.5px;font-weight:800;color:#64748b">전국주간</span><b class="'+w[1]+'" style="font-size:13.5px">'+w[0]+'</b></div>'
+    +svg(line(pw,'#0ea5e9')+dots(pw,'#0369a1','#7dd3fc','key',-10), W,h2)
+    +'<div style="height:11px"></div>'
+    +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><i style="display:inline-block;width:22px;height:4px;border-radius:99px;background:#22c55e"></i>'
+    +'<span style="font-size:12.5px;font-weight:800;color:#64748b">일일</span><b class="'+c[1]+'" style="font-size:13.5px">'+c[0]+'</b></div>'
+    +svg(line(pd,'#22c55e')+dots(pd,'#15803d','#86efac','key',-10), W,h2)
+    +'<div class="tip">두 시험을 따로 — 선이 안 엉킵니다 · 세로로 길어집니다</div></div>';
+}
+/* C안 — 숫자 줄이기 */
+function chartC(){
+  var sc=common(WK,DL);
+  var pw=pts(WK,W,H,PAD,sc), pd=pts(DL,W,H,PAD,sc);
+  return '<div class="card"><h3>📈 성장 추이 <span style="font-size:11.5px;font-weight:800;color:#94a3b8">전체 '+WK.length+'회</span></h3>'
+    +legend(WK,DL)
+    +svg(line(pw,'#0ea5e9')+line(pd,'#22c55e')
+        +dots(pw,'#0369a1','#7dd3fc','key',-11)+dots(pd,'#15803d','#86efac','key',20), W,H)
+    +'<div class="tip">기록은 전부 보여주고 숫자는 <b>처음·최고·최근</b>만 · 점을 누르면 그 회차 점수가 뜹니다</div></div>';
+}
+/* D안 — 독립 탭 */
+function chartD(){
+  var wk=BTAB==='wk', arr=wk?WK:DL;
+  var pw=pts(arr,W,150,PAD);
+  var f=function(a){ var d=a[a.length-1]-a[a.length-2]; return [(d>0?'↑'+d:d<0?'↓'+(-d):'→')+' '+a[a.length-1]+'점', d>0?'up':d<0?'dn':'fl']; };
+  var g=f(arr);
+  var h='<div class="card"><h3>📈 성적 흐름</h3>'
+    +'<div class="tabs">'
+    +'<button class="tb'+(wk?' on':'')+'" onclick="setBTab(\'wk\')">전국주간</button>'
+    +'<button class="tb'+(!wk?' on':'')+'" onclick="setBTab(\'dl\')">일일테스트</button>'
+    +'<button class="tb">단원별</button><button class="tb">등수</button></div>'
+    +'<div class="tabs"><button class="tb">최근 3개월</button><button class="tb on">6개월</button><button class="tb">전체</button></div>'
+    +'<div style="display:flex;align-items:baseline;gap:8px;margin:4px 0 8px">'
+    +'<span style="font-size:26px;font-weight:900;color:#0d2240">'+arr[arr.length-1]+'점</span>'
+    +'<b class="'+g[1]+'" style="font-size:14px">'+g[0]+'</b>'
+    +'<span style="margin-left:auto;font-size:11.5px;font-weight:800;color:#94a3b8">평균 '+Math.round(arr.reduce(function(a,b){return a+b;},0)/arr.length)+'점</span></div>'
+    +svg(line(pw,wk?'#0ea5e9':'#22c55e')+dots(pw,wk?'#0369a1':'#15803d',wk?'#7dd3fc':'#86efac','key',-11), W,150)
+    +'<div class="tip">화면 전체를 쓰니 기간·과목·등수까지 넣을 수 있습니다</div></div>';
+  h+='<div class="card"><h3>🏅 최근 등수</h3><div style="font-size:12.5px;font-weight:700;color:#64748b;line-height:1.7">학원 <b style="color:#0d2240">3위 / 25명</b><br>전국 상위 <b style="color:#0d2240">18%</b></div></div>';
+  return h;
+}
+
+function phone(inner, title, withNav, navOn){
+  var h='<div class="pbar">'+title+'<span class="sm">오시안</span></div><div class="pbody">'+inner+'</div>';
+  if(withNav){
+    h+='<div class="bnav">'
+      +[['🏠','홈',0],['📋','리포트',navOn===1?1:0],['📈','성적 흐름',navOn===2?1:0],['💡','아하노트',0],['⚙️','설정',0]]
+      .map(function(x){ return '<div class="bn'+(x[2]?' on':'')+'"><span class="e">'+x[0]+'</span>'+x[1]+'</div>'; }).join('')
+      +'</div>';
+  }
+  return h;
+}
+function draw(){
+  document.getElementById('pk').innerHTML=
+    [['A','A안 · 최근 8회 ⭐','점을 8개로 줄임'],
+     ['B','B안 · 둘로 나눔','전국주간·일일 따로'],
+     ['C','C안 · 숫자 줄이기','처음·최고·최근만'],
+     ['D','D안 · 독립 탭','학부모앱 새 탭']]
+    .map(function(x){ return '<button class="kb'+(PLAN===x[0]?' on':'')+'" onclick="setPlan(\''+x[0]+'\')">'+x[1]+'<small>'+x[2]+'</small></button>'; }).join('');
+  var inner = PLAN==='A'?chartA():PLAN==='B'?chartB():PLAN==='C'?chartC():chartD();
+  var isD=(PLAN==='D');
+  document.getElementById('ph1').innerHTML=phone(inner, isD?'📈 성적 흐름':'📋 8/13 리포트', true, isD?2:1);
+  document.getElementById('ph2').innerHTML=phone(chartNow(), '📋 8/13 리포트', true, 1);
+  document.getElementById('lab1').textContent=
+    {A:'A안 — 최근 8회 (리포트 안)',B:'B안 — 둘로 나눔 (리포트 안)',C:'C안 — 숫자 줄이기 (리포트 안)',D:'D안 — 독립 탭 「성적 흐름」'}[PLAN];
+}
+window.setPlan=function(p){ PLAN=p; EXPAND=false; draw(); };
+window.toggleExpand=function(){ EXPAND=!EXPAND; draw(); };
+window.setBTab=function(t){ BTAB=t; draw(); };
+draw();
+</script>
+</body>
+</html>
