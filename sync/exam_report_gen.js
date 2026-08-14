@@ -168,7 +168,9 @@ const probImg = (it, label) => {
   if (!it.img || !EMBED) return '';
   const src = imgSrc(it.img);
   if (src === it.img) return '';   // 로컬 파일이 없어 CDN 원주소로 떨어진 경우 → 표시 안 함
-  return `<figure class="prob"><figcaption>${esc(label)}</figcaption><img src="${src}" alt="${esc(label)} 문제" loading="lazy"></figure>`;
+  // base64 인라인이므로 loading="lazy" 안 씀 — 일부 파일 뷰어가 스크롤 로드를 안 걸어
+  // 아래쪽 이미지가 빈 채로 보이던 문제를 막는다.
+  return `<figure class="prob"><figcaption>${esc(label)}</figcaption><img src="${src}" alt="${esc(label)} 문제"></figure>`;
 };
 
 const repCards = repeated.map((t, i) => {
