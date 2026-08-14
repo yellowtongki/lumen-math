@@ -123,6 +123,7 @@ async function fetchExam(id) {
       solvingTime: (a.solvingTime && a.solvingTime.mathSecr) || null,
       chapters: (c.chapters && c.chapters[0] && c.chapters[0].chapter) || [],
       tags: (c.adaptiveTags || []).map(t => t.name),
+      img: c.imagePath || null,      // 문항 이미지 (수학비서 CDN — 열람 권한은 CDN이 판단)
     };
   });
   return {
