@@ -126,17 +126,32 @@ const repRep = repeated.map(t => {
   return { name: t.name, unit: t.unit, score: r.score, diff: r.diff, time: r.time, essay: t.items.some(it => it.essay), count: t.items.length };
 });
 
-// ── 요점정리 B: 유형별 핵심 개념 (루멘수학 작성 · 원장님 검수) ──
-// 문항 데이터가 아니라 교과 지식으로 쓴 요약이므로, 새 유형은 아래에 추가하면 된다.
+// ── 요점정리 B: 유형별 핵심 개념 ──
+// 값이 {text, src} 이면 교재로 근거 확인된 유형(배지 표시), 문자열이면 아직 검수 전 초안.
+// 새 유형은 아래에 추가하면 되고, 교재로 확인하면 {text, src} 형태로 바꾼다.
 const CONCEPTS = {
+  // ── 정비례·반비례 계열 — 「중학 수학 1-1 개념 따라쓰기」로 확인 ──
+  '반비례 관계4 (y=a/x에서 a의 값 구하기)': {
+    src: '개념 따라쓰기 1-1 · 반비례',
+    text: '반비례 관계는 y=a/x, 곧 xy=a(a는 0이 아닌 일정한 수)이다. 그래프나 표에서 지나는 점 (x, y) 하나만 알면 그 둘을 곱해 a = x × y로 상수 a가 바로 나온다. 교재대로 "y=a/x로 놓고 지나는 점의 좌표를 대입"하면 된다. 가장 기본 유형이니 실수 없이 득점해야 한다.',
+  },
+  '반비례 관계7 (y=a/x의 그래프 위의 점의 좌표가 정수인 경우)': {
+    src: '개념 따라쓰기 1-1 · 반비례',
+    text: '반비례에서는 곱 xy가 항상 a로 일정하다(xy=a). 따라서 y=a/x 위의 점 중 x, y가 모두 정수인 점은 곱이 a가 되는 정수쌍 (x, y)뿐이고, 그 개수는 a의 약수 개수와 같다. 음수쌍(음의 약수)도 빠뜨리지 말 것 — 예로 a=6이면 (1,6)(2,3)(3,2)(6,1)과 그 음수쌍까지 센다.',
+  },
+  '반비례 관계9 (y=ax, y=a/x의 그래프가 만나는 점)': {
+    src: '개념 따라쓰기 1-1 · 정비례·반비례',
+    text: '정비례 y=ax는 원점을 지나는 직선, 반비례 y=b/x는 원점에 대칭인 한 쌍의 곡선이다. 두 그래프의 교점은 두 식을 연립 — ax=b/x → x²=b/a. 교점은 원점에 대해 대칭인 두 점이 된다. 한 교점의 좌표가 주어지면 대입해 상수를 구한다. "두 그래프가 만나는 점"이 나오면 연립을 떠올린다.',
+  },
+  '두 점 사이의 거리2 (관계식이 주어진 두 점)': {
+    src: '개념 따라쓰기 1-1 · 좌표와 그래프',
+    text: '정비례(y=ax)·반비례(y=a/x) 식이 주어지면 x값을 대입해 그래프 위 점의 좌표를 먼저 구한다. 반비례는 xy=a를 이용하면 좌표가 빨리 나온다. 두 점이 같은 세로선(x가 같음) 또는 가로선(y가 같음) 위에 있으면 두 점 사이의 거리는 좌표의 차이다. 좌표를 식으로 정확히 구하는 것이 첫걸음.',
+  },
+  // ── 도형 계열 — 1-2 교재 확인 대기(현재는 검수 전 초안) ──
   '삼각형의 결정조건1 (기본 조건)': '삼각형이 하나로 정해지는 경우는 딱 셋 — ① 세 변, ② 두 변과 그 끼인각, ③ 한 변과 그 양 끝 각. 세 각만 주면 크기가 안 정해지고, 두 변과 "끼인각이 아닌" 각을 주면 삼각형이 두 개 생길 수 있어 안 된다. 세 변으로 줄 때는 (가장 긴 변) < (나머지 두 변의 합)을 만족해야 삼각형이 만들어진다.',
   '간단한 도형의 작도4 (평행선의 작도)': '"동위각(또는 엇각)이 같으면 두 직선은 평행하다"는 성질을 거꾸로 이용한다. 주어진 직선의 각과 크기가 같은 각을 다른 점에 컴퍼스로 옮겨 그리면 그 점을 지나는 평행선이 작도된다. 바탕이 되는 것은 "크기가 같은 각 옮기기" 작도. 작도 순서와 "왜 평행한가"의 근거를 설명하는 문제가 나온다.',
   '삼각형의 합동의 활용1 (정삼각형)': '정삼각형은 세 변이 모두 같고 세 각이 모두 60°. 이 성질로 두 삼각형이 SAS(두 변과 끼인각) 합동임을 보이는 문제가 단골이다. 합동이 증명되면 대응하는 변·각이 같음을 이용해 값을 구한다. 서술형으로 자주 나오므로 "어떤 합동조건(SSS·SAS·ASA)인지"를 근거로 쓰는 연습이 중요.',
   '위치 관계6 (직선과 평면)': '공간에서 두 직선·직선과 평면·두 평면의 관계를 따진다. 핵심은 "꼬인 위치" — 만나지도 평행하지도 않는(한 평면에 없는) 경우. 직육면체 그림에서 한 모서리를 기준으로 평행·수직·꼬인 위치 모서리의 개수를 정확히 세는 연습이 필수다.',
-  '두 점 사이의 거리2 (관계식이 주어진 두 점)': '좌표평면에서 두 점의 좌표를 먼저 구한 뒤 거리를 계산한다. 정비례·반비례 식(y=ax, y=a/x)이 주어지면 x값을 대입해 점의 좌표를 얻는다. 두 점이 같은 세로선(또는 가로선) 위에 있으면 거리는 좌표의 차이. 그래프 위 점의 좌표를 식으로 구하는 것이 첫걸음.',
-  '반비례 관계4 (y=a/x에서 a의 값 구하기)': '그래프나 표에서 지나는 점 (x, y) 하나만 알면 a = x × y로 비례상수 a가 바로 나온다. 반비례에서 곱 xy는 항상 a로 일정하다는 것이 핵심. 가장 기본 유형이니 실수 없이 득점해야 한다.',
-  '반비례 관계7 (y=a/x의 그래프 위의 점의 좌표가 정수인 경우)': 'y=a/x 위의 점 중 x, y가 모두 정수인 점의 개수는 a의 약수 개수와 같다. xy=a이므로 (x, y)는 곱이 a가 되는 정수쌍 — a의 약수가 몇 개인지 세면 된다. 음수 약수(음의 정수쌍)도 빠뜨리지 말 것.',
-  '반비례 관계9 (y=ax, y=a/x의 그래프가 만나는 점)': '정비례 y=ax와 반비례 y=b/x의 교점은 두 식을 연립 — ax=b/x → x²=b/a. 교점은 원점에 대해 대칭인 두 점이다. 한 교점의 좌표가 주어지면 대입해 상수를 구한다. "두 그래프가 만나는 점"이 나오면 연립을 떠올린다.',
 };
 
 // 한눈에 보기 — 자동 요약 3줄
@@ -237,10 +252,15 @@ const strategyRows = repRep.map((r, i) => `<tr>
 // 요점정리 B — 유형별 핵심 개념
 const conceptCards = repRep.map((r, i) => {
   const c = CONCEPTS[r.name];
+  const text = c ? (typeof c === 'string' ? c : c.text) : null;
+  const badge = c && typeof c === 'object' && c.src
+    ? `<span class="pill p-lo" title="교재로 근거 확인됨">📖 ${esc(c.src)}</span>`
+    : (text ? '<span class="pill p-md" title="교재 확인 전 초안">✎ 1-2 교재 확인 대기</span>' : '');
   return `<div class="concept">
     <div class="chd"><span class="repno sm">${i + 1}</span>
-      <div><div class="repname">${esc(r.name)}</div><div class="repunit">${esc(r.unit)}</div></div></div>
-    <p class="cbody">${c ? esc(c) : '<span style="color:var(--mut)">핵심 정리 준비 중입니다.</span>'}</p>
+      <div><div class="repname">${esc(r.name)}</div><div class="repunit">${esc(r.unit)}</div></div>
+      <div class="cbadge">${badge}</div></div>
+    <p class="cbody">${text ? esc(text) : '<span style="color:var(--mut)">핵심 정리 준비 중입니다.</span>'}</p>
   </div>`;
 }).join('');
 
@@ -322,6 +342,7 @@ td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .hlstat b{color:var(--s1)}
 .concept{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
 .concept .chd{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.cbadge{margin-left:auto;flex:none}
 .cbody{font-size:14px;color:var(--ink2);line-height:1.75}
 .prob img{display:block;width:100%;height:auto;padding:8px;background:#fff}
 .prob.broken{display:none}
