@@ -72,7 +72,7 @@ VI=$(vol_info "$ROOT"); FSTYPE="${VI%%|*}"; VOLRO="${VI##*|}"
 
 if [ -n "$FSTYPE" ] && [ "$FSTYPE" != "apfs" ] && [ "$FSTYPE" != "hfs" ]; then
   echo ""
-  echo " 💽 이 폴더는 «$FSTYPE» 형식의 디스크에 있습니다. (외장하드로 보입니다)"
+  echo " 💽 이 폴더는 «${FSTYPE}» 형식의 디스크에 있습니다. (외장하드로 보입니다)"
 fi
 if [ "$VOLRO" = "1" ]; then
   echo ""
@@ -156,6 +156,16 @@ parse_name() {
     pn_cls="${pn_rest%% *}"
     pn_unit="${pn_rest#* }"
     [ "$pn_unit" = "$pn_cls" ] && pn_unit=""
+    # 반을 못 찾았던 영상은 이름에 시각(1101, 2117)이 들어 있습니다.
+    # 숫자만 4자리면 반 이름이 아니라 시각이므로 버립니다.
+    case "$pn_cls" in
+      [0-9][0-9][0-9][0-9])
+        pn_cls="$pn_unit"
+        pn_unit="${pn_cls#* }"
+        [ "$pn_unit" = "$pn_cls" ] && pn_unit=""
+        pn_cls="${pn_cls%% *}"
+        ;;
+    esac
   fi
   printf '%s|%s|%s|%s|%s' "$pn_cls" "$pn_unit" "$pn_pg" "$pn_ymd" "$pn_img"
 }

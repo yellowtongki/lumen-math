@@ -201,7 +201,7 @@ if [ -n "$FIRSTDIR" ]; then
   VI=$(vol_info "$FIRSTDIR"); FSTYPE="${VI%%|*}"; VOLRO="${VI##*|}"
   if [ -n "$FSTYPE" ] && [ "$FSTYPE" != "apfs" ] && [ "$FSTYPE" != "hfs" ]; then
     echo ""
-    echo " 💽 파일이 «$FSTYPE» 형식의 디스크에 있습니다. (외장하드로 보입니다)"
+    echo " 💽 파일이 «${FSTYPE}» 형식의 디스크에 있습니다. (외장하드로 보입니다)"
   fi
   case "$FSTYPE" in
     exfat|msdos|ntfs)
