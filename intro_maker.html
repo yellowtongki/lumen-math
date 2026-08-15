@@ -32,7 +32,10 @@ label{display:block;font-size:12px;font-weight:800;color:var(--ink);margin-botto
 label .hint{font-weight:600;color:var(--sub);font-size:11px}
 input[type=text]{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font-size:15px;font-family:inherit;color:var(--ink);background:transparent;font-weight:700}
 input[type=text]:focus{outline:none;border-color:var(--accent)}
-.themes{display:flex;gap:8px;flex-wrap:wrap}
+.themes{display:flex;flex-direction:column;gap:6px}
+.thRow{display:flex;align-items:center;gap:8px}
+.thLb{width:30px;flex:none;font-size:12px;font-weight:800;color:var(--sub)}
+.thNow{margin-top:6px;font-size:12px;color:var(--sub)}
 .sw{width:34px;height:34px;border-radius:9px;border:2px solid transparent;cursor:pointer;padding:0;position:relative}
 .sw.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--ink)}
 .sw:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
@@ -88,8 +91,9 @@ canvas{width:100%;height:auto;display:block}
         <div class="sz"><span class="nm">부제</span><input type="range" id="sz-sub" min="0.5" max="1.8" step="0.05" value="1"><span class="val" id="szv-sub">100%</span></div>
       </div>
       <div class="fld">
-        <label>색 테마</label>
+        <label>색 테마 <span style="font-weight:600;color:var(--sub);font-size:12px">— 학년은 색, 학기는 진하기</span></label>
         <div class="themes" id="themes"></div>
+        <div class="thNow">선택: <b id="themeNow">중2 1학기 (블루)</b></div>
       </div>
       <div class="fld">
         <label>비율</label>
@@ -116,26 +120,80 @@ canvas{width:100%;height:auto;display:block}
 </div>
 
 <script>
-var THEMES=[
-  {key:'navy',   name:'네이비', c1:'#0b1428', c2:'#16305c', glowA:'56,189,248', glowB:'124,58,237', chip:'#8fd3ff', chipBg:'56,189,248', brand:'#ffd54a'},
-  {key:'violet', name:'퍼플',   c1:'#1a1033', c2:'#3b1d70', glowA:'167,139,250', glowB:'236,72,153', chip:'#d6b8ff', chipBg:'167,139,250', brand:'#ffd54a'},
-  {key:'teal',   name:'틸',     c1:'#04201f', c2:'#0d4d47', glowA:'45,212,191', glowB:'56,189,248', chip:'#7ff0e0', chipBg:'45,212,191', brand:'#fde68a'},
-  {key:'sunset', name:'선셋',   c1:'#2a0f0a', c2:'#7c2d12', glowA:'251,146,60', glowB:'244,63,94', chip:'#ffd0a8', chipBg:'251,146,60', brand:'#fff1c9'},
-  {key:'rose',   name:'로즈',   c1:'#2a0a1a', c2:'#7a1f4d', glowA:'244,114,182', glowB:'129,140,248', chip:'#ffc4e2', chipBg:'244,114,182', brand:'#ffe08a'},
-  {key:'slate',  name:'그레이', c1:'#0f172a', c2:'#334155', glowA:'148,163,184', glowB:'100,116,139', chip:'#cbd5e1', chipBg:'148,163,184', brand:'#facc15'}
+// ── 학년별 색 체계 ───────────────────────────────────────────
+//  학년 = 색상(6가지) · 학기 = 진하기(2단계)  →  모두 12가지
+//
+//  색을 12개 아무렇게나 늘리면 사람이 구분하지 못합니다.
+//  (색만으로 구분하는 기준에서는 5색만 되어도 이미 한계)
+//  그래서 «학년은 색으로, 학기는 진하기로» 나누어 규칙을 외울 수 있게 했습니다.
+//    예) 파란 계열 = 중2 · 진하면 2학기
+//  썸네일에는 과정 이름이 «글자로» 찍히므로 색은 보조 역할입니다.
+var GRADES=[
+  {g:'중1', hue:'틸',   c1a:'#04201f', c2a:'#0d5048', c1b:'#020c0b', c2b:'#052421',
+   glowA:'45,212,191',  glowB:'56,189,248',  chip:'#7ff0e0', chipBg:'45,212,191',  brand:'#fde68a'},
+  {g:'중2', hue:'블루', c1a:'#0b1428', c2a:'#16305c', c1b:'#04080f', c2b:'#0a1628',
+   glowA:'56,189,248',  glowB:'124,58,237',  chip:'#8fd3ff', chipBg:'56,189,248',  brand:'#ffd54a'},
+  {g:'중3', hue:'퍼플', c1a:'#1a1033', c2a:'#3b1d70', c1b:'#0a0614', c2b:'#1a0d33',
+   glowA:'167,139,250', glowB:'236,72,153',  chip:'#d6b8ff', chipBg:'167,139,250', brand:'#ffd54a'},
+  {g:'고1', hue:'로즈', c1a:'#2a0a1a', c2a:'#7a1f4d', c1b:'#10040a', c2b:'#360d22',
+   glowA:'244,114,182', glowB:'129,140,248', chip:'#ffc4e2', chipBg:'244,114,182', brand:'#ffe08a'},
+  {g:'고2', hue:'선셋', c1a:'#2a0f0a', c2a:'#7c2d12', c1b:'#100504', c2b:'#361308',
+   glowA:'251,146,60',  glowB:'244,63,94',   chip:'#ffd0a8', chipBg:'251,146,60',  brand:'#fff1c9'},
+  {g:'고3', hue:'골드', c1a:'#241a04', c2a:'#6b4e10', c1b:'#0e0901', c2b:'#2e2207',
+   glowA:'250,204,21',  glowB:'251,146,60',  chip:'#ffe9a8', chipBg:'250,204,21',  brand:'#fff1c9'}
 ];
-var state={ course:'미적분1', title:'좌극한', sub:'', theme:'navy', ratio:'16:9', brand:true, courseScale:1, titleScale:1, subScale:1 };
+
+var THEMES=[];
+GRADES.forEach(function(G){
+  // 1학기는 밝고 빛번짐이 강하게, 2학기는 어둡고 차분하게 —
+  // 배경 밝기만 낮추면 빛번짐이 덮어버려서 구분이 안 됩니다.
+  [['1','1학기','a',1.15],['2','2학기','b',0.34]].forEach(function(S){
+    THEMES.push({
+      key: G.g + '-' + S[0], name: G.g + ' ' + S[1] + ' (' + G.hue + ')',
+      grade: G.g, term: S[1], gs: S[3],
+      c1: G['c1' + S[2]], c2: G['c2' + S[2]],
+      glowA: G.glowA, glowB: G.glowB, chip: G.chip, chipBg: G.chipBg, brand: G.brand
+    });
+  });
+});
+// 학년과 상관없이 쓰는 중립 테마
+THEMES.push({key:'slate', name:'그레이 (공통)', grade:'공통', term:'',
+  c1:'#0f172a', c2:'#334155', gs:1, glowA:'148,163,184', glowB:'100,116,139',
+  chip:'#cbd5e1', chipBg:'148,163,184', brand:'#facc15'});
+var state={ course:'미적분1', title:'좌극한', sub:'', theme:'중2-1', ratio:'16:9', brand:true, courseScale:1, titleScale:1, subScale:1 };
 
 // 테마 스와치
 var tb=document.getElementById('themes');
-THEMES.forEach(function(t){
+var swAll=[];
+function addSwatch(row, t){
   var b=document.createElement('button');
   b.className='sw'+(t.key===state.theme?' on':''); b.dataset.k=t.key; b.title=t.name;
   b.style.background='linear-gradient(135deg,'+t.c1+','+t.c2+')';
   b.setAttribute('aria-label','색 테마 '+t.name);
-  b.onclick=function(){ state.theme=t.key; [].forEach.call(tb.children,function(x){x.classList.toggle('on',x.dataset.k===t.key);}); draw(); };
-  tb.appendChild(b);
+  b.onclick=function(){
+    state.theme=t.key;
+    swAll.forEach(function(x){ x.classList.toggle('on', x.dataset.k===t.key); });
+    document.getElementById('themeNow').textContent=t.name;
+    draw();
+  };
+  row.appendChild(b); swAll.push(b);
+}
+// 학년별로 한 줄씩 — 왼쪽이 1학기, 오른쪽이 2학기
+GRADES.forEach(function(G){
+  var row=document.createElement('div'); row.className='thRow';
+  var lb=document.createElement('span'); lb.className='thLb'; lb.textContent=G.g;
+  row.appendChild(lb);
+  THEMES.filter(function(t){ return t.grade===G.g; }).forEach(function(t){ addSwatch(row,t); });
+  tb.appendChild(row);
 });
+// 공통(중립) 테마
+(function(){
+  var row=document.createElement('div'); row.className='thRow';
+  var lb=document.createElement('span'); lb.className='thLb'; lb.textContent='공통';
+  row.appendChild(lb);
+  THEMES.filter(function(t){ return t.grade==='공통'; }).forEach(function(t){ addSwatch(row,t); });
+  tb.appendChild(row);
+})();
 document.getElementById('i-course').oninput=function(){ state.course=this.value; draw(); };
 document.getElementById('i-title').oninput=function(){ state.title=this.value; draw(); };
 document.getElementById('i-sub').oninput=function(){ state.sub=this.value; draw(); };
@@ -170,8 +228,9 @@ function draw(){
   ctx.fillStyle=lin; ctx.fillRect(0,0,W,H);
   // 은은한 글로우 2개
   function glow(cx,cy,rad,rgb,a){ var g=ctx.createRadialGradient(cx,cy,0,cx,cy,rad); g.addColorStop(0,'rgba('+rgb+','+a+')'); g.addColorStop(1,'rgba('+rgb+',0)'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
-  glow(W*0.24,H*0.20,W*0.42,t.glowA,0.22);
-  glow(W*0.82,H*0.82,W*0.5,t.glowB,0.26);
+  var gs=(t.gs==null?1:t.gs);
+  glow(W*0.24,H*0.20,W*0.42,t.glowA,0.22*gs);
+  glow(W*0.82,H*0.82,W*0.5,t.glowB,0.26*gs);
 
   var cx=W/2;
   // 브랜드
