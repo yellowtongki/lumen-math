@@ -1,0 +1,39 @@
+name: 매쓰플랫 요청 수집 (지금 가져오기)
+
+# 학원앱 울트라일일의 빨간 「🔄 지금 가져오기」 버튼을 처리한다.
+# - 5분마다 깨어나 Supabase에 대기 중인 요청이 있는지만 확인한다.
+#   요청이 없으면 몇 초 만에 조용히 끝나므로 부담이 거의 없다(공개 저장소는 실행시간 무료).
+# - 요청이 있으면 매쓰플랫 수집기를 돌리고 상태를 'done'으로 바꾼다.
+# - 새벽 4시 정기 수집(mathflat-collect.yml)은 그대로 따로 돈다.
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'   # 5분마다 요청 확인
+  workflow_dispatch:        # Actions 탭에서 손으로도 실행 가능
+
+# 정기 수집과 같은 그룹으로 묶어, 두 수집이 동시에 매쓰플랫에 로그인하지 않게 한다
+# (동시 로그인하면 서로 접속이 끊긴다). 진행 중이면 이번 차례는 기다렸다 취소된다.
+concurrency:
+  group: mathflat-collect
+  cancel-in-progress: false
+
+jobs:
+  handle-request:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 요청 확인 후 수집
+        env:
+          MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
+          MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node sync/collect_request_worker.js
