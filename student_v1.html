@@ -2222,6 +2222,25 @@ function loginName() {
   renderHome(); go('screen-home');
 }
 
+/* ── v2-36: 제출 직전 로그인 상태 확인 ──
+   앱을 오래 켜 두면 휴대폰이 메모리를 정리하면서 로그인 정보(studentInfo)가 사라질 수 있다.
+   그대로 두면 학생 화면에 "Cannot read properties of null" 같은 영어 오류가 그대로 보인다.
+   제출 버튼을 누른 직후 여기서 걸러내고, 다시 로그인하도록 안내한다. */
+function requireLogin(statusId, btnId, btnText) {
+  if (studentInfo && studentInfo.lumen_rec_code) return true;
+  var el = statusId && document.getElementById(statusId);
+  if (el) {
+    el.innerHTML = '<div class="serr">🔒 로그인이 풀렸어요<br>' +
+      '<span style="font-size:12px;font-weight:500">앱을 오래 켜 두면 가끔 생기는 일이에요. 다시 로그인한 뒤 제출해주세요 🙏</span><br>' +
+      '<button onclick="logout()" style="margin-top:10px;padding:9px 18px;border:0;border-radius:9px;background:#6366f1;color:#fff;font-size:14px;font-weight:700;cursor:pointer">다시 로그인하기</button></div>';
+  } else {
+    alert('로그인이 풀렸어요. 다시 로그인한 뒤 제출해주세요.');
+  }
+  var b = btnId && document.getElementById(btnId);
+  if (b) { b.disabled = false; if (btnText) b.textContent = btnText; }
+  return false;
+}
+
 function logout() {
   studentInfo = null; isTest = false;
   document.getElementById('test-bdg').style.display = 'none';
@@ -2727,6 +2746,7 @@ async function submitAll() {
   if (!audioBlob && photoFiles.length === 0) return;
   var title = document.getElementById('rec-title-inp') ? document.getElementById('rec-title-inp').value.trim() : '';
   if (!title) { alert('제출 제목을 입력해주세요!'); return; }
+  if (!requireLogin('sub-status', 'sub-btn', '📤 제출하기')) return; // v2-36
 
   if (isTest) {
     document.getElementById('sub-status').innerHTML = '<div class="sok">🧪 테스트 모드예요!<br><span style="font-size:12px;font-weight:500">실제 제출은 코드 로그인 후 가능해요 😊</span></div>';
@@ -3019,6 +3039,7 @@ function updatePlannerStatus() {
 async function submitPlannerPhotos() {
   var p1 = !!plannerPhoto1, p2 = !!plannerPhoto2;
   if (!p1 && !p2) return;
+  if (!requireLogin('planner-sub-status', 'planner-sub-btn', '📤 플래너 제출하기')) return; // v2-36
 
   // 사전 체크: 사진 1장만 있을 경우 경고
   if (!p1 || !p2) {
@@ -6556,12 +6577,12 @@ function shelfRender(){
    발표(1등·마스킹): lumen_store 'hall_announce' — 학원앱에서 원장님이 📣 발표하기를 눌러야 생김
    내 기록(나만 보임): mf_weekly에서 내 sid의 점수·학원등수, 전국등수는 발행 리포트(stu_reports_)에서
    등수 기준 = 같은 시험지를 푼 학생 전원 (다른 친구의 등수·점수는 표시하지 않음) */
-var HS={loaded:false,ann:null,weekly:[],sid:null,cat:[],next:null,groups:[],behav:{},natmap:{},pub:null};
+var HS={loaded:false,ann:null,weekly:[],sid:null,cat:[],next:null,groups:[],behav:{},natmap:{},pub:null,series:null};  // v2-37: series = 원장님이 고른 내 과정
 async function hallStuLoad(force){
   if(HS.loaded&&!force) return;
   if(isTest||!sb||!studentInfo){ HS.loaded=true; return; }
   try{
-    var r=await sb.from('lumen_store').select('key,value').in('key',['hall_announce','mf_weekly','mf_wk_catalog','wk_next','wk_groups','mf_ws_behaviors','wk_pub']);
+    var r=await sb.from('lumen_store').select('key,value').in('key',['hall_announce','mf_weekly','mf_wk_catalog','wk_next','wk_groups','mf_ws_behaviors','wk_pub','wk_series']);
     (r.data||[]).forEach(function(row){
       var v=row.value; try{ if(typeof v==='string') v=JSON.parse(v); }catch(e){}
       if(row.key==='hall_announce') HS.ann=v;
@@ -6571,6 +6592,7 @@ async function hallStuLoad(force){
       else if(row.key==='wk_groups') HS.groups=(v&&v.groups)||[];   // v2-28: 시험 그룹
       else if(row.key==='mf_ws_behaviors') HS.behav=(v&&v.map)||{}; // v2-30: 전국 등수 원본 (원클릭 보고서 수집)
       else if(row.key==='wk_pub') HS.pub=v||null;                   // v2-30: 원장님 표시 설정 (전국·학원 등수)
+      else if(row.key==='wk_series') HS.series=(v&&v.map)||null;    // v2-37: 원장님이 고른 학생별 과정(현행/선행)
     });
     // 내 mf_student_id 매칭 (로드맵·스포트라이트와 동일 규칙: 코드 우선, 동명이인이면 매칭 안 함)
     var r2=await sb.from('mf_students').select('mf_student_id,name,lumen_rec_code');
@@ -6641,7 +6663,7 @@ function hsMyTaken(){
 }
 // 내가 보는 과정들 — 응시 이력 + 나에게 온 배분, 현행(내 학년) 우선 정렬
 function hsMySeriesKeys(){
-  var keys=[], seen={};
+  var keys=[], seen={}, asg={};   // v2-36: asg = 원장님이 배분한 과정
   var taken=hsMyTaken();
   Object.keys(taken).sort(function(a,b){ return String(taken[b].date).localeCompare(String(taken[a].date)); }).forEach(function(wid){
     var c=hsCatById(wid); if(!c) return; var k=hsSeriesKeyOf(c); if(!seen[k]){ seen[k]=1; keys.push(k); }
@@ -6654,8 +6676,24 @@ function hsMySeriesKeys(){
       var match=(t.scope==='student'&&String(t.key)===myCode)||(t.scope==='group'&&String(t.key)===myGroup)||(t.scope==='grade'&&String(t.key)===myGrade)
         ||(t.scope==='wkgroup'&&myGids.indexOf(String(t.key))>=0);   // v2-28: 시험 그룹 배분
       if(!match) return;
-      var c=hsCatById(t.wid); if(!c) return; var k=hsSeriesKeyOf(c); if(!seen[k]){ seen[k]=1; keys.push(k); }
+      var c=hsCatById(t.wid); if(!c) return; var k=hsSeriesKeyOf(c); asg[k]=1; if(!seen[k]){ seen[k]=1; keys.push(k); }
     });
+  }
+  /* v2-36: 이미 올라간(졸업한) 과정 숨기기.
+     예) 초6이 중1 선행반으로 올라가면 예전 초6 시험지 이력 때문에 「다음 주간테스트」 카드가
+     초6·초6(15개정)·중1 이렇게 3장이나 떴다.
+     규칙 — 원장님이 배분한 과정 중 가장 높은 학년을 기준으로, 그보다 아래 학년이면서
+     배분은 없고 「응시 이력만」 있는 과정은 지나간 과정으로 보고 숨긴다.
+     배분이 하나도 없는 학생은 기준이 없으므로 지금까지와 똑같이 모두 보여준다(안전). */
+  /* v2-37: 원장님이 학원앱에서 내 과정을 직접 고르셨으면 그대로 따른다(최우선).
+     고르지 않았으면 아래 자동 규칙을 그대로 쓴다. */
+  var pick=(studentInfo&&HS.series&&HS.series[String(studentInfo.lumen_rec_code||'')])||null;
+  if(pick&&pick.length){
+    keys=pick.slice();
+  } else {
+    var baseR=null;
+    Object.keys(asg).forEach(function(k){ var r=hsSeriesRank(k); if(r!=null&&(baseR==null||r>baseR)) baseR=r; });
+    if(baseR!=null) keys=keys.filter(function(k){ var r=hsSeriesRank(k); return asg[k]||r==null||r>=baseR; });
   }
   var myR=hsGradeRank(hsGradeNorm(studentInfo&&studentInfo.grade));
   keys.sort(function(a,b){
@@ -6754,7 +6792,7 @@ function hsNextCards(){
     } else {
       h+='<div style="font-size:15px;font-weight:900;color:#0d2240">이번 주 수업 시간에 봐요</div>';
     }
-    h+='<div style="margin-top:6px"><span style="background:'+(ahead?'#7c3aed':'#fbbf24')+';color:'+(ahead?'#fff':'#7c2d12')+';border-radius:8px;padding:2px 9px;font-size:11px;font-weight:900">'+h3Esc(String(nx.t).replace(/\s*\(.*$/,''))+' 과정'+(ahead?' · 선행':'')+(nx.n?' · '+nx.n+'문항':'')+'</span></div>';
+    h+='<div style="margin-top:6px"><span style="background:'+(ahead?'#7c3aed':'#fbbf24')+';color:'+(ahead?'#fff':'#7c2d12')+';border-radius:8px;padding:2px 9px;font-size:11px;font-weight:900">'+h3Esc(String(nx.t).replace(/\s*\(.*$/,'')+(nx.rev==='CURRICULUM_15'?' (15개정)':''))+' 과정'+(ahead?' · 선행':'')+(nx.n?' · '+nx.n+'문항':'')+'</span></div>';
     h+='<div style="margin-top:9px;background:'+soft+';border-radius:11px;padding:9px 12px">';
     h+='<div style="font-size:9.5px;font-weight:900;color:'+main+';letter-spacing:1px;margin-bottom:2px">시험 범위</div>';
     h+='<div style="font-size:14px;font-weight:900;color:#0d2240;line-height:1.45">'+h3Esc(nx.ch||'범위는 선생님께 확인해 주세요')+'</div>';
