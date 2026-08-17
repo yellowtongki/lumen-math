@@ -122,3 +122,27 @@ SPA `worksheet.api` / `commonWorksheet.service` 청크에서 추출한 실제 �
   ```
 - 생성 body는 위 템플릿 값 + designTemplateId:41988 로 교체해 사용한다.
 - 태그는 tag:'WEAK_CONCEPT_CHIP'(취약유형) 유지 — 원장 화면 선택과 일치.
+
+### ⚠️ 2026-08-17 이론(개념 박스) 제거 — 진짜 원인 규명 (실측)
+
+`includeProblemFlag:false`로는 이론이 사라지지 않았다(시범2에 그대로 인쇄됨).
+후보를 바꿔가며 학습지를 만들고 PDF를 렌더링해 대조한 결과:
+
+**생성 body의 `conceptIdList`가 이론 박스를 만든다.**
+
+```
+POST /worksheet  body
+  conceptIdList: [15246,15247,15248]  → 문제 위에 「유형명 + 개념 설명 박스」 인쇄됨
+  conceptIdList: []                   → 문제만 인쇄 (원장 요청 형태) ✅
+```
+
+- 문제 선택은 앞 단계 `POST /worksheet/filter/concept`가 conceptIds로 이미 끝내므로,
+  생성 body에서 비워도 **문항 구성은 전혀 달라지지 않는다**.
+- 실측: 시범3(80560746) — conceptIdList:[] → 이론 없이 문제 6개만, 녹색 서식 정상.
+- 워커(collect_request_worker.js)는 이 값을 비워 보내도록 수정 완료.
+
+### 학습지 삭제 (실검증)
+```
+DELETE /worksheet   body = [80560709, 80560712]     ← 배열을 그대로 보낸다
+  ※ {worksheetIds:[...]} / {ids:[...]} 는 400 MESSAGE_NOT_READABLE
+```
