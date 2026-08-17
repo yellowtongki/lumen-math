@@ -147,7 +147,11 @@ async function makeOneWorksheet(job) {
   const made = await mfCall('POST', '/worksheet', {
     filterId,
     problemList: list.slice(0, count).map((p) => ({ id: p.id, tagTop: p.tagTop || null })),
-    conceptIdList: conceptIds, littleChapterConceptIdList: [],
+    // ★ 이론(개념 박스) 제거의 핵심: 생성 body의 conceptIdList를 비운다.
+    //   문제 선택은 위 필터가 이미 conceptIds로 끝냈으므로 구성에는 영향이 없고,
+    //   이 값을 채워 보내면 문제 위에 「유형명 + 개념 설명 박스」가 함께 인쇄된다.
+    //   (실측: 채우면 이론 있음 / 비우면 문제만 — 원장 요청은 문제만)
+    conceptIdList: [], littleChapterConceptIdList: [],
     assignStudentIdList: (job.assign && job.mfStudentId) ? [job.mfStudentId] : [],
     shareScope: 'ACADEMY',
     title: job.title || `리커버리 ${job.name || ''}`.trim(),
