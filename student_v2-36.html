@@ -6662,7 +6662,7 @@ function hsMyTaken(){
 }
 // 내가 보는 과정들 — 응시 이력 + 나에게 온 배분, 현행(내 학년) 우선 정렬
 function hsMySeriesKeys(){
-  var keys=[], seen={};
+  var keys=[], seen={}, asg={};   // v2-36: asg = 원장님이 배분한 과정
   var taken=hsMyTaken();
   Object.keys(taken).sort(function(a,b){ return String(taken[b].date).localeCompare(String(taken[a].date)); }).forEach(function(wid){
     var c=hsCatById(wid); if(!c) return; var k=hsSeriesKeyOf(c); if(!seen[k]){ seen[k]=1; keys.push(k); }
@@ -6675,9 +6675,18 @@ function hsMySeriesKeys(){
       var match=(t.scope==='student'&&String(t.key)===myCode)||(t.scope==='group'&&String(t.key)===myGroup)||(t.scope==='grade'&&String(t.key)===myGrade)
         ||(t.scope==='wkgroup'&&myGids.indexOf(String(t.key))>=0);   // v2-28: 시험 그룹 배분
       if(!match) return;
-      var c=hsCatById(t.wid); if(!c) return; var k=hsSeriesKeyOf(c); if(!seen[k]){ seen[k]=1; keys.push(k); }
+      var c=hsCatById(t.wid); if(!c) return; var k=hsSeriesKeyOf(c); asg[k]=1; if(!seen[k]){ seen[k]=1; keys.push(k); }
     });
   }
+  /* v2-36: 이미 올라간(졸업한) 과정 숨기기.
+     예) 초6이 중1 선행반으로 올라가면 예전 초6 시험지 이력 때문에 「다음 주간테스트」 카드가
+     초6·초6(15개정)·중1 이렇게 3장이나 떴다.
+     규칙 — 원장님이 배분한 과정 중 가장 높은 학년을 기준으로, 그보다 아래 학년이면서
+     배분은 없고 「응시 이력만」 있는 과정은 지나간 과정으로 보고 숨긴다.
+     배분이 하나도 없는 학생은 기준이 없으므로 지금까지와 똑같이 모두 보여준다(안전). */
+  var baseR=null;
+  Object.keys(asg).forEach(function(k){ var r=hsSeriesRank(k); if(r!=null&&(baseR==null||r>baseR)) baseR=r; });
+  if(baseR!=null) keys=keys.filter(function(k){ var r=hsSeriesRank(k); return asg[k]||r==null||r>=baseR; });
   var myR=hsGradeRank(hsGradeNorm(studentInfo&&studentInfo.grade));
   keys.sort(function(a,b){
     var ar=hsSeriesRank(a), br=hsSeriesRank(b);
@@ -6775,7 +6784,7 @@ function hsNextCards(){
     } else {
       h+='<div style="font-size:15px;font-weight:900;color:#0d2240">이번 주 수업 시간에 봐요</div>';
     }
-    h+='<div style="margin-top:6px"><span style="background:'+(ahead?'#7c3aed':'#fbbf24')+';color:'+(ahead?'#fff':'#7c2d12')+';border-radius:8px;padding:2px 9px;font-size:11px;font-weight:900">'+h3Esc(String(nx.t).replace(/\s*\(.*$/,''))+' 과정'+(ahead?' · 선행':'')+(nx.n?' · '+nx.n+'문항':'')+'</span></div>';
+    h+='<div style="margin-top:6px"><span style="background:'+(ahead?'#7c3aed':'#fbbf24')+';color:'+(ahead?'#fff':'#7c2d12')+';border-radius:8px;padding:2px 9px;font-size:11px;font-weight:900">'+h3Esc(String(nx.t).replace(/\s*\(.*$/,'')+(nx.rev==='CURRICULUM_15'?' (15개정)':''))+' 과정'+(ahead?' · 선행':'')+(nx.n?' · '+nx.n+'문항':'')+'</span></div>';
     h+='<div style="margin-top:9px;background:'+soft+';border-radius:11px;padding:9px 12px">';
     h+='<div style="font-size:9.5px;font-weight:900;color:'+main+';letter-spacing:1px;margin-bottom:2px">시험 범위</div>';
     h+='<div style="font-size:14px;font-weight:900;color:#0d2240;line-height:1.45">'+h3Esc(nx.ch||'범위는 선생님께 확인해 주세요')+'</div>';
