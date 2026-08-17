@@ -67,7 +67,129 @@ function runCollector(days) {
   });
 }
 
+/* ═══ v18-65: 학습지 생성 요청(ws_make_req) 처리 ═══════════════════════
+ * 리커버리 카드의 「🧩 학습지 만들기」가 남긴 요청을 처리한다.
+ *   { status:'requested', reqAt, jobs:[{ key, name, title, conceptIds:[...],
+ *     count, mfStudentId, schoolType, grade, assign }] }
+ * 검증된 3단계(docs/mathflat_worksheet_api.md 확정 스펙):
+ *   필터 생성 → 문제 목록 → 학습지 생성(주간 리커버리 템플릿 41988 · 이론 제외)
+ */
+const WS_KEY = 'ws_make_req';
+const MF_API = 'https://api.mathflat.com';
+const MF_WEB = 'https://teacher.mathflat.com';
+// 원장님의 「주간 리커버리」 디자인 템플릿(41988) 실측값 — 녹색 · 이론(개념 박스) 제외
+const WS_DESIGN = {
+  layoutType: 11, layoutColor: 'GREEN', partitionType: 4,
+  wrongAnswerNoteFlag: false, conceptNameFlag: false, problemTrendFlag: false,
+  answerRateFlag: false, qrFlag: true, relationWorkbookFlag: true,
+  includeProblemFlag: false, pdfDateType: 'TODAY', pdfDate: null,
+  designTemplateId: 41988, problemPadding: 60, conceptSortType: 'CHAPTER',
+};
+let MF_TOKEN = null;
+const mfH = () => ({
+  'content-type': 'application/json', accept: 'application/json, text/plain, */*',
+  'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com',
+  authorization: `Bearer ${MF_TOKEN}`, 'x-auth-token': MF_TOKEN,
+  origin: MF_WEB, referer: MF_WEB + '/',
+});
+async function mfLogin() {
+  const r = await fetch(`${MF_API}/v2/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com', origin: MF_WEB, referer: MF_WEB + '/' },
+    body: JSON.stringify({ id: process.env.MATHFLAT_ID.trim(), password: process.env.MATHFLAT_PASSWORD.trim(), userType: 'TEACHER', serviceType: 'MATHFLAT' }),
+  });
+  const j = await r.json();
+  if (!r.ok || !j.accessToken) throw new Error(`매쓰플랫 로그인 실패: ${j.code || r.status}`);
+  MF_TOKEN = j.accessToken;
+}
+async function mfCall(method, p, body) {
+  const r = await fetch(`${MF_API}${p}`, { method, headers: mfH(), body: body ? JSON.stringify(body) : undefined });
+  const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch (_) {}
+  const d = j && (j.data !== undefined ? j.data : j);
+  if (!r.ok) throw new Error(`${r.status} ${(j && j.code) || ''} @ ${p}`);
+  return d;
+}
+async function getWsReq() {
+  const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.${WS_KEY}&select=value`, { headers: sbH() });
+  if (!r.ok) return null;
+  const rows = await r.json();
+  let v = rows[0] && rows[0].value;
+  if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+  return v || null;
+}
+async function setWsReq(obj) {
+  await fetch(`${SB_URL}/rest/v1/lumen_store?on_conflict=key`, {
+    method: 'POST', headers: { ...sbH(), Prefer: 'resolution=merge-duplicates' },
+    body: JSON.stringify([{ key: WS_KEY, value: obj }]),
+  });
+}
+/* 학생 1명 분량 학습지 생성 — 성공 시 {ok:true, worksheetId, problemN} */
+async function makeOneWorksheet(job) {
+  const conceptIds = (job.conceptIds || []).map(Number).filter(Boolean);
+  if (!conceptIds.length) return { ok: false, why: '약점 유형 없음' };
+  const count = Math.min(30, Math.max(4, Number(job.count) || 12));
+  // ① 필터
+  const filter = await mfCall('POST', '/worksheet/filter/concept', {
+    type: 'CONCEPT', conceptIdList: conceptIds,
+    excludedTopicIds: [], excludedSubTopicIds: [], problemList: null,
+    problemCount: count, level: 2, levelWeight: [0, 50, 50, 0, 0],
+    problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: false,
+    excludePrevious: false, previousExclusionScope: null, studentIds: null,
+    excludeOOC: true, equalityLevel: null, minRate: 0, maxRate: 100,
+    selectedConceptIdList: [], selectedLittleChapterIdList: [],
+  });
+  const filterId = filter.filterId || filter;
+  // ② 문제 목록
+  const probs = await mfCall('POST', '/worksheet/problem', { filterId });
+  const list = Array.isArray(probs) ? probs : (probs.problemList || []);
+  if (!list.length) return { ok: false, why: '조건에 맞는 문제 없음' };
+  // ③ 생성 (+선택 배정)
+  const made = await mfCall('POST', '/worksheet', {
+    filterId,
+    problemList: list.slice(0, count).map((p) => ({ id: p.id, tagTop: p.tagTop || null })),
+    conceptIdList: conceptIds, littleChapterConceptIdList: [],
+    assignStudentIdList: (job.assign && job.mfStudentId) ? [job.mfStudentId] : [],
+    shareScope: 'ACADEMY',
+    title: job.title || `리커버리 ${job.name || ''}`.trim(),
+    writer: '김정수 선생님', prefix: '취약유형', tag: 'WEAK_CONCEPT_CHIP',
+    schoolType: job.schoolType || 'MIDDLE', grade: String(job.grade || '1'),
+    revision: 'CURRICULUM_22',
+    ...WS_DESIGN,
+  });
+  const worksheetId = (made && (made.id || made.worksheetId)) || made;
+  return { ok: true, worksheetId, problemN: Math.min(count, list.length) };
+}
+async function runWsRequests() {
+  const req = await getWsReq();
+  if (!req || req.status !== 'requested' || !Array.isArray(req.jobs) || !req.jobs.length) return false;
+  log(`학습지 생성 요청 발견 — ${req.jobs.length}건`);
+  await setWsReq({ ...req, status: 'running', startedAt: new Date().toISOString(), note: '학습지 만드는 중…' });
+  try { await mfLogin(); } catch (e) {
+    await setWsReq({ ...req, status: 'done', ok: false, finishedAt: new Date().toISOString(), note: '매쓰플랫 로그인 실패 — 잠시 후 다시 시도해 주세요' });
+    log('로그인 실패:', e.message); return true;
+  }
+  const results = [];
+  for (const job of req.jobs) {
+    try {
+      const r = await makeOneWorksheet(job);
+      results.push({ key: job.key, name: job.name, ...r });
+      log(`  ${job.name}: ${r.ok ? `✅ id=${r.worksheetId} (${r.problemN}문항)` : `실패 — ${r.why}`}`);
+    } catch (e) {
+      results.push({ key: job.key, name: job.name, ok: false, why: e.message.slice(0, 80) });
+      log(`  ${job.name}: 오류 — ${e.message.slice(0, 80)}`);
+    }
+    await new Promise((r) => setTimeout(r, 400));
+  }
+  const okN = results.filter((r) => r.ok).length;
+  await setWsReq({ ...req, status: 'done', ok: okN > 0, results, finishedAt: new Date().toISOString(), note: `학습지 ${okN}/${results.length}개 생성` });
+  log(`학습지 생성 완료 — ${okN}/${results.length}`);
+  return true;
+}
+
 (async () => {
+  // 학습지 생성 요청은 수집보다 가볍고 빠르므로 먼저 처리한다
+  try { await runWsRequests(); } catch (e) { log('학습지 요청 처리 오류:', e.message); }
+
   const req = await getReq();
 
   if (!req || !req.status) { log('대기 중인 요청 없음'); return; }
