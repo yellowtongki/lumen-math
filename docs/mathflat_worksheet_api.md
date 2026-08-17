@@ -105,3 +105,20 @@ SPA `worksheet.api` / `commonWorksheet.service` 청크에서 추출한 실제 �
   filter/concept 경로로 충분해서 필요 없음.
 - 필터 생성은 부작용 없는 임시 객체. 실제 「쓰기」는 4)뿐.
 - 다음 단계: 워커(collect_request_worker 패턴)에 ws_make_req 처리 추가 + 앱 버튼 2곳.
+
+### ⭐ 2026-08-17 원장 확인 후 확정 스펙 (구현에 이 값 사용)
+
+원장 피드백: ① 녹색 「주간 리커버리」 템플릿 사용 ② 문제 시작 전 이론(개념 박스) 제외.
+
+- 디자인 템플릿: **designTemplateId 41988** (「주간 리커버리」, 원장이 매쓰플랫에 만들어 둠)
+  GET /worksheet/design → 목록(13개), GET /worksheet/design/41988 → 상세로 실검증:
+  ```
+  { layoutType:11, layoutColor:'GREEN', partitionType:4,
+    wrongAnswerNoteFlag:false, conceptNameFlag:false, problemTrendFlag:false,
+    answerRateFlag:false, qrFlag:true, relationWorkbookFlag:true,
+    includeProblemFlag:false,   ← 이론(개념 박스) 제외! 시범 1장에 이론이 들어간 건
+                                   이 플래그를 true로 보냈기 때문 (원장 템플릿은 false)
+    pdfDateType:'TODAY' }
+  ```
+- 생성 body는 위 템플릿 값 + designTemplateId:41988 로 교체해 사용한다.
+- 태그는 tag:'WEAK_CONCEPT_CHIP'(취약유형) 유지 — 원장 화면 선택과 일치.
