@@ -635,6 +635,15 @@ async function main() {
     await refreshWkCatalog();
     return;
   }
+  // --books-only: 주문 교재 PDF 목록만 새로고침 (매쓰플랫 로그인 필요)
+  if (has('--books-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meBk = await login();
+    log(`로그인 성공 · 학원 ${meBk.academyId}`);
+    await refreshWorkbookPdfs();
+    return;
+  }
   // --weekly-only: 매쓰플랫 로그인 없이 주간테스트 집계만 (Supabase 기존 기록 사용)
   if (has('--weekly-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -707,6 +716,7 @@ async function main() {
     await backfillBehaviors(14); // 놓친 행동영역·전국등수 매일 자동 재시도 (v16-43)
     await refreshConceptNames();
     await refreshBookCatalog();
+    await refreshWorkbookPdfs();   // v18-61: 주문 교재 PDF 목록(앱 다운로드용)
     await refreshTypeDb();
     await refreshRoadmap();
     await refreshWeekly();
@@ -956,6 +966,47 @@ async function refreshMonthScores(students) {
 // 학생별 매쓰플랫 교재 목록 + 교재 메타(이름·출판사·학년학기)를
 // lumen_store 'mf_books'에 저장. (학생앱 아하노트 교재 선택,
 // 학원앱 '매쓰플랫 교재 가져오기'가 이 카탈로그를 사용)
+/* 학원이 주문한 시그니처 교재의 PDF 목록을 앱에 넘긴다 (v18-61).
+ *
+ * 매쓰플랫 교재 목록 응답에 PDF 주소(pdfUrl·solutionPdfUrl)가 그대로 들어 있고,
+ * 그 주소는 로그인 없이 열리는 고정 주소다. 그래서 파일을 우리가 보관하지 않고
+ * 「목록만」 Supabase에 저장해두면, 학원앱이 그 목록을 읽어 다운로드 링크를 걸 수 있다.
+ * (학원앱은 공개된 파일이라 매쓰플랫 비밀번호를 넣을 수 없으므로 이렇게 우회한다)
+ *
+ * 저장 키: lumen_store 'mf_workbook_pdfs'
+ *   { at, books:[{id,title,grade,page,orderDatetime,pdfUrl,solutionPdfUrl,thumb}] }
+ */
+async function refreshWorkbookPdfs() {
+  try {
+    const gradeOf = (w) => {
+      const sc = { ELEMENTARY: '초', MIDDLE: '중', HIGH: '고' }[w.schoolType] || '';
+      if (!sc) return '';
+      return sc + (w.grade != null ? w.grade : '') + (w.semester != null ? '-' + w.semester : '');
+    };
+    // 자체 제작(주문) 교재 — 실제로 주문한 것만 추린다
+    const list = await api('/workbook?type=CUSTOM_SIGNATURE&size=500');
+    const all = Array.isArray(list) ? list : ((list && list.content) || []);
+    const books = all
+      .filter((w) => w.orderDatetime && (w.pdfUrl || w.solutionPdfUrl))
+      .map((w) => ({
+        id: w.id,
+        title: w.fulltitle || w.title || '',
+        grade: gradeOf(w),
+        page: w.page || null,
+        orderDatetime: w.orderDatetime || '',
+        orderStatus: w.orderStatus || '',
+        pdfUrl: w.pdfUrl || '',
+        solutionPdfUrl: w.solutionPdfUrl || '',
+        thumb: w.thumbnailImageUrl || '',
+      }))
+      .sort((a, b) => String(b.orderDatetime).localeCompare(String(a.orderDatetime)));
+    await storeSet('mf_workbook_pdfs', { at: new Date().toISOString(), books });
+    log(`교재 PDF 목록: ${books.length}권 저장 (해설 있는 것 ${books.filter((b) => b.solutionPdfUrl).length}권)`);
+  } catch (e) {
+    log('교재 PDF 목록 실패:', e.message);
+  }
+}
+
 async function refreshBookCatalog() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
