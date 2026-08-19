@@ -148,6 +148,30 @@ problem_image_url  문제 이미지 (선택 — 약관 검토)
 - **정답 사전은 회차와 무관**: 같은 교재는 회차가 달라도 문항·정답이 같으므로 mf_book_answers는 회차 없이 교재·페이지 단위로 재사용
 - 수집기·학생앱·되돌려쓰기 모두 revisionId를 키에 포함
 
+## 11-2. ✅ 되돌려쓰기 API 계약 확정 (2026-08-19 실검증, 원복 완료)
+
+되돌리기 가능한 시범 1문항으로 실제 검증 통과. **읽기 → CORRECT 쓰기 → 확인 → NONE 원복 → 재확인** 모두 성공.
+
+**읽기** (문항·현재채점 조회):
+```
+GET /student-workbook/student/{studentId}/{studentWorkbookId}/{revisionId}
+    → { workbook, round, page:{content:[{progressId, workbookPage, status}...]} }   # 페이지 목록
+GET /student-workbook/student/{studentId}/{studentWorkbookId}/{revisionId}/{progressId}
+    → [{ id(=workbookProblemId), number, type, answer, autoScoredType, scoring:{...} }...]   # 페이지 문항+채점
+    scoring = { studentWorkbookProgressId, workbookProblemId, userAnswer, userAnswers, result, assists, updateDatetime }
+```
+**쓰기** (채점 되돌려쓰기 — ★ 본문은 「배열 그대로」):
+```
+PATCH /student-workbook/scoring?version=v2
+  body = [ { studentWorkbookProgressId, workbookProblemId, userAnswer, result } ]   # 배열!
+  result 값: CORRECT(O) · INCORRECT(X) · NONE(미채점) · (모름 ? 값은 구현 때 확정)
+  ※ {studentWorkbookProgressId, scoringList:[...]} / {single obj} 는 400 MESSAGE_NOT_READABLE
+```
+- ID 얻는 길: 교재목록 `GET /student-workbook/student/{sid}?workbookType=PUBLIC`(시중교재)·SCHOOL(교과서)·CUSTOM(내교재)
+  → 교재.studentWorkbook.id = studentWorkbookId, recentRevisionId, roundToRevisionRoundMap(회차별 progressId)
+- userAnswer는 200이지만 읽기에 null로 보임 → 구현 때 확인(result 반영은 확실). 모름(?) 결과값도 구현 때 확정.
+- **비밀번호는 워커만** → 학생앱은 채점을 lumen_store에 올리고 워커가 이 PATCH 실행 (지금가져오기 패턴)
+
 ## 12. 계획 확정 — 착수 대기
 
 위 결정으로 계획이 모두 확정됨. 남은 것은 코딩뿐이며, **원장님 「시작」 지시 대기**.
