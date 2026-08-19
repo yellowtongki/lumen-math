@@ -1327,6 +1327,53 @@ async function refreshWkCand() {
   } catch (e) { log('주간테스트 후보 갱신 실패(치명적 아님):', e.message); }
 }
 
+
+// ★ v18-73: 고등부 내신대비 학습지 → 주간 카탈로그 항목
+//   items 배열에 직접 밀어 넣는다. 반환값 = 추가한 개수.
+async function addHighNesin(url, sbHeaders, items) {
+  let tags = {};
+  try {
+    const rt = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_tags&select=value`, { headers: sbHeaders });
+    if (rt.ok) { const j = await rt.json(); tags = ((j[0] || {}).value || {}).tags || {}; }
+  } catch (e) {}
+  const nesinIds = Object.keys(tags).filter((id) => /내신/.test(String((tags[id] || {}).titleTag || '')));
+  if (!nesinIds.length) return 0;
+
+  const since = new Date(Date.now() - 400 * 86400000).toISOString().slice(0, 10);
+  const map = {};
+  for (let i = 0; i < nesinIds.length; i += 100) {
+    const chunk = nesinIds.slice(i, i + 100).join(',');
+    const r = await fetch(`${url}/rest/v1/mf_answer_records?select=worksheet_id,worksheet_title,chapter,school,score_datetime,concept_id&worksheet_id=in.(${chunk})&score_datetime=gte.${since}&limit=20000`, { headers: sbHeaders });
+    if (!r.ok) continue;
+    (await r.json()).forEach((x) => {
+      if (!x.worksheet_id || x.school !== 'HIGH') return;      // 고등만 (중등은 진짜 주간 TEST가 있다)
+      const m = map[x.worksheet_id] = map[x.worksheet_id] || { t: x.worksheet_title || '', ch: x.chapter || '', d: '', q: {} };
+      if (!m.ch && x.chapter) m.ch = x.chapter;
+      const dt = String(x.score_datetime || '').slice(0, 10);
+      if (dt > m.d) m.d = dt;
+      if (x.concept_id != null) m.q[x.concept_id] = 1;         // 문항 수 근사(유형 수)
+    });
+  }
+  const have = new Set(items.map((x) => String(x.id)));
+  let n = 0;
+  Object.keys(map).forEach((wid) => {
+    if (have.has(String(wid))) return;
+    const m = map[wid];
+    if (!m.d) return;
+    // 제목 앞 [공통수학2] → 과목명. 없으면 「고등」으로 묶는다.
+    const sm = String(m.t).match(/^\s*\[([^\]]+)\]/);
+    const subj = sm ? sm[1].trim() : '고등';
+    items.push({
+      id: Number(wid), sc: 'HIGH', g: subj, rev: 'CURRICULUM_22',
+      t: subj + ' (' + m.d.replace(/-/g, '.') + ')',
+      ch: m.ch || '', n: Object.keys(m.q).length || null,
+      nesin: true, orig: m.t,
+    });
+    n++;
+  });
+  return n;
+}
+
 async function refreshWkCatalog() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
@@ -1344,6 +1391,19 @@ async function refreshWkCatalog() {
       await sleep(150);
     }
     if (!items.length) { log('주간 카탈로그: 조회 결과 없음 → 건너뜀'); return; }
+
+    // ★ v18-73: 고등부 「내신대비」 학습지를 카탈로그에 합류
+    //   매쓰플랫은 고등 주간 TEST를 제공하지 않아 카탈로그에 HIGH 계열이 0개였고,
+    //   그래서 고등부 학생앱에는 「다음 주간테스트」 범위가 아예 뜨지 않았다.
+    //   내신대비 태그 학습지는 범위(chapter)를 갖고 있으므로 그대로 시험지처럼 쓴다.
+    //   계열은 제목 앞 대괄호의 과목명([공통수학2] 등)으로 나눈다 — 고등은 학년이 숫자가 아니라 과목이라서.
+    //   (카탈로그는 「예고 후보」일 뿐이라 발표·명예의 전당에는 영향이 없다. 실제 주간테스트 합류는
+    //    지금처럼 원장이 고른 wk_manual_ids만.)
+    try {
+      const nCand = await addHighNesin(url, sbHeaders, items);
+      if (nCand) log(`주간 카탈로그: 고등 내신대비 ${nCand}개 합류`);
+    } catch (e) { log('고등 내신대비 합류 실패(치명적 아님):', e.message); }
+
     const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
       method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify([{ key: 'mf_wk_catalog', value: { updated: new Date().toISOString(), items }, updated_at: new Date().toISOString() }]),
