@@ -13,11 +13,14 @@
   function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = b; b = a % b; a = t; } return a || 1; }
   function frac(n, d) { if (d === 0) return null; var g = gcd(n, d); var s = (d < 0) ? -1 : 1; return { v: (n / d), num: s * n / g, den: Math.abs(d) / g }; }
 
-  /* 답 한 조각 → 값. 읽으면 {v, num?, den?}, 못 읽으면 null */
+  /* 답 한 조각 → 값. 읽으면 {v, num?, den?}, 못 읽으면 null
+   * v 는 숫자이거나, 보기 기호(ㄱㄴㄷ…)일 때는 문자열이다. */
   function toValue(raw) {
     if (raw == null) return null;
     var s = String(raw).trim();
     if (!s) return null;
+    // 보기 기호 ㄱ~ㅎ — 「ㄹ, ㄱ」처럼 복수답은 splitAnswer가 나눈 뒤 여기로 온다 (v2-41)
+    if (/^[ㄱ-ㅎ]$/.test(s)) return { v: s };
     // LaTeX 꾸밈·공백 제거
     s = s.replace(/\\text\s*\{[^}]*\}/g, '')     // \text{ cm}
          .replace(/\\mathrm\s*\{[^}]*\}/g, '')
@@ -72,7 +75,13 @@
     var pieces = splitAnswer(str);
     var vals = [];
     for (var i = 0; i < pieces.length; i++) { var v = toValue(pieces[i]); if (v == null) return null; vals.push(v.v); }
-    return vals.sort(function (a, b) { return a - b; });
+    // 숫자·기호 혼합 정렬 (복수답은 순서 무관 비교 — 「ㄹ, ㄱ」= 「ㄱ, ㄹ」)
+    return vals.sort(function (a, b) {
+      var an = (typeof a === 'number'), bn = (typeof b === 'number');
+      if (an && bn) return a - b;
+      if (an !== bn) return an ? -1 : 1;
+      return String(a) < String(b) ? -1 : (String(a) > String(b) ? 1 : 0);
+    });
   }
 
   /* 채점: correct 정답 vs student 학생입력.
@@ -86,7 +95,11 @@
     if (sv == null) return { gradable: true, correct: false };   // 학생이 이상하게 입력
     if (cv.length !== sv.length) return { gradable: true, correct: false };
     var eps = 1e-9;
-    for (var i = 0; i < cv.length; i++) { if (Math.abs(cv[i] - sv[i]) > eps) return { gradable: true, correct: false }; }
+    for (var i = 0; i < cv.length; i++) {
+      var a = cv[i], b = sv[i];
+      if (typeof a === 'number' && typeof b === 'number') { if (Math.abs(a - b) > eps) return { gradable: true, correct: false }; }
+      else if (String(a) !== String(b)) return { gradable: true, correct: false };
+    }
     return { gradable: true, correct: true };
   }
 
