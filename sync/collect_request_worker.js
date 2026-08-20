@@ -202,7 +202,10 @@ async function runHwSync() {
   const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=like.hw_sync_*&select=key,value`, { headers: sbH() });
   if (!r.ok) return false;
   const rows = await r.json();
-  const queues = rows.map((x) => ({ key: x.key, v: (typeof x.value === 'string' ? JSON.parse(x.value) : x.value) || {} }))
+  // 주의: SQL LIKE에서 _ 는 한 글자 와일드카드 → hw_sync_* 가 hw_synced_*(반영 이력)까지 잡는다.
+  // 이력을 큐로 착각해 지우지 않도록 정확한 키만 남긴다.
+  const queues = rows.filter((x) => /^hw_sync_[^_]+$/.test(x.key))
+    .map((x) => ({ key: x.key, v: (typeof x.value === 'string' ? JSON.parse(x.value) : x.value) || {} }))
     .filter((q) => Array.isArray(q.v.items) && q.v.items.length);
   if (!queues.length) return false;
 
