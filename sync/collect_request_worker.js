@@ -190,7 +190,94 @@ async function runWsRequests() {
   return true;
 }
 
+/* ═══ v18-74: 교재 채점 되돌려쓰기 (hw_sync_<학생코드>) ═══════════════════
+ * 학생앱이 채점한 O/X/?를 매쓰플랫에 기록한다 (계약: docs/hw_autoscore_plan.md 11-2).
+ * 학생앱은 비밀번호가 없으므로 lumen_store 'hw_sync_<code>'에 대기열만 쌓는다:
+ *   { items:[{ id, pid(progressId), wpId(workbookProblemId), result:'CORRECT|INCORRECT|UNKNOWN',
+ *              userAnswer, at }], updated }
+ * 워커가 progressId별로 묶어 PATCH /student-workbook/scoring (본문=배열 그대로) 후
+ * 성공한 항목을 대기열에서 제거하고 'hw_synced_<code>'에 이력으로 남긴다.
+ * 실패 항목은 남겨서 다음 실행(5분 뒤·새벽)에 재시도된다. */
+async function runHwSync() {
+  const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=like.hw_sync_*&select=key,value`, { headers: sbH() });
+  if (!r.ok) return false;
+  const rows = await r.json();
+  // 주의: SQL LIKE에서 _ 는 한 글자 와일드카드 → hw_sync_* 가 hw_synced_*(반영 이력)까지 잡는다.
+  // 이력을 큐로 착각해 지우지 않도록 정확한 키만 남긴다.
+  const queues = rows.filter((x) => /^hw_sync_[^_]+$/.test(x.key))
+    .map((x) => ({ key: x.key, v: (typeof x.value === 'string' ? JSON.parse(x.value) : x.value) || {} }))
+    .filter((q) => Array.isArray(q.v.items) && q.v.items.length);
+  if (!queues.length) return false;
+
+  let token = null;
+  try { token = await mfLogin(); } catch (e) { log(`교재채점 반영: 매쓰플랫 로그인 실패 — ${e.message}`); return true; }
+  const RES_MAP = { O: 'CORRECT', X: 'INCORRECT', '?': 'UNKNOWN' };
+  let totOk = 0, totFail = 0;
+
+  for (const q of queues) {
+    const items = q.v.items;
+    // progressId별로 묶어 한 번에 PATCH
+    const byPid = {};
+    items.forEach((it) => { (byPid[it.pid] = byPid[it.pid] || []).push(it); });
+    const okIds = new Set(); const failNote = {};
+    for (const pid of Object.keys(byPid)) {
+      const group = byPid[pid];
+      const body = group.map((it) => ({
+        studentWorkbookProgressId: Number(pid),
+        workbookProblemId: Number(it.wpId),
+        userAnswer: it.userAnswer != null ? String(it.userAnswer) : null,
+        result: RES_MAP[it.result] || it.result || 'NONE',
+      }));
+      try {
+        const res = await mfCall('PATCH', '/student-workbook/scoring?version=v2', body);
+        if (res && res.__ok !== false) { group.forEach((it) => okIds.add(it.id)); }
+        else { group.forEach((it) => { failNote[it.id] = 'PATCH 실패'; }); }
+      } catch (e) {
+        // UNKNOWN(모름)을 서버가 거부하면 각 항목별로 한 번 더 — 안전하게 개별 처리
+        let recovered = 0;
+        for (const it of group) {
+          try {
+            await mfCall('PATCH', '/student-workbook/scoring?version=v2', [{
+              studentWorkbookProgressId: Number(pid), workbookProblemId: Number(it.wpId),
+              userAnswer: it.userAnswer != null ? String(it.userAnswer) : null,
+              result: RES_MAP[it.result] || it.result || 'NONE',
+            }]);
+            okIds.add(it.id); recovered++;
+          } catch (e2) { failNote[it.id] = e2.message; }
+          await new Promise((z) => setTimeout(z, 120));
+        }
+        if (!recovered) log(`교재채점 반영: progress ${pid} 실패 — ${e.message}`);
+      }
+      await new Promise((z) => setTimeout(z, 150));
+    }
+    // 대기열 갱신: 성공 항목 제거(이력으로 이동), 실패 항목 유지
+    const remain = items.filter((it) => !okIds.has(it.id));
+    const done = items.filter((it) => okIds.has(it.id)).map((it) => ({ ...it, syncedAt: new Date().toISOString() }));
+    totOk += done.length; totFail += remain.length;
+    const code = q.key.replace(/^hw_sync_/, '');
+    // 이력 (최근 500개만 유지)
+    if (done.length) {
+      try {
+        const rh = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.hw_synced_${code}&select=value`, { headers: sbH() });
+        let hist = { items: [] };
+        if (rh.ok) { const jh = await rh.json(); if (jh[0] && jh[0].value) hist = (typeof jh[0].value === 'string' ? JSON.parse(jh[0].value) : jh[0].value) || { items: [] }; }
+        hist.items = (hist.items || []).concat(done).slice(-500);
+        hist.updated = new Date().toISOString();
+        await fetch(`${SB_URL}/rest/v1/lumen_store?on_conflict=key`, { method: 'POST', headers: { ...sbH(), Prefer: 'resolution=merge-duplicates' }, body: JSON.stringify([{ key: `hw_synced_${code}`, value: hist }]) });
+      } catch (e) {}
+    }
+    await fetch(`${SB_URL}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST', headers: { ...sbH(), Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify([{ key: q.key, value: { items: remain, updated: new Date().toISOString(), lastRun: new Date().toISOString(), lastFail: Object.keys(failNote).length ? failNote : undefined } }]),
+    });
+  }
+  log(`교재채점 반영: 성공 ${totOk} · 실패(재시도 예정) ${totFail}`);
+  return true;
+}
+
 (async () => {
+  // 교재 채점 되돌려쓰기 — 가장 가볍고 학생이 기다리므로 맨 먼저
+  try { await runHwSync(); } catch (e) { log('교재채점 반영 오류:', e.message); }
   // 학습지 생성 요청은 수집보다 가볍고 빠르므로 먼저 처리한다
   try { await runWsRequests(); } catch (e) { log('학습지 요청 처리 오류:', e.message); }
 
