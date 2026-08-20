@@ -654,6 +654,13 @@ async function main() {
     await refreshBookAnswers();
     return;
   }
+  // --regrade-bookans: 매쓰플랫 로그인 없이 저장된 정답사전의 gradable 판정만 재계산 — v2-41
+  // (채점엔진이 좋아지면 이미 받은 정답으로 자동채점 가능 문항이 늘어난다. API 재호출 없음)
+  if (has('--regrade-bookans')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    await regradeBookAnswers();
+    return;
+  }
   // --weekly-only: 매쓰플랫 로그인 없이 주간테스트 집계만 (Supabase 기존 기록 사용)
   if (has('--weekly-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -1168,6 +1175,38 @@ async function refreshBookAnswers() {
     const pct = totProb ? Math.round(totGrad / totProb * 100) : 0;
     log(`교재 정답사전: 교재 ${totBooks} · 새 페이지 ${totPages} · 문항 ${totProb}(자동채점 ${totGrad}=${pct}%)`);
   } catch (e) { log('교재 정답사전 갱신 실패(치명적 아님):', e.message); }
+}
+
+// v2-41: 저장된 정답사전 전체의 gradable·unit을 현재 엔진 기준으로 재계산 (로그인 불필요)
+async function regradeBookAnswers() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  const rr = await fetch(`${url}/rest/v1/lumen_store?key=like.mf_bookans_*&select=key,value&limit=1000`, { headers: sbHeaders });
+  if (!rr.ok) { log('정답사전 재계산: 목록 조회 실패'); return; }
+  const rows = (await rr.json()).filter((x) => /^mf_bookans_/.test(x.key));
+  let nBook = 0, nProb = 0, nFlip = 0;
+  for (const row of rows) {
+    const store = (typeof row.value === 'string' ? JSON.parse(row.value) : row.value) || {};
+    let changed = false;
+    Object.keys(store.pages || {}).forEach((pid) => {
+      (store.pages[pid].problems || []).forEach((p) => {
+        nProb++;
+        const g = p.objective ? true : (p.type === 'SHORT_ANSWER' && HWGrade.isGradable(p.answer));
+        const u = p.objective ? '' : HWGrade.unitOf(p.answer);
+        if (!!g !== !!p.gradable || u !== (p.unit || '')) { if (!!g !== !!p.gradable) nFlip++; p.gradable = !!g; p.unit = u; changed = true; }
+      });
+    });
+    if (changed) {
+      store.updated = new Date().toISOString();
+      const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+        method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify([{ key: row.key, value: store, updated_at: new Date().toISOString() }]),
+      });
+      if (res.ok) nBook++;
+      await sleep(60);
+    }
+  }
+  log(`정답사전 재계산: 갱신 교재 ${nBook}/${rows.length} · 검사 문항 ${nProb} · 판정 바뀜 ${nFlip}`);
 }
 
 async function refreshBookCatalog() {
