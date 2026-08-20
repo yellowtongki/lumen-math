@@ -650,6 +650,7 @@ async function main() {
     if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
     const meBa = await login();
     log(`로그인 성공 · 학원 ${meBa.academyId}`);
+    await refreshStudentWorkbooks();
     await refreshBookAnswers();
     return;
   }
@@ -735,6 +736,7 @@ async function main() {
     await refreshMonthScores(students);
     await refreshTypeAch();
     await refreshStuck();          // v18-46: 「막힌 문제」 사전 계산 (아하노트 퍼센트의 분모)
+    await refreshStudentWorkbooks(); // v18-74: 학생별 교재·회차·페이지(progressId)
     await refreshBookAnswers();    // v18-74: 교재 채점용 정답사전
     // v18-38: 수학비서 주간테스트 파이프라인 — 지정폴더 스캔·매쓰플랫 업로드 (새벽 전체 수집에 편승)
     if (process.env.MATHSECR_ID && process.env.MATHSECR_PASSWORD) {
@@ -1017,6 +1019,69 @@ async function refreshWorkbookPdfs() {
   }
 }
 
+// ── v18-74: 학생별 교재 상태 (mf_swb_<학생코드>) ──────────────────────────
+// 학생앱 「교재 채점」의 뼈대 데이터. 학생앱은 매쓰플랫에 직접 못 붙으므로
+// 교재·회차(revisionId)·페이지(progressId 포함) 목록을 여기서 미리 만들어 둔다.
+// progressId는 되돌려쓰기(PATCH /student-workbook/scoring)의 필수 키.
+async function refreshStudentWorkbooks() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    const rs = await fetch(`${url}/rest/v1/mf_students?select=mf_student_id,lumen_rec_code,name`, { headers: sbHeaders });
+    if (!rs.ok) { log('학생 교재상태: mf_students 조회 실패'); return; }
+    const students = (await rs.json()).filter((s) => s.lumen_rec_code && s.mf_student_id);
+    const allPages = {};                                   // bid → Set(wpid) — 정답사전 대상
+    let nStu = 0, nBook = 0;
+    for (const st of students) {
+      const books = [];
+      for (const wt of ['PUBLIC', 'SCHOOL', 'CUSTOM']) {
+        let list = null;
+        try { list = await api(`/student-workbook/student/${st.mf_student_id}?workbookType=${wt}`); } catch (e) { continue; }
+        if (!Array.isArray(list)) list = (list && list.content) || [];
+        for (const b of list) {
+          const swId = b.studentWorkbook && b.studentWorkbook.id;
+          const revId = b.recentRevisionId;
+          if (!swId || !revId) continue;
+          let det = null;
+          try { det = await api(`/student-workbook/student/${st.mf_student_id}/${swId}/${revId}?size=500`); } catch (e) { continue; }
+          const content = (det && det.page && det.page.content) || [];
+          const pages = content.map((pg) => ({
+            pid: pg.progressId,
+            wpid: pg.workbookPage && pg.workbookPage.id,
+            page: pg.workbookPage && pg.workbookPage.page,
+            title: (pg.workbookPage && pg.workbookPage.title) || '',
+            st: pg.status || '',
+          })).filter((p) => p.pid && p.wpid);
+          pages.forEach((p) => { (allPages[b.id] = allPages[b.id] || new Set()).add(String(p.wpid)); });
+          books.push({
+            bid: b.id, type: wt, title: (b.fulltitle || ((b.title || '') + ' ' + (b.subtitle || ''))).replace(/\s+/g, ' ').trim(),
+            swId, revId, round: b.recentRevisionRound || 1,
+            rounds: Object.keys(b.roundToRevisionRoundMap || {}).length || 1,
+            recentPage: b.recentPageNumber || null,
+            grade: (({ ELEMENTARY: '초', MIDDLE: '중', HIGH: '고' })[b.schoolType] || '') + (b.grade || ''),
+            pages,
+          });
+          nBook++;
+          await sleep(80);
+        }
+        await sleep(60);
+      }
+      const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+        method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify([{ key: `mf_swb_${st.lumen_rec_code}`, value: { code: st.lumen_rec_code, name: st.name || '', books, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
+      });
+      if (res.ok) nStu++;
+    }
+    // 정답사전 대상 페이지 합집합 저장 (refreshBookAnswers가 읽음 — 등록 교재 전체 페이지)
+    const union = {}; Object.keys(allPages).forEach((bid) => { union[bid] = Array.from(allPages[bid]); });
+    await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify([{ key: 'mf_bookpages', value: { map: union, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
+    });
+    log(`학생 교재상태(mf_swb_*): 학생 ${nStu} · 교재 ${nBook} · 정답사전 대상 ${Object.keys(union).length}권`);
+  } catch (e) { log('학생 교재상태 갱신 실패(치명적 아님):', e.message); }
+}
+
 // ── v18-74: 교재 정답사전 (mf_bookans_<bookId>) ─────────────────────────
 // 학생앱 교재 채점용. 우리 학생이 실제 도달한 (교재·페이지)의 문항·정답을 매쓰플랫에서
 // 받아 채점엔진으로 정규화·gradable 판정해 저장. 회차와 무관(같은 교재는 문항·정답 동일).
@@ -1035,6 +1100,12 @@ async function refreshBookAnswers() {
       batch.forEach((r) => pairs.add(r.book_id + '|' + r.workbook_page_id));
       if (batch.length < 1000) break;
     }
+    // 등록 교재의 「전체 페이지」 (refreshStudentWorkbooks가 만든 mf_bookpages) — 학생앱 채점 대상
+    try {
+      const rp = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_bookpages&select=value`, { headers: sbHeaders });
+      if (rp.ok) { const j = await rp.json(); const map = ((j[0] || {}).value || {}).map || {};
+        Object.keys(map).forEach((bid) => (map[bid] || []).forEach((wpid) => pairs.add(bid + '|' + wpid))); }
+    } catch (e) {}
     if (!pairs.size) { log('교재 정답사전: 도달 페이지 없음 → 건너뜀'); return; }
     // 교재명 사전 (mf_books)
     try {
@@ -1046,7 +1117,7 @@ async function refreshBookAnswers() {
     pairs.forEach((k) => { const [b, p] = k.split('|'); (byBook[b] = byBook[b] || new Set()).add(p); });
 
     // 한 번에 받는 새 페이지 상한 — 매쓰플랫 부하·약관 고려해 점진적으로 채운다(매일 새벽 반복)
-    const PAGE_CAP = Number(process.env.BOOKANS_PAGE_CAP || 120);
+    const PAGE_CAP = Number(process.env.BOOKANS_PAGE_CAP || 500);   // 밤마다 500페이지씩 점진 수집(전체 채워질 때까지)
     let capLeft = PAGE_CAP;
     let totBooks = 0, totPages = 0, totProb = 0, totGrad = 0;
     for (const bid of Object.keys(byBook)) {
