@@ -654,6 +654,15 @@ async function main() {
     await refreshBookAnswers();
     return;
   }
+  // --kmm-only: KMM 경시 성적만 수집
+  if (has('--kmm-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meK = await login();
+    log(`로그인 성공 · 학원 ${meK.academyId}`);
+    await refreshKmm();
+    return;
+  }
   // --regrade-bookans: 매쓰플랫 로그인 없이 저장된 정답사전의 gradable 판정만 재계산 — v2-41
   // (채점엔진이 좋아지면 이미 받은 정답으로 자동채점 가능 문항이 늘어난다. API 재호출 없음)
   if (has('--regrade-bookans')) {
@@ -734,6 +743,7 @@ async function main() {
     await refreshConceptNames();
     await refreshBookCatalog();
     await refreshWorkbookPdfs();   // v18-61: 주문 교재 PDF 목록(앱 다운로드용)
+    await refreshKmm();            // v1-19: KMM 경시대회 성적·수상
     await refreshTypeDb();
     await refreshRoadmap();
     await refreshWeekly();
@@ -995,6 +1005,66 @@ async function refreshMonthScores(students) {
  * 저장 키: lumen_store 'mf_workbook_pdfs'
  *   { at, books:[{id,title,grade,page,orderDatetime,pdfUrl,solutionPdfUrl,thumb}] }
  */
+// ── v1-19: KMM 수학경시대회 성적 (매쓰플랫이 주관 — /exam API) ─────────────
+// 학부모앱·진학 나침반이 쓸 「우리 학생 경시 기록」을 lumen_store 'mf_kmm'에 저장.
+// 회차별로 학년 시험이 나뉘고, 각 시험 안에 응시 학생의 점수·수상등급(tier)이 들어 있다.
+// tier: GOLD_AWARD/SILVER_AWARD/BRONZE_AWARD/ENCOURAGEMENT_AWARD/NOT_AWARDED
+async function refreshKmm() {
+  try {
+    const sch = await api('/exam/schedule?type=KMM');
+    const rounds = (Array.isArray(sch) ? sch : []).filter((x) => x && x.year && x.month);
+    if (!rounds.length) { log('KMM 경시: 일정 없음'); return; }
+    // 최근 회차부터 (오래된 회차는 이미 저장돼 있으면 건너뛴다)
+    let prev = {};
+    try {
+      const r0 = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.mf_kmm&select=value`, { headers: sbH() });
+      if (r0.ok) { const j = await r0.json(); prev = (j[0] && j[0].value) || {}; }
+    } catch (e) {}
+    const byStudent = (prev.byStudent && typeof prev.byStudent === 'object') ? prev.byStudent : {};
+    const seen = prev.rounds || {};
+    const CAP = Number(process.env.KMM_ROUND_CAP || 30);
+    let done = 0, nRec = 0;
+    const sorted = rounds.slice().sort((a, b) => (b.year - a.year) || (b.month - a.month));
+    for (const r of sorted) {
+      if (done >= CAP) break;
+      const ym = `${r.year}-${String(r.month).padStart(2, '0')}`;
+      // 이미 받아둔 회차이고 「채점 끝(RESOLVED)」이면 다시 받지 않는다
+      if (seen[ym] === 'RESOLVED' && r.progress === 'RESOLVED') continue;
+      let exams = null;
+      try { exams = await api(`/exam/by-year-month?yearMonth=${ym}&type=KMM`); } catch (e) { continue; }
+      if (!Array.isArray(exams)) continue;
+      exams.forEach((ex) => {
+        const grade = ({ ELEMENTARY: '초', MIDDLE: '중', HIGH: '고' }[ex.schoolType] || '') + (ex.grade || '');
+        (ex.studentExams || []).forEach((se) => {
+          if (!se || !se.studentId) return;
+          const rec = {
+            ym, round: r.round || null, title: r.title || '', grade,
+            examId: ex.id, score: se.score != null ? se.score : null,
+            correct: se.correctCount != null ? se.correctCount : null,
+            wrong: se.wrongCount != null ? se.wrongCount : null,
+            tier: se.tier || 'NOT_AWARDED', status: se.status || '',
+          };
+          const arr = byStudent[se.studentId] = byStudent[se.studentId] || [];
+          const at = arr.findIndex((x) => x.ym === ym && x.examId === ex.id);
+          if (at >= 0) arr[at] = rec; else arr.push(rec);
+          nRec++;
+        });
+      });
+      seen[ym] = r.progress || '';
+      done++;
+      await sleep(200);
+    }
+    // 학생별로 최근 회차가 앞에 오도록 정렬
+    Object.keys(byStudent).forEach((k) => { byStudent[k].sort((a, b) => String(b.ym).localeCompare(String(a.ym))); });
+    await storeSet('mf_kmm', { at: new Date().toISOString(), rounds: seen, byStudent });
+    const nStu = Object.keys(byStudent).length;
+    const nAward = Object.values(byStudent).reduce((a, arr) => a + arr.filter((x) => x.tier && x.tier !== 'NOT_AWARDED').length, 0);
+    log(`KMM 경시: 회차 ${done}개 조회 · 기록 ${nRec}건 · 학생 ${nStu}명 · 수상 ${nAward}건`);
+  } catch (e) {
+    log('KMM 경시 수집 실패(치명적 아님):', e.message);
+  }
+}
+
 async function refreshWorkbookPdfs() {
   try {
     const gradeOf = (w) => {
