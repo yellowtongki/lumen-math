@@ -276,7 +276,12 @@ async function runHwSync() {
 }
 
 (async () => {
-  // 교재 채점 되돌려쓰기 — 가장 가볍고 학생이 기다리므로 맨 먼저
+  // v18-79: 제출 알림 — 가장 가볍고(대부분 조회 한 번) 원장님이 바로 알아야 하므로 맨 먼저
+  try {
+    const { runPushWatch } = require('./push_watch.js');
+    await runPushWatch();
+  } catch (e) { log('제출 알림 오류:', e.message); }
+  // 교재 채점 되돌려쓰기 — 가볍고 학생이 기다리므로 그다음
   try { await runHwSync(); } catch (e) { log('교재채점 반영 오류:', e.message); }
   // 학습지 생성 요청은 수집보다 가볍고 빠르므로 먼저 처리한다
   try { await runWsRequests(); } catch (e) { log('학습지 요청 처리 오류:', e.message); }
