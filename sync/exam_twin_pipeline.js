@@ -47,28 +47,29 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+/* pdf-lib는 워커(깃허브 서버)에는 기본으로 없어서, 쓰는 순간에만 불러온다.
+ * 워커 쪽(twin_request_worker)이 필요할 때 즉석 설치한 뒤 이 함수를 부른다. */
+let _pdflib = null;
+function pdflib() { if (!_pdflib) _pdflib = require('pdf-lib'); return _pdflib; }
 
 const MS_API = 'https://api.mathsecr.com';
 const MS_ORIGIN = 'https://mathsecr.com';
 const MF_API = 'https://api.mathflat.com';
 const MF_SAI = 'https://sai.mathflat.com';   // AI(업로드·인식·매칭) 전용 서버
 const MF_BASE = 'https://teacher.mathflat.com';
-
-const args = process.argv.slice(2);
-const arg = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 1] : d; };
-const MYDB = Number(arg('mydb', 0));
-const TRIE = arg('trie', '');
-let GRADE_LABEL = arg('grade', '');
-let TITLE = arg('title', '');
-const MYLIST = arg('mylist', '');
-const SIMILAR_X = Number(arg('similar-x', 1));
-const SKIP_WS = args.includes('--skip-worksheet');
 const OUT_DIR = path.join(__dirname, '_debug', 'twin_pipeline');
 
-if (!MYDB || !TRIE) { console.error('사용법: --mydb <수학비서 시험지 id> --trie <교육과정 키> [--grade "중 1-2"] [--title 제목]'); process.exit(1); }
+/* 교육과정 키. 22개정은 전 학기 확보 · 15개정은 중1-2만 확인됨(다른 학기는 --trie로 직접) */
+const TRIE_22 = { '1-1': '1.4.4146.4154.4169', '1-2': '1.4.4146.4154.4170', '2-1': '1.4.4146.4155.4171', '2-2': '1.4.4146.4155.4172', '3-1': '1.4.4146.4156.4173', '3-2': '1.4.4146.4156.4174' };
+const TRIE_15 = { '1-2': '1.2.9.27.80' };
+/* 2022 개정 적용 연도: 중1은 2025년부터, 중2는 2026년부터, 중3은 2027년부터 */
+function trieForExam(grade, semester, year) {
+  const is22 = Number(year) >= 2024 + Number(grade);
+  const key = `${grade}-${semester}`;
+  return (is22 ? TRIE_22 : TRIE_15)[key] || '';
+}
 
-const log = (...a) => console.log(`[${new Date().toISOString().slice(11, 19)}]`, ...a);
+let log = (...a) => console.log(`[${new Date().toISOString().slice(11, 19)}]`, ...a);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /* ── 수학비서 ─────────────────────────────────────────────── */
@@ -122,6 +123,7 @@ async function msImage(url) {
 
 /* ── PDF 조립 (A4 2단) ────────────────────────────────────── */
 async function buildPdf(images, headTitle) {
+  const { PDFDocument, rgb, StandardFonts } = pdflib();
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.HelveticaBold);
   const A4 = [595.28, 841.89];
@@ -183,20 +185,35 @@ async function saiPoll(jobId, timeoutMs) {
   throw new Error('AI 작업 시간 초과');
 }
 
-(async () => {
+async function runTwinPipeline(opts) {
+  const MYDB = Number(opts.mydb || 0);
+  let TRIE = opts.trie || '';
+  let GRADE_LABEL = opts.grade || '';
+  let TITLE = opts.title || '';
+  const MYLIST = opts.mylist || '';
+  const SIMILAR_X = Number(opts.similarX || 1);
+  const SKIP_WS = !!opts.skipWorksheet;
+  if (opts.log) log = opts.log;
+  if (!MYDB) throw new Error('mydb(수학비서 시험지 id)가 필요합니다');
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   // ① 수학비서에서 문항 이미지 + 시험명(출처)
   await msLogin();
-  if (!TITLE || !GRADE_LABEL) {
+  let msMeta = {};
+  {
     const dr = await fetch(`${MS_API}/bms/api/v1/mydbs/${MYDB}`, { headers: msH() });
     const dj = await dr.json();
     const md = (dj && dj.data) || {};
-    if (!TITLE) TITLE = sourceTitleOf(md.title) || ('기출 연습 ' + MYDB);
-    if (!GRADE_LABEL) {
-      const g = (String(md.title || '').match(/[중고](\d)/) || [])[1] || '1';
-      const s = (String(md.title || '').match(/(\d)학기/) || [])[1] || '1';
-      GRADE_LABEL = (String(md.title || '').includes('고') && !String(md.title || '').includes('중') ? '고 ' : '중 ') + g + '-' + s;
+    msMeta = md;
+    const t = String(md.title || '');
+    const g = (t.match(/[중고](\d)/) || [])[1] || '1';
+    const sem = (t.match(/(\d)학기/) || [])[1] || '1';
+    const yr = (t.match(/(20\d\d)년/) || [])[1] || '';
+    if (!TITLE) TITLE = sourceTitleOf(t) || ('기출 연습 ' + MYDB);
+    if (!GRADE_LABEL) GRADE_LABEL = (t.includes('고') && !t.includes('중') ? '고 ' : '중 ') + g + '-' + sem;
+    if (!TRIE) {
+      TRIE = trieForExam(g, sem, yr);
+      if (!TRIE) throw new Error(`교육과정 키를 정할 수 없습니다 (중${g} ${sem}학기 ${yr}년 — 15개정 키 미확보). --trie로 직접 지정해 주세요`);
     }
   }
   log(`제목(출처): ${TITLE} · 학년 ${GRADE_LABEL}`);
@@ -249,7 +266,7 @@ async function saiPoll(jobId, timeoutMs) {
   const detailIds = (paper.myDbProblemDetails || []).map((d) => d.id);
   log(`원본 등록: paper ${paper.id} · 문항 ${detailIds.length} · 공개범위 ${paper.shareScope}`);
   fs.writeFileSync(path.join(OUT_DIR, `paper_${MYDB}.json`), JSON.stringify(paper, null, 1));
-  if (SKIP_WS) { log('--skip-worksheet: 여기까지'); return; }
+  if (SKIP_WS) { log('--skip-worksheet: 여기까지'); return { mydb: MYDB, title: TITLE, trie: TRIE, paperId: paper.id, matched, matchedTotal: an.sourceData.length }; }
 
   // 학습지 공통 설정 (원본·쌍둥이 둘 다 같은 모양)
   const wsBase = {
@@ -268,15 +285,29 @@ async function saiPoll(jobId, timeoutMs) {
   const made = [];   // 만든 학습지 id들 — 마지막에 폴더로
 
   // ⑦ 기출원본 학습지 — OCR 문제를 문제은행으로 «복사»한 뒤라야 만들 수 있다
-  await mf(MF_API, 'POST', '/my-db-problems/copy-to-problem', { detailIds });
-  let copied = {};
-  for (let i = 0; i < 80; i++) {
-    const { data } = await mf(MF_API, 'POST', '/my-db-problems/copy-to-problem/status', { detailIds });
-    const rows = (data && data.details) || [];
-    copied = {}; rows.forEach((x) => { if (x.status === 'COPIED') copied[x.myDbProblemDetailId] = x.problemId; });
-    if (rows.length && Object.keys(copied).length === rows.length) break;
+  //    복사는 OCR이 끝난 뒤에만 받아준다(바로 부르면 500) → 먼저 OCR 완료를 기다린다
+  let ocrReady = false;
+  for (let i = 0; i < 100; i++) {
+    const { data } = await mf(MF_API, 'POST', '/my-db-problems/details', { detailIds });
+    const rows = (data && data.myDbProblemDetails) || [];
+    const left = rows.filter((x) => x.ocrStatus === 'PROCESSING' || x.processingStatus === 'PROCESSING').length;
+    if (rows.length && !left) { ocrReady = true; break; }
+    if (i % 10 === 0) log(`원본 OCR 대기: 남은 ${left}/${rows.length}`);
     await sleep(3000);
   }
+  let copied = {};
+  if (ocrReady) {
+    try {
+      await mf(MF_API, 'POST', '/my-db-problems/copy-to-problem', { detailIds });
+      for (let i = 0; i < 80; i++) {
+        const { data } = await mf(MF_API, 'POST', '/my-db-problems/copy-to-problem/status', { detailIds });
+        const rows = (data && data.details) || [];
+        copied = {}; rows.forEach((x) => { if (x.status === 'COPIED') copied[x.myDbProblemDetailId] = x.problemId; });
+        if (rows.length && Object.keys(copied).length === rows.length) break;
+        await sleep(3000);
+      }
+    } catch (e) { log('원본 복사 실패(쌍둥이는 계속 진행):', e.message.slice(0, 150)); }
+  } else log('원본 OCR이 제 시간에 안 끝남 — 원본 학습지는 건너뛰고 쌍둥이만 만든다');
   const origList = detailIds.map((d, i) => ({ id: copied[d], boxIndex: i + 1 })).filter((p) => p.id);
   log(`원본 문제 복사: ${origList.length}/${detailIds.length}`);
   if (origList.length) {
@@ -320,4 +351,31 @@ async function saiPoll(jobId, timeoutMs) {
       log(`마이리스트 「${MYLIST}」에 학습지 ${made.length}장 담음`);
     }
   }
-})().catch((e) => { console.error('오류:', e.message); process.exit(1); });
+
+  return {
+    mydb: MYDB, title: TITLE, trie: TRIE, gradeLabel: GRADE_LABEL,
+    paperId: paper.id, questionCount: cells.length, boxCount: nBox,
+    matched, matchedTotal: an.sourceData.length,
+    worksheetOriginal: made.length === 2 ? made[0] : (origList.length ? made[0] : null),
+    worksheetTwin: made[made.length - 1] || null,
+    mylist: MYLIST,
+  };
+}
+
+module.exports = { runTwinPipeline, sourceTitleOf, trieForExam, TRIE_22, TRIE_15 };
+
+/* ── 명령줄에서 직접 실행할 때 ── */
+if (require.main === module) {
+  const args = process.argv.slice(2);
+  const arg = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 1] : d; };
+  runTwinPipeline({
+    mydb: Number(arg('mydb', 0)),
+    trie: arg('trie', ''),
+    grade: arg('grade', ''),
+    title: arg('title', ''),
+    mylist: arg('mylist', ''),
+    similarX: Number(arg('similar-x', 1)),
+    skipWorksheet: args.includes('--skip-worksheet'),
+  }).then((r) => log('결과:', JSON.stringify(r)))
+    .catch((e) => { console.error('오류:', e.message); process.exit(1); });
+}
