@@ -294,8 +294,9 @@ async function runTwinPipeline(opts) {
 
   // ⑦ 기출원본 학습지 — OCR 문제를 문제은행으로 «복사»한 뒤라야 만들 수 있다
   //    복사는 OCR이 끝난 뒤에만 받아준다(바로 부르면 500) → 먼저 OCR 완료를 기다린다
+  // 문항이 많은 시험지는 OCR이 5분을 넘기기도 한다(실제로 28문항짜리가 그랬다) → 10분까지 기다린다
   let ocrReady = false;
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 200; i++) {
     const { data } = await mf(MF_API, 'POST', '/my-db-problems/details', { detailIds });
     const rows = (data && data.myDbProblemDetails) || [];
     const left = rows.filter((x) => x.ocrStatus === 'PROCESSING' || x.processingStatus === 'PROCESSING').length;
