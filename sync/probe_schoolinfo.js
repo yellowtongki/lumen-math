@@ -71,26 +71,37 @@ function rows(j, name) {
     if (!school && rs.length) school = rs[0];
   } else { line('본문(앞 300자): ' + String(r1.text || '').slice(0, 300)); }
 
-  /* ── ② 학사일정 = 시험일 ──────────────────────────────── */
+  /* ── ② 학사일정 = 시험일 ────────────────────────────────
+   * 인증키가 없으면 5건만 오므로, 「시험이 있을 법한 구간」으로 잘게 나눠
+   * 여러 번 물어본다. 이러면 키 없이도 시험 일정이 등록돼 있는지 확인된다. */
   head('② 나이스 학사일정 — 시험일이 나오나 (가장 값진 것)');
+  const found = [];
   if (!school) { line('학교를 못 찾아서 건너뜀'); }
   else {
-    const y = new Date().getFullYear();
-    const q2 = `${NEIS}/SchoolSchedule?Type=json&pIndex=1&pSize=100`
-      + `&ATPT_OFCDC_SC_CODE=${school.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${school.SD_SCHUL_CODE}`
-      + `&AA_FROM_YMD=${y}0301&AA_TO_YMD=${y}1231` + (KEY ? `&KEY=${KEY}` : '');
-    const r2 = await get(q2);
-    line(`요청: ${q2.replace(KEY, '***')}`);
-    line(`응답: HTTP ${r2.status}${r2.err ? ' · ' + r2.err : ''}`);
-    if (r2.json) {
-      const { rows: rs, total, msg } = rows(r2.json, 'SchoolSchedule');
-      if (msg) line('메시지: ' + msg);
-      if (total) line(`전체 ${total}건 중 ${rs.length}건 받음`);
-      rs.forEach((e) => line(`  · ${e.AA_YMD} ${e.EVENT_NM}${e.EVENT_CNTNT ? ' — ' + e.EVENT_CNTNT : ''}`));
-      const exam = rs.filter((e) => /고사|시험|평가/.test(String(e.EVENT_NM)));
-      line(exam.length ? `\n  ★ 시험 관련 일정 ${exam.length}건 발견 — 시험일 자동 설정 가능`
-                       : '\n  (이 구간에는 시험 일정이 안 보임 — 맛보기 5건 제한 때문일 수 있음)');
-    } else { line('본문(앞 300자): ' + String(r2.text || '').slice(0, 300)); }
+    const 구간 = [
+      ['1학기 중간 즈음', '20260415', '20260510'],
+      ['1학기 기말 즈음', '20260620', '20260715'],
+      ['2학기 중간 즈음', '20260920', '20261010'],   // ★ 원장님: 시험이 10월 1일에 끝난다
+      ['2학기 기말 즈음', '20261120', '20261220'],
+    ];
+    for (const [나름, from, to] of 구간) {
+      const q = `${NEIS}/SchoolSchedule?Type=json&pIndex=1&pSize=100`
+        + `&ATPT_OFCDC_SC_CODE=${school.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${school.SD_SCHUL_CODE}`
+        + `&AA_FROM_YMD=${from}&AA_TO_YMD=${to}` + (KEY ? `&KEY=${KEY}` : '');
+      const r = await get(q);
+      const { rows: rs, total, msg } = r.json ? rows(r.json, 'SchoolSchedule') : { rows: [], msg: 'JSON 아님' };
+      line(`\n▸ ${나름} (${from}~${to}) — HTTP ${r.status}${total ? ` · 전체 ${total}건 중 ${rs.length}건` : ''}${msg ? ' · ' + msg : ''}`);
+      rs.forEach((e) => {
+        const 시험 = /고사|시험|평가/.test(String(e.EVENT_NM));
+        if (시험) found.push(`${e.AA_YMD} ${e.EVENT_NM}`);
+        line(`   ${시험 ? '★' : ' ·'} ${e.AA_YMD} ${e.EVENT_NM}${e.EVENT_CNTNT ? ' — ' + e.EVENT_CNTNT : ''}`);
+      });
+      await new Promise((z) => setTimeout(z, 300));
+    }
+    line('');
+    line(found.length
+      ? `★★ 시험 일정 ${found.length}건 확인 — 시험일 자동 설정 가능\n   ` + found.join('\n   ')
+      : '   시험 일정이 안 보임 — 학교가 학사일정에 시험을 안 올렸거나, 5건 제한에 밀렸을 수 있음');
   }
 
   /* ── ③ 학교알리미 접속 자체 ───────────────────────────── */
