@@ -276,11 +276,15 @@ async function runHwSync() {
 }
 
 (async () => {
-  // v18-79: 제출 알림 — 가장 가볍고(대부분 조회 한 번) 원장님이 바로 알아야 하므로 맨 먼저
-  try {
-    const { runPushWatch } = require('./push_watch.js');
-    await runPushWatch();
-  } catch (e) { log('제출 알림 오류:', e.message); }
+  // v18-79: 제출 알림 — 2026-08-26 원장님 지시로 중지 (컴퓨터에 알림이 안 떠서 원인 확인 전까지).
+  // 재개하려면 아래 PUSH_PAUSED를 false로 바꾸면 된다. 코드·구독·설정은 그대로 남아 있다.
+  const PUSH_PAUSED = true;
+  if (!PUSH_PAUSED) {
+    try {
+      const { runPushWatch } = require('./push_watch.js');
+      await runPushWatch();
+    } catch (e) { log('제출 알림 오류:', e.message); }
+  }
   // 교재 채점 되돌려쓰기 — 가볍고 학생이 기다리므로 그다음
   try { await runHwSync(); } catch (e) { log('교재채점 반영 오류:', e.message); }
   // 학습지 생성 요청은 수집보다 가볍고 빠르므로 먼저 처리한다
