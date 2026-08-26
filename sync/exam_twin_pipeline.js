@@ -161,11 +161,19 @@ async function mfLogin() {
   if (!j.accessToken) throw new Error(`매쓰플랫 로그인 실패 ${j.code || r.status}`);
   MF_TOKEN = j.accessToken;
 }
-async function mf(host, method, p, body) {
+/* 토큰이 만료되면(401) 한 번 다시 로그인하고 재시도한다.
+ * 시험지 한 장에 몇 분이 걸리고(원본 OCR 대기), 여러 장을 이어서 돌리면
+ * 중간에 토큰이 만료된다 — 실제로 2022년 중3 기말에서 원본 필터 단계가 401로 끊겼다. */
+async function mf(host, method, p, body, _retried) {
   const r = await fetch(host + p, { method, headers: mfH(), body: body === undefined ? undefined : JSON.stringify(body) });
   const t = await r.text();
   let j = null; try { j = JSON.parse(t); } catch (e) {}
   const data = j && j.data !== undefined ? j.data : j;
+  if (r.status === 401 && !_retried) {
+    log('토큰 만료 → 다시 로그인');
+    await mfLogin();
+    return mf(host, method, p, body, true);
+  }
   if (!r.ok) throw new Error(`${method} ${p} → ${r.status} ${t.slice(0, 200)}`);
   return { data, raw: t };
 }
