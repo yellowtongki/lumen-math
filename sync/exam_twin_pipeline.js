@@ -14,7 +14,14 @@
  *   ⑤ 문제은행 매칭 (analysis-flow + trieKey) → 문항별 유형·난이도·원본문제
  *   ⑥ 기타 학습자료 원본 생성 (POST /v2/papers/by-custom, shareScope=ACADEMY)
  *   ⑦ 쌍둥이·유사 필터 (POST /v2/worksheet/filter/school-test-paper/similar)
- *   ⑧ 학습지 생성 (POST /worksheet — 배정은 하지 않음, 원장님이 확인 후 배정)
+ *   ⑧ 학습지 2장 생성 — 「…원본」(기출 그대로)과 「…쌍둥이」(유사문제)
+ *      배정은 하지 않는다. 원장님이 확인하고 배정.
+ *   ⑨ 마이리스트(폴더)에 담기
+ *
+ * 【원본 학습지의 함정】 원본은 OCR한 우리 문제라, 문제은행 문제로 «복사»되기
+ *   전에는 필터가 비어 있다. POST /my-db-problems/copy-to-problem 으로 복사를
+ *   «실행»하고 status 가 COPIED 가 될 때까지 기다린 뒤라야 만들 수 있다.
+ *   또 만들 때 problemList 와 함께 myDbProblemDetailIds 를 반드시 넣어야 한다.
  *
  * 시범 결과(2025 옥길중 중1 2학기중간): 21문항 → 23상자 인식 → 23/23 매칭
  *   → 쌍둥이 23문항 학습지 「…쌍둥이 (시범)」 생성. 전 문항 자동채점 가능.
@@ -244,42 +251,73 @@ async function saiPoll(jobId, timeoutMs) {
   fs.writeFileSync(path.join(OUT_DIR, `paper_${MYDB}.json`), JSON.stringify(paper, null, 1));
   if (SKIP_WS) { log('--skip-worksheet: 여기까지'); return; }
 
-  // ⑦ 쌍둥이·유사 필터
+  // 학습지 공통 설정 (원본·쌍둥이 둘 다 같은 모양)
+  const wsBase = {
+    conceptIdList: [], littleChapterConceptIdList: [],
+    assignStudentIdList: [], shareScope: 'ACADEMY', writer: '루멘수학',
+    layoutType: 0, layoutColor: 'BLUE', partitionType: 0,
+    wrongAnswerNoteFlag: false, conceptNameFlag: true, answerRateFlag: false,
+    relationWorkbookFlag: false, includeProblemFlag: false,
+    conceptSortType: 'CHAPTER',
+    schoolType: GRADE_LABEL.startsWith('고') ? 'HIGH' : 'MIDDLE',
+    revision: TRIE.startsWith('1.4.') ? 'CURRICULUM_22' : 'CURRICULUM_15',
+    grade: (GRADE_LABEL.match(/(\d)/) || [, '1'])[1],
+    problemPadding: 60, pdfDateType: 'TODAY', pdfDate: null,
+    designTemplateId: null, qrFlag: false, problemTrendFlag: false,
+  };
+  const made = [];   // 만든 학습지 id들 — 마지막에 폴더로
+
+  // ⑦ 기출원본 학습지 — OCR 문제를 문제은행으로 «복사»한 뒤라야 만들 수 있다
+  await mf(MF_API, 'POST', '/my-db-problems/copy-to-problem', { detailIds });
+  let copied = {};
+  for (let i = 0; i < 80; i++) {
+    const { data } = await mf(MF_API, 'POST', '/my-db-problems/copy-to-problem/status', { detailIds });
+    const rows = (data && data.details) || [];
+    copied = {}; rows.forEach((x) => { if (x.status === 'COPIED') copied[x.myDbProblemDetailId] = x.problemId; });
+    if (rows.length && Object.keys(copied).length === rows.length) break;
+    await sleep(3000);
+  }
+  const origList = detailIds.map((d, i) => ({ id: copied[d], boxIndex: i + 1 })).filter((p) => p.id);
+  log(`원본 문제 복사: ${origList.length}/${detailIds.length}`);
+  if (origList.length) {
+    const { data: oFlt } = await mf(MF_API, 'POST', '/v2/worksheet/filter/school-test-paper/original', { myDbProblemDetailIds: detailIds });
+    const { data: oWs } = await mf(MF_API, 'POST', '/worksheet', {
+      ...wsBase, filterId: oFlt.filterId || oFlt,
+      problemList: origList, myDbProblemDetailIds: detailIds,   // 원본은 이 둘을 함께 보내야 한다
+      title: `${TITLE} 원본`, tag: 'MY_DB_ORIGINAL',
+    });
+    made.push(oWs);
+    log(`✅ 기출원본 학습지: worksheet ${oWs} — 「${TITLE} 원본」`);
+  } else {
+    log('⚠ 원본 문제 복사가 끝나지 않아 원본 학습지는 건너뜁니다 (나중에 다시 실행)');
+  }
+
+  // ⑧ 쌍둥이 학습지 (problemList에는 문제 객체 전체를 그대로 넣어야 한다)
   const { data: flt } = await mf(MF_API, 'POST', '/v2/worksheet/filter/school-test-paper/similar',
     { myDbProblemDetailIds: detailIds, similarX: SIMILAR_X, similarLevel: 'AS_IS' });
   const filterId = flt.filterId || flt;
   const { data: problems } = await mf(MF_API, 'POST', '/worksheet/problem', { filterId });
   log(`쌍둥이 필터: ${problems.length}문항`);
-
-  // ⑧ 학습지 생성 (problemList에는 문제 객체 전체를 그대로 넣어야 한다)
   const { data: wsId } = await mf(MF_API, 'POST', '/worksheet', {
-    filterId, problemList: problems, conceptIdList: [], littleChapterConceptIdList: [],
-    assignStudentIdList: [], shareScope: 'ACADEMY',
-    title: `${TITLE} 쌍둥이`, writer: '루멘수학',
-    layoutType: 0, layoutColor: 'BLUE', partitionType: 0,
-    wrongAnswerNoteFlag: false, conceptNameFlag: true, answerRateFlag: false,
-    relationWorkbookFlag: false, includeProblemFlag: false,
-    tag: 'CUSTOM_PAPER', conceptSortType: 'CHAPTER',
-    schoolType: 'MIDDLE', revision: TRIE.startsWith('1.4.') ? 'CURRICULUM_22' : 'CURRICULUM_15',
-    grade: (GRADE_LABEL.match(/(\d)/) || [,'1'])[1],
-    problemPadding: 60, pdfDateType: 'TODAY', pdfDate: null,
-    designTemplateId: null, qrFlag: false, problemTrendFlag: false,
+    ...wsBase, filterId, problemList: problems,
+    title: `${TITLE} 쌍둥이`, tag: 'CUSTOM_PAPER',
   });
-  log(`✅ 쌍둥이 학습지 생성: worksheet ${wsId} — 매쓰플랫 학습지 목록에서 「${TITLE} 쌍둥이」 확인`);
+  made.push(wsId);
+  log(`✅ 쌍둥이 학습지: worksheet ${wsId} — 「${TITLE} 쌍둥이」`);
 
   // ⑨ 마이리스트(폴더)에 넣기 — 같은 이름이 없으면 만든다
-  if (MYLIST) {
+  if (MYLIST && made.length) {
     const { data: lists } = await mf(MF_API, 'GET', '/mylist');
     const all = (lists && lists.myLists) || (Array.isArray(lists) ? lists : []);
     let target = all.find((l) => l.name === MYLIST);
     if (!target) {
-      const { data: made } = await mf(MF_API, 'POST', '/mylist', { name: MYLIST });
-      target = (made && made.myList) || made;
+      const { data: mk } = await mf(MF_API, 'POST', '/mylist', { name: MYLIST });
+      target = (mk && mk.myList) || mk;
       log(`마이리스트 「${MYLIST}」 새로 만듦`);
     }
     if (target && target.id) {
-      await mf(MF_API, 'POST', `/mylist/${target.id}/element`, { worksheetIds: [wsId] });
-      log(`마이리스트 「${MYLIST}」에 학습지 담음`);
+      await mf(MF_API, 'POST', `/mylist/${target.id}/element`, { worksheetIds: made });
+      log(`마이리스트 「${MYLIST}」에 학습지 ${made.length}장 담음`);
     }
   }
 })().catch((e) => { console.error('오류:', e.message); process.exit(1); });
