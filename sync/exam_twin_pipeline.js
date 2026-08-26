@@ -1,0 +1,230 @@
+#!/usr/bin/env node
+/* ═══════════════════════════════════════════════════════════════════
+ * 기출 → 쌍둥이 학습지 파이프라인  v1  (2026-08-26 시범 성공)
+ * ═══════════════════════════════════════════════════════════════════
+ *
+ * 수학비서에 있는 학교 기출 시험지를 매쓰플랫 「기타 학습자료」(우리 학원 전용,
+ * 전국 공유 안 됨)로 등록하고, 문항마다 쌍둥이·유사 문제를 뽑아
+ * 학습지까지 만든다. 전 과정 자동.
+ *
+ *   ① 수학비서 문항 이미지 내려받기 (CDN 서명 쿠키)
+ *   ② A4 2단 시험지 PDF 조립 (pdf-lib)
+ *   ③ 매쓰플랫 업로드 (sai.mathflat.com — 2026-08 신형 AI 서버)
+ *   ④ AI 문항 인식 (document-processing-flow) → 문항 상자
+ *   ⑤ 문제은행 매칭 (analysis-flow + trieKey) → 문항별 유형·난이도·원본문제
+ *   ⑥ 기타 학습자료 원본 생성 (POST /v2/papers/by-custom, shareScope=ACADEMY)
+ *   ⑦ 쌍둥이·유사 필터 (POST /v2/worksheet/filter/school-test-paper/similar)
+ *   ⑧ 학습지 생성 (POST /worksheet — 배정은 하지 않음, 원장님이 확인 후 배정)
+ *
+ * 시범 결과(2025 옥길중 중1 2학기중간): 21문항 → 23상자 인식 → 23/23 매칭
+ *   → 쌍둥이 23문항 학습지 「…쌍둥이 (시범)」 생성. 전 문항 자동채점 가능.
+ *
+ * 사용법:
+ *   node sync/exam_twin_pipeline.js --mydb 387569 --trie 1.4.4146.4154.4170 \
+ *        --grade "중 1-2" --title "옥길중1 2학기중간(2025)"
+ *   옵션: --similar-x 1 (문항당 쌍둥이 수) · --skip-worksheet (원본 등록까지만)
+ *
+ * trieKey (22개정): 중1-1 1.4.4146.4154.4169 · 중1-2 1.4.4146.4154.4170
+ *   중2-1 1.4.4146.4155.4171 · 중2-2 1.4.4146.4155.4172
+ *   중3-1 1.4.4146.4156.4173 · 중3-2 1.4.4146.4156.4174
+ *   (15개정 중1-2는 1.2.9.27.80 — 옛 기출이면 이쪽)
+ *
+ * 계정: MATHSECR_ID/PASSWORD, MATHFLAT_ID/PASSWORD (환경변수만, 커밋 금지)
+ * 주의: 매쓰플랫 동시 로그인 시 기존 접속이 끊길 수 있음 → 새벽 실행 권장.
+ *       생성물 삭제는 DELETE /papers/{id}, 학습지는 앱에서.
+ */
+const fs = require('fs');
+const path = require('path');
+const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+
+const MS_API = 'https://api.mathsecr.com';
+const MS_ORIGIN = 'https://mathsecr.com';
+const MF_API = 'https://api.mathflat.com';
+const MF_SAI = 'https://sai.mathflat.com';   // AI(업로드·인식·매칭) 전용 서버
+const MF_BASE = 'https://teacher.mathflat.com';
+
+const args = process.argv.slice(2);
+const arg = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 1] : d; };
+const MYDB = Number(arg('mydb', 0));
+const TRIE = arg('trie', '');
+const GRADE_LABEL = arg('grade', '중 1-1');
+const TITLE = arg('title', '기출 연습');
+const SIMILAR_X = Number(arg('similar-x', 1));
+const SKIP_WS = args.includes('--skip-worksheet');
+const OUT_DIR = path.join(__dirname, '_debug', 'twin_pipeline');
+
+if (!MYDB || !TRIE) { console.error('사용법: --mydb <수학비서 시험지 id> --trie <교육과정 키> [--grade "중 1-2"] [--title 제목]'); process.exit(1); }
+
+const log = (...a) => console.log(`[${new Date().toISOString().slice(11, 19)}]`, ...a);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ── 수학비서 ─────────────────────────────────────────────── */
+let MS_TOKEN = null, MS_CDN_COOKIE = null;
+const msH = () => ({ accept: 'application/json', origin: MS_ORIGIN, referer: MS_ORIGIN + '/', authorization: `Bearer ${MS_TOKEN}` });
+async function msLogin() {
+  const r = await fetch(`${MS_API}/mim/api/v1/identities/members/login`, {
+    method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json', origin: MS_ORIGIN, referer: MS_ORIGIN + '/' },
+    body: JSON.stringify({ email: process.env.MATHSECR_ID.trim(), password: process.env.MATHSECR_PASSWORD.trim() }),
+  });
+  const j = await r.json();
+  MS_TOKEN = j.data ? j.data.accessToken : j.accessToken;
+  if (!MS_TOKEN) throw new Error('수학비서 로그인 실패');
+}
+/* cells 응답의 Set-Cookie(Cloud-CDN-Cookie)가 문항 이미지 열쇠 (약 78분 유효) */
+async function msCells(id) {
+  const r = await fetch(`${MS_API}/bms/api/v1/mydbs/${id}/cells`, { headers: msH() });
+  const sc = r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean);
+  const hit = sc.find((c) => c && c.includes('Cloud-CDN-Cookie'));
+  if (hit) MS_CDN_COOKIE = hit.split(';')[0];
+  const j = await r.json();
+  const cells = Array.isArray(j.data) ? j.data : (j.data && j.data.cells) || [];
+  return cells.sort((a, b) => a.questionNumber - b.questionNumber);
+}
+async function msImage(url) {
+  const r = await fetch(url, { headers: { cookie: MS_CDN_COOKIE, origin: MS_ORIGIN, referer: MS_ORIGIN + '/' } });
+  if (!r.ok) throw new Error(`이미지 ${r.status}`);
+  return Buffer.from(await r.arrayBuffer());
+}
+
+/* ── PDF 조립 (A4 2단) ────────────────────────────────────── */
+async function buildPdf(images, headTitle) {
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.HelveticaBold);
+  const A4 = [595.28, 841.89];
+  const M = 42, GAP = 18, COLW = (A4[0] - M * 2 - GAP) / 2;
+  let page = doc.addPage(A4), col = 0, y = A4[1] - M - 60, pageNo = 1;
+  page.drawText(headTitle.replace(/[^\x20-\x7E]/g, '').trim() || 'EXAM', { x: M, y: A4[1] - M - 18, size: 14, font });
+  page.drawLine({ start: { x: M, y: A4[1] - M - 30 }, end: { x: A4[0] - M, y: A4[1] - M - 30 }, thickness: 1, color: rgb(0.2, 0.2, 0.2) });
+  const colX = () => M + col * (COLW + GAP);
+  for (const { no, buf } of images) {
+    const png = await doc.embedPng(buf);
+    const scale = Math.min(1, (COLW - 22) / png.width);
+    const w = png.width * scale, h = png.height * scale, blockH = h + 26;
+    if (y - blockH < M) {
+      if (col === 0) { col = 1; y = A4[1] - M - (pageNo === 1 ? 60 : 20); }
+      else { page = doc.addPage(A4); pageNo++; col = 0; y = A4[1] - M - 20; }
+      if (y - blockH < M) y = A4[1] - M - 20;
+    }
+    page.drawText(String(no).padStart(2, '0'), { x: colX(), y: y - 12, size: 12, font, color: rgb(0.1, 0.3, 0.7) });
+    page.drawImage(png, { x: colX() + 22, y: y - 14 - h, width: w, height: h });
+    y -= blockH + 12;
+  }
+  return { bytes: await doc.save(), pages: doc.getPageCount() };
+}
+
+/* ── 매쓰플랫 ────────────────────────────────────────────── */
+let MF_TOKEN = null;
+const mfH = () => ({ 'content-type': 'application/json', accept: 'application/json, text/plain, */*',
+  'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com',
+  authorization: `Bearer ${MF_TOKEN}`, 'x-auth-token': MF_TOKEN, origin: MF_BASE, referer: MF_BASE + '/' });
+async function mfLogin() {
+  const r = await fetch(`${MF_API}/v2/login`, { method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com', origin: MF_BASE, referer: MF_BASE + '/' },
+    body: JSON.stringify({ id: process.env.MATHFLAT_ID.trim(), password: process.env.MATHFLAT_PASSWORD.trim(), userType: 'TEACHER', serviceType: 'MATHFLAT' }) });
+  const j = await r.json();
+  if (!j.accessToken) throw new Error(`매쓰플랫 로그인 실패 ${j.code || r.status}`);
+  MF_TOKEN = j.accessToken;
+}
+async function mf(host, method, p, body) {
+  const r = await fetch(host + p, { method, headers: mfH(), body: body === undefined ? undefined : JSON.stringify(body) });
+  const t = await r.text();
+  let j = null; try { j = JSON.parse(t); } catch (e) {}
+  const data = j && j.data !== undefined ? j.data : j;
+  if (!r.ok) throw new Error(`${method} ${p} → ${r.status} ${t.slice(0, 200)}`);
+  return { data, raw: t };
+}
+/* /jobs 는 따옴표 없는 uuid 원문을 돌려준다 */
+async function saiJob() {
+  const { data, raw } = await mf(MF_SAI, 'POST', '/jobs');
+  return (data && (data.jobId || data.id)) || (typeof data === 'string' ? data : null) || (/^[0-9a-f-]{30,}$/.test(raw.trim()) ? raw.trim() : null);
+}
+async function saiPoll(jobId, timeoutMs) {
+  const until = Date.now() + (timeoutMs || 240000);
+  while (Date.now() < until) {
+    const { data } = await mf(MF_SAI, 'GET', `/async-jobs/${jobId}`);
+    if (data.status === 'COMPLETED') return data.returns;
+    if (data.status === 'FAILED') throw new Error('AI 작업 실패: ' + JSON.stringify(data).slice(0, 300));
+    await sleep(1500);
+  }
+  throw new Error('AI 작업 시간 초과');
+}
+
+(async () => {
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+
+  // ① 수학비서에서 문항 이미지
+  await msLogin();
+  const cells = await msCells(MYDB);
+  if (!cells.length) throw new Error('문항이 없습니다 (mydb id 확인)');
+  log(`수학비서: ${cells.length}문항`);
+  const images = [];
+  for (const c of cells) images.push({ no: c.questionNumber, buf: await msImage(c.imagePath) });
+
+  // ② PDF 조립
+  const pdf = await buildPdf(images, TITLE);
+  const pdfPath = path.join(OUT_DIR, `exam_${MYDB}.pdf`);
+  fs.writeFileSync(pdfPath, pdf.bytes);
+  log(`PDF 조립: ${pdf.pages}쪽 ${(pdf.bytes.length / 1024) | 0}KB`);
+
+  // ③ 업로드
+  await mfLogin();
+  const jobId = await saiJob();
+  const { data: pres } = await mf(MF_SAI, 'POST', `/matchers/presigned/paper-pdf?jobId=${encodeURIComponent(jobId)}`);
+  const up = await fetch(pres.presignedUrl, { method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: pdf.bytes });
+  if (!up.ok) throw new Error(`PDF 업로드 실패 ${up.status}`);
+  log(`업로드 완료 · job ${jobId}`);
+
+  // ④ 문항 인식 (pageIndexes는 "1~N" 형식의 문자열)
+  await mf(MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, {
+    functionName: '/matchers/document-processing-flow',
+    parameters: { paperDocumentUrl: pres.url, pageIndexes: `1~${pdf.pages}`, pageImageQuality: 'HIGH' },
+  });
+  const doc = await saiPoll(jobId);
+  const nBox = [].concat(...doc.boxesOnEachPage).length;
+  log(`문항 인식: ${doc.pageImageUrls.length}쪽 · ${nBox}상자`);
+
+  // ⑤ 문제은행 매칭
+  await mf(MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, {
+    functionName: '/matchers/analysis-flow',
+    parameters: { pageImageUrls: doc.pageImageUrls, boxesOnEachPage: doc.boxesOnEachPage, trieKey: TRIE },
+  });
+  const an = await saiPoll(jobId, 360000);
+  const matched = an.sourceData.filter((x) => x && x.sourceProblemId).length;
+  log(`문제은행 매칭: ${matched}/${an.sourceData.length}`);
+
+  // ⑥ 기타 학습자료 원본 생성 (shareScope는 서버가 ACADEMY로 지정 — 우리 학원 전용)
+  const pages = an.pageImageUrls.map((url, i) => ({ index: i + 1, url, boundingBoxes: an.boxesOnEachPage[i] }));
+  let t = 0; const boxes = [];
+  an.boxesOnEachPage.forEach((pb, pi) => pb.forEach(() => { boxes.push({ pageIndex: pi + 1, index: t + 1, url: an.boxImageUrls[t], ...an.sourceData[t] }); t++; }));
+  const { data: paper } = await mf(MF_API, 'POST', '/v2/papers/by-custom', {
+    jobId, pdfUrl: pres.url, title: TITLE, gradeSemester: GRADE_LABEL, trieKey: TRIE,
+    pages, boxes, needOriginalProblem: true, saveOriginalProblem: true,
+  });
+  const detailIds = (paper.myDbProblemDetails || []).map((d) => d.id);
+  log(`원본 등록: paper ${paper.id} · 문항 ${detailIds.length} · 공개범위 ${paper.shareScope}`);
+  fs.writeFileSync(path.join(OUT_DIR, `paper_${MYDB}.json`), JSON.stringify(paper, null, 1));
+  if (SKIP_WS) { log('--skip-worksheet: 여기까지'); return; }
+
+  // ⑦ 쌍둥이·유사 필터
+  const { data: flt } = await mf(MF_API, 'POST', '/v2/worksheet/filter/school-test-paper/similar',
+    { myDbProblemDetailIds: detailIds, similarX: SIMILAR_X, similarLevel: 'AS_IS' });
+  const filterId = flt.filterId || flt;
+  const { data: problems } = await mf(MF_API, 'POST', '/worksheet/problem', { filterId });
+  log(`쌍둥이 필터: ${problems.length}문항`);
+
+  // ⑧ 학습지 생성 (problemList에는 문제 객체 전체를 그대로 넣어야 한다)
+  const { data: wsId } = await mf(MF_API, 'POST', '/worksheet', {
+    filterId, problemList: problems, conceptIdList: [], littleChapterConceptIdList: [],
+    assignStudentIdList: [], shareScope: 'ACADEMY',
+    title: `${TITLE} 쌍둥이`, writer: '루멘수학',
+    layoutType: 0, layoutColor: 'BLUE', partitionType: 0,
+    wrongAnswerNoteFlag: false, conceptNameFlag: true, answerRateFlag: false,
+    relationWorkbookFlag: false, includeProblemFlag: false,
+    tag: 'CUSTOM_PAPER', conceptSortType: 'CHAPTER',
+    schoolType: 'MIDDLE', revision: TRIE.startsWith('1.4.') ? 'CURRICULUM_22' : 'CURRICULUM_15',
+    grade: (GRADE_LABEL.match(/(\d)/) || [,'1'])[1],
+    problemPadding: 60, pdfDateType: 'TODAY', pdfDate: null,
+    designTemplateId: null, qrFlag: false, problemTrendFlag: false,
+  });
+  log(`✅ 쌍둥이 학습지 생성: worksheet ${wsId} — 매쓰플랫 학습지 목록에서 「${TITLE} 쌍둥이」 확인`);
+})().catch((e) => { console.error('오류:', e.message); process.exit(1); });
