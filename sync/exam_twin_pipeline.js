@@ -20,9 +20,14 @@
  *   → 쌍둥이 23문항 학습지 「…쌍둥이 (시범)」 생성. 전 문항 자동채점 가능.
  *
  * 사용법:
- *   node sync/exam_twin_pipeline.js --mydb 387569 --trie 1.4.4146.4154.4170 \
- *        --grade "중 1-2" --title "옥길중1 2학기중간(2025)"
- *   옵션: --similar-x 1 (문항당 쌍둥이 수) · --skip-worksheet (원본 등록까지만)
+ *   node sync/exam_twin_pipeline.js --mydb 387569 --trie 1.4.4146.4154.4170
+ *   옵션: --title "..."      제목 직접 지정 (생략하면 수학비서 시험명에서
+ *                            「옥길중학교 1학년 2025년 2학기 중간」 형식으로 자동 생성.
+ *                            이 제목이 문항 위 출처 꼬리표가 되므로 학교명이 중요)
+ *         --grade "중 1-2"   학년 표기 (생략하면 자동)
+ *         --mylist "기출 쌍둥이"  만든 학습지를 이 마이리스트(폴더)에 넣기 (없으면 만든다)
+ *         --similar-x 1      문항당 쌍둥이 수
+ *         --skip-worksheet   원본 등록까지만
  *
  * trieKey (22개정): 중1-1 1.4.4146.4154.4169 · 중1-2 1.4.4146.4154.4170
  *   중2-1 1.4.4146.4155.4171 · 중2-2 1.4.4146.4155.4172
@@ -47,8 +52,9 @@ const args = process.argv.slice(2);
 const arg = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 1] : d; };
 const MYDB = Number(arg('mydb', 0));
 const TRIE = arg('trie', '');
-const GRADE_LABEL = arg('grade', '중 1-1');
-const TITLE = arg('title', '기출 연습');
+let GRADE_LABEL = arg('grade', '');
+let TITLE = arg('title', '');
+const MYLIST = arg('mylist', '');
 const SIMILAR_X = Number(arg('similar-x', 1));
 const SKIP_WS = args.includes('--skip-worksheet');
 const OUT_DIR = path.join(__dirname, '_debug', 'twin_pipeline');
@@ -70,14 +76,35 @@ async function msLogin() {
   MS_TOKEN = j.data ? j.data.accessToken : j.accessToken;
   if (!MS_TOKEN) throw new Error('수학비서 로그인 실패');
 }
+/* 수학비서 시험명 → 「옥길중학교 1학년 2025년 2학기 중간」 (매쓰플랫 기출 출처 표기와 같은 꼴)
+ * 예: "내신 2025년 경기 부천시 옥길중 중1공통 2학기중간 중등수학1하" */
+function sourceTitleOf(msTitle) {
+  const t = String(msTitle || '');
+  const year = (t.match(/(20\d\d)년/) || [])[1] || '';
+  const school = (t.match(/([가-힣]+(?:중|고))(?:학교)?\s/) || [])[1] || '';
+  const grade = (t.match(/[중고](\d)/) || [])[1] || '';
+  const sem = (t.match(/(\d)학기/) || [])[1] || '';
+  const term = t.includes('기말') ? '기말' : (t.includes('중간') ? '중간' : '');
+  if (!school) return '';
+  const schoolFull = school + (school.endsWith('중') ? '학교' : '등학교');
+  return [schoolFull, grade && grade + '학년', year && year + '년', sem && sem + '학기', term].filter(Boolean).join(' ');
+}
+
 /* cells 응답의 Set-Cookie(Cloud-CDN-Cookie)가 문항 이미지 열쇠 (약 78분 유효) */
 async function msCells(id) {
-  const r = await fetch(`${MS_API}/bms/api/v1/mydbs/${id}/cells`, { headers: msH() });
-  const sc = r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean);
-  const hit = sc.find((c) => c && c.includes('Cloud-CDN-Cookie'));
-  if (hit) MS_CDN_COOKIE = hit.split(';')[0];
-  const j = await r.json();
-  const cells = Array.isArray(j.data) ? j.data : (j.data && j.data.cells) || [];
+  // 응답은 data.pages[].cells[] 꼴이고 cursor 페이지네이션 (?curriculumId=2&limit=48 필수)
+  const cells = [];
+  let cursor = '';
+  for (let i = 0; i < 10; i++) {
+    const r = await fetch(`${MS_API}/bms/api/v1/mydbs/${id}/cells?curriculumId=2&limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, { headers: msH() });
+    const sc = r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean);
+    const hit = sc.find((c) => c && c.includes('Cloud-CDN-Cookie'));
+    if (hit) MS_CDN_COOKIE = hit.split(';')[0];
+    const j = await r.json();
+    ((j.data && j.data.pages) || []).forEach((pg) => (pg.cells || []).forEach((c) => cells.push(c)));
+    cursor = j.pagination && j.pagination.cursor;
+    if (!cursor) break;
+  }
   return cells.sort((a, b) => a.questionNumber - b.questionNumber);
 }
 async function msImage(url) {
@@ -152,8 +179,20 @@ async function saiPoll(jobId, timeoutMs) {
 (async () => {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
-  // ① 수학비서에서 문항 이미지
+  // ① 수학비서에서 문항 이미지 + 시험명(출처)
   await msLogin();
+  if (!TITLE || !GRADE_LABEL) {
+    const dr = await fetch(`${MS_API}/bms/api/v1/mydbs/${MYDB}`, { headers: msH() });
+    const dj = await dr.json();
+    const md = (dj && dj.data) || {};
+    if (!TITLE) TITLE = sourceTitleOf(md.title) || ('기출 연습 ' + MYDB);
+    if (!GRADE_LABEL) {
+      const g = (String(md.title || '').match(/[중고](\d)/) || [])[1] || '1';
+      const s = (String(md.title || '').match(/(\d)학기/) || [])[1] || '1';
+      GRADE_LABEL = (String(md.title || '').includes('고') && !String(md.title || '').includes('중') ? '고 ' : '중 ') + g + '-' + s;
+    }
+  }
+  log(`제목(출처): ${TITLE} · 학년 ${GRADE_LABEL}`);
   const cells = await msCells(MYDB);
   if (!cells.length) throw new Error('문항이 없습니다 (mydb id 확인)');
   log(`수학비서: ${cells.length}문항`);
@@ -227,4 +266,20 @@ async function saiPoll(jobId, timeoutMs) {
     designTemplateId: null, qrFlag: false, problemTrendFlag: false,
   });
   log(`✅ 쌍둥이 학습지 생성: worksheet ${wsId} — 매쓰플랫 학습지 목록에서 「${TITLE} 쌍둥이」 확인`);
+
+  // ⑨ 마이리스트(폴더)에 넣기 — 같은 이름이 없으면 만든다
+  if (MYLIST) {
+    const { data: lists } = await mf(MF_API, 'GET', '/mylist');
+    const all = (lists && lists.myLists) || (Array.isArray(lists) ? lists : []);
+    let target = all.find((l) => l.name === MYLIST);
+    if (!target) {
+      const { data: made } = await mf(MF_API, 'POST', '/mylist', { name: MYLIST });
+      target = (made && made.myList) || made;
+      log(`마이리스트 「${MYLIST}」 새로 만듦`);
+    }
+    if (target && target.id) {
+      await mf(MF_API, 'POST', `/mylist/${target.id}/element`, { worksheetIds: [wsId] });
+      log(`마이리스트 「${MYLIST}」에 학습지 담음`);
+    }
+  }
 })().catch((e) => { console.error('오류:', e.message); process.exit(1); });
