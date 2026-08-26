@@ -1065,32 +1065,102 @@ async function refreshKmm() {
   }
 }
 
+/* ── v18-83: 시그니처 교재 전체로 확대 ──────────────────────────────
+ * 매쓰플랫 교재 화면의 탭이 API의 type 값과 이렇게 대응한다:
+ *
+ *   시그니처 교재 ┬ CUSTOM_SIGNATURE (275권) 우리 학원 표지가 붙은 것 + 카탈로그 사본
+ *                └ SIGNATURE        (249권) 매쓰플랫이 만든 교재 전체
+ *                                           (연산·개념·유형·심화유형·개념유형라이트·내신대비·N제)
+ *   내 교재        CUSTOM           ( 25권) 선생님이 직접 만든 학습지 (PDF 있는 것 15권)
+ *   시중교재       PUBLIC          (1000권) 출판사 교재 — PDF 주소를 주지 않는다(상대경로뿐)
+ *
+ * 그래서 내려받을 수 있는 것은 앞의 세 가지다. 시중교재는 출판사 저작물이라
+ * 매쓰플랫 자체가 PDF를 안 주므로 자동으로 빠진다(우리가 막는 게 아니다).
+ *
+ * CUSTOM_SIGNATURE 275권 중 248권은 SIGNATURE와 같은 교재(id가 같다)라
+ * 「주문일이 있는 것」만 우리 교재로 보고, 나머지는 시그니처 쪽에서 한 번만 담는다.
+ */
 async function refreshWorkbookPdfs() {
   try {
-    const gradeOf = (w) => {
-      const sc = { ELEMENTARY: '초', MIDDLE: '중', HIGH: '고' }[w.schoolType] || '';
-      if (!sc) return '';
-      return sc + (w.grade != null ? w.grade : '') + (w.semester != null ? '-' + w.semester : '');
+    const SCHOOL = { ELEMENTARY: '초', MIDDLE: '중', HIGH: '고' };
+    const KIND = {
+      ARITHMETIC: '연산서', CONCEPT: '개념서', BASIC: '유형서', HIGH: '심화유형서',
+      CONCEPT_UNIT_LIGHT: '개념유형라이트', SCHOOL_TEST: '내신대비', N_PROBLEM: 'N제',
     };
-    // 자체 제작(주문) 교재 — 실제로 주문한 것만 추린다
-    const list = await api('/workbook?type=CUSTOM_SIGNATURE&size=500');
-    const all = Array.isArray(list) ? list : ((list && list.content) || []);
-    const books = all
-      .filter((w) => w.orderDatetime && (w.pdfUrl || w.solutionPdfUrl))
-      .map((w) => ({
-        id: w.id,
-        title: w.fulltitle || w.title || '',
-        grade: gradeOf(w),
-        page: w.page || null,
-        orderDatetime: w.orderDatetime || '',
-        orderStatus: w.orderStatus || '',
-        pdfUrl: w.pdfUrl || '',
-        solutionPdfUrl: w.solutionPdfUrl || '',
-        thumb: w.thumbnailImageUrl || '',
-      }))
-      .sort((a, b) => String(b.orderDatetime).localeCompare(String(a.orderDatetime)));
+    const SUB = { COMPLEX: '종합편', BASIC: '기본편', HIGH: '심화편' };
+    const THUMB_BASE = 'https://mathflat-user-uploads.mathflat.com/created-workbook/';
+    // 썸네일은 시그니처 쪽만 상대경로로 온다 (예: sample/1319991/thumbnail.png)
+    const absThumb = (u) => (!u ? '' : (/^https?:/.test(u) ? u : THUMB_BASE + u));
+    // 「표지 체험 교재」처럼 주소가 잘려 파일명이 없는 것이 있다 → 받아도 403이라 걸러낸다
+    const pdfOk = (u) => /^https?:\/\/\S+\.pdf(\?|$)/.test(String(u || ''));
+
+    // 고등 22개정은 학년 대신 과목명이 들어온다 (grade='공통수학1', semester=null)
+    const gradeLabel = (w) => {
+      const s = SCHOOL[w.schoolType] || '';
+      const g = w.grade == null ? '' : String(w.grade);
+      if (!s) return '';
+      if (w.schoolType === 'HIGH' && g && !/^\d+$/.test(g)) return '고 ' + g;
+      return s + g + (w.semester != null ? '-' + w.semester : '');
+    };
+    const gradeKey = (w) => {                       // 화면 위쪽 칩에 쓰는 묶음 이름
+      const s = SCHOOL[w.schoolType] || '';
+      const g = w.grade == null ? '' : String(w.grade);
+      if (w.schoolType === 'HIGH') return /^\d+$/.test(g) ? '고' + g : (g || '고');
+      return s + g;
+    };
+    const kindLabel = (w) => {
+      const k = KIND[w.signatureType] || '';
+      const sb = SUB[w.signatureSubtype] || '';
+      return k && sb ? k + '(' + sb + ')' : k;
+    };
+    const rec = (w, src) => ({
+      id: w.id,
+      title: w.fulltitle || w.title || '',
+      grade: gradeLabel(w),
+      gkey: gradeKey(w),
+      school: SCHOOL[w.schoolType] || '',
+      kind: kindLabel(w),
+      rev: w.revision === 'CURRICULUM_22' ? '22개정' : (w.revision === 'CURRICULUM_15' ? '15개정' : ''),
+      page: w.page || null,
+      src,                                          // mine=우리 주문 · sig=매쓰플랫 시그니처 · own=직접 만든
+      orderDatetime: w.orderDatetime || '',
+      orderStatus: w.orderStatus || '',
+      pdfUrl: pdfOk(w.pdfUrl) ? w.pdfUrl : '',
+      solutionPdfUrl: pdfOk(w.solutionPdfUrl) ? w.solutionPdfUrl : '',
+      thumb: absThumb(w.thumbnailImageUrl),
+    });
+    const asList = (r) => (Array.isArray(r) ? r : ((r && r.content) || []));
+    const pull = async (type) => {
+      try { return asList(await api(`/workbook?type=${type}&size=1000`)); }
+      catch (e) { log(`교재 목록 ${type} 실패:`, e.message); return []; }
+    };
+
+    const [cs, sg, cu] = [await pull('CUSTOM_SIGNATURE'), await pull('SIGNATURE'), await pull('CUSTOM')];
+
+    const books = [];
+    const seen = new Set();
+    const add = (w, src) => {
+      const r = rec(w, src);
+      if (!r.pdfUrl && !r.solutionPdfUrl) return;    // 받을 게 없으면 넣지 않는다
+      if (seen.has(String(r.id))) return;
+      seen.add(String(r.id));
+      books.push(r);
+    };
+    cs.filter((w) => w.orderDatetime).forEach((w) => add(w, 'mine'));   // ① 우리가 주문한 교재
+    sg.forEach((w) => add(w, 'sig'));                                   // ② 매쓰플랫 시그니처 전체
+    cu.forEach((w) => add(w, 'own'));                                   // ③ 선생님이 직접 만든 학습지
+
+    // 우리 주문 교재가 맨 앞(최근 주문순), 그다음 시그니처, 그다음 직접 만든 것
+    const rank = { mine: 0, sig: 1, own: 2 };
+    books.sort((a, b) => (rank[a.src] - rank[b.src])
+      || String(b.orderDatetime).localeCompare(String(a.orderDatetime))
+      || String(a.grade).localeCompare(String(b.grade))
+      || String(a.title).localeCompare(String(b.title)));
+
+    const n = (s) => books.filter((b) => b.src === s).length;
     await storeSet('mf_workbook_pdfs', { at: new Date().toISOString(), books });
-    log(`교재 PDF 목록: ${books.length}권 저장 (해설 있는 것 ${books.filter((b) => b.solutionPdfUrl).length}권)`);
+    log(`교재 PDF 목록: ${books.length}권 저장 `
+      + `(주문 ${n('mine')} · 시그니처 ${n('sig')} · 직접 만든 ${n('own')} / 해설 ${books.filter((b) => b.solutionPdfUrl).length}권)`);
   } catch (e) {
     log('교재 PDF 목록 실패:', e.message);
   }
