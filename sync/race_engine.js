@@ -16,6 +16,12 @@
  *   · 「모름(?)」도 푼 것으로 인정(기본점). 「미채점(-)」은 제외.
  *   · 학습지·교재·오답지·주간테스트 — 매쓰플랫에서 채점되면 모두 포함.
  *
+ * ── 부(部) ────────────────────────────────────────────────────────
+ *   중등부 · 고등부 = 시상 대상
+ *   초등부 = 「체험 리그」 — 시상에서는 빼고, 중등부와 똑같은 잣대로 점수만
+ *            쌓아 중학생 형·누나들의 공부량을 미리 겪어 보게 한다.
+ *            기본은 6학년만(학원앱에서 4·5학년도 넣을 수 있다).
+ *
  * ── 리그 (기본값, 학원앱에서 조정 가능) ───────────────────────────
  *   브론즈 0 · 실버 2,500 · 골드 5,000 · 다이아 9,000 · 마스터 13,000
  *   (실측 평균 2.58점/문항 기준 → 1,000 / 2,000 / 3,500 / 5,000문항)
@@ -113,7 +119,7 @@ async function loadStudents() {
       nm: nm.slice(0, 1) + '○○',
       sch: String(s.school || '').replace(/(중|고등)학교$/, '$1').replace(/초등학교$/, '초'),
       gr: (band === 'high' ? '고' : band === 'mid' ? '중' : '초') + num,
-      band,
+      band, gnum: num,
     };
   });
   const rows = await sbAll('mf_students?select=mf_student_id,name');
@@ -149,7 +155,10 @@ async function runRace() {
 
   const tiers = (Array.isArray(season.tiers) && season.tiers.length ? season.tiers : DEF_TIERS)
     .slice().sort((a, b) => a.at - b.at);
-  const leagues = season.leagues || { mid: true, high: false };
+  // elem = 초등부 「체험 리그」 — 시상에서는 빼고, 중등부와 같은 잣대로 점수만 쌓는다
+  // (원장님: 초6이 중등부의 공부량을 미리 체험해 보는 기회. 2026-08-26)
+  const leagues = season.leagues || { elem: false, mid: true, high: false };
+  const elemGrades = (leagues.elemGrades && leagues.elemGrades.length) ? leagues.elemGrades.map(String) : ['6'];
 
   const { sid2code, info } = await loadStudents();
   log(`학생 매핑 ${Object.keys(sid2code).length}명`);
@@ -191,6 +200,7 @@ async function runRace() {
   function buildBand(band) {
     const rows = Object.keys(info)
       .filter((c) => info[c].band === band)
+      .filter((c) => band !== 'elem' || elemGrades.indexOf(String(info[c].gnum)) >= 0)
       .map((c) => {
         const a = agg[c] || { pts: 0, n: 0, ok: 0, hard: 0, byDay: {} };
         // 성장률 = (후반 하루평균 ÷ 전반 하루평균 − 1) × 100
@@ -236,10 +246,15 @@ async function runRace() {
 
   const watch = { at: board.at, seasonId: board.seasonId, items: [] };
 
-  ['mid', 'high'].forEach((band) => {
+  // 초등부는 「체험 리그」 — 상 계산도, 이상 신호도 만들지 않는다
+  board.demoBands = ['elem'];
+  board.elemGrades = elemGrades;
+
+  ['elem', 'mid', 'high'].forEach((band) => {
     if (!leagues[band]) return;
     const rows = buildBand(band);
     board[band] = rows;
+    if (band === 'elem') return;               // 체험 리그는 여기까지
     // 상 후보: 1~3등을 뺀 나머지 중에서
     const rest = rows.filter((r) => r.rank > 3 && r.n > 0);
     const steady = rest.slice().sort((a, b) => b.days - a.days || b.pts - a.pts)[0] || null;
@@ -257,11 +272,27 @@ async function runRace() {
     });
   });
 
+  // 부별 요약 — 초등부 화면의 「중등부 형·누나들은 이만큼 풀어요」 게이지에 쓴다
+  board.compare = {};
+  ['elem', 'mid', 'high'].forEach((band) => {
+    const rows = board[band];
+    if (!rows || !rows.length) return;
+    const tot = rows.reduce((s, r) => s + r.pts, 0);
+    const totN = rows.reduce((s, r) => s + r.n, 0);
+    board.compare[band] = {
+      n: rows.length,
+      avg: Math.round(tot / rows.length),
+      avgN: Math.round(totN / rows.length),
+      top: rows[0].pts,
+    };
+  });
+
   await kvSet('race_board', board);
   await kvSet('race_watch', watch);
 
-  const brief = ['mid', 'high'].filter((b) => board[b]).map((b) =>
-    `${b === 'mid' ? '중등부' : '고등부'} ${board[b].length}명 · 1위 ${board[b][0] ? board[b][0].pts + '점' : '-'}`).join(' / ');
+  const BN = { elem: '초등부(체험)', mid: '중등부', high: '고등부' };
+  const brief = ['elem', 'mid', 'high'].filter((b) => board[b]).map((b) =>
+    `${BN[b]} ${board[b].length}명 · 1위 ${board[b][0] ? board[b][0].pts + '점' : '-'}`).join(' / ');
   log(`완료: ${brief}${watch.items.length ? ` · 확인필요 ${watch.items.length}명` : ''}`);
   return board;
 }
