@@ -37,6 +37,18 @@ const sbH = () => ({
 });
 const log = (m) => console.log(`[요청처리] ${m}`);
 
+/* lumen_store 값 하나 읽기 (없으면 null) */
+async function getKv(key) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.${key}&select=value`, { headers: sbH() });
+    if (!r.ok) return null;
+    const j = await r.json();
+    let v = (j[0] && j[0].value) || null;
+    if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+    return v;
+  } catch (e) { return null; }
+}
+
 async function getReq() {
   const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.${KEY}&select=value`, { headers: sbH() });
   if (!r.ok) throw new Error(`요청 읽기 실패 ${r.status}`);
@@ -294,6 +306,18 @@ async function runHwSync() {
   } catch (e) { log('기출 쌍둥이 오류:', e.message); }
   // 학습지 생성 요청은 수집보다 가볍고 빠르므로 먼저 처리한다
   try { await runWsRequests(); } catch (e) { log('학습지 요청 처리 오류:', e.message); }
+
+  // 🏁 진도 레이스 순위 집계 (v18-86)
+  // 5분마다 다시 세면 낭비라서 30분에 한 번만. 단, 앱에서 「지금 다시 세기」를
+  // 누르면 race_board를 지우므로 그때는 바로 계산된다.
+  try {
+    const board = await getKv('race_board');
+    const ageMin = board && board.at ? (Date.now() - Date.parse(board.at)) / 60000 : 9999;
+    if (ageMin >= 30) {
+      const { runRace } = require('./race_engine.js');
+      await runRace();
+    }
+  } catch (e) { log('진도 레이스 오류: ' + e.message); }
 
   const req = await getReq();
 

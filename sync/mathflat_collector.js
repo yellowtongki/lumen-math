@@ -755,6 +755,9 @@ async function main() {
     await refreshStuck();          // v18-46: 「막힌 문제」 사전 계산 (아하노트 퍼센트의 분모)
     await refreshStudentWorkbooks(); // v18-74: 학생별 교재·회차·페이지(progressId)
     await refreshBookAnswers();    // v18-74: 교재 채점용 정답사전
+    // v18-86: 🏁 진도 레이스 순위 집계 (시즌이 없으면 스스로 건너뛴다)
+    try { const { runRace } = require('./race_engine.js'); await runRace(); }
+    catch (e) { log('진도 레이스 집계 실패(치명적 아님):', e.message); }
     // v18-38: 수학비서 주간테스트 파이프라인 — 지정폴더 스캔·매쓰플랫 업로드 (새벽 전체 수집에 편승)
     if (process.env.MATHSECR_ID && process.env.MATHSECR_PASSWORD) {
       try {
