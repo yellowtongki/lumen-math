@@ -293,29 +293,31 @@ async function runTwinPipeline(opts) {
   const made = [];   // 만든 학습지 id들 — 마지막에 폴더로
 
   // ⑦ 기출원본 학습지 — OCR 문제를 문제은행으로 «복사»한 뒤라야 만들 수 있다
-  //    복사는 OCR이 끝난 뒤에만 받아준다(바로 부르면 500) → 먼저 OCR 완료를 기다린다
-  let ocrReady = false;
-  for (let i = 0; i < 100; i++) {
-    const { data } = await mf(MF_API, 'POST', '/my-db-problems/details', { detailIds });
-    const rows = (data && data.myDbProblemDetails) || [];
-    const left = rows.filter((x) => x.ocrStatus === 'PROCESSING' || x.processingStatus === 'PROCESSING').length;
-    if (rows.length && !left) { ocrReady = true; break; }
-    if (i % 10 === 0) log(`원본 OCR 대기: 남은 ${left}/${rows.length}`);
-    await sleep(3000);
-  }
+  //    복사는 준비가 끝난 뒤에만 받아준다. 「준비됨」을 우리가 판정하려 했더니 틀렸다 —
+  //    ocrStatus가 다 끝나도 문항 이미지 생성이 남아 있어 400(MYDB_PROBLEM_IMAGE_NOT_COMPLETED)이 났다.
+  //    그래서 판정하지 않고, 복사 요청 자체를 될 때까지 다시 부른다(서버가 유일한 정답).
   let copied = {};
-  if (ocrReady) {
+  let copyOk = false;
+  for (let i = 0; i < 60; i++) {                       // 최대 10분 (10초 간격)
     try {
       await mf(MF_API, 'POST', '/my-db-problems/copy-to-problem', { detailIds });
-      for (let i = 0; i < 80; i++) {
-        const { data } = await mf(MF_API, 'POST', '/my-db-problems/copy-to-problem/status', { detailIds });
-        const rows = (data && data.details) || [];
-        copied = {}; rows.forEach((x) => { if (x.status === 'COPIED') copied[x.myDbProblemDetailId] = x.problemId; });
-        if (rows.length && Object.keys(copied).length === rows.length) break;
-        await sleep(3000);
-      }
-    } catch (e) { log('원본 복사 실패(쌍둥이는 계속 진행):', e.message.slice(0, 150)); }
-  } else log('원본 OCR이 제 시간에 안 끝남 — 원본 학습지는 건너뛰고 쌍둥이만 만든다');
+      copyOk = true; break;
+    } catch (e) {
+      const notReady = /NOT_COMPLETED|INTERNAL_SERVER_ERROR|PROCESSING/i.test(e.message);
+      if (!notReady) { log('원본 복사 실패(쌍둥이는 계속 진행):', e.message.slice(0, 150)); break; }
+      if (i % 6 === 0) log(`원본 문제 준비 대기… (${i * 10}초)`);
+      await sleep(10000);
+    }
+  }
+  if (copyOk) {
+    for (let i = 0; i < 80; i++) {
+      const { data } = await mf(MF_API, 'POST', '/my-db-problems/copy-to-problem/status', { detailIds });
+      const rows = (data && data.details) || [];
+      copied = {}; rows.forEach((x) => { if (x.status === 'COPIED') copied[x.myDbProblemDetailId] = x.problemId; });
+      if (rows.length && Object.keys(copied).length === rows.length) break;
+      await sleep(3000);
+    }
+  } else log('원본 문제가 제 시간에 준비되지 않음 — 쌍둥이만 만든다');
   const origList = detailIds.map((d, i) => ({ id: copied[d], boxIndex: i + 1 })).filter((p) => p.id);
   log(`원본 문제 복사: ${origList.length}/${detailIds.length}`);
   if (origList.length) {
