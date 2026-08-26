@@ -287,6 +287,11 @@ async function runHwSync() {
   }
   // 교재 채점 되돌려쓰기 — 가볍고 학생이 기다리므로 그다음
   try { await runHwSync(); } catch (e) { log('교재채점 반영 오류:', e.message); }
+  // 기출 쌍둥이 요청 (v18-84) — 요청이 없으면 조회 한 번으로 끝난다
+  try {
+    const { runTwinRequests } = require('./twin_request_worker.js');
+    await runTwinRequests();
+  } catch (e) { log('기출 쌍둥이 오류:', e.message); }
   // 학습지 생성 요청은 수집보다 가볍고 빠르므로 먼저 처리한다
   try { await runWsRequests(); } catch (e) { log('학습지 요청 처리 오류:', e.message); }
 
