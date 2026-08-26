@@ -39,7 +39,7 @@
  * trieKey (22개정): 중1-1 1.4.4146.4154.4169 · 중1-2 1.4.4146.4154.4170
  *   중2-1 1.4.4146.4155.4171 · 중2-2 1.4.4146.4155.4172
  *   중3-1 1.4.4146.4156.4173 · 중3-2 1.4.4146.4156.4174
- * trieKey (15개정): 중1 1.2.9.27.62/.80 · 중2 1.2.9.29.64/.82 · 중3 1.2.9.31.66/.84
+ *   (15개정 중1-2는 1.2.9.27.80 — 옛 기출이면 이쪽)
  *
  * 계정: MATHSECR_ID/PASSWORD, MATHFLAT_ID/PASSWORD (환경변수만, 커밋 금지)
  * 주의: 매쓰플랫 동시 로그인 시 기존 접속이 끊길 수 있음 → 새벽 실행 권장.
@@ -59,9 +59,9 @@ const MF_SAI = 'https://sai.mathflat.com';   // AI(업로드·인식·매칭) �
 const MF_BASE = 'https://teacher.mathflat.com';
 const OUT_DIR = path.join(__dirname, '_debug', 'twin_pipeline');
 
-/* 교육과정 키. 22·15개정 중학교 전 학기 확보 (15개정은 API by-key 스캔으로 확인) */
+/* 교육과정 키. 22개정은 전 학기 확보 · 15개정은 중1-2만 확인됨(다른 학기는 --trie로 직접) */
 const TRIE_22 = { '1-1': '1.4.4146.4154.4169', '1-2': '1.4.4146.4154.4170', '2-1': '1.4.4146.4155.4171', '2-2': '1.4.4146.4155.4172', '3-1': '1.4.4146.4156.4173', '3-2': '1.4.4146.4156.4174' };
-const TRIE_15 = { '1-1': '1.2.9.27.62', '1-2': '1.2.9.27.80', '2-1': '1.2.9.29.64', '2-2': '1.2.9.29.82', '3-1': '1.2.9.31.66', '3-2': '1.2.9.31.84' };
+const TRIE_15 = { '1-2': '1.2.9.27.80' };
 /* 2022 개정 적용 연도: 중1은 2025년부터, 중2는 2026년부터, 중3은 2027년부터 */
 function trieForExam(grade, semester, year) {
   const is22 = Number(year) >= 2024 + Number(grade);
@@ -161,11 +161,19 @@ async function mfLogin() {
   if (!j.accessToken) throw new Error(`매쓰플랫 로그인 실패 ${j.code || r.status}`);
   MF_TOKEN = j.accessToken;
 }
-async function mf(host, method, p, body) {
+/* 토큰이 만료되면(401) 한 번 다시 로그인하고 재시도한다.
+ * 시험지 한 장에 몇 분이 걸리고(원본 OCR 대기), 여러 장을 이어서 돌리면
+ * 중간에 토큰이 만료된다 — 실제로 2022년 중3 기말에서 원본 필터 단계가 401로 끊겼다. */
+async function mf(host, method, p, body, _retried) {
   const r = await fetch(host + p, { method, headers: mfH(), body: body === undefined ? undefined : JSON.stringify(body) });
   const t = await r.text();
   let j = null; try { j = JSON.parse(t); } catch (e) {}
   const data = j && j.data !== undefined ? j.data : j;
+  if (r.status === 401 && !_retried) {
+    log('토큰 만료 → 다시 로그인');
+    await mfLogin();
+    return mf(host, method, p, body, true);
+  }
   if (!r.ok) throw new Error(`${method} ${p} → ${r.status} ${t.slice(0, 200)}`);
   return { data, raw: t };
 }
