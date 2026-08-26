@@ -1,0 +1,21 @@
+name: 학교 정보 접속 시험 (수동)
+
+# 학교알리미·나이스에서 학교 정보를 받아올 수 있는지 확인만 하는 일회성 시험.
+# 예약 실행 없음 — 깃허브 화면에서 「Run workflow」를 눌러야만 돈다.
+# 아무것도 저장하지 않고 결과만 기록에 남긴다.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: 학교 정보 가져오기 시험
+        env:
+          NEIS_KEY: ${{ secrets.NEIS_KEY }}
+        run: node sync/probe_schoolinfo.js
