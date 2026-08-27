@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시험대비 혼합형 미리보기</title>
+<!-- ═══════════════════════════════════════════════════════════════
+  🎯 시험대비 혼합형 미리보기 v1 (2026-08-27)
+  ───────────────────────────────────────────────────────────────
+  아이디어 3안을 섞은 구성:
+    · 홈 카드   = A안 고도계 (전체 진행률 한 줄 요약)
+    · 본 화면   = B안 스테이지 맵 (단원×스텝을 하나씩 클리어)
+    · 마지막    = C안 보스전 (실전 TEST 구간)
+  왼쪽은 학원앱(원장님) — 학교×학년 「시험 그룹」으로 관리
+  오른쪽은 학생앱(학생) — 내 목표와 지금 위치
+
+  숫자는 실측입니다: 쎈 B+C 421문항 · 일품 288문항 = 709문항
+═══════════════════════════════════════════════════════════════ -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#eef2f7;color:#1e293b;padding:20px 14px 70px}
+.top{max-width:1240px;margin:0 auto 18px}
+.top h1{font-size:21px;font-weight:900;color:#0d2240}
+.top p{font-size:13px;color:#64748b;margin-top:6px;line-height:1.7}
+.stage{max-width:1240px;margin:0 auto;display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;justify-content:center}
+.lbl{display:inline-block;padding:5px 13px;border-radius:99px;font-size:12.5px;font-weight:900;color:#fff;margin-bottom:9px}
+.desc{font-size:12px;color:#64748b;line-height:1.75;margin:10px 3px 0;max-width:430px}
+
+/* ── 학원앱 패널 ── */
+.pc{width:660px;background:#fff;border:1.5px solid #dbe3ec;border-radius:16px;overflow:hidden;box-shadow:0 8px 26px rgba(13,34,64,.10)}
+.pc .bar{background:linear-gradient(135deg,#0d2240,#164a7a);color:#fff;padding:14px 18px}
+.pc .bar .t{font-size:15.5px;font-weight:900}
+.pc .bar .s{font-size:11.5px;opacity:.75;margin-top:3px;font-weight:700}
+.pc .body{padding:14px;background:#f7f9fc}
+.gcard{background:#fff;border:1.5px solid #e2e8f0;border-radius:13px;padding:12px 14px;margin-bottom:10px}
+.gcard.hot{border-color:#0f8a4e;box-shadow:0 0 0 3px #0f8a4e14}
+.gtop{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.gname{font-size:14px;font-weight:900;color:#0d2240}
+.dd{padding:3px 9px;border-radius:99px;font-size:11px;font-weight:900}
+.mini{font-size:11.5px;color:#94a3b8;font-weight:800}
+.bar2{height:9px;background:#e7ecf3;border-radius:99px;overflow:hidden;margin-top:7px}
+.bar2 i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#34d399,#0f8a4e)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:9px}
+th{background:#f1f5f9;padding:6px 8px;font-size:11px;color:#64748b;text-align:left;font-weight:800}
+td{padding:7px 8px;border-bottom:1px solid #f1f5f9;font-weight:700}
+.folder{border:1.5px solid #e2e8f0;border-radius:11px;margin-bottom:7px;overflow:hidden;background:#fff}
+.fhd{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#f8fafc;font-size:13px;font-weight:900;cursor:pointer;user-select:none}
+.fhd .cnt{margin-left:auto;font-size:11px;color:#94a3b8;font-weight:800}
+.fbody{padding:4px 12px 10px}
+.bkline{display:flex;align-items:center;gap:8px;padding:6px 4px;font-size:12.5px;font-weight:700;border-bottom:1px dashed #eef2f7}
+.bkline:last-child{border:none}
+.bkline .nm{flex:1}
+.badge{padding:2px 7px;border-radius:6px;font-size:10.5px;font-weight:900;background:#eef6ff;color:#1d4ed8}
+.badge.gray{background:#f1f5f9;color:#94a3b8}
+
+/* ── 학생앱 폰 ── */
+.phone{width:370px;background:#f6f8fb;border:8px solid #16213a;border-radius:34px;overflow:hidden;box-shadow:0 14px 40px rgba(13,34,64,.18)}
+.scr{height:720px;overflow:hidden;position:relative;background:linear-gradient(180deg,#f5f0ff,#eef2f7 45%)}
+.hd{padding:14px 17px 12px;color:#fff;background:linear-gradient(135deg,#4c1d95,#7c3aed)}
+.hd .t{font-size:15.5px;font-weight:900}
+.hd .s{font-size:11px;opacity:.82;margin-top:3px;font-weight:700}
+.card{background:#fff;border-radius:15px;margin:9px 11px;padding:12px 14px;box-shadow:0 2px 8px rgba(13,34,64,.06)}
+.small{font-size:11px;color:#94a3b8;font-weight:800}
+.dbar{height:9px;background:#e7ecf3;border-radius:99px;overflow:hidden;margin-top:6px}
+.dbar i{display:block;height:100%;border-radius:99px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>🎯 시험대비 — 혼합형 미리보기</h1>
+  <p>홈 요약은 <b>A안 고도계</b>, 본 화면은 <b>B안 스테이지 맵</b>, 마지막 실전 구간은 <b>C안 보스전</b>으로 섞었습니다.
+  학원앱은 <b>학교×학년 「시험 그룹」</b>으로 묶어 학년마다 학교가 달라도 한 화면에서 관리합니다.
+  숫자는 실측값입니다 — 쎈 B·C 421문항 + 일품 288문항 = <b>709문항</b>.</p>
+</div>
+
+<div class="stage">
+
+<!-- ════════════ 학원앱 ════════════ -->
+<div>
+  <span class="lbl" style="background:#0d2240">학원앱 · 원장님 화면</span>
+  <div class="pc">
+    <div class="bar">
+      <div class="t">📋 시험대비 계획</div>
+      <div class="s">학교×학년 시험 그룹 4개 · 시험일은 나이스에서 자동으로 채워집니다</div>
+    </div>
+    <div class="body">
+
+      <!-- 시험 그룹 카드들 -->
+      <div class="gcard hot">
+        <div class="gtop">
+          <span class="gname">🏫 옥길중 1학년</span>
+          <span class="dd" style="background:#fee2e2;color:#b91c1c">D-34</span>
+          <span class="mini">9/30~10/1 중간고사 · 6명</span>
+          <span class="mini" style="margin-left:auto">평균 진행 <b style="color:#0f8a4e">7%</b></span>
+        </div>
+        <div class="bar2"><i style="width:7%"></i></div>
+        <div class="mini" style="margin-top:7px">
+          범위: 정비례·반비례 ~ 삼각형의 합동 ·
+          <b style="color:#0d2240">쎈 B·C 421</b> + <b style="color:#0d2240">일품 288</b> = <b style="color:#7c3aed">709문항</b>
+        </div>
+        <table>
+          <tr><th>학생</th><th>쎈 B·C</th><th>일품</th><th>합계 진행</th><th>하루 목표</th><th></th></tr>
+          <tr><td>옥○○</td><td>97/421</td><td>0/288</td><td>14%</td><td><b style="color:#0f8a4e">18</b></td><td></td></tr>
+          <tr><td>김○○</td><td>18/421</td><td>0/288</td><td>3%</td><td><b style="color:#0f8a4e">21</b></td><td></td></tr>
+          <tr><td>한○○</td><td>6/421</td><td>0/288</td><td>1%</td><td><b style="color:#0f8a4e">21</b></td><td></td></tr>
+          <tr><td>유○○</td><td>0/421</td><td>0/288</td><td>0%</td><td><b style="color:#0f8a4e">21</b></td><td><span class="dd" style="background:#fef3c7;color:#92400e">시작 안 함</span></td></tr>
+          <tr><td>박○○</td><td>0/421</td><td>0/288</td><td>0%</td><td><b style="color:#0f8a4e">21</b></td><td><span class="dd" style="background:#fef3c7;color:#92400e">시작 안 함</span></td></tr>
+        </table>
+      </div>
+
+      <div class="gcard">
+        <div class="gtop">
+          <span class="gname">🏫 옥길중 2학년</span>
+          <span class="dd" style="background:#fee2e2;color:#b91c1c">D-34</span>
+          <span class="mini">9/30~10/1 · 4명</span>
+          <span class="mini" style="margin-left:auto">평균 진행 <b style="color:#0f8a4e">12%</b></span>
+        </div>
+        <div class="bar2"><i style="width:12%"></i></div>
+      </div>
+
+      <div class="gcard">
+        <div class="gtop">
+          <span class="gname">🏫 범박중 3학년</span>
+          <span class="dd" style="background:#ffedd5;color:#c2410c">D-44</span>
+          <span class="mini">11/10~12 · 3명</span>
+          <span class="mini" style="margin-left:auto">평균 진행 <b style="color:#0f8a4e">4%</b></span>
+        </div>
+        <div class="bar2"><i style="width:4%"></i></div>
+      </div>
+
+      <div class="gcard">
+        <div class="gtop">
+          <span class="gname">🏫 범박고 1학년</span>
+          <span class="dd" style="background:#e0e7ff;color:#3730a3">D-41</span>
+          <span class="mini">12/7~11 · 5명</span>
+          <span class="mini" style="margin-left:auto">범위 미정</span>
+        </div>
+        <div class="mini" style="margin-top:6px;color:#c2410c">⚠️ 교재·범위를 아직 정하지 않았습니다 — 눌러서 설정</div>
+      </div>
+
+      <!-- 학년 폴더 교재 선택 -->
+      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:13px;padding:12px 14px;margin-top:14px">
+        <div style="font-size:13px;font-weight:900;color:#0d2240;margin-bottom:9px">📚 교재 고르기 — 학년 폴더</div>
+        <div class="folder">
+          <div class="fhd">📂 <span>중1</span> <span class="cnt">25권 · 2권 선택됨</span></div>
+          <div class="fbody">
+            <div class="bkline"><input type="checkbox" checked><span class="nm">쎈 - 중등수학1(상)</span><span class="badge">p.159~ · B·C</span></div>
+            <div class="bkline"><input type="checkbox" checked><span class="nm">쎈 - 중등수학1(하)</span><span class="badge">~p.80 · B·C</span></div>
+            <div class="bkline"><input type="checkbox" checked><span class="nm">일품 - 중등수학1(상)</span><span class="badge">p.79~96</span></div>
+            <div class="bkline"><input type="checkbox" checked><span class="nm">일품 - 중등수학1(하)</span><span class="badge">p.8~45</span></div>
+            <div class="bkline"><input type="checkbox"><span class="nm">라이트쎈 - 중등수학1(하)</span><span class="badge gray">미선택</span></div>
+            <div class="bkline"><input type="checkbox"><span class="nm">개념원리 - 중등수학1(하)</span><span class="badge gray">미선택</span></div>
+            <div class="bkline"><input type="checkbox"><span class="nm">블랙반 자체교재 1차 <span style="font-size:10px;color:#0f8a4e">NEW</span></span><span class="badge gray">등록 대기</span></div>
+          </div>
+        </div>
+        <div class="folder"><div class="fhd">📁 <span>중2</span> <span class="cnt">7권</span></div></div>
+        <div class="folder"><div class="fhd">📁 <span>중3</span> <span class="cnt">10권</span></div></div>
+        <div class="folder"><div class="fhd">📁 <span>초등 (4·5·6학년)</span> <span class="cnt">39권</span></div></div>
+        <div class="folder"><div class="fhd">📁 <span>고등</span> <span class="cnt">27권</span></div></div>
+        <div class="mini" style="margin-top:8px">💡 이름이 없던 교재 25권은 학생 교재기록에서 제목을 찾아 채웠습니다 · 자체교재는 학생 등록 다음 날 자동으로 목록에 나타납니다</div>
+      </div>
+
+    </div>
+  </div>
+  <div class="desc">
+  <b>시험 그룹 = 학교 × 학년.</b> 학년마다 학교가 달라도 그룹 카드로 나뉘어 있어 헷갈리지 않습니다.
+  시험일은 <b>나이스 학사일정에서 자동</b>으로 채워지고(옥길중 9/30 이미 수집됨), 그룹에 범위를 한 번 정하면
+  소속 학생 전원에게 개인 계획이 생깁니다. 교재는 <b>학년 폴더</b>로 접혀 있어 25권 중에서 고르기 쉽습니다.
+  </div>
+</div>
+
+<!-- ════════════ 학생앱 ════════════ -->
+<div>
+  <span class="lbl" style="background:#7c3aed">학생앱 · 학생 화면</span>
+  <div class="phone"><div class="scr">
+
+    <div class="hd">
+      <div class="t">🎮 중간고사 월드</div>
+      <div class="s">옥길중 1학년 · 9/30 결전 · D-34</div>
+    </div>
+
+    <!-- A안 고도계 요약 -->
+    <div class="card" style="background:linear-gradient(135deg,#0d2240,#155e8a);color:#fff">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end">
+        <div>
+          <div style="font-size:11px;opacity:.8;font-weight:800">전체 진행 · 정상까지</div>
+          <div style="font-size:22px;font-weight:900;margin-top:2px">97 <span style="font-size:13px;opacity:.7">/ 709문항</span></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;opacity:.8;font-weight:800">하루 목표</div>
+          <div style="font-size:20px;font-weight:900;color:#6ee7b7">18문항</div>
+        </div>
+      </div>
+      <div class="dbar" style="background:#ffffff2e;margin-top:9px"><i style="width:14%;background:linear-gradient(90deg,#6ee7b7,#34d399)"></i></div>
+      <div style="font-size:10.5px;opacity:.75;font-weight:800;margin-top:5px">🏔️ 다음 캠프(스테이지 3 클리어)까지 <b>43문항</b></div>
+    </div>
+
+    <!-- B안 스테이지 맵 -->
+    <div style="padding:2px 4px">
+      <svg viewBox="0 0 350 300" style="width:100%">
+        <path d="M52 268 C150 268 200 236 165 212 C128 187 92 172 130 148 C172 122 236 130 232 96 C228 64 150 72 124 44"
+              fill="none" stroke="#d8ceef" stroke-width="9" stroke-linecap="round" stroke-dasharray="1 15"/>
+        <g text-anchor="middle">
+          <circle cx="52" cy="268" r="22" fill="#7c3aed"/><text x="52" y="274" font-size="13" fill="#fff" font-weight="900">1</text>
+          <text x="52" y="238" font-size="11">⭐⭐⭐</text>
+          <text x="52" y="296" font-size="9.5" font-weight="800" fill="#4c1d95">정비례 쎈B</text>
+
+          <circle cx="165" cy="212" r="22" fill="#7c3aed"/><text x="165" y="218" font-size="13" fill="#fff" font-weight="900">2</text>
+          <text x="165" y="182" font-size="11">⭐⭐☆</text>
+          <text x="165" y="242" font-size="9.5" font-weight="800" fill="#4c1d95">기본도형 쎈B</text>
+
+          <circle cx="130" cy="148" r="26" fill="#fff" stroke="#ff8a00" stroke-width="5">
+            <animate attributeName="stroke-width" values="4;7;4" dur="1.4s" repeatCount="indefinite"/></circle>
+          <text x="130" y="154" font-size="13" font-weight="900" fill="#c2410c">3</text>
+          <text x="130" y="114" font-size="10.5" font-weight="900" fill="#c2410c">▶ 지금 여기</text>
+          <text x="184" y="152" font-size="10" font-weight="800" fill="#7c2d12">25/68</text>
+
+          <circle cx="232" cy="96" r="21" fill="#cbd5e1"/><text x="232" y="102" font-size="12">🔒</text>
+          <text x="232" y="66" font-size="9.5" font-weight="800" fill="#64748b">작도·합동 쎈B</text>
+
+          <circle cx="124" cy="44" r="21" fill="#cbd5e1"/><text x="124" y="50" font-size="12">🔒</text>
+          <text x="124" y="18" font-size="9.5" font-weight="800" fill="#64748b">일품 고난도</text>
+
+          <!-- C안 보스 -->
+          <circle cx="292" cy="40" r="25" fill="#fee2e2" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="5 4"/>
+          <text x="292" y="48" font-size="18">🐉</text>
+          <text x="292" y="80" font-size="9.5" font-weight="900" fill="#b91c1c">실전 보스전</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- 현재 스테이지 -->
+    <div class="card" style="border:2px solid #7c3aed;background:#faf5ff;margin-top:0">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12.5px;font-weight:900;color:#4c1d95;white-space:nowrap">3 · 위치관계 쎈B</span>
+        <span class="small" style="color:#7c3aed;white-space:nowrap">정답률 90% = ⭐⭐⭐</span>
+      </div>
+      <div class="dbar" style="background:#ede9fe"><i style="width:37%;background:linear-gradient(90deg,#a855f7,#7c3aed)"></i></div>
+      <div class="small" style="margin-top:5px">43문항 더 → <b style="color:#7c3aed">스테이지 4 열림</b> · 오늘 <b style="color:#0f8a4e">5</b>/18문항</div>
+    </div>
+
+    <!-- C안 보스 예고 -->
+    <div class="card" style="background:linear-gradient(135deg,#2b1a4d,#450a0a);color:#fff">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:26px">🐉</span>
+        <div style="flex:1">
+          <div style="font-size:12.5px;font-weight:900">실전 보스전 — 일품 실전TEST</div>
+          <div style="font-size:10.5px;color:#fca5a5;font-weight:800;margin-top:2px">스테이지 5까지 클리어하면 열립니다 · HP 83</div>
+        </div>
+      </div>
+    </div>
+
+  </div></div>
+  <div class="desc">
+  맨 위 <b>고도계</b>는 항상 "전체 709 중 어디쯤"을 보여주고, 아래 <b>스테이지 맵</b>이 오늘 할 일을 정해줍니다.
+  스테이지는 <b>단원 × 교재·스텝</b>으로 잘라 만들고(예: 위치관계 쎈B), 클리어하면 다음이 열립니다.
+  별⭐은 정답률로 매겨져 <b>양만 채우는 것을 막아줍니다</b>. 마지막은 일품 실전TEST를 <b>보스전</b>으로 —
+  남은 문항이 곧 보스 HP라 풀 때마다 눈에 보이게 줄어듭니다.
+  </div>
+</div>
+
+</div>
+
+<!-- 설계 메모 -->
+<div class="top" style="margin-top:28px"><h1 style="font-size:16px">설계 메모</h1></div>
+<div class="stage"><div style="width:100%;max-width:1240px;background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 20px">
+<table style="min-width:600px">
+<tr><th>항목</th><th>정하는 방식</th></tr>
+<tr><td style="width:190px"><b>스테이지 쪼개기</b></td><td>단원 × (교재·스텝). 한 스테이지 50~80문항이 적당 — 3~4일이면 클리어되는 크기</td></tr>
+<tr><td><b>별 ⭐ 기준</b></td><td>정답률 70%/80%/90% = ⭐/⭐⭐/⭐⭐⭐ · 나중에 다시 풀어 별을 올릴 수 있음</td></tr>
+<tr><td><b>잠금 규칙</b></td><td>앞 스테이지 <b>클리어(별 1개 이상)</b> 시 다음 개방 — 별 3개를 강제하지 않아 중하위권도 막히지 않음</td></tr>
+<tr><td><b>보스전</b></td><td>실전TEST 구간(일품 Lv1·Lv2 = 83문항)을 마지막 보스로. 남은 문항 = HP</td></tr>
+<tr><td><b>하루 목표</b></td><td>(남은 문항 ÷ 남은 날) 매일 자동 재계산 — 밀리면 늘고, 앞서가면 줄어듦</td></tr>
+<tr><td><b>학원앱 그룹</b></td><td>학교 × 학년. 시험일은 나이스 학사일정에서 자동. 그룹에 범위 한 번 = 전원 개인계획 생성</td></tr>
+</table>
+</div></div>
+
+</body>
+</html>
