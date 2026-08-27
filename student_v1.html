@@ -1455,7 +1455,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     <div class="h3-me" onclick="rmGoalJump()">
       <span class="pa3" id="h-initial">학</span>
       <span class="meinfo">
-        <span class="nm3"><span id="h-name">학생</span><span class="gd3" id="h-grade">루멘수학</span><span class="bdg3m" id="h-badge">수강중</span></span>
+        <span class="nm3"><span id="h-name">학생</span><span id="blk-hd" style="display:none;align-items:center;gap:4px;margin-left:2px"></span><span class="gd3" id="h-grade">루멘수학</span><span class="bdg3m" id="h-badge">수강중</span></span>
         <span class="goal3" id="h-goalline" style="display:none">🎯</span>
       </span>
     </div>
@@ -1475,6 +1475,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <span class="dd" id="h3-rcv-dd"></span>
       </span>
     </div>
+    <!-- v2-47: 🖤 블랙반 배너 + 엠블럼 진열장 — 블랙반 학생에게만 보인다 -->
+    <div id="blk-home" style="display:none;margin:0 14px 9px"></div>
     <!-- v2-42: 🏁 진도 레이스 배너 — 시즌 중에만 보인다 -->
     <button class="rcbn" id="rcbn" style="display:none" onclick="go('screen-race')">
       <span class="em" id="rcbn-em" style="background:linear-gradient(135deg,#d9a441,#9a6b21)"></span>
@@ -1533,6 +1535,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <div class="fd3">진도·여정 보기</div>
       </button>
     </div>
+    <!-- v2-47: 🔠 글씨 크기 — 기기마다 화면이 달라 각자 고른다 -->
+    <div id="fz-box" style="background:#fff;border-radius:14px;margin:10px 14px 0;padding:12px 15px;box-shadow:0 2px 8px rgba(13,34,64,.06)"></div>
     <button class="h3-logout" onclick="logout()">로그아웃</button>
   </div>
 </div>
@@ -2348,7 +2352,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
 /* ★ v2-46: 화면에 보이는 버전을 한 곳(STU_VER)에서만 가져온다.
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
-var STU_VER = 'v2-46';
+var STU_VER = 'v2-47';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -2565,6 +2569,8 @@ function renderHome() {
   var mel = document.getElementById('h-mission');
   if (mission) { mel.className = 'td4-ms hb-mission mtext'; mel.textContent = '\ud83d\udccc ' + mission; }
   else { mel.className = 'td4-ms hb-mission mnone'; mel.textContent = '오늘 배운 개념을 말로 설명!'; }
+  if (typeof blkInit === 'function') blkInit();   // v2-47: 블랙반 엠블럼
+  if (typeof fzPaint === 'function') { fzApply(); fzPaint(); }   // v2-47: 글씨 크기
   if (typeof updateTodayCard === 'function') updateTodayCard();   // v2-34: 오늘 할 일 상태
   if (typeof refreshNoticeData === 'function') refreshNoticeData();
   if (window.rmApplyHome) rmApplyHome();
@@ -2601,8 +2607,59 @@ function renderHome() {
 
 function toggleRec() { isRecording ? stopRec() : startRec(); }
 
+/* ── v2-47: 녹음이 안 될 때 「왜 안 되는지」를 기기에 맞게 알려준다 ──
+ * 예전에는 어떤 오류든 「Safari 설정 → 마이크」라고만 떠서,
+ * 갤럭시(안드로이드) 학생은 있지도 않은 메뉴를 찾아 헤맸다.
+ * 가장 흔한 원인은 사실 「카카오톡 안에서 링크를 눌러 연 것」이다.  */
+function recIsInApp(){
+  var u=navigator.userAgent||'';
+  return /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|band/i.test(u);
+}
+function recIsAndroid(){ return /Android/i.test(navigator.userAgent||''); }
+function recIsIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent||'') ||
+  (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1); }
+
+function recHelp(err){
+  var name=(err&&err.name)||'';
+  /* ① 카카오톡·인스타 등 앱 안의 브라우저 — 마이크가 아예 막혀 있다 */
+  if(recIsInApp()){
+    return '🎙️ 지금은 카카오톡(또는 다른 앱) 안의 브라우저로 열려 있어서 녹음을 할 수 없어요.\n\n'
+      + '▸ 화면 오른쪽 위 ⋮ 또는 ⋯ 를 누르고\n'
+      + '▸ 「다른 브라우저로 열기」 또는 「Chrome으로 열기」를 선택해 주세요.\n\n'
+      + '한 번 크롬으로 열어서 즐겨찾기에 담아 두면 다음부터는 바로 됩니다.';
+  }
+  /* ② 마이크를 못 찾음 */
+  if(name==='NotFoundError'||name==='DevicesNotFoundError'){
+    return '🎙️ 마이크를 찾지 못했어요.\n이어폰을 뺐다가 다시 시도하거나, 다른 앱에서 마이크를 쓰고 있지 않은지 확인해 주세요.';
+  }
+  /* ③ 다른 앱이 마이크를 쓰는 중 */
+  if(name==='NotReadableError'||name==='TrackStartError'){
+    return '🎙️ 다른 앱이 마이크를 쓰고 있어요.\n통화·녹음·영상통화 앱을 완전히 끄고 다시 눌러 주세요.';
+  }
+  /* ④ 권한 거부 — 기기에 맞는 길 안내 */
+  if(recIsAndroid()){
+    return '🎙️ 마이크 사용을 허용해 주세요.\n\n'
+      + '▸ 주소창 왼쪽의 🔒(자물쇠) 또는 ⓘ 를 누르고\n'
+      + '▸ 「권한」 → 「마이크」 → 허용\n'
+      + '▸ 그다음 이 화면을 새로고침해 주세요.\n\n'
+      + '(그래도 안 되면 휴대폰 설정 → 애플리케이션 → Chrome → 권한 → 마이크 허용)';
+  }
+  if(recIsIOS()){
+    return '🎙️ 마이크 사용을 허용해 주세요.\n\n'
+      + '▸ 설정 → Safari → 마이크 → 「허용」\n'
+      + '▸ 그다음 이 화면을 새로고침해 주세요.';
+  }
+  return '🎙️ 마이크 사용을 허용해 주세요.\n주소창 왼쪽 자물쇠를 눌러 마이크를 허용한 뒤 새로고침해 주세요.'
+    + (name?('\n\n(오류: '+name+')'):'');
+}
+
 async function startRec() {
   try {
+    /* 인앱 브라우저·구형 브라우저는 mediaDevices 자체가 없다 */
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert(recHelp({ name: 'NoMediaDevices' }));
+      return;
+    }
     var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     audioChunks = [];
     // v1-12: mp4 우선 (iOS + 크로스플랫폼 재생 호환), webm 폴백 (구 안드로이드 Chrome)
@@ -2639,7 +2696,7 @@ async function startRec() {
       document.getElementById('r-timer').textContent = ('0'+m).slice(-2)+':'+('0'+s).slice(-2);
       if (recSecs >= 300) stopRec();
     }, 1000);
-  } catch(e) { alert('마이크 권한이 필요합니다.\nSafari 설정 → 마이크를 허용해주세요.'); }
+  } catch(e) { console.error('녹음 시작 실패:', e && e.name, e); alert(recHelp(e)); }
 }
 
 function stopRec() {
@@ -7919,6 +7976,203 @@ function rcRows(b){
   return {rows:b[band]||[],band:band};
 }
 window.rcTab=function(k){ RC.band=k; window.rcInit(); };
+/* ═══════════════════════════════════════════════════════════════
+ * 🖤 블랙반 엠블럼 (v2-47)
+ * ───────────────────────────────────────────────────────────────
+ * 학원앱에서 원장님이 기수에 넣어 확정하면(lumen_store 'black_class')
+ * 여기서 읽어 헤더·홈 배너·진열장·진도 레이스에 방패를 보여준다.
+ *
+ * 규칙 — 「한번 블랙반은 영원한 블랙반」
+ *   다음 기수에 안 뽑혀도 이미 받은 엠블럼은 남는다(은색 「출신」).
+ *
+ * ⚠️ 이름은 전부 BLK / blk* 로 시작한다 (RC=진도 레이스가 이미 씀)
+ * ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+ * 🔠 글씨 크기 (v2-47)
+ * ───────────────────────────────────────────────────────────────
+ * 휴대폰 화면 크기가 제각각이라(폴드~미니) 한 크기로 고정하지 않고
+ * 보는 사람이 직접 고른다. 고른 값은 그 기기에만 저장된다.
+ *
+ * 기본값은 「크게(110%)」 — 원래 크기가 작다는 의견이 있었다.
+ * zoom을 쓰는 이유: 앱이 px로 짜여 있어 rem으로 바꾸려면 수천 곳을
+ * 고쳐야 한다. zoom은 화면 전체를 통째로 키워 주므로 안전하다.
+ * (크롬·사파리·삼성인터넷 모두 지원)
+ * ⚠️ 이름은 FZ / fz* — 다른 기능과 겹치지 않는다
+ * ══════════════════════════════════════════════════════════════ */
+var FZ_KEY='lumen_font_zoom';
+var FZ_STEPS=[{k:'s',n:'보통',z:1},{k:'m',n:'크게',z:1.1},{k:'l',n:'아주 크게',z:1.22}];
+function fzGet(){
+  var v; try{ v=localStorage.getItem(FZ_KEY); }catch(e){}
+  var hit=FZ_STEPS.filter(function(x){ return x.k===v; })[0];
+  return hit||FZ_STEPS[1];        /* 기본 = 크게 */
+}
+function fzApply(){
+  var z=fzGet().z;
+  try{
+    /* zoom을 쓰되, 안 먹는 브라우저를 위해 폰트 확대도 함께 건다 */
+    document.body.style.zoom = z===1 ? '' : String(z);
+    if(z!==1 && !('zoom' in document.body.style)){
+      document.documentElement.style.fontSize = Math.round(16*z)+'px';
+    }
+  }catch(e){}
+}
+window.fzSet=function(k){
+  try{ localStorage.setItem(FZ_KEY,k); }catch(e){}
+  fzApply(); fzPaint();
+};
+/* 설정 칸 HTML — 두 앱에서 같은 모양으로 쓴다 */
+function fzWidget(){
+  var cur=fzGet().k;
+  var h='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span style="font-size:12.5px;font-weight:900;color:#0d2240">🔠 글씨 크기</span>'
+    +'<div style="display:flex;gap:5px;margin-left:auto">';
+  FZ_STEPS.forEach(function(s){
+    var on=s.k===cur;
+    h+='<button onclick="fzSet(\''+s.k+'\')" style="padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:900;'
+      +'font-size:'+(s.k==='s'?'11px':s.k==='m'?'12.5px':'14px')+';'
+      +(on?'background:#0d2240;color:#fff;border:1.5px solid #0d2240'
+         :'background:#fff;color:#64748b;border:1.5px solid #e2e8f0')+'">'+s.n+'</button>';
+  });
+  return h+'</div></div>';
+}
+function fzPaint(){
+  try{
+    var el=document.getElementById('fz-box');
+    if(el) el.innerHTML=fzWidget();
+  }catch(e){}
+}
+try{ fzApply(); }catch(e){}
+
+var BLK={loaded:false, data:null, at:0};
+
+async function blkLoad(force){
+  if(BLK.loaded&&!force&&Date.now()-BLK.at<180000) return BLK.data;
+  if(!sb) return null;
+  try{
+    var r=await sb.from('lumen_store').select('value').eq('key','black_class').maybeSingle();
+    var v=r&&r.data&&r.data.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+    BLK.data=(v&&Array.isArray(v.cohorts))?v:null; BLK.loaded=true; BLK.at=Date.now();
+  }catch(e){ BLK.data=null; BLK.loaded=true; }
+  return BLK.data;
+}
+/* 방패 그림 — 학원앱 blkEmblem과 같은 모양이어야 한다 */
+function blkEmblem(no, px, past){
+  var gold=past?'#b9c2ce':'#d4af37', ink=past?'#dfe5ec':'#d4af37', bg=past?'#2b2b33':'#0e0e13';
+  var rn=['','I','II','III','IV','V','VI','VII','VIII','IX','X'][Number(no)]||String(no);
+  var w=Math.round(px*0.83), big=px>=40;
+  return '<svg width="'+w+'" height="'+px+'" viewBox="0 0 86 104" style="vertical-align:middle;flex:none">'
+    +'<path d="M43 4 L78 15 V52 C78 74 62 90 43 99 C24 90 8 74 8 52 V15 Z" fill="'+bg+'" stroke="'+gold+'" stroke-width="'+(big?3:6)+'"/>'
+    +(big?'<text x="43" y="45" text-anchor="middle" font-size="14" font-weight="900" fill="'+ink+'" font-family="Georgia,serif">BLACK</text>'
+         +'<line x1="22" y1="52" x2="64" y2="52" stroke="'+gold+'" stroke-width="1" opacity=".6"/>'
+         +'<text x="43" y="78" text-anchor="middle" font-size="'+(rn.length>2?20:25)+'" font-weight="900" fill="'+ink+'" font-family="Georgia,serif">'+rn+'</text>'
+      :'<text x="43" y="76" text-anchor="middle" font-size="'+(rn.length>2?34:42)+'" font-weight="900" fill="'+ink+'" font-family="Georgia,serif">'+rn+'</text>')
+    +'</svg>';
+}
+function blkCohortsOf(code){
+  var d=BLK.data; if(!d||!code) return [];
+  return (d.cohorts||[]).filter(function(c){ return (c.codes||[]).indexOf(String(code))>=0; })
+                        .sort(function(a,b){ return a.no-b.no; });
+}
+function blkMine(){ return blkCohortsOf(studentInfo&&studentInfo.lumen_rec_code); }
+/* 이름 옆 「🖤 BLACK」 칩 (진도 레이스용)
+ * v2-47b: 작은 방패는 흰 바탕에서 묻혀 안 보였다(원장님 지적).
+ *   검정 바탕 + 금색 글자로 바꿔 확실히 눈에 띄게 한다.
+ *   칩에 기수를 넣으면(BLACK II) 이름 긴 학생 줄이 밀려, 기수는 아랫줄로 뺀다. */
+function blkTinyOf(code, px){
+  var cs=blkCohortsOf(code); if(!cs.length) return '';
+  var live=cs.some(function(c){ return !c.closed; });
+  return '<span style="display:inline-block;margin-left:3px;padding:2px 9px;border-radius:99px;'
+    +'font-size:12px;font-weight:900;letter-spacing:.3px;white-space:nowrap;line-height:1.35;'
+    +(live?'background:#15151c;color:#f0c75e;border:1px solid #d4af3788'
+          :'background:#3a3a44;color:#cbd5e1;border:1px solid #ffffff33')+'">🖤 BLACK</span>';
+}
+/* 순위표 아랫줄(학교·리그)에 붙일 기수 표시 */
+function blkGenOf(code){
+  var cs=blkCohortsOf(code); if(!cs.length) return '';
+  var cur=cs.filter(function(c){ return !c.closed; });
+  var c=cur.length?cur[cur.length-1]:cs[cs.length-1];
+  return ' · <b style="color:#b45309">'+c.no+'기'+(cur.length?'':' 출신')+'</b>';
+}
+/* 헤더 — 이름 옆 방패 + 칩 */
+function blkPaintHeader(){
+  try{
+    var el=document.getElementById('blk-hd'); if(!el) return;
+    var cs=blkMine();
+    if(!cs.length){ el.innerHTML=''; el.style.display='none'; return; }
+    var cur=cs.filter(function(c){ return !c.closed; });
+    var c=cur.length?cur[cur.length-1]:cs[cs.length-1];
+    var live=!!cur.length;
+    el.style.display='inline-flex';
+    el.innerHTML=blkEmblem(c.no,16,!live)
+      +'<span style="font-size:9px;font-weight:900;padding:2px 6px;border-radius:99px;white-space:nowrap;'
+      +(live?'color:#f0c75e;background:#00000045;border:1px solid #d4af3766'
+            :'color:#cbd5e1;background:#00000030;border:1px solid #ffffff33')+'">'
+      +(live?('블랙반 '+c.no+'기'):('블랙반 '+c.no+'기 출신'))+'</span>';
+  }catch(e){}
+}
+/* 홈 — 접히는 한 줄 카드
+ * v2-47b: 배너와 진열장이 카드 2장을 차지해 홈이 세로로 길어졌다(원장님 지적).
+ *   평소에는 한 줄만 보이고, 누르면 엠블럼 진열장이 펼쳐진다. */
+var BLK_OPEN=false;
+window.blkToggle=function(){ BLK_OPEN=!BLK_OPEN; blkPaintHome(); };
+function blkPaintHome(){
+  try{
+    var bn=document.getElementById('blk-home'); if(!bn) return;
+    var cs=blkMine();
+    if(!cs.length){ bn.style.display='none'; return; }
+    var cur=cs.filter(function(c){ return !c.closed; });
+    var live=!!cur.length;
+    var c=live?cur[cur.length-1]:cs[cs.length-1];
+    var maxNo=(BLK.data&&(BLK.data.cohorts||[]).reduce(function(m,x){ return Math.max(m,Number(x.no)||0); },0))||c.no;
+    var mine={}; cs.forEach(function(x){ mine[x.no]=x; });
+
+    var h='<div style="background:linear-gradient(135deg,'+(live?'#15151c,#26262f':'#20202a,#33333f')
+      +');border:1.5px solid '+(live?'#d4af3755':'#ffffff26')+';border-radius:15px;overflow:hidden">';
+    /* 접힌 줄 — 누르면 펼쳐진다 */
+    h+='<div onclick="blkToggle()" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;user-select:none">'
+      +blkEmblem(c.no,30,!live)
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13.5px;font-weight:900;color:'+(live?'#f0c75e':'#e2e8f0')+'">블랙반 '+c.no+'기'+(live?'':' 출신')
+      +(cs.length>1?' <span style="font-size:11px;color:'+(live?'#f0c75e':'#cbd5e1')+'">· '+cs.length+'기 연속 🔥</span>':'')+'</div>'
+      +'</div>'
+      +'<span style="color:'+(live?'#f0c75e':'#cbd5e1')+';font-size:14px;font-weight:900;transform:rotate('+(BLK_OPEN?'90':'0')+'deg);transition:.15s">›</span>'
+      +'</div>';
+    /* 펼친 내용 */
+    if(BLK_OPEN){
+      h+='<div style="padding:0 14px 13px">'
+        +'<div style="border-top:1px solid #ffffff1f;padding-top:11px">'
+        +'<div style="font-size:11px;font-weight:900;color:'+(live?'#f0c75e':'#cbd5e1')+';margin-bottom:9px">🏅 내 엠블럼 '+cs.length+'개</div>'
+        +'<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">';
+      for(var i=1;i<=Math.max(maxNo,c.no+1);i++){
+        if(mine[i]){
+          h+='<div style="text-align:center">'+blkEmblem(i,40,false)
+            +'<div style="font-size:10px;color:#cbd5e1;font-weight:800;margin-top:3px">'+i+'기 ✓</div></div>';
+        }else if(i<=maxNo){
+          var open=(BLK.data.cohorts||[]).some(function(x){ return x.no===i&&!x.closed; });
+          h+='<div style="text-align:center'+(open?'':';opacity:.3')+'">'
+            +'<svg width="34" height="40" viewBox="0 0 86 104" style="vertical-align:middle">'
+            +'<path d="M43 4 L78 15 V52 C78 74 62 90 43 99 C24 90 8 74 8 52 V15 Z" fill="none" stroke="'+(open?'#f59e0b':'#64748b')+'" stroke-width="4"'+(open?' stroke-dasharray="7 5"':'')+'/>'
+            +'<text x="43" y="74" text-anchor="middle" font-size="32" fill="'+(open?'#f59e0b':'#64748b')+'">?</text></svg>'
+            +'<div style="font-size:10px;font-weight:800;margin-top:3px;color:'+(open?'#f0c75e':'#94a3b8')+'">'+i+'기'+(open?' 선발중':'')+'</div></div>';
+        }
+      }
+      h+='</div>'
+        +'<div style="font-size:10.5px;color:#94a3b8;font-weight:800;margin-top:10px;line-height:1.65">'
+        +(live?'선발된 학생만 다는 엠블럼이에요. 한번 받은 엠블럼은 영원히 남아요.'
+              :'엠블럼은 영원히 남아요. 꾸준히 해내면 다음 기수에 다시 뽑힐 수 있어요.')
+        +'</div></div></div>';
+    }
+    h+='</div>';
+    bn.innerHTML=h; bn.style.display='block';
+  }catch(e){ console.error('블랙반 홈 표시 실패',e); }
+}
+function blkEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+/* 로그인 후 한 번 불러 그린다 */
+async function blkInit(){
+  await blkLoad();
+  blkPaintHeader(); blkPaintHome();
+}
+
 async function rcLoad(force){
   if(RC.loaded&&!force&&Date.now()-RC.at<180000) return RC.board;
   if(!sb) return null;
@@ -8033,8 +8287,8 @@ window.rcInit=async function(){
     h+='<div class="rc-row'+(r.code===code?' mine':'')+'">'
       +'<div class="no">'+medal+'</div>'
       +'<div class="em" style="background:'+t.g+'"></div>'
-      +'<div style="min-width:0"><div class="nm">'+rcEsc(r.nm)+(r.code===code?' <span style="font-size:10px;color:#1d78c9">나</span>':'')+'</div>'
-      +'<div class="sc">'+rcEsc(r.gr)+' '+rcEsc(r.sch)+' · '+rcEsc(r.label||t.n)+'</div></div>'
+      +'<div style="min-width:0"><div class="nm">'+rcEsc(r.nm)+(r.code===code?' <span style="font-size:10px;color:#1d78c9">나</span>':'')+blkTinyOf(r.code,14)+'</div>'
+      +'<div class="sc">'+rcEsc(r.gr)+' '+rcEsc(r.sch)+' · '+rcEsc(r.label||t.n)+blkGenOf(r.code)+'</div></div>'
       +'<div class="pt">'+rcN(r.pts)+'<em>'+rcN(r.n)+'문항</em></div></div>';
   });
   if(rows.length>top){

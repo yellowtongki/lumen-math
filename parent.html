@@ -170,6 +170,12 @@ button{font-family:inherit;cursor:pointer}
 .rcp.open .fold{padding:0 15px 14px}
 .rcp.open .fold{display:block}
 .rcp .peek{font-size:11.5px;font-weight:700;color:#94a3b8;padding:10px 15px 12px}
+/* v1-30: 🖤 블랙반 — 진도 레이스와 같은 접이식이되 검정·금색 */
+.rcp.blk .rhd{background:linear-gradient(135deg,#15151c,#2b2b38)}
+.rcp.blk .rhd .t{color:#f0c75e}
+.rcp.blk .rhd .d{background:#00000055;color:#f0c75e;border:1px solid #d4af3766}
+.rcp.blk .rhd .ch{color:#f0c75e}
+.rcp.blk .peek{color:#94a3b8}
 .rcp .sub{font-size:11.5px;font-weight:700;color:#94a3b8;margin-bottom:11px}
 .rcp .pz{background:linear-gradient(135deg,#fff7e6,#fdf0d0);border:1px solid #f7dfa8;border-radius:11px;padding:9px 12px;font-size:12.5px;font-weight:800;color:#8a5a00;margin-bottom:12px}
 .rcp .my{display:flex;gap:7px;margin-bottom:12px}
@@ -576,7 +582,7 @@ function db(){ if(!sb && window.supabase) sb = window.supabase.createClient(SUPA
 
 /* ★ v1-29: 화면에 보이는 버전을 한 곳(PAR_VER)에서만 가져온다.
  * 예전에는 <title>에 손으로 적어 두어 v1-18에 멈춰 있었다. */
-var PAR_VER = 'v1-29';
+var PAR_VER = 'v1-30';
 window.PAR_VER = PAR_VER;
 try{ document.title = '루멘수학 학부모 ' + PAR_VER; }catch(e){}
 
@@ -609,11 +615,11 @@ async function loadAll(code){
     P.st=st; P.code=code;
     localStorage.setItem('lumen_parent_code', code);
     // 발행 리포트 메타 + 매쓰플랫 진도 (병렬)
-    var q1=c.from('lumen_store').select('key,value').in('key',['pub_reports_'+code,'typeach_pub_'+code,'compass_pub_'+code,'typeach_stu_'+code,'stuck_'+code,'mf_progress','mf_books','mf_kmm','race_board']);
+    var q1=c.from('lumen_store').select('key,value').in('key',['pub_reports_'+code,'typeach_pub_'+code,'compass_pub_'+code,'typeach_stu_'+code,'stuck_'+code,'mf_progress','mf_books','mf_kmm','race_board','black_class']);
     var q2=c.from('mf_students').select('mf_student_id,name,lumen_rec_code');
     var q3=c.storage.from('recordings').list(code, { limit:60, sortBy:{ column:'created_at', order:'desc' } });
     var res=await Promise.all([q1,q2,q3]);
-    P.pub=null; P.prog=null; P.books=null; P.typeach=null; P.compass=null; P.amap=null; P.stuck=null; P.kmm=null; P.race=null; P.raceOpen=false;
+    P.pub=null; P.prog=null; P.books=null; P.typeach=null; P.compass=null; P.amap=null; P.stuck=null; P.kmm=null; P.race=null; P.raceOpen=false; P.blk=null; P.blkOpen=false;
     ((res[0].data)||[]).forEach(function(row){
       var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
       if(row.key==='pub_reports_'+code) P.pub=v;
@@ -625,6 +631,7 @@ async function loadAll(code){
       else if(row.key==='mf_books') P.books=v;
       else if(row.key==='mf_kmm') P.kmm=v;               // v1-19: KMM 경시 성적·수상 (수집기 자동)
       else if(row.key==='race_board') P.race=(v&&v.at)?v:null;   // v1-24: 🏁 진도 레이스
+      else if(row.key==='black_class') P.blk=(v&&Array.isArray(v.cohorts))?v:null;  // v1-30: 🖤 블랙반
     });
     P.mfSid=null;
     var mfs=(res[1].data)||[];
@@ -720,6 +727,7 @@ function render(){
   //   'amap'(성취도 자세히)·'planner'·'rec'는 각각 성적·숙제 탭 안에서 열리는 하위 화면이라
   //   탭 버튼은 부모 탭에 불을 켜 둔다(어디에 있는지 헷갈리지 않게).
   var lit=(P.tab==='amap')?'score':((P.tab==='planner'||P.tab==='rec')?'hw':P.tab);
+  try{ fzApply(); }catch(e){}   // v1-30: 글씨 크기 적용 (if/else 체인 밖에서)
   app.innerHTML='<div class="view">'+h+'</div>'
     +'<div class="tabbar">'
     +tabBtn('home','🏠','홈',false,lit)
@@ -748,7 +756,7 @@ window.doLogout=function(){
   // v1-10: 저장된 코드까지 삭제 — 안 지우면 새로고침 시 다시 자동 로그인됨
   try{ localStorage.removeItem('lumen_parent_code'); }catch(e){}
   P.st=null; P.code=''; P.loginErr=''; P.pub=null; P.recs=[]; P.prog=null; P.books=null;
-  P.typeach=null; P.compass=null; P.amap=null; P.kmm=null; P.race=null; P.raceOpen=false; P.tab='home'; P.hwView='home';
+  P.typeach=null; P.compass=null; P.amap=null; P.kmm=null; P.race=null; P.raceOpen=false; P.blk=null; P.blkOpen=false; P.tab='home'; P.hwView='home';
   render();
 };
 window.switchChild=function(code){ if(code&&code!==P.code){ P.tab='home'; loadAll(code); } };
@@ -1141,6 +1149,126 @@ function vHwWeek(){
  *   성적 = 등수 · 전국 위치 그래프 · 유형 성취도 · KMM 경시 · 진학 나침반
  *   로드맵 = 그대로 독립 탭 (루멘수학 시그니처)
  */
+/* ═══════════════════════════════════════════════════════════════
+ * 🖤 블랙반 엠블럼 (v1-30)
+ * ───────────────────────────────────────────────────────────────
+ * 학원앱에서 원장님이 기수에 넣으면(lumen_store 'black_class') 여기 뜬다.
+ * 학부모님께는 「자랑거리」와 「설명」이 함께 필요하다 —
+ * 엠블럼만 보여드리면 "왜 우리 아이만 숙제가 많나" 오해가 생길 수 있다.
+ * ⚠️ 이름은 BLK/blk*로 통일 (rc*는 진도 레이스가 쓰고 있다)
+ * ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+ * 🔠 글씨 크기 (v1-30)
+ * ───────────────────────────────────────────────────────────────
+ * 휴대폰 화면 크기가 제각각이라(폴드~미니) 한 크기로 고정하지 않고
+ * 보는 사람이 직접 고른다. 고른 값은 그 기기에만 저장된다.
+ *
+ * 기본값은 「크게(110%)」 — 원래 크기가 작다는 의견이 있었다.
+ * zoom을 쓰는 이유: 앱이 px로 짜여 있어 rem으로 바꾸려면 수천 곳을
+ * 고쳐야 한다. zoom은 화면 전체를 통째로 키워 주므로 안전하다.
+ * (크롬·사파리·삼성인터넷 모두 지원)
+ * ⚠️ 이름은 FZ / fz* — 다른 기능과 겹치지 않는다
+ * ══════════════════════════════════════════════════════════════ */
+var FZ_KEY='lumen_font_zoom';
+var FZ_STEPS=[{k:'s',n:'보통',z:1},{k:'m',n:'크게',z:1.1},{k:'l',n:'아주 크게',z:1.22}];
+function fzGet(){
+  var v; try{ v=localStorage.getItem(FZ_KEY); }catch(e){}
+  var hit=FZ_STEPS.filter(function(x){ return x.k===v; })[0];
+  return hit||FZ_STEPS[1];        /* 기본 = 크게 */
+}
+function fzApply(){
+  var z=fzGet().z;
+  try{
+    /* zoom을 쓰되, 안 먹는 브라우저를 위해 폰트 확대도 함께 건다 */
+    document.body.style.zoom = z===1 ? '' : String(z);
+    if(z!==1 && !('zoom' in document.body.style)){
+      document.documentElement.style.fontSize = Math.round(16*z)+'px';
+    }
+  }catch(e){}
+}
+window.fzSet=function(k){
+  try{ localStorage.setItem(FZ_KEY,k); }catch(e){}
+  fzApply(); fzPaint();
+};
+/* 설정 칸 HTML — 두 앱에서 같은 모양으로 쓴다 */
+function fzWidget(){
+  var cur=fzGet().k;
+  var h='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span style="font-size:12.5px;font-weight:900;color:#0d2240">🔠 글씨 크기</span>'
+    +'<div style="display:flex;gap:5px;margin-left:auto">';
+  FZ_STEPS.forEach(function(s){
+    var on=s.k===cur;
+    h+='<button onclick="fzSet(\''+s.k+'\')" style="padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:900;'
+      +'font-size:'+(s.k==='s'?'11px':s.k==='m'?'12.5px':'14px')+';'
+      +(on?'background:#0d2240;color:#fff;border:1.5px solid #0d2240'
+         :'background:#fff;color:#64748b;border:1.5px solid #e2e8f0')+'">'+s.n+'</button>';
+  });
+  return h+'</div></div>';
+}
+function fzPaint(){
+  try{
+    var el=document.getElementById('fz-box');
+    if(el) el.innerHTML=fzWidget();
+  }catch(e){}
+}
+try{ fzApply(); }catch(e){}
+
+function blkEmblem(no, px, past){
+  var gold=past?'#b9c2ce':'#d4af37', ink=past?'#dfe5ec':'#d4af37', bg=past?'#2b2b33':'#0e0e13';
+  var rn=['','I','II','III','IV','V','VI','VII','VIII','IX','X'][Number(no)]||String(no);
+  var w=Math.round(px*0.83), big=px>=40;
+  return '<svg width="'+w+'" height="'+px+'" viewBox="0 0 86 104" style="vertical-align:middle;flex:none">'
+    +'<path d="M43 4 L78 15 V52 C78 74 62 90 43 99 C24 90 8 74 8 52 V15 Z" fill="'+bg+'" stroke="'+gold+'" stroke-width="'+(big?3:6)+'"/>'
+    +(big?'<text x="43" y="45" text-anchor="middle" font-size="14" font-weight="900" fill="'+ink+'" font-family="Georgia,serif">BLACK</text>'
+         +'<line x1="22" y1="52" x2="64" y2="52" stroke="'+gold+'" stroke-width="1" opacity=".6"/>'
+         +'<text x="43" y="78" text-anchor="middle" font-size="'+(rn.length>2?20:25)+'" font-weight="900" fill="'+ink+'" font-family="Georgia,serif">'+rn+'</text>'
+      :'<text x="43" y="76" text-anchor="middle" font-size="'+(rn.length>2?34:42)+'" font-weight="900" fill="'+ink+'" font-family="Georgia,serif">'+rn+'</text>')
+    +'</svg>';
+}
+function blkMine(){
+  var d=P.blk, code=P.code;
+  if(!d||!code) return [];
+  return (d.cohorts||[]).filter(function(c){ return (c.codes||[]).indexOf(String(code))>=0; })
+                        .sort(function(a,b){ return a.no-b.no; });
+}
+function vBlack(top){
+  var cs=blkMine(); if(!cs.length) return '';
+  var cur=cs.filter(function(c){ return !c.closed; });
+  var live=!!cur.length, c=live?cur[cur.length-1]:cs[cs.length-1];
+  var open=!!P.blkOpen;
+  var h='<div class="rcp blk'+(top?' top':'')+(open?' open':'')+'">';
+  /* 접이 머리 — 진도 레이스와 같은 조작감 */
+  h+='<div class="rhd" onclick="toggleBlack()">'+blkEmblem(c.no,26,!live)
+    +'<div class="t">블랙반 '+c.no+'기'+(live?'':' 출신')+'</div>'
+    +(cs.length>1?'<div class="d">'+cs.length+'기 연속 🔥</div>':'')
+    +'<div class="ch">⌄</div></div>';
+  /* 접혔을 때 한 줄 — 눌러야 할 이유 */
+  if(!open){
+    h+='<div class="peek" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+      +'스스로 도전을 택한 반 · <b style="color:#b45309">눌러서 자세히</b></div>';
+  }
+  /* 펼친 내용 */
+  h+='<div class="fold">';
+  h+='<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin:11px 0 6px">🖤 블랙반이란</div>'
+    +'<div style="font-size:11.5px;color:#475569;font-weight:700;line-height:1.85">'
+    +'시험 대비 기간에 <b>일반 과정보다 많은 분량</b>을 스스로 해내겠다고 약속한 학생들의 반입니다. '
+    +'성적으로 뽑지 않고 <b>공부량과 꾸준함</b>으로 선발합니다.</div>';
+  h+='<div style="border-top:1px solid #f1f5f9;margin-top:11px;padding-top:11px">'
+    +'<div style="font-size:12px;font-weight:900;color:#0d2240;margin-bottom:8px">🏅 우리 아이 엠블럼</div>'
+    +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">';
+  cs.forEach(function(x){ h+=blkEmblem(x.no,40,false); });
+  h+='<div style="flex:1;min-width:120px;font-size:11px;color:#64748b;font-weight:800;line-height:1.7">'
+    +cs.map(function(x){ return x.no+'기 ('+esc(x.term||'')+')'; }).join(' · ')
+    +(cs.length>1?'<br><b style="color:#b45309">'+cs.length+'기 연속 선발되었습니다</b>':'')
+    +(live?'':'<br><span style="color:#94a3b8">엠블럼은 그대로 남습니다</span>')
+    +'</div></div></div>';
+  if(live) h+='<div style="background:#f8fafc;border-radius:10px;padding:10px 12px;margin-top:11px;font-size:11px;color:#64748b;font-weight:800;line-height:1.7">'
+    +'📌 블랙반 학생은 주간 숙제량이 많습니다. 가정에서 격려해 주시면 큰 힘이 됩니다.</div>';
+  h+='</div></div>';   // fold · rcp 닫기
+  return h;
+}
+window.toggleBlack=function(){ P.blkOpen=!P.blkOpen; render(); window.scrollTo(0,0); };
+
 function vHome(){
   var st=P.st;
   var h=headerHtml();
@@ -1148,9 +1276,11 @@ function vHome(){
   //   접혀 있어서 한 줄만 차지한다.
   // v1-28: 남색 머리에 살짝 걸치는 효과(-28px)는 「맨 위 카드」 하나만 해야 한다.
   //   레이스가 맨 위로 오면서 리포트까지 끌어올려져 레이스 카드를 덮고 있었다.
-  var race=vRace();
+  var blk=vBlack(true);      // v1-30: 🖤 블랙반 — 있으면 맨 위(자랑거리라 제일 먼저)
+  h+=blk;
+  var race=vRace(!blk);
   h+=race;
-  h+=vHeroReport(!race);     // ① 학부모 리포트 — 레이스가 없을 때만 맨 위 걸침
+  h+=vHeroReport(!race&&!blk);     // ① 학부모 리포트 — 위에 아무것도 없을 때만 맨 위 걸침
   var hwCard=vHwToday();     // ② 오늘 과제 완성도 (플래너·녹음이 카드 안에 통합돼 있음)
   if(hwCard) h+=hwCard;
   else {
@@ -1160,6 +1290,7 @@ function vHome(){
       +'<div class="cap" onclick="goTab(\'hw\')"><div class="ci" style="background:'+(rc?'#ecfdf5':'#fef2f2')+'">🎙️</div><div><div class="ct">녹음 숙제</div><div class="cs" style="color:'+(rc?'#059669':'#dc2626')+'">'+(rc?'제출 완료 ✓':'아직이에요')+'</div></div></div>'
       +'</div>';
   }
+  h+='<div id="fz-box" class="rcp" style="padding:12px 15px">'+fzWidget()+'</div>';   // v1-30: 🔠 글씨 크기
   return h;
 }
 
@@ -1176,7 +1307,7 @@ var RCT={bronze:['브론즈','#a16207','linear-gradient(135deg,#d9a441,#9a6b21)'
          diamond:['다이아','#0e7490','linear-gradient(135deg,#a5f3fc,#22d3ee)'],
          master:['마스터','#7c3aed','linear-gradient(135deg,#e9d5ff,#a855f7)']};
 function rcpN(v){ return String(v==null?0:v).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
-function vRace(){
+function vRace(top){
   var b=P.race; if(!b||b.open===false) return '';
   var today=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
   if(today<b.from) return '';
@@ -1196,7 +1327,7 @@ function vRace(){
   var top=Number(b.showTop)||5;
   // v1-26: 기본은 접어 둔다 — 홈이 너무 길어지지 않게 (원장님 지시 2026-08-27)
   var open = !!P.raceOpen;
-  var h='<div class="rcp top'+(open?' open':'')+'">';
+  var h='<div class="rcp'+(top===false?'':' top')+(open?' open':'')+'">';
   h+='<div class="rhd" onclick="toggleRace()"><div class="t">🏁 '+esc(b.name||'진도 레이스')+'</div>'
     +'<div class="d">'+(ended?'최종 결과':(left>0?('D-'+left):'오늘 마감'))+'</div><div class="ch">⌄</div></div>';
   // 접혀 있을 때 한 줄 요약 — 눌러야 할 이유를 준다
