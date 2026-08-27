@@ -98,7 +98,8 @@ async function findSchool(name) {
 // 「지필평가」「중간고사」「기말고사」 등만 시험으로 본다.
 // 「수행평가」는 날짜가 흩어져 있어 시험기간으로 잡으면 안 된다.
 const EXAM_RE = /지필|중간고사|기말고사|중간·기말|고사(?!장)|(?<!수행)평가/;
-const NOT_EXAM_RE = /수행평가|진단평가|모의|학력|성취도|설문|만족도|자율/;
+// 수능·모의고사·전국연합은 학교 시험이 아니라 제외한다(시험 대비 기간이 완전히 다르다).
+const NOT_EXAM_RE = /수행평가|진단평가|모의|학력|성취도|설문|만족도|자율|전국연합|수능|대학수학능력|졸업|입학|상담/;
 const isExam = (nm) => {
   const t = String(nm || '');
   if (NOT_EXAM_RE.test(t)) return false;
@@ -179,6 +180,11 @@ async function run() {
     });
     if (msg) { log(`  ${sc.name} — 학사일정 실패 (${msg})`); schools.push({ ...sc, err: msg }); continue; }
     const exams = groupExams(rows);
+    // 학교마다 시험 이름이 다르다. 「시험 같아 보이는데 안 잡힌 일정」을 남겨 두면
+    // 새 학교가 늘어도 무엇을 놓쳤는지 바로 보인다.
+    const missed = [...new Set(rows
+      .filter((e) => /평가|고사|시험/.test(String(e.EVENT_NM || '')) && !isExam(e.EVENT_NM))
+      .map((e) => String(e.EVENT_NM).trim()))];
     const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
     const upcoming = exams.filter((e) => e.to >= today);
     const next = upcoming[0]
@@ -187,12 +193,14 @@ async function run() {
     schools.push({
       name: sc.name, short: sc.name.replace(/(중|고등)학교$/, '$1'), atpt: sc.atpt, code: sc.code,
       addr: sc.addr, kind: sc.kind, eventN: rows.length, eventTotal: total || rows.length,
-      exams, next,
+      exams, next, missed,
     });
     log(`  ${sc.name} — 일정 ${rows.length}건${total && total > rows.length ? `/${total}` : ''} · 시험 ${exams.length}회`
       + (next ? ` · 다음 ${next.label} ${next.from}${next.days > 1 ? `~${next.to}` : ''} (D-${next.dday})` : ' · 남은 시험 없음'));
     exams.forEach((e) => log(`      ${e.label.padEnd(8)} ${e.from}${e.days > 1 ? '~' + e.to : '        '} ${e.days}일`
       + (e.grades ? ` · ${e.grades.join(',')}학년` : ' · 전 학년') + ` · ${e.name}`));
+    if (missed.length) log(`      ↪ 시험으로 세지 않은 일정: ${missed.join(' / ')}`);
+    if (!exams.length) log(`      ⚠️ 시험을 하나도 못 찾았습니다 — 이 학교는 일정 이름이 다를 수 있습니다.`);
     await sleep(300);
   }
 
