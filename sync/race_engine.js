@@ -299,10 +299,24 @@ async function runRace() {
     if (!rows || !rows.length) return;
     const tot = rows.reduce((s, r) => s + r.pts, 0);
     const totN = rows.reduce((s, r) => s + r.n, 0);
+    /* ★ 초등부↔중등부 견주기는 「상위 5명끼리」로 한다 (2026-08-27 원장님 지시)
+     * [왜] 전체 평균으로 견주면 인원 구성 때문에 불공평해진다.
+     *   중등부 12명 중 적게 푼 학생들이 평균을 끌어내려, 초등부(6명) 평균과
+     *   거의 같아 보였다 — 실측 초등 312문항 vs 중등 352문항(89%).
+     *   상위 5명끼리 견주면 344 vs 502(69%)로 실제 격차가 드러난다.
+     * [왜 5명] 1위끼리는 한 명 기록이라 그날그날 흔들리고, 5명은
+     *   순위표에 공개되는 인원과 같아 아이들이 이해하기 쉽다.
+     * 전체 평균(avg·avgN)도 그대로 남겨 둔다 — 다른 화면이 쓸 수 있다. */
+    const t5 = rows.slice(0, 5);
+    const t5p = t5.reduce((s, r) => s + r.pts, 0);
+    const t5n = t5.reduce((s, r) => s + r.n, 0);
     board.compare[band] = {
       n: rows.length,
       avg: Math.round(tot / rows.length),
       avgN: Math.round(totN / rows.length),
+      top5n: t5.length,
+      top5: Math.round(t5p / t5.length),
+      top5N: Math.round(t5n / t5.length),
       top: rows[0].pts,
     };
   });
