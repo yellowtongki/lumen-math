@@ -721,6 +721,7 @@ function render(){
   //   'amap'(성취도 자세히)·'planner'·'rec'는 각각 성적·숙제 탭 안에서 열리는 하위 화면이라
   //   탭 버튼은 부모 탭에 불을 켜 둔다(어디에 있는지 헷갈리지 않게).
   var lit=(P.tab==='amap')?'score':((P.tab==='planner'||P.tab==='rec')?'hw':P.tab);
+  try{ fzApply(); }catch(e){}   // v1-30: 글씨 크기 적용 (if/else 체인 밖에서)
   app.innerHTML='<div class="view">'+h+'</div>'
     +'<div class="tabbar">'
     +tabBtn('home','🏠','홈',false,lit)
@@ -1150,6 +1151,62 @@ function vHwWeek(){
  * 엠블럼만 보여드리면 "왜 우리 아이만 숙제가 많나" 오해가 생길 수 있다.
  * ⚠️ 이름은 BLK/blk*로 통일 (rc*는 진도 레이스가 쓰고 있다)
  * ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+ * 🔠 글씨 크기 (v1-30)
+ * ───────────────────────────────────────────────────────────────
+ * 휴대폰 화면 크기가 제각각이라(폴드~미니) 한 크기로 고정하지 않고
+ * 보는 사람이 직접 고른다. 고른 값은 그 기기에만 저장된다.
+ *
+ * 기본값은 「크게(110%)」 — 원래 크기가 작다는 의견이 있었다.
+ * zoom을 쓰는 이유: 앱이 px로 짜여 있어 rem으로 바꾸려면 수천 곳을
+ * 고쳐야 한다. zoom은 화면 전체를 통째로 키워 주므로 안전하다.
+ * (크롬·사파리·삼성인터넷 모두 지원)
+ * ⚠️ 이름은 FZ / fz* — 다른 기능과 겹치지 않는다
+ * ══════════════════════════════════════════════════════════════ */
+var FZ_KEY='lumen_font_zoom';
+var FZ_STEPS=[{k:'s',n:'보통',z:1},{k:'m',n:'크게',z:1.1},{k:'l',n:'아주 크게',z:1.22}];
+function fzGet(){
+  var v; try{ v=localStorage.getItem(FZ_KEY); }catch(e){}
+  var hit=FZ_STEPS.filter(function(x){ return x.k===v; })[0];
+  return hit||FZ_STEPS[1];        /* 기본 = 크게 */
+}
+function fzApply(){
+  var z=fzGet().z;
+  try{
+    /* zoom을 쓰되, 안 먹는 브라우저를 위해 폰트 확대도 함께 건다 */
+    document.body.style.zoom = z===1 ? '' : String(z);
+    if(z!==1 && !('zoom' in document.body.style)){
+      document.documentElement.style.fontSize = Math.round(16*z)+'px';
+    }
+  }catch(e){}
+}
+window.fzSet=function(k){
+  try{ localStorage.setItem(FZ_KEY,k); }catch(e){}
+  fzApply(); fzPaint();
+};
+/* 설정 칸 HTML — 두 앱에서 같은 모양으로 쓴다 */
+function fzWidget(){
+  var cur=fzGet().k;
+  var h='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span style="font-size:12.5px;font-weight:900;color:#0d2240">🔠 글씨 크기</span>'
+    +'<div style="display:flex;gap:5px;margin-left:auto">';
+  FZ_STEPS.forEach(function(s){
+    var on=s.k===cur;
+    h+='<button onclick="fzSet(\''+s.k+'\')" style="padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:900;'
+      +'font-size:'+(s.k==='s'?'11px':s.k==='m'?'12.5px':'14px')+';'
+      +(on?'background:#0d2240;color:#fff;border:1.5px solid #0d2240'
+         :'background:#fff;color:#64748b;border:1.5px solid #e2e8f0')+'">'+s.n+'</button>';
+  });
+  return h+'</div></div>';
+}
+function fzPaint(){
+  try{
+    var el=document.getElementById('fz-box');
+    if(el) el.innerHTML=fzWidget();
+  }catch(e){}
+}
+try{ fzApply(); }catch(e){}
+
 function blkEmblem(no, px, past){
   var gold=past?'#b9c2ce':'#d4af37', ink=past?'#dfe5ec':'#d4af37', bg=past?'#2b2b33':'#0e0e13';
   var rn=['','I','II','III','IV','V','VI','VII','VIII','IX','X'][Number(no)]||String(no);
@@ -1224,6 +1281,7 @@ function vHome(){
       +'<div class="cap" onclick="goTab(\'hw\')"><div class="ci" style="background:'+(rc?'#ecfdf5':'#fef2f2')+'">🎙️</div><div><div class="ct">녹음 숙제</div><div class="cs" style="color:'+(rc?'#059669':'#dc2626')+'">'+(rc?'제출 완료 ✓':'아직이에요')+'</div></div></div>'
       +'</div>';
   }
+  h+='<div id="fz-box" class="rcp" style="padding:12px 15px">'+fzWidget()+'</div>';   // v1-30: 🔠 글씨 크기
   return h;
 }
 
