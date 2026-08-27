@@ -1,0 +1,29 @@
+name: 네이버 예약 정찰
+
+# 네이버 예약 직접 연동 1단계 — 파트너센터 내부 API에 접속해
+# 데이터 모양을 확인만 한다 (저장 안 함, 수동 실행 전용).
+#
+# 필요한 비밀값 (Repo Settings → Secrets and variables → Actions):
+#   NAVER_COOKIE = "NID_AUT=...; NID_SES=..."
+#   (쿠키는 비밀번호와 같으므로 Secrets에만 둔다)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: naver-booking-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 정찰 실행
+        env:
+          NAVER_COOKIE: ${{ secrets.NAVER_COOKIE }}
+        run: node sync/naver_booking_probe.js
