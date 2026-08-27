@@ -8074,12 +8074,24 @@ function blkCohortsOf(code){
                         .sort(function(a,b){ return a.no-b.no; });
 }
 function blkMine(){ return blkCohortsOf(studentInfo&&studentInfo.lumen_rec_code); }
-/* 이름 옆 작은 방패 (진도 레이스용) */
+/* 이름 옆 「🖤 BLACK」 칩 (진도 레이스용)
+ * v2-47b: 작은 방패는 흰 바탕에서 묻혀 안 보였다(원장님 지적).
+ *   검정 바탕 + 금색 글자로 바꿔 확실히 눈에 띄게 한다.
+ *   칩에 기수를 넣으면(BLACK II) 이름 긴 학생 줄이 밀려, 기수는 아랫줄로 뺀다. */
 function blkTinyOf(code, px){
+  var cs=blkCohortsOf(code); if(!cs.length) return '';
+  var live=cs.some(function(c){ return !c.closed; });
+  return '<span style="display:inline-block;margin-left:3px;padding:2px 9px;border-radius:99px;'
+    +'font-size:12px;font-weight:900;letter-spacing:.3px;white-space:nowrap;line-height:1.35;'
+    +(live?'background:#15151c;color:#f0c75e;border:1px solid #d4af3788'
+          :'background:#3a3a44;color:#cbd5e1;border:1px solid #ffffff33')+'">🖤 BLACK</span>';
+}
+/* 순위표 아랫줄(학교·리그)에 붙일 기수 표시 */
+function blkGenOf(code){
   var cs=blkCohortsOf(code); if(!cs.length) return '';
   var cur=cs.filter(function(c){ return !c.closed; });
   var c=cur.length?cur[cur.length-1]:cs[cs.length-1];
-  return blkEmblem(c.no, px||14, !cur.length);
+  return ' · <b style="color:#b45309">'+c.no+'기'+(cur.length?'':' 출신')+'</b>';
 }
 /* 헤더 — 이름 옆 방패 + 칩 */
 function blkPaintHeader(){
@@ -8098,7 +8110,11 @@ function blkPaintHeader(){
       +(live?('블랙반 '+c.no+'기'):('블랙반 '+c.no+'기 출신'))+'</span>';
   }catch(e){}
 }
-/* 홈 배너 + 진열장 */
+/* 홈 — 접히는 한 줄 카드
+ * v2-47b: 배너와 진열장이 카드 2장을 차지해 홈이 세로로 길어졌다(원장님 지적).
+ *   평소에는 한 줄만 보이고, 누르면 엠블럼 진열장이 펼쳐진다. */
+var BLK_OPEN=false;
+window.blkToggle=function(){ BLK_OPEN=!BLK_OPEN; blkPaintHome(); };
 function blkPaintHome(){
   try{
     var bn=document.getElementById('blk-home'); if(!bn) return;
@@ -8110,37 +8126,42 @@ function blkPaintHome(){
     var maxNo=(BLK.data&&(BLK.data.cohorts||[]).reduce(function(m,x){ return Math.max(m,Number(x.no)||0); },0))||c.no;
     var mine={}; cs.forEach(function(x){ mine[x.no]=x; });
 
-    var h='';
-    /* 배너 */
-    h+='<div style="background:linear-gradient(135deg,'+(live?'#15151c,#26262f':'#20202a,#33333f')
-      +');border:1.5px solid '+(live?'#d4af3755':'#ffffff26')+';border-radius:15px;padding:13px 15px;margin-bottom:9px">'
-      +'<div style="display:flex;align-items:center;gap:13px">'+blkEmblem(c.no,50,!live)
+    var h='<div style="background:linear-gradient(135deg,'+(live?'#15151c,#26262f':'#20202a,#33333f')
+      +');border:1.5px solid '+(live?'#d4af3755':'#ffffff26')+';border-radius:15px;overflow:hidden">';
+    /* 접힌 줄 — 누르면 펼쳐진다 */
+    h+='<div onclick="blkToggle()" style="display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;user-select:none">'
+      +blkEmblem(c.no,30,!live)
       +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:14px;font-weight:900;color:'+(live?'#f0c75e':'#e2e8f0')+'">블랙반 '+c.no+'기'+(live?'':' 출신')+'</div>'
-      +'<div style="font-size:10.5px;color:'+(live?'#cbd5e1':'#94a3b8')+';font-weight:800;margin-top:3px;line-height:1.6">'
-      +blkEsc(c.term||'')+' 학기'+(cs.length>1?(' · <b style="color:'+(live?'#f0c75e':'#cbd5e1')+'">'+cs.length+'기 연속</b> 🔥'):'')
-      +(live?'<br>선발된 학생만 다는 엠블럼이에요':'<br>엠블럼은 영원히 남아요')+'</div>'
-      +'</div></div></div>';
-    /* 진열장 */
-    h+='<div style="background:#fff;border-radius:15px;padding:13px 15px;box-shadow:0 2px 8px rgba(13,34,64,.06)">'
-      +'<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:10px">🏅 내 엠블럼 '
-      +'<span style="font-size:10.5px;color:#94a3b8">'+cs.length+'개</span></div>'
-      +'<div style="display:flex;gap:11px;align-items:flex-end;flex-wrap:wrap">';
-    for(var i=1;i<=Math.max(maxNo, c.no+1);i++){
-      if(mine[i]){
-        h+='<div style="text-align:center">'+blkEmblem(i,44,false)
-          +'<div style="font-size:10.5px;color:#64748b;font-weight:800;margin-top:3px">'+i+'기 ✓</div></div>';
-      }else if(i<=maxNo){
-        var open=(BLK.data.cohorts||[]).some(function(x){ return x.no===i&&!x.closed; });
-        h+='<div style="text-align:center'+(open?'':';opacity:.25')+'">'
-          +'<svg width="37" height="44" viewBox="0 0 86 104" style="vertical-align:middle">'
-          +'<path d="M43 4 L78 15 V52 C78 74 62 90 43 99 C24 90 8 74 8 52 V15 Z" fill="'+(open?'#f8fafc':'#cbd5e1')+'" stroke="'+(open?'#f59e0b':'#94a3b8')+'" stroke-width="3"'+(open?' stroke-dasharray="6 4"':'')+'/>'
-          +'<text x="43" y="74" text-anchor="middle" font-size="30" fill="'+(open?'#f59e0b':'#64748b')+'">?</text></svg>'
-          +'<div style="font-size:10.5px;font-weight:800;margin-top:3px;color:'+(open?'#b45309':'#94a3b8')+'">'+i+'기'+(open?' 선발중':'')+'</div></div>';
+      +'<div style="font-size:13.5px;font-weight:900;color:'+(live?'#f0c75e':'#e2e8f0')+'">블랙반 '+c.no+'기'+(live?'':' 출신')
+      +(cs.length>1?' <span style="font-size:11px;color:'+(live?'#f0c75e':'#cbd5e1')+'">· '+cs.length+'기 연속 🔥</span>':'')+'</div>'
+      +'</div>'
+      +'<span style="color:'+(live?'#f0c75e':'#cbd5e1')+';font-size:14px;font-weight:900;transform:rotate('+(BLK_OPEN?'90':'0')+'deg);transition:.15s">›</span>'
+      +'</div>';
+    /* 펼친 내용 */
+    if(BLK_OPEN){
+      h+='<div style="padding:0 14px 13px">'
+        +'<div style="border-top:1px solid #ffffff1f;padding-top:11px">'
+        +'<div style="font-size:11px;font-weight:900;color:'+(live?'#f0c75e':'#cbd5e1')+';margin-bottom:9px">🏅 내 엠블럼 '+cs.length+'개</div>'
+        +'<div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">';
+      for(var i=1;i<=Math.max(maxNo,c.no+1);i++){
+        if(mine[i]){
+          h+='<div style="text-align:center">'+blkEmblem(i,40,false)
+            +'<div style="font-size:10px;color:#cbd5e1;font-weight:800;margin-top:3px">'+i+'기 ✓</div></div>';
+        }else if(i<=maxNo){
+          var open=(BLK.data.cohorts||[]).some(function(x){ return x.no===i&&!x.closed; });
+          h+='<div style="text-align:center'+(open?'':';opacity:.3')+'">'
+            +'<svg width="34" height="40" viewBox="0 0 86 104" style="vertical-align:middle">'
+            +'<path d="M43 4 L78 15 V52 C78 74 62 90 43 99 C24 90 8 74 8 52 V15 Z" fill="none" stroke="'+(open?'#f59e0b':'#64748b')+'" stroke-width="4"'+(open?' stroke-dasharray="7 5"':'')+'/>'
+            +'<text x="43" y="74" text-anchor="middle" font-size="32" fill="'+(open?'#f59e0b':'#64748b')+'">?</text></svg>'
+            +'<div style="font-size:10px;font-weight:800;margin-top:3px;color:'+(open?'#f0c75e':'#94a3b8')+'">'+i+'기'+(open?' 선발중':'')+'</div></div>';
+        }
       }
+      h+='</div>'
+        +'<div style="font-size:10.5px;color:#94a3b8;font-weight:800;margin-top:10px;line-height:1.65">'
+        +(live?'선발된 학생만 다는 엠블럼이에요. 한번 받은 엠블럼은 영원히 남아요.'
+              :'엠블럼은 영원히 남아요. 꾸준히 해내면 다음 기수에 다시 뽑힐 수 있어요.')
+        +'</div></div></div>';
     }
-    h+='</div>';
-    if(!live) h+='<div style="font-size:10.5px;color:#94a3b8;font-weight:800;margin-top:9px;line-height:1.6">꾸준히 해내면 다음 기수에 다시 뽑힐 수 있어요</div>';
     h+='</div>';
     bn.innerHTML=h; bn.style.display='block';
   }catch(e){ console.error('블랙반 홈 표시 실패',e); }
@@ -8266,8 +8287,8 @@ window.rcInit=async function(){
     h+='<div class="rc-row'+(r.code===code?' mine':'')+'">'
       +'<div class="no">'+medal+'</div>'
       +'<div class="em" style="background:'+t.g+'"></div>'
-      +'<div style="min-width:0"><div class="nm">'+rcEsc(r.nm)+blkTinyOf(r.code,14)+(r.code===code?' <span style="font-size:10px;color:#1d78c9">나</span>':'')+'</div>'
-      +'<div class="sc">'+rcEsc(r.gr)+' '+rcEsc(r.sch)+' · '+rcEsc(r.label||t.n)+'</div></div>'
+      +'<div style="min-width:0"><div class="nm">'+rcEsc(r.nm)+(r.code===code?' <span style="font-size:10px;color:#1d78c9">나</span>':'')+blkTinyOf(r.code,14)+'</div>'
+      +'<div class="sc">'+rcEsc(r.gr)+' '+rcEsc(r.sch)+' · '+rcEsc(r.label||t.n)+blkGenOf(r.code)+'</div></div>'
       +'<div class="pt">'+rcN(r.pts)+'<em>'+rcN(r.n)+'문항</em></div></div>';
   });
   if(rows.length>top){
