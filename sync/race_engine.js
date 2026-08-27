@@ -244,6 +244,15 @@ async function runRace() {
     days: days.length,
   };
 
+  /* ★ v2: 시즌이 끝났는지 — 끝나도 바로 지우지 않고 「최종 결과」로 며칠 더 보여준다.
+   * 앱들은 board.ended / board.endedDays를 보고 표시를 바꾼다.
+   * (기간이 지난 순간 화면에서 사라지면, 아이들이 결과를 볼 새가 없다) */
+  board.ended = todayK > season.to;
+  board.endedDays = board.ended
+    ? Math.round((Date.parse(todayK + 'T00:00:00Z') - Date.parse(season.to + 'T00:00:00Z')) / 86400000)
+    : 0;
+  board.showDaysAfter = Number(season.showDaysAfter) || 7;   // 끝난 뒤 며칠 더 보여줄지
+
   const watch = { at: board.at, seasonId: board.seasonId, items: [] };
 
   // 초등부는 「체험 리그」 — 상 계산도, 이상 신호도 만들지 않는다
@@ -287,13 +296,39 @@ async function runRace() {
     };
   });
 
+  /* ★ v2: 끝난 시즌은 'race_history'에 한 번만 담아 둔다.
+   * race_board는 키가 하나뿐이라, 다음 시즌을 만들면 지난 결과가 덮여 사라진다.
+   * 명예의 전당처럼 두고두고 볼 수 있게 따로 보관한다(최근 12시즌). */
+  if (board.ended && board.seasonId) {
+    const hist = (await kvGet('race_history')) || {};
+    hist.seasons = Array.isArray(hist.seasons) ? hist.seasons : [];
+    if (!hist.seasons.some((x) => x && x.seasonId === board.seasonId)) {
+      const slim = (rows) => (rows || []).map((r) => ({
+        code: r.code, nm: r.nm, sch: r.sch, gr: r.gr,
+        pts: r.pts, n: r.n, rate: r.rate, hard: r.hard, days: r.days,
+        rank: r.rank, tier: r.tier, label: r.label,
+      }));
+      hist.seasons.unshift({
+        seasonId: board.seasonId, name: board.name, from: board.from, to: board.to,
+        endedAt: board.at, prizeTotal: board.prizeTotal,
+        elem: slim(board.elem), mid: slim(board.mid), high: slim(board.high),
+        midAwards: board.midAwards || null, highAwards: board.highAwards || null,
+        compare: board.compare || null,
+      });
+      hist.seasons = hist.seasons.slice(0, 12);
+      hist.updated = new Date().toISOString();
+      await kvSet('race_history', hist);
+      log(`시즌 종료 — 지난 결과로 보관했습니다 (${board.name})`);
+    }
+  }
+
   await kvSet('race_board', board);
   await kvSet('race_watch', watch);
 
   const BN = { elem: '초등부(체험)', mid: '중등부', high: '고등부' };
   const brief = ['elem', 'mid', 'high'].filter((b) => board[b]).map((b) =>
     `${BN[b]} ${board[b].length}명 · 1위 ${board[b][0] ? board[b][0].pts + '점' : '-'}`).join(' / ');
-  log(`완료: ${brief}${watch.items.length ? ` · 확인필요 ${watch.items.length}명` : ''}`);
+  log(`완료: ${brief}${board.ended ? ` · 시즌 종료 ${board.endedDays}일째` : ''}${watch.items.length ? ` · 확인필요 ${watch.items.length}명` : ''}`);
   return board;
 }
 
