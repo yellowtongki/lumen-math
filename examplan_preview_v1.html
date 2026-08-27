@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>시험대비 계획 미리보기</title>
+<!-- ═══════════════════════════════════════════════════════════════
+  📋 시험대비 계획표 — 미리보기 v1 (2026-08-27)
+  ───────────────────────────────────────────────────────────────
+  교재·페이지 범위·스텝을 고르면 시험범위 문제수를 세고,
+  학생별로 「이미 푼 것」을 빼서 하루 목표량까지 계산해 보여준다.
+
+  · 자료는 전부 수학DB(정답사전 mf_bookans_* / 채점기록 mf_answer_records)
+    에서 실시간으로 읽는다 — 이 파일에는 학생 자료가 들어 있지 않다.
+  · 자체교재(매쓰플랫 CUSTOM)도 학생에게 등록되면 다음 날 새벽 수집 후
+    교재 목록에 저절로 나타난다.
+  · 마음에 들면 학원앱(lumen_v18)에 정식 화면으로 넣는다.
+═══════════════════════════════════════════════════════════════ -->
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#f1f5f9;color:#1e293b;padding-bottom:60px}
+.wrap{max-width:1080px;margin:0 auto;padding:16px}
+.hd{background:linear-gradient(135deg,#0d2240,#164a7a);border-radius:16px;padding:20px 22px;color:#fff;margin-bottom:14px}
+.hd h1{font-size:20px;font-weight:900}
+.hd .sub{font-size:12.5px;opacity:.75;margin-top:5px;line-height:1.6}
+.card{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:16px 18px;margin-bottom:12px}
+.card h2{font-size:14.5px;font-weight:900;margin-bottom:10px;color:#0d2240}
+.muted{color:#94a3b8;font-size:12px}
+.bookrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:8px;background:#f8fafc}
+.bookrow.on{border-color:#0f8a4e;background:#f0fdf4}
+.bookrow label.bk{font-size:13px;font-weight:800;flex:1;min-width:180px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.bookrow input[type=number]{width:64px;padding:6px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:13px;font-weight:700;text-align:center;font-family:inherit}
+.bookrow .rng{display:flex;align-items:center;gap:5px;font-size:12px;color:#64748b;font-weight:700}
+.steps{display:flex;gap:4px}
+.steps span{padding:5px 10px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;color:#94a3b8;background:#fff;user-select:none}
+.steps span.on{border-color:#0f8a4e;color:#0f8a4e;background:#f0fdf4}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:11.5px;font-weight:800;color:#64748b}
+.fld input{padding:8px 10px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13.5px;font-weight:700;font-family:inherit}
+button.go{padding:11px 26px;background:#0f8a4e;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:900;cursor:pointer;font-family:inherit}
+button.go:disabled{opacity:.5;cursor:wait}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:#f1f5f9;padding:8px 9px;font-size:11.5px;color:#64748b;text-align:left;font-weight:800;white-space:nowrap}
+td{padding:9px;border-bottom:1px solid #f1f5f9;font-weight:700;white-space:nowrap}
+.bar{height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden;min-width:90px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#34d399,#0f8a4e);border-radius:99px}
+.chip{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:900}
+.plancard{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:18px;margin-bottom:12px}
+.plancard .nm{font-size:16px;font-weight:900}
+.plancard .big{font-size:26px;font-weight:900;color:#0f8a4e}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:12px 0}
+.stat{background:#f8fafc;border-radius:10px;padding:10px 12px}
+.stat .l{font-size:11px;color:#94a3b8;font-weight:800}
+.stat .v{font-size:18px;font-weight:900;margin-top:3px}
+.note{background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:10px 13px;font-size:12.5px;line-height:1.7;color:#92400e;margin-bottom:12px}
+#loading{text-align:center;padding:40px;color:#94a3b8;font-weight:800;font-size:13px}
+@media print{
+  body{background:#fff;padding:0}
+  .noprint{display:none!important}
+  .plancard{page-break-inside:avoid;border:1.5px solid #cbd5e1}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hd noprint">
+    <h1>📋 시험대비 계획 — 미리보기</h1>
+    <div class="sub">교재와 범위를 고르면 시험범위 문제수를 세고, 학생마다 이미 푼 것을 빼서 하루 목표량을 계산합니다.<br>
+    자료는 수학DB에서 실시간으로 읽습니다 · 마음에 들면 학원앱에 정식 화면으로 들어갑니다.</div>
+  </div>
+
+  <div class="note noprint">💡 <b>자체교재 안내</b> — 매쓰플랫에서 자체교재(커스텀)를 만들어 학생에게 등록하면,
+  다음 날 새벽 수집이 끝난 뒤 아래 교재 목록에 저절로 나타납니다. 따로 해줄 일은 없습니다.</div>
+
+  <div class="card noprint">
+    <h2>1️⃣ 교재와 범위 고르기 <span class="muted">— 문제수가 수집된 교재만 보입니다</span></h2>
+    <input id="bookfilter" placeholder="🔍 교재 이름으로 찾기 (예: 쎈)" style="width:100%;padding:9px 12px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:13px;font-family:inherit;font-weight:700;margin-bottom:10px" oninput="drawBooks()">
+    <div id="books"><div id="loading">교재 목록을 불러오는 중…</div></div>
+  </div>
+
+  <div class="card noprint">
+    <h2>2️⃣ 날짜 정하기</h2>
+    <div class="row">
+      <div class="fld"><label>대비 시작일</label><input type="date" id="d0"></div>
+      <div class="fld"><label>시험일 (D-day)</label><input type="date" id="d1"></div>
+      <button class="go" id="gobtn" onclick="compute()">📐 문제수 세고 계획 만들기</button>
+    </div>
+  </div>
+
+  <div id="out"></div>
+</div>
+
+<script>
+var SB='https://bhkkkbcytcrlxhrtjgen.supabase.co/rest/v1';
+var KEY='sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';   // 공개용 열람 키 (앱들과 동일)
+
+function api(path,rangeTo){
+  return fetch(SB+path,{headers:{apikey:KEY,range:'0-'+(rangeTo||999)}}).then(function(r){
+    if(!r.ok) throw new Error('서버 응답 '+r.status);
+    return r.json();
+  });
+}
+/* 1000행 넘는 표는 나눠서 이어 받는다 */
+async function apiAll(path){
+  var out=[],from=0;
+  for(;;){
+    var r=await fetch(SB+path,{headers:{apikey:KEY,range:from+'-'+(from+999)}});
+    if(!r.ok) throw new Error('서버 응답 '+r.status);
+    var j=await r.json(); out=out.concat(j);
+    if(j.length<1000) break;
+    from+=1000; if(from>200000) break;
+  }
+  return out;
+}
+
+var BOOKS=[];        // {bid,name,sel,from,to,steps:{A,B,C},pmin,pmax}
+var SWBS=null;       // 학생별 교재상태 (페이지번호·보유자 파악용)
+var STEPS_DEF={A:false,B:true,C:true};
+
+/* ── 시작: 교재 목록 = 정답사전이 있는 교재 ── */
+(async function init(){
+  try{
+    var d=new Date(); document.getElementById('d0').value=d.toISOString().slice(0,10);
+    var keys=await apiAll('/lumen_store?key=like.mf_bookans_*&select=key');
+    var names={};
+    try{
+      var bk=await api('/lumen_store?key=eq.mf_books&select=value');
+      var m=((bk[0]||{}).value||{}).books||{};
+      Object.keys(m).forEach(function(id){ names[id]=m[id].n||''; });
+    }catch(e){}
+    BOOKS=keys.map(function(r){
+      var bid=r.key.replace('mf_bookans_','');
+      return {bid:bid,name:names[bid]||('교재 '+bid),sel:false,from:'',to:'',
+              steps:{A:STEPS_DEF.A,B:STEPS_DEF.B,C:STEPS_DEF.C}};
+    }).sort(function(a,b){ return a.name.localeCompare(b.name,'ko'); });
+    drawBooks();
+  }catch(e){
+    document.getElementById('books').innerHTML='<div class="muted">교재 목록을 불러오지 못했습니다: '+e.message+'</div>';
+  }
+})();
+
+function drawBooks(){
+  var f=(document.getElementById('bookfilter').value||'').trim();
+  var h='';
+  BOOKS.forEach(function(b,i){
+    if(f && b.name.indexOf(f)<0 && !b.sel) return;
+    h+='<div class="bookrow'+(b.sel?' on':'')+'">'
+      +'<label class="bk"><input type="checkbox" '+(b.sel?'checked':'')+' onchange="tog('+i+',this.checked)"> '+esc(b.name)+'</label>';
+    if(b.sel){
+      h+='<span class="rng">p.<input type="number" value="'+b.from+'" placeholder="처음" oninput="BOOKS['+i+'].from=this.value"> ~ '
+        +'<input type="number" value="'+b.to+'" placeholder="끝" oninput="BOOKS['+i+'].to=this.value"></span>'
+        +'<span class="steps">'+['A','B','C'].map(function(s){
+            return '<span class="'+(b.steps[s]?'on':'')+'" onclick="BOOKS['+i+'].steps.'+s+'=!BOOKS['+i+'].steps.'+s+';drawBooks()">'+s+'단계</span>';
+          }).join('')+'</span>';
+    }
+    h+='</div>';
+  });
+  document.getElementById('books').innerHTML=h||'<div class="muted">찾는 교재가 없습니다</div>';
+}
+function tog(i,on){ BOOKS[i].sel=on; drawBooks(); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+/* ── 계산 ── */
+async function compute(){
+  var sel=BOOKS.filter(function(b){ return b.sel; });
+  if(!sel.length){ alert('교재를 하나 이상 골라주세요'); return; }
+  var d0=document.getElementById('d0').value, d1=document.getElementById('d1').value;
+  var btn=document.getElementById('gobtn'); btn.disabled=true; btn.textContent='⏳ 세는 중…';
+  var out=document.getElementById('out');
+  out.innerHTML='<div class="card"><div id="loading">수학DB에서 문항과 채점기록을 읽는 중… (몇 초 걸립니다)</div></div>';
+  try{
+    /* 학생별 교재상태 — 페이지번호(wpid→쪽수)와 교재 보유자를 알 수 있다 */
+    if(!SWBS){
+      var rows=await apiAll('/lumen_store?key=like.mf_swb_*&select=key,value');
+      SWBS=rows.map(function(r){ return r.value; }).filter(Boolean);
+    }
+    var wp2page={};                  // bid|wpid → 실제 책 쪽수
+    var holders={};                  // bid → [{code,name}]
+    SWBS.forEach(function(sv){
+      (sv.books||[]).forEach(function(b){
+        var bid=String(b.bid);
+        if(!sel.some(function(x){ return x.bid===bid; })) return;
+        (b.pages||[]).forEach(function(p){ if(p.page) wp2page[bid+'|'+p.wpid]=p.page; });
+        (holders[bid]=holders[bid]||[]).push({code:sv.code,name:sv.name||'?'});
+      });
+    });
+
+    /* 시험범위 문항 사전: 교재별로 (스텝·범위에 맞는) 문항 집합 */
+    var target={};                   // bid|wpid → {step, probs:Set(wpId)}
+    var byBookStep={};               // bid → {A:{n,pages},B:..,C:..}
+    for(var s of sel){
+      var v=(await api('/lumen_store?key=eq.mf_bookans_'+s.bid+'&select=value'))[0];
+      v=v&&v.value; if(!v||!v.pages) continue;
+      var pages=Object.keys(v.pages);
+      var pnums=pages.map(function(w){ return wp2page[s.bid+'|'+w]; }).filter(Boolean);
+      var lo=Number(s.from)||Math.min.apply(null,pnums.length?pnums:[1]);
+      var hi=Number(s.to)||Math.max.apply(null,pnums.length?pnums:[9999]);
+      s._lo=lo; s._hi=hi;
+      pages.forEach(function(wpid){
+        var page=wp2page[s.bid+'|'+wpid];
+        if(page==null||page<lo||page>hi) return;
+        var t=(v.pages[wpid].title||'');
+        var step=t.replace(/\s/g,'').charAt(0);              // 'A단계…'→'A'
+        if('ABC'.indexOf(step)<0) step='B';                  // 단계 표기가 없으면 유형(B) 취급
+        var bs=byBookStep[s.bid]=byBookStep[s.bid]||{};
+        var st=bs[step]=bs[step]||{n:0,pages:{}};
+        st.n+=v.pages[wpid].problems.length; st.pages[page]=1;
+        if(!s.steps[step]) return;
+        target[s.bid+'|'+wpid]={step:step,probs:{}};
+        v.pages[wpid].problems.forEach(function(x){ target[s.bid+'|'+wpid].probs[String(x.wpId)]=1; });
+      });
+    }
+    var total=0; Object.keys(target).forEach(function(k){ total+=Object.keys(target[k].probs).length; });
+
+    /* 학생별 이미 푼 문항 */
+    var solved={};                   // mfsid → Set('bid|wpProblemId')
+    for(var s2 of sel){
+      var recs=await apiAll('/mf_answer_records?select=mf_student_id,workbook_page_id,workbook_problem_id,result&book_id=eq.'+s2.bid);
+      recs.forEach(function(r){
+        var k=s2.bid+'|'+r.workbook_page_id;
+        if(!target[k]) return;
+        if(r.result!=='O'&&r.result!=='X'&&r.result!=='?') return;
+        if(!target[k].probs[String(r.workbook_problem_id)]) return;
+        (solved[r.mf_student_id]=solved[r.mf_student_id]||{})[s2.bid+'|'+r.workbook_problem_id]=1;
+      });
+    }
+    /* 매쓰플랫ID → 이름·코드 */
+    var mfs=await apiAll('/mf_students?select=mf_student_id,name,lumen_rec_code');
+    var sid2={}; mfs.forEach(function(m){ sid2[m.mf_student_id]={name:m.name,code:m.lumen_rec_code}; });
+
+    /* 퇴원생은 계획에서 뺀다 (학생 등록부의 퇴원 표시 기준) */
+    var gone={};
+    try{
+      var sdb=(await api('/lumen_store?key=eq.or_studentdb&select=value'))[0];
+      var arr=sdb&&sdb.value; if(typeof arr==='string') arr=JSON.parse(arr);
+      (arr||[]).forEach(function(st){ if(st&&st.withdrawn&&st.lumen_rec_code!=null) gone[String(st.lumen_rec_code)]=1; });
+    }catch(e){}
+
+    /* 대상 학생 = 고른 교재를 가진 학생 (겹치면 한 번) */
+    var stuMap={};
+    Object.keys(holders).forEach(function(bid){
+      holders[bid].forEach(function(h){ if(h.code&&!gone[String(h.code)]) stuMap[h.code]=h.name; });
+    });
+    var stuSolved={};                // code → n
+    Object.keys(solved).forEach(function(sid){
+      var m=sid2[sid]; if(!m||!m.code) return;
+      stuSolved[m.code]=Object.keys(solved[sid]).length;
+      if(m.name&&!stuMap[m.code]) stuMap[m.code]=m.name;
+    });
+
+    render(sel,byBookStep,total,stuMap,stuSolved,d0,d1);
+  }catch(e){
+    out.innerHTML='<div class="card"><div style="color:#dc2626;font-weight:800;font-size:13px">계산 실패: '+esc(e.message)+'</div></div>';
+  }
+  btn.disabled=false; btn.textContent='📐 문제수 세고 계획 만들기';
+}
+
+function render(sel,byBookStep,total,stuMap,stuSolved,d0,d1){
+  var days=null,dday=null;
+  if(d0&&d1){
+    days=Math.max(1,Math.round((Date.parse(d1)-Date.parse(d0))/86400000));
+    dday=Math.round((Date.parse(d1)-Date.parse(new Date().toISOString().slice(0,10)))/86400000);
+  }
+  var h='';
+
+  /* 범위 요약 */
+  h+='<div class="card"><h2>📊 시험범위 문제수</h2><table><tr><th>교재</th><th>범위</th><th>A단계</th><th>B단계</th><th>C단계</th><th>선택한 스텝 합계</th></tr>';
+  var grand=0;
+  sel.forEach(function(s){
+    var bs=byBookStep[s.bid]||{};
+    var pick=0; ['A','B','C'].forEach(function(st){ if(s.steps[st]&&bs[st]) pick+=bs[st].n; });
+    grand+=pick;
+    h+='<tr><td>'+esc(s.name)+'</td><td class="muted">p.'+s._lo+'~'+s._hi+'</td>'
+      +['A','B','C'].map(function(st){
+          var v=bs[st]; var on=s.steps[st];
+          return '<td style="'+(on?'':'color:#cbd5e1')+'">'+(v?v.n+'문항':'—')+(on&&v?' ✓':'')+'</td>';
+        }).join('')
+      +'<td><b style="color:#0f8a4e">'+pick+'문항</b></td></tr>';
+  });
+  h+='<tr><td colspan="5" style="text-align:right;font-weight:900">총합</td><td><b style="font-size:15px;color:#0f8a4e">'+grand+'문항</b></td></tr></table>';
+  if(days) h+='<div class="muted" style="margin-top:8px">'+esc(d0)+' 시작 → '+esc(d1)+' 시험 · <b>'+days+'일</b> · 다 풀려면 하루 평균 <b>'+Math.ceil(grand/days)+'문항</b></div>';
+  h+='</div>';
+
+  /* 학생별 표 */
+  var codes=Object.keys(stuMap).sort(function(a,b){ return (stuSolved[b]||0)-(stuSolved[a]||0); });
+  h+='<div class="card"><h2>👥 학생별 진행 현황 <span class="muted">— 고른 교재를 가진 학생 '+codes.length+'명</span></h2>';
+  if(!codes.length) h+='<div class="muted">고른 교재가 등록된 학생이 아직 없습니다</div>';
+  else{
+    h+='<table><tr><th>학생</th><th>푼 것</th><th>남음</th><th>진행률</th>'+(days?'<th>하루 목표</th>':'')+'</tr>';
+    codes.forEach(function(c){
+      var n=stuSolved[c]||0, remain=Math.max(0,total-n), pct=total?Math.round(n/total*100):0;
+      h+='<tr><td>'+esc(stuMap[c])+'</td><td>'+n+'</td><td>'+remain+'</td>'
+        +'<td><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="flex:1"><i style="width:'+pct+'%"></i></div><span style="font-size:11.5px;color:#64748b">'+pct+'%</span></div></td>'
+        +(days?'<td><b style="color:#0f8a4e">'+Math.ceil(remain/days)+'문항</b></td>':'')
+        +'</tr>';
+    });
+    h+='</table>';
+  }
+  h+='</div>';
+
+  /* 인쇄용 개인 계획표 */
+  if(codes.length&&days){
+    h+='<div class="card noprint" style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0">🖨️ 개인별 계획표</h2><button class="go" onclick="print()">인쇄</button></div>';
+    codes.forEach(function(c){
+      var n=stuSolved[c]||0, remain=Math.max(0,total-n), per=Math.ceil(remain/days);
+      h+='<div class="plancard">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center"><span class="nm">'+esc(stuMap[c])+' 시험대비 계획</span>'
+        +'<span class="chip" style="background:#eef6ff;color:#1d4ed8">'+(dday!=null?'D-'+dday:'')+'</span></div>'
+        +'<div class="grid3">'
+        +'<div class="stat"><div class="l">시험범위 전체</div><div class="v">'+total+'문항</div></div>'
+        +'<div class="stat"><div class="l">이미 푼 것</div><div class="v" style="color:#0f8a4e">'+n+'문항</div></div>'
+        +'<div class="stat"><div class="l">남은 양</div><div class="v">'+remain+'문항</div></div>'
+        +'<div class="stat"><div class="l">하루 목표 ('+days+'일)</div><div class="v big">'+per+'</div></div>'
+        +'</div>'
+        +'<div class="muted">📌 매일 채점이 자동으로 반영되어 남은 양이 줄어듭니다. 밀리면 하루 목표가 다시 계산됩니다.</div>'
+        +'</div>';
+    });
+  }
+  document.getElementById('out').innerHTML=h;
+}
+</script>
+</body>
+</html>
