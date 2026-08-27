@@ -170,6 +170,12 @@ button{font-family:inherit;cursor:pointer}
 .rcp.open .fold{padding:0 15px 14px}
 .rcp.open .fold{display:block}
 .rcp .peek{font-size:11.5px;font-weight:700;color:#94a3b8;padding:10px 15px 12px}
+/* v1-30: 🖤 블랙반 — 진도 레이스와 같은 접이식이되 검정·금색 */
+.rcp.blk .rhd{background:linear-gradient(135deg,#15151c,#2b2b38)}
+.rcp.blk .rhd .t{color:#f0c75e}
+.rcp.blk .rhd .d{background:#00000055;color:#f0c75e;border:1px solid #d4af3766}
+.rcp.blk .rhd .ch{color:#f0c75e}
+.rcp.blk .peek{color:#94a3b8}
 .rcp .sub{font-size:11.5px;font-weight:700;color:#94a3b8;margin-bottom:11px}
 .rcp .pz{background:linear-gradient(135deg,#fff7e6,#fdf0d0);border:1px solid #f7dfa8;border-radius:11px;padding:9px 12px;font-size:12.5px;font-weight:800;color:#8a5a00;margin-bottom:12px}
 .rcp .my{display:flex;gap:7px;margin-bottom:12px}
@@ -613,7 +619,7 @@ async function loadAll(code){
     var q2=c.from('mf_students').select('mf_student_id,name,lumen_rec_code');
     var q3=c.storage.from('recordings').list(code, { limit:60, sortBy:{ column:'created_at', order:'desc' } });
     var res=await Promise.all([q1,q2,q3]);
-    P.pub=null; P.prog=null; P.books=null; P.typeach=null; P.compass=null; P.amap=null; P.stuck=null; P.kmm=null; P.race=null; P.raceOpen=false; P.blk=null;
+    P.pub=null; P.prog=null; P.books=null; P.typeach=null; P.compass=null; P.amap=null; P.stuck=null; P.kmm=null; P.race=null; P.raceOpen=false; P.blk=null; P.blkOpen=false;
     ((res[0].data)||[]).forEach(function(row){
       var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
       if(row.key==='pub_reports_'+code) P.pub=v;
@@ -750,7 +756,7 @@ window.doLogout=function(){
   // v1-10: 저장된 코드까지 삭제 — 안 지우면 새로고침 시 다시 자동 로그인됨
   try{ localStorage.removeItem('lumen_parent_code'); }catch(e){}
   P.st=null; P.code=''; P.loginErr=''; P.pub=null; P.recs=[]; P.prog=null; P.books=null;
-  P.typeach=null; P.compass=null; P.amap=null; P.kmm=null; P.race=null; P.raceOpen=false; P.blk=null; P.tab='home'; P.hwView='home';
+  P.typeach=null; P.compass=null; P.amap=null; P.kmm=null; P.race=null; P.raceOpen=false; P.blk=null; P.blkOpen=false; P.tab='home'; P.hwView='home';
   render();
 };
 window.switchChild=function(code){ if(code&&code!==P.code){ P.tab='home'; loadAll(code); } };
@@ -1229,22 +1235,24 @@ function vBlack(top){
   var cs=blkMine(); if(!cs.length) return '';
   var cur=cs.filter(function(c){ return !c.closed; });
   var live=!!cur.length, c=live?cur[cur.length-1]:cs[cs.length-1];
-  var h='<div class="rcp'+(top?' top':'')+'">';
-  /* 엠블럼 머리 */
-  h+='<div style="background:linear-gradient(135deg,'+(live?'#15151c,#2b2b38':'#20202a,#33333f')+');padding:14px 15px;display:flex;align-items:center;gap:13px">'
-    +blkEmblem(c.no,48,!live)
-    +'<div style="flex:1;min-width:0">'
-    +'<div style="font-size:14.5px;font-weight:900;color:'+(live?'#f0c75e':'#e2e8f0')+'">블랙반 '+c.no+'기'+(live?' 선발':' 출신')+'</div>'
-    +'<div style="font-size:11px;color:'+(live?'#cbd5e1':'#94a3b8')+';font-weight:800;margin-top:4px;line-height:1.65">'
-    +esc(c.term||'')+' 학기'+(cs.length>1?(' · <b style="color:'+(live?'#f0c75e':'#cbd5e1')+'">'+cs.length+'기 연속</b>'):'')
-    +'<br>스스로 도전을 택한 학생들의 반입니다</div></div></div>';
-  /* 설명 */
-  h+='<div style="padding:13px 15px 14px">'
-    +'<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:6px">🖤 블랙반이란</div>'
+  var open=!!P.blkOpen;
+  var h='<div class="rcp blk'+(top?' top':'')+(open?' open':'')+'">';
+  /* 접이 머리 — 진도 레이스와 같은 조작감 */
+  h+='<div class="rhd" onclick="toggleBlack()">'+blkEmblem(c.no,26,!live)
+    +'<div class="t">블랙반 '+c.no+'기'+(live?'':' 출신')+'</div>'
+    +(cs.length>1?'<div class="d">'+cs.length+'기 연속 🔥</div>':'')
+    +'<div class="ch">⌄</div></div>';
+  /* 접혔을 때 한 줄 — 눌러야 할 이유 */
+  if(!open){
+    h+='<div class="peek" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+      +'스스로 도전을 택한 반 · <b style="color:#b45309">눌러서 자세히</b></div>';
+  }
+  /* 펼친 내용 */
+  h+='<div class="fold">';
+  h+='<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin:11px 0 6px">🖤 블랙반이란</div>'
     +'<div style="font-size:11.5px;color:#475569;font-weight:700;line-height:1.85">'
     +'시험 대비 기간에 <b>일반 과정보다 많은 분량</b>을 스스로 해내겠다고 약속한 학생들의 반입니다. '
     +'성적으로 뽑지 않고 <b>공부량과 꾸준함</b>으로 선발합니다.</div>';
-  /* 우리 아이 엠블럼 */
   h+='<div style="border-top:1px solid #f1f5f9;margin-top:11px;padding-top:11px">'
     +'<div style="font-size:12px;font-weight:900;color:#0d2240;margin-bottom:8px">🏅 우리 아이 엠블럼</div>'
     +'<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">';
@@ -1256,9 +1264,10 @@ function vBlack(top){
     +'</div></div></div>';
   if(live) h+='<div style="background:#f8fafc;border-radius:10px;padding:10px 12px;margin-top:11px;font-size:11px;color:#64748b;font-weight:800;line-height:1.7">'
     +'📌 블랙반 학생은 주간 숙제량이 많습니다. 가정에서 격려해 주시면 큰 힘이 됩니다.</div>';
-  h+='</div></div>';
+  h+='</div></div>';   // fold · rcp 닫기
   return h;
 }
+window.toggleBlack=function(){ P.blkOpen=!P.blkOpen; render(); window.scrollTo(0,0); };
 
 function vHome(){
   var st=P.st;
