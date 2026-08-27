@@ -91,13 +91,23 @@ async function sbAll(path) {
   return out;
 }
 
-/* ── 날짜 (한국시간 기준) ─────────────────────────────────────── */
-const KST = 9 * 3600 * 1000;
-const kstDay = (iso) => new Date(new Date(iso).getTime() + KST).toISOString().slice(0, 10);
-/* 'YYYY-MM-DD'(KST 00:00) → UTC ISO */
-const kstStartUtc = (d) => new Date(new Date(d + 'T00:00:00Z').getTime() - KST).toISOString();
-/* 'YYYY-MM-DD'(KST 24:00) → UTC ISO */
-const kstEndUtc = (d) => new Date(new Date(d + 'T00:00:00Z').getTime() - KST + 86400000).toISOString();
+/* ── 날짜 ────────────────────────────────────────────────────────
+ * ⚠️ 중요: mf_answer_records.score_datetime에 적힌 시각은 <b>이미 한국시간</b>이다.
+ *   매쓰플랫이 시간대 표시 없이 한국시간을 주고, 그대로 저장돼 있다(뒤에 +00:00이
+ *   붙어 있지만 실제로는 한국시간이다). 여기에 9시간을 더하면 오후·저녁에 푼 것이
+ *   전부 다음 날로 밀린다.
+ *
+ *   [확인 방법] 8월 채점기록 23,074건의 시각 분포:
+ *     그대로 읽으면  → 15~17시·21~22시 정점, 새벽 3~6시 0건 (학원 운영시간과 일치 ✅)
+ *     9시간 더하면   → 자정~2시 정점, 낮 12~15시 0건 (있을 수 없는 모습 ❌)
+ *   그래서 <b>더하지 않고 그대로 쓴다</b>. 학원앱도 같은 방식이다(.slice(0,10)).
+ *
+ *   (2026-08-27에 잡은 버그 — 그전에는 +9를 해서 저녁에 푼 문제가 다음 날 점수로
+ *    잡히고 있었다. 총점은 크게 다르지 않지만 「푼 날」·최근 14일 막대·성장률이 어긋났다.)  */
+const kstDay = (iso) => String(iso || '').slice(0, 10);
+/* 시즌 시작일 00:00 · 종료일 다음날 00:00 — 저장된 값이 한국시간이므로 그대로 견준다 */
+const kstStartUtc = (d) => d + 'T00:00:00';
+const kstEndUtc = (d) => new Date(new Date(d + 'T00:00:00Z').getTime() + 86400000).toISOString().slice(0, 10) + 'T00:00:00';
 
 /* ── 학생 명단 ────────────────────────────────────────────────
  * mf_answer_records의 lumen_rec_code는 비어 있으므로(수집 시 미매핑)
@@ -172,7 +182,8 @@ async function runRace() {
 
   /* 학생별 집계 */
   const agg = {};   // code → {...}
-  const todayK = kstDay(new Date().toISOString());
+  // 서버(깃허브)는 UTC로 도니 「오늘」은 +9가 맞다 (이건 진짜 UTC 시계다)
+  const todayK = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
   recs.forEach((r) => {
     if (r.result !== 'O' && r.result !== 'X' && r.result !== '?') return;  // '-' 미채점 제외
     const code = sid2code[r.mf_student_id];
