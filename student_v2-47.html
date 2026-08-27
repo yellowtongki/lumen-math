@@ -1535,6 +1535,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <div class="fd3">진도·여정 보기</div>
       </button>
     </div>
+    <!-- v2-47: 🔠 글씨 크기 — 기기마다 화면이 달라 각자 고른다 -->
+    <div id="fz-box" style="background:#fff;border-radius:14px;margin:10px 14px 0;padding:12px 15px;box-shadow:0 2px 8px rgba(13,34,64,.06)"></div>
     <button class="h3-logout" onclick="logout()">로그아웃</button>
   </div>
 </div>
@@ -2568,6 +2570,7 @@ function renderHome() {
   if (mission) { mel.className = 'td4-ms hb-mission mtext'; mel.textContent = '\ud83d\udccc ' + mission; }
   else { mel.className = 'td4-ms hb-mission mnone'; mel.textContent = '오늘 배운 개념을 말로 설명!'; }
   if (typeof blkInit === 'function') blkInit();   // v2-47: 블랙반 엠블럼
+  if (typeof fzPaint === 'function') { fzApply(); fzPaint(); }   // v2-47: 글씨 크기
   if (typeof updateTodayCard === 'function') updateTodayCard();   // v2-34: 오늘 할 일 상태
   if (typeof refreshNoticeData === 'function') refreshNoticeData();
   if (window.rmApplyHome) rmApplyHome();
@@ -7984,6 +7987,62 @@ window.rcTab=function(k){ RC.band=k; window.rcInit(); };
  *
  * ⚠️ 이름은 전부 BLK / blk* 로 시작한다 (RC=진도 레이스가 이미 씀)
  * ══════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+ * 🔠 글씨 크기 (v2-47)
+ * ───────────────────────────────────────────────────────────────
+ * 휴대폰 화면 크기가 제각각이라(폴드~미니) 한 크기로 고정하지 않고
+ * 보는 사람이 직접 고른다. 고른 값은 그 기기에만 저장된다.
+ *
+ * 기본값은 「크게(110%)」 — 원래 크기가 작다는 의견이 있었다.
+ * zoom을 쓰는 이유: 앱이 px로 짜여 있어 rem으로 바꾸려면 수천 곳을
+ * 고쳐야 한다. zoom은 화면 전체를 통째로 키워 주므로 안전하다.
+ * (크롬·사파리·삼성인터넷 모두 지원)
+ * ⚠️ 이름은 FZ / fz* — 다른 기능과 겹치지 않는다
+ * ══════════════════════════════════════════════════════════════ */
+var FZ_KEY='lumen_font_zoom';
+var FZ_STEPS=[{k:'s',n:'보통',z:1},{k:'m',n:'크게',z:1.1},{k:'l',n:'아주 크게',z:1.22}];
+function fzGet(){
+  var v; try{ v=localStorage.getItem(FZ_KEY); }catch(e){}
+  var hit=FZ_STEPS.filter(function(x){ return x.k===v; })[0];
+  return hit||FZ_STEPS[1];        /* 기본 = 크게 */
+}
+function fzApply(){
+  var z=fzGet().z;
+  try{
+    /* zoom을 쓰되, 안 먹는 브라우저를 위해 폰트 확대도 함께 건다 */
+    document.body.style.zoom = z===1 ? '' : String(z);
+    if(z!==1 && !('zoom' in document.body.style)){
+      document.documentElement.style.fontSize = Math.round(16*z)+'px';
+    }
+  }catch(e){}
+}
+window.fzSet=function(k){
+  try{ localStorage.setItem(FZ_KEY,k); }catch(e){}
+  fzApply(); fzPaint();
+};
+/* 설정 칸 HTML — 두 앱에서 같은 모양으로 쓴다 */
+function fzWidget(){
+  var cur=fzGet().k;
+  var h='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    +'<span style="font-size:12.5px;font-weight:900;color:#0d2240">🔠 글씨 크기</span>'
+    +'<div style="display:flex;gap:5px;margin-left:auto">';
+  FZ_STEPS.forEach(function(s){
+    var on=s.k===cur;
+    h+='<button onclick="fzSet(\''+s.k+'\')" style="padding:6px 12px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:900;'
+      +'font-size:'+(s.k==='s'?'11px':s.k==='m'?'12.5px':'14px')+';'
+      +(on?'background:#0d2240;color:#fff;border:1.5px solid #0d2240'
+         :'background:#fff;color:#64748b;border:1.5px solid #e2e8f0')+'">'+s.n+'</button>';
+  });
+  return h+'</div></div>';
+}
+function fzPaint(){
+  try{
+    var el=document.getElementById('fz-box');
+    if(el) el.innerHTML=fzWidget();
+  }catch(e){}
+}
+try{ fzApply(); }catch(e){}
+
 var BLK={loaded:false, data:null, at:0};
 
 async function blkLoad(force){
