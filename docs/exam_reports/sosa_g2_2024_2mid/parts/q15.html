@@ -1,0 +1,65 @@
+  <section class="sol killer" id="q15">
+    <div class="sol-head">
+      <span class="sol-k red">15</span>
+      <div>
+        <div class="sol-title">실근 개수 함수의 불연속점 세기</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 킬러</span> 연속함수의 활용 · 이차방정식 실근</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">실수 \(a\)에 대하여 방정식 \(ax^{2}+2(a-2)x-a+2=0\)의 실근의 개수를 \(f(a)\)라 할 때, 함수 \(f(a)\)가 불연속이 되는 모든 \(a\)의 개수는?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>\(a=0\)이면 이차식이 아니다 — 먼저 갈라야 한다</span>
+        <p>최고차항 계수가 \(a\)이므로 \(a=0\)이면 <b>일차방정식</b>이 된다. 「이차방정식」이라 믿고 판별식만 쓰면 이 지점을 놓친다 — 킬러의 첫 함정.</p>
+        <div class="mathrow">$$a=0:\ -4x+2=0\Rightarrow x=\tfrac12\ (\text{실근 }1\text{개})\ \Rightarrow\ f(0)=1$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>\(a\ne0\) — 판별식의 부호로 실근 개수</span>
+        <div class="mathrow">$$\tfrac{D}{4}=(a-2)^{2}-a(-a+2)=2a^{2}-6a+4=2(a-1)(a-2)$$</div>
+        <p>\(D\gt0\)이면 2개, \(D=0\)이면 1개, \(D\lt0\)이면 0개. \(2(a-1)(a-2)\)의 부호는 \(a=1,2\)를 경계로 갈린다.</p>
+        <div class="mathrow">$$\underbrace{a\lt1}_{D\gt0,\ 2\text{개}}\ \mid\ \underbrace{a=1}_{1\text{개}}\ \mid\ \underbrace{1\lt a\lt2}_{D\lt0,\ 0\text{개}}\ \mid\ \underbrace{a=2}_{1\text{개}}\ \mid\ \underbrace{a\gt2}_{2\text{개}}\quad(a\ne0)$$</div>
+      </div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · \(f(a)\)의 그래프. ○는 그 점에서 값이 뚝 떨어짐</span>
+          <svg viewBox="0 0 460 210" role="img" aria-label="f(a) 계단 그래프. a=0,1,2에서 불연속">
+            <line x1="30" y1="170" x2="440" y2="170" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <line x1="70" y1="195" x2="70" y2="25" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <polygon points="440,170 431,165.5 431,174.5" fill="var(--ink-soft)"/><polygon points="70,25 65,34 75,34" fill="var(--ink-soft)"/>
+            <g font-family="Noto Sans KR" font-size="11" fill="var(--ink-faint)">
+              <text x="60" y="185">O</text><text x="442" y="168">a</text><text x="74" y="36">f(a)</text>
+              <text x="150" y="185">0</text><text x="250" y="185">1</text><text x="330" y="185">2</text>
+              <text x="52" y="130">1</text><text x="52" y="90">2</text>
+            </g>
+            <g stroke="var(--line-soft)" stroke-width="1"><line x1="70" y1="130" x2="440" y2="130"/><line x1="70" y1="90" x2="440" y2="90"/></g>
+            <!-- a<0 : 2 -->
+            <line x1="75" y1="90" x2="150" y2="90" stroke="var(--indigo)" stroke-width="2.6"/>
+            <circle cx="150" cy="90" r="4" fill="var(--paper)" stroke="var(--indigo)" stroke-width="2"/>
+            <!-- a=0 : 1 -->
+            <circle cx="150" cy="130" r="4" fill="#e11d48"/>
+            <!-- 0<a<1 : 2 -->
+            <line x1="150" y1="90" x2="250" y2="90" stroke="var(--indigo)" stroke-width="2.6"/>
+            <circle cx="150" cy="90" r="4" fill="var(--paper)" stroke="var(--indigo)" stroke-width="2"/>
+            <circle cx="250" cy="90" r="4" fill="var(--paper)" stroke="var(--indigo)" stroke-width="2"/>
+            <!-- a=1 : 1 -->
+            <circle cx="250" cy="130" r="4" fill="#e11d48"/>
+            <!-- 1<a<2 : 0 -->
+            <line x1="250" y1="170" x2="330" y2="170" stroke="var(--indigo)" stroke-width="2.6"/>
+            <circle cx="250" cy="170" r="4" fill="var(--paper)" stroke="var(--indigo)" stroke-width="2"/>
+            <circle cx="330" cy="170" r="4" fill="var(--paper)" stroke="var(--indigo)" stroke-width="2"/>
+            <!-- a=2 : 1 -->
+            <circle cx="330" cy="130" r="4" fill="#e11d48"/>
+            <!-- a>2 : 2 -->
+            <line x1="330" y1="90" x2="435" y2="90" stroke="var(--indigo)" stroke-width="2.6"/>
+            <circle cx="330" cy="90" r="4" fill="var(--paper)" stroke="var(--indigo)" stroke-width="2"/>
+          </svg>
+        </div>
+        <figcaption>빨간 점 \((a=0,1,2)\)에서 좌·우 극한과 함숫값이 어긋난다 — <b>불연속 세 곳</b>.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>불연속점 확인</span>
+        <p>\(a=0\): 좌·우극한 모두 \(2\)인데 \(f(0)=1\). \(a=1\): 좌 \(2\), 우 \(0\). \(a=2\): 좌 \(0\), 우 \(2\). 세 곳 모두 불연속.</p>
+        <div class="result"><span class="lab">정답</span><span class="val">\(3\)개 \(\Rightarrow\) ③</span></div>
+      </div>
+    </div>
+  </section>
