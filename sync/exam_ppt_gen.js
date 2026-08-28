@@ -12,6 +12,7 @@
  *   node sync/exam_ppt_gen.js --analysis sync/_debug/an.json --out 옥길중_중2.pptx
  *
  * 옵션:
+ *   --theme brand|navy   brand(기본) = 루멘수학 로고 색(붉은색·네이비·골드), navy = 파란 계열
  *   --only-mine   반복 유형이 많을 때 "우리 학교 출제(★)" 유형만 낱장 슬라이드로 만든다
  *                 (지정 안 하면 유형이 12개를 넘을 때 자동 적용)
  *
@@ -35,10 +36,38 @@ const MAP_FILE = path.join(__dirname, '_debug', 'ms_exam_images_map.json');
 const IMGMAP = fs.existsSync(MAP_FILE) ? JSON.parse(fs.readFileSync(MAP_FILE, 'utf8')) : {};
 
 // ── 색·글꼴 ────────────────────────────────────────────
-const NAVY = '14274E', NAVY2 = '24549E', BLUE = '2A78D6', ORANGE = 'EB6834';
-const INK = '101418', INK2 = '4B5563', MUT = '8A92A0', LINE = 'E3E7EE';
-const WHITE = 'FFFFFF', SOFT = 'F2F5FA', ICE = 'C9D8F2';
-const SERIES = [BLUE, ORANGE, '7C5CD6', '0F9D76'];
+// --theme brand : 루멘수학 로고 색 (붉은색 + 네이비 + 골드) — 기본값
+// --theme navy  : 처음 만들었던 네이비/블루 배색
+const THEME = arg('theme', 'brand');
+const P = THEME === 'navy'
+  ? {
+      dark: '14274E', dark2: '24549E', onDark: 'C9D8F2', big: 'C9D8F2',
+      head: '14274E', acc: '2A78D6', acc2: 'EB6834',
+      soft: 'F2F5FA', mine: 'E9F1FD', line: 'E3E7EE',
+      series: ['2A78D6', 'EB6834', '7C5CD6', '0F9D76'],
+      cards: ['2A78D6', 'EB6834', '0F9D76'],
+      badge: '24549E',
+      bandFg: { 하: '0F7A48', 중: '9C6200', 상: 'CC2222' },
+      bandBg: { 하: 'E6F6EE', 중: 'FFF3DD', 상: 'FDEAEA' },
+    }
+  : {
+      // 로고에서 뽑은 색 — 붉은 원, 골드 전구, 네이비 π
+      dark: 'C63D2E', dark2: 'A5301F', onDark: 'F5C7BC', big: 'F2B733',
+      head: '1E3A5C', acc: 'C63D2E', acc2: 'D99A1F',
+      soft: 'F8F5F2', mine: 'FBEAE6', line: 'E8E2DD',
+      series: ['C63D2E', '1E3A5C', 'D99A1F', '4E7A5E'],
+      cards: ['C63D2E', '1E3A5C', 'D99A1F'],
+      badge: '1E3A5C',   // 붉은 바탕 위에서도 번호가 또렷하게 보이도록 로고의 네이비를 쓴다
+      bandFg: { 하: '2F6B45', 중: '8A6314', 상: '9E2B1C' },
+      bandBg: { 하: 'E9F2EC', 중: 'FBF0DA', 상: 'F6E0DC' },
+    };
+const NAVY = P.dark, NAVY2 = P.dark2, ICE = P.onDark;   // 어두운 표지형 슬라이드용
+const HEAD = P.head, BLUE = P.acc, ORANGE = P.acc2;     // 밝은 본문 슬라이드용
+const SOFT = P.soft, MINE = P.mine, LINE = P.line;
+const INK = '101418', INK2 = '4B5563', MUT = '8A92A0';
+const WHITE = 'FFFFFF';
+const SERIES = P.series;
+const DPAL = [...P.series, 'C2185B', '8A92A0', '3E7CB1'];   // 도넛(단원 수가 많을 때)
 const FONT = '맑은 고딕';                 // 한국어 윈도우 기본 글꼴
 const W = 13.333, H = 7.5;               // LAYOUT_WIDE
 const M = 0.6;                           // 기본 여백
@@ -74,7 +103,7 @@ function contentSlide(title, sub) {
   s.background = { color: WHITE };
   s.addText(title, {
     x: M, y: 0.42, w: W - M * 2, h: 0.62, isTextBox: true, margin: 0,
-    fontFace: FONT, fontSize: 30, bold: true, color: NAVY, valign: 'middle',
+    fontFace: FONT, fontSize: 30, bold: true, color: HEAD, valign: 'middle',
   });
   if (sub) s.addText(sub, {
     x: M, y: 1.06, w: W - M * 2, h: 0.36, isTextBox: true, margin: 0,
@@ -108,12 +137,12 @@ function addNumBadge(s, x, y, d, n, bg = NAVY, fg = WHITE) {
 function card(s, x, y, w, h, fill = SOFT) {
   s.addShape(pres.ShapeType.roundRect, {
     x, y, w, h, rectRadius: 0.12, fill: { color: fill }, line: { color: LINE, width: 1 },
-    shadow: { type: 'outer', color: NAVY, opacity: 0.07, blur: 8, offset: 2, angle: 90 },
+    shadow: { type: 'outer', color: '000000', opacity: 0.10, blur: 8, offset: 2, angle: 90 },
   });
 }
 const bandOf = d => (d == null ? null : d <= 2 ? '하' : d <= 4 ? '중' : d <= 6 ? '상' : '최상');
-const bandColor = b => (b === '하' ? '0F7A48' : b === '중' ? '9C6200' : 'CC2222');
-const bandBg = b => (b === '하' ? 'E6F6EE' : b === '중' ? 'FFF3DD' : 'FDEAEA');
+const bandColor = b => P.bandFg[b] || P.bandFg['상'];
+const bandBg = b => P.bandBg[b] || P.bandBg['상'];
 
 // 표지 제목 — "중2 2학기"처럼 숫자가 붙어 읽히지 않도록 "2학년"으로 풀어 쓴다
 const gradeNum = (String(A.grade).match(/(\d)/) || [])[1];
@@ -134,7 +163,7 @@ const coverTitle = gradeNum
   });
   s.addText('수학 출제경향 분석', {
     x: M, y: 2.82, w: 11.5, h: 0.95, isTextBox: true, margin: 0,
-    fontFace: FONT, fontSize: 46, bold: true, color: ICE,
+    fontFace: FONT, fontSize: 46, bold: true, color: P.big,
   });
   const sub = A.peer
     ? `${A.school} ${A.anchorYear}년 기출 + 인근 학교 ${A.peerNames.length}회분 · 총 ${A.totalN}문항 분석`
@@ -158,7 +187,7 @@ const coverTitle = gradeNum
       big: A.topShare != null ? `${A.topShare}%` : `${(A.unitByKey[A.keys[0]] || {})[A.topUnit] || ''}문항`,
       lab: '배점 1위 단원',
       txt: `${A.topUnit}\n${A.school} ${A.anchorYear}년 시험에서 가장 큰 비중`,
-      col: BLUE,
+      col: P.cards[0],
     },
     {
       big: `${A.repeated.length}개`,
@@ -166,7 +195,7 @@ const coverTitle = gradeNum
       txt: A.peer
         ? `2개 이상 시험지에 반복\n그중 ★ ${A.school} 출제 ${A.mineRepN}개`
         : `분석한 모든 연도에 빠짐없이 출제\n올해도 나올 가능성이 가장 높다`,
-      col: ORANGE,
+      col: P.cards[1],
     },
     {
       big: A.repPct != null ? `${A.repPct}%` : `${A.essays.length}문항`,
@@ -174,7 +203,7 @@ const coverTitle = gradeNum
       txt: A.repPct != null
         ? `${A.school} ${A.anchorYear}년 ${A.repScoreLatest}점\n반복 유형만 잡아도 이만큼`
         : `${A.essayUnits.join(', ')} 단원`,
-      col: '0F9D76',
+      col: P.cards[2],
     },
   ];
   items.forEach((it, i) => {
@@ -206,12 +235,12 @@ const coverTitle = gradeNum
   const gap = 0.28, tw = (W - M * 2 - gap * (n - 1)) / n;
   A.exams.forEach((e, i) => {
     const x = M + i * (tw + gap);
-    card(s, x, 1.85, tw, 2.85, e.anchor ? 'E9F1FD' : SOFT);
+    card(s, x, 1.85, tw, 2.85, e.anchor ? MINE : SOFT);
     s.addText((e.anchor ? '★ ' : '') + e.label, {
       x: x + 0.24, y: 2.05, w: tw - 0.48, h: 0.36, isTextBox: true, margin: 0,
       fontFace: FONT, fontSize: 15, bold: true, color: e.anchor ? BLUE : INK2,
     });
-    s.addText([{ text: String(e.n), options: { fontSize: 40, bold: true, color: NAVY } },
+    s.addText([{ text: String(e.n), options: { fontSize: 40, bold: true, color: HEAD } },
                { text: ' 문항', options: { fontSize: 15, color: INK2 } }], {
       x: x + 0.24, y: 2.5, w: tw - 0.48, h: 0.9, isTextBox: true, margin: 0,
       fontFace: FONT, valign: 'middle',
@@ -265,7 +294,7 @@ if (A.unitScoreTotal >= 90) {
   const units = A.unitSet.filter(u => A.unitScore[u]).sort((a, b) => A.unitScore[b] - A.unitScore[a]);
   s.addChart(pres.ChartType.doughnut, [{ name: '배점', labels: units, values: units.map(u => A.unitScore[u]) }], {
     x: 0.5, y: 1.6, w: 6.6, h: 5.2, holeSize: 52,
-    chartColors: [BLUE, ORANGE, '7C5CD6', '0F9D76', 'C2185B', '8A92A0', '3E7CB1'],
+    chartColors: DPAL,
     showLegend: false, showValue: true, dataLabelPosition: 'ctr',
     dataLabelFontSize: 12, dataLabelColor: WHITE, dataLabelFontFace: FONT, dataLabelFormatCode: '0"점"',
   });
@@ -274,8 +303,7 @@ if (A.unitScoreTotal >= 90) {
     const pct = Math.round(A.unitScore[u] / A.unitScoreTotal * 100);
     s.addShape(pres.ShapeType.roundRect, {
       x: 7.4, y, w: 0.26, h: 0.26, rectRadius: 0.08,
-      fill: { color: [BLUE, ORANGE, '7C5CD6', '0F9D76', 'C2185B', '8A92A0', '3E7CB1'][i % 7] },
-      line: { color: [BLUE, ORANGE, '7C5CD6', '0F9D76', 'C2185B', '8A92A0', '3E7CB1'][i % 7] },
+      fill: { color: DPAL[i % DPAL.length] }, line: { color: DPAL[i % DPAL.length] },
     });
     s.addText(u, {
       x: 7.8, y: y - 0.03, w: 3.5, h: 0.33, isTextBox: true, margin: 0,
@@ -313,10 +341,10 @@ const restTypes = useOnlyMine ? A.repeated.filter(r => !r.mine) : [];
   const s = darkSlide();
   s.addText(A.peer ? '반복 출제되는 유형' : '매년 반복 출제된 유형', {
     x: M, y: 2.2, w: 9, h: 0.7, isTextBox: true, margin: 0,
-    fontFace: FONT, fontSize: 24, bold: true, color: ICE,
+    fontFace: FONT, fontSize: 24, bold: true, color: P.big,
   });
   s.addText([{ text: String(slideTypes.length), options: { fontSize: 110, bold: true, color: WHITE } },
-             { text: ' 개', options: { fontSize: 40, bold: true, color: ICE } }], {
+             { text: ' 개', options: { fontSize: 40, bold: true, color: P.big } }], {
     x: M, y: 2.85, w: 9, h: 1.6, isTextBox: true, margin: 0, fontFace: FONT, valign: 'middle',
   });
   s.addText(useOnlyMine
@@ -336,7 +364,7 @@ slideTypes.forEach((t, i) => {
   addNumBadge(s, M, 0.42, 0.56, i + 1, t.mine ? BLUE : NAVY);
   s.addText(t.name, {
     x: M + 0.76, y: 0.36, w: W - M * 2 - 0.76, h: 0.7, isTextBox: true, margin: 0,
-    fontFace: FONT, fontSize: 23, bold: true, color: NAVY, valign: 'middle',
+    fontFace: FONT, fontSize: 23, bold: true, color: HEAD, valign: 'middle',
   });
   // 배지 줄 — 단원 · 출제 · 배점 · 난이도 · 시간
   let px = M;
@@ -380,7 +408,7 @@ slideTypes.forEach((t, i) => {
     // 캡션(출처·번호·정답) + 문제 이미지
     const capH = 0.42;
     card(s, bx, 1.68, bw, 5.25, WHITE);
-    s.addShape(pres.ShapeType.rect, { x: bx, y: 1.68, w: bw, h: capH, fill: { color: isMineItem(item) ? 'E9F1FD' : SOFT }, line: { color: LINE, width: 1 } });
+    s.addShape(pres.ShapeType.rect, { x: bx, y: 1.68, w: bw, h: capH, fill: { color: isMineItem(item) ? MINE : SOFT }, line: { color: LINE, width: 1 } });
     const ans = item.answer ? (item.essay ? '서술형' : String(item.answer)) : null;
     s.addText(`${isMineItem(item) ? '★ ' : ''}${item.label} · ${item.no}번${item.score ? ` · ${item.score}점` : ''}${ans ? `   정답 ${ans}` : ''}`, {
       x: bx + 0.18, y: 1.68, w: bw - 0.36, h: capH, isTextBox: true, margin: 0,
@@ -485,7 +513,7 @@ if (A.essays.length) {
   ].filter(p => p.d);
   points.forEach((p, i) => {
     const y = 1.85 + i * 1.28;
-    addNumBadge(s, M, y, 0.6, i + 1, i === 0 ? ORANGE : NAVY2);
+    addNumBadge(s, M, y, 0.6, i + 1, i === 0 ? P.big : P.badge, i === 0 ? P.head : WHITE);
     s.addText(p.t, {
       x: M + 0.85, y: y - 0.05, w: 11.2, h: 0.42, isTextBox: true, margin: 0,
       fontFace: FONT, fontSize: 21, bold: true, color: WHITE, valign: 'middle',
