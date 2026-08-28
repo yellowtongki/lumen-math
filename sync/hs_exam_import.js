@@ -160,6 +160,56 @@ async function stateSet(v) {
   } catch (e) {}
 }
 
+/* ── 이미 만든 학습지를 폴더에만 담기 ── */
+async function refile() {
+  const MF_API = 'https://api.mathflat.com', MF_BASE = 'https://teacher.mathflat.com';
+  const r = await fetch(`${MF_API}/v2/login`, { method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com', origin: MF_BASE, referer: MF_BASE + '/' },
+    body: JSON.stringify({ id: process.env.MATHFLAT_ID.trim(), password: process.env.MATHFLAT_PASSWORD.trim(), userType: 'TEACHER', serviceType: 'MATHFLAT' }) });
+  const lj = await r.json();
+  if (!lj.accessToken) throw new Error('매쓰플랫 로그인 실패');
+  const T = lj.accessToken;
+  const H = { 'content-type': 'application/json', accept: 'application/json, text/plain, */*',
+    'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com',
+    authorization: 'Bearer ' + T, 'x-auth-token': T, origin: MF_BASE, referer: MF_BASE + '/' };
+  const call = async (method, p, body) => {
+    const rr = await fetch(MF_API + p, { method, headers: H, body: body === undefined ? undefined : JSON.stringify(body) });
+    const t = await rr.text(); let jj = null; try { jj = JSON.parse(t); } catch (e) {}
+    if (!rr.ok) throw new Error(`${method} ${p} → ${rr.status} ${t.slice(0, 160)}`);
+    return jj && jj.data !== undefined ? jj.data : jj;
+  };
+
+  const st = await stateGet();
+  const pending = Object.entries(st.done).filter(([, v]) => v && v.worksheet && !v.filed);
+  if (!pending.length) { console.log('폴더에 담을 것이 없습니다 (모두 담겨 있음)'); return; }
+
+  const byList = {};
+  pending.forEach(([id, v]) => { (byList[v.mylist] || (byList[v.mylist] = [])).push({ id, ws: v.worksheet }); });
+  const lists = await call('GET', '/mylist');
+  const all = (lists && lists.myLists) || (Array.isArray(lists) ? lists : []);
+  console.log(`현재 폴더 ${all.length}/20개 · 담을 학습지 ${pending.length}장 (폴더 ${Object.keys(byList).length}종)\n`);
+
+  for (const [name, items] of Object.entries(byList)) {
+    try {
+      let target = all.find((l) => l.name === name);
+      if (!target) {
+        const mk = await call('POST', '/mylist', { name });
+        target = (mk && mk.myList) || mk;
+        all.push(target);
+        console.log(`폴더 「${name}」 새로 만듦`);
+      }
+      await call('POST', `/mylist/${target.id}/element`, { worksheetIds: items.map((x) => Number(x.ws)) });
+      items.forEach((x) => { st.done[x.id].filed = true; });
+      await stateSet(st);
+      console.log(`✅ 「${name}」에 ${items.length}장 담음`);
+    } catch (e) {
+      console.log(`❌ 「${name}」 실패: ${e.message.slice(0, 180)}`);
+      if (/MY_LIST_LIMIT_EXCEEDED/.test(e.message))
+        console.log('   → 매쓰플랫 폴더가 20개로 꽉 찼습니다. 안 쓰는 폴더를 지우신 뒤 다시 실행해 주세요.');
+    }
+  }
+}
+
 (async () => {
   const schools = (arg('schools', '범박고,소사고') || '').split(',').map((s) => s.trim()).filter(Boolean);
   const grades = (arg('grades', '고1,고2') || '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -168,6 +218,10 @@ async function stateSet(v) {
   const LIMIT = Number(arg('limit', '0'));
   const TWIN = has('--twin');
   const RESUME = !has('--no-resume');
+
+  /* --refile: 이미 만들어 둔 학습지를 폴더에만 담는다 (폴더가 20개로 꽉 찼을 때 쓴다).
+   * 매쓰플랫에 다시 등록하지 않으므로 중복이 생기지 않는다. */
+  if (has('--refile')) { await refile(); return; }
 
   await msLogin();
   const folders = await findFolders(schools, grades);
@@ -205,10 +259,12 @@ async function stateSet(v) {
         mydb: r.id, trie: r.plan.trie, grade: r.plan.gradeLabel, gradeValue: r.plan.subject,
         title: r.plan.title, mylist: r.plan.mylist, originalOnly: !TWIN, log,
       });
-      okList.push({ id: r.id, title: r.plan.title, ws: out.worksheetOriginal, matched: `${out.matched}/${out.matchedTotal}` });
-      st.done[r.id] = { at: new Date().toISOString(), title: r.plan.title, mylist: r.plan.mylist, worksheet: out.worksheetOriginal, paper: out.paperId };
+      const filedOk = !!(out.filed && out.filed.ok);
+      okList.push({ id: r.id, title: r.plan.title, ws: out.worksheetOriginal, matched: `${out.matched}/${out.matchedTotal}`, filed: filedOk });
+      st.done[r.id] = { at: new Date().toISOString(), title: r.plan.title, mylist: r.plan.mylist,
+        worksheet: out.worksheetOriginal, paper: out.paperId, filed: filedOk };
       await stateSet(st);
-      log(`✅ 완료 — 매칭 ${out.matched}/${out.matchedTotal}`);
+      log(`✅ 완료 — 매칭 ${out.matched}/${out.matchedTotal}${filedOk ? '' : ' · 폴더엔 못 담음(나중에 --refile)'}`);
     } catch (e) {
       failList.push({ id: r.id, title: r.plan.title, err: String(e.message).slice(0, 200) });
       log(`❌ 실패: ${e.message}`);
@@ -216,7 +272,9 @@ async function stateSet(v) {
     if (i < rows.length - 1) await sleep(3000);   // 매쓰플랫에 몰아치지 않게 잠깐 쉼
   }
 
-  console.log(`\n══ 마무리 ══\n성공 ${okList.length}장 · 실패 ${failList.length}장`);
-  okList.forEach((x) => console.log(`  ✅ ${x.title} (학습지 ${x.ws} · 매칭 ${x.matched})`));
+  const unfiled = okList.filter((x) => !x.filed).length;
+  console.log(`\n══ 마무리 ══\n성공 ${okList.length}장 · 실패 ${failList.length}장${unfiled ? ` · 폴더 못 담음 ${unfiled}장` : ''}`);
+  okList.forEach((x) => console.log(`  ✅ ${x.title} (학습지 ${x.ws} · 매칭 ${x.matched})${x.filed ? '' : ' ⚠ 폴더 대기'}`));
   failList.forEach((x) => console.log(`  ❌ ${x.title} — ${x.err}`));
+  if (unfiled) console.log(`\n폴더가 비면 다음으로 담을 수 있습니다:\n  node sync/hs_exam_import.js --refile`);
 })().catch((e) => { console.error('ERR', e.message); process.exit(1); });

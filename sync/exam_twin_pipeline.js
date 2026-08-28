@@ -301,19 +301,33 @@ async function runTwinPipeline(opts) {
 
   /* 만든 학습지를 마이리스트(폴더)에 담는다 — 같은 이름이 없으면 폴더를 만든다.
    * 원본 전용 모드와 쌍둥이 모드 둘 다에서 부르므로 함수로 뺐다. */
+  /* 폴더 담기가 실패해도 학습지는 이미 만들어져 있다. 그래서 여기서 예외를 던지지 않는다 —
+   * 던지면 부르는 쪽이 「실패」로 기록해, 다시 돌릴 때 같은 시험지를 두 번 등록하게 된다.
+   * (2026-08-28 실제로 겪음: 매쓰플랫 폴더는 최대 20개인데 이미 20개가 차 있어
+   *  MY_LIST_LIMIT_EXCEEDED. 학습지는 정상 생성됐는데 전체가 실패로 잡혔다.) */
   async function putInMylist(ids) {
-    if (!MYLIST || !ids.length) return;
-    const { data: lists } = await mf(MF_API, 'GET', '/mylist');
-    const all = (lists && lists.myLists) || (Array.isArray(lists) ? lists : []);
-    let target = all.find((l) => l.name === MYLIST);
-    if (!target) {
-      const { data: mk } = await mf(MF_API, 'POST', '/mylist', { name: MYLIST });
-      target = (mk && mk.myList) || mk;
-      log(`마이리스트 「${MYLIST}」 새로 만듦`);
-    }
-    if (target && target.id) {
-      await mf(MF_API, 'POST', `/mylist/${target.id}/element`, { worksheetIds: ids });
-      log(`마이리스트 「${MYLIST}」에 학습지 ${ids.length}장 담음`);
+    if (!MYLIST || !ids.length) return { ok: false, reason: '폴더 지정 없음' };
+    try {
+      const { data: lists } = await mf(MF_API, 'GET', '/mylist');
+      const all = (lists && lists.myLists) || (Array.isArray(lists) ? lists : []);
+      let target = all.find((l) => l.name === MYLIST);
+      if (!target) {
+        const { data: mk } = await mf(MF_API, 'POST', '/mylist', { name: MYLIST });
+        target = (mk && mk.myList) || mk;
+        log(`마이리스트 「${MYLIST}」 새로 만듦`);
+      }
+      if (target && target.id) {
+        await mf(MF_API, 'POST', `/mylist/${target.id}/element`, { worksheetIds: ids });
+        log(`마이리스트 「${MYLIST}」에 학습지 ${ids.length}장 담음`);
+        return { ok: true, mylistId: target.id };
+      }
+      return { ok: false, reason: '폴더를 찾지도 만들지도 못함' };
+    } catch (e) {
+      const full = /MY_LIST_LIMIT_EXCEEDED/.test(e.message);
+      log(full
+        ? `⚠ 폴더 「${MYLIST}」를 만들지 못했습니다 — 매쓰플랫 폴더가 20개로 꽉 찼습니다. 학습지는 정상 생성됐으니 폴더를 비우신 뒤 --refile로 담을 수 있습니다`
+        : `⚠ 폴더 담기 실패(학습지는 정상): ${e.message.slice(0, 160)}`);
+      return { ok: false, reason: e.message.slice(0, 200), limitFull: full };
     }
   }
 
@@ -361,12 +375,12 @@ async function runTwinPipeline(opts) {
   // ⑧ 쌍둥이 학습지 (problemList에는 문제 객체 전체를 그대로 넣어야 한다)
   if (ORIGINAL_ONLY) {
     log('원본 전용 모드 — 쌍둥이는 만들지 않습니다');
-    await putInMylist(made);
+    const filed = await putInMylist(made);
     return {
       mydb: MYDB, title: TITLE, trie: TRIE, gradeLabel: GRADE_LABEL,
       paperId: paper.id, questionCount: cells.length, boxCount: nBox,
       matched, matchedTotal: an.sourceData.length,
-      worksheetOriginal: made[0] || null, worksheetTwin: null, mylist: MYLIST,
+      worksheetOriginal: made[0] || null, worksheetTwin: null, mylist: MYLIST, filed,
     };
   }
   const { data: flt } = await mf(MF_API, 'POST', '/v2/worksheet/filter/school-test-paper/similar',
@@ -382,7 +396,7 @@ async function runTwinPipeline(opts) {
   log(`✅ 쌍둥이 학습지: worksheet ${wsId} — 「${TITLE} 쌍둥이」`);
 
   // ⑨ 마이리스트(폴더)에 넣기
-  await putInMylist(made);
+  const filed = await putInMylist(made);
 
   return {
     mydb: MYDB, title: TITLE, trie: TRIE, gradeLabel: GRADE_LABEL,
@@ -390,7 +404,7 @@ async function runTwinPipeline(opts) {
     matched, matchedTotal: an.sourceData.length,
     worksheetOriginal: made.length === 2 ? made[0] : (origList.length ? made[0] : null),
     worksheetTwin: made[made.length - 1] || null,
-    mylist: MYLIST,
+    mylist: MYLIST, filed,
   };
 }
 
