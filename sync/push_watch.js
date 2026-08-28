@@ -132,6 +132,58 @@ async function watchPlanner(state) {
   return next;
 }
 
+/* ── ③ 하브루타 녹음 제출 (2026-08-28 원장님 요청) ──
+ * 학생앱이 submissions_<학생코드>에 제출을 배열로 쌓는다. 이 행의 updated_at은
+ * 갱신되지 않아 못 쓴다(실측: 8/27 제출인데 updated_at은 8/20). 대신 각 행의
+ * <b>마지막 원소만</b> 뽑아(value->-1) 지난번에 본 제출 id와 비교한다.
+ * 33명 전체를 훑어도 13KB라 5분마다 돌려도 부담이 없다(하루 4MB).
+ * 【마지막 확인 지점】 state.rec = { 학생코드: '마지막으로 본 제출 id' } */
+async function watchRec(state) {
+  const url = `${SB_URL}/rest/v1/lumen_store?key=like.submissions_*&select=key,last:value-%3E-1`;
+  const r = await fetch(url, { headers: sbH() });
+  if (!r.ok) return state;
+  const rows = await r.json();
+  if (!Array.isArray(rows)) return state;
+
+  const prev = state.rec || null;
+  const seen = {};
+  const fresh = [];
+  rows.forEach((x) => {
+    const code = String(x.key || '').replace('submissions_', '');
+    const it = x.last;
+    if (!code || !it || !it.id) return;
+    seen[code] = String(it.id);
+    // 제출 id는 20260827_1936 형태라 문자열 비교가 곧 시간순
+    if (prev && String(it.id) > String(prev[code] || '')) fresh.push({ code, it });
+  });
+
+  const next = { ...state, rec: seen };
+  if (!prev) { log(`녹음 제출 기준점 설정 (${rows.length}명) — 다음 제출부터 알립니다`); return next; }
+  if (!fresh.length) return next;
+
+  // 학생코드 → 이름 (mf_students가 가볍고 이름·코드를 둘 다 가진다)
+  const names = {};
+  try {
+    const r2 = await fetch(`${SB_URL}/rest/v1/mf_students?select=name,lumen_rec_code&limit=1000`, { headers: sbH() });
+    if (r2.ok) (await r2.json()).forEach((s) => { if (s.lumen_rec_code) names[s.lumen_rec_code] = s.name; });
+  } catch (e) {}
+
+  const who = whoText(fresh.map((x) => names[x.code] || x.code));
+  const hasRec = fresh.some((x) => x.it.type === 'recording' || x.it.type === 'both');
+  const first = fresh[0];
+  await pushOwner({
+    kind: 'rec',
+    tag: 'lumen-rec',
+    title: (hasRec ? '🎙️ 녹음 제출 ' : '📤 하브루타 제출 ') + fresh.length + '명',
+    body: fresh.length === 1
+      ? `${who}${first.it.title ? ' — ' + String(first.it.title).slice(0, 40) : ''}`
+      : `${who}이 제출했어요`,
+    url: './lumen_v1.html#submissions',
+  });
+  log(`녹음 제출 알림: ${fresh.length}명 (${who})`);
+  return next;
+}
+
 /* ── 워커가 부르는 입구 ── */
 async function runPushWatch() {
   if (!process.env.VAPID_PRIVATE_KEY) return;      // 열쇠가 아직 없으면 조용히 건너뜀
@@ -140,8 +192,9 @@ async function runPushWatch() {
 
   try { next.aha = await watchAha(state); } catch (e) { log('아하노트 확인 오류:', e.message); }
   try { next = await watchPlanner(next); } catch (e) { log('플래너 확인 오류:', e.message); }
+  try { next = await watchRec(next); } catch (e) { log('녹음 제출 확인 오류:', e.message); }
 
   if (JSON.stringify(next) !== JSON.stringify(state)) await setState(next);
 }
 
-module.exports = { runPushWatch, watchAha, watchPlanner, whoText };
+module.exports = { runPushWatch, watchAha, watchPlanner, watchRec, whoText };
