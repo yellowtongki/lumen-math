@@ -140,8 +140,8 @@ $P node sync/exam_image_fetch.js --data sync/_debug/ms_exams_okgil_m2_own.json
 node sync/exam_report_gen.js --data sync/_debug/ms_exams_okgil_m2_own.json \
   --school 옥길중 --grade 중2 --semester 2 --term 중간 \
   --anchor 493934 --label term --exams 493934,312483,387571,493933,566290 \
-  --units "이등변삼각형과 직각삼각형,삼각형의 외심과 내심,평행사변형,여러가지 사각형,도형의 닮음,닮은 도형의 넓이와 부피,피타고라스 정리" \
-  --scope "중2-2: 01 이등변삼각형과 직각삼각형 - 05 도형의 닮음, 09 피타고라스 정리" \
+  --units "이등변삼각형과 직각삼각형,삼각형의 외심과 내심,평행사변형,여러가지 사각형,도형의 닮음,닮은 도형의 넓이와 부피" \
+  --scope "중2-2: 01 이등변삼각형과 직각삼각형 ~ 05 도형의 닮음 (삼각형의 닮음까지)" \
   --out docs/exam_reports/okgil_m2_2_mid.html --analysis sync/_debug/an_m2own.json
 ```
 
@@ -153,6 +153,11 @@ node sync/exam_report_gen.js --data sync/_debug/ms_exams_okgil_m2_own.json \
 | `--anchor` | 기준이 되는 시험지 (★ 표시) |
 
 비교 대상이 **모두 같은 학교**면 보고서·PPT 문구가 자동으로 "우리 학교 과거 기출" 표현으로 바뀐다.
+
+> ⚠️ **`--units` 는 수학비서의 범위 문구를 그대로 믿지 말고 직접 확인할 것.**
+> 옥길중 2025년 2학기 중간의 경우 DB의 범위 문구에는 "09 피타고라스 정리"가 들어 있었지만
+> 실제 시험지에는 피타고라스 문항이 **한 문제도 없었다**(실제 범위는 삼각형의 닮음까지).
+> 기준 시험지에 **실제로 출제된 단원을 먼저 세어 보고** 범위를 정하는 것이 안전하다.
 
 ## 우리 학교 기출이 1회분뿐일 때 ② — 인근 학교 비교 모드
 
