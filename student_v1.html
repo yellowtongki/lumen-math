@@ -1170,6 +1170,13 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .rc-hero .nm{font-size:16px;font-weight:900}
 .rc-hero .pr{font-size:11.5px;font-weight:800;opacity:.78;margin-top:4px}
 .rc-hero .pz{margin-top:10px;background:rgba(43,22,0,.13);border-radius:11px;padding:9px 12px;font-size:12px;font-weight:800}
+/* v2-51: 상금을 크게 — 「얼마가 걸렸는지」가 한눈에 들어와야 달릴 마음이 난다 (원장님 지시) */
+.rc-prize{margin-top:11px;background:linear-gradient(135deg,#fffdf5,#fff4d6);border:2px solid rgba(43,22,0,.16);border-radius:14px;padding:13px 14px 12px;text-align:center;box-shadow:0 2px 10px rgba(43,22,0,.12)}
+.rc-prize .lb{font-size:11.5px;font-weight:900;color:#a35a00;letter-spacing:.5px}
+.rc-prize .amt{font-size:34px;font-weight:900;line-height:1.06;margin:3px 0 1px;color:#c2410c;text-shadow:0 1px 0 #fff,0 2px 6px rgba(194,65,12,.2)}
+.rc-prize .amt small{font-size:19px;font-weight:900;margin-left:1px}
+.rc-prize .who{font-size:12px;font-weight:800;color:#8a5a00;margin-top:3px}
+.rc-prize .who b{color:#c2410c}
 .rc-me{background:var(--surface);border:1.5px solid #e2e8f0;border-radius:15px;padding:14px;margin-bottom:12px}
 .rc-me .top{display:flex;align-items:center;gap:12px}
 .rc-me .em{width:44px;height:50px;flex-shrink:0;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)}
@@ -2352,7 +2359,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
 /* ★ v2-46: 화면에 보이는 버전을 한 곳(STU_VER)에서만 가져온다.
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
-var STU_VER = 'v2-50';
+var STU_VER = 'v2-52';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -7948,7 +7955,8 @@ function bkCleanAns(a){
 /* ══════════════════════════════════════════════════════════════
  * v2-42: 🏁 진도 레이스
  * 시험기간 동안 「매쓰플랫에서 채점된 문항」을 난이도에 따라 점수로 바꿔
- * 겨루는 이벤트. 점수 계산은 학원 서버가 하고(30분마다), 학생앱은
+ * 겨루는 이벤트. 채점 기록은 하루 3번(새벽4시·오후4시·밤10시) 매쓰플랫에서
+ * 가져오고, 점수 계산은 학원 서버가 한다. 학생앱은
  * lumen_store의 'race_board'를 읽어 보여주기만 한다.
  *   · 공개는 상위 N명(원장님이 정함)까지 · 이름은 김○○
  *   · 6위 이하는 순위표에 안 나오지만, 「내 순위」는 자기 자신에게만 보인다
@@ -8242,7 +8250,11 @@ window.rcInit=async function(){
   h+='<div class="rc-hero"><div class="nm">🏁 '+rcEsc(b.name||'진도 레이스')+(ended?' <span style="font-size:11px;font-weight:800;background:rgba(43,22,0,.16);border-radius:50px;padding:3px 9px;vertical-align:2px">끝났어요</span>':'')+'</div>'
     +'<div class="pr">'+rcEsc(b.from)+' ~ '+rcEsc(b.to)+' · <b>'+(ended?'최종 결과':(left>0?('D-'+left):'오늘 마감!'))+'</b></div>';
   if(demo) h+='<div class="pz" style="background:rgba(255,255,255,.5)">🌱 <b>체험 리그</b> — 상은 없지만, 중학생 형·누나들과 <b>똑같은 잣대</b>로 점수가 쌓여요</div>';
-  else if(b.prizeTotal) h+='<div class="pz">🏆 총상금 '+rcN(b.prizeTotal)+'원 · '+b.prizeCount+'명에게 <span style="opacity:.7;font-weight:700">(1·2·3등 + 꾸준상 + 성장상)</span></div>';
+  else if(b.prizeTotal) h+='<div class="rc-prize">'
+    +'<div class="lb">🏆 이번 시즌 총상금</div>'
+    +'<div class="amt">'+rcN(b.prizeTotal)+'<small>원</small></div>'
+    +'<div class="who"><b>'+b.prizeCount+'명</b>에게 · 1·2·3등 + 꾸준상 + 성장상</div>'
+    +'</div>';
   h+='</div>';
 
   /* 부 전환 탭 — 다른 부의 레이스도 구경할 수 있다 */
@@ -8341,7 +8353,22 @@ window.rcInit=async function(){
   });
   h+='</div><div style="font-size:11px;font-weight:700;color:#94a3b8;margin-top:9px;line-height:1.7">각 리그 안에서도 III → II → I 로 올라가요. 점수가 쌓이면 자동으로 승급!</div></div>';
 
-  h+='<div style="text-align:center;font-size:10.5px;color:#cbd5e1;font-weight:700;padding:4px 0 0">순위는 30분마다 새로 계산돼요</div>';
+  /* v2-52: 「내가 오늘 푼 게 언제 점수에 들어가나?」를 알려준다 (원장님 지시).
+   * 전에는 「순위는 30분마다 새로 계산돼요」뿐이라, 정작 중요한
+   * <b>채점 기록이 들어오는 시각</b>을 몰라 「왜 안 올랐지?」 하게 됐다.
+   * 2026-08-28부터 매쓰플랫 채점 기록을 하루 세 번 가져온다. */
+  h+='<div class="rc-card" style="background:#f8fbff;border-color:#dbeafe">'
+    +'<div class="hd" style="color:#1d4ed8">🕐 점수는 하루 세 번 들어와요</div>'
+    +'<div style="display:flex;gap:7px;margin:2px 0 9px">'
+    + [['새벽','4시'],['오후','4시'],['밤','10시']].map(function(t){
+        return '<div style="flex:1;background:#fff;border:1.5px solid #dbeafe;border-radius:11px;padding:9px 4px;text-align:center">'
+          +'<div style="font-size:11px;font-weight:800;color:#93b4e8">'+t[0]+'</div>'
+          +'<div style="font-size:16px;font-weight:900;color:#1d4ed8;margin-top:1px">'+t[1]+'</div></div>';
+      }).join('')
+    +'</div>'
+    +'<div style="font-size:11.5px;font-weight:700;color:#64748b;line-height:1.75">'
+    +'지금 푼 문제는 <b style="color:#1d4ed8">다음 시각</b>에 점수로 들어와요. '
+    +'바로 안 올라도 걱정 마세요 — 빠짐없이 다 세어집니다 🙂</div></div>';
   body.innerHTML=h+'</div>';
 };
 
