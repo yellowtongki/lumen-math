@@ -288,6 +288,13 @@ async function runHwSync() {
 }
 
 (async () => {
+  // 2026-08-28: 「서버 시험 발송」 — 알림 설정의 📡 버튼 요청이 있으면 시험 알림을 쏘고
+  // 푸시 서비스의 답을 push_test_result에 적는다. 자동 알림이 멈춰 있어도 이건 항상 돈다
+  // (안 뜨는 원인을 가리는 진단 도구이므로).
+  try {
+    const { runPushTest } = require('./push.js');
+    await runPushTest();
+  } catch (e) { log('시험 발송 오류: ' + e.message); }
   // v18-79: 제출 알림 — 2026-08-26 원장님 지시로 중지 (컴퓨터에 알림이 안 떠서 원인 확인 전까지).
   // 재개하려면 아래 PUSH_PAUSED를 false로 바꾸면 된다. 코드·구독·설정은 그대로 남아 있다.
   const PUSH_PAUSED = true;
