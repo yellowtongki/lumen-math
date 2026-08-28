@@ -30,26 +30,45 @@ function arg(n, d) { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 
 const DATA = arg('data'); const SCHOOL = arg('school', '');
 const GRADE = arg('grade'); const SEM = arg('semester'); const TERM = arg('term');
 const OUT = arg('out');
-const ANCHOR = arg('anchor');             // 인근 학교 비교 모드 — 기준(우리 학교) 시험지 id
+const ANCHOR = arg('anchor');             // 비교 모드 — 기준이 되는 시험지 id
 const SCOPE = arg('scope');               // 시험 범위 직접 지정 (--ids 수집분은 범위 정보가 없다)
+// 시험지를 id로 직접 고른다 (학년/학기/중간·기말이 제각각인 시험지를 섞어 볼 때)
+const EXAMS = (arg('exams', '') || '').split(',').map(v => v.trim()).filter(Boolean);
+// 특정 단원 문항만 남긴다 — "2025년 시험 범위에 해당하는 문항만" 골라낼 때
+const UNITS = (arg('units', '') || '').split(',').map(v => v.trim()).filter(Boolean);
+// 계열 이름 표기: school = "옥길중 2025", term = "2025년 2학기 중간"
+const LABEL = arg('label', 'school');
 const EMBED = args.includes('--embed');   // 문항 이미지를 base64로 인라인 (자체 포함 배포본)
 if (!DATA || !GRADE || !SEM || !TERM || !OUT) {
   console.error('필수 인자: --data --grade --semester --term --out'); process.exit(1);
 }
 
+const clean = s => String(s || '').replace(/^\d+ /, '');
+function diffBand(d) { if (d == null) return null; if (d <= 2) return '하'; if (d <= 4) return '중'; if (d <= 6) return '상'; return '최상'; }
+const isEssay = t => t && t !== 'single_choice';
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
 const all = JSON.parse(fs.readFileSync(DATA, 'utf8'));
-const exams = all
-  .filter(e => e.grade === GRADE && e.semester === SEM && e.term === TERM)
-  .sort((a, b) => Number(a.year) - Number(b.year));
+let exams = EXAMS.length
+  ? EXAMS.map(id => all.find(e => String(e.id) === id)).filter(Boolean)
+  : all.filter(e => e.grade === GRADE && e.semester === SEM && e.term === TERM);
+exams.sort((a, b) => Number(a.year) - Number(b.year));
+// 시험 범위에 해당하는 단원의 문항만 남긴다
+if (UNITS.length) {
+  exams.forEach(e => { e.cells = e.cells.filter(c => UNITS.includes(clean(c.chapters[1]))); });
+  exams = exams.filter(e => e.cells.length);
+}
 if (!exams.length) { console.error('해당 조건의 시험지가 없습니다'); process.exit(1); }
 
 // 시험지 제목에서 학교명 뽑기 — "… 부천시 옥길중 중2공통 …" / "… 부천시 옥길중학교 중3공 …"
 const schoolOf = t => (String(t).match(/(?:시|군|구)\s+(\S+?중)(?:학교)?\s/) || [])[1] || SCHOOL;
 const PEER = !!ANCHOR;                    // 인근 학교 비교 모드 여부
+const termLabel = e => `${e.year}년 ${e.semester}학기 ${e.term}`;
 exams.forEach(e => {
   e.school = schoolOf(e.title);
-  e.key = PEER ? `${e.school} ${e.year}` : String(e.year);
-  e.label = PEER ? `${e.school} ${e.year}년` : `${e.year}년`;
+  if (!PEER) { e.key = String(e.year); e.label = `${e.year}년`; }
+  else if (LABEL === 'term') { e.key = termLabel(e); e.label = termLabel(e); }
+  else { e.key = `${e.school} ${e.year}`; e.label = `${e.school} ${e.year}년`; }
 });
 // 기준 시험지 — 비교 모드면 --anchor, 아니면 가장 최근 연도
 const anchorExam = (PEER && exams.find(e => String(e.id) === String(ANCHOR))) || exams[exams.length - 1];
@@ -60,6 +79,8 @@ if (PEER) {
 }
 const anchorKey = anchorExam.key;
 const isAnchor = k => k === anchorKey;
+// 비교 대상이 모두 우리 학교면 "과거 기출 비교", 아니면 "인근 학교 비교"
+const OWN = PEER && new Set(exams.map(e => e.school)).size === 1;
 
 // 이미지 인라인용 — 다운로드된 로컬 파일을 base64 data URI로
 let IMGMAP = {};
@@ -79,10 +100,6 @@ function imgSrc(url) {
   return url;   // 임베드 안 하면 CDN 원주소(로그인 필요)
 }
 
-const clean = s => String(s || '').replace(/^\d+ /, '');
-function diffBand(d) { if (d == null) return null; if (d <= 2) return '하'; if (d <= 4) return '중'; if (d <= 6) return '상'; return '최상'; }
-const isEssay = t => t && t !== 'single_choice';
-const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 // ── 집계 ──────────────────────────────────────────────
 // keys = 그래프의 계열(비교 모드에서는 "학교 연도", 기본 모드에서는 연도)
@@ -215,6 +232,12 @@ const CONCEPTS = {
   '사각형 사이의 관계2 (사각형 사이의 관계)': '사각형들의 포함 관계를 묻는다. 정사각형은 직사각형이면서 마름모이고, 직사각형과 마름모는 모두 평행사변형이며, 평행사변형은 사다리꼴이다. "항상 옳은가"를 묻는 참·거짓 문제로 나오므로, 틀린 보기에 대해 반례를 떠올리는 연습이 중요하다(예: 마름모라고 해서 직사각형인 것은 아니다).',
   '정사각형2 (뜻과 성질의 활용)': '정사각형은 네 변의 길이가 모두 같고 네 각이 모두 직각이므로, 직사각형의 성질과 마름모의 성질을 모두 갖는다. 따라서 두 대각선은 길이가 같으면서 서로를 수직이등분한다. 정사각형 안에서 합동인 삼각형을 찾아 각도나 길이를 구하는 문제가 대표적이다.',
   '피타고라스 정리1 (직각삼각형을 이용한 변의 길이)': '직각삼각형에서 (빗변)² = (다른 두 변의 제곱의 합). 빗변이 어느 변인지 — 직각과 마주 보는 변 — 를 먼저 확정하는 것이 실수를 막는 핵심이다. 3:4:5, 5:12:13, 8:15:17 같은 정수비를 외워 두면 계산이 훨씬 빨라진다.',
+  '삼각형의 닮음 조건3 (SAS닮음)': '두 쌍의 대응변의 길이의 비가 같고, 그 <끼인각>의 크기가 같으면 두 삼각형은 닮음이다(SAS닮음). 끼인각이 아닌 각이 같다고 해서는 성립하지 않으니 반드시 확인할 것. 실제 문제에서는 공통인 각이나 맞꼭지각이 그 끼인각 역할을 하는 경우가 대부분이다.',
+  '직각삼각형의 닮음3 (직각을 낀 변의 길이의 제곱)': '직각삼각형에서 직각인 꼭짓점에서 빗변에 수선을 내리면 큰 삼각형과 작은 삼각형 두 개가 모두 닮음이 된다. 여기서 세 관계식이 나온다 — (직각을 낀 한 변)² = (빗변) × (그 변 쪽 빗변 조각), (수선의 길이)² = (빗변의 두 조각의 곱). 그림과 함께 통째로 외워 두면 바로 대입해서 풀 수 있다.',
+  '넓이의 비2 (사각형에서 삼각형의 닮음비 이용)': '닮음비가 m:n이면 넓이의 비는 m²:n²이다. 사다리꼴이나 평행사변형에서 대각선·평행선으로 생긴 두 삼각형이 AA닮음임을 먼저 찾고, 대응변의 비로 닮음비를 구한 뒤 제곱해 넓이의 비를 얻는다. "높이가 같은 두 삼각형은 밑변의 비 = 넓이의 비"도 함께 쓰인다.',
+  '평행사변형의 정의1 (기본)': '평행사변형의 정의는 "두 쌍의 대변이 각각 평행". 여기서 세 가지 성질이 따라 나온다 — 두 쌍의 대변의 길이가 같다, 두 쌍의 대각의 크기가 같다, 두 대각선이 서로 다른 것을 이등분한다. 이웃한 두 각의 합이 180°라는 것도 각을 구할 때 자주 쓴다. 가장 기본 유형이니 실수 없이 득점해야 한다.',
+  '피타고라스 정리8 (조건에 따른 변의 길이)': '직각삼각형이 두 개 이상 겹쳐 있는 그림에서 나온다. 두 삼각형이 함께 쓰는 <공통인 변>을 다리로 삼아 피타고라스 정리를 두 번 적용하는 것이 정석이다. 구하려는 길이를 x로 놓고, 같은 선분을 두 가지 식으로 표현해 방정식을 세운다. 종이접기 문제도 접힌 변의 길이가 같다는 점을 이용한 같은 방식이다.',
+  '피타고라스 정리9 (변의 길이에 따른 삼각형의 종류)': '세 변 중 <가장 긴 변>을 c, 나머지를 a·b라 할 때 — c² = a²+b² 이면 직각삼각형, c² < a²+b² 이면 예각삼각형, c² > a²+b² 이면 둔각삼각형이다. 가장 긴 변을 먼저 찾는 것이 실수를 막는 핵심. 애초에 삼각형이 되는지(가장 긴 변 < 나머지 두 변의 합)도 함께 확인한다.',
   '닮음의 성질 활용2 (입체도형)': '닮음비가 m:n이면 겉넓이의 비는 m²:n², 부피의 비는 m³:n³ 이다. 원뿔이나 각뿔을 밑면에 평행하게 자른 문제가 단골 — 잘라 낸 위쪽 작은 뿔과 원래 뿔이 닮음이므로 그 비로 부피를 구한 뒤, 전체에서 빼서 뿔대의 부피를 얻는다.',
 };
 
@@ -228,7 +251,9 @@ const mineRepN = repRep.filter(r => r.mine).length;
 const highlights = [
   `<b>${esc(topUnit)}</b> 단원이 가장 큰 비중${topShare ? ` — ${PEER ? esc(SCHOOL) + ' ' : ''}${latest}년 배점의 <b>${topShare}%</b>` : ''}`,
   PEER
-    ? `${exams.length}개 시험지 중 <b>2곳 이상</b>에서 반복된 세부유형 <b>${repeated.length}개</b> (그중 ${esc(SCHOOL)}에 실제 출제된 것 <b>${mineRepN}개</b>)`
+    ? (OWN
+        ? `${esc(SCHOOL)} 시험지 <b>2회 이상</b>에 반복된 세부유형 <b>${repeated.length}개</b> (그중 ${esc(latest)}년 ${esc(TERM)}고사에 나온 것 <b>${mineRepN}개</b>)`
+        : `${exams.length}개 시험지 중 <b>2곳 이상</b>에서 반복된 세부유형 <b>${repeated.length}개</b> (그중 ${esc(SCHOOL)}에 실제 출제된 것 <b>${mineRepN}개</b>)`)
     : `${keys.length}개년 모두 출제된 세부유형 <b>${repeated.length}개</b> — 올해도 나올 가능성이 가장 높은 목록`,
   (myEssays.length ? myEssays : essays).length
     ? `서술형은 <b>${esc(essayUnits[0])}</b>${essayUnits.length > 1 ? ' 등' : ''}에서 반복 출제`
@@ -299,7 +324,7 @@ const repCards = repeated.map((t, i) => {
   const meta = t.items.some(it => it.essay) ? ' <span class="pill p-es">서술형 출제</span>' : '';
   // 비교 모드: "우리 학교 출제" 여부와 몇 개 학교에서 나왔는지를 배지로
   const peerMeta = PEER
-    ? `${hasAnchor(t) ? `<span class="pill p-me">★ ${esc(SCHOOL)} 출제</span>` : ''}<span class="pill p-nx">${nExams(t)}개 시험지</span>`
+    ? `${hasAnchor(t) ? `<span class="pill p-me">★ ${OWN ? esc(latest) + '년 출제' : esc(SCHOOL) + ' 출제'}</span>` : ''}<span class="pill p-nx">${nExams(t)}개 시험지</span>`
     : '';
   const maxD = Math.max(...t.items.map(it => it.diff || 0));
   let imgs = '';
@@ -326,7 +351,7 @@ const strategyRows = repRep.map((r, i) => `<tr>
   <td><span class="repno sm">${i + 1}</span></td>
   <td><b>${esc(r.name)}</b></td>
   <td>${esc(r.unit)}</td>${PEER ? `
-  <td>${r.mine ? `<span class="pill p-me">★ ${esc(SCHOOL)}</span>` : ''}<span class="pill p-nx">${r.nEx}개 시험지</span></td>` : ''}
+  <td>${r.mine ? `<span class="pill p-me">★ ${OWN ? esc(latest) + '년' : esc(SCHOOL)}</span>` : ''}<span class="pill p-nx">${r.nEx}개 시험지</span></td>` : ''}
   <td>${r.score ? r.score + '점' : '-'}</td>
   <td>${bandPill(diffBand(r.diff))}</td>
   <td>${r.time ? r.time + '분' : '-'}${r.essay ? ' <span class="pill p-es">서술형</span>' : ''}</td>
@@ -360,16 +385,25 @@ const title = `${SCHOOL} ${GRADE} ${SEM}학기 ${TERM}고사`;
 
 // 표지 부제 · 자료 출처 안내
 const peerNames = exams.filter(e => e !== anchorExam).map(e => e.label);
-const coverSub = PEER
-  ? `${esc(SCHOOL)} ${latest}년 기출 + 인근 ${new Set(exams.filter(e => e !== anchorExam).map(e => e.school)).size}개교 ${peerNames.length}회분 · 총 ${totalN}문항 분석`
-  : `${keys.map(k => k + '년').join(' · ')} 실제 기출 ${exams.length}회분 · ${totalN}문항 완전 분석`;
-const srcBox = PEER ? `<div class="srcbox">
+const coverSub = !PEER
+  ? `${keys.map(k => k + '년').join(' · ')} 실제 기출 ${exams.length}회분 · ${totalN}문항 완전 분석`
+  : OWN
+    ? `${esc(SCHOOL)} 기출 ${exams.length}회분에서 이 시험 범위 문항 ${totalN}개 분석`
+    : `${esc(SCHOOL)} ${latest}년 기출 + 인근 ${new Set(exams.filter(e => e !== anchorExam).map(e => e.school)).size}개교 ${peerNames.length}회분 · 총 ${totalN}문항 분석`;
+const srcBox = !PEER ? '' : OWN ? `<div class="srcbox">
+  <b>📌 이 자료를 읽는 법</b><br>
+  ${esc(SCHOOL)}은 해에 따라 이 범위를 <b>2학기 중간</b>에 내기도 하고 <b>2학기 기말</b>에 내기도 했습니다.
+  그래서 ${esc(latest)}년 ${esc(SEM)}학기 ${esc(TERM)}고사 범위에 해당하는 문항을
+  <b>${esc(peerNames.join(', '))}</b> 시험지에서도 모두 골라내 함께 분석했습니다.<br>
+  <b>여기 나오는 문제는 전부 ${esc(SCHOOL)}이 실제로 낸 문제</b>이고,
+  <b>★ 표시가 ${esc(latest)}년 ${esc(SEM)}학기 ${esc(TERM)}고사</b>입니다.
+</div>` : `<div class="srcbox">
   <b>📌 이 자료를 읽는 법</b><br>
   ${esc(SCHOOL)}의 ${GRADE} ${SEM}학기 ${TERM}고사 기출은 현행 교육과정 기준으로 <b>${latest}년 1회분</b>만 확보돼 있습니다.
   (그 이전 시험지는 교육과정이 달라 시험 범위 자체가 다릅니다.)<br>
   그래서 같은 학군의 <b>${esc(peerNames.join(', '))}</b> 같은 시험을 함께 분석했습니다.
   <b>★ 표시가 ${esc(SCHOOL)} 실제 기출</b>이고, 나머지는 "이 범위에서 어떤 유형이 반복되는가"를 보는 근거입니다.
-</div>` : '';
+</div>`;
 
 const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -481,7 +515,9 @@ td.me{color:var(--s1);font-weight:800}
   <div class="hl"><h2>한눈에 보기</h2><ul>${highlights.map(h => `<li>${h}</li>`).join('')}</ul></div>
 ${srcBox ? '\n  ' + srcBox + '\n' : ''}
   <div class="sec"><div class="shead"><span class="snum">01</span><h2 class="st">시험 개요</h2></div>
-    <div class="desc">${PEER ? `분석에 쓴 시험지 ${exams.length}회분의 문항 구성입니다. <b>★</b>가 ${esc(SCHOOL)} 기출입니다.` : `최근 ${exams.length}개년 실제 시험지의 문항 구성입니다.`}</div>
+    <div class="desc">${!PEER ? `최근 ${exams.length}개년 실제 시험지의 문항 구성입니다.`
+      : OWN ? `분석에 쓴 ${esc(SCHOOL)} 시험지 ${exams.length}회분입니다. 기말 시험지는 <b>이 시험 범위에 해당하는 문항만</b> 세었습니다. <b>★</b>가 기준이 되는 ${esc(latest)}년 시험입니다.`
+      : `분석에 쓴 시험지 ${exams.length}회분의 문항 구성입니다. <b>★</b>가 ${esc(SCHOOL)} 기출입니다.`}</div>
     <div class="tiles">${tiles}</div>
     ${scopeTxt ? `<div class="note">시험 범위 (${esc(latest)}년 기준)</div><div class="scope">${scopeTxt}</div>` : ''}
   </div>
@@ -498,7 +534,9 @@ ${srcBox ? '\n  ' + srcBox + '\n' : ''}
 
   <div class="sec"><div class="shead"><span class="snum">04</span><h2 class="st">${PEER ? '반복 출제되는 세부유형' : '매년 반복 출제된 세부유형'}</h2></div>
     <div class="desc">${PEER
-      ? `분석한 ${exams.length}개 시험지 중 <b>2곳 이상</b>에 등장한 유형입니다. <b>★ ${esc(SCHOOL)} 출제</b> 배지가 붙은 것이 우리 학교에 실제로 나왔던 유형 — 여기부터 보세요.`
+      ? (OWN
+          ? `${esc(SCHOOL)} 시험지 <b>2회 이상</b>에 등장한 유형입니다. <b>★</b> 배지가 붙은 것이 ${esc(latest)}년 ${esc(SEM)}학기 ${esc(TERM)}고사에 실제로 나왔던 유형 — 여기부터 보세요.`
+          : `분석한 ${exams.length}개 시험지 중 <b>2곳 이상</b>에 등장한 유형입니다. <b>★ ${esc(SCHOOL)} 출제</b> 배지가 붙은 것이 우리 학교에 실제로 나왔던 유형 — 여기부터 보세요.`)
       : `분석한 ${exams.length}개년 <b>모두</b>에 등장한 유형입니다. 실제 기출 문제와 함께 확인하세요 — 올해도 나올 가능성이 가장 높은 목록입니다.`}</div>
     ${repCards || '<div class="desc">반복 유형 없음</div>'}
   </div>
@@ -512,20 +550,24 @@ ${srcBox ? '\n  ' + srcBox + '\n' : ''}
   ${hardRows ? `<div class="sec"><div class="shead"><span class="snum">06</span><h2 class="st">고난도 문항 — 변별력이 갈리는 자리</h2></div>
     <div class="desc">난이도 상 이상 문항이 출제된 위치입니다. 상위권 목표라면 이 유형을 집중 대비하세요.</div>
     <table><tr><th>${PEER ? '출처' : '연도'}</th><th>번호</th><th>단원</th><th>세부유형</th><th>비고</th></tr>${hardRows}</table>
-    ${PEER ? '<div class="note">※ 인근 학교는 시험 범위가 조금씩 다릅니다. ' + esc(SCHOOL) + ' 범위 밖 단원이 섞여 있을 수 있으니 <b>★ ' + esc(SCHOOL) + '</b> 행을 먼저 보세요.</div>' : ''}
+    ${!PEER ? '' : OWN
+      ? '<div class="note">※ ' + esc(latest) + '년 시험 범위에 해당하는 문항만 모았습니다. <b>★</b> 가 ' + esc(latest) + '년 ' + esc(SEM) + '학기 ' + esc(TERM) + '고사입니다.</div>'
+      : '<div class="note">※ 인근 학교는 시험 범위가 조금씩 다릅니다. ' + esc(SCHOOL) + ' 범위 밖 단원이 섞여 있을 수 있으니 <b>★ ' + esc(SCHOOL) + '</b> 행을 먼저 보세요.</div>'}
     ${hardImgs ? `<div class="probs" style="padding:14px 0 0">${hardImgs}</div>` : ''}</div>` : ''}
 
   ${essayRows ? `<div class="sec"><div class="shead"><span class="snum">07</span><h2 class="st">서술형 출제 위치</h2></div>
     <div class="desc">풀이 과정을 채점하는 서술형이 나온 자리입니다. 답만 맞히는 연습으로는 부족합니다.</div>
     <table><tr><th>${PEER ? '출처' : '연도'}</th><th>번호</th><th>단원</th><th>세부유형</th><th>난이도·배점</th></tr>${essayRows}</table>
-    ${PEER ? '<div class="note">※ 인근 학교는 시험 범위가 조금씩 다릅니다. ' + esc(SCHOOL) + ' 범위 밖 단원이 섞여 있을 수 있으니 <b>★ ' + esc(SCHOOL) + '</b> 행을 먼저 보세요.</div>' : ''}
+    ${!PEER ? '' : OWN
+      ? '<div class="note">※ ' + esc(latest) + '년 시험 범위에 해당하는 문항만 모았습니다. <b>★</b> 가 ' + esc(latest) + '년 ' + esc(SEM) + '학기 ' + esc(TERM) + '고사입니다.</div>'
+      : '<div class="note">※ 인근 학교는 시험 범위가 조금씩 다릅니다. ' + esc(SCHOOL) + ' 범위 밖 단원이 섞여 있을 수 있으니 <b>★ ' + esc(SCHOOL) + '</b> 행을 먼저 보세요.</div>'}
     ${essayImgs ? `<div class="probs" style="padding:14px 0 0">${essayImgs}</div>` : ''}</div>` : ''}
 
   <div class="sec"><div class="shead"><span class="snum">08</span><h2 class="st">시험 대비 요점정리 ① — 공부 우선순위</h2></div>
     <div class="desc">${PEER ? '반복 출제되는 유형만 모았습니다. ★ 표시(우리 학교 출제) 유형부터 잡는 것이 가장 효율적입니다.' : '매년 빠짐없이 나온 유형만 모았습니다. 여기부터 완벽히 잡는 것이 가장 효율적입니다.'}</div>
-    ${repPct != null ? `<div class="hlstat">${PEER ? `여러 학교에서 반복된 <b>${repeated.length}개 유형</b> 가운데 ${esc(SCHOOL)} ${esc(latest)}년 시험에 <b>${repScoreLatest}점</b>` : `매년 반복된 <b>${repeated.length}개 유형</b>에서 ${esc(latest)}년 시험 <b>${repScoreLatest}점</b>`}${repPct ? `(전체의 <b>${repPct}%</b>)` : ''}이 출제됐습니다. <b>이것부터</b> 잡으세요.</div>` : ''}
+    ${repPct != null ? `<div class="hlstat">${PEER ? `${OWN ? esc(SCHOOL) + '이 반복해서 낸' : '여러 학교에서 반복된'} <b>${repeated.length}개 유형</b> 가운데 ${esc(SCHOOL)} ${esc(latest)}년 시험에 <b>${repScoreLatest}점</b>` : `매년 반복된 <b>${repeated.length}개 유형</b>에서 ${esc(latest)}년 시험 <b>${repScoreLatest}점</b>`}${repPct ? `(전체의 <b>${repPct}%</b>)` : ''}이 출제됐습니다. <b>이것부터</b> 잡으세요.</div>` : ''}
     <table><tr><th>번호</th><th>유형</th><th>단원</th>${PEER ? '<th>출제</th>' : ''}<th>배점</th><th>난이도</th><th>예상 풀이시간</th></tr>${strategyRows}</table>
-    <div class="note">배점·난이도·풀이시간은 ${PEER ? `${esc(SCHOOL)} ${esc(latest)}년 기출(우리 학교에 없던 유형은 인근 학교 기출)` : `${esc(latest)}년 기출`} 기준입니다. 번호는 아래 개념 정리·반복유형 카드와 같습니다.</div>
+    <div class="note">배점·난이도·풀이시간은 ${!PEER ? `${esc(latest)}년 기출` : `${esc(latest)}년 ${esc(SEM)}학기 ${esc(TERM)}고사 기준(그 시험에 없던 유형은 ${OWN ? '다른 해 기출' : '인근 학교 기출'})`} 기준입니다. 번호는 아래 개념 정리·반복유형 카드와 같습니다.</div>
   </div>
 
   <div class="sec"><div class="shead"><span class="snum">09</span><h2 class="st">시험 대비 요점정리 ② — 유형별 핵심 개념</h2></div>
@@ -535,13 +577,13 @@ ${srcBox ? '\n  ' + srcBox + '\n' : ''}
 
   <div class="final"><h2>💡 루멘수학 대비 포인트</h2><ul>
     <li><b>${esc(topUnit)}</b> 단원을 가장 먼저, 가장 깊게 — 배점 비중이 제일 큽니다.</li>
-    <li>위 <b>반복 유형 ${repeated.length}개</b>는 유사 문제까지 반드시 연습합니다.${PEER ? ` 그중 <b>★ ${esc(SCHOOL)} 출제 ${mineRepN}개</b>가 1순위입니다.` : ''}</li>
+    <li>위 <b>반복 유형 ${repeated.length}개</b>는 유사 문제까지 반드시 연습합니다.${PEER ? ` 그중 <b>★ ${OWN ? esc(latest) + '년 출제' : esc(SCHOOL) + ' 출제'} ${mineRepN}개</b>가 1순위입니다.` : ''}</li>
     ${essays.length ? `<li>서술형 대비: <b>${esc(essayUnits.join(', '))}</b>은 풀이 과정을 쓰는 연습까지.</li>` : ''}
     <li>위 <b>요점정리 ①·②</b>대로 우선순위를 잡고, 반복 유형은 유사 문제까지 반복 연습하세요.</li>
   </ul></div>
 
   <div class="foot">
-    루멘수학 내부 제작 자료 · ${PEER ? `${esc(SCHOOL)} ${esc(latest)}년 기출 + 인근 학교(${esc(peerNames.join(', '))}) 기출 근거` : `${keys.map(k => k + '년').join('·')} ${esc(SCHOOL)} 기출 근거`} · ${today}<br>
+    루멘수학 내부 제작 자료 · ${PEER ? (OWN ? `${esc(SCHOOL)} 기출 ${exams.length}회분(${esc(keys.join(', '))}) 근거` : `${esc(SCHOOL)} ${esc(latest)}년 기출 + 인근 학교(${esc(peerNames.join(', '))}) 기출 근거`) : `${keys.map(k => k + '년').join('·')} ${esc(SCHOOL)} 기출 근거`} · ${today}<br>
     학원 수강생 및 학부모 안내용입니다. 무단 재배포는 삼가 주세요.
   </div>
 </div>
@@ -573,7 +615,7 @@ if (ANALYSIS) {
   const conceptOf = n => (typeof CONCEPTS[n] === 'string' ? CONCEPTS[n] : (CONCEPTS[n] || {}).text) || null;
   const conceptSrcOf = n => (CONCEPTS[n] && typeof CONCEPTS[n] === 'object' && CONCEPTS[n].src) || null;
   fs.writeFileSync(ANALYSIS, JSON.stringify({
-    school: SCHOOL, grade: GRADE, semester: SEM, term: TERM, peer: PEER, title, today,
+    school: SCHOOL, grade: GRADE, semester: SEM, term: TERM, peer: PEER, own: OWN, title, today,
     anchorLabel: anchorExam.label, anchorYear: latest,
     scope: SCOPE || (anchorExam.scopes || []).join(' / ') || null,
     peerNames, exams: perExam, keys, labels: keys.map(k => labelOf[k]),

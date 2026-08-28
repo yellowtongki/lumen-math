@@ -14,7 +14,7 @@
  * 옵션:
  *   --theme brand|navy   brand(기본) = 루멘수학 로고 색(붉은색·네이비·골드), navy = 파란 계열
  *   --only-mine   반복 유형이 많을 때 "우리 학교 출제(★)" 유형만 낱장 슬라이드로 만든다
- *                 (지정 안 하면 유형이 12개를 넘을 때 자동 적용)
+ *                 (지정 안 하면 유형이 16개를 넘을 때 자동 적용)
  *
  * 문항 이미지는 exam_image_fetch.js 가 내려받아 둔 sync/_debug/exam_images/ 를 쓴다.
  * 이미지가 없으면 그 자리를 비우고 개념 설명만 넣는다(에러 없이 진행).
@@ -44,7 +44,7 @@ const P = THEME === 'navy'
       dark: '14274E', dark2: '24549E', onDark: 'C9D8F2', big: 'C9D8F2',
       head: '14274E', acc: '2A78D6', acc2: 'EB6834',
       soft: 'F2F5FA', mine: 'E9F1FD', line: 'E3E7EE',
-      series: ['2A78D6', 'EB6834', '7C5CD6', '0F9D76'],
+      series: ['2A78D6', 'EB6834', '7C5CD6', '0F9D76', 'C2185B', '5B7083'],
       cards: ['2A78D6', 'EB6834', '0F9D76'],
       badge: '24549E',
       bandFg: { 하: '0F7A48', 중: '9C6200', 상: 'CC2222' },
@@ -55,7 +55,7 @@ const P = THEME === 'navy'
       dark: 'C63D2E', dark2: 'A5301F', onDark: 'F5C7BC', big: 'F2B733',
       head: '1E3A5C', acc: 'C63D2E', acc2: 'D99A1F',
       soft: 'F8F5F2', mine: 'FBEAE6', line: 'E8E2DD',
-      series: ['C63D2E', '1E3A5C', 'D99A1F', '4E7A5E'],
+      series: ['C63D2E', '1E3A5C', 'D99A1F', '4E7A5E', '8A5A8C', '7C8A96'],
       cards: ['C63D2E', '1E3A5C', 'D99A1F'],
       badge: '1E3A5C',   // 붉은 바탕 위에서도 번호가 또렷하게 보이도록 로고의 네이비를 쓴다
       bandFg: { 하: '2F6B45', 중: '8A6314', 상: '9E2B1C' },
@@ -67,7 +67,7 @@ const SOFT = P.soft, MINE = P.mine, LINE = P.line;
 const INK = '101418', INK2 = '4B5563', MUT = '8A92A0';
 const WHITE = 'FFFFFF';
 const SERIES = P.series;
-const DPAL = [...P.series, 'C2185B', '8A92A0', '3E7CB1'];   // 도넛(단원 수가 많을 때)
+const DPAL = [...P.series, '3E7CB1', 'B07A3A'];   // 도넛(단원 수가 많을 때)
 const FONT = '맑은 고딕';                 // 한국어 윈도우 기본 글꼴
 const W = 13.333, H = 7.5;               // LAYOUT_WIDE
 const M = 0.6;                           // 기본 여백
@@ -165,9 +165,11 @@ const coverTitle = gradeNum
     x: M, y: 2.82, w: 11.5, h: 0.95, isTextBox: true, margin: 0,
     fontFace: FONT, fontSize: 46, bold: true, color: P.big,
   });
-  const sub = A.peer
-    ? `${A.school} ${A.anchorYear}년 기출 + 인근 학교 ${A.peerNames.length}회분 · 총 ${A.totalN}문항 분석`
-    : `${A.labels.join(' · ')} 실제 기출 ${A.exams.length}회분 · ${A.totalN}문항 분석`;
+  const sub = !A.peer
+    ? `${A.labels.join(' · ')} 실제 기출 ${A.exams.length}회분 · ${A.totalN}문항 분석`
+    : A.own
+      ? `${A.school} 기출 ${A.exams.length}회분에서 이 시험 범위 문항 ${A.totalN}개 분석`
+      : `${A.school} ${A.anchorYear}년 기출 + 인근 학교 ${A.peerNames.length}회분 · 총 ${A.totalN}문항 분석`;
   s.addText(sub, {
     x: M, y: 3.95, w: 11.5, h: 0.4, isTextBox: true, margin: 0,
     fontFace: FONT, fontSize: 17, color: ICE,
@@ -192,9 +194,11 @@ const coverTitle = gradeNum
     {
       big: `${A.repeated.length}개`,
       lab: A.peer ? '반복 출제 유형' : '매년 나온 유형',
-      txt: A.peer
-        ? `2개 이상 시험지에 반복\n그중 ★ ${A.school} 출제 ${A.mineRepN}개`
-        : `분석한 모든 연도에 빠짐없이 출제\n올해도 나올 가능성이 가장 높다`,
+      txt: !A.peer
+        ? `분석한 모든 연도에 빠짐없이 출제\n올해도 나올 가능성이 가장 높다`
+        : A.own
+          ? `${A.school} 시험지 2회 이상에 반복\n그중 ★ ${A.anchorYear}년 출제 ${A.mineRepN}개`
+          : `2개 이상 시험지에 반복\n그중 ★ ${A.school} 출제 ${A.mineRepN}개`,
       col: P.cards[1],
     },
     {
@@ -228,42 +232,46 @@ const coverTitle = gradeNum
 
 // ── 3. 시험 개요 ───────────────────────────────────────
 {
-  const s = contentSlide('시험 개요', A.peer
-    ? `분석에 쓴 시험지 ${A.exams.length}회분 — ★ 가 ${A.school} 실제 기출입니다`
-    : `최근 ${A.exams.length}개년 실제 시험지의 문항 구성`);
+  const s = contentSlide('시험 개요', !A.peer
+    ? `최근 ${A.exams.length}개년 실제 시험지의 문항 구성`
+    : A.own
+      ? `${A.school} 기출 ${A.exams.length}회분 — 기말 시험지는 이 범위 문항만 세었습니다. ★ 가 ${A.anchorYear}년 시험입니다`
+      : `분석에 쓴 시험지 ${A.exams.length}회분 — ★ 가 ${A.school} 실제 기출입니다`);
   const n = A.exams.length;
   const gap = 0.28, tw = (W - M * 2 - gap * (n - 1)) / n;
   A.exams.forEach((e, i) => {
     const x = M + i * (tw + gap);
-    card(s, x, 1.85, tw, 2.85, e.anchor ? MINE : SOFT);
+    card(s, x, 1.85, tw, 3.25, e.anchor ? MINE : SOFT);
     s.addText((e.anchor ? '★ ' : '') + e.label, {
-      x: x + 0.24, y: 2.05, w: tw - 0.48, h: 0.36, isTextBox: true, margin: 0,
-      fontFace: FONT, fontSize: 15, bold: true, color: e.anchor ? BLUE : INK2,
+      x: x + 0.24, y: 2.02, w: tw - 0.48, h: 0.62, isTextBox: true, margin: 0,
+      fontFace: FONT, fontSize: 13.5, bold: true, color: e.anchor ? BLUE : INK2, valign: 'top',
     });
     s.addText([{ text: String(e.n), options: { fontSize: 40, bold: true, color: HEAD } },
                { text: ' 문항', options: { fontSize: 15, color: INK2 } }], {
-      x: x + 0.24, y: 2.5, w: tw - 0.48, h: 0.9, isTextBox: true, margin: 0,
+      x: x + 0.24, y: 2.7, w: tw - 0.48, h: 0.9, isTextBox: true, margin: 0,
       fontFace: FONT, valign: 'middle',
     });
     s.addText(`객관식 ${e.choice} · 서술형 ${e.essay}${e.total ? `\n${e.total}점 만점` : ''}`, {
-      x: x + 0.24, y: 3.5, w: tw - 0.48, h: 0.95, isTextBox: true, margin: 0,
-      fontFace: FONT, fontSize: 14, color: INK2, lineSpacingMultiple: 1.3,
+      x: x + 0.24, y: 3.68, w: tw - 0.48, h: 1.2, isTextBox: true, margin: 0,
+      fontFace: FONT, fontSize: 13, color: INK2, lineSpacingMultiple: 1.3,
     });
   });
   if (A.scope) {
-    card(s, M, 5.1, W - M * 2, 1.3, SOFT);
+    card(s, M, 5.35, W - M * 2, 1.25, SOFT);
     s.addText(`시험 범위 (${A.school} ${A.anchorYear}년 기준)`, {
-      x: M + 0.3, y: 5.28, w: W - M * 2 - 0.6, h: 0.3, isTextBox: true, margin: 0,
+      x: M + 0.3, y: 5.5, w: W - M * 2 - 0.6, h: 0.3, isTextBox: true, margin: 0,
       fontFace: FONT, fontSize: 12.5, bold: true, color: MUT,
     });
     s.addText(A.scope, {
-      x: M + 0.3, y: 5.62, w: W - M * 2 - 0.6, h: 0.55, isTextBox: true, margin: 0,
+      x: M + 0.3, y: 5.83, w: W - M * 2 - 0.6, h: 0.5, isTextBox: true, margin: 0,
       fontFace: FONT, fontSize: 17, bold: true, color: INK,
     });
   }
-  if (A.peer) s.addText(`※ ${A.school} 기출은 현행 교육과정 기준 ${A.anchorYear}년 1회분만 있습니다. 같은 학군 ${A.peerNames.join(', ')} 시험을 함께 분석했습니다.`, {
-    x: M, y: 6.62, w: W - M * 2, h: 0.4, isTextBox: true, margin: 0,
-    fontFace: FONT, fontSize: 12, color: MUT,
+  if (A.peer) s.addText(A.own
+    ? `※ ${A.school}은 해에 따라 이 범위를 2학기 중간에 내기도, 기말에 내기도 했습니다. 그래서 ${A.peerNames.join(', ')} 시험지에서도 이 범위 문항을 모두 골라내 함께 분석했습니다.`
+    : `※ ${A.school} 기출은 현행 교육과정 기준 ${A.anchorYear}년 1회분만 있습니다. 같은 학군 ${A.peerNames.join(', ')} 시험을 함께 분석했습니다.`, {
+    x: M, y: 6.74, w: W - M * 2, h: 0.55, isTextBox: true, margin: 0,
+    fontFace: FONT, fontSize: 11.5, color: MUT,
   });
 }
 
@@ -334,7 +342,7 @@ if (A.unitScoreTotal >= 90) {
 
 // ── 7. 섹션 표지 — 반복 유형 ───────────────────────────
 const mineTypes = A.repeated.filter(r => r.mine);
-const useOnlyMine = ONLY_MINE || (A.peer && A.repeated.length > 12 && mineTypes.length >= 5);
+const useOnlyMine = ONLY_MINE || (A.peer && A.repeated.length > 16 && mineTypes.length >= 5);
 const slideTypes = useOnlyMine ? mineTypes : A.repeated;
 const restTypes = useOnlyMine ? A.repeated.filter(r => !r.mine) : [];
 {
@@ -369,8 +377,8 @@ slideTypes.forEach((t, i) => {
   // 배지 줄 — 단원 · 출제 · 배점 · 난이도 · 시간
   let px = M;
   px = addPill(s, px, 1.2, t.unit, 'EEF1F6', INK2, 12);
-  if (A.peer && t.mine) px = addPill(s, px, 1.2, `★ ${A.school} 출제`, BLUE, WHITE, 12);
-  if (A.peer) px = addPill(s, px, 1.2, `${t.nEx}개 시험지`, 'EEF1F6', INK2, 12);
+  if (A.peer && t.mine) px = addPill(s, px, 1.2, A.own ? `★ ${A.anchorYear}년 출제` : `★ ${A.school} 출제`, BLUE, WHITE, 12);
+  if (A.peer) px = addPill(s, px, 1.2, `${t.nEx}회 출제`, 'EEF1F6', INK2, 12);
   const rep = t.rep || {};
   if (rep.score) px = addPill(s, px, 1.2, `${rep.score}점`, 'EEF1F6', INK2, 12);
   const band = bandOf(rep.diff);
@@ -425,7 +433,9 @@ slideTypes.forEach((t, i) => {
 
 // ── 9. (낱장에서 뺀) 나머지 반복 유형 목록 ──────────────
 if (restTypes.length) {
-  const s = contentSlide('그 밖에 이 범위에서 자주 나오는 유형', `${A.school}에는 아직 안 나왔지만 인근 학교에서 반복된 유형입니다 — 올해 나올 수 있습니다`);
+  const s = contentSlide('그 밖에 이 범위에서 자주 나오는 유형', A.own
+    ? `${A.anchorYear}년 시험에는 없었지만 ${A.school}이 다른 해에 반복해서 낸 유형입니다 — 올해 나올 수 있습니다`
+    : `${A.school}에는 아직 안 나왔지만 인근 학교에서 반복된 유형입니다 — 올해 나올 수 있습니다`);
   const rows = [[
     { text: '유형', options: { bold: true, color: MUT, fontSize: 12 } },
     { text: '단원', options: { bold: true, color: MUT, fontSize: 12 } },
@@ -437,7 +447,7 @@ if (restTypes.length) {
     rows.push([
       { text: t.name, options: { bold: true, color: INK, fontSize: 13 } },
       { text: t.unit, options: { color: INK2, fontSize: 13 } },
-      { text: `${t.nEx}개 시험지`, options: { color: INK2, fontSize: 13 } },
+      { text: `${t.nEx}회 출제`, options: { color: INK2, fontSize: 13 } },
       { text: band || '-', options: { color: band ? bandColor(band) : INK2, bold: true, fontSize: 13 } },
     ]);
   });
@@ -466,7 +476,9 @@ if (A.hard.length) {
     x: M, y: 1.68, w: W - M * 2, colW: [2.3, 0.9, 2.7, 6.23], border: { type: 'solid', color: LINE, pt: 1 },
     fontFace: FONT, rowH: 0.38, valign: 'middle', margin: [3, 8, 3, 8],
   });
-  if (A.peer) s.addText(`※ 인근 학교는 시험 범위가 조금씩 다릅니다. ★ ${A.school} 행을 먼저 보세요.`, {
+  if (A.peer) s.addText(A.own
+    ? `※ ${A.anchorYear}년 시험 범위에 해당하는 문항만 모았습니다. ★ 가 ${A.anchorYear}년 ${A.semester}학기 ${A.term}고사입니다.`
+    : `※ 인근 학교는 시험 범위가 조금씩 다릅니다. ★ ${A.school} 행을 먼저 보세요.`, {
     x: M, y: 6.95, w: W - M * 2, h: 0.3, isTextBox: true, margin: 0,
     fontFace: FONT, fontSize: 11.5, color: MUT,
   });
@@ -523,7 +535,7 @@ if (A.essays.length) {
       fontFace: FONT, fontSize: 14.5, color: ICE, valign: 'middle',
     });
   });
-  s.addText(`루멘수학 내부 제작 자료 · ${A.peer ? `${A.school} ${A.anchorYear}년 기출 + 인근 학교 기출` : `${A.labels.join('·')} ${A.school} 기출`} 근거 · ${A.today}`, {
+  s.addText(`루멘수학 내부 제작 자료 · ${!A.peer ? `${A.labels.join('·')} ${A.school} 기출` : A.own ? `${A.school} 기출 ${A.exams.length}회분` : `${A.school} ${A.anchorYear}년 기출 + 인근 학교 기출`} 근거 · ${A.today}`, {
     x: M, y: 6.85, w: W - M * 2, h: 0.3, isTextBox: true, margin: 0,
     fontFace: FONT, fontSize: 11, color: '7C8DAE',
   });
