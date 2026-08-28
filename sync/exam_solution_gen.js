@@ -13,6 +13,7 @@
  *
  * 사용법:
  *   node sync/exam_solution_gen.js --dir sync/_debug/sol --outdir ./해설지
+ *   (--full 을 붙이면 '전 문항 해설지' 제목으로 나온다)
  *
  * ⚠️ 기출 문항 이미지가 들어가므로 학원 수강생 배포용으로만 쓴다(저장소 커밋 금지).
  */
@@ -23,6 +24,7 @@ const args = process.argv.slice(2);
 const arg = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 1] : d; };
 const DIR = arg('dir');
 const OUTDIR = arg('outdir', '.');
+const FULL = args.includes('--full');   // 전 문항 해설지(고난도·서술형만이 아닐 때)
 if (!DIR) { console.error('필수 인자: --dir <sol 폴더> [--outdir <저장 폴더>]'); process.exit(1); }
 
 const index = JSON.parse(fs.readFileSync(path.join(DIR, 'index.json'), 'utf8'));
@@ -62,7 +64,7 @@ h1{font-size:20pt;font-weight:900;color:var(--navy);margin:1.5mm 0 1mm;line-heig
 .note{margin-top:4mm;background:#FDF6EC;border:1px solid #EFDCBC;border-radius:2mm;padding:3mm 4mm;font-size:8.8pt;color:#6B4A12}
 .note b{color:#8A6314}
 .warnbox{margin-top:3mm;background:#FBEAE6;border:1px solid #E7BFB6;border-radius:2mm;padding:3mm 4mm;font-size:8.8pt;color:#8E2A1B}
-.q{border:1px solid var(--line);border-radius:3mm;overflow:hidden;margin-bottom:6mm;break-inside:avoid;page-break-inside:avoid}
+.q{border:1px solid var(--line);border-radius:3mm;overflow:hidden;margin-bottom:4mm;break-inside:avoid;page-break-inside:avoid}
 .qh{display:flex;align-items:center;gap:3mm;background:var(--soft);padding:3mm 4mm;border-bottom:1px solid var(--line)}
 .qno{background:var(--navy);color:#fff;font-weight:900;font-size:11pt;border-radius:1.5mm;padding:.8mm 3mm;flex:none}
 .qmeta{flex:1;font-size:8.6pt;color:var(--ink2)}
@@ -70,16 +72,16 @@ h1{font-size:20pt;font-weight:900;color:var(--navy);margin:1.5mm 0 1mm;line-heig
 .pill{display:inline-block;font-size:7.8pt;font-weight:800;padding:.4mm 2.2mm;border-radius:9mm;background:#EDE9E5;color:var(--ink2);margin-right:1.2mm}
 .pill.lo{background:#E9F2EC;color:#2F6B45}.pill.md{background:#FBF0DA;color:#8A6314}
 .pill.hi{background:#F6E0DC;color:#9E2B1C}.pill.es{background:#EDEAFD;color:#5747C9}
-.qb{padding:4mm}
-.qimg{border:1px solid #D5DEE7;border-radius:2mm;padding:2mm;background:#fff;margin-bottom:4mm}
-.qimg img{display:block;width:100%;max-width:150mm;margin:0 auto}
+.qb{padding:3mm 4mm}
+.qimg{border:1px solid #D5DEE7;border-radius:2mm;padding:1.5mm;background:#fff;margin-bottom:2.5mm;text-align:center}
+.qimg img{display:block;width:auto;max-width:100%;max-height:52mm;margin:0 auto}
 .given{font-size:8.8pt;color:var(--ink2);background:var(--soft);border-left:2.5px solid var(--gold);
   border-radius:0 2mm 2mm 0;padding:2.5mm 3.5mm;margin-bottom:3mm}
 .given b{color:var(--navy)}
 .lab{font-size:8.4pt;font-weight:900;color:var(--red);letter-spacing:.5px;margin-bottom:1.5mm}
-ol.steps{margin:0 0 3mm 5.5mm;font-size:9.2pt;color:var(--ink2)}
-ol.steps li{margin:1.6mm 0;padding-left:1mm}
-.ansbox{background:#F1F5F9;border:1px solid #D5DEE7;border-radius:2mm;padding:2.5mm 4mm;margin-bottom:3mm}
+ol.steps{margin:0 0 2.5mm 5.5mm;font-size:8.9pt;color:var(--ink2)}
+ol.steps li{margin:1.1mm 0;padding-left:1mm}
+.ansbox{background:#F1F5F9;border:1px solid #D5DEE7;border-radius:2mm;padding:2mm 4mm;margin-bottom:2.5mm}
 .ansbox b{font-size:8.4pt;color:var(--mut);display:block}
 .ansv{font-size:12pt;font-weight:900;color:var(--red)}
 .trap{background:#FDF6EC;border:1px solid #EFDCBC;border-radius:2mm;padding:2.5mm 3.5mm;font-size:8.8pt;color:#6B4A12}
@@ -132,7 +134,7 @@ Object.entries(byExam).forEach(([examId, ex]) => {
 
   const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)} 고난도·서술형 해설 — 루멘수학</title>
+<title>${esc(title)} ${FULL ? '전 문항' : '고난도·서술형'} 해설 — 루멘수학</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>${CSS}</style></head><body>
@@ -140,8 +142,8 @@ Object.entries(byExam).forEach(([examId, ex]) => {
 <div class="sheet">
   <div class="head">
     <div class="brand">LUMEN MATH · 루멘수학</div>
-    <h1>${esc(title)}<br>고난도 · 서술형 해설</h1>
-    <div class="sub">난이도 <b>상</b> 이상 문항과 서술형 문항 <b>${items.length}개</b>의 단계별 풀이입니다.</div>
+    <h1>${esc(title)}<br>${FULL ? '전 문항 해설' : '고난도 · 서술형 해설'}</h1>
+    <div class="sub">${FULL ? `<b>${items.length}문항 전체</b>의 단계별 풀이입니다.` : `난이도 <b>상</b> 이상 문항과 서술형 문항 <b>${items.length}개</b>의 단계별 풀이입니다.`}</div>
   </div>
   <div class="note"><b>이 해설지에 대하여</b><br>
     수학비서 기출 DB에는 해설이 들어 있지 않아, 문항을 보고 <b>새로 작성한 풀이</b>입니다.
