@@ -87,9 +87,12 @@ async function storeSet(key, value) {
 }
 
 /* ── 알림 한 건 보내기 ──
- * 성공하면 true. 구독이 죽었으면(폰에서 앱을 지웠거나 알림을 껐거나) 'gone'.  */
+ * 성공하면 true. 구독이 죽었으면(폰에서 앱을 지웠거나 알림을 껐거나) 'gone'.
+ * 2026-08-28: 「컴퓨터에 알림이 안 뜬다」 원인을 가리기 위해, 푸시 서비스(구글·애플)가
+ * 뭐라고 답했는지를 detail로 함께 돌려주고 로그에도 남긴다. 전에는 실패해도
+ * 아무 기록이 없어서 어디서 끊겼는지 알 수 없었다. */
 async function sendTo(sub, msg) {
-  if (!sub || !sub.endpoint) return false;
+  if (!sub || !sub.endpoint) return { r: false, detail: '구독 정보 없음' };
   const id = subIdOf(sub.endpoint);
   // ① 내용을 먼저 적어 둔다 (폰이 이걸 읽어 띄운다)
   await storeSet('push_inbox_' + id, {
@@ -107,17 +110,28 @@ async function sendTo(sub, msg) {
         'Content-Length': '0',
       },
     });
-    if (res.status === 404 || res.status === 410) return 'gone';   // 더 이상 없는 구독
-    return res.ok || res.status === 201;
+    if (res.status === 404 || res.status === 410) return { r: 'gone', detail: `구독 만료(${res.status})` };
+    const okRes = res.ok || res.status === 201;
+    let detail = `푸시 서비스 응답 ${res.status}`;
+    if (!okRes) { try { detail += ' — ' + (await res.text()).slice(0, 160); } catch (e) {} }
+    return { r: okRes, detail };
   } catch (e) {
-    return false;
+    return { r: false, detail: '발송 자체가 실패: ' + (e && e.message) };
   }
+}
+
+/* 기기 이름을 알아보기 쉽게 (진단 결과 표시용) */
+function deviceName(s) {
+  const u = (s && s.ua) || '';
+  const os = /Windows/.test(u) ? '윈도우 컴퓨터' : /Macintosh/.test(u) ? '맥 컴퓨터'
+    : /Android/.test(u) ? '안드로이드 폰' : /iPhone|iPad/.test(u) ? '아이폰' : '기기';
+  return `${(s && s.name) || ''} ${os}`.trim();
 }
 
 /* ── 여러 명에게 보내기 ──
  * pick(sub) 가 true인 구독에만 보냅니다. 죽은 구독은 목록에서 자동으로 지웁니다. */
 async function push(msg, pick) {
-  if (!VAPID_PRIVATE) { console.log('[알림] VAPID_PRIVATE_KEY가 없어 발송을 건너뜁니다'); return { sent: 0, gone: 0 }; }
+  if (!VAPID_PRIVATE) { console.log('[알림] VAPID_PRIVATE_KEY가 없어 발송을 건너뜁니다'); return { sent: 0, gone: 0, results: [] }; }
   const subs = await loadSubs();
   const ids = Object.keys(subs).filter((id) => {
     const s = subs[id];
@@ -126,16 +140,54 @@ async function push(msg, pick) {
     return pick ? pick(s) : true;
   });
   let sent = 0, gone = 0, dirty = false;
+  const results = [];
   for (const id of ids) {
-    const r = await sendTo(subs[id], msg);
+    const { r, detail } = await sendTo(subs[id], msg);
+    results.push({ id, device: deviceName(subs[id]), ok: r === true, detail });
     if (r === 'gone') { delete subs[id]; gone++; dirty = true; }
     else if (r) sent++;
   }
   if (dirty) await saveSubs(subs);
-  return { sent, gone };
+  // 어디서 끊겼는지 항상 알 수 있게 — 기기별 결과를 로그로 남긴다
+  results.forEach((x) => console.log(`[알림] ${x.device}: ${x.ok ? '✅' : '❌'} ${x.detail}`));
+  return { sent, gone, results };
 }
 
 /* 원장님(학원앱)에게만 */
 const pushOwner = (msg) => push({ ...msg, url: msg.url || './lumen_v1.html' }, (s) => s.role === 'owner');
 
-module.exports = { push, pushOwner, loadSubs, saveSubs, subIdOf, vapidToken, VAPID_PUBLIC };
+/* ── 서버 시험 발송 (2026-08-28) ──
+ * 학원앱 알림 설정의 「📡 서버에서 시험 발송」 버튼이 push_test_request에
+ * {status:'pending'}을 남기면, 5분마다 도는 워커가 이 함수를 불러
+ * 실제 발송 경로 그대로 시험 알림을 쏘고, 기기별로 푸시 서비스가 뭐라고
+ * 답했는지를 push_test_result에 적는다. 앱이 그 결과를 화면에 보여준다.
+ * → 「앱→구글 서버」 구간과 「구글 서버→컴퓨터」 구간 중 어디가 문제인지 가려진다. */
+async function runPushTest() {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.push_test_request&select=value`, { headers: sbH() });
+    if (!r.ok) return;
+    const j = await r.json();
+    let req = (j[0] && j[0].value) || null;
+    if (typeof req === 'string') { try { req = JSON.parse(req); } catch (e) { req = null; } }
+    if (!req || req.status !== 'pending') return;
+
+    console.log('[알림] 시험 발송 요청 발견 → 원장님 기기 전체로 보냅니다');
+    const out = await push({
+      kind: 'test', tag: 'lumen-servertest',
+      title: '📡 루멘수학 서버 알림 시험',
+      body: '이게 보이면 알림 전달이 정상입니다! (' + new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' }) + ')',
+      url: './lumen_v1.html#push',
+    }, (s) => s.role === 'owner');
+
+    await storeSet('push_test_request', { status: 'done', at: new Date().toISOString() });
+    await storeSet('push_test_result', {
+      at: new Date().toISOString(),
+      sent: out.sent, gone: out.gone,
+      results: out.results.map((x) => ({ device: x.device, ok: x.ok, detail: x.detail })),
+      hasKey: !!VAPID_PRIVATE,
+    });
+    console.log(`[알림] 시험 발송 완료: 성공 ${out.sent} · 만료 ${out.gone}`);
+  } catch (e) { console.log('[알림] 시험 발송 오류:', e && e.message); }
+}
+
+module.exports = { push, pushOwner, runPushTest, loadSubs, saveSubs, subIdOf, vapidToken, VAPID_PUBLIC };
