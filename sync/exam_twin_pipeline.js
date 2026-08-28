@@ -201,6 +201,13 @@ async function runTwinPipeline(opts) {
   const MYLIST = opts.mylist || '';
   const SIMILAR_X = Number(opts.similarX || 1);
   const SKIP_WS = !!opts.skipWorksheet;
+  /* 2026-08-28 원장님 지시로 추가 —
+   * ORIGINAL_ONLY: 기출 원본 학습지까지만 만들고 쌍둥이는 건너뛴다.
+   *   (고1·고2 기출 37장을 먼저 원본으로만 넣어 보고, 쌍둥이는 결과를 보고 결정)
+   * GRADE_VALUE: 학습지의 「학년」 값. 중등은 '1'/'2'/'3'이지만
+   *   고등은 '공통수학1' 같은 <b>과목명</b>이라 밖에서 넣어 준다. */
+  const ORIGINAL_ONLY = !!opts.originalOnly;
+  const GRADE_VALUE = opts.gradeValue || '';
   if (opts.log) log = opts.log;
   if (!MYDB) throw new Error('mydb(수학비서 시험지 id)가 필요합니다');
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -286,11 +293,29 @@ async function runTwinPipeline(opts) {
     conceptSortType: 'CHAPTER',
     schoolType: GRADE_LABEL.startsWith('고') ? 'HIGH' : 'MIDDLE',
     revision: TRIE.startsWith('1.4.') ? 'CURRICULUM_22' : 'CURRICULUM_15',
-    grade: (GRADE_LABEL.match(/(\d)/) || [, '1'])[1],
+    grade: GRADE_VALUE || (GRADE_LABEL.match(/(\d)/) || [, '1'])[1],
     problemPadding: 60, pdfDateType: 'TODAY', pdfDate: null,
     designTemplateId: null, qrFlag: false, problemTrendFlag: false,
   };
   const made = [];   // 만든 학습지 id들 — 마지막에 폴더로
+
+  /* 만든 학습지를 마이리스트(폴더)에 담는다 — 같은 이름이 없으면 폴더를 만든다.
+   * 원본 전용 모드와 쌍둥이 모드 둘 다에서 부르므로 함수로 뺐다. */
+  async function putInMylist(ids) {
+    if (!MYLIST || !ids.length) return;
+    const { data: lists } = await mf(MF_API, 'GET', '/mylist');
+    const all = (lists && lists.myLists) || (Array.isArray(lists) ? lists : []);
+    let target = all.find((l) => l.name === MYLIST);
+    if (!target) {
+      const { data: mk } = await mf(MF_API, 'POST', '/mylist', { name: MYLIST });
+      target = (mk && mk.myList) || mk;
+      log(`마이리스트 「${MYLIST}」 새로 만듦`);
+    }
+    if (target && target.id) {
+      await mf(MF_API, 'POST', `/mylist/${target.id}/element`, { worksheetIds: ids });
+      log(`마이리스트 「${MYLIST}」에 학습지 ${ids.length}장 담음`);
+    }
+  }
 
   // ⑦ 기출원본 학습지 — OCR 문제를 문제은행으로 «복사»한 뒤라야 만들 수 있다
   //    복사는 준비가 끝난 뒤에만 받아준다. 「준비됨」을 우리가 판정하려 했더니 틀렸다 —
@@ -334,6 +359,16 @@ async function runTwinPipeline(opts) {
   }
 
   // ⑧ 쌍둥이 학습지 (problemList에는 문제 객체 전체를 그대로 넣어야 한다)
+  if (ORIGINAL_ONLY) {
+    log('원본 전용 모드 — 쌍둥이는 만들지 않습니다');
+    await putInMylist(made);
+    return {
+      mydb: MYDB, title: TITLE, trie: TRIE, gradeLabel: GRADE_LABEL,
+      paperId: paper.id, questionCount: cells.length, boxCount: nBox,
+      matched, matchedTotal: an.sourceData.length,
+      worksheetOriginal: made[0] || null, worksheetTwin: null, mylist: MYLIST,
+    };
+  }
   const { data: flt } = await mf(MF_API, 'POST', '/v2/worksheet/filter/school-test-paper/similar',
     { myDbProblemDetailIds: detailIds, similarX: SIMILAR_X, similarLevel: 'AS_IS' });
   const filterId = flt.filterId || flt;
@@ -346,21 +381,8 @@ async function runTwinPipeline(opts) {
   made.push(wsId);
   log(`✅ 쌍둥이 학습지: worksheet ${wsId} — 「${TITLE} 쌍둥이」`);
 
-  // ⑨ 마이리스트(폴더)에 넣기 — 같은 이름이 없으면 만든다
-  if (MYLIST && made.length) {
-    const { data: lists } = await mf(MF_API, 'GET', '/mylist');
-    const all = (lists && lists.myLists) || (Array.isArray(lists) ? lists : []);
-    let target = all.find((l) => l.name === MYLIST);
-    if (!target) {
-      const { data: mk } = await mf(MF_API, 'POST', '/mylist', { name: MYLIST });
-      target = (mk && mk.myList) || mk;
-      log(`마이리스트 「${MYLIST}」 새로 만듦`);
-    }
-    if (target && target.id) {
-      await mf(MF_API, 'POST', `/mylist/${target.id}/element`, { worksheetIds: made });
-      log(`마이리스트 「${MYLIST}」에 학습지 ${made.length}장 담음`);
-    }
-  }
+  // ⑨ 마이리스트(폴더)에 넣기
+  await putInMylist(made);
 
   return {
     mydb: MYDB, title: TITLE, trie: TRIE, gradeLabel: GRADE_LABEL,
