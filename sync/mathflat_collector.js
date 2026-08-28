@@ -382,8 +382,19 @@ async function collectWorkbookProblems(me, students, cutoff) {
           await sleep(90);
         }
         for (const [wpId, v] of Object.entries(byProblem)) {
+          /* ★ 2026-08-28: 고유키에 「회차」(studentBookId)를 넣는다.
+           * [왜] 전에는 wb:학생교재ID:문항ID 였다. 그런데 같은 교재를 2회차로 다시 풀리면
+           *   학생교재ID는 그대로이고 회차ID만 바뀐다. 그래서 2회차에 같은 문항을 풀면
+           *   1회차 기록을 <b>덮어써</b> 문항수가 늘지 않았다(진도 레이스 점수도 그대로).
+           *   1회차 오답 기록도 사라져 오답 추적이 끊겼다.
+           * [지금까지 안 터진 이유] 실제 2회차 사례가 옥서희(개념원리 미적분1) 하나뿐이었고,
+           *   그마저 1·2회차가 서로 다른 페이지라 겹치는 문항이 0개였다.
+           *   블랙반이 쎈을 2회 도는 계획이라 곧 터질 상황이었다.
+           * [기존 기록] 옛 키(wb:교재:문항)로 쌓인 39,292건은 그대로 둔다.
+           *   다음 수집부터 새 키로 들어오므로, 이미 푼 1회차가 새 키로 한 번 더 들어올 수 있다.
+           *   같은 문항을 두 번 세는 셈이 되므로 아래 fixLegacyWbKeys()가 옛 키를 정리한다. */
           records.push(mkRec({
-            record_key: `wb:${c.studentWorkbookId}:${wpId}`, source: '교재',
+            record_key: `wb:${c.studentWorkbookId}:${c.studentBookId}:${wpId}`, source: '교재',
             academy_id: me.academyId, mf_student_id: st.id,
             student_workbook_id: c.studentWorkbookId, student_book_id: c.studentBookId,
             book_id: it.bookId, worksheet_title: (it.title || '') + (it.subtitle || ''),
@@ -689,6 +700,12 @@ async function main() {
     await refreshTypeAch();
     return;
   }
+  // --fix-keys: 매쓰플랫 로그인 없이 옛 교재 고유키만 새 형식으로 옮긴다 (--dry-run 이면 세어만 봄)
+  if (has('--fix-keys')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    await fixLegacyWbKeys({ dry: has('--dry-run') });
+    return;
+  }
   // --stuck-only: 매쓰플랫 로그인 없이 「막힌 문제」만 재계산 (Supabase 기존 기록 사용)
   if (has('--stuck-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -734,6 +751,8 @@ async function main() {
       status: s.status || null,
     }));
     if (studentRows.length) await upsert('mf_students', studentRows, 'mf_student_id');
+    // 교재 기록을 저장하기 직전에 옛 고유키를 새 형식으로 옮긴다 (같은 문제 두 번 세는 것 방지)
+    await fixLegacyWbKeys({ dry: has('--dry-run') });
     if (answers.length) await upsert('mf_answer_records', answers, 'record_key');
     if (sessions.length) await upsert('mf_study_sessions', sessions, 'mf_student_id,book_id,student_workbook_id,student_book_id,update_datetime');
     await saveWsTags();
@@ -2063,6 +2082,95 @@ async function refreshStuck() {
       log(`  학부모앱용 학생별 분할(stuck_<코드>): ${perRows.length}명 ${r2.ok ? '저장 완료' : '저장 실패 ' + r2.status}`);
     }
   } catch (e) { log('막힌 문제 계산 실패(치명적 아님):', e.message); }
+}
+
+/* ── 옛 교재 고유키 정리 (2026-08-28) ───────────────────────────────────────
+ * [무엇] 교재 문항의 고유키를 「wb:학생교재ID:문항ID」 → 「wb:학생교재ID:회차ID:문항ID」로 바꿨다.
+ * [왜 정리가 필요한가] 옛 키로 쌓인 기록을 그대로 두면, 다음 수집에서 같은 문항이
+ *   새 키로 한 번 더 들어온다. 그러면 한 문제를 두 번 세게 되어 진도 레이스 문항수·점수가
+ *   부풀고, 정답률도 틀어진다.
+ * [어떻게] 옛 기록의 「학생교재ID·회차ID·문항ID」는 이미 각 줄에 저장돼 있다.
+ *   그 값으로 새 키를 만들어 그대로 옮겨 심고(내용은 하나도 안 바뀜), 옛 줄만 지운다.
+ *   즉 지우는 게 아니라 <b>이름표만 바꿔 다는</b> 작업이다.
+ * [언제] 매일 수집에서 교재 기록을 저장하기 <b>직전</b>에 한 번 돌린다.
+ *   한 번 옮기고 나면 옛 줄이 0건이라 그냥 지나간다(부담 없음).
+ *   `node sync/mathflat_collector.js --fix-keys` 로 따로 돌릴 수도 있고,
+ *   `--dry-run` 을 붙이면 「몇 건이 옮겨질지」만 세어 보고 실제로는 건드리지 않는다. */
+async function fixLegacyWbKeys(opts) {
+  const dry = !!(opts && opts.dry);
+  const url = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), key = process.env.SUPABASE_SERVICE_KEY;
+  if (!url || !key) return { scanned: 0, moved: 0, skipped: 0 };
+  const H = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  const isLegacy = (k) => String(k || '').startsWith('wb:') && String(k).split(':').length === 3;
+
+  try {
+    // 1) 옛 형식(콜론 2개) 줄만 훑는다 — 새 형식(콜론 3개)은 서버에서 미리 걸러 낸다.
+    const cols = REC_COLS.join(',');
+    const rows = [];
+    for (let off = 0; ; off += 1000) {
+      const q = `${url}/rest/v1/mf_answer_records?select=${cols}`
+        + `&record_key=like.wb:*&record_key=not.like.wb:*:*:*`
+        + `&order=record_key.asc&limit=1000&offset=${off}`;
+      const r = await fetch(q, { headers: H });
+      if (!r.ok) { log(`  옛 키 조회 실패(${r.status}) — 이번엔 건너뜁니다`); return { scanned: 0, moved: 0, skipped: 0 }; }
+      const page = await r.json();
+      rows.push(...page.filter((x) => isLegacy(x.record_key)));   // 서버 필터를 한 번 더 확인
+      if (page.length < 1000) break;
+      await sleep(80);
+    }
+    if (!rows.length) return { scanned: 0, moved: 0, skipped: 0 };
+
+    // 2) 각 줄에 새 이름표를 붙인다 (세 값 중 하나라도 비면 손대지 않고 그대로 둔다)
+    const moved = [], oldKeys = [];
+    let skipped = 0;
+    for (const row of rows) {
+      const swb = row.student_workbook_id, sbk = row.student_book_id, wp = row.workbook_problem_id;
+      if (swb == null || sbk == null || wp == null) { skipped++; continue; }
+      const nk = `wb:${swb}:${sbk}:${wp}`;
+      if (nk === row.record_key) { skipped++; continue; }
+      moved.push(mkRec(Object.assign({}, row, { record_key: nk })));
+      oldKeys.push(row.record_key);
+    }
+    log(`옛 교재 고유키 정리: 대상 ${rows.length}건 → 옮길 ${moved.length}건 / 그대로 둘 ${skipped}건${dry ? ' (미리보기 — 실제 변경 없음)' : ''}`);
+    if (dry || !moved.length) return { scanned: rows.length, moved: moved.length, skipped };
+
+    // 3) 새 이름표로 먼저 심는다 (순서 중요: 중간에 멈춰도 기록이 사라지지 않음)
+    await upsert('mf_answer_records', moved, 'record_key');
+
+    // 4) 「진짜로 새 줄이 들어갔는지」 DB에 다시 물어본다.
+    //    저장이 일부라도 실패했는데 옛 줄을 지우면 기록이 통째로 날아가므로,
+    //    <b>확인된 것만</b> 지운다. 못 옮긴 줄은 그대로 남아 다음 날 다시 시도된다.
+    const live = new Set();
+    for (let off = 0; ; off += 1000) {
+      const r = await fetch(`${url}/rest/v1/mf_answer_records?select=record_key`
+        + `&record_key=like.wb:*:*:*&order=record_key.asc&limit=1000&offset=${off}`, { headers: H });
+      if (!r.ok) { log(`  새 줄 확인 실패(${r.status}) — 안전을 위해 옛 줄은 지우지 않습니다`); return { scanned: rows.length, moved: 0, skipped }; }
+      const page = await r.json();
+      page.forEach((x) => live.add(x.record_key));
+      if (page.length < 1000) break;
+      await sleep(60);
+    }
+    const safeOld = [];
+    for (let i = 0; i < oldKeys.length; i++) if (live.has(moved[i].record_key)) safeOld.push(oldKeys[i]);
+    if (safeOld.length < oldKeys.length) log(`  ⚠ ${oldKeys.length - safeOld.length}건은 아직 안 옮겨져 옛 줄을 남겨 둡니다(내일 다시 시도)`);
+
+    let gone = 0;
+    for (let i = 0; i < safeOld.length; i += 100) {
+      const part = safeOld.slice(i, i + 100);
+      const list = part.map((k) => `"${k}"`).join(',');
+      const r = await fetch(`${url}/rest/v1/mf_answer_records?record_key=in.(${encodeURIComponent(list)})`, {
+        method: 'DELETE', headers: { ...H, prefer: 'return=minimal' },
+      });
+      if (r.ok) gone += part.length;
+      else log(`  옛 줄 삭제 실패(${r.status}): ${(await r.text()).slice(0, 120)}`);
+      await sleep(80);
+    }
+    log(`  옛 줄 ${gone}/${safeOld.length}건 정리 완료 — 이제 회차별로 따로 세어집니다`);
+    return { scanned: rows.length, moved: moved.length, skipped };
+  } catch (e) {
+    log('옛 교재 고유키 정리 실패(치명적 아님):', e.message);
+    return { scanned: 0, moved: 0, skipped: 0 };
+  }
 }
 
 async function upsert(table, records, onConflict) {

@@ -21,6 +21,10 @@ NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt \
 - `--skip-problems`(학습지) · `--skip-workbook`(교재 문항) · `--skip-history`(세션) 각각 생략 가능
 - 결과는 `sync/_debug/`에 저장 (개인정보 포함 → **커밋 금지**, .gitignore 처리됨)
   - `mf_answer_records.json` — **학습지 + 교재 문항별 O/X** (`source`로 구분, `record_key`로 중복방지)
+    - 고유키 형식: 학습지 `ws:학생학습지ID:문항순번` / 교재 `wb:학생교재ID:회차ID:문항ID`
+    - 2026-08-28: 교재 키에 **회차ID**를 넣었다. 전에는 같은 교재를 2회차로 다시 풀면 1회차 기록을
+      덮어써 문항수가 안 늘었다. 옛 기록(39,292건)은 `--fix-keys`가 새 키로 옮긴다(매일 수집에 포함).
+      `node sync/mathflat_collector.js --fix-keys --dry-run` 으로 미리보기만 가능.
   - `mf_study_sessions.json` — 학습지+교재 세션별(시간순) 요약
 
 > ⚠️ 교재 문항 수집은 교재 1권당 진도별로 수십~수백 회 호출한다(무거움). 야간 실행 시 `--days`를 좁혀 최근 활동만 수집 권장.
