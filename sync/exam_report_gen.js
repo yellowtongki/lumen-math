@@ -617,6 +617,7 @@ if (ANALYSIS) {
   fs.writeFileSync(ANALYSIS, JSON.stringify({
     school: SCHOOL, grade: GRADE, semester: SEM, term: TERM, peer: PEER, own: OWN, title, today,
     anchorLabel: anchorExam.label, anchorYear: latest,
+    anchorTime: anchorExam.cells.reduce((s2, c) => s2 + (c.solvingTime || 0), 0),
     scope: SCOPE || (anchorExam.scopes || []).join(' / ') || null,
     peerNames, exams: perExam, keys, labels: keys.map(k => labelOf[k]),
     totalN, unitSet, unitByKey, unitScore, unitScoreTotal,

@@ -188,3 +188,44 @@ node sync/exam_report_gen.js --data sync/_debug/ms_exams_okgil_m2_2mid.json \
 - `{ src: '개념 따라쓰기 1-1 · 반비례', text: '...' }` 형태로 바꾸면 **"📖 교재 근거 확인"** 배지가 붙는다.
 
 새 학년·단원을 분석할 때마다 여기에 유형을 추가하면 보고서와 PPT에 동시에 반영된다.
+
+---
+
+# 고난도·서술형 해설지 (exam_solution_gen.js)
+
+**수학비서 기출 DB에는 해설이 없다.** 문항 데이터의 `explanations` 는 `null`, `isExplanation` 은 `false`로
+정답·난이도·배점·예상 풀이시간만 제공한다. 그래서 해설은 다음 3단계로 만든다.
+
+1. **AI가 문항 이미지를 보고 단계별 풀이를 작성**
+2. **수학비서가 가진 공식 정답과 대조해 검증** — 불일치하면 `verify: "MISMATCH"` 로 표시
+3. **선생님 검수** 후 배포
+
+## 만드는 순서
+
+```bash
+# 1) 대상 시험지 수집 + 이미지
+$P node sync/mathsecr_exam_collector.js --ids 387569,493934,387500,387479
+mv sync/_debug/ms_exams_ids.json sync/_debug/ms_exams_solutions.json
+$P node sync/exam_image_fetch.js --data sync/_debug/ms_exams_solutions.json
+
+# 2) 난이도 상 이상 + 서술형 문항만 골라 sol/ 폴더에 이미지와 index.json 생성
+#    (스크립트 안의 TAG 표를 학교에 맞게 고쳐 쓴다)
+
+# 3) 문항별 풀이를 sol/solutions_<태그>.json 에 작성
+#    { "<태그>_<번호2자리>": { given, steps[], answer, trap, verify?, verifyNote? } }
+
+# 4) 인쇄용 해설지 생성
+node sync/exam_solution_gen.js --dir sync/_debug/sol --outdir ./해설지
+```
+
+`verify: "MISMATCH"` 를 넣으면 해설지 맨 위와 해당 문항에 **정답 불일치 경고**가 자동으로 표시된다.
+
+## 실제 검증 사례 (2026-08-28)
+
+옥길중 중1·중2 2025 2학기 중간, 소사고 고1 2025 · 고2 2024 2학기 중간의
+난이도 상 이상 + 서술형 **22문항** 풀이를 작성해 정답과 대조한 결과 **21문항 일치**.
+소사고 고1 19번(집합의 개수)만 DB 정답이 ④(33)인데 전수 조사 결과 **31(②)** 이 나와 불일치로 표시했다.
+
+## ⚠️ 배포 주의
+
+해설지에는 기출 문항 이미지가 들어간다. **학원 수강생 배포용으로만** 쓰고 저장소에 커밋하지 않는다.
