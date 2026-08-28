@@ -170,6 +170,22 @@ async function runRace() {
   const leagues = season.leagues || { elem: false, mid: true, high: false };
   const elemGrades = (leagues.elemGrades && leagues.elemGrades.length) ? leagues.elemGrades.map(String) : ['6'];
 
+  /* ── 부별 설정 (2026-08-28 원장님 지시로 추가) ────────────────────
+   * [왜 부마다 다르게 두나] 고등부를 켜 보니 실측으로 이런 모습이었다:
+   *   고등 7명 · 1등 650점 · 평균 407점   /   중등 12명 · 1등 2,593점 · 평균 1,691점
+   *   중등 기준 티어(실버 2,500점)를 그대로 쓰면 <b>고등부는 전원 브론즈</b>에 갇혀
+   *   시즌 내내 승급이 없다 — 등급이 올라가는 재미가 통째로 사라진다.
+   * [그래서] 부마다 ① 티어 문턱 ② 공개 인원 ③ 상금 여부 ④ 다른 부에 흐리게 보일지를
+   *   따로 정할 수 있게 했다. season.bands 에 부 이름으로 넣는다:
+   *     bands: { high: { tiers:[...], showTop:3, prize:false, blurToOthers:true } }
+   *   아무것도 안 넣으면 예전과 똑같이 동작한다(기존 시즌 설정을 건드리지 않는다). */
+  const bandCfg = season.bands || {};
+  const cfgOf = (band) => bandCfg[band] || {};
+  const tiersOf = (band) => {
+    const t = cfgOf(band).tiers;
+    return (Array.isArray(t) && t.length) ? t.slice().sort((a, b) => a.at - b.at) : tiers;
+  };
+
   const { sid2code, info } = await loadStudents();
   log(`학생 매핑 ${Object.keys(sid2code).length}명`);
 
@@ -230,9 +246,10 @@ async function runRace() {
         };
       })
       .sort((a, b) => b.pts - a.pts || b.n - a.n);
+    const bt = tiersOf(band);            // 부마다 티어 문턱이 다를 수 있다
     rows.forEach((r, i) => {
       r.rank = i + 1;
-      Object.assign(r, tierOf(r.pts, tiers));
+      Object.assign(r, tierOf(r.pts, bt));
     });
     return rows;
   }
@@ -269,12 +286,27 @@ async function runRace() {
   // 초등부는 「체험 리그」 — 상 계산도, 이상 신호도 만들지 않는다
   board.demoBands = ['elem'];
   board.elemGrades = elemGrades;
+  /* 부별 설정을 앱에도 그대로 넘긴다 — 학생앱·학부모앱·학원앱이 같은 값을 본다.
+   *   bandTiers    : 부별 티어 (없으면 공통 티어)
+   *   bandShowTop  : 부별 공개 인원
+   *   noPrizeBands : 상금이 걸리지 않은 부 (예: 고등부)
+   *   blurBands    : 다른 부 학생이 볼 때 흐리게(모자이크) 처리할 부 */
+  board.bandTiers = {}; board.bandShowTop = {};
+  board.noPrizeBands = []; board.blurBands = [];
+  ['elem', 'mid', 'high'].forEach((bd) => {
+    const c = cfgOf(bd);
+    if (Array.isArray(c.tiers) && c.tiers.length) board.bandTiers[bd] = tiersOf(bd).map((t) => ({ k: t.k, n: t.n, at: t.at }));
+    if (c.showTop != null) board.bandShowTop[bd] = Number(c.showTop) || 0;
+    if (c.prize === false) board.noPrizeBands.push(bd);
+    if (c.blurToOthers) board.blurBands.push(bd);
+  });
 
   ['elem', 'mid', 'high'].forEach((band) => {
     if (!leagues[band]) return;
     const rows = buildBand(band);
     board[band] = rows;
     if (band === 'elem') return;               // 체험 리그는 여기까지
+    if (cfgOf(band).prize === false) return;   // 상금이 없는 부는 시상 계산도 안 한다 (고등부)
     // 상 후보: 1~3등을 뺀 나머지 중에서
     const rest = rows.filter((r) => r.rank > 3 && r.n > 0);
     const steady = rest.slice().sort((a, b) => b.days - a.days || b.pts - a.pts)[0] || null;
