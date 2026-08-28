@@ -295,9 +295,11 @@ async function runHwSync() {
     const { runPushTest } = require('./push.js');
     await runPushTest();
   } catch (e) { log('시험 발송 오류: ' + e.message); }
-  // v18-79: 제출 알림 — 2026-08-26 원장님 지시로 중지 (컴퓨터에 알림이 안 떠서 원인 확인 전까지).
-  // 재개하려면 아래 PUSH_PAUSED를 false로 바꾸면 된다. 코드·구독·설정은 그대로 남아 있다.
-  const PUSH_PAUSED = true;
+  // v18-79: 제출 알림. 2026-08-26 「컴퓨터에 알림이 안 뜬다」로 중지했다가
+  // 2026-08-28 재개 — 시험 발송으로 확인해 보니 구글 푸시 서비스가 두 컴퓨터 모두
+  // 201(정상 접수)로 답했다. 즉 보내는 쪽은 정상이고, 문제는 컴퓨터가 화면에
+  // 안 띄우는 것(윈도우 알림 설정 등). 발송 결과는 이제 기기별로 로그에 남는다.
+  const PUSH_PAUSED = false;
   if (!PUSH_PAUSED) {
     try {
       const { runPushWatch } = require('./push_watch.js');
