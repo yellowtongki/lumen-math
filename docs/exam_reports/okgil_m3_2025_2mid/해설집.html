@@ -1,0 +1,1435 @@
+<title>옥길중 중3 2학기중간 해설집</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global', scale: 1.02 },
+  options: { menuOptions: { settings: { inTabOrder: false } } }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
+
+<style>
+:root{
+  --ground:#E7E9EE; --paper:#FFFFFF;
+  --ink:#18222E; --ink-soft:#4A5666; --ink-faint:#8A94A2;
+  --line:#DBE0E9; --line-soft:#EDF0F5;
+  --indigo:#274777; --indigo-ink:#1E3A63; --indigo-soft:#E9EFF8;
+  --amber:#9C6612; --amber-soft:#F6EEDC;
+  --green:#2C7A54; --green-soft:#E1EFE8;
+  --red:#AF413A; --red-soft:#F6E4E1;
+  --shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px rgba(24,34,46,.09);
+  --shadow-sm:0 1px 2px rgba(24,34,46,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C121A; --paper:#141C26;
+    --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+    --line:#28333F; --line-soft:#1D2732;
+    --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+    --amber:#D9A64A; --amber-soft:#2C2515;
+    --green:#66BB8E; --green-soft:#16271E;
+    --red:#E0776D; --red-soft:#2B1A18;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C121A; --paper:#141C26;
+  --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+  --line:#28333F; --line-soft:#1D2732;
+  --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+  --amber:#D9A64A; --amber-soft:#2C2515;
+  --green:#66BB8E; --green-soft:#16271E;
+  --red:#E0776D; --red-soft:#2B1A18;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Noto Sans KR", system-ui, sans-serif;
+  font-size:16px; line-height:1.75; letter-spacing:-.003em;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 18px 96px}
+
+/* ── 상단 헤더 ── */
+.masthead{padding:34px 0 20px}
+.eyebrow{
+  font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--indigo); margin:0 0 10px;
+}
+.masthead h1{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:clamp(28px,6vw,40px);
+  line-height:1.18; margin:0; letter-spacing:-.01em; text-wrap:balance; color:var(--ink);
+}
+.masthead .sub{
+  color:var(--ink-soft); font-size:14.5px; margin-top:12px; font-weight:500;
+  display:flex; flex-wrap:wrap; gap:7px 14px; align-items:center;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--paper); border:1px solid var(--line); border-radius:99px;
+  padding:4px 12px; font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  box-shadow:var(--shadow-sm);
+}
+.chip b{color:var(--ink)}
+.chip.hard{color:var(--red); border-color:color-mix(in srgb, var(--red) 34%, var(--line))}
+
+/* ── 문제 카드 ── */
+.paper{
+  background:var(--paper); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); padding:26px 26px 24px; margin-bottom:22px;
+}
+.q-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px}
+.q-no{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:30px; color:var(--indigo);
+  line-height:1;
+}
+.q-tag{
+  font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--ink-faint);
+  border-left:1px solid var(--line); padding-left:12px;
+}
+.q-body{font-size:17px; line-height:1.85; color:var(--ink)}
+.cond{
+  margin:16px 0 4px; border:1px solid var(--line); border-radius:12px;
+  background:color-mix(in srgb, var(--indigo-soft) 55%, var(--paper));
+  padding:14px 18px;
+}
+.cond .row{display:flex; gap:12px; align-items:baseline}
+.cond .row+.row{margin-top:6px}
+.cond .lab{font-weight:700; color:var(--indigo-ink); flex-shrink:0}
+.choices{
+  margin-top:18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:8px;
+}
+.choice{
+  border:1px solid var(--line); border-radius:10px; padding:9px 14px;
+  font-size:15.5px; color:var(--ink-soft); display:flex; gap:9px; align-items:center;
+}
+.choice .n{font-weight:700; color:var(--ink-faint)}
+.choice.ans{
+  border-color:var(--green); background:var(--green-soft); color:var(--ink);
+  font-weight:700; box-shadow:0 0 0 1px var(--green) inset;
+}
+.choice.ans .n{color:var(--green)}
+.choice.ans::after{content:"정답"; margin-left:auto; font-size:11px; font-weight:800;
+  letter-spacing:.06em; color:var(--green)}
+
+/* ── 급소 배너 ── */
+.insight{
+  display:flex; gap:13px; align-items:flex-start;
+  background:var(--amber-soft); border:1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+  border-radius:14px; padding:16px 18px; margin-bottom:30px;
+}
+.insight .ic{font-size:20px; line-height:1.4; flex-shrink:0}
+.insight p{margin:0; font-size:14.5px; color:var(--ink); line-height:1.7}
+.insight b{color:var(--amber); font-weight:800}
+
+/* ── 풀이 전환 네비 ── */
+.nav{
+  position:sticky; top:0; z-index:20; margin:0 -18px 26px; padding:10px 18px;
+  background:color-mix(in srgb, var(--ground) 86%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+}
+.nav::-webkit-scrollbar{display:none}
+.nav a{
+  flex:0 0 auto; text-decoration:none; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink-soft); border-radius:99px;
+  padding:7px 15px; font-size:13px; font-weight:700; white-space:nowrap;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.nav a .k{color:var(--indigo); font-family:"Hahmlet",serif; font-weight:800; margin-right:5px}
+.nav a:hover{border-color:var(--indigo); color:var(--ink)}
+.nav a:focus-visible{outline:2px solid var(--indigo); outline-offset:2px}
+
+/* ── 풀이 섹션 ── */
+.sol{margin-bottom:40px; scroll-margin-top:64px}
+.sol-head{display:flex; align-items:center; gap:14px; margin-bottom:6px}
+.sol-k{
+  font-family:"Hahmlet",serif; font-weight:800; font-size:26px;
+  width:46px; height:46px; flex-shrink:0; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--indigo); color:#fff;
+}
+:root[data-theme="dark"] .sol-k, :root:not([data-theme="light"]) .sol-k{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .sol-k{color:#fff}}
+.sol-title{font-family:"Hahmlet",serif; font-weight:700; font-size:22px; color:var(--ink); line-height:1.2}
+.sol-kind{font-size:12.5px; font-weight:700; color:var(--ink-faint); margin-top:3px; letter-spacing:.01em}
+.sol-body{
+  background:var(--paper); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); padding:8px 24px 22px; margin-top:14px;
+}
+
+.step{padding:18px 0; border-bottom:1px solid var(--line-soft)}
+.step:last-child{border-bottom:none}
+.step-lab{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:8px;
+  font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--indigo);
+}
+.step-lab .dot{width:6px; height:6px; border-radius:50%; background:var(--indigo)}
+.step-lab.amber{color:var(--amber)} .step-lab.amber .dot{background:var(--amber)}
+.step-lab.green{color:var(--green)} .step-lab.green .dot{background:var(--green)}
+.step h4{margin:0 0 6px; font-size:16px; font-weight:700; color:var(--ink)}
+.step p{margin:8px 0; font-size:15px; color:var(--ink); line-height:1.8}
+.step .aside{color:var(--ink-soft); font-size:14px}
+
+/* 수식 디스플레이 줄 */
+.mathrow{overflow-x:auto; overflow-y:hidden; padding:6px 2px; margin:6px 0; scrollbar-width:thin}
+mjx-container[display="true"]{margin:0 !important}
+
+/* 함정·실수 박스 */
+.warn{
+  border:1px solid color-mix(in srgb, var(--amber) 34%, var(--line));
+  background:var(--amber-soft); border-radius:12px; padding:14px 16px; margin:12px 0;
+}
+.warn .t{font-weight:800; color:var(--amber); font-size:14px; margin-bottom:5px; display:flex; gap:7px; align-items:center}
+.warn p{margin:4px 0; font-size:14px; color:var(--ink)}
+.miss{
+  border-left:3px solid var(--red); background:var(--red-soft); border-radius:0 10px 10px 0;
+  padding:11px 15px; margin:11px 0; font-size:14px; color:var(--ink);
+}
+.miss b{color:var(--red)}
+
+/* 결과 배지 */
+.result{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--green-soft); border:1px solid var(--green); border-radius:13px;
+  padding:15px 20px; margin-top:16px;
+}
+.result .lab{font-size:13px; font-weight:800; letter-spacing:.04em; color:var(--green)}
+.result .val{font-size:20px}
+
+/* 그림풀이 */
+figure{margin:14px 0 6px; text-align:center}
+.fig-frame > svg{max-width:100%; height:auto; display:block; margin:0 auto}
+figcaption mjx-container svg, .fig-tag mjx-container svg{display:inline-block; margin:0}
+.fig-tag mjx-container{vertical-align:-0.1em}
+figcaption{
+  font-size:12.5px; color:var(--ink-faint); font-weight:600; margin-top:10px;
+  letter-spacing:.01em;
+}
+.fig-frame{
+  border:1px dashed var(--line); border-radius:14px; padding:20px 16px 14px;
+  background:color-mix(in srgb, var(--line-soft) 45%, var(--paper));
+}
+.fig-tag{
+  display:inline-block; font-size:11px; font-weight:800; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;
+}
+
+/* 검산 표 */
+.calc{width:100%; border-collapse:collapse; margin:10px 0 2px; font-variant-numeric:tabular-nums}
+.calc td,.calc th{border-bottom:1px solid var(--line-soft); padding:8px 10px; text-align:left; font-size:15px}
+.calc th{color:var(--ink-faint); font-weight:700; font-size:12.5px; letter-spacing:.03em}
+.calc tr:last-child td{border-bottom:none}
+.calc .hi{background:var(--indigo-soft); font-weight:700}
+
+footer{
+  text-align:center; color:var(--ink-faint); font-size:12.5px;
+  border-top:1px solid var(--line); padding-top:22px; margin-top:16px; line-height:1.9;
+}
+
+@media (max-width:520px){
+  .sol-body{padding:6px 16px 18px}
+  .paper{padding:20px 18px}
+  .q-body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+
+/* ── 해설집 추가 ── */
+.idx{display:grid;grid-template-columns:repeat(auto-fit,minmax(46px,1fr));gap:7px;margin:0 0 8px}
+.idx a{text-decoration:none;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);
+  border-radius:10px;padding:9px 0;text-align:center;font-weight:800;font-size:14px;font-family:"Hahmlet",serif;
+  transition:border-color .15s,color .15s}
+.idx a:hover{border-color:var(--indigo);color:var(--indigo)}
+.idx a .kd{display:block;font-size:9px;font-weight:700;letter-spacing:.04em;margin-top:2px;font-family:"Noto Sans KR"}
+.idx a.hard{border-color:color-mix(in srgb,var(--red) 30%,var(--line))}
+.idx a.hard .kd{color:var(--red)}
+.idx a:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+.pnum{font-family:"Hahmlet",serif;font-weight:800;font-size:24px;color:var(--indigo);line-height:1}
+.pstate{font-size:16px;line-height:1.85;color:var(--ink);margin:10px 0 0}
+.pstate .cond{margin:14px 0 2px}
+.dbadge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;border-radius:99px;
+  padding:3px 10px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper)}
+.dbadge.k{color:var(--red);border-color:color-mix(in srgb,var(--red) 34%,var(--line))}
+.dbadge.red{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,var(--line));background:var(--red-soft)}
+/* 킬러 문항 강조 */
+.sol.killer .sol-body{border-color:color-mix(in srgb,var(--red) 34%,var(--line));
+  box-shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px color-mix(in srgb,var(--red) 16%,transparent)}
+.sol-k.red{background:var(--red)}
+.tag-essay{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;vertical-align:middle;
+  color:#fff;background:var(--amber);border-radius:6px;padding:2px 8px;margin-left:8px}
+:root[data-theme="dark"] .tag-essay,:root:not([data-theme="light"]) .tag-essay{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .tag-essay{color:#fff}}
+
+/* ── 좁은 화면 안전장치: 긴 수식·표가 가로로 넘치지 않게 ── */
+.calc{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch}
+.cond .row>span:last-child{min-width:0; overflow-x:auto; padding-bottom:2px}
+.result .val{min-width:0; overflow-x:auto; padding-bottom:2px}
+</style>
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">루멘수학 · 기출 정밀해설집</p>
+    <h1>옥길중 3학년 2학기 중간 · 중등수학 3(하) 해설</h1>
+    <div class="sub">
+      <span class="chip">옥길중학교 3학년</span>
+      <span class="chip">2025 · 2학기 중간</span>
+      <span class="chip"><b>21문항</b></span>
+      <span class="chip">삼각비 · 삼각비의 활용 · 대푯값과 산포도</span>
+    </div>
+  </header>
+  <div class="insight">
+    <span class="ic">📐</span>
+    <p>스물한 문항을 <b>왜 그렇게 푸는지</b>까지 짚는 첨삭 해설로 담았습니다. 아래 번호를 누르면 해당 문제로 바로 이동합니다.
+      <b style="color:var(--red)">빨간 번호</b>는 최고난도 문항이고, <b>2번</b>은 문제 자체에 오류가 있어 따로 짚었습니다.</p>
+  </div>
+  <nav class="idx" aria-label="문제 바로가기">
+    <a href="#q1">1</a><a href="#q2" class="hard">2<span class="kd">오류</span></a>
+    <a href="#q3" class="hard">3<span class="kd">고난도</span></a><a href="#q4">4</a>
+    <a href="#q5">5</a><a href="#q6">6</a><a href="#q7">7</a><a href="#q8">8</a>
+    <a href="#q9">9</a><a href="#q10" class="hard">10<span class="kd">고난도</span></a>
+    <a href="#q11">11</a><a href="#q12">12</a>
+    <a href="#q13" class="hard">13<span class="kd">킬러</span></a>
+    <a href="#q14" class="hard">14<span class="kd">고난도</span></a>
+    <a href="#q15">15</a><a href="#q16">16</a><a href="#q17">17</a><a href="#q18">18</a>
+    <a href="#q19">19</a><a href="#q20">20</a><a href="#q21">21</a>
+  </nav>
+  <section class="sol" id="q1">
+    <div class="sol-head">
+      <span class="sol-k">1</span>
+      <div>
+        <div class="sol-title">기준각을 바꾸면 분자가 바뀐다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 삼각비의 뜻과 값 · 참거짓/합답형</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림과 같은 직각삼각형 \(\mathrm{ABC}\)에서 \(\overline{\mathrm{AB}}=5\), \(\overline{\mathrm{AC}}=7\)일 때, 삼각비의 값으로 옳은 것은?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 먼저 남은 한 변부터 채운다</span>
+          <svg viewBox="0 0 360 230" role="img" aria-label="직각삼각형 ABC, 각 B가 직각, AB=5, BC=2루트6, AC=7">
+            <polygon points="60,180 270,180 270,55" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M 270 180 L 248 180 L 248 158 L 270 158" fill="none" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="44" y="196">A</text><text x="276" y="196">B</text><text x="276" y="50">C</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="12.5" font-weight="700">
+              <text x="155" y="200" fill="var(--indigo)">5</text>
+              <text x="150" y="106" fill="var(--indigo)">7</text>
+              <text x="282" y="122" fill="var(--red)">2√6</text>
+            </g>
+            <text x="60" y="46" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--red)">피타고라스: √(7²−5²)=√24</text>
+          </svg>
+        </div>
+        <figcaption>빗변은 언제나 직각의 <b>맞은편</b>인 \(\overline{\mathrm{AC}}=7\). 남은 변 \(\overline{\mathrm{BC}}=\sqrt{7^{2}-5^{2}}=2\sqrt6\).</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 세 변을 모두 확보한다</span>
+        <p>삼각비 문제는 <b>세 변이 다 채워지기 전엔 아무것도 판단하지 않는다</b>. 직각이 \(\mathrm{B}\)에 있으니 빗변은 \(\overline{\mathrm{AC}}=7\)이고, 피타고라스 정리로</p>
+        <div class="mathrow">$$\overline{\mathrm{BC}}=\sqrt{7^{2}-5^{2}}=\sqrt{24}=2\sqrt6$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 기준각이 \(\mathrm{A}\)냐 \(\mathrm{C}\)냐로 분자가 갈린다</span>
+        <p>이 문제의 함정은 오직 하나, <b>기준각이 바뀌면 「높이」와 「밑변」이 서로 자리를 바꾼다</b>는 것. 분모(빗변 \(7\))는 어느 쪽에서 봐도 그대로다.</p>
+        <table class="calc">
+          <tr><th></th><th>기준각 \(\mathrm{A}\)</th><th>기준각 \(\mathrm{C}\)</th></tr>
+          <tr><td>마주보는 변(높이)</td><td>\(\overline{\mathrm{BC}}=2\sqrt6\)</td><td>\(\overline{\mathrm{AB}}=5\)</td></tr>
+          <tr><td>이웃한 변(밑변)</td><td>\(\overline{\mathrm{AB}}=5\)</td><td>\(\overline{\mathrm{BC}}=2\sqrt6\)</td></tr>
+          <tr class="hi"><td>\(\sin\)</td><td>\(\dfrac{2\sqrt6}{7}\)</td><td>\(\dfrac{5}{7}\)</td></tr>
+          <tr class="hi"><td>\(\cos\)</td><td>\(\dfrac{5}{7}\)</td><td>\(\dfrac{2\sqrt6}{7}\)</td></tr>
+          <tr class="hi"><td>\(\tan\)</td><td>\(\dfrac{2\sqrt6}{5}\)</td><td>\(\dfrac{5}{2\sqrt6}=\dfrac{5\sqrt6}{12}\)</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 표와 하나씩 대조</span>
+        <p>① \(\sin A=\frac57\)? → 실제는 \(\frac{2\sqrt6}{7}\) <b>✗</b> &nbsp; ② \(\cos A=\frac{2\sqrt6}{7}\)? → 실제는 \(\frac57\) <b>✗</b><br>
+        ③ \(\tan A=\frac{5\sqrt6}{12}\)? → 그건 \(\tan C\)의 값 <b>✗</b> &nbsp; ④ \(\sin C=\frac{2\sqrt6}{5}\)? → 실제는 \(\frac57\) <b>✗</b><br>
+        ⑤ \(\cos C=\frac{2\sqrt6}{7}\)? → 표와 일치 <b>✓</b></p>
+        <div class="miss"><b>자주 하는 실수</b> ③번이 특히 잘 걸린다. \(\frac{5\sqrt6}{12}\)는 \(\frac{5}{2\sqrt6}\)를 유리화한 값이라 「본 적 있는 모양」이라 맞다고 느껴지는데, 그건 \(\tan C\)다. <b>계산이 맞아도 기준각이 틀리면 오답</b>이라는 걸 이 문제가 정확히 노렸다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\cos C=\dfrac{2\sqrt6}{7}\ \Rightarrow\ \) ⑤</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="sol killer" id="q2">
+    <div class="sol-head">
+      <span class="sol-k red">2</span>
+      <div>
+        <div class="sol-title">\(\sqrt{A^{2}}=|A|\) — 그런데 이 문제는 성립하지 않는다</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 4 · 5점 · 출제 오류</span> 예각의 삼각비 · 대소 관계를 이용한 식의 계산</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">다음 등식이 성립할 때, \(\cos x\)의 값은? (단, \(\cos x \lt \sin x\)이다.)
+        <div class="mathrow">$$\sqrt{(\sin x+\cos x)^{2}}+\sqrt{(\cos x-\sin x)^{2}}=\frac43$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 이 단원의 전부: \(\sqrt{A^{2}}=|A|\)</span>
+        <p>근호와 제곱이 만나면 그냥 벗겨지는 게 아니라 <b>절댓값</b>이 남는다. 그래서 이런 문제는 늘 「괄호 안이 양수냐 음수냐」를 먼저 정하는 싸움이다.</p>
+        <div class="mathrow">$$\sqrt{A^{2}}=|A|=\begin{cases}A & (A\ge 0)\\ -A & (A \lt 0)\end{cases}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 부호를 판정한다</span>
+        <p>\(x\)는 예각이므로 \(\sin x \gt 0,\ \cos x \gt 0\) → 첫 번째 괄호 \(\sin x+\cos x \gt 0\)은 무조건 양수. 두 번째는 주어진 조건 \(\cos x \lt \sin x\) 때문에 \(\cos x-\sin x \lt 0\), 즉 음수다.</p>
+        <div class="mathrow">$$\sqrt{(\sin x+\cos x)^{2}}=\sin x+\cos x,\qquad \sqrt{(\cos x-\sin x)^{2}}=\sin x-\cos x$$</div>
+        <div class="mathrow">$$\therefore\ (\sin x+\cos x)+(\sin x-\cos x)=2\sin x=\frac43\ \Longrightarrow\ \sin x=\frac23$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 여기서 모순이 터진다</span>
+        <p>\(\sin x=\frac23\)이면 \(\cos x=\sqrt{1-\frac49}=\frac{\sqrt5}{3}\approx 0.745\)인데, \(\sin x=\frac23\approx 0.667\)이다. 즉 \(\cos x \gt \sin x\) — <b>문제가 준 조건 \(\cos x \lt \sin x\)와 정반대</b>다.</p>
+        <p>우연이 아니다. 좌변을 정리하면 언제나 <b>둘 중 큰 쪽의 두 배</b>가 된다.</p>
+        <div class="mathrow">$$(\sin x+\cos x)+|\cos x-\sin x|=2\max(\sin x,\ \cos x)$$</div>
+        <p>예각에서 \(\sin x,\ \cos x\) 중 큰 값은 아무리 작아도 \(\frac{\sqrt2}{2}\) 이상이므로, 좌변은 항상 \(\sqrt2\approx1.414\) 이상이다. 그런데 우변은 \(\frac43\approx1.333\) — <b>애초에 도달할 수 없는 값</b>이다. 인쇄된 그대로라면 이 문제는 답이 없다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 원래 문제는 가운데가 \(-\)였다</span>
+        <p>두 근호 사이를 <b>뺄셈</b>으로 놓으면 모든 게 맞아떨어진다.</p>
+        <div class="mathrow">$$\sqrt{(\sin x+\cos x)^{2}}-\sqrt{(\cos x-\sin x)^{2}}=(\sin x+\cos x)-(\sin x-\cos x)=2\cos x$$</div>
+        <div class="mathrow">$$2\cos x=\frac43\ \Longrightarrow\ \cos x=\frac23$$</div>
+        <p>검산해 보면 \(\cos x=\frac23\approx0.667\), \(\sin x=\frac{\sqrt5}{3}\approx0.745\)이므로 <b>\(\cos x \lt \sin x\) 조건도 정확히 만족</b>한다. 앞뒤가 완벽히 맞으니, 원문은 \(+\)가 아니라 \(-\)인 문제였고 학교 공식 정답 ①도 이 계산에서 나온 것이다.</p>
+        <div class="result"><span class="lab">공식 정답</span><span class="val">\(\cos x=\dfrac23\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">⚠️ 시험장에서 이런 문제를 만나면</div>
+          <p>부호 조건과 답이 어긋나면 <b>먼저 자기 계산을 두 번 검산</b>하고, 그래도 어긋나면 <b>답지에 있는 값 중 조건을 만족하는 것</b>을 고른다. 이 문제에서 \(\cos x \lt \sin x\)를 만족하는 선택지는 ①\(\frac23\)뿐이고(②\(\frac{\sqrt5}{3}\)는 \(\cos x \gt \sin x\)가 된다), 그게 정답이었다. 그리고 시험 직후 <b>이의신청</b> 대상이다.</p>
+        </div>
+        <div class="miss"><b>진짜 배울 점</b> 이 단원의 핵심은 답이 아니라 <b>「부호를 먼저 정하고 절댓값을 벗긴다」</b>는 순서다. \(45^\circ\)를 기준으로 \(0^\circ \lt x \lt 45^\circ\)면 \(\cos x \gt \sin x\), \(45^\circ \lt x \lt 90^\circ\)면 \(\sin x \gt \cos x\) — 이 한 줄이 이 유형 전체를 지배한다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q3">
+    <div class="sol-head">
+      <span class="sol-k">3</span>
+      <div>
+        <div class="sol-title">특수각이 아닌 삼각형 → 수선을 그어 직각삼각형 둘로</div>
+        <div class="sol-kind"><span class="dbadge">난이도 5 · 5점</span> 삼각비의 활용 · 한 변과 양 끝 각 조건</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림과 같은 \(\triangle \mathrm{ABC}\)에서 두 점 \(\mathrm{D}\), \(\mathrm{E}\)는 각각 \(\overline{\mathrm{AB}}\), \(\overline{\mathrm{AC}}\)의 중점이다. \(\angle \mathrm{A}=45^\circ\), \(\angle \mathrm{AED}=60^\circ\), \(\overline{\mathrm{BC}}=32\)일 때, \(\overline{\mathrm{AD}}\)의 길이는?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 점선이 「내가 그어야 할 보조선」</span>
+          <svg viewBox="0 0 360 240" role="img" aria-label="삼각형 ABC와 중점 D, E. D에서 AE에 내린 수선의 발 H">
+            <polygon points="150,40 60,200 290,200" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <line x1="105" y1="120" x2="220" y2="120" stroke="var(--indigo)" stroke-width="2.4"/>
+            <line x1="105" y1="120" x2="170" y2="63" stroke="var(--red)" stroke-width="2" stroke-dasharray="5 4"/>
+            <path d="M 170 63 L 162 54 L 154 61" fill="none" stroke="var(--red)" stroke-width="1.5"/>
+            <g fill="var(--indigo)"><circle cx="105" cy="120" r="4"/><circle cx="220" cy="120" r="4"/></g>
+            <circle cx="170" cy="63" r="3.5" fill="var(--red)"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="144" y="30">A</text><text x="42" y="212">B</text><text x="296" y="212">C</text>
+              <text x="86" y="126">D</text><text x="228" y="126">E</text>
+            </g>
+            <text x="176" y="58" font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--red)">H</text>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--ink-soft)">
+              <text x="140" y="60">45°</text><text x="186" y="134">60°</text>
+              <text x="162" y="216">32</text><text x="150" y="112">16</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>중점연결정리로 \(\overline{\mathrm{DE}}=16\). 특수각이 없는 \(\triangle\mathrm{ADE}\)는 <b>수선 \(\overline{\mathrm{DH}}\)</b> 하나로 직각삼각형 둘이 된다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 중점 두 개를 봤으면 중점연결정리</span>
+        <p>\(\mathrm{D}\), \(\mathrm{E}\)가 두 변의 중점이므로 \(\overline{\mathrm{DE}}\parallel\overline{\mathrm{BC}}\)이고 길이는 절반이다.</p>
+        <div class="mathrow">$$\overline{\mathrm{DE}}=\frac12\overline{\mathrm{BC}}=\frac12\times 32=16$$</div>
+        <p class="aside">\(\overline{\mathrm{BC}}=32\)라는 조건은 오직 이 한 줄을 위해 존재한다. 여기서 \(16\)을 못 뽑으면 남은 길이 정보가 하나도 없다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 핵심: 직각삼각형이 아니면 삼각비를 못 쓴다</span>
+        <p>이제 \(\triangle\mathrm{ADE}\)만 보면 된다. \(\angle \mathrm{A}=45^\circ\), \(\angle \mathrm{AED}=60^\circ\), \(\overline{\mathrm{DE}}=16\). 그런데 이 삼각형은 <b>직각삼각형이 아니라</b> 삼각비를 바로 쓸 수 없다. 중3에서 이럴 때 하는 일은 딱 하나 — <b>길이를 아는 변의 끝점에서 수선을 내려 직각삼각형 두 개로 쪼갠다</b>.</p>
+        <p>길이를 아는 변이 \(\overline{\mathrm{DE}}\)이니, \(\mathrm{D}\)에서 \(\overline{\mathrm{AE}}\)에 수선을 내려 발을 \(\mathrm{H}\)라 하자. 그러면 \(\overline{\mathrm{DH}}\)가 <b>두 직각삼각형이 공유하는 다리</b>가 된다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 공유하는 변 \(\overline{\mathrm{DH}}\)를 징검다리로</span>
+        <p>먼저 \(60^\circ\)가 있는 \(\triangle \mathrm{DHE}\)에서 \(\overline{\mathrm{DH}}\)를 구한다.</p>
+        <div class="mathrow">$$\overline{\mathrm{DH}}=\overline{\mathrm{DE}}\sin 60^\circ=16\times\frac{\sqrt3}{2}=8\sqrt3$$</div>
+        <p>이제 \(45^\circ\)가 있는 \(\triangle \mathrm{ADH}\)에서 \(\overline{\mathrm{AD}}\)를 구한다. \(\overline{\mathrm{DH}}\)는 \(\angle \mathrm{A}\)의 <b>맞은편</b> 변이므로 \(\sin\)을 쓴다.</p>
+        <div class="mathrow">$$\overline{\mathrm{DH}}=\overline{\mathrm{AD}}\sin 45^\circ\ \Longrightarrow\ \overline{\mathrm{AD}}=\frac{8\sqrt3}{\frac{\sqrt2}{2}}=8\sqrt3\times\frac{2}{\sqrt2}=8\sqrt6$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\overline{\mathrm{AD}}=8\sqrt6\ \Rightarrow\ \) ④</span></div>
+        <div class="warn">
+          <div class="t">💡 이 유형의 공식 같은 순서</div>
+          <p>「한 변과 양 끝 각」이 주어진 삼각형에서 다른 변을 구할 때는 <b>① 길이를 아는 변의 한쪽 끝에서 ② 마주보는 변에 수선을 내리고 ③ 그 수선을 징검다리로 두 번 삼각비를 쓴다</b>. 수선을 어디서 내릴지 고민되면 <b>「길이를 아는 변의 끝점에서」</b>를 기억하면 된다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q4">
+    <div class="sol-head">
+      <span class="sol-k">4</span>
+      <div>
+        <div class="sol-title">특수각 계산 한 덩어리 + 근과 계수의 관계</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 특수각의 삼각비 · 이차방정식의 근 조건</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">이차방정식 \(x^{2}-x+a=0\)의 한 근이
+        <div class="mathrow">$$\sin 60^\circ\times\frac{1}{\tan 30^\circ}\times(\tan 60^\circ)^{2}-\cos 60^\circ\times\tan 45^\circ$$</div>
+        일 때, 다른 한 근은? (단, \(a\)는 수이다.)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 특수각 값을 표로 먼저 꺼내 놓는다</span>
+        <p>계산 실수를 줄이는 가장 확실한 방법은 <b>대입하기 전에 값을 모두 적어 놓는 것</b>이다.</p>
+        <table class="calc">
+          <tr><th></th><th>\(30^\circ\)</th><th>\(45^\circ\)</th><th>\(60^\circ\)</th></tr>
+          <tr><td>\(\sin\)</td><td>\(\frac12\)</td><td>\(\frac{\sqrt2}{2}\)</td><td>\(\frac{\sqrt3}{2}\)</td></tr>
+          <tr><td>\(\cos\)</td><td>\(\frac{\sqrt3}{2}\)</td><td>\(\frac{\sqrt2}{2}\)</td><td>\(\frac12\)</td></tr>
+          <tr><td>\(\tan\)</td><td>\(\frac{\sqrt3}{3}\)</td><td>\(1\)</td><td>\(\sqrt3\)</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 한 근의 값을 계산</span>
+        <p>\(\dfrac{1}{\tan 30^\circ}=\dfrac{1}{\frac{\sqrt3}{3}}=\dfrac{3}{\sqrt3}=\sqrt3\), \((\tan 60^\circ)^{2}=(\sqrt3)^{2}=3\)임에 주의.</p>
+        <div class="mathrow">$$\frac{\sqrt3}{2}\times\sqrt3\times 3-\frac12\times 1=\frac{3}{2}\times 3-\frac12=\frac92-\frac12=4$$</div>
+        <p class="aside">\(\frac{\sqrt3}{2}\times\sqrt3=\frac{3}{2}\) — 무리수끼리 곱해 유리수가 되는 이 지점이 계산의 고비다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — \(a\)를 구하지 않는 것이 요령</span>
+        <p>많은 학생이 근 \(4\)를 방정식에 대입해 \(16-4+a=0\), \(a=-12\)를 구한 뒤 다시 방정식을 풀려고 한다. 그럴 필요가 전혀 없다. <b>두 근의 합은 \(a\)와 무관</b>하기 때문이다.</p>
+        <div class="mathrow">$$x^{2}-x+a=0\ \text{의 두 근의 합}=-\frac{-1}{1}=1$$</div>
+        <div class="mathrow">$$\therefore\ \text{다른 한 근}=1-4=-3$$</div>
+        <div class="miss"><b>오답 함정</b> 선택지 ①\(-12\)는 바로 \(a\)의 값이다. 「구한 김에 적어 버리는」 실수를 정확히 노린 선택지 — <b>문제가 묻는 게 근인지 상수인지</b>를 마지막에 한 번 더 확인하자.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(-3\ \Rightarrow\ \) ③</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q5">
+    <div class="sol-head">
+      <span class="sol-k">5</span>
+      <div>
+        <div class="sol-title">\(0^\circ\)와 \(90^\circ\)의 삼각비 — 다섯 개를 한 줄씩 검산</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 예각의 삼각비 · 참거짓/합답형</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">삼각비의 값이 바르게 계산된 것만을 &lt;보기&gt;에서 있는 대로 고른 것은?
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>\(\sin 0^\circ+\cos 90^\circ=0\)</span></div>
+          <div class="row"><span class="lab">ㄴ.</span><span>\(\cos 60^\circ-\tan 45^\circ+\sin 30^\circ=1\)</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>\(\cos 0^\circ\times(\tan 45^\circ+\sin 90^\circ)=2\)</span></div>
+          <div class="row"><span class="lab">ㄹ.</span><span>\(\sin 90^\circ-\tan 30^\circ\times\tan 60^\circ+\cos 0^\circ=-1\)</span></div>
+          <div class="row"><span class="lab">ㅁ.</span><span>\((\sin 0^\circ+\sin 45^\circ)(\cos 90^\circ-\cos 45^\circ)=-\dfrac12\)</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — \(0^\circ,\ 90^\circ\) 값을 「그림」으로 외운다</span>
+        <p>사분원에서 각을 \(0^\circ\)로 눕히면 높이가 사라지고, \(90^\circ\)로 세우면 밑변이 사라진다고 생각하면 외울 게 없다.</p>
+        <table class="calc">
+          <tr><th></th><th>\(\sin\)</th><th>\(\cos\)</th><th>\(\tan\)</th></tr>
+          <tr><td>\(0^\circ\)</td><td>\(0\)</td><td>\(1\)</td><td>\(0\)</td></tr>
+          <tr><td>\(90^\circ\)</td><td>\(1\)</td><td>\(0\)</td><td>정할 수 없다</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 다섯 개를 각각 계산</span>
+        <p><b>ㄱ.</b> <b>✓ 참</b></p>
+        <div class="mathrow">$$\sin 0^\circ+\cos 90^\circ=0+0=0$$</div>
+        <p><b>ㄴ.</b> <b>✗ 거짓</b> — \(1\)이 아니라 \(0\)이다.</p>
+        <div class="mathrow">$$\cos 60^\circ-\tan 45^\circ+\sin 30^\circ=\frac12-1+\frac12=0$$</div>
+        <p><b>ㄷ.</b> <b>✓ 참</b></p>
+        <div class="mathrow">$$\cos 0^\circ\times(\tan 45^\circ+\sin 90^\circ)=1\times(1+1)=2$$</div>
+        <p><b>ㄹ.</b> <b>✗ 거짓</b> — \(\tan 30^\circ\times\tan 60^\circ=1\)이므로 \(-1\)이 아니라 \(1\)이다.</p>
+        <div class="mathrow">$$\sin 90^\circ-\tan 30^\circ\times\tan 60^\circ+\cos 0^\circ=1-1+1=1$$</div>
+        <p><b>ㅁ.</b> <b>✓ 참</b></p>
+        <div class="mathrow">$$\left(0+\frac{\sqrt2}{2}\right)\left(0-\frac{\sqrt2}{2}\right)=-\frac24=-\frac12$$</div>
+</div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">ㄱ, ㄷ, ㅁ \(\ \Rightarrow\ \) ④</span></div>
+        <div class="miss"><b>실수 주의</b> ㄹ에서 \(\tan 30^\circ\times\tan 60^\circ=1\)은 자주 나오는 짝(서로 역수)이다. 이걸 \(\frac{\sqrt3}{3}\times\sqrt3=\frac{3}{3}=1\)로 정확히 계산하지 않고 \(\sqrt3\) 같은 값으로 남겨 두면 부호까지 어긋난다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q6">
+    <div class="sol-head">
+      <span class="sol-k">6</span>
+      <div>
+        <div class="sol-title">표는 「값 → 각」으로 거꾸로 읽는다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 삼각비의 표 · 각의 크기 구하기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(\sin x=0.1736\), \(\cos y=0.9945\)일 때, 삼각비의 표를 이용한 \(\tan(x-y)\)의 값은?
+        <table class="calc">
+          <tr><th>각도</th><th>사인</th><th>코사인</th><th>탄젠트</th></tr>
+          <tr class="hi"><td>\(4^\circ\)</td><td>0.0698</td><td>0.9976</td><td><b>0.0699</b></td></tr>
+          <tr><td>\(6^\circ\)</td><td>0.1045</td><td><b>0.9945</b></td><td>0.1051</td></tr>
+          <tr><td>\(8^\circ\)</td><td>0.1392</td><td>0.9903</td><td>0.1405</td></tr>
+          <tr><td>\(10^\circ\)</td><td><b>0.1736</b></td><td>0.9848</td><td>0.1763</td></tr>
+          <tr><td>\(12^\circ\)</td><td>0.2079</td><td>0.9781</td><td>0.2126</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 값이 있는 「열」을 정확히 골라 각을 찾는다</span>
+        <p>표를 쓰는 문제는 늘 <b>세로로 어느 열을 보느냐</b>가 전부다. \(\sin x\)는 <b>사인 열</b>에서, \(\cos y\)는 <b>코사인 열</b>에서 찾는다.</p>
+        <div class="mathrow">$$\sin x=0.1736\ \Rightarrow\ x=10^\circ,\qquad \cos y=0.9945\ \Rightarrow\ y=6^\circ$$</div>
+        <p class="aside">\(0.1736\)은 코사인 열엔 없고, \(0.9945\)는 사인 열엔 없다. 열을 헷갈리면 애초에 값을 못 찾으니, 못 찾겠다 싶으면 열부터 다시 보자.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 각을 먼저 빼고, 그다음에 \(\tan\)</span>
+        <div class="mathrow">$$x-y=10^\circ-6^\circ=4^\circ\ \Longrightarrow\ \tan(x-y)=\tan 4^\circ=0.0699$$</div>
+        <div class="warn">
+          <div class="t">⚠️ 절대 하면 안 되는 계산</div>
+          <p>\(\tan(x-y)\)는 <b>\(\tan x-\tan y\)가 아니다</b>. \(0.1763-0.1051=0.0712\)라는 값이 표에 없는 것도 그 때문. 삼각비는 「각을 넣으면 값이 나오는 장치」라서, <b>괄호 안의 각을 먼저 계산</b>한 뒤 그 각으로 표를 다시 봐야 한다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\tan 4^\circ=0.0699\ \Rightarrow\ \) ①</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q7">
+    <div class="sol-head">
+      <span class="sol-k">7</span>
+      <div>
+        <div class="sol-title">모든 식을 「변 하나」로 정리하면 승부가 난다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 6점</span> 삼각비의 뜻과 값 · 참거짓/합답형</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">&lt;보기&gt;에서 \(\angle \mathrm{C}=90^\circ\)인 직각삼각형 \(\mathrm{ABC}\)에 대한 등식으로 올바른 것의 개수는?
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>\(\dfrac{\overline{\mathrm{BC}}}{\sin A}=\dfrac{\overline{\mathrm{AC}}}{\sin B}\)</span></div>
+          <div class="row"><span class="lab">ㄴ.</span><span>\(\overline{\mathrm{AB}}\times\sin A=\dfrac{\overline{\mathrm{BC}}}{\tan A}\)</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>\(\overline{\mathrm{AB}}\times\cos A=\dfrac{\overline{\mathrm{AC}}}{\tan B}\)</span></div>
+          <div class="row"><span class="lab">ㄹ.</span><span>\(\overline{\mathrm{AC}}\times\tan A=\overline{\mathrm{AB}}\times\cos A\)</span></div>
+          <div class="row"><span class="lab">ㅁ.</span><span>\(\overline{\mathrm{AB}}\times\cos B=\overline{\mathrm{BC}}\times\tan B\)</span></div>
+        </div>
+      </div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 직각이 C에 있으므로 빗변은 AB</span>
+          <svg viewBox="0 0 340 210" role="img" aria-label="각 C가 직각인 직각삼각형 ABC">
+            <polygon points="50,170 290,170 290,50" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M 290 170 L 268 170 L 268 148 L 290 148" fill="none" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="34" y="184">A</text><text x="292" y="42">B</text><text x="296" y="184">C</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--indigo)">
+              <text x="160" y="188">AC</text><text x="298" y="115">BC</text><text x="150" y="100">AB (빗변)</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>\(\angle \mathrm{C}=90^\circ\) → 빗변은 \(\overline{\mathrm{AB}}\). \(\mathrm{A}\)에서 보면 높이가 \(\overline{\mathrm{BC}}\), \(\mathrm{B}\)에서 보면 높이가 \(\overline{\mathrm{AC}}\).</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 여섯 개를 미리 다 적어 놓는다</span>
+        <p>이런 「등식 참거짓」 문제는 머리로 비교하면 반드시 틀린다. <b>여섯 개를 표로 적어 놓고 기계적으로 대입</b>하는 것이 정답률이 가장 높다.</p>
+        <table class="calc">
+          <tr><th>기준각 \(A\)</th><th>기준각 \(B\)</th></tr>
+          <tr><td>\(\sin A=\dfrac{\overline{\mathrm{BC}}}{\overline{\mathrm{AB}}}\)</td><td>\(\sin B=\dfrac{\overline{\mathrm{AC}}}{\overline{\mathrm{AB}}}\)</td></tr>
+          <tr><td>\(\cos A=\dfrac{\overline{\mathrm{AC}}}{\overline{\mathrm{AB}}}\)</td><td>\(\cos B=\dfrac{\overline{\mathrm{BC}}}{\overline{\mathrm{AB}}}\)</td></tr>
+          <tr><td>\(\tan A=\dfrac{\overline{\mathrm{BC}}}{\overline{\mathrm{AC}}}\)</td><td>\(\tan B=\dfrac{\overline{\mathrm{AC}}}{\overline{\mathrm{BC}}}\)</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 양변을 각각 「하나의 변」으로 줄인다</span>
+        <p>여기가 핵심이다. 대입해 보면 <b>모든 식이 결국 \(\overline{\mathrm{AC}}\) 아니면 \(\overline{\mathrm{BC}}\) 하나로 정리</b>된다. 그러면 참거짓은 눈으로 바로 보인다.</p>
+        <table class="calc">
+          <tr><th></th><th>좌변</th><th>우변</th><th>판정</th></tr>
+          <tr><td>ㄱ</td><td>\(\dfrac{\overline{\mathrm{BC}}}{\overline{\mathrm{BC}}/\overline{\mathrm{AB}}}=\overline{\mathrm{AB}}\)</td><td>\(\dfrac{\overline{\mathrm{AC}}}{\overline{\mathrm{AC}}/\overline{\mathrm{AB}}}=\overline{\mathrm{AB}}\)</td><td><b>참 ✓</b></td></tr>
+          <tr><td>ㄴ</td><td>\(\overline{\mathrm{AB}}\cdot\dfrac{\overline{\mathrm{BC}}}{\overline{\mathrm{AB}}}=\overline{\mathrm{BC}}\)</td><td>\(\dfrac{\overline{\mathrm{BC}}}{\overline{\mathrm{BC}}/\overline{\mathrm{AC}}}=\overline{\mathrm{AC}}\)</td><td>거짓 ✗</td></tr>
+          <tr><td>ㄷ</td><td>\(\overline{\mathrm{AB}}\cdot\dfrac{\overline{\mathrm{AC}}}{\overline{\mathrm{AB}}}=\overline{\mathrm{AC}}\)</td><td>\(\dfrac{\overline{\mathrm{AC}}}{\overline{\mathrm{AC}}/\overline{\mathrm{BC}}}=\overline{\mathrm{BC}}\)</td><td>거짓 ✗</td></tr>
+          <tr><td>ㄹ</td><td>\(\overline{\mathrm{AC}}\cdot\dfrac{\overline{\mathrm{BC}}}{\overline{\mathrm{AC}}}=\overline{\mathrm{BC}}\)</td><td>\(\overline{\mathrm{AB}}\cdot\dfrac{\overline{\mathrm{AC}}}{\overline{\mathrm{AB}}}=\overline{\mathrm{AC}}\)</td><td>거짓 ✗</td></tr>
+          <tr><td>ㅁ</td><td>\(\overline{\mathrm{AB}}\cdot\dfrac{\overline{\mathrm{BC}}}{\overline{\mathrm{AB}}}=\overline{\mathrm{BC}}\)</td><td>\(\overline{\mathrm{BC}}\cdot\dfrac{\overline{\mathrm{AC}}}{\overline{\mathrm{BC}}}=\overline{\mathrm{AC}}\)</td><td>거짓 ✗</td></tr>
+        </table>
+        <p class="aside">ㄴ·ㄷ·ㄹ·ㅁ이 전부 「\(\overline{\mathrm{BC}}=\overline{\mathrm{AC}}\)」꼴로 귀결된다. 이건 <b>직각이등변삼각형일 때만</b> 참이므로, 일반적으로는 모두 거짓이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">참인 것은 ㄱ 하나 \(\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">💡 ㄱ은 사실 「사인법칙」의 맛보기</div>
+          <p>ㄱ의 양변이 똑같이 빗변 \(\overline{\mathrm{AB}}\)가 되는 것은 우연이 아니다. 고등학교에서 배우는 <b>사인법칙</b> \(\frac{a}{\sin A}=\frac{b}{\sin B}=2R\)의 직각삼각형 특수한 경우다. 지금은 「대변을 그 대각의 사인으로 나누면 항상 같다」 정도로 기억해 두면 좋다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q8">
+    <div class="sol-head">
+      <span class="sol-k">8</span>
+      <div>
+        <div class="sol-title">눈높이를 기준선으로 — 위와 아래를 따로 재서 더한다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 삼각비의 활용 · 두 시점의 높이의 차</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">건물에서 \(9\,\mathrm{m}\) 떨어진 위치에 나무가 있다. 건물의 \(\mathrm{A}\)지점에서 이 나무의 꼭대기 \(\mathrm{B}\)지점을 올려다본 각의 크기는 \(45^\circ\)이고, 나무의 밑 \(\mathrm{C}\)지점을 내려다본 각의 크기는 \(30^\circ\)일 때, 나무의 높이는?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 점선(눈높이)이 나무를 위·아래로 자른다</span>
+          <svg viewBox="0 0 360 270" role="img" aria-label="건물 A지점에서 나무 꼭대기 B를 올려본각 45도, 밑 C를 내려본각 30도, 수평거리 9m">
+            <line x1="30" y1="225" x2="345" y2="225" stroke="var(--ink-soft)" stroke-width="2"/>
+            <rect x="55" y="145" width="65" height="80" fill="var(--line-soft)" stroke="var(--ink-soft)" stroke-width="1.8"/>
+            <line x1="250" y1="225" x2="250" y2="20" stroke="var(--green)" stroke-width="4" stroke-linecap="round"/>
+            <line x1="120" y1="150" x2="250" y2="150" stroke="var(--ink-faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+            <line x1="120" y1="150" x2="250" y2="20" stroke="var(--indigo)" stroke-width="2.2"/>
+            <line x1="120" y1="150" x2="250" y2="225" stroke="var(--indigo)" stroke-width="2.2"/>
+            <path d="M 250 150 L 262 150" stroke="var(--red)" stroke-width="1.4" stroke-dasharray="3 3"/>
+            <path d="M 158 150 A 38 38 0 0 0 146 124" fill="none" stroke="var(--indigo)" stroke-width="1.5"/>
+            <path d="M 158 150 A 38 38 0 0 1 155 172" fill="none" stroke="var(--indigo)" stroke-width="1.5"/>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--indigo)">
+              <text x="163" y="132">45°</text><text x="163" y="180">30°</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="103" y="146">A</text><text x="256" y="18">B</text><text x="256" y="242">C</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--ink-soft)">
+              <text x="172" y="165">9 m</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="800">
+              <text x="282" y="90" fill="var(--red)">9 (윗부분)</text>
+              <text x="282" y="195" fill="var(--red)">3√3 (아랫부분)</text>
+            </g>
+            <line x1="276" y1="20" x2="276" y2="150" stroke="var(--red)" stroke-width="1.4"/>
+            <line x1="276" y1="150" x2="276" y2="225" stroke="var(--red)" stroke-width="1.4"/>
+          </svg>
+        </div>
+        <figcaption>눈높이 점선이 기준선. 나무는 이 선 <b>위쪽</b>과 <b>아래쪽</b> 두 토막으로 나뉘고, 두 토막 모두 밑변이 \(9\,\mathrm{m}\)인 직각삼각형에서 나온다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 「올려본각·내려본각」은 언제나 수평선이 기준</span>
+        <p>이 유형에서 가장 먼저 그어야 할 선은 <b>\(\mathrm{A}\)에서 나무 쪽으로 뻗은 수평선</b>이다. 올려본각도 내려본각도 이 수평선에서 잰 각이기 때문. 이 선이 나무를 위·아래 두 토막으로 자른다.</p>
+        <p class="aside">건물과 나무 사이 거리 \(9\,\mathrm{m}\)는 <b>두 직각삼각형이 공유하는 밑변</b>이다. 한 번 구한 정보를 두 번 쓰는 구조라서 문제가 짧게 끝난다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 위쪽 토막 (올려본각 \(45^\circ\))</span>
+        <p>밑변이 \(9\), 그 각이 \(45^\circ\)이므로 높이는 \(\tan\)으로 구한다.</p>
+        <div class="mathrow">$$(\text{윗부분})=9\times\tan 45^\circ=9\times 1=9$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 아래쪽 토막 (내려본각 \(30^\circ\))</span>
+        <div class="mathrow">$$(\text{아랫부분})=9\times\tan 30^\circ=9\times\frac{\sqrt3}{3}=3\sqrt3$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 두 토막을 더한다</span>
+        <div class="mathrow">$$(\text{나무의 높이})=9+3\sqrt3\ (\mathrm{m})$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\((9+3\sqrt3)\,\mathrm{m}\ \Rightarrow\ \) ⑤</span></div>
+        <div class="miss"><b>오답 함정</b> ①\((6+2\sqrt3)\), ②\((6+3\sqrt3)\)는 밑변을 \(6\)으로 잘못 본 경우, ③\((9+\sqrt3)\), ④\((9+2\sqrt3)\)는 \(9\tan30^\circ\)를 \(\sqrt3\)이나 \(2\sqrt3\)으로 잘못 계산한 경우다. \(9\times\frac{\sqrt3}{3}=3\sqrt3\) — <b>\(9\div3=3\)</b>이 정확히 되는지 확인하자.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q9">
+    <div class="sol-head">
+      <span class="sol-k">9</span>
+      <div>
+        <div class="sol-title">수선으로 \(\overline{\mathrm{AC}}\)를 구하고 나면 정삼각형이 보인다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 삼각비의 활용 · 두 각과 한 변 조건</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림과 같이 호수의 두 지점 \(\mathrm{C}\)와 \(\mathrm{D}\) 사이의 거리를 구하기 위해 거리와 각을 측정하여 나타낸 것이다.
+        <div class="cond">
+          <div class="row"><span class="lab">측정</span><span>\(\overline{\mathrm{AB}}=100\,\mathrm{m}\), \(\angle \mathrm{ABC}=60^\circ\), \(\angle \mathrm{BAC}=75^\circ\), \(\angle \mathrm{CAD}=60^\circ\)</span></div>
+        </div>
+        \(\overline{\mathrm{AC}}=\overline{\mathrm{AD}}\)일 때, \(\overline{\mathrm{CD}}\)의 길이는?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 빨간 점선이 내가 그어야 할 수선</span>
+          <svg viewBox="0 0 340 260" role="img" aria-label="사각형 ABCD와 A에서 BC에 내린 수선의 발 H">
+            <polygon points="90,110 70,220 270,180 250,50" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <line x1="90" y1="110" x2="270" y2="180" stroke="var(--indigo)" stroke-width="2.4"/>
+            <line x1="90" y1="110" x2="110" y2="212" stroke="var(--red)" stroke-width="2" stroke-dasharray="5 4"/>
+            <path d="M 110 212 L 119 209 L 116 200" fill="none" stroke="var(--red)" stroke-width="1.5"/>
+            <circle cx="110" cy="212" r="3.5" fill="var(--red)"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="70" y="106">A</text><text x="52" y="234">B</text><text x="276" y="192">C</text><text x="256" y="44">D</text>
+            </g>
+            <text x="114" y="228" font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--red)">H</text>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--ink-soft)">
+              <text x="30" y="170">100 m</text><text x="104" y="132">75°</text><text x="86" y="202">60°</text><text x="118" y="115">60°</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>\(\triangle\mathrm{ABC}\)에는 직각이 없다 → \(\mathrm{A}\)에서 \(\overline{\mathrm{BC}}\)에 수선 \(\overline{\mathrm{AH}}\)를 내려 직각삼각형 둘로 만든다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 남은 각부터 채운다</span>
+        <p>\(\triangle\mathrm{ABC}\)의 세 각의 합은 \(180^\circ\)이므로</p>
+        <div class="mathrow">$$\angle \mathrm{ACB}=180^\circ-60^\circ-75^\circ=45^\circ$$</div>
+        <p class="aside">\(60^\circ\)와 \(45^\circ\)라는 <b>특수각 두 개</b>가 양 끝에 생겼다. 이게 수선을 내리라는 신호다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 수선 \(\overline{\mathrm{AH}}\)를 징검다리로 \(\overline{\mathrm{AC}}\) 구하기</span>
+        <p>\(\mathrm{A}\)에서 \(\overline{\mathrm{BC}}\)에 내린 수선의 발을 \(\mathrm{H}\)라 하면, \(\overline{\mathrm{AH}}\)는 두 직각삼각형이 함께 쓰는 변이다.</p>
+        <div class="mathrow">$$\triangle \mathrm{ABH}:\quad \overline{\mathrm{AH}}=100\sin 60^\circ=100\times\frac{\sqrt3}{2}=50\sqrt3$$</div>
+        <div class="mathrow">$$\triangle \mathrm{AHC}:\quad \overline{\mathrm{AH}}=\overline{\mathrm{AC}}\sin 45^\circ\ \Longrightarrow\ \overline{\mathrm{AC}}=\frac{50\sqrt3}{\frac{\sqrt2}{2}}=50\sqrt3\times\frac{2}{\sqrt2}=50\sqrt6$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 마지막 한 수: 정삼각형</span>
+        <p>이제 \(\triangle \mathrm{ACD}\)를 보자. \(\overline{\mathrm{AC}}=\overline{\mathrm{AD}}\)인 <b>이등변삼각형</b>인데 그 사이 낀 각이 \(\angle \mathrm{CAD}=60^\circ\)다.</p>
+        <p>이등변삼각형의 두 밑각은 같고 합이 \(180^\circ-60^\circ=120^\circ\)이므로 각각 \(60^\circ\) — <b>세 각이 모두 \(60^\circ\), 곧 정삼각형</b>이다. 따라서 세 변이 모두 같다.</p>
+        <div class="mathrow">$$\overline{\mathrm{CD}}=\overline{\mathrm{AC}}=50\sqrt6\ (\mathrm{m})$$</div>
+        <div class="warn">
+          <div class="t">💡 놓치면 계산이 두 배로 길어지는 지점</div>
+          <p>「이등변 + 낀각 \(60^\circ\) = 정삼각형」을 못 보면, \(\triangle\mathrm{ACD}\)에서 또 수선을 내려 \(\overline{\mathrm{CD}}=2\times\overline{\mathrm{AC}}\sin 30^\circ\)를 계산해야 한다. 답은 같지만 시간이 두 배다. <b>\(60^\circ\)가 낀각으로 등장하면 정삼각형부터 의심</b>하자.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\overline{\mathrm{CD}}=50\sqrt6\,\mathrm{m}\ \Rightarrow\ \) ②</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q10">
+    <div class="sol-head">
+      <span class="sol-k">10</span>
+      <div>
+        <div class="sol-title">숫자가 없는 문제 — 「무엇을 재는 식인가」로 답을 고른다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 5 · 5점</span> 삼각비의 활용 · 두 시점의 높이의 차</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림과 같이 폭포보다 높은 건너편 언덕에서 폭포를 바라볼 때 폭포의 높이 \(h\)는? (관측점에서 폭포의 <b>윗부분</b>까지의 거리가 \(b\), <b>아랫부분</b>까지의 거리가 \(c\), 각각의 내려본각이 \(x^\circ\), \(y^\circ\))</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 관측점의 수평선을 기준으로 두 번 내려본다</span>
+          <svg viewBox="0 0 380 280" role="img" aria-label="관측점에서 폭포 위끝과 아래끝을 내려본 그림. 빗변 b와 c, 내려본각 x도와 y도">
+            <line x1="60" y1="50" x2="340" y2="50" stroke="var(--ink-faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+            <line x1="60" y1="50" x2="280" y2="130" stroke="var(--indigo)" stroke-width="2.2"/>
+            <line x1="60" y1="50" x2="280" y2="230" stroke="var(--amber)" stroke-width="2.2"/>
+            <line x1="280" y1="130" x2="280" y2="230" stroke="var(--green)" stroke-width="5" stroke-linecap="round"/>
+            <line x1="280" y1="50" x2="280" y2="130" stroke="var(--indigo)" stroke-width="1.5" stroke-dasharray="4 4"/>
+            <path d="M 118 50 A 58 58 0 0 1 113 71" fill="none" stroke="var(--indigo)" stroke-width="1.5"/>
+            <path d="M 150 50 A 90 90 0 0 1 133 124" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+            <circle cx="60" cy="50" r="5" fill="var(--ink)"/>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="800">
+              <text x="122" y="70" fill="var(--indigo)">x°</text>
+              <text x="150" y="100" fill="var(--amber)">y°</text>
+              <text x="168" y="82" fill="var(--indigo)">b</text>
+              <text x="150" y="168" fill="var(--amber)">c</text>
+              <text x="292" y="185" fill="var(--green)">h</text>
+              <text x="292" y="95" fill="var(--indigo)">b sin x°</text>
+              <text x="292" y="245" fill="var(--amber)">c sin y°</text>
+            </g>
+            <line x1="352" y1="50" x2="352" y2="230" stroke="var(--amber)" stroke-width="1.3"/>
+            <path d="M 348 54 L 352 50 L 356 54" fill="none" stroke="var(--amber)" stroke-width="1.3"/>
+            <path d="M 348 226 L 352 230 L 356 226" fill="none" stroke="var(--amber)" stroke-width="1.3"/>
+            <text x="66" y="42" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--ink-soft)">관측점(수평선)</text>
+          </svg>
+        </div>
+        <figcaption>수평선에서 <b>아래로 내려간 깊이</b>를 두 번 재서 빼면 된다. 빗변에 \(\sin\)을 곱하면 세로 길이, \(\cos\)을 곱하면 가로 길이.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 선택지를 보면 두 조각만 판단하면 된다</span>
+        <p>숫자가 하나도 없는 문제라 겁먹기 쉽지만, 실제로 확인할 것은 딱 두 가지다. <b>① 세로냐 가로냐(\(\sin\)이냐 \(\cos\)이냐)</b>, <b>② 더하냐 빼냐</b>.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — \(\cos\)이 들어간 선택지는 전부 탈락</span>
+        <p>구하려는 \(h\)는 <b>세로 길이</b>다. 빗변 \(b\)에 대해 세로 성분은 \(b\sin x^\circ\), 가로 성분이 \(b\cos x^\circ\)다. 따라서 \(b\cos x^\circ\)가 들어간 ①②③은 <b>가로 길이를 세로에 쓴 셈</b>이라 계산할 것도 없이 틀렸다.</p>
+        <div class="mathrow">$$(\text{윗부분까지의 깊이})=b\sin x^\circ,\qquad (\text{아랫부분까지의 깊이})=c\sin y^\circ$$</div>
+        <p class="aside">남은 건 ④\(c\sin y^\circ-b\sin x^\circ\)와 ⑤\(c\sin y^\circ+b\sin x^\circ\) 둘뿐. 이제 부호만 정하면 끝난다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 두 점이 「같은 쪽」에 있으면 뺄셈</span>
+        <p>폭포의 위끝과 아래끝은 <b>둘 다 수평선 아래</b>에 있다. 같은 방향으로 잰 두 깊이이므로, 그 차이가 폭포의 높이다.</p>
+        <div class="mathrow">$$h=(\text{아래끝 깊이})-(\text{위끝 깊이})=c\sin y^\circ-b\sin x^\circ$$</div>
+        <div class="warn">
+          <div class="t">⚠️ 8번 문제와 비교하면 확실해진다</div>
+          <p>8번에서는 나무 꼭대기가 수평선 <b>위</b>, 밑동이 <b>아래</b>라서 두 조각을 <b>더했다</b>. 여기서는 폭포가 통째로 수평선 <b>아래</b>라서 <b>뺀다</b>. 「기준선을 넘나들면 덧셈, 같은 쪽이면 뺄셈」 — 이 한 문장이 이 유형 전체의 부호 규칙이다.</p>
+        </div>
+        <div class="miss"><b>참고</b> 시험지 그림에는 거리가 \(b\,\mathrm{m}\), \(c\,\mathrm{cm}\), \(h\,\mathrm{cm}\)로 단위가 섞여 인쇄돼 있다(선택지는 모두 \(\mathrm{m}\)). 단위 표기 실수이며 풀이에는 영향이 없다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(h=c\sin y^\circ-b\sin x^\circ\ \Rightarrow\ \) ④</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q11">
+    <div class="sol-head">
+      <span class="sol-k">11</span>
+      <div>
+        <div class="sol-title">둔각이면 \(180^\circ\)에서 빼고 넣는다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 2 · 4점</span> 삼각비의 활용 · 둔각삼각형의 넓이</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림과 같은 삼각형 \(\mathrm{ABC}\)와 삼각형 \(\mathrm{DEF}\)의 넓이의 합은?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 예각 하나, 둔각 하나</span>
+          <svg viewBox="0 0 400 190" role="img" aria-label="삼각형 ABC는 각B가 45도, AB=6, BC=3루트2. 삼각형 DEF는 각D가 150도, DF=5, DE=4">
+            <polygon points="30,150 170,150 120,45" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M 148 150 A 22 22 0 0 0 155 135" fill="none" stroke="var(--indigo)" stroke-width="1.5"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="16" y="164">A</text><text x="176" y="164">B</text><text x="114" y="38">C</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--ink-soft)">
+              <text x="86" y="166">6 cm</text><text x="150" y="92">3√2 cm</text><text x="130" y="142">45°</text>
+            </g>
+            <polygon points="230,52 300,138 385,120" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M 289 122 A 22 22 0 0 0 322 134" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="220" y="46">F</text><text x="292" y="156">D</text><text x="390" y="118">E</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--ink-soft)">
+              <text x="238" y="106">5 cm</text><text x="336" y="146">4 cm</text><text x="294" y="106">150°</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>두 변과 <b>낀각</b>이 주어졌으면 넓이 공식을 바로 쓸 수 있다. 낀각이 둔각이면 \(180^\circ\)에서 뺀 각을 넣는다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 넓이 공식은 「두 변 × 낀각의 사인 ÷ 2」</span>
+        <div class="mathrow">$$S=\frac12ab\sin\theta\quad(\theta\ \text{가 예각}),\qquad S=\frac12ab\sin(180^\circ-\theta)\quad(\theta\ \text{가 둔각})$$</div>
+        <p class="aside">둔각일 때 \(180^\circ-\theta\)를 쓰는 이유는 <b>높이를 만드는 수선이 삼각형 바깥으로 나가기 때문</b>이다. 바깥에 생긴 직각삼각형의 각이 바로 \(180^\circ-\theta\)다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — \(\triangle \mathrm{ABC}\) (낀각 \(45^\circ\), 예각)</span>
+        <div class="mathrow">$$S_1=\frac12\times 6\times 3\sqrt2\times\sin 45^\circ=\frac12\times 6\times 3\sqrt2\times\frac{\sqrt2}{2}=9\ (\mathrm{cm}^2)$$</div>
+        <p class="aside">\(3\sqrt2\times\frac{\sqrt2}{2}=\frac{3\times 2}{2}=3\) — 무리수가 깔끔히 사라지도록 숫자를 만들어 둔 문제다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — \(\triangle \mathrm{DEF}\) (낀각 \(150^\circ\), 둔각)</span>
+        <div class="mathrow">$$S_2=\frac12\times 5\times 4\times\sin(180^\circ-150^\circ)=\frac12\times 20\times\sin 30^\circ=10\times\frac12=5\ (\mathrm{cm}^2)$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$S_1+S_2=9+5=14\ (\mathrm{cm}^2)$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(14\,\mathrm{cm}^2\ \Rightarrow\ \) ③</span></div>
+        <div class="miss"><b>실수 주의</b> \(150^\circ\)를 그대로 넣어도 \(\sin 150^\circ=\sin 30^\circ=\frac12\)라 답은 같다. 하지만 중3 과정에서는 \(90^\circ\)를 넘는 삼각비를 배우지 않았으므로, <b>반드시 \(180^\circ-150^\circ=30^\circ\)로 바꿔서</b> 쓰는 것이 정확한 서술이다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q12">
+    <div class="sol-head">
+      <span class="sol-k">12</span>
+      <div>
+        <div class="sol-title">각을 못 구할 땐 넓이를 두 번 세어 \(\sin\)을 역으로 뽑는다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 6점</span> 삼각비의 활용 · 다각형의 넓이 · 각 또는 삼각비 구하기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">한 변의 길이가 \(4\)인 정사각형 \(\mathrm{ABCD}\)의 두 변 \(\overline{\mathrm{AD}}\), \(\overline{\mathrm{CD}}\)의 중점을 각각 \(\mathrm{M}\), \(\mathrm{N}\)이라 하고 \(\angle \mathrm{BMN}=x^\circ\)라 할 때, \(\sin x^\circ\)의 값은?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 삼각형 BMN을 「빼서」 구한다</span>
+          <svg viewBox="0 0 330 250" role="img" aria-label="정사각형 ABCD와 변의 중점 M, N으로 만든 삼각형 BMN">
+            <rect x="65" y="30" width="200" height="200" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
+            <polygon points="65,30 165,30 65,230" fill="var(--line-soft)" stroke="var(--paper)" stroke-width="2"/>
+            <polygon points="165,30 265,30 265,130" fill="var(--line-soft)" stroke="var(--paper)" stroke-width="2"/>
+            <polygon points="265,130 265,230 65,230" fill="var(--line-soft)" stroke="var(--paper)" stroke-width="2"/>
+            <polygon points="165,30 265,130 65,230" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <g fill="var(--indigo)"><circle cx="165" cy="30" r="4"/><circle cx="265" cy="130" r="4"/></g>
+            <g font-family="Noto Sans KR" font-size="11" font-weight="800" fill="var(--ink-faint)">
+              <text x="86" y="86">4</text><text x="222" y="60">2</text><text x="176" y="206">4</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="48" y="24">A</text><text x="270" y="24">D</text><text x="48" y="246">B</text><text x="270" y="246">C</text>
+              <text x="160" y="22">M</text><text x="274" y="128">N</text>
+            </g>
+            <text x="170" y="70" font-family="Noto Sans KR" font-size="12" font-weight="800" fill="var(--indigo)">x°</text>
+            <g font-family="Noto Sans KR" font-size="11" font-weight="700" fill="var(--ink-faint)">
+              <text x="82" y="120">4</text><text x="150" y="246">4</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>회색 삼각형 셋을 정사각형에서 빼면 \(\triangle \mathrm{BMN}\)의 넓이가 나온다. 그 넓이를 넓이 공식에 <b>거꾸로</b> 넣으면 \(\sin x^\circ\)가 튀어나온다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — \(x^\circ\)는 특수각이 아니다. 그래서 넓이를 쓴다</span>
+        <p>\(\angle \mathrm{BMN}\)은 \(30^\circ,45^\circ,60^\circ\) 어느 것도 아니라서 직접 구할 수 없다. 이럴 때 중3의 정석은 <b>같은 넓이를 두 가지 방법으로 세어 등식을 만드는 것</b>이다.</p>
+        <div class="mathrow">$$\underbrace{(\text{정사각형}-\text{모서리 삼각형 3개})}_{\text{빼서 세기}}=\underbrace{\frac12\times\overline{\mathrm{MB}}\times\overline{\mathrm{MN}}\times\sin x^\circ}_{\text{공식으로 세기}}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 빼서 세기</span>
+        <table class="calc">
+          <tr><th>도형</th><th>계산</th><th>넓이</th></tr>
+          <tr><td>정사각형 \(\mathrm{ABCD}\)</td><td>\(4\times 4\)</td><td>\(16\)</td></tr>
+          <tr><td>\(\triangle \mathrm{ABM}\)</td><td>\(\frac12\times 2\times 4\)</td><td>\(4\)</td></tr>
+          <tr><td>\(\triangle \mathrm{MDN}\)</td><td>\(\frac12\times 2\times 2\)</td><td>\(2\)</td></tr>
+          <tr><td>\(\triangle \mathrm{BCN}\)</td><td>\(\frac12\times 4\times 2\)</td><td>\(4\)</td></tr>
+          <tr class="hi"><td>\(\triangle \mathrm{BMN}\)</td><td>\(16-4-2-4\)</td><td>\(6\)</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 두 변의 길이는 피타고라스로</span>
+        <div class="mathrow">$$\overline{\mathrm{MB}}=\sqrt{2^{2}+4^{2}}=\sqrt{20}=2\sqrt5,\qquad \overline{\mathrm{MN}}=\sqrt{2^{2}+2^{2}}=2\sqrt2$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 넓이 공식에 거꾸로 대입</span>
+        <div class="mathrow">$$\frac12\times 2\sqrt5\times 2\sqrt2\times\sin x^\circ=6\ \Longrightarrow\ 2\sqrt{10}\,\sin x^\circ=6$$</div>
+        <div class="mathrow">$$\sin x^\circ=\frac{6}{2\sqrt{10}}=\frac{3}{\sqrt{10}}=\frac{3\sqrt{10}}{10}$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\sin x^\circ=\dfrac{3\sqrt{10}}{10}\ \Rightarrow\ \) ③</span></div>
+        <div class="warn">
+          <div class="t">💡 이 문제의 진짜 이름은 「넓이의 역이용」</div>
+          <p>넓이 공식 \(S=\frac12ab\sin\theta\)는 보통 <b>넓이를 구하는</b> 데 쓰지만, <b>넓이를 이미 아는 상황에서는 \(\sin\theta\)를 구하는 도구</b>가 된다. 「각을 모르는데 넓이는 셀 수 있다」 싶으면 이 방향을 떠올리자. 마지막 <b>분모 유리화</b>(\(\frac{3}{\sqrt{10}}=\frac{3\sqrt{10}}{10}\))까지 해야 선택지와 모양이 맞는다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol killer" id="q13">
+    <div class="sol-head">
+      <span class="sol-k red">13</span>
+      <div>
+        <div class="sol-title">접으면 각이 두 개 같아진다 → 이등변삼각형</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 5점 · 최고난도</span> 삼각비의 활용 · 접은 도형의 넓이</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림과 같이 세로의 길이가 \(6\,\mathrm{cm}\)인 직사각형 모양의 종이에서 \(\overline{\mathrm{AC}}\)를 접는 선으로 하여 접었더니 \(\overline{\mathrm{AC}}=12\,\mathrm{cm}\)이었다. 삼각형 \(\mathrm{ABC}\)의 넓이는?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 같은 표시(●)가 붙은 각이 접기로 같아진 각</span>
+          <svg viewBox="0 0 430 200" role="img" aria-label="세로 6인 직사각형 종이를 AC로 접은 그림. 삼각형 ABC는 각 B가 120도인 이등변삼각형">
+            <defs>
+              <marker id="fold-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--amber)"/>
+              </marker>
+            </defs>
+            <rect x="60" y="60" width="330" height="100" fill="none" stroke="var(--ink-faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+            <polygon points="160,60 218,160 333,160" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <line x1="160" y1="60" x2="333" y2="160" stroke="var(--indigo)" stroke-width="3"/>
+            <line x1="160" y1="60" x2="390" y2="60" stroke="var(--amber)" stroke-width="3"/>
+            <path d="M 340 74 Q 312 96 296 124" fill="none" stroke="var(--amber)" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#fold-arrow)"/>
+            <path d="M 195 60 A 35 35 0 0 0 189 78" fill="none" stroke="var(--green)" stroke-width="1.6"/>
+            <path d="M 189 78 A 35 35 0 0 0 178 92" fill="none" stroke="var(--green)" stroke-width="1.6"/>
+            <path d="M 303 160 A 30 30 0 0 0 308 145" fill="none" stroke="var(--green)" stroke-width="1.6"/>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="800" fill="var(--green)">
+              <text x="199" y="74">30°</text><text x="178" y="106">30°</text><text x="283" y="152">30°</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="151" y="52">A</text><text x="211" y="181">B</text><text x="338" y="181">C</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="700">
+              <text x="34" y="115" fill="var(--ink-soft)">6 cm</text>
+              <text x="242" y="124" fill="var(--indigo)">12 cm</text>
+              <text x="252" y="181" fill="var(--red)">4√3</text>
+              <text x="150" y="116" fill="var(--red)">4√3</text>
+              <text x="238" y="52" fill="var(--amber)">접기 전 윗변</text>
+              <text x="346" y="112" fill="var(--amber)">접는다</text>
+            </g>
+            <line x1="45" y1="60" x2="45" y2="160" stroke="var(--ink-soft)" stroke-width="1.3"/>
+            <path d="M 41 64 L 45 60 L 49 64" fill="none" stroke="var(--ink-soft)" stroke-width="1.3"/>
+            <path d="M 41 156 L 45 160 L 49 156" fill="none" stroke="var(--ink-soft)" stroke-width="1.3"/>
+          </svg>
+        </div>
+        <figcaption><b>주황색 윗변</b>이 \(\overline{\mathrm{AC}}\)를 축으로 접히면서 \(\overline{\mathrm{AB}}\) 위로 포개진다. 그래서 \(\angle \mathrm{BAC}\)와 윗변 쪽 각이 같고, 엇각으로 \(\angle \mathrm{ACB}\)까지 같아져 <b>\(30^\circ\)가 세 개</b> 생긴다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — \(\overline{\mathrm{AC}}\)의 기울기부터 확정한다</span>
+        <p>\(\mathrm{A}\)는 종이의 <b>윗변</b> 위에, \(\mathrm{C}\)는 <b>아랫변</b> 위에 있으므로 두 점의 높이 차이가 곧 종이의 세로 \(6\)이다. 빗변이 \(12\)이므로</p>
+        <div class="mathrow">$$\sin(\angle \text{AC와 윗변이 이루는 각})=\frac{6}{12}=\frac12\ \Longrightarrow\ 30^\circ$$</div>
+        <p class="aside">\(6\)과 \(12\)가 정확히 <b>1:2</b>인 것이 이 문제의 첫 번째 선물이다. \(30^\circ\)가 튀어나온다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 접기의 정체: 각이 세 개나 \(30^\circ\)가 된다</span>
+        <p>접는다는 건 <b>접는 선을 축으로 한 대칭</b>이다. 윗변이 \(\overline{\mathrm{AC}}\)를 축으로 접히면서 \(\overline{\mathrm{AB}}\) 방향으로 포개지므로</p>
+        <div class="mathrow">$$\angle \mathrm{BAC}=(\text{윗변과 }\overline{\mathrm{AC}}\text{가 이루는 각})=30^\circ$$</div>
+        <p>여기에 <b>엇각</b>이 하나 더 있다. 종이의 윗변과 아랫변은 평행하고 \(\overline{\mathrm{AC}}\)가 그 사이를 가로지르므로</p>
+        <div class="mathrow">$$\angle \mathrm{ACB}=(\text{윗변과 }\overline{\mathrm{AC}}\text{가 이루는 각})=30^\circ$$</div>
+        <div class="warn">
+          <div class="t">⭐ 접은 도형 문제의 만능 열쇠</div>
+          <p><b>「접은 각 = 원래 각」 + 「윗변 ∥ 아랫변이라 엇각도 같다」</b> → 결국 \(\angle \mathrm{BAC}=\angle \mathrm{BCA}\)가 되어 <b>\(\triangle \mathrm{ABC}\)는 \(\overline{\mathrm{BA}}=\overline{\mathrm{BC}}\)인 이등변삼각형</b>이 된다. 종이접기 문제에서 이등변삼각형이 나오는 건 우연이 아니라 <b>거의 항상</b> 그렇다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 밑변 \(\overline{\mathrm{BC}}\)의 길이</span>
+        <p>\(\angle \mathrm{BAC}=\angle \mathrm{BCA}=30^\circ\)이므로 \(\angle \mathrm{ABC}=180^\circ-60^\circ=120^\circ\) — <b>둔각삼각형</b>이다. \(\mathrm{B}\)에서 아랫변을 따라 왼쪽을 보면 \(\overline{\mathrm{AB}}\)가 아랫변과 이루는 각은 \(180^\circ-120^\circ=60^\circ\). \(\mathrm{A}\)와 아랫변의 높이 차가 \(6\)이므로</p>
+        <div class="mathrow">$$\overline{\mathrm{AB}}\sin 60^\circ=6\ \Longrightarrow\ \overline{\mathrm{AB}}=\frac{6}{\frac{\sqrt3}{2}}=\frac{12}{\sqrt3}=4\sqrt3$$</div>
+        <div class="mathrow">$$\therefore\ \overline{\mathrm{BC}}=\overline{\mathrm{AB}}=4\sqrt3\ \ (\text{이등변})$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 넓이: 밑변 \(\overline{\mathrm{BC}}\), 높이 \(6\)</span>
+        <p>\(\overline{\mathrm{BC}}\)는 종이의 아랫변 위에 있고 \(\mathrm{A}\)는 윗변 위에 있으므로, <b>높이는 그냥 종이의 세로 \(6\)</b>이다. 수선을 따로 그을 필요조차 없다.</p>
+        <div class="mathrow">$$S=\frac12\times\overline{\mathrm{BC}}\times 6=\frac12\times 4\sqrt3\times 6=12\sqrt3\ (\mathrm{cm}^2)$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(12\sqrt3\,\mathrm{cm}^2\ \Rightarrow\ \) ④</span></div>
+        <div class="miss"><b>다른 풀이(검산)</b> 넓이 공식으로도 확인된다. 두 방법이 일치하면 안심해도 좋다.
+          <div class="mathrow">$$S=\frac12\times\overline{\mathrm{AB}}\times\overline{\mathrm{AC}}\times\sin 30^\circ=\frac12\times 4\sqrt3\times 12\times\frac12=12\sqrt3\ \checkmark$$</div>
+        </div>
+        <div class="miss"><b>가장 흔한 오답</b> \(\angle \mathrm{ABC}=90^\circ\)라고 넘겨짚어 \(\overline{\mathrm{BC}}=\sqrt{12^{2}-6^{2}}=6\sqrt3\), 넓이 \(18\sqrt3\)을 만드는 것. 그림을 보면 \(\mathrm{B}\)는 <b>직각이 아니라 둔각</b>이다. 접은 도형에서 「직각일 것 같다」는 느낌은 대개 틀린다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q14">
+    <div class="sol-head">
+      <span class="sol-k">14</span>
+      <div>
+        <div class="sol-title">입체는 「직각삼각형 하나」만 찾아내면 평면 문제가 된다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 5 · 5점</span> 삼각비의 활용 · 입체도형에서의 변의 길이 · 부피</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림과 같이 사각뿔 \(\mathrm{O\text{-}ABCD}\)는 밑면의 한 변의 길이가 \(2\,\mathrm{cm}\)인 정사각형이고, 옆면이 모두 합동인 이등변삼각형이다. 꼭짓점 \(\mathrm{O}\)에서 밑면에 내린 수선의 발을 \(\mathrm{H}\)라고 할 때, \(\angle \mathrm{OAH}=60^\circ\)이다. 이 사각뿔의 부피는? (단, 수선의 발 \(\mathrm{H}\)는 정사각형 \(\mathrm{ABCD}\)의 두 대각선의 교점이다.)</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 노란 삼각형 OAH 하나가 전부다</span>
+          <svg viewBox="0 0 360 250" role="img" aria-label="정사각뿔 O-ABCD와 밑면 중심 H, 직각삼각형 OAH">
+            <polygon points="70,200 210,215 285,170 145,157" fill="var(--line-soft)" stroke="var(--ink-soft)" stroke-width="2" stroke-linejoin="round"/>
+            <polygon points="70,200 178,45 177,185" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2"/>
+            <g stroke="var(--indigo)" stroke-width="2.2" fill="none">
+              <path d="M 178 45 L 70 200"/><path d="M 178 45 L 210 215"/><path d="M 178 45 L 285 170"/>
+            </g>
+            <path d="M 178 45 L 145 157" stroke="var(--indigo)" stroke-width="1.6" stroke-dasharray="4 4" fill="none"/>
+            <line x1="178" y1="45" x2="177" y2="185" stroke="var(--amber)" stroke-width="2.2"/>
+            <line x1="70" y1="200" x2="285" y2="170" stroke="var(--ink-faint)" stroke-width="1.3" stroke-dasharray="4 4"/>
+            <line x1="145" y1="157" x2="210" y2="215" stroke="var(--ink-faint)" stroke-width="1.3" stroke-dasharray="4 4"/>
+            <path d="M 177 173 L 165 174 L 166 186" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+            <path d="M 100 195 A 34 34 0 0 0 96 178" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="172" y="38">O</text><text x="52" y="210">A</text><text x="212" y="232">B</text>
+              <text x="292" y="168">C</text><text x="128" y="152">D</text><text x="182" y="200">H</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="800" fill="var(--amber)">
+              <text x="102" y="184">60°</text><text x="186" y="120">√6</text><text x="120" y="200">√2</text>
+            </g>
+            <text x="235" y="205" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--ink-soft)">2 cm</text>
+          </svg>
+        </div>
+        <figcaption>\(\overline{\mathrm{OH}}\)는 밑면과 수직 → \(\triangle \mathrm{OAH}\)는 \(\mathrm{H}\)가 직각인 직각삼각형. 여기에만 삼각비를 쓴다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 부피 공식이 요구하는 건 「밑넓이」와 「높이」뿐</span>
+        <div class="mathrow">$$V=\frac13\times(\text{밑넓이})\times(\text{높이})=\frac13\times 2\times 2\times\overline{\mathrm{OH}}$$</div>
+        <p>밑넓이는 \(2\times2=4\)로 즉시 나온다. 남은 건 높이 \(\overline{\mathrm{OH}}\) 하나. <b>입체 문제는 결국 「높이 구하기」로 환원된다.</b></p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — \(\overline{\mathrm{AH}}\): 대각선의 절반</span>
+        <p>\(\mathrm{H}\)가 정사각형의 두 대각선의 교점이므로 \(\overline{\mathrm{AH}}\)는 <b>대각선의 반</b>이다. 한 변이 \(2\)인 정사각형의 대각선은 \(2\sqrt2\)이므로</p>
+        <div class="mathrow">$$\overline{\mathrm{AH}}=\frac12\times 2\sqrt2=\sqrt2$$</div>
+        <p class="aside">여기가 이 문제의 진짜 관문이다. 밑면 한 변 \(2\)를 그대로 삼각비에 넣어 버리는 실수가 가장 많다. 삼각비를 쓸 직각삼각형은 <b>옆면이 아니라 \(\triangle \mathrm{OAH}\)</b>이고, 그 밑변은 대각선의 절반이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — \(60^\circ\)로 높이 뽑기</span>
+        <p>\(\triangle \mathrm{OAH}\)에서 \(\angle \mathrm{H}=90^\circ\), \(\angle \mathrm{OAH}=60^\circ\), 밑변 \(\overline{\mathrm{AH}}=\sqrt2\)이므로</p>
+        <div class="mathrow">$$\overline{\mathrm{OH}}=\overline{\mathrm{AH}}\times\tan 60^\circ=\sqrt2\times\sqrt3=\sqrt6$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 부피</span>
+        <div class="mathrow">$$V=\frac13\times 4\times\sqrt6=\frac{4\sqrt6}{3}\ (\mathrm{cm}^3)$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\dfrac{4\sqrt6}{3}\,\mathrm{cm}^3\ \Rightarrow\ \) ④</span></div>
+        <div class="miss"><b>오답 함정</b> \(\overline{\mathrm{AH}}\)를 \(1\)(변의 절반)로 잘못 잡으면 \(\overline{\mathrm{OH}}=\sqrt3\), 부피 \(\frac{4\sqrt3}{3}\)이 되어 답지에 없다. 답이 선택지에 없으면 <b>가장 먼저 \(\overline{\mathrm{AH}}\)를 의심</b>하자 — 「변의 절반」이 아니라 「대각선의 절반」이다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q15">
+    <div class="sol-head">
+      <span class="sol-k">15</span>
+      <div>
+        <div class="sol-title">중앙값은 이미 정해져 있다 — 평균만 맞추면 끝</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 대푯값 · 중앙값 조건으로 변량 구하기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">어떤 자료의 변량을 작은 값부터 순서대로 나열하면 \(3,\ 7,\ 10,\ 12,\ x\)이다. 이 자료의 평균과 중앙값이 같을 때, \(x\)의 값은?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 「순서대로 나열하면」이라는 한 마디가 결정적이다</span>
+        <p>문제가 이미 <b>크기순으로 정렬해 놓았다</b>고 말해 주었다. 그러니 \(x\)는 맨 뒤, 즉 \(x\ge 12\)다. 자료가 \(5\)개(홀수)이므로 중앙값은 한가운데인 <b>세 번째 값</b>으로 고정된다.</p>
+        <div class="mathrow">$$(\text{중앙값})=10$$</div>
+        <p class="aside">여기서 \(x\)의 위치를 경우로 나누기 시작하면 문제가 갑자기 어려워진다. 정렬돼 있다는 조건 덕분에 <b>경우를 나눌 필요가 없다</b>는 걸 알아채는 게 핵심.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 평균을 중앙값과 같다고 놓는다</span>
+        <div class="mathrow">$$\frac{3+7+10+12+x}{5}=10\ \Longrightarrow\ 32+x=50\ \Longrightarrow\ x=18$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — 조건 검토(꼭 해야 한다)</span>
+        <p>\(x=18\ge 12\)이므로 「맨 뒤에 온다」는 처음 가정과 어긋나지 않는다. 정렬해 보면 \(3,7,10,12,18\) → 중앙값 \(10\), 평균 \(\frac{50}{5}=10\) ✓</p>
+        <div class="result"><span class="lab">정답</span><span class="val">\(x=18\ \Rightarrow\ \) ④</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q16">
+    <div class="sol-head">
+      <span class="sol-k">16</span>
+      <div>
+        <div class="sol-title">두 조건을 「후보 좁히기 → 대입 검증」 순서로</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 대푯값 · 중앙값·최빈값·평균 조건</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">다음 두 조건을 모두 만족시키는 두 변량 \(a\)와 \(b\)에 대하여 \(x\)의 값은?
+        <div class="cond">
+          <div class="row"><span class="lab">①</span><span>\(5,\ 8,\ 13,\ 15,\ a\)의 중앙값은 \(8\)이고, 최빈값은 \(x\)이다.</span></div>
+          <div class="row"><span class="lab">②</span><span>\(2,\ 15,\ a,\ b,\ 13\)의 중앙값은 \(12\)이고, 평균은 \(b-2\)이다.</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 첫 조건에서 \(a\)의 범위를 좁힌다</span>
+        <p>\(a\)를 뺀 네 값은 \(5,8,13,15\). 여기에 \(a\)를 끼워 넣어 <b>세 번째 값이 \(8\)</b>이 되어야 한다. \(a\)가 \(8\)보다 크면 세 번째 값이 \(13\)이 되어 버리므로</p>
+        <div class="mathrow">$$a\le 8$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 최빈값이 존재한다는 말이 \(a\)를 못 박는다</span>
+        <p>다섯 값이 모두 다르면 <b>최빈값을 하나로 정할 수 없다</b>. 그런데 문제는 「최빈값은 \(x\)이다」라고 단정했으니, \(a\)는 반드시 \(5,8,13,15\) 중 하나와 겹쳐야 한다. 1단계의 \(a\le 8\)과 합치면 후보는 둘뿐이다.</p>
+        <div class="mathrow">$$a=5\quad\text{또는}\quad a=8$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 두 번째 조건으로 후보를 하나씩 검증</span>
+        <p>평균 조건부터 식으로 바꾼다.</p>
+        <div class="mathrow">$$\frac{2+15+a+b+13}{5}=b-2\ \Longrightarrow\ 30+a+b=5b-10\ \Longrightarrow\ 4b=40+a$$</div>
+        <table class="calc">
+          <tr><th>후보</th><th>\(b=\frac{40+a}{4}\)</th><th>정렬한 자료</th><th>중앙값</th><th>판정</th></tr>
+          <tr><td>\(a=5\)</td><td>\(b=11.25\)</td><td>\(2,\ 5,\ 11.25,\ 13,\ 15\)</td><td>\(11.25\)</td><td>\(12\)가 아님 ✗</td></tr>
+          <tr class="hi"><td>\(a=8\)</td><td>\(b=12\)</td><td>\(2,\ 8,\ 12,\ 13,\ 15\)</td><td>\(12\)</td><td>조건 만족 ✓</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 이제 \(x\)를 답한다</span>
+        <p>\(a=8\)이므로 첫 자료는 \(5,\ 8,\ 13,\ 15,\ 8\). \(8\)이 두 번 나오고 나머지는 한 번씩이므로 최빈값은 \(8\)이다.</p>
+        <div class="result"><span class="lab">정답</span><span class="val">\(x=8\ \Rightarrow\ \) ②</span></div>
+        <div class="miss"><b>마지막에 흔히 놓치는 것</b> \(a=8\)까지 구하고 안심하다가 \(a\)를 답으로 적는 학생이 많은데, 이 문제가 묻는 건 <b>최빈값 \(x\)</b>다. 여기서는 우연히 둘 다 \(8\)이라 살아남지만, 습관적으로 <b>「무엇을 묻는가」를 마지막에 다시 읽는</b> 연습을 하자.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q17">
+    <div class="sol-head">
+      <span class="sol-k">17</span>
+      <div>
+        <div class="sol-title">「최빈값이 9」가 되려면 9가 한 번 더 나와야 한다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 대푯값 · 최빈값 조건 → 다른 대푯값 구하기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(a\)가 자연수일 때, 다음 자료의 최빈값이 \(9\)이다. 평균을 \(m\)이라고 하면 \(7m\)의 값은?
+        <div class="cond"><div class="row"><span class="lab">자료</span><span>\(a+4,\ \ 9,\ \ 7,\ \ 7,\ \ 10,\ \ 9,\ \ 2a\)</span></div></div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — \(a\)와 무관한 값들부터 세어 본다</span>
+        <p>\(a+4\)와 \(2a\)를 뺀 나머지는 \(9,\ 7,\ 7,\ 10,\ 9\)이다.</p>
+        <table class="calc">
+          <tr><th>값</th><th>지금까지 개수</th></tr>
+          <tr><td>\(7\)</td><td>2개</td></tr>
+          <tr><td>\(9\)</td><td>2개</td></tr>
+          <tr><td>\(10\)</td><td>1개</td></tr>
+        </table>
+        <p><b>\(7\)과 \(9\)가 동점</b>이다. 최빈값이 \(9\) 하나로 정해지려면, 남은 두 자리 \(a+4\)와 \(2a\) 중에서 <b>\(9\)가 적어도 한 번 더</b> 나와야 한다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 자연수 조건이 경우를 하나로 줄인다</span>
+        <p>\(2a=9\)라면 \(a=4.5\)로 자연수가 아니다. 따라서 \(9\)가 될 수 있는 건 \(a+4\)뿐이다.</p>
+        <div class="mathrow">$$a+4=9\ \Longrightarrow\ a=5\ \Longrightarrow\ 2a=10$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 최빈값이 정말 \(9\)인지 확인</span>
+        <p>자료는 \(9,\ 9,\ 7,\ 7,\ 10,\ 9,\ 10\)이 된다. \(9\)가 <b>3개</b>, \(7\)이 2개, \(10\)이 2개 → 최빈값은 \(9\) 하나로 확정 ✓</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 평균, 그리고 \(7m\)</span>
+        <div class="mathrow">$$(\text{합})=9+9+7+7+10+9+10=61,\qquad m=\frac{61}{7}$$</div>
+        <div class="mathrow">$$7m=7\times\frac{61}{7}=61$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(7m=61\ \Rightarrow\ \) ⑤</span></div>
+        <div class="warn">
+          <div class="t">💡 왜 하필 \(7m\)을 물었을까</div>
+          <p>변량이 \(7\)개라서 평균 \(m=\frac{(\text{합})}{7}\)이고, \(7m\)은 정확히 <b>변량의 총합</b>이다. 즉 이 문제는 「평균을 구하시오」가 아니라 <b>「합을 구하시오」</b>를 예쁘게 물은 것 — 분수 계산을 아예 할 필요가 없다. \(m=\frac{61}{7}\approx 8.71\)을 소수로 바꿔 \(7\)을 곱하는 순간 반올림 오차로 틀린다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q18">
+    <div class="sol-head">
+      <span class="sol-k">18</span>
+      <div>
+        <div class="sol-title">편차의 합은 \(0\) — 빈칸은 언제나 여기서 나온다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 산포도 · 변량을 구한 후 분산·표준편차</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">어느 학생의 \(5\)회에 걸친 수학 시험 점수의 편차를 나타낸 표이다. 이에 대한 설명으로 옳은 것은?
+        <table class="calc">
+          <tr><th>시험</th><th>1회</th><th>2회</th><th>3회</th><th>4회</th><th>5회</th></tr>
+          <tr><td>편차(점)</td><td>\(1\)</td><td>?</td><td>\(0\)</td><td>\(4\)</td><td>\(-3\)</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 빈칸 채우기: 편차의 합 \(=0\)</span>
+        <p>편차는 「변량 \(-\) 평균」이고, 이걸 모두 더하면 <b>반드시 \(0\)</b>이 된다. 편차표에 빈칸이 있으면 예외 없이 여기서 나온다.</p>
+        <div class="mathrow">$$1+(\text{2회})+0+4+(-3)=0\ \Longrightarrow\ (\text{2회})=-2$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 분산과 표준편차</span>
+        <div class="mathrow">$$(\text{분산})=\frac{1^{2}+(-2)^{2}+0^{2}+4^{2}+(-3)^{2}}{5}=\frac{1+4+0+16+9}{5}=\frac{30}{5}=6$$</div>
+        <div class="mathrow">$$(\text{표준편차})=\sqrt6\ (\text{점})$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 선택지 다섯 개를 하나씩</span>
+        <p>① 분산은 \(8\)이다 → 실제 \(6\) <b>✗</b></p>
+        <p>② 평균은 \(80\)이다 → <b>알 수 없다 ✗</b>. 편차는 「평균에서 얼마나 떨어졌나」만 알려 줄 뿐, <b>평균 자체는 절대 알려 주지 않는다</b>. 평균이 \(50\)이든 \(80\)이든 편차표는 똑같을 수 있다.</p>
+        <p>③ 표준편차는 \(\sqrt6\)이다 → <b>✓ 옳다</b></p>
+        <p>④ 2회 때의 편차는 \(2\)이다 → 실제 \(-2\) <b>✗</b> (부호를 빼먹은 함정)</p>
+        <p>⑤ 3회 때의 점수가 가장 높다 → 편차 \(0\)은 「평균과 같다」는 뜻이다. 가장 높은 건 편차가 가장 큰 <b>4회</b>(\(+4\)) <b>✗</b></p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">표준편차 \(=\sqrt6\ \Rightarrow\ \) ③</span></div>
+        <div class="miss"><b>이 문제의 진짜 교훈</b> ②와 ⑤가 노리는 건 <b>「편차 \(0\) = 점수 \(0\)」, 「편차만으로 평균을 안다」</b>는 오해다. 편차는 <b>평균을 원점으로 옮겨 놓은 눈금</b>일 뿐이라고 기억하자.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q19">
+    <div class="sol-head">
+      <span class="sol-k">19</span>
+      <div>
+        <div class="sol-title">합과 제곱합 두 식으로 잡고, 곱은 \(36-t^{2}\)로</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 산포도 · 평균 또는 분산 조건 · 변량의 변화</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(3\)개 변량 \(4,\ 6,\ 8\)에 변량 \(2\)개를 추가하였더니 \(5\)개 변량의 평균이 \(6\), 분산이 \(4\)이다. 추가한 \(2\)개의 변량의 곱은?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 평균 조건 → 두 수의 합</span>
+        <p>\(5\)개의 평균이 \(6\)이므로 전체 합은 \(30\). 원래 세 수의 합이 \(4+6+8=18\)이므로</p>
+        <div class="mathrow">$$(\text{추가한 두 수의 합})=30-18=12$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 분산 조건 → 편차 제곱의 합</span>
+        <p>평균이 \(6\)이므로 편차는 「값 \(-\,6\)」이다. 분산이 \(4\)이므로 편차 제곱의 총합은 \(4\times 5=20\).</p>
+        <div class="mathrow">$$(4-6)^{2}+(6-6)^{2}+(8-6)^{2}=4+0+4=8$$</div>
+        <div class="mathrow">$$\therefore\ (\text{추가한 두 수의 편차 제곱의 합})=20-8=12$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 대칭으로 놓으면 계산이 사라진다</span>
+        <p>두 수의 합이 \(12\), 즉 <b>평균 \(6\)을 사이에 두고 대칭</b>이므로 \(6+t\)와 \(6-t\)로 놓자. 그러면 두 편차는 \(t\)와 \(-t\)다.</p>
+        <div class="mathrow">$$t^{2}+(-t)^{2}=12\ \Longrightarrow\ 2t^{2}=12\ \Longrightarrow\ t^{2}=6$$</div>
+        <div class="mathrow">$$(\text{두 수의 곱})=(6+t)(6-t)=36-t^{2}=36-6=30$$</div>
+        <p class="aside">\(t=\sqrt6\) 자체를 구할 필요가 없다는 게 이 풀이의 묘미다. 합·차 곱셈공식이 \(t^{2}\)만 요구하기 때문.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(30\ \Rightarrow\ \) ③</span></div>
+        <div class="warn">
+          <div class="t">💡 문자로 푸는 정석도 같이 익혀 두자</div>
+          <p>두 수를 \(p,q\)라 하면 \(p+q=12\), \((p-6)^{2}+(q-6)^{2}=12\). 아래를 전개하면 \(p^{2}+q^{2}-12(p+q)+72=12\) → \(p^{2}+q^{2}=84\). 그리고 \((p+q)^{2}=p^{2}+q^{2}+2pq\)에서 \(144=84+2pq\) → \(pq=30\) ✓ 같은 답이다. <b>「합과 제곱합을 알면 곱을 안다」</b>는 곱셈공식의 활용이 이 유형의 뼈대다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q20">
+    <div class="sol-head">
+      <span class="sol-k">20</span>
+      <div>
+        <div class="sol-title">그래프에서 (값 × 사람 수) 표를 만들어 놓고 시작한다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 산포도 · 도수로 주어진 자료의 분산</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림은 학생 \(20\)명을 대상으로 공부 시간을 조사하여 나타낸 것이다. 공부 시간의 분산은? (단, 단위는 시간이다.)</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 막대 높이 = 사람 수</span>
+          <svg viewBox="0 0 340 240" role="img" aria-label="공부시간 막대그래프. 5시간 2명, 6시간 6명, 7시간 5명, 8시간 4명, 9시간 3명">
+            <g stroke="var(--line-soft)" stroke-width="1">
+              <line x1="60" y1="175" x2="300" y2="175"/><line x1="60" y1="150" x2="300" y2="150"/>
+              <line x1="60" y1="125" x2="300" y2="125"/><line x1="60" y1="100" x2="300" y2="100"/>
+              <line x1="60" y1="75" x2="300" y2="75"/><line x1="60" y1="50" x2="300" y2="50"/>
+            </g>
+            <g fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2">
+              <rect x="72" y="150" width="30" height="50"/>
+              <rect x="112" y="50" width="30" height="150"/>
+              <rect x="152" y="75" width="30" height="125"/>
+              <rect x="192" y="100" width="30" height="100"/>
+              <rect x="232" y="125" width="30" height="75"/>
+            </g>
+            <line x1="60" y1="200" x2="300" y2="200" stroke="var(--ink-soft)" stroke-width="1.8"/>
+            <line x1="60" y1="200" x2="60" y2="35" stroke="var(--ink-soft)" stroke-width="1.8"/>
+            <polygon points="300,200 291,195.5 291,204.5" fill="var(--ink-soft)"/>
+            <polygon points="60,35 55,44 65,44" fill="var(--ink-soft)"/>
+            <g font-family="Noto Sans KR" font-size="11" fill="var(--ink-faint)">
+              <text x="84" y="215">5</text><text x="124" y="215">6</text><text x="164" y="215">7</text>
+              <text x="204" y="215">8</text><text x="244" y="215">9</text>
+              <text x="48" y="204">O</text><text x="48" y="179">1</text><text x="48" y="154">2</text>
+              <text x="48" y="129">3</text><text x="48" y="104">4</text><text x="48" y="79">5</text><text x="48" y="54">6</text>
+              <text x="266" y="216">x(시간)</text><text x="30" y="42">(명)</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--indigo)">
+              <text x="80" y="144">2</text><text x="120" y="44">6</text><text x="160" y="69">5</text>
+              <text x="200" y="94">4</text><text x="240" y="119">3</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>합계 \(2+6+5+4+3=20\)명 ✓ — 먼저 이 검산부터 하면 그래프를 잘못 읽는 사고를 막을 수 있다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 평균 (도수를 「곱」으로 반영)</span>
+        <p>같은 값이 여러 번 나오므로 하나씩 더하지 말고 <b>(값)\(\times\)(사람 수)</b>로 묶는다.</p>
+        <div class="mathrow">$$(\text{총합})=5\cdot2+6\cdot6+7\cdot5+8\cdot4+9\cdot3=10+36+35+32+27=140$$</div>
+        <div class="mathrow">$$(\text{평균})=\frac{140}{20}=7\ (\text{시간})$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 편차 제곱도 도수를 곱해서</span>
+        <table class="calc">
+          <tr><th>공부 시간</th><th>도수</th><th>편차</th><th>(편차)²×도수</th></tr>
+          <tr><td>\(5\)</td><td>\(2\)</td><td>\(-2\)</td><td>\(4\times2=8\)</td></tr>
+          <tr><td>\(6\)</td><td>\(6\)</td><td>\(-1\)</td><td>\(1\times6=6\)</td></tr>
+          <tr><td>\(7\)</td><td>\(5\)</td><td>\(0\)</td><td>\(0\times5=0\)</td></tr>
+          <tr><td>\(8\)</td><td>\(4\)</td><td>\(1\)</td><td>\(1\times4=4\)</td></tr>
+          <tr><td>\(9\)</td><td>\(3\)</td><td>\(2\)</td><td>\(4\times3=12\)</td></tr>
+          <tr class="hi"><td>합계</td><td>\(20\)</td><td></td><td>\(30\)</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — 분산</span>
+        <div class="mathrow">$$(\text{분산})=\frac{30}{20}=\frac32$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\dfrac32\ \Rightarrow\ \) ②</span></div>
+        <div class="miss"><b>선택지가 놓은 덫</b> ③\(\frac{\sqrt6}{2}\), ④\(\frac{\sqrt3}{2}\)는 <b>표준편차 모양</b>이다. 실제로 \(\sqrt{\frac32}=\frac{\sqrt6}{2}\)라 ③은 이 자료의 표준편차가 맞다. 문제가 <b>분산</b>을 물었는지 <b>표준편차</b>를 물었는지 확인하지 않으면 정확히 여기 걸린다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q21">
+    <div class="sol-head">
+      <span class="sol-k">21</span>
+      <div>
+        <div class="sol-title">용어 다섯 개의 정의를 정확히 구분하는 문제</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 산포도의 이해 · 참거짓/합답형</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">산포도에 대한 설명으로 옳은 것만을 &lt;보기&gt;에서 있는 대로 고른 것은?
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>편차의 합은 항상 \(0\)이다.</span></div>
+          <div class="row"><span class="lab">ㄴ.</span><span>분산이 커질수록 표준편차는 커진다.</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>표준편차는 편차의 제곱의 평균이다.</span></div>
+          <div class="row"><span class="lab">ㄹ.</span><span>산포도에는 평균과 표준편차 등이 있다.</span></div>
+          <div class="row"><span class="lab">ㅁ.</span><span>표준편차가 클수록 자료는 고르게 분포되어 있다.</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>먼저 용어 지도를 그려 두자</span>
+        <table class="calc">
+          <tr><th>구분</th><th>뜻</th><th>해당하는 것</th></tr>
+          <tr><td><b>대푯값</b></td><td>자료를 대표하는 <b>중심</b> 위치</td><td>평균, 중앙값, 최빈값</td></tr>
+          <tr><td><b>산포도</b></td><td>자료가 중심에서 <b>얼마나 흩어졌나</b></td><td>분산, 표준편차</td></tr>
+        </table>
+        <div class="mathrow">$$(\text{편차})=(\text{변량})-(\text{평균}),\quad (\text{분산})=\overline{(\text{편차})^{2}},\quad (\text{표준편차})=\sqrt{(\text{분산})}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>다섯 개 판정</span>
+        <p><b>ㄱ.</b> 편차의 합은 항상 \(0\) — <b>✓ 참</b>. 평균보다 큰 쪽(양의 편차)과 작은 쪽(음의 편차)이 정확히 상쇄되기 때문이다. 바로 이 성질 때문에 편차를 그냥 더하는 대신 <b>제곱해서</b> 흩어짐을 잰다.</p>
+        <p><b>ㄴ.</b> 분산이 커질수록 표준편차도 커진다 — <b>✓ 참</b>. 표준편차는 분산의 양의 제곱근이고, 제곱근은 커질수록 커지는 함수다.</p>
+        <p><b>ㄷ.</b> 표준편차는 편차의 제곱의 평균이다 — <b>✗ 거짓</b>. 그것은 <b>분산</b>의 정의다. 표준편차는 거기에 <b>제곱근을 씌운</b> 값.</p>
+        <p><b>ㄹ.</b> 산포도에는 평균과 표준편차 등이 있다 — <b>✗ 거짓</b>. 평균은 <b>대푯값</b>이지 산포도가 아니다. 위 표에서 칸이 다르다.</p>
+        <p><b>ㅁ.</b> 표준편차가 클수록 고르게 분포 — <b>✗ 거짓</b>. 정반대다. 표준편차가 <b>작을수록</b> 평균 가까이 몰려 있어 고르고, <b>클수록</b> 넓게 흩어져 있다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">ㄱ, ㄴ \(\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">⚠️ ㅁ은 시험마다 나오는 단골 함정</div>
+          <p>「고르다」를 <b>「골고루 넓게 퍼져 있다」</b>로 읽으면 참처럼 느껴진다. 하지만 통계에서 「고르다」는 <b>「값들이 서로 비슷하다 = 흩어짐이 작다」</b>는 뜻이다. 예를 들어 반 전체가 모두 \(70\)점이면 표준편차는 \(0\) — 가장 고른 상태다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer>
+    루멘수학 · 기출 정밀해설집 · 옥길중 3학년 2025학년도 2학기 중간 (중등수학 3하)<br>
+    문항 정답 21/21 검증 완료 · 그림풀이 원본 제작 · 첨삭 해설
+  </footer>
+</div>

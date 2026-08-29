@@ -1,0 +1,40 @@
+  <section class="sol" id="q14">
+    <div class="sol-head">
+      <span class="sol-k">14</span>
+      <div>
+        <div class="sol-title">역함수를 구하지 말고, 식을 「벗겨」 조건을 단순화한다</div>
+        <div class="sol-kind"><span class="dbadge">4.8점</span> 역함수와 합성함수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 함수 \(f(x)\), \(g(x)\)가 \(f(x)=2x-7\), \(g(x)=-2x+a\)일 때, 모든 실수 \(x\)에 대하여 \(\big(f^{-1}\circ(g^{-1}\circ f)\circ g\big)(x)=x\)가 성립하도록 하는 상수 \(a\)의 값은?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 역함수를 실제로 구하면 진다</span>
+        <p>\(f^{-1}, g^{-1}\)을 직접 구해 네 번 합성하면 계산이 폭발한다. 대신 <b>양쪽에 \(f\)를 씌워 \(f^{-1}\)을 지우는</b> 방향으로 간다.</p>
+        <div class="mathrow">$$f^{-1}\circ\big(g^{-1}\circ f\circ g\big)=I\quad(I\text{는 항등함수})$$</div>
+        <p>양변 왼쪽에 \(f\)를 합성하면 \(f\circ f^{-1}=I\)이므로 \(f^{-1}\)이 사라진다.</p>
+        <div class="mathrow">$$g^{-1}\circ f\circ g=f$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 한 번 더 벗긴다</span>
+        <p>이번엔 양변 왼쪽에 \(g\)를 합성하면 \(g\circ g^{-1}=I\)로 \(g^{-1}\)도 사라진다.</p>
+        <div class="mathrow">$$f\circ g=g\circ f$$</div>
+        <p class="aside">즉 이 문제는 결국 <b>「\(f\)와 \(g\)의 합성 순서를 바꿔도 같아지게 하라」</b>는 조건이다. 복잡해 보이던 식이 한 줄로 줄었다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 양쪽을 계산해 계수 비교</span>
+        <div class="mathrow">$$(f\circ g)(x)=f(-2x+a)=2(-2x+a)-7=-4x+2a-7$$</div>
+        <div class="mathrow">$$(g\circ f)(x)=g(2x-7)=-2(2x-7)+a=-4x+14+a$$</div>
+        <p>\(x\)의 계수는 양쪽 모두 \(-4\)로 이미 같다. <b>상수항만 맞추면 된다.</b></p>
+        <div class="mathrow">$$2a-7=14+a\ \Longrightarrow\ a=21$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(a=21\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">💡 합성·역함수 문제의 3원칙</div>
+          <p><b>①</b> \(f\circ f^{-1}=f^{-1}\circ f=I\) — 붙어 있으면 지운다. <b>②</b> 합성은 <b>결합법칙</b>이 성립하므로 괄호를 자유롭게 옮겨도 된다. <b>③</b> 합성은 <b>교환법칙이 성립하지 않는다</b> — 그래서 「\(f\circ g=g\circ f\)」가 특별한 조건이 되어 문제가 된다.</p>
+        </div>
+      </div>
+    </div>
+  </section>

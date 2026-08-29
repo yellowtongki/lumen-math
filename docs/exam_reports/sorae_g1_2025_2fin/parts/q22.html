@@ -1,0 +1,79 @@
+  <section class="sol killer" id="q22">
+    <div class="sol-head">
+      <span class="sol-k red">22</span>
+      <div>
+        <div class="sol-title">\(f(f(a))=f(a)\) → \(f(a)\)가 「제자리 값」이어야 한다</div>
+        <div class="sol-kind"><span class="dbadge red">5.7점 · 킬러</span> 합성함수 · 구간별로 정의된 함수 · 해의 개수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">실수 전체의 집합에서 정의된 함수
+        <div class="mathrow">$$f(x)=\begin{cases}2x-4 & (x\ge 0)\\[2pt] -(x+2)^{2} & (x \lt 0)\end{cases}$$</div>
+        에 대하여 \((f\circ f)(a)=f(a)\)를 만족시키는 서로 다른 모든 실수 \(a\)의 개수는? (단, \(a\)는 상수이다.)</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · \(y=x\)와 만나는 세 곳이 「제자리 값」</span>
+          <svg viewBox="0 0 340 320" role="img" aria-label="구간별로 정의된 함수 그래프와 직선 y=x가 세 점에서 만나는 그림">
+            <line x1="30" y1="190" x2="310" y2="190" stroke="var(--ink-soft)" stroke-width="1.5"/>
+            <line x1="150" y1="312" x2="150" y2="40" stroke="var(--ink-soft)" stroke-width="1.5"/>
+            <polygon points="310,190 301,185.5 301,194.5" fill="var(--ink-soft)"/>
+            <polygon points="150,40 145,49 155,49" fill="var(--ink-soft)"/>
+            <line x1="38" y1="302" x2="262" y2="78" stroke="var(--ink-faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+            <polyline points="73,315 78,290 86,254 94,226 102,206 110,194 118,190 126,194 134,206 142,226 150,254"
+                      fill="none" stroke="var(--indigo)" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="150" y1="254" x2="246" y2="62" stroke="var(--indigo)" stroke-width="2.8" stroke-linecap="round"/>
+            <g fill="var(--red)">
+              <circle cx="214" cy="126" r="5.5"/><circle cx="134" cy="206" r="5.5"/><circle cx="86" cy="254" r="5.5"/>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--red)">
+              <text x="220" y="122">t = 4</text><text x="138" y="228">t = -1</text><text x="46" y="248">t = -4</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800">
+              <text x="252" y="86" fill="var(--ink-faint)">y = x</text>
+              <text x="230" y="160" fill="var(--indigo)">y = 2x - 4</text>
+              <text x="40" y="180" fill="var(--indigo)">y = -(x+2)²</text>
+              <text x="154" y="206" fill="var(--ink-faint)">O</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>먼저 <b>\(f(t)=t\)</b>인 \(t\)(그래프와 \(y=x\)의 교점) 세 개를 찾고, 그다음 <b>\(f(a)=t\)</b>인 \(a\)를 각각 센다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 조건을 두 단계로 쪼갠다</span>
+        <p>\(t=f(a)\)라고 두면 조건은 \(f(t)=t\)가 된다. 즉 <b>\(f(a)\)의 값이 「\(f\)를 한 번 더 넣어도 변하지 않는 값」이어야 한다</b>는 뜻이다.</p>
+        <div class="mathrow">$$\text{① }f(t)=t\ \text{인 }t\ \text{를 모두 찾는다}\ \longrightarrow\ \text{② 각 }t\ \text{마다 }f(a)=t\ \text{인 }a\ \text{를 센다}$$</div>
+        <div class="miss"><b>흔한 오답</b> \(f(a)=a\)를 푸는 것(그러면 답이 \(3\)). 조건은 \(f(f(a))=f(a)\)이지 \(f(a)=a\)가 아니다. <b>고정점이어야 하는 건 \(a\)가 아니라 \(f(a)\)</b>다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — ① \(f(t)=t\) 풀기 (그래프와 \(y=x\)의 교점)</span>
+        <div class="mathrow">$$t\ge 0:\quad 2t-4=t\ \Longrightarrow\ t=4\ \ (\ge 0\ \checkmark)$$</div>
+        <div class="mathrow">$$t \lt 0:\quad -(t+2)^{2}=t\ \Longrightarrow\ t^{2}+5t+4=0\ \Longrightarrow\ (t+1)(t+4)=0$$</div>
+        <div class="mathrow">$$t=-1,\ -4\ \ (\text{둘 다}\ \lt 0\ \checkmark)$$</div>
+        <p>제자리 값은 \(t=4,\ -1,\ -4\)의 <b>세 개</b>다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — ② 각 \(t\)의 「원상」 개수를 센다</span>
+        <p>\(f(a)=t\)를 두 구간에서 각각 풀고, <b>구한 \(a\)가 그 구간에 실제로 속하는지</b> 반드시 확인한다.</p>
+        <table class="calc">
+          <tr><th>\(t\)</th><th>\(a\ge 0\): \(2a-4=t\)</th><th>\(a \lt 0\): \(-(a+2)^{2}=t\)</th><th>개수</th></tr>
+          <tr><td>\(4\)</td><td>\(a=4\) ✓</td><td>\((a+2)^{2}=-4\) → 실근 없음</td><td>1</td></tr>
+          <tr class="hi"><td>\(-1\)</td><td>\(a=\frac32\) ✓</td><td>\((a+2)^{2}=1\Rightarrow a=-1,\ -3\) ✓✓</td><td>3</td></tr>
+          <tr><td>\(-4\)</td><td>\(a=0\) ✓</td><td>\((a+2)^{2}=4\Rightarrow a=0\)(제외), \(a=-4\) ✓</td><td>2</td></tr>
+        </table>
+        <div class="warn">
+          <div class="t">⚠️ 경계 \(a=0\)에서 중복을 조심하라</div>
+          <p>\(t=-4\)일 때 왼쪽 식에서 \(a=0\), 오른쪽 식에서도 \(a=0\)이 나온다. 하지만 오른쪽은 <b>\(a \lt 0\)</b>인 구간이므로 \(a=0\)은 그 구간의 해가 아니다. 결국 \(a=0\)은 <b>한 번만</b> 센다. 이런 문제에서 개수를 하나 더 세거나 덜 세는 사고가 대부분 여기서 난다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 모두 모아 중복 확인</span>
+        <div class="mathrow">$$a\in\left\{\,4,\ \ \frac32,\ -1,\ -3,\ \ 0,\ -4\,\right\}$$</div>
+        <p>여섯 값이 모두 서로 다르다.</p>
+        <div class="result"><span class="lab">정답</span><span class="val">\(6\)개 \(\ \Rightarrow\ \) ⑤</span></div>
+        <div class="warn">
+          <div class="t">⭐ 이 유형의 표준 전략</div>
+          <p>\((f\circ f)(a)=f(a)\) 꼴은 항상 <b>「안쪽 값을 문자로 치환 → 고정점 찾기 → 원상 세기」</b> 3단계로 푼다. 그래프에서 <b>\(y=x\)와의 교점 개수</b>가 1단계, <b>가로선 \(y=t\)와의 교점 개수</b>가 2단계다. 그림 한 장이면 계산 없이도 \(1+3+2=6\)이 보인다.</p>
+        </div>
+      </div>
+    </div>
+  </section>

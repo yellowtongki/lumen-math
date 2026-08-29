@@ -1,0 +1,278 @@
+<title>소래고 고1 2학기기말 해설집</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global', scale: 1.02 },
+  options: { menuOptions: { settings: { inTabOrder: false } } }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
+
+<style>
+:root{
+  --ground:#E7E9EE; --paper:#FFFFFF;
+  --ink:#18222E; --ink-soft:#4A5666; --ink-faint:#8A94A2;
+  --line:#DBE0E9; --line-soft:#EDF0F5;
+  --indigo:#274777; --indigo-ink:#1E3A63; --indigo-soft:#E9EFF8;
+  --amber:#9C6612; --amber-soft:#F6EEDC;
+  --green:#2C7A54; --green-soft:#E1EFE8;
+  --red:#AF413A; --red-soft:#F6E4E1;
+  --shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px rgba(24,34,46,.09);
+  --shadow-sm:0 1px 2px rgba(24,34,46,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C121A; --paper:#141C26;
+    --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+    --line:#28333F; --line-soft:#1D2732;
+    --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+    --amber:#D9A64A; --amber-soft:#2C2515;
+    --green:#66BB8E; --green-soft:#16271E;
+    --red:#E0776D; --red-soft:#2B1A18;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C121A; --paper:#141C26;
+  --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+  --line:#28333F; --line-soft:#1D2732;
+  --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+  --amber:#D9A64A; --amber-soft:#2C2515;
+  --green:#66BB8E; --green-soft:#16271E;
+  --red:#E0776D; --red-soft:#2B1A18;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Noto Sans KR", system-ui, sans-serif;
+  font-size:16px; line-height:1.75; letter-spacing:-.003em;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 18px 96px}
+
+/* ── 상단 헤더 ── */
+.masthead{padding:34px 0 20px}
+.eyebrow{
+  font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--indigo); margin:0 0 10px;
+}
+.masthead h1{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:clamp(28px,6vw,40px);
+  line-height:1.18; margin:0; letter-spacing:-.01em; text-wrap:balance; color:var(--ink);
+}
+.masthead .sub{
+  color:var(--ink-soft); font-size:14.5px; margin-top:12px; font-weight:500;
+  display:flex; flex-wrap:wrap; gap:7px 14px; align-items:center;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--paper); border:1px solid var(--line); border-radius:99px;
+  padding:4px 12px; font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  box-shadow:var(--shadow-sm);
+}
+.chip b{color:var(--ink)}
+.chip.hard{color:var(--red); border-color:color-mix(in srgb, var(--red) 34%, var(--line))}
+
+/* ── 문제 카드 ── */
+.paper{
+  background:var(--paper); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); padding:26px 26px 24px; margin-bottom:22px;
+}
+.q-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px}
+.q-no{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:30px; color:var(--indigo);
+  line-height:1;
+}
+.q-tag{
+  font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--ink-faint);
+  border-left:1px solid var(--line); padding-left:12px;
+}
+.q-body{font-size:17px; line-height:1.85; color:var(--ink)}
+.cond{
+  margin:16px 0 4px; border:1px solid var(--line); border-radius:12px;
+  background:color-mix(in srgb, var(--indigo-soft) 55%, var(--paper));
+  padding:14px 18px;
+}
+.cond .row{display:flex; gap:12px; align-items:baseline}
+.cond .row+.row{margin-top:6px}
+.cond .lab{font-weight:700; color:var(--indigo-ink); flex-shrink:0}
+.choices{
+  margin-top:18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:8px;
+}
+.choice{
+  border:1px solid var(--line); border-radius:10px; padding:9px 14px;
+  font-size:15.5px; color:var(--ink-soft); display:flex; gap:9px; align-items:center;
+}
+.choice .n{font-weight:700; color:var(--ink-faint)}
+.choice.ans{
+  border-color:var(--green); background:var(--green-soft); color:var(--ink);
+  font-weight:700; box-shadow:0 0 0 1px var(--green) inset;
+}
+.choice.ans .n{color:var(--green)}
+.choice.ans::after{content:"정답"; margin-left:auto; font-size:11px; font-weight:800;
+  letter-spacing:.06em; color:var(--green)}
+
+/* ── 급소 배너 ── */
+.insight{
+  display:flex; gap:13px; align-items:flex-start;
+  background:var(--amber-soft); border:1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+  border-radius:14px; padding:16px 18px; margin-bottom:30px;
+}
+.insight .ic{font-size:20px; line-height:1.4; flex-shrink:0}
+.insight p{margin:0; font-size:14.5px; color:var(--ink); line-height:1.7}
+.insight b{color:var(--amber); font-weight:800}
+
+/* ── 풀이 전환 네비 ── */
+.nav{
+  position:sticky; top:0; z-index:20; margin:0 -18px 26px; padding:10px 18px;
+  background:color-mix(in srgb, var(--ground) 86%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+}
+.nav::-webkit-scrollbar{display:none}
+.nav a{
+  flex:0 0 auto; text-decoration:none; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink-soft); border-radius:99px;
+  padding:7px 15px; font-size:13px; font-weight:700; white-space:nowrap;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.nav a .k{color:var(--indigo); font-family:"Hahmlet",serif; font-weight:800; margin-right:5px}
+.nav a:hover{border-color:var(--indigo); color:var(--ink)}
+.nav a:focus-visible{outline:2px solid var(--indigo); outline-offset:2px}
+
+/* ── 풀이 섹션 ── */
+.sol{margin-bottom:40px; scroll-margin-top:64px}
+.sol-head{display:flex; align-items:center; gap:14px; margin-bottom:6px}
+.sol-k{
+  font-family:"Hahmlet",serif; font-weight:800; font-size:26px;
+  width:46px; height:46px; flex-shrink:0; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--indigo); color:#fff;
+}
+:root[data-theme="dark"] .sol-k, :root:not([data-theme="light"]) .sol-k{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .sol-k{color:#fff}}
+.sol-title{font-family:"Hahmlet",serif; font-weight:700; font-size:22px; color:var(--ink); line-height:1.2}
+.sol-kind{font-size:12.5px; font-weight:700; color:var(--ink-faint); margin-top:3px; letter-spacing:.01em}
+.sol-body{
+  background:var(--paper); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); padding:8px 24px 22px; margin-top:14px;
+}
+
+.step{padding:18px 0; border-bottom:1px solid var(--line-soft)}
+.step:last-child{border-bottom:none}
+.step-lab{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:8px;
+  font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--indigo);
+}
+.step-lab .dot{width:6px; height:6px; border-radius:50%; background:var(--indigo)}
+.step-lab.amber{color:var(--amber)} .step-lab.amber .dot{background:var(--amber)}
+.step-lab.green{color:var(--green)} .step-lab.green .dot{background:var(--green)}
+.step h4{margin:0 0 6px; font-size:16px; font-weight:700; color:var(--ink)}
+.step p{margin:8px 0; font-size:15px; color:var(--ink); line-height:1.8}
+.step .aside{color:var(--ink-soft); font-size:14px}
+
+/* 수식 디스플레이 줄 */
+.mathrow{overflow-x:auto; overflow-y:hidden; padding:6px 2px; margin:6px 0; scrollbar-width:thin}
+mjx-container[display="true"]{margin:0 !important}
+
+/* 함정·실수 박스 */
+.warn{
+  border:1px solid color-mix(in srgb, var(--amber) 34%, var(--line));
+  background:var(--amber-soft); border-radius:12px; padding:14px 16px; margin:12px 0;
+}
+.warn .t{font-weight:800; color:var(--amber); font-size:14px; margin-bottom:5px; display:flex; gap:7px; align-items:center}
+.warn p{margin:4px 0; font-size:14px; color:var(--ink)}
+.miss{
+  border-left:3px solid var(--red); background:var(--red-soft); border-radius:0 10px 10px 0;
+  padding:11px 15px; margin:11px 0; font-size:14px; color:var(--ink);
+}
+.miss b{color:var(--red)}
+
+/* 결과 배지 */
+.result{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--green-soft); border:1px solid var(--green); border-radius:13px;
+  padding:15px 20px; margin-top:16px;
+}
+.result .lab{font-size:13px; font-weight:800; letter-spacing:.04em; color:var(--green)}
+.result .val{font-size:20px}
+
+/* 그림풀이 */
+figure{margin:14px 0 6px; text-align:center}
+.fig-frame > svg{max-width:100%; height:auto; display:block; margin:0 auto}
+figcaption mjx-container svg, .fig-tag mjx-container svg{display:inline-block; margin:0}
+.fig-tag mjx-container{vertical-align:-0.1em}
+figcaption{
+  font-size:12.5px; color:var(--ink-faint); font-weight:600; margin-top:10px;
+  letter-spacing:.01em;
+}
+.fig-frame{
+  border:1px dashed var(--line); border-radius:14px; padding:20px 16px 14px;
+  background:color-mix(in srgb, var(--line-soft) 45%, var(--paper));
+}
+.fig-tag{
+  display:inline-block; font-size:11px; font-weight:800; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;
+}
+
+/* 검산 표 */
+.calc{width:100%; border-collapse:collapse; margin:10px 0 2px; font-variant-numeric:tabular-nums}
+.calc td,.calc th{border-bottom:1px solid var(--line-soft); padding:8px 10px; text-align:left; font-size:15px}
+.calc th{color:var(--ink-faint); font-weight:700; font-size:12.5px; letter-spacing:.03em}
+.calc tr:last-child td{border-bottom:none}
+.calc .hi{background:var(--indigo-soft); font-weight:700}
+
+footer{
+  text-align:center; color:var(--ink-faint); font-size:12.5px;
+  border-top:1px solid var(--line); padding-top:22px; margin-top:16px; line-height:1.9;
+}
+
+@media (max-width:520px){
+  .sol-body{padding:6px 16px 18px}
+  .paper{padding:20px 18px}
+  .q-body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+
+/* ── 해설집 추가 ── */
+.idx{display:grid;grid-template-columns:repeat(auto-fit,minmax(46px,1fr));gap:7px;margin:0 0 8px}
+.idx a{text-decoration:none;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);
+  border-radius:10px;padding:9px 0;text-align:center;font-weight:800;font-size:14px;font-family:"Hahmlet",serif;
+  transition:border-color .15s,color .15s}
+.idx a:hover{border-color:var(--indigo);color:var(--indigo)}
+.idx a .kd{display:block;font-size:9px;font-weight:700;letter-spacing:.04em;margin-top:2px;font-family:"Noto Sans KR"}
+.idx a.hard{border-color:color-mix(in srgb,var(--red) 30%,var(--line))}
+.idx a.hard .kd{color:var(--red)}
+.idx a:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+.pnum{font-family:"Hahmlet",serif;font-weight:800;font-size:24px;color:var(--indigo);line-height:1}
+.pstate{font-size:16px;line-height:1.85;color:var(--ink);margin:10px 0 0}
+.pstate .cond{margin:14px 0 2px}
+.dbadge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;border-radius:99px;
+  padding:3px 10px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper)}
+.dbadge.k{color:var(--red);border-color:color-mix(in srgb,var(--red) 34%,var(--line))}
+.dbadge.red{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,var(--line));background:var(--red-soft)}
+/* 킬러 문항 강조 */
+.sol.killer .sol-body{border-color:color-mix(in srgb,var(--red) 34%,var(--line));
+  box-shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px color-mix(in srgb,var(--red) 16%,transparent)}
+.sol-k.red{background:var(--red)}
+.tag-essay{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;vertical-align:middle;
+  color:#fff;background:var(--amber);border-radius:6px;padding:2px 8px;margin-left:8px}
+:root[data-theme="dark"] .tag-essay,:root:not([data-theme="light"]) .tag-essay{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .tag-essay{color:#fff}}
+
+/* ── 좁은 화면 안전장치: 긴 수식·표가 가로로 넘치지 않게 ── */
+.calc{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch}
+.cond .row>span:last-child{min-width:0; overflow-x:auto; padding-bottom:2px}
+.result .val{min-width:0; overflow-x:auto; padding-bottom:2px}
+</style>

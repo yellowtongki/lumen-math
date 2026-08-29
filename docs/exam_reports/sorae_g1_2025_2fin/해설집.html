@@ -1,0 +1,1319 @@
+<title>소래고 고1 2학기기말 해설집</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global', scale: 1.02 },
+  options: { menuOptions: { settings: { inTabOrder: false } } }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
+
+<style>
+:root{
+  --ground:#E7E9EE; --paper:#FFFFFF;
+  --ink:#18222E; --ink-soft:#4A5666; --ink-faint:#8A94A2;
+  --line:#DBE0E9; --line-soft:#EDF0F5;
+  --indigo:#274777; --indigo-ink:#1E3A63; --indigo-soft:#E9EFF8;
+  --amber:#9C6612; --amber-soft:#F6EEDC;
+  --green:#2C7A54; --green-soft:#E1EFE8;
+  --red:#AF413A; --red-soft:#F6E4E1;
+  --shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px rgba(24,34,46,.09);
+  --shadow-sm:0 1px 2px rgba(24,34,46,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C121A; --paper:#141C26;
+    --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+    --line:#28333F; --line-soft:#1D2732;
+    --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+    --amber:#D9A64A; --amber-soft:#2C2515;
+    --green:#66BB8E; --green-soft:#16271E;
+    --red:#E0776D; --red-soft:#2B1A18;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C121A; --paper:#141C26;
+  --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+  --line:#28333F; --line-soft:#1D2732;
+  --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+  --amber:#D9A64A; --amber-soft:#2C2515;
+  --green:#66BB8E; --green-soft:#16271E;
+  --red:#E0776D; --red-soft:#2B1A18;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Noto Sans KR", system-ui, sans-serif;
+  font-size:16px; line-height:1.75; letter-spacing:-.003em;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 18px 96px}
+
+/* ── 상단 헤더 ── */
+.masthead{padding:34px 0 20px}
+.eyebrow{
+  font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--indigo); margin:0 0 10px;
+}
+.masthead h1{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:clamp(28px,6vw,40px);
+  line-height:1.18; margin:0; letter-spacing:-.01em; text-wrap:balance; color:var(--ink);
+}
+.masthead .sub{
+  color:var(--ink-soft); font-size:14.5px; margin-top:12px; font-weight:500;
+  display:flex; flex-wrap:wrap; gap:7px 14px; align-items:center;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--paper); border:1px solid var(--line); border-radius:99px;
+  padding:4px 12px; font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  box-shadow:var(--shadow-sm);
+}
+.chip b{color:var(--ink)}
+.chip.hard{color:var(--red); border-color:color-mix(in srgb, var(--red) 34%, var(--line))}
+
+/* ── 문제 카드 ── */
+.paper{
+  background:var(--paper); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); padding:26px 26px 24px; margin-bottom:22px;
+}
+.q-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px}
+.q-no{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:30px; color:var(--indigo);
+  line-height:1;
+}
+.q-tag{
+  font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--ink-faint);
+  border-left:1px solid var(--line); padding-left:12px;
+}
+.q-body{font-size:17px; line-height:1.85; color:var(--ink)}
+.cond{
+  margin:16px 0 4px; border:1px solid var(--line); border-radius:12px;
+  background:color-mix(in srgb, var(--indigo-soft) 55%, var(--paper));
+  padding:14px 18px;
+}
+.cond .row{display:flex; gap:12px; align-items:baseline}
+.cond .row+.row{margin-top:6px}
+.cond .lab{font-weight:700; color:var(--indigo-ink); flex-shrink:0}
+.choices{
+  margin-top:18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:8px;
+}
+.choice{
+  border:1px solid var(--line); border-radius:10px; padding:9px 14px;
+  font-size:15.5px; color:var(--ink-soft); display:flex; gap:9px; align-items:center;
+}
+.choice .n{font-weight:700; color:var(--ink-faint)}
+.choice.ans{
+  border-color:var(--green); background:var(--green-soft); color:var(--ink);
+  font-weight:700; box-shadow:0 0 0 1px var(--green) inset;
+}
+.choice.ans .n{color:var(--green)}
+.choice.ans::after{content:"정답"; margin-left:auto; font-size:11px; font-weight:800;
+  letter-spacing:.06em; color:var(--green)}
+
+/* ── 급소 배너 ── */
+.insight{
+  display:flex; gap:13px; align-items:flex-start;
+  background:var(--amber-soft); border:1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+  border-radius:14px; padding:16px 18px; margin-bottom:30px;
+}
+.insight .ic{font-size:20px; line-height:1.4; flex-shrink:0}
+.insight p{margin:0; font-size:14.5px; color:var(--ink); line-height:1.7}
+.insight b{color:var(--amber); font-weight:800}
+
+/* ── 풀이 전환 네비 ── */
+.nav{
+  position:sticky; top:0; z-index:20; margin:0 -18px 26px; padding:10px 18px;
+  background:color-mix(in srgb, var(--ground) 86%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+}
+.nav::-webkit-scrollbar{display:none}
+.nav a{
+  flex:0 0 auto; text-decoration:none; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink-soft); border-radius:99px;
+  padding:7px 15px; font-size:13px; font-weight:700; white-space:nowrap;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.nav a .k{color:var(--indigo); font-family:"Hahmlet",serif; font-weight:800; margin-right:5px}
+.nav a:hover{border-color:var(--indigo); color:var(--ink)}
+.nav a:focus-visible{outline:2px solid var(--indigo); outline-offset:2px}
+
+/* ── 풀이 섹션 ── */
+.sol{margin-bottom:40px; scroll-margin-top:64px}
+.sol-head{display:flex; align-items:center; gap:14px; margin-bottom:6px}
+.sol-k{
+  font-family:"Hahmlet",serif; font-weight:800; font-size:26px;
+  width:46px; height:46px; flex-shrink:0; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--indigo); color:#fff;
+}
+:root[data-theme="dark"] .sol-k, :root:not([data-theme="light"]) .sol-k{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .sol-k{color:#fff}}
+.sol-title{font-family:"Hahmlet",serif; font-weight:700; font-size:22px; color:var(--ink); line-height:1.2}
+.sol-kind{font-size:12.5px; font-weight:700; color:var(--ink-faint); margin-top:3px; letter-spacing:.01em}
+.sol-body{
+  background:var(--paper); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); padding:8px 24px 22px; margin-top:14px;
+}
+
+.step{padding:18px 0; border-bottom:1px solid var(--line-soft)}
+.step:last-child{border-bottom:none}
+.step-lab{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:8px;
+  font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--indigo);
+}
+.step-lab .dot{width:6px; height:6px; border-radius:50%; background:var(--indigo)}
+.step-lab.amber{color:var(--amber)} .step-lab.amber .dot{background:var(--amber)}
+.step-lab.green{color:var(--green)} .step-lab.green .dot{background:var(--green)}
+.step h4{margin:0 0 6px; font-size:16px; font-weight:700; color:var(--ink)}
+.step p{margin:8px 0; font-size:15px; color:var(--ink); line-height:1.8}
+.step .aside{color:var(--ink-soft); font-size:14px}
+
+/* 수식 디스플레이 줄 */
+.mathrow{overflow-x:auto; overflow-y:hidden; padding:6px 2px; margin:6px 0; scrollbar-width:thin}
+mjx-container[display="true"]{margin:0 !important}
+
+/* 함정·실수 박스 */
+.warn{
+  border:1px solid color-mix(in srgb, var(--amber) 34%, var(--line));
+  background:var(--amber-soft); border-radius:12px; padding:14px 16px; margin:12px 0;
+}
+.warn .t{font-weight:800; color:var(--amber); font-size:14px; margin-bottom:5px; display:flex; gap:7px; align-items:center}
+.warn p{margin:4px 0; font-size:14px; color:var(--ink)}
+.miss{
+  border-left:3px solid var(--red); background:var(--red-soft); border-radius:0 10px 10px 0;
+  padding:11px 15px; margin:11px 0; font-size:14px; color:var(--ink);
+}
+.miss b{color:var(--red)}
+
+/* 결과 배지 */
+.result{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--green-soft); border:1px solid var(--green); border-radius:13px;
+  padding:15px 20px; margin-top:16px;
+}
+.result .lab{font-size:13px; font-weight:800; letter-spacing:.04em; color:var(--green)}
+.result .val{font-size:20px}
+
+/* 그림풀이 */
+figure{margin:14px 0 6px; text-align:center}
+.fig-frame > svg{max-width:100%; height:auto; display:block; margin:0 auto}
+figcaption mjx-container svg, .fig-tag mjx-container svg{display:inline-block; margin:0}
+.fig-tag mjx-container{vertical-align:-0.1em}
+figcaption{
+  font-size:12.5px; color:var(--ink-faint); font-weight:600; margin-top:10px;
+  letter-spacing:.01em;
+}
+.fig-frame{
+  border:1px dashed var(--line); border-radius:14px; padding:20px 16px 14px;
+  background:color-mix(in srgb, var(--line-soft) 45%, var(--paper));
+}
+.fig-tag{
+  display:inline-block; font-size:11px; font-weight:800; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;
+}
+
+/* 검산 표 */
+.calc{width:100%; border-collapse:collapse; margin:10px 0 2px; font-variant-numeric:tabular-nums}
+.calc td,.calc th{border-bottom:1px solid var(--line-soft); padding:8px 10px; text-align:left; font-size:15px}
+.calc th{color:var(--ink-faint); font-weight:700; font-size:12.5px; letter-spacing:.03em}
+.calc tr:last-child td{border-bottom:none}
+.calc .hi{background:var(--indigo-soft); font-weight:700}
+
+footer{
+  text-align:center; color:var(--ink-faint); font-size:12.5px;
+  border-top:1px solid var(--line); padding-top:22px; margin-top:16px; line-height:1.9;
+}
+
+@media (max-width:520px){
+  .sol-body{padding:6px 16px 18px}
+  .paper{padding:20px 18px}
+  .q-body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+
+/* ── 해설집 추가 ── */
+.idx{display:grid;grid-template-columns:repeat(auto-fit,minmax(46px,1fr));gap:7px;margin:0 0 8px}
+.idx a{text-decoration:none;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);
+  border-radius:10px;padding:9px 0;text-align:center;font-weight:800;font-size:14px;font-family:"Hahmlet",serif;
+  transition:border-color .15s,color .15s}
+.idx a:hover{border-color:var(--indigo);color:var(--indigo)}
+.idx a .kd{display:block;font-size:9px;font-weight:700;letter-spacing:.04em;margin-top:2px;font-family:"Noto Sans KR"}
+.idx a.hard{border-color:color-mix(in srgb,var(--red) 30%,var(--line))}
+.idx a.hard .kd{color:var(--red)}
+.idx a:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+.pnum{font-family:"Hahmlet",serif;font-weight:800;font-size:24px;color:var(--indigo);line-height:1}
+.pstate{font-size:16px;line-height:1.85;color:var(--ink);margin:10px 0 0}
+.pstate .cond{margin:14px 0 2px}
+.dbadge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;border-radius:99px;
+  padding:3px 10px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper)}
+.dbadge.k{color:var(--red);border-color:color-mix(in srgb,var(--red) 34%,var(--line))}
+.dbadge.red{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,var(--line));background:var(--red-soft)}
+/* 킬러 문항 강조 */
+.sol.killer .sol-body{border-color:color-mix(in srgb,var(--red) 34%,var(--line));
+  box-shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px color-mix(in srgb,var(--red) 16%,transparent)}
+.sol-k.red{background:var(--red)}
+.tag-essay{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;vertical-align:middle;
+  color:#fff;background:var(--amber);border-radius:6px;padding:2px 8px;margin-left:8px}
+:root[data-theme="dark"] .tag-essay,:root:not([data-theme="light"]) .tag-essay{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .tag-essay{color:#fff}}
+
+/* ── 좁은 화면 안전장치: 긴 수식·표가 가로로 넘치지 않게 ── */
+.calc{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch}
+.cond .row>span:last-child{min-width:0; overflow-x:auto; padding-bottom:2px}
+.result .val{min-width:0; overflow-x:auto; padding-bottom:2px}
+</style>
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">루멘수학 · 기출 정밀해설집</p>
+    <h1>소래고 1학년 2학기 기말 · 공통수학2 해설</h1>
+    <div class="sub">
+      <span class="chip">소래고등학교 1학년</span>
+      <span class="chip">2025 · 2학기 기말</span>
+      <span class="chip"><b>22문항</b></span>
+      <span class="chip">집합과 명제 · 함수 · 유리함수 · 무리함수</span>
+    </div>
+  </header>
+  <div class="insight">
+    <span class="ic">📗</span>
+    <p>스물두 문항을 <b>왜 그렇게 푸는지</b>까지 짚는 첨삭 해설로 담았습니다. 아래 번호를 누르면 해당 문제로 바로 이동합니다.
+      <b style="color:var(--red)">빨간 번호</b>는 등급을 가르는 고난도 문항이에요.</p>
+  </div>
+  <nav class="idx" aria-label="문제 바로가기">
+    <a href="#q1">1</a><a href="#q2">2</a><a href="#q3">3</a><a href="#q4">4</a>
+    <a href="#q5">5</a><a href="#q6">6</a><a href="#q7">7</a><a href="#q8">8</a>
+    <a href="#q9">9</a><a href="#q10">10</a><a href="#q11">11</a><a href="#q12">12</a>
+    <a href="#q13">13</a><a href="#q14">14</a><a href="#q15">15</a>
+    <a href="#q16" class="hard">16<span class="kd">함정</span></a>
+    <a href="#q17" class="hard">17<span class="kd">킬러</span></a>
+    <a href="#q18">18</a><a href="#q19" class="hard">19<span class="kd">고난도</span></a>
+    <a href="#q20" class="hard">20<span class="kd">고난도</span></a>
+    <a href="#q21" class="hard">21<span class="kd">킬러</span></a>
+    <a href="#q22" class="hard">22<span class="kd">킬러</span></a>
+  </nav>
+  <section class="sol" id="q1">
+    <div class="sol-head">
+      <span class="sol-k">1</span>
+      <div>
+        <div class="sol-title">차집합 \(A-B\) — \(A\)에서 \(B\)의 원소를 지운다</div>
+        <div class="sol-kind"><span class="dbadge">3.4점</span> 집합과 명제 · 집합의 연산</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">전체집합 \(U=\{1,2,3,4,5\}\)의 두 부분집합 \(A=\{1,3,5\}\), \(B=\{2,3\}\)에 대하여 \(A-B\)의 모든 원소의 합은?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>차집합의 정의</span>
+        <p>\(A-B\)는 <b>\(A\)에는 속하지만 \(B\)에는 속하지 않는</b> 원소들의 집합이다. \(A\)의 원소를 하나씩 훑으며 \(B\)에 있는 것만 지우면 된다.</p>
+        <div class="mathrow">$$A=\{1,\ \underline{3},\ 5\}\quad\to\quad A-B=\{1,\ 5\}$$</div>
+        <p class="aside">밑줄 친 \(3\)은 \(B\)에도 있으므로 탈락. \(B\)에만 있는 \(2\)는 애초에 \(A\)의 원소가 아니므로 신경 쓸 필요가 없다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$1+5=6$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(6\ \Rightarrow\ \) ③</span></div>
+        <div class="miss"><b>헷갈리기 쉬운 이웃 개념</b> \(A-B=\{1,5\}\)(합 \(6\)), \(B-A=\{2\}\)(합 \(2\)), \(A\cap B=\{3\}\), \(A\cup B=\{1,2,3,5\}\). 전체집합 \(U\)가 주어진 건 이 문제에선 쓰이지 않는 <b>미끼</b>다 — 뒤 문제에서 여집합을 쓰라고 깔아 둔 것.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q2">
+    <div class="sol-head">
+      <span class="sol-k">2</span>
+      <div>
+        <div class="sol-title">\(\sim p\)의 진리집합 = \(p\)의 진리집합의 여집합</div>
+        <div class="sol-kind"><span class="dbadge">3.5점</span> 집합과 명제 · 조건과 진리집합</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">전체집합 \(U=\{1,2,3,4,5\}\)에 대하여 조건 \(p\)가 \(p:x \gt 3\)일 때, \(\sim p\)의 진리집합의 모든 원소의 합은?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 조건 \(p\)의 진리집합 \(P\)</span>
+        <p>진리집합은 <b>전체집합의 원소 중 그 조건을 참으로 만드는 것들</b>이다. \(U=\{1,2,3,4,5\}\)에서 \(x \gt 3\)인 것은</p>
+        <div class="mathrow">$$P=\{4,\ 5\}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — \(\sim p\)는 여집합</span>
+        <p>\(\sim p\)의 진리집합은 \(P^{C}\)다. 두 가지 길이 있는데 둘 다 같은 답으로 간다.</p>
+        <table class="calc">
+          <tr><th>방법</th><th>과정</th><th>결과</th></tr>
+          <tr><td>여집합으로</td><td>\(U\)에서 \(P=\{4,5\}\)를 뺀다</td><td>\(\{1,2,3\}\)</td></tr>
+          <tr><td>부정을 직접</td><td>\(\sim p:\ x\le 3\)를 만족하는 원소</td><td>\(\{1,2,3\}\)</td></tr>
+        </table>
+        <div class="warn">
+          <div class="t">⚠️ \(x \gt 3\)의 부정은 \(x \lt 3\)이 아니다</div>
+          <p>부등호를 뒤집을 때 <b>등호가 따라온다</b>: \(x \gt 3\)의 부정은 \(x\le 3\). 여기서 \(3\)을 빠뜨리면 합이 \(3\)(선택지 ②)이 되어 정확히 오답 함정에 빠진다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$1+2+3=6$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(6\ \Rightarrow\ \) ③</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q3">
+    <div class="sol-head">
+      <span class="sol-k">3</span>
+      <div>
+        <div class="sol-title">유리함수의 점근선은 「분모=0」과 「더한 상수」</div>
+        <div class="sol-kind"><span class="dbadge">3.6점</span> 유리함수 · 점근선</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">유리함수 \(y=\dfrac{-3}{x+1}+2\)의 점근선의 방정식이 \(x=p\), \(y=q\)일 때, \(p+q\)의 값은? (단, \(p,\ q\)는 상수이다.)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>표준형이면 점근선은 눈으로 읽는다</span>
+        <p>\(y=\dfrac{k}{x-m}+n\) 꼴은 \(y=\dfrac{k}{x}\)의 그래프를 <b>\(x\)축으로 \(m\), \(y\)축으로 \(n\)만큼 평행이동</b>한 것이다. 원래 점근선 \(x=0,\ y=0\)도 똑같이 따라 움직이므로</p>
+        <div class="mathrow">$$x=m,\qquad y=n$$</div>
+        <p>주어진 식을 이 꼴로 보면 \(x+1=x-(-1)\)이므로 \(m=-1\), \(n=2\).</p>
+        <div class="mathrow">$$x=-1\ (\ p=-1\ ),\qquad y=2\ (\ q=2\ )$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$p+q=-1+2=1$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(1\ \Rightarrow\ \) ③</span></div>
+        <div class="miss"><b>부호 실수 1순위</b> \(x+1\)을 보고 \(p=1\)이라 적는 것. 점근선은 <b>분모를 \(0\)으로 만드는 \(x\)값</b>이므로 \(x+1=0\ \Rightarrow\ x=-1\)이다. 헷갈리면 공식을 외우지 말고 <b>분모가 \(0\)이 되는 곳</b>을 직접 풀자. 분자의 \(-3\)은 그래프의 방향·벌어짐만 정할 뿐 점근선과는 무관하다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q4">
+    <div class="sol-head">
+      <span class="sol-k">4</span>
+      <div>
+        <div class="sol-title">무리함수의 치역은 \(\sqrt{\ }\ge 0\)에서 출발한다</div>
+        <div class="sol-kind"><span class="dbadge">3.8점</span> 무리함수 · 정의역과 치역</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">무리함수 \(y=\sqrt{x+2}+2\)의 치역은?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>근호 자체의 값 범위에서 시작</span>
+        <p>실수 범위에서 <b>근호의 값은 절대로 음수가 될 수 없다</b>. 이 한 줄이 무리함수 치역 문제의 전부다.</p>
+        <div class="mathrow">$$\sqrt{x+2}\ \ge\ 0$$</div>
+        <p>양변에 \(2\)를 더하면 그대로 \(y\)의 범위가 된다.</p>
+        <div class="mathrow">$$\sqrt{x+2}+2\ \ge\ 0+2\ \Longrightarrow\ y\ge 2$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\{y\,|\,y\ge 2\ \text{인 실수}\}\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">💡 정의역과 치역을 한 번에 정리</div>
+          <p><b>정의역</b>은 근호 안이 \(0\) 이상: \(x+2\ge 0\ \Rightarrow\ x\ge -2\). <b>치역</b>은 근호 밖에 더한 상수: \(y\ge 2\). 즉 이 그래프는 <b>점 \((-2,\ 2)\)에서 출발해 오른쪽 위로</b> 뻗는다. 선택지 ④\(y\ge -2\)는 정의역을 치역 자리에 갖다 놓은 함정이다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q5">
+    <div class="sol-head">
+      <span class="sol-k">5</span>
+      <div>
+        <div class="sol-title">평행이동: \(x\) 자리에 \(x-1\), 식 전체에 \(+3\)</div>
+        <div class="sol-kind"><span class="dbadge">3.9점</span> 무리함수 · 평행이동</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(y=\sqrt{2x}\)의 그래프를 \(x\)축의 방향으로 \(1\)만큼, \(y\)축의 방향으로 \(3\)만큼 평행이동한 그래프가 점 \((3,\ a)\)를 지날 때, \(a\)의 값은? (단, \(a\)는 상수이다.)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 평행이동한 식 만들기</span>
+        <p>\(x\)축으로 \(m\), \(y\)축으로 \(n\)만큼 옮기려면 <b>\(x\) 자리에 \(x-m\)을 넣고, 전체에 \(n\)을 더한다</b>.</p>
+        <div class="mathrow">$$y=\sqrt{2x}\ \longrightarrow\ y=\sqrt{2(x-1)}+3$$</div>
+        <div class="miss"><b>가장 잦은 실수</b> \(\sqrt{2x-1}+3\)이라고 쓰는 것. \(x\) <b>하나하나</b>가 \(x-1\)로 바뀌므로 \(2x\)는 \(2(x-1)=2x-2\)가 된다. 괄호를 꼭 쓰자.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — \(x=3\) 대입</span>
+        <div class="mathrow">$$a=\sqrt{2(3-1)}+3=\sqrt4+3=2+3=5$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(a=5\ \Rightarrow\ \) ⑤</span></div>
+        <p class="aside">검산: 원래 그래프에서 \((3,5)\)를 \(1\)만큼 왼쪽, \(3\)만큼 아래로 되돌리면 \((2,\ 2)\)이고, \(\sqrt{2\times2}=2\) ✓ 원래 그래프 위의 점이 맞다.</p>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q6">
+    <div class="sol-head">
+      <span class="sol-k">6</span>
+      <div>
+        <div class="sol-title">「\(8\)은 \(A\)에」, 「\(1\)은 \(B\)에」 — 양쪽에서 조인다</div>
+        <div class="sol-kind"><span class="dbadge">4.0점</span> 집합의 연산 · 미지수가 있는 집합</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 집합 \(A=\{1,\ 3,\ a^{2}+2a\}\), \(B=\{8,\ a+5,\ -a+2\}\)에 대하여 \(A\cap B=\{1,\ 8\}\)이 되도록 하는 상수 \(a\)의 값은?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 교집합 조건을 「소속」으로 번역한다</span>
+        <p>\(A\cap B=\{1,8\}\)이라는 말은 <b>\(1\)과 \(8\)이 두 집합 모두에 들어 있다</b>는 뜻이다. 눈에 보이는 것부터 확인하면</p>
+        <table class="calc">
+          <tr><th>원소</th><th>\(A\)에 있나?</th><th>\(B\)에 있나?</th><th>필요한 조건</th></tr>
+          <tr><td>\(1\)</td><td>있다(그대로)</td><td>안 보인다</td><td>\(a+5=1\) 또는 \(-a+2=1\)</td></tr>
+          <tr><td>\(8\)</td><td>안 보인다</td><td>있다(그대로)</td><td>\(a^{2}+2a=8\)</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 각각 후보를 구한다</span>
+        <div class="mathrow">$$a^{2}+2a=8\ \Longrightarrow\ a^{2}+2a-8=0\ \Longrightarrow\ (a+4)(a-2)=0\ \Longrightarrow\ a=-4\ \text{또는}\ a=2$$</div>
+        <div class="mathrow">$$a+5=1\ \Longrightarrow\ a=-4,\qquad -a+2=1\ \Longrightarrow\ a=1$$</div>
+        <p>두 조건을 <b>동시에</b> 만족해야 하므로 공통으로 등장하는 \(a=-4\)만 살아남는다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 반드시 대입해서 확인한다</span>
+        <p>집합 문제는 <b>구한 값을 넣어 원소가 겹치지 않는지</b>까지 봐야 완성이다.</p>
+        <div class="mathrow">$$a=-4:\quad A=\{1,\ 3,\ 16-8\}=\{1,3,8\},\qquad B=\{8,\ 1,\ 6\}$$</div>
+        <div class="mathrow">$$A\cap B=\{1,\ 8\}\ \checkmark$$</div>
+        <p class="aside">세 원소가 서로 달라야 집합이 성립하는데, \(A\)도 \(B\)도 중복 없이 잘 나왔다. 만약 \(a=2\)였다면 \(A=\{1,3,8\}\), \(B=\{8,7,0\}\)이라 \(A\cap B=\{8\}\)뿐이라 조건에 맞지 않는다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(a=-4\ \Rightarrow\ \) ②</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q7">
+    <div class="sol-head">
+      <span class="sol-k">7</span>
+      <div>
+        <div class="sol-title">치역은 「나온 값들의 집합」 — 중복은 한 번만 센다</div>
+        <div class="sol-kind"><span class="dbadge">4.1점</span> 함수 · 정의역·공역·치역</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">정의역이 \(X=\{1,2,3,4,5,6,7\}\)인 함수 \(f\)를 \(f(x)=(x^{2}\)을 \(7\)로 나눈 나머지\()\)로 정의할 때, 함수 \(f\)의 치역의 모든 원소의 합은?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 일곱 개를 전부 계산한다</span>
+        <table class="calc">
+          <tr><th>\(x\)</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th></tr>
+          <tr><td>\(x^{2}\)</td><td>1</td><td>4</td><td>9</td><td>16</td><td>25</td><td>36</td><td>49</td></tr>
+          <tr class="hi"><td>\(7\)로 나눈 나머지</td><td>1</td><td>4</td><td>2</td><td>2</td><td>4</td><td>1</td><td>0</td></tr>
+        </table>
+        <p class="aside">\(49=7\times7\)이라 나머지가 \(0\)이다. 이 <b>\(0\)을 빠뜨리는 것</b>이 이 문제의 첫 번째 함정.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 치역은 집합, 중복을 지운다</span>
+        <p>나온 값을 늘어놓으면 \(1,4,2,2,4,1,0\). 치역은 <b>이 값들을 모아 놓은 집합</b>이므로 같은 값은 한 번만 쓴다.</p>
+        <div class="mathrow">$$(\text{치역})=\{0,\ 1,\ 2,\ 4\}$$</div>
+        <div class="miss"><b>두 번째 함정</b> 일곱 개를 그대로 더해 \(1+4+2+2+4+1+0=14\)로 답하는 것. 치역은 <b>순서도 중복도 없는 집합</b>이다. 선택지에 \(14\)가 없는 게 그나마 다행이지만, 습관이 잘못 들면 다른 문제에서 걸린다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$0+1+2+4=7$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(7\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">💡 왜 값이 \(\{0,1,2,4\}\)뿐일까</div>
+          <p>\(x\)와 \(7-x\)의 제곱은 \(7\)로 나눈 나머지가 같다(\((7-x)^2=49-14x+x^2\)). 그래서 \(1\!\leftrightarrow\!6\), \(2\!\leftrightarrow\!5\), \(3\!\leftrightarrow\!4\)가 짝을 이뤄 값이 겹친다. 고등 과정에서 <b>일대일함수가 아닌 이유</b>를 설명할 때 자주 쓰이는 구조다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q8">
+    <div class="sol-head">
+      <span class="sol-k">8</span>
+      <div>
+        <div class="sol-title">「어느 것도 아닌 것」을 먼저 빼면 합집합이 나온다</div>
+        <div class="sol-kind"><span class="dbadge">4.2점</span> 집합의 원소의 개수 · 활용</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">어느 학급의 학생 \(25\)명 중에서 직업 체험과 대학 탐방을 모두 신청한 학생은 \(6\)명, 직업 체험과 대학 탐방 중에서 어느 것도 신청하지 않은 학생은 \(4\)명이다. 직업 체험을 신청한 학생 수가 대학 탐방을 신청한 학생 수의 \(2\)배일 때, 직업 체험을 신청한 학생 수는?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 기호로 옮긴다</span>
+        <p>직업 체험을 신청한 집합을 \(A\), 대학 탐방을 신청한 집합을 \(B\)라 하자.</p>
+        <div class="mathrow">$$n(U)=25,\quad n(A\cap B)=6,\quad n\big((A\cup B)^{C}\big)=4,\quad n(A)=2\,n(B)$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 「어느 것도 아닌」 \(4\)명을 빼서 합집합 확보</span>
+        <div class="mathrow">$$n(A\cup B)=25-4=21$$</div>
+        <p class="aside">벤 다이어그램에서 <b>두 원 바깥</b>이 \(4\)명이라는 뜻. 전체에서 바깥을 빼면 원 안쪽 전부, 곧 합집합이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 합집합 공식에 넣고 \(n(B)\)로 통일</span>
+        <div class="mathrow">$$n(A\cup B)=n(A)+n(B)-n(A\cap B)$$</div>
+        <div class="mathrow">$$21=2n(B)+n(B)-6\ \Longrightarrow\ 3n(B)=27\ \Longrightarrow\ n(B)=9$$</div>
+        <p>미지수가 둘(\(n(A),n(B)\))이지만 「\(2\)배」 조건이 있으므로 <b>하나로 통일해서 대입</b>하는 것이 요령이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 묻는 것은 \(n(A)\)</span>
+        <div class="mathrow">$$n(A)=2\times 9=18$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(18\ \Rightarrow\ \) ⑤</span></div>
+        <div class="miss"><b>오답 함정</b> ②\(9\)는 <b>대학 탐방</b> 인원 \(n(B)\)다. 마지막 한 단계(\(2\)배 하기)를 빼먹으면 정확히 여기 걸린다. 검산: 직업 체험만 \(18-6=12\), 대학 탐방만 \(9-6=3\), 둘 다 \(6\), 어느 것도 아님 \(4\) → \(12+3+6+4=25\) ✓</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q9">
+    <div class="sol-head">
+      <span class="sol-k">9</span>
+      <div>
+        <div class="sol-title">그래프에서 \(a,b,c\)를 뽑아 유리함수로 갈아탄다</div>
+        <div class="sol-kind"><span class="dbadge">4.3점</span> 무리함수 그래프 → 유리함수의 성질</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(y=a\sqrt{x+b}+c\)의 그래프가 다음 그림과 같을 때, 함수 \(y=\dfrac{ax+c}{x-b}\)에 대한 설명으로 <b>옳지 않은</b> 것은? (단, \(a,\ b,\ c\)는 상수)</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 출발점과 지나는 점, 두 개면 충분하다</span>
+          <svg viewBox="0 0 360 320" role="img" aria-label="무리함수 그래프. 점 (-4,-6)에서 시작해 원점을 지나 오른쪽 위로 증가">
+            <line x1="30" y1="160" x2="340" y2="160" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <line x1="150" y1="300" x2="150" y2="40" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <polygon points="340,160 331,155.5 331,164.5" fill="var(--ink-soft)"/>
+            <polygon points="150,40 145,49 155,49" fill="var(--ink-soft)"/>
+            <g stroke="var(--line)" stroke-width="1.2" stroke-dasharray="4 4">
+              <line x1="70" y1="280" x2="70" y2="160"/><line x1="70" y1="280" x2="150" y2="280"/>
+            </g>
+            <polyline points="70,280 80,237.6 90,220 110,195.1 130,176.1 150,160 170,145.8 190,133 210,121.3 230,110.3 250,100 270,90.3 290,81 310,72.2"
+                      fill="none" stroke="var(--indigo)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="70" cy="280" r="5" fill="var(--indigo)"/>
+            <circle cx="150" cy="160" r="4.5" fill="var(--paper)" stroke="var(--indigo)" stroke-width="2.4"/>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--ink-faint)">
+              <text x="62" y="152">-4</text><text x="122" y="286">-6</text>
+              <text x="156" y="178">O</text><text x="342" y="158">x</text><text x="156" y="46">y</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--red)">
+              <text x="14" y="298">시작점 (-4, -6)</text>
+              <text x="176" y="188">원점을 지난다</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>무리함수는 <b>시작점</b>이 \((-b,\ c)\). 여기에 지나는 점 하나를 더하면 \(a\)까지 결정된다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 시작점이 \(b\)와 \(c\)를 알려 준다</span>
+        <p>\(y=a\sqrt{x+b}+c\)에서 근호 안이 \(0\)이 되는 순간이 그래프의 <b>끝점(시작점)</b>이다.</p>
+        <div class="mathrow">$$x+b=0\ \Rightarrow\ x=-b,\quad \text{그때}\ y=c$$</div>
+        <p>그림의 시작점이 \((-4,\ -6)\)이므로</p>
+        <div class="mathrow">$$-b=-4\ \Rightarrow\ b=4,\qquad c=-6$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 원점을 대입해 \(a\)</span>
+        <div class="mathrow">$$0=a\sqrt{0+4}+(-6)\ \Longrightarrow\ 2a=6\ \Longrightarrow\ a=3$$</div>
+        <div class="mathrow">$$\therefore\ y=\frac{ax+c}{x-b}=\frac{3x-6}{x-4}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 표준형으로 고쳐 놓고 판정한다</span>
+        <p>유리함수 문제는 <b>\(y=\dfrac{k}{x-m}+n\) 꼴로 바꾸는 순간</b> 대부분이 풀린다.</p>
+        <div class="mathrow">$$\frac{3x-6}{x-4}=\frac{3(x-4)+6}{x-4}=3+\frac{6}{x-4}$$</div>
+        <p>중심(점근선의 교점)은 \((4,\ 3)\), 벌어짐은 \(k=6\).</p>
+        <table class="calc">
+          <tr><th></th><th>선택지</th><th>확인</th><th>판정</th></tr>
+          <tr><td>①</td><td>역함수는 \(y=\frac{4x-6}{x-3}\)</td><td>\(y(x-4)=3x-6\Rightarrow x=\frac{4y-6}{y-3}\)</td><td>옳다</td></tr>
+          <tr><td>②</td><td>치역 \(y\ne 3\)</td><td>\(y=3+\frac{6}{x-4}\)에서 \(\frac{6}{x-4}\ne 0\)</td><td>옳다</td></tr>
+          <tr><td>③</td><td>정의역 \(x\ne 4\)</td><td>분모 \(x-4\ne 0\)</td><td>옳다</td></tr>
+          <tr class="hi"><td>④</td><td>제4사분면을 지나지 않는다</td><td>아래 4단계 참조</td><td><b>옳지 않다</b></td></tr>
+          <tr><td>⑤</td><td>\(y=\frac6x\)를 \((4,3)\)만큼 평행이동</td><td>\(y=\frac{6}{x-4}+3\) ✓</td><td>옳다</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — ④가 틀린 이유: 절편을 찍어 보면 끝</span>
+        <p>사분면 문제는 <b>축과 만나는 점</b>만 구하면 바로 판정된다.</p>
+        <div class="mathrow">$$y=0:\ 3x-6=0\Rightarrow x=2\quad\to\ (2,\ 0)$$</div>
+        <div class="mathrow">$$x=0:\ y=\frac{-6}{-4}=\frac32\quad\to\ \left(0,\ \frac32\right)$$</div>
+        <p>왼쪽 가지는 \(\left(0,\frac32\right)\)에서 내려와 \((2,0)\)을 지나고, \(x\to 4^{-}\)에서 \(-\infty\)로 떨어진다. 즉 <b>\(2 \lt x \lt 4\) 구간에서 \(x \gt 0,\ y \lt 0\)</b> — 정확히 제4사분면이다.</p>
+        <div class="result"><span class="lab">정답 (옳지 않은 것)</span><span class="val">④ 제4사분면을 지나지 않는다</span></div>
+        <div class="warn">
+          <div class="t">💡 사분면 판정의 요령</div>
+          <p>유리함수 그래프를 머릿속으로 그리려 애쓰지 말고 <b>\(x\)절편과 \(y\)절편, 그리고 점근선</b> 세 가지만 좌표평면에 찍어 보자. 중심 \((4,3)\)이 제1사분면에 있으니 오른쪽 가지는 제1사분면에만 있고, 왼쪽 가지가 \((0,\frac32)\to(2,0)\to\) 아래로 내려가며 <b>2·1·4사분면</b>을 훑는다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q10">
+    <div class="sol-head">
+      <span class="sol-k">10</span>
+      <div>
+        <div class="sol-title">대우로 바꿔 화살표를 한 줄로 잇는다</div>
+        <div class="sol-kind"><span class="dbadge">4.4점</span> 명제 · 대우와 삼단논법</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">세 조건 \(p,\ q,\ r\)에 대하여 두 명제 \(p\to q\)와 \(\sim r\to\ \sim q\)가 모두 참일 때, 다음 명제 중 <b>항상 참인</b> 것은?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 대우를 써서 화살표 방향을 맞춘다</span>
+        <p>명제와 그 <b>대우는 참·거짓이 항상 같다</b>. 두 번째 명제를 대우로 바꾸면 첫 번째 명제와 화살표가 이어진다.</p>
+        <div class="mathrow">$$\sim r\to\ \sim q\quad\Longleftrightarrow\quad q\to r$$</div>
+        <p class="aside">대우는 <b>부정하고 뒤집는다</b>: \(\sim r\to\sim q\)의 가정·결론을 각각 부정해 \(r,\ q\)로 만들고 순서를 바꾸면 \(q\to r\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 삼단논법으로 잇는다</span>
+        <div class="mathrow">$$p\to q,\qquad q\to r\qquad\Longrightarrow\qquad p\to r$$</div>
+        <p>얻은 것은 \(p\to r\) 하나뿐이다. 그런데 선택지에 \(p\to r\)이 없다. 이럴 때 답은 <b>그 대우</b>다.</p>
+        <div class="mathrow">$$p\to r\quad\Longleftrightarrow\quad \sim r\to\ \sim p$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 나머지가 왜 안 되는지</span>
+        <table class="calc">
+          <tr><th>선택지</th><th>왜 항상 참이 아닌가</th></tr>
+          <tr><td>① \(q\to\sim r\)</td><td>우리가 아는 건 \(q\to r\). 결론이 정반대다.</td></tr>
+          <tr><td>② \(\sim p\to\sim q\)</td><td>\(p\to q\)의 <b>이(역의 대우가 아닌 것)</b>. 참이라는 보장이 없다.</td></tr>
+          <tr><td>③ \(\sim r\to q\)</td><td>주어진 \(\sim r\to\sim q\)의 결론을 뒤집었다.</td></tr>
+          <tr class="hi"><td>④ \(\sim r\to\sim p\)</td><td>\(p\to r\)의 <b>대우</b> — 항상 참 ✓</td></tr>
+          <tr><td>⑤ \(\sim q\to p\)</td><td>\(p\to q\)의 역·이 계열. 보장 없음.</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\sim r\to\ \sim p\ \Rightarrow\ \) ④</span></div>
+        <div class="warn">
+          <div class="t">💡 이 유형의 만능 전략</div>
+          <p>주어진 명제를 <b>모두 「긍정 → 긍정」 방향으로 통일</b>한 뒤 화살표를 이어 붙인다. 여기서는 \(p\to q\to r\)라는 <b>한 줄 사슬</b>이 만들어진다. 사슬에서 나올 수 있는 참인 명제는 <b>사슬을 따라가는 것</b>(\(p\to q\), \(q\to r\), \(p\to r\))과 <b>그 대우들</b>뿐이다. 거꾸로 가는 화살표(역)는 절대 보장되지 않는다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q11">
+    <div class="sol-head">
+      <span class="sol-k">11</span>
+      <div>
+        <div class="sol-title">「서로 같은 함수」 = 정의역의 모든 원소에서 값이 같다</div>
+        <div class="sol-kind"><span class="dbadge">4.5점</span> 함수 · 서로 같은 함수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 집합 \(X=\{1,2,3\}\), \(Y=\{-3,-2,-1,0\}\)에 대하여 두 함수 \(f:X\to Y\), \(g:X\to Y\)를 \(f(x)=x^{2}-4x+2\), \(g(x)=a|x-2|+b\)라 하자. 두 함수 \(f\)와 \(g\)가 서로 같을 때, \(a-b\)의 값은?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 「같은 함수」의 정확한 뜻</span>
+        <p>식이 같아야 하는 게 <b>아니다</b>. 정의역이 같고, <b>정의역의 각 원소에서 함숫값이 같으면</b> 두 함수는 같다. 정의역이 \(\{1,2,3\}\)이니 <b>확인할 점은 딱 세 개</b>다.</p>
+        <div class="mathrow">$$f(1)=g(1),\qquad f(2)=g(2),\qquad f(3)=g(3)$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 양쪽 값을 표로</span>
+        <table class="calc">
+          <tr><th>\(x\)</th><th>\(f(x)=x^{2}-4x+2\)</th><th>\(g(x)=a|x-2|+b\)</th></tr>
+          <tr><td>\(1\)</td><td>\(1-4+2=-1\)</td><td>\(a|{-1}|+b=a+b\)</td></tr>
+          <tr class="hi"><td>\(2\)</td><td>\(4-8+2=-2\)</td><td>\(a\cdot 0+b=b\)</td></tr>
+          <tr><td>\(3\)</td><td>\(9-12+2=-1\)</td><td>\(a\cdot 1+b=a+b\)</td></tr>
+        </table>
+        <p class="aside">\(x=2\)에서 절댓값이 \(0\)이 되어 \(a\)가 통째로 사라진다. <b>여기부터 손대는 것</b>이 정답으로 가는 가장 빠른 길이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 두 식을 푼다</span>
+        <div class="mathrow">$$b=-2$$</div>
+        <div class="mathrow">$$a+b=-1\ \Longrightarrow\ a-2=-1\ \Longrightarrow\ a=1$$</div>
+        <p class="aside">\(x=1\)과 \(x=3\)이 같은 식 \(a+b=-1\)을 주는 것도 우연이 아니다. \(f\)의 축이 \(x=2\)이고 \(g\)도 \(x=2\)에서 꺾이므로, 두 함수 모두 \(x=2\)에 대해 <b>대칭</b>이기 때문이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$a-b=1-(-2)=3$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(3\ \Rightarrow\ \) ③</span></div>
+        <div class="miss"><b>부호 실수</b> \(a-b\)에서 \(b=-2\)를 빼는 것이므로 \(1-(-2)=3\). \(1-2=-1\)로 잘못 계산하기 쉽다. 음수를 대입할 때는 <b>반드시 괄호</b>를 치고 쓰자.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q12">
+    <div class="sol-head">
+      <span class="sol-k">12</span>
+      <div>
+        <div class="sol-title">충분조건을 집합의 포함관계 하나로 바꾼다</div>
+        <div class="sol-kind"><span class="dbadge">4.6점</span> 명제 · 충분조건과 진리집합</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">전체집합 \(U\)에 대하여 두 조건 \(p\)와 \(q\)의 진리집합을 각각 \(P\)와 \(Q\)라 하자. \(\sim q\)가 \(p\)이기 위한 충분조건일 때, &lt;보기&gt;에서 항상 옳은 것만을 있는 대로 고른 것은?
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>\(Q^{C}\subset P\)</span></div>
+          <div class="row"><span class="lab">ㄴ.</span><span>\(P\cup Q=U\)</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>\(P^{C}\cup Q=Q\)</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 「A가 B이기 위한 충분조건」의 방향</span>
+        <p>이 표현에서 <b>화살표는 「충분조건 → 나머지」</b> 방향이다. \(\sim q\)가 <b>\(p\)이기 위한</b> 충분조건이므로</p>
+        <div class="mathrow">$$\sim q\ \Longrightarrow\ p\qquad\text{즉}\qquad Q^{C}\subset P$$</div>
+        <p class="aside">외우는 법: <b>「충분한 쪽에서 화살표가 나간다」</b>, 그리고 <b>「화살표 방향이 곧 \(\subset\) 방향」</b>. \(A\Rightarrow B\)이면 \(A\subset B\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — ㄱ은 정의 그대로</span>
+        <p>ㄱ은 1단계에서 얻은 결론 그 자체다. <b>✓ 항상 옳다</b></p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — ㄴ: \(Q^{C}\subset P\)를 말로 풀면</span>
+        <p>「\(Q\)에 없는 원소는 반드시 \(P\)에 있다」는 뜻이다. 그러면 전체집합의 어떤 원소든 <b>\(Q\)에 있거나 \(P\)에 있거나</b> 둘 중 하나이므로, 두 집합을 합치면 빈틈이 없다.</p>
+        <div class="mathrow">$$P\cup Q=U\quad \textbf{✓ 항상 옳다}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>4단계 — ㄷ: 대우를 집합으로</span>
+        <p>\(P^{C}\cup Q=Q\)가 성립한다는 것은 \(P^{C}\)가 \(Q\) 안에 통째로 들어간다는 뜻이다(합쳐도 \(Q\)가 커지지 않으므로).</p>
+        <div class="mathrow">$$P^{C}\cup Q=Q\quad\Longleftrightarrow\quad P^{C}\subset Q$$</div>
+        <p>그런데 \(Q^{C}\subset P\)의 <b>대우에 해당하는 집합 관계</b>가 정확히 \(P^{C}\subset Q\)다(양변에 여집합을 취하면 포함관계가 뒤집힌다).</p>
+        <div class="mathrow">$$Q^{C}\subset P\ \Longrightarrow\ P^{C}\subset (Q^{C})^{C}=Q\quad \textbf{✓ 항상 옳다}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">ㄱ, ㄴ, ㄷ \(\ \Rightarrow\ \) ⑤</span></div>
+        <div class="warn">
+          <div class="t">💡 벤 다이어그램으로 한 번에 확인</div>
+          <p>\(Q^{C}\subset P\)를 그리면 「\(Q\)의 바깥이 \(P\) 안에 쏙 들어간」 그림이 된다. 그 그림에서 <b>\(P\)와 \(Q\)가 전체를 덮고</b>(ㄴ), <b>\(P\)의 바깥은 \(Q\) 안에</b>(ㄷ) 있는 것이 눈으로 바로 보인다. 명제 문제에서 판단이 흔들리면 진리집합을 그려 보는 것이 가장 확실하다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q13">
+    <div class="sol-head">
+      <span class="sol-k">13</span>
+      <div>
+        <div class="sol-title">합성을 반복하면 제자리로 — 주기를 찾는다</div>
+        <div class="sol-kind"><span class="dbadge">4.7점</span> 함수 · 합성함수의 주기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">집합 \(X=\{1,2,3,4\}\)에 대하여 \(X\)에서 \(X\)로의 함수가 \(f(1)=2,\ f(2)=4,\ f(3)=1,\ f(4)=3\)을 만족한다. \(f^{1}=f\), \(f^{n+1}=f\circ f^{n}\)으로 정의할 때, \(f^{2025}(1)+f^{2026}(3)\)의 값은?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 화살표를 이어 보면 고리가 보인다</span>
+        <p>\(2025\)번을 실제로 계산할 수는 없다. 이런 문제는 <b>반드시 반복(주기)이 있다</b>. 화살표를 따라가 보자.</p>
+        <div class="mathrow">$$1\ \to\ 2\ \to\ 4\ \to\ 3\ \to\ 1\ \to\ \cdots$$</div>
+        <p>네 원소가 <b>하나의 고리</b>를 이루며 돈다. 따라서 \(f\)를 <b>\(4\)번</b> 적용하면 어떤 원소든 제자리로 돌아온다.</p>
+        <div class="mathrow">$$f^{4}(x)=x\quad(\text{모든}\ x\in X)$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 지수를 \(4\)로 나눈 나머지만 남긴다</span>
+        <table class="calc">
+          <tr><th>구하는 것</th><th>\(4\)로 나눈 나머지</th><th>줄어든 식</th><th>값</th></tr>
+          <tr><td>\(f^{2025}(1)\)</td><td>\(2025=4\times506+\mathbf{1}\)</td><td>\(f^{1}(1)=f(1)\)</td><td>\(2\)</td></tr>
+          <tr><td>\(f^{2026}(3)\)</td><td>\(2026=4\times506+\mathbf{2}\)</td><td>\(f^{2}(3)=f(f(3))=f(1)\)</td><td>\(2\)</td></tr>
+        </table>
+        <p class="aside">\(2024=4\times506\)이 딱 떨어진다는 걸 알아두면 \(2025,\ 2026\)의 나머지가 \(1,\ 2\)임이 바로 보인다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$f^{2025}(1)+f^{2026}(3)=2+2=4$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(4\ \Rightarrow\ \) ②</span></div>
+        <div class="miss"><b>주의</b> 나머지가 \(0\)일 때는 \(f^{0}\)이 아니라 <b>\(f^{4}\)=항등함수</b>로 봐야 한다. 예를 들어 \(f^{2024}(1)\)이라면 답은 \(1\) 자신이다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q14">
+    <div class="sol-head">
+      <span class="sol-k">14</span>
+      <div>
+        <div class="sol-title">역함수를 구하지 말고, 식을 「벗겨」 조건을 단순화한다</div>
+        <div class="sol-kind"><span class="dbadge">4.8점</span> 역함수와 합성함수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 함수 \(f(x)\), \(g(x)\)가 \(f(x)=2x-7\), \(g(x)=-2x+a\)일 때, 모든 실수 \(x\)에 대하여 \(\big(f^{-1}\circ(g^{-1}\circ f)\circ g\big)(x)=x\)가 성립하도록 하는 상수 \(a\)의 값은?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 역함수를 실제로 구하면 진다</span>
+        <p>\(f^{-1}, g^{-1}\)을 직접 구해 네 번 합성하면 계산이 폭발한다. 대신 <b>양쪽에 \(f\)를 씌워 \(f^{-1}\)을 지우는</b> 방향으로 간다.</p>
+        <div class="mathrow">$$f^{-1}\circ\big(g^{-1}\circ f\circ g\big)=I\quad(I\text{는 항등함수})$$</div>
+        <p>양변 왼쪽에 \(f\)를 합성하면 \(f\circ f^{-1}=I\)이므로 \(f^{-1}\)이 사라진다.</p>
+        <div class="mathrow">$$g^{-1}\circ f\circ g=f$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 한 번 더 벗긴다</span>
+        <p>이번엔 양변 왼쪽에 \(g\)를 합성하면 \(g\circ g^{-1}=I\)로 \(g^{-1}\)도 사라진다.</p>
+        <div class="mathrow">$$f\circ g=g\circ f$$</div>
+        <p class="aside">즉 이 문제는 결국 <b>「\(f\)와 \(g\)의 합성 순서를 바꿔도 같아지게 하라」</b>는 조건이다. 복잡해 보이던 식이 한 줄로 줄었다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 양쪽을 계산해 계수 비교</span>
+        <div class="mathrow">$$(f\circ g)(x)=f(-2x+a)=2(-2x+a)-7=-4x+2a-7$$</div>
+        <div class="mathrow">$$(g\circ f)(x)=g(2x-7)=-2(2x-7)+a=-4x+14+a$$</div>
+        <p>\(x\)의 계수는 양쪽 모두 \(-4\)로 이미 같다. <b>상수항만 맞추면 된다.</b></p>
+        <div class="mathrow">$$2a-7=14+a\ \Longrightarrow\ a=21$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(a=21\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">💡 합성·역함수 문제의 3원칙</div>
+          <p><b>①</b> \(f\circ f^{-1}=f^{-1}\circ f=I\) — 붙어 있으면 지운다. <b>②</b> 합성은 <b>결합법칙</b>이 성립하므로 괄호를 자유롭게 옮겨도 된다. <b>③</b> 합성은 <b>교환법칙이 성립하지 않는다</b> — 그래서 「\(f\circ g=g\circ f\)」가 특별한 조건이 되어 문제가 된다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q15">
+    <div class="sol-head">
+      <span class="sol-k">15</span>
+      <div>
+        <div class="sol-title">부등식은 「좌변\(-\)우변」을 인수분해해서 부호를 본다</div>
+        <div class="sol-kind"><span class="dbadge">4.9점</span> 절대부등식 · 산술·기하·조화평균</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(a,\ b\)가 양수일 때, 부등식에 관한 설명 중 옳은 것만을 &lt;보기&gt;에서 있는 대로 고른 것은?
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>\(\sqrt{ab}\ \ge\ \dfrac{2ab}{a+b}\)</span></div>
+          <div class="row"><span class="lab">ㄴ.</span><span>\(|a|-|b|\ \ge\ |a-b|\)</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>\(a^{3}+b^{3}\ \ge\ ab(a+b)\)</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>ㄱ — 기하평균 \(\ge\) 조화평균</span>
+        <p>산술평균 \(\ge\) 기하평균 \(\dfrac{a+b}{2}\ge\sqrt{ab}\)에서 출발한다. 양변이 양수이므로 역수를 취하면 부등호가 뒤집힌다.</p>
+        <div class="mathrow">$$\frac{2}{a+b}\ \le\ \frac{1}{\sqrt{ab}}$$</div>
+        <p>양변에 양수 \(ab\)를 곱하면</p>
+        <div class="mathrow">$$\frac{2ab}{a+b}\ \le\ \frac{ab}{\sqrt{ab}}=\sqrt{ab}\qquad \textbf{✓ 참}$$</div>
+        <p class="aside">세 평균의 크기 순서 <b>(산술) \(\ge\) (기하) \(\ge\) (조화)</b>는 통째로 외워 둘 가치가 있다. 등호는 셋 다 \(a=b\)일 때.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>ㄴ — 부등호 방향이 반대다</span>
+        <p>참인 것은 <b>\(|a|-|b|\le|a-b|\)</b>(삼각부등식)이다. 반례를 하나만 들면 끝난다.</p>
+        <div class="mathrow">$$a=1,\ b=2:\quad |1|-|2|=-1,\qquad |1-2|=1$$</div>
+        <div class="mathrow">$$-1\ \ge\ 1\ ?\quad \textbf{✗ 거짓}$$</div>
+        <div class="miss"><b>반례 만드는 요령</b> \(a,b\)가 양수라는 조건만 있으므로 <b>\(a \lt b\)</b>를 잡으면 좌변이 음수, 우변은 항상 \(0\) 이상이라 즉시 무너진다. 「보기가 거짓 같다」 싶으면 <b>큰 값/작은 값을 바꿔 보는 것</b>이 가장 빠른 반례 탐색이다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>ㄷ — 차를 인수분해하면 제곱이 나온다</span>
+        <div class="mathrow">$$a^{3}+b^{3}-ab(a+b)=(a+b)(a^{2}-ab+b^{2})-ab(a+b)$$</div>
+        <div class="mathrow">$$=(a+b)\big(a^{2}-2ab+b^{2}\big)=(a+b)(a-b)^{2}$$</div>
+        <p>\(a,b\)가 양수라 \(a+b \gt 0\)이고 \((a-b)^{2}\ge 0\)이므로 곱은 항상 \(0\) 이상이다.</p>
+        <div class="mathrow">$$\therefore\ a^{3}+b^{3}\ \ge\ ab(a+b)\qquad \textbf{✓ 참}\quad(\text{등호는}\ a=b)$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">ㄱ, ㄷ \(\ \Rightarrow\ \) ④</span></div>
+        <div class="warn">
+          <div class="t">💡 절대부등식 증명의 두 갈래</div>
+          <p><b>참인 것 같으면</b> 「좌변 \(-\) 우변」을 계산해 <b>\((\ )^{2}\)이나 양수 인수의 곱</b>으로 만든다(ㄷ). <b>거짓인 것 같으면</b> 숫자 하나로 <b>반례</b>를 만든다(ㄴ). 이 두 가지 말고 다른 방법은 거의 필요 없다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol killer" id="q16">
+    <div class="sol-head">
+      <span class="sol-k red">16</span>
+      <div>
+        <div class="sol-title">빈칸 세 개가 곧 세 함수 — 마지막 \(h\)는 상수함수다</div>
+        <div class="sol-kind"><span class="dbadge red">5.0점 · 함정</span> 대우를 이용한 증명 · 합성함수와 역함수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">‘자연수 \(n\)에 대하여 \(n^{2}\)이 \(3\)의 배수이면 \(n\)도 \(3\)의 배수이다’라는 명제가 참임을 증명한 것이다.
+        <div class="cond">
+          <div class="row"><span>\(n\)이 \(3\)의 배수가 아니라고 가정하면 \(n=3k+1\) 또는 \(n=3k+2\) (\(k\)는 \(0\) 또는 자연수)</span></div>
+          <div class="row"><span class="lab">(ⅰ)</span><span>\(n=3k+1\)일 때, \(n^{2}=3\big(\ \boxed{\text{(가)}}\ \big)+1\)이므로 \(n^{2}\)은 \(3\)의 배수가 아니다.</span></div>
+          <div class="row"><span class="lab">(ⅱ)</span><span>\(n=3k+2\)일 때, \(n^{2}=3\big(\ \boxed{\text{(나)}}\ \big)+1\)이므로 \(n^{2}\)은 \(3\)의 배수가 아니다.</span></div>
+          <div class="row"><span class="lab">(ⅲ)</span><span>(ⅰ),(ⅱ)에 의해서 \(n^{2}\)이 \(\boxed{\text{(다)}}\)의 배수가 아니다.</span></div>
+        </div>
+        위의 (가), (나), (다)에 알맞은 것을 각각 \(f(x)\), \(g(x)\), \(h(x)\)라 할 때, \((f\circ g)^{-1}(5)+h(5)\)는?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 빈칸 채우기: 전개해서 \(3(\ \ )+1\) 꼴로</span>
+        <div class="mathrow">$$(3k+1)^{2}=9k^{2}+6k+1=3\big(3k^{2}+2k\big)+1\ \Longrightarrow\ \text{(가)}=3k^{2}+2k$$</div>
+        <div class="mathrow">$$(3k+2)^{2}=9k^{2}+12k+4=3\big(3k^{2}+4k+1\big)+1\ \Longrightarrow\ \text{(나)}=3k^{2}+4k+1$$</div>
+        <p class="aside">(ⅱ)에서 상수 \(4\)를 \(3\times1+1\)로 쪼개 \(+1\)을 남기는 것이 포인트. 두 경우 모두 나머지가 \(1\)로 같아지는 게 이 증명의 핵심이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — (다)는 숫자 \(3\), 즉 \(h(x)=3\)인 상수함수</span>
+        <p>(다) 자리에 들어가는 것은 \(3\)이다. 이것을 「함수 \(h(x)\)」로 보라고 했으므로 \(h\)는 <b>어떤 값을 넣어도 항상 \(3\)</b>인 상수함수다.</p>
+        <div class="mathrow">$$h(x)=3\ \Longrightarrow\ h(5)=3$$</div>
+        <div class="miss"><b>여기서 가장 많이 막힌다</b> \(h(5)=5\)라고 쓰거나 「(다)는 함수가 아닌데?」 하고 멈추는 경우. <b>상수함수도 엄연한 함수</b>이고, \(h(5)\)는 \(5\)와 아무 상관 없이 \(3\)이다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — \((f\circ g)^{-1}(5)\): 거꾸로 추적한다</span>
+        <p>\((f\circ g)^{-1}(5)=x\)라는 것은 <b>\((f\circ g)(x)=5\)가 되는 \(x\)</b>를 찾으라는 뜻이다. 안쪽부터 차례로 벗긴다. \(t=g(x)\)로 두면</p>
+        <div class="mathrow">$$f(t)=3t^{2}+2t=5\ \Longrightarrow\ 3t^{2}+2t-5=0\ \Longrightarrow\ (3t+5)(t-1)=0$$</div>
+        <div class="mathrow">$$t=1\quad\text{또는}\quad t=-\frac53$$</div>
+        <p>이제 \(g(x)=t\)를 푼다.</p>
+        <table class="calc">
+          <tr><th>\(t\)</th><th>\(g(x)=3x^{2}+4x+1=t\)</th><th>해</th></tr>
+          <tr class="hi"><td>\(1\)</td><td>\(3x^{2}+4x=0\Rightarrow x(3x+4)=0\)</td><td>\(x=0\) 또는 \(x=-\frac43\)</td></tr>
+          <tr><td>\(-\frac53\)</td><td>\(9x^{2}+12x+8=0\)</td><td>판별식 \(144-288 \lt 0\) → 실근 없음</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>4단계 — 두 개 중 어느 것? 문제의 문맥이 정한다</span>
+        <p>실수 전체에서 보면 \(x=0\)과 \(x=-\frac43\) 둘 다 \((f\circ g)(x)=5\)를 만족한다. 즉 \(f\circ g\)는 일대일함수가 아니라서 <b>엄밀히 말하면 역함수가 존재하지 않는다</b>.</p>
+        <p>답을 정하는 것은 <b>이 함수들이 어디서 왔는지</b>다. \(f,g\)는 증명 속 \(k\)(<b>\(0\) 또는 자연수</b>)에 대한 식이므로 변수는 \(0\) 이상의 정수여야 한다. \(-\frac43\)은 그 범위 밖이므로 남는 것은 하나뿐이다.</p>
+        <div class="mathrow">$$(f\circ g)^{-1}(5)=0$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$(f\circ g)^{-1}(5)+h(5)=0+3=3$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(3\ \Rightarrow\ \) ②</span></div>
+        <div class="warn">
+          <div class="t">⚠️ 이 문제의 미비점(알아 두면 좋다)</div>
+          <p>문제에 정의역이 명시돼 있지 않아, 실수 전체로 보면 역함숫값이 \(0\)과 \(-\frac43\) 두 개가 된다. 출제 의도는 증명 문맥의 \(k\ge 0\)인 정수이며 그때 답은 \(0\)이다. <b>시험장에서는 「깔끔한 정수 해」를 고르면 된다</b>. 이런 문제를 만나면 각 선택지를 역으로 대입해 보는 것도 빠른 길이다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol killer" id="q17">
+    <div class="sol-head">
+      <span class="sol-k red">17</span>
+      <div>
+        <div class="sol-title">증가함수면 \(f\)와 \(f^{-1}\)의 교점은 \(y=x\) 위에 있다</div>
+        <div class="sol-kind"><span class="dbadge red">5.1점 · 킬러</span> 무리함수 · 역함수와의 교점 · 근의 분리</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(f(x)=3-\sqrt{k-2x}\)의 그래프와 그 역함수 \(y=f^{-1}(x)\)의 그래프가 서로 다른 두 점에서 만나도록 하는 실수 \(k\)의 값의 범위가 \(a \lt k\le b\)일 때, \(b-a\)의 값은? (단, \(a,\ b\)는 상수)</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 두 곡선은 \(y=x\)에 대해 거울처럼 대칭</span>
+          <svg viewBox="0 0 340 330" role="img" aria-label="증가하는 무리함수와 그 역함수가 직선 y=x 위의 두 점에서 만나는 그림">
+            <line x1="20" y1="250" x2="320" y2="250" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <line x1="110" y1="320" x2="110" y2="50" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <polygon points="320,250 311,245.5 311,254.5" fill="var(--ink-soft)"/>
+            <polygon points="110,50 105,59 115,59" fill="var(--ink-soft)"/>
+            <line x1="55" y1="305" x2="290" y2="70" stroke="var(--ink-faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+            <polyline points="27.5,245.3 55,235.6 110,214 137.5,201.7 165,187.9 181.1,178.9 209,160.8 220,152.4 242,131 253,115.1 258.9,101.1 261.3,85"
+                      fill="none" stroke="var(--indigo)" stroke-width="2.8" stroke-linecap="round"/>
+            <polyline points="124.4,305 146,250 158.3,222.5 172.1,195 181.1,178.9 207.6,140 229,118 244.9,107 258.9,101.1 275,98.8"
+                      fill="none" stroke="var(--amber)" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 4"/>
+            <circle cx="181.1" cy="178.9" r="5.5" fill="var(--red)"/>
+            <circle cx="258.9" cy="101.1" r="5.5" fill="var(--red)"/>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="800">
+              <text x="26" y="216" fill="var(--indigo)">y = f(x)</text>
+              <text x="196" y="298" fill="var(--amber)">y = f⁻¹(x)</text>
+              <text x="266" y="66" fill="var(--ink-faint)">y = x</text>
+              <text x="112" y="268" fill="var(--ink-faint)">O</text>
+            </g>
+            <text x="140" y="160" font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--red)">교점 2개</text>
+          </svg>
+        </div>
+        <figcaption>\(f\)가 <b>증가함수</b>이면 두 그래프의 교점은 반드시 \(y=x\) 위에 있다. 그래서 문제가 <b>\(f(x)=x\)의 실근 개수</b> 문제로 바뀐다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — \(f\)가 증가함수임을 확인한다 (이게 전제다)</span>
+        <p>\(x\)가 커지면 \(k-2x\)는 작아지고, 따라서 \(\sqrt{k-2x}\)도 작아진다. 그 앞에 <b>마이너스</b>가 붙어 있으므로 \(f(x)=3-\sqrt{k-2x}\)는 <b>커진다</b>. 즉 \(f\)는 증가함수다.</p>
+        <div class="warn">
+          <div class="t">⭐ 킬러의 관문</div>
+          <p>일반적으로 \(y=f(x)\)와 \(y=f^{-1}(x)\)의 교점이 \(y=x\) 위에만 있는 것은 <b>아니다</b>(감소함수면 \(y=x\) 밖에서도 만난다). 하지만 <b>\(f\)가 증가함수이면</b> 모든 교점이 \(y=x\) 위에 놓인다. 그래서 <b>먼저 증가함수임을 확인하는 것</b>이 이 풀이의 정당성을 만든다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — \(f(x)=x\)로 바꿔 정리</span>
+        <div class="mathrow">$$3-\sqrt{k-2x}=x\ \Longrightarrow\ \sqrt{k-2x}=3-x$$</div>
+        <p>근호는 음수가 될 수 없으므로 <b>\(3-x\ge 0\), 즉 \(x\le 3\)</b>이라는 숨은 조건이 생긴다. 이 조건을 잊으면 답이 달라진다.</p>
+        <div class="mathrow">$$k-2x=(3-x)^{2}=9-6x+x^{2}\ \Longrightarrow\ x^{2}-4x+9-k=0$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 조건 두 개: 서로 다른 두 실근 + \(x\le 3\)</span>
+        <p><b>조건 ①</b> 판별식이 양수라야 서로 다른 두 실근이 나온다.</p>
+        <div class="mathrow">$$\frac{D}{4}=(-2)^{2}-(9-k)=k-5 \gt 0\ \Longrightarrow\ k \gt 5$$</div>
+        <p><b>조건 ②</b> 두 근이 모두 \(3\) 이하여야 한다. 근을 직접 구해 보면 깔끔하다.</p>
+        <div class="mathrow">$$x=2\pm\sqrt{k-5}$$</div>
+        <div class="mathrow">$$2+\sqrt{k-5}\ \le\ 3\ \Longrightarrow\ \sqrt{k-5}\le 1\ \Longrightarrow\ k-5\le 1\ \Longrightarrow\ k\le 6$$</div>
+        <p class="aside">작은 근 \(2-\sqrt{k-5}\)는 \(2\)보다 작으므로 \(x\le3\)을 저절로 만족한다. <b>큰 근만 확인</b>하면 된다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 두 조건을 합친다</span>
+        <div class="mathrow">$$5 \lt k\le 6\ \Longrightarrow\ a=5,\ b=6$$</div>
+        <div class="mathrow">$$b-a=6-5=1$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(1\ \Rightarrow\ \) ①</span></div>
+        <div class="miss"><b>왜 \(k=6\)은 되고 \(k=5\)는 안 되나</b> \(k=6\)일 때 두 근은 \(1\)과 \(3\) — 서로 다르고 둘 다 \(x\le3\)을 만족하므로 <b>포함</b>(\(\le\)). \(k=5\)일 때는 근이 \(2\) 하나뿐(중근)이라 교점이 한 개뿐이므로 <b>제외</b>(\(\lt\)). 문제가 굳이 \(a \lt k\le b\)라는 <b>비대칭 부등호</b>를 알려 준 것은 이 사실을 확인하라는 신호다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q18">
+    <div class="sol-head">
+      <span class="sol-k">18</span>
+      <div>
+        <div class="sol-title">「어떤」의 부정은 「모든」 — 거짓 조건을 참 조건으로 뒤집는다</div>
+        <div class="sol-kind"><span class="dbadge">5.2점</span> 명제 · 한정사가 있는 명제의 참·거짓</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 정수 \(a,\ b\)에 대하여 명제 \(p\)는 <b>거짓</b>이고 명제 \(q\)는 <b>참</b>이 되도록 하는 \(a\)의 최댓값과 \(b\)의 최솟값의 합은?
+        <div class="cond">
+          <div class="row"><span class="lab">\(p\)</span><span>어떤 실수 \(x\)에 대하여 \(x^{2}+2ax+5a+6\le 0\)이다.</span></div>
+          <div class="row"><span class="lab">\(q\)</span><span>어떤 실수 \(x\)에 대하여 \(x^{2}=b-1\)이다.</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — \(p\)가 거짓 = \(\sim p\)가 참</span>
+        <p>「어떤 \(x\)에 대하여 \(\cdots\le 0\)」이 <b>거짓</b>이라는 말은, 그런 \(x\)가 <b>하나도 없다</b>는 뜻이다. 한정사를 뒤집으면</p>
+        <div class="mathrow">$$\sim p:\ \text{모든 실수}\ x\ \text{에 대하여}\ x^{2}+2ax+5a+6 \gt 0$$</div>
+        <p>이차함수가 <b>항상 양수</b>가 되려면 아래로 볼록한 포물선이 \(x\)축과 만나지 않아야 한다 → 판별식이 음수.</p>
+        <div class="mathrow">$$\frac{D}{4}=a^{2}-(5a+6) \lt 0\ \Longrightarrow\ a^{2}-5a-6 \lt 0\ \Longrightarrow\ (a-6)(a+1) \lt 0$$</div>
+        <div class="mathrow">$$-1 \lt a \lt 6$$</div>
+        <p>\(a\)는 <b>정수</b>이므로 \(a=0,1,2,3,4,5\). 따라서 <b>\(a\)의 최댓값은 \(5\)</b>.</p>
+        <div class="miss"><b>함정</b> 부등호가 \(\lt\)라서 \(a=6\)은 <b>포함되지 않는다</b>. \(a=6\)이면 판별식이 \(0\)이 되어 \(x^{2}+12x+36=(x+6)^{2}\), 즉 \(x=-6\)에서 값이 \(0\)이 되므로 「\(\le 0\)인 \(x\)가 존재」해 \(p\)가 참이 되어 버린다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — \(q\)가 참</span>
+        <p>「어떤 실수 \(x\)에 대하여 \(x^{2}=b-1\)」이 참이려면, 그런 \(x\)가 <b>적어도 하나</b> 있어야 한다. 실수의 제곱은 \(0\) 이상이므로</p>
+        <div class="mathrow">$$b-1\ \ge\ 0\ \Longrightarrow\ b\ \ge\ 1$$</div>
+        <p>\(b\)는 정수이므로 <b>\(b\)의 최솟값은 \(1\)</b>.</p>
+        <p class="aside">\(b=1\)이면 \(x^{2}=0\), 즉 \(x=0\)이라는 실수가 실제로 존재한다 ✓ 「어떤」은 하나만 있어도 참이므로 등호가 포함된다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$5+1=6$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(6\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">💡 한정사 명제 정리표</div>
+          <table class="calc">
+            <tr><th>명제</th><th>참이 되는 조건</th><th>부정</th></tr>
+            <tr><td>모든 \(x\)에 대해 \(f(x) \gt 0\)</td><td>최솟값 \(\gt 0\) (판별식 \(\lt 0\))</td><td>어떤 \(x\)에 대해 \(f(x)\le 0\)</td></tr>
+            <tr><td>어떤 \(x\)에 대해 \(f(x)\le 0\)</td><td>최솟값 \(\le 0\) (판별식 \(\ge 0\))</td><td>모든 \(x\)에 대해 \(f(x) \gt 0\)</td></tr>
+          </table>
+          <p><b>거짓인 명제가 주어지면 부정을 취해 참으로 바꾼 뒤 푸는 것</b>이 언제나 더 쉽다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q19">
+    <div class="sol-head">
+      <span class="sol-k">19</span>
+      <div>
+        <div class="sol-title">직선이 중심을 지난다 — 산술·기하평균으로 최소 거리</div>
+        <div class="sol-kind"><span class="dbadge">5.3점</span> 유리함수 · 점과 직선 사이의 거리 · 절대부등식</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">유리함수 \(f(x)=\dfrac{2}{x-1}+3\)에 대하여 \(y=f(x)\)의 그래프 위를 움직이는 점 \(\mathrm{P}\)와 직선 \(y=-x+4\) 사이의 거리의 최솟값은?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 직선이 곡선의 중심을 정확히 통과한다</span>
+          <svg viewBox="0 0 320 300" role="img" aria-label="유리함수 그래프와 중심을 지나는 직선, 최단거리 2">
+            <line x1="30" y1="230" x2="305" y2="230" stroke="var(--ink-soft)" stroke-width="1.5"/>
+            <line x1="110" y1="290" x2="110" y2="20" stroke="var(--ink-soft)" stroke-width="1.5"/>
+            <g stroke="var(--line)" stroke-width="1.4" stroke-dasharray="5 4">
+              <line x1="136" y1="20" x2="136" y2="290"/><line x1="30" y1="152" x2="300" y2="152"/>
+            </g>
+            <line x1="58" y1="74" x2="253" y2="269" stroke="var(--amber)" stroke-width="2.4"/>
+            <polyline points="32,165 58,169 71,172 84,178 97,187 110,204 115,217 119,232 123,256 125,270 126,282" fill="none" stroke="var(--indigo)" stroke-width="2.8" stroke-linecap="round"/>
+            <polyline points="146,22 147,34 149,48 153,68 157,87 162,100 168,110 175,117 181,122 188,126 201,131 214,135 227,137 240,139 266,142 292,143" fill="none" stroke="var(--indigo)" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="173" y1="115" x2="136" y2="152" stroke="var(--red)" stroke-width="2.6"/>
+            <circle cx="173" cy="115" r="5" fill="var(--red)"/>
+            <circle cx="99" cy="189" r="5" fill="var(--red)"/>
+            <line x1="99" y1="189" x2="136" y2="152" stroke="var(--red)" stroke-width="2.6"/>
+            <circle cx="136" cy="152" r="4.5" fill="var(--paper)" stroke="var(--ink)" stroke-width="2"/>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800">
+              <text x="142" y="146" fill="var(--ink)">중심 (1, 3)</text>
+              <text x="180" y="104" fill="var(--red)">2</text>
+              <text x="60" y="196" fill="var(--red)">2</text>
+              <text x="228" y="284" fill="var(--amber)">y = -x + 4</text>
+              <text x="248" y="130" fill="var(--indigo)">y = f(x)</text>
+            </g>
+            <text x="112" y="248" font-family="Noto Sans KR" font-size="11" fill="var(--ink-faint)">O</text>
+          </svg>
+        </div>
+        <figcaption>중심 \((1,3)\)이 직선 위에 있다(\(1+3=4\)). 그래서 <b>양쪽 가지에서 최단거리가 똑같이 \(2\)</b>로 나온다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 먼저 중심의 위치를 확인한다 (이 문제의 열쇠)</span>
+        <p>\(f(x)=\dfrac{2}{x-1}+3\)의 점근선은 \(x=1,\ y=3\)이므로 중심은 \((1,\ 3)\). 이 점을 직선 \(x+y-4=0\)에 넣어 보면</p>
+        <div class="mathrow">$$1+3-4=0$$</div>
+        <p><b>중심이 직선 위에 정확히 놓여 있다.</b> 곡선은 중심에 대해 점대칭이므로, 계산이 대칭적으로 아주 깔끔해진다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 중심을 원점으로 옮겨 놓고 본다</span>
+        <p>\(t=x-1\)로 두면 \(y-3=\dfrac{2}{t}\)이다. \(s=y-3\)이라 하면 곡선은 \(st=2\)라는 아주 단순한 꼴이 되고, 직선은</p>
+        <div class="mathrow">$$x+y-4=(t+1)+(s+3)-4=t+s$$</div>
+        <p>즉 직선은 \(t+s=0\)이 된다. 점 \(\mathrm{P}\)의 좌표는 \(\left(t,\ \dfrac2t\right)\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 거리 공식 + 산술·기하평균</span>
+        <div class="mathrow">$$d=\frac{|t+s|}{\sqrt{1^{2}+1^{2}}}=\frac{\left|t+\dfrac{2}{t}\right|}{\sqrt2}$$</div>
+        <p>\(t \gt 0\)이면 산술평균 \(\ge\) 기하평균에 의해</p>
+        <div class="mathrow">$$t+\frac2t\ \ge\ 2\sqrt{t\cdot\frac2t}=2\sqrt2\quad\left(\text{등호는}\ t=\frac2t,\ \text{즉}\ t=\sqrt2\right)$$</div>
+        <p>\(t \lt 0\)이면 \(\left|t+\frac2t\right|=|t|+\frac{2}{|t|}\ge 2\sqrt2\)로 <b>똑같은 값</b>이 나온다.</p>
+        <div class="mathrow">$$\therefore\ d\ \ge\ \frac{2\sqrt2}{\sqrt2}=2$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">최솟값 \(2\ \Rightarrow\ \) ④</span></div>
+        <div class="warn">
+          <div class="t">💡 최단거리는 어디서 생기나</div>
+          <p>등호가 성립하는 \(t=\sqrt2\)일 때 \(\mathrm{P}=(1+\sqrt2,\ 3+\sqrt2)\)이고, 여기서 직선에 내린 수선의 발은 <b>정확히 중심 \((1,3)\)</b>이다. 반대쪽 가지의 \(\mathrm{P}=(1-\sqrt2,\ 3-\sqrt2)\)도 마찬가지 — 그림의 빨간 선분 두 개가 그것이다. <b>「중심을 지나는 직선」이면 최단거리 지점이 중심 방향</b>이라는 걸 기억해 두면 검산이 쉽다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q20">
+    <div class="sol-head">
+      <span class="sol-k">20</span>
+      <div>
+        <div class="sol-title">「한 직선 위」 = 등차수열 — 경우가 둘로 좁혀진다</div>
+        <div class="sol-kind"><span class="dbadge">5.4점</span> 함수 · 일대일함수 · 조건에 맞는 함수의 개수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">집합 \(X=\{1,2,3,4,5\}\), \(Y=\{1,2,\cdots,8\}\)에 대하여 함수 \(f\)는 \(X\)에서 \(Y\)로의 <b>일대일함수</b>이고 다음 조건을 만족한다.
+        <div class="cond">
+          <div class="row"><span class="lab">(가)</span><span>\(f(2)=6\)</span></div>
+          <div class="row"><span class="lab">(나)</span><span>\(f(1) \gt f(2) \gt f(3)\)</span></div>
+          <div class="row"><span class="lab">(다)</span><span>세 점 \((1,f(1))\), \((2,f(2))\), \((3,f(3))\)은 한 직선 위에 있다.</span></div>
+        </div>
+        \(f(4)\times f(5)\)의 최댓값을 \(M\), 최솟값을 \(m\)이라 할 때, \(M+m\)의 값은?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — (다)를 식으로: \(x\)가 \(1,2,3\)으로 등간격이므로</span>
+        <p>세 점의 \(x\)좌표가 \(1,2,3\)으로 <b>일정한 간격</b>이다. 이 세 점이 한 직선 위에 있으려면 \(y\)좌표도 같은 간격으로 변해야 한다.</p>
+        <div class="mathrow">$$f(2)-f(1)=f(3)-f(2)\ \Longrightarrow\ f(1)+f(3)=2f(2)=12$$</div>
+        <p class="aside">기울기가 같다는 조건 \(\frac{f(2)-f(1)}{2-1}=\frac{f(3)-f(2)}{3-2}\)를 정리한 것. <b>가운데 값이 양 끝의 평균</b>이라는 등차수열 조건과 같다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — (나)로 후보를 좁힌다</span>
+        <p>\(f(1) \gt 6\)이고 \(f(1)\in Y\)이므로 \(f(1)\)은 \(7\) 또는 \(8\)뿐이다. 그러면 \(f(3)=12-f(1)\)이 자동으로 정해진다.</p>
+        <table class="calc">
+          <tr><th>경우</th><th>\(f(1)\)</th><th>\(f(2)\)</th><th>\(f(3)\)</th><th>\(f(3) \lt 6\)?</th><th>남는 값</th></tr>
+          <tr><td>A</td><td>\(7\)</td><td>\(6\)</td><td>\(5\)</td><td>✓</td><td>\(\{1,2,3,4,8\}\)</td></tr>
+          <tr><td>B</td><td>\(8\)</td><td>\(6\)</td><td>\(4\)</td><td>✓</td><td>\(\{1,2,3,5,7\}\)</td></tr>
+        </table>
+        <p class="aside">일대일함수라서 \(f(4),f(5)\)는 「남는 값」에서 <b>서로 다르게</b> 골라야 한다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 각 경우의 최대·최소 곱</span>
+        <p>서로 다른 두 수의 곱은 <b>큰 것 두 개</b>를 곱할 때 최대, <b>작은 것 두 개</b>를 곱할 때 최소다.</p>
+        <table class="calc">
+          <tr><th>경우</th><th>남는 값</th><th>최대 곱</th><th>최소 곱</th></tr>
+          <tr><td>A</td><td>\(1,2,3,4,8\)</td><td>\(8\times4=32\)</td><td>\(1\times2=2\)</td></tr>
+          <tr class="hi"><td>B</td><td>\(1,2,3,5,7\)</td><td>\(7\times5=\mathbf{35}\)</td><td>\(1\times2=\mathbf{2}\)</td></tr>
+        </table>
+        <p>두 경우를 통틀어 \(M=35\), \(m=2\).</p>
+        <div class="miss"><b>놓치기 쉬운 점</b> 경우 A만 보고 \(M=32\)로 끝내는 실수. \(f(1)\)의 후보가 <b>둘</b>이라는 걸 확인한 뒤 <b>양쪽 다</b> 계산해야 한다. 흥미롭게도 최댓값은 B(8이 이미 쓰여 8을 못 쓰지만 7과 5가 남는다)에서 나온다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$M+m=35+2=37$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(37\ \Rightarrow\ \) ②</span></div>
+      </div>
+    </div>
+  </section>
+  <section class="sol killer" id="q21">
+    <div class="sol-head">
+      <span class="sol-k red">21</span>
+      <div>
+        <div class="sol-title">\(n(A\cup B^{C})=8\) 한 줄이 전체집합을 확정한다</div>
+        <div class="sol-kind"><span class="dbadge red">5.6점 · 킬러</span> 집합의 연산 · 약수 · 원소의 합 조건</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 자연수 \(a,\ b\ (a\ge b)\)에 대하여 전체집합 \(U=\{x\,|\,x\text{는 }a\text{ 이하의 자연수}\}\)의 두 부분집합 \(A=\{x\,|\,x\text{는 }b\text{의 약수}\}\), \(B\)가 다음 조건을 만족시킨다.
+        <div class="cond">
+          <div class="row"><span class="lab">(가)</span><span>\(B-A=\{6,\ 7\}\), \(n(A\cup B^{C})=8\)</span></div>
+          <div class="row"><span class="lab">(나)</span><span>집합 \(A\)의 모든 원소의 합과 집합 \(B\)의 모든 원소의 합은 서로 같다.</span></div>
+        </div>
+        집합 \(A^{C}\cap B^{C}\)의 모든 원소의 합의 최댓값을 \(M\), 최솟값을 \(m\)이라 할 때, \(M-m\)의 값은?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — \(A\cup B^{C}\)의 여집합을 취하면 \(a\)가 나온다</span>
+        <p>드모르간 법칙으로 뒤집어 보자. 이 한 수가 이 문제 전체를 연다.</p>
+        <div class="mathrow">$$(A\cup B^{C})^{C}=A^{C}\cap B=B-A=\{6,\ 7\}$$</div>
+        <p>즉 \(A\cup B^{C}\)는 <b>전체집합에서 \(\{6,7\}\) 두 개만 뺀 것</b>이다.</p>
+        <div class="mathrow">$$n(A\cup B^{C})=n(U)-2=8\ \Longrightarrow\ n(U)=10\ \Longrightarrow\ a=10$$</div>
+        <div class="mathrow">$$U=\{1,2,3,4,5,6,7,8,9,10\}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — \(B-A=\{6,7\}\)을 두 갈래로 읽는다</span>
+        <p><b>읽기 ①</b> \(6,7\in B\)이고 \(6,7\notin A\). \(A\)는 \(b\)의 약수 집합이므로 \(b\)는 \(6\)으로도 \(7\)로도 나누어떨어지지 않는다. \(b\le a=10\)이므로 후보는 \(b\in\{1,2,3,4,5,8,9,10\}\).</p>
+        <p><b>읽기 ②</b> \(B\)에서 \(A\) 밖에 있는 원소가 \(6,7\)뿐이므로, <b>\(B\)의 나머지 원소는 모두 \(A\) 안에 있다</b>.</p>
+        <div class="mathrow">$$B=\{6,\ 7\}\ \cup\ (B\cap A)$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — (나)를 「\(A\)에서 빠진 원소들의 합」으로 바꾼다</span>
+        <div class="mathrow">$$(\text{합}\ B)=13+(\text{합}\ B\cap A)=(\text{합}\ A)$$</div>
+        <div class="mathrow">$$\therefore\ (\text{합}\ A)-(\text{합}\ B\cap A)=(\text{합}\ A-B)=13$$</div>
+        <p>즉 <b>\(A\)의 원소 중 \(B\)에 들어가지 않은 것들의 합이 정확히 \(13\)</b>이어야 한다. 이제 후보 \(b\)를 하나씩 검사한다.</p>
+        <table class="calc">
+          <tr><th>\(b\)</th><th>\(A\) (=\(b\)의 약수)</th><th>합 \(A\)</th><th>합이 \(13\)인 부분집합</th><th>판정</th></tr>
+          <tr><td>1~5</td><td>최대 \(\{1,2,4\}\) 등</td><td>\(\le 7\)</td><td>불가능</td><td>✗</td></tr>
+          <tr class="hi"><td>\(8\)</td><td>\(\{1,2,4,8\}\)</td><td>\(15\)</td><td>\(1+4+8=13\)</td><td>✓</td></tr>
+          <tr class="hi"><td>\(9\)</td><td>\(\{1,3,9\}\)</td><td>\(13\)</td><td>\(1+3+9=13\) (전부)</td><td>✓</td></tr>
+          <tr class="hi"><td>\(10\)</td><td>\(\{1,2,5,10\}\)</td><td>\(18\)</td><td>\(1+2+10=13\)</td><td>✓</td></tr>
+        </table>
+        <p class="aside">\(b\le 5\)이면 약수의 합 자체가 \(13\)에 못 미쳐 탈락. 남은 셋은 모두 성립하므로 <b>세 경우를 다 계산</b>해야 한다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>4단계 — 세 경우의 \(A^{C}\cap B^{C}=(A\cup B)^{C}\)</span>
+        <table class="calc">
+          <tr><th>\(b\)</th><th>\(A\)</th><th>\(B\)</th><th>\(A\cup B\)</th><th>\((A\cup B)^{C}\)</th><th>합</th></tr>
+          <tr><td>\(8\)</td><td>\(\{1,2,4,8\}\)</td><td>\(\{2,6,7\}\)</td><td>\(\{1,2,4,6,7,8\}\)</td><td>\(\{3,5,9,10\}\)</td><td>\(27\)</td></tr>
+          <tr class="hi"><td>\(9\)</td><td>\(\{1,3,9\}\)</td><td>\(\{6,7\}\)</td><td>\(\{1,3,6,7,9\}\)</td><td>\(\{2,4,5,8,10\}\)</td><td>\(\mathbf{29}\ (=M)\)</td></tr>
+          <tr class="hi"><td>\(10\)</td><td>\(\{1,2,5,10\}\)</td><td>\(\{5,6,7\}\)</td><td>\(\{1,2,5,6,7,10\}\)</td><td>\(\{3,4,8,9\}\)</td><td>\(\mathbf{24}\ (=m)\)</td></tr>
+        </table>
+        <p class="aside">\(B\)는 \(\{6,7\}\)에 「\(A\)에서 빠지지 않은 원소」를 더한 것. 예를 들어 \(b=8\)이면 \(A-B=\{1,4,8\}\)이므로 \(B\cap A=\{2\}\), 따라서 \(B=\{2,6,7\}\)이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$M-m=29-24=5$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(5\ \Rightarrow\ \) ⑤</span></div>
+        <div class="warn">
+          <div class="t">⭐ 킬러 공략 요약</div>
+          <p><b>①</b> \(n(A\cup B^{C})\) 같은 낯선 개수 조건은 <b>여집합을 취해</b> \(B-A\)처럼 이미 아는 집합으로 바꾼다. <b>②</b> 「두 집합의 원소 합이 같다」는 조건은 겹치는 부분(\(A\cap B\))을 소거해 <b>\(A-B\)와 \(B-A\)의 합이 같다</b>로 바꾸면 훨씬 다루기 쉽다. <b>③</b> \(A^{C}\cap B^{C}=(A\cup B)^{C}\) — 드모르간을 두 번 쓰는 문제다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol killer" id="q22">
+    <div class="sol-head">
+      <span class="sol-k red">22</span>
+      <div>
+        <div class="sol-title">\(f(f(a))=f(a)\) → \(f(a)\)가 「제자리 값」이어야 한다</div>
+        <div class="sol-kind"><span class="dbadge red">5.7점 · 킬러</span> 합성함수 · 구간별로 정의된 함수 · 해의 개수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">실수 전체의 집합에서 정의된 함수
+        <div class="mathrow">$$f(x)=\begin{cases}2x-4 & (x\ge 0)\\[2pt] -(x+2)^{2} & (x \lt 0)\end{cases}$$</div>
+        에 대하여 \((f\circ f)(a)=f(a)\)를 만족시키는 서로 다른 모든 실수 \(a\)의 개수는? (단, \(a\)는 상수이다.)</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · \(y=x\)와 만나는 세 곳이 「제자리 값」</span>
+          <svg viewBox="0 0 340 320" role="img" aria-label="구간별로 정의된 함수 그래프와 직선 y=x가 세 점에서 만나는 그림">
+            <line x1="30" y1="190" x2="310" y2="190" stroke="var(--ink-soft)" stroke-width="1.5"/>
+            <line x1="150" y1="312" x2="150" y2="40" stroke="var(--ink-soft)" stroke-width="1.5"/>
+            <polygon points="310,190 301,185.5 301,194.5" fill="var(--ink-soft)"/>
+            <polygon points="150,40 145,49 155,49" fill="var(--ink-soft)"/>
+            <line x1="38" y1="302" x2="262" y2="78" stroke="var(--ink-faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+            <polyline points="73,315 78,290 86,254 94,226 102,206 110,194 118,190 126,194 134,206 142,226 150,254"
+                      fill="none" stroke="var(--indigo)" stroke-width="2.8" stroke-linecap="round"/>
+            <line x1="150" y1="254" x2="246" y2="62" stroke="var(--indigo)" stroke-width="2.8" stroke-linecap="round"/>
+            <g fill="var(--red)">
+              <circle cx="214" cy="126" r="5.5"/><circle cx="134" cy="206" r="5.5"/><circle cx="86" cy="254" r="5.5"/>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--red)">
+              <text x="220" y="122">t = 4</text><text x="138" y="228">t = -1</text><text x="46" y="248">t = -4</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800">
+              <text x="252" y="86" fill="var(--ink-faint)">y = x</text>
+              <text x="230" y="160" fill="var(--indigo)">y = 2x - 4</text>
+              <text x="40" y="180" fill="var(--indigo)">y = -(x+2)²</text>
+              <text x="154" y="206" fill="var(--ink-faint)">O</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>먼저 <b>\(f(t)=t\)</b>인 \(t\)(그래프와 \(y=x\)의 교점) 세 개를 찾고, 그다음 <b>\(f(a)=t\)</b>인 \(a\)를 각각 센다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 조건을 두 단계로 쪼갠다</span>
+        <p>\(t=f(a)\)라고 두면 조건은 \(f(t)=t\)가 된다. 즉 <b>\(f(a)\)의 값이 「\(f\)를 한 번 더 넣어도 변하지 않는 값」이어야 한다</b>는 뜻이다.</p>
+        <div class="mathrow">$$\text{① }f(t)=t\ \text{인 }t\ \text{를 모두 찾는다}\ \longrightarrow\ \text{② 각 }t\ \text{마다 }f(a)=t\ \text{인 }a\ \text{를 센다}$$</div>
+        <div class="miss"><b>흔한 오답</b> \(f(a)=a\)를 푸는 것(그러면 답이 \(3\)). 조건은 \(f(f(a))=f(a)\)이지 \(f(a)=a\)가 아니다. <b>고정점이어야 하는 건 \(a\)가 아니라 \(f(a)\)</b>다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — ① \(f(t)=t\) 풀기 (그래프와 \(y=x\)의 교점)</span>
+        <div class="mathrow">$$t\ge 0:\quad 2t-4=t\ \Longrightarrow\ t=4\ \ (\ge 0\ \checkmark)$$</div>
+        <div class="mathrow">$$t \lt 0:\quad -(t+2)^{2}=t\ \Longrightarrow\ t^{2}+5t+4=0\ \Longrightarrow\ (t+1)(t+4)=0$$</div>
+        <div class="mathrow">$$t=-1,\ -4\ \ (\text{둘 다}\ \lt 0\ \checkmark)$$</div>
+        <p>제자리 값은 \(t=4,\ -1,\ -4\)의 <b>세 개</b>다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — ② 각 \(t\)의 「원상」 개수를 센다</span>
+        <p>\(f(a)=t\)를 두 구간에서 각각 풀고, <b>구한 \(a\)가 그 구간에 실제로 속하는지</b> 반드시 확인한다.</p>
+        <table class="calc">
+          <tr><th>\(t\)</th><th>\(a\ge 0\): \(2a-4=t\)</th><th>\(a \lt 0\): \(-(a+2)^{2}=t\)</th><th>개수</th></tr>
+          <tr><td>\(4\)</td><td>\(a=4\) ✓</td><td>\((a+2)^{2}=-4\) → 실근 없음</td><td>1</td></tr>
+          <tr class="hi"><td>\(-1\)</td><td>\(a=\frac32\) ✓</td><td>\((a+2)^{2}=1\Rightarrow a=-1,\ -3\) ✓✓</td><td>3</td></tr>
+          <tr><td>\(-4\)</td><td>\(a=0\) ✓</td><td>\((a+2)^{2}=4\Rightarrow a=0\)(제외), \(a=-4\) ✓</td><td>2</td></tr>
+        </table>
+        <div class="warn">
+          <div class="t">⚠️ 경계 \(a=0\)에서 중복을 조심하라</div>
+          <p>\(t=-4\)일 때 왼쪽 식에서 \(a=0\), 오른쪽 식에서도 \(a=0\)이 나온다. 하지만 오른쪽은 <b>\(a \lt 0\)</b>인 구간이므로 \(a=0\)은 그 구간의 해가 아니다. 결국 \(a=0\)은 <b>한 번만</b> 센다. 이런 문제에서 개수를 하나 더 세거나 덜 세는 사고가 대부분 여기서 난다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 모두 모아 중복 확인</span>
+        <div class="mathrow">$$a\in\left\{\,4,\ \ \frac32,\ -1,\ -3,\ \ 0,\ -4\,\right\}$$</div>
+        <p>여섯 값이 모두 서로 다르다.</p>
+        <div class="result"><span class="lab">정답</span><span class="val">\(6\)개 \(\ \Rightarrow\ \) ⑤</span></div>
+        <div class="warn">
+          <div class="t">⭐ 이 유형의 표준 전략</div>
+          <p>\((f\circ f)(a)=f(a)\) 꼴은 항상 <b>「안쪽 값을 문자로 치환 → 고정점 찾기 → 원상 세기」</b> 3단계로 푼다. 그래프에서 <b>\(y=x\)와의 교점 개수</b>가 1단계, <b>가로선 \(y=t\)와의 교점 개수</b>가 2단계다. 그림 한 장이면 계산 없이도 \(1+3+2=6\)이 보인다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <footer>
+    루멘수학 · 기출 정밀해설집 · 소래고 1학년 2025학년도 2학기 기말 (공통수학2)<br>
+    문항 정답 22/22 검증 완료 · 그림풀이 원본 제작 · 첨삭 해설
+  </footer>
+</div>
