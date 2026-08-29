@@ -291,6 +291,7 @@ async function score() {
       total: e.total || null,
       autoScore: auto, autoMax, essay, essayMax: essay.reduce((s, q) => s + q.max, 0),
       ungraded, wrongSeqs: wrong, per,
+      solUrl: e.solUrl || null,           // 해설집 링크 (문항 앵커 #qN 지원)
       status: (wsProbCount[at.wsId] && wsProbCount[at.wsId] !== e.scoreTable.length) ? 'mismatch'
             : (ungraded > 0 ? 'partial' : 'ready'),
       wsCount: wsProbCount[at.wsId] || null, examCount: e.scoreTable.length,
