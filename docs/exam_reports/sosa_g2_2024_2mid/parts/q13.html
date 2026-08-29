@@ -1,0 +1,66 @@
+  <section class="sol" id="q13">
+    <div class="sol-head">
+      <span class="sol-k">13</span>
+      <div>
+        <div class="sol-title">그래프에서 기울기 부등식 읽기</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4</span> 미분계수의 기하적 의미 · 평균값 정리</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">다항함수 \(f(x)\)와 직선 \(y=x\)의 그래프가 그림과 같을 때, &lt;보기&gt;에서 옳은 것만을 있는 대로 고른 것은? (단, \(0\lt a\lt1\lt b\))
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>\(f'(b)\gt1\)</span></div>
+          <div class="row"><span class="lab">ㄴ.</span><span>\(\dfrac{f(a)}{a}\lt\dfrac{f(b)}{b}\)</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>\(f'(a)\lt\dfrac{f(b)-f(a)}{b-a}\lt f'(b)\)</span></div>
+        </div>
+      </div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 기울기는 「직선의 가파름」으로 본다</span>
+          <svg viewBox="0 0 420 300" role="img" aria-label="y=f(x) 볼록 증가곡선과 직선 y=x. x=1에서 만남">
+            <line x1="30" y1="235" x2="405" y2="235" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <line x1="90" y1="285" x2="90" y2="25" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <polygon points="405,235 396,230.5 396,239.5" fill="var(--ink-soft)"/><polygon points="90,25 85,34 95,34" fill="var(--ink-soft)"/>
+            <text x="74" y="252" font-family="Noto Sans KR" font-size="11" fill="var(--ink-faint)">O</text>
+            <text x="407" y="233" font-family="Noto Sans KR" font-size="11" fill="var(--ink-faint)">x</text>
+            <text x="94" y="36" font-family="Noto Sans KR" font-size="11" fill="var(--ink-faint)">y</text>
+            <!-- 직선 y=x -->
+            <line x1="45" y1="280" x2="360" y2="65" fill="none" stroke="var(--ink-faint)" stroke-width="2"/>
+            <text x="330" y="60" font-family="Noto Sans KR" font-size="12" fill="var(--ink-soft)">y=x</text>
+            <!-- 곡선 y=f(x): 볼록 증가, 원점 부근 지나 x=1에서 직선과 교차 -->
+            <path d="M 50 225 C 120 232, 175 205, 215 150 C 245 108, 285 70, 330 40" fill="none" stroke="var(--indigo)" stroke-width="2.6"/>
+            <text x="305" y="36" font-family="Noto Sans KR" font-size="12" font-weight="700" fill="var(--indigo)">y=f(x)</text>
+            <!-- a, 1, b -->
+            <g stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="3 3">
+              <line x1="170" y1="200" x2="170" y2="235"/><line x1="215" y1="150" x2="215" y2="235"/><line x1="258" y1="103" x2="258" y2="235"/>
+            </g>
+            <g font-family="Noto Sans KR" font-size="12" fill="var(--ink-soft)" font-weight="700">
+              <text x="166" y="252">a</text><text x="211" y="252">1</text><text x="254" y="252">b</text>
+            </g>
+            <circle cx="215" cy="150" r="4" fill="var(--amber)"/>
+            <text x="222" y="146" font-family="Noto Sans KR" font-size="10" fill="var(--amber)">x=1 만남</text>
+          </svg>
+        </div>
+        <figcaption>곡선은 \(x&lt;1\)에서 직선 <b>아래</b>, \(x&gt;1\)에서 직선 <b>위</b>. 그리고 오른쪽으로 갈수록 <b>점점 가팔라진다(볼록)</b>.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>ㄱ. \(x=b\)에서의 접선 기울기</span>
+        <p>\(x&gt;1\)에서 곡선은 직선 \(y=x\)(기울기 \(1\))보다 <b>가파르게</b> 올라간다. 접선 기울기 \(f'(b)\)가 \(1\)보다 크다. ✓</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>ㄴ. \(\dfrac{f(a)}{a}\)는 「원점~그 점」을 잇는 직선의 기울기</span>
+        <p>\(\dfrac{f(a)}{a}\)는 원점과 \((a,f(a))\)를 잇는 선의 기울기. \(a\lt1\)에서 점이 직선 아래라 \(f(a)\lt a\Rightarrow \dfrac{f(a)}{a}\lt1\). 반대로 \(b\gt1\)에서 점이 직선 위라 \(\dfrac{f(b)}{b}\gt1\).</p>
+        <div class="mathrow">$$\frac{f(a)}{a}\lt1\lt\frac{f(b)}{b}\quad\checkmark$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>ㄷ. 평균값 = 두 접선 기울기 사이 (볼록이면 성립)</span>
+        <p>가운데 \(\dfrac{f(b)-f(a)}{b-a}\)는 두 점 \((a,f(a)),(b,f(b))\)를 잇는 <b>할선(평균)의 기울기</b>. 평균값 정리로 어떤 \(c\,(a\lt c\lt b)\)에서 \(f'(c)=\)이 값이다.</p>
+        <p>곡선이 <b>볼록</b>(오른쪽으로 갈수록 접선이 점점 가파름 → \(f'\) 증가)이므로 \(f'(a)\lt f'(c)\lt f'(b)\). 따라서</p>
+        <div class="mathrow">$$f'(a)\lt\frac{f(b)-f(a)}{b-a}\lt f'(b)\quad\checkmark$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">ㄱ, ㄴ, ㄷ \(\Rightarrow\) ⑤</span></div>
+      </div>
+    </div>
+  </section>

@@ -1,0 +1,67 @@
+  <section class="sol" id="q9">
+    <div class="sol-head">
+      <span class="sol-k">9</span>
+      <div>
+        <div class="sol-title">그래프에서 불연속·미분불가 개수 세기</div>
+        <div class="sol-kind"><span class="dbadge">난이도 3</span> 미분가능성과 연속성 · 그래프 판단</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(y=f(x)\)의 그래프가 오른쪽과 같다. 열린구간 \((-1,8)\)에서 \(f(x)\)가 불연속인 \(x\)의 값은 \(m\)개, 미분가능하지 않은 \(x\)의 값은 \(n\)개이다. \(m^{2}+n^{2}\)의 값은?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 끊긴 곳(●○)과 꺾인 곳(∨)을 표시</span>
+          <svg viewBox="0 0 460 260" role="img" aria-label="구간정의 그래프. x=2, x=6에서 점프, x=4에서 뾰족">
+            <line x1="30" y1="205" x2="440" y2="205" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <line x1="70" y1="235" x2="70" y2="25" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <polygon points="440,205 431,200.5 431,209.5" fill="var(--ink-soft)"/><polygon points="70,25 65,34 75,34" fill="var(--ink-soft)"/>
+            <g font-family="Noto Sans KR" font-size="11" fill="var(--ink-faint)">
+              <text x="56" y="220">-1</text><text x="150" y="222">2</text><text x="228" y="222">4</text><text x="306" y="222">6</text><text x="384" y="222">8</text>
+              <text x="58" y="200">O</text><text x="442" y="203">x</text><text x="74" y="36">y</text>
+            </g>
+            <g stroke="var(--line-soft)" stroke-width="1" stroke-dasharray="3 3">
+              <line x1="155" y1="60" x2="155" y2="205"/><line x1="233" y1="150" x2="233" y2="205"/>
+              <line x1="311" y1="70" x2="311" y2="205"/><line x1="389" y1="45" x2="389" y2="205"/>
+            </g>
+            <!-- 왼쪽 상승 곡선 → x=2 위쪽 빈점 -->
+            <path d="M 44 175 Q 100 40 155 60" fill="none" stroke="var(--indigo)" stroke-width="2.4"/>
+            <!-- x=2 아래 채운점 → x=4 골 채운점 (∨ 꺾임) -->
+            <path d="M 155 100 Q 195 165 233 150" fill="none" stroke="var(--indigo)" stroke-width="2.4"/>
+            <!-- x=4 → x=6 위쪽 채운점 상승 -->
+            <path d="M 233 150 Q 275 90 311 70" fill="none" stroke="var(--indigo)" stroke-width="2.4"/>
+            <!-- x=6 아래 빈점 → x=8 상승 -->
+            <path d="M 311 110 Q 355 60 389 45" fill="none" stroke="var(--indigo)" stroke-width="2.4"/>
+            <!-- 점들 -->
+            <circle cx="155" cy="60" r="4.5" fill="var(--paper)" stroke="var(--indigo)" stroke-width="2"/>
+            <circle cx="155" cy="100" r="4.5" fill="var(--indigo)"/>
+            <circle cx="233" cy="150" r="4.5" fill="var(--indigo)"/>
+            <circle cx="311" cy="70" r="4.5" fill="var(--indigo)"/>
+            <circle cx="311" cy="110" r="4.5" fill="var(--paper)" stroke="var(--indigo)" stroke-width="2"/>
+            <!-- 표시 -->
+            <text x="140" y="52" font-family="Noto Sans KR" font-size="15" font-weight="800" fill="#e11d48">점프</text>
+            <text x="214" y="176" font-family="Noto Sans KR" font-size="15" font-weight="800" fill="var(--amber)">꺾임</text>
+            <text x="296" y="62" font-family="Noto Sans KR" font-size="15" font-weight="800" fill="#e11d48">점프</text>
+          </svg>
+        </div>
+        <figcaption>빨간 「점프」 두 곳은 <b>끊긴 곳(불연속)</b>, 노란 「꺾임」은 이어졌지만 <b>뾰족한 곳</b>.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>① 불연속 \(m\) — 위아래로 점 두 개(●○)면 끊긴 것</span>
+        <p>\(x=2\)와 \(x=6\)은 좌·우극한이 서로 다른 <b>점프</b>. 값이 뚝 떨어지므로 불연속. \(\Rightarrow m=2\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>② 미분불가 \(n\) — 끊긴 곳 + 꺾인 곳</span>
+        <p>「끊긴 곳은 무조건 미분 불가」이므로 \(x=2,\ x=6\)이 우선 포함. 여기에 이어져 있지만 <b>뾰족하게 꺾인</b> \(x=4\)가 더해진다.</p>
+        <div class="mathrow">$$n=\underbrace{2}_{\text{끊김}(2,6)}+\underbrace{1}_{\text{꺾임}(4)}=3$$</div>
+        <div class="warn">
+          <div class="t">⭐ 자주 하는 실수</div>
+          <p>「불연속점은 미분가능 개수에서 빼야지」라고 착각하기 쉽다. 반대다 — <b>불연속이면 미분도 절대 안 된다.</b> 그래서 미분불가 개수 \(n\)은 항상 불연속 개수 \(m\) <b>이상</b>이다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="mathrow">$$m^{2}+n^{2}=2^{2}+3^{2}=4+9=13$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(13\ \Rightarrow\ \) ④</span></div>
+      </div>
+    </div>
+  </section>

@@ -1,0 +1,68 @@
+  <section class="sol killer" id="q19">
+    <div class="sol-head">
+      <span class="sol-k red">19</span>
+      <div>
+        <div class="sol-title">반복정의 그래프와 교점 개수 함수</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 킬러</span> 극한의 활용 · 구간정의함수의 교점</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">음이 아닌 실수가 정의역인 함수 \(f(x)\)가 <b>(가)</b> \(0\le x\lt3\)일 때 \(f(x)=(x-1)^{2}\), <b>(나)</b> \(x\ge3\)일 때 \(f(x)=f(x-3)+3\)을 만족시킨다. 실수 \(t\)에 대하여 \(y=t\)와 \(y=f(x)\)의 교점의 개수를 \(g(t)\)라 할 때, \(\displaystyle\lim_{t\to a^{-}}g(t)=\lim_{t\to (a+1)^{+}}g(t)\)를 만족하는 \(a\)의 값 중 작은 자연수부터 \(a_{1},a_{2},a_{3},\cdots\)라 하자. \(a_{2}+a_{4}\)의 값은?</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>(나)는 「오른쪽 3, 위로 3 복사」 명령</span>
+        <p>\(f(x)=f(x-3)+3\)은 \([0,3)\)의 그래프를 <b>오른쪽으로 3, 위로 3</b> 옮겨 붙이라는 뜻. 기본조각 \((x-1)^{2}\)이 계단처럼 오르며 무한히 이어진다.</p>
+        <div class="mathrow">$$[3k,\,3k+3):\ f(x)=(x-3k-1)^{2}+3k\quad(k=0,1,2,\cdots)$$</div>
+      </div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 계단처럼 오르는 \(f(x)\)와 수평선 \(y=t\)</span>
+          <svg viewBox="0 0 470 280" role="img" aria-label="반복 상승하는 f(x) 그래프. 극소 0,3,6, 극대 4,7,10">
+            <line x1="34" y1="245" x2="452" y2="245" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <line x1="52" y1="262" x2="52" y2="20" stroke="var(--ink-soft)" stroke-width="1.6"/>
+            <polygon points="452,245 443,240.5 443,249.5" fill="var(--ink-soft)"/><polygon points="52,20 47,29 57,29" fill="var(--ink-soft)"/>
+            <text x="40" y="260" font-family="Noto Sans KR" font-size="10" fill="var(--ink-faint)">O</text>
+            <text x="454" y="243" font-family="Noto Sans KR" font-size="10" fill="var(--ink-faint)">x</text>
+            <text x="56" y="30" font-family="Noto Sans KR" font-size="10" fill="var(--ink-faint)">y</text>
+            <!-- y눈금: 0,3,4,6,7 (스케일 y=245-11*value) -->
+            <g font-family="Noto Sans KR" font-size="9" fill="var(--ink-faint)">
+              <text x="36" y="248">0</text><text x="36" y="215">3</text><text x="36" y="204">4</text><text x="36" y="182">6</text><text x="36" y="171">7</text><text x="36" y="149">9</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="9" fill="var(--ink-faint)">
+              <text x="82" y="258">1</text><text x="118" y="258">3</text><text x="140" y="258">4</text><text x="192" y="258">6</text><text x="214" y="258">7</text><text x="264" y="258">9</text><text x="286" y="258">10</text>
+            </g>
+            <!-- x축 좌표 스케일: x=52+18*xval  ; y=245-11*yval -->
+            <!-- 조각0: (0,1)->(1,0)->(3,4) 포물선.  샘플점으로 근사 -->
+            <path d="M 52 234 Q 70 256 88 245 Q 106 234 124 201" fill="none" stroke="var(--indigo)" stroke-width="2.4"/>
+            <!-- 조각1: (3,4)->(4,3)->(6,7) -->
+            <path d="M 124 201 Q 142 223 160 212 Q 178 201 196 168" fill="none" stroke="var(--indigo)" stroke-width="2.4"/>
+            <!-- 조각2: (6,7)->(7,6)->(9,10) -->
+            <path d="M 196 168 Q 214 190 232 179 Q 250 168 268 135" fill="none" stroke="var(--indigo)" stroke-width="2.4"/>
+            <!-- 조각3 일부 -->
+            <path d="M 268 135 Q 286 157 304 146 Q 322 135 340 102" fill="none" stroke="var(--indigo)" stroke-width="2.4"/>
+            <!-- 수평선 예시 y=3.5 (g=3), y=5 (g=1) -->
+            <line x1="52" y1="206.5" x2="360" y2="206.5" stroke="#e11d48" stroke-width="1.3" stroke-dasharray="5 3"/>
+            <text x="364" y="210" font-family="Noto Sans KR" font-size="9" fill="#e11d48">t=3.5 → 3개</text>
+            <line x1="52" y1="190" x2="360" y2="190" stroke="var(--amber)" stroke-width="1.3" stroke-dasharray="5 3"/>
+            <text x="364" y="194" font-family="Noto Sans KR" font-size="9" fill="var(--amber)">t=5 → 1개</text>
+          </svg>
+        </div>
+        <figcaption>극솟값은 \(0,3,6,9,\cdots\), 극댓값은 \(4,7,10,\cdots\). 수평선을 위로 올릴수록 교점 수가 <b>3 → 1 → 3 → 1</b>로 번갈아 바뀐다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>\(g(t)\)를 구간별로 정리</span>
+        <p>수평선이 극대·극소를 지날 때마다 교점 수가 바뀐다. 낮은 곳만 예외이고, \(t\gt3\)부터는 주기 \(3\)으로 규칙적이다.</p>
+        <div class="mathrow">$$g(t)=\begin{cases}2&(0\lt t\lt1)\\ 1&(1\lt t\lt3)\\ 3&(3k\lt t\lt3k{+}1,\ k\ge1)\\ 1&(3k{+}1\lt t\lt3k{+}3,\ k\ge1)\end{cases}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>조건을 자연수 \(a\)에 대입</span>
+        <p>\(\lim_{t\to a^-}g(t)\)는 \(a\) 바로 <b>왼쪽</b> 값, \(\lim_{t\to(a+1)^+}g(t)\)는 \(a{+}1\) 바로 <b>오른쪽</b> 값. 두 값이 같아지는 자연수를 찾는다.</p>
+        <div class="mathrow">$$a=3:\ g(3^-)=1,\ g(4^+)=1\ \checkmark\qquad a=6:\ g(6^-)=1,\ g(7^+)=1\ \checkmark$$</div>
+        <p>같은 방식으로 \(a=9,\ 12,\ 15,\cdots\) 즉 <b>\(a=3k\)</b>에서만 좌·우 극한이 모두 \(1\)로 일치한다. (\(a=1,2,4,5,7,8\) 등은 \(2\!\ne\!1\) 또는 \(1\!\ne\!3\)으로 어긋난다.)</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>수열로 나열</span>
+        <div class="mathrow">$$a_{1}=3,\ a_{2}=6,\ a_{3}=9,\ a_{4}=12,\cdots\ \Longrightarrow\ a_{2}+a_{4}=6+12=18$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(18\ \Rightarrow\ \) ④</span></div>
+      </div>
+    </div>
+  </section>
