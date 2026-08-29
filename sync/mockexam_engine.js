@@ -99,13 +99,16 @@ async function msScoreTable(id) {
     var scoreVal = pick(vMy) ? vMy : (pick(vSc) ? vSc : (vMy != null ? vMy : vSc));
     // 소수점 누락 오타 보정: 48 → 4.8 (10으로 나눠야 상식 범위에 들어오는 경우)
     if (scoreVal != null && !pick(scoreVal) && scoreVal > 30 && pick(scoreVal / 10)) scoreVal = scoreVal / 10;
+    var chArr = (c.chapters && c.chapters[0] && c.chapters[0].chapter) || [];
     return {
       seq: idx + 1,                      // 학습지 문항 순서 (= mf_answer_records.problem_seq)
       no: c.questionNumber,
       score: scoreVal,
       answerType: a.type || sc.answerType || null,
       answer: a.latex || (a.answer && a.answer.join(',')) || null,
-      chapter: (c.chapters && c.chapters[0] && c.chapters[0].chapter || []).slice(-1)[0] || null,
+      chapter: chArr.slice(-1)[0] || null,                       // 세부 유형
+      unit: chArr.length > 1 ? chArr[1] : (chArr[0] || null),    // 대단원 (성적표 단원별 정답률용)
+      difficulty: (a.difficulty && a.difficulty.mathSecr) != null ? a.difficulty.mathSecr : (sc.difficulty != null ? sc.difficulty : null),
     };
   });
 }
@@ -189,7 +192,8 @@ async function build() {
   for (const examId of Object.keys(map.exams)) {
     const e = map.exams[examId];
     e.meta = parseExamTitle(e.title);            // 제목 파싱은 항상 최신 규칙으로
-    if (e.scoreTable && e.scoreTable.length) continue;
+    var hasDiff = e.scoreTable && e.scoreTable.length && e.scoreTable.every(q => q.difficulty != null || q.unit != null);
+    if (e.scoreTable && e.scoreTable.length && hasDiff) continue;   // 난이도·대단원까지 있으면 통과
     try {
       const st = await msScoreTable(examId);
       let tot = st.reduce((s, q) => s + (q.score || 0), 0);
@@ -280,7 +284,7 @@ async function score() {
         else if (r === 'X' || r === '?') wrong.push(q.seq);
         else ungraded++;
       }
-      per.push({ seq: q.seq, r, sc: q.score, essay: isEssay, chapter: q.chapter || null });
+      per.push({ seq: q.seq, r, sc: q.score, essay: isEssay, chapter: q.chapter || null, unit: q.unit || null, diff: q.difficulty != null ? q.difficulty : null });
     });
     auto = Math.round(auto * 10) / 10; autoMax = Math.round(autoMax * 10) / 10;
     const essay = e.scoreTable.filter(q => essaySet.has(q.seq)).map(q => ({ seq: q.seq, max: q.score || 0 }));
