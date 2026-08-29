@@ -367,6 +367,14 @@ async function runHwSync() {
   });
 
   log(code === 0 ? `완료 (약 ${mins}분)` : `실패 (코드 ${code})`);
+
+  // 기출모의 자동 성적표 — 새 채점이 들어왔을 수 있으니 점수 재계산 (실패해도 무해)
+  if (code === 0) {
+    try {
+      const { spawnSync } = require('child_process');
+      spawnSync('node', [path.join(__dirname, 'mockexam_engine.js')], { stdio: 'inherit', env: process.env });
+    } catch (e) { log('기출모의 엔진 오류: ' + e.message); }
+  }
   // 실패해도 워크플로 자체는 성공으로 끝낸다 — 앱이 상태(ok:false)로 알려주고,
   // 새벽 자동 수집이 어차피 다시 돌기 때문에 빨간 실패 알림을 띄우지 않는다.
 })().catch((e) => {

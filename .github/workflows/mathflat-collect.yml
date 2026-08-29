@@ -52,3 +52,4 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           node sync/mathflat_collector.js --days ${{ github.event.inputs.days || '7' }}
+          node sync/mockexam_engine.js || echo "기출모의 엔진 실패 (수집은 정상)" 
