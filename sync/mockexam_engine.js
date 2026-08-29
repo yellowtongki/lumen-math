@@ -151,10 +151,12 @@ async function build() {
   log(`고등 수입 기록에서 연결 ${fromHs}건 추가 (총 ${Object.keys(map.exams).length}건)`);
 
   // ② 백필: 채점 기록에 있는 「… 원본」 학습지 중 연결 안 된 것 → 수학비서 제목 대조
-  const rr = await fetch(`${SB_URL}/rest/v1/mf_answer_records?source=eq.학습지&select=worksheet_id,worksheet_title&limit=10000`, { headers: sbH() });
+  // 「… 원본」 제목만 서버에서 바로 골라온다 — 전체 기록은 수만 행이라 앞부분만 읽으면
+  // 최근 학습지를 놓친다 (실사례: 옥길중 2025-2 중간이 스캔 밖이라 미집계)
+  const rr = await fetch(`${SB_URL}/rest/v1/mf_answer_records?source=eq.학습지&worksheet_title=like.${encodeURIComponent('*원본')}&select=worksheet_id,worksheet_title&limit=20000`, { headers: sbH() });
   const rows = await rr.json();
   const wsSeen = {};
-  rows.forEach(x => { if (/원본\s*$/.test(x.worksheet_title || '')) wsSeen[x.worksheet_id] = x.worksheet_title; });
+  rows.forEach(x => { wsSeen[x.worksheet_id] = x.worksheet_title; });
   const linkedWs = new Set(Object.values(map.exams).map(e => e.worksheetId));
   const orphans = Object.keys(wsSeen).filter(id => !linkedWs.has(+id));
   if (orphans.length) {
@@ -254,6 +256,13 @@ async function score() {
     if (a.student_worksheet_id === at.swId) at.per[a.problem_seq] = { r: a.result, at: a.score_datetime };
   });
 
+  // 학습지 문항수(기록 관측) — 시험 문항수와 다르면 OCR 쪼개짐 등으로 순서가 어긋난 것
+  const wsProbCount = {};
+  Object.values(attempts).forEach(at => {
+    const n = Math.max(0, ...Object.keys(at.per).map(Number));
+    if (!wsProbCount[at.wsId] || n > wsProbCount[at.wsId]) wsProbCount[at.wsId] = n;
+  });
+
   const items = [];
   Object.values(attempts).forEach(at => {
     const e = byWs[at.wsId]; const stu = stuMap[at.sid];
@@ -282,13 +291,15 @@ async function score() {
       total: e.total || null,
       autoScore: auto, autoMax, essay, essayMax: essay.reduce((s, q) => s + q.max, 0),
       ungraded, wrongSeqs: wrong, per,
-      status: ungraded > 0 ? 'partial' : 'ready',
+      status: (wsProbCount[at.wsId] && wsProbCount[at.wsId] !== e.scoreTable.length) ? 'mismatch'
+            : (ungraded > 0 ? 'partial' : 'ready'),
+      wsCount: wsProbCount[at.wsId] || null, examCount: e.scoreTable.length,
       solvedAt: lastAt,
     });
   });
 
   items.sort((a, b) => (b.solvedAt || '').localeCompare(a.solvedAt || ''));
-  log(`자동 채점 항목 ${items.length}건 — ready ${items.filter(i => i.status === 'ready').length} · partial ${items.filter(i => i.status === 'partial').length}`);
+  log(`자동 채점 항목 ${items.length}건 — ready ${items.filter(i => i.status === 'ready').length} · partial ${items.filter(i => i.status === 'partial').length} · 문항수불일치 ${items.filter(i => i.status === 'mismatch').length}`);
   items.slice(0, 10).forEach(i => log(`  ${i.student_name} · ${i.examTitle} — 자동 ${i.autoScore}/${i.autoMax}점, 서술형 ${i.essay.length}문항(${i.essayMax}점) 대기, 미채점 ${i.ungraded}`));
 
   if (DRY) { fs.writeFileSync('/tmp/mockexam_auto.json', JSON.stringify({ items }, null, 1)); log('[dry-run] /tmp/mockexam_auto.json 저장'); return; }
