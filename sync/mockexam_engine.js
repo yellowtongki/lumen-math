@@ -243,7 +243,7 @@ async function score() {
 
   // 채점 기록: 연결표 학습지만
   const ids = exams.map(e => e.worksheetId).join(',');
-  const ansR = await fetch(`${SB_URL}/rest/v1/mf_answer_records?source=eq.학습지&worksheet_id=in.(${ids})&select=worksheet_id,student_worksheet_id,problem_seq,mf_student_id,result,score_datetime&limit=100000`, { headers: sbH() });
+  const ansR = await fetch(`${SB_URL}/rest/v1/mf_answer_records?source=eq.학습지&worksheet_id=in.(${ids})&select=worksheet_id,student_worksheet_id,problem_seq,mf_student_id,result,score_datetime,concept_id,school,grade&limit=100000`, { headers: sbH() });
   const ans = await ansR.json();
   log(`채점 기록 ${ans.length}행 (${exams.length}개 시험 학습지)`);
 
@@ -254,10 +254,10 @@ async function score() {
     const k = a.mf_student_id + '|' + a.worksheet_id;
     const cur = attempts[k];
     if (!cur || a.student_worksheet_id > cur.swId) {
-      if (!cur || a.student_worksheet_id !== cur.swId) attempts[k] = { swId: a.student_worksheet_id, wsId: a.worksheet_id, sid: a.mf_student_id, per: {} };
+      if (!cur || a.student_worksheet_id !== cur.swId) attempts[k] = { swId: a.student_worksheet_id, wsId: a.worksheet_id, sid: a.mf_student_id, mfSchool: a.school || null, mfGrade: a.grade || null, per: {} };
     }
     const at = attempts[k];
-    if (a.student_worksheet_id === at.swId) at.per[a.problem_seq] = { r: a.result, at: a.score_datetime };
+    if (a.student_worksheet_id === at.swId) at.per[a.problem_seq] = { r: a.result, at: a.score_datetime, cid: a.concept_id || null };
   });
 
   // 학습지 문항수(기록 관측) — 시험 문항수와 다르면 OCR 쪼개짐 등으로 순서가 어긋난 것
@@ -284,7 +284,7 @@ async function score() {
         else if (r === 'X' || r === '?') wrong.push(q.seq);
         else ungraded++;
       }
-      per.push({ seq: q.seq, r, sc: q.score, essay: isEssay, chapter: q.chapter || null, unit: q.unit || null, diff: q.difficulty != null ? q.difficulty : null });
+      per.push({ seq: q.seq, r, sc: q.score, essay: isEssay, chapter: q.chapter || null, unit: q.unit || null, diff: q.difficulty != null ? q.difficulty : null, cid: rec.cid || null });
     });
     auto = Math.round(auto * 10) / 10; autoMax = Math.round(autoMax * 10) / 10;
     const essay = e.scoreTable.filter(q => essaySet.has(q.seq)).map(q => ({ seq: q.seq, max: q.score || 0 }));
@@ -300,6 +300,7 @@ async function score() {
             : (ungraded > 0 ? 'partial' : 'ready'),
       wsCount: wsProbCount[at.wsId] || null, examCount: e.scoreTable.length,
       solvedAt: lastAt,
+      mfStudentId: at.sid, mfSchool: at.mfSchool || null, mfGrade: at.mfGrade || null,
     });
   });
 
