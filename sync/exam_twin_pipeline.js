@@ -232,7 +232,10 @@ async function runTwinPipeline(opts) {
     }
   }
   log(`제목(출처): ${TITLE} · 학년 ${GRADE_LABEL}`);
-  const cells = await msCells(MYDB);
+  let cells = await msCells(MYDB);
+  /* 교과서 DB 이식(db_transplant)용 부분 등록 — 대단원별로 잘라 넣을 때
+   * 필터를 받는다. 필터가 없으면 기존과 완전히 동일하게 전체를 등록한다. */
+  if (typeof opts.cellFilter === 'function') cells = cells.filter(opts.cellFilter);
   if (!cells.length) throw new Error('문항이 없습니다 (mydb id 확인)');
   log(`수학비서: ${cells.length}문항`);
   const images = [];
