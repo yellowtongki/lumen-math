@@ -209,8 +209,6 @@ const SYNC_KEYS = [
   'lumen_vod_assign',     // ★ v15-1: 강의실 배정(영상별 학생·마감)
   'rec_topics'            // ★ v17-17: 녹음 주제 배정 (학년별·개인별, 날짜키)
 ];
-// ※ 기출 해설집(lumen_haesol_catalog·haesol_body_<코드>)은 SYNC_KEYS에 넣지 않는다 —
-//   블랙반·진도레이스처럼 기능이 서버 값을 직접 읽고 쓴다(일반 동기화가 덮어쓰지 않도록).
 
 // ── 피드백 전용 저장소 ──────────────────────────────
 // lumen_comments = { 'reportId': 'comment 내용' }
@@ -284,7 +282,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v18-104';
+var APP_VER = 'v18-103';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -6690,7 +6688,6 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
-      {ver:'v18-104',date:'2026',stability:'ok',memo:'📖 기출 해설집 1단계 — 목록·문항별 미리보기·인쇄. [배경] Claude 세션에서 만든 기출 해설집(옥길중 중2·중3, 소래고 고1)이 저장소 HTML 파일로만 있어 앱에서 볼 길이 없었다. [위치] 성적·분석 그룹 기출모의 옆 (VIEW=haesol→rHaesol). GROUPS 한 줄 + render 분기 두 줄만 더해 기존 화면은 건드리지 않았다. [불러오기] 「＋ 해설집 불러오기」로 해설집.html을 고르면 hsParse()가 section.sol#qN 단위로 잘라 head/cover/tail + 문항별 조각으로 담는다. 통짜로 넣지 않은 이유는 나중에 「틀린 문항만 열기」·아하노트 연결·문항별 잠금을 하기 위해서다(문항 1개 약 7KB). [식별] 해설집 head에 심은 meta name=haesol-* 에서 시험코드·학교·학년·학기·과목을 읽는다. 없으면 제목에서 코드를 만든다. [문항 표시] 정답(①~⑤/서술)을 본문에서 뽑아 그리드에 띄우고, <b>보라=최고난도(킬러)</b>·<b>빨강=문제 자체에 확인할 점이 있는 문항</b>(출제 오류·조건 부족)으로 구분한다. [보기] 문항을 누르면 그 해설만 iframe(srcdoc)으로 띄운다 — 해설집 자체 CSS·MathJax가 앱 스타일과 섞이지 않는다. 전체 미리보기·인쇄는 새 창. [저장] lumen_haesol_catalog(목록) + haesol_body_코드(본문, 열 때만 로드). 둘 다 SYNC_KEYS에 넣지 않고 기능이 서버 값을 직접 읽고 쓴다 — 블랙반·진도 레이스와 같은 방식(일반 동기화가 덮어쓰지 않도록). [검증] 실브라우저 19/19 통과 — 파싱·정답추출·킬러/주의 구분·본문 20문항 분할 저장·서버 재로드·iframe 수식 렌더(41개, 오류 0)·삭제·기존 화면(기출모의·진학 나침반) 회귀. [다음] 2단계 학생앱 발행(반 배정·공개 규칙) → 3단계 기출모의 오답 연결 → 4단계 매쓰플랫 정오답 연동.'},
       {ver:'v18-99',date:'2026',stability:'ok',memo:'🚑 리커버리 선발이 <b>엉뚱한 옛 점수</b>를 잡던 버그 + 🖤 엠블럼 자리 확대 + 최근 1주 프리셋. [증상] 08.21~08.28로 놓고 봤는데 서민수가 「주간 55점(08.27)」로 떠서 리커버리에 걸렸다. 그런데 그 55점은 <b>6월 20일</b>에 본 시험이고, 8/27에 실제로 본 점수는 90점이었다. 박진희도 8/1에 본 85점이 08.27로 표시됐다. [원인] 한 시험지를 여러 날에 걸쳐 보면(결석·보강) <b>시험지 날짜는 하나뿐</b>인데 학생마다 응시일이 다르다. 그런데 선발은 시험지 날짜(t.date)로만 걸렀다. 학생별 응시일(me.date)이 이미 담겨 있었는데 쓰지 않았다. [고침] 학생 본인의 응시일로 거르고, 화면에 표시하는 날짜도 본인 응시일로 바꿨다 — 화면 날짜와 실제가 어긋나지 않는다. 실데이터로 확인: 서민수는 더는 안 걸리고(8/27 90점이 맞음), 박진희는 8/25 75점만, 성재연은 8/27 75점 그대로 걸린다. [기간 프리셋] 「최근 1주」를 추가했다 — 원장님이 가장 자주 쓰신다. [엠블럼] 명예의 전당 1등과 플래너 랭킹에도 🖤 BLACK 칩이 붙는다. 이를 위해 발표(hall_announce)와 플래너 랭킹에 <b>학생코드</b>를 함께 담는다 — 이름은 여전히 마스킹(김○○)이라 누군지 드러나지 않는다. 학생앱 v2-50이 짝이다.'},
       {ver:'v18-100',date:'2026',stability:'ok',memo:'🔔 알림 문제 원인 규명 + 📡 서버 시험 발송. [경과] 8/26 「컴퓨터에 알림이 안 뜬다」로 자동 알림을 중지했었다. [진단] 발송기가 구글 푸시 서비스의 답을 전혀 기록하지 않아 어디서 끊겼는지 알 수 없었다 → 기기별 응답을 기록하게 고치고 실제 시험 발송을 해 보니, 구글이 <b>윈도우·맥 두 컴퓨터 모두 201(정상 접수)</b>로 답했다. 즉 보내는 쪽(열쇠·서명·발송)은 전부 정상이고, <b>컴퓨터가 받아만 두고 화면에 안 띄우는 것</b>이 원인이다(윈도우 알림 설정·방해 금지·크롬 완전 종료 중 하나일 가능성이 큼). [추가] 알림 설정에 「📡 서버에서 시험 발송」 버튼 — 진짜 알림이 오는 길 전체(서버→구글→컴퓨터)를 시험하고 기기별 결과를 보여준다. 기존 🧪 버튼(컴퓨터 안에서만 띄움)과 함께 쓰면 어느 구간이 문제인지 바로 가려진다. 자동 알림(플래너·아하노트)도 다시 켰다.'},
       {ver:'v18-101',date:'2026',stability:'ok',memo:'🎙️ 하브루타 녹음 제출 알림 추가(원장님 요청). 학생앱이 submissions_<학생코드>에 제출을 쌓는데 이 행의 updated_at이 갱신되지 않아(실측: 8/27 제출인데 updated_at 8/20) 변경 감지에 못 쓴다. 대신 서버 감시가 5분마다 <b>각 학생의 마지막 제출 1건만</b> 뽑아(value->-1 문법, 33명 전체 13KB) 지난번에 본 제출 id와 비교한다 — 서버 부담 하루 4MB 수준. 녹음이 포함되면 「🎙️ 녹음 제출 N명」, 사진만이면 「📤 하브루타 제출 N명」으로 알린다. 알림 설정의 「받을 알림」에 하브루타 녹음 스위치가 생겨 따로 끌 수 있다.'},
@@ -7835,275 +7832,6 @@ function renderApiBanner(){
   }
 }
 
-/* ══════════════════════════════════════════════════════════════════
- * 📖 기출 해설집 (v18-104) — 1단계: 목록 · 문항별 미리보기 · 인쇄
- *   저장: lumen_haesol_catalog (목록)  +  haesol_body_<코드> (본문, 열 때만 로드)
- *         둘 다 SYNC_KEYS에 넣지 않고 기능이 직접 읽고 쓴다 (블랙반·진도레이스와 같은 방식)
- *   해설집 HTML은 Claude 세션에서 만들어 파일로 받는다. 앱은 <section class="sol" id="qN">
- *   단위로 잘라 문항별로 담는다 → 나중에 「틀린 문항만 열기」로 확장할 수 있다.
- *   ※ 전부 hs 네임스페이스 · 문자열 연결로만 작성 (기존 코드 건드리지 않음)
- * ══════════════════════════════════════════════════════════════════ */
-var HS = { loaded:false, cat:null, code:null, q:null, body:null, bodyCode:null, busy:'' };
-
-/* 수식·태그를 걷어내고 목록에 쓸 짧은 글자로 */
-function hsPlain(s){
-  if(!s) return '';
-  s = String(s).replace(/<[^>]*>/g,' ');
-  s = s.replace(/\\\(|\\\)|\\\[|\\\]/g,' ').replace(/\$\$/g,' ');
-  s = s.replace(/\\overline\{([^}]*)\}/g,'$1').replace(/\\mathrm\{([^}]*)\}/g,'$1')
-       .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g,'$1/$2').replace(/\\sqrt\{([^}]*)\}/g,'√$1')
-       .replace(/\\angle/g,'∠').replace(/\\triangle/g,'△').replace(/\\times/g,'×')
-       .replace(/\\backsim/g,'∽').replace(/\\equiv/g,'≡').replace(/\\parallel/g,'∥')
-       .replace(/\\perp/g,'⊥').replace(/\\circ/g,'°').replace(/\\lt/g,'<').replace(/\\gt/g,'>')
-       .replace(/\\[a-zA-Z]+/g,' ').replace(/[\\${}]/g,' ').replace(/\\\(|\\\)/g,' ');
-  s = s.replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');
-  return s.replace(/\s+/g,' ').trim();
-}
-function hsEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
-/* 해설집 HTML 한 개 → { meta, head, cover, tail, items } */
-function hsParse(html){
-  function metaOf(n){ var m=html.match(new RegExp('<meta name="haesol-'+n+'" content="([^"]*)"')); return m?m[1]:''; }
-  var wrapAt = html.indexOf('<div class="wrap">');
-  if(wrapAt<0) throw new Error('해설집 형식이 아닙니다 (표지를 찾지 못했습니다)');
-
-  var re = /<section class="sol([^"]*)" id="q(\d+)">([\s\S]*?)<\/section>/g, m, items={}, qs=[];
-  var firstAt=-1, lastEnd=-1;
-  while((m=re.exec(html))!==null){
-    if(firstAt<0) firstAt=m.index;
-    lastEnd = m.index + m[0].length;
-    var no = Number(m[2]), inner = m[3], full = m[0];
-    items[no] = full;
-    var t=(inner.match(/<div class="sol-title">([\s\S]*?)<\/div>/)||[])[1]||'';
-    var k=(inner.match(/<div class="sol-kind">([\s\S]*?)<\/div>/)||[])[1]||'';
-    var vals=inner.match(/<span class="val">([\s\S]*?)<\/span>/g)||[];
-    var ans=''; if(vals.length){ var c=hsPlain(vals[vals.length-1]).match(/[①②③④⑤]/g); ans=c?c[c.length-1]:'서술'; }
-    var badge=(k.match(/<span class="dbadge[^"]*">([\s\S]*?)<\/span>/)||[])[1]||'';
-    var bp=hsPlain(badge);
-    qs.push({ no:no, title:hsPlain(t), kind:hsPlain(k.replace(/<span class="dbadge[\s\S]*?<\/span>/,'')),
-              badge:bp, ans:ans,
-              killer:/killer/.test(m[1]) && /킬러|최고난도/.test(bp),
-              warn:/오류|부족|미비/.test(bp) });
-  }
-  if(!qs.length) throw new Error('문항을 하나도 찾지 못했습니다');
-  qs.sort(function(a,b){ return a.no-b.no; });
-
-  var code = metaOf('code');
-  if(!code){
-    var t0=(html.match(/<title>([\s\S]*?)<\/title>/)||[])[1]||'해설집';
-    code = 'haesol_' + hsPlain(t0).replace(/\s+/g,'_').slice(0,40) + '_' + Date.now().toString(36);
-  }
-  return {
-    meta:{ code:code, title:metaOf('title')||hsPlain((html.match(/<title>([\s\S]*?)<\/title>/)||[])[1]||'해설집'),
-           school:metaOf('school'), grade:metaOf('grade'), term:metaOf('term'), subject:metaOf('subject'),
-           n:qs.length, qs:qs, addedAt:new Date().toISOString() },
-    head: html.slice(0, wrapAt),
-    cover: html.slice(wrapAt, firstAt),
-    tail: html.slice(lastEnd),
-    items: items
-  };
-}
-
-async function hsLoad(force){
-  if(HS.loaded && !force) return;
-  try{
-    var sb=getSupaClient(); if(!sb) return;
-    var r=await sb.from('lumen_store').select('value').eq('key','lumen_haesol_catalog');
-    var v=(r.data&&r.data[0])?r.data[0].value:null;
-    if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
-    HS.cat = v && v.items ? v : { items:[] };
-    HS.loaded = true;
-    try{ localStorage.setItem('lumen_haesol_catalog', JSON.stringify(HS.cat)); }catch(e){}
-    if(VIEW==='haesol') render();
-  }catch(e){
-    console.error('해설집 목록 불러오기 실패:', e);
-    try{ HS.cat=JSON.parse(localStorage.getItem('lumen_haesol_catalog')||'{"items":[]}'); }catch(e2){ HS.cat={items:[]}; }
-    HS.loaded=true; if(VIEW==='haesol') render();
-  }
-}
-async function hsSaveCat(){
-  HS.cat.updated=new Date().toISOString();
-  try{ localStorage.setItem('lumen_haesol_catalog', JSON.stringify(HS.cat)); }catch(e){}
-  var sb=getSupaClient(); if(!sb) throw new Error('서버 연결 없음');
-  await sb.from('lumen_store').upsert({key:'lumen_haesol_catalog',value:HS.cat,updated_at:HS.cat.updated},{onConflict:'key'});
-}
-async function hsBodyLoad(code){
-  if(HS.bodyCode===code && HS.body) return HS.body;
-  var sb=getSupaClient(); if(!sb) throw new Error('서버 연결 없음');
-  var r=await sb.from('lumen_store').select('value').eq('key','haesol_body_'+code);
-  var v=(r.data&&r.data[0])?r.data[0].value:null;
-  if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
-  if(!v) throw new Error('본문을 찾지 못했습니다');
-  HS.body=v; HS.bodyCode=code; return v;
-}
-
-/* ── 불러오기 ── */
-window.hsPick=function(){ var el=document.getElementById('hs-file'); if(el) el.click(); };
-window.hsFile=async function(inp){
-  var f=inp&&inp.files&&inp.files[0]; if(!f) return;
-  inp.value='';
-  HS.busy='해설집을 읽는 중…'; render();
-  try{
-    var html=await f.text();
-    var P=hsParse(html);
-    var exists=(HS.cat.items||[]).some(function(x){ return x.code===P.meta.code; });
-    if(exists && !confirm('이미 등록된 해설집입니다.\n\n'+P.meta.title+'\n\n최신본으로 덮어쓸까요?')){ HS.busy=''; render(); return; }
-    HS.busy='저장하는 중…'; render();
-    var sb=getSupaClient(); if(!sb) throw new Error('서버 연결 없음');
-    var body={ head:P.head, cover:P.cover, tail:P.tail, items:P.items };
-    await sb.from('lumen_store').upsert({key:'haesol_body_'+P.meta.code, value:body, updated_at:new Date().toISOString()},{onConflict:'key'});
-    HS.cat.items=(HS.cat.items||[]).filter(function(x){ return x.code!==P.meta.code; });
-    HS.cat.items.push(P.meta);
-    await hsSaveCat();
-    HS.body=body; HS.bodyCode=P.meta.code;
-    HS.busy=''; HS.code=P.meta.code; HS.q=null;
-    plToast('불러왔습니다 — '+P.meta.n+'문항');
-  }catch(e){ HS.busy=''; alert('불러오기 실패: '+e.message); }
-  render();
-};
-window.hsDel=async function(code){
-  var it=(HS.cat.items||[]).find(function(x){ return x.code===code; }); if(!it) return;
-  if(!confirm('「'+it.title+'」을(를) 목록에서 지울까요?\n(본문도 함께 지워집니다)')) return;
-  try{
-    var sb=getSupaClient();
-    if(sb) await sb.from('lumen_store').delete().eq('key','haesol_body_'+code);
-    HS.cat.items=HS.cat.items.filter(function(x){ return x.code!==code; });
-    await hsSaveCat();
-    if(HS.bodyCode===code){ HS.body=null; HS.bodyCode=null; }
-    plToast('지웠습니다');
-  }catch(e){ alert('삭제 실패: '+e.message); }
-  HS.code=null; render();
-};
-window.hsOpen=async function(code){
-  HS.code=code; HS.q=null; HS.busy='본문을 여는 중…'; render();
-  try{ await hsBodyLoad(code); HS.busy=''; }
-  catch(e){ HS.busy=''; alert('열기 실패: '+e.message); HS.code=null; }
-  render();
-};
-window.hsBack=function(){ HS.code=null; HS.q=null; render(); };
-window.hsQ=function(no){ HS.q=(HS.q===no?null:no); render(); };
-
-/* ── 미리보기 · 인쇄 ── */
-function hsFullHtml(code, only){
-  var b=HS.body, list=[];
-  var it=(HS.cat.items||[]).find(function(x){ return x.code===code; });
-  var nos=only?[only]:(it?it.qs.map(function(q){return q.no;}):Object.keys(b.items).map(Number).sort(function(a,c){return a-c;}));
-  nos.forEach(function(n){ if(b.items[n]) list.push(b.items[n]); });
-  return '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'+b.head+'</head><body>'
-       + (only? '<div class="wrap">' : b.cover) + list.join('\n') + (only? '</div>' : b.tail)
-       + '</body></html>';
-}
-window.hsPreview=function(){
-  if(!HS.body) return;
-  var w=window.open('','_blank'); if(!w){ alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해 주세요.'); return; }
-  w.document.open(); w.document.write(hsFullHtml(HS.code)); w.document.close();
-};
-window.hsPrint=function(){
-  if(!HS.body) return;
-  var w=window.open('','_blank'); if(!w){ alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해 주세요.'); return; }
-  var html=hsFullHtml(HS.code).replace('</body>',
-    '<script>window.onload=function(){setTimeout(function(){window.print();},2500);}<\/script></body>');
-  w.document.open(); w.document.write(html); w.document.close();
-};
-
-/* ── 화면 ── */
-function rHaesol(){
-  if(HS.busy) return '<div style="padding:60px;text-align:center;color:#94a3b8;font-weight:700">📖 '+hsEsc(HS.busy)+'</div>';
-  if(!HS.loaded) return '<div style="padding:60px;text-align:center;color:#94a3b8;font-weight:700">📖 기출 해설집 불러오는 중…</div>';
-  return HS.code ? rHaesolOne() : rHaesolList();
-}
-
-function rHaesolList(){
-  var items=(HS.cat.items||[]).slice().sort(function(a,b){ return (b.addedAt||'').localeCompare(a.addedAt||''); });
-  var h='<div style="padding:14px;max-width:1000px">';
-  h+='<div style="background:linear-gradient(135deg,#0d2240,#1d6fe8);border-radius:14px;padding:18px 20px;margin-bottom:12px;color:#fff">'
-    +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
-    +'<div style="font-size:19px;font-weight:900">📖 기출 해설집</div>'
-    +'<div style="font-size:12px;opacity:.85;font-weight:700">Claude가 만든 해설집 파일을 불러와 문항별로 보고 인쇄합니다</div>'
-    +'<button onclick="hsPick()" style="margin-left:auto;padding:9px 16px;background:#fff;color:#0d2240;border:none;border-radius:9px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">＋ 해설집 불러오기</button>'
-    +'</div></div>';
-  h+='<input type="file" id="hs-file" accept=".html,text/html" style="display:none" onchange="hsFile(this)">';
-
-  if(!items.length){
-    h+='<div style="background:#fff;border-radius:14px;padding:44px;text-align:center;color:#94a3b8;font-size:13px;line-height:1.9">'
-      +'아직 불러온 해설집이 없습니다.<br><b>＋ 해설집 불러오기</b>를 눌러 <b>해설집.html</b> 파일을 골라 주세요.'
-      +'<div style="margin-top:14px;font-size:12px;color:#b6c0cf">문항별로 잘라 저장되므로 나중에 「틀린 문항만 열기」로 넓힐 수 있습니다.</div></div>';
-    return h+'</div>';
-  }
-
-  items.forEach(function(it){
-    var kill=(it.qs||[]).filter(function(q){ return q.killer; }).length;
-    var warn=(it.qs||[]).filter(function(q){ return q.warn; }).length;
-    var essay=(it.qs||[]).filter(function(q){ return q.ans==='서술'; }).length;
-    h+='<div style="background:#fff;border:1.5px solid #e3e9f2;border-radius:14px;padding:15px 17px;margin-bottom:10px">'
-      +'<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">'
-      +'<div style="font-size:15.5px;font-weight:900;color:#0d2240">'+hsEsc(it.title||it.code)+'</div>'
-      +'<span style="background:#dcfce7;color:#16a34a;border-radius:50px;padding:3px 10px;font-size:10.5px;font-weight:900">'+it.n+'문항</span>'
-      +(essay?'<span style="background:#fef3c7;color:#a16207;border-radius:50px;padding:3px 10px;font-size:10.5px;font-weight:900">서술형 '+essay+'</span>':'')
-      +(kill?'<span style="background:#f3e8ff;color:#7e22ce;border-radius:50px;padding:3px 10px;font-size:10.5px;font-weight:900">최고난도 '+kill+'</span>':'')
-      +(warn?'<span style="background:#fee2e2;color:#dc2626;border-radius:50px;padding:3px 10px;font-size:10.5px;font-weight:900">⚠️ 문제 확인 '+warn+'</span>':'')
-      +'</div>'
-      +'<div style="font-size:12px;color:#5b6b82;font-weight:700;margin-top:5px">'
-      + hsEsc([it.school,it.grade,it.term,it.subject].filter(Boolean).join(' · ')) +'</div>'
-      +'<div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">'
-      +'<button onclick="hsOpen(\''+it.code+'\')" style="padding:8px 15px;background:#1d6fe8;color:#fff;border:none;border-radius:9px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">문항 보기</button>'
-      +'<button onclick="hsDel(\''+it.code+'\')" style="padding:8px 13px;background:#fff;color:#94a3b8;border:1.5px solid #e3e9f2;border-radius:9px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">삭제</button>'
-      +'<span style="margin-left:auto;align-self:center;font-size:11px;color:#b6c0cf;font-weight:700">'+hsEsc(String(it.addedAt||'').slice(0,10))+' 등록</span>'
-      +'</div></div>';
-  });
-  return h+'</div>';
-}
-
-function rHaesolOne(){
-  var it=(HS.cat.items||[]).find(function(x){ return x.code===HS.code; });
-  if(!it) return '<div style="padding:40px;text-align:center;color:#94a3b8">해설집을 찾지 못했습니다.</div>';
-  var qs=it.qs||[];
-
-  var h='<div style="padding:14px;max-width:1000px">';
-  h+='<div style="background:#fff;border:1.5px solid #e3e9f2;border-radius:14px;padding:15px 17px;margin-bottom:11px">'
-    +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">'
-    +'<button onclick="hsBack()" style="padding:7px 13px;background:#fff;color:#5b6b82;border:1.5px solid #e3e9f2;border-radius:9px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">← 목록</button>'
-    +'<div style="font-size:16px;font-weight:900;color:#0d2240">'+hsEsc(it.title||it.code)+'</div>'
-    +'<button onclick="hsPreview()" style="margin-left:auto;padding:8px 14px;background:#0d2240;color:#fff;border:none;border-radius:9px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">👁 전체 미리보기</button>'
-    +'<button onclick="hsPrint()" style="padding:8px 14px;background:#fff;color:#0d2240;border:1.5px solid #cbd5e1;border-radius:9px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">🖨 인쇄</button>'
-    +'</div>'
-    +'<div style="font-size:12px;color:#5b6b82;font-weight:700;margin-top:6px">'
-    + hsEsc([it.school,it.grade,it.term,it.subject].filter(Boolean).join(' · ')) + ' · '+it.n+'문항</div>'
-    +'</div>';
-
-  h+='<div style="background:#fff;border:1.5px solid #e3e9f2;border-radius:14px;padding:15px 17px;margin-bottom:11px">'
-    +'<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:9px">문항을 누르면 그 해설만 아래에 뜹니다</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:7px">';
-  qs.forEach(function(q){
-    var on=(HS.q===q.no);
-    var cl = q.warn?'#dc2626' : (q.killer?'#7e22ce':'');
-    var bd = on?'#1d6fe8' : (cl||'#e3e9f2');
-    var bg = on?'#eaf2ff' : (q.warn?'#fee2e2':(q.killer?'#f3e8ff':'#fff'));
-    h+='<button onclick="hsQ('+q.no+')" title="'+hsEsc(q.title)+'" style="border:1.5px solid '+bd+';background:'+bg+';border-radius:10px;padding:8px 0;cursor:pointer;font-family:inherit;text-align:center">'
-      +'<div style="font-size:14px;font-weight:900;color:#0d2240">'+q.no+'</div>'
-      +'<div style="font-size:9.5px;font-weight:800;color:'+(cl||'#8a94a2')+';margin-top:1px">'+hsEsc(q.warn?'확인':(q.killer?'킬러':(q.ans||'')))+'</div>'
-      +'</button>';
-  });
-  h+='</div></div>';
-
-  if(HS.q!=null){
-    var q=qs.find(function(x){ return x.no===HS.q; })||{};
-    h+='<div style="background:#fff;border:1.5px solid #e3e9f2;border-radius:14px;padding:15px 17px">'
-      +'<div style="font-size:13.5px;font-weight:900;color:#0d2240">'+HS.q+'번 · '+hsEsc(q.title||'')+'</div>'
-      +'<div style="font-size:11.5px;color:#8a94a2;font-weight:700;margin:3px 0 10px">'+hsEsc([q.badge,q.kind].filter(Boolean).join(' · '))+'</div>'
-      +'<iframe id="hs-frame" style="width:100%;height:70vh;border:1px solid #e3e9f2;border-radius:11px;background:#fff" '
-      +'srcdoc="'+hsEsc(hsFullHtml(HS.code, HS.q))+'"></iframe>'
-      +'<div style="font-size:11px;color:#b6c0cf;font-weight:700;margin-top:7px">수식은 인터넷에서 받아 그립니다 — 잠시 기다리면 보입니다.</div>'
-      +'</div>';
-  } else {
-    h+='<div style="background:#f7f9fd;border:1.5px dashed #cbd5e1;border-radius:14px;padding:34px;text-align:center;color:#94a3b8;font-size:13px;font-weight:700">'
-      +'위에서 문항 번호를 눌러 주세요.<br><span style="font-size:11.5px;color:#b6c0cf"><b style="color:#7e22ce">보라</b>=최고난도 · <b style="color:#dc2626">빨강</b>=문제 자체에 확인할 점이 있는 문항</span></div>';
-  }
-  return h+'</div>';
-}
-window.rHaesol=rHaesol; window.hsLoad=hsLoad;
-/* ═══════════════ 기출 해설집 끝 ═══════════════ */
-
 /* ── 네비 ── */
 const isDesktop=()=>window.innerWidth>=900;
 
@@ -8140,7 +7868,6 @@ var GROUPS=[
     {v:'books', icon:'📚', label:'교재·유형', act:function(){ VIEW='books'; BOOK_TYPE_MODE='book'; }},
     {v:'exam', icon:'📝', label:'시험', act:function(){ EXAM_VIEW='list'; VIEW='exam'; }},
     {v:'mockexam', icon:'🏫', label:'기출모의', act:function(){ MOCK_TAB='list'; VIEW='mockexam'; }},
-    {v:'haesol', icon:'📖', label:'기출 해설집', act:function(){ HS.code=null; HS.q=null; VIEW='haesol'; }},
     {v:'twin', icon:'🏭', label:'기출 쌍둥이', act:function(){ VIEW='twin'; }},
     {v:'race', icon:'🏁', label:'진도 레이스', act:function(){ VIEW='race'; }},
     {v:'black', icon:'🖤', label:'블랙반', act:function(){ VIEW='black'; }},
@@ -14764,7 +14491,6 @@ function render(){
     }
     else if(VIEW==='exam') C.innerHTML=rExam();
     else if(VIEW==='mockexam') C.innerHTML=rMockExam();
-    else if(VIEW==='haesol'){try{C.innerHTML=rHaesol(); if(!HS.loaded) setTimeout(hsLoad,0);}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='compass'){try{C.innerHTML=rCompass();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='wktab'){try{C.innerHTML=rWkTab();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='sungong'){try{C.innerHTML=rSungong();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
@@ -14806,7 +14532,6 @@ function render(){
     else if(VIEW==='quick') C.innerHTML=rQuickInput();
     else if(VIEW==='exam') C.innerHTML=rExam();
     else if(VIEW==='mockexam') C.innerHTML=rMockExam();
-    else if(VIEW==='haesol'){try{C.innerHTML=rHaesol(); if(!HS.loaded) setTimeout(hsLoad,0);}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='compass'){try{C.innerHTML=rCompass();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='wktab'){try{C.innerHTML=rWkTab();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='sungong'){try{C.innerHTML=rSungong();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
