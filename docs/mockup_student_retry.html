@@ -1,0 +1,279 @@
+<title>학생앱 기출 다시풀기 시안</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --bg:#f2f5fa; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#e3e9f2;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --stu:#6366f1; --stu-soft:#eef2ff;
+    --gold:#f59e0b; --gold-soft:#fef3c7;
+    --g:#16a34a; --g-soft:#dcfce7; --r:#dc2626; --r-soft:#fee2e2;
+    --y-soft:#fef9c3; --y-ink:#a16207; --shade:#f7f9fd;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+      --blue:#5b9bff; --blue-soft:#17305c; --stu:#818cf8; --stu-soft:#1e2650;
+      --gold:#fbbf24; --gold-soft:#3a2e10;
+      --g:#34d399; --g-soft:#0c2e22; --r:#f87171; --r-soft:#3b1212;
+      --y-soft:#37300b; --y-ink:#fbbf24; --shade:#0f1f38; }
+  }
+  :root[data-theme="dark"]{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+    --blue:#5b9bff; --blue-soft:#17305c; --stu:#818cf8; --stu-soft:#1e2650;
+    --gold:#fbbf24; --gold-soft:#3a2e10;
+    --g:#34d399; --g-soft:#0c2e22; --r:#f87171; --r-soft:#3b1212;
+    --y-soft:#37300b; --y-ink:#fbbf24; --shade:#0f1f38; }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:26px 20px 80px; }
+  h1{ font-size:23px; font-weight:900; margin:0 0 6px; letter-spacing:-0.4px; }
+  .note{ font-size:14.5px; color:var(--sub); font-weight:600; line-height:1.7; margin:0 0 24px; max-width:900px; }
+  .note b{ color:var(--ink); }
+  .sec{ margin:34px 0 0; }
+  .sec > h2{ font-size:17px; font-weight:900; margin:0 0 4px; display:flex; align-items:center; gap:9px; }
+  .sec > h2 .n{ background:var(--ink); color:var(--card); font-size:11.5px; font-weight:900;
+    border-radius:7px; padding:3px 9px; letter-spacing:.04em; }
+  .sec > .d{ font-size:13.5px; color:var(--sub); font-weight:600; margin:0 0 14px; max-width:880px; }
+  .sec > .d b{ color:var(--ink); }
+  .card{ background:var(--card); border:1.5px solid var(--line); border-radius:16px; padding:18px 20px; }
+  .grid2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:14px; }
+
+  /* 폰 프레임 */
+  .phones{ display:flex; gap:18px; flex-wrap:wrap; align-items:flex-start; }
+  .phone{ width:330px; background:var(--card); border:1.5px solid var(--line); border-radius:24px;
+    overflow:hidden; box-shadow:0 3px 14px rgba(13,34,64,.08); flex-shrink:0; }
+  .ph-cap{ font-size:11.5px; font-weight:900; letter-spacing:.05em; color:var(--sub);
+    background:var(--shade); border-bottom:1.5px solid var(--line); padding:8px 14px; }
+  .ph-body{ padding:13px; }
+  .ph-top{ display:flex; align-items:center; gap:8px; margin-bottom:11px; }
+  .ph-top .t{ font-size:15.5px; font-weight:900; }
+  .ph-top .back{ font-size:12px; font-weight:800; color:var(--sub); border:1.5px solid var(--line);
+    border-radius:8px; padding:3px 9px; }
+
+  .badge{ font-size:10.5px; font-weight:900; border-radius:50px; padding:3px 9px; white-space:nowrap; }
+  .b-ok{ background:var(--g-soft); color:var(--g); }
+  .b-off{ background:var(--shade); color:var(--sub); border:1px solid var(--line); }
+  .b-stu{ background:var(--stu-soft); color:var(--stu); }
+  .b-red{ background:var(--r-soft); color:var(--r); }
+  .b-gold{ background:var(--gold-soft); color:var(--y-ink); }
+
+  .hcard{ border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:9px; background:var(--card); }
+  .hcard .h1r{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .hcard .nm{ font-size:14px; font-weight:900; }
+  .hcard .s2{ font-size:11.5px; color:var(--sub); font-weight:700; margin-top:3px; line-height:1.55; }
+  .hcard.hero{ border-color:var(--stu); background:var(--stu-soft); }
+
+  .qrow{ border:1.5px solid var(--line); border-radius:13px; padding:11px 13px; margin-bottom:8px; background:var(--card); }
+  .qrow .r1{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .qrow .no{ font-size:15px; font-weight:900; color:var(--r); min-width:34px; }
+  .qrow .ti{ font-size:12.5px; font-weight:800; }
+  .qrow .r2{ font-size:11px; color:var(--sub); font-weight:700; margin-top:3px; }
+  .qrow .r3{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .abtn{ display:inline-block; border-radius:9px; padding:7px 12px; font-size:11.5px; font-weight:900;
+    border:1.5px solid var(--line); background:var(--card); color:var(--ink); }
+  .abtn.pri{ background:var(--stu); border-color:var(--stu); color:#fff; }
+  .abtn.lock{ color:var(--sub); background:var(--shade); }
+
+  .flow{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; font-size:13px; font-weight:800; }
+  .flow .f{ background:var(--card); border:1.5px solid var(--line); border-radius:11px; padding:8px 13px; }
+  .flow .f b{ color:var(--blue); }
+  .flow .a{ color:var(--sub); font-weight:900; }
+
+  .oxstrip{ display:grid; grid-template-columns:repeat(11,1fr); gap:4px; margin-top:8px; }
+  .ox{ border-radius:7px; text-align:center; font-size:10px; font-weight:900; padding:5px 0 4px; }
+  .ox b{ display:block; font-size:11.5px; }
+  .ox.o{ background:var(--g-soft); color:var(--g); }
+  .ox.x{ background:var(--r-soft); color:var(--r); }
+  .bar{ height:9px; background:var(--shade); border-radius:5px; overflow:hidden; margin-top:4px; }
+  .bar i{ display:block; height:100%; background:var(--stu); border-radius:5px; }
+  .unit{ font-size:11px; font-weight:800; color:var(--sub); display:flex; justify-content:space-between; margin-top:9px; }
+  .unit b{ color:var(--ink); }
+
+  ul.pts{ margin:8px 0 0; padding-left:19px; font-size:13.5px; font-weight:600; color:var(--sub); line-height:1.9; }
+  ul.pts b{ color:var(--ink); }
+  .qa{ margin-top:10px; }
+  .qa .q{ font-size:13.5px; font-weight:900; }
+  .qa .a{ font-size:13.5px; font-weight:600; color:var(--sub); margin:3px 0 12px; line-height:1.75; }
+  .qa .a b{ color:var(--ink); }
+  .lockbox{ border:1.5px dashed var(--line); border-radius:13px; padding:16px 14px; text-align:center;
+    color:var(--sub); font-size:12.5px; font-weight:800; background:var(--shade); }
+</style>
+
+<div class="wrap">
+  <h1>📱 학생앱 · 기출 다시풀기 시안</h1>
+  <p class="note">
+    원장님이 정하신 방향대로 그렸습니다 — <b>풀이(해설)는 우선 막고</b>, 학생은 <b>틀린 문항을 다시 풀어 사진으로 올리는 것까지만</b> 합니다.
+    해설집 보기 화면은 <b>만들어 두되 미오픈</b>(학생에게 안 보임)이고, 나중에 원장님이 여시면 그대로 켜집니다.
+    데이터는 이미 서버에 있는 <b>기출모의 자동 채점 기록</b>(문항별 O/X·단원·유형·배점)을 그대로 씁니다 — 학생이 뭔가 입력할 필요가 없습니다.
+  </p>
+
+  <div class="sec">
+    <h2><span class="n">화면 1</span> 지금 오픈하는 것 — 틀린 문항 다시풀기</h2>
+    <p class="d">기출모의를 본 학생에게만 카드가 뜹니다. 내가 틀린 문항 목록이 자동으로 나오고, 한 문항씩 종이에 다시 푼 뒤 사진으로 올립니다. <b>풀이 보기 버튼은 잠금</b> — 지금은 눌러도 열리지 않는다는 것을 학생이 알 수 있게 표시만 합니다.</p>
+    <div class="phones">
+      <div class="phone">
+        <div class="ph-cap">홈 — 기출모의 기록이 있는 학생에게만</div>
+        <div class="ph-body">
+          <div class="hcard hero">
+            <div class="h1r"><span class="nm">🧾 기출 다시풀기</span><span class="badge b-red">틀린 4문항</span></div>
+            <div class="s2">옥길중 3학년 · 2학기 중간 기출<br>틀린 문제를 다시 풀어서 올려 보자!</div>
+          </div>
+          <div class="hcard">
+            <div class="h1r"><span class="nm">📔 순공피드백</span><span class="badge b-ok">이번 주 제출 완료</span></div>
+            <div class="s2">기존 카드 — 그대로 유지</div>
+          </div>
+          <div class="lockbox">📖 해설집 카드는 <b>미오픈이라 홈에 아예 안 보입니다</b><br>(원장님이 여시면 이 자리에 나타남)</div>
+        </div>
+      </div>
+
+      <div class="phone">
+        <div class="ph-cap">기출 다시풀기 — 내 틀린 문항</div>
+        <div class="ph-body">
+          <div class="ph-top"><span class="back">←</span><span class="t">🧾 옥길중 3학년 2학기 중간</span></div>
+          <div class="hcard">
+            <div class="h1r"><span class="nm">17 / 21 맞음</span><span class="badge b-stu">재풀이 1 / 4 제출</span></div>
+            <div class="s2">틀린 문항만 아래에 모았어요 · 다시 풀어서 📸</div>
+          </div>
+          <div class="qrow">
+            <div class="r1"><span class="no">3번</span><span class="ti">위치 관계</span><span class="badge b-off">4점</span></div>
+            <div class="r2">02 위치 관계 · 직선과 평면</div>
+            <div class="r3"><span class="abtn pri">📸 재풀이 올리기</span><span class="abtn lock">🔒 풀이 보기</span></div>
+          </div>
+          <div class="qrow" style="border-color:var(--g)">
+            <div class="r1"><span class="no" style="color:var(--g)">9번</span><span class="ti">이차함수 그래프</span><span class="badge b-ok">✅ 8/31 제출</span></div>
+            <div class="r2">선생님이 확인하실 거예요 · 다시 올리면 교체돼요</div>
+            <div class="r3"><span class="abtn">📸 다시 올리기</span><span class="abtn lock">🔒 풀이 보기</span></div>
+          </div>
+          <div class="qrow">
+            <div class="r1"><span class="no">14번</span><span class="ti">원과 접선</span><span class="badge b-gold">킬러</span><span class="badge b-off">5점</span></div>
+            <div class="r3"><span class="abtn pri">📸 재풀이 올리기</span><span class="abtn lock">🔒 풀이 보기</span></div>
+          </div>
+          <div class="lockbox" style="margin-top:10px">🔒 풀이는 아직 열리지 않았어요<br>선생님이 여는 날 알림으로 알려드려요</div>
+        </div>
+      </div>
+
+      <div class="phone">
+        <div class="ph-cap">재풀이 올리기 — 사진 한 장이면 끝</div>
+        <div class="ph-body">
+          <div class="ph-top"><span class="back">←</span><span class="t">3번 · 위치 관계</span></div>
+          <div class="lockbox" style="padding:30px 14px;border-style:solid;border-color:var(--stu);color:var(--stu);background:var(--stu-soft)">
+            📸 다시 푼 종이를 찍어주세요
+          </div>
+          <div class="hcard" style="margin-top:10px">
+            <div class="s2" style="margin-top:0">✔ 플래너 사진과 같은 방식 (자동 압축 업로드)<br>✔ 제출하면 선생님 화면에 바로 표시<br>✔ 다시 올리면 최신 사진으로 교체</div>
+          </div>
+          <div class="abtn pri" style="display:block;text-align:center;padding:11px;font-size:13px">제출하기</div>
+          <div class="hcard" style="margin-top:10px;border-color:var(--g);background:var(--g-soft)">
+            <div class="h1r"><span class="nm" style="color:var(--g)">🎉 재풀이 제출 완료!</span></div>
+            <div class="s2">3번 · 선생님이 확인하실 거예요</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">화면 2</span> 만들어 두고 미오픈 — 해설집 보기</h2>
+    <p class="d">코드는 앱 안에 들어 있지만 <b>서버의 오픈 스위치가 꺼져 있으면 학생에게 전혀 보이지 않습니다</b>. 나중에 원장님이 "열자" 하시면 앱을 다시 배포할 필요 없이 스위치만 켜면 됩니다(Claude에게 한마디면 됩니다). 열리면 승인하신 규칙대로 <b>재풀이를 제출한 문항만</b> 풀이가 열립니다.</p>
+    <div class="phones">
+      <div class="phone">
+        <div class="ph-cap">지금 (스위치 꺼짐) — 학생 화면</div>
+        <div class="ph-body">
+          <div class="lockbox" style="padding:40px 16px">
+            아무것도 안 보입니다.<br>메뉴에도, 홈에도 해설집이 없습니다.<br><br>
+            <span class="badge b-off">서버 스위치 OFF</span>
+          </div>
+        </div>
+      </div>
+      <div class="phone">
+        <div class="ph-cap">나중에 (스위치 켬) — 이렇게 열립니다</div>
+        <div class="ph-body">
+          <div class="ph-top"><span class="back">←</span><span class="t">📖 해설집 · 3번</span></div>
+          <div class="hcard" style="border-color:var(--g);background:var(--g-soft)">
+            <div class="h1r"><span class="nm" style="color:var(--g)">✅ 재풀이 제출 완료 — 풀이가 열렸어요</span></div>
+          </div>
+          <div class="hcard">
+            <div class="s2" style="margin-top:0">학원앱과 같은 첨삭 해설이 문항별로 뜹니다<br>(수식·그림 포함, 이미 서버에 올라가 있는 4권 그대로)</div>
+          </div>
+          <div class="qrow">
+            <div class="r1"><span class="no" style="color:var(--sub)">14번</span><span class="ti">원과 접선</span><span class="badge b-gold">킬러</span></div>
+            <div class="r3"><span class="abtn lock">🔒 재풀이를 제출하면 열려요</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">화면 3</span> 내 기출성적표 — 학원앱 성적표 그대로 (포함됨)</h2>
+    <p class="d">원장님 지시대로 <b>학원앱 기출모의 탭의 성적표(카톡용과 같은 것)를 그대로</b> 학생앱에 넣었습니다. 같은 렌더러를 이식해서 학교 추정·학원 등수·2면 문항 분석까지 동일하게 나오고, 폰 폭에 맞춰 자동 축소됩니다. 학생은 자기 것만 봅니다.</p>
+    <div class="phones">
+      <div class="phone">
+        <div class="ph-cap">내 기출성적표 (제안)</div>
+        <div class="ph-body">
+          <div class="ph-top"><span class="back">←</span><span class="t">🧾 내 기출성적표</span></div>
+          <div class="hcard hero">
+            <div class="h1r"><span class="nm">옥길중 3학년 2학기 중간</span><span class="badge b-stu">84점</span></div>
+            <div class="s2">2026-08-24 실시 · 21문항 중 17 맞음</div>
+          </div>
+          <div class="hcard">
+            <div class="h1r"><span class="nm" style="font-size:12.5px">문항별 결과</span></div>
+            <div class="oxstrip">
+              <span class="ox o"><b>1</b>O</span><span class="ox o"><b>2</b>O</span><span class="ox x"><b>3</b>X</span>
+              <span class="ox o"><b>4</b>O</span><span class="ox o"><b>5</b>O</span><span class="ox o"><b>6</b>O</span>
+              <span class="ox o"><b>7</b>O</span><span class="ox o"><b>8</b>O</span><span class="ox x"><b>9</b>X</span>
+              <span class="ox o"><b>10</b>O</span><span class="ox o"><b>11</b>O</span>
+            </div>
+            <div class="oxstrip">
+              <span class="ox o"><b>12</b>O</span><span class="ox o"><b>13</b>O</span><span class="ox x"><b>14</b>X</span>
+              <span class="ox o"><b>15</b>O</span><span class="ox o"><b>16</b>O</span><span class="ox o"><b>17</b>O</span>
+              <span class="ox o"><b>18</b>O</span><span class="ox x"><b>19</b>X</span><span class="ox o"><b>20</b>O</span>
+              <span class="ox o"><b>21</b>O</span>
+            </div>
+          </div>
+          <div class="hcard">
+            <div class="h1r"><span class="nm" style="font-size:12.5px">단원별 정답률</span></div>
+            <div class="unit"><span>이차함수</span><b>6/7</b></div><div class="bar"><i style="width:86%"></i></div>
+            <div class="unit"><span>원의 성질</span><b>4/6</b></div><div class="bar"><i style="width:67%"></i></div>
+            <div class="unit"><span>삼각비</span><b>7/8</b></div><div class="bar"><i style="width:88%"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="flex:1;min-width:280px">
+        <div style="font-size:14px;font-weight:900;margin-bottom:4px">왜 바로 되나</div>
+        <ul class="pts">
+          <li>기출모의 채점은 이미 <b>새벽 수집기가 자동으로</b> 서버에 쌓고 있음 (현재 24건)</li>
+          <li>문항마다 <b>O/X · 배점 · 단원 · 유형 · 난이도</b>가 붙어 있음</li>
+          <li>재풀이 제출 여부와 합치면 "틀림 → 다시 풂 → 확인" 흐름이 성적표에 그대로 보임</li>
+          <li>같은 시험의 해설집이 서버에 있으면 성적표에서 바로 연결 가능 (해설집 오픈 이후)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2><span class="n">정리</span> 이번 판에 들어가는 것 / 안 들어가는 것</h2>
+    <div class="grid2">
+      <div class="card">
+        <div style="font-size:14px;font-weight:900;margin-bottom:4px">✅ 이번 학생앱 새 버전에 넣는 것</div>
+        <ul class="pts">
+          <li><b>기출 다시풀기</b> — 내 틀린 문항 목록 + 📸 재풀이 사진 제출 (열림)</li>
+          <li><b>내 기출성적표</b> — 학원앱 성적표와 동일 (열림)</li>
+          <li><b>해설집 보기</b> — 코드는 넣되 <b>미오픈</b> (서버 스위치 꺼짐, 학생에게 안 보임)</li>
+          <li>풀이 보기 버튼은 <b>🔒 잠금 표시만</b> — 눌러도 안 열림</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div style="font-size:14px;font-weight:900;margin-bottom:4px">⏸ 나중에 (원장님 결정으로)</div>
+        <ul class="pts">
+          <li>해설집 오픈 — 서버 스위치만 켜면 됨, 재배포 불필요</li>
+          <li>재풀이 제출 시 XP 지급 연동</li>
+          <li>학원앱에서 재풀이 사진 모아보기 화면</li>
+        </ul>
+      </div>
+    </div>
+    <div class="qa">
+      <div class="q">Q. 학생앱 주소가 바뀌나요?</div>
+      <div class="a">아니요. 새 버전 파일(<b>student_v2-54</b>)로만 만들어 두고, 학생들이 쓰는 고정 주소(student_v1) 교체는 <b>원장님이 보시고 결정</b>하시면 됩니다.</div>
+    </div>
+  </div>
+</div>
