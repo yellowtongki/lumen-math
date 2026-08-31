@@ -79,7 +79,7 @@ async function msListAll() {
     const p = await msGet(`/bms/api/v1/mydbs?limit=100&searchMode=all${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
     const items = (p.data && p.data.mydbs) || [];
     all.push(...items);
-    cursor = p.data && p.data.cursor;
+    cursor = p.pagination && p.pagination.cursor;
     if (!cursor || !items.length) break;
   }
   return all;
@@ -89,7 +89,7 @@ async function msCellsRaw(id) {
   for (let i = 0; i < 40; i++) {
     const j = await msGet(`/bms/api/v1/mydbs/${id}/cells?curriculumId=2&limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
     ((j.data && j.data.pages) || []).forEach((pg) => (pg.cells || []).forEach((c) => cells.push(c)));
-    cursor = j.data && j.data.cursor;
+    cursor = j.pagination && j.pagination.cursor;
     if (!cursor) break;
   }
   return cells;
@@ -138,6 +138,10 @@ function kindOf(title) {
   const WHOLE = arg('whole', '');
   const LIMIT = Number(arg('limit', 0));
   const CHUNK_MAX = Number(arg('chunk', 50));
+  /* --maxunit 05: 대단원 코드가 이보다 큰 문항은 뺀다 (진도 절단 —
+   * 예: 미적분1 2학기 중간 = 「05 함수의 증가와 감소」(삼차·사차 그래프)까지,
+   * 06 방부등식·속도가속도, 07~ 적분 제외. 2026-08-31 원장 지시) */
+  const MAX_UNIT = arg('maxunit', '');
   const RESUME = !has('--no-resume');
   const trie = HS_TRIE[SUBJECT];
   if (!WHOLE && !SUBJECT) throw new Error('--subject 과목명(예: 미적분1)이 필요합니다');
@@ -183,12 +187,17 @@ function kindOf(title) {
     const kind = kindOf(t.title);
     const groups = {};   // 대단원 → questionNumber 집합 (순서 보존)
     const order = [];
+    let cut = 0;
     cells.forEach((c) => {
       const u = unitOf(c);
+      if (MAX_UNIT) {
+        const code = (u.match(/^(\d{2})/) || [])[1];
+        if (!code || code > MAX_UNIT) { cut++; return; }   // 진도 밖 → 제외
+      }
       if (!groups[u]) { groups[u] = []; order.push(u); }
       groups[u].push(c.questionNumber);
     });
-    log(`[${t.id}] ${t.title} — ${cells.length}문항 · 대단원 ${order.length}개`);
+    log(`[${t.id}] ${t.title} — ${cells.length}문항 · 대단원 ${order.length}개${cut ? ` · 진도 밖 제외 ${cut}문항 (--maxunit ${MAX_UNIT})` : ''}`);
     order.forEach((u) => {
       // 대단원이 상한보다 크면 앞/뒤로 나눈다 (문항 번호순 유지)
       const nos = groups[u];
