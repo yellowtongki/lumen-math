@@ -1,0 +1,1446 @@
+<title>옥길중 중2 2학기중간 해설집</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global', scale: 1.02 },
+  options: { menuOptions: { settings: { inTabOrder: false } } }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
+
+<style>
+:root{
+  --ground:#E7E9EE; --paper:#FFFFFF;
+  --ink:#18222E; --ink-soft:#4A5666; --ink-faint:#8A94A2;
+  --line:#DBE0E9; --line-soft:#EDF0F5;
+  --indigo:#274777; --indigo-ink:#1E3A63; --indigo-soft:#E9EFF8;
+  --amber:#9C6612; --amber-soft:#F6EEDC;
+  --green:#2C7A54; --green-soft:#E1EFE8;
+  --red:#AF413A; --red-soft:#F6E4E1;
+  --shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px rgba(24,34,46,.09);
+  --shadow-sm:0 1px 2px rgba(24,34,46,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C121A; --paper:#141C26;
+    --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+    --line:#28333F; --line-soft:#1D2732;
+    --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+    --amber:#D9A64A; --amber-soft:#2C2515;
+    --green:#66BB8E; --green-soft:#16271E;
+    --red:#E0776D; --red-soft:#2B1A18;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C121A; --paper:#141C26;
+  --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+  --line:#28333F; --line-soft:#1D2732;
+  --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+  --amber:#D9A64A; --amber-soft:#2C2515;
+  --green:#66BB8E; --green-soft:#16271E;
+  --red:#E0776D; --red-soft:#2B1A18;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Noto Sans KR", system-ui, sans-serif;
+  font-size:16px; line-height:1.75; letter-spacing:-.003em;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 18px 96px}
+
+/* ── 상단 헤더 ── */
+.masthead{padding:34px 0 20px}
+.eyebrow{
+  font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--indigo); margin:0 0 10px;
+}
+.masthead h1{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:clamp(28px,6vw,40px);
+  line-height:1.18; margin:0; letter-spacing:-.01em; text-wrap:balance; color:var(--ink);
+}
+.masthead .sub{
+  color:var(--ink-soft); font-size:14.5px; margin-top:12px; font-weight:500;
+  display:flex; flex-wrap:wrap; gap:7px 14px; align-items:center;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--paper); border:1px solid var(--line); border-radius:99px;
+  padding:4px 12px; font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  box-shadow:var(--shadow-sm);
+}
+.chip b{color:var(--ink)}
+.chip.hard{color:var(--red); border-color:color-mix(in srgb, var(--red) 34%, var(--line))}
+
+/* ── 문제 카드 ── */
+.paper{
+  background:var(--paper); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); padding:26px 26px 24px; margin-bottom:22px;
+}
+.q-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px}
+.q-no{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:30px; color:var(--indigo);
+  line-height:1;
+}
+.q-tag{
+  font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--ink-faint);
+  border-left:1px solid var(--line); padding-left:12px;
+}
+.q-body{font-size:17px; line-height:1.85; color:var(--ink)}
+.cond{
+  margin:16px 0 4px; border:1px solid var(--line); border-radius:12px;
+  background:color-mix(in srgb, var(--indigo-soft) 55%, var(--paper));
+  padding:14px 18px;
+}
+.cond .row{display:flex; gap:12px; align-items:baseline}
+.cond .row+.row{margin-top:6px}
+.cond .lab{font-weight:700; color:var(--indigo-ink); flex-shrink:0}
+.choices{
+  margin-top:18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:8px;
+}
+.choice{
+  border:1px solid var(--line); border-radius:10px; padding:9px 14px;
+  font-size:15.5px; color:var(--ink-soft); display:flex; gap:9px; align-items:center;
+}
+.choice .n{font-weight:700; color:var(--ink-faint)}
+.choice.ans{
+  border-color:var(--green); background:var(--green-soft); color:var(--ink);
+  font-weight:700; box-shadow:0 0 0 1px var(--green) inset;
+}
+.choice.ans .n{color:var(--green)}
+.choice.ans::after{content:"정답"; margin-left:auto; font-size:11px; font-weight:800;
+  letter-spacing:.06em; color:var(--green)}
+
+/* ── 급소 배너 ── */
+.insight{
+  display:flex; gap:13px; align-items:flex-start;
+  background:var(--amber-soft); border:1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+  border-radius:14px; padding:16px 18px; margin-bottom:30px;
+}
+.insight .ic{font-size:20px; line-height:1.4; flex-shrink:0}
+.insight p{margin:0; font-size:14.5px; color:var(--ink); line-height:1.7}
+.insight b{color:var(--amber); font-weight:800}
+
+/* ── 풀이 전환 네비 ── */
+.nav{
+  position:sticky; top:0; z-index:20; margin:0 -18px 26px; padding:10px 18px;
+  background:color-mix(in srgb, var(--ground) 86%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+}
+.nav::-webkit-scrollbar{display:none}
+.nav a{
+  flex:0 0 auto; text-decoration:none; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink-soft); border-radius:99px;
+  padding:7px 15px; font-size:13px; font-weight:700; white-space:nowrap;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.nav a .k{color:var(--indigo); font-family:"Hahmlet",serif; font-weight:800; margin-right:5px}
+.nav a:hover{border-color:var(--indigo); color:var(--ink)}
+.nav a:focus-visible{outline:2px solid var(--indigo); outline-offset:2px}
+
+/* ── 풀이 섹션 ── */
+.sol{margin-bottom:40px; scroll-margin-top:64px}
+.sol-head{display:flex; align-items:center; gap:14px; margin-bottom:6px}
+.sol-k{
+  font-family:"Hahmlet",serif; font-weight:800; font-size:26px;
+  width:46px; height:46px; flex-shrink:0; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--indigo); color:#fff;
+}
+:root[data-theme="dark"] .sol-k, :root:not([data-theme="light"]) .sol-k{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .sol-k{color:#fff}}
+.sol-title{font-family:"Hahmlet",serif; font-weight:700; font-size:22px; color:var(--ink); line-height:1.2}
+.sol-kind{font-size:12.5px; font-weight:700; color:var(--ink-faint); margin-top:3px; letter-spacing:.01em}
+.sol-body{
+  background:var(--paper); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); padding:8px 24px 22px; margin-top:14px;
+}
+
+.step{padding:18px 0; border-bottom:1px solid var(--line-soft)}
+.step:last-child{border-bottom:none}
+.step-lab{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:8px;
+  font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--indigo);
+}
+.step-lab .dot{width:6px; height:6px; border-radius:50%; background:var(--indigo)}
+.step-lab.amber{color:var(--amber)} .step-lab.amber .dot{background:var(--amber)}
+.step-lab.green{color:var(--green)} .step-lab.green .dot{background:var(--green)}
+.step h4{margin:0 0 6px; font-size:16px; font-weight:700; color:var(--ink)}
+.step p{margin:8px 0; font-size:15px; color:var(--ink); line-height:1.8}
+.step .aside{color:var(--ink-soft); font-size:14px}
+
+/* 수식 디스플레이 줄 */
+.mathrow{overflow-x:auto; overflow-y:hidden; padding:6px 2px; margin:6px 0; scrollbar-width:thin}
+mjx-container[display="true"]{margin:0 !important}
+
+/* 함정·실수 박스 */
+.warn{
+  border:1px solid color-mix(in srgb, var(--amber) 34%, var(--line));
+  background:var(--amber-soft); border-radius:12px; padding:14px 16px; margin:12px 0;
+}
+.warn .t{font-weight:800; color:var(--amber); font-size:14px; margin-bottom:5px; display:flex; gap:7px; align-items:center}
+.warn p{margin:4px 0; font-size:14px; color:var(--ink)}
+.miss{
+  border-left:3px solid var(--red); background:var(--red-soft); border-radius:0 10px 10px 0;
+  padding:11px 15px; margin:11px 0; font-size:14px; color:var(--ink);
+}
+.miss b{color:var(--red)}
+
+/* 결과 배지 */
+.result{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--green-soft); border:1px solid var(--green); border-radius:13px;
+  padding:15px 20px; margin-top:16px;
+}
+.result .lab{font-size:13px; font-weight:800; letter-spacing:.04em; color:var(--green)}
+.result .val{font-size:20px}
+
+/* 그림풀이 */
+figure{margin:14px 0 6px; text-align:center}
+.fig-frame > svg{max-width:100%; height:auto; display:block; margin:0 auto}
+figcaption mjx-container svg, .fig-tag mjx-container svg{display:inline-block; margin:0}
+.fig-tag mjx-container{vertical-align:-0.1em}
+figcaption{
+  font-size:12.5px; color:var(--ink-faint); font-weight:600; margin-top:10px;
+  letter-spacing:.01em;
+}
+.fig-frame{
+  border:1px dashed var(--line); border-radius:14px; padding:20px 16px 14px;
+  background:color-mix(in srgb, var(--line-soft) 45%, var(--paper));
+}
+.fig-tag{
+  display:inline-block; font-size:11px; font-weight:800; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;
+}
+
+/* 검산 표 */
+.calc{width:100%; border-collapse:collapse; margin:10px 0 2px; font-variant-numeric:tabular-nums}
+.calc td,.calc th{border-bottom:1px solid var(--line-soft); padding:8px 10px; text-align:left; font-size:15px}
+.calc th{color:var(--ink-faint); font-weight:700; font-size:12.5px; letter-spacing:.03em}
+.calc tr:last-child td{border-bottom:none}
+.calc .hi{background:var(--indigo-soft); font-weight:700}
+
+footer{
+  text-align:center; color:var(--ink-faint); font-size:12.5px;
+  border-top:1px solid var(--line); padding-top:22px; margin-top:16px; line-height:1.9;
+}
+
+@media (max-width:520px){
+  .sol-body{padding:6px 16px 18px}
+  .paper{padding:20px 18px}
+  .q-body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+
+/* ── 해설집 추가 ── */
+.idx{display:grid;grid-template-columns:repeat(auto-fit,minmax(46px,1fr));gap:7px;margin:0 0 8px}
+.idx a{text-decoration:none;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);
+  border-radius:10px;padding:9px 0;text-align:center;font-weight:800;font-size:14px;font-family:"Hahmlet",serif;
+  transition:border-color .15s,color .15s}
+.idx a:hover{border-color:var(--indigo);color:var(--indigo)}
+.idx a .kd{display:block;font-size:9px;font-weight:700;letter-spacing:.04em;margin-top:2px;font-family:"Noto Sans KR"}
+.idx a.hard{border-color:color-mix(in srgb,var(--red) 30%,var(--line))}
+.idx a.hard .kd{color:var(--red)}
+.idx a:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+.pnum{font-family:"Hahmlet",serif;font-weight:800;font-size:24px;color:var(--indigo);line-height:1}
+.pstate{font-size:16px;line-height:1.85;color:var(--ink);margin:10px 0 0}
+.pstate .cond{margin:14px 0 2px}
+.dbadge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;border-radius:99px;
+  padding:3px 10px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper)}
+.dbadge.k{color:var(--red);border-color:color-mix(in srgb,var(--red) 34%,var(--line))}
+.dbadge.red{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,var(--line));background:var(--red-soft)}
+/* 킬러 문항 강조 */
+.sol.killer .sol-body{border-color:color-mix(in srgb,var(--red) 34%,var(--line));
+  box-shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px color-mix(in srgb,var(--red) 16%,transparent)}
+.sol-k.red{background:var(--red)}
+.tag-essay{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;vertical-align:middle;
+  color:#fff;background:var(--amber);border-radius:6px;padding:2px 8px;margin-left:8px}
+:root[data-theme="dark"] .tag-essay,:root:not([data-theme="light"]) .tag-essay{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .tag-essay{color:#fff}}
+
+/* ── 좁은 화면 안전장치: 긴 수식·표가 가로로 넘치지 않게 ── */
+.calc{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch}
+.cond .row>span:last-child{min-width:0; overflow-x:auto; padding-bottom:2px}
+.result .val{min-width:0; overflow-x:auto; padding-bottom:2px}
+</style>
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">루멘수학 · 기출 정밀해설집</p>
+    <h1>옥길중 2학년 2학기 중간 · 중등수학 2(하) 해설</h1>
+    <div class="sub">
+      <span class="chip">옥길중학교 2학년</span>
+      <span class="chip">2025 · 2학기 중간</span>
+      <span class="chip"><b>20문항</b></span>
+      <span class="chip">삼각형의 성질 · 사각형의 성질 · 도형의 닮음</span>
+    </div>
+  </header>
+  <div class="insight">
+    <span class="ic">📏</span>
+    <p>스무 문항을 <b>왜 그렇게 푸는지</b>까지 짚는 첨삭 해설로 담았습니다. 아래 번호를 누르면 해당 문제로 바로 이동합니다.
+      <b style="color:var(--red)">빨간 번호</b>는 최고난도 문항이고, <b>6번</b>은 조건이 하나 빠진 문제라 따로 짚었습니다.
+      <b>17~20번</b>은 서술형입니다.</p>
+  </div>
+  <nav class="idx" aria-label="문제 바로가기">
+    <a href="#q1">1</a><a href="#q2">2</a><a href="#q3">3</a>
+    <a href="#q4" class="hard">4<span class="kd">고난도</span></a>
+    <a href="#q5">5</a>
+    <a href="#q6" class="hard">6<span class="kd">조건부족</span></a>
+    <a href="#q7">7</a><a href="#q8">8</a><a href="#q9">9</a><a href="#q10">10</a>
+    <a href="#q11">11</a><a href="#q12">12</a>
+    <a href="#q13" class="hard">13<span class="kd">고난도</span></a>
+    <a href="#q14" class="hard">14<span class="kd">킬러</span></a>
+    <a href="#q15" class="hard">15<span class="kd">고난도</span></a>
+    <a href="#q16" class="hard">16<span class="kd">고난도</span></a>
+    <a href="#q17">17<span class="kd">서술</span></a><a href="#q18">18<span class="kd">서술</span></a>
+    <a href="#q19">19<span class="kd">서술</span></a><a href="#q20">20<span class="kd">서술</span></a>
+  </nav>
+  <section class="sol" id="q1">
+    <div class="sol-head">
+      <span class="sol-k">1</span>
+      <div>
+        <div class="sol-title">빗변이 공통이면 RHS 합동을 의심한다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 직각삼각형의 합동 · RHS(빗변이 공통)</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림에서 \(\overline{\mathrm{PA}}=\overline{\mathrm{PB}}\)일 때, 각 \(x\)의 크기는?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 빗변 OP를 공유하는 직각삼각형 두 개</span>
+          <svg viewBox="0 0 380 250" role="img" aria-label="각 O의 두 변에 내린 수선 PA, PB가 같은 점 P">
+            <line x1="45" y1="205" x2="345" y2="205" stroke="var(--ink)" stroke-width="2.2"/>
+            <line x1="45" y1="205" x2="173.6" y2="14.3" stroke="var(--ink)" stroke-width="2.2"/>
+            <line x1="45" y1="205" x2="212.8" y2="115.9" stroke="var(--indigo)" stroke-width="2.4"/>
+            <line x1="212.8" y1="115.9" x2="138.7" y2="66" stroke="var(--indigo)" stroke-width="2.4"/>
+            <line x1="212.8" y1="115.9" x2="212.8" y2="205" stroke="var(--indigo)" stroke-width="2.4"/>
+            <path d="M 148.6 72.7 L 141.9 82.6 L 132 75.9" fill="none" stroke="var(--ink-soft)" stroke-width="1.7"/>
+            <path d="M 212.8 191 L 198.8 191 L 198.8 205" fill="none" stroke="var(--ink-soft)" stroke-width="1.7"/>
+            <g stroke="var(--red)" stroke-width="2.6">
+              <line x1="179.7" y1="85.2" x2="171.9" y2="96.8"/>
+              <line x1="205.8" y1="160.5" x2="219.8" y2="160.5"/>
+            </g>
+            <path d="M 100 205 A 55 55 0 0 0 93.6 179.2" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+            <path d="M 189.6 100.2 A 28 28 0 0 0 188.1 129" fill="none" stroke="var(--green)" stroke-width="1.8"/>
+            <circle cx="212.8" cy="115.9" r="4" fill="var(--indigo)"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="28" y="220">O</text><text x="120" y="60">A</text><text x="220" y="110">P</text><text x="216" y="224">B</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="12.5" font-weight="800">
+              <text x="104" y="196" fill="var(--amber)">28°</text>
+              <text x="166" y="120" fill="var(--green)">x</text>
+            </g>
+            <text x="230" y="46" font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--red)">PA = PB</text>
+            <text x="230" y="64" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--ink-soft)">(빨간 표시)</text>
+          </svg>
+        </div>
+        <figcaption>\(\triangle\mathrm{OAP}\)와 \(\triangle\mathrm{OBP}\)는 <b>빗변 \(\overline{\mathrm{OP}}\)를 함께 쓴다</b>. 여기에 \(\overline{\mathrm{PA}}=\overline{\mathrm{PB}}\)가 붙으면 RHS 합동.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 합동 조건을 확인한다</span>
+        <p>\(\triangle \mathrm{OAP}\)와 \(\triangle \mathrm{OBP}\)를 나란히 놓고 세 가지를 확인한다.</p>
+        <table class="calc">
+          <tr><th>확인할 것</th><th>내용</th><th>기호</th></tr>
+          <tr><td>직각</td><td>\(\angle \mathrm{OAP}=\angle \mathrm{OBP}=90^\circ\)</td><td><b>R</b></td></tr>
+          <tr><td>빗변</td><td>\(\overline{\mathrm{OP}}\)는 <b>공통</b>인 변</td><td><b>H</b></td></tr>
+          <tr><td>다른 한 변</td><td>\(\overline{\mathrm{PA}}=\overline{\mathrm{PB}}\) (주어짐)</td><td><b>S</b></td></tr>
+        </table>
+        <div class="mathrow">$$\therefore\ \triangle \mathrm{OAP}\equiv\triangle \mathrm{OBP}\ (\mathrm{RHS}\ \text{합동})$$</div>
+        <p class="aside">이 문제가 「빗변이 공통인 두 삼각형」 유형인 이유가 여기 있다. \(\overline{\mathrm{OP}}\)를 <b>두 삼각형이 함께 쓰는 변</b>으로 보는 순간 조건 하나가 공짜로 생긴다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 합동이면 대응각도 같다</span>
+        <p>합동이므로 \(\angle \mathrm{AOP}=\angle \mathrm{BOP}\). 즉 \(\overline{\mathrm{OP}}\)는 \(\angle \mathrm{AOB}\)를 <b>이등분</b>한다. 그림에 표시된 \(28^\circ\)가 \(\angle \mathrm{BOP}\)이므로 \(\angle \mathrm{AOP}=28^\circ\)이다.</p>
+        <div class="warn">
+          <div class="t">💡 사실 이건 「각의 이등분선」 성질 그 자체다</div>
+          <p><b>각의 두 변에서 같은 거리에 있는 점은 그 각의 이등분선 위에 있다</b> — 교과서의 이 정리가 바로 지금 한 RHS 합동으로 증명된다. 시험에서는 이 정리를 바로 써도 되지만, 서술형이면 RHS 합동을 밝혀 주는 편이 안전하다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — 삼각형의 나머지 각</span>
+        <p>\(\triangle \mathrm{OAP}\)에서 \(\angle \mathrm{OAP}=90^\circ\), \(\angle \mathrm{AOP}=28^\circ\)이므로</p>
+        <div class="mathrow">$$x=180^\circ-90^\circ-28^\circ=62^\circ$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(62^\circ\ \Rightarrow\ \) ①</span></div>
+        <div class="miss"><b>실수 주의</b> \(28^\circ\)를 \(\angle \mathrm{AOB}\) 전체로 착각하면 \(\angle \mathrm{AOP}=14^\circ\), \(x=76^\circ\)가 되어 답지에 없다. 그림에서 <b>각의 표시가 어느 두 반직선 사이에 그려져 있는지</b>를 반드시 확인하자.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q2">
+    <div class="sol-head">
+      <span class="sol-k">2</span>
+      <div>
+        <div class="sol-title">거꾸로 생각한다 — 사각형을 대각선으로 잘라 본다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 2 · 4점</span> 여러 가지 사각형 · 사각형의 판별</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">직각이 없는 이등변삼각형 두 개를 붙여서 만들 수 있는 사각형을 &lt;보기&gt;에서 있는 대로 고른 것은?
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>정사각형</span><span class="lab">ㄴ.</span><span>직사각형</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>마름모</span><span class="lab">ㄹ.</span><span>평행사변형</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 「붙이기」를 「자르기」로 뒤집는다</span>
+        <p>삼각형 두 개를 이리저리 붙여 보는 건 끝이 없다. 대신 <b>완성된 사각형을 대각선으로 잘랐을 때 어떤 삼각형이 나오는지</b>를 보면 한 번에 판정된다. 사각형을 두 삼각형으로 나누는 방법은 <b>대각선을 긋는 것뿐</b>이기 때문이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 넷을 각각 잘라 본다</span>
+        <table class="calc">
+          <tr><th>사각형</th><th>대각선으로 자르면</th><th>직각이 없는 이등변?</th></tr>
+          <tr><td>ㄱ. 정사각형</td><td>직각이등변삼각형</td><td><b>✗</b> 직각이 있다</td></tr>
+          <tr><td>ㄴ. 직사각형</td><td>직각삼각형(이등변도 아님)</td><td><b>✗</b> 직각이 있다</td></tr>
+          <tr class="hi"><td>ㄷ. 마름모</td><td>네 변이 같으므로 <b>이등변삼각형</b></td><td><b>✓</b> 정사각형만 아니면 직각 없음</td></tr>
+          <tr class="hi"><td>ㄹ. 평행사변형</td><td>마름모도 평행사변형이다</td><td><b>✓</b></td></tr>
+        </table>
+        <p class="aside">ㄷ이 되면 ㄹ은 자동이다. <b>마름모는 평행사변형의 한 종류</b>이기 때문. 사각형 문제에서 이 「포함 관계」를 알고 있으면 판정이 절반으로 줄어든다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 실제로 만들어 확인</span>
+        <p>세 변이 \(5,\ 5,\ 6\)인 이등변삼각형(직각 없음) 두 개를 밑변 \(6\)끼리 뒤집어 붙이면 <b>네 변이 모두 \(5\)</b>인 마름모가 된다 ✓ 같은 삼각형을 \(180^\circ\) 돌려 한 변끼리 붙이면 <b>평행사변형</b>이 된다 ✓</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">ㄷ, ㄹ \(\ \Rightarrow\ \) ③</span></div>
+        <div class="miss"><b>「직각이 없는」이 핵심어</b> 이 다섯 글자를 빼고 읽으면 ㄱ·ㄴ도 맞게 되어 ⑤를 고르게 된다. 정사각형·직사각형은 <b>직각이 있어야만</b> 만들어지는데, 재료 삼각형에 직각이 없으니 불가능하다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q3">
+    <div class="sol-head">
+      <span class="sol-k">3</span>
+      <div>
+        <div class="sol-title">닮음비 하나 구해 놓고 다섯 개를 검산한다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 닮음의 성질 · 입체도형 · 참거짓/합답형</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 삼각기둥은 서로 닮은 도형이다. \(\overline{\mathrm{AB}}\)와 \(\overline{\mathrm{GH}}\)가 대응하는 모서리일 때, 설명 중 <b>옳지 않은</b> 것은?
+        <div class="cond">
+          <div class="row"><span class="lab">작은 기둥</span><span>\(\overline{\mathrm{AC}}=6\,\mathrm{cm}\), 높이 \(9\,\mathrm{cm}\), \(\overline{\mathrm{EF}}=x\,\mathrm{cm}\)</span></div>
+          <div class="row"><span class="lab">큰 기둥</span><span>\(\overline{\mathrm{GI}}=10\,\mathrm{cm}\), 높이 \(y\,\mathrm{cm}\), \(\overline{\mathrm{KL}}=8\,\mathrm{cm}\)</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 대응 관계를 알파벳으로 못 박는다</span>
+        <p>\(\overline{\mathrm{AB}}\)와 \(\overline{\mathrm{GH}}\)가 대응한다는 한 줄이 <b>모든 꼭짓점의 짝</b>을 정해 준다.</p>
+        <div class="mathrow">$$\mathrm{A}\leftrightarrow \mathrm{G},\quad \mathrm{B}\leftrightarrow \mathrm{H},\quad \mathrm{C}\leftrightarrow \mathrm{I},\quad \mathrm{D}\leftrightarrow \mathrm{J},\quad \mathrm{E}\leftrightarrow \mathrm{K},\quad \mathrm{F}\leftrightarrow \mathrm{L}$$</div>
+        <p class="aside">이 표를 먼저 적어 두면 ③·⑤ 같은 선택지는 <b>읽는 즉시</b> 판정된다. 대응을 머리로만 따라가면 반드시 헷갈린다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 닮음비를 구한다</span>
+        <p>\(\overline{\mathrm{AC}}\leftrightarrow\overline{\mathrm{GI}}\)이고 둘 다 길이가 주어졌으니 여기서 비를 뽑는다.</p>
+        <div class="mathrow">$$\overline{\mathrm{AC}}:\overline{\mathrm{GI}}=6:10=3:5$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 다섯 개를 검산</span>
+        <table class="calc">
+          <tr><th></th><th>내용</th><th>확인</th><th>판정</th></tr>
+          <tr class="hi"><td>①</td><td>\(x=5\)</td><td>\(\overline{\mathrm{EF}}:\overline{\mathrm{KL}}=x:8=3:5\Rightarrow x=\dfrac{24}{5}=4.8\)</td><td><b>옳지 않다</b></td></tr>
+          <tr><td>②</td><td>\(y=15\)</td><td>\(9:y=3:5\Rightarrow y=15\)</td><td>옳다</td></tr>
+          <tr><td>③</td><td>\(\triangle \mathrm{DEF}\backsim\triangle \mathrm{JKL}\)</td><td>\(\mathrm{D}\!\to\!\mathrm{J},\ \mathrm{E}\!\to\!\mathrm{K},\ \mathrm{F}\!\to\!\mathrm{L}\)</td><td>옳다</td></tr>
+          <tr><td>④</td><td>닮음비 \(3:5\)</td><td>2단계에서 확인</td><td>옳다</td></tr>
+          <tr><td>⑤</td><td>면 BEFC ↔ 면 HKLI</td><td>\(\mathrm{B}\!\to\!\mathrm{H},\ \mathrm{E}\!\to\!\mathrm{K},\ \mathrm{F}\!\to\!\mathrm{L},\ \mathrm{C}\!\to\!\mathrm{I}\)</td><td>옳다</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답 (옳지 않은 것)</span><span class="val">\(x=\dfrac{24}{5}\)이므로 ①</span></div>
+        <div class="warn">
+          <div class="t">⚠️ \(x=5\)가 그럴듯해 보이는 이유</div>
+          <p>\(6:10\)과 \(x:8\)을 보고 「\(6\)이 \(10\)보다 \(4\) 작으니 \(x\)도 \(8\)보다 \(4\) 작겠지」라고 <b>차</b>로 생각하면 \(x=4\), 또 대충 「\(5\)쯤」이라고 찍으면 ①에 걸린다. 닮음은 <b>비(나눗셈)</b>이지 차(뺄셈)가 아니다. \(x=6\times\frac{8}{10}=4.8\)로 확실히 계산하자.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q4">
+    <div class="sol-head">
+      <span class="sol-k">4</span>
+      <div>
+        <div class="sol-title">접기 + 엇각 → 이등변삼각형이 만들어진다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 이등변삼각형 · 직사각형 종이 접기 · 참거짓/합답형</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">직사각형 모양의 종이를 그림과 같이 접을 때, 다음 중 옳은 것의 개수는? (\(\overline{\mathrm{PQ}}=8\,\mathrm{cm}\), \(\overline{\mathrm{AB}}=9\,\mathrm{cm}\), \(\angle \mathrm{SAC}=50^\circ\))
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>\(\overline{\mathrm{BC}}=8\,\mathrm{cm}\)</span><span class="lab">ㄴ.</span><span>\(\angle \mathrm{ABC}=50^\circ\)</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>\(\triangle \mathrm{ABC}=36\,\mathrm{cm}^{2}\)</span><span class="lab">ㄹ.</span><span>\(\angle \mathrm{BAC}=\angle \mathrm{BCA}\)</span></div>
+        </div>
+      </div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 같은 색 각이 같아지는 두 가지 이유</span>
+          <svg viewBox="0 0 440 250" role="img" aria-label="직사각형 종이를 AC로 접어 윗변이 AB 위로 오게 한 그림">
+            <rect x="60" y="60" width="330" height="110" fill="none" stroke="var(--ink-faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+            <line x1="60" y1="60" x2="230" y2="60" stroke="var(--ink)" stroke-width="2.2"/>
+            <line x1="60" y1="60" x2="60" y2="170" stroke="var(--ink)" stroke-width="2.2"/>
+            <line x1="60" y1="170" x2="222" y2="170" stroke="var(--ink)" stroke-width="2.2"/>
+            <line x1="230" y1="60" x2="390" y2="60" stroke="var(--amber)" stroke-width="2.6"/>
+            <polygon points="230,60 222,170 350,170" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <line x1="230" y1="60" x2="350" y2="170" stroke="var(--indigo)" stroke-width="2.8"/>
+            <path d="M 258 60 A 28 28 0 0 0 250 79" fill="none" stroke="var(--green)" stroke-width="1.8"/>
+            <path d="M 245 84 A 30 30 0 0 0 228 90" fill="none" stroke="var(--green)" stroke-width="1.8"/>
+            <path d="M 322 170 A 28 28 0 0 0 328 152" fill="none" stroke="var(--green)" stroke-width="1.8"/>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="800" fill="var(--green)">
+              <text x="256" y="76">50°</text><text x="222" y="106">50°</text><text x="300" y="163">50°</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="52" y="52">P</text><text x="228" y="52">A</text><text x="392" y="52">S</text>
+              <text x="52" y="188">Q</text><text x="210" y="188">B</text><text x="352" y="188">C</text><text x="392" y="188">R</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="700">
+              <text x="26" y="120" fill="var(--ink-soft)">8 cm</text>
+              <text x="182" y="120" fill="var(--red)">9 cm</text>
+              <text x="272" y="188" fill="var(--red)">9 cm</text>
+              <text x="290" y="52" fill="var(--amber)">접기 전 윗변</text>
+            </g>
+            <line x1="45" y1="60" x2="45" y2="170" stroke="var(--ink-soft)" stroke-width="1.3"/>
+            <path d="M 41 64 L 45 60 L 49 64" fill="none" stroke="var(--ink-soft)" stroke-width="1.3"/>
+            <path d="M 41 166 L 45 170 L 49 166" fill="none" stroke="var(--ink-soft)" stroke-width="1.3"/>
+          </svg>
+        </div>
+        <figcaption>주황 윗변이 \(\overline{\mathrm{AC}}\)를 축으로 접혀 \(\overline{\mathrm{AB}}\) 위로 온다. 그래서 \(50^\circ\)가 <b>세 곳</b>에 생긴다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — \(50^\circ\)가 퍼지는 두 경로</span>
+        <p><b>경로 ① 접기(대칭)</b> — 윗변 \(\overline{\mathrm{AS}}\)가 \(\overline{\mathrm{AC}}\)를 축으로 접혀 \(\overline{\mathrm{AB}}\) 쪽으로 포개지므로</p>
+        <div class="mathrow">$$\angle \mathrm{BAC}=\angle \mathrm{SAC}=50^\circ$$</div>
+        <p><b>경로 ② 엇각</b> — 종이의 윗변과 아랫변은 평행하고 \(\overline{\mathrm{AC}}\)가 그 사이를 가로지르므로</p>
+        <div class="mathrow">$$\angle \mathrm{BCA}=\angle \mathrm{SAC}=50^\circ$$</div>
+        <div class="warn">
+          <div class="t">⭐ 종이접기 문제의 결론은 거의 항상 이등변삼각형</div>
+          <p>두 경로가 만나 \(\angle \mathrm{BAC}=\angle \mathrm{BCA}\)가 되었다. 두 밑각이 같으므로 <b>\(\triangle \mathrm{ABC}\)는 \(\overline{\mathrm{BA}}=\overline{\mathrm{BC}}\)인 이등변삼각형</b>이다. 이 한 줄이 나머지를 전부 결정한다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 네 개를 판정</span>
+        <p><b>ㄹ.</b> \(\angle \mathrm{BAC}=\angle \mathrm{BCA}\) — 1단계 그대로 <b>✓ 참</b></p>
+        <p><b>ㄱ.</b> \(\overline{\mathrm{BC}}=8\)? 이등변이므로 \(\overline{\mathrm{BC}}=\overline{\mathrm{AB}}=9\). \(8\)은 종이의 <b>세로</b>(\(\overline{\mathrm{PQ}}\))다 <b>✗ 거짓</b></p>
+        <p><b>ㄴ.</b> \(\angle \mathrm{ABC}=50^\circ\)? 두 밑각이 \(50^\circ\)씩이므로 \(\angle \mathrm{ABC}=180^\circ-100^\circ=80^\circ\) <b>✗ 거짓</b></p>
+        <p><b>ㄷ.</b> \(\triangle \mathrm{ABC}=36\,\mathrm{cm}^2\)? 밑변 \(\overline{\mathrm{BC}}=9\)는 종이의 아랫변 위에 있고 꼭짓점 \(\mathrm{A}\)는 윗변 위에 있으므로 <b>높이는 종이의 세로 \(8\)</b>이다.</p>
+        <div class="mathrow">$$\triangle \mathrm{ABC}=\frac12\times 9\times 8=36\ (\mathrm{cm}^2)\quad \textbf{✓ 참}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">옳은 것은 ㄷ, ㄹ의 <b>2개</b> \(\ \Rightarrow\ \) ③</span></div>
+        <div class="miss"><b>ㄱ과 ㄴ이 노리는 것</b> 문제에 \(8\)과 \(50\)이라는 숫자가 이미 나와 있어서 「어딘가에 또 쓰이겠지」 하는 심리를 정확히 노렸다. \(8\)은 <b>높이</b>로, \(50^\circ\)는 <b>밑각</b>으로만 쓰인다는 걸 그림에서 확인하고 넘어가자.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q5">
+    <div class="sol-head">
+      <span class="sol-k">5</span>
+      <div>
+        <div class="sol-title">RHS 합동을 「이등변삼각형」으로 증명하는 과정</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 직각삼각형의 합동조건 · 빈칸 넣기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">‘두 직각삼각형에서 빗변의 길이와 다른 한 변의 길이가 같을 때 두 삼각형은 서로 합동이다.’를 설명하는 과정이다. (가)~(마)에 알맞은 것으로 <b>옳지 않은</b> 것은?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>증명의 얼개 — 두 삼각형을 「붙여서 하나로」</span>
+        <p>\(\angle \mathrm{C}=\angle \mathrm{F}=90^\circ\), \(\overline{\mathrm{AB}}=\overline{\mathrm{DE}}\), \(\overline{\mathrm{AC}}=\overline{\mathrm{DF}}\)인 두 직각삼각형을, \(\overline{\mathrm{AC}}\)와 \(\overline{\mathrm{DF}}\)가 겹치도록 \(\triangle \mathrm{DEF}\)를 <b>뒤집어 붙인다</b>. 그러면 \(\mathrm{A}\)와 \(\mathrm{D}\)가, \(\mathrm{C}\)와 \(\mathrm{F}\)가 한 점이 된다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>빈칸 채우기</span>
+        <table class="calc">
+          <tr><th>빈칸</th><th>들어갈 것</th><th>이유</th></tr>
+          <tr><td>(가)</td><td>\(180^\circ\)</td><td>\(\angle \mathrm{ACB}\)와 \(\angle \mathrm{ACE}\)가 각각 \(90^\circ\)라서 합이 \(180^\circ\)</td></tr>
+          <tr><td>(나)</td><td>한 직선</td><td>이웃한 두 각의 합이 \(180^\circ\) → \(\mathrm{B},\mathrm{C},\mathrm{E}\)가 일직선 위에 있다</td></tr>
+          <tr><td>(다)</td><td>\(\overline{\mathrm{AB}}=\overline{\mathrm{AE}}\)</td><td>\(\overline{\mathrm{AB}}=\overline{\mathrm{DE}}\)인데 붙이면서 \(\overline{\mathrm{DE}}\)가 \(\overline{\mathrm{AE}}\)가 되었다</td></tr>
+          <tr class="hi"><td>(라)</td><td><b>이등변삼각형</b></td><td>두 변이 같을 뿐, 세 변이 같다는 근거는 어디에도 없다</td></tr>
+          <tr><td>(마)</td><td>\(\triangle \mathrm{ABC}\equiv\triangle \mathrm{DEF}\) (RHS 합동)</td><td>증명하려던 결론 그 자체</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>④가 틀린 이유</span>
+        <p>④는 (라)를 <b>정삼각형</b>이라고 했다. \(\triangle \mathrm{ABE}\)에서 확인된 것은 \(\overline{\mathrm{AB}}=\overline{\mathrm{AE}}\) <b>두 변뿐</b>이고, 밑변 \(\overline{\mathrm{BE}}\)가 이들과 같다는 보장은 전혀 없다. 실제로 \(\overline{\mathrm{BE}}=2\overline{\mathrm{BC}}\)인데 이 값은 얼마든지 달라질 수 있다.</p>
+        <p class="aside">정삼각형이라면 \(\angle \mathrm{B}=60^\circ\)로 고정되어, 애초에 <b>모든 직각삼각형에 대한 증명</b>이 될 수 없다. 증명 과정에 등장하는 도형 이름은 <b>「지금까지 밝혀진 것만으로 부를 수 있는 이름」</b>이어야 한다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답 (옳지 않은 것)</span><span class="val">(라) : 정삼각형 \(\ \Rightarrow\ \) ④</span></div>
+        <div class="warn">
+          <div class="t">💡 이 증명이 알려 주는 것</div>
+          <p>RHS 합동은 새 공리가 아니라 <b>이등변삼각형의 두 밑각이 같다</b>는 성질에서 나온다. \(\overline{\mathrm{AB}}=\overline{\mathrm{AE}}\) → \(\angle \mathrm{B}=\angle \mathrm{E}\) → 이제 두 직각삼각형은 <b>ASA</b>로 합동. 즉 <b>RHS는 ASA로 환원</b>된다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol killer" id="q6">
+    <div class="sol-head">
+      <span class="sol-k red">6</span>
+      <div>
+        <div class="sol-title">외심은 \(2\)배, 내심은 \(\frac12\) — 그런데 조건이 하나 모자란다</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 4 · 5점 · 조건 부족</span> 삼각형의 외심과 내심 · 각의 크기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림의 \(\triangle \mathrm{ABC}\)에서 점 \(\mathrm{O}\)는 외심, 점 \(\mathrm{I}\)는 내심이다. \(\angle \mathrm{BOC}=100^\circ\)일 때, \(\angle \mathrm{IBC}\)의 크기는?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 문제에 그려진 그대로의 삼각형</span>
+          <svg viewBox="0 0 360 250" role="img" aria-label="외심 O와 내심 I가 표시된 삼각형 ABC">
+            <polygon points="290,55 70,225 320,225" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <g stroke="var(--ink-soft)" stroke-width="1.8" fill="none">
+              <path d="M 70 225 L 205 148"/><path d="M 205 148 L 320 225"/>
+            </g>
+            <g stroke="var(--green)" stroke-width="1.8" fill="none">
+              <path d="M 70 225 L 227 172"/><path d="M 227 172 L 320 225"/>
+            </g>
+            <circle cx="205" cy="148" r="5" fill="var(--ink)"/>
+            <circle cx="227" cy="172" r="5" fill="var(--green)"/>
+            <path d="M 186 160 A 24 24 0 0 0 222 158" fill="none" stroke="var(--amber)" stroke-width="1.8"/>
+            <path d="M 104 225 A 34 34 0 0 0 102 214" fill="none" stroke="var(--green)" stroke-width="1.8"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="292" y="46">A</text><text x="52" y="238">B</text><text x="326" y="238">C</text>
+              <text x="196" y="138">O</text>
+            </g>
+            <text x="234" y="166" font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--green)">I</text>
+            <g font-family="Noto Sans KR" font-size="12" font-weight="800">
+              <text x="176" y="184" fill="var(--amber)">100°</text>
+              <text x="108" y="212" fill="var(--green)">?</text>
+            </g>
+            <text x="60" y="60" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--ink-soft)">회색 = 외심 O에서 그은 선</text>
+            <text x="60" y="78" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--green)">초록 = 내심 I에서 그은 선</text>
+          </svg>
+        </div>
+        <figcaption>외심 \(\mathrm{O}\)와 내심 \(\mathrm{I}\)는 <b>완전히 다른 점</b>이다. 성질도 각각 따로 외워 두어야 한다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 외심 성질로 \(\angle \mathrm{A}\)를 얻는다</span>
+        <p>외심에서는 <b>중심각이 원주각의 \(2\)배</b>다.</p>
+        <div class="mathrow">$$\angle \mathrm{BOC}=2\angle \mathrm{A}\ \Longrightarrow\ 100^\circ=2\angle \mathrm{A}\ \Longrightarrow\ \angle \mathrm{A}=50^\circ$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 여기서 막힌다: \(\angle \mathrm{IBC}\)는 \(\angle \mathrm{B}\)의 절반</span>
+        <p>내심은 <b>세 내각의 이등분선이 만나는 점</b>이므로 \(\overline{\mathrm{BI}}\)는 \(\angle \mathrm{B}\)를 이등분한다.</p>
+        <div class="mathrow">$$\angle \mathrm{IBC}=\frac12\angle \mathrm{B}$$</div>
+        <p>그런데 1단계에서 알아낸 것은 \(\angle \mathrm{A}\)뿐이다. \(\angle \mathrm{B}+\angle \mathrm{C}=130^\circ\)라는 것만 알 뿐, <b>\(\angle \mathrm{B}\)가 얼마인지는 정해지지 않는다.</b> 예를 들어 \((\angle \mathrm{B},\angle \mathrm{C})\)가 \((50^\circ,80^\circ)\)여도, \((60^\circ,70^\circ)\)여도 \(\angle \mathrm{BOC}\)는 똑같이 \(100^\circ\)다.</p>
+        <div class="warn">
+          <div class="t">⚠️ 문제에 조건이 하나 빠졌다</div>
+          <p>\(\angle \mathrm{BOC}=100^\circ\) 하나만으로는 \(\angle \mathrm{IBC}\)를 구할 수 없다. 원문에는 <b>\(\overline{\mathrm{CA}}=\overline{\mathrm{CB}}\)</b>(또는 \(\angle \mathrm{C}=80^\circ\)) 같은 조건이 하나 더 있었을 것으로 보인다. 실제로 <b>시험지 그림은 \(\angle \mathrm{A}=\angle \mathrm{B}=50^\circ\), \(\angle \mathrm{C}=80^\circ\)로 정확히 그려져 있다.</b></p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — 그림의 조건을 살려 마무리</span>
+        <p>\(\overline{\mathrm{CA}}=\overline{\mathrm{CB}}\)인 이등변삼각형이면 두 밑각이 같으므로</p>
+        <div class="mathrow">$$\angle \mathrm{B}=\angle \mathrm{A}=50^\circ\ \Longrightarrow\ \angle \mathrm{IBC}=\frac12\times 50^\circ=25^\circ$$</div>
+        <div class="result"><span class="lab">공식 정답</span><span class="val">\(25^\circ\ \Rightarrow\ \) ③</span></div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>꼭 외워야 할 외심·내심 공식</span>
+        <table class="calc">
+          <tr><th></th><th>외심 \(\mathrm{O}\)</th><th>내심 \(\mathrm{I}\)</th></tr>
+          <tr><td>정의</td><td>세 변의 <b>수직이등분선</b>의 교점</td><td>세 내각의 <b>이등분선</b>의 교점</td></tr>
+          <tr><td>거리</td><td>\(\overline{\mathrm{OA}}=\overline{\mathrm{OB}}=\overline{\mathrm{OC}}\) (세 <b>꼭짓점</b>까지)</td><td>세 <b>변</b>까지의 거리가 같다</td></tr>
+          <tr class="hi"><td>\(\angle \mathrm{B}\square\mathrm{C}\)</td><td>\(\angle \mathrm{BOC}=2\angle \mathrm{A}\)</td><td>\(\angle \mathrm{BIC}=90^\circ+\dfrac12\angle \mathrm{A}\)</td></tr>
+        </table>
+        <p class="aside">이 문제에서 \(\angle \mathrm{BIC}\)를 물었다면 \(90^\circ+25^\circ=115^\circ\)로 <b>추가 조건 없이</b> 구할 수 있었다. 「무엇을 물었느냐」에 따라 필요한 조건이 달라진다는 걸 보여 주는 문제다.</p>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q7">
+    <div class="sol-head">
+      <span class="sol-k">7</span>
+      <div>
+        <div class="sol-title">내심의 성질과 외심의 성질을 갈라 놓는 문제</div>
+        <div class="sol-kind"><span class="dbadge">난이도 3 · 5점</span> 삼각형의 내심 · 뜻과 성질 · 참거짓/합답형</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">점 \(\mathrm{I}\)가 \(\triangle \mathrm{ABC}\)의 내심일 때, 설명으로 옳은 것만을 &lt;보기&gt;에서 있는 대로 고른 것은? (\(\mathrm{D},\mathrm{E},\mathrm{F}\)는 각각 \(\overline{\mathrm{AB}},\overline{\mathrm{BC}},\overline{\mathrm{CA}}\) 위의 수선의 발)
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>\(\overline{\mathrm{AD}}=\overline{\mathrm{AF}}\)</span><span class="lab">ㄴ.</span><span>\(\overline{\mathrm{ID}}=\overline{\mathrm{IE}}=\overline{\mathrm{IF}}\)</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>\(\overline{\mathrm{IA}}=\overline{\mathrm{IB}}=\overline{\mathrm{IC}}\)</span><span class="lab">ㄹ.</span><span>\(\triangle \mathrm{IDA}\equiv\triangle \mathrm{IDB}\) (RHS 합동)</span></div>
+          <div class="row"><span class="lab">ㅁ.</span><span>\(\overline{\mathrm{ID}}\)는 \(\overline{\mathrm{AB}}\)의 수직이등분선이다</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>기준선 하나 — 내심은 「변까지」, 외심은 「꼭짓점까지」</span>
+        <p>이 문제의 다섯 개는 전부 <b>이 한 줄</b>로 갈린다. 내심에서 같은 것은 <b>세 변까지의 거리</b>(=내접원의 반지름)이고, 외심에서 같은 것은 <b>세 꼭짓점까지의 거리</b>(=외접원의 반지름)다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>다섯 개 판정</span>
+        <p><b>ㄴ.</b> \(\overline{\mathrm{ID}}=\overline{\mathrm{IE}}=\overline{\mathrm{IF}}\) — 내심에서 세 변까지의 거리, 즉 <b>내접원의 반지름</b>이다 <b>✓ 참</b></p>
+        <p><b>ㄱ.</b> \(\overline{\mathrm{AD}}=\overline{\mathrm{AF}}\) — \(\triangle \mathrm{IDA}\)와 \(\triangle \mathrm{IFA}\)는 직각(\(\mathrm{D},\mathrm{F}\)), 빗변 \(\overline{\mathrm{IA}}\) 공통, \(\overline{\mathrm{ID}}=\overline{\mathrm{IF}}\)이므로 <b>RHS 합동</b> → 대응변이 같다 <b>✓ 참</b></p>
+        <div class="mathrow">$$\triangle \mathrm{IDA}\equiv\triangle \mathrm{IFA}\ (\mathrm{RHS})\ \Longrightarrow\ \overline{\mathrm{AD}}=\overline{\mathrm{AF}}$$</div>
+        <p><b>ㄷ.</b> \(\overline{\mathrm{IA}}=\overline{\mathrm{IB}}=\overline{\mathrm{IC}}\) — 이건 <b>외심</b>의 성질이다 <b>✗ 거짓</b></p>
+        <p><b>ㄹ.</b> \(\triangle \mathrm{IDA}\equiv\triangle \mathrm{IDB}\)? \(\overline{\mathrm{ID}}\) 공통이고 둘 다 직각이지만, 남은 변 \(\overline{\mathrm{IA}}\)와 \(\overline{\mathrm{IB}}\)가 같다는 보장이 없다 <b>✗ 거짓</b>. 짝을 잘못 지었다 — 옳은 것은 <b>\(\triangle \mathrm{IDA}\equiv\triangle \mathrm{IFA}\)</b>(같은 꼭짓점 \(\mathrm{A}\)를 낀 두 개)다.</p>
+        <p><b>ㅁ.</b> \(\overline{\mathrm{ID}}\)는 \(\overline{\mathrm{AB}}\)에 <b>수직이긴 하다</b>. 하지만 \(\mathrm{D}\)가 \(\overline{\mathrm{AB}}\)의 <b>중점은 아니다</b>(\(\overline{\mathrm{AD}}=\overline{\mathrm{AF}}\), \(\overline{\mathrm{BD}}=\overline{\mathrm{BE}}\)일 뿐) <b>✗ 거짓</b>. 변의 수직이등분선이 만나는 점은 <b>외심</b>이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">ㄱ, ㄴ \(\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">💡 접선의 길이가 같다</div>
+          <p>ㄱ이 말하는 \(\overline{\mathrm{AD}}=\overline{\mathrm{AF}}\)는 사실 <b>「원 밖의 한 점에서 그은 두 접선의 길이는 같다」</b>는 성질이다. 같은 논리로 \(\overline{\mathrm{BD}}=\overline{\mathrm{BE}}\), \(\overline{\mathrm{CE}}=\overline{\mathrm{CF}}\). 이 세 쌍이 <b>8번 문제</b>를 푸는 열쇠가 된다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q8">
+    <div class="sol-head">
+      <span class="sol-k">8</span>
+      <div>
+        <div class="sol-title">직각삼각형의 내접원 반지름은 \(r=\dfrac{a+b-c}{2}\)</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 내심 · 내접원에서 넓이 구하기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">점 \(\mathrm{I}\)가 직각삼각형 \(\mathrm{ABC}\)의 내심이다. \(\overline{\mathrm{AB}}=9\,\mathrm{cm}\), \(\overline{\mathrm{BC}}=15\,\mathrm{cm}\), \(\overline{\mathrm{AC}}=12\,\mathrm{cm}\)일 때, \(\triangle \mathrm{IEC}\)의 넓이는? (\(\mathrm{E}\)는 \(\overline{\mathrm{BC}}\) 위의 접점)</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 접선의 길이 세 쌍을 채워 넣는다</span>
+          <svg viewBox="0 0 420 235" role="img" aria-label="9-12-15 직각삼각형 ABC의 내접원과 접점 D, E, F, 그리고 삼각형 IEC">
+            <polygon points="177,129 177,195 375,195" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2.4" stroke-linejoin="round"/>
+            <polygon points="45,195 375,195 163.8,36.6" fill="none" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <circle cx="177" cy="129" r="66" fill="none" stroke="var(--indigo)" stroke-width="1.8" stroke-dasharray="5 4"/>
+            <path d="M 152 55 L 164 64 L 174 50" fill="none" stroke="var(--ink-soft)" stroke-width="1.8"/>
+            <path d="M 177 181 L 191 181 L 191 195" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+            <line x1="177" y1="129" x2="177" y2="195" stroke="var(--red)" stroke-width="2.6"/>
+            <g fill="var(--indigo)"><circle cx="177" cy="129" r="4.5"/><circle cx="177" cy="195" r="4.5"/><circle cx="124.2" cy="89.4" r="4.5"/><circle cx="216.6" cy="76.2" r="4.5"/></g>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="158" y="28">A</text><text x="28" y="210">B</text><text x="380" y="210">C</text>
+              <text x="186" y="124">I</text><text x="172" y="214">E</text><text x="104" y="86">D</text><text x="224" y="72">F</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800">
+              <text x="82" y="112" fill="var(--ink-soft)">9</text>
+              <text x="286" y="108" fill="var(--ink-soft)">12</text>
+              <text x="106" y="214" fill="var(--red)">6</text>
+              <text x="272" y="214" fill="var(--red)">9</text>
+              <text x="184" y="168" fill="var(--red)">r = 3</text>
+            </g>
+            <text x="240" y="180" font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--amber)">△IEC</text>
+          </svg>
+        </div>
+        <figcaption>주황 삼각형이 구하려는 \(\triangle \mathrm{IEC}\). 밑변은 \(\overline{\mathrm{EC}}\), 높이는 내접원의 반지름 \(r\).</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>0단계 — 직각이 어디인지부터</span>
+        <p>\(9^2+12^2=81+144=225=15^2\)이므로 <b>빗변이 \(\overline{\mathrm{BC}}=15\)</b>, 직각은 \(\angle \mathrm{A}\)에 있다. (\(9\!-\!12\!-\!15\)는 \(3\!-\!4\!-\!5\)의 \(3\)배)</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 내접원의 반지름</span>
+        <p>직각삼각형에서는 <b>직각을 낀 두 변의 합에서 빗변을 빼고 \(2\)로 나누면</b> 반지름이 나온다.</p>
+        <div class="mathrow">$$r=\frac{\overline{\mathrm{AB}}+\overline{\mathrm{AC}}-\overline{\mathrm{BC}}}{2}=\frac{9+12-15}{2}=3$$</div>
+        <p class="aside">왜 그럴까? \(\mathrm{ADIF}\)는 네 각이 직각이고 \(\overline{\mathrm{ID}}=\overline{\mathrm{IF}}=r\)이므로 <b>한 변이 \(r\)인 정사각형</b>이다. 따라서 \(\overline{\mathrm{AD}}=\overline{\mathrm{AF}}=r\). 여기에 접선의 길이가 같다는 성질을 넣고 세 변의 합을 세면 위 식이 나온다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 접선의 길이로 \(\overline{\mathrm{EC}}\)를 구한다</span>
+        <p>같은 꼭짓점에서 나온 두 접선의 길이는 같다. \(\overline{\mathrm{AD}}=\overline{\mathrm{AF}}=3\)이므로</p>
+        <table class="calc">
+          <tr><th>꼭짓점</th><th>두 접선</th><th>길이</th></tr>
+          <tr><td>\(\mathrm{A}\)</td><td>\(\overline{\mathrm{AD}}=\overline{\mathrm{AF}}\)</td><td>\(3\)</td></tr>
+          <tr><td>\(\mathrm{B}\)</td><td>\(\overline{\mathrm{BD}}=\overline{\mathrm{BE}}\)</td><td>\(9-3=6\)</td></tr>
+          <tr class="hi"><td>\(\mathrm{C}\)</td><td>\(\overline{\mathrm{CF}}=\overline{\mathrm{CE}}\)</td><td>\(12-3=9\)</td></tr>
+        </table>
+        <p>검산: \(\overline{\mathrm{BE}}+\overline{\mathrm{EC}}=6+9=15=\overline{\mathrm{BC}}\) ✓</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — 넓이</span>
+        <p>\(\overline{\mathrm{IE}}\perp\overline{\mathrm{BC}}\)이므로 \(\triangle \mathrm{IEC}\)의 높이는 \(r=3\)이다.</p>
+        <div class="mathrow">$$\triangle \mathrm{IEC}=\frac12\times\overline{\mathrm{EC}}\times r=\frac12\times 9\times 3=\frac{27}{2}\ (\mathrm{cm}^2)$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\dfrac{27}{2}\,\mathrm{cm}^2\ \Rightarrow\ \) ④</span></div>
+        <div class="miss"><b>오답 함정</b> ①\(9\,\mathrm{cm}^2\)는 \(\overline{\mathrm{EC}}\)와 \(r\)을 그냥 곱하고 \(\frac12\)을 잊었거나, \(\overline{\mathrm{EC}}=6\)으로 좌우를 바꿔 넣은 값이다. 접선의 길이는 <b>\(\mathrm{B}\)쪽이 \(6\), \(\mathrm{C}\)쪽이 \(9\)</b> — 짧은 변 쪽이 짧다고 기억하면 헷갈리지 않는다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q9">
+    <div class="sol-head">
+      <span class="sol-k">9</span>
+      <div>
+        <div class="sol-title">\(\mathrm{E}\)가 어디 있든 답은 같다 — 미지수로 두고 소거</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 평행선과 넓이 · 사각형에서 삼각형의 넓이</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">한 변의 길이가 \(10\)인 정사각형 \(\mathrm{ABCD}\)의 외부에 점 \(\mathrm{E}\)가 있다. 이때 \(\triangle \mathrm{DEC}\)의 넓이와 \(\triangle \mathrm{AEB}\)의 넓이의 차는?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 두 삼각형의 밑변은 정사각형의 마주 보는 두 변</span>
+          <svg viewBox="0 0 400 250" role="img" aria-label="정사각형 ABCD 왼쪽 바깥의 점 E에서 두 삼각형을 만든 그림">
+            <rect x="150" y="45" width="160" height="160" fill="none" stroke="var(--ink)" stroke-width="2.2"/>
+            <polygon points="70,125 150,45 150,205" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2"/>
+            <polygon points="70,125 310,45 310,205" fill="none" stroke="var(--indigo)" stroke-width="2.2"/>
+            <line x1="150" y1="45" x2="150" y2="205" stroke="var(--amber)" stroke-width="3.2"/>
+            <line x1="310" y1="45" x2="310" y2="205" stroke="var(--indigo)" stroke-width="3.2"/>
+            <line x1="70" y1="125" x2="150" y2="125" stroke="var(--amber)" stroke-width="1.6" stroke-dasharray="5 4"/>
+            <line x1="150" y1="125" x2="310" y2="125" stroke="var(--indigo)" stroke-width="1.6" stroke-dasharray="5 4"/>
+            <circle cx="70" cy="125" r="5" fill="var(--ink)"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="130" y="38">A</text><text x="316" y="38">D</text><text x="130" y="222">B</text><text x="316" y="222">C</text><text x="52" y="130">E</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800">
+              <text x="88" y="118" fill="var(--amber)">a</text>
+              <text x="216" y="118" fill="var(--indigo)">10 + a</text>
+              <text x="120" y="130" fill="var(--amber)">10</text>
+              <text x="318" y="130" fill="var(--indigo)">10</text>
+            </g>
+            <text x="60" y="228" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--ink-soft)">주황 = △AEB · 파랑 = △DEC</text>
+          </svg>
+        </div>
+        <figcaption>두 삼각형의 밑변은 각각 \(\overline{\mathrm{AB}}\)와 \(\overline{\mathrm{DC}}\)로 <b>둘 다 \(10\)</b>. 높이만 \(a\)와 \(10+a\)로 다르다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 정해지지 않은 것은 문자로 두고 시작한다</span>
+        <p>\(\mathrm{E}\)의 위치가 정해져 있지 않아 당황하기 쉽다. 이럴 때는 <b>모르는 것을 문자로 두고 그냥 계산</b>하면 된다. \(\mathrm{E}\)에서 변 \(\overline{\mathrm{AB}}\)까지의 거리를 \(a\)라 하자.</p>
+        <p class="aside">\(\mathrm{E}\)의 <b>위아래 위치는 아예 상관이 없다</b>. 삼각형의 넓이는 밑변과 높이만으로 정해지고, 밑변 \(\overline{\mathrm{AB}}\)는 세로 방향이라 높이는 <b>가로 거리</b>이기 때문이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 두 넓이를 각각 쓴다</span>
+        <p>\(\overline{\mathrm{AB}}\)와 \(\overline{\mathrm{DC}}\)는 평행하고 그 사이 거리가 \(10\)이므로, \(\mathrm{E}\)에서 \(\overline{\mathrm{DC}}\)까지의 거리는 \(10+a\)다.</p>
+        <div class="mathrow">$$\triangle \mathrm{AEB}=\frac12\times 10\times a=5a$$</div>
+        <div class="mathrow">$$\triangle \mathrm{DEC}=\frac12\times 10\times(10+a)=50+5a$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — 빼면 \(a\)가 사라진다</span>
+        <div class="mathrow">$$\triangle \mathrm{DEC}-\triangle \mathrm{AEB}=(50+5a)-5a=50$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(50\ \Rightarrow\ \) ②</span></div>
+        <div class="warn">
+          <div class="t">💡 답이 \(50\)인 진짜 이유</div>
+          <p>\(50=\dfrac{10\times 10}{2}\), 즉 <b>정사각형 넓이의 절반</b>이다. 실제로 \(\triangle \mathrm{DEC}=\triangle \mathrm{AEB}+(\text{정사각형의 절반})\)이 항상 성립한다. 문제가 \(\mathrm{E}\)의 위치를 알려 주지 않은 것은 <b>「위치와 무관하다」는 사실 자체가 답</b>이기 때문 — 조건이 부족한 게 아니라 <b>필요 없는 것</b>이다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q10">
+    <div class="sol-head">
+      <span class="sol-k">10</span>
+      <div>
+        <div class="sol-title">이등변삼각형 + 엇각 + 등변사다리꼴, 세 성질을 이어 붙인다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 등변사다리꼴의 뜻과 성질 · 각의 크기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">등변사다리꼴 \(\mathrm{ABCD}\)에서 \(\overline{\mathrm{AB}}=\overline{\mathrm{AD}}\)이고 \(\angle \mathrm{ADB}=35^\circ\)일 때, \(\angle \mathrm{BDC}\)의 크기는? (\(\overline{\mathrm{AD}}\parallel\overline{\mathrm{BC}}\))</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — \(\overline{\mathrm{AB}}=\overline{\mathrm{AD}}\) → 이등변삼각형</span>
+        <p>\(\triangle \mathrm{ABD}\)에서 두 변이 같으므로 그 대각인 두 밑각이 같다.</p>
+        <div class="mathrow">$$\angle \mathrm{ABD}=\angle \mathrm{ADB}=35^\circ$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — \(\overline{\mathrm{AD}}\parallel\overline{\mathrm{BC}}\) → 엇각</span>
+        <p>\(\overline{\mathrm{BD}}\)가 두 평행선을 가로지르는 선이므로</p>
+        <div class="mathrow">$$\angle \mathrm{DBC}=\angle \mathrm{ADB}=35^\circ\ (\text{엇각})$$</div>
+        <p>따라서 사다리꼴의 아랫밑각은</p>
+        <div class="mathrow">$$\angle \mathrm{ABC}=\angle \mathrm{ABD}+\angle \mathrm{DBC}=35^\circ+35^\circ=70^\circ$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 등변사다리꼴 → 아랫밑각 두 개가 같다</span>
+        <div class="mathrow">$$\angle \mathrm{BCD}=\angle \mathrm{ABC}=70^\circ$$</div>
+        <p class="aside">이 성질이 <b>「등변」사다리꼴</b>이라는 이름값이다. 그냥 사다리꼴이면 이 단계를 쓸 수 없어 문제가 풀리지 않는다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — \(\triangle \mathrm{BCD}\)의 남은 각</span>
+        <div class="mathrow">$$\angle \mathrm{BDC}=180^\circ-\angle \mathrm{DBC}-\angle \mathrm{BCD}=180^\circ-35^\circ-70^\circ=75^\circ$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(75^\circ\ \Rightarrow\ \) ④</span></div>
+        <div class="warn">
+          <div class="t">💡 세 개의 \(35^\circ\)를 그림에 직접 써 넣자</div>
+          <p>\(\angle \mathrm{ADB}\), \(\angle \mathrm{ABD}\), \(\angle \mathrm{DBC}\)가 모두 \(35^\circ\)다. 각도 문제는 <b>구한 값을 그림에 즉시 적는 것</b>이 정답률을 가장 크게 올린다. 머릿속에만 담아 두면 마지막 뺄셈에서 어느 각인지 헷갈린다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q11">
+    <div class="sol-head">
+      <span class="sol-k">11</span>
+      <div>
+        <div class="sol-title">높이가 같으면 넓이의 비는 밑변의 비</div>
+        <div class="sol-kind"><span class="dbadge">난이도 2 · 5점</span> 평행선과 넓이 · 평행사변형</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">평행사변형 \(\mathrm{ABCD}\)에서 \(\overline{\mathrm{BE}}:\overline{\mathrm{EC}}=2:3\)이고, 평행사변형 \(\mathrm{ABCD}\)의 넓이가 \(30\,\mathrm{cm}^2\)일 때, \(\triangle \mathrm{ABE}\)의 넓이는?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 대각선은 평행사변형을 이등분한다</span>
+        <div class="mathrow">$$\triangle \mathrm{ABC}=\frac12\times 30=15\ (\mathrm{cm}^2)$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — \(\triangle \mathrm{ABE}\)와 \(\triangle \mathrm{AEC}\)는 높이가 같다</span>
+        <p>두 삼각형은 꼭짓점 \(\mathrm{A}\)를 함께 쓰고 밑변 \(\overline{\mathrm{BE}}\), \(\overline{\mathrm{EC}}\)가 같은 직선 \(\overline{\mathrm{BC}}\) 위에 있다. 즉 <b>높이가 완전히 같다</b>. 그러면 넓이의 비는 밑변의 비 그대로다.</p>
+        <div class="mathrow">$$\triangle \mathrm{ABE}:\triangle \mathrm{AEC}=\overline{\mathrm{BE}}:\overline{\mathrm{EC}}=2:3$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — 비례배분</span>
+        <div class="mathrow">$$\triangle \mathrm{ABE}=15\times\frac{2}{2+3}=15\times\frac25=6\ (\mathrm{cm}^2)$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(6\,\mathrm{cm}^2\ \Rightarrow\ \) ②</span></div>
+        <div class="miss"><b>실수 주의</b> \(30\times\frac25=12\)로 <b>평행사변형 전체</b>에 비를 적용하는 실수가 가장 많다. 비 \(2:3\)이 나뉘는 대상은 \(\triangle \mathrm{ABC}\)(\(=15\))이지 평행사변형이 아니다. 「먼저 반으로, 그다음에 비례배분」 순서를 지키자.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q12">
+    <div class="sol-head">
+      <span class="sol-k">12</span>
+      <div>
+        <div class="sol-title">SAS 닮음은 「끼인각」일 때만 성립한다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 삼각형의 닮음 조건 · 조건의 추가</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(\triangle \mathrm{ABC}\)와 \(\triangle \mathrm{DEF}\)가 서로 닮은 도형이 되기 위해 추가해야 할 조건으로 옳은 것만을 &lt;보기&gt;에서 있는 대로 고른 것은? (이미 주어진 것: \(\angle \mathrm{B}=\angle \mathrm{E}=55^\circ\), \(\overline{\mathrm{BC}}=12\,\mathrm{cm}\), \(\overline{\mathrm{EF}}=8\,\mathrm{cm}\))
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>\(\angle \mathrm{A}=90^\circ,\ \angle \mathrm{F}=40^\circ\)</span><span class="lab">ㄴ.</span><span>\(\angle \mathrm{A}=80^\circ,\ \angle \mathrm{D}=80^\circ\)</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>\(\overline{\mathrm{AB}}=6\,\mathrm{cm},\ \overline{\mathrm{DE}}=4\,\mathrm{cm}\)</span><span class="lab">ㄹ.</span><span>\(\overline{\mathrm{AC}}=9\,\mathrm{cm},\ \overline{\mathrm{DF}}=6\,\mathrm{cm}\)</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>0단계 — 이미 가진 패를 정리한다</span>
+        <table class="calc">
+          <tr><th>가진 것</th><th>내용</th></tr>
+          <tr><td>각 한 쌍</td><td>\(\angle \mathrm{B}=\angle \mathrm{E}=55^\circ\)</td></tr>
+          <tr><td>변 한 쌍의 비</td><td>\(\overline{\mathrm{BC}}:\overline{\mathrm{EF}}=12:8=3:2\)</td></tr>
+        </table>
+        <p>여기서 닮음까지 가는 길은 두 갈래뿐이다. <b>AA</b>(각 하나 더) 또는 <b>SAS</b>(\(\angle \mathrm{B}\)를 끼는 나머지 변의 비).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — \(\angle \mathrm{B}\)를 끼는 변이 무엇인지 확인</span>
+        <p>\(\angle \mathrm{B}\)는 <b>\(\overline{\mathrm{AB}}\)와 \(\overline{\mathrm{BC}}\) 사이</b>의 각이다. 이미 \(\overline{\mathrm{BC}}\)의 비를 알고 있으니, SAS 닮음에 필요한 나머지 하나는 반드시 <b>\(\overline{\mathrm{AB}}\)</b>여야 한다. \(\overline{\mathrm{AC}}\)는 \(\angle \mathrm{B}\)의 <b>맞은편</b> 변이라 쓸 수 없다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 네 개를 판정</span>
+        <p><b>ㄴ.</b> \(\angle \mathrm{A}=\angle \mathrm{D}=80^\circ\) — \(\angle \mathrm{B}=\angle \mathrm{E}\)와 합쳐 <b>두 쌍의 각</b>이 같다 → <b>AA 닮음 ✓ 참</b></p>
+        <p><b>ㄷ.</b> \(\overline{\mathrm{AB}}:\overline{\mathrm{DE}}=6:4=3:2=\overline{\mathrm{BC}}:\overline{\mathrm{EF}}\)이고 그 <b>끼인각</b> \(\angle \mathrm{B}=\angle \mathrm{E}\) → <b>SAS 닮음 ✓ 참</b></p>
+        <p><b>ㄹ.</b> \(\overline{\mathrm{AC}}:\overline{\mathrm{DF}}=9:6=3:2\)로 비는 맞지만, \(\overline{\mathrm{AC}}\)와 \(\overline{\mathrm{BC}}\) 사이의 각은 \(\angle \mathrm{C}\)이지 \(\angle \mathrm{B}\)가 아니다. <b>끼인각이 아닌 각</b>이라 닮음 조건이 안 된다 <b>✗ 거짓</b></p>
+        <p><b>ㄱ.</b> 각을 다 계산해 보면 어긋난다.</p>
+        <table class="calc">
+          <tr><th></th><th>\(\angle \mathrm{A}\)</th><th>\(\angle \mathrm{B}\)</th><th>\(\angle \mathrm{C}\)</th></tr>
+          <tr><td>\(\triangle \mathrm{ABC}\)</td><td>\(90^\circ\)</td><td>\(55^\circ\)</td><td>\(35^\circ\)</td></tr>
+          <tr><th></th><th>\(\angle \mathrm{D}\)</th><th>\(\angle \mathrm{E}\)</th><th>\(\angle \mathrm{F}\)</th></tr>
+          <tr><td>\(\triangle \mathrm{DEF}\)</td><td>\(85^\circ\)</td><td>\(55^\circ\)</td><td>\(40^\circ\)</td></tr>
+        </table>
+        <p>대응각은 \(\mathrm{A}\leftrightarrow \mathrm{D}\)인데 \(90^\circ\ne 85^\circ\) → <b>✗ 거짓</b>. 조건을 더하기는커녕 <b>닮음을 깨뜨리는</b> 조건이다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">ㄴ, ㄷ \(\ \Rightarrow\ \) ②</span></div>
+        <div class="warn">
+          <div class="t">⭐ ㄹ이 가짜인 이유를 한 번 더</div>
+          <p>「두 변의 비 + 각 하나」로 보이지만 그 각이 <b>끼인각이 아니면</b> 삼각형이 하나로 정해지지 않는다(중1의 삼각형 결정조건과 똑같은 이야기다). 닮음·합동 조건에서 <b>「끼인각」 세 글자를 지우면 전부 무너진다</b>고 기억하자.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q13">
+    <div class="sol-head">
+      <span class="sol-k">13</span>
+      <div>
+        <div class="sol-title">직각삼각형의 수선 공식을 <b>두 번</b> 쓴다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 직각삼각형의 닮음 · 수선의 길이의 제곱(중복 사용)</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(\angle \mathrm{A}=90^\circ\)인 직각삼각형 \(\mathrm{ABC}\)에서 점 \(\mathrm{M}\)은 \(\overline{\mathrm{BC}}\)의 중점이다. \(\overline{\mathrm{AG}}\perp\overline{\mathrm{BC}}\), \(\overline{\mathrm{GH}}\perp\overline{\mathrm{AM}}\)이고 \(\overline{\mathrm{BG}}=8\,\mathrm{cm}\), \(\overline{\mathrm{GC}}=2\,\mathrm{cm}\)일 때, \(\overline{\mathrm{GH}}\)의 길이는?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 직각삼각형 안에 직각삼각형이 하나 더</span>
+          <svg viewBox="0 0 420 230" role="img" aria-label="직각삼각형 ABC에서 AG가 BC에 수직, GH가 AM에 수직인 그림">
+            <polygon points="330,55 40,175 370,175" fill="none" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <line x1="330" y1="55" x2="304" y2="175" stroke="var(--indigo)" stroke-width="2.2"/>
+            <line x1="330" y1="55" x2="205" y2="175" stroke="var(--amber)" stroke-width="2.2"/>
+            <line x1="304" y1="175" x2="272" y2="106" stroke="var(--red)" stroke-width="2.4"/>
+            <path d="M 316 62 L 326 72 L 336 62" fill="none" stroke="var(--ink-soft)" stroke-width="1.5"/>
+            <path d="M 304 160 L 289 160 L 289 175" fill="none" stroke="var(--ink-soft)" stroke-width="1.5"/>
+            <path d="M 272 106 L 282 112 L 276 122" fill="none" stroke="var(--red)" stroke-width="1.5"/>
+            <g fill="var(--ink)"><circle cx="205" cy="175" r="4"/><circle cx="304" cy="175" r="4"/><circle cx="272" cy="106" r="4"/></g>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="332" y="46">A</text><text x="22" y="190">B</text><text x="376" y="190">C</text>
+              <text x="198" y="196">M</text><text x="300" y="196">G</text>
+            </g>
+            <text x="252" y="100" font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--red)">H</text>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800">
+              <text x="112" y="196" fill="var(--ink-soft)">5</text>
+              <text x="248" y="196" fill="var(--ink-soft)">3</text>
+              <text x="330" y="196" fill="var(--ink-soft)">2</text>
+              <text x="316" y="120" fill="var(--indigo)">4</text>
+              <text x="270" y="150" fill="var(--amber)">5</text>
+            </g>
+            <text x="50" y="70" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--red)">빨강 = 구하는 GH</text>
+          </svg>
+        </div>
+        <figcaption>먼저 \(\triangle \mathrm{ABC}\)에서 \(\overline{\mathrm{AG}}\)를 구하고, 그다음 <b>직각삼각형 \(\mathrm{AGM}\)</b>에서 같은 공식을 한 번 더 쓴다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 길이를 전부 채운다</span>
+        <div class="mathrow">$$\overline{\mathrm{BC}}=8+2=10\ \Longrightarrow\ \overline{\mathrm{BM}}=\overline{\mathrm{MC}}=5$$</div>
+        <div class="mathrow">$$\overline{\mathrm{MG}}=\overline{\mathrm{BG}}-\overline{\mathrm{BM}}=8-5=3$$</div>
+        <p class="aside">검산: \(\overline{\mathrm{MG}}+\overline{\mathrm{GC}}=3+2=5=\overline{\mathrm{MC}}\) ✓</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 첫 번째 수선 공식으로 \(\overline{\mathrm{AG}}\)</span>
+        <p>직각삼각형에서 빗변에 내린 수선에 대해 <b>\((\text{수선})^2=(\text{나뉜 두 조각의 곱})\)</b>이 성립한다.</p>
+        <div class="mathrow">$$\overline{\mathrm{AG}}^{2}=\overline{\mathrm{BG}}\times\overline{\mathrm{GC}}=8\times 2=16\ \Longrightarrow\ \overline{\mathrm{AG}}=4$$</div>
+        <p class="aside">이 공식의 뿌리는 \(\triangle \mathrm{ABG}\backsim\triangle \mathrm{CAG}\) (AA 닮음)이다. \(\overline{\mathrm{BG}}:\overline{\mathrm{AG}}=\overline{\mathrm{AG}}:\overline{\mathrm{CG}}\)에서 바로 나온다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 새 직각삼각형 \(\mathrm{AGM}\)을 찾는다</span>
+        <p>\(\overline{\mathrm{AG}}\perp\overline{\mathrm{BC}}\)이므로 \(\angle \mathrm{AGM}=90^\circ\) — <b>\(\triangle \mathrm{AGM}\)이 또 하나의 직각삼각형</b>이다. 두 다리는 \(\overline{\mathrm{AG}}=4\), \(\overline{\mathrm{GM}}=3\)이므로 빗변은</p>
+        <div class="mathrow">$$\overline{\mathrm{AM}}=\sqrt{4^{2}+3^{2}}=5$$</div>
+        <div class="warn">
+          <div class="t">💡 사실 \(\overline{\mathrm{AM}}=5\)는 계산 없이도 나온다</div>
+          <p>\(\mathrm{M}\)은 빗변 \(\overline{\mathrm{BC}}\)의 중점이므로 <b>직각삼각형의 외심</b>이다. 따라서 \(\overline{\mathrm{MA}}=\overline{\mathrm{MB}}=\overline{\mathrm{MC}}=5\). 이 사실을 알면 \(3\!-\!4\!-\!5\)를 검산으로 쓸 수 있다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 넓이를 두 번 세어 \(\overline{\mathrm{GH}}\)</span>
+        <p>\(\overline{\mathrm{GH}}\)는 직각삼각형 \(\mathrm{AGM}\)에서 <b>빗변 \(\overline{\mathrm{AM}}\)에 내린 수선</b>이다. 같은 삼각형의 넓이를 두 가지로 세면</p>
+        <div class="mathrow">$$\frac12\times\overline{\mathrm{AG}}\times\overline{\mathrm{GM}}=\frac12\times\overline{\mathrm{AM}}\times\overline{\mathrm{GH}}$$</div>
+        <div class="mathrow">$$4\times 3=5\times\overline{\mathrm{GH}}\ \Longrightarrow\ \overline{\mathrm{GH}}=\frac{12}{5}\ (\mathrm{cm})$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(\dfrac{12}{5}\,\mathrm{cm}\ \Rightarrow\ \) ②</span></div>
+        <div class="miss"><b>이 문제의 이름이 「중복 사용」인 이유</b> 같은 직각삼각형 수선 공식을 <b>큰 삼각형 \(\mathrm{ABC}\)에서 한 번, 작은 삼각형 \(\mathrm{AGM}\)에서 한 번</b> 쓴다. 한 번 쓰고 멈추면 \(\overline{\mathrm{AG}}=4\)에서 끝나 버린다. <b>수선이 두 개 그어져 있으면 공식도 두 번</b>이다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol killer" id="q14">
+    <div class="sol-head">
+      <span class="sol-k red">14</span>
+      <div>
+        <div class="sol-title">「평행사변형이 되는 조건」을 움직이는 점에 적용한다</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 6점 · 킬러</span> 평행사변형이 되는 조건 · 움직이는 두 점</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(\overline{\mathrm{AB}}=100\,\mathrm{cm}\)인 평행사변형 \(\mathrm{ABCD}\)에서 점 \(\mathrm{P}\)는 점 \(\mathrm{A}\)에서 점 \(\mathrm{B}\)까지 매초 \(4\,\mathrm{cm}\)의 속력으로, 점 \(\mathrm{Q}\)는 점 \(\mathrm{C}\)에서 점 \(\mathrm{D}\)까지 매초 \(8\,\mathrm{cm}\)의 속력으로 변을 따라 움직인다.
+        <div class="cond">
+          <div class="row"><span class="lab">조건1</span><span>점 \(\mathrm{P}\)가 점 \(\mathrm{A}\)를 출발한 지 \(4\)초 후에 점 \(\mathrm{Q}\)가 점 \(\mathrm{C}\)를 출발한다.</span></div>
+          <div class="row"><span class="lab">조건2</span><span>점 \(\mathrm{Q}\)가 출발한 지 \(x\)초 후 \(\overline{\mathrm{AQ}}\parallel\overline{\mathrm{PC}}\)이다.</span></div>
+        </div>
+        \(x\)의 값은?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · APCQ가 평행사변형이 되는 순간</span>
+          <svg viewBox="0 0 420 240" role="img" aria-label="평행사변형 ABCD 위를 움직이는 점 P와 Q, 사각형 APCQ">
+            <polygon points="110,40 350,40 300,190 60,190" fill="none" stroke="var(--ink-soft)" stroke-width="2"/>
+            <polygon points="110,40 88,105 300,190 322,125" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <line x1="110" y1="40" x2="88" y2="105" stroke="var(--red)" stroke-width="4" stroke-linecap="round"/>
+            <line x1="322" y1="125" x2="300" y2="190" stroke="var(--red)" stroke-width="4" stroke-linecap="round"/>
+            <g fill="var(--indigo)"><circle cx="88" cy="105" r="5"/><circle cx="322" cy="125" r="5"/></g>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="104" y="32">A</text><text x="354" y="32">D</text><text x="42" y="204">B</text><text x="300" y="206">C</text>
+              <text x="66" y="112">P</text><text x="330" y="122">Q</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--red)">
+              <text x="78" y="76">AP</text><text x="326" y="164">QC</text>
+            </g>
+            <text x="150" y="120" font-family="Noto Sans KR" font-size="12" font-weight="800" fill="var(--indigo)">□APCQ</text>
+            <text x="120" y="228" font-family="Noto Sans KR" font-size="11.5" font-weight="700" fill="var(--ink-soft)">AP와 QC가 길이까지 같아지는 순간</text>
+          </svg>
+        </div>
+        <figcaption>\(\overline{\mathrm{AP}}\)와 \(\overline{\mathrm{QC}}\)는 <b>이미 평행</b>(평행사변형의 두 대변 위에 있으므로). 길이까지 같아지면 \(\square \mathrm{APCQ}\)가 평행사변형이 된다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — \(\overline{\mathrm{AQ}}\parallel\overline{\mathrm{PC}}\)를 「평행사변형」으로 바꿔 읽는다</span>
+        <p>이 문제의 전부가 여기 있다. 사각형 \(\square \mathrm{APCQ}\)를 보자. \(\mathrm{P}\)는 \(\overline{\mathrm{AB}}\) 위에, \(\mathrm{Q}\)는 \(\overline{\mathrm{CD}}\) 위에 있고 <b>\(\overline{\mathrm{AB}}\parallel\overline{\mathrm{DC}}\)</b>이므로, \(\overline{\mathrm{AP}}\)와 \(\overline{\mathrm{QC}}\)는 <b>항상 평행</b>하다.</p>
+        <p>여기서 <b>길이까지 같아지면</b> 「한 쌍의 대변이 평행하고 그 길이가 같다」는 조건을 만족해 \(\square \mathrm{APCQ}\)가 평행사변형이 되고, 그러면 나머지 한 쌍의 대변 \(\overline{\mathrm{AQ}}\)와 \(\overline{\mathrm{PC}}\)도 평행해진다.</p>
+        <div class="mathrow">$$\overline{\mathrm{AQ}}\parallel\overline{\mathrm{PC}}\ \Longleftrightarrow\ \overline{\mathrm{AP}}=\overline{\mathrm{QC}}$$</div>
+        <p class="aside">이것이 바로 <b>18번 문제에서 증명한 성질</b>이다. 시험지가 같은 원리를 증명(18번)과 활용(14번)으로 두 번 물었다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — 시간을 하나의 문자로 통일한다</span>
+        <p>\(\mathrm{Q}\)가 출발한 지 \(x\)초가 지났다면, \(\mathrm{P}\)는 \(4\)초 먼저 떠났으므로 <b>\((x+4)\)초</b>째 움직이고 있다.</p>
+        <table class="calc">
+          <tr><th>점</th><th>움직인 시간</th><th>속력</th><th>움직인 거리</th></tr>
+          <tr><td>\(\mathrm{P}\) (\(\mathrm{A}\to \mathrm{B}\))</td><td>\(x+4\)초</td><td>매초 \(4\,\mathrm{cm}\)</td><td>\(\overline{\mathrm{AP}}=4(x+4)\)</td></tr>
+          <tr><td>\(\mathrm{Q}\) (\(\mathrm{C}\to \mathrm{D}\))</td><td>\(x\)초</td><td>매초 \(8\,\mathrm{cm}\)</td><td>\(\overline{\mathrm{QC}}=8x\)</td></tr>
+        </table>
+        <div class="miss"><b>가장 많이 틀리는 지점</b> \(\mathrm{P}\)의 시간을 그냥 \(x\)로 두는 것. 문제가 시간을 재는 기준을 <b>「\(\mathrm{Q}\)가 출발한 시각」</b>으로 잡았으므로, 먼저 떠난 \(\mathrm{P}\)에는 \(+4\)를 반드시 붙여야 한다.</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — 방정식을 세워 푼다</span>
+        <div class="mathrow">$$4(x+4)=8x\ \Longrightarrow\ 4x+16=8x\ \Longrightarrow\ 4x=16\ \Longrightarrow\ x=4$$</div>
+        <p>검산: \(x=4\)일 때 \(\overline{\mathrm{AP}}=4\times 8=32\,\mathrm{cm}\), \(\overline{\mathrm{QC}}=8\times 4=32\,\mathrm{cm}\) ✓ 두 값 모두 \(100\,\mathrm{cm}\) 이하라 변 위에 잘 있다 ✓</p>
+        <div class="result"><span class="lab">정답</span><span class="val">\(x=4\)초 \(\ \Rightarrow\ \) ①</span></div>
+        <div class="warn">
+          <div class="t">⭐ 킬러 공략 요약</div>
+          <p><b>①</b> 「\(\parallel\)」 조건은 <b>평행사변형이 되는 조건</b>으로 번역한다. <b>②</b> 두 점이 <b>마주 보는 변 위를 반대 방향으로</b> 움직이면 \(\overline{\mathrm{AP}}\)와 \(\overline{\mathrm{QC}}\)가 자동으로 평행이 되므로, 남는 조건은 <b>길이가 같다</b> 하나뿐이다. <b>③</b> 출발 시각이 다르면 <b>늦게 출발한 쪽을 기준</b>으로 문자를 잡고 먼저 간 쪽에 시간을 더한다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q15">
+    <div class="sol-head">
+      <span class="sol-k">15</span>
+      <div>
+        <div class="sol-title">조건 네 줄이 「정사각형 + \(45^\circ\)」로 압축된다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 6점</span> 여러 가지 사각형 · 회전을 이용한 길이 옮기기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">평행사변형 \(\mathrm{ABCD}\)에 다음 조건을 주었을 때, \(\triangle \mathrm{DQP}\)의 둘레의 길이는? (\(\mathrm{Q}\)는 \(\overline{\mathrm{AD}}\) 위, \(\mathrm{P}\)는 \(\overline{\mathrm{DC}}\) 위)
+        <div class="cond">
+          <div class="row"><span class="lab">조건1</span><span>\(\overline{\mathrm{AB}}=2\)</span><span class="lab">조건2</span><span>\(\overline{\mathrm{AC}}=\overline{\mathrm{BD}}\)</span></div>
+          <div class="row"><span class="lab">조건3</span><span>\(\overline{\mathrm{AC}}\perp\overline{\mathrm{BD}}\)</span><span class="lab">조건4</span><span>\(\angle \mathrm{QBP}=\dfrac12\angle \mathrm{ABC}\)</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>1단계 — 조건 2·3이 도형을 정사각형으로 확정한다</span>
+        <table class="calc">
+          <tr><th>조건</th><th>평행사변형에 더하면</th></tr>
+          <tr><td>\(\overline{\mathrm{AC}}=\overline{\mathrm{BD}}\) (대각선의 길이가 같다)</td><td><b>직사각형</b></td></tr>
+          <tr><td>\(\overline{\mathrm{AC}}\perp\overline{\mathrm{BD}}\) (대각선이 수직)</td><td><b>마름모</b></td></tr>
+          <tr class="hi"><td>둘 다</td><td><b>정사각형</b> (한 변 \(=2\))</td></tr>
+        </table>
+        <p>정사각형이므로 \(\angle \mathrm{ABC}=90^\circ\), 따라서 조건 4는</p>
+        <div class="mathrow">$$\angle \mathrm{QBP}=\frac12\times 90^\circ=45^\circ$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>2단계 — \(45^\circ\)를 보면 「\(90^\circ\) 회전」을 떠올린다</span>
+        <p>\(\triangle \mathrm{ABQ}\)를 점 \(\mathrm{B}\)를 중심으로 \(90^\circ\) 회전시켜 \(\mathrm{A}\)가 \(\mathrm{C}\)에 겹치게 하자. \(\mathrm{Q}\)가 옮겨 간 점을 \(\mathrm{Q}'\)이라 하면 \(\mathrm{Q}'\)은 반직선 \(\mathrm{DC}\)의 연장 위에 놓이고</p>
+        <div class="mathrow">$$\overline{\mathrm{CQ}'}=\overline{\mathrm{AQ}},\qquad \overline{\mathrm{BQ}'}=\overline{\mathrm{BQ}}$$</div>
+        <p>이제 각을 세어 보면, \(\angle \mathrm{ABQ}+\angle \mathrm{PBC}=90^\circ-45^\circ=45^\circ\)이고 회전으로 \(\angle \mathrm{Q}'\mathrm{BC}=\angle \mathrm{ABQ}\)이므로</p>
+        <div class="mathrow">$$\angle \mathrm{Q}'\mathrm{BP}=\angle \mathrm{Q}'\mathrm{BC}+\angle \mathrm{CBP}=45^\circ=\angle \mathrm{QBP}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>3단계 — 합동에서 핵심 등식이 나온다</span>
+        <p>\(\triangle \mathrm{BQP}\)와 \(\triangle \mathrm{BQ}'\mathrm{P}\)는 \(\overline{\mathrm{BQ}}=\overline{\mathrm{BQ}'}\), \(\angle \mathrm{QBP}=\angle \mathrm{Q}'\mathrm{BP}=45^\circ\), \(\overline{\mathrm{BP}}\) 공통 → <b>SAS 합동</b>.</p>
+        <div class="mathrow">$$\overline{\mathrm{QP}}=\overline{\mathrm{Q}'\mathrm{P}}=\overline{\mathrm{Q}'\mathrm{C}}+\overline{\mathrm{CP}}=\overline{\mathrm{AQ}}+\overline{\mathrm{CP}}$$</div>
+        <div class="warn">
+          <div class="t">⭐ 이 유형의 정체</div>
+          <p><b>정사각형 + \(45^\circ\)</b>가 보이면 답은 언제나 이 등식이다: <b>빗변 \(\overline{\mathrm{QP}}\) = 양쪽 자투리의 합</b>. \(45^\circ\)는 \(90^\circ\)의 절반이라 회전시켰을 때 두 조각이 딱 맞아떨어지기 때문이다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 둘레는 두 변의 길이로 뭉친다</span>
+        <div class="mathrow">$$(\triangle \mathrm{DQP}\text{의 둘레})=\overline{\mathrm{DQ}}+\overline{\mathrm{QP}}+\overline{\mathrm{PD}}=\overline{\mathrm{DQ}}+(\overline{\mathrm{AQ}}+\overline{\mathrm{CP}})+\overline{\mathrm{PD}}$$</div>
+        <div class="mathrow">$$=\underbrace{(\overline{\mathrm{DQ}}+\overline{\mathrm{QA}})}_{\overline{\mathrm{AD}}=2}+\underbrace{(\overline{\mathrm{PD}}+\overline{\mathrm{CP}})}_{\overline{\mathrm{DC}}=2}=2+2=4$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">둘레 \(=4\ \Rightarrow\ \) ③</span></div>
+        <div class="miss"><b>놀라운 점</b> \(\mathrm{P}\), \(\mathrm{Q}\)가 정확히 어디에 있는지 몰라도 둘레는 항상 <b>한 변의 \(2\)배</b>다. 「길이를 못 구하겠는데?」 싶을 때 <b>더해서 한 변이 되는 짝</b>을 찾는 것이 이 문제의 사고법이다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q16">
+    <div class="sol-head">
+      <span class="sol-k">16</span>
+      <div>
+        <div class="sol-title">정삼각형 접기 — 양옆의 두 삼각형이 닮음이 된다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 6점</span> 삼각형의 닮음 조건 · AA닮음(정삼각형 접기)</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">정삼각형 \(\mathrm{ABC}\)의 꼭짓점 \(\mathrm{A}\)가 변 \(\overline{\mathrm{BC}}\) 위의 점 \(\mathrm{E}\)에 오도록 접은 것이다. \(\overline{\mathrm{AD}}=7\,\mathrm{cm}\), \(\overline{\mathrm{BE}}=5\,\mathrm{cm}\), \(\overline{\mathrm{AC}}=15\,\mathrm{cm}\)일 때, \(x(=\overline{\mathrm{AF}})\)의 값은?</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 같은 표시(●○)가 닮음을 만드는 두 쌍의 각</span>
+          <svg viewBox="0 0 420 240" role="img" aria-label="정삼각형 ABC를 접어 A가 BC 위의 E로 온 그림">
+            <polygon points="60,190 360,190 210,45" fill="none" stroke="var(--ink-faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+            <polygon points="60,190 360,190 285,118 160,118" fill="none" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <polygon points="160,118 285,118 160,190" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <line x1="160" y1="118" x2="285" y2="118" stroke="var(--indigo)" stroke-width="2.8"/>
+            <g stroke="var(--ink-faint)" stroke-width="1.4" stroke-dasharray="4 4" fill="none">
+              <path d="M 210 45 L 160 118"/><path d="M 210 45 L 285 118"/><path d="M 210 45 L 160 190"/>
+            </g>
+            <g fill="var(--indigo)"><circle cx="160" cy="118" r="4"/><circle cx="285" cy="118" r="4"/><circle cx="160" cy="190" r="4"/></g>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="204" y="38">A</text><text x="42" y="204">B</text><text x="364" y="204">C</text>
+              <text x="140" y="114">D</text><text x="292" y="114">F</text><text x="152" y="208">E</text>
+            </g>
+            <path d="M 92 190 A 32 32 0 0 0 87 176" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+            <path d="M 328 190 A 32 32 0 0 1 333 176" fill="none" stroke="var(--amber)" stroke-width="1.6"/>
+            <path d="M 175 172 A 20 20 0 0 0 180 158" fill="none" stroke="var(--green)" stroke-width="1.6"/>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800">
+              <text x="94" y="176" fill="var(--amber)">60°</text>
+              <text x="308" y="176" fill="var(--amber)">60°</text>
+              <text x="182" y="152" fill="var(--green)">60°</text>
+              <text x="126" y="156" fill="var(--red)">7</text>
+              <text x="106" y="204" fill="var(--red)">5</text>
+              <text x="222" y="204" fill="var(--ink-soft)">10</text>
+              <text x="298" y="152" fill="var(--red)">x</text>
+              <text x="118" y="130" fill="var(--ink-soft)">8</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>접혀서 생긴 \(\angle \mathrm{DEF}\)도 \(60^\circ\). 그래서 \(\mathrm{E}\)를 둘러싼 세 각의 합에서 <b>\(\triangle \mathrm{DBE}\backsim\triangle \mathrm{ECF}\)</b>가 나온다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 접기로 옮겨 가는 길이부터</span>
+        <p>정삼각형이므로 세 변이 모두 \(15\). 접으면 \(\mathrm{A}\to \mathrm{E}\)이므로</p>
+        <div class="mathrow">$$\overline{\mathrm{DE}}=\overline{\mathrm{AD}}=7,\qquad \overline{\mathrm{FE}}=\overline{\mathrm{AF}}=x$$</div>
+        <div class="mathrow">$$\overline{\mathrm{DB}}=15-7=8,\qquad \overline{\mathrm{EC}}=15-5=10$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — 닮음을 찾는 결정적 한 수</span>
+        <p>\(\mathrm{E}\)는 변 \(\overline{\mathrm{BC}}\) 위의 점이므로 \(\mathrm{E}\)를 둘러싼 세 각의 합이 \(180^\circ\)다. 접힌 각 \(\angle \mathrm{DEF}=\angle \mathrm{A}=60^\circ\)이므로</p>
+        <div class="mathrow">$$\angle \mathrm{DEB}+\underbrace{\angle \mathrm{DEF}}_{60^\circ}+\angle \mathrm{FEC}=180^\circ\ \Longrightarrow\ \angle \mathrm{DEB}+\angle \mathrm{FEC}=120^\circ$$</div>
+        <p>한편 \(\triangle \mathrm{DBE}\)에서 \(\angle \mathrm{B}=60^\circ\)이므로</p>
+        <div class="mathrow">$$\angle \mathrm{BDE}+\angle \mathrm{DEB}=120^\circ$$</div>
+        <p>두 식을 비교하면 <b>\(\angle \mathrm{BDE}=\angle \mathrm{FEC}\)</b>. 여기에 \(\angle \mathrm{B}=\angle \mathrm{C}=60^\circ\)를 더하면</p>
+        <div class="mathrow">$$\triangle \mathrm{DBE}\backsim\triangle \mathrm{ECF}\quad(\mathrm{AA}\ \text{닮음})$$</div>
+        <div class="warn">
+          <div class="t">⭐ 대응 순서를 절대 헷갈리지 말 것</div>
+          <p>\(\mathrm{D}\leftrightarrow \mathrm{E}\), \(\mathrm{B}\leftrightarrow \mathrm{C}\), \(\mathrm{E}\leftrightarrow \mathrm{F}\)다. 「\(\triangle \mathrm{DBE}\)와 \(\triangle \mathrm{EBF}\)」처럼 잘못 짝지으면 비례식이 통째로 어긋난다. <b>같은 크기의 각끼리</b> 순서를 맞춰 쓰는 습관을 들이자.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — 비례식을 세운다</span>
+        <div class="mathrow">$$\overline{\mathrm{DB}}:\overline{\mathrm{EC}}=\overline{\mathrm{BE}}:\overline{\mathrm{CF}}=\overline{\mathrm{DE}}:\overline{\mathrm{EF}}$$</div>
+        <div class="mathrow">$$8:10=7:x\ \Longrightarrow\ 8x=70\ \Longrightarrow\ x=\frac{70}{8}=\frac{35}{4}$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(x=\dfrac{35}{4}\,\mathrm{cm}\ \Rightarrow\ \) ⑤</span></div>
+        <div class="miss"><b>검산까지 하면 완벽하다</b> 같은 비로 \(8:10=5:\overline{\mathrm{CF}}\) → \(\overline{\mathrm{CF}}=\frac{25}{4}\). 그러면 \(\overline{\mathrm{AF}}+\overline{\mathrm{FC}}=\frac{35}{4}+\frac{25}{4}=\frac{60}{4}=15=\overline{\mathrm{AC}}\) ✓ 딱 맞는다. <b>변의 길이 합으로 검산</b>하는 습관이 이 유형에서 특히 유용하다.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q17">
+    <div class="sol-head">
+      <span class="sol-k">17</span>
+      <div>
+        <div class="sol-title">꼭지각의 이등분선은 밑변을 수직이등분한다<span class="tag-essay">서술형</span></div>
+        <div class="sol-kind"><span class="dbadge">난이도 2 · 4점</span> 이등변삼각형 · 꼭지각의 이등분선</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">이등변삼각형 \(\mathrm{ABC}\)에서 꼭지각 \(\mathrm{A}\)의 이등분선과 \(\overline{\mathrm{BC}}\)의 교점을 \(\mathrm{D}\)라고 할 때, \(x,\ y\)의 값을 각각 구하시오. (\(\overline{\mathrm{BC}}=10\,\mathrm{cm}\), \(\angle \mathrm{ACE}=130^\circ\), \(x=\angle \mathrm{B}\), \(y=\overline{\mathrm{DC}}\))</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 외각 130°에서 시작한다</span>
+          <svg viewBox="0 0 400 210" role="img" aria-label="이등변삼각형 ABC와 꼭지각의 이등분선 AD, C의 외각 130도">
+            <polygon points="190,35 70,165 310,165" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <line x1="190" y1="35" x2="190" y2="165" stroke="var(--indigo)" stroke-width="2.2"/>
+            <line x1="310" y1="165" x2="370" y2="165" stroke="var(--ink)" stroke-width="2"/>
+            <path d="M 190 152 L 203 152 L 203 165" fill="none" stroke="var(--red)" stroke-width="1.6"/>
+            <g stroke="var(--red)" stroke-width="2">
+              <line x1="126" y1="94" x2="134" y2="106"/><line x1="246" y1="94" x2="254" y2="106"/>
+              <line x1="126" y1="160" x2="126" y2="170"/><line x1="254" y1="160" x2="254" y2="170"/>
+            </g>
+            <path d="M 186 66 A 32 32 0 0 0 176 82" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+            <path d="M 194 66 A 32 32 0 0 1 204 82" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+            <path d="M 296 165 A 22 22 0 0 0 300 152" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+            <path d="M 332 165 A 26 26 0 0 0 306 145" fill="none" stroke="var(--amber)" stroke-width="1.5"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="184" y="26">A</text><text x="52" y="180">B</text><text x="308" y="184">C</text>
+              <text x="184" y="184">D</text><text x="372" y="180">E</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800">
+              <text x="82" y="158" fill="var(--indigo)">x°</text>
+              <text x="222" y="158" fill="var(--red)">y cm</text>
+              <text x="316" y="140" fill="var(--amber)">130°</text>
+              <text x="140" y="184" fill="var(--ink-soft)">10 cm</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>빨간 표시는 <b>같은 길이</b>. 꼭지각의 이등분선이 \(\overline{\mathrm{BC}}\)를 수직이등분한다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>[1] \(x\) 구하기 — 외각에서 내각으로</span>
+        <p>\(\angle \mathrm{ACB}\)와 \(\angle \mathrm{ACE}\)는 한 직선 위에서 이웃하므로 합이 \(180^\circ\)다.</p>
+        <div class="mathrow">$$\angle \mathrm{ACB}=180^\circ-130^\circ=50^\circ$$</div>
+        <p>\(\overline{\mathrm{AB}}=\overline{\mathrm{AC}}\)인 이등변삼각형이므로 두 밑각이 같다.</p>
+        <div class="mathrow">$$x=\angle \mathrm{B}=\angle \mathrm{ACB}=50$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>[2] \(y\) 구하기 — 이등분선의 성질</span>
+        <p>이등변삼각형에서 <b>꼭지각의 이등분선은 밑변을 수직이등분</b>한다. 따라서 \(\mathrm{D}\)는 \(\overline{\mathrm{BC}}\)의 중점이다.</p>
+        <div class="mathrow">$$y=\overline{\mathrm{DC}}=\frac12\overline{\mathrm{BC}}=\frac12\times 10=5$$</div>
+        <p class="aside">왜 그럴까? \(\triangle \mathrm{ABD}\)와 \(\triangle \mathrm{ACD}\)에서 \(\overline{\mathrm{AB}}=\overline{\mathrm{AC}}\), \(\angle \mathrm{BAD}=\angle \mathrm{CAD}\), \(\overline{\mathrm{AD}}\) 공통 → <b>SAS 합동</b>. 대응변 \(\overline{\mathrm{BD}}=\overline{\mathrm{CD}}\)이고 대응각 \(\angle \mathrm{ADB}=\angle \mathrm{ADC}=90^\circ\)가 따라 나온다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">\(x=50,\quad y=5\)</span></div>
+        <div class="warn">
+          <div class="t">✍️ 서술형 답안은 이렇게</div>
+          <p>① \(\angle \mathrm{ACB}=180^\circ-130^\circ=50^\circ\) ② \(\overline{\mathrm{AB}}=\overline{\mathrm{AC}}\)이므로 \(\angle \mathrm{B}=\angle \mathrm{ACB}=50^\circ\), 즉 \(x=50\) ③ 이등변삼각형의 꼭지각의 이등분선은 밑변을 이등분하므로 \(\overline{\mathrm{DC}}=\frac12\overline{\mathrm{BC}}=5\), 즉 \(y=5\) — <b>「~이므로」로 근거를 밝히는 문장</b>을 반드시 넣어야 배점을 다 받는다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q18">
+    <div class="sol-head">
+      <span class="sol-k">18</span>
+      <div>
+        <div class="sol-title">「한 쌍의 대변이 평행하고 길이가 같으면 평행사변형」의 증명<span class="tag-essay">서술형</span></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 6점</span> 평행사변형이 되는 조건 · 빈칸 넣기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">한 쌍의 대변이 평행하고 그 길이가 같은 사각형은 평행사변형임을 설명하는 과정이다. (가)~(바)의 빈칸을 채우시오. (\(\square \mathrm{ABCD}\)에서 \(\overline{\mathrm{AD}}\parallel\overline{\mathrm{BC}}\), \(\overline{\mathrm{AD}}=\overline{\mathrm{BC}}\))</div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>증명의 전략 — 대각선을 그어 삼각형 두 개로</span>
+        <p>사각형 문제의 90%는 <b>대각선 한 개</b>로 풀린다. 대각선 \(\overline{\mathrm{AC}}\)를 그으면 \(\square \mathrm{ABCD}\)가 \(\triangle \mathrm{ABC}\)와 \(\triangle \mathrm{CDA}\)로 나뉜다. 이 둘이 합동임을 보이는 것이 목표.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>빈칸 채우기</span>
+        <table class="calc">
+          <tr><th>빈칸</th><th>답</th><th>근거</th></tr>
+          <tr><td>(가)</td><td>\(\overline{\mathrm{AD}}\)</td><td>주어진 조건 \(\overline{\mathrm{BC}}=\overline{\mathrm{AD}}\) (대응변)</td></tr>
+          <tr><td>(나)</td><td>\(\angle \mathrm{CAD}\)</td><td>\(\overline{\mathrm{AD}}\parallel\overline{\mathrm{BC}}\), 가로지르는 선 \(\overline{\mathrm{AC}}\) → <b>엇각</b></td></tr>
+          <tr><td>(다)</td><td>\(\overline{\mathrm{AC}}\)</td><td>두 삼각형이 함께 쓰는 <b>공통</b>인 변</td></tr>
+          <tr class="hi"><td>(라)</td><td><b>SAS</b></td><td>변–끼인각–변 순서로 세 조건이 갖춰졌다</td></tr>
+          <tr><td>(마)</td><td>\(\angle \mathrm{DCA}\)</td><td>합동인 두 삼각형의 <b>대응각</b></td></tr>
+          <tr><td>(바)</td><td>\(\overline{\mathrm{AB}}\parallel\overline{\mathrm{DC}}\)</td><td>엇각이 같으면 두 직선은 평행</td></tr>
+        </table>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>왜 SAS인지 순서를 확인하자</span>
+        <p>①\(\overline{\mathrm{BC}}=\overline{\mathrm{AD}}\)(변) ②\(\angle \mathrm{ACB}=\angle \mathrm{CAD}\)(각) ③\(\overline{\mathrm{AC}}\) 공통(변) — 여기서 <b>②의 각이 ①과 ③ 두 변 사이에 끼어 있는지</b>가 관건이다.</p>
+        <div class="mathrow">$$\angle \mathrm{ACB}\ \text{는}\ \overline{\mathrm{CB}}\ \text{와}\ \overline{\mathrm{CA}}\ \text{사이의 각}\quad\checkmark$$</div>
+        <p>끼인각이 맞으므로 <b>SAS 합동</b>이다. (ASA나 SSS로 쓰면 감점)</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>마무리 — 왜 평행사변형인가</span>
+        <p>\(\overline{\mathrm{AB}}\parallel\overline{\mathrm{DC}}\)를 얻었고, \(\overline{\mathrm{AD}}\parallel\overline{\mathrm{BC}}\)는 처음부터 주어졌다. <b>두 쌍의 대변이 각각 평행</b>하므로 정의에 의해 평행사변형이다.</p>
+        <div class="result"><span class="lab">정답</span><span class="val">(가) \(\overline{\mathrm{AD}}\) &nbsp;(나) \(\angle \mathrm{CAD}\) &nbsp;(다) \(\overline{\mathrm{AC}}\) &nbsp;(라) SAS &nbsp;(마) \(\angle \mathrm{DCA}\) &nbsp;(바) \(\overline{\mathrm{AB}}\parallel\overline{\mathrm{DC}}\)</span></div>
+        <div class="warn">
+          <div class="t">💡 이 성질이 14번에서 그대로 쓰인다</div>
+          <p>여기서 증명한 <b>「한 쌍의 대변이 평행하고 길이가 같다 → 평행사변형」</b>이 바로 14번(킬러) 문제의 열쇠였다. 시험지가 <b>증명(18번)과 활용(14번)</b>으로 같은 성질을 두 번 물은 셈이다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q19">
+    <div class="sol-head">
+      <span class="sol-k">19</span>
+      <div>
+        <div class="sol-title">사각형 계보도 — 「무엇이 추가되면 무엇이 되는가」<span class="tag-essay">서술형</span></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 여러 가지 사각형 사이의 관계</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(5\)개의 사각형을 주어진 조건에 따라 분류하는 과정이다. (가)~(마)에 들어갈 조건을 &lt;보기&gt;에서 <b>모두</b> 찾아 기호로 쓰시오.
+        <div class="cond">
+          <div class="row"><span class="lab">ㄱ.</span><span>\(\angle \mathrm{BAC}=\angle \mathrm{DCA}\)</span><span class="lab">ㄴ.</span><span>\(\overline{\mathrm{AC}}\perp\overline{\mathrm{BD}}\)</span></div>
+          <div class="row"><span class="lab">ㄷ.</span><span>\(\overline{\mathrm{OA}}=\overline{\mathrm{OD}}\)</span><span class="lab">ㄹ.</span><span>\(\overline{\mathrm{AB}}=\overline{\mathrm{AD}}\)</span></div>
+          <div class="row"><span class="lab">ㅁ.</span><span>\(\angle \mathrm{A}=\angle \mathrm{D}\)</span></div>
+        </div>
+      </div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 사각형 계보도</span>
+          <svg viewBox="0 0 440 220" role="img" aria-label="사다리꼴에서 평행사변형, 직사각형, 마름모를 거쳐 정사각형으로 가는 분류도">
+            <g font-family="Noto Sans KR" font-size="12.5" font-weight="800" text-anchor="middle">
+              <rect x="10" y="90" width="86" height="38" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.6"/>
+              <text x="53" y="114" fill="var(--ink)">사다리꼴</text>
+              <rect x="140" y="90" width="96" height="38" rx="9" fill="var(--indigo-soft)" stroke="var(--indigo)" stroke-width="1.8"/>
+              <text x="188" y="114" fill="var(--indigo-ink)">평행사변형</text>
+              <rect x="284" y="18" width="86" height="38" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.6"/>
+              <text x="327" y="42" fill="var(--ink)">직사각형</text>
+              <rect x="284" y="162" width="86" height="38" rx="9" fill="var(--paper)" stroke="var(--line)" stroke-width="1.6"/>
+              <text x="327" y="186" fill="var(--ink)">마름모</text>
+              <rect x="352" y="90" width="82" height="38" rx="9" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.8"/>
+              <text x="393" y="114" fill="var(--green)">정사각형</text>
+            </g>
+            <g stroke="var(--ink-faint)" stroke-width="1.8" fill="none">
+              <path d="M 96 109 L 134 109"/><path d="M 236 100 L 280 60"/><path d="M 236 118 L 280 160"/>
+              <path d="M 370 52 L 392 86"/><path d="M 370 166 L 392 132"/>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--amber)">
+              <text x="104" y="102">(가)</text><text x="240" y="72">(나)</text><text x="240" y="152">(다)</text>
+              <text x="344" y="72">(라)</text><text x="344" y="156">(마)</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>가로줄이 「위쪽 사각형에 조건을 더하면 오른쪽 사각형이 된다」는 뜻이다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>(가) 사다리꼴 → 평행사변형</span>
+        <p>사다리꼴은 한 쌍만 평행하다(\(\overline{\mathrm{AD}}\parallel\overline{\mathrm{BC}}\)). 평행사변형이 되려면 <b>나머지 한 쌍도 평행</b>해야 한다.</p>
+        <p><b>ㄱ.</b> \(\angle \mathrm{BAC}=\angle \mathrm{DCA}\)는 \(\overline{\mathrm{AB}}\)와 \(\overline{\mathrm{DC}}\)에 대해 \(\overline{\mathrm{AC}}\)를 가로지르는 선으로 본 <b>엇각</b>이다. 엇각이 같으면 \(\overline{\mathrm{AB}}\parallel\overline{\mathrm{DC}}\) ✓</p>
+        <div class="result"><span class="lab">(가)</span><span class="val">ㄱ</span></div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>(나) 평행사변형 → 직사각형</span>
+        <p>직사각형의 추가 조건은 <b>① 한 내각이 직각</b> 또는 <b>② 두 대각선의 길이가 같다</b>.</p>
+        <p><b>ㄷ.</b> 평행사변형은 대각선이 서로를 이등분하므로 \(\overline{\mathrm{OA}}=\overline{\mathrm{OC}}\), \(\overline{\mathrm{OB}}=\overline{\mathrm{OD}}\). 여기에 \(\overline{\mathrm{OA}}=\overline{\mathrm{OD}}\)가 더해지면 네 토막이 모두 같아져 <b>\(\overline{\mathrm{AC}}=\overline{\mathrm{BD}}\)</b> ✓</p>
+        <p><b>ㅁ.</b> 평행사변형에서 이웃한 두 각의 합은 \(180^\circ\)다(\(\angle \mathrm{A}+\angle \mathrm{D}=180^\circ\)). 둘이 같다면 각각 \(90^\circ\) ✓</p>
+        <div class="result"><span class="lab">(나)</span><span class="val">ㄷ, ㅁ</span></div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>(다) 평행사변형 → 마름모</span>
+        <p>마름모의 추가 조건은 <b>① 이웃하는 두 변의 길이가 같다</b> 또는 <b>② 두 대각선이 수직</b>.</p>
+        <p><b>ㄴ.</b> \(\overline{\mathrm{AC}}\perp\overline{\mathrm{BD}}\) ✓ &nbsp;&nbsp;<b>ㄹ.</b> \(\overline{\mathrm{AB}}=\overline{\mathrm{AD}}\) (이웃한 두 변) ✓</p>
+        <div class="result"><span class="lab">(다)</span><span class="val">ㄴ, ㄹ</span></div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>(라)·(마) — 마지막 한 걸음</span>
+        <p>정사각형은 <b>직사각형이면서 마름모</b>인 도형이다. 그러니 어느 쪽에서 출발하느냐에 따라 <b>모자란 쪽의 조건</b>을 채워 주면 된다.</p>
+        <table class="calc">
+          <tr><th>출발</th><th>이미 가진 것</th><th>채워야 할 것</th><th>답</th></tr>
+          <tr><td>(라) 직사각형 →</td><td>네 각이 직각</td><td><b>마름모</b>의 조건</td><td>ㄴ, ㄹ</td></tr>
+          <tr><td>(마) 마름모 →</td><td>네 변이 같음</td><td><b>직사각형</b>의 조건</td><td>ㄷ, ㅁ</td></tr>
+        </table>
+        <p class="aside">(라)와 (다)의 답이 같고, (마)와 (나)의 답이 같다. <b>계보도가 마름모꼴로 대칭</b>이기 때문이다 — 답을 다 쓴 뒤 이 대칭이 맞는지 확인하면 훌륭한 검산이 된다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>답</span>
+        <div class="result"><span class="lab">정답</span><span class="val">(가) ㄱ &nbsp;(나) ㄷ, ㅁ &nbsp;(다) ㄴ, ㄹ &nbsp;(라) ㄴ, ㄹ &nbsp;(마) ㄷ, ㅁ</span></div>
+        <div class="miss"><b>「모두 찾아」라는 말에 주의</b> (나)·(다)·(라)·(마)는 답이 <b>두 개씩</b>이다. 하나만 쓰면 부분 점수만 받는다. 각 칸마다 「다른 것도 되나?」를 한 번씩 더 확인하자.</div>
+      </div>
+    </div>
+  </section>
+  <section class="sol" id="q20">
+    <div class="sol-head">
+      <span class="sol-k">20</span>
+      <div>
+        <div class="sol-title">공통각을 낀 두 변의 비가 같다 → SAS 닮음<span class="tag-essay">서술형</span></div>
+        <div class="sol-kind"><span class="dbadge">난이도 2 · 3점</span> 삼각형의 닮음 조건 · 기본</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(\triangle \mathrm{ABC}\)에서 \(\overline{\mathrm{AD}}=5\,\mathrm{cm}\), \(\overline{\mathrm{AC}}=6\,\mathrm{cm}\), \(\overline{\mathrm{DB}}=4\,\mathrm{cm}\), \(\overline{\mathrm{BE}}=3\,\mathrm{cm}\), \(\overline{\mathrm{EC}}=9\,\mathrm{cm}\)일 때,
+        <br>(1) 서로 닮은 두 삼각형을 찾아 닮음 기호로 나타내고, 닮음 조건을 쓰시오. &nbsp;(2) \(\overline{\mathrm{DE}}\)의 길이를 구하시오.</div>
+      <figure>
+        <div class="fig-frame">
+          <span class="fig-tag">그림풀이 · 꼭짓점 B를 공유하는 두 삼각형</span>
+          <svg viewBox="0 0 420 220" role="img" aria-label="삼각형 ABC 안에 점 D, E로 만든 작은 삼각형 EBD">
+            <polygon points="60,160 380,160 250,45" fill="none" stroke="var(--indigo)" stroke-width="2.4" stroke-linejoin="round"/>
+            <polygon points="60,160 140,160 165,102" fill="var(--amber-soft)" stroke="var(--amber)" stroke-width="2.4" stroke-linejoin="round"/>
+            <line x1="140" y1="160" x2="165" y2="102" stroke="var(--amber)" stroke-width="2.6"/>
+            <g fill="var(--ink)"><circle cx="165" cy="102" r="4"/><circle cx="140" cy="160" r="4"/></g>
+            <path d="M 92 160 A 32 32 0 0 0 84 141" fill="none" stroke="var(--green)" stroke-width="1.8"/>
+            <g font-family="Noto Sans KR" font-size="13" font-weight="700" fill="var(--ink)">
+              <text x="252" y="36">A</text><text x="42" y="176">B</text><text x="386" y="176">C</text>
+              <text x="146" y="96">D</text><text x="134" y="180">E</text>
+            </g>
+            <g font-family="Noto Sans KR" font-size="11.5" font-weight="800">
+              <text x="196" y="66" fill="var(--ink-soft)">5</text>
+              <text x="106" y="122" fill="var(--ink-soft)">4</text>
+              <text x="96" y="180" fill="var(--ink-soft)">3</text>
+              <text x="256" y="180" fill="var(--ink-soft)">9</text>
+              <text x="330" y="96" fill="var(--ink-soft)">6</text>
+              <text x="166" y="140" fill="var(--red)">?</text>
+            </g>
+            <text x="60" y="60" font-family="Noto Sans KR" font-size="11.5" font-weight="800" fill="var(--green)">∠B 공통</text>
+          </svg>
+        </div>
+        <figcaption>큰 삼각형 \(\mathrm{ABC}\)와 주황 삼각형 \(\mathrm{EBD}\). \(\angle \mathrm{B}\)를 함께 쓰는 것이 출발점이다.</figcaption>
+      </figure>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 두 변의 전체 길이부터 구한다</span>
+        <div class="mathrow">$$\overline{\mathrm{AB}}=\overline{\mathrm{AD}}+\overline{\mathrm{DB}}=5+4=9,\qquad \overline{\mathrm{BC}}=\overline{\mathrm{BE}}+\overline{\mathrm{EC}}=3+9=12$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>2단계 — \(\angle \mathrm{B}\)를 끼는 두 변의 비를 비교</span>
+        <p>\(\angle \mathrm{B}\)를 낀 두 변은 \(\overline{\mathrm{BA}}\)와 \(\overline{\mathrm{BC}}\)(큰 삼각형), \(\overline{\mathrm{BE}}\)와 \(\overline{\mathrm{BD}}\)(작은 삼각형)이다. <b>긴 변끼리, 짧은 변끼리 짝짓지 말고 「비가 같아지는 짝」을 찾는 것</b>이 요령이다.</p>
+        <div class="mathrow">$$\frac{\overline{\mathrm{BA}}}{\overline{\mathrm{BE}}}=\frac{9}{3}=3,\qquad \frac{\overline{\mathrm{BC}}}{\overline{\mathrm{BD}}}=\frac{12}{4}=3$$</div>
+        <p>두 비가 같고 그 사이의 <b>끼인각 \(\angle \mathrm{B}\)는 공통</b>이다.</p>
+        <div class="mathrow">$$\therefore\ \triangle \mathrm{ABC}\backsim\triangle \mathrm{EBD}\quad(\mathrm{SAS}\ \text{닮음})$$</div>
+        <div class="warn">
+          <div class="t">⚠️ 대응 순서가 뒤집힌다 — 여기가 핵심</div>
+          <p>\(\mathrm{A}\leftrightarrow \mathrm{E}\), \(\mathrm{B}\leftrightarrow \mathrm{B}\), \(\mathrm{C}\leftrightarrow \mathrm{D}\)다. \(\overline{\mathrm{AB}}\)의 짝이 \(\overline{\mathrm{DB}}\)가 아니라 <b>\(\overline{\mathrm{EB}}\)</b>라는 것 — 그림에서 「가까운 쪽끼리」 짝지으면 틀린다. 비가 \(3\)으로 맞는 조합을 찾아야 한다. 그래서 답은 \(\triangle \mathrm{ABC}\backsim\triangle \mathrm{DBE}\)가 아니라 <b>\(\triangle \mathrm{ABC}\backsim\triangle \mathrm{EBD}\)</b>다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>3단계 — \(\overline{\mathrm{DE}}\)의 길이</span>
+        <p>닮음비가 \(3:1\)이고 \(\overline{\mathrm{AC}}\)의 대응변은 \(\overline{\mathrm{ED}}\)이므로</p>
+        <div class="mathrow">$$\overline{\mathrm{AC}}:\overline{\mathrm{ED}}=3:1\ \Longrightarrow\ 6:\overline{\mathrm{ED}}=3:1\ \Longrightarrow\ \overline{\mathrm{DE}}=2\ (\mathrm{cm})$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">(1) \(\triangle \mathrm{ABC}\backsim\triangle \mathrm{EBD}\) (SAS 닮음) &nbsp;&nbsp;(2) \(\overline{\mathrm{DE}}=2\,\mathrm{cm}\)</span></div>
+        <div class="miss"><b>서술형 감점 포인트</b> ① 닮음 기호 \(\backsim\)의 <b>대응 순서</b>를 틀리면 (1)은 0점이다. ② 「SAS 닮음」이라고 <b>조건 이름까지</b> 써야 한다. ③ \(\overline{\mathrm{AD}}=5\)는 \(\overline{\mathrm{AB}}=9\)를 만들기 위한 재료일 뿐, 비례식에 직접 넣으면 안 된다.</div>
+      </div>
+    </div>
+  </section>
+  <footer>
+    루멘수학 · 기출 정밀해설집 · 옥길중 2학년 2025학년도 2학기 중간 (중등수학 2하)<br>
+    문항 정답 20/20 검증 완료 · 그림풀이 원본 제작 · 첨삭 해설
+  </footer>
+</div>
