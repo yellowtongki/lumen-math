@@ -1,0 +1,421 @@
+<title>기출 해설집 → 학원앱 얹기 시안</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{
+    --bg:#f2f5fa; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#e3e9f2;
+    --blue:#1d6fe8; --blue-soft:#eaf2ff; --gold:#f59e0b; --gold-soft:#fef3c7;
+    --g:#16a34a; --g-soft:#dcfce7; --r:#dc2626; --r-soft:#fee2e2;
+    --y-soft:#fef9c3; --y-ink:#a16207; --shade:#f7f9fd;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+      --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10;
+      --g:#34d399; --g-soft:#0c2e22; --r:#f87171; --r-soft:#3b1212;
+      --y-soft:#37300b; --y-ink:#fbbf24; --shade:#0f1f38; }
+  }
+  :root[data-theme="dark"]{ --bg:#0b1526; --card:#132441; --ink:#eaf1fb; --sub:#93a7c2; --line:#22375d;
+    --blue:#5b9bff; --blue-soft:#17305c; --gold:#fbbf24; --gold-soft:#3a2e10;
+    --g:#34d399; --g-soft:#0c2e22; --r:#f87171; --r-soft:#3b1212;
+    --y-soft:#37300b; --y-ink:#fbbf24; --shade:#0f1f38; }
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Pretendard','Noto Sans KR',sans-serif; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:26px 20px 80px; }
+  h1{ font-size:23px; font-weight:900; margin:0 0 6px; letter-spacing:-0.4px; }
+  .note{ font-size:14.5px; color:var(--sub); font-weight:600; line-height:1.7; margin:0 0 24px; max-width:900px; }
+  .note b{ color:var(--ink); }
+
+  .sec{ margin:34px 0 0; }
+  .sec > h2{ font-size:17px; font-weight:900; margin:0 0 4px; display:flex; align-items:center; gap:9px; }
+  .sec > h2 .n{ background:var(--ink); color:var(--card); font-size:11.5px; font-weight:900;
+    border-radius:7px; padding:3px 9px; letter-spacing:.04em; }
+  .sec > .d{ font-size:13.5px; color:var(--sub); font-weight:600; margin:0 0 14px; max-width:880px; }
+
+  .card{ background:var(--card); border:1.5px solid var(--line); border-radius:16px; padding:18px 20px; }
+  .grid2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:14px; }
+  .grid3{ display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:12px; }
+
+  /* 앱 화면 프레임 */
+  .screen{ background:var(--card); border:1.5px solid var(--line); border-radius:18px; overflow:hidden;
+    box-shadow:0 2px 10px rgba(13,34,64,.06); }
+  .scr-cap{ font-size:11.5px; font-weight:900; letter-spacing:.05em; color:var(--sub);
+    background:var(--shade); border-bottom:1.5px solid var(--line); padding:8px 14px; }
+  .scr-body{ padding:14px; }
+  .appbar{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .appbar .t{ font-size:16px; font-weight:900; }
+  .crumb{ font-size:11.5px; font-weight:800; color:var(--sub); }
+  .crumb b{ color:var(--blue); }
+
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{ border:1.5px solid var(--line); background:var(--card); border-radius:50px; padding:5px 12px;
+    font-size:12px; font-weight:800; color:var(--sub); }
+  .chip.on{ background:var(--blue); border-color:var(--blue); color:#fff; }
+
+  .row{ border:1.5px solid var(--line); border-radius:13px; padding:12px 14px; margin-bottom:9px; background:var(--card); }
+  .row.sel{ border-color:var(--blue); background:var(--blue-soft); }
+  .row .r1{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .row .nm{ font-size:14.5px; font-weight:900; }
+  .row .r2{ font-size:12px; color:var(--sub); font-weight:700; margin-top:4px; }
+  .badge{ font-size:10.5px; font-weight:900; border-radius:50px; padding:3px 9px; white-space:nowrap; }
+  .b-ok{ background:var(--g-soft); color:var(--g); }
+  .b-warn{ background:var(--y-soft); color:var(--y-ink); }
+  .b-off{ background:var(--shade); color:var(--sub); border:1px solid var(--line); }
+  .b-blue{ background:var(--blue-soft); color:var(--blue); }
+  .b-red{ background:var(--r-soft); color:var(--r); }
+
+  .btn{ display:inline-block; border-radius:10px; padding:8px 14px; font-size:12.5px; font-weight:900;
+    border:1.5px solid var(--line); background:var(--card); color:var(--ink); }
+  .btn.pri{ background:var(--blue); border-color:var(--blue); color:#fff; }
+  .btn.gho{ color:var(--sub); }
+  .btnrow{ display:flex; gap:7px; flex-wrap:wrap; margin-top:11px; }
+
+  /* 문항 그리드 */
+  .qgrid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(52px,1fr)); gap:7px; }
+  .q{ border:1.5px solid var(--line); border-radius:10px; padding:8px 0; text-align:center; background:var(--card); }
+  .q .n{ font-size:14px; font-weight:900; }
+  .q .s{ font-size:9.5px; font-weight:800; color:var(--sub); margin-top:1px; }
+  .q.open{ border-color:var(--g); background:var(--g-soft); } .q.open .s{ color:var(--g); }
+  .q.lock{ background:var(--shade); } .q.lock .s{ color:var(--sub); }
+  .q.flag{ border-color:var(--r); background:var(--r-soft); } .q.flag .s{ color:var(--r); }
+
+  /* 휴대폰 프레임 */
+  .phone{ width:100%; max-width:290px; margin:0 auto; border:9px solid var(--ink); border-radius:30px;
+    background:var(--card); overflow:hidden; }
+  .ph-top{ background:var(--blue); color:#fff; padding:10px 13px; font-size:12.5px; font-weight:900; }
+  .ph-body{ padding:12px; }
+  .stu-card{ border:1.5px solid var(--line); border-radius:13px; padding:11px 12px; margin-bottom:9px; }
+  .stu-card.hi{ border-color:var(--gold); background:var(--gold-soft); }
+
+  table{ width:100%; border-collapse:collapse; font-size:13px; }
+  th,td{ border-bottom:1px solid var(--line); padding:9px 8px; text-align:left; vertical-align:top; }
+  th{ font-size:11.5px; font-weight:900; color:var(--sub); letter-spacing:.03em; }
+  td code{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px;
+    background:var(--shade); border:1px solid var(--line); border-radius:5px; padding:1px 6px; }
+  tr:last-child td{ border-bottom:none; }
+  .tw{ overflow-x:auto; }
+
+  ol,ul{ margin:8px 0 0; padding-left:20px; }
+  li{ margin:5px 0; }
+  .ask{ border-left:4px solid var(--gold); background:var(--gold-soft); border-radius:0 12px 12px 0;
+    padding:12px 15px; margin:9px 0; }
+  .ask .t{ font-weight:900; font-size:13.5px; margin-bottom:3px; }
+  .warn{ border-left:4px solid var(--r); background:var(--r-soft); border-radius:0 12px 12px 0;
+    padding:12px 15px; margin:9px 0; font-size:13.5px; }
+  .flow{ display:flex; gap:9px; flex-wrap:wrap; align-items:stretch; }
+  .fstep{ flex:1; min-width:150px; background:var(--card); border:1.5px solid var(--line);
+    border-radius:13px; padding:12px 13px; position:relative; }
+  .fstep .k{ font-size:10.5px; font-weight:900; color:var(--blue); letter-spacing:.06em; }
+  .fstep .h{ font-size:13.5px; font-weight:900; margin:3px 0 4px; }
+  .fstep .p{ font-size:12px; color:var(--sub); font-weight:600; line-height:1.55; }
+  .arrow{ align-self:center; color:var(--sub); font-weight:900; font-size:17px; }
+  @media (max-width:700px){ .arrow{ display:none; } }
+  footer{ margin-top:44px; padding-top:20px; border-top:1.5px solid var(--line);
+    font-size:12.5px; color:var(--sub); font-weight:700; line-height:1.8; }
+</style>
+
+<div class="wrap">
+  <h1>📖 기출 해설집을 학원앱에 얹는 방향</h1>
+  <p class="note">
+    지금까지 만든 해설집 <b>3권</b>(옥길중 중2·중3, 소래고 고1)은 아직 <b>따로 노는 HTML 파일</b>입니다.
+    이걸 학원앱 안으로 들여와 <b>원장님이 목록으로 관리하고, 학생앱으로 내보내고, 나중에 매쓰플랫 정오답과 이어 붙이는</b> 그림을 시안으로 그렸습니다.
+    아래는 <b>상의용</b>이며 앱은 아직 건드리지 않았습니다 — 방향을 정해 주시면 그때 구현합니다.
+  </p>
+
+  <!-- 1 -->
+  <div class="sec">
+    <h2><span class="n">1</span> 어디에 들어가나</h2>
+    <p class="d">새 화면을 하나 만들지 않고, 이미 <b>기출 시험지를 다루는 자리</b> 옆에 붙입니다. 진학 나침반을 넣을 때와 같은 방식입니다.</p>
+    <div class="card">
+      <div class="crumb">성적·분석 &nbsp;›&nbsp; 월간보고서 · 주간리포트 · 진도현황 · 리커버리 · 유형성취도 · 교재·유형 · 시험 · <b>기출모의</b> · 기출쌍둥이 · 진도레이스 · 블랙반 · 진학나침반 · 자체모의 · 학교성적</div>
+      <div class="btnrow" style="margin-top:12px">
+        <span class="btn gho">🏫 기출모의</span>
+        <span class="btn pri">📖 기출 해설집 &nbsp;← 새로 추가</span>
+        <span class="btn gho">🏭 기출 쌍둥이</span>
+      </div>
+      <p class="d" style="margin:13px 0 0">
+        메뉴 배열(<code>GROUPS</code>)에 한 줄, 화면 분기(<code>render()</code>)에 한 줄만 더하면 됩니다.
+        기존 화면은 손대지 않으므로 <b>사고 위험이 거의 없는 추가</b>입니다.
+      </p>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="sec">
+    <h2><span class="n">2</span> 화면 세 개</h2>
+    <p class="d">목록에서 고르고 → 문항별로 열고 닫고 → 학생에게 내보낸다. 강의실(VOD)과 똑같은 흐름이라 원장님께 낯설지 않습니다.</p>
+
+    <div class="grid2">
+      <!-- 화면 A -->
+      <div class="screen">
+        <div class="scr-cap">화면 A · 해설집 목록</div>
+        <div class="scr-body">
+          <div class="appbar">
+            <span class="t">📖 기출 해설집</span>
+            <span class="btn pri" style="margin-left:auto">+ 해설집 불러오기</span>
+          </div>
+          <div class="chips" style="margin-bottom:11px">
+            <span class="chip on">전체 3</span><span class="chip">중2 1</span><span class="chip">중3 1</span>
+            <span class="chip">고1 1</span><span class="chip">발행됨 1</span>
+          </div>
+
+          <div class="row sel">
+            <div class="r1">
+              <span class="nm">옥길중 중2 · 2학기 중간</span>
+              <span class="badge b-ok">정답 20/20 검증</span>
+              <span class="badge b-red">조건부족 1</span>
+            </div>
+            <div class="r2">2025 · 중등수학 2(하) · 객관식 16 + 서술형 4 · 그림 11 · 평균 난이도 3.7</div>
+            <div class="r2" style="margin-top:5px"><span class="badge b-blue">학생앱 발행됨 · 중2 A반 12명</span></div>
+          </div>
+
+          <div class="row">
+            <div class="r1">
+              <span class="nm">옥길중 중3 · 2학기 중간</span>
+              <span class="badge b-ok">정답 21/21 검증</span>
+              <span class="badge b-warn">출제오류 1</span>
+            </div>
+            <div class="r2">2025 · 중등수학 3(하) · 삼각비 · 대푯값과 산포도 · 그림 11</div>
+            <div class="r2" style="margin-top:5px"><span class="badge b-off">미발행 — 원장님 확인 대기</span></div>
+          </div>
+
+          <div class="row">
+            <div class="r1">
+              <span class="nm">소래고 고1 · 2학기 기말</span>
+              <span class="badge b-ok">정답 22/22 검증</span>
+            </div>
+            <div class="r2">2025 · 공통수학2 · 집합과 명제 · 함수 · 유리·무리함수 · 그림 4</div>
+            <div class="r2" style="margin-top:5px"><span class="badge b-off">미발행</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 화면 B -->
+      <div class="screen">
+        <div class="scr-cap">화면 B · 문항별 관리 (옥길중 중2)</div>
+        <div class="scr-body">
+          <div class="appbar">
+            <span class="t">옥길중 중2 · 2학기 중간</span>
+            <span class="btn" style="margin-left:auto">👁 미리보기</span>
+            <span class="btn">🖨 인쇄</span>
+          </div>
+          <div class="chips" style="margin-bottom:11px">
+            <span class="chip on">공개 규칙 : 재풀이 제출 후</span>
+            <span class="chip">즉시</span><span class="chip">시험 후</span><span class="chip">오답만</span>
+          </div>
+          <div class="qgrid">
+            <div class="q open"><div class="n">1</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">2</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">3</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">4</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">5</div><div class="s">공개</div></div>
+            <div class="q flag"><div class="n">6</div><div class="s">조건부족</div></div>
+            <div class="q open"><div class="n">7</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">8</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">9</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">10</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">11</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">12</div><div class="s">공개</div></div>
+            <div class="q open"><div class="n">13</div><div class="s">공개</div></div>
+            <div class="q lock"><div class="n">14</div><div class="s">잠금</div></div>
+            <div class="q open"><div class="n">15</div><div class="s">공개</div></div>
+            <div class="q lock"><div class="n">16</div><div class="s">잠금</div></div>
+            <div class="q open"><div class="n">17</div><div class="s">서술</div></div>
+            <div class="q open"><div class="n">18</div><div class="s">서술</div></div>
+            <div class="q open"><div class="n">19</div><div class="s">서술</div></div>
+            <div class="q open"><div class="n">20</div><div class="s">서술</div></div>
+          </div>
+          <p class="d" style="margin:12px 0 0">
+            <b style="color:var(--g)">초록</b> = 학생에게 열림 · <b>회색</b> = 잠금(킬러는 수업 후에 열기)
+            · <b style="color:var(--r)">빨강</b> = 문제 자체에 이상이 있어 따로 표시해 둔 문항.
+            번호를 누르면 그 문항 해설만 크게 뜹니다.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 화면 C -->
+    <div class="grid2" style="margin-top:14px">
+      <div class="screen">
+        <div class="scr-cap">화면 C · 학생앱에서는 이렇게 보입니다</div>
+        <div class="scr-body">
+          <div class="phone">
+            <div class="ph-top">📖 기출 해설집</div>
+            <div class="ph-body">
+              <div class="stu-card hi">
+                <div style="font-size:13px;font-weight:900">우리 학교 2학기 중간</div>
+                <div style="font-size:11px;color:var(--sub);font-weight:700;margin-top:2px">옥길중 중2 · 20문항</div>
+                <div style="font-size:11px;font-weight:900;color:var(--gold);margin-top:6px">내가 틀린 4문항부터 보기 →</div>
+              </div>
+              <div class="stu-card">
+                <div style="font-size:12.5px;font-weight:800">6번 · 외심과 내심</div>
+                <div style="font-size:10.5px;color:var(--sub);font-weight:700;margin-top:2px">📸 재풀이 제출하면 열립니다</div>
+              </div>
+              <div class="stu-card">
+                <div style="font-size:12.5px;font-weight:800">13번 · 직각삼각형의 닮음</div>
+                <div style="font-size:10.5px;color:var(--g);font-weight:800;margin-top:2px">✓ 열림 — 해설 보기</div>
+              </div>
+              <div class="stu-card">
+                <div style="font-size:12.5px;font-weight:800">14번 · 움직이는 두 점 <span class="badge b-red">킬러</span></div>
+                <div style="font-size:10.5px;color:var(--sub);font-weight:700;margin-top:2px">🔒 수업 후 공개</div>
+              </div>
+            </div>
+          </div>
+          <p class="d" style="margin:14px 0 0;text-align:center">
+            해설집 전체를 그냥 던져 주는 게 아니라 <b>「내가 틀린 문항」부터</b> 열어 줍니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="screen">
+        <div class="scr-cap">왜 문항 단위로 쪼개 저장하나</div>
+        <div class="scr-body">
+          <p style="font-size:13.5px;font-weight:700;margin:0 0 10px">
+            해설집을 통짜 HTML 한 덩어리로 넣으면 「전체 보기」밖에 못 합니다.
+            지금 만드는 방식이 이미 <b>문항 하나에 파일 하나</b>(<code>q01.html</code> ~ <code>q20.html</code>)라
+            그대로 쪼개 담으면 아래가 전부 가능해집니다.
+          </p>
+          <ul style="font-size:13.5px;font-weight:600;color:var(--sub)">
+            <li><b style="color:var(--ink)">틀린 문항만 열기</b> — 매쓰플랫 정오답과 문항번호로 맞물림</li>
+            <li><b style="color:var(--ink)">아하노트 연결</b> — 질문한 문항에 「이 시험 해설 보기」</li>
+            <li><b style="color:var(--ink)">문항별 잠금</b> — 킬러는 수업 후에 열기</li>
+            <li><b style="color:var(--ink)">가벼움</b> — 문항 하나 약 7KB, 필요한 것만 내려받음</li>
+          </ul>
+          <div class="warn" style="margin-top:13px">
+            <b>실측</b> 해설집 한 권이 약 100KB, 문항 하나가 약 7KB입니다.
+            통짜로 넣어도 용량 자체는 문제없지만, <b>쪼개 두지 않으면 위 네 가지를 나중에 다시 만들어야</b> 합니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="sec">
+    <h2><span class="n">3</span> 해설집이 앱으로 들어오는 길</h2>
+    <p class="d">원장님이 파일 하나만 고르시면 앱이 알아서 문항별로 잘라 담습니다. 해설지 PDF 올리시던 것과 같은 감각입니다.</p>
+    <div class="flow">
+      <div class="fstep"><div class="k">STEP 1</div><div class="h">Claude가 제작</div>
+        <div class="p">시험지를 주시면 문항별로 풀어 <code>해설집.html</code> 한 개를 만듭니다. 정답은 공식 정답표와 대조해 검증합니다.</div></div>
+      <div class="arrow">→</div>
+      <div class="fstep"><div class="k">STEP 2</div><div class="h">앱에서 불러오기</div>
+        <div class="p">「+ 해설집 불러오기」로 그 파일을 고릅니다. 앱이 <code>&lt;section class="sol" id="qN"&gt;</code> 단위로 잘라 문항별로 저장합니다.</div></div>
+      <div class="arrow">→</div>
+      <div class="fstep"><div class="k">STEP 3</div><div class="h">원장님이 검토</div>
+        <div class="p">문항별로 훑어보고 공개/잠금을 정합니다. 이상한 문항(6번 같은 것)은 빨간 표시로 먼저 눈에 띕니다.</div></div>
+      <div class="arrow">→</div>
+      <div class="fstep"><div class="k">STEP 4</div><div class="h">학생앱 발행</div>
+        <div class="p">반 또는 학생을 골라 발행. 발행해야만 학생 화면에 나타납니다(진학 나침반과 같은 원칙).</div></div>
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="sec">
+    <h2><span class="n">4</span> 저장 설계</h2>
+    <p class="d">이미 쓰고 있는 <code>lumen_store</code> 위에 키 세 개만 새로 만듭니다. 강의실(<code>lumen_vod_catalog</code> + <code>lumen_vod_assign</code>)과 똑같은 짝 구조입니다.</p>
+    <div class="card tw">
+      <table>
+        <tr><th style="width:26%">키</th><th style="width:16%">동기화</th><th>담는 것</th></tr>
+        <tr>
+          <td><code>lumen_haesol_catalog</code></td>
+          <td><span class="badge b-ok">SYNC_KEYS</span></td>
+          <td>해설집 목록 — 시험코드·학교·학년·학기·과목·문항수·문항별 단원/난이도/정답·검증 상태·특이사항. <b>가볍고 자주 읽는 것</b>만.</td>
+        </tr>
+        <tr>
+          <td><code>haesol_body_&lt;시험코드&gt;</code></td>
+          <td><span class="badge b-off">개별 로드</span></td>
+          <td>본문. <code>{ head, cover, tail, items:{ 1:"…", 2:"…" } }</code> — 문항별 HTML 조각. 열 때만 내려받습니다.</td>
+        </tr>
+        <tr>
+          <td><code>lumen_haesol_assign</code></td>
+          <td><span class="badge b-ok">SYNC_KEYS</span></td>
+          <td>배정·공개 규칙 — 어떤 해설집을 어떤 반/학생에게, 어떤 문항까지, 언제부터 열지.</td>
+        </tr>
+      </table>
+      <p class="d" style="margin:14px 0 0">
+        시험코드는 만들어 둔 폴더 이름을 그대로 씁니다 — <code>okgil_m2_2025_2mid</code>, <code>okgil_m3_2025_2mid</code>, <code>sorae_g1_2025_2fin</code>.
+      </p>
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="sec">
+    <h2><span class="n">5</span> 이미 있는 기능과 잇는 곳</h2>
+    <p class="d">해설집을 따로 떠 있는 자료가 아니라 <b>앱의 다른 화면에서 저절로 튀어나오는 것</b>으로 만드는 게 핵심입니다.</p>
+    <div class="grid3">
+      <div class="card">
+        <div style="font-size:14px;font-weight:900;margin-bottom:5px">🏫 기출모의</div>
+        <p class="d" style="margin:0">그 시험을 실시한 기록(<code>mock_exams</code>)이 있으면 <b>학생별 오답 문항</b>을 알고 있습니다 → 학생앱에서 그 문항 해설만 자동으로 열립니다.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:14px;font-weight:900;margin-bottom:5px">💡 아하노트</div>
+        <p class="d" style="margin:0">학생이 올린 질문에 교재·쪽·번호가 붙어 있습니다. 시험 문항과 맞물리면 힌트 창에 <b>「이 시험 해설 보기」</b>가 하나 더 생깁니다.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:14px;font-weight:900;margin-bottom:5px">🔁 매쓰플랫 정오답</div>
+        <p class="d" style="margin:0">지금 진행 중인 문항 단위 수집이 붙으면 <b>틀린 문항 → 그 해설 → 에빙하우스 복습</b>까지 한 줄로 이어집니다. 문항 단위로 쪼개 두는 이유.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="sec">
+    <h2><span class="n">6</span> 원장님이 정해 주실 것</h2>
+    <p class="d">아래 세 가지만 정해 주시면 바로 만들 수 있습니다.</p>
+
+    <div class="ask">
+      <div class="t">① 학생에게 언제 열어 줄까요?</div>
+      <div style="font-size:13.5px;color:var(--sub);font-weight:600">
+        <b style="color:var(--ink)">권장 — 「📸 재풀이 제출 후 공개」</b>.
+        손풀이 자산에 이미 정해 두신 규칙과 같아서 학생이 헷갈리지 않습니다.
+        (다른 선택: 즉시 전체 공개 / 시험 끝난 뒤 / 내가 틀린 문항만)
+      </div>
+    </div>
+
+    <div class="ask">
+      <div class="t">② 어디까지 내보낼까요?</div>
+      <div style="font-size:13.5px;color:var(--sub);font-weight:600">
+        학생앱만 / 학부모앱에도 (「우리 아이가 틀린 문항 해설」) / 인쇄물로도.
+        <b style="color:var(--ink)">권장 — 우선 학생앱만</b>. 학부모앱은 반응을 보고 나중에.
+      </div>
+    </div>
+
+    <div class="ask">
+      <div class="t">③ 시험지 원문은 어떻게 할까요?</div>
+      <div style="font-size:13.5px;color:var(--sub);font-weight:600">
+        지금 해설집은 <b>문제를 저희가 직접 타이핑</b>해 넣었고 시험지 이미지는 쓰지 않았습니다(저작권).
+        학생앱 공개도 <b>로그인한 우리 학원 학생에게만</b> 열리도록 하는 걸 권합니다.
+      </div>
+    </div>
+
+    <div class="warn">
+      <b>한 가지 더 확인</b> — 해설집은 수식을 인터넷에서 받아 그립니다(MathJax).
+      학생 휴대폰이 <b>오프라인이면 수식이 안 보입니다</b>. 학원 안에서만 쓸 거면 상관없지만,
+      집에서도 볼 거라면 수식 파일을 앱에 함께 넣어 두는 편이 안전합니다(용량 약 2MB, 1회).
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="sec">
+    <h2><span class="n">7</span> 만드는 순서</h2>
+    <p class="d">한 번에 다 만들지 않고 <b>쓸 수 있는 상태</b>를 먼저 만든 뒤 넓혀 갑니다.</p>
+    <div class="card">
+      <ol style="font-size:14px;font-weight:700;margin:0">
+        <li><b>1단계 · 목록과 미리보기</b> — 학원앱에 화면 A·B만. 원장님이 해설집을 불러와 보고 인쇄까지. <span class="badge b-blue">여기까지가 가장 먼저</span></li>
+        <li><b>2단계 · 학생앱 발행</b> — 반 배정 + 공개 규칙. 학생앱에 「기출 해설집」 카드 한 개 추가.</li>
+        <li><b>3단계 · 오답 연결</b> — 기출모의 기록과 맞물려 「내가 틀린 문항부터」.</li>
+        <li><b>4단계 · 매쓰플랫 연동</b> — 문항 단위 정오답이 붙는 시점에 복습 스케줄까지 연결.</li>
+      </ol>
+      <p class="d" style="margin:14px 0 0">
+        1단계는 <b>기존 화면을 건드리지 않고 새 화면만 추가</b>하는 작업이라 앱이 망가질 위험이 거의 없습니다.
+        2단계부터 학생앱도 함께 손봐야 하므로, 1단계를 먼저 써 보시고 판단하셔도 됩니다.
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    루멘수학 · 기출 해설집 학원앱 연동 시안 (상의용) · 2026-08-31<br>
+    현재 해설집 3권: 옥길중 중2 2학기중간(20문항) · 옥길중 중3 2학기중간(21문항) · 소래고 고1 2학기기말(22문항)<br>
+    이 문서는 시안이며 학원앱(lumen_v18)·학생앱(student_v2)은 아직 수정하지 않았습니다.
+  </footer>
+</div>
