@@ -282,7 +282,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v18-121';
+var APP_VER = 'v18-104';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -3095,29 +3095,6 @@ function saveSchoolDistDb(){localStorage.setItem('school_dist_db', JSON.stringif
     }
   });
   if(changed){saveSchoolDistDb(); console.log('분포 DB subject 필드 마이그레이션 완료 (기존 → 수학)');}
-})();
-
-// v18-107: 캡처로 등록됐던 분포의 SD를 성취도 역산값으로 일회 교정
-//  (v10-70 캡처 흐름이 AI가 읽은 SD를 그대로 저장했었다 — 학교알리미는 SD 미공개라 오독값)
-(function fixCapturedDistSd(){
-  try{
-    var changed=false;
-    schoolDistDb.forEach(function(d){
-      if(!/캡처 자동 등록/.test(d.memo||'')) return;
-      if(d.sdFixed) return;
-      var ad=d.achievementDist||{};
-      if(d.mean==null||ad.A==null) return;
-      var est=(typeof estimateSdFrom5Dist==='function')?estimateSdFrom5Dist(+d.mean,+ad.A,+ad.B,+ad.C,+ad.D,+ad.E):null;
-      if(est==null&&typeof estimateSdFromAPct==='function') est=estimateSdFromAPct(+ad.A,+d.mean);
-      if(est==null) return;
-      est=Math.round(est*10)/10;
-      if(Math.abs(est-(+d.sd||0))>0.5){
-        d.sdOld=d.sd; d.sd=est; d.sdFixed=true; changed=true;
-        console.log('분포 SD 교정:',d.school,d.grade,d.term,(d.sdOld||'?')+' → '+est);
-      } else { d.sdFixed=true; changed=true; }
-    });
-    if(changed){ saveSchoolDistDb(); if(typeof recalcAllMockExamGrades==='function') recalcAllMockExamGrades(); }
-  }catch(e){ console.warn('분포 SD 교정 실패', e); }
 })();
 
 // 정규분포 누적분포함수 (Z-score → 상위백분율 계산용)
@@ -6711,7 +6688,6 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
-      {ver:'v18-121',date:'2026',stability:'ok',memo:'\uD83E\uDDE9 \uD2C0\uB9B0 \uAE30\uCD9C \u2192 \uB9E4\uC4F0\uD50C\uB7AB \uC624\uB2F5 \uD559\uC2B5\uC9C0 \uC790\uB3D9 \uC0DD\uC131. [\uD575\uC2EC] \uAE30\uCD9C\uBAA8\uC758 \uC218\uC2E0\uD568\uC5D0\uC11C \uD559\uC0DD\uC774 \uD2C0\uB9B0 \uBB38\uD56D\uC758 <b>\uC720\uD615(concept)</b>\uC744 \uBAA8\uC544, \uADF8 \uC720\uD615\uC758 \uC720\uC0AC\uBB38\uC81C 12\uBB38\uD56D\uC9DC\uB9AC \uAC1C\uBCC4 \uD559\uC2B5\uC9C0\uB97C \uB9E4\uC4F0\uD50C\uB7AB\uC5D0 \uC790\uB3D9\uC73C\uB85C \uB9CC\uB4E0\uB2E4 \u2014 \u300C\uC9C4\uC815\uD55C \uC624\uB2F5 \uD559\uC2B5\u300D. [\uBC84\uD2BC] \uC218\uC2E0\uD568 \uC911\uC559 \uD2C0\uB9B0 \uBB38\uD56D \uC904\uC5D0 \u300C\uD83E\uDDE9 \uC624\uB2F5 \uD559\uC2B5\uC9C0\u300D(\uAC1C\uBCC4), \uD1B5\uACC4\uC904\uC5D0 \u300C\uD83E\uDDE9 \uC804\uC6D0 \uC624\uB2F5 \uD559\uC2B5\uC9C0\u300D(\uC751\uC2DC\uC790 \uC804\uC6D0, \uC624\uB2F5 \uC5C6\uB294 \uD559\uC0DD\u00B7\uC774\uBBF8 \uC0DD\uC131\uB41C \uD559\uC0DD \uC790\uB3D9 \uC81C\uC678). [\uB3D9\uC791] \uB9AC\uCEE4\uBC84\uB9AC\uC5D0\uC11C \uAC80\uC99D\uB41C \uD050(ws_make_req + 5\uBD84 \uC6CC\uCEE4) \uC7AC\uC0AC\uC6A9 \u2014 \uB179\uC0C9 \uB9AC\uCEE4\uBC84\uB9AC \uC11C\uC2DD\u00B7\uC774\uB860 \uC5C6\uC774 \uBB38\uC81C\uB9CC\u00B7\uD559\uC0DD \uBC30\uC815 \uD3EC\uD568, \uC774\uB984\uC740 \u300C\uC624\uB2F5\uD074\uB9AC\uB2C9 \uB0A0\uC9DC \uC774\uB984\u300D. \uD654\uBA74\uC5D0\uC11C \uC815\uC624\uB97C \uC815\uC815(\u270F)\uD588\uB2E4\uBA74 \uC815\uC815\uB41C \uC624\uB2F5 \uAE30\uC900\uC73C\uB85C \uC720\uD615\uC744 \uBAA8\uC740\uB2E4(\uC11C\uC220\uD615 \uC81C\uC678). \uC911\u00B7\uACE0\uB4F1 \uBAA8\uB450 \uC9C0\uC6D0. [\uC5D4\uC9C4] mockexam_engine\uC774 \uBB38\uD56D\uBCC4 \uC720\uD615ID\u00B7\uB9E4\uC4F0\uD50C\uB7AB \uD559\uC0DDID\u00B7\uD559\uAD50\uAE09\uC744 \uD568\uAED8 \uC2E3\uB3C4\uB85D \uD655\uC7A5 \u2014 \uB2E4\uC74C \u300C\uC9C0\uAE08 \uAC00\uC838\uC624\uAE30\u300D\uBD80\uD130 \uC61B \uD56D\uBAA9\uC5D0\uB3C4 \uCC44\uC6CC\uC9C4\uB2E4.'},
       {ver:'v18-104',date:'2026',stability:'ok',memo:'\uD83D\uDEAA \uD1F4\uC6D0\uC0DD\uC774 \uC544\uD558\uB178\uD2B8 \uBC18\uBCC4 \uBAA9\uB85D\uC5D0 \uB0A8\uB358 \uBB38\uC81C + \uC7AC\uBC1C \uBC29\uC9C0. [\uC99D\uC0C1] \uC774\uC11C\uC740(T5)\u00B7\uC2EC\uC720\uCC2C(T730)\u00B7\uC774\uCC44\uC728(T630) \uC138 \uD1F4\uC6D0\uC0DD\uC774 \uC544\uD558\uB178\uD2B8 \uBC18\uBCC4 \uBAA9\uB85D\uC5D0 \uACC4\uC18D \uD45C\uC2DC\uB410\uB2E4(\uC138 \uBA85 \uBAA8\uB450 \uC61B \uB178\uD2B8 \uBCF4\uC720\u00B7\uBBF8\uD574\uACB0 0). [\uC6D0\uC778] \uD654\uBA74\uB9C8\uB2E4 \uD1F4\uC6D0\uC0DD \uC81C\uC678 \uD544\uD130\uB97C \uB530\uB85C \uB2EC\uC544 \uC654\uACE0(v12-10 \uD50C\uB798\uB108\u00B7\uB179\uC74C, v16-18\u00B729 \uD559\uC0DD\uAD00\uB9AC), \uC544\uD558\uB178\uD2B8 \uD654\uBA74\uC740 \uC790\uAE30 \uBAA9\uB85D\uC744 ahaNotes\u00D7\uB4F1\uB85D\uBD80\uB85C \uC9C1\uC811 \uB9CC\uB4E4\uBA74\uC11C \uD544\uD130\uAC00 \uBE60\uC838 \uC788\uC5C8\uB2E4 \u2014 \uAC19\uC740 \uBD80\uB958\uC758 \uC138 \uBC88\uC9F8 \uC7AC\uBC1C. [\uACE0\uCE68] \uC544\uD558\uB178\uD2B8 \uB85C\uB4DC \uB2E8\uACC4(\uB2E8 \uD55C \uACF3)\uC5D0\uC11C \uD1F4\uC6D0\uC0DD \uB178\uD2B8\uB97C \uAC78\uB7EC\uB0B8\uB2E4 \u2014 \uBC18\uBCC4\u00B7\uD559\uC0DD\uBCC4\u00B7\uC77C\uBCC4\u00B7\uD648\uCE74\uB4DC\u00B7\uAC74\uC218 \uC804\uBD80 \uD55C\uAEBC\uBC88\uC5D0 \uD574\uACB0. \uAE30\uB85D\uC740 \uBCF4\uC874\uD574 \uD559\uC0DD\uAD00\uB9AC \uD1F4\uC6D0\uC0DD \uD3F4\uB354\uC5D0\uC11C \uC5F4\uB78C \uAC00\uB2A5. \uD559\uC0DD\uAD00\uB9AC \uC88C\uCE21 \uD604\uD669\u00B7\uBC18\uBCC4 \uCE74\uC6B4\uD2B8\uB3C4 \uD1F4\uC6D0\uC0DD \uC81C\uC678\uB85C \uD1B5\uC77C. [\uC7AC\uBC1C \uBC29\uC9C0] \u2460 \uACF5\uC6A9 activeStudents() \uC2E0\uC124 \u2014 \uC0C8 \uD654\uBA74\uC740 students \uB300\uC2E0 \uC774\uAC78 \uC4F4\uB2E4. \u2461 \uC790\uB3D9 \uAC80\uC0AC(sync/check_withdrawn_leak.js) \u2014 \uD1F4\uC6D0\uC0DD \uC774\uB984\uC774 \uC8FC\uC694 \uD654\uBA74\uC5D0 \uB098\uD0C0\uB098\uBA74 \uBC30\uD3EC \uC804 \uAC80\uC99D\uC5D0\uC11C \uBC14\uB85C \uAC78\uB9B0\uB2E4.'},
       {ver:'v18-103',date:'2026',stability:'ok',memo:'\uD83C\uDFC1 \uC9C4\uB3C4 \uB808\uC774\uC2A4 \uBD80\uBCC4 \uC124\uC815 \uACC4\uC0B0\uAE30 \uBC18\uC601(race_engine\uACFC \uB3D9\uC77C \uADDC\uCE59 \uC720\uC9C0).'},
       {ver:'v18-102',date:'2026',stability:'ok',memo:'\uD83C\uDFC6 \uC9C4\uB3C4 \uB808\uC774\uC2A4 \uC0C1\uAE08\uC744 \uD06C\uAC8C \uD45C\uC2DC(\uBC30\uB108).'},
@@ -10980,7 +10956,7 @@ function rcWsPoll(){
         var okN=(v.results||[]).filter(function(x){ return x.ok; }).length;
         plToast('🧩 학습지 '+okN+'개 생성 완료 — 매쓰플랫 내학습지에서 인쇄하세요');
       }
-      if(VIEW==='recovery'||VIEW==='mockexam') render();
+      if(VIEW==='recovery') render();
     }catch(e){}
   }, 30000);
 }
@@ -22224,7 +22200,6 @@ function rMockExam_MockReport(){
   h+='<div style="display:flex;gap:6px">';
   h+='<button onclick="_mrPrint()" style="padding:7px 12px;background:#475569;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🖨️ 인쇄</button>';
   h+='<button onclick="_mrDownloadPdf()" style="padding:7px 12px;background:#dc2626;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">📥 PDF 다운로드</button>';
-  h+='<button onclick="_mrKakaoCurrent()" title="카톡 전송용 세로 이미지" style="padding:7px 12px;background:#fee500;color:#3c1e1e;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">📱 카톡용</button>';
   h+='</div>';
   h+='</div>';
   h+='<div id="mr-preview-wrap" style="background:white;border-radius:8px;padding:0;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.1)">';
@@ -22434,7 +22409,7 @@ function _mrLoadDistDb(){
 function _mrReset(){
   if(!confirm('입력 내용을 모두 초기화하시겠습니까?')) return;
   MOCK_REPORT_STATE={
-    studentName:'',school:'',grade:'중1',semester:'1학기',examType:'중간고사',examDate:'',examYear:'',
+    studentName:'',school:'',grade:'중1',semester:'1학기',examType:'중간고사',examDate:'',
     studentScore:'',schoolMean:'',schoolSd:'',totalStudents:'',
     distA:'',distB:'',distC:'',distD:'',distE:'',
     mfGrade:'',academyRank:'',academyTotal:'',academyMean:'',
@@ -22461,35 +22436,6 @@ function _mrPrint(){
 }
 
 // PDF 다운로드 (html2canvas + jsPDF)
-async function _mrKakaoCurrent(){
-  try{
-    await _maEnsureCanvasLibs();
-    var page=document.getElementById('mr-page'), page2=document.getElementById('mr-page2');
-    if(!page){ alert('미리보기를 찾을 수 없습니다'); return; }
-    var targets=[page]; if(page2) targets.push(page2);
-    var hides=[], shows=[], hp=[], sp=[];
-    targets.forEach(function(t){
-      t.querySelectorAll('[data-pdf-hide="1"]').forEach(function(el){hides.push(el);});
-      t.querySelectorAll('[data-pdf-show="1"]').forEach(function(el){shows.push(el);});
-    });
-    hides.forEach(function(el,i){hp[i]=el.style.display; el.style.display='none';});
-    shows.forEach(function(el,i){sp[i]=el.style.display; el.style.display='block';});
-    var cs=[];
-    for(var i=0;i<targets.length;i++) cs.push(await html2canvas(targets[i],{scale:2,useCORS:true,backgroundColor:'#ffffff'}));
-    hides.forEach(function(el,i){el.style.display=hp[i]||'';});
-    shows.forEach(function(el,i){el.style.display=sp[i]||'none';});
-    var gap=48;
-    var W=Math.max.apply(null,cs.map(function(c){return c.width;}));
-    var H=cs.reduce(function(t,c){return t+c.height;},0)+gap*Math.max(0,cs.length-1);
-    var out=document.createElement('canvas'); out.width=W; out.height=H;
-    var ctx=out.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
-    var y=0; cs.forEach(function(c){ ctx.drawImage(c,0,y); y+=c.height+gap; });
-    var blob=await new Promise(function(res){ out.toBlob(res,'image/jpeg',0.92); });
-    var s2=MOCK_REPORT_STATE;
-    _maDownloadBlob(blob,'성적표_'+((s2.studentName||'학생').replace(/[\\/:*?"<>|]/g,''))+'_카톡용.jpg');
-  }catch(e){ alert('이미지 생성 실패: '+e.message); }
-}
-window._mrKakaoCurrent=_mrKakaoCurrent;
 async function _mrDownloadPdf(){
   var s=MOCK_REPORT_STATE;
   if(!s.studentScore || !s.schoolMean || !s.schoolSd || !s.totalStudents){
@@ -22519,24 +22465,15 @@ async function _mrDownloadPdf(){
     hides.forEach(function(el,i){hidesPrev[i]=el.style.display; el.style.display='none';});
     shows.forEach(function(el,i){showsPrev[i]=el.style.display; el.style.display='block';});
 
-    var bigPrint=confirm('큰글씨 PDF로 만들까요?\n\n확인 = 큰글씨 (A4 가로, 한 면을 두 장에 — 글자 약 1.4배, 총 4쪽)\n취소 = 기본 (세로 2쪽)');
-    var pdf = new window.jspdf.jsPDF({orientation:(bigPrint?'landscape':'portrait'), unit:'mm', format:'a4'});
-    var firstPage=true;
+    var pdf = new window.jspdf.jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
+    var pdfW = pdf.internal.pageSize.getWidth();
+    var pdfH = pdf.internal.pageSize.getHeight();
     for(var ti=0; ti<targets.length; ti++){
-      var cuts=_maSectionCutsOf(targets[ti], 2);
       var canvas = await html2canvas(targets[ti], {scale:2, useCORS:true, backgroundColor:'#ffffff'});
-      if(bigPrint){
-        var pieces=_maSplitCanvasAt(canvas, cuts);
-        for(var pi=0; pi<pieces.length; pi++){
-          if(!firstPage) pdf.addPage('a4','landscape');
-          firstPage=false;
-          _maAddCanvasFit(pdf, pieces[pi]);
-        }
-      } else {
-        if(!firstPage) pdf.addPage('a4','portrait');
-        firstPage=false;
-        _maAddCanvasFit(pdf, canvas);
-      }
+      var imgData = canvas.toDataURL('image/jpeg', 0.95);
+      if(ti>0) pdf.addPage();
+      var imgH = (canvas.height * pdfW) / canvas.width;
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, Math.min(imgH, pdfH));
     }
 
     // 토글 복원
@@ -22760,7 +22697,6 @@ function _mrSaveReport(){
     showFeedback:s.showFeedback,
     parentFeedback:s.parentFeedback||'',
     customTitle:s.customTitle||'',
-    examYear:s.examYear||'',
     // v14-10: 평가일 + 원클릭 확장 추출 필드
     examDate:s.examDate||'',
     diffRates:s.diffRates||null,
@@ -23272,7 +23208,7 @@ let MOCK_REPORT_BATCH_EDIT=null;      // 일괄 수정 모달 {key, f:{...}}
 
 function _mrBlankState(){
   return {
-    studentName:'',school:'',grade:'중1',semester:'1학기',examType:'중간고사',examDate:'',examYear:'',
+    studentName:'',school:'',grade:'중1',semester:'1학기',examType:'중간고사',examDate:'',
     studentScore:'',schoolMean:'',schoolSd:'',totalStudents:'',
     distA:'',distB:'',distC:'',distD:'',distE:'',
     mfGrade:'',academyRank:'',academyTotal:'',academyMean:'',
@@ -23346,22 +23282,6 @@ window._mrfPrintFolder=function(key){
 };
 
 // 폴더 일괄 PDF — 한 파일에 학생×2면
-window._mrfKakaoFolder=async function(key){
-  var g=_mrfGroups().filter(function(x){return x.key===key;})[0];
-  if(!g||!g.recs.length){alert('폴더를 찾을 수 없습니다'); return;}
-  try{
-    if(typeof JSZip==='undefined') await _mrLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-    var zip=new JSZip();
-    for(var i=0;i<g.recs.length;i++){
-      var c=await _maRecToLongCanvas(g.recs[i]);
-      var blob=await new Promise(function(res){ c.toBlob(res,'image/jpeg',0.92); });
-      zip.file('성적표_'+_mrfSanit(g.recs[i].studentName||('학생'+(i+1)))+'_카톡용.jpg', blob);
-    }
-    var out=await zip.generateAsync({type:'blob'});
-    _maDownloadBlob(out,'성적표_카톡용_'+_mrfSanit(g.school)+'_'+g.recs.length+'명.zip');
-    alert('카톡용 이미지 '+g.recs.length+'명 완성 — 압축을 풀어 한 장씩 카톡으로 보내세요');
-  }catch(e){ alert('이미지 생성 실패: '+e.message); }
-};
 window._mrfPdfFolder=async function(key){
   var g=_mrfGroups().filter(function(x){return x.key===key;})[0];
   if(!g||!g.recs.length){alert('폴더를 찾을 수 없습니다'); return;}
@@ -23372,55 +23292,37 @@ window._mrfPdfFolder=async function(key){
     document.body.appendChild(st);
   }
   function say(m){ st.textContent=m; st.style.opacity='1'; }
-  var bigPrint=confirm('큰글씨 PDF로 만들까요?\n\n확인 = 큰글씨 (한 면을 A4 두 장에 나눠 글자 1.4배, 학생당 4쪽)\n취소 = 기본 (학생당 2쪽)');
   try{
     say('📄 준비 중…');
     if(typeof html2canvas==='undefined') await _mrLoadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
     if(typeof window.jspdf==='undefined') await _mrLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-    // v18-118: 학생별 「개별 PDF」로 각각 만들어 ZIP 한 파일로 묶는다 (원장님 요청)
-    if(typeof JSZip==='undefined') await _mrLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
     var host=document.createElement('div');
     host.style.cssText='position:fixed;left:-9999px;top:0;width:820px;background:white;z-index:-1';
     document.body.appendChild(host);
-    var zip=new JSZip();
-    var examTag=_mrfSanit(g.school)+'_'+_mrfSanit(g.grade)+'_'+_mrfSanit(g.semester+String(g.examType||'').replace('고사',''));
+    var pdf=new window.jspdf.jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    var pdfW=pdf.internal.pageSize.getWidth(), pdfH=pdf.internal.pageSize.getHeight();
+    var first=true;
     for(var i=0;i<g.recs.length;i++){
       var r=g.recs[i];
-      say('📄 개별 PDF 생성 '+(i+1)+' / '+g.recs.length+' — '+(r.studentName||''));
+      say('📄 PDF 생성 중 '+(i+1)+' / '+g.recs.length+' — '+(r.studentName||''));
       host.innerHTML=_mrPagesHTMLFor(r);
       await new Promise(function(res){ setTimeout(res,60); });
       host.querySelectorAll('[data-pdf-hide="1"]').forEach(function(el){el.style.display='none';});
       host.querySelectorAll('[data-pdf-show="1"]').forEach(function(el){el.style.display='block';});
-      var pdf=new window.jspdf.jsPDF({orientation:(bigPrint?'landscape':'portrait'),unit:'mm',format:'a4'});
-      var first=true;
       var pages=[host.querySelector('#mr-page'), host.querySelector('#mr-page2')].filter(function(x){return x;});
       for(var p=0;p<pages.length;p++){
-        var cuts=_maSectionCutsOf(pages[p], 2);
         var canvas=await html2canvas(pages[p],{scale:2,useCORS:true,backgroundColor:'#ffffff'});
-        if(bigPrint){
-          var pieces=_maSplitCanvasAt(canvas, cuts);
-          for(var hpart=0;hpart<pieces.length;hpart++){
-            if(!first) pdf.addPage('a4','landscape');
-            first=false;
-            _maAddCanvasFit(pdf, pieces[hpart]);
-          }
-        } else {
-          if(!first) pdf.addPage('a4','portrait');
-          first=false;
-          _maAddCanvasFit(pdf, canvas);
-        }
+        var img=canvas.toDataURL('image/jpeg',0.92);
+        if(!first) pdf.addPage();
+        first=false;
+        var imgH=(canvas.height*pdfW)/canvas.width;
+        pdf.addImage(img,'JPEG',0,0,pdfW,Math.min(imgH,pdfH));
       }
-      zip.file('성적표_'+_mrfSanit(r.studentName||('학생'+(i+1)))+'_'+examTag+(bigPrint?'_큰글씨':'')+'.pdf', pdf.output('blob'));
     }
     document.body.removeChild(host);
-    say('🗜 압축 중…');
-    var blob=await zip.generateAsync({type:'blob'});
-    var fn='성적표_'+examTag+'_'+g.recs.length+'명_개별.zip';
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob); a.download=fn;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(a.href); },4000);
-    say('✅ '+fn+' — 압축을 풀면 학생별 PDF가 각각 들어 있어요');
+    var fn='성적표_'+_mrfSanit(g.school)+'_'+_mrfSanit(g.grade)+'_'+_mrfSanit(g.semester+String(g.examType||'').replace('고사',''))+'_'+g.recs.length+'명.pdf';
+    pdf.save(fn);
+    say('✅ '+fn);
     setTimeout(function(){ st.style.opacity='0'; },2600);
   }catch(e){
     console.error(e);
@@ -23507,7 +23409,7 @@ function renderMockReportPreview(){
   var evalD=_mrEvalDate(s);
   var hakYear=_mrHakYearOf(evalD);
   var evalDisp=_mrEvalDisp(s);
-  var examDisplay=(s.examYear||hakYear)+' '+(s.semester||'1학기')+' '+(s.examType||'중간고사');
+  var examDisplay=hakYear+' '+(s.semester||'1학기')+' '+(s.examType||'중간고사');
   var today=new Date();
   var dateDisplay=today.getFullYear()+'년 '+(today.getMonth()+1)+'월 '+today.getDate()+'일';
   // v14-10: 1면 하단 그래프 데이터 (추이 = 같은 학생·학교 저장본 + 현재, 히스토 = 같은 시험 폴더)
@@ -23519,7 +23421,7 @@ function renderMockReportPreview(){
   // 헤더
   h+='<div style="text-align:center;border-bottom:3px double #0d2240;padding-bottom:14px;margin-bottom:18px">';
   h+='<div style="font-size:12px;color:#666;font-weight:500;margin-bottom:3px;letter-spacing:0.5px">'+_mrEsc(schoolDisplay)+'</div>';
-  var _mrTitle=(s.customTitle&&s.customTitle.trim())?_mrEsc(s.customTitle.trim()):((s.examYear||hakYear)+'학년도 '+_mrEsc(s.semester||'1학기')+' '+_mrEsc(s.examType||'중간고사')+' 성적표');
+  var _mrTitle=(s.customTitle&&s.customTitle.trim())?_mrEsc(s.customTitle.trim()):(hakYear+'학년도 '+_mrEsc(s.semester||'1학기')+' '+_mrEsc(s.examType||'중간고사')+' 성적표');
   h+='<div style="font-size:28px;font-weight:900;color:#0d2240;letter-spacing:-1px;margin-bottom:4px">'+_mrTitle+'</div>';
   h+='<div style="font-size:13px;color:#444;font-weight:500">루멘수학 모의 성적 추정 리포트</div>';
   h+='</div>';
@@ -23938,15 +23840,7 @@ async function _mrCaptureSchoolDist(file){
           examType:ext.examType||'',
           year:ext.year||String(new Date().getFullYear()),
           mean:parseFloat(ext.mean),
-          // v18-107: 학교알리미는 표준편차를 공개하지 않는다 — 캡처의 sd는 오독 가능성이 높아,
-          // 성취도 분포(A~E)로 역산한 값을 우선한다 (진학 나침반과 같은 방식)
-          sd:(function(){
-            var m=parseFloat(ext.mean); var ad=ext.achievementDist||{};
-            var est=(typeof estimateSdFrom5Dist==='function')?estimateSdFrom5Dist(m,parseFloat(ad.A),parseFloat(ad.B),parseFloat(ad.C),parseFloat(ad.D),parseFloat(ad.E)):null;
-            if(est==null&&typeof estimateSdFromAPct==='function'&&ad.A!=null) est=estimateSdFromAPct(parseFloat(ad.A),m);
-            if(est!=null) return Math.round(est*10)/10;
-            return ext.sd!=null?parseFloat(ext.sd):(s.schoolSd?parseFloat(s.schoolSd):null);
-          })(),
+          sd:ext.sd!=null?parseFloat(ext.sd):(s.schoolSd?parseFloat(s.schoolSd):null),
           totalStudents:ext.totalStudents!=null?parseInt(ext.totalStudents):null,
           achievementDist:ext.achievementDist||null,
           memo:'모의성적표 캡처 자동 등록',
@@ -24106,7 +24000,6 @@ function _mrRenderTabList(){
       h+='<button onclick="_mrfOpenEdit(\''+_mrEsc(g.key)+'\')" style="padding:9px 13px;background:rgba(255,255,255,0.14);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">✏️ 시험 정보 수정</button>';
       h+='<button onclick="_mrfPrintFolder(\''+_mrEsc(g.key)+'\')" style="padding:9px 13px;background:rgba(255,255,255,0.14);color:white;border:1px solid rgba(255,255,255,0.3);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🖨 전체 인쇄</button>';
       h+='<button onclick="_mrfPdfFolder(\''+_mrEsc(g.key)+'\')" style="padding:9px 13px;background:#dc2626;color:white;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">📄 전체 PDF</button>';
-      h+='<button onclick="_mrfKakaoFolder(\''+_mrEsc(g.key)+'\')" style="padding:9px 13px;background:#fee500;color:#3c1e1e;border:none;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">📱 카톡용 이미지</button>';
       h+='</div>';
       h+='</div>';
       h+='<div style="font-size:9.5px;opacity:0.65;margin-top:8px">💡 전체 인쇄/PDF는 학생당 2면 — 양면 인쇄하면 학생 1명 = 종이 1장</div>';
@@ -24908,927 +24801,8 @@ function _mrBulkSaveAll(){
 // ── v10-73: 모의 성적표 저장 목록 탭 끝 ─────────────────────
 
 
-/* ═══════════ 기출모의 자동 수신함 (v18-105) ═══════════
- * 서버 엔진(sync/mockexam_engine.js)이 매쓰플랫 기출 「원본」 학습지의 채점을
- * 자동 점수로 바꿔 lumen_store 'mockexam_auto'에 둔다. 여기서 서술형 부분점수만
- * 입력하면 mock_exams에 정식 등록되어 기존 등급 계산·성적표가 그대로 작동한다. */
-var MOCKAUTO=null, MOCKAUTO_LOADING=false;
-var MOCKAUTO_ESSAY={};      // 서술형 입력값 { itemKey|seq : 점수 }
-var MOCKAUTO_TOGGLE={};     // 화면에서 서술형으로 전환한 문항 { itemKey : {seq:true} }
-var MOCKAUTO_OX={};         // 화면에서 정정한 정오 { itemKey : {seq:'O'|'X'} } — 매쓰플랫 채점을 덮어씀
-var MOCKAUTO_SHOWDONE=false;
-function mockAutoLoad(force){
-  if(MOCKAUTO_LOADING) return;
-  if(MOCKAUTO!==null && !force) return;
-  MOCKAUTO_LOADING=true;
-  var sb; try{ sb=getSupaClient(); }catch(e){ sb=null; }
-  if(!sb){ MOCKAUTO={items:[]}; MOCKAUTO_LOADING=false; return; }
-  sb.from('lumen_store').select('value').eq('key','mockexam_auto').then(function(r){
-    MOCKAUTO=(r&&r.data&&r.data[0]&&r.data[0].value)||{items:[]};
-    MOCKAUTO_LOADING=false;
-    // v18-121: 학습지 생성 큐 상태도 함께 불러온다 (오답 학습지 버튼의 ⏳/✅ 표시용)
-    _maWsEnsure().then(function(){ if(RC.wsr&&(RC.wsr.status==='requested'||RC.wsr.status==='running')) rcWsPoll(); if(VIEW==='mockexam') render(); });
-    if(VIEW==='mockexam') render();
-  },function(){ MOCKAUTO={items:[]}; MOCKAUTO_LOADING=false; if(VIEW==='mockexam') render(); });
-}
-function mockAutoPendingCount(){
-  if(!MOCKAUTO||!MOCKAUTO.items) return 0;
-  return MOCKAUTO.items.filter(function(it){ return !mockExams.some(function(m){return m.autoKey===it.key;}); }).length;
-}
-// 시험 meta → 등록 폼 값 변환
-function _maGrade(meta){ return meta&&meta.grade?((meta.level==='고'?'고':'중')+meta.grade):''; }
-function _maSchoolGuess(meta){
-  var nm=(meta&&meta.school)||''; if(!nm) return '';
-  var tok=nm.replace(/학교$/,'').replace(/중$|고$/,'');
-  var hit=schools.find(function(s){ var t=(s.name||'').replace(/학교$/,'').replace(/중$|고$/,''); return t&&tok&&(t.indexOf(tok)===0||tok.indexOf(t)===0); });
-  return hit?hit.name:'';
-}
-function _maStudentByCode(code){
-  return students.find(function(s){ return String(s.lumen_rec_code||'')===String(code); })||null;
-}
-function _maEssaySeqs(it){
-  var extra=MOCKAUTO_TOGGLE[it.key]||{};
-  var set={};
-  (it.essay||[]).forEach(function(q){ set[q.seq]=true; });
-  Object.keys(extra).forEach(function(sq){ if(extra[sq]) set[sq]=true; else delete set[sq]; });
-  return set;
-}
-// 화면 계산: 자동점수(토글 반영) + 서술형 입력 합
-function _maCalc(it){
-  var essaySet=_maEssaySeqs(it);
-  var auto=0, autoMax=0, essayMax=0, essayIn=0, essayFilled=0, essayCnt=0;
-  (it.per||[]).forEach(function(pb){
-    var isE=!!essaySet[pb.seq];
-    if(isE){
-      essayCnt++; essayMax+=(pb.sc||0);
-      var v=MOCKAUTO_ESSAY[it.key+'|'+pb.seq];
-      if(v!=null&&v!==''){ essayIn+=parseFloat(v)||0; essayFilled++; }
-    } else {
-      autoMax+=(pb.sc||0);
-      if(_maEffR(it.key,pb)==='O') auto+=(pb.sc||0);
-    }
-  });
-  return { auto:Math.round(auto*10)/10, autoMax:Math.round(autoMax*10)/10,
-           essayCnt:essayCnt, essayMax:Math.round(essayMax*10)/10,
-           essayIn:Math.round(essayIn*10)/10, essayFilled:essayFilled,
-           total:Math.round((auto+essayIn)*10)/10 };
-}
-// 유효 정오: 화면 정정이 있으면 그 값, 없으면 매쓰플랫 채점
-function _maEffR(itKey, pb){ var o=MOCKAUTO_OX[itKey]; return (o&&o[pb.seq])||pb.r; }
-// 칸 클릭 순환: O → X → ✍(서술형) → O  (미채점 –는 O부터)
-function mockAutoCycle(key,seq){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;}); if(!it) return;
-  var pb=(it.per||[]).find(function(x){return x.seq===seq;}); if(!pb) return;
-  var essaySet=_maEssaySeqs(it);
-  if(!MOCKAUTO_OX[key]) MOCKAUTO_OX[key]={};
-  if(!MOCKAUTO_TOGGLE[key]) MOCKAUTO_TOGGLE[key]={};
-  if(essaySet[seq]){                    // ✍ 칸 클릭 = 부분점수 입력칸으로 이동 (실수로 풀리지 않게)
-    var idSafe=key.replace(/[^a-zA-Z0-9]/g,'');
-    var inp=document.getElementById('ma-es-'+idSafe+'-'+seq);
-    if(inp){ inp.focus(); inp.select&&inp.select(); }
-    return;
-  } else {
-    var r=_maEffR(key,pb);
-    if(r==='O'){ MOCKAUTO_OX[key][seq]='X'; }               // O → X
-    else if(r==='X'||r==='?'){                              // X → ✍
-      delete MOCKAUTO_OX[key][seq];
-      MOCKAUTO_TOGGLE[key][seq]=true;
-    }
-    else { MOCKAUTO_OX[key][seq]='O'; }                     // – → O
-  }
-  render();
-}
-window.mockAutoCycle=mockAutoCycle;
-function mockAutoUnessay(key,seq){
-  if(!MOCKAUTO_TOGGLE[key]) MOCKAUTO_TOGGLE[key]={};
-  MOCKAUTO_TOGGLE[key][seq]=false;                 // 서술형 해제 → 원래 매쓰플랫 채점(O/X)으로 복귀
-  if(MOCKAUTO_OX[key]) delete MOCKAUTO_OX[key][seq];
-  delete MOCKAUTO_ESSAY[key+'|'+seq];
-  render();
-}
-window.mockAutoUnessay=mockAutoUnessay;
-// 등록 후 수정 반영 재등록: 기존 기록을 빼고 현재 화면 값으로 다시 등록
-function mockAutoReRegister(key){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;}); if(!it) return;
-  var idx=mockExams.findIndex(function(m){return m.autoKey===key;});
-  if(idx>=0){ mockExams.splice(idx,1); saveMockExams(); }
-  mockAutoRegister(key);
-}
-window.mockAutoReRegister=mockAutoReRegister;
-function mockAutoToggleEssay(key,seq){
-  if(!MOCKAUTO_TOGGLE[key]) MOCKAUTO_TOGGLE[key]={};
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;});
-  var baseEssay=it&&(it.essay||[]).some(function(q){return q.seq===seq;});
-  var cur=MOCKAUTO_TOGGLE[key][seq];
-  // 기본 서술형이면 false로 끄고, 아니면 true로 켠다 (3상태 순환 없이 단순 토글)
-  MOCKAUTO_TOGGLE[key][seq]=(cur===undefined)?(!baseEssay):!cur;
-  render();
-}
-window.mockAutoToggleEssay=mockAutoToggleEssay;
-function mockAutoEssayInput(key,seq,val){ MOCKAUTO_ESSAY[key+'|'+seq]=val; setTimeout(render,0); }
-var _maEsTimer=null;
-function mockAutoEssayLive(key,seq,val){    // 타이핑하는 동안 즉시 반영 (0.3초 디바운스, 커서 유지)
-  MOCKAUTO_ESSAY[key+'|'+seq]=val;
-  clearTimeout(_maEsTimer);
-  _maEsTimer=setTimeout(function(){
-    var focusId=document.activeElement&&document.activeElement.id;
-    render();
-    if(focusId&&/^ma-es-/.test(focusId)){
-      var el=document.getElementById(focusId);
-      if(el){ el.focus(); try{ el.setSelectionRange&&el.setSelectionRange(el.value.length,el.value.length); }catch(e){} }
-    }
-  },300);
-}
-window.mockAutoEssayLive=mockAutoEssayLive;
-window.mockAutoEssayInput=mockAutoEssayInput;
-function mockAutoRegister(key){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;});
-  if(!it){ alert('항목을 찾을 수 없습니다'); return; }
-  if(mockExams.some(function(m){return m.autoKey===key;})){ alert('이미 등록된 항목입니다'); return; }
-  var stu=_maStudentByCode(it.student_code);
-  if(!stu){ alert('등록부에서 학생을 찾지 못했습니다: '+it.student_name); return; }
-  var calc=_maCalc(it);
-  if(it.status==='mismatch'){
-    if(!confirm('⚠ 이 시험은 문항 수가 어긋나 있어 자동 점수가 부정확할 수 있습니다.\n실제 답안과 대조하셨나요? 이대로 등록할까요?')) return;
-  }
-  if(calc.essayCnt>calc.essayFilled){
-    if(!confirm('서술형 '+(calc.essayCnt-calc.essayFilled)+'문항이 아직 비어 있습니다 (0점 처리).\n이대로 등록할까요?')) return;
-  }
-  var sel=document.getElementById('ma-school-'+it.key.replace(/[^a-zA-Z0-9]/g,''));
-  var school=(sel&&sel.value)||_maSchoolGuess(it.meta);
-  var meta=it.meta||{};
-  var essaySet=_maEssaySeqs(it);
-  var effPer=(it.per||[]).map(function(p){ return Object.assign({}, p, { r:_maEffR(it.key,p) }); });
-  var wrong=effPer.filter(function(p){return !essaySet[p.seq]&&(p.r==='X'||p.r==='?');}).map(function(p){return p.seq;});
-  var edited=effPer.filter(function(p,i){return p.r!==(it.per[i]||{}).r;}).length;
-  var data={
-    studentId: stu.id,
-    sourceSchool: school,
-    sourceYear: meta.year?+meta.year:null,
-    sourceGrade: _maGrade(meta),
-    sourceTerm: meta.semester?meta.semester+'학기':'',
-    examType: meta.term||'',
-    examDate: (it.solvedAt||'').slice(0,10),
-    score: calc.total,
-    memo: '⚡자동채점 · 객관식 '+calc.auto+'/'+calc.autoMax+(calc.essayCnt?' · 서술형 '+calc.essayIn+'/'+calc.essayMax:'')+(edited?' · ✏정정 '+edited+'문항':'')+(wrong.length?' · 틀린 문항 '+wrong.join(','):''),
-    autoKey: it.key,
-    autoDetail: { per: effPer, essaySeqs: Object.keys(essaySet).map(Number), examId: it.examId, examTitle: it.examTitle }
-  };
-  var saved=addMockExam(data);
-  var isMid=/^중/.test(data.sourceGrade||'');
-  var gradeMsg;
-  if(saved.calcAchievement&&isMid) gradeMsg=' · 성취도 '+saved.calcAchievement+(saved.calcTopPct!=null?' (상위 '+Math.round(saved.calcTopPct)+'%)':'');
-  else if(saved.calcGrade) gradeMsg=' · 예상 '+saved.calcGrade+'등급'+(saved.calcTopPct!=null?' (상위 '+Math.round(saved.calcTopPct)+'%)':'');
-  else gradeMsg=' (분포 DB 없음 → 계산대기)';
-  alert('✅ 등록 완료 — '+stu.name+' '+calc.total+'점'+gradeMsg);
-  render();
-}
-window.mockAutoRegister=mockAutoRegister;
-
-function rMockExam_Inbox(){
-  if(MOCKAUTO===null){ mockAutoLoad(); return '<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">⚡ 자동 채점 데이터를 불러오는 중…</div>'; }
-  var items=(MOCKAUTO.items||[]);
-  if(!items.length){
-    return '<div style="background:white;border-radius:12px;padding:36px;text-align:center;color:#94a3b8;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">아직 자동 채점된 기출이 없습니다.<br><span style="font-size:11px">학생이 매쓰플랫에서 기출 「원본」 학습지를 풀고 채점되면, 다음 수집(하루 3번 또는 지금 가져오기) 때 나타납니다.</span></div>';
-  }
-  // 선택 항목 (없으면 첫 대기 항목)
-  var sel=items.find(function(x){return x.key===MOCKAUTO_SEL;});
-  if(!sel){
-    sel=items.find(function(x){ return !mockExams.some(function(m){return m.autoKey===x.key;}); })||items[0];
-    MOCKAUTO_SEL=sel?sel.key:null;
-  }
-  var pw=MOCKAUTO_PW();
-  var h='<div id="ma-grid" style="display:grid;grid-template-columns:360px minmax(0,1fr) 8px '+pw+'px;gap:10px;align-items:start">';
-  h+=_maLeftPane(items, sel);
-  h+='<div>'+_maCenterPane(sel)+'</div>';
-  h+='<div onmousedown="startMaResize(event)" title="끌어서 성적표 폭 조절" style="cursor:col-resize;align-self:stretch;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#e2e8f0" onmouseenter="this.style.background=\'#0ea5e9\'" onmouseleave="if(!window._maResizing)this.style.background=\'#e2e8f0\'"><svg width="4" height="28" viewBox="0 0 4 28"><circle cx="2" cy="6" r="1.5" fill="#94a3b8"/><circle cx="2" cy="14" r="1.5" fill="#94a3b8"/><circle cx="2" cy="22" r="1.5" fill="#94a3b8"/></svg></div>';
-  h+='<div>'+_maPreviewPane(sel)+'</div>';
-  h+='</div>';
-  return h;
-}
-var MOCKAUTO_SEL=null;
-function MOCKAUTO_PW(){ var v=parseInt(localStorage.getItem('ma_pw'),10); return (v>=380&&v<=1200)?v:680; }
-function startMaResize(e){
-  e.preventDefault();
-  window._maResizing=true;
-  var grid=document.getElementById('ma-grid'); if(!grid) return;
-  document.body.style.userSelect='none';
-  var onMove=function(ev){
-    var rect=grid.getBoundingClientRect();
-    var w=Math.min(1200, Math.max(380, Math.round(rect.right-ev.clientX)));
-    grid.style.gridTemplateColumns='360px minmax(0,1fr) 8px '+w+'px';
-    var inner=document.getElementById('ma-pv-inner');
-    if(inner){
-      var sc=Math.max(0.4, Math.min(1.4,(w-52)/794));
-      inner.style.transform='scale('+sc+')';
-      inner.style.width=Math.round(100/sc)+'%';
-    }
-    window._maPwTmp=w;
-  };
-  var onUp=function(){
-    window._maResizing=false;
-    document.body.style.userSelect='';
-    if(window._maPwTmp) localStorage.setItem('ma_pw', String(window._maPwTmp));
-    document.removeEventListener('mousemove',onMove);
-    document.removeEventListener('mouseup',onUp);
-  };
-  document.addEventListener('mousemove',onMove);
-  document.addEventListener('mouseup',onUp);
-}
-window.startMaResize=startMaResize;
-var MOCKAUTO_EXPAND={};   // 시험 폴더 펼침 상태
-
-function _maIsDone(it){ return mockExams.some(function(m){return m.autoKey===it.key;}); }
-function _maRegOf(it){ return mockExams.find(function(m){return m.autoKey===it.key;}); }
-function mockAutoSelect(key){ MOCKAUTO_SEL=key; render(); }
-window.mockAutoSelect=mockAutoSelect;
-
-/* ── 좌: 시험 폴더 + 학생 목록 ── */
-function _maLeftPane(items, sel){
-  var gmap={}, order=[];
-  items.forEach(function(it){
-    var k=String(it.examId);
-    if(!gmap[k]){ gmap[k]={examTitle:it.examTitle, meta:it.meta||{}, items:[], pend:0, mismatch:false, latest:''}; order.push(k); }
-    var g=gmap[k]; g.items.push(it);
-    if(!_maIsDone(it)) g.pend++;
-    if(it.status==='mismatch') g.mismatch=true;
-    if((it.solvedAt||'')>g.latest) g.latest=it.solvedAt||'';
-  });
-  order.sort(function(a,b){ return (gmap[b].latest||'').localeCompare(gmap[a].latest||''); });
-  var h='<div style="background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);padding:10px 8px;position:sticky;top:8px;max-height:calc(100vh - 120px);overflow-y:auto">';
-  h+='<div style="display:flex;align-items:center;gap:8px;padding:4px 8px 10px">'
-    +'<span style="font-size:15px;font-weight:900;color:#0d2240">⚡ 채점 도착</span>'
-    +(MOCKAUTO.updated?'<span style="font-size:9px;color:#94a3b8">'+MOCKAUTO.updated.slice(5,16).replace('T',' ')+'</span>':'')
-    +'<button onclick="mockAutoLoad(true)" title="새로고침" style="margin-left:auto;padding:4px 9px;background:#f1f5f9;color:#475569;border:none;border-radius:7px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">🔄</button></div>';
-  order.forEach(function(k){
-    var g=gmap[k];
-    var open=MOCKAUTO_EXPAND.hasOwnProperty(k)?MOCKAUTO_EXPAND[k]:(g.pend>0||g.items.some(function(x){return x.key===(sel&&sel.key);}));
-    var mm=g.meta||{};
-    h+='<div onclick="MOCKAUTO_EXPAND[\''+k+'\']='+(open?'false':'true')+';render()" style="display:flex;align-items:center;gap:6px;padding:11px 10px;border-radius:10px;cursor:pointer;background:#f8fafc;margin:4px 0">'
-      +'<span style="font-size:10px;color:#94a3b8">'+(open?'▾':'▸')+'</span>'
-      +'<span style="flex:1;min-width:0;font-size:15px;font-weight:800;color:#0d2240;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+g.examTitle+'">🗂 '+((mm.school||'')+' '+((mm.level||'')+(mm.grade||''))+' '+(mm.year||'')+' '+(mm.semester?mm.semester+'학기':'')+' '+(mm.term||'').replace('고사',''))+'</span>'
-      +(g.latest?'<span style="font-size:11px;color:#94a3b8;flex-shrink:0">'+(+g.latest.slice(5,7))+'/'+(+g.latest.slice(8,10))+'</span>':'')
-      +(g.pend>0?'<span style="font-size:12px;background:#dc2626;color:white;padding:2px 9px;border-radius:10px;font-weight:800">'+g.pend+'</span>':'<span style="font-size:13px;color:#15803d;font-weight:800">✓</span>')
-      +'</div>';
-    if(open){
-      g.items.sort(function(a,b){ return (b.solvedAt||'').localeCompare(a.solvedAt||''); });
-      g.items.forEach(function(it){
-        var on=sel&&sel.key===it.key;
-        var done=_maIsDone(it); var reg=done?_maRegOf(it):null;
-        var calc=_maCalc(it);
-        var dday=(it.solvedAt||'').slice(5,10).replace('-','/').replace(/^0/,'').replace('/0','/');
-        h+='<div onclick="mockAutoSelect(\''+it.key+'\')" style="display:flex;align-items:center;gap:8px;padding:10px 12px 10px 26px;border-radius:9px;cursor:pointer;'
-          +(on?'background:#0d2240;color:white;':'')+'margin:2px 0">'
-          +'<span style="font-size:17px;font-weight:800;'+(on?'color:white':'color:#0d2240')+'">'+it.student_name+'</span>'
-          +(it.status==='mismatch'?'<span style="font-size:12px">⚠</span>':'')
-          +(dday?'<span style="font-size:11.5px;'+(on?'color:rgba(255,255,255,0.55)':'color:#94a3b8')+'">'+dday+'</span>':'')
-          +'<span style="margin-left:auto;font-size:17px;font-weight:900;'+(on?'color:#fca5a5':'color:#dc2626')+'">'+(done&&reg?reg.score:calc.total)+'</span>'
-          +(done?'<span style="font-size:12px;'+(on?'color:#86efac':'color:#15803d')+'">✓</span>':'<span style="font-size:12px;'+(on?'color:#fde68a':'color:#f59e0b')+'">●</span>')
-          +'</div>';
-      });
-    }
-  });
-  h+='<div style="font-size:11.5px;color:#94a3b8;padding:10px 10px 2px;line-height:1.6">● 등록 대기 · ✓ 등록됨 · 이름 옆 날짜=응시일<br>새 채점은 수집(하루 3번·지금 가져오기) 후 나타납니다</div>';
-  h+='</div>';
-  return h;
-}
-
-/* ── 시험 통계 (같은 시험 응시자 전체) ── */
-function _maExamStats(examId){
-  var takers=(MOCKAUTO.items||[]).filter(function(x){return x.examId===examId;});
-  if(!takers.length) return null;
-  var scores=takers.map(function(x){ var d=_maIsDone(x)?_maRegOf(x):null; return d?d.score:_maCalc(x).total; });
-  var mean=Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length*10)/10;
-  var max=Math.max.apply(null,scores);
-  // 문항별 정답률 (서술형·미채점 제외)
-  var per={};
-  takers.forEach(function(x){
-    (x.per||[]).forEach(function(pb){
-      if(pb.essay) return;
-      var r=_maEffR(x.key,pb);
-      if(!per[pb.seq]) per[pb.seq]={o:0,t:0,sc:pb.sc,chapter:pb.chapter};
-      if(r==='O'){per[pb.seq].o++;per[pb.seq].t++;}
-      else if(r==='X'||r==='?'){per[pb.seq].t++;}
-    });
-  });
-  var rows=Object.keys(per).map(function(k){ var v=per[k]; return {seq:+k,rate:v.t?Math.round(v.o/v.t*100):null,sc:v.sc,chapter:v.chapter,t:v.t}; });
-  rows.sort(function(a,b){return a.seq-b.seq;});
-  return {n:takers.length, mean:mean, max:max, rows:rows};
-}
-function mockAutoOpenSol(key,seq){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;});
-  if(!it||!it.solUrl) return;
-  window.open(it.solUrl+(seq?('#q'+seq):''),'_blank');
-}
-window.mockAutoOpenSol=mockAutoOpenSol;
-function mockAutoLinkSol(key){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;});
-  if(!it) return;
-  var url=prompt('이 시험의 해설집 주소를 붙여넣으세요.\n(해설집 채팅에서 만든 아티팩트 링크 — 문항 앵커 #q번호 자동 연결)', it.solUrl||'https://');
-  if(url===null) return;
-  url=(url||'').trim();
-  var sb; try{ sb=getSupaClient(); }catch(e){ sb=null; }
-  if(!sb){ alert('서버 연결이 없어 저장할 수 없습니다'); return; }
-  sb.from('lumen_store').select('value').eq('key','exam_ws_map').then(function(r){
-    var map=(r&&r.data&&r.data[0]&&r.data[0].value)||{exams:{}};
-    if(!map.exams[it.examId]){ alert('연결표에서 시험을 찾지 못했습니다'); return; }
-    if(url && url!=='https://') map.exams[it.examId].solUrl=url; else delete map.exams[it.examId].solUrl;
-    map.updated=new Date().toISOString();
-    sb.from('lumen_store').upsert({key:'exam_ws_map',value:map,updated_at:map.updated},{onConflict:'key'}).then(function(){
-      // 화면 즉시 반영 (다음 엔진 실행 때 mockexam_auto에도 실림)
-      (MOCKAUTO.items||[]).forEach(function(x){ if(x.examId===it.examId) x.solUrl=(url&&url!=='https://')?url:null; });
-      alert(url&&url!=='https://'?'📘 해설집이 연결되었습니다 — 틀린 문항 번호를 누르면 해당 해설로 이동합니다':'해설집 연결을 해제했습니다');
-      render();
-    });
-  });
-}
-window.mockAutoLinkSol=mockAutoLinkSol;
-
-/* ── 중: 채점 상세 ── */
-/* ═══ v18-121: 틀린 기출 → 매쓰플랫 오답 학습지 ═══════════════════════════
- * 「진정한 오답」 — 시험에서 틀린 문항의 유형(concept_id)으로 학생별 개별 학습지를
- * 매쓰플랫에 자동 생성한다. 리커버리의 검증된 큐(ws_make_req + 5분 워커)를 재사용. */
-function _maWsEnsure(){
-  return new Promise(function(res){
-    try{
-      var sb=getSupaClient(); if(!sb){ res(); return; }
-      sb.from('lumen_store').select('value').eq('key','ws_make_req').then(function(r){
-        var v=(r&&r.data&&r.data[0])?r.data[0].value:null;
-        if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
-        RC.wsr=v; res();
-      },function(){ res(); });
-    }catch(e){ res(); }
-  });
-}
-function _maWsJobOf(it){
-  var essaySet=_maEssaySeqs(it);
-  var seen={}, ids=[];
-  (it.per||[]).forEach(function(pb){
-    if(essaySet[pb.seq]) return;                       // 서술형은 유형 학습지 대상 아님
-    var r=_maEffR(it.key,pb);
-    if((r==='X'||r==='?')&&pb.cid&&!seen[pb.cid]){ seen[pb.cid]=1; ids.push(pb.cid); }
-  });
-  var d=new Date(); var md=(d.getMonth()+1)+'/'+d.getDate();
-  return { key:'ma|'+it.key, name:it.student_name, title:'오답클리닉 '+md+' '+it.student_name,
-    conceptIds:ids, count:12, mfStudentId:it.mfStudentId||null,
-    schoolType:it.mfSchool||'MIDDLE', grade:it.mfGrade!=null?String(it.mfGrade):'1', assign:true };
-}
-function _maWsBtn(it){
-  if(!it.mfStudentId) return '';                       // 옛 데이터(엔진 갱신 전) — 다음 수집 후 나타남
-  var job=_maWsJobOf(it);
-  if(!job.conceptIds.length) return '';
-  var st=rcWsState(job.key);
-  if(st.k==='wait') return '<span style="font-size:12px;font-weight:900;color:#fff;background:#475569;border-radius:9px;padding:6px 12px">⏳ 오답 학습지 생성 중… (약 5분)</span>';
-  if(st.k==='done') return '<span title="매쓰플랫 → 학습지 → 내학습지에서 인쇄하세요" style="font-size:12px;font-weight:900;color:#15803d;background:#dcfce7;border:1.5px solid #bbf7d0;border-radius:9px;padding:6px 12px">✅ 오답 학습지 생성됨 · '+st.r.problemN+'문항</span>'
-    +'<button onclick="mockAutoMakeWs(\''+it.key.replace(/'/g,'')+'\')" style="border:none;background:none;color:#94a3b8;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">다시</button>';
-  if(st.k==='fail') return '<button onclick="mockAutoMakeWs(\''+it.key.replace(/'/g,'')+'\')" title="'+esc2(st.r.why||'')+'" style="border:1.5px solid #fca5a5;background:#fef2f2;color:#dc2626;border-radius:9px;padding:6px 12px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit">⚠ 학습지 실패 — 다시</button>';
-  return '<button onclick="mockAutoMakeWs(\''+it.key.replace(/'/g,'')+'\')" title="틀린 문항의 유형 '+job.conceptIds.length+'개로 12문항 개별 학습지를 매쓰플랫에 만듭니다" style="border:none;background:linear-gradient(135deg,#0d2240,#1d4f91);color:#fff;border-radius:9px;padding:7px 13px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit">🧩 오답 학습지</button>';
-}
-window.mockAutoMakeWs=async function(key){
-  var it=(MOCKAUTO&&MOCKAUTO.items||[]).find(function(x){return x.key===key;});
-  if(!it){ alert('항목을 찾지 못했습니다.'); return; }
-  await _maWsEnsure();
-  var job=_maWsJobOf(it);
-  if(!job.conceptIds.length){ alert('틀린 문항의 유형 정보가 없습니다.\n(왼쪽 위 「지금 가져오기」로 다시 수집하면 유형이 채워집니다)'); return; }
-  if(!job.mfStudentId){ alert('매쓰플랫 학생 정보가 없습니다 — 「지금 가져오기」로 다시 수집해 주세요.'); return; }
-  var msg='🧩 오답 학습지 만들기 — '+it.student_name+'\n\n'
-    +'· '+it.examTitle+'\n'
-    +'· 틀린 문항의 유형 '+job.conceptIds.length+'개 → 유사문제 '+job.count+'문항\n'
-    +'· 「주간 리커버리」 녹색 서식 · 이론 없이 문제만 · 학생 배정 포함\n'
-    +'· 이름: '+job.title+'\n\n'
-    +'약 5분 뒤 매쓰플랫 내학습지에 만들어집니다. 진행할까요?';
-  if(!confirm(msg)) return;
-  if(await rcWsSubmit([job])) plToast('🧩 요청했습니다 — 약 5분 뒤 「✅ 생성됨」으로 바뀝니다');
-};
-window.mockAutoMakeWsAll=async function(examId){
-  var takers=(MOCKAUTO&&MOCKAUTO.items||[]).filter(function(x){return x.examId===examId;});
-  if(!takers.length) return;
-  await _maWsEnsure();
-  var jobs=[]; var skip=0;
-  takers.forEach(function(it){
-    var job=_maWsJobOf(it);
-    if(!job.conceptIds.length||!job.mfStudentId){ return; }         // 오답 없음(만점 등)·정보 없음 → 조용히 제외
-    if(rcWsState(job.key).k==='done'){ skip++; return; }            // 이미 생성됨
-    jobs.push(job);
-  });
-  if(!jobs.length){ alert('만들 학습지가 없습니다.\n(오답이 있는 학생이 없거나, 이미 모두 생성되었습니다'+(skip?' — 생성됨 '+skip+'명':'')+')'); return; }
-  if(!confirm('🧩 이 시험 응시자 '+jobs.length+'명의 오답 학습지를 한번에 만들까요?\n(학생마다 자기가 틀린 유형 12문항 · 녹색 서식 · 학생 배정)'+(skip?'\n(이미 생성된 '+skip+'명은 제외)':''))) return;
-  if(await rcWsSubmit(jobs)) plToast('🧩 '+jobs.length+'명 요청 완료 — 약 5분 뒤 생성됩니다');
-};
-function _maCenterPane(it){
-  if(!it) return '<div style="background:white;border-radius:12px;padding:40px;text-align:center;color:#94a3b8;font-size:12px">왼쪽에서 학생을 선택하세요</div>';
-  var calc=_maCalc(it);
-  var essaySet=_maEssaySeqs(it);
-  var stu=_maStudentByCode(it.student_code);
-  var meta=it.meta||{};
-  var isDone=_maIsDone(it); var reg=isDone?_maRegOf(it):null;
-  var schoolGuess=_maSchoolGuess(meta);
-  var idSafe=it.key.replace(/[^a-zA-Z0-9]/g,'');
-  var isMiddle=(meta.level||'')==='중';
-  var h='<div style="background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);padding:18px 20px">';
-  // 머리
-  h+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">'
-    +'<span style="font-size:28px;font-weight:900;color:#0d2240">'+(stu?stu.name:it.student_name)+'</span>'
-    +(stu&&stu.group?'<span style="font-size:10px;background:#eef2ff;color:#4338ca;padding:2px 8px;border-radius:10px;font-weight:800">'+stu.group+'</span>':'')
-    +(it.solvedAt?'<span style="font-size:10px;color:#94a3b8">응시 '+it.solvedAt.slice(0,10)+'</span>':'')
-    +'<div style="margin-left:auto;display:flex;align-items:baseline;gap:5px">'
-    +'<span style="font-size:52px;font-weight:900;color:#dc2626;line-height:1">'+calc.total+'</span>'
-    +'<span style="font-size:16px;color:#94a3b8">/ '+(it.total||100)+'점</span></div>'
-    +'</div>';
-  h+='<div style="font-size:15px;color:#475569;margin-bottom:10px">'+it.examTitle+'</div>';
-  // 📊 우리 학원 통계줄 + 문항별 정답률 막대 (정답률 50% 미만 = 빨강)
-  var stats=_maExamStats(it.examId);
-  if(stats&&stats.n>=2){
-    h+='<div style="background:#f8fafc;border:1px solid #eef1f5;border-radius:12px;padding:12px 16px;margin-bottom:14px">';
-    h+='<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:9px">'
-      +'<span style="font-size:14px;font-weight:900;color:#0d2240">📊 우리 학원 '+stats.n+'명 응시</span>'
-      +'<span style="font-size:13.5px;color:#475569">평균 <b style="color:#0d2240">'+stats.mean+'</b> · 최고 <b style="color:#dc2626">'+stats.max+'</b></span>'
-      +'<span style="font-size:11px;color:#94a3b8">막대 = 문항별 정답률'+(it.solUrl?' · 클릭하면 해설':'')+'</span>'
-      +'<span style="margin-left:auto;display:flex;gap:6px">'
-      +'<button onclick="mockAutoRegisterAll('+it.examId+')" style="padding:7px 12px;background:#dc2626;color:white;border:none;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">💾 전원 등록</button>'
-      +'<button onclick="mockAutoPrintAll('+it.examId+')" style="padding:7px 12px;background:#0d2240;color:white;border:none;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">🖨 전원 인쇄</button>'
-      +'<button onclick="mockAutoSaveAll('+it.examId+')" style="padding:7px 12px;background:#f59e0b;color:white;border:none;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">📂 전원 저장</button>'
-      +'<button onclick="mockAutoKakaoImgAll('+it.examId+')" style="padding:7px 12px;background:#fee500;color:#3c1e1e;border:none;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">📱 전원 카톡용</button>'
-      +'<button onclick="mockAutoMakeWsAll('+it.examId+')" title="학생마다 자기가 틀린 유형으로 12문항 개별 학습지를 매쓰플랫에 만듭니다" style="padding:7px 12px;background:#7c3aed;color:white;border:none;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">🧩 전원 오답 학습지</button>'
-      +'</span>'
-      +'</div>';
-    h+='<div style="display:flex;gap:3px;align-items:flex-end;height:52px">';
-    stats.rows.forEach(function(rw){
-      var rate=rw.rate==null?0:rw.rate;
-      var bar=Math.max(4,Math.round(rate*0.42));
-      var color=rate<50?'#dc2626':(rate<75?'#f59e0b':'#22c55e');
-      h+='<div onclick="'+(it.solUrl?'mockAutoOpenSol(\''+it.key+'\','+rw.seq+')':'')+'" title="'+rw.seq+'번 · 정답률 '+(rw.rate==null?'-':rw.rate+'%')+(rw.chapter?' · '+rw.chapter:'')+'" '
-        +'style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;'+(it.solUrl?'cursor:pointer;':'')+'">'
-        +'<div style="width:100%;max-width:26px;height:'+bar+'px;background:'+color+';border-radius:3px 3px 0 0;opacity:0.85"></div>'
-        +'<span style="font-size:9.5px;color:#94a3b8;font-weight:700">'+rw.seq+'</span></div>';
-    });
-    h+='</div></div>';
-  }
-  // 등록 결과 배지 (중학교는 성취도 우선)
-  if(isDone&&reg){
-    var badge='';
-    // 등급 표기는 성적표와 같은 5등급제로 통일 (9등급제 병기는 혼란만 줘서 제거)
-    var g5=null;
-    if(reg.calcTopPct!=null&&typeof calcGrade5FromScore==='function'){
-      var meta5=it.meta||{}; var sg=_maSchoolGuess(meta5);
-      var d5=findDistMatch(sg,_maGrade(meta5),meta5.semester?meta5.semester+'학기':'',meta5.term||'',meta5.year);
-      if(d5&&d5.mean!=null&&d5.sd) { var r5=calcGrade5FromScore(reg.score,d5.mean,d5.sd); if(r5) g5=r5.grade; }
-    }
-    if(reg.calcAchievement&&isMiddle) badge='성취도 '+reg.calcAchievement+(reg.calcTopPct!=null?' · 상위 '+Math.round(reg.calcTopPct)+'%':'')+(g5?' · 5등급제 '+g5+'등급':'');
-    else if(g5||reg.calcGrade) badge=(g5?'5등급제 '+g5+'등급':reg.calcGrade+'등급')+(reg.calcTopPct!=null?' · 상위 '+Math.round(reg.calcTopPct)+'%':'')+(reg.calcAchievement?' · 성취도 '+reg.calcAchievement:'');
-    else badge='계산대기 (분포 DB 등록 시 자동)';
-    var dirty=reg&&Math.abs((reg.score||0)-calc.total)>0.01;
-    h+='<div style="display:flex;align-items:center;gap:10px;background:'+(dirty?'#fff7ed':'#dcfce7')+';border:1px solid '+(dirty?'#fdba74':'#86efac')+';border-radius:10px;padding:9px 14px;margin-bottom:12px">'
-      +(dirty
-        ?'<span style="font-size:16px;font-weight:800;color:#c2410c">✏ 수정 중 — 등록 '+reg.score+'점 → 화면 '+calc.total+'점 · 아래 「다시 등록」을 눌러야 반영됩니다</span>'
-        :'<span style="font-size:16px;font-weight:800;color:#15803d">✅ 등록됨 — '+badge+'</span>')
-      +'<button onclick="mockAutoReRegister(\''+it.key+'\')" style="margin-left:auto;padding:8px 14px;background:#dc2626;color:white;border:none;border-radius:8px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">🔁 수정 반영해 다시 등록</button>'
-      +'<button onclick="mockAutoToReport(\''+it.key+'\')" style="padding:8px 14px;background:#f59e0b;color:white;border:none;border-radius:8px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">📄 성적표 화면에 채우기</button>'
-      +'</div>';
-  }
-  // 문항수 불일치 경고
-  if(it.status==='mismatch'){
-    h+='<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:14px;color:#92400e;line-height:1.7">'
-      +'⚠️ <b>문항 수 불일치</b> — 학습지 '+(it.wsCount||'?')+'문제 vs 원본 시험 '+(it.examCount||'?')+'문항. 매쓰플랫이 시험지를 읽으며 문항을 쪼갠 경우로, '
-      +'<b>순서가 밀려 배점이 잘못 붙을 수 있습니다.</b> 등록 전 실제 답안지와 대조하세요.</div>';
-  }
-  // O/X 스트립
-  h+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">';
-  (it.per||[]).forEach(function(pb){
-    var isE=!!essaySet[pb.seq];
-    var r=_maEffR(it.key,pb);
-    var edited=MOCKAUTO_OX[it.key]&&MOCKAUTO_OX[it.key][pb.seq]&&MOCKAUTO_OX[it.key][pb.seq]!==pb.r;
-    var bg,fg,label;
-    if(isE){ bg='#f3e8ff'; fg='#7c3aed'; label='✍'; }
-    else if(r==='O'){ bg='#dcfce7'; fg='#15803d'; label='O'; }
-    else if(r==='X'||r==='?'){ bg='#fee2e2'; fg='#dc2626'; label='X'; }
-    else { bg='#f1f5f9'; fg='#94a3b8'; label='–'; }
-    h+='<span onclick="mockAutoCycle(\''+it.key+'\','+pb.seq+')" title="'+pb.seq+'번 · '+(pb.sc||0)+'점'+(pb.chapter?' · '+pb.chapter:'')+' · 클릭 = O→X→서술형 순환'+(edited?' · ✏ 정정됨':'')+'" '
-      +'style="display:inline-flex;flex-direction:column;align-items:center;justify-content:center;width:54px;height:62px;border-radius:10px;background:'+bg+';color:'+fg+';cursor:pointer;user-select:none'+(edited?';box-shadow:0 0 0 2.5px #1d6fe8 inset':'')+'">'
-      +'<span style="font-size:13px;font-weight:700;opacity:0.7">'+pb.seq+(edited?' ✏':'')+'</span><span style="font-size:20px;font-weight:900">'+label+'</span></span>';
-  });
-  h+='</div>';
-  h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:#94a3b8;margin-bottom:14px">'
-    +'<span>칸 클릭 = <b>O→X→✍ 순환</b> (정오 정정 가능, ✏=정정됨) · 객관식 '+calc.auto+'/'+calc.autoMax+'점</span>';
-  var effWrong=(it.per||[]).filter(function(pb){ var r=_maEffR(it.key,pb); return !essaySet[pb.seq]&&(r==='X'||r==='?'); }).map(function(pb){return pb.seq;});
-  it=it; if(effWrong.length){ it.wrongSeqs=effWrong; }else{ it.wrongSeqs=[]; }
-  if(it.wrongSeqs&&it.wrongSeqs.length){
-    h+='<span style="font-weight:700;color:#64748b">틀린 문항:</span>';
-    it.wrongSeqs.forEach(function(sq){
-      if(it.solUrl){
-        h+='<span onclick="mockAutoOpenSol(\''+it.key+'\','+sq+')" title="'+sq+'번 해설 열기" style="display:inline-flex;align-items:center;gap:3px;background:#fee2e2;color:#dc2626;padding:3px 10px;border-radius:9px;font-size:12.5px;font-weight:800;cursor:pointer">'+sq+' 📘</span>';
-      } else {
-        h+='<span style="background:#f1f5f9;color:#64748b;padding:3px 9px;border-radius:9px;font-size:12px;font-weight:700">'+sq+'</span>';
-      }
-    });
-    h+=_maWsBtn(it);
-  }
-  h+='<span onclick="mockAutoLinkSol(\''+it.key+'\')" style="margin-left:auto;font-size:11.5px;color:'+(it.solUrl?'#15803d':'#1d6fe8')+';cursor:pointer;font-weight:700">'+(it.solUrl?'📘 해설집 연결됨 · 변경':'📘 해설집 연결하기')+'</span>';
-  h+='</div>';
-  // 서술형 입력 — 등록 여부와 무관하게 항상 (등록 후엔 「수정 반영해 다시 등록」으로 반영)
-  var eqs=(it.per||[]).filter(function(pb){return essaySet[pb.seq];});
-  if(eqs.length){
-    h+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:11px 14px;margin-bottom:12px">';
-    h+='<span style="font-size:16px;font-weight:800;color:#7c3aed">✍ 서술형 부분점수</span>';
-    eqs.forEach(function(pb){
-      var v=MOCKAUTO_ESSAY[it.key+'|'+pb.seq];
-      h+='<label style="display:flex;align-items:center;gap:6px;font-size:16px;color:#475569">'+pb.seq+'번'
-        +'<input id="ma-es-'+idSafe+'-'+pb.seq+'" type="number" min="0" max="'+(pb.sc||10)+'" step="0.5" value="'+(v!=null?v:'')+'" placeholder="0~'+(pb.sc||0)+'" '
-        +'oninput="mockAutoEssayLive(\''+it.key+'\','+pb.seq+',this.value)" '
-        +'style="width:90px;padding:10px 10px;border:1.5px solid #e9d5ff;border-radius:9px;font-size:18px;font-family:inherit;outline:none"> / '+(pb.sc||0)
-        +'<span onclick="if(confirm(\''+pb.seq+'번을 객관식(자동 채점)으로 되돌릴까요?\'))mockAutoUnessay(\''+it.key+'\','+pb.seq+')" title="객관식으로 되돌리기" style="cursor:pointer;color:#94a3b8;font-size:13px">✕</span></label>';
-    });
-    h+='</div>';
-  }
-  if(!isDone){
-    // 등록줄
-    var schoolOpts='<option value="">🏫 기출학교…</option>'+schools.map(function(sch){
-      return '<option value="'+sch.name+'" '+(sch.name===schoolGuess?'selected':'')+'>'+sch.name+'</option>';
-    }).join('');
-    var dist=findDistMatch(schoolGuess, _maGrade(meta), meta.semester?meta.semester+'학기':'', meta.term||'', meta.year);
-    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
-    h+='<select id="ma-school-'+idSafe+'" onchange="setTimeout(render,0)" style="padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:14px;font-family:inherit;outline:none">'+schoolOpts+'</select>';
-    h+='<span style="font-size:13.5px;color:#64748b">'+_maGrade(meta)+' · '+(meta.semester?meta.semester+'학기':'')+' '+(meta.term||'')+(meta.year?' · '+meta.year+'년':'')+'</span>';
-    h+=dist?'<span style="font-size:10px;background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:10px;font-weight:800">분포 DB ✓ '+(isMiddle?'성취도·':'')+'등급 자동</span>'
-          :'<span style="font-size:10px;background:#f1f5f9;color:#94a3b8;padding:2px 8px;border-radius:10px;font-weight:700">분포 DB 없음 → 계산대기</span>';
-    h+='<button onclick="mockAutoToReport(\''+it.key+'\')" style="margin-left:auto;padding:14px 22px;background:#f59e0b;color:white;border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit">📄 성적표 화면에 채우기</button>';
-    h+='<button onclick="mockAutoRegister(\''+it.key+'\')" style="padding:14px 30px;background:#dc2626;color:white;border:none;border-radius:10px;font-size:17px;font-weight:800;cursor:pointer;font-family:inherit">💾 성적표 등록</button>';
-    h+='</div>';
-    // 학교알리미 캡처 (분포 없을 때)
-    if(!dist){
-      h+='<div style="display:flex;align-items:center;gap:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:9px 14px;margin-top:10px;flex-wrap:wrap">'
-        +'<span style="font-size:11px;color:#1e40af">🏫 학교알리미의 <b>평균·성취도 분포</b> 캡처를 올리면 등급 계산이 켜집니다 (표준편차는 분포로 자동 역산)</span>'
-        +'<label style="margin-left:auto;padding:7px 14px;background:#1d6fe8;color:white;border-radius:8px;font-size:11px;font-weight:800;cursor:pointer">📷 캡처 올리기'
-        +'<input type="file" accept="image/*" style="display:none" onchange="_mrCaptureSchoolDist(this.files[0]);this.value=\'\'">'
-        +'</label></div>';
-    }
-  }
-  h+='</div>';
-  return h;
-}
-
-/* ── 우: 성적표 미리보기 ── */
-function _maPreviewRec(it){
-  var stu=_maStudentByCode(it.student_code);
-  var calc=_maCalc(it);
-  var meta=it.meta||{};
-  var isDone=_maIsDone(it); var reg=isDone?_maRegOf(it):null;
-  var idSafe=it.key.replace(/[^a-zA-Z0-9]/g,'');
-  var sel=document.getElementById('ma-school-'+idSafe);
-  var school=(sel&&sel.value)||(reg&&reg.sourceSchool)||_maSchoolGuess(meta);
-  var dist=findDistMatch(school, _maGrade(meta), meta.semester?meta.semester+'학기':'', meta.term||'', meta.year);
-  // 학원 내 등수 (같은 시험 응시자끼리)
-  var peers=(MOCKAUTO.items||[]).filter(function(x){return x.examId===it.examId;})
-    .map(function(x){ return {key:x.key, score:_maCalc(x).total}; });   // 항상 화면 계산값 (수정 즉시 반영)
-  peers.sort(function(a,b){return b.score-a.score;});
-  // 동점자는 공동 등수 (91점 두 명이면 둘 다 1등)
-  var myScore=(peers.find(function(pp){return pp.key===it.key;})||{}).score;
-  var rank=peers.filter(function(pp){return pp.score>myScore+0.001;}).length+1;
-  var mean=peers.length?Math.round(peers.reduce(function(t,pp){return t+pp.score;},0)/peers.length*10)/10:'';
-  var ad=(dist&&dist.achievementDist)||{};
-  return {
-    studentName:(stu?stu.name:it.student_name), school:school||'', grade:_maGrade(meta)||'중1',
-    examYear:meta.year?String(meta.year):'',
-    semester:(meta.semester?meta.semester+'학기':'1학기'), examType:meta.term||'중간고사',
-    examDate:(it.solvedAt||'').slice(0,10),
-    studentScore:String(calc.total),
-    schoolMean:dist&&dist.mean!=null?String(dist.mean):'', schoolSd:dist&&dist.sd!=null?String(dist.sd):'',
-    totalStudents:(dist&&dist.totalStudents!=null)?String(dist.totalStudents):(_maExtra(it.examId).totalStudents!=null?String(_maExtra(it.examId).totalStudents):''),
-    distA:ad.A!=null?String(ad.A):'', distB:ad.B!=null?String(ad.B):'', distC:ad.C!=null?String(ad.C):'',
-    distD:ad.D!=null?String(ad.D):'', distE:ad.E!=null?String(ad.E):'',
-    academyRank:String(rank||''), academyTotal:String(peers.length||''), academyMean:String(mean||''),
-    showRef:true,
-    // 제목: 기출 원본 연도(예: 2025학년도) 기준 — 응시일(2026) 기준 자동 제목이 헷갈려서 명시한다
-    customTitle:(_maExtra(it.examId).customTitle)||((meta.year?meta.year+'학년도 ':'')+(meta.semester?meta.semester+'학기 ':'')+(meta.term||'')+' (기출 모의) 성적표'),
-    // ── 2면 문항 분석 — 매쓰플랫 수집 데이터로 자동 (PDF 업로드 불필요) ──
-    diffRates:_maDiffRates(it), items:_maItems(it), unitRates:_maUnitRates(it),
-    goodTypes:_maGoodWeak(it).good, weakTypes:_maGoodWeak(it).weak
-  };
-}
-// 학원 문항별 정답률 사전 {seq: rate}
-function _maAvgRates(examId){
-  var st=_maExamStats(examId); var m={};
-  if(st) st.rows.forEach(function(r){ if(r.rate!=null) m[r.seq]=r.rate; });
-  return m;
-}
-// 난이도별 정답률(그 학생) — 수학비서 난이도 1~6을 5칸에 대응
-function _maDiffRates(it){
-  var bands={'하':[0,0],'중하':[0,0],'중':[0,0],'상':[0,0],'최상':[0,0]};
-  var name=function(d){ if(d==null) return null; if(d<=2)return '하'; if(d===3)return '중하'; if(d===4)return '중'; if(d===5)return '상'; return '최상'; };
-  var any=false;
-  (it.per||[]).forEach(function(pb){
-    if(pb.essay) return; var b=name(pb.diff); if(!b) return;
-    var r=_maEffR(it.key,pb);
-    if(r==='O'){ bands[b][0]++; bands[b][1]++; any=true; }
-    else if(r==='X'||r==='?'){ bands[b][1]++; any=true; }
-  });
-  if(!any) return null;
-  var out={}; Object.keys(bands).forEach(function(k){ out[k]=bands[k][1]?Math.round(bands[k][0]/bands[k][1]*100):0; });
-  return out;
-}
-// 문항별 진단 [{no,name,correct,avgRate}] — avgRate=우리 학원 정답률
-function _maItems(it){
-  var avg=_maAvgRates(it.examId);
-  var rows=(it.per||[]).filter(function(pb){var r=_maEffR(it.key,pb);return !pb.essay&&(r==='O'||r==='X'||r==='?');})
-    .map(function(pb){ var r=_maEffR(it.key,pb); return { no:pb.seq, name:(pb.chapter||'').replace(/^\d+\s*/,''), correct:r==='O', avgRate:avg[pb.seq]!=null?avg[pb.seq]:null }; });
-  return rows.length?rows:null;
-}
-// 단원별 정답률(그 학생)
-function _maUnitRates(it){
-  var m={};
-  (it.per||[]).forEach(function(pb){
-    if(pb.essay) return; var u=(pb.unit||'').replace(/^\d+\s*/,''); if(!u) return;
-    var r=_maEffR(it.key,pb);
-    if(!m[u]) m[u]=[0,0];
-    if(r==='O'){ m[u][0]++; m[u][1]++; }
-    else if(r==='X'||r==='?'){ m[u][1]++; }
-  });
-  var rows=Object.keys(m).filter(function(u){return m[u][1]>0;}).map(function(u){ return { name:u, rate:Math.round(m[u][0]/m[u][1]*100) }; });
-  return rows.length?rows:null;
-}
-// 우수(어려운데 맞힘)·보완(쉬운데 틀림) 유형 3개씩
-function _maGoodWeak(it){
-  var avg=_maAvgRates(it.examId);
-  var good=[], weak=[];
-  (it.per||[]).forEach(function(pb){
-    if(pb.essay||avg[pb.seq]==null) return;
-    var nm=(pb.chapter||'').replace(/^\d+\s*/,''); if(!nm) return;
-    var r=_maEffR(it.key,pb);
-    if(r==='O'&&avg[pb.seq]<=60) good.push({no:pb.seq,name:nm,rate:avg[pb.seq]});
-    if((r==='X'||r==='?')&&avg[pb.seq]>=70) weak.push({no:pb.seq,name:nm,rate:avg[pb.seq]});
-  });
-  good.sort(function(a,b){return a.rate-b.rate;});
-  weak.sort(function(a,b){return b.rate-a.rate;});
-  return { good: good.slice(0,3).map(function(x){return {no:x.no,name:x.name};}),
-           weak: weak.slice(0,3).map(function(x){return {no:x.no,name:x.name};}) };
-}
-function _maPreviewPane(it){
-  if(!it) return '';
-  var pw=MOCKAUTO_PW();
-  var scale=Math.max(0.4, Math.min(1.4, (pw-52)/794));   // 794px = 성적표 A4 폭 — 패널 폭에 맞춰 글씨도 커진다
-  var h='<div style="background:white;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);padding:12px 14px;position:sticky;top:8px">';
-  var rec=null, inner='';
-  try{ rec=_maPreviewRec(it); inner=_mrPagesHTMLFor(rec); }catch(e){ inner='<div style="padding:30px;color:#94a3b8;font-size:11px">미리보기 생성 실패: '+(e.message||e)+'</div>'; }
-  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">'
-    +'<span style="font-size:15px;font-weight:900;color:#0d2240">📄 성적표</span>'
-    +'<button onclick="mockAutoPrint(\''+it.key+'\')" style="padding:9px 16px;background:#0d2240;color:white;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">🖨 인쇄</button>'
-    +'<button onclick="mockAutoPdf(\''+it.key+'\')" style="padding:9px 16px;background:#dc2626;color:white;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">📥 PDF</button>'
-    +'<button onclick="mockAutoKakaoImg(\''+it.key+'\')" title="카톡 전송용 세로 이미지 — 폰에서 크게 보여요" style="padding:9px 16px;background:#fee500;color:#3c1e1e;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">📱 카톡용</button>'
-    +'<button onclick="mockAutoSaveReport(\''+it.key+'\')" style="padding:9px 14px;background:#f59e0b;color:white;border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">📂 저장</button>'
-    +'<span onclick="mockAutoEditTitle('+it.examId+')" style="font-size:12px;color:#1d6fe8;cursor:pointer;font-weight:800">✏ 제목</span>'
-    +'<span style="margin-left:auto;font-size:10px;color:#94a3b8">경계선을 끌면 폭·글씨가 함께 커져요</span>'
-    +'</div>';
-  // 전교생 수 — 시험 단위 공통 입력 (같은 폴더 학생 전원 적용)
-  if(rec && !rec.totalStudents){
-    h+='<div style="display:flex;align-items:center;gap:8px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;padding:8px 12px;margin-bottom:8px">'
-      +'<span style="font-size:12.5px;color:#9a3412;font-weight:700">🏫 전교생 수를 넣으면 등수 추정이 켜져요 (이 시험 전체에 적용)</span>'
-      +'<input type="number" min="1" placeholder="예: 261" onchange="mockAutoSetTotal('+it.examId+',this.value)" '
-      +'style="margin-left:auto;width:110px;padding:8px 10px;border:1.5px solid #fed7aa;border-radius:8px;font-size:14px;font-family:inherit;outline:none">'
-      +'</div>';
-  } else if(rec && rec.totalStudents){
-    h+='<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#94a3b8;margin-bottom:6px">전교생 '+rec.totalStudents+'명 기준'
-      +'<span onclick="var v=prompt(\'전교생 수 (이 시험 전체에 적용)\','+(rec.totalStudents||'')+');if(v!==null)mockAutoSetTotal('+it.examId+',v)" style="cursor:pointer;color:#1d6fe8;font-weight:700">수정</span></div>';
-  }
-  h+='<div style="height:calc(100vh - 240px);overflow:auto;border:1px solid #eef1f5;border-radius:10px;background:#f8fafc">'
-    +'<div id="ma-pv-inner" style="transform:scale('+scale+');transform-origin:top left;width:'+(Math.round(10000/ (scale*100))/1)+'%">'+inner+'</div></div>';
-  h+='</div>';
-  return h;
-}
-// 시험 단위 공통 입력(전교생 수 등) — 같은 폴더 학생 전원에 적용
-function _maExtra(examId){ try{ return JSON.parse(localStorage.getItem('ma_exam_extra')||'{}')[examId]||{}; }catch(e){ return {}; } }
-function mockAutoSetTotal(examId, v){
-  v=parseInt(v,10);
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.examId===examId;});
-  var meta=(it&&it.meta)||{};
-  var school=it?_maSchoolGuess(meta):'';
-  var dist=school?findDistMatch(school,_maGrade(meta),meta.semester?meta.semester+'학기':'',meta.term||'',meta.year):null;
-  if(dist){ dist.totalStudents=isNaN(v)?null:v; saveSchoolDistDb(); }   // 분포 DB에 저장 → 모든 기기·학생 공유
-  else {
-    var ex; try{ ex=JSON.parse(localStorage.getItem('ma_exam_extra')||'{}'); }catch(e){ ex={}; }
-    ex[examId]=ex[examId]||{}; ex[examId].totalStudents=isNaN(v)?null:v;
-    localStorage.setItem('ma_exam_extra', JSON.stringify(ex));
-  }
-  setTimeout(render,0);
-}
-window.mockAutoSetTotal=mockAutoSetTotal;
-function mockAutoEditTitle(examId){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.examId===examId;}); if(!it) return;
-  var cur=_maExtra(examId).customTitle||_maPreviewRec(it).customTitle||'';
-  var v=prompt('성적표 제목 (이 시험 전체에 적용)', cur);
-  if(v===null) return;
-  var ex; try{ ex=JSON.parse(localStorage.getItem('ma_exam_extra')||'{}'); }catch(e){ ex={}; }
-  ex[examId]=ex[examId]||{};
-  if(v.trim()) ex[examId].customTitle=v.trim(); else delete ex[examId].customTitle;
-  localStorage.setItem('ma_exam_extra', JSON.stringify(ex));
-  render();
-}
-window.mockAutoEditTitle=mockAutoEditTitle;
-/* ── 카톡용 세로 이미지 (모바일 전용) ── */
-async function _maEnsureCanvasLibs(){
-  if(typeof html2canvas==='undefined') await _mrLoadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-}
-async function _maRecToLongCanvas(rec){
-  await _maEnsureCanvasLibs();
-  var host=document.createElement('div');
-  host.style.cssText='position:fixed;left:-9999px;top:0;width:820px;background:white;z-index:-1';
-  document.body.appendChild(host);
-  try{
-    host.innerHTML=_mrPagesHTMLFor(rec);
-    await new Promise(function(res){ setTimeout(res,60); });
-    host.querySelectorAll('[data-pdf-hide="1"]').forEach(function(el){el.style.display='none';});
-    host.querySelectorAll('[data-pdf-show="1"]').forEach(function(el){el.style.display='block';});
-    var pages=[host.querySelector('#mr-page'), host.querySelector('#mr-page2')].filter(function(x){return x;});
-    var cs=[];
-    for(var i=0;i<pages.length;i++) cs.push(await html2canvas(pages[i],{scale:2,useCORS:true,backgroundColor:'#ffffff'}));
-    var gap=48;
-    var W=Math.max.apply(null,cs.map(function(c){return c.width;}));
-    var H=cs.reduce(function(t,c){return t+c.height;},0)+gap*Math.max(0,cs.length-1);
-    var out=document.createElement('canvas'); out.width=W; out.height=H;
-    var ctx=out.getContext('2d');
-    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);
-    var y=0;
-    cs.forEach(function(c){ ctx.drawImage(c,0,y); y+=c.height+gap; });
-    return out;
-  } finally { document.body.removeChild(host); }
-}
-function _maDownloadBlob(blob, name){
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download=name;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(function(){ URL.revokeObjectURL(a.href); },4000);
-}
-/* 큰글씨 PDF 공통 — 한 면을 「섹션 경계」에서 두 조각으로 잘라(카드가 두 동강 나지 않게)
- * A4를 가로로 눕혀 폭을 꽉 채우면 글자가 약 1.4배 커진다. */
-function _maSectionCutsOf(pageEl, scale){
-  // 자식(+손자) 블록의 「페이지 기준」 상단 좌표 — offsetTop은 페이지가 겹겹이 쌓인
-  // 렌더 호스트에서 1면 높이가 섞여 들어가므로 getBoundingClientRect 차이로 잰다
-  var tops=[];
-  try{
-    var base=pageEl.getBoundingClientRect().top;
-    var collect=function(el){
-      var t=el.getBoundingClientRect().top-base;
-      if(t>80) tops.push(Math.round(t*scale));
-    };
-    Array.prototype.forEach.call(pageEl.children, function(ch){
-      collect(ch);
-      Array.prototype.forEach.call(ch.children||[], collect);
-    });
-  }catch(e){}
-  return tops;
-}
-function _maSplitCanvasAt(canvas, cuts){
-  var half=canvas.height/2, cut=Math.round(half);
-  if(cuts&&cuts.length){
-    var best=null, bd=1e9;
-    cuts.forEach(function(c){
-      if(c>canvas.height*0.25&&c<canvas.height*0.8){
-        var d=Math.abs(c-half); if(d<bd){ bd=d; best=c; }
-      }
-    });
-    if(best!=null) cut=best;
-  }
-  function piece(y0,y1){
-    var c=document.createElement('canvas'); c.width=canvas.width; c.height=Math.max(1,y1-y0);
-    var x=c.getContext('2d'); x.fillStyle='#ffffff'; x.fillRect(0,0,c.width,c.height);
-    x.drawImage(canvas,0,-y0); return c;
-  }
-  return [piece(0,cut), piece(cut,canvas.height)];
-}
-function _maAddCanvasFit(pdf, canvas){
-  var W=pdf.internal.pageSize.getWidth(), H=pdf.internal.pageSize.getHeight();
-  var dW=W, dH=(canvas.height*W)/canvas.width;
-  if(dH>H){ dH=H; dW=(canvas.width*H)/canvas.height; }
-  pdf.addImage(canvas.toDataURL('image/jpeg',0.92),'JPEG',(W-dW)/2,0,dW,dH);
-}
-
-async function mockAutoKakaoImg(key){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;}); if(!it) return;
-  var rec=_maPreviewRec(it);
-  try{
-    var c=await _maRecToLongCanvas(rec);
-    var blob=await new Promise(function(res){ c.toBlob(res,'image/jpeg',0.92); });
-    _maDownloadBlob(blob,'성적표_'+(rec.studentName||'학생')+'_카톡용.jpg');
-  }catch(e){ alert('이미지 생성 실패: '+e.message); }
-}
-window.mockAutoKakaoImg=mockAutoKakaoImg;
-async function mockAutoKakaoImgAll(examId){
-  var takers=_maExamItems(examId); if(!takers.length) return;
-  try{
-    await _maEnsureCanvasLibs();
-    if(typeof JSZip==='undefined') await _mrLoadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
-    var zip=new JSZip();
-    for(var i=0;i<takers.length;i++){
-      var rec=_maPreviewRec(takers[i]);
-      var c=await _maRecToLongCanvas(rec);
-      var blob=await new Promise(function(res){ c.toBlob(res,'image/jpeg',0.92); });
-      zip.file('성적표_'+(rec.studentName||('학생'+(i+1)))+'_카톡용.jpg', blob);
-    }
-    var out=await zip.generateAsync({type:'blob'});
-    _maDownloadBlob(out,'성적표_카톡용_'+takers.length+'명.zip');
-    alert('카톡용 이미지 '+takers.length+'명 완성 — 압축을 풀어 한 장씩 카톡으로 보내세요');
-  }catch(e){ alert('이미지 생성 실패: '+e.message); }
-}
-window.mockAutoKakaoImgAll=mockAutoKakaoImgAll;
-
-function mockAutoPrint(key){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;});
-  if(!it) return;
-  MOCK_REPORT_STATE=_mrStateFromRec(_maPreviewRec(it));   // 상태를 채우고 (모의 성적표 탭에도 그대로 남는다)
-  _mrPrint();
-}
-window.mockAutoPrint=mockAutoPrint;
-function mockAutoPdf(key){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;});
-  if(!it) return;
-  MOCK_REPORT_STATE=_mrStateFromRec(_maPreviewRec(it));
-  _mrDownloadPdf();
-}
-window.mockAutoPdf=mockAutoPdf;
-
-function _maExamItems(examId){ return (MOCKAUTO.items||[]).filter(function(x){return x.examId===examId;}); }
-function mockAutoPrintAll(examId){
-  var takers=_maExamItems(examId);
-  if(!takers.length) return;
-  var html='';
-  takers.forEach(function(it){ try{ html+=_mrPagesHTMLFor(_maPreviewRec(it)); }catch(e){} });
-  var w=window.open('','_blank');
-  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>성적표 전체 인쇄</title>'
-    +'<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">'
-    +"<style>body{margin:0;font-family:'Noto Sans KR',sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
-    +'[data-pdf-hide="1"]{display:none!important}[data-pdf-show="1"]{display:block!important}@page{size:A4;margin:10mm}</style>'
-    +'</head><body>'+html+'</body></html>');
-  w.document.close();
-  setTimeout(function(){w.print();},700);
-}
-window.mockAutoPrintAll=mockAutoPrintAll;
-function mockAutoSaveAll(examId){
-  var takers=_maExamItems(examId); var n=0;
-  takers.forEach(function(it){
-    var rec=_maPreviewRec(it);
-    rec.id='mr_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
-    rec.createdAt=Date.now(); rec.updatedAt=Date.now();
-    mockReports.push(rec); n++;
-  });
-  saveMockReports();
-  alert('📂 '+n+'명 성적표를 저장했습니다 — 「모의 성적표 저장 목록」 폴더에서 전체 PDF도 만들 수 있어요.');
-  render();
-}
-window.mockAutoSaveAll=mockAutoSaveAll;
-function mockAutoRegisterAll(examId){
-  var takers=_maExamItems(examId).filter(function(it){ return !_maIsDone(it); });
-  if(!takers.length){ alert('등록 대기 학생이 없습니다'); return; }
-  var noEssayInput=takers.filter(function(it){ var c=_maCalc(it); return c.essayCnt>c.essayFilled; });
-  var msg='대기 '+takers.length+'명을 한 번에 등록합니다.';
-  if(noEssayInput.length) msg+='\n\n⚠ 서술형 미입력(0점 처리): '+noEssayInput.map(function(it){return it.student_name;}).join(', ');
-  if(!confirm(msg)) return;
-  var ok=0, fail=[];
-  takers.forEach(function(it){
-    var stu=_maStudentByCode(it.student_code);
-    if(!stu){ fail.push(it.student_name); return; }
-    var calc=_maCalc(it); var meta=it.meta||{};
-    var essaySet=_maEssaySeqs(it);
-    var effPer=(it.per||[]).map(function(p){ return Object.assign({}, p, { r:_maEffR(it.key,p) }); });
-    var wrong=effPer.filter(function(p){return !essaySet[p.seq]&&(p.r==='X'||p.r==='?');}).map(function(p){return p.seq;});
-    addMockExam({
-      studentId: stu.id, sourceSchool: _maSchoolGuess(meta), sourceYear: meta.year?+meta.year:null,
-      sourceGrade: _maGrade(meta), sourceTerm: meta.semester?meta.semester+'학기':'', examType: meta.term||'',
-      examDate: (it.solvedAt||'').slice(0,10), score: calc.total,
-      memo: '⚡자동채점(일괄) · 객관식 '+calc.auto+'/'+calc.autoMax+(calc.essayCnt?' · 서술형 '+calc.essayIn+'/'+calc.essayMax:'')+(wrong.length?' · 틀린 문항 '+wrong.join(','):''),
-      autoKey: it.key,
-      autoDetail: { per: effPer, examId: it.examId, examTitle: it.examTitle }
-    });
-    ok++;
-  });
-  alert('✅ '+ok+'명 등록 완료'+(fail.length?'\n등록부 미매칭 제외: '+fail.join(', '):''));
-  render();
-}
-window.mockAutoRegisterAll=mockAutoRegisterAll;
-
-function mockAutoToReport(key){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;});
-  if(!it){ alert('항목을 찾을 수 없습니다'); return; }
-  var rec=_maPreviewRec(it);
-  MOCK_REPORT_STATE=_mrStateFromRec(rec);        // 폼 전체 자동 채움 (학생·학교·점수·분포·학원등수)
-  MOCK_TAB='mockreport';
-  render();
-}
-window.mockAutoToReport=mockAutoToReport;
-
-function mockAutoSaveReport(key){
-  var it=(MOCKAUTO.items||[]).find(function(x){return x.key===key;});
-  if(!it){ alert('항목을 찾을 수 없습니다'); return; }
-  var rec=_maPreviewRec(it);
-  rec.id='mr_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
-  rec.createdAt=Date.now(); rec.updatedAt=Date.now();
-  mockReports.push(rec); saveMockReports();
-  alert('📂 저장 완료 — 「모의 성적표 저장 목록」 탭에서 인쇄·PDF로 뽑을 수 있습니다.');
-  render();
-}
-window.mockAutoSaveReport=mockAutoSaveReport;
-
 function rMockExam(){
-  // v18-108: 자동 수신함은 3분할이라 화면 전체 폭을 쓴다
-  var h='<div style="padding:14px;'+(MOCK_TAB==='inbox'?'':'max-width:1400px;')+'margin:0 auto">';
+  var h='<div style="padding:14px;max-width:1400px;margin:0 auto">';
 
   // 헤더
   h+='<div style="background:linear-gradient(135deg, #fef2f2 0%, #fff7ed 100%);border:1px solid #fecaca;border-radius:12px;padding:14px 18px;margin-bottom:14px">'
@@ -25845,9 +24819,7 @@ function rMockExam(){
 
   // 하위 탭
   h+='<div style="display:flex;gap:6px;background:white;padding:6px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.04);margin-bottom:14px;overflow-x:auto">';
-  if(MOCKAUTO===null && !MOCKAUTO_LOADING) mockAutoLoad();
   var subTabs=[
-    {key:'inbox', icon:'⚡', label:'자동 수신함'},
     {key:'list', icon:'📋', label:'모의실시 목록'},
     {key:'add', icon:'➕', label:'새 기출모의 등록'},
     {key:'distdb', icon:'🏫', label:'학교 성적분포 DB'},
@@ -25858,10 +24830,6 @@ function rMockExam(){
   subTabs.forEach(function(t){
     var on=MOCK_TAB===t.key;
     var badge='';
-    if(t.key==='inbox'){
-      var pc=mockAutoPendingCount();
-      if(pc>0) badge=' <span style="background:'+(on?'white':'#dc2626')+';color:'+(on?'#dc2626':'white')+';padding:1px 7px;border-radius:10px;font-size:10px;font-weight:800;margin-left:3px">'+pc+'</span>';
-    }
     if(t.key==='mockreport_saved' && typeof mockReports!=='undefined' && mockReports && mockReports.length>0){
       badge=' <span style="background:'+(on?'white':'#dc2626')+';color:'+(on?'#dc2626':'white')+';padding:1px 7px;border-radius:10px;font-size:10px;font-weight:800;margin-left:3px">'+mockReports.length+'</span>';
     }
@@ -25873,8 +24841,7 @@ function rMockExam(){
   h+='</div>';
 
   // 본문
-  if(MOCK_TAB==='inbox') h+=rMockExam_Inbox();
-  else if(MOCK_TAB==='list') h+=rMockExam_List();
+  if(MOCK_TAB==='list') h+=rMockExam_List();
   else if(MOCK_TAB==='add') h+=rMockExam_Add();
   else if(MOCK_TAB==='distdb') h+=rMockExam_DistDb();
   else if(MOCK_TAB==='stats') h+=rMockExam_Stats();
@@ -25892,13 +24859,13 @@ function rMockExam_List(){
   // 보기 모드
   h+='<div style="background:white;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">'
     +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">'
-      +'<span style="font-size:13.5px;font-weight:700;color:#64748b">보기:</span>'
+      +'<span style="font-size:11px;font-weight:700;color:#64748b">보기:</span>'
       +'<div style="display:inline-flex;background:#f1f5f9;border-radius:8px;padding:3px;gap:2px">';
   ['all','byStudent','byGroup'].forEach(function(m){
     var lbl=m==='all'?'📋 전체목록':m==='byStudent'?'👤 학생별':'🏷️ 반별';
     var on=MOCK_VIEW_MODE===m;
     h+='<button onclick="MOCK_VIEW_MODE=\''+m+'\';MOCK_SELECTED_STUDENT=null;render()" '
-      +'style="padding:5px 12px;font-size:13.5px;font-weight:700;border:none;border-radius:6px;cursor:pointer;color:'+(on?'#dc2626':'#64748b')+';background:'+(on?'white':'transparent')+';font-family:inherit;'
+      +'style="padding:5px 12px;font-size:11px;font-weight:700;border:none;border-radius:6px;cursor:pointer;color:'+(on?'#dc2626':'#64748b')+';background:'+(on?'white':'transparent')+';font-family:inherit;'
       +(on?'box-shadow:0 1px 3px rgba(0,0,0,0.08)':'')+'">'+lbl+'</button>';
   });
   h+='</div></div>';
@@ -25908,11 +24875,11 @@ function rMockExam_List(){
     var schoolList=Array.from(new Set(mockExams.map(function(m){return m.sourceSchool;}).filter(Boolean))).sort();
     var yearList=Array.from(new Set(mockExams.map(function(m){return m.sourceYear;}).filter(Boolean))).sort().reverse();
     h+='<div style="display:flex;gap:6px;flex-wrap:wrap">'
-      +'<select onchange="MOCK_FILTER_SCHOOL=this.value;render()" style="padding:7px 12px;font-size:15px;border:1.5px solid #e2e8f0;border-radius:8px;font-family:inherit;outline:none">'
+      +'<select onchange="MOCK_FILTER_SCHOOL=this.value;render()" style="padding:7px 12px;font-size:12px;border:1.5px solid #e2e8f0;border-radius:8px;font-family:inherit;outline:none">'
       +'<option value="">🏫 학교 - 전체</option>'
       +schoolList.map(function(s){return '<option value="'+s+'" '+(MOCK_FILTER_SCHOOL===s?'selected':'')+'>'+s+'</option>';}).join('')
       +'</select>'
-      +'<select onchange="MOCK_FILTER_YEAR=this.value;render()" style="padding:7px 12px;font-size:15px;border:1.5px solid #e2e8f0;border-radius:8px;font-family:inherit;outline:none">'
+      +'<select onchange="MOCK_FILTER_YEAR=this.value;render()" style="padding:7px 12px;font-size:12px;border:1.5px solid #e2e8f0;border-radius:8px;font-family:inherit;outline:none">'
       +'<option value="">📅 연도 - 전체</option>'
       +yearList.map(function(y){return '<option value="'+y+'" '+(String(MOCK_FILTER_YEAR)===String(y)?'selected':'')+'>'+y+'년</option>';}).join('')
       +'</select>'
@@ -25924,8 +24891,8 @@ function rMockExam_List(){
   if(mockExams.length===0){
     h+='<div style="background:white;border:2px dashed #e2e8f0;border-radius:12px;padding:30px;text-align:center;color:#94a3b8">'
       +'<div style="font-size:36px;margin-bottom:10px">🏫</div>'
-      +'<div style="font-size:16px;font-weight:700;color:#334155;margin-bottom:6px">아직 등록된 기출모의가 없습니다</div>'
-      +'<div style="font-size:13.5px;margin-bottom:14px">"➕ 새 기출모의 등록" 탭에서 추가해주세요</div>'
+      +'<div style="font-size:13px;font-weight:700;color:#334155;margin-bottom:6px">아직 등록된 기출모의가 없습니다</div>'
+      +'<div style="font-size:11px;margin-bottom:14px">"➕ 새 기출모의 등록" 탭에서 추가해주세요</div>'
     +'</div>';
     return h;
   }
@@ -25946,26 +24913,26 @@ function rMockExam_List_All(){
   filtered.sort(function(a,b){return (b.examDate||'').localeCompare(a.examDate||'');});
 
   var h='<div style="background:white;border-radius:12px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">';
-  h+='<div style="font-size:16px;font-weight:800;color:#0d2240;margin-bottom:10px">📋 모의실시 기록 <span style="font-size:12.5px;background:#fef2f2;color:#dc2626;padding:2px 8px;border-radius:20px;margin-left:4px;font-weight:700">총 '+filtered.length+'건</span></div>';
+  h+='<div style="font-size:13px;font-weight:800;color:#0d2240;margin-bottom:10px">📋 모의실시 기록 <span style="font-size:10px;background:#fef2f2;color:#dc2626;padding:2px 8px;border-radius:20px;margin-left:4px;font-weight:700">총 '+filtered.length+'건</span></div>';
 
   if(filtered.length===0){
-    h+='<div style="padding:20px;text-align:center;color:#94a3b8;font-size:15px">필터 조건에 맞는 기록이 없습니다</div>';
+    h+='<div style="padding:20px;text-align:center;color:#94a3b8;font-size:12px">필터 조건에 맞는 기록이 없습니다</div>';
     h+='</div>';
     return h;
   }
 
-  h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:15px;min-width:800px">';
+  h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:800px">';
   h+='<thead><tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0">'
-    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:12.5px">학생</th>'
-    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:12.5px">기출학교</th>'
-    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:12.5px">연도</th>'
-    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:12.5px">학년/학기</th>'
-    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:12.5px">시험</th>'
-    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:12.5px">실시일</th>'
-    +'<th style="padding:8px;text-align:right;font-weight:800;color:#475569;font-size:12.5px">점수</th>'
-    +'<th style="padding:8px;text-align:center;font-weight:800;color:#475569;font-size:12.5px">예상등급</th>'
-    +'<th style="padding:8px;text-align:center;font-weight:800;color:#475569;font-size:12.5px">성취도</th>'
-    +'<th style="padding:8px;text-align:center;font-weight:800;color:#475569;font-size:12.5px">관리</th>'
+    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:10px">학생</th>'
+    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:10px">기출학교</th>'
+    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:10px">연도</th>'
+    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:10px">학년/학기</th>'
+    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:10px">시험</th>'
+    +'<th style="padding:8px;text-align:left;font-weight:800;color:#475569;font-size:10px">실시일</th>'
+    +'<th style="padding:8px;text-align:right;font-weight:800;color:#475569;font-size:10px">점수</th>'
+    +'<th style="padding:8px;text-align:center;font-weight:800;color:#475569;font-size:10px">예상등급</th>'
+    +'<th style="padding:8px;text-align:center;font-weight:800;color:#475569;font-size:10px">성취도</th>'
+    +'<th style="padding:8px;text-align:center;font-weight:800;color:#475569;font-size:10px">관리</th>'
     +'</tr></thead><tbody>';
 
   filtered.forEach(function(m){
@@ -25981,18 +24948,18 @@ function rMockExam_List_All(){
       +'<td style="padding:8px">'+(m.sourceYear||'-')+'</td>'
       +'<td style="padding:8px">'+(m.sourceGrade||'')+(m.sourceTerm?'/'+m.sourceTerm:'')+'</td>'
       +'<td style="padding:8px">'+(m.examType||'-')+'</td>'
-      +'<td style="padding:8px;font-size:13.5px">'+(m.examDate||'-').replace(/-/g,'.')+'</td>'
-      +'<td style="padding:8px;text-align:right;font-weight:900;font-size:17px;color:#0d2240">'+(m.score!=null?m.score+'점':'-')+'</td>'
+      +'<td style="padding:8px;font-size:11px">'+(m.examDate||'-').replace(/-/g,'.')+'</td>'
+      +'<td style="padding:8px;text-align:right;font-weight:900;font-size:14px;color:#0d2240">'+(m.score!=null?m.score+'점':'-')+'</td>'
       +'<td style="padding:8px;text-align:center">'
-        +(m.calcGrade?'<span style="padding:3px 9px;background:'+gColor.bg+';color:'+gColor.color+';border-radius:20px;font-size:12.5px;font-weight:800">'+m.calcGrade+'등급</span>'
+        +(m.calcGrade?'<span style="padding:3px 9px;background:'+gColor.bg+';color:'+gColor.color+';border-radius:20px;font-size:10px;font-weight:800">'+m.calcGrade+'등급</span>'
           :'<span style="padding:3px 9px;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:20px;font-size:9px;font-weight:700;font-style:italic">계산대기</span>')
       +'</td>'
       +'<td style="padding:8px;text-align:center">'
-        +(m.calcAchievement?'<span style="padding:3px 9px;background:'+aColor.bg+';color:'+aColor.color+';border-radius:20px;font-size:12.5px;font-weight:800">'+m.calcAchievement+'</span>':'-')
+        +(m.calcAchievement?'<span style="padding:3px 9px;background:'+aColor.bg+';color:'+aColor.color+';border-radius:20px;font-size:10px;font-weight:800">'+m.calcAchievement+'</span>':'-')
       +'</td>'
       +'<td style="padding:8px;text-align:center">'
-        +'<button onclick="editMockExamUI(\''+m.id+'\')" style="padding:3px 8px;background:#fef3c7;color:#92400e;border:none;border-radius:5px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:2px">✏️</button>'
-        +'<button onclick="deleteMockExam(\''+m.id+'\')" style="padding:3px 8px;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">🗑</button>'
+        +'<button onclick="editMockExamUI(\''+m.id+'\')" style="padding:3px 8px;background:#fef3c7;color:#92400e;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:2px">✏️</button>'
+        +'<button onclick="deleteMockExam(\''+m.id+'\')" style="padding:3px 8px;background:#fee2e2;color:#dc2626;border:none;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit">🗑</button>'
       +'</td>'
       +'</tr>';
   });
@@ -26022,12 +24989,12 @@ function rMockExam_List_ByStudent(){
     var stIds=Object.keys(studentMap);
     if(stIds.length===0){
       h+='<div style="background:white;border:2px dashed #e2e8f0;border-radius:12px;padding:30px;text-align:center;color:#94a3b8">'
-        +'<div style="font-size:16px">기출모의 기록이 있는 학생이 없습니다</div>'
+        +'<div style="font-size:13px">기출모의 기록이 있는 학생이 없습니다</div>'
       +'</div>';
       return h;
     }
     
-    h+='<div style="font-size:13.5px;color:#64748b;margin-bottom:10px">💡 학생 카드를 클릭하면 해당 학생의 기출모의 내역을 볼 수 있습니다</div>';
+    h+='<div style="font-size:11px;color:#64748b;margin-bottom:10px">💡 학생 카드를 클릭하면 해당 학생의 기출모의 내역을 볼 수 있습니다</div>';
     h+='<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));gap:12px">';
     stIds.forEach(function(stId){
       var st=students.find(function(s){return s.id===stId;});
@@ -26037,16 +25004,16 @@ function rMockExam_List_ByStudent(){
         +'style="background:white;border:2px solid #e2e8f0;border-radius:12px;padding:14px;cursor:pointer;transition:all 0.15s" '
         +'onmouseover="this.style.borderColor=\'#dc2626\';this.style.transform=\'translateY(-2px)\'" '
         +'onmouseout="this.style.borderColor=\'#e2e8f0\';this.style.transform=\'\'">'
-        +'<div style="font-size:17px;font-weight:900;color:#0d2240;margin-bottom:2px">'+st.name+'</div>'
-        +'<div style="font-size:12.5px;color:#94a3b8;font-weight:600;margin-bottom:10px">'+(st.grade||'')+(st.school?' · 🏫 '+st.school:'')+'</div>'
-        +'<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #f1f5f9;font-size:13.5px">'
+        +'<div style="font-size:14px;font-weight:900;color:#0d2240;margin-bottom:2px">'+st.name+'</div>'
+        +'<div style="font-size:10px;color:#94a3b8;font-weight:600;margin-bottom:10px">'+(st.grade||'')+(st.school?' · 🏫 '+st.school:'')+'</div>'
+        +'<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #f1f5f9;font-size:11px">'
           +'<span style="color:#94a3b8">기출모의</span><span style="font-weight:800;color:#dc2626">'+info.count+'회</span>'
         +'</div>'
-        +'<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #f1f5f9;font-size:13.5px">'
+        +'<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #f1f5f9;font-size:11px">'
           +'<span style="color:#94a3b8">최근 점수</span><span style="font-weight:800;color:#dc2626">'+(info.recentScore!=null?info.recentScore+'점':'-')+'</span>'
         +'</div>'
-        +'<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #f1f5f9;font-size:13.5px">'
-          +'<span style="color:#94a3b8">기출 학교</span><span style="font-weight:800;color:#0d2240;font-size:12.5px">'+info.schools.size+'개교</span>'
+        +'<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #f1f5f9;font-size:11px">'
+          +'<span style="color:#94a3b8">기출 학교</span><span style="font-weight:800;color:#0d2240;font-size:10px">'+info.schools.size+'개교</span>'
         +'</div>'
       +'</div>';
     });
@@ -26063,7 +25030,7 @@ function rMockExam_List_ByStudent(){
   var stMocks=mockExams.filter(function(m){return m.studentId===MOCK_SELECTED_STUDENT;});
   
   // 헤더
-  h+='<div style="margin-bottom:12px"><a onclick="MOCK_SELECTED_STUDENT=null;render()" style="color:#dc2626;cursor:pointer;font-weight:700;font-size:15px">← 학생 목록으로</a></div>';
+  h+='<div style="margin-bottom:12px"><a onclick="MOCK_SELECTED_STUDENT=null;render()" style="color:#dc2626;cursor:pointer;font-weight:700;font-size:12px">← 학생 목록으로</a></div>';
   
   // 학생 정보 카드
   var avgScore=stMocks.length?Math.round(stMocks.reduce(function(s,m){return s+(m.score||0);},0)/stMocks.length):0;
@@ -26071,13 +25038,13 @@ function rMockExam_List_ByStudent(){
   var schoolCount=Array.from(new Set(stMocks.map(function(m){return m.sourceSchool;}).filter(Boolean))).length;
   
   h+='<div style="background:white;border-radius:12px;padding:14px;border-left:4px solid #dc2626;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">'
-    +'<div style="font-size:17px;font-weight:900;color:#0d2240;margin-bottom:2px">'+st.name+'</div>'
-    +'<div style="font-size:13.5px;color:#94a3b8;margin-bottom:10px">'+(st.grade||'')+(st.school?' · 🏫 '+st.school:'')+'</div>'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240;margin-bottom:2px">'+st.name+'</div>'
+    +'<div style="font-size:11px;color:#94a3b8;margin-bottom:10px">'+(st.grade||'')+(st.school?' · 🏫 '+st.school:'')+'</div>'
     +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
-      +'<div style="background:#f8fafc;border-radius:8px;padding:8px 14px;flex:1;min-width:100px;text-align:center"><div style="font-size:12.5px;color:#94a3b8;font-weight:700">총 실시</div><div style="font-size:16px;font-weight:900;color:#dc2626">'+stMocks.length+'회</div></div>'
-      +'<div style="background:#f8fafc;border-radius:8px;padding:8px 14px;flex:1;min-width:100px;text-align:center"><div style="font-size:12.5px;color:#94a3b8;font-weight:700">평균 점수</div><div style="font-size:16px;font-weight:900;color:#dc2626">'+avgScore+'점</div></div>'
-      +'<div style="background:#f8fafc;border-radius:8px;padding:8px 14px;flex:1;min-width:100px;text-align:center"><div style="font-size:12.5px;color:#94a3b8;font-weight:700">최고 점수</div><div style="font-size:16px;font-weight:900;color:#dc2626">'+maxScore+'점</div></div>'
-      +'<div style="background:#f8fafc;border-radius:8px;padding:8px 14px;flex:1;min-width:100px;text-align:center"><div style="font-size:12.5px;color:#94a3b8;font-weight:700">기출 학교</div><div style="font-size:16px;font-weight:900;color:#dc2626">'+schoolCount+'개교</div></div>'
+      +'<div style="background:#f8fafc;border-radius:8px;padding:8px 14px;flex:1;min-width:100px;text-align:center"><div style="font-size:10px;color:#94a3b8;font-weight:700">총 실시</div><div style="font-size:16px;font-weight:900;color:#dc2626">'+stMocks.length+'회</div></div>'
+      +'<div style="background:#f8fafc;border-radius:8px;padding:8px 14px;flex:1;min-width:100px;text-align:center"><div style="font-size:10px;color:#94a3b8;font-weight:700">평균 점수</div><div style="font-size:16px;font-weight:900;color:#dc2626">'+avgScore+'점</div></div>'
+      +'<div style="background:#f8fafc;border-radius:8px;padding:8px 14px;flex:1;min-width:100px;text-align:center"><div style="font-size:10px;color:#94a3b8;font-weight:700">최고 점수</div><div style="font-size:16px;font-weight:900;color:#dc2626">'+maxScore+'점</div></div>'
+      +'<div style="background:#f8fafc;border-radius:8px;padding:8px 14px;flex:1;min-width:100px;text-align:center"><div style="font-size:10px;color:#94a3b8;font-weight:700">기출 학교</div><div style="font-size:16px;font-weight:900;color:#dc2626">'+schoolCount+'개교</div></div>'
     +'</div>'
   +'</div>';
 
@@ -26093,15 +25060,15 @@ function rMockExam_List_ByStudent(){
   });
 
   h+='<div style="background:white;border-radius:12px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,0.04)">';
-  h+='<div style="font-size:16px;font-weight:800;color:#0d2240;margin-bottom:10px">🏫 기출학교별 내역</div>';
+  h+='<div style="font-size:13px;font-weight:800;color:#0d2240;margin-bottom:10px">🏫 기출학교별 내역</div>';
   
   Object.values(bySchool).forEach(function(grp){
     h+='<div style="background:#f8fafc;border-radius:10px;padding:12px;margin-bottom:10px">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-        +'<span style="background:#dc2626;color:white;padding:4px 10px;border-radius:20px;font-size:13.5px;font-weight:800">'+grp.school+'</span>'
-        +'<span style="font-size:13.5px;color:#64748b;font-weight:700">'+(grp.year?grp.year+' 기출 · ':'')+grp.items.length+'회 실시</span>'
+        +'<span style="background:#dc2626;color:white;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800">'+grp.school+'</span>'
+        +'<span style="font-size:11px;color:#64748b;font-weight:700">'+(grp.year?grp.year+' 기출 · ':'')+grp.items.length+'회 실시</span>'
       +'</div>'
-      +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px;background:white;border-radius:8px"><thead><tr style="border-bottom:1px solid #e2e8f0"><th style="padding:6px;text-align:left;font-weight:700;color:#475569">실시일</th><th style="padding:6px;text-align:left;font-weight:700;color:#475569">학년/학기</th><th style="padding:6px;text-align:left;font-weight:700;color:#475569">시험</th><th style="padding:6px;text-align:right;font-weight:700;color:#475569">점수</th><th style="padding:6px;text-align:center;font-weight:700;color:#475569">예상등급</th><th style="padding:6px;text-align:center;font-weight:700;color:#475569">성취도</th><th style="padding:6px;text-align:center;font-weight:700;color:#475569">관리</th></tr></thead><tbody>';
+      +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px;background:white;border-radius:8px"><thead><tr style="border-bottom:1px solid #e2e8f0"><th style="padding:6px;text-align:left;font-weight:700;color:#475569">실시일</th><th style="padding:6px;text-align:left;font-weight:700;color:#475569">학년/학기</th><th style="padding:6px;text-align:left;font-weight:700;color:#475569">시험</th><th style="padding:6px;text-align:right;font-weight:700;color:#475569">점수</th><th style="padding:6px;text-align:center;font-weight:700;color:#475569">예상등급</th><th style="padding:6px;text-align:center;font-weight:700;color:#475569">성취도</th><th style="padding:6px;text-align:center;font-weight:700;color:#475569">관리</th></tr></thead><tbody>';
     grp.items.forEach(function(m){
       var gColor=getGradeColor(m.calcGrade);
       var aColor=getAchievementColor(m.calcAchievement);
@@ -26146,7 +25113,7 @@ function rMockExam_List_ByGroup(){
   var h='';
   if(Object.keys(byGroup).length===0){
     h+='<div style="background:white;border:2px dashed #e2e8f0;border-radius:12px;padding:30px;text-align:center;color:#94a3b8">'
-      +'<div style="font-size:16px">기출모의를 푼 학생이 있는 반이 없습니다</div>'
+      +'<div style="font-size:13px">기출모의를 푼 학생이 있는 반이 없습니다</div>'
     +'</div>';
     return h;
   }
@@ -26155,12 +25122,12 @@ function rMockExam_List_ByGroup(){
   Object.keys(byGroup).sort().forEach(function(grp){
     var members=byGroup[grp].sort(function(a,b){return b.count-a.count;});
     h+='<div style="background:white;border-radius:12px;padding:14px;border-left:3px solid #dc2626;box-shadow:0 2px 8px rgba(0,0,0,0.04)">'
-      +'<div style="font-size:16px;font-weight:800;color:#0d2240;margin-bottom:10px">🏷️ '+grp+'반 · '+members.length+'명</div>'
-      +'<div style="font-size:15px;line-height:1.8">';
+      +'<div style="font-size:13px;font-weight:800;color:#0d2240;margin-bottom:10px">🏷️ '+grp+'반 · '+members.length+'명</div>'
+      +'<div style="font-size:12px;line-height:1.8">';
     members.forEach(function(mem){
       h+='<div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:4px 0" onclick="MOCK_VIEW_MODE=\'byStudent\';MOCK_SELECTED_STUDENT=\''+mem.student.id+'\';render()">'
         +'<span style="color:#0d2240;font-weight:700">'+mem.student.name+'</span>'
-        +'<span style="color:#dc2626;font-weight:800;font-size:13.5px">'+mem.count+'회</span>'
+        +'<span style="color:#dc2626;font-weight:800;font-size:11px">'+mem.count+'회</span>'
       +'</div>';
     });
     h+='</div></div>';
