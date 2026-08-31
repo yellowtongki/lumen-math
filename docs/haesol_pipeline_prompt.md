@@ -36,7 +36,11 @@
 
 ## 작업 규칙
 - 비밀번호·API키 커밋 금지(환경변수만). 학생 개인정보 실데이터 커밋 금지.
-- 해설집 작업은 **전용 브랜치 `claude/haesol-reports`**에서 하세요(앱 개발 브랜치와 분리). 시작 시: `git fetch origin main && git checkout -B claude/haesol-reports origin/main`. 커밋 메시지 끝에 `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>` 붙이고, 그 외 모델명은 어디에도 넣지 말 것.
+- **작업은 `main`에서 합니다** (2026-08-31 원장 지시 — 전용 브랜치 `claude/haesol-reports`는 이때 main에 병합하고 종료).
+- ⚠️ **무엇을 하든 시작 전에 반드시 최신을 받으세요**: `git fetch origin main && git checkout main && git merge --ff-only origin/main`.
+  특히 **앱(lumen_v18-*)을 만질 때는 최신 버전 파일을 base로 삼아 새 번호를 붙입니다.** (2026-08-31 사고: 낡은 v18-103을 바탕으로 v18-104를 만들었으나 그 사이 main은 v18-121까지 나가 있었고 파일명도 충돌했다. v18-121 위에 다시 얹어 v18-122로 배포했다.)
+- 앱을 배포할 때는 새 버전 파일을 만들고 **고정 주소 `lumen_v1.html`도 함께 최신본으로 교체**합니다(CLAUDE.md 배포 규칙).
+- 커밋 메시지 끝에 `Co-Authored-By` 줄을 붙이되, **모델명은 커밋·PR·코드 주석 등 저장소에 남는 곳 어디에도 따로 적지 않습니다.**
 
 지금은 첫 인사만 하세요: 위 역할을 한 줄로 요약하고, **어떤 시험지부터 해설집을 만들지** 원장님께 물어보세요(학교·학년·학기·과목, 또는 시험지 이미지 첨부). 길게 설명하지 말고 짧게.
 
