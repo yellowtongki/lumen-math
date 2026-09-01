@@ -31,15 +31,19 @@
  *   옵션: --title "..."      제목 직접 지정 (생략하면 수학비서 시험명에서
  *                            「옥길중학교 1학년 2025년 2학기 중간」 형식으로 자동 생성.
  *                            이 제목이 문항 위 출처 꼬리표가 되므로 학교명이 중요)
- *         --grade "중 1-2"   학년 표기 (생략하면 자동)
+ *         --grade "중 1-2"   학년 표기 (생략하면 자동 · 고등은 과목명 「공통수학2」)
  *         --mylist "기출 쌍둥이"  만든 학습지를 이 마이리스트(폴더)에 넣기 (없으면 만든다)
  *         --similar-x 1      문항당 쌍둥이 수
  *         --skip-worksheet   원본 등록까지만
+ *         --assign "김가희"   기출원본 학습지를 이 학생에게 배정 (이름 또는 매쓰플랫 id, 쉼표로 여러 명)
+ *         --assign-twin      쌍둥이 학습지도 같이 배정 (기본은 원본만)
  *
- * trieKey (22개정): 중1-1 1.4.4146.4154.4169 · 중1-2 1.4.4146.4154.4170
+ * trieKey (22개정 중등): 중1-1 1.4.4146.4154.4169 · 중1-2 1.4.4146.4154.4170
  *   중2-1 1.4.4146.4155.4171 · 중2-2 1.4.4146.4155.4172
  *   중3-1 1.4.4146.4156.4173 · 중3-2 1.4.4146.4156.4174
- * trieKey (15개정): 중1 1.2.9.27.62/.80 · 중2 1.2.9.29.64/.82 · 중3 1.2.9.31.66/.84
+ * trieKey (15개정 중등): 중1 1.2.9.27.62/.80 · 중2 1.2.9.29.64/.82 · 중3 1.2.9.31.66/.84
+ * trieKey (22개정 고등 — 학년이 아니라 과목이 단위): 공통수학1 1.4.4147.4175 ·
+ *   공통수학2 .4176 · 대수 .4177 · 미적분1 .4178 · 확률과 통계 .4179 · 미적분2 .4180 · 기하 .4181
  *
  * 계정: MATHSECR_ID/PASSWORD, MATHFLAT_ID/PASSWORD (환경변수만, 커밋 금지)
  * 주의: 매쓰플랫 동시 로그인 시 기존 접속이 끊길 수 있음 → 새벽 실행 권장.
@@ -62,15 +66,60 @@ const OUT_DIR = path.join(__dirname, '_debug', 'twin_pipeline');
 /* 교육과정 키. 22·15개정 중학교 전 학기 확보 (15개정은 /curriculums/by-key 스캔으로 확인) */
 const TRIE_22 = { '1-1': '1.4.4146.4154.4169', '1-2': '1.4.4146.4154.4170', '2-1': '1.4.4146.4155.4171', '2-2': '1.4.4146.4155.4172', '3-1': '1.4.4146.4156.4173', '3-2': '1.4.4146.4156.4174' };
 const TRIE_15 = { '1-1': '1.2.9.27.62', '1-2': '1.2.9.27.80', '2-1': '1.2.9.29.64', '2-2': '1.2.9.29.82', '3-1': '1.2.9.31.66', '3-2': '1.2.9.31.84' };
+/* 고등 22개정은 「학년」이 아니라 「과목」이 단위다 (매쓰플랫 curriculum의 grade 값이 과목명).
+ * /curriculums/by-key?key=1.4.4147 스캔으로 확인 (2026-09-01). */
+const TRIE_22_HIGH = {
+  '공통수학1': '1.4.4147.4175', '공통수학2': '1.4.4147.4176', '대수': '1.4.4147.4177',
+  '미적분1': '1.4.4147.4178', '확률과 통계': '1.4.4147.4179', '미적분2': '1.4.4147.4180', '기하': '1.4.4147.4181',
+};
 /* 2022 개정 적용 연도: 중1은 2025년부터, 중2는 2026년부터, 중3은 2027년부터 */
 function trieForExam(grade, semester, year) {
   const is22 = Number(year) >= 2024 + Number(grade);
   const key = `${grade}-${semester}`;
   return (is22 ? TRIE_22 : TRIE_15)[key] || '';
 }
+/* 수학비서 시험명에서 고등 과목명 뽑기 (예: "…소래고 고1공통 2학기기말 공통수학2" → 공통수학2) */
+function hsSubjectOf(title) {
+  const t = String(title || '').replace(/\s+/g, '');
+  const m = t.match(/(공통수학[12]|확률과통계|미적분[12]|대수|기하)/);
+  if (!m) return '';
+  return m[1] === '확률과통계' ? '확률과 통계' : m[1];
+}
+/* 학교 이름 토큰 (…중 / …고). 제목 어디에 있든 학교명만 집어낸다 */
+function schoolTokenOf(title) {
+  return (String(title || '').match(/([가-힣]+(?:중|고))(?:학교)?\s/) || [])[1] || '';
+}
 
 let log = (...a) => console.log(`[${new Date().toISOString().slice(11, 19)}]`, ...a);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ── 고등 기출 수입 장부 (hs_exam_import) ────────────────────
+ * 기출모의 엔진(mockexam_engine --build)은 고등 시험을 이 장부에서 읽어
+ * 「수학비서 시험 ↔ 매쓰플랫 원본 학습지」를 잇는다. 중학교는 채점 기록 제목 대조로
+ * 백필되지만, 고등은 학교명 꼬리(「소래고등학교」→「소래고등」)가 어긋나 백필이 안 된다.
+ * 그래서 고등 시험은 만들자마자 여기에 적어 둔다 — 안 적으면 학생이 풀어도
+ * 기출모의 자동 수신함에 뜨지 않는다. */
+async function registerHsExam(examId, entry) {
+  const url = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+  const key = process.env.SUPABASE_SERVICE_KEY || '';
+  if (!url || !key) { log('⚠ SUPABASE 환경변수가 없어 고등 수입 장부 등록을 건너뜁니다'); return false; }
+  const H = { apikey: key, authorization: 'Bearer ' + key, 'Content-Type': 'application/json' };
+  const r = await fetch(`${url}/rest/v1/lumen_store?select=value&key=eq.hs_exam_import`, { headers: H });
+  const rows = await r.json();
+  let v = (rows && rows[0] && rows[0].value) || {};
+  if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = {}; } }
+  v.done = v.done || {};
+  if (v.done[examId] && v.done[examId].worksheet) { log(`고등 수입 장부: ${examId} 이미 등록됨 (worksheet ${v.done[examId].worksheet}) — 건너뜀`); return false; }
+  v.done[examId] = { ...entry, at: new Date().toISOString(), filed: true };
+  v.updated = new Date().toISOString();
+  const w = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+    method: 'POST', headers: { ...H, Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify({ key: 'hs_exam_import', value: v, updated_at: v.updated }),
+  });
+  if (!w.ok) { log(`⚠ 고등 수입 장부 등록 실패 ${w.status}: ${(await w.text()).slice(0, 140)}`); return false; }
+  log(`고등 수입 장부에 등록: ${examId} → worksheet ${entry.worksheet} (총 ${Object.keys(v.done).length}건)`);
+  return true;
+}
 
 /* ── 수학비서 ─────────────────────────────────────────────── */
 let MS_TOKEN = null, MS_CDN_COOKIE = null;
@@ -201,6 +250,10 @@ async function runTwinPipeline(opts) {
   const MYLIST = opts.mylist || '';
   const SIMILAR_X = Number(opts.similarX || 1);
   const SKIP_WS = !!opts.skipWorksheet;
+  const ASSIGN = String(opts.assign || '').split(',').map((s) => s.trim()).filter(Boolean);   // 학생 이름 또는 매쓰플랫 id
+  const ASSIGN_TWIN = !!opts.assignTwin;   // 쌍둥이까지 배정할지 (기본은 기출원본만)
+  let IS_HIGH = false, HS_SUBJECT = '', WS_GRADE = '1';
+  let assignIds = [], assignNames = [];
   if (opts.log) log = opts.log;
   if (!MYDB) throw new Error('mydb(수학비서 시험지 id)가 필요합니다');
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -217,12 +270,27 @@ async function runTwinPipeline(opts) {
     const g = (t.match(/[중고](\d)/) || [])[1] || '1';
     const sem = (t.match(/(\d)학기/) || [])[1] || '1';
     const yr = (t.match(/(20\d\d)년/) || [])[1] || '';
+    IS_HIGH = /고$/.test(schoolTokenOf(t)) || (!schoolTokenOf(t) && t.includes('고') && !t.includes('중'));
     if (!TITLE) TITLE = sourceTitleOf(t) || ('기출 연습 ' + MYDB);
-    if (!GRADE_LABEL) GRADE_LABEL = (t.includes('고') && !t.includes('중') ? '고 ' : '중 ') + g + '-' + sem;
-    if (!TRIE) {
-      TRIE = trieForExam(g, sem, yr);
-      if (!TRIE) throw new Error(`교육과정 키를 정할 수 없습니다 (중${g} ${sem}학기 ${yr}년 — 15개정 키 미확보). --trie로 직접 지정해 주세요`);
+    if (IS_HIGH) {
+      // 고등: 학년-학기가 아니라 과목이 단위. 학습지의 grade 칸에도 과목명이 들어간다.
+      HS_SUBJECT = hsSubjectOf(t);
+      // 고등은 제목 끝에 과목명을 붙인다 — 기출모의 엔진이 과목을 제목 끝에서 읽는다
+      // (예: 「소사고등학교 2학년 2024년 2학기 중간 미적분1」). 안 붙이면 과목이 「수학」으로 뭉개진다.
+      if (!opts.title && HS_SUBJECT && !TITLE.includes(HS_SUBJECT)) TITLE = TITLE + ' ' + HS_SUBJECT;
+      if (!GRADE_LABEL) GRADE_LABEL = HS_SUBJECT || ('고 ' + g + '-' + sem);
+      if (!TRIE) {
+        TRIE = TRIE_22_HIGH[HS_SUBJECT] || '';
+        if (!TRIE) throw new Error(`고등 교육과정 키를 정할 수 없습니다 (과목 「${HS_SUBJECT || '알 수 없음'}」) — --trie로 직접 지정해 주세요`);
+      }
+    } else {
+      if (!GRADE_LABEL) GRADE_LABEL = '중 ' + g + '-' + sem;
+      if (!TRIE) {
+        TRIE = trieForExam(g, sem, yr);
+        if (!TRIE) throw new Error(`교육과정 키를 정할 수 없습니다 (중${g} ${sem}학기 ${yr}년 — 15개정 키 미확보). --trie로 직접 지정해 주세요`);
+      }
     }
+    WS_GRADE = IS_HIGH ? (HS_SUBJECT || '공통수학1') : g;
   }
   log(`제목(출처): ${TITLE} · 학년 ${GRADE_LABEL}`);
   const cells = await msCells(MYDB);
@@ -276,6 +344,18 @@ async function runTwinPipeline(opts) {
   fs.writeFileSync(path.join(OUT_DIR, `paper_${MYDB}.json`), JSON.stringify(paper, null, 1));
   if (SKIP_WS) { log('--skip-worksheet: 여기까지'); return { mydb: MYDB, title: TITLE, trie: TRIE, paperId: paper.id, matched, matchedTotal: an.sourceData.length }; }
 
+  // 배정할 학생 찾기 (이름으로 주면 활동학생 명부에서 매쓰플랫 id를 찾는다)
+  if (ASSIGN.length) {
+    const { data: sd } = await mf(MF_API, 'GET', '/students?size=500');
+    const roster = Array.isArray(sd) ? sd : (sd.students || sd.content || []);
+    for (const key of ASSIGN) {
+      const hit = roster.find((s) => String(s.id) === key) || roster.find((s) => String(s.name || '').trim() === key);
+      if (hit) { assignIds.push(hit.id); assignNames.push(hit.name); }
+      else log(`⚠ 배정 대상 「${key}」을(를) 매쓰플랫 활동학생에서 못 찾음 — 건너뜁니다`);
+    }
+    if (assignIds.length) log(`배정 대상: ${assignNames.join(', ')} (${assignIds.join(', ')})`);
+  }
+
   // 학습지 공통 설정 (원본·쌍둥이 둘 다 같은 모양)
   const wsBase = {
     conceptIdList: [], littleChapterConceptIdList: [],
@@ -284,9 +364,10 @@ async function runTwinPipeline(opts) {
     wrongAnswerNoteFlag: false, conceptNameFlag: true, answerRateFlag: false,
     relationWorkbookFlag: false, includeProblemFlag: false,
     conceptSortType: 'CHAPTER',
-    schoolType: GRADE_LABEL.startsWith('고') ? 'HIGH' : 'MIDDLE',
+    schoolType: IS_HIGH ? 'HIGH' : 'MIDDLE',
     revision: TRIE.startsWith('1.4.') ? 'CURRICULUM_22' : 'CURRICULUM_15',
-    grade: (GRADE_LABEL.match(/(\d)/) || [, '1'])[1],
+    // 고등 22개정은 학년 칸에 과목명이 들어간다 (중학교는 학년 숫자)
+    grade: String(WS_GRADE),
     problemPadding: 60, pdfDateType: 'TODAY', pdfDate: null,
     designTemplateId: null, qrFlag: false, problemTrendFlag: false,
   };
@@ -326,9 +407,10 @@ async function runTwinPipeline(opts) {
       ...wsBase, filterId: oFlt.filterId || oFlt,
       problemList: origList, myDbProblemDetailIds: detailIds,   // 원본은 이 둘을 함께 보내야 한다
       title: `${TITLE} 원본`, tag: 'MY_DB_ORIGINAL',
+      assignStudentIdList: assignIds,      // 기출 그대로 푸는 것이므로 배정은 원본에 붙인다
     });
     made.push(oWs);
-    log(`✅ 기출원본 학습지: worksheet ${oWs} — 「${TITLE} 원본」`);
+    log(`✅ 기출원본 학습지: worksheet ${oWs} — 「${TITLE} 원본」${assignIds.length ? ` · 배정 ${assignNames.join(', ')}` : ''}`);
   } else {
     log('⚠ 원본 문제 복사가 끝나지 않아 원본 학습지는 건너뜁니다 (나중에 다시 실행)');
   }
@@ -342,9 +424,10 @@ async function runTwinPipeline(opts) {
   const { data: wsId } = await mf(MF_API, 'POST', '/worksheet', {
     ...wsBase, filterId, problemList: problems,
     title: `${TITLE} 쌍둥이`, tag: 'CUSTOM_PAPER',
+    assignStudentIdList: ASSIGN_TWIN ? assignIds : [],
   });
   made.push(wsId);
-  log(`✅ 쌍둥이 학습지: worksheet ${wsId} — 「${TITLE} 쌍둥이」`);
+  log(`✅ 쌍둥이 학습지: worksheet ${wsId} — 「${TITLE} 쌍둥이」${(ASSIGN_TWIN && assignIds.length) ? ` · 배정 ${assignNames.join(', ')}` : ''}`);
 
   // ⑨ 마이리스트(폴더)에 넣기 — 같은 이름이 없으면 만든다
   if (MYLIST && made.length) {
@@ -362,17 +445,26 @@ async function runTwinPipeline(opts) {
     }
   }
 
+  // ⑩ 고등이면 수입 장부에 적어 둔다 (기출모의 엔진이 이걸 보고 채점을 잇는다)
+  const wsOrig = made.length === 2 ? made[0] : (origList.length ? made[0] : null);
+  if (IS_HIGH && wsOrig) {
+    try { await registerHsExam(String(MYDB), { title: TITLE, paper: paper.id, worksheet: wsOrig, mylist: MYLIST || null }); }
+    catch (e) { log('⚠ 고등 수입 장부 등록 오류:', e.message.slice(0, 120)); }
+  }
+
   return {
     mydb: MYDB, title: TITLE, trie: TRIE, gradeLabel: GRADE_LABEL,
+    schoolType: IS_HIGH ? 'HIGH' : 'MIDDLE', subject: HS_SUBJECT || null,
     paperId: paper.id, questionCount: cells.length, boxCount: nBox,
     matched, matchedTotal: an.sourceData.length,
-    worksheetOriginal: made.length === 2 ? made[0] : (origList.length ? made[0] : null),
+    worksheetOriginal: wsOrig,
     worksheetTwin: made[made.length - 1] || null,
+    assigned: assignNames, assignedIds: assignIds, assignedTwin: !!ASSIGN_TWIN,
     mylist: MYLIST,
   };
 }
 
-module.exports = { runTwinPipeline, sourceTitleOf, trieForExam, TRIE_22, TRIE_15 };
+module.exports = { runTwinPipeline, sourceTitleOf, trieForExam, hsSubjectOf, registerHsExam, TRIE_22, TRIE_15, TRIE_22_HIGH };
 
 /* ── 명령줄에서 직접 실행할 때 ── */
 if (require.main === module) {
@@ -386,6 +478,8 @@ if (require.main === module) {
     mylist: arg('mylist', ''),
     similarX: Number(arg('similar-x', 1)),
     skipWorksheet: args.includes('--skip-worksheet'),
+    assign: arg('assign', ''),
+    assignTwin: args.includes('--assign-twin'),
   }).then((r) => log('결과:', JSON.stringify(r)))
     .catch((e) => { console.error('오류:', e.message); process.exit(1); });
 }
