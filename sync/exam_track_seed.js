@@ -78,9 +78,15 @@ async function kvSet(key, value) {
   if (!r.ok) throw new Error('저장 실패 ' + r.status + ' ' + (await r.text()).slice(0, 200));
 }
 
-/* ── 학교별 2학기 중간고사 (임시 날짜 — 학교 공지로 확인 필요) ── */
-const DDAY_GUESS = '2026-10-15';
-const SCHOOLS = ['옥길중', '소사고', '범박고'];
+/* ── 학교 이름 줄이기 (옥길중학교 → 옥길중) ── */
+const shortSchool = (n) => String(n || '').trim().replace(/(초등학교|중학교|고등학교)$/, (m) => m.charAt(0));
+/* 학년 줄이기 (중학교 1학년 → 중1) */
+function shortGrade(x) {
+  const s = String(x || '');
+  let m = s.match(/(초등학교|중학교|고등학교)?\s*(\d)\s*학년/);
+  if (m) { const lv = m[1] ? m[1].charAt(0) : (/초/.test(s) ? '초' : (/고/.test(s) ? '고' : '중')); return lv + m[2]; }
+  m = s.match(/([초중고])\s*(\d)/); return m ? (m[1] + m[2]) : '';
+}
 
 /* ── 트랙 재료 ──────────────────────────────────────────────
  * 고2 미적분1: 2026-08-31 이식한 교과서 DB 학습지 15장 (문항 수 = 실제 매칭 수)
@@ -164,15 +170,23 @@ function mainSchoolOf(list) {
   const findBook = (m, hint) => books.find((b) => String(b.title || '').replace(/\s+/g, ' ').indexOf(m) >= 0
     && (!hint || String(b.grade || '') === hint));
 
-  // 반별로 묶기
+  /* ★ 트랙 단위 = 「학교 학년」 (2026-09-01 원장 지시 — 시험은 반이 아니라 학교가 친다) */
   const byGrp = {};
-  active.forEach((s) => { const g = String(s.group || '').trim(); if (!g) return; (byGrp[g] = byGrp[g] || []).push(s); });
+  active.forEach((s) => {
+    const sc = shortSchool(s.school), gr = shortGrade(s.grade);
+    if (!sc || !gr || gr.charAt(0) === '초') return;   // 초등은 시험대비 대상 아님
+    const k = sc + ' ' + gr;
+    (byGrp[k] = byGrp[k] || []).push(s);
+  });
 
   const prev = (await kvGet('exam_track')) || {};
   // 매쓰플랫 학생ID ↔ 학생코드, 그리고 최근 학습 기록
   const mfs = await sbGet('/mf_students?select=mf_student_id,lumen_rec_code');
   const codeBySid = {}; mfs.forEach((x) => { if (x.lumen_rec_code) codeBySid[x.mf_student_id] = String(x.lumen_rec_code); });
-  const grpByCode = {}; active.forEach((s) => { grpByCode[String(s.lumen_rec_code)] = String(s.group || '').trim(); });
+  const grpByCode = {}; active.forEach((s) => {
+    const sc = shortSchool(s.school), gr = shortGrade(s.grade);
+    grpByCode[String(s.lumen_rec_code)] = (sc && gr) ? (sc + ' ' + gr) : '';
+  });
   const recent = await recentBooks(30);
   log(`최근 30일 학습 인스턴스 ${recent.length}건`);
   /* 반별 교재 사용 현황: 몇 명이 · 최고 몇 문항까지 */
@@ -189,9 +203,8 @@ function mainSchoolOf(list) {
   const notes = [];
   Object.keys(byGrp).sort().forEach((g) => {
     const list = byGrp[g];
-    const gk = mainGradeOf(list);
-    const school = mainSchoolOf(list);
-    if (!gk) { notes.push(`${g}: 초등만 있어 트랙을 만들지 않았습니다`); return; }
+    const school = g.split(' ')[0];
+    const gk = g.split(' ')[1];
     const items = [];
     const seen = {};
     /* ① 지금 실제로 풀고 있는 교재 — 반의 절반 이상이 쓰는 것 (최대 3권).
@@ -224,12 +237,26 @@ function mainSchoolOf(list) {
     items.forEach((it, i) => log(`      ${i + 1}. ${it.title} — ${it.total}문항${it.kind === '진행 중' ? '  ← 지금 풀고 있는 교재' : ''}${it.needCheck && it.kind !== '진행 중' ? ' (문항수 확인)' : ''}`));
   });
 
-  // 디데이
-  let ddays = (KEEP_DDAYS && Array.isArray(prev.ddays) && prev.ddays.length) ? prev.ddays
-    : SCHOOLS.map((s) => ({ school: s, label: '2학기 중간 (날짜 확인 필요)', date: DDAY_GUESS }));
+  /* 디데이 — 교육부 나이스(NEIS) 학사일정에서 그대로 (school-info.yml이 매일 수집) */
+  let ddays = [];
+  if (KEEP_DDAYS && Array.isArray(prev.ddays) && prev.ddays.length) ddays = prev.ddays;
+  else {
+    const cal = (await kvGet('school_calendar')) || {};
+    const mine = {}; active.forEach((s) => { const n = String(s.school || '').trim(); if (n) mine[n] = 1; });
+    (cal.schools || []).forEach((sc) => {
+      if (!mine[sc.name]) return;
+      const nx = sc.next; if (!nx || !nx.from) return;
+      const label = (nx.label || nx.name || '시험')
+        + (nx.to && nx.to !== nx.from ? ` (${String(nx.from).slice(5)}~${String(nx.to).slice(5)})` : '');
+      ddays.push({ school: shortSchool(sc.name), label, date: nx.from });
+    });
+    ddays.sort((a, b) => String(a.date).localeCompare(String(b.date)));
+    if (!ddays.length) log('⚠ 학사일정(school_calendar)이 비어 있어 디데이를 만들지 못했습니다');
+  }
 
   const value = { ddays, tracks, indiv: (prev.indiv || {}), publish: prev.publish !== false, updated: new Date().toISOString() };
-  log(`\n디데이 ${ddays.length}개: ${ddays.map((d) => d.school + ' ' + d.date).join(' · ')}`);
+  log(`\n디데이 ${ddays.length}개 (나이스 학사일정):`);
+  ddays.forEach((d) => log(`  · ${d.school} — ${d.label} ${d.date}`));
   if (notes.length) { log('\n확인이 필요한 것:'); notes.forEach((n) => log('  · ' + n)); }
   if (PLAN) { log('\n--plan: 저장하지 않았습니다'); return; }
   await kvSet('exam_track', value);
