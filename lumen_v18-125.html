@@ -284,7 +284,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v18-126';
+var APP_VER = 'v18-125';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -6714,7 +6714,6 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
-      {ver:'v18-126',date:'2026',stability:'ok',memo:'🎯 시험대비 트랙 신설 (진도·리포트 그룹, 진도 레이스 옆 — 기존 레이스는 그대로). [무엇] 시험대비 교재를 반별로 「트랙」(푸는 순서)으로 배정하고, 학생별 에너지바(진행률)를 <b>매쓰플랫 채점 기록으로 자동 집계</b> — 손으로 진도를 입력할 일이 없다. [디데이] 학교별 시험 디데이 보드 — 날짜를 등록하면 큰 숫자(D-26)로 표시(원장 지시: 3배 크기), 7일 이내 빨강·14일 이내 주황. 반 트랙에 학교를 지정하면 그 반 화면에도 대형 디데이가 붙는다. [배정] ➕ 교재 추가 → 교재 서가(교재PDF 목록 재사용: 우리 교재·시그니처·직접 만든 학습지, 표지 썸네일 포함)에서 골라 순서대로 쌓기, ↑↓ 순서 이동. 특정 학생에게만 끼워 넣는 개별 배정(보라 칩)도 지원. [현황] 학생×교재 매트릭스 — 완료✓·진행%·대기 에너지바, 반 평균. [저장] lumen_store exam_track (레이스처럼 서버 직접 저장). [학생앱 공개] 토글 준비 — 학생앱 트랙 화면은 다음 버전(student_v2-55)에서.'},
       {ver:'v18-125',date:'2026',stability:'ok',memo:'🗂 상단 탭 정리 — 성적·분석(17탭)을 <b>📝 시험·기출</b>과 <b>📈 진도·리포트</b> 두 그룹으로 분할 (원장님 승인안 그대로). [시험·기출 8탭] 기출모의 · 기출 해설집 · 기출 쌍둥이 · 자체모의 · 학교성적 · 시험 · 주간테스트 · 진학 나침반. [진도·리포트 9탭] 진도 현황 · 진도 타임라인 · 진도 레이스 · 블랙반 · 리커버리 · 교재·유형 · 월간보고서 · 주간리포트 · 유형성취도. [방법] GROUPS 배열의 그룹 소속과 상단 버튼만 바꿨고 <b>각 화면 코드는 무수정</b> — 화면 위치만 이동, 기능·데이터 변화 없음. 상단 큰 그룹은 6→7개(홈 · 오늘의 확인 · 수업·출결 · 시험·기출 · 진도·리포트 · 학생앱 · 운영). [검증] 실브라우저 — 새 그룹 탭 전환·17개 화면 전부 렌더 회귀 통과.'},
       {ver:'v18-124',date:'2026',stability:'ok',memo:'📖 기출 해설집 목록에 <b>학년별 필터 칩</b> 추가. [배경] 승인된 연동 시안(화면 A)에는 전체/중2/중3/고1 칩이 있었는데 v18-122~123 실화면에는 빠져 있었다 — 원장님 지적. [동작] 목록 위에 <b>전체 · 중1~고3</b> 칩이 뜨고(해설집이 있는 학년만), 누르면 그 학년 해설집만 남는다. 학년은 카탈로그의 grade 값 앞머리(중2, 고1 공통→고1)로 판별. 칩마다 권수 표시. 화면을 벗어나도 선택이 유지되고, 필터에 해당하는 해설집이 사라지면 자동으로 「전체」로 돌아간다. [검증] 실브라우저 — 4권(중2·중3·고1·고2) 기준 칩 5개·필터링·문항 보기 회귀 통과.'},
       {ver:'v18-123',date:'2026',stability:'ok',memo:'📖 기출 해설집이 <b>서버에 자동으로 올라온다</b>. [배경] v18-122는 원장님이 해설집.html 파일을 직접 골라야 목록에 들어왔다. 원장님 요청 — 「수파베이스에 저장되고 자동으로 불러오면 좋겠다」. [방법] 앱은 이미 lumen_haesol_catalog를 서버에서 읽고 있으므로, Claude 쪽에서 만들자마자 올려 두면 앱은 그대로 뜬다. 새 수집기 sync/haesol_upload.js 가 docs/exam_reports 아래 해설집.html을 앱의 hsParse()와 <b>같은 규칙</b>으로 잘라 haesol_body_&lt;코드&gt;(본문)와 lumen_haesol_catalog(목록)에 올린다. 목록은 병합 방식이라 다른 데서 올린 해설집을 지우지 않고, 최초 등록일도 지킨다. [앱 변경] ① 목록 헤더에 <b>🔄 새로고침</b> 추가 — 화면을 이미 연 상태에서도 새로 올라온 해설집을 바로 읽는다(hsLoad(true)). ② 빈 화면 문구를 「자동으로 올라오니 새로고침을 눌러 보세요」로 바꿨다. 「＋ 해설집 불러오기」 수동 경로는 그대로 남겨 뒀다. [현재 올라간 것] 4권 — 옥길중 중2(20문항)·중3(21문항), 소래고 고1(22문항), 소사고 고2(20문항). [검증] 실브라우저 통과 + 서버 되읽기로 목록·본문 조각 수 일치 확인.'},
@@ -8167,327 +8166,6 @@ const isDesktop=()=>window.innerWidth>=900;
 
 // 기능 탭 바 활성 상태 업데이트
 /* ── v16-3: 6그룹 상단탭 + 좌측 서브탭 레일 ── */
-/* ═══════════════════════════════════════════════════════════════
- * 🎯 시험대비 트랙 (v18-126)
- * ═══════════════════════════════════════════════════════════════
- * 시험대비 교재를 반별로 「트랙」(푸는 순서)으로 배정하고, 매쓰플랫 채점
- * 기록(mf_study_sessions)으로 학생별 에너지바(진행률)를 자동 집계한다.
- * 기존 진도 레이스 화면은 그대로 — 이 화면은 추가다 (2026-09-01 원장).
- *
- * 저장: lumen_store 'exam_track' (레이스처럼 서버 직접 읽고쓰기)
- *   { ddays:[{school,label,date}],                    ← 학교별 시험 디데이
- *     tracks:{ <반>:{school, items:[{id,title,thumb,total,kind}]} },
- *     indiv:{ <학생코드>:[{id,title,thumb,total,kind}] },  ← 개별 끼워넣기
- *     publish:true, updated }
- * 진행률: 학생이 그 교재/학습지에서 채점받은 문항 수(정답+오답 누적)를
- *   총 문항수로 나눈 값. 교재 id는 매쓰플랫 id 그대로(mf_study_sessions.book_id).
- */
-var XT={loaded:false, data:null, grp:'', prog:null, mfMap:null, picker:false, pq:'', psrc:'own', saving:false};
-function xtD(){ if(!XT.data||typeof XT.data!=='object') XT.data={}; var d=XT.data;
-  if(!Array.isArray(d.ddays)) d.ddays=[]; if(!d.tracks) d.tracks={}; if(!d.indiv) d.indiv={};
-  if(d.publish===undefined) d.publish=true; return d; }
-async function xtLoad(force){
-  if(XT.loaded&&!force) return;
-  try{
-    var sb=getSupaClient(); if(!sb) return;
-    var r=await sb.from('lumen_store').select('value').eq('key','exam_track');
-    var v=(r.data&&r.data[0])?r.data[0].value:null;
-    if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
-    XT.data=v||{}; xtD(); XT.loaded=true;
-    if(!XT.mfMap){
-      var m=await sb.from('mf_students').select('mf_student_id,lumen_rec_code');
-      XT.mfMap={}; (m.data||[]).forEach(function(x){ if(x.lumen_rec_code) XT.mfMap[String(x.lumen_rec_code)]=x.mf_student_id; });
-    }
-    if(!XT.grp){ var ks=Object.keys(xtD().tracks); XT.grp=ks[0]||''; }
-    xtLoadProg();
-    if(VIEW==='examtrack') render();
-  }catch(e){ console.error('시험대비 트랙 불러오기 실패:',e); }
-}
-async function xtSave(){
-  xtD().updated=new Date().toISOString();
-  XT.saving=true; render();
-  var ok=await supaSetItem('exam_track', XT.data);
-  XT.saving=false;
-  if(!ok) plToast('저장 실패 — 네트워크를 확인해 주세요'); else render();
-}
-/* 현재 반 트랙의 진행률 집계 — 학생×교재 = Σ(정답+오답), 총 문항수로 캡 */
-async function xtLoadProg(){
-  try{
-    var sb=getSupaClient(); if(!sb) return;
-    var d=xtD(); var tr=d.tracks[XT.grp]; if(!tr||!tr.items.length){ XT.prog={}; return; }
-    var ids=tr.items.map(function(it){return it.id;});
-    (xtGrpStudents()).forEach(function(s){ (d.indiv[String(s.lumen_rec_code)]||[]).forEach(function(it){ if(ids.indexOf(it.id)<0) ids.push(it.id); }); });
-    var r=await sb.from('mf_study_sessions').select('mf_student_id,book_id,correct_count,wrong_count').in('book_id',ids).limit(20000);
-    var p={};
-    (r.data||[]).forEach(function(x){
-      var k=x.mf_student_id+'|'+x.book_id;
-      p[k]=(p[k]||0)+(x.correct_count||0)+(x.wrong_count||0);
-    });
-    XT.prog=p;
-    if(VIEW==='examtrack') render();
-  }catch(e){ console.error('진행률 집계 실패:',e); }
-}
-function xtGrpStudents(){ return activeStudents().filter(function(s){ return String(s.group||'')===XT.grp; }); }
-function xtGroups(){
-  var seen={}, out=[];
-  Object.keys(xtD().tracks).forEach(function(g){ if(!seen[g]){seen[g]=1;out.push(g);} });
-  activeStudents().forEach(function(s){ var g=String(s.group||'').trim(); if(g&&!seen[g]){seen[g]=1;out.push(g);} });
-  return out;
-}
-function xtDday(dateStr){
-  if(!dateStr) return null;
-  var t=new Date(dateStr+'T00:00:00'), now=new Date(); now.setHours(0,0,0,0);
-  return Math.round((t-now)/86400000);
-}
-function xtSolved(stu, bookId){
-  var sid=XT.mfMap&&XT.mfMap[String(stu.lumen_rec_code||'')];
-  if(!sid||!XT.prog) return 0;
-  return XT.prog[sid+'|'+bookId]||0;
-}
-window.xtSetGrp=function(g){ XT.grp=g; XT.picker=false; xtLoadProg(); render(); };
-window.xtReload=function(){ XT.loaded=false; xtLoad(true); plToast('새로 불러옵니다…'); };
-window.xtTogglePub=function(){ xtD().publish=!xtD().publish; xtSave(); };
-window.xtAddDday=function(){
-  var s=document.getElementById('xt-dd-school'), l=document.getElementById('xt-dd-label'), dt=document.getElementById('xt-dd-date');
-  if(!s||!s.value.trim()||!dt||!dt.value){ plToast('학교와 날짜를 넣어주세요'); return; }
-  xtD().ddays.push({school:s.value.trim(), label:(l&&l.value.trim())||'시험', date:dt.value});
-  xtD().ddays.sort(function(a,b){ return String(a.date).localeCompare(String(b.date)); });
-  xtSave();
-};
-window.xtDelDday=function(i){ if(!confirm('이 디데이를 지울까요?')) return; xtD().ddays.splice(i,1); xtSave(); };
-window.xtEditDday=function(i){
-  var dd=xtD().ddays[i]; if(!dd) return;
-  var v=prompt(dd.school+' · '+dd.label+' 시험 날짜 (YYYY-MM-DD)', dd.date);
-  if(v&&/^\d{4}-\d{2}-\d{2}$/.test(v.trim())){ dd.date=v.trim(); xtD().ddays.sort(function(a,b){return String(a.date).localeCompare(String(b.date));}); xtSave(); }
-};
-window.xtNewTrack=function(){
-  var g=prompt('트랙을 만들 반 이름 (예: M7)', XT.grp||''); if(!g||!g.trim()) return;
-  g=g.trim(); if(!xtD().tracks[g]) xtD().tracks[g]={school:'', items:[]};
-  XT.grp=g; xtSave();
-};
-window.xtSetSchool=function(){
-  var tr=xtD().tracks[XT.grp]; if(!tr) return;
-  var names=xtD().ddays.map(function(d){return d.school;}).join(', ');
-  var v=prompt('이 반의 시험 학교 (디데이 보드의 학교명과 똑같이'+(names?' — 등록됨: '+names:'')+')', tr.school||'');
-  if(v!=null){ tr.school=v.trim(); xtSave(); }
-};
-window.xtOpenPicker=function(){
-  XT.picker=true;
-  // wpLoad는 교재 화면에서만 다시 그리므로, 여기서는 끝난 뒤 직접 다시 그린다
-  Promise.resolve(wpLoad()).then(function(){ if(VIEW==='examtrack') render(); });
-  render();
-};
-window.xtClosePicker=function(){ XT.picker=false; render(); };
-window.xtPickSrc=function(k){ XT.psrc=k; render(); };
-window.xtPickQ=function(v){ XT.pq=v; render(); };
-window.xtAddBook=function(id){
-  var b=(WP.books||[]).filter(function(x){return String(x.id)===String(id);})[0]; if(!b) return;
-  var tr=xtD().tracks[XT.grp]; if(!tr){ plToast('먼저 반 트랙을 만들어 주세요'); return; }
-  if(tr.items.some(function(it){return String(it.id)===String(b.id);})){ plToast('이미 트랙에 있습니다'); return; }
-  var t=prompt('「'+b.title+'」 총 문항 수 (에너지바 기준)', '');
-  var total=Number(t); if(!total||total<1){ plToast('문항 수를 숫자로 넣어주세요'); return; }
-  tr.items.push({ id:b.id, title:b.title, thumb:b.thumb||'', total:total, kind:b.kind||'' });
-  xtSave(); xtLoadProg();
-};
-window.xtMoveItem=function(i,dir){
-  var it=xtD().tracks[XT.grp]; if(!it) return; var a=it.items;
-  var j=i+dir; if(j<0||j>=a.length) return;
-  var tmp=a[i]; a[i]=a[j]; a[j]=tmp; xtSave();
-};
-window.xtDelItem=function(i){
-  var tr=xtD().tracks[XT.grp]; if(!tr) return;
-  if(!confirm('「'+tr.items[i].title+'」을 트랙에서 뺄까요? (채점 기록은 그대로 남습니다)')) return;
-  tr.items.splice(i,1); xtSave();
-};
-window.xtEditTotal=function(i){
-  var tr=xtD().tracks[XT.grp]; if(!tr||!tr.items[i]) return;
-  var v=prompt('「'+tr.items[i].title+'」 총 문항 수', tr.items[i].total);
-  var n=Number(v); if(n&&n>0){ tr.items[i].total=n; xtSave(); }
-};
-window.xtDelTrack=function(){
-  if(!confirm('반 「'+XT.grp+'」의 트랙 전체를 지울까요?')) return;
-  delete xtD().tracks[XT.grp]; var ks=Object.keys(xtD().tracks); XT.grp=ks[0]||''; xtSave();
-};
-window.xtAddIndiv=function(code){
-  var b=prompt('이 학생에게만 끼워 넣을 교재의 이름 일부 (교재 서가에서 검색)',''); if(!b) return;
-  var hit=(WP.books||[]).filter(function(x){ return String(x.title).toLowerCase().indexOf(b.toLowerCase())>=0; });
-  if(!hit.length){ plToast('교재를 찾지 못했습니다 — 먼저 ➕ 교재 추가에서 목록을 확인해 보세요'); return; }
-  var pick=hit[0];
-  if(hit.length>1){
-    var msg='여러 개가 있습니다. 번호를 고르세요:\n'+hit.slice(0,9).map(function(x,i){return (i+1)+'. '+x.title;}).join('\n');
-    var n=Number(prompt(msg,'1')); if(!n||n<1||n>Math.min(9,hit.length)) return; pick=hit[n-1];
-  }
-  var t=Number(prompt('「'+pick.title+'」 총 문항 수','')); if(!t||t<1) return;
-  var d=xtD(); if(!d.indiv[code]) d.indiv[code]=[];
-  d.indiv[code].push({ id:pick.id, title:pick.title, thumb:pick.thumb||'', total:t, kind:pick.kind||'' });
-  xtSave(); xtLoadProg();
-};
-window.xtDelIndiv=function(code,i){
-  var a=xtD().indiv[code]; if(!a) return; a.splice(i,1); if(!a.length) delete xtD().indiv[code]; xtSave();
-};
-/* 학생 한 명의 트랙 진행 요약 — 학생앱도 같은 규칙을 쓴다 */
-function xtStuSummary(stu){
-  var tr=xtD().tracks[XT.grp]; if(!tr) return null;
-  var items=tr.items.concat(xtD().indiv[String(stu.lumen_rec_code)]||[]);
-  var doneN=0, cur=null, curPct=0;
-  items.forEach(function(it){
-    var sv=Math.min(xtSolved(stu,it.id), it.total);
-    var pct=it.total?Math.round(sv/it.total*100):0;
-    if(pct>=100) doneN++;
-    else if(!cur){ cur=it; curPct=pct; }
-  });
-  return { items:items, doneN:doneN, cur:cur, curPct:curPct };
-}
-function rExamTrack(){
-  var d=xtD();
-  var h='<div style="max-width:1200px">';
-  // 머리
-  h+='<div style="background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:18px 22px;margin-bottom:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
-    +'<div><div style="font-size:19px;font-weight:900;color:#fff">🎯 시험대비 트랙</div>'
-    +'<div style="font-size:12px;color:#aebfd8;margin-top:3px">반별로 시험대비 교재를 순서대로 배정 — 에너지바는 매쓰플랫 채점 기록으로 자동으로 채워집니다</div></div>'
-    +'<div style="margin-left:auto;display:flex;gap:8px;align-items:center">'
-    +'<button onclick="xtTogglePub()" style="padding:8px 14px;border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;background:'+(d.publish?'#22c55e':'#64748b')+';color:#fff">'+(d.publish?'📱 학생앱 공개 중':'📱 학생앱 비공개')+'</button>'
-    +'<button onclick="xtReload()" style="padding:8px 14px;border:none;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;background:rgba(255,255,255,.15);color:#fff">🔄 새로고침</button>'
-    +'</div></div>';
-  // 학교별 디데이 보드 — 숫자를 아주 크게 (원장 지시: 3배)
-  h+='<div style="background:#fff;border:1px solid #e6ebf3;border-radius:14px;padding:16px 20px;margin-bottom:14px">'
-    +'<div style="font-size:14px;font-weight:900;color:#0d2240;margin-bottom:12px">📅 학교별 시험 디데이</div>'
-    +'<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:stretch">';
-  if(!d.ddays.length) h+='<div style="color:#94a3b8;font-size:12.5px;padding:10px 0">아직 등록된 시험이 없습니다 — 아래에서 추가해 주세요.</div>';
-  d.ddays.forEach(function(dd,i){
-    var n=xtDday(dd.date); var past=n!=null&&n<0;
-    var col=past?'#94a3b8':(n<=7?'#dc2626':(n<=14?'#ea580c':'#0d2240'));
-    h+='<div style="flex:1;min-width:200px;background:#f8fafc;border:1.5px solid '+(past?'#e2e8f0':(n<=14?'#fecaca':'#dbe4f0'))+';border-radius:14px;padding:14px 18px;position:relative">'
-      +'<span onclick="xtDelDday('+i+')" title="지우기" style="position:absolute;right:10px;top:8px;color:#cbd5e1;cursor:pointer;font-weight:900">✕</span>'
-      +'<div style="font-size:15px;font-weight:900;color:#0d2240">'+esc2(dd.school)+'</div>'
-      +'<div style="font-size:11.5px;color:#64748b;font-weight:700">'+esc2(dd.label||'시험')+' · '+esc2(dd.date)+'</div>'
-      +'<div onclick="xtEditDday('+i+')" title="클릭하면 날짜 수정" style="font-size:64px;font-weight:900;line-height:1.05;color:'+col+';cursor:pointer;font-variant-numeric:tabular-nums;letter-spacing:-2px;margin-top:4px">'
-      +(past?'끝':('D-'+n))+'</div></div>';
-  });
-  h+='</div>'
-    +'<div style="display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;align-items:center">'
-    +'<input id="xt-dd-school" placeholder="학교 (예: 소사고)" style="width:140px;padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:12.5px;font-family:inherit">'
-    +'<input id="xt-dd-label" placeholder="시험명 (예: 2학기 중간)" style="width:150px;padding:8px 11px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:12.5px;font-family:inherit">'
-    +'<input id="xt-dd-date" type="date" style="padding:7px 11px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:12.5px;font-family:inherit">'
-    +'<button onclick="xtAddDday()" style="padding:8px 15px;border:none;border-radius:9px;background:#0d2240;color:#fff;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">+ 추가</button>'
-    +'</div></div>';
-  // 반 탭
-  var grps=xtGroups();
-  h+='<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px;align-items:center">';
-  grps.forEach(function(g){
-    var has=!!d.tracks[g];
-    h+='<button onclick="xtSetGrp(\''+esc2(g).replace(/'/g,'')+'\')" style="padding:8px 16px;border:none;border-radius:50px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;'
-      +(XT.grp===g?'background:#0d2240;color:#fff':'background:#fff;color:'+(has?'#0d2240':'#94a3b8')+';border:1.5px solid #e2e8f0')+'">'
-      +g+(has?' 🏁':'')+'</button>';
-  });
-  h+='<button onclick="xtNewTrack()" style="padding:8px 14px;border:1.5px dashed #cbd5e1;border-radius:50px;background:none;color:#64748b;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">+ 반 트랙 만들기</button>'
-    +'</div>';
-  var tr=d.tracks[XT.grp];
-  if(!XT.grp||!tr){
-    h+='<div style="background:#fff;border:1px solid #e6ebf3;border-radius:14px;padding:40px;text-align:center;color:#94a3b8;font-size:13px">반을 고르고 「+ 반 트랙 만들기」로 시작하세요.<br>트랙 = 그 반이 시험까지 풀 교재의 순서입니다.</div>';
-    return h+'</div>';
-  }
-  // 반 머리: 학교 디데이 (크게) + 트랙 관리
-  var dd=d.ddays.filter(function(x){return x.school===tr.school;})[0];
-  var dn=dd?xtDday(dd.date):null;
-  h+='<div style="display:flex;gap:14px;align-items:stretch;flex-wrap:wrap;margin-bottom:14px">';
-  h+='<div style="background:#fff;border:1px solid #e6ebf3;border-radius:14px;padding:14px 22px;display:flex;align-items:center;gap:18px;min-width:280px">'
-    +'<div><div style="font-size:12px;color:#64748b;font-weight:800">'+esc2(tr.school||'학교 미지정')+(dd?' · '+esc2(dd.label):'')+'</div>'
-    +'<div style="font-size:72px;font-weight:900;line-height:1;letter-spacing:-3px;font-variant-numeric:tabular-nums;color:'+(dn==null?'#cbd5e1':(dn<=7?'#dc2626':(dn<=14?'#ea580c':'#0d2240')))+'">'
-    +(dn==null?'D-?':(dn<0?'끝':'D-'+dn))+'</div></div>'
-    +'<button onclick="xtSetSchool()" style="align-self:flex-start;border:none;background:none;color:#1d6fe8;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;text-decoration:underline">학교 지정</button>'
-    +'</div>';
-  // 트랙 순서
-  h+='<div style="flex:1;min-width:340px;background:#fff;border:1px solid #e6ebf3;border-radius:14px;padding:14px 18px">'
-    +'<div style="display:flex;align-items:center;margin-bottom:10px"><span style="font-size:13.5px;font-weight:900;color:#0d2240">🛤 '+esc2(XT.grp)+' 트랙 순서</span>'
-    +'<button onclick="xtOpenPicker()" style="margin-left:auto;padding:7px 13px;border:none;border-radius:9px;background:#1d6fe8;color:#fff;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">➕ 교재 추가</button>'
-    +'<button onclick="xtDelTrack()" style="margin-left:7px;border:none;background:none;color:#cbd5e1;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit">트랙 삭제</button></div>';
-  if(!tr.items.length) h+='<div style="color:#94a3b8;font-size:12.5px;padding:8px 0">아직 교재가 없습니다 — ➕ 교재 추가로 순서대로 쌓아 주세요.</div>';
-  tr.items.forEach(function(it,i){
-    h+='<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f1f5f9">'
-      +'<span style="width:22px;height:22px;border-radius:50%;background:#eef4fd;color:#1d6fe8;font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex:none">'+(i+1)+'</span>'
-      +(it.thumb?'<img src="'+esc2(it.thumb)+'" style="width:26px;height:35px;object-fit:cover;border-radius:4px;border:1px solid #e6ebf3;flex:none" alt="">':'')
-      +'<span style="flex:1;font-size:13px;font-weight:800;color:#0d2240;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc2(it.title)+'</span>'
-      +'<span onclick="xtEditTotal('+i+')" title="클릭하면 수정" style="font-size:11.5px;color:#64748b;font-weight:800;cursor:pointer">'+it.total+'문항</span>'
-      +'<span style="display:flex;gap:3px">'
-      +'<button onclick="xtMoveItem('+i+',-1)" style="border:none;background:#f1f5f9;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#64748b;font-weight:900">↑</button>'
-      +'<button onclick="xtMoveItem('+i+',1)" style="border:none;background:#f1f5f9;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#64748b;font-weight:900">↓</button>'
-      +'<button onclick="xtDelItem('+i+')" style="border:none;background:#fef2f2;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#dc2626;font-weight:900">✕</button></span>'
-      +'</div>';
-  });
-  h+='</div></div>';
-  // 교재 고르기 패널
-  if(XT.picker){
-    var q=(XT.pq||'').toLowerCase();
-    var list=(WP.books||[]).filter(function(b){ return (b.src||'mine')===XT.psrc && (!q||String(b.title).toLowerCase().indexOf(q)>=0); }).slice(0,40);
-    h+='<div style="background:#fff;border:1.5px solid #1d6fe8;border-radius:14px;padding:14px 18px;margin-bottom:14px">'
-      +'<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">'
-      +'<span style="font-size:13.5px;font-weight:900;color:#0d2240">📚 교재 서가</span>';
-    WP_SRC.forEach(function(s){
-      h+='<button onclick="xtPickSrc(\''+s.k+'\')" style="padding:5px 12px;border:none;border-radius:50px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;'
-        +(XT.psrc===s.k?'background:#0d2240;color:#fff':'background:#f1f5f9;color:#64748b')+'">'+s.ic+' '+s.t+'</button>';
-    });
-    h+='<input value="'+esc2(XT.pq)+'" oninput="xtPickQ(this.value)" placeholder="이름 검색" style="flex:1;min-width:150px;padding:7px 11px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:12px;font-family:inherit">'
-      +'<button onclick="xtClosePicker()" style="border:none;background:none;color:#94a3b8;font-weight:900;cursor:pointer;font-size:15px">✕</button></div>';
-    if(!WP.loaded) h+='<div style="color:#94a3b8;font-size:12px;padding:8px">교재 목록 불러오는 중…</div>';
-    else if(!list.length) h+='<div style="color:#94a3b8;font-size:12px;padding:8px">조건에 맞는 교재가 없습니다.</div>';
-    h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:7px">';
-    list.forEach(function(b){
-      h+='<div style="display:flex;align-items:center;gap:9px;background:#f8fafc;border:1px solid #eef1f6;border-radius:10px;padding:7px 10px">'
-        +(b.thumb?'<img src="'+esc2(b.thumb)+'" style="width:24px;height:32px;object-fit:cover;border-radius:3px;flex:none" alt="">':'')
-        +'<span style="flex:1;font-size:12px;font-weight:800;color:#0d2240;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc2(b.title)+'">'+esc2(b.title)+'</span>'
-        +(b.grade?'<span style="font-size:10px;color:#94a3b8;font-weight:700;flex:none">'+esc2(b.grade)+'</span>':'')
-        +'<button onclick="xtAddBook(\''+esc2(String(b.id)).replace(/'/g,'')+'\')" style="border:none;border-radius:7px;background:#1d6fe8;color:#fff;font-size:11px;font-weight:900;padding:5px 11px;cursor:pointer;font-family:inherit;flex:none">+ 추가</button>'
-        +'</div>';
-    });
-    h+='</div></div>';
-  }
-  // 학생×교재 매트릭스
-  var stus=xtGrpStudents();
-  h+='<div style="background:#fff;border:1px solid #e6ebf3;border-radius:14px;padding:16px 18px;overflow-x:auto">'
-    +'<div style="font-size:13.5px;font-weight:900;color:#0d2240;margin-bottom:11px">👥 '+esc2(XT.grp)+' 진행 현황 <span style="font-size:11px;color:#94a3b8;font-weight:700">에너지바 = 매쓰플랫 채점 기록 자동 집계</span></div>';
-  if(!stus.length) h+='<div style="color:#94a3b8;font-size:12.5px">이 반에 재원 중인 학생이 없습니다 (등록부의 반 이름과 같아야 합니다).</div>';
-  else if(!tr.items.length) h+='<div style="color:#94a3b8;font-size:12.5px">교재를 추가하면 학생별 에너지바가 나타납니다.</div>';
-  else{
-    h+='<table style="border-collapse:collapse;width:100%;min-width:'+(220+tr.items.length*150)+'px">'
-      +'<tr><th style="text-align:left;font-size:11px;color:#94a3b8;font-weight:800;padding:6px 8px;border-bottom:2px solid #eef1f6">학생</th>';
-    tr.items.forEach(function(it,i){
-      h+='<th style="text-align:left;font-size:11px;color:#64748b;font-weight:800;padding:6px 8px;border-bottom:2px solid #eef1f6;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc2(it.title)+'">'+(i+1)+'. '+esc2(it.title)+'</th>';
-    });
-    h+='<th style="text-align:left;font-size:11px;color:#7c3aed;font-weight:800;padding:6px 8px;border-bottom:2px solid #eef1f6">개별</th></tr>';
-    var sums=tr.items.map(function(){return {p:0,n:0};});
-    stus.forEach(function(s){
-      var code=String(s.lumen_rec_code||'');
-      h+='<tr><td style="padding:8px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:800;color:#0d2240;white-space:nowrap">'+esc2(s.name)
-        +' <span style="font-size:10px;color:#94a3b8;font-weight:700">'+esc2(s.grade||'')+'</span></td>';
-      tr.items.forEach(function(it,i){
-        var sv=Math.min(xtSolved(s,it.id), it.total);
-        var pct=it.total?Math.round(sv/it.total*100):0;
-        sums[i].p+=pct; sums[i].n++;
-        var col=pct>=100?'#22c55e':(pct>0?'#1d6fe8':'#e2e8f0');
-        var lab=pct>=100?'✓ 완료':(pct>0?(sv+'/'+it.total+' · '+pct+'%'):'대기');
-        h+='<td style="padding:8px;border-bottom:1px solid #f1f5f9;min-width:135px">'
-          +'<div style="font-size:10.5px;font-weight:900;color:'+(pct>=100?'#0f8a4e':(pct>0?'#1d6fe8':'#94a3b8'))+'">'+lab+'</div>'
-          +'<div style="height:9px;background:#f1f5f9;border-radius:50px;overflow:hidden;margin-top:3px"><div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:50px"></div></div></td>';
-      });
-      var iv=xtD().indiv[code]||[];
-      h+='<td style="padding:8px;border-bottom:1px solid #f1f5f9;white-space:nowrap">';
-      iv.forEach(function(it,i){
-        var sv=Math.min(xtSolved(s,it.id), it.total); var pct=it.total?Math.round(sv/it.total*100):0;
-        h+='<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;background:#f5f3ff;color:#7c3aed;border-radius:50px;padding:2px 9px;margin:1px" title="'+esc2(it.title)+'">'+esc2(it.title.slice(0,10))+' '+pct+'%<span onclick="xtDelIndiv(\''+code+'\','+i+')" style="cursor:pointer;color:#c4b5fd">✕</span></span>';
-      });
-      h+='<button onclick="xtAddIndiv(\''+code+'\')" title="이 학생에게만 교재 끼워 넣기" style="border:1px dashed #d8b4fe;background:none;color:#7c3aed;border-radius:50px;font-size:10px;font-weight:900;padding:2px 8px;cursor:pointer;font-family:inherit">＋</button>';
-      h+='</td></tr>';
-    });
-    h+='<tr><td style="padding:8px;font-size:12px;font-weight:900;color:#64748b;background:#f8fafc">반 평균</td>';
-    sums.forEach(function(x){ h+='<td style="padding:8px;font-size:12.5px;font-weight:900;color:#0d2240;background:#f8fafc">'+(x.n?Math.round(x.p/x.n):0)+'%</td>'; });
-    h+='<td style="background:#f8fafc"></td></tr></table>';
-  }
-  h+='</div>';
-  if(XT.saving) h+='<div style="position:fixed;bottom:20px;right:20px;background:#0d2240;color:#fff;font-size:12px;font-weight:800;border-radius:10px;padding:9px 16px;z-index:99">저장 중…</div>';
-  return h+'</div>';
-}
-
 var GROUPS=[
   {key:'home', icon:'🏠', label:'홈', memo:'출발점', subs:[
     {v:'home', icon:'🏠', label:'대시보드', act:function(){ VIEW='home'; }}
@@ -8523,7 +8201,6 @@ var GROUPS=[
     {v:'bookprog', icon:'📚', label:'진도 현황', act:function(){ VIEW='bookprog'; }},
     {v:'bookprogtl', icon:'📅', label:'진도 타임라인', act:function(){ VIEW='bookprogtl'; }},
     {v:'race', icon:'🏁', label:'진도 레이스', act:function(){ VIEW='race'; }},
-    {v:'examtrack', icon:'🎯', label:'시험대비 트랙', act:function(){ VIEW='examtrack'; }},   // v18-126
     {v:'black', icon:'🖤', label:'블랙반', act:function(){ VIEW='black'; }},
     {v:'recovery', icon:'🚑', label:'리커버리', act:function(){ VIEW='recovery'; }},
     {v:'books', icon:'📚', label:'교재·유형', act:function(){ VIEW='books'; BOOK_TYPE_MODE='book'; }},
@@ -15169,7 +14846,6 @@ function render(){
     else if(VIEW==='push'){ C.innerHTML=rPush(); if(!PUSH_STATE.subs) setTimeout(pushRefresh,0); }
     else if(VIEW==='twin'){ try{ C.innerHTML=rTwin(); if(!TW.loaded) setTimeout(twLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
     else if(VIEW==='race'){ try{ C.innerHTML=rRace(); if(!RACE.loaded) setTimeout(raceLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
-    else if(VIEW==='examtrack'){ try{ C.innerHTML=rExamTrack(); if(!XT.loaded) setTimeout(xtLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
     else if(VIEW==='black'){ try{ C.innerHTML=rBlack(); if(!BLK.loaded) setTimeout(blkLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
     else C.innerHTML=rSettings();
   }else{
@@ -15212,7 +14888,6 @@ function render(){
     else if(VIEW==='push'){ C.innerHTML=rPush(); if(!PUSH_STATE.subs) setTimeout(pushRefresh,0); }
     else if(VIEW==='twin'){ try{ C.innerHTML=rTwin(); if(!TW.loaded) setTimeout(twLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
     else if(VIEW==='race'){ try{ C.innerHTML=rRace(); if(!RACE.loaded) setTimeout(raceLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
-    else if(VIEW==='examtrack'){ try{ C.innerHTML=rExamTrack(); if(!XT.loaded) setTimeout(xtLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
     else if(VIEW==='black'){ try{ C.innerHTML=rBlack(); if(!BLK.loaded) setTimeout(blkLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
     else C.innerHTML=rSettings();
   }
