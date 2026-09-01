@@ -52,4 +52,8 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           node sync/mathflat_collector.js --days ${{ github.event.inputs.days || '7' }}
-          node sync/mockexam_engine.js || echo "기출모의 엔진 실패 (수집은 정상)" 
+          node sync/mockexam_engine.js || echo "기출모의 엔진 실패 (수집은 정상)"
+          # 시험대비 트랙에 새로 담긴 교재의 「쪽별 문항 수」를 매쓰플랫에서 받아
+          # 목표 문항 수를 정확한 값으로 채운다. 이미 받아 둔 교재는 그냥 건너뛰므로
+          # 평소에는 몇 초면 끝난다(로그인조차 하지 않는다).
+          node sync/mf_book_toc.js --track --apply || echo "교재 목차 수집 실패 (수집은 정상)" 
