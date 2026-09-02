@@ -87,12 +87,30 @@ const planDay = (key) => {
 };
 
 /* 기본 리그 구간 — 원장님이 학원앱에서 바꿀 수 있다 */
+/* ═══ 리그 — 롤(LoL) 사다리 (2026-09-02 원장 결정, B안) ═══════
+ * 브론즈 → 실버 → 골드 → 플래티넘 → 에메랄드 → 다이아몬드 → 마스터
+ * 그 위 두 자리는 점수가 아니라 <b>등수</b>로 준다(롤과 같은 방식).
+ *   👑 챌린저      = 마스터에 도달한 학생 중 1등
+ *   🔴 그랜드마스터 = 마스터에 도달한 학생 중 2등
+ * 마스터에 아무도 못 갔으면 두 자리는 비어 있다 — 시즌 막판에 걸리는 왕관이다.
+ *
+ * ★ 아이언은 일부러 뺐다. 롤에선 맨 밑이지만 학원에서 아이에게 붙이면 낙인이 된다.
+ *   모두 브론즈 IV에서 시작한다.
+ * ★ 문턱은 「지금 1등이 골드」가 되도록 잡았다(원장 지시). 그래야 남은 4주에
+ *   올라갈 칸이 여섯 개 남아 승급 알림이 자주 뜬다. 아무도 강등되지 않는다. */
 const DEF_TIERS = [
-  { k: 'bronze',  n: '브론즈', at: 0 },
-  { k: 'silver',  n: '실버',   at: 2500 },
-  { k: 'gold',    n: '골드',   at: 5000 },
-  { k: 'diamond', n: '다이아', at: 9000 },
-  { k: 'master',  n: '마스터', at: 13000 },
+  { k: 'bronze',    n: '브론즈',   at: 0 },
+  { k: 'silver',    n: '실버',     at: 2000 },
+  { k: 'gold',      n: '골드',     at: 4000 },
+  { k: 'platinum',  n: '플래티넘', at: 6500 },
+  { k: 'emerald',   n: '에메랄드', at: 9000 },
+  { k: 'diamond',   n: '다이아',   at: 10800 },
+  { k: 'master',    n: '마스터',   at: 12000 },
+];
+/* 마스터 위 두 자리 — 점수표에는 없고 등수로만 올라간다 */
+const TOP_SEATS = [
+  { k: 'challenger',   n: '챌린저' },        // 마스터 도달자 중 1등
+  { k: 'grandmaster',  n: '그랜드마스터' },  // 〃 2등
 ];
 
 /* ── Supabase 도우미 ──────────────────────────────────────────── */
@@ -210,15 +228,31 @@ async function loadPlanner() {
 
 /* ── 리그 판정 ───────────────────────────────────────────────
  * 각 리그를 III → II → I 로 3등분. 마지막(마스터)은 단일 등급.     */
+/* 롤처럼 한 티어 안을 IV·III·II·I 네 칸으로 나눈다 (I 이 가장 높다).
+ * 맨 위 티어(마스터)는 롤과 같이 디비전이 없다. */
+const DIVS = ['IV', 'III', 'II', 'I'];
 function tierOf(pts, tiers) {
   let i = 0;
   for (let k = 0; k < tiers.length; k++) if (pts >= tiers[k].at) i = k;
   const t = tiers[i];
   if (i === tiers.length - 1) return { tier: t.k, tierName: t.n, div: '', label: t.n };
   const w = Math.max(1, tiers[i + 1].at - t.at);
-  const r = (pts - t.at) / w;
-  const div = r < 1 / 3 ? 'III' : (r < 2 / 3 ? 'II' : 'I');
+  const r = Math.max(0, Math.min(0.999, (pts - t.at) / w));
+  const div = DIVS[Math.floor(r * DIVS.length)];
   return { tier: t.k, tierName: t.n, div, label: `${t.n} ${div}` };
+}
+
+/* 마스터에 도달한 학생 중 1등을 챌린저, 2등을 그랜드마스터로 올린다.
+ * (점수를 더 얹는 게 아니라 이름표만 바뀐다 — 순위 자체는 점수 그대로다) */
+function seatTopTiers(rows, tiers) {
+  const topKey = tiers.length ? tiers[tiers.length - 1].k : 'master';
+  const reached = rows.filter((r) => r.tier === topKey);   // 이미 점수순으로 정렬돼 있다
+  TOP_SEATS.forEach((seat, i) => {
+    const r = reached[i];
+    if (!r) return;
+    r.tier = seat.k; r.tierName = seat.n; r.div = ''; r.label = seat.n;
+  });
+  return rows;
 }
 
 /* ═══ 본체 ═══════════════════════════════════════════════════ */
@@ -338,6 +372,7 @@ async function runRace() {
       r.rank = i + 1;
       Object.assign(r, tierOf(r.pts, bt));
     });
+    seatTopTiers(rows, bt);              // 👑 챌린저 · 🔴 그랜드마스터 자리
     return rows;
   }
 
@@ -509,7 +544,7 @@ function dryReport(board) {
   console.log('※ 미리보기입니다 — 순위표에 저장하지 않았습니다.\n');
 }
 
-module.exports = { runRace, ptOf, tierOf, DEF_TIERS };
+module.exports = { runRace, ptOf, tierOf, seatTopTiers, DEF_TIERS, TOP_SEATS };
 
 if (require.main === module) {
   runRace().catch((e) => { console.error('오류:', e.message); process.exit(1); });
