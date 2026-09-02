@@ -115,20 +115,25 @@ async function buildBookIndex(wantBids) {
   for (const st of students) {
     if (Object.keys(found).length >= want.size) break;
     scanned++;
-    for (const wt of ['CUSTOM', 'SCHOOL', 'PUBLIC']) {
-      let list = null;
-      try { list = await api(`/student-workbook/student/${st.mf_student_id}?workbookType=${wt}`); } catch (_) { continue; }
-      if (!Array.isArray(list)) list = (list && list.content) || [];
-      for (const b of list) {
-        const bid = String(b.id);
-        if (!want.has(bid) || found[bid]) continue;
-        const swId = b.studentWorkbook && b.studentWorkbook.id;
-        const revId = b.recentRevisionId;
-        if (!swId || !revId) continue;
-        found[bid] = { sid: st.mf_student_id, swId, revId, title: (b.fulltitle || b.title || '').trim(), minPage: b.minPage, maxPage: b.maxPage };
-      }
-      await sleep(60);
+    /* ★ workbookType=ALL 로 한 번에 받는다 (2026-09-02 수정).
+     * 예전에는 CUSTOM·SCHOOL·PUBLIC 세 종류만 훑었는데, 원장님이 직접 만드신
+     * 시그니처 교재(type=CUSTOM_SIGNATURE, 예: Lumen Brilliance M1-1)는
+     * 그 셋 어디에도 안 잡혀 통째로 빠졌다. 그래서 배정된 학생이 버젓이 있는데도
+     * 「배정 없음」으로 보고 경로B(쪽 번호를 모르는 훑기)로 새어, 시험범위
+     * 301~350p 같은 계산을 못 해 ⚠추정 배지가 남아 있었다.
+     * ALL 하나면 20권이 다 나온다 — 통신도 3분의 1로 준다. */
+    let list = null;
+    try { list = await api(`/student-workbook/student/${st.mf_student_id}?workbookType=ALL`); } catch (_) { continue; }
+    if (!Array.isArray(list)) list = (list && list.content) || [];
+    for (const b of list) {
+      const bid = String(b.id);
+      if (!want.has(bid) || found[bid]) continue;
+      const swId = b.studentWorkbook && b.studentWorkbook.id;
+      const revId = b.recentRevisionId;
+      if (!swId || !revId) continue;
+      found[bid] = { sid: st.mf_student_id, swId, revId, title: (b.fulltitle || b.title || '').trim(), minPage: b.minPage, maxPage: b.maxPage };
     }
+    await sleep(60);
   }
   log(`  → 학생 ${scanned}명 확인 · 교재 ${Object.keys(found).length}/${want.size}권을 찾았습니다`);
   return found;
