@@ -48,6 +48,34 @@ const ptOf = (level, result) => {
   return result === 'O' ? base * 2 : base;
 };
 
+/* ═══ 🔥 집중 버프 — 플래너를 올린 날은 그날 문제 점수가 커진다 ═══
+ * (2026-09-02 원장 결정)
+ *
+ * 배율 = 1 + (그날 플래너 점수 ÷ 10) × max      ※ 기본 max = 0.4 → 최대 1.4배
+ *   플래너 10점 → ×1.40 · 9점 → ×1.36 · 5점 → ×1.20 · 안 올린 날 → ×1.00
+ *
+ * ★ 왜 「그날」인가
+ *   아이들은 문제를 낮에 풀고 플래너는 밤 10시 이후에 올린다. 그래서 버프는
+ *   「지금부터 더 풀어라」가 아니라 「그날 하루를 잘 마쳤으니 얹어 준다」이다.
+ *   플래너 점수에는 이미 「어느 날 것인지」 날짜가 붙어 있으므로(원장님이 채점할 때 적는다),
+ *   승인이 며칠 늦어도 날짜끼리 맞추면 된다. 레이스는 매번 시즌 전체를 다시 세므로
+ *   나중에 승인해도 그날 점수가 저절로 채워진다.
+ *
+ * ⚠️ 이 규칙은 학원앱 안의 계산기(lumen_v18-134.html rcBuffMult)와 <b>똑같아야</b> 한다.
+ *    한쪽만 고치면 두 화면의 점수가 어긋난다. */
+const buffMult = (planScore, max) => {
+  const v = Number(planScore);
+  if (!(v > 0)) return 1;                       // 미제출·0점은 그대로
+  return 1 + (Math.min(10, v) / 10) * (max > 0 ? max : 0.4);
+};
+/* 플래너 날짜 키를 YYYY-MM-DD 로 통일한다.
+ * 실제 저장된 예: "2026.09.02" · "2026.9.2" · "2026.08.31(제출은 9/1)" */
+const planDay = (key) => {
+  const m = String(key || '').match(/^\s*(20\d\d)[.\-/](\d{1,2})[.\-/](\d{1,2})/);
+  if (!m) return null;
+  return m[1] + '-' + String(m[2]).padStart(2, '0') + '-' + String(m[3]).padStart(2, '0');
+};
+
 /* 기본 리그 구간 — 원장님이 학원앱에서 바꿀 수 있다 */
 const DEF_TIERS = [
   { k: 'bronze',  n: '브론즈', at: 0 },
@@ -142,6 +170,33 @@ async function loadStudents() {
   return { sid2code, info };
 }
 
+/* ── 플래너 점수 (학생앱에 발행된 = 원장님이 승인한 것만) ────────
+ * lumen_store 의 student_planner_<학생코드> 를 전부 읽어
+ *   { 학생코드: { "2026-09-02": 9, ... } } 로 만든다.
+ * 승인 전 「예상 점수」는 여기 들어오지 않는다 — 화면에만 보여 주고
+ * 점수에는 확정된 것만 넣는다(원장 결정 2026-09-02). */
+async function loadPlanner() {
+  const out = {};
+  try {
+    const rows = await sbAll('lumen_store?key=like.student_planner_*&select=key,value');
+    rows.forEach((row) => {
+      const code = String(row.key || '').replace('student_planner_', '');
+      let v = row.value;
+      if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+      const sc = (v && v.scores) || {};
+      const m = {};
+      Object.keys(sc).forEach((k) => {
+        const d = planDay(k);
+        if (!d) return;
+        const n = Number(sc[k]);
+        if (!isNaN(n)) m[d] = Math.max(m[d] || 0, n);   // 같은 날 키가 둘이면 높은 쪽
+      });
+      if (Object.keys(m).length) out[code] = m;
+    });
+  } catch (e) { log('플래너 점수 읽기 실패(버프 없이 진행):', e.message); }
+  return out;
+}
+
 /* ── 리그 판정 ───────────────────────────────────────────────
  * 각 리그를 III → II → I 로 3등분. 마지막(마스터)은 단일 등급.     */
 function tierOf(pts, tiers) {
@@ -196,6 +251,12 @@ async function runRace() {
     `&score_datetime=gte.${t0}&score_datetime=lt.${t1}&order=score_datetime.asc`);
   log(`기간 ${season.from}~${season.to} · 채점기록 ${recs.length}건`);
 
+  /* 🔥 집중 버프 설정 — 시즌에 켜져 있을 때만 (기본 꺼짐) */
+  const buffOn = !!(season.buff && season.buff.on);
+  const buffMax = Number((season.buff || {}).max) || 0.4;
+  const plan = buffOn ? await loadPlanner() : {};
+  if (buffOn) log(`🔥 집중 버프 켜짐 (최대 ×${(1 + buffMax).toFixed(2)}) · 플래너 있는 학생 ${Object.keys(plan).length}명`);
+
   /* 학생별 집계 */
   const agg = {};   // code → {...}
   // 서버(깃허브)는 UTC로 도니 「오늘」은 +9가 맞다 (이건 진짜 UTC 시계다)
@@ -204,9 +265,15 @@ async function runRace() {
     if (r.result !== 'O' && r.result !== 'X' && r.result !== '?') return;  // '-' 미채점 제외
     const code = sid2code[r.mf_student_id];
     if (!code || !info[code]) return;
-    const a = agg[code] || (agg[code] = { code, pts: 0, n: 0, ok: 0, hard: 0, byDay: {} });
+    const a = agg[code] || (agg[code] = { code, pts: 0, base: 0, n: 0, ok: 0, hard: 0, byDay: {} });
     const lv = Number(r.level) || 2;
-    a.pts += ptOf(lv, r.result);
+    /* base = 버프 없는 원점수 · pts = 버프까지 얹은 점수.
+     * 둘 다 남겨야 학원앱에서 「버프로 얼마나 벌었나」를 보여 줄 수 있다. */
+    const raw = ptOf(lv, r.result);
+    const day = kstDay(r.score_datetime);
+    const mult = buffOn ? buffMult((plan[code] || {})[day], buffMax) : 1;
+    a.base += raw;
+    a.pts += raw * mult;
     a.n += 1;
     if (r.result === 'O') a.ok += 1;
     if (lv >= 4) a.hard += 1;
@@ -229,14 +296,22 @@ async function runRace() {
       .filter((c) => info[c].band === band)
       .filter((c) => band !== 'elem' || elemGrades.indexOf(String(info[c].gnum)) >= 0)
       .map((c) => {
-        const a = agg[c] || { pts: 0, n: 0, ok: 0, hard: 0, byDay: {} };
+        const a = agg[c] || { pts: 0, base: 0, n: 0, ok: 0, hard: 0, byDay: {} };
+        /* 🔥 버프 요약 — 원점수·보너스·플래너 올린 날 수·평균 배율 */
+        const pmap = plan[c] || {};
+        const pdays = days.filter((d) => (pmap[d] || 0) > 0).length;
+        const psum = days.reduce((s2, d) => s2 + (Number(pmap[d]) || 0), 0);
+        const basePts = Math.round(a.base || a.pts);
+        const bonus = Math.max(0, Math.round(a.pts) - basePts);
         // 성장률 = (후반 하루평균 ÷ 전반 하루평균 − 1) × 100
         // 기간이 짧으면 하루 결석만으로도 숫자가 튀므로 10일 이상일 때만 계산한다.
         const avg = (ds) => (ds.length ? ds.reduce((s, d) => s + (a.byDay[d] || 0), 0) / ds.length : 0);
         const f = avg(firstHalf), l = avg(lastHalf);
         return {
           code: c, nm: info[c].nm, sch: info[c].sch, gr: info[c].gr,
-          pts: a.pts, n: a.n, ok: a.ok,
+          pts: Math.round(a.pts), base: basePts, bonus: bonus,
+          pdays: pdays, pavg: pdays ? Math.round((psum / pdays) * 10) / 10 : 0,
+          n: a.n, ok: a.ok,
           rate: a.n ? Math.round((a.ok / a.n) * 100) : 0,
           hard: a.hard,
           days: Object.keys(a.byDay).filter((d) => (a.byDay[d] || 0) > 0).length,
@@ -270,6 +345,7 @@ async function runRace() {
       note: '틀려도 점수를 받습니다. 맞히면 두 배! (정답률도 함께 봅니다)',
     },
     days: days.length,
+    buff: { on: buffOn, max: buffMax },   // 앱들이 「🔥 버프 켜짐」 표시에 쓴다
   };
 
   /* ★ v2: 시즌이 끝났는지 — 끝나도 바로 지우지 않고 「최종 결과」로 며칠 더 보여준다.
