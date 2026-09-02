@@ -23,7 +23,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<script src="supabase.js" onerror="(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';document.head.appendChild(s);})()"></script><!-- v: 데이터 부품 자체 호스팅 (CDN 차단 대비, 실패 시 CDN 폴백) -->
+<script src="supabase.js" onerror="(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';document.head.appendChild(s);})()"></script>
+<!-- 📱 모바일 성적표 — 학원앱과 같은 파일 하나를 쓴다 (여기만 고치면 둘 다 바뀜) -->
+<script src="lumen_mobile_report.js?v=1"></script><!-- v: 데이터 부품 자체 호스팅 (CDN 차단 대비, 실패 시 CDN 폴백) -->
 <!-- v1-23: EXIF 촬영시각 추출용 (15KB) -->
 <script src="https://cdn.jsdelivr.net/npm/exifr@7/dist/lite.umd.js"></script>
 <style>
@@ -1105,6 +1107,29 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .td4{background:#0d2240;border-radius:18px;padding:14px;margin-bottom:10px}
 .td4-hd{font-size:14px;font-weight:900;color:rgba(255,255,255,0.75);margin-bottom:9px;display:flex;gap:7px;align-items:center}
 .td4-row{display:flex;gap:9px}
+/* ═══ 🔥 집중 버프 카드 (v2-61 → v2-62에서 자리 이동) ═══════════
+ * 플래너를 올린 날은 그날 푼 문제 점수가 커진다. 밤에 올리는 플래너라
+ * 문구는 전부 <b>완료형</b>이다.
+ * ⚠️ v2-62부터 버프 카드는 홈이 아니라 <b>진도 레이스 화면 안</b>에서 그린다
+ *    (bfRaceCard). 아래 .bf 규칙은 플래너 화면 등에서 쓰려고 남겨 둔 것이다. */
+.bf{border-radius:15px;padding:14px 15px;margin-bottom:12px;position:relative;overflow:hidden;color:#fff;
+  background:linear-gradient(135deg,#f59e0b 0%,#ef6b1f 52%,#e8192c 100%);box-shadow:0 8px 18px -8px rgba(232,25,44,.55)}
+.bf::after{content:"";position:absolute;right:-18px;top:-24px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.13)}
+.bf .lab{font-size:11px;font-weight:800;opacity:.93;position:relative}
+.bf .big{font-size:42px;font-weight:900;line-height:1.05;margin:2px 0 3px;position:relative;letter-spacing:-.02em}
+.bf .sub{font-size:12px;font-weight:700;opacity:.95;position:relative}
+.bf .cta{margin-top:10px;background:#0d2240;color:#fff;border-radius:10px;text-align:center;
+  font-size:13px;font-weight:800;padding:10px 0;position:relative;cursor:pointer;border:none;width:100%;font-family:inherit}
+/* 아직 안 올림 */
+.bf.off{background:var(--surface,#fff);border:1.5px dashed #cbd5e1;color:#94a3b8;box-shadow:none}
+.bf.off::after{display:none}
+.bf.off .big{color:#cbd5e1}
+/* 채점 대기 · 예상 */
+.bf.wait{background:var(--surface,#fff);border:1.5px dashed #94a3b8;color:#64748b;box-shadow:none}
+.bf.wait::after{display:none}
+.bf.wait .big{color:#94a3b8}
+.bf .pill{display:inline-block;margin-top:8px;background:#eef2f8;color:#64748b;border-radius:20px;
+  padding:4px 11px;font-size:11px;font-weight:800;position:relative}
 .td4-card{flex:1;border:none;border-radius:13px;padding:13px 12px;text-align:left;cursor:pointer;font-family:inherit;color:#fff}
 .td4-card.rec{background:linear-gradient(135deg,#dc2626,#ef4444)}
 .td4-card.pl{background:linear-gradient(135deg,#1d6fe8,#3b82f6)}
@@ -1162,8 +1187,12 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .rcbn{width:100%;background:linear-gradient(135deg,#f9a825,#ef6c00);border:none;border-radius:15px;padding:12px 14px;margin-bottom:10px;cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:11px;color:#2b1600;box-shadow:0 3px 12px rgba(239,108,0,.28)}
 .rcbn .em{width:30px;height:34px;flex-shrink:0;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)}
 .rcbn .t1{font-size:13.5px;font-weight:900;display:flex;align-items:center;gap:6px}
-.rcbn .dd{font-size:10px;font-weight:900;background:#7a2e00;color:#ffd9a8;border-radius:50px;padding:2px 7px}
+.rcbn .dd{font-size:19px;font-weight:900;color:#7a2e00;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1}
+.rcbn .ddwrap{margin-left:auto;text-align:right;flex:none;padding-left:8px}
+.rcbn .ddwrap .dt{display:block;font-size:9.5px;font-weight:800;color:#7a2e00;opacity:.72;margin-top:1px}
 .rcbn .t2{font-size:11px;font-weight:700;opacity:.72;margin-top:2px}
+/* v2-62: 홈 배너의 🔥 버프 칩 — 자세한 내용은 레이스 화면 안에서 본다 */
+.rcbn .t3{display:inline-block;margin-top:4px;font-size:10px;font-weight:900;border-radius:50px;padding:2px 8px;background:rgba(255,255,255,.62);color:#7a2e00}
 .rcbn .ch{margin-left:auto;opacity:.45;font-size:16px}
 .rcw{padding:14px 13px 40px}
 .rc-hero{background:linear-gradient(135deg,#f9a825,#ef6c00);border-radius:16px;padding:16px;color:#2b1600;margin-bottom:12px;box-shadow:0 3px 14px rgba(239,108,0,.26)}
@@ -1487,12 +1516,26 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     <!-- v2-42: 🏁 진도 레이스 배너 — 시즌 중에만 보인다 -->
     <button class="rcbn" id="rcbn" style="display:none" onclick="go('screen-race')">
       <span class="em" id="rcbn-em" style="background:linear-gradient(135deg,#d9a441,#9a6b21)"></span>
-      <span style="min-width:0">
-        <span class="t1">🏁 <span id="rcbn-nm">진도 레이스</span> <span class="dd" id="rcbn-dd">D-0</span></span>
+      <span style="min-width:0;flex:1">
+        <span class="t1">🏁 <span id="rcbn-nm">진도 레이스</span></span>
         <span class="t2" id="rcbn-t2">불러오는 중…</span>
+        <!-- v2-62: 🔥 집중 버프는 진도 레이스 안으로 옮겼다. 홈에는 작은 칩만 남긴다 -->
+        <span class="t3" id="rcbn-bf" style="display:none"></span>
+      </span>
+      <span class="ddwrap"><span class="dd" id="rcbn-dd">D-0</span><span class="dt" id="rcbn-dt"></span></span>
+      <span class="ch">›</span>
+    </button>
+    <!-- v2-59: 🧾 기출 다시풀기 — 진도 레이스 바로 아래 (원장 지시) -->
+    <button class="rcbn" id="rtbn" style="display:none;background:linear-gradient(135deg,#312e81,#6366f1);color:#eef2ff;box-shadow:0 3px 12px rgba(49,46,129,.3)" onclick="go('screen-retry')">
+      <span style="font-size:22px;flex-shrink:0">🧾</span>
+      <span style="min-width:0">
+        <span class="t1" style="color:#fff">기출 다시풀기 <span class="dd" id="rtbn-dd" style="background:#c7d2fe;color:#312e81">틀린 문항</span></span>
+        <span class="t2" id="rtbn-t2" style="color:#e0e7ff">틀린 문제를 다시 풀어서 올려 보자!</span>
       </span>
       <span class="ch">›</span>
     </button>
+    <!-- v2-62: 🔥 집중 버프 카드는 진도 레이스 화면 안으로 옮겼다 (원장 지시 2026-09-02).
+         홈에서는 위 진도 레이스 배너의 작은 칩(#rcbn-bf)으로만 알려 준다. -->
     <!-- v2-34(C안): 📌 오늘 할 일 — 매일 하는 두 가지가 맨 위 -->
     <div class="td4">
       <div class="td4-hd">📌 오늘 할 일 <span id="td4-date"></span></div>
@@ -1522,6 +1565,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
       </span>
       <span style="display:none" id="h3-spot-weak"></span><span style="display:none" id="h3-spot-solved"></span><span style="display:none" id="h3-spot-per"></span>
     </button>
+    <!-- v2-54: 🧾 기출 다시풀기 배너 — 기출모의 채점 기록에 틀린 문항이 있는 학생에게만 -->
     <div class="h3-tiles4">
       <button class="h3-tile hall3" onclick="hallOpen()">
         <span class="bdg3" id="h3-hall-bdg" style="display:none;background:#fff;color:#b45309">발표!</span>
@@ -1549,6 +1593,17 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 </div>
 
 <!-- ══ v2-42: 🏁 진도 레이스 ══ -->
+<!-- ══ v2-55: 🎯 시험대비 트랙 — 시험까지 풀 교재 레이스 (학원앱 exam_track 배정) ══ -->
+<div class="screen" id="screen-examtrack">
+  <div class="sub-hdr" style="background:linear-gradient(135deg,#0d2240,#1d4e89)">
+    <button class="back-btn" onclick="go('screen-home')" style="color:#fff">←</button>
+    <div class="sub-title" style="color:#fff">🎯 시험대비 레이스</div>
+  </div>
+  <div class="rec-body" id="xt-body" style="padding:0;background:#f8fafc">
+    <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
+  </div>
+</div>
+
 <div class="screen" id="screen-race">
   <div class="sub-hdr" style="background:linear-gradient(135deg,#0d2240,#1d4e89)">
     <button class="back-btn" onclick="go('screen-home')" style="color:#fff">←</button>
@@ -1616,6 +1671,29 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
   </div>
   <input type="file" id="sg-file" accept="image/*" capture="environment" style="display:none" onchange="sgPick(this)">
+</div>
+
+<!-- ══ v2-54: 🧾 기출 다시풀기 — 틀린 문항을 다시 풀어 사진으로 제출 (풀이 보기는 미오픈) ══ -->
+<div class="screen" id="screen-retry">
+  <div class="sub-hdr" style="background:linear-gradient(135deg,#312e81,#6366f1)">
+    <button class="back-btn" onclick="go('screen-home')" style="color:#fff">←</button>
+    <div class="sub-title" style="color:#fff">🧾 기출 다시풀기</div>
+  </div>
+  <div class="rec-body" id="rt-body" style="padding:12px">
+    <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
+  </div>
+  <input type="file" id="rt-file" accept="image/*" capture="environment" style="display:none" onchange="rtPick(this)">
+</div>
+
+<!-- ══ v2-54: 📖 풀이 보기 — 서버 스위치(haesol_student_open)가 켜진 뒤에만 진입 가능 (미오픈) ══ -->
+<div class="screen" id="screen-haesol">
+  <div class="sub-hdr" style="background:linear-gradient(135deg,#0d2240,#1d6fe8)">
+    <button class="back-btn" onclick="go('screen-retry')" style="color:#fff">←</button>
+    <div class="sub-title" style="color:#fff">📖 풀이 보기</div>
+  </div>
+  <div class="rec-body" id="shs-body" style="padding:12px">
+    <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
+  </div>
 </div>
 
 <!-- ══ v2-17: 명예의 전당 — 이번 주 1등(마스킹) + 내 기록(나만 보임) ══ -->
@@ -2359,7 +2437,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
 /* ★ v2-46: 화면에 보이는 버전을 한 곳(STU_VER)에서만 가져온다.
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
-var STU_VER = 'v2-53';
+var STU_VER = 'v2-63';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -2386,6 +2464,7 @@ function go(id) {
   target.classList.add('active');
   window.scrollTo(0,0);
   if (id === 'screen-home' && typeof updateTodayCard === 'function') updateTodayCard();   // v2-34
+  if (id === 'screen-home' && window.bfHomeChip) bfHomeChip();                            // v2-62: 🔥 버프 칩
   if (id === 'screen-record') loadSubmissionList();
   if (id === 'screen-race' && window.rcInit) window.rcInit();
   if (id === 'screen-bookscore' && typeof BK_LOCKED !== 'undefined' && BK_LOCKED) {  // v2-44: 잠금
@@ -2416,6 +2495,9 @@ function go(id) {
   }
   if (id === 'screen-spotlight') { if (window.sp3Init) sp3Init(); }
   if (id === 'screen-sungong') { if (window.sgInit) sgInit(); }   // v2-38
+  if (id === 'screen-examtrack' && window.xtInit) xtInit();       // v2-55: 시험대비 트랙
+  if (id === 'screen-retry') { if (window.rtInit) rtInit(); }     // v2-54: 기출 다시풀기
+  if (id === 'screen-haesol') { if (window.shsInit) shsInit(); }  // v2-54: 풀이 보기 (미오픈)
   if (id === 'screen-bookscore') { if (window.bkInit) bkInit(); }        // v2-40
   if (id === 'screen-bookpages') { if (window.bkRenderPages) bkRenderPages(); }
   if (id === 'screen-bookq') { if (window.bkRenderQ) bkRenderQ(); }
@@ -2448,6 +2530,7 @@ async function loginCode() {
     studentInfo = found; isTest = false;
     renderHome(); go('screen-home');
     loadRecTopics(); // v2-20: 자동 배정 녹음 주제 (백그라운드 로드 후 홈 갱신)
+    if (window.bfLoad) bfLoad();   // v2-61: 🔥 집중 버프 자료 (홈 카드·레이스에서 쓴다)
   } catch(e) { setErr('오류: ' + e.message); }
 }
 
@@ -2585,6 +2668,8 @@ function renderHome() {
   if (window.sgHomeUpdate) sgHomeUpdate();  // v2-38: 순공피드백 칸·스트립
   if (window.bkHomeUpdate) bkHomeUpdate();  // v2-40: 교재 채점 허브
   if (window.rcHomeUpdate) rcHomeUpdate();  // v2-42: 🏁 진도 레이스 배너
+  /* v2-59: 시험대비 트랙은 홈이 아니라 「진도 레이스」 화면 안에 있다 (원장 지시) */
+  if (window.rtHomeUpdate) rtHomeUpdate();  // v2-54: 🧾 기출 다시풀기 배너
   renderPlannerMission();
   // 백그라운드로 플래너 점수 데이터 미리 로드 (내 점수 탭 빠르게 뜨도록)
   if (!isTest && typeof loadMyPlannerData === 'function') {
@@ -3431,6 +3516,8 @@ async function submitPlannerPhotos() {
 
     // 최근 제출 기록 즉시 갱신
     if (typeof renderPlannerRecentList === 'function') renderPlannerRecentList();
+    // v2-61: 올린 자리에서 바로 「오늘 버프」를 확인시켜 준다 (원장님 요청)
+    if (window.bfAfterSubmit) bfAfterSubmit();
 
     setTimeout(function() {
       btn.disabled = false; btn.textContent = '📤 플래너 제출하기'; btn.style.background = '';
@@ -8216,6 +8303,272 @@ async function rcLoad(force){
   return RC.board;
 }
 /* 홈 배너 */
+/* ═══════════════════════════════════════════════════════════════
+ * 🎯 시험대비 트랙 (v2-55) — 시험까지 풀 교재를 레이스 트랙처럼
+ * ═══════════════════════════════════════════════════════════════
+ * 학원앱이 lumen_store 'exam_track'에 반별 트랙(교재 순서)을 배정하면,
+ * 내 반 트랙 + 개별 배정을 합쳐 보여준다. 에너지바는 매쓰플랫 채점
+ * 기록(mf_study_sessions)으로 자동으로 줄어든다 — 내가 풀고 채점되면 깎인다.
+ * 같은 학교·학년 친구는 이름 없이 「N명 진행 중」 숫자로만 보인다.
+ */
+var XTS={data:null, my:null, prog:null, mates:null, sid:null, at:0};
+function xtEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function xtDd(dateStr){
+  if(!dateStr) return null;
+  var t=Date.parse(dateStr+'T00:00:00'); if(!t) return null;
+  var kst=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+  return Math.round((t-Date.parse(kst+'T00:00:00'))/86400000);
+}
+async function xtLoad(force){
+  if(XTS.data!==null&&!force&&Date.now()-XTS.at<120000) return XTS;
+  XTS.at=Date.now();
+  var code=studentInfo&&studentInfo.lumen_rec_code;
+  if(!code||!sb||isTest){ XTS.my=null; return XTS; }
+  try{
+    var r=await sb.from('lumen_store').select('value').eq('key','exam_track');
+    var v=(r.data&&r.data[0])?r.data[0].value:null;
+    if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+    XTS.data=v||{};
+    if(!v||v.publish===false){ XTS.my=null; return XTS; }
+    /* ★ v2-57: 트랙 단위가 「반」에서 「학교 학년」으로 바뀌었다 (학원앱 v18-128).
+     * 옛 반 트랙도 남아 있을 수 있어 학교·학년 → 반 순서로 찾는다. */
+    var g=String(studentInfo.group||'').trim();
+    function shortSchool(n){ return String(n||'').trim().replace(/(초등학교|중학교|고등학교)$/, function(m){ return m.charAt(0); }); }
+    function shortGrade(x){
+      var s=String(x||''); var m=s.match(/(초등학교|중학교|고등학교)?\s*(\d)\s*학년/);
+      if(m){ var lv=m[1]?m[1].charAt(0):(/초/.test(s)?'초':(/고/.test(s)?'고':'중')); return lv+m[2]; }
+      m=s.match(/([초중고])\s*(\d)/); return m?(m[1]+m[2]):'';
+    }
+    var scKey=shortSchool(studentInfo.school), grKey=shortGrade(studentInfo.grade);
+    var myKey=(scKey&&grKey)?(scKey+' '+grKey):'';
+    var tr=(myKey&&(v.tracks||{})[myKey]) || (v.tracks||{})[g];
+    var items=((tr&&tr.items)||[]).concat(((v.indiv||{})[code])||[]);
+    if(!items.length){ XTS.my=null; return XTS; }
+    /* ★ v2-56: 디데이는 <b>내 학교</b> 기준으로 찾는다 — 한 반에 학교가 섞여 있다
+     * (실측: M7 = 범박고 2명 + 소사고 2명). 등록부 학교로 못 찾으면 반 학교로 폴백. */
+    var mySc=String(studentInfo.school||'').trim();
+    var dds=(v.ddays||[]);
+    function ddFor(name){
+      if(!name) return null;
+      var n=String(name).replace(/\s/g,'');
+      return dds.filter(function(x){
+        var s=String(x.school||'').replace(/\s/g,'');
+        return s&&(n===s||n.indexOf(s)===0||s.indexOf(n)===0);
+      })[0]||null;
+    }
+    var dd=ddFor(mySc)||ddFor(tr&&tr.school);
+    XTS.my={ g:g, items:items, school:(dd&&dd.school)||mySc||(tr&&tr.school)||'', dd:dd };
+    // 내 매쓰플랫 id + 반 친구들 id
+    var codes=[code];
+    try{
+      var listR=await sb.from('lumen_store').select('value').eq('key','or_studentdb').single();
+      var list=(listR.data&&listR.data.value)||[];
+      /* 같은 트랙을 쓰는 친구 = 같은 학교·학년 (옛 반 트랙이면 같은 반) */
+      list.forEach(function(s){
+        if(s.withdrawn||!s.lumen_rec_code) return;
+        var same = myKey ? ((shortSchool(s.school)+' '+shortGrade(s.grade))===myKey)
+                         : (String(s.group||'').trim()===g);
+        if(same&&codes.indexOf(s.lumen_rec_code)<0) codes.push(s.lumen_rec_code);
+      });
+    }catch(e){}
+    var m=await sb.from('mf_students').select('mf_student_id,lumen_rec_code').in('lumen_rec_code',codes);
+    var sidOf={}; ((m&&m.data)||[]).forEach(function(x){ sidOf[x.lumen_rec_code]=x.mf_student_id; });
+    XTS.sid=sidOf[code]||null;
+    var sids=Object.keys(sidOf).map(function(k){return sidOf[k];});
+    var ids=items.map(function(it){return it.id;});
+    /* 서버가 한 번에 1000행까지만 준다 — 나눠 받는다 */
+    var srows=[];
+    for(var pg=0; pg<12; pg++){
+      var sp=await sb.from('mf_study_sessions')
+        .select('mf_student_id,book_id,student_workbook_id,student_book_id,correct_count,wrong_count,update_datetime,page')
+        .in('book_id',ids).in('mf_student_id',sids).order('update_datetime',{ascending:false}).range(pg*1000,pg*1000+999);
+      var g2=(sp&&sp.data)||[]; srows=srows.concat(g2);
+      if(g2.length<1000) break;
+    }
+    var s={data:srows};
+    /* ★ v2-56: 채점 기록은 「누적 스냅샷」 — 날짜마다 새 행이 쌓이고 값은 그때까지의
+     * 누계다(40→80→120→278). 더하면 안 되고 배정 인스턴스별 최신 행만 쓴다. */
+    var last={};
+    ((s&&s.data)||[]).forEach(function(x){
+      var inst=x.mf_student_id+'|'+x.book_id+'|'+(x.student_workbook_id||x.student_book_id||0);
+      var at=String(x.update_datetime||''), n=(x.correct_count||0)+(x.wrong_count||0);
+      if(!last[inst]||at>last[inst].at) last[inst]={at:at,n:n};
+    });
+    var p={};   // sid|book → 푼 문항 수
+    Object.keys(last).forEach(function(k){ var a=k.split('|'); var key=a[0]+'|'+a[1]; p[key]=(p[key]||0)+last[k].n; });
+    XTS.prog=p;
+    /* 시험범위 계산용 — 학생|교재별 배정 페이지 구간 */
+    var pgs={};
+    srows.forEach(function(x){ if(!x.page) return; var k=x.mf_student_id+'|'+x.book_id; (pgs[k]=pgs[k]||[]).push(x.page); });
+    XTS.pages=pgs;
+    // 친구 위치: 각 친구의 「현재 교재」(순서상 첫 미완료)를 센다 — 이름은 안 쓴다
+    var mates={};
+    sids.forEach(function(sid){
+      if(sid===XTS.sid) return;
+      for(var i=0;i<XTS.my.items.length;i++){
+        var it=XTS.my.items[i];
+        var _t=xtItemTotalS(it);
+        var sv=Math.min(p[sid+'|'+it.id]||0, _t);
+        if(sv<_t){ mates[i]=(mates[i]||0)+1; return; }
+      }
+      mates[XTS.my.items.length]=(mates[XTS.my.items.length]||0)+1;   // 전체 완주
+    });
+    XTS.mates=mates;
+  }catch(e){ console.error('시험대비 트랙 로드 실패:',e); XTS.my=null; }
+  return XTS;
+}
+/* ★ v2-58: 선생님이 정한 「시험범위」를 학생앱도 똑같이 계산한다.
+ * (학원앱 v18-129와 같은 규칙 — 안 맞추면 선생님 화면과 학생 화면의 %가 달라진다)
+ * 매쓰플랫이 페이지를 범위 단위로만 주므로 겹치는 페이지 비율로 환산한 추정치. */
+function xtRange(s){
+  var m=String(s||'').match(/(\d+)\s*~\s*(\d+)/);
+  if(!m){ var one=String(s||'').match(/^\s*(\d+)\s*$/); return one?{a:+one[1],b:+one[1]}:null; }
+  var a=+m[1],b=+m[2]; return {a:Math.min(a,b),b:Math.max(a,b)};
+}
+/* v2-60: 선생님 화면이 매쓰플랫에서 「쪽별 문항 수」(it.pc)를 받아 왔으면
+ * 학생앱도 똑같이 정확한 수로 센다 (안 맞추면 두 화면의 %가 달라진다) */
+function xtPageSumS(pc, from, to){
+  var s=0; if(!pc) return 0;
+  Object.keys(pc).forEach(function(k){
+    var p=Number(k); if(isNaN(p)) return;
+    if(from!=null&&p<from) return;
+    if(to!=null&&p>to) return;
+    s+=pc[k]||0;
+  });
+  return s;
+}
+function xtItemTotalS(it){
+  if(it&&it.pc){ var t=xtPageSumS(it.pc, it.pFrom!=null?it.pFrom:null, it.pTo!=null?it.pTo:null); if(t) return t; }
+  return (it&&it.total)||0;
+}
+function xtItemProgress(it){
+  var total=xtItemTotalS(it);
+  var sv=XTS.sid?Math.min((XTS.prog&&XTS.prog[XTS.sid+'|'+it.id])||0, total):0;
+  if(!(it.pFrom&&it.pTo)) return { sv:sv, total:total, pct:total?Math.round(sv/total*100):0, est:false };
+  var rng={a:it.pFrom,b:it.pTo};
+  var pages=(XTS.sid&&XTS.pages)?(XTS.pages[XTS.sid+'|'+it.id]||[]):[];
+  var want=rng.b-rng.a+1, covered=0, seen={};
+  pages.forEach(function(pp){
+    var r=xtRange(pp); if(!r) return;
+    for(var i=Math.max(r.a,rng.a); i<=Math.min(r.b,rng.b); i++){ if(!seen[i]){ seen[i]=1; covered++; } }
+  });
+  if(it.pc){
+    var done=0; Object.keys(seen).forEach(function(p){ done+=it.pc[String(p)]||0; });
+    return { sv:Math.min(done,total), total:total, pct:total?Math.round(Math.min(done,total)/total*100):0,
+             est:false, covered:covered, want:want };
+  }
+  var pct=want?Math.round(covered/want*100):0;
+  return { sv:Math.round(total*pct/100), total:total, pct:pct, est:true, covered:covered, want:want };
+}
+function xtMine(){
+  // 내 항목별 진행 + 현재 교재
+  var my=XTS.my; if(!my) return null;
+  var rows=[];
+  my.items.forEach(function(it,i){
+    var pr=xtItemProgress(it);
+    var sv=pr.sv, pct=pr.pct;
+    var done=pct>=100&&pr.total>0;
+    rows.push({ it:it, sv:sv, pct:pct, done:done, est:pr.est, covered:pr.covered, want:pr.want });
+  });
+  /* 「지금 푸는 교재」 = 아직 안 끝난 것 중 <b>이미 풀고 있는</b> 첫 교재.
+   * 순서상 첫 미완료만 쓰면, 1번을 아직 안 폈는데 3번을 96% 푼 학생에게
+   * 「0%」만 보여 주게 된다 (실측: 윤유솔 — 교과서 0% / 개념원리 96%). */
+  var cur=-1;
+  for(var i=0;i<rows.length;i++){ if(!rows[i].done&&rows[i].sv>0){ cur=i; break; } }
+  if(cur<0) for(var j=0;j<rows.length;j++){ if(!rows[j].done){ cur=j; break; } }
+  return { rows:rows, cur:cur, doneN:rows.filter(function(r){return r.done;}).length };
+}
+async function xtHomeUpdate(){
+  var el=document.getElementById('xtcard'); if(!el) return;
+  if(isTest){ el.style.display='none'; return; }
+  await xtLoad();
+  var mine=xtMine();
+  if(!mine){ el.style.display='none'; return; }
+  var my=XTS.my;
+  var dn=my.dd?xtDd(my.dd.date):null;
+  var r=mine.cur>=0?mine.rows[mine.cur]:null;
+  var h='<button onclick="go(\'screen-examtrack\')" style="width:100%;text-align:left;background:#fff;border:1.5px solid #e2e8f0;border-radius:16px;padding:13px 15px;font-family:inherit;cursor:pointer;box-shadow:0 3px 12px rgba(232,25,44,.06)">'
+    +'<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
+    +'<span style="font-size:10.5px;font-weight:900;color:#e8192c;letter-spacing:.06em">🎯 시험대비 레이스</span>'
+    +(dn!=null?'<span style="background:#0d2240;color:#ffd54a;font-size:10.5px;font-weight:900;border-radius:20px;padding:2px 10px">'+xtEsc(my.school)+' '+(dn<0?'시험 끝':'D-'+dn)+'</span>':'')
+    +'<span style="margin-left:auto;color:#cbd5e1;font-weight:900">›</span></div>';
+  if(r){
+    h+='<div style="font-size:15px;font-weight:900;color:#0f172a;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+xtEsc(r.it.title)+'</div>'
+      +'<div style="height:20px;background:#f1f5f9;border-radius:50px;overflow:hidden;position:relative;margin-top:7px">'
+      +'<div style="height:100%;width:'+Math.max(3,r.pct)+'%;border-radius:50px;background:linear-gradient(90deg,#10b981,#34d399);position:relative">'
+      +'<div style="position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.5) 50%,transparent 70%)"></div></div>'
+      +'<span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;color:#0f172a">남은 에너지 '+(xtItemTotalS(r.it)-r.sv)+' / '+xtItemTotalS(r.it)+'문제</span></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:10.5px;color:#64748b;font-weight:700;margin-top:4px">'
+      +'<span>⚔ '+r.sv+'문제 격파</span><span>'+(mine.doneN)+'권 클리어 · '+(mine.rows.length)+'권 트랙</span></div>';
+  }else{
+    h+='<div style="font-size:14px;font-weight:900;color:#059669;margin-top:6px">🏆 트랙 전체 클리어! 대단해요</div>';
+  }
+  h+='</button>';
+  el.innerHTML=h; el.style.display='';
+}
+window.xtInit=async function(){
+  var body=document.getElementById('xt-body'); if(!body) return;
+  if(isTest){ body.innerHTML='<div class="sp3-empty"><div class="e1">🧪</div><div class="e2">테스트 모드에서는 볼 수 없어요</div></div>'; return; }
+  await xtLoad(true);
+  var mine=xtMine();
+  if(!mine){ body.innerHTML='<div class="sp3-empty"><div class="e1">🎯</div><div class="e2">아직 배정된 시험대비 트랙이 없어요<br>선생님이 배정하면 여기에 나타나요</div></div>'; return; }
+  var my=XTS.my;
+  var dn=my.dd?xtDd(my.dd.date):null;
+  var h='<div style="padding:14px 14px 30px">';
+  // 디데이 — 아주 크게 (원장 지시: 3배)
+  if(my.dd){
+    h+='<div style="background:linear-gradient(135deg,#0d2240,#1d4e89);border-radius:18px;padding:16px 20px;color:#fff;margin-bottom:13px;display:flex;align-items:center;gap:16px">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:800;color:#aebfd8">'+xtEsc(my.school)+' · '+xtEsc(my.dd.label||'시험')+'</div>'
+      +'<div style="font-size:11px;color:#7d94b8;margin-top:2px">'+xtEsc(my.dd.date)+'</div></div>'
+      +'<div style="font-size:62px;font-weight:900;line-height:1;letter-spacing:-2px;color:'+(dn!=null&&dn<=7?'#ff7b7b':'#ffd54a')+';font-variant-numeric:tabular-nums">'+(dn==null?'':(dn<0?'끝':'D-'+dn))+'</div>'
+      +'</div>';
+  }
+  // 요약
+  h+='<div style="display:flex;gap:8px;margin-bottom:14px">'
+    +'<div style="flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:900;color:#059669">'+mine.doneN+'</div><div style="font-size:10px;color:#64748b;font-weight:700">클리어</div></div>'
+    +'<div style="flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:900;color:#e8192c">'+(mine.cur>=0?(mine.cur+1):'-')+'</div><div style="font-size:10px;color:#64748b;font-weight:700">현재 트랙</div></div>'
+    +'<div style="flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:900;color:#0d2240">'+mine.rows.length+'</div><div style="font-size:10px;color:#64748b;font-weight:700">전체 교재</div></div>'
+    +'</div>';
+  // 트랙
+  h+='<div style="position:relative;padding-left:32px">'
+    +'<div style="position:absolute;left:12px;top:8px;bottom:8px;width:5px;border-radius:3px;background:#e2e8f0"></div>';
+  mine.rows.forEach(function(r,i){
+    var mateN=(XTS.mates&&XTS.mates[i])||0;
+    var pinBg=r.done?'#10b981':(i===mine.cur?'#e8192c':'#cbd5e1');
+    var pinTx=r.done?'✓':(i===mine.cur?'▶':String(i+1));
+    h+='<div style="position:relative;margin-bottom:11px">'
+      +'<span style="position:absolute;left:-32px;top:13px;width:29px;height:29px;border-radius:50%;background:'+pinBg+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;'+(i===mine.cur?'box-shadow:0 0 0 5px rgba(232,25,44,.16)':'')+'">'+pinTx+'</span>'
+      +'<div style="background:#fff;border:1.5px solid '+(i===mine.cur?'#e8192c':'#e2e8f0')+';border-radius:15px;padding:11px 13px;'+(i>mine.cur&&!r.done?'opacity:.75':'')+(i===mine.cur?';box-shadow:0 4px 14px rgba(232,25,44,.12)':'')+'">'
+      +'<div style="display:flex;align-items:center;gap:9px">'
+      +(r.it.thumb?'<img src="'+xtEsc(r.it.thumb)+'" style="width:30px;height:40px;object-fit:cover;border-radius:5px;border:1px solid #e2e8f0;flex:none" alt="">':'')
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13.5px;font-weight:900;color:#0f172a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+xtEsc(r.it.title)+'</div>'
+      +'<div style="font-size:10.5px;color:#64748b;font-weight:700;margin-top:1px">'
+      +(r.done?'클리어! '+xtItemTotalS(r.it)+'문제'
+              :(r.sv>0?(((r.it.pFrom&&r.it.pTo)?('시험범위 '+r.it.pFrom+'~'+r.it.pTo+'p · '):'')+(xtItemTotalS(r.it)-r.sv)+'문제 남음')
+                      :(((r.it.pFrom&&r.it.pTo)?('시험범위 '+r.it.pFrom+'~'+r.it.pTo+'p · '):'')+xtItemTotalS(r.it)+'문제 · 대기')))
+      +'</div></div>'
+      +(r.done?'<span style="font-size:10px;font-weight:900;color:#059669;background:#ecfdf5;border-radius:50px;padding:3px 9px;flex:none">클리어</span>'
+              :(r.sv>0?'':'<span style="color:#94a3b8;font-size:11px;flex:none">🔒</span>'))
+      +'</div>';
+    /* 시작한 교재는 모두 에너지바를 보여 준다 — 84%나 푼 책에 자물쇠만 뜨면 이상하다 */
+    if(!r.done&&r.sv>0){
+      h+='<div style="height:13px;background:#f1f5f9;border-radius:50px;overflow:hidden;position:relative;margin-top:8px">'
+        +'<div style="height:100%;width:'+Math.max(3,r.pct)+'%;border-radius:50px;background:linear-gradient(90deg,#10b981,#34d399);position:relative">'
+        +'<div style="position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.5) 50%,transparent 70%)"></div></div>'
+        +'<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:8.5px;font-weight:900;color:#334155">'+r.pct+'%</span></div>';
+    }
+    if(mateN) h+='<div style="margin-top:7px"><span style="font-size:10px;font-weight:800;background:#f1f5f9;color:#64748b;border-radius:50px;padding:2px 9px">👥 친구 '+mateN+'명이 여기 진행 중</span></div>';
+    h+='</div></div>';
+  });
+  var finN=(XTS.mates&&XTS.mates[mine.rows.length])||0;
+  h+='</div>';
+  if(finN) h+='<div style="text-align:center;font-size:11px;color:#94a3b8;font-weight:700;margin-top:4px">🏆 '+finN+'명이 트랙을 모두 마쳤어요</div>';
+  h+='<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:13px;padding:10px 14px;font-size:11.5px;font-weight:800;color:#92400e;margin-top:12px">💡 에너지바는 매쓰플랫에서 채점되면 자동으로 줄어들어요 — 풀고, 채점받고, 깎아 내려가요!</div>';
+  h+='</div>';
+  body.innerHTML=h;
+};
+
 async function rcHomeUpdate(){
   var el=document.getElementById('rcbn'); if(!el) return;
   if(isTest){ el.style.display='none'; return; }
@@ -8231,7 +8584,9 @@ async function rcHomeUpdate(){
   el.style.display='';
   document.getElementById('rcbn-nm').textContent=b.name||'진도 레이스';
   var left=Math.max(0,Math.round((Date.parse(b.to+'T00:00:00')-Date.parse(today+'T00:00:00'))/86400000));
-  document.getElementById('rcbn-dd').textContent=(today>b.to)?'최종 결과':('D-'+left);
+  document.getElementById('rcbn-dd').textContent=(today>b.to)?'끝':('D-'+left);
+  var dtEl=document.getElementById('rcbn-dt');
+  if(dtEl) dtEl.textContent=String(b.to||'').slice(5).replace('-','/')+' 마감';
   var em=document.getElementById('rcbn-em');
   if(me){
     em.style.background=rcT(me.tier).g;
@@ -8246,7 +8601,13 @@ window.rcInit=async function(){
   var body=document.getElementById('rc-body'); if(!body) return;
   if(isTest){ body.innerHTML='<div class="sp3-empty"><div class="e1">🧪</div><div class="e2">테스트 모드에서는 볼 수 없어요</div></div>'; return; }
   var b=await rcLoad(true);
-  if(!b||b.open===false){ body.innerHTML='<div class="sp3-empty"><div class="e1">🏁</div><div class="e2">지금은 진행 중인 레이스가 없어요</div></div>'; return; }
+  /* ★ v2-59: 레이스 시즌이 없어도 <b>시험대비 트랙</b>은 보여야 한다 (원장 지시로 이 화면에 들어왔다) */
+  if(!b||b.open===false){
+    body.innerHTML='<div class="rcw"><div id="xtcard" style="margin-bottom:12px"></div>'
+      +'<div class="sp3-empty"><div class="e1">🏁</div><div class="e2">지금은 진행 중인 레이스가 없어요</div></div></div>';
+    if(window.xtHomeUpdate) xtHomeUpdate();
+    return;
+  }
   var rr=rcRows(b), rows=rr.rows, band=rr.band, code=studentInfo&&studentInfo.lumen_rec_code;
   var me=rows.filter(function(r){return r.code===code;})[0];
   var demo=rcIsDemo(b,band);
@@ -8259,6 +8620,9 @@ window.rcInit=async function(){
   var today=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
   var left=Math.max(0,Math.round((Date.parse(b.to+'T00:00:00')-Date.parse(today+'T00:00:00'))/86400000));
   var h='<div class="rcw">';
+  /* ★ v2-59: 시험대비 트랙을 진도 레이스 안에 넣는다 — 둘 다 「지금 달리는 것」이라
+   * 홈에 따로 두면 학생이 어디를 봐야 할지 헷갈린다 (2026-09-01 원장 지시). */
+  h+='<div id="xtcard" style="margin-bottom:12px"></div>';
 
   /* 히어로 */
   var ended = today>b.to;
@@ -8310,6 +8674,11 @@ window.rcInit=async function(){
       +'</div></div>';
   }
 
+  /* v2-62: 🔥 집중 버프 — 홈이 아니라 여기(레이스 안)에서 본다.
+   * 내가 속한 부를 보고 있을 때만. 기록이 아직 없어도(me 없음) 보여 준다 —
+   * 「플래너를 올리면 점수가 커진다」는 안내가 필요한 건 오히려 그런 아이들이다. */
+  if(band===myBand && window.bfRaceCard) h+='<div id="bf-race">'+bfRaceCard()+'</div>';
+
   /* 내 카드 — 내가 속한 부를 보고 있을 때만 */
   if(me&&band===myBand){
     var t=rcT(me.tier);
@@ -8330,7 +8699,9 @@ window.rcInit=async function(){
       +'<div class="s"><b style="color:#7c3aed">'+rcN(me.hard)+'</b><span>어려운 문제</span></div>'
       +'<div class="s"><b>'+me.days+'</b><span>푼 날</span></div>'
       +'<div class="s"><b style="color:#1d78c9">'+me.rate+'%</b><span>정답률</span></div>'
-      +'</div></div>';
+      +'</div>'
+      +(window.bfRaceLine?bfRaceLine(me):'')   /* v2-61: 🔥 버프로 번 점수 */
+      +'</div>';
   }
 
   /* 순위표 */
@@ -8401,6 +8772,8 @@ window.rcInit=async function(){
     +'지금 푼 문제는 <b style="color:#1d4ed8">다음 시각</b>에 점수로 들어와요. '
     +'바로 안 올라도 걱정 마세요 — 빠짐없이 다 세어집니다 🙂</div></div>';
   body.innerHTML=h+'</div>';
+  /* ★ 화면을 다 그린 뒤에 시험대비 트랙 카드를 채운다 — 그리기 전에 부르면 자리(xtcard)가 없다 */
+  if(window.xtHomeUpdate) xtHomeUpdate();
 };
 
 /* ★ v2-44: 교재 채점을 잠시 닫아 둔다 (원장님 지시 2026-08-27).
@@ -8668,6 +9041,1403 @@ async function bkPersist(wpId, r, userAnswer){
     await sb.from('lumen_store').upsert({ key:'hw_sync_'+code, value:{ items:q, updated:new Date().toISOString() } });
   }catch(e){ /* 오프라인이어도 화면 채점은 유지 — 다음 채점 때 다시 저장 시도 */ }
 }
+
+var MOCK_REPORT_STATE=null;
+/* ═══════ v2-54: 학원앱 v18 「모의 성적표」 렌더러 이식 (원장님 지시 — 카톡용 성적표 그대로) ═══════
+   아래 함수들은 학원앱 lumen_v18의 동일 함수를 그대로 복사한 것 (수정 금지 — 학원앱과 함께 갱신).
+   전역 mockReports/schoolDistDb 는 서버(lumen_store)에서 읽어 채운다. */
+var mockReports=[]; var schoolDistDb=[];
+function _erf(x){
+  var sign=x<0?-1:1;
+  x=Math.abs(x);
+  var a1= 0.254829592, a2=-0.284496736, a3=1.421413741;
+  var a4=-1.453152027, a5= 1.061405429, p =0.3275911;
+  var t=1.0/(1.0+p*x);
+  var y=1.0-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return sign*y;
+}
+// 표준정규 CDF: P(Z <= z)
+function _normCdf(z){ return 0.5*(1+_erf(z/Math.sqrt(2))); }
+
+function calcAchievementFromScore(score){
+  if(score==null) return null;
+  if(score>=90) return 'A';
+  if(score>=80) return 'B';
+  if(score>=70) return 'C';
+  if(score>=60) return 'D';
+  return 'E';
+}
+function calcGrade5FromScore(score, mean, sd){
+  if(score==null||mean==null||sd==null||sd<=0) return null;
+  var z=(score-mean)/sd;
+  var topPct=(1-_normCdf(z))*100;
+  if(topPct<=10) return {grade:1, topPct:topPct};
+  if(topPct<=34) return {grade:2, topPct:topPct};
+  if(topPct<=66) return {grade:3, topPct:topPct};
+  if(topPct<=90) return {grade:4, topPct:topPct};
+  return {grade:5, topPct:topPct};
+}
+function estimateSchoolRank(score, mean, sd, totalStudents){
+  if(score==null||mean==null||sd==null||sd<=0||!totalStudents) return null;
+  var z=(score-mean)/sd;
+  var topPct=(1-_normCdf(z))*100;
+  var rank=Math.max(1, Math.round(totalStudents * topPct / 100));
+  return {z:z, topPct:topPct, rank:rank, total:totalStudents};
+}
+
+function findDistMatch(school, grade, term, examType, year, subject){
+  if(!school) return null;
+  // v11-5: subject 인자 미지정 시 '수학' 기본값 (기존 호출자 호환)
+  if(subject===undefined||subject===null) subject='수학';
+  return schoolDistDb.find(function(d){
+    if(d.school!==school) return false;
+    if(grade && d.grade && d.grade!==grade) return false;
+    if(term && d.term && d.term!==term) return false;
+    if(examType && d.examType && d.examType!==examType) return false;
+    if(year && d.year && String(d.year)!==String(year)) return false;
+    // v11-5: subject 매칭 (d.subject 없으면 '수학'으로 간주, 마이그레이션 호환)
+    if(subject && (d.subject||'수학')!==subject) return false;
+    return true;
+  });
+}
+
+function _mrEsc(s){
+  if(s==null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+window.lumenGraphs = (function(){
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function n2(v){ return Math.round(v*10)/10; }
+
+  // ① 성적 추이 — 격차 면적(중립 파랑). points:[{label,score,mean}] 2개 이상.
+  function trend(opts){
+    var pts=opts.points||[], W=opts.w||660, H=opts.h||190;
+    if(pts.length<2) return '';
+    var padL=40, padR=16, padT=16, padB=34;
+    var plotW=W-padL-padR, plotH=H-padT-padB;
+    var lo=100, hi=100;
+    pts.forEach(function(p){ lo=Math.min(lo, p.score, (p.mean!=null?p.mean:p.score)); });
+    lo=Math.max(0, Math.floor((lo-6)/10)*10);
+    if(hi-lo<30) lo=Math.max(0,hi-30);
+    function py(v){ return padT + (hi-v)/(hi-lo)*plotH; }
+    function px(i){ return pts.length===1?padL+plotW/2 : padL + i*(plotW/(pts.length-1)); }
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block" xmlns="http://www.w3.org/2000/svg">';
+    var step=(hi-lo)>=50?20:10;
+    for(var g=lo; g<=hi; g+=step){
+      var gy=py(g);
+      s+='<line x1="'+padL+'" y1="'+n2(gy)+'" x2="'+(W-padR)+'" y2="'+n2(gy)+'" stroke="'+(g===lo?'#dfe5ee':'#eef1f6')+'" stroke-width="'+(g===lo?'1.5':'1')+'"/>';
+      s+='<text x="'+(padL-6)+'" y="'+n2(gy+3)+'" font-size="9" fill="#94a3b8" text-anchor="end" font-weight="700">'+g+'</text>';
+    }
+    var haveMean=pts.every(function(p){return p.mean!=null;});
+    if(haveMean){
+      var poly='';
+      pts.forEach(function(p,i){ poly+=n2(px(i))+','+n2(py(p.mean))+' '; });
+      for(var i=pts.length-1;i>=0;i--){ poly+=n2(px(i))+','+n2(py(pts[i].score))+' '; }
+      s+='<polygon points="'+poly.trim()+'" fill="rgba(59,130,246,0.16)" stroke="none"/>';
+      var ml=''; pts.forEach(function(p,i){ ml+=n2(px(i))+','+n2(py(p.mean))+' '; });
+      s+='<polyline points="'+ml.trim()+'" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,4"/>';
+      pts.forEach(function(p,i){
+        s+='<circle cx="'+n2(px(i))+'" cy="'+n2(py(p.mean))+'" r="3" fill="white" stroke="#94a3b8" stroke-width="2"/>';
+        s+='<text x="'+n2(px(i))+'" y="'+n2(py(p.mean)-7)+'" font-size="8.5" fill="#94a3b8" text-anchor="middle" font-weight="700">'+n2(p.mean)+'</text>';
+      });
+    }
+    var sl=''; pts.forEach(function(p,i){ sl+=n2(px(i))+','+n2(py(p.score))+' '; });
+    s+='<polyline points="'+sl.trim()+'" fill="none" stroke="#e8192c" stroke-width="3"/>';
+    pts.forEach(function(p,i){
+      s+='<circle cx="'+n2(px(i))+'" cy="'+n2(py(p.score))+'" r="5" fill="white" stroke="#e8192c" stroke-width="3"/>';
+      s+='<text x="'+n2(px(i))+'" y="'+n2(py(p.score)+16)+'" font-size="10.5" fill="#0d2240" text-anchor="middle" font-weight="900">'+p.score+'점</text>';
+      s+='<text x="'+n2(px(i))+'" y="'+(H-6)+'" font-size="9" fill="#475569" text-anchor="middle" font-weight="700">'+esc(p.label)+'</text>';
+    });
+    if(haveMean && pts.length>=2){
+      var a=pts[pts.length-2], b=pts[pts.length-1];
+      var gapA=n2(a.score-a.mean), gapB=n2(b.score-b.mean);
+      if(gapB>gapA){
+        var mx=(px(pts.length-2)+px(pts.length-1))/2;
+        var myv=(py(b.score)+py(b.mean))/2;
+        s+='<text x="'+n2(mx)+'" y="'+n2(myv)+'" font-size="9" fill="#1d4ed8" text-anchor="middle" font-weight="900">격차 '+n2(gapB-gapA)+' 좁힘 ▲</text>';
+      }
+    }
+    s+='</svg>';
+    return s;
+  }
+
+  // ② 난이도별 정답률 — 세로 미니바. data:{하,중하,중,상,최상}
+  function diffBars(opts){
+    var d=opts.data||{}, W=opts.w||340, H=opts.h||150;
+    var order=['하','중하','중','상','최상'];
+    var colors=['#94a3b8','#22c55e','#3b82f6','#f59e0b','#ef4444'];
+    var baseY=H-30, topY=20, plotH=baseY-topY;
+    var bw=42, gap=(W-28-bw*5)/4;
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block" xmlns="http://www.w3.org/2000/svg">';
+    s+='<line x1="14" y1="'+baseY+'" x2="'+(W-14)+'" y2="'+baseY+'" stroke="#dfe5ee" stroke-width="1.5"/>';
+    order.forEach(function(k,i){
+      var v=parseFloat(d[k]); if(isNaN(v)) v=0;
+      var x=14+i*(bw+gap), bh=Math.max(1, plotH*v/100);
+      var col=v===0?'#fecaca':colors[i];
+      s+='<rect x="'+n2(x)+'" y="'+n2(baseY-bh)+'" width="'+bw+'" height="'+n2(bh)+'" rx="4" fill="'+col+'"/>';
+      s+='<text x="'+n2(x+bw/2)+'" y="'+n2(baseY-bh-6)+'" font-size="11.5" fill="'+(v===0?'#ef4444':'#334155')+'" text-anchor="middle" font-weight="900">'+n2(v)+'%</text>';
+      s+='<text x="'+n2(x+bw/2)+'" y="'+(H-9)+'" font-size="11.5" fill="#475569" text-anchor="middle" font-weight="700">'+k+'</text>';
+    });
+    s+='</svg>';
+    return s;
+  }
+
+  // ③ 수학 역량 — 오각형 레이더. data:{문제해결,추론,의사소통,연결,정보처리}
+  function radar(opts){
+    var d=opts.data||{}, size=opts.size||150;
+    var labels=['문제해결','추론','의사소통','연결','정보처리'];
+    var cx=size/2, cy=size/2+4, R=size*0.34;
+    function pt(i,v){
+      var ang=(-90+i*72)*Math.PI/180;
+      return [n2(cx+R*v/100*Math.cos(ang)), n2(cy+R*v/100*Math.sin(ang))];
+    }
+    var s='<svg viewBox="0 0 '+size+' '+size+'" width="100%" style="display:block;max-width:'+(size+40)+'px;margin:0 auto" xmlns="http://www.w3.org/2000/svg">';
+    [100,80,60,40,20].forEach(function(r,idx){
+      var poly=''; for(var i=0;i<5;i++){var p=pt(i,r); poly+=p[0]+','+p[1]+' ';}
+      s+='<polygon points="'+poly.trim()+'" fill="none" stroke="'+(idx===0?'#e2e8f0':'#eef1f6')+'" stroke-width="1"/>';
+    });
+    for(var i=0;i<5;i++){var p=pt(i,100); s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+p[0]+'" y2="'+p[1]+'" stroke="#cbd5e1" stroke-width="0.8"/>';}
+    var vpoly='', vals=[];
+    labels.forEach(function(k,i){
+      var v=parseFloat(d[k]); if(isNaN(v)) v=0; vals.push(v);
+      var p=pt(i,v); vpoly+=p[0]+','+p[1]+' ';
+    });
+    s+='<polygon points="'+vpoly.trim()+'" fill="rgba(124,58,237,0.18)" stroke="#7c3aed" stroke-width="2"/>';
+    labels.forEach(function(k,i){
+      var p=pt(i,vals[i]);
+      s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3" fill="#7c3aed"/>';
+      var lp=pt(i,128);
+      var anchor=(i===0)?'middle':(i===1||i===2)?'start':'end';
+      if(i===0) lp[1]-=2;
+      s+='<text x="'+lp[0]+'" y="'+lp[1]+'" font-size="8.5" fill="#0d2240" text-anchor="'+anchor+'" font-weight="800">'+k+' '+Math.round(vals[i])+'</text>';
+    });
+    s+='</svg>';
+    return s;
+  }
+
+  // ④ 문항 지도 — 2×2 매트릭스. items:[{no,name,correct,avgRate}]
+  function itemMap(opts){
+    var items=opts.items||[], W=opts.w||340, H=opts.h||230;
+    var padL=30, padR=10, padT=14, padB=28;
+    var plotW=W-padL-padR, plotH=H-padT-padB;
+    var midX=padL+plotW*0.6, midY=padT+plotH/2;   // x축 60% 기준: 어려움/쉬움
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block" xmlns="http://www.w3.org/2000/svg">';
+    s+='<rect x="'+padL+'" y="'+padT+'" width="'+n2(midX-padL)+'" height="'+n2(plotH/2)+'" fill="rgba(34,197,94,0.06)"/>';
+    s+='<rect x="'+n2(midX)+'" y="'+padT+'" width="'+n2(padL+plotW-midX)+'" height="'+n2(plotH/2)+'" fill="rgba(34,197,94,0.1)"/>';
+    s+='<rect x="'+padL+'" y="'+n2(midY)+'" width="'+n2(midX-padL)+'" height="'+n2(plotH/2)+'" fill="rgba(148,163,184,0.08)"/>';
+    s+='<rect x="'+n2(midX)+'" y="'+n2(midY)+'" width="'+n2(padL+plotW-midX)+'" height="'+n2(plotH/2)+'" fill="rgba(232,25,44,0.12)"/>';
+    s+='<line x1="'+padL+'" y1="'+n2(midY)+'" x2="'+(padL+plotW)+'" y2="'+n2(midY)+'" stroke="#94a3b8" stroke-width="1.2"/>';
+    s+='<line x1="'+n2(midX)+'" y1="'+padT+'" x2="'+n2(midX)+'" y2="'+(padT+plotH)+'" stroke="#94a3b8" stroke-width="1.2"/>';
+    s+='<text x="'+n2((padL+midX)/2)+'" y="'+(padT+14)+'" font-size="10" fill="#15803d" text-anchor="middle" font-weight="900">💪 강점</text>';
+    s+='<text x="'+n2((midX+padL+plotW)/2)+'" y="'+(padT+14)+'" font-size="10" fill="#15803d" text-anchor="middle" font-weight="900">✅ 안정</text>';
+    s+='<text x="'+n2((padL+midX)/2)+'" y="'+n2(midY+16)+'" font-size="10" fill="#64748b" text-anchor="middle" font-weight="900">🌱 성장여지</text>';
+    s+='<text x="'+n2((midX+padL+plotW)/2)+'" y="'+n2(midY+16)+'" font-size="10" fill="#dc2626" text-anchor="middle" font-weight="900">🚨 쉬운데 틀림</text>';
+    items.forEach(function(it,i){
+      var avg=parseFloat(it.avgRate); if(isNaN(avg)) avg=50;
+      var x=padL + plotW*Math.min(100,Math.max(0,avg))/100;
+      x+=((i*13)%9)-4;
+      var bandTop=it.correct?padT+22:midY+22;
+      var bandH=plotH/2-30;
+      var y=bandTop + ((i*37)%Math.max(1,Math.round(bandH)));
+      var miss=(!it.correct && avg>=70);
+      if(miss){
+        s+='<circle cx="'+n2(x)+'" cy="'+n2(y)+'" r="8" fill="#dc2626" stroke="white" stroke-width="1.5"/>';
+        s+='<text x="'+n2(x)+'" y="'+n2(y+3.2)+'" font-size="8.5" fill="white" text-anchor="middle" font-weight="900">'+esc(it.no)+'</text>';
+      }else{
+        var col=it.correct?(avg<60?'#16a34a':'#22c55e'):'#94a3b8';
+        s+='<circle cx="'+n2(x)+'" cy="'+n2(y)+'" r="5.5" fill="'+col+'" stroke="white" stroke-width="1.2"><title>'+esc(it.no)+'번 '+esc(it.name||'')+' · 평균 '+n2(avg)+'%</title></circle>';
+      }
+    });
+    s+='<text x="'+padL+'" y="'+(H-7)+'" font-size="10" fill="#475569" font-weight="800">◀ 어려운 문항</text>';
+    s+='<text x="'+(padL+plotW)+'" y="'+(H-7)+'" font-size="10" fill="#475569" text-anchor="end" font-weight="800">쉬운 문항 ▶</text>';
+    s+='</svg>';
+    return s;
+  }
+
+  // ⑤ 학원 내 위치 — 점수 구간 히스토그램. scores:[숫자], me:{name,score}
+  function histo(opts){
+    var scores=(opts.scores||[]).filter(function(v){return !isNaN(v);});
+    var me=opts.me||null, W=opts.w||330, H=opts.h||150;
+    if(!scores.length) return '';
+    var minS=Math.min.apply(null,scores);
+    var start=Math.min(50, Math.floor(minS/10)*10); if(start<0) start=0;
+    var bins=[]; for(var b=start;b<=90;b+=10) bins.push(b);
+    var counts=bins.map(function(b){ return scores.filter(function(v){ return v>=b && (b===90?v<=100:v<b+10); }).length; });
+    var maxC=Math.max.apply(null,counts.concat([1]));
+    var baseY=H-26, topY=26, plotH=baseY-topY;
+    var padL=16, bw=Math.min(46,(W-padL*2)/bins.length-10), gap=(W-padL*2-bw*bins.length)/Math.max(1,bins.length-1);
+    var meBin=me?Math.min(90,Math.max(start,Math.floor(me.score/10)*10)):null;
+    var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="display:block" xmlns="http://www.w3.org/2000/svg">';
+    s+='<line x1="'+(padL-4)+'" y1="'+baseY+'" x2="'+(W-padL+4)+'" y2="'+baseY+'" stroke="#dfe5ee" stroke-width="2"/>';
+    bins.forEach(function(b,i){
+      var c=counts[i];
+      var x=padL+i*(bw+gap);
+      var bh=c>0?Math.max(14, plotH*c/maxC):0;
+      var isMe=(meBin===b);
+      var col=isMe?'#e8192c':(b>=90?'#22c55e':(b>=80?'#3b82f6':'#94a3b8'));
+      if(c>0){
+        s+='<rect x="'+n2(x)+'" y="'+n2(baseY-bh)+'" width="'+n2(bw)+'" height="'+n2(bh)+'" rx="4" fill="'+col+'"/>';
+        s+='<text x="'+n2(x+bw/2)+'" y="'+n2(baseY-bh-6)+'" font-size="11" fill="'+(isMe?'#0d2240':'#475569')+'" text-anchor="middle" font-weight="900">'+(isMe?'★':'')+c+'</text>';
+        if(isMe && me.name) s+='<text x="'+n2(x+bw/2)+'" y="'+n2(baseY-bh-18)+'" font-size="8.5" fill="#e8192c" text-anchor="middle" font-weight="900">'+esc(me.name)+'</text>';
+      }
+      s+='<text x="'+n2(x+bw/2)+'" y="'+(H-9)+'" font-size="8.5" fill="#475569" text-anchor="middle" font-weight="700">'+b+'~'+(b===90?'99':(b+9))+'</text>';
+    });
+    s+='</svg>';
+    return s;
+  }
+
+  return { trend:trend, diffBars:diffBars, radar:radar, itemMap:itemMap, histo:histo };
+})();
+
+/* ══════════════════════════════════════════════════════════════════
+ * 🔥 집중 버프 (v2-62) — 플래너를 올린 날은 그날 문제 점수가 커진다
+ * ══════════════════════════════════════════════════════════════════
+ * 배율 = 1 + (그날 플래너 점수 ÷ 10) × max    ※ 기본 max 0.4 → 최대 ×1.40
+ *
+ * ★ 왜 완료형으로 말하나
+ *   아이들은 문제를 낮에 풀고 플래너는 밤 10시 이후에 올린다. 그래서
+ *   「지금부터 더 풀어라」가 아니라 「그날 하루를 잘 마쳤으니 얹어 준다」이다.
+ *
+ * ★ v2-62 에서 바뀐 것 (원장 지시 2026-09-02)
+ *   1) 자리 — 홈 카드를 없애고 <b>진도 레이스 화면 안</b>으로 옮겼다.
+ *      버프는 레이스 점수 이야기이므로 레이스 안에서 봐야 말이 된다.
+ *      홈에는 레이스 배너의 작은 칩 하나만 남긴다.
+ *   2) 기준 날짜 — <b>어제</b>가 주인공이다. 오늘 것은 밤에 올리므로 늘 「×?.??」로만
+ *      보여서 아이들이 버프를 실제로 본 적이 없었다. 어제는 이미 승인이 끝나
+ *      확정 배율이 나온다. 오늘은 그 아래 한 줄로만 「올렸나」를 알려 준다.
+ *   3) 설명 — 「🔥 버프가 뭐야?」 접이식 설명을 넣었다. 아이들에게 규칙을 알려야
+ *      플래너를 올릴 이유가 생긴다.
+ *
+ * ★ 하루의 네 가지 상태
+ *   ① 미제출        ×1.00 회색 + 「플래너 올리기」 버튼
+ *   ② 제출·채점 전   ×?.?? 「새벽에 점수가 매겨져요」
+ *   ③ 새벽 채점 뒤   예상 ×1.32 (회색) — 점수에는 아직 안 들어감
+ *   ④ 확정          불꽃 ×1.36 + 시즌 누적 보너스
+ *
+ * ⚠️ 배율 규칙은 sync/race_engine.js · 학원앱 rcBuffMult 와 똑같아야 한다.
+ * ══════════════════════════════════════════════════════════════════ */
+(function(){
+  var BF = { on:false, max:0.4, loaded:false, plan:{}, guess:{}, sub:{}, me:null, open:false, from:'', to:'' };
+
+  function bfMult(v){ v=Number(v); if(!(v>0)) return 1; return 1+(Math.min(10,v)/10)*(BF.max>0?BF.max:0.4); }
+  function bfDay(k){
+    var m=String(k||'').match(/^\s*(20\d\d)[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+    return m ? (m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0')) : null;
+  }
+  function bfToday(){ return new Date(Date.now()+9*3600000).toISOString().slice(0,10); }
+  /* v2-62: 어제 — 버프 카드의 주인공. 오늘 것은 밤에 올리므로 낮에는 늘 비어 있다. */
+  function bfYest(){ return new Date(Date.now()+9*3600000-86400000).toISOString().slice(0,10); }
+  function bfLabel(d){ var a=d.split('-'); return Number(a[1])+'월 '+Number(a[2])+'일'; }
+
+  /* 자료 모으기 — 확정 점수 · 새벽 예상 점수 · 오늘 제출 여부 · 시즌 누적 */
+  window.bfLoad = async function(){
+    if(!sb || !studentInfo || !studentInfo.lumen_rec_code) return;
+    var code = String(studentInfo.lumen_rec_code);
+    try{
+      /* 시즌에 버프가 켜져 있나 (순위표가 알려 준다) */
+      var rb = await sb.from('lumen_store').select('value').eq('key','race_board').maybeSingle();
+      var b = (rb && rb.data) ? rb.data.value : null;
+      if(typeof b==='string'){ try{ b=JSON.parse(b); }catch(e){ b=null; } }
+      /* 시즌에 버프가 켜져 있을 때 동작한다.
+       * 주소 끝에 ?buff=1 을 붙이면 원장님이 미리 볼 수 있다(점수는 안 바뀐다). */
+      BF.on = !!(b && b.buff && b.buff.on) || /[?&]buff=1/.test(location.search);
+      BF.max = Number((b&&b.buff||{}).max)||0.4;
+      /* v2-63: 버프는 시즌 첫날부터 소급 계산된다 — 그걸 화면에 적어 주려고 기간을 들고 있는다 */
+      BF.from = (b&&b.from)||''; BF.to = (b&&b.to)||'';
+      /* 시즌 누적 — 내 행에 base(원점수)·bonus(버프로 번 점수)가 들어 있다 */
+      BF.me = null;
+      if(b) ['mid','elem','high'].forEach(function(bd){
+        ((b[bd])||[]).forEach(function(r){ if(String(r.code)===code) BF.me=r; });
+      });
+
+      /* 확정 점수 — 선생님이 승인해 학생앱에 발행된 것 */
+      BF.plan = {};
+      var rp = await sb.from('lumen_store').select('value').eq('key','student_planner_'+code).maybeSingle();
+      var pv = (rp && rp.data) ? rp.data.value : null;
+      if(typeof pv==='string'){ try{ pv=JSON.parse(pv); }catch(e){ pv=null; } }
+      Object.keys((pv&&pv.scores)||{}).forEach(function(k){
+        var d=bfDay(k); if(!d) return;
+        var n=Number(pv.scores[k]); if(!isNaN(n)) BF.plan[d]=Math.max(BF.plan[d]||0,n);
+      });
+
+      /* 새벽 자동채점의 「예상」 — 화면에만 보여 주고 점수에는 안 넣는다 */
+      BF.guess = {};
+      var rg = await sb.from('lumen_store').select('value').eq('key','planner_ai_results').maybeSingle();
+      var gv = (rg && rg.data) ? rg.data.value : null;
+      if(typeof gv==='string'){ try{ gv=JSON.parse(gv); }catch(e){ gv=null; } }
+      var res=(gv&&gv.results)||{};
+      Object.keys(res).forEach(function(k){
+        if(k.indexOf(code+'_')!==0) return;
+        var an=res[k]&&res[k].analysis; if(!an) return;
+        var d=bfDay(an.date); if(!d) return;
+        /* 소점수 4개(각 0/1) + 시간점수는 선생님만 매긴다 → 예상은 「소점수 + 6(정시 2장)」으로 어림잡되
+         * 어디까지나 예상이라 회색으로만 보여 준다. */
+        var sub=(parseInt(an.studyScore)||0)+(parseInt(an.practiceScore)||0)
+               +(parseInt(an.specificScore)||0)+(parseInt(an.feedbackScore)||0);
+        BF.guess[d]=Math.max(BF.guess[d]||0, Math.min(10, sub+6));
+      });
+
+      /* 오늘 사진을 올렸나 (채점 전이라도 「제출 완료」로 보여 주려고) */
+      BF.sub = {};
+      try{
+        var st = await sb.storage.from('photos').list(code, {limit:60, sortBy:{column:'created_at',order:'desc'}});
+        ((st&&st.data)||[]).forEach(function(f){
+          if(String(f.name).indexOf('planner')<0) return;
+          var m=String(f.name).match(/(20\d\d)(\d\d)(\d\d)_\d{4}/);
+          if(m) BF.sub[m[1]+'-'+m[2]+'-'+m[3]]=1;
+        });
+      }catch(e){}
+      BF.loaded = true;
+      bfPaint();
+    }catch(e){ console.warn('버프 로드 실패:', e); }
+  };
+
+  /* 어떤 하루의 상태를 판정한다 (fix 확정 / guess 예상 / wait 채점대기 / off 미제출) */
+  function bfStateFor(d){
+    if(BF.plan[d]>0)  return {d:d, kind:'fix',   score:BF.plan[d]};
+    if(BF.guess[d]>0) return {d:d, kind:'guess', score:BF.guess[d]};
+    if(BF.sub[d])     return {d:d, kind:'wait',  score:0};
+    return {d:d, kind:'off', score:0};
+  }
+
+  /* ── 홈 배너의 작은 칩 ────────────────────────────────────────────
+   * 홈에서는 자세히 말하지 않는다. 「어제 ×1.32 받았어」 정도만 알려 주고
+   * 눌러서 레이스 화면에 들어가면 전부 보이게 한다. */
+  window.bfHomeChip = function(){
+    var el=document.getElementById('rcbn-bf'); if(!el) return;
+    if(!BF.loaded || !BF.on){ el.style.display='none'; return; }
+    var y=bfStateFor(bfYest()), t=bfStateFor(bfToday());
+    var txt;
+    if(y.kind==='fix')        txt='🔥 어제 버프 ×'+bfMult(y.score).toFixed(2);
+    else if(y.kind==='guess') txt='🔥 어제 버프 ×'+bfMult(y.score).toFixed(2)+' (예상)';
+    else if(y.kind==='wait')  txt='🌙 어제 플래너 채점 중';
+    else if(t.kind!=='off')   txt='✅ 오늘 플래너 올림 · 버프 대기';
+    else                      txt='🔥 플래너 올리면 최대 ×'+(1+BF.max).toFixed(1)+' 버프';
+    el.style.display='';
+    el.textContent=txt;
+  };
+
+  /* ── 레이스 화면 안의 버프 카드 (v2-62의 본체) ───────────────────── */
+  window.bfRaceCard = function(){
+    if(!BF.loaded || !BF.on) return '';
+    var y=bfStateFor(bfYest()), t=bfStateFor(bfToday());
+    var m=bfMult(y.score), pct=Math.round((m-1)*100);
+
+    /* 어제 — 큰 배율 */
+    var tone, badge, line;
+    if(y.kind==='fix'){
+      tone={bg:'linear-gradient(135deg,#f59e0b,#e8192c)',fg:'#fff',sub:'rgba(255,255,255,.9)'};
+      badge='확정'; line='플래너 '+y.score+'점 → 어제 푼 문제가 <b>'+pct+'% 더</b> 셌어요';
+    } else if(y.kind==='guess'){
+      tone={bg:'linear-gradient(135deg,#94a3b8,#64748b)',fg:'#fff',sub:'rgba(255,255,255,.88)'};
+      badge='예상'; line='새벽 자동채점 결과예요 · 선생님이 확인하면 확정돼요';
+    } else if(y.kind==='wait'){
+      tone={bg:'linear-gradient(135deg,#94a3b8,#64748b)',fg:'#fff',sub:'rgba(255,255,255,.88)'};
+      badge='채점 중'; line='플래너는 잘 올렸어요 · 점수가 매겨지면 배율이 나와요';
+    } else {
+      tone={bg:'#f1f5f9',fg:'#64748b',sub:'#94a3b8'};
+      badge='없음'; line='어제는 플래너를 안 올렸어요 · 어제 푼 문제는 그대로예요';
+    }
+    var big = (y.kind==='fix'||y.kind==='guess') ? '×'+m.toFixed(2) : (y.kind==='wait' ? '×?.??' : '×1.00');
+
+    /* 오늘 — 작은 한 줄 */
+    var tTxt, tCol;
+    if(t.kind==='off'){ tTxt='아직 안 올렸어요 — 오늘 푼 문제는 ×1.00'; tCol='#94a3b8'; }
+    else if(t.kind==='wait'){ tTxt='제출 완료! 새벽에 점수가 매겨져요'; tCol='#1d6fe8'; }
+    else { tTxt='플래너 '+t.score+'점 → 예상 ×'+bfMult(t.score).toFixed(2); tCol='#c2410c'; }
+
+    var h='<div class="rc-card" style="padding:0;overflow:hidden">'
+      +'<div style="display:flex;align-items:center;gap:8px;padding:11px 14px 9px">'
+      +'<span style="font-size:13.5px;font-weight:900;color:#0f172a;flex:none;white-space:nowrap">🔥 집중 버프</span>'
+      +'<span style="font-size:10px;font-weight:800;color:#94a3b8;min-width:0;overflow:hidden;'
+      +'text-overflow:ellipsis;white-space:nowrap">플래너를 올린 날은 문제 점수가 커져요</span>'
+      +'<button onclick="bfToggle()" style="margin-left:auto;flex:none;border:1px solid #e2e8f0;background:#fff;'
+      +'border-radius:50px;padding:4px 10px;font-size:10.5px;font-weight:900;color:#475569;cursor:pointer;font-family:inherit">'
+      +(BF.open?'닫기 ▴':'버프가 뭐야? ▾')+'</button></div>';
+
+    /* 어제 블록 */
+    h+='<div style="margin:0 12px;border-radius:14px;background:'+tone.bg+';color:'+tone.fg+';padding:13px 15px">'
+      +'<div style="display:flex;align-items:center;gap:7px">'
+      +'<span style="font-size:11.5px;font-weight:900;opacity:.95">어제 · '+bfLabel(y.d)+'</span>'
+      +'<span style="font-size:9.5px;font-weight:900;border-radius:50px;padding:2px 8px;'
+      +'background:rgba(255,255,255,.28);color:'+tone.fg+'">'+badge+'</span></div>'
+      +'<div style="font-size:38px;font-weight:900;letter-spacing:-1.5px;line-height:1.05;margin-top:4px">'+big+'</div>'
+      +'<div style="font-size:11.5px;font-weight:700;color:'+tone.sub+';line-height:1.6;margin-top:3px">'+line+'</div>'
+      +'</div>';
+
+    /* 오늘 줄 */
+    h+='<div style="margin:9px 12px 0;display:flex;align-items:center;gap:8px;background:#f8fafc;'
+      +'border-radius:11px;padding:9px 12px">'
+      +'<span style="font-size:11px;font-weight:900;color:#475569;flex:none">오늘 · '+bfLabel(t.d)+'</span>'
+      +'<span style="font-size:11px;font-weight:800;color:'+tCol+';line-height:1.5">'+tTxt+'</span>'
+      +(t.kind==='off'
+        ? '<button onclick="go(\'screen-planner\');if(window.plTab)plTab(1)" style="margin-left:auto;flex:none;'
+          +'border:none;background:#1d6fe8;color:#fff;border-radius:50px;padding:6px 12px;font-size:11px;'
+          +'font-weight:900;cursor:pointer;font-family:inherit">📷 올리기</button>'
+        : '')
+      +'</div>';
+
+    /* v2-63: 시즌 누적 — 「레이스 시작한 날부터 다 쌓여 있다」를 눈으로 보여 준다.
+     * 어제 한 칸만 보면 「오늘부터 시작인가?」 하고 헷갈린다. */
+    var sb2=BF.me?Number(BF.me.bonus||0):0, sd=BF.me?Number(BF.me.pdays||0):0;
+    if(BF.from){
+      h+='<div style="margin:7px 12px 0;display:flex;align-items:center;gap:8px;background:#fff7ed;'
+        +'border:1px solid #fed7aa;border-radius:11px;padding:9px 12px">'
+        +'<span style="font-size:11px;font-weight:900;color:#c2410c;flex:none">시즌 누적</span>'
+        +'<span style="font-size:11px;font-weight:800;color:#9a3412;line-height:1.5">'
+        +bfLabel(BF.from)+' 레이스 시작부터 · 플래너 <b>'+sd+'일</b> → '
+        +(sb2>0?('버프로 <b>+'+sb2.toLocaleString()+'점</b>')
+               :'아직 버프로 번 점수가 없어요')
+        +'</span></div>';
+    }
+
+    /* 접이식 설명 — 아이들에게 규칙을 알려 준다 */
+    if(BF.open){
+      var mx=(1+BF.max).toFixed(1), half=(1+BF.max/2).toFixed(2);
+      h+='<div style="margin:10px 12px 0;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px">'
+        +'<div style="font-size:12px;font-weight:900;color:#92400e;margin-bottom:7px">🔥 집중 버프가 뭐야?</div>'
+        +'<div style="font-size:11.5px;font-weight:700;color:#78350f;line-height:1.85">'
+        +'<b>1. 플래너를 올린 날은 그날 푼 문제 점수가 커져요.</b><br>'
+        +'매쓰플랫에서 채점받은 문제에 배율을 곱해 줘요.<br><br>'
+        +'<b>2. 플래너 점수만큼 비례해서 커져요.</b><br>'
+        +'플래너 10점 → <b>×'+mx+'</b> (40% 더) · 5점 → ×'+half+' · 0점 → ×1.00<br><br>'
+        +'<b>3. 언제 들어가나요?</b><br>'
+        +'플래너는 밤에 올리고, 선생님이 다음 날 확인해요. 확인이 끝나면 '
+        +'<b>그날 푼 문제 점수가 자동으로 다시 계산</b>돼요. 늦게 확인돼도 손해는 없어요.<br><br>'
+        +'<b>4. 지난 날도 다 들어가요.</b><br>'
+        +'오늘부터 시작이 아니에요. <b>'+(BF.from?bfLabel(BF.from)+' 레이스 첫날':'레이스 첫날')+'부터</b> '
+        +'올린 플래너가 전부 계산돼 있어요. 지금 보이는 점수에 이미 다 들어가 있어요.<br><br>'
+        +'<b>5. 이것만 기억해요 ⚠️</b><br>'
+        +'버프는 <b>푼 문제에 곱하는 것</b>이라서, 문제를 안 풀면 플래너가 10점이어도 0점이에요. '
+        +'<b>문제를 풀고 → 플래너를 올린다</b>, 두 개가 다 있어야 점수가 커져요.'
+        +'</div></div>';
+    }
+    h+='<div style="height:12px"></div></div>';
+    return h;
+  };
+
+  /* 설명 펼치기/접기 — 순위표를 통째로 다시 그리면 자료를 또 받아 와야 하니 이 칸만 갈아 끼운다 */
+  window.bfToggle=function(){
+    BF.open=!BF.open;
+    var el=document.getElementById('bf-race');
+    if(el) el.innerHTML=bfRaceCard(); else if(window.rcInit) rcInit();
+  };
+
+  /* 홈 배너 칩 + (레이스 화면이 열려 있으면) 레이스 화면을 다시 그린다 */
+  function bfPaint(){
+    try{ bfHomeChip(); }catch(e){}
+    try{
+      var el=document.getElementById('bf-race');
+      if(el) el.innerHTML=bfRaceCard();
+    }catch(e){}
+  }
+  window.bfPaint = bfPaint;
+  /* 예전 이름 — 홈에서 부르던 자리를 그대로 살려 둔다 */
+  window.bfRender = bfPaint;
+
+  /* 플래너 화면 — 제출 직후 「버프 확인」 줄 (원장님 요청 2026-09-02) */
+  window.bfAfterSubmit = function(){
+    if(!BF.on) return;
+    var host=document.getElementById('planner-sub-status'); if(!host) return;
+    BF.sub[bfToday()]=1;
+    var el=document.createElement('div');
+    el.style.cssText='margin-top:9px;border-radius:12px;padding:11px 13px;color:#fff;'
+      +'background:linear-gradient(135deg,#f59e0b,#e8192c);font-size:12.5px;font-weight:800;'
+      +'display:flex;align-items:center;gap:9px;cursor:pointer';
+    el.innerHTML='<span style="font-size:18px">🔥</span>'
+      +'<span style="flex:1;line-height:1.5">오늘 푼 문제가 최대 <b>'+(1+BF.max).toFixed(1)+'배</b>가 돼요'
+      +'<br><span style="font-weight:600;opacity:.92">새벽에 점수가 매겨지면 알려 드릴게요</span></span>'
+      +'<span style="font-size:16px">›</span>';
+    el.onclick=function(){ go('screen-race'); };
+    host.appendChild(el);
+    bfRender();
+  };
+
+  /* 레이스 화면 — 내 점수 안에서 버프 몫을 보여 준다 */
+  window.bfRaceLine = function(me){
+    if(!BF.on || !me) return '';
+    var base=Number(me.base||0), bonus=Number(me.bonus||0);
+    if(!base && !bonus) return '';
+    if(!bonus) return '<div style="margin-top:9px;padding:9px 11px;background:#f8fafc;border-radius:10px;'
+      +'font-size:11.5px;font-weight:700;color:#94a3b8">🔥 아직 버프로 번 점수가 없어요 — 플래너를 올려 보세요</div>';
+    var pct=Math.round(bonus/Math.max(1,base)*100);
+    var bw=Math.round(base/Math.max(1,base+bonus)*100);
+    return '<div style="margin-top:10px;padding:11px 12px;background:linear-gradient(90deg,#fff7ed,#fef2f2);'
+      +'border:1px solid #fed7aa;border-radius:12px">'
+      +'<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">'
+      +'<span style="font-size:12px;font-weight:900;color:#c2410c">🔥 버프로 번 점수</span>'
+      +'<span style="margin-left:auto;font-size:17px;font-weight:900;color:#e8192c">+'+bonus.toLocaleString()+'</span>'
+      +'<span style="font-size:11px;font-weight:800;color:#f59e0b">'+pct+'%</span></div>'
+      +'<div style="height:16px;border-radius:6px;overflow:hidden;display:flex;background:#f1f5f9">'
+      +'<i style="height:100%;width:'+bw+'%;background:#1d6fe8"></i>'
+      +'<i style="height:100%;width:'+(100-bw)+'%;background:linear-gradient(90deg,#f59e0b,#e8192c)"></i></div>'
+      +'<div style="display:flex;gap:12px;font-size:10.5px;color:#64748b;font-weight:700;margin-top:6px">'
+      +'<span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#1d6fe8;margin-right:4px;vertical-align:-1px"></i>문제 '+base.toLocaleString()+'</span>'
+      +'<span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#e8192c;margin-right:4px;vertical-align:-1px"></i>버프 '+bonus.toLocaleString()+'</span>'
+      +'<span style="margin-left:auto">플래너 '+(me.pdays||0)+'일 올림</span></div>'
+      +'<div style="font-size:11px;color:#9a3412;font-weight:700;margin-top:6px">'
+      +'버프가 없었다면 <b>'+base.toLocaleString()+'점</b>이었어요</div></div>';
+  };
+})();
+
+function _mrEvalDate(s){   // 평가일 Date (examDate 우선, 없으면 오늘)
+  if(s.examDate && /^\d{4}-\d{2}-\d{2}$/.test(s.examDate)){
+    var d=new Date(s.examDate+'T00:00:00');
+    if(!isNaN(d.getTime())) return d;
+  }
+  return new Date();
+}
+function _mrEvalDisp(s){
+  var d=_mrEvalDate(s);
+  return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일';
+}
+function _mrHakYearOf(d){ return (d.getMonth()+1>=3)?d.getFullYear():d.getFullYear()-1; }
+function _mrRecEvalTs(r){   // 레코드 평가 시점 (evalDate → createdAt 폴백)
+  if(r.examDate && /^\d{4}-\d{2}-\d{2}$/.test(r.examDate)){
+    var t=Date.parse(r.examDate+'T00:00:00'); if(!isNaN(t)) return t;
+  }
+  return r.createdAt||0;
+}
+function _mrRecEvalDisp(r){
+  var t=_mrRecEvalTs(r); if(!t) return '-';
+  var d=new Date(t);
+  return d.getFullYear()+'.'+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+'.'+(d.getDate()<10?'0':'')+d.getDate();
+}
+function _mrExamShort(r){ return (r.semester||'')+' '+String(r.examType||'').replace('고사',''); }
+function _mrFolderKeyOf(r){
+  var hy=_mrHakYearOf(new Date(_mrRecEvalTs(r)||Date.now()));
+  return hy+'|'+String(r.school||'').trim()+'|'+String(r.grade||'').trim()+'|'+(r.semester||'')+'|'+(r.examType||'');
+}
+// 성적 추이 시리즈 — 같은 학생·같은 학교의 저장본 + 현재 입력(마지막 점)
+function _mrTrendSeries(s){
+  var out=[];
+  (mockReports||[]).forEach(function(r){
+    if(r.studentName!==s.studentName || String(r.school||'').trim()!==String(s.school||'').trim()) return;
+    if(r.semester===s.semester && r.examType===s.examType) return;   // 현재와 같은 시험은 현재값으로 대체
+    var sc=parseFloat(r.studentScore), mn=parseFloat(r.schoolMean);
+    if(isNaN(sc)||isNaN(mn)) return;
+    out.push({label:_mrExamShort(r), score:sc, mean:mn, t:_mrRecEvalTs(r)});
+  });
+  out.sort(function(a,b){return a.t-b.t;});
+  if(out.length>4) out=out.slice(-4);
+  var cs=parseFloat(s.studentScore), cm=parseFloat(s.schoolMean);
+  if(!isNaN(cs)&&!isNaN(cm)) out.push({label:_mrExamShort(s), score:cs, mean:cm, t:_mrEvalDate(s).getTime()});
+  return out;
+}
+// 같은 시험(폴더) 학원생 점수 — 현재 학생은 라이브 값으로 대체
+function _mrFolderScores(s){
+  var key=_mrFolderKeyOf({school:s.school,grade:s.grade,semester:s.semester,examType:s.examType,examDate:s.examDate,createdAt:Date.now()});
+  var scores=[], meIncluded=false;
+  (mockReports||[]).forEach(function(r){
+    if(_mrFolderKeyOf(r)!==key) return;
+    if(r.studentName===s.studentName){ meIncluded=true; return; }
+    var v=parseFloat(r.studentScore); if(!isNaN(v)) scores.push(v);
+  });
+  var cs=parseFloat(s.studentScore);
+  if(!isNaN(cs)) scores.push(cs);
+  return scores;
+}
+
+// ── v14-10: 2면 (문항 분석) ──────────────────────────────────
+function _mrPage2HTML(s, ctx){
+  var fb=String(s.parentFeedback||'');
+  var showFb=!!s.showFeedback;
+  var gapY=showFb?(fb.length>220?9:14):0;
+  var rootExtra=showFb?'':'justify-content:space-between;';
+  var SEC='font-size:15px;font-weight:800;color:#0d2240;border-left:4px solid #c41e3a;padding-left:10px;margin-bottom:9px;letter-spacing:-0.3px';
+  var GBOX='border:1.5px solid #e8ecf3;border-radius:10px;padding:11px 13px 9px;background:#fcfdff';
+  var CAP='font-size:10px;color:#94a3b8;text-align:center;margin-top:6px;font-weight:600;line-height:1.5';
+
+  var h='<div id="mr-page2" style="width:794px;min-height:1123px;background:white;padding:36px 50px 34px;box-sizing:border-box;font-family:\'Noto Sans KR\',sans-serif;color:#222;page-break-before:always;margin-top:16px;display:flex;flex-direction:column;'+rootExtra+'">';
+
+  // 헤더
+  h+='<div style="display:flex;align-items:center;gap:10px;border-bottom:2.5px solid #111;padding-bottom:9px">';
+  h+='<span style="font-size:18px;font-weight:900;color:#111">'+_mrEsc(ctx.nameDisplay)+'</span>';
+  h+='<span style="font-size:12px;color:#64748b;font-weight:700">'+_mrEsc(ctx.examDisplay)+' · '+_mrEsc(ctx.evalDisp)+'</span>';
+  h+='<span style="margin-left:auto;font-size:11px;color:#94a3b8;font-weight:800">문항 분석 · 2 / 2</span>';
+  h+='</div>';
+
+  var d=s.diffRates, c=s.compRates, gt=s.goodTypes, wt=s.weakTypes, items=s.items, ur=s.unitRates;
+  var hasAny=!!(d||c||(gt&&gt.length)||(wt&&wt.length)||(items&&items.length)||(ur&&ur.length));
+
+  function sec(inner){ return '<div style="margin-top:'+(gapY||16)+'px">'+inner+'</div>'; }
+
+  if(!hasAny){
+    h+=sec('<div style="padding:52px 24px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;text-align:center;color:#64748b">'
+      +'<div style="font-size:36px;margin-bottom:10px">📄</div>'
+      +'<div style="font-size:16px;font-weight:800;color:#475569;margin-bottom:6px">문항 분석 데이터가 아직 없어요</div>'
+      +'<div style="font-size:12.5px;line-height:1.8">매쓰플랫 <b>원클릭 리포트(ONE REPORT) PDF</b>를 업로드하면<br>난이도별 정답률 · 수학 역량 · 문항 지도 · 단원별 정답률이 자동으로 채워집니다</div>'
+      +'</div>');
+  }else{
+    // 난이도 + 역량 (2단)
+    if(d||c){
+      var col1='', col2='';
+      if(d){
+        col1='<div style="'+SEC+'">■ 난이도별 정답률</div><div style="'+GBOX+'">'
+          +lumenGraphs.diffBars({data:d,w:340,h:150});
+        var dv={};['하','중하','중','상','최상'].forEach(function(k){dv[k]=parseFloat(d[k])||0;});
+        var growKey=null;
+        ['중','상','중하','최상','하'].some(function(k){ if(dv[k]>0&&dv[k]<100){growKey=k;return true;} return false; });
+        col1+='<div style="'+CAP+'">'+(growKey?('<b>\''+growKey+'\' 단계</b>가 지금의 성장 구간'):'난이도별 성취 분포')+'</div>';
+        col1+='</div>';
+      }
+      if(c){
+        col2='<div style="'+SEC+'">■ 수학 역량</div><div style="'+GBOX+';padding:8px 6px 6px">'
+          +lumenGraphs.radar({data:c,size:172})+'</div>';
+      }
+      h+=sec('<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+        +'<div>'+(col1||'')+'</div><div>'+(col2||'')+'</div></div>');
+    }
+    // 우수/보완 유형 (2단)
+    if((gt&&gt.length)||(wt&&wt.length)){
+      function typeRows(list,color){
+        var r='';
+        (list||[]).slice(0,3).forEach(function(t){
+          r+='<div style="display:flex;align-items:center;gap:7px;background:#f8fafc;border-radius:6px;padding:8px 10px;font-size:12px;font-weight:700;color:#334155;margin-bottom:5px">'
+            +'<span style="background:'+color+';color:white;font-size:10px;font-weight:900;border-radius:5px;padding:3px 7px;flex-shrink:0">'+_mrEsc(t.no)+'번</span>'
+            +'<span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+_mrEsc(t.name||'')+'</span></div>';
+        });
+        return r||'<div style="font-size:12px;color:#94a3b8;padding:7px 2px">—</div>';
+      }
+      h+=sec('<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+        +'<div><div style="'+SEC+'">■ 대표 우수 유형</div>'+typeRows(gt,'#1d6fe8')+'</div>'
+        +'<div><div style="'+SEC+'">■ 보완할 유형</div>'+typeRows(wt,'#f59e0b')+'</div></div>');
+    }
+    // 문항 지도 + 아쉬운 문항 (2단)
+    if(items&&items.length){
+      var missList=items.filter(function(it){ return !it.correct && parseFloat(it.avgRate)>=70; })
+        .sort(function(a,b){ return parseFloat(b.avgRate)-parseFloat(a.avgRate); }).slice(0,6);
+      var missH='';
+      if(missList.length){
+        missList.forEach(function(it){
+          missH+='<div style="display:flex;align-items:center;gap:7px;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:8px 10px;font-size:12px;font-weight:700;color:#7c2d12;margin-bottom:5px">'
+            +'<span style="background:#ea580c;color:white;font-size:10px;font-weight:900;border-radius:5px;padding:3px 7px">'+_mrEsc(it.no)+'번</span>'
+            +'<span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+_mrEsc(it.name||'')+'</span>'
+            +'<span style="font-size:10px;color:#b45309;font-weight:800;flex-shrink:0">평균 '+Math.round(parseFloat(it.avgRate)||0)+'%</span></div>';
+        });
+        missH+='<div style="font-size:10px;color:#94a3b8;font-weight:600;margin-top:5px">전체 평균 70%↑인데 놓친 문항 — <b>우선 복습 순서</b></div>';
+      }else{
+        missH='<div style="padding:18px 10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:12.5px;color:#166534;font-weight:700;text-align:center">👍 쉬운 문항을 모두 지켜냈어요</div>';
+      }
+      h+=sec('<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+        +'<div><div style="'+SEC+'">■ 문항 지도</div><div style="'+GBOX+';padding:6px">'
+        +lumenGraphs.itemMap({items:items,w:340,h:230})
+        +'<div style="'+CAP+'">빨간 숫자 = 아하노트 후보 · 초록 = 자랑거리</div></div></div>'
+        +'<div><div style="'+SEC+'">■ 아쉬운 문항</div>'+missH+'</div></div>');
+    }
+    // 단원별 정답률 (2단)
+    if(ur&&ur.length){
+      function unitBar(u){
+        var v=Math.round(parseFloat(u.rate)||0);
+        var grad=v>=80?'linear-gradient(90deg,#1d6fe8,#38bdf8)':(v>=40?'linear-gradient(90deg,#f59e0b,#fbbf24)':'#fecaca');
+        var w=Math.max(6,v);
+        return '<div style="display:flex;align-items:center;gap:7px;margin:4px 0;font-size:11px;font-weight:700">'
+          +'<span style="width:118px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+_mrEsc(u.name||'')+'</span>'
+          +'<span style="flex:1;background:#f1f5f9;border-radius:3px;height:12px;overflow:hidden;display:block"><span style="display:block;height:100%;border-radius:3px;width:'+w+'%;background:'+grad+'"></span></span>'
+          +'<span style="width:36px;text-align:right;color:#334155">'+v+'%</span></div>';
+      }
+      var half=Math.ceil(ur.length/2), colA='', colB='';
+      ur.forEach(function(u,i){ if(i<half) colA+=unitBar(u); else colB+=unitBar(u); });
+      h+=sec('<div><div style="'+SEC+'">■ 단원별 정답률</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px">'
+        +'<div>'+colA+'</div><div>'+colB+'</div></div></div>');
+    }
+  }
+
+  // 학부모 피드백 (기본 꺼짐 — 켰을 때만, 2면 하단)
+  if(showFb){
+    h+='<div style="margin-top:'+(gapY||16)+'px;padding:13px 14px;background:#fff;border:2px solid #fde68a;border-radius:10px">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px">';
+    h+='<div style="font-size:13px;font-weight:800;color:#92400e">💌 학부모님께</div>';
+    h+='<div style="display:flex;gap:6px" data-pdf-hide="1">';
+    if(s.isGeneratingFeedback){
+      h+='<button disabled style="padding:6px 14px;background:#cbd5e1;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:not-allowed;font-family:inherit">⏳ 생성 중...</button>';
+    } else {
+      var btnLabel=s.parentFeedback?'🔄 다시 생성':'✨ AI 피드백 생성';
+      h+='<button onclick="_mrGenerateParentFeedback()" style="padding:6px 14px;background:#f59e0b;color:white;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">'+btnLabel+'</button>';
+      if(s.parentFeedback){
+        h+='<button onclick="if(confirm(\'피드백을 지우시겠습니까?\')){MOCK_REPORT_STATE.parentFeedback=\'\';render();}" style="padding:6px 10px;background:#fee2e2;color:#dc2626;border:1px solid #fecaca;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🗑</button>';
+      }
+    }
+    h+='</div></div>';
+    if(s.parentFeedback){
+      h+='<textarea data-pdf-hide="1" oninput="MOCK_REPORT_STATE.parentFeedback=this.value;_mrUpdateFeedbackDisplay()" style="width:100%;min-height:110px;padding:12px;border:1px solid #fde68a;border-radius:6px;font-size:12px;line-height:1.7;font-family:inherit;color:#0d2240;background:#fffbeb;resize:vertical;outline:none">'+_mrEsc(s.parentFeedback)+'</textarea>';
+      h+='<div style="font-size:10px;color:#92400e;margin-top:6px" data-pdf-hide="1">💡 위 내용을 직접 수정할 수 있습니다. 저장 시 함께 보관됩니다.</div>';
+      h+='<div id="mr-feedback-display" data-pdf-show="1" style="display:none;padding:6px 2px;font-size:12px;line-height:1.8;color:#0d2240;white-space:pre-wrap">'+_mrEsc(s.parentFeedback)+'</div>';
+    } else if(!s.isGeneratingFeedback){
+      h+='<div style="padding:18px;text-align:center;color:#94a3b8;font-size:12px;background:#fffbeb;border-radius:6px;border:1px dashed #fde68a" data-pdf-hide="1">';
+      h+='<div style="font-weight:700;color:#92400e;margin-bottom:3px">「✨ AI 피드백 생성」 버튼을 눌러주세요</div>';
+      h+='<div style="font-size:10px">학생 점수와 학교 분포를 바탕으로 학부모님께 전달할 코멘트를 자동 작성합니다</div>';
+      h+='</div>';
+    } else {
+      h+='<div style="padding:18px;text-align:center;color:#92400e;font-size:12px;background:#fffbeb;border-radius:6px" data-pdf-hide="1">⏳ AI가 학부모 피드백을 작성하고 있습니다...</div>';
+    }
+    h+='</div>';
+  }
+
+  // 푸터
+  var today=new Date();
+  var pub=today.getFullYear()+'년 '+(today.getMonth()+1)+'월 '+today.getDate()+'일';
+  h+='<div style="margin-top:auto;padding-top:12px;border-top:2px solid #0d2240;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#666">';
+  h+='<div style="font-weight:800;color:#0d2240;font-size:13px">루멘수학</div>';
+  h+='<div style="font-size:10px;color:#888">발행일: '+pub+' · 2 / 2</div>';
+  h+='</div>';
+
+  h+='</div>';
+  return h;
+}
+
+// ── v14-10: 시험 폴더 · 일괄 출력 · 일괄 수정 ─────────────────
+let MOCK_REPORT_FOLDER_OPEN=null;     // 열린 폴더 key
+let MOCK_REPORT_BATCH_EDIT=null;      // 일괄 수정 모달 {key, f:{...}}
+
+function _mrBlankState(){
+  return {
+    studentName:'',school:'',grade:'중1',semester:'1학기',examType:'중간고사',examDate:'',examYear:'',
+    studentScore:'',schoolMean:'',schoolSd:'',totalStudents:'',
+    distA:'',distB:'',distC:'',distD:'',distE:'',
+    mfGrade:'',academyRank:'',academyTotal:'',academyMean:'',
+    classNum:'',studentNum:'',showRef:true,
+    showFeedback:false,parentFeedback:'',isGeneratingFeedback:false,customTitle:'',
+    isExtracting:false,extractedFromPdf:false,
+    diffRates:null,compRates:null,goodTypes:null,weakTypes:null,items:null,unitRates:null
+  };
+}
+function _mrStateFromRec(r){
+  var st=_mrBlankState();
+  Object.keys(r||{}).forEach(function(k){
+    if(k!=='id'&&k!=='createdAt'&&k!=='updatedAt'&&st.hasOwnProperty(k)) st[k]=(r[k]!=null?r[k]:'');
+  });
+  st.isGeneratingFeedback=false; st.isExtracting=false;
+  return st;
+}
+function _mrPagesHTMLFor(r){   // 임시 상태 스왑 → 렌더 → 복원 (읽기 전용)
+  var keep=MOCK_REPORT_STATE;
+  MOCK_REPORT_STATE=_mrStateFromRec(r);
+  var html='';
+  try{ html=renderMockReportPreview(); }
+  finally{ MOCK_REPORT_STATE=keep; }
+  return html;
+}
+function renderMockReportPreview(){
+  var s=MOCK_REPORT_STATE;
+  var score=parseFloat(s.studentScore);
+  if(isNaN(score)) score=null;
+  var mean=parseFloat(s.schoolMean);
+  if(isNaN(mean)) mean=null;
+  var sd=parseFloat(s.schoolSd);
+  if(isNaN(sd)) sd=null;
+  var total=parseInt(s.totalStudents);
+  if(isNaN(total)) total=null;
+
+  var rankInfo=null, gradeInfo5=null, achievement=null;
+  if(score!=null && mean!=null && sd!=null && total){
+    rankInfo=estimateSchoolRank(score, mean, sd, total);
+    gradeInfo5=calcGrade5FromScore(score, mean, sd);
+  }
+  if(score!=null) achievement=calcAchievementFromScore(score);
+
+  var distVals={A:parseFloat(s.distA)||0, B:parseFloat(s.distB)||0, C:parseFloat(s.distC)||0, D:parseFloat(s.distD)||0, E:parseFloat(s.distE)||0};
+
+  var distColors={A:'#10b981', B:'#3b82f6', C:'#f59e0b', D:'#f97316', E:'#dc2626'};
+  var achColor=distColors[achievement]||'#888';
+
+  var topPct=rankInfo?rankInfo.topPct:null;
+  var pinPos=topPct!=null?Math.min(99, Math.max(1, topPct)):null;
+
+  var schoolDisplay=s.school?s.school:'(학교 미입력)';
+  var gradeDisplay=s.grade||'';
+  var classDisplay=(s.classNum||s.studentNum)?(s.classNum?s.classNum+'반 ':'')+(s.studentNum?s.studentNum+'번':''):'';
+  var nameDisplay=s.studentName||'(학생 미선택)';
+  // v14-10: 평가일(examDate) 기반 — 학년도·정보표 날짜. 발행일은 출력 시점 유지.
+  var evalD=_mrEvalDate(s);
+  var hakYear=_mrHakYearOf(evalD);
+  var evalDisp=_mrEvalDisp(s);
+  var examDisplay=(s.examYear||hakYear)+' '+(s.semester||'1학기')+' '+(s.examType||'중간고사');
+  var today=new Date();
+  var dateDisplay=today.getFullYear()+'년 '+(today.getMonth()+1)+'월 '+today.getDate()+'일';
+  // v14-10: 1면 하단 그래프 데이터 (추이 = 같은 학생·학교 저장본 + 현재, 히스토 = 같은 시험 폴더)
+  var trendPts=_mrTrendSeries(s);
+  var folderScores=_mrFolderScores(s);
+
+  var h='<div id="mr-page" style="width:794px;min-height:1123px;background:white;padding:42px 50px 38px;box-sizing:border-box;font-family:\'Noto Sans KR\',sans-serif;color:#222">';
+
+  // 헤더
+  h+='<div style="text-align:center;border-bottom:3px double #0d2240;padding-bottom:14px;margin-bottom:18px">';
+  h+='<div style="font-size:12px;color:#666;font-weight:500;margin-bottom:3px;letter-spacing:0.5px">'+_mrEsc(schoolDisplay)+'</div>';
+  var _mrTitle=(s.customTitle&&s.customTitle.trim())?_mrEsc(s.customTitle.trim()):((s.examYear||hakYear)+'학년도 '+_mrEsc(s.semester||'1학기')+' '+_mrEsc(s.examType||'중간고사')+' 성적표');
+  h+='<div style="font-size:28px;font-weight:900;color:#0d2240;letter-spacing:-1px;margin-bottom:4px">'+_mrTitle+'</div>';
+  h+='<div style="font-size:13px;color:#444;font-weight:500">루멘수학 모의 성적 추정 리포트</div>';
+  h+='</div>';
+
+  // 학생 정보
+  h+='<table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:12px">';
+  h+='<tr><td style="border:1px solid #2a2a2a;padding:7px 11px;background:#f3f3f0;font-weight:700;width:90px;text-align:center">학교</td>'
+    +'<td style="border:1px solid #2a2a2a;padding:7px 11px;font-weight:500">'+_mrEsc(schoolDisplay)+'</td>'
+    +'<td style="border:1px solid #2a2a2a;padding:7px 11px;background:#f3f3f0;font-weight:700;width:90px;text-align:center">학년/반/번호</td>'
+    +'<td style="border:1px solid #2a2a2a;padding:7px 11px;font-weight:500">'+_mrEsc(gradeDisplay)+' '+_mrEsc(classDisplay)+'</td></tr>';
+  h+='<tr><td style="border:1px solid #2a2a2a;padding:7px 11px;background:#f3f3f0;font-weight:700;text-align:center">성명</td>'
+    +'<td style="border:1px solid #2a2a2a;padding:7px 11px;font-weight:700">'+_mrEsc(nameDisplay)+'</td>'
+    +'<td style="border:1px solid #2a2a2a;padding:7px 11px;background:#f3f3f0;font-weight:700;text-align:center">시험구분</td>'
+    +'<td style="border:1px solid #2a2a2a;padding:7px 11px;font-weight:500">'+_mrEsc(examDisplay)+'</td></tr>';
+  h+='<tr><td style="border:1px solid #2a2a2a;padding:7px 11px;background:#f3f3f0;font-weight:700;text-align:center">평가일</td>'
+    +'<td style="border:1px solid #2a2a2a;padding:7px 11px;font-weight:500">'+_mrEsc(evalDisp)+(s.examDate?'':' <span style="color:#94a3b8;font-size:9px">(미입력 — 오늘)</span>')+'</td>'
+    +'<td style="border:1px solid #2a2a2a;padding:7px 11px;background:#f3f3f0;font-weight:700;text-align:center">전교생 수</td>'
+    +'<td style="border:1px solid #2a2a2a;padding:7px 11px;font-weight:500">'+(total?total+'명':'(미입력)')+'</td></tr>';
+  h+='</table>';
+
+  // 교과 성적
+  h+='<div style="font-size:14px;font-weight:800;color:#0d2240;border-left:4px solid #c41e3a;padding-left:9px;margin:16px 0 10px;letter-spacing:-0.3px">■ 교과 성적</div>';
+  h+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+  h+='<thead>';
+  h+='<tr><th rowspan="2" style="border:1px solid #2a2a2a;padding:8px 5px;background:#0d2240;color:white;font-weight:700;font-size:11px;width:75px">교과</th>'
+    +'<th rowspan="2" style="border:1px solid #2a2a2a;padding:8px 5px;background:#0d2240;color:white;font-weight:700;font-size:11px;width:55px">원점수</th>'
+    +'<th colspan="2" style="border:1px solid #2a2a2a;padding:8px 5px;background:#0d2240;color:white;font-weight:700;font-size:11px">학교 (실제)</th>'
+    +'<th colspan="2" style="border:1px solid #2a2a2a;padding:8px 5px;background:#0d2240;color:#fbbf24;font-weight:700;font-size:11px">★ 학교 추정 (모의)</th>'
+    +'<th rowspan="2" style="border:1px solid #2a2a2a;padding:8px 5px;background:#0d2240;color:white;font-weight:700;font-size:11px;width:60px">성취도</th></tr>';
+  h+='<tr><th style="border:1px solid #2a2a2a;padding:8px 5px;background:#0d2240;color:white;font-weight:700;font-size:11px;width:60px">평균</th>'
+    +'<th style="border:1px solid #2a2a2a;padding:8px 5px;background:#0d2240;color:white;font-weight:700;font-size:11px;width:55px">표준편차</th>'
+    +'<th style="border:1px solid #2a2a2a;padding:8px 5px;background:#0d2240;color:#fbbf24;font-weight:700;font-size:11px;width:75px">★ 학교 등수</th>'
+    +'<th style="border:1px solid #2a2a2a;padding:8px 5px;background:#0d2240;color:#fbbf24;font-weight:700;font-size:11px;width:60px">★ 등급</th></tr>';
+  h+='</thead><tbody>';
+  h+='<tr>';
+  h+='<td style="border:1px solid #2a2a2a;padding:8px 5px;text-align:left;padding-left:13px;background:#f3f3f0;font-weight:700;font-size:13px">수학</td>';
+  h+='<td style="border:1px solid #2a2a2a;padding:8px 5px;text-align:center;font-weight:800;font-size:14px;color:#0d2240">'+(score!=null?score:'-')+'</td>';
+  h+='<td style="border:1px solid #2a2a2a;padding:8px 5px;text-align:center">'+(mean!=null?mean.toFixed(1):'-')+'</td>';
+  h+='<td style="border:1px solid #2a2a2a;padding:8px 5px;text-align:center">'+(sd!=null?sd.toFixed(1):'-')+'</td>';
+  if(rankInfo){
+    h+='<td style="border:1px solid #2a2a2a;padding:8px 5px;text-align:center;font-weight:600;font-size:11px;color:#c41e3a">★ 약 '+rankInfo.rank+'등 / '+rankInfo.total+'명<br>'
+      +'<span style="color:#888;font-weight:500;font-size:10px">(상위 '+rankInfo.topPct.toFixed(1)+'%)</span></td>';
+  } else {
+    h+='<td style="border:1px solid #2a2a2a;padding:8px 5px;text-align:center;color:#999">-</td>';
+  }
+  if(gradeInfo5){
+    var gColors={1:'#10b981',2:'#3b82f6',3:'#f59e0b',4:'#f97316',5:'#dc2626'};
+    h+='<td style="border:1px solid #2a2a2a;padding:8px 5px;text-align:center;font-weight:800;font-size:14px;color:#c41e3a">'
+      +'<span style="display:inline-block;width:22px;height:22px;line-height:20px;border-radius:50%;background:'+gColors[gradeInfo5.grade]+';color:white;font-weight:800;font-size:12px;text-align:center">'+gradeInfo5.grade+'</span>'
+      +'<div style="font-size:9px;color:#888;font-weight:500;margin-top:2px">5등급제</div></td>';
+  } else {
+    h+='<td style="border:1px solid #2a2a2a;padding:8px 5px;text-align:center;color:#999">-</td>';
+  }
+  h+='<td style="border:1px solid #2a2a2a;padding:8px 5px;text-align:center"><b style="color:'+achColor+'">'+(achievement||'-')+'</b></td>';
+  h+='</tr></tbody></table>';
+
+  // 매쓰플랫 참고 박스 — 버그 수정: 입력값을 trim하고 빈문자열 제외
+  var mfG=String(s.mfGrade||'').trim();
+  var aR=String(s.academyRank||'').trim();
+  var aT=String(s.academyTotal||'').trim();
+  var aM=String(s.academyMean||'').trim();
+  if(s.showRef && (mfG||aR||aM)){
+    h+='<div style="margin-top:8px;padding:10px 13px;background:#f0f9ff;border:1px solid #93c5fd;border-radius:6px;display:flex;align-items:center;gap:14px;font-size:11px;flex-wrap:wrap">';
+    h+='<div style="font-weight:800;color:#1e40af;flex-shrink:0">📋 참고 (매쓰플랫)</div>';
+    var sepNeeded=false;
+    if(mfG){
+      h+='<div><span style="color:#64748b;font-size:10px">매쓰플랫 등급: </span><span style="font-weight:700;color:#0d2240;font-size:12px">'+_mrEsc(mfG)+'등급</span><span style="color:#888;font-size:9px;margin-left:4px">(매쓰플랫 5등급제)</span></div>';
+      sepNeeded=true;
+    }
+    if(aR && aT){
+      if(sepNeeded) h+='<div style="width:1px;height:14px;background:#93c5fd"></div>';
+      h+='<div><span style="color:#64748b;font-size:10px">학원 내 등수: </span><span style="font-weight:700;color:#0d2240;font-size:12px">'+_mrEsc(aR)+'등 / '+_mrEsc(aT)+'명</span></div>';
+      sepNeeded=true;
+    }
+    if(aM){
+      if(sepNeeded) h+='<div style="width:1px;height:14px;background:#93c5fd"></div>';
+      h+='<div><span style="color:#64748b;font-size:10px">학원 평균: </span><span style="font-weight:700;color:#0d2240;font-size:12px">'+_mrEsc(aM)+'점</span></div>';
+    }
+    h+='</div>';
+  }
+
+  // 학교 성적 분포
+  var distSum=distVals.A+distVals.B+distVals.C+distVals.D+distVals.E;
+  if(distSum>0){
+    h+='<div style="font-size:14px;font-weight:800;color:#0d2240;border-left:4px solid #c41e3a;padding-left:9px;margin:16px 0 10px;letter-spacing:-0.3px">■ 학교 성적 분포 (수학)</div>';
+    h+='<div style="margin-top:12px;padding:12px 14px;background:#fafaf6;border:1px solid #e0ddd0;border-radius:6px">';
+    h+='<div style="font-size:11px;font-weight:700;color:#333;margin-bottom:8px">학교알리미 공시 분포 · '+_mrEsc(nameDisplay)+' 학생 위치 (★)</div>';
+    var ranges={A:'(90↑)', B:'(80~89)', C:'(70~79)', D:'(60~69)', E:'(60↓)'};
+    ['A','B','C','D','E'].forEach(function(g){
+      var pct=distVals[g];
+      var isMine=achievement===g;
+      h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px">';
+      h+='<div style="width:55px;font-weight:700;color:#555;font-size:11px">'+g+' '+ranges[g]+'</div>';
+      h+='<div style="flex:1;height:16px;background:#e8e8e0;border-radius:3px;position:relative;overflow:hidden">';
+      h+='<div style="height:100%;background:'+distColors[g]+';width:'+pct+'%;display:flex;align-items:center;justify-content:flex-end;padding-right:5px;color:white;font-size:10px;font-weight:700">'+(isMine?'★ ':'')+pct.toFixed(1)+'%</div>';
+      h+='</div>';
+      h+='<div style="width:65px;text-align:right;font-weight:700;font-size:11px;'+(isMine?'color:#c41e3a':'color:#222')+'">'+(isMine?'★ '+_mrEsc(nameDisplay):pct.toFixed(1)+'%')+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+  }
+
+  // 시각화
+  if(rankInfo && gradeInfo5){
+    h+='<div style="font-size:14px;font-weight:800;color:#0d2240;border-left:4px solid #c41e3a;padding-left:9px;margin:16px 0 10px;letter-spacing:-0.3px">■ 학교 내 위치 시각화 (학부모용 한눈에 보기)</div>';
+    h+='<div style="margin-top:12px;padding:14px;background:linear-gradient(180deg,#fafaf6 0%,white 100%);border:1px solid #d6d3c5;border-radius:8px">';
+
+    // Z-score 바
+    h+='<div style="margin-bottom:18px">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">';
+    h+='<div style="font-size:12px;font-weight:800;color:#0d2240">📊 학교 내 백분위 (Z-score 기반)</div>';
+    h+='<div style="font-size:10px;color:#666">Z = <b style="color:#c41e3a;font-size:11px">'+(rankInfo.z>=0?'+':'')+rankInfo.z.toFixed(2)+'</b> (상위 '+rankInfo.topPct.toFixed(1)+'%)</div>';
+    h+='</div>';
+    h+='<div style="position:relative;height:42px;margin:8px 0 4px">';
+    h+='<div style="position:absolute;top:18px;left:0;right:0;height:10px;background:linear-gradient(90deg,#10b981 0%,#3b82f6 30%,#f59e0b 55%,#f97316 75%,#dc2626 100%);border-radius:5px"></div>';
+    h+='<div style="position:absolute;top:6px;transform:translateX(-50%);text-align:center;z-index:2;left:'+pinPos+'%">';
+    h+='<div style="width:16px;height:16px;background:#0d2240;border:3px solid white;border-radius:50%;margin:0 auto;box-shadow:0 2px 5px rgba(0,0,0,0.3)"></div>';
+    h+='<div style="font-size:10px;font-weight:800;color:#0d2240;margin-top:3px;white-space:nowrap;background:white;padding:1px 5px;border-radius:3px;border:1px solid #0d2240">'+_mrEsc(nameDisplay)+' '+rankInfo.topPct.toFixed(1)+'%</div>';
+    h+='</div>';
+    h+='</div>';
+    h+='<div style="display:flex;justify-content:space-between;font-size:9px;color:#888;font-weight:600;margin-top:4px">';
+    h+='<span>상위 0%</span><span>10%</span><span>25%</span><span>50%</span><span>75%</span><span>90%</span><span>100%</span>';
+    h+='</div>';
+    h+='</div>';
+
+    // 5등급 바
+    h+='<div style="margin-bottom:0">';
+    h+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">';
+    h+='<div style="font-size:12px;font-weight:800;color:#0d2240">🎯 고교 내신 5등급제</div>';
+    h+='</div>';
+    h+='<div style="position:relative;margin:18px 0 4px">';
+    h+='<div style="display:flex;height:42px;border:1px solid #2a2a2a;border-radius:4px;overflow:hidden">';
+    var grade5Widths=[10,24,32,24,10];
+    var grade5Colors=['#10b981','#3b82f6','#f59e0b','#f97316','#dc2626'];
+    for(var i=0;i<5;i++){
+      h+='<div style="flex-grow:0;flex-shrink:0;width:'+grade5Widths[i]+'%;display:flex;flex-direction:column;align-items:center;justify-content:center;'
+        +'border-right:'+(i<4?'1px solid rgba(0,0,0,0.15)':'none')+';color:white;font-weight:800;background:'+grade5Colors[i]+'">';
+      h+='<div style="font-size:15px;line-height:1;margin-bottom:2px">'+(i+1)+'</div>';
+      h+='<div style="font-size:9px;font-weight:600;opacity:0.9">'+grade5Widths[i]+'%</div>';
+      h+='</div>';
+    }
+    h+='</div>';
+    // v10-73: 핀 라벨에 등급 명시
+    h+='<div style="position:absolute;top:-22px;transform:translateX(-50%);text-align:center;z-index:3;left:'+pinPos+'%">';
+    h+='<div style="font-size:10px;font-weight:800;color:white;background:#0d2240;padding:2px 7px;border-radius:3px;white-space:nowrap">'+_mrEsc(nameDisplay)+' '+rankInfo.topPct.toFixed(1)+'% · '+gradeInfo5.grade+'등급</div>';
+    h+='<div style="width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid #0d2240;margin:0 auto;margin-top:2px"></div>';
+    h+='</div>';
+    h+='</div>';
+    h+='<div style="display:flex;justify-content:space-between;font-size:10px;color:#555;font-weight:700;margin-top:6px">';
+    h+='<span>← 잘함</span>';
+    h+='<span style="color:#0d2240;font-weight:600;font-size:10px">학교 학생 '+total+'명의 성적 분포</span>';
+    h+='<span>노력 필요 →</span>';
+    h+='</div>';
+    h+='</div>';
+
+    h+='</div>';   // 시각화 박스 끝
+
+    // 안내 노트
+    h+='<div style="margin-top:14px;padding:9px 12px;background:#fff8f0;border-left:3px solid #c41e3a;font-size:10px;color:#444;line-height:1.55;border-radius:0 4px 4px 0">';
+    h+='<b style="color:#c41e3a">※ 추정 안내</b><br>';
+    h+='학교 등수와 등급은 <b>학교알리미 공시 분포로 정규분포 가정 통계 추정값</b>이며, 등급은 <b>고교 내신 5등급제 기준</b>입니다. 실제 학교 성적과 차이가 있을 수 있어 참고용으로 활용해주세요. 학원 내 등수와 학교 추정 등수는 모집단이 달라 차이가 발생할 수 있습니다. 매쓰플랫 등급은 매쓰플랫 자체 기준(5등급제)이며 학교 추정 등급과 직접 비교하기 어렵습니다.';
+    h+='</div>';
+
+    // v14-10: 1면 하단 — 성적 추이 + 학원 내 위치 (좌우 2단, 목업 v0-9)
+    var SEC1='font-size:13px;font-weight:800;color:#0d2240;border-left:4px solid #c41e3a;padding-left:9px;margin-bottom:8px;letter-spacing:-0.3px';
+    var GBOX1='border:1.5px solid #e8ecf3;border-radius:10px;padding:11px 12px 8px;background:#fcfdff';
+    var CAP1='font-size:8.5px;color:#94a3b8;text-align:center;margin-top:5px;font-weight:600';
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">';
+    // 좌: 성적 추이
+    h+='<div><div style="'+SEC1+'">■ 성적 추이</div>';
+    if(trendPts.length>=2){
+      h+='<div style="'+GBOX1+'">'+lumenGraphs.trend({points:trendPts,w:330,h:172});
+      var pA=trendPts[trendPts.length-2], pB=trendPts[trendPts.length-1];
+      var chips='';
+      var dScore=Math.round((pB.score-pA.score)*10)/10;
+      chips+='<span style="font-size:9px;font-weight:800;border-radius:20px;padding:3px 8px;background:'+(dScore>=0?'#f0fdf4;color:#15803d':'#fef2f2;color:#dc2626')+'">'+(dScore>=0?'+':'')+dScore+'점 '+(dScore>=0?'▲':'▼')+'</span>';
+      var gA=Math.round((pA.score-pA.mean)*10)/10, gB=Math.round((pB.score-pB.mean)*10)/10;
+      chips+='<span style="font-size:9px;font-weight:800;border-radius:20px;padding:3px 8px;background:#eff6ff;color:#1d6fe8">평균 격차 '+(gA>=0?'+':'')+gA+' → '+(gB>=0?'+':'')+gB+'</span>';
+      h+='<div style="display:flex;gap:5px;justify-content:center;margin-top:4px;flex-wrap:wrap">'+chips+'</div>';
+      h+='<div style="'+CAP1+'">같은 학교 저장 성적표에서 자동 연결</div></div>';
+    }else{
+      h+='<div style="'+GBOX1+';display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;text-align:center;color:#64748b">';
+      h+='<div style="font-size:26px;margin-bottom:8px">🌱</div>';
+      h+='<div style="font-size:12px;font-weight:800;color:#475569">첫 기록이에요</div>';
+      h+='<div style="font-size:10px;margin-top:4px;line-height:1.6">다음 시험부터 성장 그래프가<br>이 자리에 그려집니다</div></div>';
+    }
+    h+='</div>';
+    // 우: 학원 내 위치 (히스토그램)
+    h+='<div><div style="'+SEC1+'">■ 학원 내 위치 — 같은 시험</div>';
+    if(folderScores.length>=2){
+      h+='<div style="'+GBOX1+'">'+lumenGraphs.histo({scores:folderScores,me:{name:nameDisplay,score:score!=null?score:parseFloat(s.studentScore)},w:330,h:176});
+      var avgTxt=String(s.academyMean||'').trim();
+      if(!avgTxt){ var sum=0; folderScores.forEach(function(v){sum+=v;}); avgTxt=String(Math.round(sum/folderScores.length*10)/10); }
+      h+='<div style="'+CAP1+'">같은 시험 학원생 '+folderScores.length+'명 · 학원평균 '+_mrEsc(avgTxt)+'점'+(aR&&aT?' · 학원 내 '+_mrEsc(aR)+'등':'')+'</div></div>';
+    }else{
+      h+='<div style="'+GBOX1+';display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;text-align:center;color:#64748b">';
+      h+='<div style="font-size:26px;margin-bottom:8px">🏫</div>';
+      h+='<div style="font-size:12px;font-weight:800;color:#475569">함께 본 친구가 아직 없어요</div>';
+      h+='<div style="font-size:10px;margin-top:4px;line-height:1.6">같은 시험 성적표가 2개 이상 저장되면<br>학원 분포가 그려집니다</div></div>';
+    }
+    h+='</div>';
+    h+='</div>';
+
+    // v14-10: 학부모 피드백은 2면 하단으로 이동 (_mrPage2HTML)
+  } else {
+    h+='<div style="margin:24px 0;padding:30px;background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;text-align:center;color:#64748b">';
+    h+='<div style="font-size:32px;margin-bottom:8px">📝</div>';
+    h+='<div style="font-size:14px;font-weight:700;color:#475569;margin-bottom:4px">왼쪽 입력란을 채워주세요</div>';
+    h+='<div style="font-size:11px">학생 점수 · 학교 평균 · 표준편차 · 전교생 수가 필요합니다</div>';
+    h+='</div>';
+  }
+
+  // 푸터
+  h+='<div style="margin-top:20px;padding-top:12px;border-top:2px solid #0d2240;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#666">';
+  h+='<div style="flex:1">';
+  h+='<div style="font-weight:800;color:#0d2240;font-size:13px">루멘수학</div>';
+  h+='<div style="margin-top:2px">발행일: '+_mrEsc(dateDisplay)+' · 1 / 2</div>';
+  h+='<div style="margin-top:2px;font-size:10px;color:#888">The secret of education lies in respecting the pupil</div>';
+  h+='</div>';
+  h+='<div style="flex-shrink:0"><img src="data:image/jpeg;base64,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" alt="루멘수학" style="width:64px;height:64px;display:block;border-radius:6px"></div>';
+  h+='</div>';
+
+  h+='</div>';   // 1면 끝
+  // v14-10: 2면 (문항 분석) 연결
+  h+=_mrPage2HTML(s, {nameDisplay:nameDisplay, examDisplay:examDisplay, evalDisp:evalDisp});
+  return h;
+}
+
+/* ═══════════════ v2-54: 🧾 기출 다시풀기 + 내 기출성적표 ═══════════════
+   기출모의 자동 채점(lumen_store 'mockexam_auto', 새벽 수집기)에서 내 문항별 O/X를 읽어
+   ① 틀린 문항을 다시 푼 종이를 사진으로 올리고(열림)
+   ② 내 성적표(학원앱 기출모의 탭의 성적표와 동일 렌더러)를 본다.
+   ③ 📖 풀이(해설집) 보기는 코드만 넣고 미오픈 — 서버 스위치 'haesol_student_open'({open:true})가
+      켜져야 보인다 (2026-08-31 원장님 지시). 켜지면 「재풀이 제출한 문항만」 열린다.
+   재풀이 저장: lumen_store 'haesol_retry_<코드>' = { code,name,grade, items:{ '<examId>|<번호>': {photo,at} } }
+   사진: photos 버킷 <코드>/<코드>_<시각>_retry<번호>.jpg (플래너와 같은 자동 압축) */
+var RT={ loaded:false, all:[], mine:[], subs:{}, open:false, cat:null, mockExams:[],
+         view:'list', repKey:null, target:null, busy:false, bodyCache:{} };
+
+async function rtLoad(force){
+  if(RT.loaded&&!force) return;
+  if(isTest||!sb||!studentInfo||!studentInfo.lumen_rec_code){ RT.loaded=true; RT.mine=[]; return; }
+  var code=studentInfo.lumen_rec_code;
+  try{
+    var keys=['mockexam_auto','haesol_retry_'+code,'haesol_student_open','school_dist_db','mock_exams','mock_reports','lumen_haesol_catalog','retry_open'];
+    var r=await sb.from('lumen_store').select('key,value').in('key',keys);
+    var st={};
+    (r.data||[]).forEach(function(row){ var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } } st[row.key]=v; });
+    RT.all=((st['mockexam_auto']&&st['mockexam_auto'].items)||[]);
+    /* ★ v2-59: 선생님이 「학생앱 공개」로 켠 기출만 보여 준다 (2026-09-01 원장 지시).
+     * 예전에 본 기출까지 전부 뜨면 지금 풀어야 할 것이 묻힌다.
+     * retry_open = { exams:{ <examId>:true }, all:false } — 설정이 아예 없으면(옛 상태) 전부 보인다. */
+    var ro=st['retry_open']||null;
+    RT.openCfg=ro;
+    RT.mine=RT.all.filter(function(x){
+      if(String(x.student_code||'')!==String(code)) return false;
+      if(!(x.per||[]).length) return false;
+      if(ro&&ro.exams&&!ro.all){ return !!ro.exams[String(x.examId)]; }
+      return true;
+    });
+    RT.mine.sort(function(a,b){ return String(b.solvedAt||'').localeCompare(String(a.solvedAt||'')); });
+    RT.subs=((st['haesol_retry_'+code]||{}).items)||{};
+    RT.open=!!(st['haesol_student_open']&&st['haesol_student_open'].open);
+    RT.cat=st['lumen_haesol_catalog']||{items:[]};
+    RT.mockExams=st['mock_exams']||[];
+    schoolDistDb=st['school_dist_db']||[];
+    mockReports=st['mock_reports']||[];
+  }catch(e){ console.error('[기출 다시풀기] 로드 실패:',e); }
+  RT.loaded=true;
+}
+
+function rtRegOf(it){ return (RT.mockExams||[]).find(function(m){ return m.autoKey===it.key; })||null; }
+function rtScoreOf(it){
+  var g=rtRegOf(it);
+  if(g&&g.score!=null&&!isNaN(parseFloat(g.score))) return parseFloat(g.score);
+  return (it.autoScore!=null)?it.autoScore:null;
+}
+function rtWrong(it){ return (it.per||[]).filter(function(p){ return p.r==='X'; }); }
+function rtKey(it,seq){ return String(it.examId!=null?it.examId:it.key)+'|'+seq; }
+function rtGradeStr(m){ return ((m&&m.level)==='고'?'고':'중')+String((m&&m.grade)||''); }
+function rtExamTitle(it){
+  var m=it.meta||{};
+  return (m.school||'')+' '+rtGradeStr(m)+' · '+(m.year?m.year+' ':'')+(m.semester?m.semester+'학기 ':'')+String(m.term||'').replace('고사','');
+}
+function rtSchoolGuess(m){
+  var nm=(m&&m.school)||''; if(!nm) return '';
+  var tok=nm.replace(/학교$/,'').replace(/중$|고$/,'');
+  var names={}; (schoolDistDb||[]).forEach(function(d){ if(d.school) names[d.school]=1; });
+  var hit=Object.keys(names).find(function(s){ var t=s.replace(/학교$/,'').replace(/중$|고$/,''); return t&&tok&&(t.indexOf(tok)===0||tok.indexOf(t)===0); });
+  return hit||nm;
+}
+
+/* ── 성적표 계산 (학원앱 _maPreviewRec의 학생판 — 서술형 화면 입력 대신 등록 점수 사용) ── */
+function rtAvgRates(examId){
+  var per={}, m={};
+  RT.all.forEach(function(x){
+    if(x.examId!==examId) return;
+    (x.per||[]).forEach(function(pb){
+      if(pb.essay) return;
+      if(!per[pb.seq]) per[pb.seq]={o:0,t:0};
+      if(pb.r==='O'){ per[pb.seq].o++; per[pb.seq].t++; }
+      else if(pb.r==='X'||pb.r==='?'){ per[pb.seq].t++; }
+    });
+  });
+  Object.keys(per).forEach(function(k){ var v=per[k]; if(v.t) m[k]=Math.round(v.o/v.t*100); });
+  return m;
+}
+function rtDiffRates(it){
+  var bands={'하':[0,0],'중하':[0,0],'중':[0,0],'상':[0,0],'최상':[0,0]};
+  var name=function(d){ if(d==null) return null; if(d<=2)return '하'; if(d===3)return '중하'; if(d===4)return '중'; if(d===5)return '상'; return '최상'; };
+  var any=false;
+  (it.per||[]).forEach(function(pb){
+    if(pb.essay) return; var b=name(pb.diff); if(!b) return;
+    if(pb.r==='O'){ bands[b][0]++; bands[b][1]++; any=true; }
+    else if(pb.r==='X'||pb.r==='?'){ bands[b][1]++; any=true; }
+  });
+  if(!any) return null;
+  var out={}; Object.keys(bands).forEach(function(k){ out[k]=bands[k][1]?Math.round(bands[k][0]/bands[k][1]*100):0; });
+  return out;
+}
+function rtItems(it){
+  var avg=rtAvgRates(it.examId);
+  var rows=(it.per||[]).filter(function(pb){ return !pb.essay&&(pb.r==='O'||pb.r==='X'||pb.r==='?'); })
+    .map(function(pb){ return { no:pb.seq, name:(pb.chapter||'').replace(/^\d+\s*/,''), correct:pb.r==='O', avgRate:avg[pb.seq]!=null?avg[pb.seq]:null }; });
+  return rows.length?rows:null;
+}
+function rtUnitRates(it){
+  var m={};
+  (it.per||[]).forEach(function(pb){
+    if(pb.essay) return; var u=(pb.unit||'').replace(/^\d+\s*/,''); if(!u) return;
+    if(!m[u]) m[u]=[0,0];
+    if(pb.r==='O'){ m[u][0]++; m[u][1]++; }
+    else if(pb.r==='X'||pb.r==='?'){ m[u][1]++; }
+  });
+  var out=Object.keys(m).filter(function(u){ return m[u][1]>0; })
+    .map(function(u){ return { name:u, rate:Math.round(m[u][0]/m[u][1]*100), n:m[u][1] }; });
+  return out.length?out:null;
+}
+function rtGoodWeak(it){
+  var avg=rtAvgRates(it.examId);
+  var good=[], weak=[];
+  (it.per||[]).forEach(function(pb){
+    if(pb.essay||avg[pb.seq]==null) return;
+    var nm=(pb.chapter||'').replace(/^\d+\s*/,''); if(!nm) return;
+    if(pb.r==='O'&&avg[pb.seq]<=60) good.push({no:pb.seq,name:nm,rate:avg[pb.seq]});
+    if((pb.r==='X'||pb.r==='?')&&avg[pb.seq]>=70) weak.push({no:pb.seq,name:nm,rate:avg[pb.seq]});
+  });
+  good.sort(function(a,b){ return a.rate-b.rate; });
+  weak.sort(function(a,b){ return b.rate-a.rate; });
+  return { good: good.slice(0,3).map(function(x){ return {no:x.no,name:x.name}; }),
+           weak: weak.slice(0,3).map(function(x){ return {no:x.no,name:x.name}; }) };
+}
+function rtRecOf(it){
+  var m=it.meta||{};
+  var reg=rtRegOf(it);
+  var school=(reg&&reg.sourceSchool)||rtSchoolGuess(m);
+  var grade=rtGradeStr(m);
+  var dist=findDistMatch(school, grade, m.semester?m.semester+'학기':'', m.term||'', m.year);
+  var peers=RT.all.filter(function(x){ return x.examId===it.examId; })
+    .map(function(x){ return { key:x.key, score:rtScoreOf(x)||0 }; });
+  peers.sort(function(a,b){ return b.score-a.score; });
+  var myScore=(peers.find(function(p){ return p.key===it.key; })||{}).score||0;
+  var rank=peers.filter(function(p){ return p.score>myScore+0.001; }).length+1;
+  var mean=peers.length?Math.round(peers.reduce(function(t,p){ return t+p.score; },0)/peers.length*10)/10:'';
+  var ad=(dist&&dist.achievementDist)||{};
+  var sc=rtScoreOf(it);
+  var gw=rtGoodWeak(it);
+  return {
+    studentName:(studentInfo&&studentInfo.name)||it.student_name||'', school:school||'', grade:grade||'중1',
+    examYear:m.year?String(m.year):'',
+    semester:(m.semester?m.semester+'학기':'1학기'), examType:m.term||'중간고사',
+    examDate:(it.solvedAt||'').slice(0,10),
+    studentScore:sc!=null?String(sc):'',
+    schoolMean:dist&&dist.mean!=null?String(dist.mean):'', schoolSd:dist&&dist.sd!=null?String(dist.sd):'',
+    totalStudents:(dist&&dist.totalStudents!=null)?String(dist.totalStudents):'',
+    distA:ad.A!=null?String(ad.A):'', distB:ad.B!=null?String(ad.B):'', distC:ad.C!=null?String(ad.C):'',
+    distD:ad.D!=null?String(ad.D):'', distE:ad.E!=null?String(ad.E):'',
+    academyRank:String(rank||''), academyTotal:String(peers.length||''), academyMean:String(mean||''),
+    showRef:true,
+    customTitle:(m.year?m.year+'학년도 ':'')+(m.semester?m.semester+'학기 ':'')+(m.term||'')+' (기출 모의) 성적표',
+    diffRates:rtDiffRates(it), items:rtItems(it), unitRates:rtUnitRates(it),
+    goodTypes:gw.good, weakTypes:gw.weak
+  };
+}
+
+/* ── 해설집 매칭 (미오픈 — RT.open일 때만 쓰인다) ── */
+function rtMatchBook(it){
+  var m=it.meta||{}; var items=(RT.cat&&RT.cat.items)||[];
+  var g=rtGradeStr(m);
+  var tm=/기말/.test(m.term||'')?'기말':'중간';
+  var ms=String(m.school||'').replace(/학교$/,'');
+  var hit=null;
+  items.forEach(function(b){
+    if(hit) return;
+    var bs=String(b.school||'').replace(/학교$/,'');
+    if(!(bs&&ms&&(bs.indexOf(ms)===0||ms.indexOf(bs)===0))) return;
+    if(String(b.grade||'').indexOf(g)!==0) return;
+    var bt=String(b.term||'');
+    if(bt.indexOf(String(m.year||''))<0) return;
+    if(m.semester&&bt.indexOf(String(m.semester)+'학기')<0) return;
+    if(bt.indexOf(tm)<0) return;
+    hit=b;
+  });
+  return hit;
+}
+function rtBookHasQ(book,seq){ return !!(book&&(book.qs||[]).some(function(q){ return q.no===seq; })); }
+
+/* ── 홈 배너 ── */
+window.rtHomeUpdate=async function(){
+  var bn=document.getElementById('rtbn'); if(!bn) return;
+  if(isTest||!studentInfo||!sb){ bn.style.display='none'; return; }
+  await rtLoad();
+  if(!RT.mine.length){ bn.style.display='none'; return; }
+  var wrongTot=0, subTot=0;
+  RT.mine.forEach(function(it){ rtWrong(it).forEach(function(p){ wrongTot++; if(RT.subs[rtKey(it,p.seq)]) subTot++; }); });
+  bn.style.display='';
+  var dd=document.getElementById('rtbn-dd'), t2=document.getElementById('rtbn-t2');
+  if(dd) dd.textContent = wrongTot?('틀린 '+wrongTot+'문항'):'전부 정답!';
+  if(t2) t2.textContent = wrongTot
+    ? (subTot?('재풀이 '+subTot+' / '+wrongTot+' 제출 — 계속 가보자!'):'틀린 문제를 다시 풀어서 올려 보자!')
+    : (rtExamTitle(RT.mine[0])+' · 내 성적표 보기');
+};
+
+/* ── 화면 ── */
+window.rtInit=async function(){
+  RT.view='list'; RT.repKey=null;
+  var body=document.getElementById('rt-body');
+  if(isTest){ body.innerHTML='<div class="sp3-empty"><div class="e1">🧪</div><div class="e2">테스트 모드에서는 볼 수 없어요</div></div>'; return; }
+  if(!studentInfo||!studentInfo.lumen_rec_code||!sb){
+    body.innerHTML='<div class="sp3-empty"><div class="e1">🔒</div><div class="e2">로그인이 풀렸어요<br><button onclick="logout()" style="margin-top:10px;padding:9px 18px;border:0;border-radius:9px;background:#6366f1;color:#fff;font-size:14px;font-weight:700">다시 로그인하기</button></div></div>';
+    return;
+  }
+  await rtLoad(true);
+  rtRender();
+};
+window.rtBack=function(){ RT.view='list'; RT.repKey=null; rtRender(); };
+window.rtLockMsg=function(){ toast('🔒 풀이는 아직 열리지 않았어요 — 선생님이 여는 날 알려줄게요'); };
+window.rtOpenReport=function(itKey){ RT.view='report'; RT.repKey=itKey; rtRender(); };
+
+function rtRender(){
+  var body=document.getElementById('rt-body'); if(!body) return;
+  if(RT.view==='report'){ rtRenderReport(body); return; }
+  var h='';
+  if(!RT.mine.length){
+    body.innerHTML='<div class="sp3-empty"><div class="e1">🧾</div><div class="e2">아직 기출모의 기록이 없어요<br><span style="font-size:12px;font-weight:600;color:#94a3b8">학원에서 기출모의를 보면 여기에 떠요</span></div></div>';
+    return;
+  }
+  RT.mine.forEach(function(it){
+    var per=(it.per||[]), wrong=rtWrong(it);
+    var right=per.filter(function(p){ return p.r==='O'; }).length;
+    var graded=per.filter(function(p){ return p.r==='O'||p.r==='X'; }).length;
+    var sc=rtScoreOf(it), reg=rtRegOf(it);
+    var subN=wrong.filter(function(p){ return RT.subs[rtKey(it,p.seq)]; }).length;
+    var book=RT.open?rtMatchBook(it):null;
+
+    h+='<div style="background:#fff;border-radius:16px;padding:15px 15px 13px;margin-bottom:12px;box-shadow:0 2px 8px rgba(13,34,64,.06)">';
+    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+    h+='<span style="font-size:15px;font-weight:900;color:#0d2240">'+_mrEsc(rtExamTitle(it))+'</span>';
+    if(sc!=null) h+='<span style="background:#eef2ff;color:#4338ca;border-radius:50px;padding:3px 11px;font-size:12px;font-weight:900">'+sc+'점'+((!reg&&(it.essayMax||0)>0)?' <span style="font-weight:700;opacity:.7">(서술형 제외)</span>':'')+'</span>';
+    h+='</div>';
+    h+='<div style="font-size:12px;color:#64748b;font-weight:700;margin-top:4px">'+right+' / '+graded+' 맞음'
+      +(wrong.length?(' · <b style="color:#dc2626">틀린 '+wrong.length+'문항</b>'+(subN?(' · 재풀이 '+subN+' 제출'):'')):' · 🎉 전부 정답!')
+      +((it.solvedAt||'')?(' · '+String(it.solvedAt).slice(0,10)):'')+'</div>';
+    h+='<button onclick="rtOpenReport(\''+_mrEsc(it.key)+'\')" style="margin-top:10px;width:100%;padding:11px;border:0;border-radius:11px;background:linear-gradient(135deg,#312e81,#6366f1);color:#fff;font-size:13.5px;font-weight:900;font-family:inherit;cursor:pointer">🧾 내 성적표 보기</button>';
+
+    if(wrong.length){
+      h+='<div style="font-size:12px;font-weight:900;color:#0d2240;margin:13px 0 7px">틀린 문항 — 다시 풀어서 📸 올리기</div>';
+      wrong.forEach(function(p){
+        var key=rtKey(it,p.seq), sub=RT.subs[key];
+        var nm=(p.chapter||p.unit||'').replace(/^\d+\s*/,'');
+        h+='<div style="border:1.5px solid '+(sub?'#86efac':'#e6eaf1')+';border-radius:12px;padding:10px 12px;margin-bottom:7px'+(sub?';background:#f0fdf4':'')+'">';
+        h+='<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">';
+        h+='<span style="font-size:14.5px;font-weight:900;color:'+(sub?'#16a34a':'#dc2626')+'">'+p.seq+'번</span>';
+        if(nm) h+='<span style="font-size:12px;font-weight:800;color:#334155">'+_mrEsc(nm)+'</span>';
+        if(p.sc) h+='<span style="font-size:10.5px;font-weight:900;color:#94a3b8">'+p.sc+'점</span>';
+        if((p.diff||0)>=5) h+='<span style="background:#fef3c7;color:#a16207;border-radius:50px;padding:2px 8px;font-size:10px;font-weight:900">어려움</span>';
+        h+='</div>';
+        if(sub) h+='<div style="font-size:11px;font-weight:700;color:#15803d;margin-top:3px">✅ '+String(sub.at||'').slice(5,10).replace('-','/')+' 제출 — 선생님이 확인하실 거예요</div>';
+        h+='<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">';
+        h+='<button onclick="rtPickOpen(\''+_mrEsc(it.key)+'\','+p.seq+')" '+(RT.busy?'disabled ':'')+'style="padding:8px 13px;border:0;border-radius:9px;background:'+(sub?'#fff':'#6366f1')+';color:'+(sub?'#6366f1':'#fff')+';'+(sub?'border:1.5px solid #c7d2fe;':'')+'font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer">📸 '+(sub?'다시 올리기':'재풀이 올리기')+'</button>';
+        if(RT.open&&book&&rtBookHasQ(book,p.seq)){
+          if(sub) h+='<button onclick="shsShow(\''+_mrEsc(it.key)+'\','+p.seq+')" style="padding:8px 13px;border:0;border-radius:9px;background:#0d2240;color:#fff;font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer">📖 풀이 보기</button>';
+          else h+='<button onclick="toast(\'📸 재풀이를 먼저 제출하면 풀이가 열려요\')" style="padding:8px 13px;border:1.5px solid #e6eaf1;border-radius:9px;background:#f7f9fd;color:#94a3b8;font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer">🔒 제출하면 풀이 열림</button>';
+        } else {
+          h+='<button onclick="rtLockMsg()" style="padding:8px 13px;border:1.5px solid #e6eaf1;border-radius:9px;background:#f7f9fd;color:#94a3b8;font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer">🔒 풀이 보기</button>';
+        }
+        h+='</div></div>';
+      });
+      if(!RT.open) h+='<div style="border:1.5px dashed #e6eaf1;border-radius:11px;padding:11px 12px;font-size:11.5px;font-weight:700;color:#94a3b8;text-align:center;background:#f8fafc">🔒 풀이는 아직 열리지 않았어요 · 열리는 날 알려드릴게요</div>';
+    }
+    h+='</div>';
+  });
+  body.innerHTML=h;
+}
+
+/* ── 내 성적표 — 학원앱과 같은 성적표를 폰 폭에 맞춰 축소 표시 ── */
+function rtRenderReport(body){
+  var it=RT.mine.find(function(x){ return x.key===RT.repKey; });
+  if(!it){ rtBack(); return; }
+  var h='<div style="display:flex;align-items:center;gap:8px;margin-bottom:11px">'
+    +'<button onclick="rtBack()" style="padding:7px 13px;border:1.5px solid #e6eaf1;border-radius:9px;background:#fff;color:#5b6b82;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer">← 목록</button>'
+    +'<span style="font-size:13.5px;font-weight:900;color:#0d2240">🧾 내 성적표</span></div>';
+  try{
+    if(typeof lumenMobileReport!=='function') throw new Error('모바일 성적표 파일을 불러오지 못했어요');
+    h+=lumenMobileReport(rtRecOf(it), { per:(it.per||[]) });
+  }
+  catch(e){ body.innerHTML='<div class="sp3-empty"><div class="e1">⚠️</div><div class="e2">성적표 생성 실패<br>'+_mrEsc(e.message||e)+'</div></div>'; return; }
+  body.innerHTML=h;
+}
+
+/* ── 재풀이 사진 제출 ── */
+window.rtPickOpen=function(itKey,seq){
+  if(RT.busy) return;
+  RT.target={ itKey:itKey, seq:seq };
+  document.getElementById('rt-file').click();
+};
+window.rtPick=async function(input){
+  var f=input.files&&input.files[0]; input.value='';
+  if(!f||!RT.target) return;
+  var it=RT.mine.find(function(x){ return x.key===RT.target.itKey; });
+  if(!it||!studentInfo||!sb){ RT.target=null; return; }
+  var seq=RT.target.seq;
+  RT.busy=true; rtRender();
+  try{
+    var blob; try{ blob=await resizePlannerImage(f,1600,0.85); }catch(e){ blob=f; }
+    var code=studentInfo.lumen_rec_code, now=new Date();
+    var stamp=now.getFullYear()+('0'+(now.getMonth()+1)).slice(-2)+('0'+now.getDate()).slice(-2)+'_'+('0'+now.getHours()).slice(-2)+('0'+now.getMinutes()).slice(-2);
+    var path=code+'/'+code+'_'+stamp+'_retry'+seq+'.jpg';
+    var up=await sb.storage.from('photos').upload(path, blob, { contentType:'image/jpeg', upsert:true });
+    if(up.error) throw up.error;
+    RT.subs[rtKey(it,seq)]={ photo:path, at:new Date().toISOString(), examId:it.examId, seq:seq, exam:rtExamTitle(it) };
+    var r=await sb.from('lumen_store').upsert({ key:'haesol_retry_'+code,
+      value:{ code:code, name:studentInfo.name||'', grade:studentInfo.grade||'', items:RT.subs, updated:new Date().toISOString() } });
+    if(r.error) throw r.error;
+    toast('🎉 '+seq+'번 재풀이 제출 완료!');
+  }catch(e){ alert('제출 실패: '+(e&&e.message||e)); }
+  RT.busy=false; RT.target=null;
+  rtRender();
+  if(window.rtHomeUpdate) rtHomeUpdate();
+};
+
+/* ── 📖 풀이 보기 (미오픈 — RT.open일 때만 도달 가능) ── */
+window.shsInit=function(){};
+window.shsShow=async function(itKey,seq){
+  if(!RT.open){ rtLockMsg(); return; }
+  var it=RT.mine.find(function(x){ return x.key===itKey; }); if(!it) return;
+  var book=rtMatchBook(it);
+  if(!book){ toast('이 시험의 해설집이 아직 없어요'); return; }
+  if(!RT.subs[rtKey(it,seq)]){ toast('📸 재풀이를 먼저 제출하면 풀이가 열려요'); return; }
+  go('screen-haesol');
+  var el=document.getElementById('shs-body');
+  el.innerHTML='<div class="sp3-empty"><div class="e1">⏳</div><div class="e2">풀이 불러오는 중...</div></div>';
+  try{
+    var bd=RT.bodyCache[book.code];
+    if(!bd){
+      var r=await sb.from('lumen_store').select('value').eq('key','haesol_body_'+book.code);
+      bd=r.data&&r.data[0]&&r.data[0].value;
+      if(typeof bd==='string'){ try{ bd=JSON.parse(bd); }catch(e){ bd=null; } }
+      if(!bd||!bd.items) throw new Error('해설 본문을 찾지 못했어요');
+      RT.bodyCache[book.code]=bd;
+    }
+    var sec=bd.items&&bd.items[seq];
+    if(!sec) throw new Error(seq+'번 해설이 아직 없어요');
+    var doc='<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'+(bd.head||'')+'</head><body><div class="wrap">'+sec+'</div></body></html>';
+    el.innerHTML='<div style="font-size:13px;font-weight:900;color:#0d2240;margin-bottom:8px">📖 '+_mrEsc(book.title||book.code)+' · <span style="color:#1d6fe8">'+seq+'번</span></div>'
+      +'<iframe id="shs-frame" style="width:100%;height:76vh;border:1px solid #e6eaf1;border-radius:12px;background:#fff"></iframe>';
+    document.getElementById('shs-frame').srcdoc=doc;
+  }catch(e){
+    el.innerHTML='<div class="sp3-empty"><div class="e1">⚠️</div><div class="e2">'+_mrEsc(e&&e.message||e)+'</div></div>';
+  }
+};
+
 
 </script>
 </body>
