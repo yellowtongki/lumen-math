@@ -26,9 +26,14 @@ function lumenMobileReport(rec, opts){
     var t=1/(1+0.2316419*Math.abs(z));
     var d=0.3989423*Math.exp(-z*z/2);
     var p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));
+    /* ⚠️ upper 는 「상위 비율」이라 0~1 사이의 소수다(예: 0.246 = 상위 24.6%).
+     * 퍼센트 숫자가 아니다 — 등수를 낼 때 100으로 또 나누면 안 된다.
+     * (2026-09-02 버그 수정: 291명 중 상위 24.6%가 「약 1등」으로 나왔다.
+     *  291×0.246÷100 = 0.7 → Math.max(1,…) 때문에 1등으로 보였던 것.
+     *  맞는 계산은 291×0.246 = 71.6 → 약 72등이다.) */
     var upper=(z>0)?p:(1-p);
     topPct=Math.round(upper*1000)/10;
-    if(!isNaN(totalN)&&totalN>0) rank=Math.max(1,Math.round(totalN*upper/100));
+    if(!isNaN(totalN)&&totalN>0) rank=Math.max(1,Math.round(totalN*upper));
   }
   /* 5등급제 — 상위 누적 10/34/66/90% 컷 (두 앱이 쓰는 규칙과 같다) */
   var g5=null;
