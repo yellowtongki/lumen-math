@@ -42,6 +42,16 @@ const sbH = () => ({ apikey: SB_KEY, authorization: 'Bearer ' + SB_KEY, 'content
 const log = (...a) => console.log('[레이스]', ...a);
 
 /* 난이도 → 기본 점수 (맞히면 ×2) */
+/* ── 미리보기 모드 (2026-09-02) ────────────────────────────────────
+ * `node sync/race_engine.js --dry`        아무것도 저장하지 않고 계산만 한다
+ * `node sync/race_engine.js --dry --buff` 버프를 강제로 켜서 「켜면 어떻게 되나」를 본다
+ *
+ * ★ 왜 필요한가 — 버프를 켜기 전에 결과를 미리 보려고 계산기를 따로 짜면
+ *   규칙이 어긋나 엉뚱한 숫자가 나온다(실제로 한 번 그랬다). 진짜 엔진을
+ *   그대로 돌리되 저장만 막는 것이 유일하게 믿을 수 있는 방법이다. */
+const DRY  = process.argv.includes('--dry');
+const FBUF = process.argv.includes('--buff');
+
 const LV_PT = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 4 };
 const ptOf = (level, result) => {
   const base = LV_PT[Number(level)] || 2;          // 난이도 미상은 '중' 취급
@@ -97,6 +107,7 @@ async function kvGet(key) {
   } catch (e) { return null; }
 }
 async function kvSet(key, value) {
+  if (DRY) { log(`[미리보기] ${key} — 저장하지 않았습니다`); return; }
   const r = await fetch(`${SB_URL}/rest/v1/lumen_store?on_conflict=key`, {
     method: 'POST',
     headers: { ...sbH(), Prefer: 'resolution=merge-duplicates' },
@@ -252,8 +263,9 @@ async function runRace() {
   log(`기간 ${season.from}~${season.to} · 채점기록 ${recs.length}건`);
 
   /* 🔥 집중 버프 설정 — 시즌에 켜져 있을 때만 (기본 꺼짐) */
-  const buffOn = !!(season.buff && season.buff.on);
+  const buffOn = !!(season.buff && season.buff.on) || FBUF;
   const buffMax = Number((season.buff || {}).max) || 0.4;
+  if (FBUF && !(season.buff && season.buff.on)) log('🔎 --buff : 시즌 스위치는 꺼져 있지만 켠 셈 치고 계산합니다');
   const plan = buffOn ? await loadPlanner() : {};
   if (buffOn) log(`🔥 집중 버프 켜짐 (최대 ×${(1 + buffMax).toFixed(2)}) · 플래너 있는 학생 ${Object.keys(plan).length}명`);
 
@@ -455,6 +467,8 @@ async function runRace() {
     }
   }
 
+  if (DRY) dryReport(board);
+
   await kvSet('race_board', board);
   await kvSet('race_watch', watch);
 
@@ -463,6 +477,36 @@ async function runRace() {
     `${BN[b]} ${board[b].length}명 · 1위 ${board[b][0] ? board[b][0].pts + '점' : '-'}`).join(' / ');
   log(`완료: ${brief}${board.ended ? ` · 시즌 종료 ${board.endedDays}일째` : ''}${watch.items.length ? ` · 확인필요 ${watch.items.length}명` : ''}`);
   return board;
+}
+
+/* ── 미리보기 표 ──────────────────────────────────────────────────
+ * 버프를 켜면 누가 얼마나 벌고 순위가 어떻게 움직이는지 한눈에 본다.
+ * 이름은 순위표에 이미 가려진 값(옥○○)을 그대로 쓴다. */
+function dryReport(board) {
+  const BN = { elem: '초등부', mid: '중등부', high: '고등부' };
+  const pad = (v, n) => String(v).padStart(n);
+  let tb = 0, tg = 0, tm = 0, tn = 0;
+  ['elem', 'mid', 'high'].forEach((band) => {
+    const rows = board[band]; if (!rows || !rows.length) return;
+    const hasBuff = rows.some((r) => Number(r.bonus || 0) > 0);
+    console.log(`\n── ${BN[band]} ${rows.length}명 ${hasBuff ? '' : '(버프 없음)'} ──`);
+    /* 버프가 없었다면 몇 등이었을까 — base 로 다시 줄 세워 비교한다 */
+    const byBase = rows.slice().sort((a, b) => Number(b.base || b.pts) - Number(a.base || a.pts));
+    const rk0 = {}; byBase.forEach((r, i) => { rk0[r.code] = i + 1; });
+    console.log('순위  학생        원점수 →  버프후   보너스  플래너  순위변동');
+    rows.forEach((r) => {
+      const base = Number(r.base != null ? r.base : r.pts);
+      const bon = Number(r.bonus || 0);
+      const mv = rk0[r.code] - r.rank;
+      tb += base; tg += bon; tn += 1; if (bon > 0) tm += 1;
+      console.log(`${pad(r.rank, 3)}   ${String(r.nm || '').padEnd(9)}${pad(base, 6)} → ${pad(r.pts, 6)}`
+        + `  ${pad('+' + bon, 6)}  ${pad((r.pdays || 0) + '일', 5)}   `
+        + (mv > 0 ? `▲${mv}` : (mv < 0 ? `▼${-mv}` : '－')));
+    });
+  });
+  console.log(`\n합계: ${tn}명 중 ${tm}명이 버프를 받음 · 원점수 ${tb.toLocaleString()} → `
+    + `${(tb + tg).toLocaleString()} (총 +${tg.toLocaleString()}점, ${tb ? Math.round(tg / tb * 100) : 0}%)`);
+  console.log('※ 미리보기입니다 — 순위표에 저장하지 않았습니다.\n');
 }
 
 module.exports = { runRace, ptOf, tierOf, DEF_TIERS };
