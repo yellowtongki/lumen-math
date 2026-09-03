@@ -226,6 +226,24 @@ async function loadPlanner() {
   return out;
 }
 
+/* ── ⚔️ 보스 레이드 — 학생이 고른 직업 ────────────────────────
+ * 학생앱이 raid_job_<학생코드> 에 { job:'warrior' } 로 적어 둔다.
+ * 학생마다 키가 따로라 여러 명이 동시에 골라도 서로 덮어쓰지 않는다. */
+async function loadRaidJobs() {
+  const out = {};
+  try {
+    const rows = await sbAll('lumen_store?key=like.raid_job_*&select=key,value');
+    rows.forEach((row) => {
+      const code = String(row.key || '').replace('raid_job_', '');
+      let v = row.value;
+      if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+      const j = v && v.job;
+      if (code && j) out[code] = String(j);
+    });
+  } catch (e) { log('직업 읽기 실패(기본값으로 진행):', e.message); }
+  return out;
+}
+
 /* ── 리그 판정 ───────────────────────────────────────────────
  * 각 리그를 III → II → I 로 3등분. 마지막(마스터)은 단일 등급.     */
 /* 롤처럼 한 티어 안을 IV·III·II·I 네 칸으로 나눈다 (I 이 가장 높다).
@@ -304,6 +322,14 @@ async function runRace() {
   if (buffOn) log(`🔥 집중 버프 켜짐 (최대 ×${(1 + buffMax).toFixed(2)}) · 플래너 있는 학생 ${Object.keys(plan).length}명`);
 
   /* 학생별 집계 */
+  /* ⚔️ 보스 레이드 — 시즌과 따로, 레이드 시작일부터의 점수만 센다.
+   * (시즌 첫날부터 소급하면 시작하자마자 절반이 깎여 있어 김이 샌다 —
+   *  원장 결정 2026-09-02: 오늘 0에서 시작해 시험일까지) */
+  const raidCfg = season.raid || null;
+  const raidOn = !!(raidCfg && raidCfg.on && raidCfg.from && raidCfg.to);
+  const raidHit = {};    // code → {sum, byDay:{}}
+  if (raidOn) log(`⚔️ 레이드 「${raidCfg.name || ''}」 ${raidCfg.from}~${raidCfg.to} · 체력 ${Number(raidCfg.hp) || 0}`);
+
   const agg = {};   // code → {...}
   // 서버(깃허브)는 UTC로 도니 「오늘」은 +9가 맞다 (이건 진짜 UTC 시계다)
   const todayK = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
@@ -325,6 +351,13 @@ async function runRace() {
     if (lv >= 4) a.hard += 1;
     const d = kstDay(r.score_datetime);
     a.byDay[d] = (a.byDay[d] || 0) + 1;
+    /* 레이드 기간 안이면 보스에게 들어간 피해로도 센다 */
+    if (raidOn && day >= raidCfg.from && day <= raidCfg.to) {
+      const h = raidHit[code] || (raidHit[code] = { sum: 0, byDay: {} });
+      const dmg = raw * mult;
+      h.sum += dmg;
+      h.byDay[day] = (h.byDay[day] || 0) + dmg;
+    }
   });
 
   /* 기간 안의 날짜 목록 (오늘까지) */
@@ -500,6 +533,83 @@ async function runRace() {
       await kvSet('race_history', hist);
       log(`시즌 종료 — 지난 결과로 보관했습니다 (${board.name})`);
     }
+  }
+
+  /* ══ ⚔️ 보스 레이드 순위판 ═════════════════════════════════
+   * 시즌 순위표와 따로 raid_board 에 저장한다. 학생앱은 이것만 읽으면
+   * 보스·체력·어제 피해·앞줄 3명을 다 그릴 수 있다. */
+  if (raidOn) {
+    const jobs = await loadRaidJobs();
+    const wantGr = String(raidCfg.gr || '').trim();      // 예: '중1'
+    const wantSch = String(raidCfg.sch || '').trim();    // 예: '옥길중' (비우면 학년 전체)
+    const mem = Object.keys(info).filter((c) => {
+      const t = info[c];
+      if (wantGr && t.gr !== wantGr) return false;
+      if (wantSch && String(t.sch || '').indexOf(wantSch) !== 0) return false;
+      return true;
+    });
+    /* 어제·이번 주 — 한국 날짜 기준 */
+    const yDay = new Date(Date.now() + 9 * 3600000 - 86400000).toISOString().slice(0, 10);
+    const weekFrom = new Date(Date.now() + 9 * 3600000 - 6 * 86400000).toISOString().slice(0, 10);
+    const rows = mem.map((c) => {
+      const h = raidHit[c] || { sum: 0, byDay: {} };
+      let week = 0;
+      Object.keys(h.byDay).forEach((d) => { if (d >= weekFrom) week += h.byDay[d]; });
+      return {
+        code: c, nm: info[c].nm, gr: info[c].gr, sch: info[c].sch,
+        job: jobs[c] || null,
+        dealt: Math.round(h.sum),
+        week: Math.round(week),
+        y: Math.round(h.byDay[yDay] || 0),
+      };
+    }).sort((a2, b2) => b2.dealt - a2.dealt);
+
+    const hp = Math.max(1, Number(raidCfg.hp) || 45000);
+    const dealt = rows.reduce((x, r) => x + r.dealt, 0);
+    const yest = rows.reduce((x, r) => x + r.y, 0);
+    /* 이번 주 기여 상위 3명이 앞줄에 선다 — 시즌 누적으로 하면 1등이 고정돼
+     * 나머지가 일찍 포기한다(원장 결정 2026-09-02) */
+    const front = rows.slice().sort((a2, b2) => b2.week - a2.week || b2.dealt - a2.dealt)
+      .slice(0, Math.max(0, Number(raidCfg.showNames) || 3)).map((r) => r.code);
+    /* 남은 날 · 지금 속도로 언제 잡히나 */
+    const daysIn = Math.max(1, Math.round((Date.parse(todayK) - Date.parse(raidCfg.from)) / 86400000) + 1);
+    const perDay = dealt / daysIn;
+    const left = Math.max(0, hp - dealt);
+    /* 격파 예상일 — 사흘도 안 쌓였을 때 내놓으면 엉뚱한 날짜가 나온다
+     * (오늘치 채점이 아직 안 끝났으니 하루 평균이 낮게 잡힌다). 나흘째부터 보여 준다. */
+    const etaDays = (daysIn >= 4 && perDay > 0) ? Math.ceil(left / perDay) : null;
+    const eta = etaDays != null
+      ? new Date(Date.parse(todayK) + etaDays * 86400000).toISOString().slice(0, 10) : null;
+    const dday = Math.round((Date.parse(raidCfg.to) - Date.parse(todayK)) / 86400000);
+
+    const raidBoard = {
+      at: new Date().toISOString(),
+      on: true,
+      name: raidCfg.name || '보스 레이드',
+      boss: raidCfg.boss || 'golem',
+      gr: wantGr, sch: wantSch,
+      from: raidCfg.from, to: raidCfg.to, dday,
+      hp, dealt, left, pct: Math.min(100, Math.round(dealt / hp * 1000) / 10),
+      cleared: dealt >= hp,
+      yesterday: yest, perDay: Math.round(perDay), eta, daysIn,
+      showNames: Number(raidCfg.showNames) || 3,
+      front, rows,
+    };
+    await kvSet('raid_board', raidBoard);
+    log(`⚔️ 레이드: ${rows.length}명 · ${dealt.toLocaleString()} / ${hp.toLocaleString()} `
+      + `(${raidBoard.pct}%) · 어제 ${yest.toLocaleString()}`
+      + (eta ? ` · 격파 예상 ${eta}` : '') + (raidBoard.cleared ? ' · 🎉 격파!' : ''));
+    if (DRY) {
+      console.log('\n── ⚔️ 레이드 ──');
+      rows.forEach((r, i) => console.log(
+        `${String(i + 1).padStart(2)}  ${String(r.nm).padEnd(8)}${String(r.dealt).padStart(6)} 피해`
+        + `  (이번 주 ${String(r.week).padStart(5)})  ${front.indexOf(r.code) >= 0 ? '★앞줄' : ''}`
+        + `  ${r.job || '직업 미선택'}`));
+      console.log(`   합계 ${dealt.toLocaleString()} / ${hp.toLocaleString()} = ${raidBoard.pct}%`
+        + (eta ? ` · 격파 예상 ${eta}` : ''));
+    }
+  } else if (season.raid && season.raid.on === false) {
+    await kvSet('raid_board', { at: new Date().toISOString(), on: false });
   }
 
   if (DRY) dryReport(board);
