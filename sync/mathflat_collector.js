@@ -492,6 +492,15 @@ async function runMonthly() {
   log(`로그인 성공 · 학원 ${me.academyId}`);
   const students = await getActiveStudents();
   const byName = {}; students.forEach((s) => { byName[s.name] = s; });
+  /* ★ 학습코드 사전 — 색인에 code를 함께 남겨야 학부모앱이 「우리 아이 것」만 골라 보여줄 수 있다.
+   * (예전 색인은 name 문자열뿐이라 학부모앱에서 짝을 지을 수 없었다) */
+  const codeByName = {};
+  try {
+    const db = (await storeGet('or_studentdb')) || [];
+    (Array.isArray(db) ? db : []).forEach((st2) => {
+      if (st2 && st2.name && st2.lumen_rec_code) codeByName[String(st2.name).trim()] = String(st2.lumen_rec_code);
+    });
+  } catch (_) { /* 등록부를 못 읽어도 수집 자체는 계속한다 */ }
 
   const results = [];
   for (const it of items) {
@@ -514,6 +523,8 @@ async function runMonthly() {
     const ok = await storageUpload(rel, buf, 'application/pdf');
     results.push({
       name: it.name, ok, path: ok ? rel : null, why: ok ? '' : '업로드 실패',
+      code: it.code || codeByName[String(it.name).trim()] || '',
+      sid: String(st.id),
       reportId: rep.id, totalScore: rep.totalScore, totalTier: rep.totalTier,
     });
     log(`  · ${it.name}: ${ok ? '저장 완료 (' + Math.round(buf.length / 1024) + 'KB, ' + (rep.totalScore ?? '-') + '점)' : '업로드 실패'}`);
@@ -526,7 +537,9 @@ async function runMonthly() {
     files[ym] = files[ym] || { files: [] };
     okR.forEach((r) => {
       files[ym].files = (files[ym].files || []).filter((f) => f.path !== r.path);
-      files[ym].files.push({ name: `${r.name}_${ym}.pdf`, path: r.path, at: new Date().toISOString(), score: r.totalScore, tier: r.totalTier });
+      files[ym].files.push({ name: `${r.name}_${ym}.pdf`, path: r.path, at: new Date().toISOString(),
+        stu: r.name, code: r.code || '', sid: r.sid || '',   /* ★ 학부모앱이 짝을 짓는 열쇠 */
+        score: r.totalScore, tier: r.totalTier });
     });
     await storeSet('mf_report_files', files);
   }
