@@ -178,13 +178,6 @@ button{font-family:inherit;cursor:pointer}
 .rcp.blk .peek{color:#94a3b8}
 .rcp .sub{font-size:11.5px;font-weight:700;color:#94a3b8;margin-bottom:11px}
 .rcp .pz{background:linear-gradient(135deg,#fff7e6,#fdf0d0);border:1px solid #f7dfa8;border-radius:11px;padding:9px 12px;font-size:12.5px;font-weight:800;color:#8a5a00;margin-bottom:12px}
-/* v1-33: 상금을 크게 (원장님 지시) — 학부모님도 무엇이 걸린 도전인지 바로 아시게 */
-.rcp .prize{background:linear-gradient(135deg,#fffdf5,#fff4d6);border:2px solid #f2cd85;border-radius:14px;padding:13px 14px 12px;text-align:center;margin-bottom:12px;box-shadow:0 2px 10px rgba(180,120,20,.13)}
-.rcp .prize .lb{font-size:11.5px;font-weight:900;color:#a35a00;letter-spacing:.5px}
-.rcp .prize .amt{font-size:32px;font-weight:900;line-height:1.06;margin:3px 0 1px;color:#c2410c}
-.rcp .prize .amt small{font-size:18px;font-weight:900;margin-left:1px}
-.rcp .prize .who{font-size:12px;font-weight:800;color:#8a5a00;margin-top:3px}
-.rcp .prize .who b{color:#c2410c}
 .rcp .my{display:flex;gap:7px;margin-bottom:12px}
 .rcp .my .s{flex:1;background:#f4f7fb;border-radius:11px;padding:9px 6px;text-align:center}
 .rcp .my .s b{display:block;font-size:18px;font-weight:900;color:#0d2240;line-height:1.2}
@@ -589,7 +582,7 @@ function db(){ if(!sb && window.supabase) sb = window.supabase.createClient(SUPA
 
 /* ★ v1-29: 화면에 보이는 버전을 한 곳(PAR_VER)에서만 가져온다.
  * 예전에는 <title>에 손으로 적어 두어 v1-18에 멈춰 있었다. */
-var PAR_VER = 'v1-34';
+var PAR_VER = 'v1-32';
 window.PAR_VER = PAR_VER;
 try{ document.title = '루멘수학 학부모 ' + PAR_VER; }catch(e){}
 
@@ -622,11 +615,11 @@ async function loadAll(code){
     P.st=st; P.code=code;
     localStorage.setItem('lumen_parent_code', code);
     // 발행 리포트 메타 + 매쓰플랫 진도 (병렬)
-    var q1=c.from('lumen_store').select('key,value').in('key',['pub_reports_'+code,'typeach_pub_'+code,'compass_pub_'+code,'typeach_stu_'+code,'stuck_'+code,'mf_progress','mf_books','mf_kmm','race_board','black_class','mf_report_files']);
+    var q1=c.from('lumen_store').select('key,value').in('key',['pub_reports_'+code,'typeach_pub_'+code,'compass_pub_'+code,'typeach_stu_'+code,'stuck_'+code,'mf_progress','mf_books','mf_kmm','race_board','black_class']);
     var q2=c.from('mf_students').select('mf_student_id,name,lumen_rec_code');
     var q3=c.storage.from('recordings').list(code, { limit:60, sortBy:{ column:'created_at', order:'desc' } });
     var res=await Promise.all([q1,q2,q3]);
-    P.pub=null; P.prog=null; P.books=null; P.typeach=null; P.compass=null; P.amap=null; P.stuck=null; P.kmm=null; P.race=null; P.raceOpen=false; P.blk=null; P.blkOpen=false; P.mfrep=null;
+    P.pub=null; P.prog=null; P.books=null; P.typeach=null; P.compass=null; P.amap=null; P.stuck=null; P.kmm=null; P.race=null; P.raceOpen=false; P.blk=null; P.blkOpen=false;
     ((res[0].data)||[]).forEach(function(row){
       var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
       if(row.key==='pub_reports_'+code) P.pub=v;
@@ -639,7 +632,6 @@ async function loadAll(code){
       else if(row.key==='mf_kmm') P.kmm=v;               // v1-19: KMM 경시 성적·수상 (수집기 자동)
       else if(row.key==='race_board') P.race=(v&&v.at)?v:null;   // v1-24: 🏁 진도 레이스
       else if(row.key==='black_class') P.blk=(v&&Array.isArray(v.cohorts))?v:null;  // v1-30: 🖤 블랙반
-      else if(row.key==='mf_report_files') P.mfrep=v;   // v1-34: 📊 매쓰플랫 월간 보고서 색인
     });
     P.mfSid=null;
     var mfs=(res[1].data)||[];
@@ -1350,11 +1342,7 @@ function vRace(top){
   h+='<div class="fold">';
   h+='<div class="sub" style="margin-top:9px">'+esc(b.from)+' ~ '+esc(b.to)+' · 시험기간 문제풀이 레이스</div>';
   if(demo) h+='<div class="pz" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#bbf7d0;color:#166534">🌱 <b>초등부는 「체험 리그」</b>입니다 — 시상에서는 빠지고, <b>중학생 형·누나들과 똑같은 잣대</b>로 점수만 쌓습니다</div>';
-  else if(b.prizeTotal) h+='<div class="prize">'
-    +'<div class="lb">🏆 이번 시즌 총상금</div>'
-    +'<div class="amt">'+rcpN(b.prizeTotal)+'<small>원</small></div>'
-    +'<div class="who"><b>'+b.prizeCount+'명</b> 시상 · 1·2·3등 + 꾸준상 + 성장상</div>'
-    +'</div>';
+  else if(b.prizeTotal) h+='<div class="pz">🏆 총상금 '+rcpN(b.prizeTotal)+'원 · '+b.prizeCount+'명 시상 <span style="font-weight:700;opacity:.7">(1·2·3등 + 꾸준상 + 성장상)</span></div>';
   if(me){
     h+='<div style="font-size:12px;font-weight:900;color:#0d2240;margin-bottom:6px">'+esc((P.st&&P.st.name)||'우리 아이')+' 학생의 기록</div>';
     h+='<div class="my">'
@@ -1852,7 +1840,6 @@ function vReport(){
   var h='<div class="pagehd">📋 학습 리포트 <small>발행된 리포트만 표시됩니다</small></div>';
   // v1-20: 과제 완성도(최근 7일)는 「숙제」 탭으로 옮겼다 — 리포트 탭에는 리포트만 둔다.
   //   v1-19에서 숙제 탭을 새로 만들면서 같은 카드가 두 탭에 겹쳐 나오고 있었다.
-  h+=vMonthly();  // v1-34: 📊 매쓰플랫 월간 보고서 (있을 때만)
   h+=vTypeAch(); // v1-5: 유형 성취 리포트 먼저
   setTimeout(pArmRead,0);   // v1-19: 3초 이상 머무를 때만 열람으로 기록
   if(P.pub&&P.pub.url){
@@ -1863,49 +1850,6 @@ function vReport(){
   } else if(!((P.typeach&&P.typeach.list)||[]).length) {
     h+='<div class="empty">아직 발행된 리포트가 없어요.<br>선생님이 발행하면 이곳에서 전체 리포트를<br>날짜별로 넘겨볼 수 있습니다.</div>';
   }
-  return h;
-}
-
-/* ═══ v1-34: 📊 매쓰플랫 월간 보고서 ═══
- * 예전에는 원장님이 매쓰플랫에서 보고서를 만든 뒤 카카오톡으로 링크를 <b>한 집씩</b>
- * 보내야 했다. 이제 새벽 수집기가 PDF를 받아 저장해 두고, 이 칸에서 달별로 쌓아 보여준다.
- * — 카톡으로는 「보고서 올라갔습니다」 한 줄만 보내면 된다.
- * 짝짓기: 색인의 code(학습코드)가 1순위, 옛 색인처럼 code가 없으면 「이름_YYYY-MM.pdf」의
- * 이름으로 맞춘다(동명이인이 없는 학원이라 안전하다). */
-function mfMonthlyList(){
-  var idx=P.mfrep; if(!idx||typeof idx!=='object') return [];
-  var myCode=String(P.code||''), myName=String((P.st&&P.st.name)||'').trim();
-  var out=[];
-  Object.keys(idx).forEach(function(ym){
-    var fl=(idx[ym]&&idx[ym].files)||[];
-    fl.forEach(function(f){
-      if(!f||!f.path) return;
-      var mine=false;
-      if(f.code) mine=(String(f.code)===myCode);
-      else if(myName) mine=(String(f.name||'').indexOf(myName+'_')===0 || String(f.stu||'')===myName);
-      if(mine) out.push({ ym:ym, path:f.path, at:f.at||'', score:f.score, tier:f.tier });
-    });
-  });
-  out.sort(function(a,b){ return String(b.ym).localeCompare(String(a.ym)); });
-  return out;
-}
-function vMonthly(){
-  var ls=mfMonthlyList(); if(!ls.length) return '';
-  var base=(window.SUPA_URL||'https://bhkkkbcytcrlxhrtjgen.supabase.co')+'/storage/v1/object/public/';
-  var h='<div style="background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:14px 16px;margin-bottom:12px">';
-  h+='<div style="font-size:15px;font-weight:900;color:#0d2240;margin-bottom:3px">📊 월간 학습 보고서</div>';
-  h+='<div style="font-size:11.5px;color:#94a3b8;font-weight:700;margin-bottom:10px">한 달 동안의 학습을 정리한 보고서입니다 · 눌러서 열어 보세요</div>';
-  ls.forEach(function(x){
-    var y=String(x.ym).slice(0,4), m=String(x.ym).slice(5,7).replace(/^0/,'');
-    h+='<a href="'+base+esc(x.path)+'" target="_blank" rel="noopener" '
-      +'style="display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #eef2f7;border-radius:12px;margin-bottom:7px;text-decoration:none;background:#fbfdff">'
-      +'<span style="font-size:20px">📄</span>'
-      +'<span style="min-width:0;flex:1"><span style="display:block;font-size:14px;font-weight:900;color:#0d2240">'+esc(y)+'년 '+esc(m)+'월 보고서</span>'
-      +'<span style="display:block;font-size:10.5px;color:#94a3b8;font-weight:700">'
-      +(x.score!=null&&x.score!==''?('총점 '+esc(x.score)+'점 · '):'')+esc(String(x.at||'').slice(0,10).replace(/-/g,'.'))+' 올림</span></span>'
-      +'<span style="font-size:11.5px;font-weight:900;color:#1d6fe8;flex-shrink:0">열기 ›</span></a>';
-  });
-  h+='</div>';
   return h;
 }
 
@@ -2966,21 +2910,8 @@ window.rmParentSync=async function(){
 
 /* ── 시작 ── */
 (function(){
-  /* ★ v1-34: 주소에 코드가 붙어 있으면 바로 들어간다 (예: parent.html?code=ABC123)
-   * 원장님이 카카오톡으로 보내는 안내 링크에 코드를 실어 두면, 학부모가 여섯 자리를
-   * 옮겨 적을 필요 없이 링크 한 번으로 열린다. 한 번 열면 코드가 기기에 저장되므로
-   * 다음부터는 링크 없이 주소만 열어도 된다.
-   * 주소창에 코드가 남지 않도록 확인 후 지운다(가족이 옆에서 보거나 링크를 다시
-   * 공유할 때 코드가 딸려 가지 않게). */
-  var urlCode='';
-  try{
-    var m=String(location.search||'').match(/[?&]code=([A-Za-z0-9]{4,8})/);
-    if(m) urlCode=m[1].toUpperCase();
-    if(urlCode&&history.replaceState) history.replaceState(null,'',location.pathname+location.hash);
-  }catch(e){}
   var saved=localStorage.getItem('lumen_parent_code');
-  var use=urlCode||saved;
-  if(use){ loadAll(use); } else { render(); }
+  if(saved){ loadAll(saved); } else { render(); }
 })();
 </script>
 </body></html>
