@@ -32,6 +32,7 @@
  *   --skip-problems [A] 건너뛰기 (교재 세션만 빠르게)
  *   --skip-history  [B] 건너뛰기 (학습지 문항만)
  *   --out-dir DIR   결과 폴더 (기본 sync/_debug)
+ *   --essay-ws ID,ID|auto  서술형 학습지 채점기준 사전(mf_essay_ws)만 갱신 — 학원앱 「✍️ 서술형 첨삭」용
  *
  * 출력 (개인정보 포함 → 커밋 금지, .gitignore 처리):
  *   {out-dir}/mf_answer_records.json   [A] 문항 단위 학습지 정오답
@@ -302,6 +303,92 @@ async function saveWsTags() {
     });
     log(`학습지 태그(mf_ws_tags): ${Object.keys(cur).length}개 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('학습지 태그 저장 실패(치명적 아님):', e.message); }
+}
+
+/* ═══ 서술형 학습지 채점기준 사전 (--essay-ws) — v18-154 서술형 첨삭 1단계 ═══
+ * 매쓰플랫 서술형 학습지(tag SCHOOL_PREPARE_ESSAY)의 문항별 문제·정답·해설 이미지 주소,
+ * 배점, 답안 칸 종류(STEP 단계형 / DESCRIPTIVE 서술형 / BLANK 빈칸형)와 칸별 정답을
+ * lumen_store 'mf_essay_ws'에 저장한다. 학원앱 「✍️ 서술형 첨삭」이 스캔 답안을 채점할 때
+ * 이 사전을 채점기준으로 쓴다. (2026-09-06 0단계 탐색 결과: 문항·정답·해설·칸 구조는
+ * API로 받을 수 있고, 가채점 점수·AI 첨삭 문장은 API에 없다)
+ *   GET /worksheet/{id}            → 학습지 머리(제목·단원·학년)
+ *   GET /student-worksheet/assign/{swId}/problem → 문항별 essay{essayType,maxScore,slots} (배정본 하나면 충분)
+ *   GET /worksheet/{id}/problem    → 문항(이미지·정답·개념·해설영상) — 배정본이 없을 때 대체
+ * 학생 개인정보는 넣지 않는다(문항 정보만). */
+async function fetchEssayWorksheet(wsId) {
+  const head = await api(`/worksheet/${wsId}`);
+  if (!head) throw new Error('학습지 없음');
+  // 배정본(학생 학습지) 하나를 찾아 essay 구조(배점·칸)를 읽는다 — Supabase 기록에서 swId 조회
+  let swId = null;
+  try {
+    const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+    if (url && key) {
+      const r = await fetch(`${url}/rest/v1/mf_answer_records?worksheet_id=eq.${wsId}&select=student_worksheet_id&limit=1`, { headers: { apikey: key, authorization: `Bearer ${key}` } });
+      const j = r.ok ? await r.json() : [];
+      if (j[0]) swId = j[0].student_worksheet_id;
+    }
+  } catch (_) { /* 없으면 아래 대체 경로 */ }
+  let rows = [];
+  if (swId) {
+    const d = await api(`/student-worksheet/assign/${swId}/problem?size=300`);
+    rows = ((d && d.content) || []).map((c) => ({ p: c.problem, wpId: c.worksheetProblemId, essay: c.essay || null }));
+  }
+  if (!rows.length) {
+    const d = await api(`/worksheet/${wsId}/problem?size=300`);
+    rows = ((d && d.content) || []).map((c) => ({ p: c.problem || c, wpId: c.worksheetProblemId || c.id, essay: c.essay || null }));
+  }
+  const problems = rows.map((r, i) => {
+    const p = r.p || {}; const e = r.essay || {};
+    return {
+      no: i + 1, problemId: p.id, wpId: r.wpId,
+      essayType: e.essayType || (p.type === 'ESSAY' ? 'DESCRIPTIVE' : 'OBJECTIVE'),
+      maxScore: e.maxScore != null ? e.maxScore : null,
+      slots: (e.slots || []).map((s) => ({ tag: s.tag, label: s.label || null, answer: s.answer || null })),
+      answer: p.answer || '', answerUnits: p.answerUnits || [],
+      img: p.problemImageUrl || null, ansImg: p.answerImageUrl || null, solImg: p.solutionImageUrl || null,
+      concept: p.conceptName || '', conceptId: p.conceptId || null, level: p.level || null,
+      answerRate: p.problemSummary ? p.problemSummary.answerRate : null,
+      video: (p.video && p.video.videoUrl) ? p.video.videoUrl : null,
+    };
+  });
+  return {
+    id: wsId, title: head.title || '', titlePrefix: head.titlePrefix || head.titleTag || '', chapter: head.chapter || '',
+    school: head.school || '', grade: head.grade || '', tag: head.tag || head.type || '', problemCount: problems.length,
+    maxTotal: problems.reduce((s, p) => s + (p.maxScore || 0), 0),
+    updated: new Date().toISOString(), problems,
+  };
+}
+async function refreshEssayWorksheets(idsArg) {
+  const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+  const H = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  let ids = String(idsArg || '').split(',').map((s) => s.trim()).filter(Boolean);
+  if (!ids.length || ids[0] === 'auto') {
+    // 태그 사전에서 서술형 학습지 전부
+    const rc = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_tags&select=value`, { headers: H });
+    const j = rc.ok ? await rc.json() : [];
+    const tags = (j[0] && j[0].value && j[0].value.tags) || {};
+    ids = Object.keys(tags).filter((k) => /ESSAY/.test(String(tags[k].tag || tags[k].type || '')));
+    log(`서술형 학습지 자동 선택: ${ids.length}개`);
+  }
+  let cur = {};
+  try {
+    const rc = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_essay_ws&select=value`, { headers: H });
+    if (rc.ok) { const j = await rc.json(); if (j[0] && j[0].value && typeof j[0].value === 'object') cur = j[0].value; }
+  } catch (_) {}
+  let ok = 0;
+  for (const id of ids) {
+    try {
+      const ws = await fetchEssayWorksheet(id);
+      cur[String(id)] = ws; ok++;
+      log(`  ✓ ${id} ${ws.title} · ${ws.problemCount}문항 · ${ws.maxTotal}점 만점 · 칸 ${ws.problems.map((p) => p.essayType[0]).join('')}`);
+    } catch (e) { log(`  ✗ ${id} 실패: ${e.message}`); }
+    await sleep(150);
+  }
+  const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+    method: 'POST', headers: { ...H, prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify([{ key: 'mf_essay_ws', value: cur, updated_at: new Date().toISOString() }]),
+  });
+  log(`서술형 채점기준(mf_essay_ws): ${Object.keys(cur).length}개 학습지 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status} (이번 ${ok}/${ids.length})`);
 }
 
 // ── [B] 학습지+교재 세션 단위 (학생별 학습내역, 시간순) ──
@@ -666,6 +753,15 @@ async function main() {
     const meBk = await login();
     log(`로그인 성공 · 학원 ${meBk.academyId}`);
     await refreshWorkbookPdfs();
+    return;
+  }
+  // --essay-ws <id,id|auto>: 서술형 학습지 채점기준 사전(mf_essay_ws) 갱신 (매쓰플랫 로그인 필요) — v18-154
+  if (has('--essay-ws')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meE = await login();
+    log(`로그인 성공 · 학원 ${meE.academyId}`);
+    await refreshEssayWorksheets(opt('--essay-ws', 'auto'));
     return;
   }
   // --bookans-only: 교재 정답사전만 새로고침 (매쓰플랫 로그인 필요) — v18-74
