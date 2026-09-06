@@ -1,0 +1,523 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>루멘수학 — 질문 리그 · IB 기반 새 기능 미리보기</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:#eef2f8;font-family:"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#0d2240}
+#topbar{position:sticky;top:0;z-index:50;background:#0d2240;color:#fff;padding:11px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;box-shadow:0 3px 14px rgba(13,34,64,.25)}
+#topbar .t{font-size:14px;font-weight:900}
+#topbar .t small{font-weight:600;opacity:.75;margin-left:7px;font-size:11px}
+#topbar .tabs{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+#topbar button{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.1);color:#fff;font-family:inherit;font-size:12px;font-weight:800;border-radius:50px;padding:6px 14px;cursor:pointer}
+#topbar button.on{background:#fff;color:#0d2240;border-color:#fff}
+.pane{display:none}
+.pane.on{display:block}
+#p1,#p2{padding:22px}
+#p1 *{box-sizing:border-box}
+#p1{margin:0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f8;color:#0d2240;padding:22px}
+#p1 .sec{max-width:1080px;margin:0 auto 34px}
+#p1 .sec h2{font-size:17px;margin:0 0 4px}
+#p1 .sec .lead{font-size:12.5px;color:#64748b;margin:0 0 12px;line-height:1.6}
+#p1 .row{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+#p1 .card{background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:16px}
+#p1 .phone{width:372px;background:#fff;border:1px solid #d9dfe9;border-radius:30px;padding:14px 13px 18px;box-shadow:0 14px 34px -18px rgba(13,34,64,.45)}
+#p1 .phone .hd{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:900;margin-bottom:10px}
+#p1 .badge{display:inline-block;font-size:10.5px;font-weight:900;border-radius:50px;padding:3px 10px}
+#p1 .btn{border:none;border-radius:50px;padding:9px 16px;font-size:12.5px;font-weight:900;font-family:inherit;cursor:pointer}
+#p1 .note{font-size:11px;color:#64748b;font-weight:700;background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:10px 13px;margin-top:10px;line-height:1.7}
+#p1 .q{border:1.5px solid #e2e8f0;border-radius:12px;padding:9px 11px;margin-bottom:8px;background:#fbfcfe}
+#p1 .q b{font-size:11px;color:#6d28d9;display:block;margin-bottom:3px}
+#p1 .q .ph{font-size:12.5px;color:#94a3b8}
+#p1 .q .tx{font-size:12.5px;color:#0d2240;line-height:1.55}
+#p1 .meter{display:flex;gap:4px;margin:8px 0 4px}
+#p1 .meter i{flex:1;height:8px;border-radius:5px;background:#e5e9f1}
+#p1 .meter i.on{background:#7c3aed}
+#p1 .chk{font-size:11px;line-height:1.8;color:#475569}
+#p1 .chk .ok{color:#16a34a;font-weight:800}
+#p1 .chk .no{color:#94a3b8}
+#p1 .tier{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#1e1b4b,#4c1d95);color:#fff;border-radius:16px;padding:14px}
+#p1 .tier .big{font-size:30px;font-weight:900;line-height:1}
+#p1 .tier small{font-size:11px;opacity:.85;display:block}
+#p1 .rank{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-size:12.5px;font-weight:700;border:1px solid #eef0f4;margin-bottom:5px}
+#p1 .rank.me{background:#f5f3ff;border-color:#c4b5fd}
+#p1 .rank .n{width:22px;font-weight:900;color:#6d28d9}
+#p1 .rank .pt{margin-left:auto;font-weight:900}
+#p1 .gal{border:1.5px solid #fde68a;background:#fffbeb;border-radius:12px;padding:10px 12px;margin-bottom:7px;font-size:12px;line-height:1.55}
+#p1 .gal b{color:#b45309;font-size:11px;display:block}
+#p1 .crit{display:grid;grid-template-columns:150px 1fr 60px;gap:6px 10px;align-items:center;font-size:12.5px}
+#p1 .crit .k{font-weight:800}
+#p1 .crit .lv{display:flex;gap:4px}
+#p1 .crit .lv span{width:26px;height:24px;border:1px solid #dde3ec;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;color:#94a3b8}
+#p1 .crit .lv span.on{background:#7c3aed;border-color:#7c3aed;color:#fff}
+#p1 .crit .sc{text-align:right;font-weight:900;color:#6d28d9}
+#p1 .coach{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:11px;padding:10px 12px;font-size:12.5px;line-height:1.6;margin-top:10px}
+#p1 .coach b{color:#6d28d9}
+#p1 table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+#p1 table.cmp th,#p1 table.cmp td{border:1px solid #e6eaf1;padding:8px 10px;text-align:left;vertical-align:top;line-height:1.5}
+#p1 table.cmp th{background:#f8fafc;font-size:12px}
+#p1 .tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:#eef2ff;color:#3730a3;margin-right:3px}
+#p1 .spk{border:1px solid #e6eaf1;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+#p1 .bar{height:8px;background:#eef0f5;border-radius:6px;overflow:hidden;margin-top:4px}
+#p1 .bar i{display:block;height:100%;background:#0ea5e9}
+
+#p2 *{box-sizing:border-box}
+#p2{margin:0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f8;color:#0d2240;padding:22px}
+#p2 .sec{max-width:1080px;margin:0 auto 34px}
+#p2 .sec h2{font-size:17px;margin:0 0 4px}
+#p2 .sec .lead{font-size:12.5px;color:#64748b;margin:0 0 12px;line-height:1.6}
+#p2 .row{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+#p2 .card{background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:16px}
+#p2 .phone{width:372px;background:#fff;border:1px solid #d9dfe9;border-radius:30px;padding:14px 13px 18px;box-shadow:0 14px 34px -18px rgba(13,34,64,.45)}
+#p2 .phone .hd{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:900;margin-bottom:10px}
+#p2 .badge{display:inline-block;font-size:10.5px;font-weight:900;border-radius:50px;padding:3px 10px}
+#p2 .btn{border:none;border-radius:50px;padding:9px 16px;font-size:12.5px;font-weight:900;font-family:inherit;cursor:pointer}
+#p2 .note{font-size:11px;color:#64748b;font-weight:700;background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:10px 13px;margin-top:10px;line-height:1.7}
+#p2 .q{border:1.5px solid #e2e8f0;border-radius:12px;padding:9px 11px;margin-bottom:8px;background:#fbfcfe}
+#p2 .q b{font-size:11px;color:#6d28d9;display:block;margin-bottom:3px}
+#p2 .q .tx{font-size:12.5px;color:#0d2240;line-height:1.55}
+#p2 .chip{display:inline-block;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:50px;border:1px solid #dde3ec;background:#fff;margin:2px 3px 2px 0;color:#475569}
+#p2 .chip.on{background:#ede9fe;border-color:#c4b5fd;color:#6d28d9}
+#p2 .chk{font-size:11.5px;line-height:1.9;color:#475569}
+#p2 .chk .ok{color:#16a34a;font-weight:800}
+#p2 .chk .no{color:#94a3b8}
+#p2 .coach{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:11px;padding:10px 12px;font-size:12.5px;line-height:1.6;margin-top:10px}
+#p2 .coach b{color:#6d28d9}
+#p2 table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+#p2 table.cmp th,#p2 table.cmp td{border:1px solid #e6eaf1;padding:8px 10px;text-align:left;vertical-align:top;line-height:1.5}
+#p2 table.cmp th{background:#f8fafc;font-size:12px}
+#p2 .tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:#eef2ff;color:#3730a3;margin-right:3px}
+#p2 .tag.f{background:#f1f5f9;color:#475569}
+#p2 .tag.c{background:#ede9fe;color:#6d28d9}
+#p2 .tag.d{background:#fff7ed;color:#c2410c}
+#p2 .unit{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;border-radius:16px;padding:14px}
+#p2 .unit .soi{font-size:14px;font-weight:900;line-height:1.5;margin:6px 0 8px}
+#p2 .unit small{font-size:10.5px;opacity:.8}
+#p2 .iq{border:1px solid #e6eaf1;border-radius:11px;padding:9px 11px;margin-bottom:7px;font-size:12.5px;line-height:1.5}
+#p2 .iq b{display:block;font-size:10.5px;margin-bottom:2px}
+#p2 .bars{display:flex;flex-direction:column;gap:10px}
+#p2 .bar{display:grid;grid-template-columns:150px 1fr 50px;gap:10px;align-items:center;font-size:12.5px}
+#p2 .bar .k{font-weight:800}
+#p2 .bar .tr{position:relative;height:14px;background:#eef0f5;border-radius:4px}
+#p2 .bar .tr i{position:absolute;left:0;top:0;bottom:0;background:#4f46e5;border-radius:4px 3px 3px 4px}
+#p2 .bar .tr em{position:absolute;top:-4px;width:2px;height:22px;background:#0d2240;opacity:.55}
+#p2 .bar .v{font-weight:900;text-align:right;color:#0d2240}
+#p2 .fb{border-left:4px solid #16a34a;background:#f0fbf4;border-radius:8px;padding:8px 11px;font-size:12.5px;margin-bottom:6px;line-height:1.55}
+#p2 .ff{border-left:4px solid #1d6fe8;background:#eef4ff;border-radius:8px;padding:8px 11px;font-size:12.5px;line-height:1.55}
+#p2 .gr{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;font-size:12.5px;align-items:start}
+#p2 .gr b{color:#c2410c}
+#p2 .step{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #e6eaf1;border-radius:10px;margin-bottom:6px;font-size:12.5px}
+#p2 .step .n{width:22px;height:22px;border-radius:50%;background:#0d2240;color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none}
+#p2 .step.done{background:#f0fbf4;border-color:#bce6cb}
+
+
+/* 좁은 창(우측 패널)에서 표가 뭉개지지 않게 — 표만 가로 스크롤 */
+#p1 .card,#p2 .card{overflow-x:auto}
+#p1 table.cmp,#p2 table.cmp{min-width:620px}
+@media (max-width:760px){
+  #p1,#p2{padding:14px 10px}
+  #p1 .phone,#p2 .phone{width:100%;max-width:372px}
+  #topbar{padding:9px 12px}
+  #topbar .tabs{margin-left:0;width:100%}
+  #topbar button{flex:1;padding:6px 8px;font-size:11.5px}
+}
+</style></head><body>
+<div id="topbar"><span class="t">루멘수학 미리보기<small>상의용 목업 · 실제 앱 아님</small></span>
+<span class="tabs">
+<button id="b1" class="on" onclick="pick(1)">💡 질문 리그 · 말하기 리그</button>
+<button id="b2" onclick="pick(2)">🧭 IB 자료 기반 새 기능</button>
+</span></div>
+<div id="p1" class="pane on">
+
+<!-- ════════ ① 학생앱: 질문 만들기 ════════ -->
+<div class="sec">
+  <h2>① 학생앱 — 아하노트 「질문 만들기」 (한 줄 메모 → 4칸 글쓰기)</h2>
+  <p class="lead">IB의 탐구 질문 쓰기처럼, 질문을 「시도한 것 → 막힌 곳 → 내 생각 → 묻고 싶은 것」 4칸으로 쓰게 합니다. 쓰는 동안 오른쪽 아래 「질문력 미터」가 실시간으로 채워져, 대충 쓰면 미터가 낮게 보입니다(제출은 막지 않음).</p>
+  <div class="row">
+    <div class="phone">
+      <div class="hd">💡 아하노트 <span class="badge" style="background:#ede9fe;color:#6d28d9;margin-left:auto">질문력 미터</span></div>
+      <div style="font-size:11.5px;color:#64748b;margin-bottom:8px">📷 사진 1장 ✓ · 📚 쎈 중2-1 · p.87 · 12번 · ⚠️ 관련개념부족</div>
+      <div class="q"><b>1️⃣ 여기까지는 했어요 (시도한 것)</b><div class="tx">일차함수 식을 y=2x+b로 놓고 (1,3)을 대입해서 b=1까지 구했어요.</div></div>
+      <div class="q"><b>2️⃣ 여기서 막혔어요 (정확한 지점)</b><div class="tx">그 다음에 x절편을 구하라는데, y=0을 넣는 건지 x=0을 넣는 건지 헷갈려요.</div></div>
+      <div class="q"><b>3️⃣ 내 생각엔… (가설)</b><div class="tx">절편이 x축이랑 만나는 점이니까 y가 0일 것 같은데, 답지는 −1/2인데 저는 1이 나와요.</div></div>
+      <div class="q"><b>4️⃣ 묻고 싶은 것 (한 문장 질문)</b><div class="tx">x절편을 구할 때 왜 y=0을 대입하는지, 그리고 제 계산에서 어디가 틀렸는지 알고 싶어요.</div></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="font-size:11px;font-weight:800;color:#6d28d9">질문력</span><div class="meter" style="flex:1;margin:0"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><span style="font-size:12px;font-weight:900;color:#6d28d9">8 / 10</span></div>
+      <div class="chk"><span class="ok">✓ 시도한 것이 있어요</span> · <span class="ok">✓ 막힌 줄이 보여요</span> · <span class="ok">✓ 내 생각을 썼어요</span> · <span class="ok">✓ 「왜」가 들어간 질문</span> · <span class="no">○ 해결 후 「알게 된 것」은 나중에</span></div>
+      <button class="btn" style="width:100%;background:#7c3aed;color:#fff;margin-top:8px">질문 보내기</button>
+      <div class="note" style="margin-top:8px">대충 쓰면? — 「답이 안 나와요」 한 줄만 쓰면 질문력 2/10로 보내집니다. 막지는 않지만 리그 점수는 그만큼만 쌓입니다.</div>
+    </div>
+    <div class="card" style="flex:1;min-width:300px">
+      <b style="font-size:13.5px">질문력 채점 기준 5개 (각 0·1·2점 = 10점 만점)</b>
+      <div style="font-size:12px;color:#64748b;margin:4px 0 10px">IB의 「기준별 채점(criterion-based)」을 흉내 냈습니다. 각 기준은 <b>있다/부족/없다</b> 3단계라 AI도 원장님도 판단이 빠릅니다.</div>
+      <table class="cmp">
+        <tr><th style="width:110px">기준</th><th>2점</th><th>1점</th><th>0점</th></tr>
+        <tr><td><b>① 시도</b></td><td>어디까지 풀었는지 식·값이 보임</td><td>「풀어봤는데」 정도</td><td>없음</td></tr>
+        <tr><td><b>② 막힌 지점</b></td><td>어느 단계·어느 줄인지 특정</td><td>대략적</td><td>「모르겠어요」</td></tr>
+        <tr><td><b>③ 내 생각</b></td><td>가설·예상값·답지와 비교</td><td>느낌만</td><td>없음</td></tr>
+        <tr><td><b>④ 질문 문장</b></td><td>「왜/어떻게/차이」가 든 답할 수 있는 한 문장</td><td>막연한 질문</td><td>질문 문장 없음</td></tr>
+        <tr><td><b>⑤ 되돌아보기</b></td><td>해결 후 「알게 된 것」 한 줄 + 재풀이 제출</td><td>재풀이만</td><td>없음</td></tr>
+      </table>
+      <div class="coach">⑤는 IB의 <b>reflection(성찰)</b>에 해당합니다. 질문을 잘 쓰는 것으로 끝나지 않고, 힌트 받고 다시 푼 뒤 <b>「내가 몰랐던 건 ○○였다」</b> 한 줄을 적어야 만점이 됩니다. 이 한 줄이 나중에 <b>학생별 오답 노트 요약</b>이 됩니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ② 학원앱: 질문 채점 검토 ════════ -->
+<div class="sec">
+  <h2>② 학원앱 — 질문 채점 검토 (아하노트 카드 안, 힌트 발송과 같은 자리)</h2>
+  <p class="lead">Haiku가 4칸 글을 읽고 5기준 점수 초안을 매깁니다. 원장님은 칸을 눌러 고치고 「한 줄 코치」를 확인한 뒤 힌트와 함께 보냅니다. 힌트 발송 흐름(초안 → 승인 → 발송)을 그대로 씁니다.</p>
+  <div class="card" style="max-width:720px">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><b style="font-size:15px">김하늘 · 쎈 중2-1 p.87 12번</b><span class="badge" style="background:#ede9fe;color:#6d28d9">AI 초안 8/10</span><span class="badge" style="background:#fff7ea;color:#b45309">검토 대기</span><span style="margin-left:auto;font-size:11px;color:#64748b">작성 2분 · 4칸 모두 채움</span></div>
+    <div class="crit">
+      <span class="k">① 시도</span><span class="lv"><span>0</span><span>1</span><span class="on">2</span></span><span class="sc">2</span>
+      <span class="k">② 막힌 지점</span><span class="lv"><span>0</span><span>1</span><span class="on">2</span></span><span class="sc">2</span>
+      <span class="k">③ 내 생각</span><span class="lv"><span>0</span><span>1</span><span class="on">2</span></span><span class="sc">2</span>
+      <span class="k">④ 질문 문장</span><span class="lv"><span>0</span><span>1</span><span class="on">2</span></span><span class="sc">2</span>
+      <span class="k">⑤ 되돌아보기</span><span class="lv"><span class="on">0</span><span>1</span><span>2</span></span><span class="sc">0 <small style="color:#94a3b8;font-weight:600">해결 후</small></span>
+    </div>
+    <div class="coach"><b>한 줄 코치(학생에게 감):</b> 「막힌 줄을 정확히 짚었고 답지 값과 비교한 게 좋아요. 다음엔 y=0을 넣은 계산식까지 써 주면 어디서 틀렸는지 바로 보여요.」 <span style="color:#94a3b8">✏️ 수정</span></div>
+    <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn" style="background:#7c3aed;color:#fff">💡 힌트 + 점수 함께 발송</button>
+      <button class="btn" style="background:#fff;border:1px solid #e2e8f0">⭐ 수업 공통질문으로 채택 (+2)</button>
+      <button class="btn" style="background:#fff;border:1px solid #e2e8f0">🏆 이번 주 베스트 질문 후보</button>
+    </div>
+    <div class="note">⭐ 채택: 이미 있는 「공통 질문」(v18-151)과 연결 — 수업에서 다룰 질문으로 뽑히면 보너스. 잘 쓴 질문이 반 전체에 도움이 된다는 것을 학생이 느끼게 하는 장치입니다.</div>
+  </div>
+</div>
+
+<!-- ════════ ③ 학생앱: 질문 리그 ════════ -->
+<div class="sec">
+  <h2>③ 학생앱 — 💡 질문 리그 (진도 레이스와 같은 카드 문법)</h2>
+  <p class="lead">「많이」가 아니라 「잘」 쓴 학생이 올라가도록 점수를 <b>질문력 평균 × 인정 개수(상한)</b>로 설계합니다. 이름은 레이스처럼 성+○○, 상위 N명만 공개. 아래 A·B·C안 중 고르시면 됩니다.</p>
+  <div class="row">
+    <div class="phone">
+      <div class="hd">💡 질문 리그 <span class="badge" style="background:#ede9fe;color:#6d28d9;margin-left:auto">시즌 9월</span></div>
+      <div class="tier"><div><div class="big">🔎 탐구자 Ⅱ</div><small>질문력 평균 7.8 · 인정 질문 11개 · 리그 점수 86</small></div><div style="margin-left:auto;text-align:right"><div style="font-size:22px;font-weight:900">4위</div><small>중등부 18명</small></div></div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">🏆 이번 주 베스트 질문</div>
+      <div class="gal"><b>박○○ · 개념원리 p.132 · 질문력 10</b>「이차방정식 근의 공식에서 판별식이 0일 때 중근이라고 하는데, 그래프로는 왜 x축에 ‘닿기만’ 하는 건지 알고 싶어요. 제 생각엔…」</div>
+      <div class="gal"><b>김○○(나) · 쎈 p.87 · 질문력 9 ⭐채택</b>「x절편을 구할 때 왜 y=0을 대입하는지…」</div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">🏅 중등부 순위</div>
+      <div class="rank"><span class="n">1</span>박○○ <span class="tag">탐구자 Ⅰ</span><span class="pt">112</span></div>
+      <div class="rank"><span class="n">2</span>이○○ <span class="tag">탐구자 Ⅰ</span><span class="pt">98</span></div>
+      <div class="rank"><span class="n">3</span>최○○ <span class="tag">탐구자 Ⅱ</span><span class="pt">91</span></div>
+      <div class="rank me"><span class="n">4</span>김○○ (나) <span class="tag">탐구자 Ⅱ</span><span class="pt">86</span></div>
+      <div style="font-size:10.5px;color:#94a3b8;margin-top:4px">6위부터는 본인에게만 보입니다</div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">📏 점수 쌓이는 법</div>
+      <div class="chk">• 질문 1개 = 질문력(0~10) 그대로<br>• 하루 최대 2개까지만 인정 → 양보다 질<br>• ⭐ 수업 채택 +2 · 🏆 베스트 +3<br>• 되돌아보기(⑤)까지 써야 만점</div>
+    </div>
+    <div class="card" style="flex:1;min-width:320px">
+      <b style="font-size:13.5px">점수 규칙 3안</b>
+      <table class="cmp" style="margin-top:8px">
+        <tr><th style="width:80px">안</th><th>규칙</th><th>장점</th><th>주의</th></tr>
+        <tr><td><b>A 합산+상한</b><br><span class="tag">추천</span></td><td>질문력 합계, 하루 2개·주 8개까지만 인정</td><td>레이스와 같은 문법이라 직관적. 꾸준함도 반영</td><td>상한 안에서는 여전히 개수가 유리 → 질문력 5 미만은 0점 처리로 보완</td></tr>
+        <tr><td><b>B 베스트 5 평균</b></td><td>시즌 중 가장 잘 쓴 5개의 평균 × 10</td><td>양 경쟁이 완전히 사라짐. 한 번이라도 제대로 쓰면 올라감</td><td>5개 채운 뒤엔 동기 약함 → 「갱신」 알림 필요</td></tr>
+        <tr><td><b>C 등급 사다리</b></td><td>질문력 평균으로 등급(질문자→탐구자→연구자→학자), 승급 조건에 최소 개수</td><td>레이스 티어와 통일감, 강등 없음</td><td>순위표가 없어 경쟁 자극은 약함 → A와 병행 가능</td></tr>
+      </table>
+      <div class="coach"><b>제안:</b> A안 점수판 + C안 등급을 같이 씁니다(레이스도 점수+티어 두 겹). 등급 이름은 IB 학습자상(learner profile)에서 따 <b>질문자(Inquirer) → 탐구자 → 사고자(Thinker) → 성찰자(Reflective)</b> 처럼 붙일 수 있습니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ④ 말하기 리그 ════════ -->
+<div class="sec">
+  <h2>④ 학생앱 — 🎙 말하기 리그 (하브루타 녹음을 같은 방식으로)</h2>
+  <p class="lead">지금 녹음은 STT·AI 피드백까지 만들어지지만 학생에게 돌아가지 않고 점수도 없습니다. STT 텍스트를 5기준으로 채점해 「말하기력」을 만들고, 피드백 요약을 학생앱으로 돌려보냅니다. 오늘의 주제(rec_topics)가 있으면 「주제 적중」 기준을 추가.</p>
+  <div class="row">
+    <div class="phone">
+      <div class="hd">🎙 말하기 리그 <span class="badge" style="background:#e0f2fe;color:#0369a1;margin-left:auto">이번 주</span></div>
+      <div class="tier" style="background:linear-gradient(135deg,#0c4a6e,#0284c7)"><div><div class="big">🗣 설명가 Ⅲ</div><small>말하기력 평균 6.9 · 이번 주 2회 · 🔥 3주 연속</small></div><div style="margin-left:auto;text-align:right"><div style="font-size:22px;font-weight:900">7위</div><small>중등부</small></div></div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">📼 9/5 「일차함수의 기울기」 · 2분 40초</div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>정확성 (틀린 말 없음)</span><span>2/2</span></div><div class="bar"><i style="width:100%"></i></div></div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>왜? (근거·이유 말하기)</span><span>1/2</span></div><div class="bar"><i style="width:50%"></i></div><div style="font-size:11px;color:#64748b;margin-top:4px">「기울기는 y 증가량/x 증가량」까지는 좋았어요. <b>왜</b> 그렇게 정의하는지 한 문장이 빠졌어요.</div></div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>순서 (정의→예→주의점)</span><span>2/2</span></div><div class="bar"><i style="width:100%"></i></div></div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>내 말로 (용어를 풀어서)</span><span>1/2</span></div><div class="bar"><i style="width:50%"></i></div></div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>질문 던지기 (듣는 사람에게)</span><span>1/2</span></div><div class="bar"><i style="width:50%"></i></div><div style="font-size:11px;color:#64748b;margin-top:4px">하브루타답게 끝에 「그럼 기울기가 음수면 어떻게 될까?」 같은 질문 하나!</div></div>
+      <div class="coach" style="background:#f0f9ff;border-color:#bae6fd"><b style="color:#0369a1">정수쌤 한마디</b> 개념 순서가 깔끔합니다. 다음 녹음에서는 「왜」를 한 번, 마지막에 질문을 하나 넣어 보세요. → 예상 말하기력 9</div>
+    </div>
+    <div class="card" style="flex:1;min-width:320px">
+      <b style="font-size:13.5px">두 리그를 한 판으로 — 「탐구 리그」</b>
+      <div style="font-size:12.5px;line-height:1.7;color:#334155;margin-top:6px">IB에서 배우는 순환은 <b>묻기(inquiry) → 해보기(action) → 되돌아보기(reflection)</b>입니다. 우리 학원 도구에 그대로 대응됩니다.</div>
+      <table class="cmp" style="margin-top:8px">
+        <tr><th>IB 단계</th><th>루멘 도구</th><th>점수</th></tr>
+        <tr><td>묻기</td><td>💡 아하노트 질문 4칸</td><td>질문력 0~10</td></tr>
+        <tr><td>해보기</td><td>🔁 재풀이 제출 · 매쓰플랫 재복습(mf_answer_records로 자동 확인)</td><td>되돌아보기 기준 ⑤</td></tr>
+        <tr><td>되돌아보기·말하기</td><td>🎙 하브루타 녹음 「내가 배운 것을 설명」</td><td>말하기력 0~10</td></tr>
+      </table>
+      <div class="coach"><b>확장 아이디어</b><br>• 질문한 문제를 <b>녹음 주제로 자동 추천</b>: 「p.87 12번, 이제 설명할 수 있어요?」 → 질문–해결–설명이 한 문제에서 완결되면 <b>「완결 보너스」</b><br>• <b>질문 갤러리</b>: 베스트 질문을 학생앱·학원 벽면 인쇄로 전시 → 잘 쓴 질문의 모양을 보고 배움<br>• <b>학부모 리포트</b>에 「질문력·말하기력 추이」 그래프 한 칸<br>• 짝 하브루타: A가 설명 녹음 → B가 그 녹음 듣고 질문 녹음(2단계에서)<br>• 원장님이 채점을 다 못 하는 날: AI 초안 점수를 「임시」로 학생에게 먼저 보여주고, 승인되면 확정 표시(발행 센터의 도장 문법)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ⑥ 스스로 해결 ════════ -->
+<div class="sec">
+  <h2>⑥ 「쓰다 보니 알았어요」 — 스스로 해결에 가장 큰 점수</h2>
+  <p class="lead">질문을 제대로 쓰는 과정 자체가 생각을 정리해 줍니다. 그래서 쓰다가 스스로 푼 순간이 진짜 「아하」이고, IB에서 말하는 메타인지(내 생각을 들여다보기)의 증거입니다. 해결을 <b>어떤 경로로 했는가</b>에 따라 점수를 다르게 줍니다. 힌트를 적게 쓰고 풀수록 높게.</p>
+  <div class="row">
+    <div class="phone">
+      <div class="hd">💡 아하노트 <span class="badge" style="background:#fef3c7;color:#b45309;margin-left:auto">질문력 8 / 10</span></div>
+      <div style="font-size:11.5px;color:#64748b;margin-bottom:8px">쎈 중2-1 · p.87 · 12번 · 4칸 작성 완료</div>
+      <div style="border:1.5px solid #fbbf24;background:#fffbeb;border-radius:14px;padding:12px">
+        <div style="font-size:13px;font-weight:900;color:#b45309">🙋 쓰다 보니 알았어요!</div>
+        <div style="font-size:11.5px;color:#92400e;margin:3px 0 9px;line-height:1.5">질문을 쓰면서 스스로 풀렸다면 여기서 바로 끝낼 수 있어요. 스스로 해결은 <b>해결 보너스 +4</b>(가장 큼).</div>
+        <div class="q" style="background:#fff"><b style="color:#b45309">어떻게 풀렸나요? (한두 문장)</b><div class="tx">「막힌 곳」을 쓰다가 x절편은 x축 위의 점이니까 y=0이라는 걸 알았어요. 제가 x=0을 넣어서 1이 나온 거였어요. y=0 넣으니 −1/2.</div></div>
+        <div class="q" style="background:#fff"><b style="color:#b45309">재풀이 사진</b><div style="display:flex;gap:6px"><div style="width:52px;height:64px;border-radius:7px;background:#e2e8f0"></div><div style="width:52px;height:64px;border:1.5px dashed #cbd5e1;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:18px">+</div></div></div>
+        <div class="q" style="background:#fff"><b style="color:#b45309">내가 몰랐던 것 한 줄 (되돌아보기)</b><div class="tx">절편은 「어느 축 위의 점인가」를 먼저 정하고 그 축이 아닌 좌표를 0으로 놓는다.</div></div>
+        <div style="font-size:11px;color:#16a34a;font-weight:800;margin:4px 0 8px">✓ 정답 −1/2 · 정답사전과 일치 → 선생님 확인만 남았어요</div>
+        <button class="btn" style="width:100%;background:#f59e0b;color:#fff">🙋 스스로 해결로 보내기 (예상 8 + 4 + 2 = 14)</button>
+      </div>
+      <div style="text-align:center;font-size:11px;color:#94a3b8;margin:8px 0 4px">— 아니면 —</div>
+      <button class="btn" style="width:100%;background:#7c3aed;color:#fff">💡 그래도 모르겠어요 · 힌트 요청</button>
+      <div class="note" style="margin-top:8px">힌트로 풀어도 점수를 받으니 「물어보면 손해」가 되지 않게 합니다. 다만 힌트를 하나만 열고 풀면 두 개 연 것보다 높습니다.</div>
+    </div>
+    <div class="card" style="flex:1;min-width:320px">
+      <b style="font-size:13.5px">해결 경로별 보너스 (질문력 0~10에 더해짐)</b>
+      <table class="cmp" style="margin-top:8px">
+        <tr><th style="width:170px">어떻게 해결했나</th><th style="width:70px">보너스</th><th>확인 방법</th></tr>
+        <tr style="background:#fffbeb"><td><b>🙋 쓰다가 스스로</b> (힌트 받기 전)</td><td><b>+4</b></td><td>재풀이 사진 + 「어떻게 풀렸나」 설명 + 정답사전 자동 대조 + 원장 확인</td></tr>
+        <tr><td>💡 힌트 1개만 열고</td><td>+3</td><td>학생앱이 연 힌트 단계를 기록(지금은 기기에만 저장 → 서버로 옮김)</td></tr>
+        <tr><td>💡 힌트 2개</td><td>+2</td><td>같음</td></tr>
+        <tr><td>💡 힌트 3개 / ✍️ 손풀이 보고</td><td>+1</td><td>같음</td></tr>
+        <tr><td>수업에서 설명 듣고 / 미해결</td><td>0</td><td>재풀이 없음</td></tr>
+        <tr><td>+ 되돌아보기 한 줄</td><td>+2</td><td>기준 ⑤ 그대로(어느 경로든)</td></tr>
+        <tr><td>+ 🎙 그 문제를 녹음으로 설명</td><td>+2</td><td>말하기 리그와 연결(완결 보너스)</td></tr>
+      </table>
+      <div class="coach"><b>왜 이렇게 나누나:</b> 「스스로 해결」만 크게 주면 아이들이 질문을 안 하고 억지로 스스로 했다고 할 수 있습니다. 그래서 ① 힌트 경로도 점수를 주고 ② 스스로 해결은 <b>정답 대조 + 설명 + 원장 확인</b> 세 겹으로 검증합니다. 재풀이 사진이 정답사전(교재 정답)과 안 맞으면 자동으로 「힌트 요청」으로 돌립니다.</div>
+      <div class="coach" style="background:#f0fdf4;border-color:#bbf7d0"><b style="color:#15803d">학부모에게 보이는 숫자:</b> 「자기해결률」 = 질문 중 스스로 푼 비율. 성적보다 앞서 움직이는 지표라 리포트에 한 줄로 넣기 좋습니다. (예: 8월 20% → 9월 45%)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ⑦ 학원앱 확인 + 리그 반영 ════════ -->
+<div class="sec">
+  <h2>⑦ 학원앱 확인 카드 · 리그에서 보이는 모습</h2>
+  <p class="lead">원장님은 「스스로 해결」 카드를 확인만 하면 됩니다(힌트 만들 필요 없음). 잘 쓴 「어떻게 풀렸나」는 다른 학생에게도 힌트가 되므로 갤러리에 올릴 수 있습니다.</p>
+  <div class="row">
+    <div class="card" style="flex:1;min-width:340px">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;flex-wrap:wrap"><b style="font-size:15px">김하늘 · 쎈 중2-1 p.87 12번</b><span class="badge" style="background:#fef3c7;color:#b45309">🙋 스스로 해결</span><span class="badge" style="background:#eafaf0;color:#16a34a">정답 일치 ✓ (−1/2)</span><span style="margin-left:auto;font-size:11px;color:#64748b">질문 작성 6분 뒤 해결</span></div>
+      <div class="q"><b>학생이 쓴 「어떻게 풀렸나」</b><div class="tx">「막힌 곳」을 쓰다가 x절편은 x축 위의 점이니까 y=0이라는 걸 알았어요. 제가 x=0을 넣어서 1이 나온 거였어요.</div></div>
+      <div class="q"><b>되돌아보기</b><div class="tx">절편은 「어느 축 위의 점인가」를 먼저 정하고 그 축이 아닌 좌표를 0으로 놓는다.</div></div>
+      <div style="display:flex;gap:8px;align-items:center;margin:8px 0"><div style="width:70px;height:90px;border-radius:8px;background:#e2e8f0"></div><div style="width:70px;height:90px;border-radius:8px;background:#e2e8f0"></div><div style="font-size:11.5px;color:#64748b;line-height:1.6">재풀이 사진 2장<br>AI 대조: 풀이 과정에 y=0 대입 확인 ✓</div></div>
+      <div class="crit" style="margin-top:6px"><span class="k">질문력</span><span style="font-size:12px;color:#64748b">4칸 · AI 초안 8</span><span class="sc">8</span><span class="k">해결 보너스</span><span style="font-size:12px;color:#64748b">스스로 +4 · 되돌아보기 +2</span><span class="sc">+6</span><span class="k">합계</span><span></span><span class="sc" style="font-size:15px">14</span></div>
+      <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn" style="background:#f59e0b;color:#fff">✓ 확인 (14점 확정)</button>
+        <button class="btn" style="background:#fff;border:1px solid #e2e8f0">✏️ 점수 조정</button>
+        <button class="btn" style="background:#fff;border:1px solid #e2e8f0">🏆 「스스로 해결 이야기」에 올리기</button>
+        <button class="btn" style="background:#fff;border:1px solid #fecaca;color:#b91c1c">↩ 아직 아님 → 힌트 흐름으로</button>
+      </div>
+      <div class="note">확인이 밀리는 날은 「임시 14점」으로 학생에게 먼저 보이고, 확인 도장이 찍히면 확정 표시(발행 센터 도장 문법). 정답 불일치·설명 없음이면 임시 점수도 안 보여 줍니다.</div>
+    </div>
+    <div class="phone">
+      <div class="hd">💡 질문 리그 <span class="badge" style="background:#ede9fe;color:#6d28d9;margin-left:auto">시즌 9월</span></div>
+      <div class="tier"><div><div class="big">🔎 탐구자 Ⅱ</div><small>리그 점수 92 · 질문 11개 · <b style="color:#fde68a">🙋 스스로 5회</b></small></div><div style="margin-left:auto;text-align:right"><div style="font-size:22px;font-weight:900">3위</div><small>중등부 18명</small></div></div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <div style="flex:1;border:1px solid #eef0f4;border-radius:10px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:900;color:#b45309">45%</div><div style="font-size:10px;color:#64748b">자기해결률<br><span style="color:#16a34a;font-weight:800">▲ 지난달 20%</span></div></div>
+        <div style="flex:1;border:1px solid #eef0f4;border-radius:10px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:900;color:#6d28d9">7.8</div><div style="font-size:10px;color:#64748b">질문력 평균</div></div>
+        <div style="flex:1;border:1px solid #eef0f4;border-radius:10px;padding:8px;text-align:center"><div style="font-size:18px;font-weight:900;color:#0369a1">1.4</div><div style="font-size:10px;color:#64748b">평균 힌트 수<br><span style="color:#16a34a;font-weight:800">▼ 적을수록 좋음</span></div></div>
+      </div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">🙋 이번 주 「스스로 해결 이야기」</div>
+      <div class="gal"><b>김○○ · 쎈 p.87 · +4</b>「막힌 곳」을 쓰다가 x절편은 x축 위의 점이니까 y=0이라는 걸 알았어요…</div>
+      <div class="gal"><b>박○○ · 일품 p.41 · +4</b>내 생각을 쓰려고 예를 하나 만들어 봤더니, 조건에서 n이 짝수여야 한다는 걸 놓친 게 보였어요.</div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">🛡️ 등급 오르는 조건</div>
+      <div class="chk">• 탐구자 Ⅰ → 사고자: 질문력 평균 8 이상 <b>+ 스스로 해결 3회</b><br>• 사고자 → 성찰자: 되돌아보기 10회 + 녹음 설명 3회</div>
+      <div class="note" style="margin-top:8px">「스스로 해결 이야기」는 다른 학생에게 <b>진짜 힌트</b>가 됩니다. 정답이 아니라 「어디서 생각이 바뀌었는지」가 실려서, 선생님 힌트보다 또래 말이 더 와닿는 경우가 많습니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ⑤ 구현 순서 ════════ -->
+<div class="sec">
+  <h2>⑧ 만들 순서 (제안)</h2>
+  <div class="card">
+    <table class="cmp">
+      <tr><th style="width:60px">단계</th><th>내용</th><th style="width:220px">건드리는 것</th></tr>
+      <tr><td><b>1</b></td><td>학생앱 질문 4칸 + 질문력 미터(규칙 기반, AI 없이) · aha_notes에 <code>q_try/q_stuck/q_guess/q_ask</code> 컬럼 · 옛 「한 줄 메모」는 4칸 중 「묻고 싶은 것」으로 이사</td><td>student_v2, aha_notes 테이블</td></tr>
+      <tr><td><b>2</b></td><td>학원앱 질문 채점(Haiku 초안 → 원장 조정 → 한 줄 코치) · 힌트 발송에 점수 동봉 · ⭐채택</td><td>lumen 아하노트 카드, aha_hints</td></tr>
+      <tr><td><b>3</b></td><td>질문 리그 보드(새벽 엔진이 race처럼 계산: <code>qleague_board</code>) + 학생앱 카드 + 베스트 질문 갤러리</td><td>sync/race_engine.js 옆에 qleague, student_v2</td></tr>
+      <tr><td><b>4</b></td><td>말하기 리그: STT → 5기준 채점 → 학생앱 결과 카드 · 녹음 주제 자동 추천(질문한 문제)</td><td>recmgr, student_v2</td></tr>
+      <tr><td><b>5</b></td><td>XP·학부모 리포트 연결, 시즌 시상(레이스 시즌 설정 재사용)</td><td>레벨관리, parent</td></tr>
+    </table>
+    <div class="note">결정해 주실 것 — ① 점수 규칙 A/B/C ② 채점을 매번 승인할지, AI 초안 자동 확정+사후 수정으로 할지 ③ 질문 리그를 레이스와 같은 부(초·중·고)·시즌으로 갈지 ④ 되돌아보기(⑤ 기준)를 필수로 할지 ⑤ 등급 이름(IB 학습자상 vs 우리말)</div>
+  </div>
+</div>
+</div>
+<div id="p2" class="pane">
+
+<!-- ① 매핑 -->
+<div class="sec">
+  <h2>① 경기도교육청 IB 자료 4권 — 수학에 쓸 수 있는 것과 루멘수학 대응</h2>
+  <p class="lead">공통편·PYP편·DP편은 총론이고, <b>수학에 직접 쓸 수 있는 것은 MYP편</b>에 몰려 있습니다. 아래는 자료의 문구를 그대로 우리 기능으로 옮긴 표입니다.</p>
+  <div class="card">
+    <table class="cmp">
+      <tr><th style="width:230px">IB 자료의 내용 (출처)</th><th>수학에 뜻하는 것</th><th style="width:300px">루멘수학에 옮기면</th></tr>
+      <tr><td><b>수학 평가 기준 A~D</b> — A 알기와 이해하기 / B 패턴 조사하기 / C 의사소통하기 / D 실생활 맥락에 수학 적용하기 (MYP p.26)</td><td>정답률(A)만이 아니라 규칙 찾기·일반화(B), 설명·질문(C), 실생활 적용(D)을 <b>따로 평가</b>한다. 「1년에 최소 2번」</td><td>💠 <b>A·B·C·D 성장 리포트</b> — A=매쓰플랫 정답률, B=탐구노트 일반화·전이, C=질문력·말하기력, D=GRASPS 과제</td></tr>
+      <tr><td><b>탐구 질문 3유형</b> — 사실적 → 개념적 → 논쟁적. 수학 예: 「자리를 옮기면 어떻게 될까? / 소수점은 어떤 역할? / 규칙이 없다면?」 (MYP p.23)</td><td>「답이 뭐예요」(사실)보다 「왜」(개념)·「꼭 그래야 하나」(논쟁)가 고차원 질문</td><td>💡 질문력 채점에 <b>질문 유형 자동 태그</b> — 개념적·논쟁적 질문 가점</td></tr>
+      <tr><td><b>수학 관련 개념 12개</b> — 변화·동치성·일반화·타당성·근사·모델·패턴·수량·표현·단순화·공간·시스템 (MYP p.19)</td><td>문제를 단원이 아니라 <b>개념 렌즈</b>로 묶는다</td><td>🔎 질문·오답에 <b>개념 칩</b> → 학생별 「자주 걸리는 개념」 분포</td></tr>
+      <tr><td><b>탐구 진술 + 질문 3개</b>로 단원의 큰 그림 (MYP p.21~24), 단원 설계 「흥미로운 시작」 (공통 p.21)</td><td>단원마다 「이 단원은 무엇을 묻는가」 한 줄이 있어야 문제풀이가 개념으로 이어진다</td><td>🧭 <b>단원 탐구 카드</b> — 로드맵 단원 진입 시 탐구 진술·질문 3개, 단원 끝에 「지금은 어떻게 답할까」 성찰</td></tr>
+      <tr><td><b>지식의 구조</b> 사실→개념→일반화, 탐구 사이클 「일반화하기 → 전이하기」 (공통 p.19·23, PYP p.10)</td><td>푼 문제(사실)에서 원리(일반화)를 뽑고 새 문제(전이)에 쓰는 것이 개념 이해의 최고 수준</td><td>📓 <b>탐구노트</b> — 해결 후 「원리 한 문장」 + 「같은 원리 다른 문제」, 복습 때 전이 문제 출제</td></tr>
+      <tr><td><b>GRASPS 수행과제</b> — 목표·역할·청중·상황·수행·기준. 저울 만들기 예시, 단계별 초안 제출 (MYP p.27·48)</td><td>실생활 맥락 과제 1개를 학기 1회, 초안을 여러 번 받으며 피드백</td><td>🏗 <b>실생활 과제</b> — 학원앱 6칸 작성(AI 초안) → 학생앱 초안 2회+최종, 기준 체크리스트 자기평가</td></tr>
+      <tr><td><b>형성평가 3질문</b> — 사전 지식? 지속 평가? 학생 자기평가? / 차별화 소그룹 (MYP p.36~37)</td><td>수업 전에 「어디에 있고, 어디로 가야 하나」를 데이터로 본다</td><td>📋 <b>수업 전 브리핑</b>을 이 3칸으로 재구성, 같은 개념에 걸린 학생끼리 보충 소그룹 제안</td></tr>
+      <tr><td><b>피드백 → 피드포워드</b> (PYP p.34), 채점 기준 사전 공개 → 자기평가 (DP p.16)</td><td>「잘했다/틀렸다」 뒤에 반드시 「다음엔 이렇게」가 붙어야 함. 학생이 기준을 알고 스스로 매긴다</td><td>✍️ 모든 코치 문장을 <b>두 줄</b>(피드백·피드포워드)로 / 질문 보내기 전 <b>자기평가 체크</b>, 원장 점수와 맞으면 +1</td></tr>
+      <tr><td><b>성찰 4항목</b> 배운 점·느낀 점·성취한 점·궁금한 점 + 증거 + 교사 승인 (DP p.26), 3회 성찰 세션 (DP p.22)</td><td>성찰은 글로 남기고 교사가 확인해야 기록이 된다</td><td>🙋 되돌아보기를 「배운 점 / 궁금한 점」 두 칸으로 — 궁금한 점은 <b>다음 질문의 씨앗</b></td></tr>
+      <tr><td><b>학습자상·ATL</b> — 탐구·사고·소통·도전·성찰 / 자기관리(조직·정서·성찰)·사고(전이) (공통 p.7·16)</td><td>결과가 아닌 과정의 자질을 이름 붙여 칭찬</td><td>🏅 질문 리그 등급 이름·리포트 코멘트에 학습자상 언어(「이번 달 너는 도전하는 사람이었다」)</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ② 탐구노트 -->
+<div class="sec">
+  <h2>② 학생앱 — 아하노트 → 「탐구노트」 (질문 유형·개념 칩·자기평가·일반화·전이)</h2>
+  <p class="lead">앞서 만든 4칸 질문 위에 IB 자료의 세 가지를 얹습니다: ⓐ 질문 유형 자동 태그(사실/개념/논쟁) ⓑ 관련 개념 칩 ⓒ 보내기 전 자기평가. 해결 뒤에는 되돌아보기가 「배운 점·궁금한 점·원리 한 문장·전이 문제」로 커집니다.</p>
+  <div class="row">
+    <div class="phone">
+      <div class="hd">📓 탐구노트 <span class="badge" style="background:#ede9fe;color:#6d28d9;margin-left:auto">질문 쓰기</span></div>
+      <div style="font-size:11.5px;color:#64748b;margin-bottom:6px">📷 사진 ✓ · 쎈 중2-1 p.87 12번</div>
+      <div class="q"><b>4️⃣ 묻고 싶은 것</b><div class="tx">x절편을 구할 때 <b>왜</b> y=0을 대입하는지 알고 싶어요.</div>
+        <div style="margin-top:5px"><span class="tag c">개념적 질문 (왜)</span><span style="font-size:10.5px;color:#94a3b8">사실적 「답이 뭐예요」 +0 · 개념적 「왜」 +1 · 논쟁적 「꼭 그래야 하나」 +1</span></div></div>
+      <div style="font-size:11px;font-weight:800;color:#6d28d9;margin:6px 0 3px">이 문제에서 걸린 개념은? (하나 이상)</div>
+      <div><span class="chip on">표현</span><span class="chip on">동치성</span><span class="chip">변화</span><span class="chip">패턴</span><span class="chip">일반화</span><span class="chip">타당성</span><span class="chip">근사</span><span class="chip">모델</span><span class="chip">수량</span><span class="chip">단순화</span><span class="chip">공간</span><span class="chip">시스템</span></div>
+      <div style="font-size:11px;font-weight:800;color:#6d28d9;margin:10px 0 3px">보내기 전 스스로 매겨 보기 <span style="font-weight:600;color:#94a3b8">(선생님도 같은 기준으로 봅니다)</span></div>
+      <div class="chk"><span class="ok">☑ 시도한 것을 식으로 썼다</span><br><span class="ok">☑ 막힌 줄을 정확히 짚었다</span><br><span class="ok">☑ 내 생각(가설)을 썼다</span><br><span class="no">☐ 답지 값과 비교했다</span><br><span class="ok">☑ 「왜/어떻게」가 든 한 문장 질문</span></div>
+      <div style="font-size:11px;color:#475569;margin-top:4px">내 예상 질문력 <b>8</b> · 선생님 점수와 같으면 <b>+1</b></div>
+      <button class="btn" style="width:100%;background:#7c3aed;color:#fff;margin-top:8px">질문 보내기</button>
+    </div>
+    <div class="phone">
+      <div class="hd">📓 탐구노트 <span class="badge" style="background:#eafaf0;color:#16a34a;margin-left:auto">해결 후 되돌아보기</span></div>
+      <div style="font-size:11.5px;color:#64748b;margin-bottom:6px">쎈 p.87 12번 · 힌트 1개로 해결 · 재풀이 정답 ✓</div>
+      <div class="q"><b>배운 점</b><div class="tx">절편은 「어느 축 위의 점인가」를 먼저 정하고 그 축이 아닌 좌표를 0으로 놓는다.</div></div>
+      <div class="q"><b>궁금한 점 (다음 질문의 씨앗)</b><div class="tx">그럼 x절편이 두 개인 함수도 있나? 이차함수는 그런 것 같은데…</div></div>
+      <div class="q" style="border-color:#c4b5fd;background:#faf8ff"><b>🔁 원리 한 문장 (일반화) <span class="tag">B 패턴</span></b><div class="tx">「그래프가 축과 만나는 점」은 항상 다른 좌표를 0으로 놓고 방정식을 푼다.</div></div>
+      <div class="q" style="border-color:#c4b5fd;background:#faf8ff"><b>➡️ 같은 원리로 풀 수 있는 다른 문제 (전이) <span class="tag">B 패턴</span></b><div class="tx">쎈 p.91 7번 (y절편) · 또는 내가 만든 문제: y=−3x+6의 x절편은?</div></div>
+      <div class="coach"><b>+2 되돌아보기 · +2 일반화 · +1 전이</b><br>전이 문제는 <b>3일 뒤 복습 카드</b>에 원래 문제 대신 나옵니다. 거기서 맞히면 「전이 성공」으로 B 축이 올라갑니다.</div>
+      <div class="note">IB의 지식의 구조(사실→개념→일반화)와 탐구 사이클의 마지막 두 단계(일반화→전이)를 그대로 옮겼습니다. 「원리 한 문장」은 억지로 쓰게 하지 않고, 쓰면 점수를 주는 <b>선택 칸</b>입니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 단원 탐구 카드 -->
+<div class="sec">
+  <h2>③ 학생앱 — 🧭 단원 탐구 카드 (로드맵 단원에 들어갈 때 · 단원 끝날 때)</h2>
+  <p class="lead">MYP 단원 계획서의 「탐구 진술 + 사실적·개념적·논쟁적 질문」을 교재 단원마다 한 장씩 둡니다. 학생은 단원 시작에 <b>개념적 질문만</b> 먼저 보고, 단원이 끝나면 「처음 질문에 지금은 어떻게 답할까」를 씁니다. 그 글이 곧 말하기 리그 녹음 주제가 됩니다.</p>
+  <div class="row">
+    <div class="phone">
+      <div class="hd">🗺 로드맵 · 일차함수</div>
+      <div class="unit"><small>이 단원의 큰 그림 · 개념: 관계 · 변화 · 모델</small><div class="soi">「변화하는 두 양의 관계는 식·표·그래프로 서로 바꿔 표현할 수 있고, 그 관계로 아직 보지 않은 값을 예측할 수 있다.」</div><small>탐구 진술 — 문제를 풀다 막히면 이 문장으로 돌아오세요</small></div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">이 단원이 묻는 질문 3개</div>
+      <div class="iq"><b><span class="tag f">사실적</span></b>기울기가 2, y절편이 1인 직선의 식은?</div>
+      <div class="iq"><b><span class="tag c">개념적</span></b>기울기는 왜 「x가 1 커질 때 y의 변화」로 정하는가? 다르게 정해도 되는가?</div>
+      <div class="iq"><b><span class="tag d">논쟁적</span></b>세상의 변화를 직선 하나로 예측하는 것은 언제 위험한가?</div>
+      <div class="note" style="margin-top:8px">단원 끝에 이 카드가 다시 뜹니다: <b>「개념적 질문에 지금은 어떻게 답할래?」</b> 3문장 쓰기 → 말하기 리그 녹음 주제로 바로 연결(+ C 의사소통).</div>
+    </div>
+    <div class="card" style="flex:1;min-width:320px">
+      <b style="font-size:13.5px">학원앱 — 단원 탐구 카드 편집 (AI 초안 → 원장 수정)</b>
+      <div style="font-size:12px;color:#64748b;margin:4px 0 10px">교재·유형 관리의 단원마다 카드 한 장. Haiku가 MYP 관련 개념 12개 중 2~3개와 질문 3개 초안을 만들고, 원장님이 다듬습니다. 한 번 만들면 모든 학생·모든 학기에 재사용.</div>
+      <table class="cmp">
+        <tr><th style="width:110px">칸</th><th>내용</th></tr>
+        <tr><td>관련 개념</td><td><span class="chip on">관계</span><span class="chip on">변화</span><span class="chip on">모델</span> <span style="font-size:11px;color:#94a3b8">(12개 중 선택)</span></td></tr>
+        <tr><td>탐구 진술</td><td>변화하는 두 양의 관계는 식·표·그래프로 서로 바꿔 표현할 수 있고… <span style="font-size:11px;color:#94a3b8">✏️</span></td></tr>
+        <tr><td>사실적 질문</td><td>기울기가 2, y절편이 1인 직선의 식은?</td></tr>
+        <tr><td>개념적 질문</td><td>기울기는 왜 「x가 1 커질 때 y의 변화」로 정하는가?</td></tr>
+        <tr><td>논쟁적 질문</td><td>세상의 변화를 직선 하나로 예측하는 것은 언제 위험한가?</td></tr>
+        <tr><td>수업 도입 한 마디</td><td>「휴대폰 요금제 두 개, 몇 분 쓰면 뒤집힐까?」 <span style="font-size:11px;color:#94a3b8">(흥미로운 시작)</span></td></tr>
+      </table>
+      <div class="coach"><b>수업 전 브리핑에 함께 뜸:</b> 오늘 수업 학생의 (1) 사전 지식 — 선수 유형(정비례·좌표) 정답률, (2) 지속 평가 — 이번 단원 매쓰플랫 정답률·복습 큐, (3) 자기평가 — 탐구노트에서 학생이 고른 개념 칩. MYP 형성평가 3질문 그대로입니다. 같은 개념 칩에 걸린 학생 3명 이상이면 「보충 소그룹 제안」.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 성장 리포트 -->
+<div class="sec">
+  <h2>④ 학부모·학생 — 💠 A·B·C·D 성장 리포트 (정답률 말고 네 축)</h2>
+  <p class="lead">MYP 수학 평가 기준 네 개를 그대로 축으로 씁니다. 각 축은 우리가 이미 모으는 데이터로 자동 계산되고, 원장님은 학습자상 언어로 코멘트 한 줄만 씁니다. 점수는 IB처럼 0~8 단계.</p>
+  <div class="row">
+    <div class="card" style="width:560px">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:12px"><b style="font-size:14px">김하늘 · 9월 성장 리포트</b><span style="font-size:11px;color:#64748b">진한 막대 = 이번 달 · 세로선 = 지난달</span></div>
+      <div class="bars">
+        <div class="bar"><span class="k">A 알기·이해하기</span><div class="tr"><i style="width:75%"></i><em style="left:62%"></em></div><span class="v">6 /8</span></div>
+        <div class="bar"><span class="k">B 패턴 조사하기</span><div class="tr"><i style="width:50%"></i><em style="left:25%"></em></div><span class="v">4 /8</span></div>
+        <div class="bar"><span class="k">C 의사소통하기</span><div class="tr"><i style="width:87%"></i><em style="left:62%"></em></div><span class="v">7 /8</span></div>
+        <div class="bar"><span class="k">D 실생활 적용</span><div class="tr"><i style="width:37%"></i><em style="left:37%"></em></div><span class="v">3 /8</span></div>
+      </div>
+      <table class="cmp" style="margin-top:12px;font-size:11.5px">
+        <tr><th>축</th><th>무엇으로 계산하나 (이미 있는 데이터)</th></tr>
+        <tr><td>A</td><td>매쓰플랫 문항 정답률·난이도(mf_answer_records), 주간테스트</td></tr>
+        <tr><td>B</td><td>탐구노트 「원리 한 문장」 수·질, 전이 문제 성공률, 복습 재정답</td></tr>
+        <tr><td>C</td><td>질문력 평균(질문 리그) + 말하기력(말하기 리그) + 개념적 질문 비율</td></tr>
+        <tr><td>D</td><td>실생활 과제(GRASPS) 기준 충족 수 — 학기 1~2회라 천천히 움직임</td></tr>
+      </table>
+      <div style="margin-top:12px">
+        <div class="fb"><b>피드백</b> 이번 달 하늘이는 <b>「소통하는 사람」</b>이었습니다. 질문 11개 중 8개가 「왜」로 시작했고, 스스로 해결이 5회로 늘었습니다.</div>
+        <div class="ff"><b>피드포워드</b> 다음 달은 B축입니다. 되돌아보기에서 「원리 한 문장」을 주 2개만 쓰면 복습 카드에서 전이 문제가 늘어나 B가 5~6으로 올라갑니다.</div>
+      </div>
+      <div class="note">두 줄 구조(피드백·피드포워드)는 PYP편 「효과적인 평가」의 마지막 항목입니다. AI 일괄 피드백·울트라 피드백의 프롬프트에도 같은 두 줄을 요구하면 어투가 통일됩니다.</div>
+    </div>
+    <div class="card" style="flex:1;min-width:300px">
+      <b style="font-size:13.5px">이 리포트가 기존 것과 다른 점</b>
+      <div style="font-size:12.5px;line-height:1.75;color:#334155;margin-top:6px">
+      • 지금의 매쓰플랫 월간보고서·울트라 피드백은 거의 <b>A축</b>만 말합니다.<br>
+      • B·C·D는 「점수는 그대로인데 아이가 달라졌다」를 보여주는 축입니다. 학부모 상담에서 성적 하락 달에도 할 말이 생깁니다.<br>
+      • 진학 나침반 3쪽 리포트의 마지막 쪽에 이 네 막대를 넣을 수 있습니다.<br>
+      • 학습자상 10개 중 그 달에 가장 두드러진 하나를 AI가 고르고 원장님이 확정합니다: 탐구하는·사고하는·소통하는·도전하는·성찰하는·원칙을 지키는(정직한 채점)…
+      </div>
+      <div class="coach"><b>D축 주의:</b> 실생활 과제는 학기 1~2회뿐이라 매달 움직이지 않습니다. 「이번 학기 과제 1/2 완료」처럼 <b>진행 표시</b>로 보여주는 게 정직합니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ GRASPS -->
+<div class="sec">
+  <h2>⑤ 🏗 실생활 과제 (GRASPS) — 학기 1회, 초안 2번 + 최종</h2>
+  <p class="lead">MYP편의 GRASPS 여섯 칸을 학원앱에서 채우면(AI 초안) 학생앱에 과제 카드가 뜹니다. 지리 단원 계획서처럼 <b>초안을 단계별로 받아</b> 매번 피드백하고, 기준(Standards)은 학생 자기평가 체크리스트가 됩니다. 발표는 녹음으로 대신해 말하기 리그와 연결.</p>
+  <div class="row">
+    <div class="card" style="flex:1;min-width:340px">
+      <b style="font-size:13.5px">학원앱 — 과제 만들기 (중2 일차함수 예)</b>
+      <div class="gr" style="margin-top:10px">
+        <b>G 목표</b><span>두 휴대폰 요금제 중 우리 가족에게 유리한 것을 수학으로 증명하기</span>
+        <b>R 역할</b><span>너는 가족의 「요금제 분석가」다</span>
+        <b>A 청중</b><span>부모님 (실제로 보여드리고 서명을 받는다)</span>
+        <b>S 상황</b><span>기본료·분당 요금이 다른 요금제 두 개. 우리 가족의 한 달 통화량은 직접 조사</span>
+        <b>P 수행</b><span>두 요금제의 요금을 일차함수로 세우고, 표·그래프·교점을 담은 한 장 보고서</span>
+        <b>S 기준</b><span>☐ 식 두 개가 맞다 ☐ 교점(뒤집히는 통화량)을 구했다 ☐ 그래프에 교점을 표시했다 ☐ 우리 가족 통화량으로 결론을 냈다 ☐ 「직선 예측이 틀릴 수 있는 경우」를 한 줄 썼다</span>
+      </div>
+      <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap"><button class="btn" style="background:#0d2240;color:#fff">🤖 AI 초안 다시</button><button class="btn" style="background:#e8192c;color:#fff">중2 전체에 배포 · 마감 3주</button></div>
+      <div class="note">GRASPS 예시(저울·가격 책정)를 학년별로 바꾼 것: 중1 비례(레시피 늘리기), 중2 일차함수(요금제), 중3 이차함수(공 던지기 높이), 고1 통계(설문 분석), 고2 삼각비(건물 높이 재기).</div>
+    </div>
+    <div class="phone">
+      <div class="hd">🏗 실생활 과제 <span class="badge" style="background:#fff7ed;color:#c2410c;margin-left:auto">D-12</span></div>
+      <div style="font-size:13px;font-weight:900;margin-bottom:4px">우리 가족 요금제 분석가</div>
+      <div style="font-size:11.5px;color:#64748b;line-height:1.5;margin-bottom:10px">두 요금제를 일차함수로 세우고 교점을 찾아 부모님께 보고서를 보여드리세요.</div>
+      <div class="step done"><span class="n">1</span><span><b>1차 초안</b> 통화량 조사 + 식 세우기<br><span style="font-size:10.5px;color:#16a34a">제출 ✓ · 정수쌤: 「분당 요금 단위 확인」</span></span></div>
+      <div class="step"><span class="n">2</span><span><b>2차 초안</b> 표·그래프·교점<br><span style="font-size:10.5px;color:#94a3b8">사진 제출 · 9/14까지</span></span></div>
+      <div class="step"><span class="n">3</span><span><b>최종</b> 한 장 보고서 + 부모님 서명 + 🎙 1분 설명 녹음</span></div>
+      <div style="font-size:11px;font-weight:800;color:#c2410c;margin:10px 0 3px">기준 체크 (제출 전 스스로)</div>
+      <div class="chk"><span class="ok">☑ 식 두 개</span> · <span class="no">☐ 교점</span> · <span class="no">☐ 그래프에 표시</span> · <span class="no">☐ 우리 가족 결론</span> · <span class="no">☐ 직선 예측의 한계</span></div>
+      <div class="coach" style="margin-top:8px"><b>D 실생활 적용</b> 기준 5개 중 충족 수가 그대로 D축 점수. 최종 녹음은 말하기 리그에 「과제 설명」으로 올라갑니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑥ 순서 -->
+<div class="sec">
+  <h2>⑥ 정리 — 앞서 상의한 질문 리그와 합친 순서</h2>
+  <div class="card">
+    <table class="cmp">
+      <tr><th style="width:60px">순서</th><th>기능</th><th>IB 근거</th><th style="width:170px">난이도</th></tr>
+      <tr><td><b>1</b></td><td>탐구노트 질문 4칸 + 질문 유형 태그 + 개념 칩 + 자기평가 체크 + 질문력 채점(학원앱) + 스스로 해결 보너스</td><td>MYP 질문 3유형·관련 개념 12·기준 C, DP 채점기준 공개</td><td>학생앱·학원앱 각 1버전</td></tr>
+      <tr><td><b>2</b></td><td>되돌아보기 확장(배운 점·궁금한 점·원리 한 문장·전이 문제) + 복습 카드에 전이 문제</td><td>공통 지식의 구조, 탐구 사이클 일반화→전이, DP 성찰 4항목</td><td>학생앱 + 복습 엔진 손보기</td></tr>
+      <tr><td><b>3</b></td><td>질문 리그·말하기 리그 보드 + 갤러리 + 등급(학습자상 이름)</td><td>공통 학습자상·ATL</td><td>새벽 엔진 + 학생앱</td></tr>
+      <tr><td><b>4</b></td><td>단원 탐구 카드(AI 초안) + 수업 전 브리핑 형성평가 3칸 + 보충 소그룹 제안</td><td>MYP 탐구 진술·질문 3개·형성평가·차별화</td><td>학원앱, 카드 데이터 만들기</td></tr>
+      <tr><td><b>5</b></td><td>A·B·C·D 성장 리포트(월간) + 피드백·피드포워드 두 줄 + 학습자상 코멘트</td><td>MYP 수학 기준 A~D, PYP 피드포워드</td><td>학원앱 리포트 + 학부모앱</td></tr>
+      <tr><td><b>6</b></td><td>실생활 과제(GRASPS) 학기 1회</td><td>MYP GRASPS·단계별 초안</td><td>학원앱 작성 + 학생앱 제출</td></tr>
+    </table>
+    <div class="note">결정해 주실 것 — ① 개념 칩 12개를 그대로 쓸지, 중학생 말로 바꿀지(예: 동치성→「같은 값 다른 모양」) ② 질문 유형 가점(개념적 +1·논쟁적 +1)을 넣을지 ③ A~D를 0~8 단계로 할지 %로 할지 ④ 실생활 과제를 올해 2학기에 한 번 해 볼지(중2 요금제) ⑤ 단원 탐구 카드를 어느 교재부터 만들지</div>
+  </div>
+</div>
+</div>
+<script>
+function pick(n){
+  for(var i=1;i<=2;i++){
+    document.getElementById("p"+i).classList.toggle("on",i===n);
+    document.getElementById("b"+i).classList.toggle("on",i===n);
+  }
+  window.scrollTo(0,0);
+}
+</script>
+</body></html>
