@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>목업 — 💡 질문 리그 · 🎙 말하기 리그 (IB식 질문 쓰기)</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;background:#eef2f8;color:#0d2240;padding:22px}
+.sec{max-width:1080px;margin:0 auto 34px}
+.sec h2{font-size:17px;margin:0 0 4px}
+.sec .lead{font-size:12.5px;color:#64748b;margin:0 0 12px;line-height:1.6}
+.row{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.card{background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:16px}
+.phone{width:372px;background:#fff;border:1px solid #d9dfe9;border-radius:30px;padding:14px 13px 18px;box-shadow:0 14px 34px -18px rgba(13,34,64,.45)}
+.phone .hd{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:900;margin-bottom:10px}
+.badge{display:inline-block;font-size:10.5px;font-weight:900;border-radius:50px;padding:3px 10px}
+.btn{border:none;border-radius:50px;padding:9px 16px;font-size:12.5px;font-weight:900;font-family:inherit;cursor:pointer}
+.note{font-size:11px;color:#64748b;font-weight:700;background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:10px 13px;margin-top:10px;line-height:1.7}
+.q{border:1.5px solid #e2e8f0;border-radius:12px;padding:9px 11px;margin-bottom:8px;background:#fbfcfe}
+.q b{font-size:11px;color:#6d28d9;display:block;margin-bottom:3px}
+.q .ph{font-size:12.5px;color:#94a3b8}
+.q .tx{font-size:12.5px;color:#0d2240;line-height:1.55}
+.meter{display:flex;gap:4px;margin:8px 0 4px}
+.meter i{flex:1;height:8px;border-radius:5px;background:#e5e9f1}
+.meter i.on{background:#7c3aed}
+.chk{font-size:11px;line-height:1.8;color:#475569}
+.chk .ok{color:#16a34a;font-weight:800}.chk .no{color:#94a3b8}
+.tier{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#1e1b4b,#4c1d95);color:#fff;border-radius:16px;padding:14px}
+.tier .big{font-size:30px;font-weight:900;line-height:1}
+.tier small{font-size:11px;opacity:.85;display:block}
+.rank{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-size:12.5px;font-weight:700;border:1px solid #eef0f4;margin-bottom:5px}
+.rank.me{background:#f5f3ff;border-color:#c4b5fd}
+.rank .n{width:22px;font-weight:900;color:#6d28d9}
+.rank .pt{margin-left:auto;font-weight:900}
+.gal{border:1.5px solid #fde68a;background:#fffbeb;border-radius:12px;padding:10px 12px;margin-bottom:7px;font-size:12px;line-height:1.55}
+.gal b{color:#b45309;font-size:11px;display:block}
+.crit{display:grid;grid-template-columns:150px 1fr 60px;gap:6px 10px;align-items:center;font-size:12.5px}
+.crit .k{font-weight:800}
+.crit .lv{display:flex;gap:4px}
+.crit .lv span{width:26px;height:24px;border:1px solid #dde3ec;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;color:#94a3b8}
+.crit .lv span.on{background:#7c3aed;border-color:#7c3aed;color:#fff}
+.crit .sc{text-align:right;font-weight:900;color:#6d28d9}
+.coach{background:#f5f3ff;border:1px solid #ddd6fe;border-radius:11px;padding:10px 12px;font-size:12.5px;line-height:1.6;margin-top:10px}
+.coach b{color:#6d28d9}
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px}
+table.cmp th,table.cmp td{border:1px solid #e6eaf1;padding:8px 10px;text-align:left;vertical-align:top;line-height:1.5}
+table.cmp th{background:#f8fafc;font-size:12px}
+.tag{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:6px;background:#eef2ff;color:#3730a3;margin-right:3px}
+.spk{border:1px solid #e6eaf1;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.bar{height:8px;background:#eef0f5;border-radius:6px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:#0ea5e9}
+</style></head><body>
+
+<!-- ════════ ① 학생앱: 질문 만들기 ════════ -->
+<div class="sec">
+  <h2>① 학생앱 — 아하노트 「질문 만들기」 (한 줄 메모 → 4칸 글쓰기)</h2>
+  <p class="lead">IB의 탐구 질문 쓰기처럼, 질문을 「시도한 것 → 막힌 곳 → 내 생각 → 묻고 싶은 것」 4칸으로 쓰게 합니다. 쓰는 동안 오른쪽 아래 「질문력 미터」가 실시간으로 채워져, 대충 쓰면 미터가 낮게 보입니다(제출은 막지 않음).</p>
+  <div class="row">
+    <div class="phone">
+      <div class="hd">💡 아하노트 <span class="badge" style="background:#ede9fe;color:#6d28d9;margin-left:auto">질문력 미터</span></div>
+      <div style="font-size:11.5px;color:#64748b;margin-bottom:8px">📷 사진 1장 ✓ · 📚 쎈 중2-1 · p.87 · 12번 · ⚠️ 관련개념부족</div>
+      <div class="q"><b>1️⃣ 여기까지는 했어요 (시도한 것)</b><div class="tx">일차함수 식을 y=2x+b로 놓고 (1,3)을 대입해서 b=1까지 구했어요.</div></div>
+      <div class="q"><b>2️⃣ 여기서 막혔어요 (정확한 지점)</b><div class="tx">그 다음에 x절편을 구하라는데, y=0을 넣는 건지 x=0을 넣는 건지 헷갈려요.</div></div>
+      <div class="q"><b>3️⃣ 내 생각엔… (가설)</b><div class="tx">절편이 x축이랑 만나는 점이니까 y가 0일 것 같은데, 답지는 −1/2인데 저는 1이 나와요.</div></div>
+      <div class="q"><b>4️⃣ 묻고 싶은 것 (한 문장 질문)</b><div class="tx">x절편을 구할 때 왜 y=0을 대입하는지, 그리고 제 계산에서 어디가 틀렸는지 알고 싶어요.</div></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><span style="font-size:11px;font-weight:800;color:#6d28d9">질문력</span><div class="meter" style="flex:1;margin:0"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><span style="font-size:12px;font-weight:900;color:#6d28d9">8 / 10</span></div>
+      <div class="chk"><span class="ok">✓ 시도한 것이 있어요</span> · <span class="ok">✓ 막힌 줄이 보여요</span> · <span class="ok">✓ 내 생각을 썼어요</span> · <span class="ok">✓ 「왜」가 들어간 질문</span> · <span class="no">○ 해결 후 「알게 된 것」은 나중에</span></div>
+      <button class="btn" style="width:100%;background:#7c3aed;color:#fff;margin-top:8px">질문 보내기</button>
+      <div class="note" style="margin-top:8px">대충 쓰면? — 「답이 안 나와요」 한 줄만 쓰면 질문력 2/10로 보내집니다. 막지는 않지만 리그 점수는 그만큼만 쌓입니다.</div>
+    </div>
+    <div class="card" style="flex:1;min-width:300px">
+      <b style="font-size:13.5px">질문력 채점 기준 5개 (각 0·1·2점 = 10점 만점)</b>
+      <div style="font-size:12px;color:#64748b;margin:4px 0 10px">IB의 「기준별 채점(criterion-based)」을 흉내 냈습니다. 각 기준은 <b>있다/부족/없다</b> 3단계라 AI도 원장님도 판단이 빠릅니다.</div>
+      <table class="cmp">
+        <tr><th style="width:110px">기준</th><th>2점</th><th>1점</th><th>0점</th></tr>
+        <tr><td><b>① 시도</b></td><td>어디까지 풀었는지 식·값이 보임</td><td>「풀어봤는데」 정도</td><td>없음</td></tr>
+        <tr><td><b>② 막힌 지점</b></td><td>어느 단계·어느 줄인지 특정</td><td>대략적</td><td>「모르겠어요」</td></tr>
+        <tr><td><b>③ 내 생각</b></td><td>가설·예상값·답지와 비교</td><td>느낌만</td><td>없음</td></tr>
+        <tr><td><b>④ 질문 문장</b></td><td>「왜/어떻게/차이」가 든 답할 수 있는 한 문장</td><td>막연한 질문</td><td>질문 문장 없음</td></tr>
+        <tr><td><b>⑤ 되돌아보기</b></td><td>해결 후 「알게 된 것」 한 줄 + 재풀이 제출</td><td>재풀이만</td><td>없음</td></tr>
+      </table>
+      <div class="coach">⑤는 IB의 <b>reflection(성찰)</b>에 해당합니다. 질문을 잘 쓰는 것으로 끝나지 않고, 힌트 받고 다시 푼 뒤 <b>「내가 몰랐던 건 ○○였다」</b> 한 줄을 적어야 만점이 됩니다. 이 한 줄이 나중에 <b>학생별 오답 노트 요약</b>이 됩니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ② 학원앱: 질문 채점 검토 ════════ -->
+<div class="sec">
+  <h2>② 학원앱 — 질문 채점 검토 (아하노트 카드 안, 힌트 발송과 같은 자리)</h2>
+  <p class="lead">Haiku가 4칸 글을 읽고 5기준 점수 초안을 매깁니다. 원장님은 칸을 눌러 고치고 「한 줄 코치」를 확인한 뒤 힌트와 함께 보냅니다. 힌트 발송 흐름(초안 → 승인 → 발송)을 그대로 씁니다.</p>
+  <div class="card" style="max-width:720px">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><b style="font-size:15px">김하늘 · 쎈 중2-1 p.87 12번</b><span class="badge" style="background:#ede9fe;color:#6d28d9">AI 초안 8/10</span><span class="badge" style="background:#fff7ea;color:#b45309">검토 대기</span><span style="margin-left:auto;font-size:11px;color:#64748b">작성 2분 · 4칸 모두 채움</span></div>
+    <div class="crit">
+      <span class="k">① 시도</span><span class="lv"><span>0</span><span>1</span><span class="on">2</span></span><span class="sc">2</span>
+      <span class="k">② 막힌 지점</span><span class="lv"><span>0</span><span>1</span><span class="on">2</span></span><span class="sc">2</span>
+      <span class="k">③ 내 생각</span><span class="lv"><span>0</span><span>1</span><span class="on">2</span></span><span class="sc">2</span>
+      <span class="k">④ 질문 문장</span><span class="lv"><span>0</span><span>1</span><span class="on">2</span></span><span class="sc">2</span>
+      <span class="k">⑤ 되돌아보기</span><span class="lv"><span class="on">0</span><span>1</span><span>2</span></span><span class="sc">0 <small style="color:#94a3b8;font-weight:600">해결 후</small></span>
+    </div>
+    <div class="coach"><b>한 줄 코치(학생에게 감):</b> 「막힌 줄을 정확히 짚었고 답지 값과 비교한 게 좋아요. 다음엔 y=0을 넣은 계산식까지 써 주면 어디서 틀렸는지 바로 보여요.」 <span style="color:#94a3b8">✏️ 수정</span></div>
+    <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn" style="background:#7c3aed;color:#fff">💡 힌트 + 점수 함께 발송</button>
+      <button class="btn" style="background:#fff;border:1px solid #e2e8f0">⭐ 수업 공통질문으로 채택 (+2)</button>
+      <button class="btn" style="background:#fff;border:1px solid #e2e8f0">🏆 이번 주 베스트 질문 후보</button>
+    </div>
+    <div class="note">⭐ 채택: 이미 있는 「공통 질문」(v18-151)과 연결 — 수업에서 다룰 질문으로 뽑히면 보너스. 잘 쓴 질문이 반 전체에 도움이 된다는 것을 학생이 느끼게 하는 장치입니다.</div>
+  </div>
+</div>
+
+<!-- ════════ ③ 학생앱: 질문 리그 ════════ -->
+<div class="sec">
+  <h2>③ 학생앱 — 💡 질문 리그 (진도 레이스와 같은 카드 문법)</h2>
+  <p class="lead">「많이」가 아니라 「잘」 쓴 학생이 올라가도록 점수를 <b>질문력 평균 × 인정 개수(상한)</b>로 설계합니다. 이름은 레이스처럼 성+○○, 상위 N명만 공개. 아래 A·B·C안 중 고르시면 됩니다.</p>
+  <div class="row">
+    <div class="phone">
+      <div class="hd">💡 질문 리그 <span class="badge" style="background:#ede9fe;color:#6d28d9;margin-left:auto">시즌 9월</span></div>
+      <div class="tier"><div><div class="big">🔎 탐구자 Ⅱ</div><small>질문력 평균 7.8 · 인정 질문 11개 · 리그 점수 86</small></div><div style="margin-left:auto;text-align:right"><div style="font-size:22px;font-weight:900">4위</div><small>중등부 18명</small></div></div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">🏆 이번 주 베스트 질문</div>
+      <div class="gal"><b>박○○ · 개념원리 p.132 · 질문력 10</b>「이차방정식 근의 공식에서 판별식이 0일 때 중근이라고 하는데, 그래프로는 왜 x축에 ‘닿기만’ 하는 건지 알고 싶어요. 제 생각엔…」</div>
+      <div class="gal"><b>김○○(나) · 쎈 p.87 · 질문력 9 ⭐채택</b>「x절편을 구할 때 왜 y=0을 대입하는지…」</div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">🏅 중등부 순위</div>
+      <div class="rank"><span class="n">1</span>박○○ <span class="tag">탐구자 Ⅰ</span><span class="pt">112</span></div>
+      <div class="rank"><span class="n">2</span>이○○ <span class="tag">탐구자 Ⅰ</span><span class="pt">98</span></div>
+      <div class="rank"><span class="n">3</span>최○○ <span class="tag">탐구자 Ⅱ</span><span class="pt">91</span></div>
+      <div class="rank me"><span class="n">4</span>김○○ (나) <span class="tag">탐구자 Ⅱ</span><span class="pt">86</span></div>
+      <div style="font-size:10.5px;color:#94a3b8;margin-top:4px">6위부터는 본인에게만 보입니다</div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">📏 점수 쌓이는 법</div>
+      <div class="chk">• 질문 1개 = 질문력(0~10) 그대로<br>• 하루 최대 2개까지만 인정 → 양보다 질<br>• ⭐ 수업 채택 +2 · 🏆 베스트 +3<br>• 되돌아보기(⑤)까지 써야 만점</div>
+    </div>
+    <div class="card" style="flex:1;min-width:320px">
+      <b style="font-size:13.5px">점수 규칙 3안</b>
+      <table class="cmp" style="margin-top:8px">
+        <tr><th style="width:80px">안</th><th>규칙</th><th>장점</th><th>주의</th></tr>
+        <tr><td><b>A 합산+상한</b><br><span class="tag">추천</span></td><td>질문력 합계, 하루 2개·주 8개까지만 인정</td><td>레이스와 같은 문법이라 직관적. 꾸준함도 반영</td><td>상한 안에서는 여전히 개수가 유리 → 질문력 5 미만은 0점 처리로 보완</td></tr>
+        <tr><td><b>B 베스트 5 평균</b></td><td>시즌 중 가장 잘 쓴 5개의 평균 × 10</td><td>양 경쟁이 완전히 사라짐. 한 번이라도 제대로 쓰면 올라감</td><td>5개 채운 뒤엔 동기 약함 → 「갱신」 알림 필요</td></tr>
+        <tr><td><b>C 등급 사다리</b></td><td>질문력 평균으로 등급(질문자→탐구자→연구자→학자), 승급 조건에 최소 개수</td><td>레이스 티어와 통일감, 강등 없음</td><td>순위표가 없어 경쟁 자극은 약함 → A와 병행 가능</td></tr>
+      </table>
+      <div class="coach"><b>제안:</b> A안 점수판 + C안 등급을 같이 씁니다(레이스도 점수+티어 두 겹). 등급 이름은 IB 학습자상(learner profile)에서 따 <b>질문자(Inquirer) → 탐구자 → 사고자(Thinker) → 성찰자(Reflective)</b> 처럼 붙일 수 있습니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ④ 말하기 리그 ════════ -->
+<div class="sec">
+  <h2>④ 학생앱 — 🎙 말하기 리그 (하브루타 녹음을 같은 방식으로)</h2>
+  <p class="lead">지금 녹음은 STT·AI 피드백까지 만들어지지만 학생에게 돌아가지 않고 점수도 없습니다. STT 텍스트를 5기준으로 채점해 「말하기력」을 만들고, 피드백 요약을 학생앱으로 돌려보냅니다. 오늘의 주제(rec_topics)가 있으면 「주제 적중」 기준을 추가.</p>
+  <div class="row">
+    <div class="phone">
+      <div class="hd">🎙 말하기 리그 <span class="badge" style="background:#e0f2fe;color:#0369a1;margin-left:auto">이번 주</span></div>
+      <div class="tier" style="background:linear-gradient(135deg,#0c4a6e,#0284c7)"><div><div class="big">🗣 설명가 Ⅲ</div><small>말하기력 평균 6.9 · 이번 주 2회 · 🔥 3주 연속</small></div><div style="margin-left:auto;text-align:right"><div style="font-size:22px;font-weight:900">7위</div><small>중등부</small></div></div>
+      <div style="font-size:11.5px;font-weight:800;margin:12px 0 5px">📼 9/5 「일차함수의 기울기」 · 2분 40초</div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>정확성 (틀린 말 없음)</span><span>2/2</span></div><div class="bar"><i style="width:100%"></i></div></div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>왜? (근거·이유 말하기)</span><span>1/2</span></div><div class="bar"><i style="width:50%"></i></div><div style="font-size:11px;color:#64748b;margin-top:4px">「기울기는 y 증가량/x 증가량」까지는 좋았어요. <b>왜</b> 그렇게 정의하는지 한 문장이 빠졌어요.</div></div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>순서 (정의→예→주의점)</span><span>2/2</span></div><div class="bar"><i style="width:100%"></i></div></div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>내 말로 (용어를 풀어서)</span><span>1/2</span></div><div class="bar"><i style="width:50%"></i></div></div>
+      <div class="spk"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800"><span>질문 던지기 (듣는 사람에게)</span><span>1/2</span></div><div class="bar"><i style="width:50%"></i></div><div style="font-size:11px;color:#64748b;margin-top:4px">하브루타답게 끝에 「그럼 기울기가 음수면 어떻게 될까?」 같은 질문 하나!</div></div>
+      <div class="coach" style="background:#f0f9ff;border-color:#bae6fd"><b style="color:#0369a1">정수쌤 한마디</b> 개념 순서가 깔끔합니다. 다음 녹음에서는 「왜」를 한 번, 마지막에 질문을 하나 넣어 보세요. → 예상 말하기력 9</div>
+    </div>
+    <div class="card" style="flex:1;min-width:320px">
+      <b style="font-size:13.5px">두 리그를 한 판으로 — 「탐구 리그」</b>
+      <div style="font-size:12.5px;line-height:1.7;color:#334155;margin-top:6px">IB에서 배우는 순환은 <b>묻기(inquiry) → 해보기(action) → 되돌아보기(reflection)</b>입니다. 우리 학원 도구에 그대로 대응됩니다.</div>
+      <table class="cmp" style="margin-top:8px">
+        <tr><th>IB 단계</th><th>루멘 도구</th><th>점수</th></tr>
+        <tr><td>묻기</td><td>💡 아하노트 질문 4칸</td><td>질문력 0~10</td></tr>
+        <tr><td>해보기</td><td>🔁 재풀이 제출 · 매쓰플랫 재복습(mf_answer_records로 자동 확인)</td><td>되돌아보기 기준 ⑤</td></tr>
+        <tr><td>되돌아보기·말하기</td><td>🎙 하브루타 녹음 「내가 배운 것을 설명」</td><td>말하기력 0~10</td></tr>
+      </table>
+      <div class="coach"><b>확장 아이디어</b><br>• 질문한 문제를 <b>녹음 주제로 자동 추천</b>: 「p.87 12번, 이제 설명할 수 있어요?」 → 질문–해결–설명이 한 문제에서 완결되면 <b>「완결 보너스」</b><br>• <b>질문 갤러리</b>: 베스트 질문을 학생앱·학원 벽면 인쇄로 전시 → 잘 쓴 질문의 모양을 보고 배움<br>• <b>학부모 리포트</b>에 「질문력·말하기력 추이」 그래프 한 칸<br>• 짝 하브루타: A가 설명 녹음 → B가 그 녹음 듣고 질문 녹음(2단계에서)<br>• 원장님이 채점을 다 못 하는 날: AI 초안 점수를 「임시」로 학생에게 먼저 보여주고, 승인되면 확정 표시(발행 센터의 도장 문법)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ⑤ 구현 순서 ════════ -->
+<div class="sec">
+  <h2>⑤ 만들 순서 (제안)</h2>
+  <div class="card">
+    <table class="cmp">
+      <tr><th style="width:60px">단계</th><th>내용</th><th style="width:220px">건드리는 것</th></tr>
+      <tr><td><b>1</b></td><td>학생앱 질문 4칸 + 질문력 미터(규칙 기반, AI 없이) · aha_notes에 <code>q_try/q_stuck/q_guess/q_ask</code> 컬럼 · 옛 「한 줄 메모」는 4칸 중 「묻고 싶은 것」으로 이사</td><td>student_v2, aha_notes 테이블</td></tr>
+      <tr><td><b>2</b></td><td>학원앱 질문 채점(Haiku 초안 → 원장 조정 → 한 줄 코치) · 힌트 발송에 점수 동봉 · ⭐채택</td><td>lumen 아하노트 카드, aha_hints</td></tr>
+      <tr><td><b>3</b></td><td>질문 리그 보드(새벽 엔진이 race처럼 계산: <code>qleague_board</code>) + 학생앱 카드 + 베스트 질문 갤러리</td><td>sync/race_engine.js 옆에 qleague, student_v2</td></tr>
+      <tr><td><b>4</b></td><td>말하기 리그: STT → 5기준 채점 → 학생앱 결과 카드 · 녹음 주제 자동 추천(질문한 문제)</td><td>recmgr, student_v2</td></tr>
+      <tr><td><b>5</b></td><td>XP·학부모 리포트 연결, 시즌 시상(레이스 시즌 설정 재사용)</td><td>레벨관리, parent</td></tr>
+    </table>
+    <div class="note">결정해 주실 것 — ① 점수 규칙 A/B/C ② 채점을 매번 승인할지, AI 초안 자동 확정+사후 수정으로 할지 ③ 질문 리그를 레이스와 같은 부(초·중·고)·시즌으로 갈지 ④ 되돌아보기(⑤ 기준)를 필수로 할지 ⑤ 등급 이름(IB 학습자상 vs 우리말)</div>
+  </div>
+</div>
+</body></html>
