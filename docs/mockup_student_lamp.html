@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>📱 학생앱 미리보기 — 아하노트 LAMP (v3 1단계)</title>
+<title>📱 학생앱 미리보기 — IB아하노트 (1단계)</title>
 <style>
 :root{
   --red:#e8192c; --navy:#0d2240; --navy2:#1d3a60; --blue:#1d6fe8;
@@ -186,59 +186,149 @@ table.cmp th{background:#f6f8fb;font-size:11.5px}
   display:flex;align-items:flex-start;justify-content:center;font-size:9px;color:#94a3b8;padding-top:4px}
 .shot .tx{font-size:11.5px;line-height:1.55;color:var(--sub)}
 .shot .tx b{color:var(--text);font-size:12.5px;display:block;margin-bottom:2px}
+
+/* IB 설명 */
+.ibhero{background:linear-gradient(135deg,#1d6fe8,#0d2240);border-radius:14px;padding:13px 14px;color:#fff;margin-bottom:10px}
+.ibhero .k{font-size:10px;font-weight:800;letter-spacing:.12em;opacity:.8}
+.ibhero .t{font-size:16px;font-weight:900;margin:3px 0 5px;line-height:1.3}
+.ibhero .s{font-size:11.5px;line-height:1.6;opacity:.92}
+.ibcard{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:11px 12px;margin-bottom:9px}
+.ibcard .t{font-size:12.5px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.ibcard .s{font-size:11.5px;color:#334155;line-height:1.65}
+.ibcard .s b{color:var(--navy)}
+.ibrow{display:grid;grid-template-columns:30px 1fr;gap:6px 8px;align-items:start;margin-top:6px}
+.ibrow .l{width:26px;height:26px;border-radius:7px;background:var(--brown);color:#fff;font-family:Georgia,serif;
+  font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center}
+.ibrow .l.r{background:var(--red)}
+.ibrow .l.h{background:#b45309;font-size:9px;font-family:inherit}
+.ibrow .d{font-size:11.5px;line-height:1.5;color:#334155;padding-top:3px}
+.ibrow .d b{color:var(--navy)}
+/* 리그 */
+.tier{background:linear-gradient(135deg,#1e1b4b,#4c1d95);border-radius:14px;padding:13px 14px;color:#fff;margin-bottom:9px}
+.tier .row{display:flex;align-items:center;gap:10px}
+.tier .big{font-size:24px;font-weight:900;line-height:1.05}
+.tier .big small{display:block;font-size:10.5px;opacity:.8;font-weight:700;margin-top:3px}
+.tier .rk{margin-left:auto;text-align:right}
+.tier .rk b{font-size:22px;font-weight:900;display:block;line-height:1}
+.tier .rk small{font-size:10px;opacity:.8}
+.tier .stats{display:flex;gap:6px;margin-top:10px}
+.tier .st{flex:1;background:rgba(255,255,255,.12);border-radius:9px;padding:6px 7px;text-align:center}
+.tier .st b{display:block;font-size:15px;font-weight:900}
+.tier .st span{font-size:9.5px;opacity:.85}
+.next{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:9px 11px;margin-bottom:9px}
+.next .t{font-size:11.5px;font-weight:800;color:#6d28d9;margin-bottom:5px}
+.next .cond{display:flex;align-items:center;gap:7px;font-size:11.5px;margin-bottom:4px;color:#334155}
+.next .cond .bar{flex:1;height:6px;background:#eef0f5;border-radius:4px;overflow:hidden}
+.next .cond .bar i{display:block;height:100%;background:#7c3aed}
+.next .cond .n{font-weight:800;color:var(--navy);flex:none;font-size:11px}
+.rank{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-size:12px;
+  font-weight:700;border:1px solid #eef0f4;margin-bottom:4px;background:#fff}
+.rank.me{background:#f5f3ff;border-color:#c4b5fd}
+.rank .n{width:20px;font-weight:900;color:#6d28d9}
+.rank .tag{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;background:#ede9fe;color:#6d28d9}
+.rank .pt{margin-left:auto;font-weight:900;color:var(--navy)}
+.best{border:1.5px solid #fde68a;background:#fffbeb;border-radius:12px;padding:9px 11px;margin-bottom:9px;font-size:11.5px;line-height:1.55}
+.best b{color:#b45309;font-size:11px;display:block;margin-bottom:2px}
+.sec{font-size:11.5px;font-weight:800;color:var(--navy);margin:10px 0 5px}
 </style></head><body>
 
 <div class="head">
-  <h1>📱 학생앱 미리보기 — 아하노트가 「LAMP」로 (1단계)</h1>
-  <b>고친 점(원장 지적 반영):</b> 종이 활동지에 연필로 쓴 것을 앱에 <b>다시 쓰지 않습니다.</b>
-  활동지를 <b>사진 한 장</b> 찍으면 AI가 L·A·M·P 네 칸을 읽어 채우고, 학생은 <b>맞는지 확인만</b> 합니다.
-  종이 없이 급히 물을 때만 앱에서 직접 씁니다.
+  <h1>📱 학생앱 미리보기 — 「IB아하노트」 (1단계)</h1>
+  <b>원장 결정 반영:</b> ① 앱에서 직접 쓰는 방법은 <b>없습니다</b> — 종이 LAMP 활동지에 쓰고 <b>사진 한 장</b>이 전부입니다.
+  ② 이름을 <b>IB아하노트</b>로 바꾸고 IB 설명을 넣었습니다. ③ <b>리그 진행 화면</b>을 추가했습니다.
 </div>
 
 <div class="stage">
 
-  <!-- ① 두 갈래 -->
+  <!-- ① 시작 -->
   <div class="col">
-    <div class="cap"><span>1</span> 아하노트 시작 <small>두 갈래</small></div>
+    <div class="cap"><span>1</span> IB아하노트 시작</div>
     <div class="phone">
-      <div class="hdr"><button class="back">←</button><div class="htitle">💡 새 아하노트</div></div>
+      <div class="hdr"><button class="back">←</button><div class="htitle">💡 IB아하노트</div><span class="hright">ⓘ IB란?</span></div>
       <div class="body">
         <div class="pick main">
-          <div class="t">📄 활동지 사진으로<span class="bdg">보통 이것</span></div>
-          <div class="s">종이 <b>LAMP 활동지</b>에 이미 썼다면 사진만 찍으세요.
-            AI가 네 칸을 읽어 옮겨 적습니다. <b>다시 쓰지 않아도 됩니다.</b></div>
+          <div class="t">📄 활동지 사진 찍기</div>
+          <div class="s">종이 <b>LAMP 활동지</b>에 쓴 것을 찍으세요. AI가 네 칸을 읽어 옮겨 적고,
+            여러분은 <b>맞는지 확인만</b> 합니다. <b>앱에 다시 쓰지 않습니다.</b></div>
           <button class="btn" style="width:100%">📷 활동지 사진 찍기</button>
         </div>
-        <div class="pick">
-          <div class="t">✍️ 앱에서 바로 쓰기</div>
-          <div class="s">활동지가 없을 때. 집에서 갑자기 막혔거나, 종이를 안 가져왔을 때 씁니다.</div>
-          <button class="btn ghost" style="width:100%;flex:1">앱에서 바로 쓰기</button>
+        <div class="note" style="margin-top:0">🏠 <b>집에서 활동지가 없을 때</b> — 공책에 <b>L · A · M · P</b> 네 글자를 쓰고
+          그 옆에 적어서 찍어도 됩니다. 같은 방식으로 읽습니다.</div>
+
+        <div class="sec">📒 내 IB아하노트</div>
+        <div class="ncard" style="padding:9px 11px">
+          <div class="top" style="margin-bottom:3px"><span class="src">쎈 중2-1 · p.87 12번</span><span class="st fin">✓ 9점</span></div>
+          <div style="font-size:11px;color:var(--sub)">9/7 · 개념적 질문 · 힌트 1개로 해결</div>
         </div>
-        <div class="note">둘 다 <b>결과는 같습니다.</b> 네 칸이 채워지고 질문력 점수를 받습니다.
-          종이로 쓴 학생이 손해 보지 않도록, <b>사진 경로가 기본</b>입니다.</div>
+        <div class="ncard" style="padding:9px 11px">
+          <div class="top" style="margin-bottom:3px"><span class="src">개념원리 · p.132 5번</span><span class="st temp">⏳ 임시 7</span></div>
+          <div style="font-size:11px;color:var(--sub)">9/6 · 선생님 확인 대기</div>
+        </div>
       </div>
-      <div class="foot"><div class="btns"><button class="btn ghost" style="flex:1">내 아하노트 보기</button></div></div>
+      <div class="foot"><div class="btns"><button class="btn ghost" style="flex:1">🏆 리그 보기</button><button class="btn">📷 사진 찍기</button></div></div>
     </div>
   </div>
 
-  <!-- ② 사진 → AI 읽기 -->
+  <!-- ② IB 설명 -->
   <div class="col">
-    <div class="cap"><span>2</span> 활동지 사진 → AI가 읽음 <small>주 경로</small></div>
+    <div class="cap"><span>2</span> ⓘ IB아하노트란? <small>학생·학부모용 설명</small></div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">ⓘ IB아하노트란?</div></div>
+      <div class="body">
+        <div class="ibhero">
+          <div class="k">IB · INTERNATIONAL BACCALAUREATE</div>
+          <div class="t">정답을 맞히는 공부에서,<br>「질문을 잘 쓰는」 공부로</div>
+          <div class="s">IB(국제 바칼로레아)는 세계 160여 나라가 쓰는 교육과정입니다. 경기도교육청도 도입을 추진하고 있습니다.
+            IB 수학은 <b>답을 외웠는지</b>가 아니라 <b>어떻게 생각했는지</b>를 봅니다.</div>
+        </div>
+        <div class="ibcard">
+          <div class="t">IB가 수학에서 보는 것</div>
+          <div class="s">문제를 <b>정확히 이해</b>했나 · 어떤 <b>원리</b>를 떠올렸나 · 풀이를 <b>논리 순서</b>로 썼나 ·
+            막힌 곳을 <b>스스로 짚고 물을 수</b> 있나 · 풀고 나서 <b>무엇을 배웠는지 돌아보나</b>.
+            이 다섯 가지를 각각 점수로 매깁니다.</div>
+        </div>
+        <div class="ibcard">
+          <div class="t">루멘수학의 LAMP 활동지가 바로 그것입니다</div>
+          <div class="ibrow">
+            <span class="l">L</span><span class="d"><b>Learn</b> 문제를 정확히 이해하기 — 구하는 것과 조건</span>
+            <span class="l">A</span><span class="d"><b>Activate</b> 관련 이론·공식 떠올리기</span>
+            <span class="l">M</span><span class="d"><b>Model</b> 어떻게 풀었는지 논리 순서로</span>
+            <span class="l r">P</span><span class="d"><b>Pinpoint</b> 막힌 곳을 콕 집고, 어떤 도움을 원하는지</span>
+            <span class="l h">AHA</span><span class="d"><b>되돌아보기</b> 어떤 발상을 못 떠올렸나, 무엇을 배웠나</span>
+          </div>
+        </div>
+        <div class="ibcard">
+          <div class="t">그래서 점수는 이렇게</div>
+          <div class="s">L·A·M·P·AHA 각 0·1·2점 = <b>질문력 10점</b>.
+            여기에 「왜?」로 물으면 +1, <b>스스로 풀면 +4</b>, 힌트를 적게 보고 풀수록 높습니다.
+            <b>많이 올리는 것이 아니라 잘 쓰는 것</b>이 점수입니다 — 하루 2개까지만 리그에 인정됩니다.</div>
+        </div>
+        <div class="ibcard" style="background:#fffbeb;border-color:#fde68a">
+          <div class="t" style="color:#b45309">부모님께</div>
+          <div class="s">「모르겠어요」 한 줄이 「어디서 막혔고 어떤 설명이 필요한지」 한 문단으로 바뀌는 과정입니다.
+            점수보다 <b>질문의 질이 달라지는 것</b>을 봐 주세요. 매달 성장 리포트에 함께 보내 드립니다.</div>
+        </div>
+      </div>
+      <div class="foot"><div class="btns"><button class="btn" style="flex:1">알겠어요</button></div></div>
+    </div>
+  </div>
+
+  <!-- ③ 사진 → AI -->
+  <div class="col">
+    <div class="cap"><span>3</span> 활동지 사진 → AI가 읽음 → 확인</div>
     <div class="phone">
       <div class="hdr"><button class="back">←</button><div class="htitle">📄 활동지 확인</div><span class="hright">쎈 p.87 12번</span></div>
       <div class="body">
         <div class="shot"><span class="im">활동지</span>
           <span class="tx"><b>사진 1장 · 9/7</b>교재·쪽·번호·틀린이유도 활동지에서 함께 읽었어요</span></div>
-        <div class="aiban">🤖 <b>AI가 네 칸을 읽었어요.</b> 맞는지 훑어보고, 다르면 「고치기」를 누르세요.
-          <b>다시 쓸 필요는 없습니다.</b></div>
-
+        <div class="aiban">🤖 <b>AI가 네 칸을 읽었어요.</b> 맞는지 훑어보고, 다르면 「고치기」. <b>다시 쓸 필요 없습니다.</b></div>
         <div class="lamp read">
           <div class="t"><span class="ltr">L</span><span class="tt">문제를 정확히 이해하기</span><span class="fix">✏️ 고치기</span></div>
           <div class="val">기울기 2이고 (1,3)을 지나는 직선의 x절편 구하기. 조건은 기울기와 지나는 점 하나.</div>
         </div>
         <div class="lamp warn">
           <div class="t"><span class="ltr" style="background:#b45309">A</span><span class="tt" style="color:#b45309">관련 이론·공식</span><span class="fix">✏️ 채우기</span></div>
-          <div class="miss">글씨가 흐려서 못 읽었어요. 한 줄만 적어 주세요 — <b>「일차함수 y=ax+b, 절편은 축과 만나는 점」</b> 처럼요.</div>
+          <div class="miss">글씨가 흐려서 못 읽었어요. 한 줄만 적어 주세요.</div>
         </div>
         <div class="lamp read">
           <div class="t"><span class="ltr">M</span><span class="tt">어떻게 풀었나요?</span><span class="fix">✏️ 고치기</span></div>
@@ -256,66 +346,18 @@ table.cmp th{background:#f6f8fb;font-size:11.5px}
             <div class="mean"><b>설명하시오</b> — 구체적인 사례를 들어 용어를 정의한다</div>
           </div>
         </div>
-        <div class="note" style="margin-bottom:6px">학생이 <b>손으로 하는 일은 두 가지뿐</b>입니다 — 사진 찍기, 지시어 하나 누르기.
-          (못 읽은 칸이 있으면 그 칸만 채우기)</div>
+        <div class="selfev" style="margin-top:2px">
+          <div class="t">✅ 내가 먼저 매겨 보기 <span style="font-weight:600;color:#94a3b8;font-size:10.5px">(선택 · 맞히면 +1)</span></div>
+          <div class="row" style="flex-direction:row;flex-wrap:wrap;gap:5px 12px">
+            <div class="it"><span class="cbx on">✓</span> L</div><div class="it"><span class="cbx on">✓</span> A</div>
+            <div class="it"><span class="cbx on">✓</span> M</div><div class="it"><span class="cbx"></span> P</div>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--sub)">예상 <b style="color:var(--navy)">6</b>/8</span>
+          </div>
+        </div>
       </div>
       <div class="foot">
         <div class="meter"><span class="k">질문력</span><div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><span class="n">6 / 8</span></div>
         <div class="btns"><button class="btn ghost">🙋 이미 풀었어요</button><button class="btn">이대로 보내기</button></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ③ 앱에서 바로 -->
-  <div class="col">
-    <div class="cap"><span>3</span> 앱에서 바로 쓰기 <small>종이가 없을 때만</small></div>
-    <div class="phone">
-      <div class="hdr"><button class="back">←</button><div class="htitle">💡 새 아하노트</div><span class="hright">쎈 p.87 12번</span></div>
-      <div class="body">
-        <div class="lamp">
-          <div class="t"><span class="ltr">L</span><span class="tt">문제를 정확히 이해하기</span><span class="ok">✓</span></div>
-          <div class="hh">구하려는 것과 문제 조건을 내 말로</div>
-          <div class="val">기울기 2이고 (1,3)을 지나는 직선의 <b>x절편</b>을 구하는 문제.</div>
-        </div>
-        <div class="lamp">
-          <div class="t"><span class="ltr">A</span><span class="tt">관련 이론·공식 떠올리기</span><span class="ok">✓</span></div>
-          <div class="hh">이 문제에 쓸 공식·성질은?</div>
-          <div class="val">일차함수 y=ax+b, 점을 대입해 b 구하기.</div>
-        </div>
-        <div class="lamp">
-          <div class="t"><span class="ltr">M</span><span class="tt">어떻게 풀었나요?</span><span class="ok">✓</span></div>
-          <div class="hh">어디까지, 어떤 논리로 풀었는지 식으로</div>
-          <div class="val">y=2x+b에 (1,3) 대입 → 3=2+b → b=1</div>
-        </div>
-        <div class="lamp p">
-          <div class="t"><span class="ltr">P</span><span class="tt">막힌 곳을 콕 집기</span><span class="ok">✓</span></div>
-          <div class="hh">어느 줄·어느 단계에서 막혔는지</div>
-          <div class="val">x절편 구할 때 <b>y=0인지 x=0인지</b> 헷갈립니다.</div>
-          <div class="dir">
-            <div class="dt">선생님께 원하는 것 — 하나만</div>
-            <div class="chips">
-              <span class="chip sm blue on">설명</span><span class="chip sm">비교</span><span class="chip sm">논증</span>
-              <span class="chip sm">추론</span><span class="chip sm">적용</span><span class="chip sm">해석</span><span class="chip sm">평가</span>
-            </div>
-            <div class="val" style="margin-top:7px">왜 y=0을 넣는지 예를 들어 설명해 주세요.</div>
-            <div><span class="qtype">개념적 질문</span> <span class="qtype plus">+1점</span></div>
-          </div>
-        </div>
-        <div class="selfev">
-          <div class="t">✅ 보내기 전, 내가 먼저 매겨 보기</div>
-          <div class="s">선생님도 <b>똑같은 표</b>로 봅니다. 맞으면 <b>+1점</b> · 체크만 하면 됩니다</div>
-          <div class="row">
-            <div class="it"><span class="cbx on">✓</span> <b style="font-family:Georgia,serif">L</b> 구하는 것·조건을 썼다</div>
-            <div class="it"><span class="cbx on">✓</span> <b style="font-family:Georgia,serif">A</b> 이론·공식을 떠올렸다</div>
-            <div class="it"><span class="cbx on">✓</span> <b style="font-family:Georgia,serif">M</b> 풀이를 순서대로 썼다</div>
-            <div class="it"><span class="cbx"></span> <b style="font-family:Georgia,serif">P</b> 막힌 줄을 콕 집었다</div>
-          </div>
-          <div class="exp">내 예상 질문력 <b>6</b> / 8 <span style="margin-left:auto;color:#94a3b8">AHA는 풀고 나서</span></div>
-        </div>
-      </div>
-      <div class="foot">
-        <div class="meter"><span class="k">질문력</span><div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><span class="n">7 / 8</span></div>
-        <div class="btns"><button class="btn ghost">🙋 쓰다 보니 알았어요</button><button class="btn">질문 보내기</button></div>
       </div>
     </div>
   </div>
@@ -328,20 +370,18 @@ table.cmp th{background:#f6f8fb;font-size:11.5px}
       <div class="body">
         <div class="selfbox">
           <div class="t">🙋 쓰다 보니 알았어요!</div>
-          <div class="s">질문을 쓰다가(또는 활동지를 쓰다가) 스스로 풀렸다면 여기서 끝냅니다. <b>가장 큰 점수(+4)</b>.</div>
+          <div class="s">활동지를 쓰다가 스스로 풀렸다면 여기서 끝냅니다. <b>가장 큰 점수(+4)</b>.</div>
           <label class="lb" style="font-size:11.5px">어떻게 풀렸나요? <span class="req">*</span></label>
           <div class="val" style="border:1px solid #e2e8f0;border-radius:9px;background:#fff;padding:7px 9px;font-size:12px;line-height:1.5">
             「막힌 곳」을 쓰다가 x절편은 <b>x축 위의 점</b>이니까 y=0이라는 걸 알았어요.</div>
           <label class="lb" style="font-size:11.5px;margin-top:8px">다시 푼 사진 <span class="req">*</span></label>
-          <div class="photo" style="height:64px"><span class="th" style="width:48px;height:48px;font-size:18px">📸</span><span style="font-size:11.5px">활동지 6단계 칸을 찍어도 됩니다</span></div>
+          <div class="photo" style="height:64px"><span class="th" style="width:48px;height:48px;font-size:18px">📸</span><span style="font-size:11.5px">활동지 6단계 칸을 찍으면 됩니다</span></div>
           <div style="margin-top:8px;font-size:11px;color:#92400e;background:#fff;border:1px solid #fde68a;border-radius:8px;padding:6px 8px;line-height:1.5">
             ✓ 답 <b>−1/2</b> · 교재 정답과 일치 → 선생님 확인만 남았어요</div>
           <button class="btn gold" style="width:100%;margin-top:9px">🙋 스스로 해결로 보내기 <span style="opacity:.85">(6 + 4 = 10)</span></button>
         </div>
-        <div class="note" style="margin-top:4px">힌트를 받아 풀어도 점수가 있습니다.
-          <b>적게 보고 풀수록 높습니다</b> — 힌트 1개 +3 · 2개 +2 · 3개 +1.
-          <b>물어보는 것이 손해가 되지 않게</b> 했습니다.</div>
-        <div class="note">활동지 <b>7단계 AHA</b>는 풀고 나서 채웁니다. 사진을 다시 올리거나 앱에 한 줄 적으면 <b>+2점</b>입니다.</div>
+        <div class="note" style="margin-top:4px">힌트를 받아 풀어도 점수가 있습니다. <b>적게 보고 풀수록 높습니다</b> — 힌트 1개 +3 · 2개 +2 · 3개 +1.</div>
+        <div class="note">활동지 <b>7단계 AHA</b>는 풀고 나서 채웁니다. 사진을 다시 올리면 <b>+2점</b>.</div>
       </div>
       <div class="foot"><div class="btns"><button class="btn ghost" style="flex:1">나중에 하기</button></div></div>
     </div>
@@ -349,17 +389,10 @@ table.cmp th{background:#f6f8fb;font-size:11.5px}
 
   <!-- ⑤ 결과 -->
   <div class="col">
-    <div class="cap"><span>5</span> 보낸 뒤 — 임시 점수 → 확정</div>
+    <div class="cap"><span>5</span> 점수 받기 — 임시 → 확정</div>
     <div class="phone">
-      <div class="hdr"><button class="back">←</button><div class="htitle">💡 아하노트</div><span class="hright">내 기록</span></div>
+      <div class="hdr"><button class="back">←</button><div class="htitle">💡 IB아하노트</div><span class="hright">내 기록</span></div>
       <div class="body">
-        <div class="ncard">
-          <div class="top"><span class="src">쎈 중2-1 · p.87 12번</span><span class="st temp">⏳ 임시</span></div>
-          <div style="font-size:11.5px;color:var(--sub);line-height:1.5;margin-bottom:7px">방금 보냈어요. 선생님이 확인하면 점수가 확정됩니다.</div>
-          <div class="score" style="background:linear-gradient(135deg,#94a3b8,#475569)">
-            <span class="big">7</span><span class="u">/ 10</span>
-            <span class="rt">임시 점수<br>선생님 확인 대기</span></div>
-        </div>
         <div class="ncard">
           <div class="top"><span class="src">쎈 중2-1 · p.87 12번</span><span class="st fin">✓ 확정</span></div>
           <div class="score"><span class="big">9</span><span class="u">/ 10</span>
@@ -376,40 +409,71 @@ table.cmp th{background:#f6f8fb;font-size:11.5px}
           <div class="ladder"><span>E</span><span>D</span><span class="cur">C 지금</span><span class="next">B 다음</span><span>A</span></div>
           <div style="font-size:11px;color:var(--sub);line-height:1.5">B가 되려면 — <b>x절편·y절편 용어를 정확히</b> 쓰고, 왜 그런지 한 문장으로 설명하기</div>
           <div style="margin-top:9px;padding-top:8px;border-top:1px dashed #e2e8f0;font-size:11.5px;color:var(--text)">
-            💡 힌트 <b>1개</b> 열림 → 풀고 나서 <b>AHA</b>를 쓰면 <b>+2점</b>이에요</div>
+            💡 힌트 <b>1개</b> 열림 → 풀고 나서 <b>AHA</b>를 찍어 올리면 <b>+2점</b></div>
+        </div>
+        <div class="ncard">
+          <div class="top"><span class="src">개념원리 · p.132 5번</span><span class="st temp">⏳ 임시</span></div>
+          <div class="score" style="background:linear-gradient(135deg,#94a3b8,#475569)">
+            <span class="big">7</span><span class="u">/ 10</span><span class="rt">임시 점수<br>선생님 확인 대기</span></div>
         </div>
       </div>
-      <div class="foot"><div class="btns"><button class="btn">＋ 새 아하노트</button></div></div>
+      <div class="foot"><div class="btns"><button class="btn ghost" style="flex:1">🏆 리그 보기</button><button class="btn">📷 사진 찍기</button></div></div>
+    </div>
+  </div>
+
+  <!-- ⑥ 리그 -->
+  <div class="col">
+    <div class="cap"><span>6</span> 🏆 리그 진행 <small>월 시즌 · 중등부</small></div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">🏆 IB아하노트 리그</div><span class="hright">9월 · D-23</span></div>
+      <div class="body">
+        <div class="tier">
+          <div class="row">
+            <div class="big">🔎 탐구자<small>Knowledgeable · 중등부</small></div>
+            <div class="rk"><b>4위</b><small>18명 중</small></div>
+          </div>
+          <div class="stats">
+            <div class="st"><b>86</b><span>리그 점수</span></div>
+            <div class="st"><b>7.8</b><span>평균 질문력</span></div>
+            <div class="st"><b>5</b><span>🙋 스스로</span></div>
+            <div class="st"><b>6/8</b><span>이번 주 인정</span></div>
+          </div>
+        </div>
+        <div class="next">
+          <div class="t">다음 등급 「사고자 Thinker」까지</div>
+          <div class="cond"><span>평균 질문력 8 이상</span><span class="bar"><i style="width:97%"></i></span><span class="n">7.8 / 8</span></div>
+          <div class="cond"><span>스스로 해결 3회</span><span class="bar"><i style="width:100%"></i></span><span class="n">5 / 3 ✓</span></div>
+          <div style="font-size:10.5px;color:var(--sub);margin-top:3px">질문력 8 이상 노트 하나면 승급합니다. 등급은 내려가지 않습니다.</div>
+        </div>
+        <div class="sec">🏅 중등부 순위 <span style="font-weight:600;color:#94a3b8">· 6위부터는 본인에게만</span></div>
+        <div class="rank"><span class="n">1</span>박○○ <span class="tag">사고자</span><span class="pt">112</span></div>
+        <div class="rank"><span class="n">2</span>이○○ <span class="tag">사고자</span><span class="pt">98</span></div>
+        <div class="rank"><span class="n">3</span>최○○ <span class="tag">탐구자</span><span class="pt">91</span></div>
+        <div class="rank me"><span class="n">4</span>김○○ (나) <span class="tag">탐구자</span><span class="pt">86</span></div>
+        <div class="rank"><span class="n">5</span>정○○ <span class="tag">탐구자</span><span class="pt">79</span></div>
+        <div class="sec">🏆 이번 주 베스트 질문</div>
+        <div class="best"><b>박○○ · 개념원리 p.132 · 질문력 10</b>「판별식이 0일 때 중근이라 하는데, 그래프로는 왜 x축에 ‘닿기만’ 하는 건지 설명해 주세요. 제 생각엔…」</div>
+        <div class="sec">📏 점수 쌓이는 법</div>
+        <div class="note" style="margin-top:0">질문력(0~10) + 「왜?」 +1 + 스스로 +4 / 힌트 1개 +3 / 2개 +2 / 3개 +1 + AHA +2 + ⭐수업 채택 +2<br>
+          <b>하루 2개 · 주 8개까지만</b> 인정 — 양보다 질 · 등급: 질문자 → 탐구자 → 사고자 → 성찰자</div>
+      </div>
+      <div class="foot"><div class="btns"><button class="btn ghost" style="flex:1">🎙 말하기 리그</button><button class="btn">📷 사진 찍기</button></div></div>
     </div>
   </div>
 </div>
 
 <div class="stage" style="margin-top:26px">
   <div style="width:100%;background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(13,34,64,.06)">
-    <div style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:10px">두 번 쓰지 않습니다</div>
-    <p style="font-size:12.5px;line-height:1.8;margin:0 0 12px;color:#333">
-      원장님 지적이 맞았습니다. 종이에 연필로 쓴 L·A·M·P를 앱에 또 치게 하면 아무도 안 씁니다.
-      그래서 <b>활동지를 쓴 학생은 사진 한 장으로 끝냅니다.</b>
-      AI가 네 칸과 교재·쪽·번호·틀린이유까지 읽어 채우고, 학생은 맞는지 보고 <b>지시어 하나만</b> 누릅니다.
-    </p>
+    <div style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:10px">이번에 바뀐 것</div>
     <table class="cmp">
-      <tr><th style="width:130px">학생이 한 일</th><th>종이에 이미 쓴 경우</th><th>종이 없이 앱에서만</th></tr>
-      <tr><td><b>네 칸 쓰기</b></td><td>연필로 활동지에 <b>한 번</b></td><td>앱에 <b>한 번</b></td></tr>
-      <tr><td><b>앱에서 하는 일</b></td><td>📷 사진 1장 + 지시어 ○ <b>(끝)</b></td><td>네 칸 입력 + 지시어 ○</td></tr>
-      <tr><td><b>못 읽었을 때</b></td><td>그 칸만 한 줄 채우기</td><td>—</td></tr>
-      <tr><td><b>받는 점수</b></td><td colspan="2" style="text-align:center">똑같습니다. 종이로 쓴 학생이 손해 보지 않습니다.</td></tr>
+      <tr><th style="width:170px">결정</th><th>반영</th></tr>
+      <tr><td><b>앱에서 직접 쓰기 없음</b></td><td>입력 경로는 <b>활동지 사진 하나</b>. 집에서 활동지가 없으면 공책에 L·A·M·P 네 글자를 쓰고 찍으면 됨. 앱은 「읽은 것 확인 + 지시어 하나 누르기」만.</td></tr>
+      <tr><td><b>이름 「IB아하노트」</b></td><td>머리글·목록·리그 이름 모두 변경. ⓘ 버튼에 <b>학생·학부모용 IB 설명</b> 화면(IB가 무엇인지 → IB가 수학에서 보는 것 → 우리 LAMP가 바로 그것 → 점수 → 부모님께).</td></tr>
+      <tr><td><b>리그 진행 화면</b></td><td>내 등급(학습자상: 질문자→탐구자→사고자→성찰자)·순위·리그 점수·평균 질문력·스스로 해결 횟수·이번 주 인정 n/8 · 다음 등급 조건 막대 · 상위 5명(성+○○) · 이번 주 베스트 질문 · 점수 규칙. 진도 레이스와 같은 문법(부·월 시즌·이름 가리기).</td></tr>
+      <tr><td><b>자기평가</b></td><td>사진 확인 화면에 <b>체크 4개(선택)</b>로 남겼습니다. 맞히면 +1. 빼도 됩니다.</td></tr>
     </table>
-    <div style="margin-top:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.75;color:#14532d">
-      <b>AI가 손글씨를 읽을 수 있나?</b> 지금 학원앱의 「수학풀이분석」이 이미 학생 손글씨 스캔을 읽어
-      학생별로 나누고 채점하고 있습니다. 같은 방식입니다. 못 읽은 칸은 <b>비워 두고 학생에게 물어보므로</b>
-      틀린 채로 넘어가지 않습니다.
-    </div>
-    <div style="margin-top:10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.75;color:#7c2d12">
-      <b>확인해 주실 것</b><br>
-      ① 사진 한 장으로 끝내는 이 흐름이 맞을까요?<br>
-      ② 「내가 먼저 매겨 보기」(체크 4개)는 <b>앱에서 바로 쓸 때만</b> 넣었습니다. 사진 경로에도 넣을까요?<br>
-      ③ AI가 읽은 것을 학생이 확인만 하면, <b>글씨를 못 알아볼 때</b>만 손이 갑니다. 이 정도면 될까요?<br>
-      ④ 아직 남은 SQL 두 칸(<code>q_learn</code>·<code>q_act</code>) 실행
+    <div style="margin-top:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.75;color:#7c2d12">
+      <b>확인해 주실 것</b> ① IB 설명 문구가 학부모께 보여도 될 만한지 ② 리그 화면에서 빼거나 더할 것 ③ 자기평가 체크 4개를 둘지 ④ SQL 두 칸(<code>q_learn</code>·<code>q_act</code>) 실행
     </div>
   </div>
 </div>

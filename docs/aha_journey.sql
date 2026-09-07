@@ -62,7 +62,8 @@ select column_name, data_type
 -- ═══════════════════════════════════════════════════════════════
 alter table public.aha_notes
   add column if not exists q_learn text,   -- L  문제에서 구하려는 것과 조건
-  add column if not exists q_act   text;   -- A  이 문제에 필요한 이론·공식
+  add column if not exists q_act   text,   -- A  이 문제에 필요한 이론·공식
+  add column if not exists lamp_ai jsonb;  -- AI가 활동지 사진에서 읽은 원본(학생이 고치기 전) — D7 「사진 한 장」 경로
 
 -- 칸 쓰임 (기존 칸 재사용, SQL 변경 없음)
 --   q_learn → L 문제 이해
@@ -75,4 +76,4 @@ alter table public.aha_notes
 
 select column_name from information_schema.columns
  where table_schema='public' and table_name='aha_notes'
-   and column_name in ('q_learn','q_act') order by column_name;
+   and column_name in ('q_learn','q_act','lamp_ai') order by column_name;
