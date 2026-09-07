@@ -1,334 +1,307 @@
 <!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>📝 종이 아하노트 새 양식 (인쇄용) — 아하 여정 v3</title>
+<title>📝 LAMP 활동지 v2 — 지금 양식을 살린 새 아하노트</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#e8ecf3;font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;color:#111;padding:22px 14px 60px}
-.wrap{max-width:1000px;margin:0 auto}
-.head{max-width:1000px;margin:0 auto 20px;font-size:12.5px;color:#4b5563;line-height:1.7}
+.head{max-width:1010px;margin:0 auto 18px;font-size:12.5px;color:#4b5563;line-height:1.75}
 .head h1{font-size:18px;color:#0d2240;margin:0 0 6px}
 .head b{color:#0d2240}
 .tabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
 .tabs button{border:1px solid #cbd5e1;background:#fff;color:#0d2240;font-family:inherit;font-size:12px;font-weight:800;border-radius:50px;padding:7px 15px;cursor:pointer}
-.tabs button.on{background:#0d2240;color:#fff;border-color:#0d2240}
-.note{font-size:11.5px;color:#64748b;background:#fff;border:1px dashed #cbd5e1;border-radius:10px;padding:10px 13px;margin:10px 0;line-height:1.7}
-
-/* ─── 종이 ─── */
-.sheet{width:210mm;min-height:297mm;background:#fff;margin:0 auto 22px;padding:12mm 11mm;box-shadow:0 8px 26px -12px rgba(13,34,64,.4);position:relative}
-.sheet.half{min-height:148.5mm}
+.tabs button.on{background:#4a3a18;color:#fff;border-color:#4a3a18}
+.note{font-size:11.5px;color:#64748b;background:#fff;border:1px dashed #cbd5e1;border-radius:10px;padding:10px 13px;margin:10px auto;line-height:1.7;max-width:1010px}
 .pane{display:none}.pane.on{display:block}
 
+/* ─── 종이 ─── */
+.sheet{width:210mm;min-height:297mm;background:#fff;margin:0 auto 22px;padding:9mm 9mm 8mm;
+  box-shadow:0 8px 26px -12px rgba(13,34,64,.4);position:relative;display:flex;flex-direction:column}
+:root{--ink:#111;--brown:#4a3a18;--gold:#f2b90c;--red:#d81b28;--gray:#8a8a8a}
+
 /* 머리 */
-.hd{display:flex;align-items:flex-end;gap:8px;border-bottom:2.5px solid #111;padding-bottom:5px;margin-bottom:7px}
-.hd .ttl{font-size:19px;font-weight:900;letter-spacing:-.5px}
-.hd .ttl small{font-size:10.5px;font-weight:700;color:#555;margin-left:5px;letter-spacing:0}
-.hd .side{margin-left:auto;font-size:10px;color:#666;text-align:right;line-height:1.5}
-.meta{display:flex;gap:0;border:1.5px solid #111;font-size:11px;margin-bottom:8px}
-.meta div{padding:4px 6px;border-right:1px solid #999;display:flex;align-items:center;gap:4px}
-.meta div:last-child{border-right:none}
-.meta b{font-size:10px;color:#333;white-space:nowrap}
-.meta .ln{flex:1;border-bottom:1px dotted #aaa;min-width:26px;height:14px}
+.top{display:flex;gap:9px;align-items:stretch;margin-bottom:6px}
+.logo{width:33mm;background:var(--brown);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5px 0 7px;flex:none}
+.logo .lm{color:#fff;font-size:23px;font-weight:900;letter-spacing:1.5px;line-height:1;margin-top:3px}
+.tp{flex:1;display:flex;flex-direction:column}
+.tp .r1{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.tp .r1 .t{font-size:21px;font-weight:900;color:var(--brown);letter-spacing:-.5px}
+.tag{background:var(--brown);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;white-space:nowrap}
+.fill{border-bottom:1px solid #555;flex:1;min-width:20px;height:15px}
+.steps{font-size:9.6px;line-height:1.62;color:#222}
+.steps b{color:var(--brown)}
+.steps .rd{color:var(--red);font-weight:800}
 
-/* 칸 */
-.bx{border:1.5px solid #111;margin-bottom:7px}
-.bx .bt{background:#111;color:#fff;font-size:11.5px;font-weight:800;padding:3px 8px;display:flex;align-items:center;gap:6px}
-.bx .bt small{font-weight:600;opacity:.85;font-size:10px}
-.bx .bt .pt{margin-left:auto;font-size:9.5px;background:#fff;color:#111;border-radius:3px;padding:1px 5px;font-weight:800}
-.bx .bb{padding:5px 8px 7px}
-.rule{border-bottom:1px solid #d4d4d4;height:27px}
-.rule:last-child{border-bottom:none}
-.hint{font-size:9.5px;color:#888;padding:2px 8px 4px;font-style:italic}
-
-/* 체크 */
-.chks{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:10.5px;padding:5px 8px}
-.chks span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
-.cb{display:inline-block;width:10px;height:10px;border:1.3px solid #111;flex:none}
+/* 표 */
+.tbl{display:flex;border:1px solid var(--ink);font-size:10px;margin-bottom:5px}
+.tbl div{padding:3px 5px;border-right:1px solid var(--ink);display:flex;align-items:center;gap:4px}
+.tbl div:last-child{border-right:none}
+.tbl .lb{background:#f2f2f2;font-weight:800;white-space:nowrap}
+.tbl .w{min-width:30px;flex:1}
+.cb{display:inline-block;width:9.5px;height:9.5px;border:1.2px solid var(--ink);flex:none}
 .cb.rd{border-radius:50%}
-.dsc{font-size:9px;color:#777;padding:0 8px 5px;line-height:1.5}
+
+/* 개념 줄 */
+.conc{border:1px solid var(--ink);border-top:none;font-size:9.3px;padding:3px 5px;display:flex;flex-wrap:wrap;gap:2px 8px;align-items:center;margin-bottom:6px}
+.conc b{font-size:9.3px;color:var(--brown);white-space:nowrap}
+.conc span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+
+/* LAMP 격자 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--ink);border-bottom:none}
+.cell{border-bottom:1px solid var(--ink);border-right:1px solid var(--ink);padding:4px 6px 5px;position:relative}
+.cell:nth-child(2n){border-right:none}
+.cell .h{font-size:12.5px;font-weight:700;color:#333;letter-spacing:-.2px;line-height:1.25}
+.cell .h .cap{font-size:15px;font-weight:900;color:var(--brown)}
+.cell .h small{font-size:9.3px;color:#555;font-weight:600}
+.cell.p .h,.cell.p .h .cap{color:var(--red)}
+.cell.p .h small{color:var(--red)}
+.la{min-height:26mm}
+.mp{min-height:52mm}
+
+/* 지시어 */
+.dir{border-top:1px dotted #bbb;margin-top:4px;padding-top:3px;font-size:9.3px}
+.dir .t{font-weight:800;color:var(--red);margin-bottom:2px}
+.dir .row{display:flex;flex-wrap:wrap;gap:2px 7px}
+.dir .row span{display:inline-flex;align-items:center;gap:2.5px;white-space:nowrap}
+.dir .dsc{color:#777;font-size:8.4px;line-height:1.45;margin-top:2px}
 
 /* 자기평가 */
-.selfev{border:1.5px solid #111;padding:5px 8px;font-size:10.5px;margin-bottom:7px}
-.selfev .t{font-weight:800;font-size:11px;margin-bottom:3px}
-.selfev .row{display:flex;flex-wrap:wrap;gap:3px 12px}
+.selfev{border:1px solid var(--ink);border-top:none;padding:3.5px 6px;font-size:9.5px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 10px;margin-bottom:6px}
+.selfev b{color:var(--brown);font-size:9.5px}
+.selfev span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.selfev .sc{margin-left:auto;font-weight:800}
+.selfev .sc u{display:inline-block;width:26px;border-bottom:1px solid var(--ink);text-decoration:none}
 
-/* 선생님란 */
-.tea{border:2px solid #111;background:#f4f4f4;padding:6px 8px;margin-top:8px}
-.tea .t{font-size:11.5px;font-weight:900;margin-bottom:5px;display:flex;align-items:center;gap:6px}
-.tea .t .r{margin-left:auto;font-size:10px;font-weight:700}
-.grid{display:grid;grid-template-columns:74px repeat(3,26px) 1fr;gap:2px 4px;font-size:10px;align-items:center}
-.grid .k{font-weight:800}
-.grid .c{border:1.2px solid #111;height:17px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px}
-.grid .memo{border-bottom:1px dotted #999;height:17px}
-.lad{display:flex;gap:3px;margin-top:5px;align-items:center;font-size:10px}
-.lad b{font-size:10px}
-.lad span{width:26px;height:18px;border:1.2px solid #111;display:flex;align-items:center;justify-content:center;font-weight:800}
-.coach{display:flex;gap:5px;font-size:10px;margin-top:5px;align-items:center}
-.coach b{white-space:nowrap;font-size:10px}
-.coach .ln{flex:1;border-bottom:1px dotted #999;height:15px}
+/* 재풀이 */
+.hw{border:1px solid var(--ink);flex:1;min-height:56mm;position:relative;margin-bottom:5px}
+.hw .hh{font-size:10px;color:#555;padding:3px 6px;border-bottom:1px dotted #ccc;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hw .hh b{color:var(--brown)}
+.hw .hh .path{display:flex;flex-wrap:wrap;gap:2px 8px;margin-left:auto}
+.hw .hh .path span{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.hw .gridbg{position:absolute;left:0;right:0;top:23px;bottom:0;
+  background-image:linear-gradient(#f0f0f0 1px,transparent 1px),linear-gradient(90deg,#f0f0f0 1px,transparent 1px);background-size:5mm 5mm}
 
-/* 뒷면 */
-.two{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.solv{border:1.5px solid #111;padding:5px 8px;font-size:10.5px}
-.solv .t{font-weight:800;font-size:11px;margin-bottom:4px}
-.big{border:1.5px solid #111;min-height:88mm;position:relative;margin-bottom:7px}
-.big .bt{background:#111;color:#fff;font-size:11.5px;font-weight:800;padding:3px 8px}
-.big .gridbg{position:absolute;left:0;right:0;top:22px;bottom:0;
-  background-image:linear-gradient(#eee 1px,transparent 1px),linear-gradient(90deg,#eee 1px,transparent 1px);
-  background-size:5mm 5mm}
-.foot{position:absolute;left:11mm;right:11mm;bottom:7mm;font-size:9px;color:#777;border-top:1px solid #ddd;padding-top:4px;display:flex}
-.foot .rt{margin-left:auto}
+/* AHA */
+.aha{border:1px solid var(--ink);padding:4px 6px 5px;margin-bottom:5px}
+.aha .t{font-size:13px;font-weight:900;color:var(--red);display:flex;align-items:baseline;gap:6px}
+.aha .t small{font-size:9.3px;font-weight:700;color:var(--red)}
+.aha .t .pt{margin-left:auto;font-size:8.6px;background:var(--red);color:#fff;padding:1px 5px;font-weight:800}
+.ln{border-bottom:1px solid #d8d8d8;height:22px}
+.ln:last-child{border-bottom:none}
+.aha2{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px}
+.aha2 .bx{border:1px solid var(--ink);padding:4px 6px 5px}
+.aha2 .bx .t{font-size:9.8px;font-weight:800;color:var(--brown)}
+.aha2 .bx .t small{font-weight:600;color:#777}
+
+/* 선생님 */
+.tea{border:1.6px solid var(--ink);background:#f5f5f3;padding:4px 6px 5px}
+.tea .t{font-size:10.5px;font-weight:900;color:var(--brown);display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.tea .t .r{margin-left:auto;font-weight:800;font-size:9.8px;color:#111}
+.tea .t .r u{display:inline-block;width:28px;border-bottom:1.3px solid var(--ink);text-decoration:none}
+.rub{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;font-size:9.3px}
+.rub .c{border:1px solid var(--ink);background:#fff;padding:2px 3px}
+.rub .c .k{font-weight:800;font-size:9.3px;color:var(--brown);display:block;margin-bottom:2px}
+.rub .c .k i{font-style:normal;font-size:11px;font-weight:900}
+.rub .c .n{display:flex;gap:2px}
+.rub .c .n span{flex:1;border:1px solid #555;height:14px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:9px}
+.lad{display:flex;gap:3px;align-items:center;font-size:9.3px;margin-top:4px}
+.lad b{white-space:nowrap;font-size:9.3px;color:var(--brown)}
+.lad i{font-style:normal;width:20px;height:15px;border:1px solid #555;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+.lad .ln2{flex:1;border-bottom:1px dotted #999;height:14px}
+.cline{display:flex;gap:5px;align-items:center;font-size:9.3px;margin-top:3px}
+.cline b{white-space:nowrap;color:var(--brown)}
+.cline .ln2{flex:1;border-bottom:1px dotted #999;height:14px}
+
+.foot{margin-top:5px;display:flex;align-items:center;gap:6px;font-size:9px;color:#888}
+.foot .lg{font-size:12px;font-weight:900;color:var(--brown);margin-left:auto}
+
+/* 비교표 */
+.cmp{width:100%;border-collapse:collapse;font-size:12px}
+.cmp th,.cmp td{border:1px solid #d5d9e2;padding:7px 9px;text-align:left;vertical-align:top;line-height:1.55}
+.cmp th{background:#f6f7fa;font-size:11.5px}
+.keep{color:#15803d;font-weight:800}.add{color:#b45309;font-weight:800}.del{color:#94a3b8}
 
 @media print{
   body{background:#fff;padding:0}
-  .head,.tabs,.note,.scr{display:none!important}
-  .sheet{box-shadow:none;margin:0;page-break-after:always;width:auto;min-height:auto;padding:10mm}
+  .head,.tabs,.note{display:none!important}
+  .sheet{box-shadow:none;margin:0;page-break-after:always;width:auto;min-height:auto}
   .pane{display:block!important}
   @page{size:A4;margin:0}
 }
 </style></head><body>
 
 <div class="head">
-  <h1>📝 종이 아하노트 — 새 양식 (아하 여정 v3에 맞춤)</h1>
-  <b>왜 바꿔야 하나:</b> 지금 앱이 「질문 4칸 · 지시어 · 자기평가 · 스스로 해결 · 되돌아보기」로 바뀌므로, 종이도 같은 칸을 써야 <b>손으로 익힌 습관이 앱으로 그대로 넘어갑니다.</b>
-  종이가 다르면 아이들은 두 가지를 따로 배우게 됩니다. 다만 종이는 앱보다 <b>더 단순해야</b> 합니다 — 펜으로 쓰는 것은 느리니 고르는 것(☐ 체크)은 많이, 쓰는 것은 꼭 필요한 만큼만.
+  <h1>📝 LAMP 활동지 v2 — 지금 쓰시는 양식을 살린 새 아하노트</h1>
+  <b>먼저 말씀드릴 것:</b> 지금 양식(LAMP 활동지)은 이미 잘 만들어져 있습니다. 오히려 <b>제가 앞서 만든 양식보다 나은 점</b>이 있습니다 —
+  <b>L(문제 이해)</b>과 <b>A(이론·공식 떠올리기)</b>는 제 4칸에 없던 단계인데, 수학에서 매우 중요한 두 걸음입니다.
+  그래서 <b>LAMP를 버리지 않고 그대로 두고, 앱과 이어지는 데 꼭 필요한 네 가지만 더했습니다.</b>
   <div class="tabs">
-    <button id="b1" class="on" onclick="pick(1)">A안 · A4 앞면 (묻기)</button>
-    <button id="b2" onclick="pick(2)">A안 · A4 뒷면 (풀고 나서)</button>
-    <button id="b3" onclick="pick(3)">B안 · 반쪽 간단형</button>
-    <button id="b4" onclick="pick(4)">바뀐 점 · 쓰는 법</button>
+    <button id="b1" class="on" onclick="pick(1)">① 새 양식 (A4 한 장)</button>
+    <button id="b2" onclick="pick(2)">② 무엇이 바뀌었나</button>
   </div>
-  <div class="note">인쇄: 이 화면에서 <b>Ctrl+P</b> → A4 · 여백 없음. 세 양식이 각각 한 장씩 나옵니다. (아래는 화면용 미리보기라 실제 인쇄물과 여백이 조금 다를 수 있습니다.)</div>
+  <div class="note" style="margin-left:0">인쇄: <b>Ctrl+P</b> → A4 · 여백 없음 · 배경 그래픽 켜기.</div>
 </div>
 
-<!-- ═════════ A안 앞면 ═════════ -->
+<!-- ═════════ 새 양식 ═════════ -->
 <div id="p1" class="pane on"><div class="sheet">
-  <div class="hd">
-    <div class="ttl">💡 아하노트 <small>모르는 문제를 「질문」으로 만드는 종이</small></div>
-    <div class="side">루멘수학<br>LUMEN MATH</div>
-  </div>
-  <div class="meta">
-    <div><b>이름</b><span class="ln"></span></div>
-    <div><b>학습코드</b><span class="ln" style="min-width:52px"></span></div>
-    <div><b>날짜</b><span class="ln">&nbsp;&nbsp;&nbsp;.&nbsp;&nbsp;&nbsp;.</span></div>
-    <div style="flex:1.4"><b>교재·프린트</b><span class="ln"></span></div>
-    <div><b>쪽</b><span class="ln" style="min-width:30px"></span></div>
-    <div><b>번호</b><span class="ln" style="min-width:30px"></span></div>
-  </div>
 
-  <div class="bx">
-    <div class="bt">1️⃣ 여기까지는 했어요 <small>— 어디까지 풀었는지 식으로</small><span class="pt">2점</span></div>
-    <div class="bb"><div class="rule"></div><div class="rule"></div><div class="rule"></div></div>
-    <div class="hint">예) y=2x+b에 (1,3)을 넣어 b=1까지 구했습니다.</div>
-  </div>
-
-  <div class="bx">
-    <div class="bt">2️⃣ 여기서 막혔어요 <small>— 어느 줄·어느 단계인지 콕 집어서</small><span class="pt">2점</span></div>
-    <div class="bb"><div class="rule"></div><div class="rule"></div><div class="rule"></div></div>
-    <div class="hint">「모르겠어요」는 0점. 예) 그 다음 x절편을 구할 때 y=0인지 x=0인지 헷갈립니다.</div>
-  </div>
-
-  <div class="bx">
-    <div class="bt">3️⃣ 내 생각엔… <small>— 내 짐작, 답지와 무엇이 다른지</small><span class="pt">2점</span></div>
-    <div class="bb"><div class="rule"></div><div class="rule"></div><div class="rule"></div></div>
-    <div class="hint">예) x축과 만나니까 y=0일 것 같은데, 답지는 −1/2인데 저는 1이 나왔습니다.</div>
-  </div>
-
-  <div class="bx">
-    <div class="bt">4️⃣ 선생님께 원하는 것 <small>— 아래에서 하나 고르고, 한 문장으로</small><span class="pt">2점</span></div>
-    <div class="chks">
-      <span><i class="cb rd"></i>설명해 주세요</span><span><i class="cb rd"></i>비교해 주세요</span><span><i class="cb rd"></i>논증해 주세요</span>
-      <span><i class="cb rd"></i>추론해 주세요</span><span><i class="cb rd"></i>적용해 주세요</span><span><i class="cb rd"></i>해석해 주세요</span>
-      <span><i class="cb rd"></i>평가해 주세요</span>
+  <div class="top">
+    <div class="logo">
+      <svg width="62" height="62" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="42" r="26" fill="#f2b90c"/>
+        <rect x="41" y="66" width="18" height="8" rx="2" fill="#fff"/><rect x="44" y="76" width="12" height="6" rx="2" fill="#fff"/>
+        <text x="50" y="52" font-size="30" font-weight="900" fill="#4a3a18" text-anchor="middle" font-family="Georgia,serif">π</text>
+        <g stroke="#f2b90c" stroke-width="4" stroke-linecap="round">
+          <line x1="50" y1="6" x2="50" y2="12"/><line x1="18" y1="16" x2="23" y2="21"/><line x1="82" y1="16" x2="77" y2="21"/>
+          <line x1="8" y1="45" x2="15" y2="45"/><line x1="92" y1="45" x2="85" y2="45"/></g>
+      </svg>
+      <div class="lm">LAMP</div>
     </div>
-    <div class="dsc">설명 = 예를 들어 뜻을 풀어 주기 · 비교 = 공통점과 차이점 · 논증 = 이유와 근거 · 추론 = 아는 것에서 결론 이끌기 · 적용 = 배운 원리를 이 상황에 쓰기 · 해석 = 자료를 읽고 결론 내기 · 평가 = 어느 쪽이 나은지 판단</div>
-    <div class="bb" style="padding-top:0"><div class="rule"></div><div class="rule"></div><div class="rule"></div></div>
-    <div class="hint">「왜 ~인가요」로 물으면 +1점, 「꼭 ~해야 하나요」로 물으면 +1점.</div>
+    <div class="tp">
+      <div class="r1">
+        <span class="t">활동지</span>
+        <span class="tag">교재</span><span class="fill" style="flex:2"></span>
+        <span class="tag">날짜</span><span class="fill" style="max-width:22px"></span><span style="font-size:10px">월</span>
+        <span class="fill" style="max-width:22px"></span><span style="font-size:10px">일</span>
+        <span class="tag">이름</span><span class="fill" style="flex:1.2"></span>
+      </div>
+      <div class="steps">
+        <div><b>1단계[틀린이유구분]</b> 연산오류, 문제잘못읽음, 관련개념부족, 문제이해못함, 틀린이유모름</div>
+        <div><b>2단계[Learn]</b> 문제에서 구하려는 것과, 문제조건을 정리한다.</div>
+        <div><b>3단계[Act]</b> 문제를 풀 때 필요한 이론과 공식을 정리한다.</div>
+        <div><b>4단계[Model]</b> 자신이 풀었던 풀이과정을 논리적 사고 순서에 맞게 써야 하며, 수식으로 정리한다.</div>
+        <div><b>5단계[Pin]</b> 문제를 풀 때 막힌부분이나, 질문할 내용을 <span class="rd">빨간펜</span>으로 글로 적어본다.
+          <span class="rd">← 어떤 도움을 원하는지 아래 ○에 표시</span></div>
+        <div><b>6단계</b> 집에서 다시 풀어보기. <span style="color:#666">스스로 풀었는지, 힌트를 몇 개 보고 풀었는지 표시한다.</span></div>
+        <div><b>7단계[Aha]</b> 이 문제에서 어떠한 생각(발상)을 떠올리지 못해서 못풀었다. 그 내용을 적어봅시다.<span class="rd">(빨간펜)</span></div>
+      </div>
+    </div>
   </div>
 
-  <div class="bx">
-    <div class="bt">🔎 이 문제에서 걸린 것 <small>— 해당하는 것 모두 ✓</small></div>
-    <div class="chks">
-      <span><i class="cb"></i>변하는 양</span><span><i class="cb"></i>같은 값 다른 모양</span><span><i class="cb"></i>규칙 찾기</span>
-      <span><i class="cb"></i>맞는지 따지기</span><span><i class="cb"></i>어림</span><span><i class="cb"></i>식으로 나타내기</span>
-      <span><i class="cb"></i>패턴</span><span><i class="cb"></i>양·개수</span><span><i class="cb"></i>표·그래프·식 바꾸기</span>
-      <span><i class="cb"></i>간단히 하기</span><span><i class="cb"></i>도형·공간</span><span><i class="cb"></i>여러 조건 한꺼번에</span>
-    </div>
-    <div class="chks" style="border-top:1px dotted #bbb;padding-top:4px">
-      <b style="font-size:10px">틀린 이유</b>
-      <span><i class="cb"></i>연산 실수</span><span><i class="cb"></i>문제를 잘못 읽음</span><span><i class="cb"></i>개념이 부족</span>
-      <span><i class="cb"></i>문제를 이해 못 함</span><span><i class="cb"></i>이유를 모르겠음</span>
+  <div class="tbl">
+    <div class="lb">페이지</div><div class="w"></div>
+    <div class="lb">번호</div><div class="w"></div>
+    <div class="lb">틀린이유구분</div>
+    <div><i class="cb"></i>연산오류</div><div><i class="cb"></i>문제잘못읽음</div><div><i class="cb"></i>관련개념부족</div><div><i class="cb"></i>문제이해못함</div><div><i class="cb"></i>틀린이유모름</div>
+  </div>
+  <div class="conc">
+    <b>이 문제에서 걸린 것</b>
+    <span><i class="cb"></i>변하는 양</span><span><i class="cb"></i>같은 값 다른 모양</span><span><i class="cb"></i>규칙 찾기</span><span><i class="cb"></i>맞는지 따지기</span>
+    <span><i class="cb"></i>어림</span><span><i class="cb"></i>식으로 나타내기</span><span><i class="cb"></i>패턴</span><span><i class="cb"></i>양·개수</span>
+    <span><i class="cb"></i>표·그래프·식 바꾸기</span><span><i class="cb"></i>간단히 하기</span><span><i class="cb"></i>도형·공간</span><span><i class="cb"></i>여러 조건 한꺼번에</span>
+  </div>
+
+  <div class="grid2">
+    <div class="cell la"><div class="h"><span class="cap">L</span>earn the question <small>(문제를 정확히 이해하기)</small></div></div>
+    <div class="cell la"><div class="h"><span class="cap">A</span>ctivate Knowledge <small>(관련 이론, 공식 떠올리기)</small></div></div>
+    <div class="cell mp"><div class="h"><span class="cap">M</span>odel your reasoning<br><small>(어떻게 풀었나요? 어떤 논리로 접근했나요?)</small></div></div>
+    <div class="cell mp p">
+      <div class="h"><span class="cap">P</span>inpoint your confusion <small>(막힌 부분을 정확히 짚어내고 질문을 정리하기)</small></div>
+      <div class="dir">
+        <div class="t">선생님께 원하는 것 — 하나만 ○</div>
+        <div class="row">
+          <span><i class="cb rd"></i>설명</span><span><i class="cb rd"></i>비교</span><span><i class="cb rd"></i>논증</span><span><i class="cb rd"></i>추론</span>
+          <span><i class="cb rd"></i>적용</span><span><i class="cb rd"></i>해석</span><span><i class="cb rd"></i>평가</span>
+        </div>
+        <div class="dsc">설명=예를 들어 뜻 풀기 · 비교=공통점과 차이점 · 논증=이유와 근거 · 추론=아는 것에서 결론 · 적용=배운 원리를 이 상황에 · 해석=자료 읽고 결론 · 평가=어느 쪽이 나은지</div>
+      </div>
     </div>
   </div>
 
   <div class="selfev">
-    <div class="t">✅ 내가 먼저 매겨 보기 <span style="font-weight:600;color:#666;font-size:10px">— 선생님도 똑같은 표로 봅니다. 맞히면 +1점</span></div>
-    <div class="row">
-      <span><i class="cb"></i> a 시도를 식으로 썼다</span>
-      <span><i class="cb"></i> b 막힌 줄을 콕 집었다</span>
-      <span><i class="cb"></i> c 내 생각·답지와 비교했다</span>
-      <span><i class="cb"></i> d 지시어를 고르고 한 문장으로 물었다</span>
-      <span style="margin-left:auto">내 예상 점수 <b style="border-bottom:1px solid #111;padding:0 10px">&nbsp;</b> / 8</span>
+    <b>내가 먼저 매겨 보기</b>
+    <span><i class="cb"></i>L 구하는 것·조건을 썼다</span>
+    <span><i class="cb"></i>A 이론·공식을 떠올렸다</span>
+    <span><i class="cb"></i>M 풀이를 순서대로 썼다</span>
+    <span><i class="cb"></i>P 막힌 줄을 콕 집었다</span>
+    <span class="sc">예상 <u></u> / 8</span>
+  </div>
+
+  <div class="hw">
+    <div class="hh"><b>6단계</b> 숙제로 집에서 다시 풀어보자.
+      <span class="path">
+        <span><i class="cb rd"></i><b>스스로 +4</b></span><span><i class="cb rd"></i>힌트1개 +3</span><span><i class="cb rd"></i>힌트2개 +2</span>
+        <span><i class="cb rd"></i>힌트3개·손풀이 +1</span><span><i class="cb rd"></i>수업에서 듣고 0</span>
+      </span>
     </div>
-  </div>
-
-  <div class="tea">
-    <div class="t">✍️ 선생님 <span class="r">질문력 <b style="border-bottom:1.4px solid #111;padding:0 12px">&nbsp;</b> / 10</span></div>
-    <div class="grid">
-      <span class="k">a 시도</span><span class="c">0</span><span class="c">1</span><span class="c">2</span><span class="memo"></span>
-      <span class="k">b 막힌 지점</span><span class="c">0</span><span class="c">1</span><span class="c">2</span><span class="memo"></span>
-      <span class="k">c 내 생각</span><span class="c">0</span><span class="c">1</span><span class="c">2</span><span class="memo"></span>
-      <span class="k">d 질문 문장</span><span class="c">0</span><span class="c">1</span><span class="c">2</span><span class="memo"></span>
-      <span class="k">e 되돌아보기</span><span class="c">0</span><span class="c">1</span><span class="c">2</span><span class="memo" style="border-bottom:1px dotted #999">← 뒷면 쓰고 나서</span>
-    </div>
-  </div>
-
-  <div class="foot"><span>앞면 = 풀기 전에 씁니다. 다 쓰면 뒷면으로 넘어가세요.</span><span class="rt">루멘수학 아하 여정 · 앞면</span></div>
-</div></div>
-
-<!-- ═════════ A안 뒷면 ═════════ -->
-<div id="p2" class="pane"><div class="sheet">
-  <div class="hd">
-    <div class="ttl">🧭 풀고 나서 <small>— 어떻게 풀었는지, 무엇을 알게 됐는지</small></div>
-    <div class="side">이름 <span style="display:inline-block;border-bottom:1px solid #111;width:60px"></span><br><span style="font-size:9px">앞면과 같은 문제</span></div>
-  </div>
-
-  <div class="bx" style="margin-bottom:8px">
-    <div class="bt">① 어떻게 풀었나요? <small>— 하나만 ✓</small></div>
-    <div class="chks" style="padding:6px 8px">
-      <span><i class="cb rd"></i><b>쓰다가 스스로 알았다</b> <b style="color:#111">+4</b></span>
-      <span><i class="cb rd"></i>힌트 1개만 보고 <b>+3</b></span>
-      <span><i class="cb rd"></i>힌트 2개 보고 <b>+2</b></span>
-      <span><i class="cb rd"></i>힌트 3개·손풀이 보고 <b>+1</b></span>
-      <span><i class="cb rd"></i>수업에서 설명 듣고 <b>0</b></span>
-      <span><i class="cb rd"></i>아직 못 풀었다</span>
-    </div>
-    <div class="hint">힌트를 봐도 점수를 받습니다. 다만 <b>적게 보고 풀수록 높습니다.</b> 스스로 풀었다면 아래 ②를 꼭 채워야 인정됩니다.</div>
-  </div>
-
-  <div class="big">
-    <div class="bt">② 내 풀이 <small>— 식을 한 줄씩, 마지막에 답에 ○</small></div>
     <div class="gridbg"></div>
   </div>
 
-  <div class="two">
-    <div class="solv">
-      <div class="t">③ 배운 점 <span style="font-weight:600;color:#666">— 내가 몰랐던 건 ○○였다</span></div>
-      <div class="rule"></div><div class="rule"></div><div class="rule"></div>
-    </div>
-    <div class="solv">
-      <div class="t">④ 궁금한 점 <span style="font-weight:600;color:#666">— 다음 질문의 씨앗</span></div>
-      <div class="rule"></div><div class="rule"></div><div class="rule"></div>
-    </div>
+  <div class="aha">
+    <div class="t">AHA <small>(어떤 발상을 했으면 이 문제를 풀 수 있었을까?)</small><span class="pt">2점</span></div>
+    <div class="ln"></div><div class="ln"></div>
   </div>
 
-  <div class="bx" style="margin-top:7px">
-    <div class="bt">⑤ 한 문장으로 남기면 <small>— 이 문제에서 얻은 원리</small><span class="pt">+2점</span></div>
-    <div class="bb"><div class="rule"></div><div class="rule"></div></div>
-    <div class="hint">예) 「그래프가 축과 만나는 점」은 항상 다른 좌표를 0으로 놓고 푼다.</div>
-  </div>
-
-  <div class="bx">
-    <div class="bt">⑥ 같은 원리로 풀 수 있는 다른 문제 <small>— 찾아 적거나, 내가 만들어 보기</small><span class="pt">+1점</span></div>
-    <div class="bb"><div class="rule"></div><div class="rule"></div></div>
-    <div class="chks" style="border-top:1px dotted #bbb">
-      <b style="font-size:10px">내가 만든 문제라면</b>
-      <span><i class="cb"></i>조건이 분명한가</span><span><i class="cb"></i>이 원리를 써야 풀리나</span>
-      <span><i class="cb"></i>답이 하나로 나오나</span><span><i class="cb"></i>원래 문제보다 한 걸음 더 갔나</span>
-    </div>
+  <div class="aha2">
+    <div class="bx"><div class="t">한 문장으로 남기면 <small>— 이 문제에서 얻은 원리 (+2)</small></div><div class="ln"></div></div>
+    <div class="bx"><div class="t">궁금한 점 <small>— 다음 질문의 씨앗</small></div><div class="ln"></div></div>
   </div>
 
   <div class="tea">
-    <div class="t">✍️ 선생님 확인
-      <span class="r">해결 경로 <b style="border-bottom:1.4px solid #111;padding:0 10px">&nbsp;</b> 점 &nbsp;·&nbsp; e 되돌아보기 <b style="border-bottom:1.4px solid #111;padding:0 10px">&nbsp;</b> / 2</span></div>
-    <div class="lad"><b>성취수준</b><span>E</span><span>D</span><span>C</span><span>B</span><span>A</span>
-      <b style="margin-left:8px">한 단계 위로 가려면</b><span class="memo" style="flex:1;border-bottom:1px dotted #999;height:16px"></span></div>
-    <div class="coach"><b>잘한 점</b><span class="ln"></span></div>
-    <div class="coach"><b>다만 ~ 다음엔</b><span class="ln"></span></div>
+    <div class="t">✍️ 선생님 <span class="r">질문력 <u></u> / 10 &nbsp;·&nbsp; 해결 경로 <u></u> 점</span></div>
+    <div class="rub">
+      <div class="c"><span class="k"><i>L</i> 문제 이해</span><span class="n"><span>0</span><span>1</span><span>2</span></span></div>
+      <div class="c"><span class="k"><i>A</i> 이론·공식</span><span class="n"><span>0</span><span>1</span><span>2</span></span></div>
+      <div class="c"><span class="k"><i>M</i> 풀이 논리</span><span class="n"><span>0</span><span>1</span><span>2</span></span></div>
+      <div class="c"><span class="k"><i>P</i> 막힌 곳·질문</span><span class="n"><span>0</span><span>1</span><span>2</span></span></div>
+      <div class="c"><span class="k"><i>A</i> AHA·되돌아보기</span><span class="n"><span>0</span><span>1</span><span>2</span></span></div>
+    </div>
+    <div class="lad"><b>성취수준</b><i>E</i><i>D</i><i>C</i><i>B</i><i>A</i>
+      <b style="margin-left:6px">한 단계 위로 가려면</b><span class="ln2"></span></div>
+    <div class="cline"><b>잘한 점</b><span class="ln2"></span></div>
+    <div class="cline"><b>다만 ~ 다음엔</b><span class="ln2"></span></div>
   </div>
 
-  <div class="foot"><span>다 쓴 노트는 사진을 찍어 학생앱에 올리면 점수가 그대로 들어갑니다.</span><span class="rt">루멘수학 아하 여정 · 뒷면</span></div>
+  <div class="foot"><span>다 쓴 활동지는 사진을 찍어 학생앱에 올리면 점수가 그대로 들어갑니다.</span>
+    <span class="lg">π 루멘수학</span></div>
 </div></div>
-
-<!-- ═════════ B안 반쪽 ═════════ -->
-<div id="p3" class="pane"><div class="sheet half">
-  <div class="hd" style="border-bottom-width:2px;margin-bottom:6px">
-    <div class="ttl" style="font-size:16px">💡 아하노트 <small>간단형 — 수업 중 빠르게</small></div>
-    <div class="side" style="font-size:9px">루멘수학</div>
-  </div>
-  <div class="meta" style="margin-bottom:6px">
-    <div><b>이름</b><span class="ln"></span></div>
-    <div><b>날짜</b><span class="ln">&nbsp;.&nbsp;&nbsp;.</span></div>
-    <div style="flex:1.3"><b>교재</b><span class="ln"></span></div>
-    <div><b>쪽</b><span class="ln" style="min-width:26px"></span></div>
-    <div><b>번호</b><span class="ln" style="min-width:26px"></span></div>
-  </div>
-  <div class="bx" style="margin-bottom:5px"><div class="bt" style="font-size:11px">1️⃣ 여기까지 했어요</div><div class="bb" style="padding:4px 8px 5px"><div class="rule" style="height:23px"></div><div class="rule" style="height:23px"></div></div></div>
-  <div class="bx" style="margin-bottom:5px"><div class="bt" style="font-size:11px">2️⃣ 여기서 막혔어요</div><div class="bb" style="padding:4px 8px 5px"><div class="rule" style="height:23px"></div><div class="rule" style="height:23px"></div></div></div>
-  <div class="bx" style="margin-bottom:5px"><div class="bt" style="font-size:11px">3️⃣ 내 생각엔</div><div class="bb" style="padding:4px 8px 5px"><div class="rule" style="height:23px"></div></div></div>
-  <div class="bx" style="margin-bottom:5px">
-    <div class="bt" style="font-size:11px">4️⃣ 선생님께 원하는 것</div>
-    <div class="chks" style="padding:4px 8px;font-size:10px">
-      <span><i class="cb rd"></i>설명</span><span><i class="cb rd"></i>비교</span><span><i class="cb rd"></i>논증</span><span><i class="cb rd"></i>추론</span><span><i class="cb rd"></i>적용</span><span><i class="cb rd"></i>해석</span><span><i class="cb rd"></i>평가</span>
-    </div>
-    <div class="bb" style="padding:0 8px 5px"><div class="rule" style="height:23px"></div></div>
-  </div>
-  <div style="display:flex;gap:6px;align-items:stretch">
-    <div class="selfev" style="flex:1;margin:0">
-      <div class="t" style="font-size:10.5px">✅ 내가 먼저 매겨 보기</div>
-      <div class="row" style="font-size:10px">
-        <span><i class="cb"></i>a</span><span><i class="cb"></i>b</span><span><i class="cb"></i>c</span><span><i class="cb"></i>d</span>
-        <span style="margin-left:auto">예상 <b style="border-bottom:1px solid #111;padding:0 8px">&nbsp;</b>/8</span>
-      </div>
-    </div>
-    <div class="tea" style="margin:0;flex:1.1;padding:4px 7px">
-      <div class="t" style="font-size:10.5px;margin-bottom:3px">✍️ 선생님 <span class="r">질문력 <b style="border-bottom:1.3px solid #111;padding:0 9px">&nbsp;</b>/10</span></div>
-      <div style="display:flex;gap:5px;font-size:10px">
-        <span>a<b style="border-bottom:1px solid #111;padding:0 5px">&nbsp;</b></span><span>b<b style="border-bottom:1px solid #111;padding:0 5px">&nbsp;</b></span>
-        <span>c<b style="border-bottom:1px solid #111;padding:0 5px">&nbsp;</b></span><span>d<b style="border-bottom:1px solid #111;padding:0 5px">&nbsp;</b></span><span>e<b style="border-bottom:1px solid #111;padding:0 5px">&nbsp;</b></span>
-      </div>
-    </div>
-  </div>
-  <div style="font-size:9px;color:#777;margin-top:6px;border-top:1px solid #ddd;padding-top:4px">풀고 나서: 어떻게 풀었는지(스스로/힌트 몇 개) · 배운 점 한 줄을 <b>뒷면이나 학생앱</b>에 남기면 점수가 올라갑니다. · 루멘수학 아하 여정 · 간단형</div>
-</div>
-<div class="note" style="max-width:210mm;margin:0 auto">이 간단형은 <b>A4 한 장에 두 부</b>가 들어갑니다(반으로 잘라 쓰기). 수업 중 빠르게 받을 때, 또는 저학년용으로 씁니다. 「풀고 나서」 부분은 앱에서 채우게 합니다.</div>
-</div>
 
 <!-- ═════════ 설명 ═════════ -->
-<div id="p4" class="pane"><div class="sheet" style="min-height:auto;padding:14mm 13mm">
-  <div class="hd"><div class="ttl">바뀐 점과 쓰는 법</div></div>
+<div id="p2" class="pane"><div class="sheet" style="min-height:auto;padding:14mm 13mm">
+  <div style="font-size:20px;font-weight:900;color:#4a3a18;border-bottom:2.5px solid #4a3a18;padding-bottom:6px;margin-bottom:12px">무엇이 바뀌었나</div>
 
-  <div style="font-size:12.5px;line-height:1.8;color:#222">
-    <p style="margin:8px 0 4px"><b>1. 왜 종이도 바꿔야 하나</b><br>
-    앱이 「질문 4칸」으로 바뀌는데 종이가 그대로면 아이들이 <b>두 가지 방식을 따로 배우게</b> 됩니다. 종이에서 손으로 익힌 순서가 앱에서 그대로 나와야 합니다. 특히 <b>②「어디서 막혔는지 콕 집기」</b>가 핵심인데, 이건 종이에서 훈련하는 편이 더 잘 됩니다.</p>
+  <p style="font-size:13px;line-height:1.8;margin:0 0 14px;color:#222">
+  <b>결론: LAMP는 그대로 둡니다.</b> 지금 양식이 이미 좋습니다. 특히 <b>L(문제 이해)</b>과 <b>A(이론·공식 떠올리기)</b>는
+  제가 앞서 만든 「4칸 질문」에 <u>없던 단계</u>인데, 수학에서 가장 중요한 두 걸음입니다.
+  그래서 <b>LAMP를 앱에도 그대로 쓰기로</b> 하고, 종이에는 앱과 이어지는 데 필요한 네 가지만 더했습니다.</p>
 
-    <p style="margin:12px 0 4px"><b>2. 종이는 앱보다 단순하게</b><br>
-    펜으로 쓰는 것은 느립니다. 그래서 <b>고르는 것(☐ 체크)은 넉넉히, 쓰는 것은 4칸만</b> 두었습니다. 앱에만 있는 것(질문 유형 자동 태그, 임시 점수, 힌트 열람 기록)은 종이에서 뺐습니다.</p>
+  <table class="cmp">
+    <tr><th style="width:150px">지금 양식</th><th style="width:110px">어떻게</th><th>왜</th></tr>
+    <tr><td><b>LAMP 로고·활동지 머리</b></td><td class="keep">그대로</td><td>학원의 얼굴입니다. 아이들이 이미 「LAMP 쓴다」고 부릅니다.</td></tr>
+    <tr><td><b>7단계 안내문</b></td><td class="keep">그대로</td><td>5단계에 「어떤 도움을 원하는지 표시」, 6단계에 「스스로/힌트 표시」 한 줄씩만 덧붙였습니다.</td></tr>
+    <tr><td><b>페이지·번호·틀린이유 5개</b></td><td class="keep">그대로</td><td>앱의 「틀린 이유」와 이미 같습니다.</td></tr>
+    <tr><td><b>L / A / M / P 네 칸</b></td><td class="keep">그대로</td><td>앱의 질문 4칸을 <b>LAMP로 바꾸겠습니다.</b> 종이와 앱이 같은 말을 씁니다.</td></tr>
+    <tr><td><b>6단계 재풀이 큰 칸</b></td><td class="keep">그대로</td><td>모눈만 옅게 깔았습니다(식을 줄 맞춰 쓰라고).</td></tr>
+    <tr><td><b>AHA 칸</b></td><td class="keep">그대로</td><td>여기가 IB에서 말하는 「성찰」입니다. 그대로 두고 점수(2점)만 붙였습니다.</td></tr>
+    <tr style="background:#fffbeb"><td><b>＋ 지시어 7개</b></td><td class="add">P칸에 추가</td><td>「막혔다」에서 끝내지 않고 <b>어떤 도움을 원하는지</b>까지 쓰게 합니다. 설명·비교·논증·추론·적용·해석·평가.</td></tr>
+    <tr style="background:#fffbeb"><td><b>＋ 개념 12개 체크</b></td><td class="add">표 아래 한 줄</td><td>「무슨 개념에서 걸렸나」가 쌓이면 학생별 취약 개념 지도가 나옵니다.</td></tr>
+    <tr style="background:#fffbeb"><td><b>＋ 내가 먼저 매겨 보기</b></td><td class="add">한 줄</td><td>채점 기준을 미리 알고 스스로 매깁니다. 선생님 점수와 맞으면 +1점.</td></tr>
+    <tr style="background:#fffbeb"><td><b>＋ 해결 경로 표시</b></td><td class="add">6단계 줄에</td><td>스스로 +4 / 힌트 1개 +3 / 2개 +2 / 3개 +1. <b>물어봐도 손해가 아니되, 적게 보고 풀수록 높게.</b></td></tr>
+    <tr style="background:#fffbeb"><td><b>＋ 원리 한 문장 · 궁금한 점</b></td><td class="add">AHA 아래</td><td>AHA가 「못 떠올린 발상」이라면, 이건 「그래서 얻은 원리」와 「다음 질문의 씨앗」입니다.</td></tr>
+    <tr style="background:#fffbeb"><td><b>＋ 선생님 채점란</b></td><td class="add">맨 아래</td><td>L·A·M·P·AHA 각 0·1·2 = <b>10점</b>. 성취수준 E~A와 코치 두 줄(잘한 점 / 다만 ~ 다음엔).</td></tr>
+  </table>
 
-    <p style="margin:12px 0 4px"><b>3. 앞면 / 뒷면으로 나눈 이유</b><br>
-    앞면은 <b>풀기 전</b>(묻기), 뒷면은 <b>풀고 난 뒤</b>(어떻게 풀었나·배운 점)입니다. 종이 한 장이 곧 「아하 여정 한 편」이 되고, 뒷면을 채워야 만점이 됩니다.</p>
+  <div style="margin-top:16px;background:#f0fbf4;border:1px solid #bce6cb;border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.75">
+    <b style="color:#15803d;font-size:13.5px">가장 큰 발견 — 채점표가 저절로 맞아떨어집니다</b><br>
+    LAMP 네 글자 + AHA = <b>다섯 항목</b>이고, 각 0·1·2점이면 <b>정확히 10점</b>입니다.
+    제가 만들려던 a·b·c·d·e 채점표와 개수가 똑같습니다. 그러니 아이들에게 낯선 「a·b·c」 대신
+    <b>이미 알고 있는 「L·A·M·P·AHA」로 점수를 매기면</b> 설명할 것이 없습니다.
+    앱 채점표도 이 이름으로 바꾸겠습니다.
+  </div>
 
-    <p style="margin:12px 0 4px"><b>4. 점수가 앱과 똑같습니다</b><br>
-    선생님란의 a·b·c·d·e 표가 앱의 채점표와 같습니다. 종이로 채점한 점수를 앱에 그대로 옮기면 리그 점수에 들어갑니다. <b>학생이 먼저 매겨 보고 선생님과 맞으면 +1점</b>도 종이에 있습니다.</p>
+  <div style="margin-top:12px;background:#eef4ff;border:1px solid #cfe0ff;border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.75">
+    <b style="color:#1d4ed8;font-size:13.5px">종이 → 앱으로 옮기는 법</b><br>
+    ㄱ. <b>사진만</b> — 학생이 활동지를 찍어 올리면 AI가 L·A·M·P 칸 글자를 읽어 옮깁니다(원장 확인). <b>← 추천</b><br>
+    ㄴ. <b>옮겨 쓰기</b> — 종이에 쓰고 앱에 다시 입력. 두 번 쓰며 문장이 다듬어집니다.<br>
+    ㄷ. <b>종이만</b> — 종이로만 쓰고 선생님이 점수만 앱에 입력. 저학년·태블릿 없는 학생.
+  </div>
 
-    <p style="margin:12px 0 4px"><b>5. 종이 → 앱으로 옮기는 방법 (세 가지 중 선택)</b></p>
-    <table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:4px">
-      <tr style="background:#f1f1f1"><th style="border:1px solid #bbb;padding:5px;text-align:left;width:110px">방법</th><th style="border:1px solid #bbb;padding:5px;text-align:left">어떻게</th><th style="border:1px solid #bbb;padding:5px;text-align:left;width:150px">누가 편한가</th></tr>
-      <tr><td style="border:1px solid #bbb;padding:5px"><b>ㄱ. 사진만</b></td><td style="border:1px solid #bbb;padding:5px">학생이 종이를 찍어 앱에 올림. AI가 4칸 글자를 읽어 옮겨 적음(원장 확인).</td><td style="border:1px solid #bbb;padding:5px">학생이 제일 편함</td></tr>
-      <tr><td style="border:1px solid #bbb;padding:5px"><b>ㄴ. 옮겨 쓰기</b></td><td style="border:1px solid #bbb;padding:5px">종이에 먼저 쓰고, 앱에 다시 입력. 두 번 쓰면서 문장이 다듬어짐.</td><td style="border:1px solid #bbb;padding:5px">글이 좋아짐 · 손이 감</td></tr>
-      <tr><td style="border:1px solid #bbb;padding:5px"><b>ㄷ. 종이만</b></td><td style="border:1px solid #bbb;padding:5px">종이로만 쓰고 선생님이 점수만 앱에 입력.</td><td style="border:1px solid #bbb;padding:5px">저학년·태블릿 없는 학생</td></tr>
-    </table>
-    <p style="margin:6px 0 0;font-size:11.5px;color:#555">추천: <b>ㄱ(사진)을 기본</b>으로 하고, 잘 쓰는 학생은 ㄴ으로. 앱에 「📄 종이 아하노트 사진 올리기」 버튼을 두면 됩니다.</p>
-
-    <p style="margin:14px 0 4px"><b>6. 두 양식 중 무엇을 쓰나</b><br>
-    <b>A안(앞뒤 한 장)</b> — 숙제·아하노트 제출용 기본. 여정 전체가 들어갑니다.<br>
-    <b>B안(반쪽 간단형)</b> — 수업 중 즉석 질문, 저학년. A4 한 장에 두 부.</p>
-
-    <p style="margin:14px 0 4px;color:#b91c1c"><b>확인이 필요합니다</b><br>
-    지금 쓰시는 <b>종이 아하노트 사진이 도착하지 않았습니다.</b> 그 양식을 보면 ① 지금 있는 칸 중 살릴 것 ② 크기(A4/B5) ③ 학원 로고·머리글 형식을 맞춰 다시 그리겠습니다.</p>
+  <div style="margin-top:12px;font-size:12.5px;line-height:1.75;color:#7c2d12;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px 14px">
+    <b>확인 부탁드립니다</b><br>
+    ① 로고·글꼴·색(갈색·금색)을 원본과 비슷하게 다시 그렸습니다. <b>원본 로고 이미지 파일</b>이 있으면 주시면 그대로 넣겠습니다.<br>
+    ② 한 장에 다 넣었습니다. 빽빽하면 <b>앞뒤 두 장</b>(앞=LAMP, 뒤=재풀이·AHA·채점)으로 나눌 수 있습니다.<br>
+    ③ 「내가 먼저 매겨 보기」와 「선생님 채점란」이 부담스러우면 <b>둘 다 빼고</b> 앱에서만 채점해도 됩니다.
   </div>
 </div></div>
 
-<script>
-function pick(n){ for(var i=1;i<=4;i++){ document.getElementById("p"+i).classList.toggle("on",i===n); document.getElementById("b"+i).classList.toggle("on",i===n);} window.scrollTo(0,0); }
-</script>
+<script>function pick(n){for(var i=1;i<=2;i++){document.getElementById("p"+i).classList.toggle("on",i===n);document.getElementById("b"+i).classList.toggle("on",i===n);}window.scrollTo(0,0);}</script>
 </body></html>
