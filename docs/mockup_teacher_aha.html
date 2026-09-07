@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🖥 학원앱 미리보기 — IB아하노트 채점·스스로 해결 확인·리그 설정</title>
+<style>
+:root{
+  --red:#e8192c; --navy:#0d2240; --navy2:#1d3a60; --blue:#1d6fe8; --brown:#4a3a18; --gold:#a97b0c;
+  --yellow:#fbbf24; --gray:#f1f5f9; --gray2:#e2e8f0; --text:#0f172a; --sub:#64748b; --line:#e8eef8;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#dfe4ec;color:var(--text);
+  font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',-apple-system,sans-serif;padding:20px 14px 60px}
+.head{max-width:1180px;margin:0 auto 16px;font-size:12.5px;color:#4b5563;line-height:1.75}
+.head h1{font-size:18px;color:var(--navy);margin:0 0 6px}
+.head b{color:var(--navy)}
+.stage{max-width:1180px;margin:0 auto 26px}
+.cap{font-size:12.5px;font-weight:800;color:var(--navy);margin:0 0 7px;display:flex;align-items:center;gap:6px}
+.cap span{font-size:10.5px;font-weight:700;color:#fff;background:var(--navy);border-radius:50px;padding:2px 8px}
+.cap small{font-weight:600;color:#64748b;font-size:11px}
+.note{font-size:11px;color:var(--sub);line-height:1.55;margin-top:8px}
+
+/* 학원앱 창 */
+.win{background:#f5f7fb;border-radius:14px;overflow:hidden;box-shadow:0 14px 40px -16px rgba(13,34,64,.45);border:1px solid #d5dbe6}
+.top{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;font-size:12.5px}
+.top .lg{font-weight:900;font-size:14px}
+.top .lg small{opacity:.7;font-weight:600;margin-left:6px;font-size:10.5px}
+.top .tabs{display:flex;gap:4px;margin-left:12px}
+.top .tabs span{padding:5px 10px;border-radius:7px;background:rgba(255,255,255,.08);font-size:11.5px;font-weight:700;opacity:.8}
+.top .tabs span.on{background:#fff;color:var(--navy);opacity:1}
+.top .r{margin-left:auto;font-size:11px;opacity:.8}
+.wrap{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px;padding:14px}
+.card{background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(13,34,64,.08);border:1px solid var(--line)}
+.card h4{margin:0 0 10px;font-size:13.5px;color:var(--navy);display:flex;align-items:center;gap:7px}
+.card h4 .cnt{font-size:10.5px;background:var(--red);color:#fff;border-radius:50px;padding:2px 7px;font-weight:800}
+.card h4 .rt{margin-left:auto;font-size:11px;color:var(--sub);font-weight:600}
+.seg{display:flex;gap:4px;background:var(--gray);border-radius:9px;padding:3px;margin-bottom:10px}
+.seg span{flex:1;text-align:center;font-size:11px;font-weight:700;color:var(--sub);padding:5px 4px;border-radius:7px}
+.seg span.on{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.li{display:flex;align-items:center;gap:8px;padding:8px 8px;border-radius:9px;border:1px solid transparent;font-size:12px;margin-bottom:3px}
+.li.on{background:#eff6ff;border-color:#bfdbfe}
+.li .nm{font-weight:800;color:var(--text);width:52px;flex:none}
+.li .src{color:var(--sub);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .tg{font-size:10px;font-weight:800;border-radius:50px;padding:2px 7px;flex:none}
+.tg.ai{background:#f1f5f9;color:#475569}
+.tg.self{background:#fef3c7;color:#92400e}
+.tg.fin{background:#dcfce7;color:#15803d}
+.tg.new{background:#fee2e2;color:#b91c1c}
+
+/* 채점 패널 */
+.panel{display:grid;grid-template-columns:270px minmax(0,1fr);gap:14px}
+.photo{background:#fbfbf7;border:1px solid #e5e2d6;border-radius:10px;padding:10px;font-family:'Nanum Pen Script','Apple SD Gothic Neo',cursive;position:relative}
+.photo .pt{font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:10px;color:var(--sub);text-align:center;margin-bottom:6px;font-weight:700}
+.photo .hd{font-family:Georgia,serif;font-weight:900;color:var(--brown);font-size:13px;display:flex;gap:8px;align-items:baseline;border-bottom:1px solid #d9d4c4;padding-bottom:4px;margin-bottom:5px}
+.photo .hd small{font-family:'Apple SD Gothic Neo',sans-serif;font-weight:600;color:var(--sub);font-size:9.5px}
+.photo .bx{border:1px solid #cfc9b6;border-radius:5px;padding:4px 6px;margin-bottom:5px;min-height:38px;font-size:12px;line-height:1.35;color:#2b2b36;background:repeating-linear-gradient(#fff,#fff 15px,#eee 16px)}
+.photo .bx b{font-family:Georgia,serif;color:var(--brown);font-size:11px;margin-right:4px}
+.photo .bx.p{border-color:#fca5a5}
+.photo .bx.p b{color:var(--red)}
+.photo .bx.hl{outline:2px solid var(--yellow);outline-offset:-2px}
+.photo .zoom{position:absolute;right:8px;top:8px;font-family:'Apple SD Gothic Neo',sans-serif;font-size:10px;background:#fff;border:1px solid #d5dbe6;border-radius:6px;padding:2px 6px;color:var(--sub)}
+.read{display:flex;flex-direction:column;gap:7px}
+.rd{display:grid;grid-template-columns:26px minmax(0,1fr) 92px;gap:8px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
+.rd.p{border-color:#fca5a5;background:#fffafa}
+.rd .ltr{width:24px;height:24px;border-radius:7px;background:var(--brown);color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center;font-family:Georgia,serif}
+.rd.p .ltr{background:var(--red)}
+.rd .tx{font-size:12px;line-height:1.5;color:var(--text)}
+.rd .tx .nm{font-size:10.5px;font-weight:800;color:var(--sub);margin-right:5px}
+.rd .tx .fix{background:#fef9c3;border-bottom:1px dashed #ca8a04;padding:0 2px}
+.rd .tx .q{display:block;margin-top:3px;color:#7f1d1d;font-weight:700}
+.sc{display:flex;gap:3px;justify-content:flex-end;align-items:center}
+.sc i{width:24px;height:24px;border-radius:6px;border:1px solid #cbd5e1;font-style:normal;font-size:11.5px;font-weight:800;display:flex;align-items:center;justify-content:center;color:#94a3b8;background:#fff}
+.sc i.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sc i.ai{outline:2px dashed #93c5fd;outline-offset:1px}
+.meta{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 2px}
+.chip{background:#fff;color:var(--sub);border:1.5px solid #cbd5e1;padding:4px 9px;border-radius:18px;font-size:10.5px;font-weight:700}
+.chip.on{background:#fef3c7;color:#92400e;border-color:var(--yellow)}
+.chip.on::before{content:'✓ '}
+.chip.pu{background:#ede9fe;color:#6d28d9;border-color:#c4b5fd}
+.chip.gr{background:#dcfce7;color:#15803d;border-color:#86efac}
+.tot{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--blue),var(--navy));border-radius:11px;padding:9px 13px;color:#fff;margin-top:4px}
+.tot .big{font-size:24px;font-weight:900}
+.tot .u{font-size:11px;opacity:.8}
+.tot .rt{margin-left:auto;font-size:10.5px;line-height:1.5;opacity:.9;text-align:right}
+.tot .ai{font-size:10px;background:rgba(255,255,255,.18);border-radius:50px;padding:2px 8px;font-weight:800}
+.coach{display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px;align-items:center;margin-top:6px}
+.coach label{font-size:11px;font-weight:800;color:var(--sub)}
+.coach .in{border:1px solid #cbd5e1;border-radius:8px;padding:7px 9px;font-size:12px;line-height:1.5;background:#fff}
+.coach .in.fb{border-left:3px solid #16a34a}
+.coach .in.ff{border-left:3px solid var(--blue)}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.btn{padding:9px 13px;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:inherit;color:#fff;background:linear-gradient(135deg,var(--blue),var(--navy))}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid #cbd5e1}
+.btn.gold{background:linear-gradient(135deg,#f59e0b,#b45309)}
+.btn.red{background:#fff;color:var(--red);border:1.5px solid #fca5a5}
+.btn.sm{padding:6px 10px;font-size:11px}
+
+/* 스스로 해결 */
+.self{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;font-size:12px;line-height:1.55}
+.box .t{font-size:11px;font-weight:800;color:var(--sub);margin-bottom:4px}
+.ok{background:#f0fdf4;border:1px solid #86efac;border-radius:9px;padding:8px 10px;font-size:12px;color:#14532d;line-height:1.5}
+.ok b{font-weight:900}
+.warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;padding:8px 10px;font-size:11.5px;color:#7c2d12;line-height:1.5}
+
+/* 리그 설정 */
+.set{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
+.row{display:flex;align-items:center;gap:10px;font-size:12px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.row .k{width:150px;flex:none;font-weight:800;color:var(--text)}
+.row .k small{display:block;font-weight:600;color:var(--sub);font-size:10px}
+.row .v{flex:1;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.opt{border:1.5px solid #cbd5e1;border-radius:8px;padding:5px 10px;font-size:11.5px;font-weight:700;color:var(--sub);background:#fff}
+.opt.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.num{border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;font-size:12px;font-weight:800;color:var(--navy);background:#fff;min-width:44px;text-align:center}
+.tog{width:34px;height:18px;border-radius:10px;background:#16a34a;position:relative;flex:none}
+.tog::after{content:'';position:absolute;right:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff}
+.tog.off{background:#cbd5e1}.tog.off::after{right:auto;left:2px}
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+.bd{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fbfcfe}
+.bd .t{font-size:12px;font-weight:900;color:var(--navy);margin-bottom:5px;display:flex;align-items:center}
+.bd .t small{margin-left:auto;font-weight:600;color:var(--sub);font-size:10px}
+.bd .r{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 0}
+.bd .r .n{width:16px;font-weight:900;color:var(--sub)}
+.bd .r .tg{margin-left:auto;font-size:9.5px;font-weight:800;color:#6d28d9;background:#ede9fe;border-radius:5px;padding:1px 5px}
+.bd .r b{font-weight:900;color:var(--navy);width:30px;text-align:right}
+.cmp{width:100%;border-collapse:collapse;font-size:12px}
+.cmp th,.cmp td{border:1px solid #e2e8f0;padding:8px 10px;text-align:left;vertical-align:top;line-height:1.55}
+.cmp th{background:#f8fafc;font-size:11px;color:#475569}
+</style></head><body>
+
+<div class="head">
+  <h1>🖥 학원앱 화면 — IB아하노트 채점 · 스스로 해결 확인 · 리그 설정</h1>
+  원장님이 보는 화면 세 장입니다. 핵심은 <b>사진과 AI가 읽은 글자를 나란히 놓고, AI 초안 점수를 확인만 하면 확정</b>되는 것. 리그 시즌은 <b>2달</b>이 기본이고 설정 화면에서 바꿀 수 있습니다. 이름·수치는 예시입니다.
+</div>
+
+<!-- ① 채점 패널 -->
+<div class="stage">
+  <div class="cap"><span>1</span> IB아하노트 관리 → 질문력 채점 패널 <small>기존 아하노트 관리 탭을 개편 · 힌트 발송 팝업 자리</small></div>
+  <div class="win">
+    <div class="top"><span class="lg">π 루멘수학<small>학원앱 v18-155</small></span>
+      <div class="tabs"><span>학생</span><span>출결</span><span>플래너</span><span class="on">💡 IB아하노트</span><span>서술형</span><span>리포트</span></div>
+      <span class="r">2026-09-08 (월) 22:10 · 원장</span></div>
+    <div class="wrap">
+      <div class="card">
+        <h4>확인 대기 <span class="cnt">7</span><span class="rt">오늘 5 · 어제 2</span></h4>
+        <div class="seg"><span class="on">질문 4</span><span>스스로 2</span><span>AHA 1</span><span>확정</span></div>
+        <div class="li on"><span class="nm">김○○</span><span class="src">쎈 중2-1 p.87 12번</span><span class="tg ai">AI 7</span></div>
+        <div class="li"><span class="nm">박○○</span><span class="src">개념원리 p.132 5번</span><span class="tg ai">AI 10</span></div>
+        <div class="li"><span class="nm">이○○</span><span class="src">프린트 · 일차함수 3번</span><span class="tg new">AI 읽는 중</span></div>
+        <div class="li"><span class="nm">최○○</span><span class="src">쎈 중3-1 p.41 9번</span><span class="tg ai">AI 4</span></div>
+        <div class="li"><span class="nm">정○○</span><span class="src">RPM p.66 17번</span><span class="tg self">🙋 스스로</span></div>
+        <div class="li"><span class="nm">한○○</span><span class="src">개념원리 p.90 2번</span><span class="tg self">🙋 스스로</span></div>
+        <div class="li"><span class="nm">윤○○</span><span class="src">쎈 p.112 4번 · AHA</span><span class="tg ai">AHA 2</span></div>
+        <div class="btns" style="margin-top:12px"><button class="btn ghost sm" style="flex:1">☑ AI 초안 그대로 일괄 확정 (질문력 8 이상 2건)</button></div>
+        <div class="note">수업 모드(v18-150)에서 같은 목록을 반별로 봅니다. 「AI 읽는 중」은 사진을 아직 읽는 중(5~10초).</div>
+      </div>
+
+      <div class="card">
+        <h4>김○○ · 중2 · 쎈 중2-1 p.87 12번 <span class="tg ai" style="font-size:10px">틀린이유: 개념부족</span><span class="rt">올림 21:42 · 힌트 0 · 지시어 「설명」</span></h4>
+        <div class="panel">
+          <div class="photo">
+            <div class="pt">📷 활동지 사진 (탭하면 크게)</div><span class="zoom">🔍 확대</span>
+            <div class="hd">LAMP <small>쎈 중2-1 · p.87 · 12번 · □개념부족</small></div>
+            <div class="bx"><b>L</b> 일차함수 y=−2x+1 의 x절편과 y절편 구하기. 조건: 그래프가 주어짐</div>
+            <div class="bx"><b>A</b> 절편은 축과 만나는 점</div>
+            <div class="bx"><b>M</b> y=0 넣으면 0=−2x+1, x=1/2. x=0 넣으면 y=1. 답지는 x절편 1/2 y절편 1 인데 순서가 헷갈림</div>
+            <div class="bx p hl"><b>P</b> x절편 구할때 y=0인지 x=0인지 매번 헷갈려요. 왜 x절편인데 y에 0을 넣는지 설명해주세요</div>
+          </div>
+          <div>
+            <div class="read">
+              <div class="rd"><span class="ltr">L</span><div class="tx"><span class="nm">문제 이해</span>일차함수 y=−2x+1의 x절편과 y절편 구하기. 조건: 그래프가 주어짐</div><div class="sc"><i>0</i><i>1</i><i class="on ai">2</i></div></div>
+              <div class="rd"><span class="ltr">A</span><div class="tx"><span class="nm">이론·공식</span>절편은 축과 만나는 점</div><div class="sc"><i>0</i><i class="on ai">1</i><i>2</i></div></div>
+              <div class="rd"><span class="ltr">M</span><div class="tx"><span class="nm">풀이 논리</span>y=0 넣으면 0=−2x+1, x=<span class="fix" title="AI가 ½로 읽음 → 학생이 1/2로 고침">1/2</span>. x=0 넣으면 y=1. 답지와 순서가 헷갈림</div><div class="sc"><i>0</i><i>1</i><i class="on ai">2</i></div></div>
+              <div class="rd p"><span class="ltr">P</span><div class="tx"><span class="nm">막힌 곳</span>x절편 구할 때 y=0인지 x=0인지 매번 헷갈림<span class="q">Q. 왜 x절편인데 y에 0을 넣는지 <b>설명해 주세요</b></span></div><div class="sc"><i>0</i><i>1</i><i class="on ai">2</i></div></div>
+              <div class="rd" style="opacity:.55"><span class="ltr" style="background:#94a3b8">A<small style="font-size:8px">HA</small></span><div class="tx"><span class="nm">되돌아보기</span>아직 없음 — 힌트 받고 풀면 사진으로 올라옵니다</div><div class="sc"><i>0</i><i>1</i><i>2</i></div></div>
+            </div>
+            <div class="meta">
+              <span class="chip pu">개념적 질문 +1</span><span class="chip on">지시어 · 설명</span><span class="chip on">절편·좌표 (representation)</span><span class="chip on">등식 (equivalence)</span><span class="chip">자기평가 예상 7</span>
+            </div>
+            <div class="tot"><span class="big">7</span><span class="u">/ 10 질문력</span><span class="ai">AI 초안 · 확인만 하면 확정</span>
+              <span class="rt">+ 개념적 1 · 자기평가 적중 시 +1<br>= 리그 <b>8~9점</b> (해결 경로 보너스는 나중에)</span></div>
+            <div class="coach">
+              <label>잘한 점</label><div class="in fb">「막힌 곳」에서 y=0인지 x=0인지 헷갈린다고 정확히 짚었고, 답지 값과 비교한 것이 좋았습니다.</div>
+              <label>다만</label><div class="in ff">A칸에 「절편은 축과 만나는 점」만 썼는데, <b>어느 축인지</b>까지 쓰면 2점입니다.</div>
+            </div>
+            <div class="btns">
+              <button class="btn">✓ 확정 + 학생에게 보내기</button>
+              <button class="btn ghost">💡 힌트 1 + 점수 함께 발송</button>
+              <button class="btn gold">⭐ 수업 공통질문 채택 +2</button>
+              <button class="btn ghost">🏆 베스트 후보</button>
+              <button class="btn red sm" style="margin-left:auto">✏️ 읽은 글자 고치기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note">점선 테두리 칸이 <b>AI 초안</b> 점수. 원장님이 다른 칸을 누르면 그 값으로 바뀝니다. 노란 밑줄은 학생이 이미 고친 글자, 노란 테두리(P)는 AI가 자신 없어 한 칸(원장이 사진과 대조).</div>
+</div>
+
+<!-- ② 스스로 해결 -->
+<div class="stage">
+  <div class="cap"><span>2</span> 🙋 스스로 해결 확인 카드 <small>status: self_pending · 정답사전 자동 대조</small></div>
+  <div class="win">
+    <div class="wrap" style="grid-template-columns:1fr">
+      <div class="card">
+        <h4>정○○ · 중3 · RPM 중3-1 p.66 17번 <span class="tg self" style="font-size:10px">🙋 쓰다 보니 알았어요</span><span class="rt">질문 21:05 → 스스로 21:19 (14분) · 힌트 0</span></h4>
+        <div class="self">
+          <div>
+            <div class="box"><div class="t">어떻게 풀렸나 (학생 글)</div>P칸 쓰다가 「이차식을 인수분해할 때 상수항 부호를 먼저 보라」던 게 생각났어요. 상수항이 −12라 부호가 다른 두 수(4, −3)를 찾으니 (x+4)(x−3)=0. 답 x=−4 또는 3.</div>
+            <div class="ok" style="margin-top:8px">✓ <b>정답 대조 일치</b> — 재풀이 사진에서 읽은 답 <b>x=−4, 3</b> = 교재 정답사전(RPM 중3-1 p.66 17번) <b>−4, 3</b></div>
+            <div class="box" style="margin-top:8px"><div class="t">AHA (사진에서 AI가 읽음)</div>못 떠올린 것: 상수항 부호부터 보기 · 원리 한 문장: <b>곱이 음수면 두 수의 부호가 다르다</b></div>
+          </div>
+          <div>
+            <div class="photo" style="min-height:150px"><div class="pt">📷 재풀이 사진 (활동지 6단계 칸)</div>
+              <div class="bx" style="min-height:96px">x²+x−12=0<br>(x+4)(x−3)=0<br>x=−4 또는 x=3 ✓</div></div>
+            <div class="tot" style="background:linear-gradient(135deg,#f59e0b,#b45309)"><span class="big">+4</span><span class="u">스스로 해결</span>
+              <span class="rt">질문력 AI 8 + 개념적 1 + AHA 2<br>= 리그 <b>15점</b> (오늘 2건째 · 인정)</span></div>
+            <div class="btns">
+              <button class="btn gold">✓ 확인 — 보너스 +4 확정</button>
+              <button class="btn ghost">✏️ 점수 조정</button>
+              <button class="btn ghost">🏆 스스로 해결 이야기에 올리기</button>
+              <button class="btn red sm">↩ 아직 아님 → 힌트 흐름</button>
+            </div>
+            <div class="warn" style="margin-top:8px">정답이 <b>불일치</b>이거나 「어떻게 풀렸나」가 비어 있으면 이 카드에 ✗가 뜨고 학생앱에는 임시 +4가 표시되지 않습니다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 리그 설정 -->
+<div class="stage">
+  <div class="cap"><span>3</span> 🏆 리그 설정 + 시즌 보드 <small>시즌 길이 2달 기본 · 여기서 조정 (원장 2026-09-08)</small></div>
+  <div class="win">
+    <div class="wrap" style="grid-template-columns:1fr">
+      <div class="card">
+        <h4>IB아하노트 리그 설정 <span class="rt">진도 레이스 설정과 같은 자리 · 저장하면 학생앱에 바로 반영</span></h4>
+        <div class="set">
+          <div>
+            <div class="row"><div class="k">시즌 길이<small>끝나면 자동으로 다음 시즌</small></div><div class="v"><span class="opt">1달</span><span class="opt on">2달</span><span class="opt">3달</span><span class="opt">학기</span></div></div>
+            <div class="row"><div class="k">현재 시즌</div><div class="v"><span class="num">9~10월</span><span style="font-size:11px;color:var(--sub)">9/1 시작 · 10/31 끝 · D-53</span><button class="btn ghost sm">시즌 지금 끝내기</button></div></div>
+            <div class="row"><div class="k">부 나누기</div><div class="v"><span class="opt on">초등</span><span class="opt on">중등</span><span class="opt on">고등</span><span style="font-size:11px;color:var(--sub)">레이스와 동일</span></div></div>
+            <div class="row"><div class="k">인정 상한<small>양보다 질</small></div><div class="v">하루 <span class="num">2</span> 건 · 주 <span class="num">8</span> 건 · 질문력 <span class="num">5</span> 미만은 0점</div></div>
+            <div class="row"><div class="k">순위 공개</div><div class="v">상위 <span class="num">5</span> 명 공개 · 이름 <span class="opt on">성+○○</span><span class="opt">실명</span><span class="opt">가림</span></div></div>
+          </div>
+          <div>
+            <div class="row"><div class="k">🔎 탐구자 문턱</div><div class="v">평균 질문력 <span class="num">6</span> · 인정 노트 <span class="num">5</span> 건</div></div>
+            <div class="row"><div class="k">💭 사고자 문턱</div><div class="v">평균 질문력 <span class="num">8</span> · 스스로 해결 <span class="num">3</span> 회</div></div>
+            <div class="row"><div class="k">🪞 성찰자 문턱</div><div class="v">AHA <span class="num">10</span> 건 · 🎙 녹음 설명 <span class="num">3</span> 회</div></div>
+            <div class="row"><div class="k">등급 강등</div><div class="v"><span class="tog off"></span><span style="font-size:11px;color:var(--sub)">없음 (시즌이 바뀌어도 등급 유지)</span></div></div>
+            <div class="row"><div class="k">시즌 끝 리포트<small>학부모 성장 리포트</small></div><div class="v"><span class="tog"></span><span style="font-size:11px;color:var(--sub)">시즌 종료일 다음 날 AI 초안 자동 생성 → 원장 검토 → 발행</span></div></div>
+          </div>
+        </div>
+        <div class="btns"><button class="btn">저장</button><button class="btn ghost">기본값으로</button></div>
+
+        <h4 style="margin-top:18px">9~10월 시즌 보드 <span class="rt">확정 점수만 집계 · 매일 새벽 갱신</span></h4>
+        <div class="board">
+          <div class="bd"><div class="t">초등부 <small>7명 · 인정 23건</small></div>
+            <div class="r"><span class="n">1</span>서○○<span class="tg">탐구자</span><b>64</b></div>
+            <div class="r"><span class="n">2</span>오○○<span class="tg">질문자</span><b>51</b></div>
+            <div class="r"><span class="n">3</span>강○○<span class="tg">질문자</span><b>40</b></div></div>
+          <div class="bd"><div class="t">중등부 <small>18명 · 인정 96건</small></div>
+            <div class="r"><span class="n">1</span>박○○<span class="tg">사고자</span><b>112</b></div>
+            <div class="r"><span class="n">2</span>이○○<span class="tg">사고자</span><b>98</b></div>
+            <div class="r"><span class="n">3</span>최○○<span class="tg">탐구자</span><b>91</b></div>
+            <div class="r"><span class="n">4</span>김○○<span class="tg">탐구자</span><b>86</b></div>
+            <div class="r"><span class="n">5</span>정○○<span class="tg">탐구자</span><b>79</b></div></div>
+          <div class="bd"><div class="t">고등부 <small>9명 · 인정 31건</small></div>
+            <div class="r"><span class="n">1</span>조○○<span class="tg">탐구자</span><b>77</b></div>
+            <div class="r"><span class="n">2</span>임○○<span class="tg">탐구자</span><b>70</b></div>
+            <div class="r"><span class="n">3</span>신○○<span class="tg">질문자</span><b>52</b></div></div>
+        </div>
+        <div class="btns"><button class="btn ghost sm">🏆 이번 주 베스트 질문 고르기 (후보 4)</button><button class="btn ghost sm">📋 반별 보기</button><button class="btn ghost sm">⚠ 2주째 노트 없는 학생 6명</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stage">
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(13,34,64,.06)">
+    <div style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:10px">원장님 하루 일이 얼마나 되나</div>
+    <table class="cmp">
+      <tr><th style="width:200px">일</th><th>손이 가는 정도</th><th style="width:260px">1단계에서 코딩</th></tr>
+      <tr><td><b>질문 채점</b></td><td>AI 초안이 이미 매겨져 있어 카드당 <b>「확정」 한 번</b>. 점수를 바꾸고 싶을 때만 칸을 누름. 질문력 8 이상은 목록에서 <b>일괄 확정</b>.</td><td>✓ 채점 패널 · 일괄 확정</td></tr>
+      <tr><td><b>스스로 해결 확인</b></td><td>정답 대조가 자동이라 ✓ 표시 확인 후 <b>「확인」 한 번</b>. 불일치는 ✗로 표시되어 힌트 흐름으로 돌림.</td><td>✓ 확인 카드 · 정답 대조</td></tr>
+      <tr><td><b>읽은 글자 고치기</b></td><td>학생이 먼저 고쳐 오므로 거의 없음. 노란 테두리 칸만 사진과 대조.</td><td>✓ 패널 안 「고치기」</td></tr>
+      <tr><td><b>리그 설정 · 베스트 질문</b></td><td>시즌 시작 때 한 번 · 베스트는 주 1회 후보 중 고르기.</td><td>5단계 (설정 화면 골격은 1단계에 넣어 둠)</td></tr>
+      <tr><td><b>학부모 성장 리포트</b></td><td>시즌 끝(2달) AI 초안 → 한마디 2줄 고쳐 발행. 학생당 1~2분.</td><td>5단계</td></tr>
+    </table>
+  </div>
+</div>
+</body></html>
