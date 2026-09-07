@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📱 학생앱 미리보기 — IB아하노트 (1단계)</title>
+<style>
+:root{
+  --red:#e8192c; --navy:#0d2240; --navy2:#1d3a60; --blue:#1d6fe8;
+  --yellow:#fbbf24; --gray:#f1f5f9; --gray2:#e2e8f0; --text:#0f172a; --sub:#64748b;
+  --brown:#4a3a18;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#dfe4ec;color:var(--text);
+  font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',-apple-system,sans-serif;padding:20px 14px 60px}
+.head{max-width:1180px;margin:0 auto 16px;font-size:12.5px;color:#4b5563;line-height:1.75}
+.head h1{font-size:18px;color:var(--navy);margin:0 0 6px}
+.head b{color:var(--navy)}
+.stage{max-width:1180px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.col{width:360px}
+.cap{font-size:12.5px;font-weight:800;color:var(--navy);margin:0 0 7px;display:flex;align-items:center;gap:6px}
+.cap span{font-size:10.5px;font-weight:700;color:#fff;background:var(--navy);border-radius:50px;padding:2px 8px}
+.cap small{font-weight:600;color:#64748b;font-size:11px}
+
+/* 폰 */
+.phone{width:360px;height:720px;background:#fff;border-radius:34px;overflow:hidden;
+  box-shadow:0 16px 40px -14px rgba(13,34,64,.45);display:flex;flex-direction:column;position:relative}
+.hdr{background:var(--navy);padding:34px 18px 14px;display:flex;align-items:center;gap:11px;flex-shrink:0}
+.back{background:rgba(255,255,255,.14);border:none;border-radius:50%;width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:700;flex:none}
+.htitle{font-size:16px;font-weight:900;color:#fff}
+.hright{margin-left:auto;font-size:10.5px;font-weight:800;color:#cfe0ff;background:rgba(255,255,255,.12);
+  border-radius:50px;padding:4px 10px}
+.body{flex:1;overflow-y:auto;background:var(--gray);padding:14px 14px 10px}
+.body::-webkit-scrollbar{width:0}
+
+/* 폼 */
+.grp{margin-bottom:13px}
+.lb{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:5px;display:block}
+.lb.pri{color:var(--blue)}
+.lb .req{color:var(--red)}
+.hint{font-size:10.5px;color:var(--sub);margin-bottom:5px;line-height:1.5}
+.inp,.sel,.ta{width:100%;padding:0 10px;border:1px solid #cbd5e1;border-radius:10px;font-size:13.5px;
+  font-family:inherit;background:#fff;color:var(--text)}
+.inp,.sel{height:38px;line-height:38px}
+.ta{padding:8px 10px;min-height:54px;line-height:1.5;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.photo{background:#f8fafc;border:2px solid #cbd5e1;border-radius:12px;height:84px;display:flex;
+  align-items:center;justify-content:center;gap:9px;color:#64748b;font-size:12px;font-weight:700;overflow:hidden}
+.photo .th{width:64px;height:64px;border-radius:8px;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);
+  display:flex;align-items:center;justify-content:center;font-size:22px}
+
+/* 칩 */
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{background:#fff;color:var(--sub);border:1.5px solid #cbd5e1;padding:6px 11px;border-radius:18px;
+  font-size:11.5px;font-weight:600;font-family:inherit}
+.chip.on{background:#fef3c7;color:#92400e;border-color:var(--yellow);font-weight:800}
+.chip.on::before{content:'✓ '}
+.chip.sm{padding:5px 9px;font-size:11px}
+.chip.blue.on{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+
+/* LAMP 카드 */
+.lamp{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:10px 11px 11px;margin-bottom:9px;
+  box-shadow:0 1px 4px rgba(13,34,64,.05)}
+.lamp.p{border-color:#fca5a5;background:#fffafa}
+.lamp .t{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.lamp .ltr{width:23px;height:23px;border-radius:7px;background:var(--brown);color:#fff;font-size:14px;
+  font-weight:900;display:flex;align-items:center;justify-content:center;flex:none;font-family:Georgia,serif}
+.lamp.p .ltr{background:var(--red)}
+.lamp .tt{font-size:12.5px;font-weight:800;color:var(--text)}
+.lamp.p .tt{color:var(--red)}
+.lamp .ok{margin-left:auto;font-size:10.5px;font-weight:800;color:#16a34a}
+.lamp .ok.no{color:#cbd5e1}
+.lamp .hh{font-size:10.5px;color:var(--sub);margin-bottom:5px;line-height:1.45}
+.lamp .val{border:1px solid #e2e8f0;border-radius:9px;background:#fbfcfe;padding:7px 9px;font-size:12.5px;
+  line-height:1.55;color:var(--text);min-height:40px}
+.lamp.p .val{background:#fff}
+.lamp .ph{color:#b6bdc9}
+
+/* 지시어 */
+.dir{border-top:1px dashed #fca5a5;margin-top:8px;padding-top:7px}
+.dir .dt{font-size:11px;font-weight:800;color:var(--red);margin-bottom:5px}
+.dir .mean{margin-top:6px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:6px 8px;
+  font-size:10.5px;color:#991b1b;line-height:1.5}
+
+/* 유형 태그 */
+.qtype{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;border-radius:6px;
+  padding:3px 8px;background:#ede9fe;color:#6d28d9;margin-top:7px}
+.qtype.plus{background:#dcfce7;color:#15803d}
+
+/* 자기평가 */
+.selfev{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:10px 11px;margin-bottom:9px}
+.selfev .t{font-size:12px;font-weight:800;color:var(--navy);margin-bottom:2px}
+.selfev .s{font-size:10.5px;color:var(--sub);margin-bottom:7px;line-height:1.45}
+.selfev .row{display:flex;flex-direction:column;gap:5px}
+.selfev .it{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text)}
+.cbx{width:17px;height:17px;border-radius:5px;border:1.6px solid #cbd5e1;flex:none;display:flex;
+  align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:900}
+.cbx.on{background:#16a34a;border-color:#16a34a}
+.selfev .exp{margin-top:8px;padding-top:7px;border-top:1px dashed #e2e8f0;font-size:11.5px;
+  display:flex;align-items:center;gap:6px;color:var(--sub)}
+.selfev .exp b{font-size:15px;color:var(--navy)}
+
+/* 하단 바 */
+.foot{flex-shrink:0;background:#fff;border-top:1px solid #e2e8f0;padding:9px 13px 12px;
+  box-shadow:0 -3px 14px rgba(13,34,64,.07)}
+.meter{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.meter .k{font-size:10.5px;font-weight:800;color:var(--brown);flex:none}
+.meter .bar{flex:1;display:flex;gap:3px}
+.meter .bar i{flex:1;height:7px;border-radius:4px;background:#e2e8f0}
+.meter .bar i.on{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.meter .n{font-size:12px;font-weight:900;color:var(--navy);flex:none}
+.btns{display:flex;gap:7px}
+.btn{flex:1;padding:11px 8px;border:none;border-radius:11px;font-size:13px;font-weight:800;
+  font-family:inherit;color:#fff;background:linear-gradient(135deg,var(--blue),var(--navy))}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid #cbd5e1;flex:0 0 44%;font-size:12px}
+.btn.gold{background:linear-gradient(135deg,#f59e0b,#b45309)}
+
+/* 카드 (목록) */
+.ncard{background:#fff;border-radius:14px;padding:11px 12px;margin-bottom:9px;box-shadow:0 2px 8px rgba(13,34,64,.06)}
+.ncard .top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.ncard .src{font-size:12px;font-weight:800;color:var(--navy)}
+.ncard .st{margin-left:auto;font-size:10px;font-weight:800;border-radius:50px;padding:3px 8px}
+.st.temp{background:#f1f5f9;color:#64748b}
+.st.fin{background:#dcfce7;color:#15803d}
+.score{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1d6fe8,#0d2240);
+  border-radius:11px;padding:9px 11px;color:#fff;margin-bottom:8px}
+.score .big{font-size:26px;font-weight:900;line-height:1}
+.score .u{font-size:11px;opacity:.75;font-weight:700}
+.score .rt{margin-left:auto;text-align:right;font-size:10.5px;line-height:1.5;opacity:.9}
+.lampres{display:flex;gap:4px;margin-bottom:8px}
+.lampres div{flex:1;text-align:center;border:1px solid #e2e8f0;border-radius:8px;padding:5px 0;background:#fff}
+.lampres .l{font-size:10px;font-weight:900;color:var(--brown);font-family:Georgia,serif}
+.lampres .v{font-size:13px;font-weight:900}
+.v2{color:#16a34a}.v1{color:#e08a00}.v0{color:#cbd5e1}
+.coach{border-left:3px solid #16a34a;background:#f0fdf4;border-radius:8px;padding:7px 9px;
+  font-size:11.5px;line-height:1.55;margin-bottom:6px;color:#14532d}
+.coach.ff{border-left-color:var(--blue);background:#eff6ff;color:#1e3a8a}
+.coach b{font-weight:800}
+.ladder{display:flex;gap:3px;margin:8px 0 6px}
+.ladder span{flex:1;text-align:center;font-size:10px;font-weight:800;padding:5px 0;border-radius:6px;
+  background:#f1f5f9;color:#94a3b8}
+.ladder span.cur{background:var(--red);color:#fff}
+.ladder span.next{background:#fff7ea;color:#b45309;border:1px dashed #f3dcae}
+
+/* 자체 해결 */
+.selfbox{background:#fffbeb;border:1.5px solid #fde68a;border-radius:13px;padding:11px 12px;margin-bottom:9px}
+.selfbox .t{font-size:13px;font-weight:900;color:#b45309;margin-bottom:3px}
+.selfbox .s{font-size:11px;color:#92400e;line-height:1.5;margin-bottom:8px}
+.pathrow{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+.pathrow .it{display:flex;align-items:center;gap:7px;font-size:12px;background:#fff;border:1px solid #e2e8f0;
+  border-radius:9px;padding:7px 9px}
+.pathrow .it.on{border-color:var(--yellow);background:#fffbeb;font-weight:800}
+.rdo{width:15px;height:15px;border-radius:50%;border:1.6px solid #cbd5e1;flex:none;position:relative}
+.rdo.on{border-color:#f59e0b;border-width:5px}
+.pathrow .it .pt{margin-left:auto;font-weight:900;color:#b45309;font-size:12px}
+
+.note{font-size:11.5px;color:#64748b;background:#fff;border:1px dashed #cbd5e1;border-radius:10px;
+  padding:9px 12px;margin-top:9px;line-height:1.7}
+.note b{color:var(--navy)}
+table.cmp{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+table.cmp th,table.cmp td{border:1px solid #dde3ec;padding:7px 9px;text-align:left;vertical-align:top;line-height:1.55}
+table.cmp th{background:#f6f8fb;font-size:11.5px}
+
+/* 갈래 고르기 */
+.pick{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:13px 14px;margin-bottom:10px;
+  box-shadow:0 2px 8px rgba(13,34,64,.05)}
+.pick.main{border-color:var(--blue);background:#f5f9ff}
+.pick .t{font-size:14px;font-weight:900;color:var(--navy);display:flex;align-items:center;gap:7px}
+.pick .t .bdg{margin-left:auto;font-size:10px;font-weight:800;background:var(--blue);color:#fff;
+  border-radius:50px;padding:3px 9px}
+.pick .s{font-size:11.5px;color:var(--sub);line-height:1.6;margin:5px 0 9px}
+.pick .s b{color:var(--text)}
+/* AI 읽기 */
+.aiban{background:#eef6ff;border:1px solid #bfdbfe;border-radius:12px;padding:9px 11px;margin-bottom:10px;
+  font-size:11.5px;color:#1e40af;line-height:1.6}
+.aiban b{font-weight:800}
+.lamp.read{background:#fbfdff;border-color:#dbeafe}
+.lamp .fix{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--blue);background:#eff6ff;
+  border:1px solid #bfdbfe;border-radius:50px;padding:3px 9px}
+.lamp.warn{border-color:#fcd34d;background:#fffbeb}
+.lamp.warn .fix{color:#b45309;background:#fef3c7;border-color:#fcd34d}
+.miss{font-size:11.5px;color:#92400e;background:#fff;border:1px dashed #fcd34d;border-radius:9px;
+  padding:8px 10px;line-height:1.55}
+.shot{display:flex;gap:9px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+  padding:9px 10px;margin-bottom:10px}
+.shot .im{width:52px;height:66px;border-radius:7px;flex:none;
+  background:repeating-linear-gradient(#fff 0 7px,#eef2f7 7px 8px);border:1px solid #cbd5e1;
+  display:flex;align-items:flex-start;justify-content:center;font-size:9px;color:#94a3b8;padding-top:4px}
+.shot .tx{font-size:11.5px;line-height:1.55;color:var(--sub)}
+.shot .tx b{color:var(--text);font-size:12.5px;display:block;margin-bottom:2px}
+
+/* IB 설명 */
+.ibhero{background:linear-gradient(135deg,#1d6fe8,#0d2240);border-radius:14px;padding:13px 14px;color:#fff;margin-bottom:10px}
+.ibhero .k{font-size:10px;font-weight:800;letter-spacing:.12em;opacity:.8}
+.ibhero .t{font-size:16px;font-weight:900;margin:3px 0 5px;line-height:1.3}
+.ibhero .s{font-size:11.5px;line-height:1.6;opacity:.92}
+.ibcard{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:11px 12px;margin-bottom:9px}
+.ibcard .t{font-size:12.5px;font-weight:800;color:var(--navy);margin-bottom:4px}
+.ibcard .s{font-size:11.5px;color:#334155;line-height:1.65}
+.ibcard .s b{color:var(--navy)}
+.ibrow{display:grid;grid-template-columns:30px 1fr;gap:6px 8px;align-items:start;margin-top:6px}
+.ibrow .l{width:26px;height:26px;border-radius:7px;background:var(--brown);color:#fff;font-family:Georgia,serif;
+  font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center}
+.ibrow .l.r{background:var(--red)}
+.ibrow .l.h{background:#b45309;font-size:9px;font-family:inherit}
+.ibrow .d{font-size:11.5px;line-height:1.5;color:#334155;padding-top:3px}
+.ibrow .d b{color:var(--navy)}
+/* 리그 */
+.tier{background:linear-gradient(135deg,#1e1b4b,#4c1d95);border-radius:14px;padding:13px 14px;color:#fff;margin-bottom:9px}
+.tier .row{display:flex;align-items:center;gap:10px}
+.tier .big{font-size:24px;font-weight:900;line-height:1.05}
+.tier .big small{display:block;font-size:10.5px;opacity:.8;font-weight:700;margin-top:3px}
+.tier .rk{margin-left:auto;text-align:right}
+.tier .rk b{font-size:22px;font-weight:900;display:block;line-height:1}
+.tier .rk small{font-size:10px;opacity:.8}
+.tier .stats{display:flex;gap:6px;margin-top:10px}
+.tier .st{flex:1;background:rgba(255,255,255,.12);border-radius:9px;padding:6px 7px;text-align:center}
+.tier .st b{display:block;font-size:15px;font-weight:900}
+.tier .st span{font-size:9.5px;opacity:.85}
+.next{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:9px 11px;margin-bottom:9px}
+.next .t{font-size:11.5px;font-weight:800;color:#6d28d9;margin-bottom:5px}
+.next .cond{display:flex;align-items:center;gap:7px;font-size:11.5px;margin-bottom:4px;color:#334155}
+.next .cond .bar{flex:1;height:6px;background:#eef0f5;border-radius:4px;overflow:hidden}
+.next .cond .bar i{display:block;height:100%;background:#7c3aed}
+.next .cond .n{font-weight:800;color:var(--navy);flex:none;font-size:11px}
+.rank{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;font-size:12px;
+  font-weight:700;border:1px solid #eef0f4;margin-bottom:4px;background:#fff}
+.rank.me{background:#f5f3ff;border-color:#c4b5fd}
+.rank .n{width:20px;font-weight:900;color:#6d28d9}
+.rank .tag{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;background:#ede9fe;color:#6d28d9}
+.rank .pt{margin-left:auto;font-weight:900;color:var(--navy)}
+.best{border:1.5px solid #fde68a;background:#fffbeb;border-radius:12px;padding:9px 11px;margin-bottom:9px;font-size:11.5px;line-height:1.55}
+.best b{color:#b45309;font-size:11px;display:block;margin-bottom:2px}
+.sec{font-size:11.5px;font-weight:800;color:var(--navy);margin:10px 0 5px}
+</style></head><body>
+
+<div class="head">
+  <h1>📱 학생앱 미리보기 — 「IB아하노트」 (1단계)</h1>
+  <b>원장 결정 반영:</b> ① 앱에서 직접 쓰는 방법은 <b>없습니다</b> — 종이 LAMP 활동지에 쓰고 <b>사진 한 장</b>이 전부입니다.
+  ② 이름을 <b>IB아하노트</b>로 바꾸고 IB 설명을 넣었습니다. ③ <b>리그 진행 화면</b>을 추가했습니다.
+</div>
+
+<div class="stage">
+
+  <!-- ① 시작 -->
+  <div class="col">
+    <div class="cap"><span>1</span> IB아하노트 시작</div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">💡 IB아하노트</div><span class="hright">ⓘ IB란?</span></div>
+      <div class="body">
+        <div class="pick main">
+          <div class="t">📄 활동지 사진 찍기</div>
+          <div class="s">종이 <b>LAMP 활동지</b>에 쓴 것을 찍으세요. AI가 네 칸을 읽어 옮겨 적고,
+            여러분은 <b>맞는지 확인만</b> 합니다. <b>앱에 다시 쓰지 않습니다.</b></div>
+          <button class="btn" style="width:100%">📷 활동지 사진 찍기</button>
+        </div>
+        <div class="note" style="margin-top:0">🏠 <b>집에서 활동지가 없을 때</b> — 공책에 <b>L · A · M · P</b> 네 글자를 쓰고
+          그 옆에 적어서 찍어도 됩니다. 같은 방식으로 읽습니다.</div>
+
+        <div class="sec">📒 내 IB아하노트</div>
+        <div class="ncard" style="padding:9px 11px">
+          <div class="top" style="margin-bottom:3px"><span class="src">쎈 중2-1 · p.87 12번</span><span class="st fin">✓ 9점</span></div>
+          <div style="font-size:11px;color:var(--sub)">9/7 · 개념적 질문 · 힌트 1개로 해결</div>
+        </div>
+        <div class="ncard" style="padding:9px 11px">
+          <div class="top" style="margin-bottom:3px"><span class="src">개념원리 · p.132 5번</span><span class="st temp">⏳ 임시 7</span></div>
+          <div style="font-size:11px;color:var(--sub)">9/6 · 선생님 확인 대기</div>
+        </div>
+      </div>
+      <div class="foot"><div class="btns"><button class="btn ghost" style="flex:1">🏆 리그 보기</button><button class="btn">📷 사진 찍기</button></div></div>
+    </div>
+  </div>
+
+  <!-- ② IB 설명 -->
+  <div class="col">
+    <div class="cap"><span>2</span> ⓘ IB아하노트란? <small>학생·학부모용 설명</small></div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">ⓘ IB아하노트란?</div></div>
+      <div class="body">
+        <div class="ibhero">
+          <div class="k">IB · INTERNATIONAL BACCALAUREATE</div>
+          <div class="t">정답을 맞히는 공부에서,<br>「질문을 잘 쓰는」 공부로</div>
+          <div class="s">IB(국제 바칼로레아)는 세계 160여 나라가 쓰는 교육과정입니다. 경기도교육청도 도입을 추진하고 있습니다.
+            IB 수학은 <b>답을 외웠는지</b>가 아니라 <b>어떻게 생각했는지</b>를 봅니다.</div>
+        </div>
+        <div class="ibcard">
+          <div class="t">IB가 수학에서 보는 것</div>
+          <div class="s">문제를 <b>정확히 이해</b>했나 · 어떤 <b>원리</b>를 떠올렸나 · 풀이를 <b>논리 순서</b>로 썼나 ·
+            막힌 곳을 <b>스스로 짚고 물을 수</b> 있나 · 풀고 나서 <b>무엇을 배웠는지 돌아보나</b>.
+            이 다섯 가지를 각각 점수로 매깁니다.</div>
+        </div>
+        <div class="ibcard">
+          <div class="t">루멘수학의 LAMP 활동지가 바로 그것입니다</div>
+          <div class="ibrow">
+            <span class="l">L</span><span class="d"><b>Learn</b> 문제를 정확히 이해하기 — 구하는 것과 조건</span>
+            <span class="l">A</span><span class="d"><b>Activate</b> 관련 이론·공식 떠올리기</span>
+            <span class="l">M</span><span class="d"><b>Model</b> 어떻게 풀었는지 논리 순서로</span>
+            <span class="l r">P</span><span class="d"><b>Pinpoint</b> 막힌 곳을 콕 집고, 어떤 도움을 원하는지</span>
+            <span class="l h">AHA</span><span class="d"><b>되돌아보기</b> 어떤 발상을 못 떠올렸나, 무엇을 배웠나</span>
+          </div>
+        </div>
+        <div class="ibcard">
+          <div class="t">그래서 점수는 이렇게</div>
+          <div class="s">L·A·M·P·AHA 각 0·1·2점 = <b>질문력 10점</b>.
+            여기에 「왜?」로 물으면 +1, <b>스스로 풀면 +4</b>, 힌트를 적게 보고 풀수록 높습니다.
+            <b>많이 올리는 것이 아니라 잘 쓰는 것</b>이 점수입니다 — 하루 2개까지만 리그에 인정됩니다.</div>
+        </div>
+        <div class="ibcard" style="background:#fffbeb;border-color:#fde68a">
+          <div class="t" style="color:#b45309">부모님께</div>
+          <div class="s">「모르겠어요」 한 줄이 「어디서 막혔고 어떤 설명이 필요한지」 한 문단으로 바뀌는 과정입니다.
+            점수보다 <b>질문의 질이 달라지는 것</b>을 봐 주세요. 매달 성장 리포트에 함께 보내 드립니다.</div>
+        </div>
+      </div>
+      <div class="foot"><div class="btns"><button class="btn" style="flex:1">알겠어요</button></div></div>
+    </div>
+  </div>
+
+  <!-- ③ 사진 → AI -->
+  <div class="col">
+    <div class="cap"><span>3</span> 활동지 사진 → AI가 읽음 → 확인</div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">📄 활동지 확인</div><span class="hright">쎈 p.87 12번</span></div>
+      <div class="body">
+        <div class="shot"><span class="im">활동지</span>
+          <span class="tx"><b>사진 1장 · 9/7</b>교재·쪽·번호·틀린이유도 활동지에서 함께 읽었어요</span></div>
+        <div class="aiban">🤖 <b>AI가 네 칸을 읽었어요.</b> 맞는지 훑어보고, 다르면 「고치기」. <b>다시 쓸 필요 없습니다.</b></div>
+        <div class="lamp read">
+          <div class="t"><span class="ltr">L</span><span class="tt">문제를 정확히 이해하기</span><span class="fix">✏️ 고치기</span></div>
+          <div class="val">기울기 2이고 (1,3)을 지나는 직선의 x절편 구하기. 조건은 기울기와 지나는 점 하나.</div>
+        </div>
+        <div class="lamp warn">
+          <div class="t"><span class="ltr" style="background:#b45309">A</span><span class="tt" style="color:#b45309">관련 이론·공식</span><span class="fix">✏️ 채우기</span></div>
+          <div class="miss">글씨가 흐려서 못 읽었어요. 한 줄만 적어 주세요.</div>
+        </div>
+        <div class="lamp read">
+          <div class="t"><span class="ltr">M</span><span class="tt">어떻게 풀었나요?</span><span class="fix">✏️ 고치기</span></div>
+          <div class="val">y=2x+b에 (1,3) 대입 → 3=2+b → b=1. 그래서 y=2x+1까지 구했어요.</div>
+        </div>
+        <div class="lamp p read">
+          <div class="t"><span class="ltr">P</span><span class="tt">막힌 곳</span><span class="fix">✏️ 고치기</span></div>
+          <div class="val">x절편 구할 때 y=0을 넣는지 x=0을 넣는지 헷갈립니다. 답지는 −1/2인데 저는 1이 나왔어요.</div>
+          <div class="dir">
+            <div class="dt">이것만 눌러 주세요 — 어떤 도움을 원하나요?</div>
+            <div class="chips">
+              <span class="chip sm blue on">설명</span><span class="chip sm">비교</span><span class="chip sm">논증</span>
+              <span class="chip sm">추론</span><span class="chip sm">적용</span><span class="chip sm">해석</span><span class="chip sm">평가</span>
+            </div>
+            <div class="mean"><b>설명하시오</b> — 구체적인 사례를 들어 용어를 정의한다</div>
+          </div>
+        </div>
+        <div class="selfev" style="margin-top:2px">
+          <div class="t">✅ 내가 먼저 매겨 보기 <span style="font-weight:600;color:#94a3b8;font-size:10.5px">(선택 · 맞히면 +1)</span></div>
+          <div class="row" style="flex-direction:row;flex-wrap:wrap;gap:5px 12px">
+            <div class="it"><span class="cbx on">✓</span> L</div><div class="it"><span class="cbx on">✓</span> A</div>
+            <div class="it"><span class="cbx on">✓</span> M</div><div class="it"><span class="cbx"></span> P</div>
+            <span style="margin-left:auto;font-size:11.5px;color:var(--sub)">예상 <b style="color:var(--navy)">6</b>/8</span>
+          </div>
+        </div>
+      </div>
+      <div class="foot">
+        <div class="meter"><span class="k">질문력</span><div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><span class="n">6 / 8</span></div>
+        <div class="btns"><button class="btn ghost">🙋 이미 풀었어요</button><button class="btn">이대로 보내기</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 스스로 해결 -->
+  <div class="col">
+    <div class="cap"><span>4</span> 스스로 해결 <small>가장 큰 점수</small></div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">🙋 스스로 해결</div></div>
+      <div class="body">
+        <div class="selfbox">
+          <div class="t">🙋 쓰다 보니 알았어요!</div>
+          <div class="s">활동지를 쓰다가 스스로 풀렸다면 여기서 끝냅니다. <b>가장 큰 점수(+4)</b>.</div>
+          <label class="lb" style="font-size:11.5px">어떻게 풀렸나요? <span class="req">*</span></label>
+          <div class="val" style="border:1px solid #e2e8f0;border-radius:9px;background:#fff;padding:7px 9px;font-size:12px;line-height:1.5">
+            「막힌 곳」을 쓰다가 x절편은 <b>x축 위의 점</b>이니까 y=0이라는 걸 알았어요.</div>
+          <label class="lb" style="font-size:11.5px;margin-top:8px">다시 푼 사진 <span class="req">*</span></label>
+          <div class="photo" style="height:64px"><span class="th" style="width:48px;height:48px;font-size:18px">📸</span><span style="font-size:11.5px">활동지 6단계 칸을 찍으면 됩니다</span></div>
+          <div style="margin-top:8px;font-size:11px;color:#92400e;background:#fff;border:1px solid #fde68a;border-radius:8px;padding:6px 8px;line-height:1.5">
+            ✓ 답 <b>−1/2</b> · 교재 정답과 일치 → 선생님 확인만 남았어요</div>
+          <button class="btn gold" style="width:100%;margin-top:9px">🙋 스스로 해결로 보내기 <span style="opacity:.85">(6 + 4 = 10)</span></button>
+        </div>
+        <div class="note" style="margin-top:4px">힌트를 받아 풀어도 점수가 있습니다. <b>적게 보고 풀수록 높습니다</b> — 힌트 1개 +3 · 2개 +2 · 3개 +1.</div>
+        <div class="note">활동지 <b>7단계 AHA</b>는 풀고 나서 채웁니다. 사진을 다시 올리면 <b>+2점</b>.</div>
+      </div>
+      <div class="foot"><div class="btns"><button class="btn ghost" style="flex:1">나중에 하기</button></div></div>
+    </div>
+  </div>
+
+  <!-- ⑤ 결과 -->
+  <div class="col">
+    <div class="cap"><span>5</span> 점수 받기 — 임시 → 확정</div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">💡 IB아하노트</div><span class="hright">내 기록</span></div>
+      <div class="body">
+        <div class="ncard">
+          <div class="top"><span class="src">쎈 중2-1 · p.87 12번</span><span class="st fin">✓ 확정</span></div>
+          <div class="score"><span class="big">9</span><span class="u">/ 10</span>
+            <span class="rt">질문력 7 + 개념적 +1<br>자기평가 적중 +1</span></div>
+          <div class="lampres">
+            <div><div class="l">L</div><div class="v v2">2</div></div>
+            <div><div class="l">A</div><div class="v v1">1</div></div>
+            <div><div class="l">M</div><div class="v v2">2</div></div>
+            <div><div class="l">P</div><div class="v v2">2</div></div>
+            <div><div class="l">AHA</div><div class="v v0">–</div></div>
+          </div>
+          <div class="coach"><b>잘한 점</b> 「막힌 곳」에서 y=0인지 x=0인지 헷갈린다고 정확히 짚었고, 답지 값과 비교한 것이 좋았습니다.</div>
+          <div class="coach ff"><b>다만 다음엔</b> A칸에 「절편은 축과 만나는 점」만 썼는데, <b>어느 축인지</b>까지 쓰면 2점입니다.</div>
+          <div class="ladder"><span>E</span><span>D</span><span class="cur">C 지금</span><span class="next">B 다음</span><span>A</span></div>
+          <div style="font-size:11px;color:var(--sub);line-height:1.5">B가 되려면 — <b>x절편·y절편 용어를 정확히</b> 쓰고, 왜 그런지 한 문장으로 설명하기</div>
+          <div style="margin-top:9px;padding-top:8px;border-top:1px dashed #e2e8f0;font-size:11.5px;color:var(--text)">
+            💡 힌트 <b>1개</b> 열림 → 풀고 나서 <b>AHA</b>를 찍어 올리면 <b>+2점</b></div>
+        </div>
+        <div class="ncard">
+          <div class="top"><span class="src">개념원리 · p.132 5번</span><span class="st temp">⏳ 임시</span></div>
+          <div class="score" style="background:linear-gradient(135deg,#94a3b8,#475569)">
+            <span class="big">7</span><span class="u">/ 10</span><span class="rt">임시 점수<br>선생님 확인 대기</span></div>
+        </div>
+      </div>
+      <div class="foot"><div class="btns"><button class="btn ghost" style="flex:1">🏆 리그 보기</button><button class="btn">📷 사진 찍기</button></div></div>
+    </div>
+  </div>
+
+  <!-- ⑥ 리그 -->
+  <div class="col">
+    <div class="cap"><span>6</span> 🏆 리그 진행 <small>2달 시즌 · 중등부</small></div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">🏆 IB아하노트 리그</div><span class="hright">9~10월 · D-53</span></div>
+      <div class="body">
+        <div class="tier">
+          <div class="row">
+            <div class="big">🔎 탐구자<small>Knowledgeable · 중등부</small></div>
+            <div class="rk"><b>4위</b><small>18명 중</small></div>
+          </div>
+          <div class="stats">
+            <div class="st"><b>86</b><span>리그 점수</span></div>
+            <div class="st"><b>7.8</b><span>평균 질문력</span></div>
+            <div class="st"><b>5</b><span>🙋 스스로</span></div>
+            <div class="st"><b>6/8</b><span>이번 주 인정</span></div>
+          </div>
+        </div>
+        <div class="next">
+          <div class="t">다음 등급 「사고자 Thinker」까지</div>
+          <div class="cond"><span>평균 질문력 8 이상</span><span class="bar"><i style="width:97%"></i></span><span class="n">7.8 / 8</span></div>
+          <div class="cond"><span>스스로 해결 3회</span><span class="bar"><i style="width:100%"></i></span><span class="n">5 / 3 ✓</span></div>
+          <div style="font-size:10.5px;color:var(--sub);margin-top:3px">질문력 8 이상 노트 하나면 승급합니다. 등급은 내려가지 않습니다.</div>
+        </div>
+        <div class="sec">🏅 중등부 순위 <span style="font-weight:600;color:#94a3b8">· 6위부터는 본인에게만</span></div>
+        <div class="rank"><span class="n">1</span>박○○ <span class="tag">사고자</span><span class="pt">112</span></div>
+        <div class="rank"><span class="n">2</span>이○○ <span class="tag">사고자</span><span class="pt">98</span></div>
+        <div class="rank"><span class="n">3</span>최○○ <span class="tag">탐구자</span><span class="pt">91</span></div>
+        <div class="rank me"><span class="n">4</span>김○○ (나) <span class="tag">탐구자</span><span class="pt">86</span></div>
+        <div class="rank"><span class="n">5</span>정○○ <span class="tag">탐구자</span><span class="pt">79</span></div>
+        <div class="sec">🏆 이번 주 베스트 질문</div>
+        <div class="best"><b>박○○ · 개념원리 p.132 · 질문력 10</b>「판별식이 0일 때 중근이라 하는데, 그래프로는 왜 x축에 ‘닿기만’ 하는 건지 설명해 주세요. 제 생각엔…」</div>
+        <div class="sec">📏 점수 쌓이는 법</div>
+        <div class="note" style="margin-top:0">질문력(0~10) + 「왜?」 +1 + 스스로 +4 / 힌트 1개 +3 / 2개 +2 / 3개 +1 + AHA +2 + ⭐수업 채택 +2<br>
+          <b>하루 2개 · 주 8개까지만</b> 인정 — 양보다 질 · 등급: 질문자 → 탐구자 → 사고자 → 성찰자</div>
+      </div>
+      <div class="foot"><div class="btns"><button class="btn ghost" style="flex:1">🎙 말하기 리그</button><button class="btn">📷 사진 찍기</button></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="stage" style="margin-top:26px">
+  <div style="width:100%;background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(13,34,64,.06)">
+    <div style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:10px">이번에 바뀐 것</div>
+    <table class="cmp">
+      <tr><th style="width:170px">결정</th><th>반영</th></tr>
+      <tr><td><b>앱에서 직접 쓰기 없음</b></td><td>입력 경로는 <b>활동지 사진 하나</b>. 집에서 활동지가 없으면 공책에 L·A·M·P 네 글자를 쓰고 찍으면 됨. 앱은 「읽은 것 확인 + 지시어 하나 누르기」만.</td></tr>
+      <tr><td><b>이름 「IB아하노트」</b></td><td>머리글·목록·리그 이름 모두 변경. ⓘ 버튼에 <b>학생·학부모용 IB 설명</b> 화면(IB가 무엇인지 → IB가 수학에서 보는 것 → 우리 LAMP가 바로 그것 → 점수 → 부모님께).</td></tr>
+      <tr><td><b>리그 진행 화면</b></td><td>내 등급(학습자상: 질문자→탐구자→사고자→성찰자)·순위·리그 점수·평균 질문력·스스로 해결 횟수·이번 주 인정 n/8 · 다음 등급 조건 막대 · 상위 5명(성+○○) · 이번 주 베스트 질문 · 점수 규칙. 진도 레이스와 같은 문법(부·이름 가리기). 시즌은 <b>2달</b>(학원앱 리그 설정에서 1달·2달·3달·학기 조정).</td></tr>
+      <tr><td><b>자기평가</b></td><td>사진 확인 화면에 <b>체크 4개(선택)</b>로 남겼습니다. 맞히면 +1. 빼도 됩니다.</td></tr>
+    </table>
+    <div style="margin-top:12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.75;color:#7c2d12">
+      <b>원장 확인(9/8)</b> ① IB 설명 문구 그대로 ② 리그 화면 그대로, <b>시즌은 2달</b>(학원앱에서 조정) ③ 자기평가 체크 그대로 ④ SQL 실행 완료 → 다음: 학원앱 화면·학부모 성장 리포트 시안(왼쪽 목차)
+    </div>
+  </div>
+</div>
+</body></html>

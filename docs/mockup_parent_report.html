@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>👨‍👩‍👧 학부모 성장 리포트 미리보기 — IB아하노트</title>
+<style>
+:root{
+  --red:#e8192c; --navy:#1d2240; --navy2:#0d2240; --blue:#1d6fe8; --gold:#a97b0c; --brown:#4a3a18;
+  --muted:#6b7280; --line:#e9ebf0; --bg:#eef0f4; --text:#0f172a; --sub:#64748b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#dfe4ec;color:var(--text);
+  font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',-apple-system,sans-serif;padding:20px 14px 60px}
+.head{max-width:1180px;margin:0 auto 16px;font-size:12.5px;color:#4b5563;line-height:1.75}
+.head h1{font-size:18px;color:var(--navy);margin:0 0 6px}
+.head b{color:var(--navy)}
+.stage{max-width:1180px;margin:0 auto;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+.col{width:360px}
+.cap{font-size:12.5px;font-weight:800;color:var(--navy);margin:0 0 7px;display:flex;align-items:center;gap:6px}
+.cap span{font-size:10.5px;font-weight:700;color:#fff;background:var(--navy);border-radius:50px;padding:2px 8px}
+.cap small{font-weight:600;color:#64748b;font-size:11px}
+.note{font-size:11px;color:var(--sub);line-height:1.55;margin-top:8px}
+
+/* 학부모앱 폰 */
+.phone{width:360px;height:720px;background:#fff;border-radius:34px;overflow:hidden;
+  box-shadow:0 16px 40px -14px rgba(13,34,64,.45);display:flex;flex-direction:column}
+.hdr{background:var(--navy);padding:34px 18px 14px;display:flex;align-items:center;gap:11px;flex-shrink:0}
+.back{background:rgba(255,255,255,.14);border:none;border-radius:50%;width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:700;flex:none}
+.htitle{font-size:16px;font-weight:900;color:#fff}
+.hright{margin-left:auto;font-size:10.5px;font-weight:800;color:#f5d9dd;background:rgba(255,255,255,.12);border-radius:50px;padding:4px 10px}
+.body{flex:1;overflow-y:auto;background:var(--bg);padding:14px 14px 10px}
+.body::-webkit-scrollbar{width:0}
+.pc{background:#fff;border-radius:14px;padding:12px 13px;margin-bottom:10px;box-shadow:0 2px 8px rgba(29,34,64,.06);border:1px solid var(--line)}
+.pc .t{font-size:12.5px;font-weight:900;color:var(--navy);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.pc .t .new{margin-left:auto;font-size:9.5px;background:var(--red);color:#fff;border-radius:50px;padding:2px 7px;font-weight:800}
+.hero{background:linear-gradient(135deg,var(--navy),#3b2f6e);color:#fff;border-radius:14px;padding:13px 14px;margin-bottom:10px}
+.hero .k{font-size:10.5px;opacity:.75;font-weight:700;letter-spacing:.04em}
+.hero .g{font-size:21px;font-weight:900;margin:2px 0 1px}
+.hero .g small{font-size:11px;opacity:.75;font-weight:600;margin-left:6px}
+.hero .row{display:flex;gap:6px;margin-top:9px}
+.hero .st{flex:1;background:rgba(255,255,255,.1);border-radius:9px;padding:6px 4px;text-align:center}
+.hero .st b{display:block;font-size:16px;font-weight:900}
+.hero .st span{font-size:9.5px;opacity:.75}
+.trend{display:flex;align-items:flex-end;gap:5px;height:56px;padding:0 2px}
+.trend div{flex:1;background:#dbe4f3;border-radius:4px 4px 0 0;position:relative}
+.trend div.on{background:linear-gradient(180deg,var(--blue),#0d2240)}
+.trend div i{position:absolute;top:-15px;left:0;right:0;text-align:center;font-size:9.5px;font-weight:800;color:var(--navy);font-style:normal}
+.tlab{display:flex;gap:5px;padding:3px 2px 0}
+.tlab span{flex:1;text-align:center;font-size:9.5px;color:var(--sub)}
+.five{display:flex;flex-direction:column;gap:5px}
+.five .r{display:flex;align-items:center;gap:7px;font-size:11px}
+.five .r .l{width:78px;font-weight:800;color:var(--text);flex:none}
+.five .r .l small{display:block;font-weight:600;color:var(--sub);font-size:9px}
+.five .bar{flex:1;height:8px;background:#eef0f4;border-radius:4px;overflow:hidden}
+.five .bar i{display:block;height:100%;background:linear-gradient(90deg,#fbbf24,#f59e0b);border-radius:4px}
+.five .bar i.b{background:linear-gradient(90deg,#60a5fa,var(--blue))}
+.five .n{width:34px;text-align:right;font-weight:900;color:var(--navy);font-size:11px;flex:none}
+.quote{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 10px;font-size:11.5px;line-height:1.6;color:#78350f}
+.quote b{display:block;font-size:10.5px;color:#92400e;margin-bottom:2px}
+.coach{border-left:3px solid #16a34a;background:#f0fdf4;border-radius:8px;padding:7px 9px;font-size:11.5px;line-height:1.55;margin-bottom:6px;color:#14532d}
+.coach.ff{border-left-color:var(--blue);background:#eff6ff;color:#1e3a8a}
+.coach b{font-weight:800}
+.home{display:flex;flex-direction:column;gap:6px}
+.home .it{display:flex;gap:7px;font-size:11.5px;line-height:1.5;color:var(--text)}
+.home .it span{flex:none;width:20px;height:20px;border-radius:6px;background:var(--navy);color:#fff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.foot{flex-shrink:0;background:#fff;border-top:1px solid var(--line);padding:9px 13px 12px;display:flex;gap:7px}
+.btn{flex:1;padding:11px 8px;border:none;border-radius:11px;font-size:13px;font-weight:800;font-family:inherit;color:#fff;background:var(--navy)}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid #cbd5e1}
+
+/* A4 리포트 */
+.a4{width:560px;background:#fff;border-radius:6px;box-shadow:0 12px 36px -14px rgba(13,34,64,.4);padding:30px 34px 28px;
+  font-size:11.5px;line-height:1.6;color:var(--text);position:relative}
+.a4 .mast{display:flex;align-items:flex-end;gap:12px;border-bottom:2px solid var(--brown);padding-bottom:10px;margin-bottom:14px}
+.a4 .mast .logo{font-family:Georgia,serif;font-size:22px;font-weight:900;color:var(--brown);line-height:1}
+.a4 .mast .logo small{display:block;font-family:inherit;font-size:9px;letter-spacing:.18em;color:var(--sub);font-weight:700;margin-top:3px}
+.a4 .mast .ttl{margin-left:auto;text-align:right}
+.a4 .mast .ttl b{display:block;font-size:16px;color:var(--navy);font-weight:900}
+.a4 .mast .ttl span{font-size:10.5px;color:var(--sub)}
+.a4 h3{font-size:12.5px;color:var(--brown);margin:14px 0 6px;padding-left:8px;border-left:3px solid var(--gold)}
+.a4 .who{display:flex;gap:14px;font-size:11px;color:var(--sub);margin-bottom:4px}
+.a4 .who b{color:var(--text)}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:6px}
+.kpi div{border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:#fbfbfd}
+.kpi b{display:block;font-size:17px;font-weight:900;color:var(--navy);line-height:1.1}
+.kpi span{font-size:9.5px;color:var(--sub)}
+.kpi em{font-style:normal;font-size:9.5px;color:#16a34a;font-weight:800;margin-left:3px}
+.crit{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:4px}
+.crit th,.crit td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+.crit th{font-size:9.5px;color:var(--sub);font-weight:700;background:#fbfbfd}
+.crit td.n{font-weight:900;color:var(--navy);text-align:center;width:40px;font-size:12px}
+.crit td.n small{display:block;font-size:9px;color:#16a34a;font-weight:800}
+.crit .ib{color:var(--sub);font-size:9.5px;font-weight:600}
+.scale{display:flex;gap:2px;margin:2px 0 0}
+.scale i{flex:1;height:6px;background:#eef0f4;border-radius:2px}
+.scale i.on{background:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.a4 .q{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:8px 10px;font-size:10.5px;line-height:1.6;color:#78350f}
+.a4 .q b{display:block;color:#92400e;font-size:10px;margin-bottom:2px}
+.a4 .fb{border-left:3px solid #16a34a;padding:2px 0 2px 9px;margin-bottom:5px;font-size:10.5px}
+.a4 .fb.ff{border-left-color:var(--blue)}
+.a4 .fb b{color:var(--text)}
+.a4 ul{margin:2px 0 0;padding-left:16px}
+.a4 li{margin-bottom:2px;font-size:10.5px}
+.a4 .sig{margin-top:14px;padding-top:8px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;font-size:10px;color:var(--sub)}
+.a4 .stamp{position:absolute;right:34px;top:96px;border:2px solid var(--red);color:var(--red);border-radius:6px;padding:2px 7px;font-size:10px;font-weight:900;transform:rotate(-6deg);opacity:.85}
+.cmp{width:100%;border-collapse:collapse;font-size:12px}
+.cmp th,.cmp td{border:1px solid #e2e8f0;padding:8px 10px;text-align:left;vertical-align:top;line-height:1.55}
+.cmp th{background:#f8fafc;font-size:11px;color:#475569}
+</style></head><body>
+
+<div class="head">
+  <h1>👨‍👩‍👧 학부모 성장 리포트 — 시즌(2달)마다 한 번</h1>
+  IB아하노트 시즌이 끝나면 학원앱이 <b>학생별 리포트를 자동으로 만들고</b>, 원장님이 한 번 훑어본 뒤 <b>학부모앱에 발행</b>합니다(진학 나침반과 같은 발행 방식).
+  왼쪽은 학부모앱에서 보는 화면, 오른쪽은 인쇄용 한 장입니다. 이름·수치는 <b>예시</b>입니다.
+</div>
+
+<div class="stage">
+  <!-- 학부모앱 -->
+  <div class="col">
+    <div class="cap"><span>A</span> 학부모앱 화면 <small>parent.html 안 새 카드</small></div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">💡 IB아하노트 성장 리포트</div><span class="hright">9~10월</span></div>
+      <div class="body">
+        <div class="hero">
+          <div class="k">김○○ 학생 · 중2 · 2026년 9~10월 시즌</div>
+          <div class="g">🔎 탐구자 <small>Knowledgeable · 지난 시즌 질문자 → 승급</small></div>
+          <div class="row">
+            <div class="st"><b>14</b><span>올린 노트</span></div>
+            <div class="st"><b>7.6</b><span>평균 질문력</span></div>
+            <div class="st"><b>5</b><span>스스로 해결</span></div>
+            <div class="st"><b>4위</b><span>중등부 18명</span></div>
+          </div>
+        </div>
+
+        <div class="pc">
+          <div class="t">📈 질문력이 이렇게 달라졌어요 <span class="new">2주 단위</span></div>
+          <div class="trend">
+            <div style="height:40%"><i>5.0</i></div><div style="height:58%"><i>6.5</i></div>
+            <div style="height:68%"><i>7.3</i></div><div class="on" style="height:80%"><i>8.2</i></div>
+          </div>
+          <div class="tlab"><span>9월 초</span><span>9월 말</span><span>10월 초</span><span>10월 말</span></div>
+          <div class="note" style="margin-top:6px">「모르겠어요」 한 줄(5점)에서 시작해, 지금은 <b>어디서 막혔는지</b>를 스스로 짚는 질문(8점대)을 씁니다.</div>
+        </div>
+
+        <div class="pc">
+          <div class="t">🧭 IB가 보는 다섯 가지 <small style="font-weight:600;color:var(--sub)">0~8</small></div>
+          <div class="five">
+            <div class="r"><div class="l">문제 이해<small>Learn</small></div><div class="bar"><i style="width:87%"></i></div><div class="n">7</div></div>
+            <div class="r"><div class="l">원리·공식<small>Activate</small></div><div class="bar"><i class="b" style="width:50%"></i></div><div class="n">4</div></div>
+            <div class="r"><div class="l">풀이 논리<small>Model</small></div><div class="bar"><i style="width:75%"></i></div><div class="n">6</div></div>
+            <div class="r"><div class="l">막힌 곳 짚기<small>Pinpoint</small></div><div class="bar"><i style="width:87%"></i></div><div class="n">7</div></div>
+            <div class="r"><div class="l">되돌아보기<small>AHA</small></div><div class="bar"><i class="b" style="width:62%"></i></div><div class="n">5</div></div>
+          </div>
+          <div class="note">파란 막대 두 개(<b>원리·공식</b>, <b>되돌아보기</b>)가 다음 시즌의 목표입니다.</div>
+        </div>
+
+        <div class="pc">
+          <div class="t">🏆 이번 시즌 베스트 질문</div>
+          <div class="quote"><b>개념원리 p.132 5번 · 질문력 10 · 10월 14일</b>
+            「판별식이 0일 때 중근이라 하는데, 그래프로는 왜 x축에 ‘닿기만’ 하는 건지 설명해 주세요. 제 생각엔 두 근이 같은 자리에 겹쳐서…」</div>
+        </div>
+
+        <div class="pc">
+          <div class="t">✍️ 선생님 한마디</div>
+          <div class="coach"><b>잘한 점</b> 막힌 곳을 「몇 번째 줄에서」라고 특정하는 습관이 생겼습니다. 스스로 해결 5회는 중등부에서 두 번째입니다.</div>
+          <div class="coach ff"><b>다만 다음 시즌엔</b> A칸(원리·공식)에 공식 이름만 쓰고 <b>왜 그 공식인지</b>는 비어 있는 경우가 많았습니다. 한 문장이면 됩니다.</div>
+        </div>
+
+        <div class="pc">
+          <div class="t">🏠 집에서 이렇게 도와주세요</div>
+          <div class="home">
+            <div class="it"><span>1</span>「답이 뭐야?」 대신 <b>「어디서 막혔어?」</b>라고 물어봐 주세요. 아이가 P칸을 말로 하는 연습이 됩니다.</div>
+            <div class="it"><span>2</span>공책에 <b>L·A·M·P</b> 네 글자만 써 두면 집에서도 사진 한 장으로 올릴 수 있습니다.</div>
+          </div>
+        </div>
+        <div class="note" style="text-align:center">다음 리포트: 11~12월 시즌 끝(12월 말)</div>
+      </div>
+      <div class="foot"><button class="btn ghost">🖨 인쇄용 보기</button><button class="btn">지난 시즌 리포트</button></div>
+    </div>
+  </div>
+
+  <!-- 인쇄용 A4 -->
+  <div class="col" style="width:560px">
+    <div class="cap"><span>B</span> 인쇄용 한 장 <small>학원앱 「리포트 인쇄」 · 학부모앱 「인쇄용 보기」</small></div>
+    <div class="a4">
+      <div class="stamp">확정 · 원장 검토</div>
+      <div class="mast">
+        <div class="logo">π 루멘수학<small>LUMEN MATH · IB AHA NOTE</small></div>
+        <div class="ttl"><b>IB아하노트 성장 리포트</b><span>2026년 9~10월 시즌 · 발행 2026-11-02</span></div>
+      </div>
+      <div class="who"><span>학생 <b>김○○</b></span><span>학년 <b>중2</b></span><span>부 <b>중등부(18명)</b></span><span>등급 <b>🔎 탐구자 Knowledgeable</b> (지난 시즌 질문자)</span></div>
+      <div class="kpi">
+        <div><b>14<em>+5</em></b><span>올린 IB아하노트</span></div>
+        <div><b>7.6<em>+1.8</em></b><span>평균 질문력 (10점)</span></div>
+        <div><b>5</b><span>스스로 해결 (힌트 없이)</span></div>
+        <div><b>4위</b><span>중등부 리그 · 86점</span></div>
+      </div>
+
+      <h3>1. IB 다섯 기준으로 본 이번 시즌 (0~8 척도)</h3>
+      <table class="crit">
+        <tr><th style="width:118px">기준</th><th>지금</th><th>이렇게 썼습니다</th></tr>
+        <tr><td><b>문제 이해</b> <span class="ib">L · Knowing and understanding</span><div class="scale"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></td><td class="n">7<small>+3</small></td><td>구하는 것과 조건을 자기 말로 다시 씁니다. 14편 중 12편.</td></tr>
+        <tr><td><b>원리·공식</b> <span class="ib">A · Applying mathematics</span><div class="scale"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></div></td><td class="n">4<small>+1</small></td><td>공식 이름은 쓰지만 「왜 이 공식인지」가 비어 있는 편.</td></tr>
+        <tr><td><b>풀이 논리</b> <span class="ib">M · Communicating</span><div class="scale"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div></td><td class="n">6<small>+2</small></td><td>어디까지 어떤 순서로 풀었는지 식으로 남깁니다.</td></tr>
+        <tr><td><b>막힌 곳 짚기</b> <span class="ib">P · Investigating patterns</span><div class="scale"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div></td><td class="n">7<small>+3</small></td><td>「몇 번째 줄에서」를 특정하고 지시어(설명·논증)를 골라 묻습니다.</td></tr>
+        <tr><td><b>되돌아보기</b> <span class="ib">AHA · Reflection</span><div class="scale"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></div></td><td class="n">5<small>+2</small></td><td>못 떠올린 발상은 쓰지만 「원리 한 문장」은 절반만.</td></tr>
+      </table>
+
+      <div class="two" style="margin-top:12px">
+        <div>
+          <h3 style="margin-top:0">2. 이번 시즌 베스트 질문</h3>
+          <div class="q"><b>개념원리 p.132 5번 · 질문력 10 · 논쟁적 질문 · 10/14</b>「판별식이 0일 때 중근이라 하는데, 그래프로는 왜 x축에 ‘닿기만’ 하는 건지 설명해 주세요. 제 생각엔 두 근이 같은 자리에 겹쳐서…」</div>
+          <h3>3. 질문 유형</h3>
+          <ul><li>사실적(답이 뭐예요) 3편 → 개념적(왜·어떻게) 9편 → 논쟁적(꼭 그래야 하나) 2편</li><li>지난 시즌은 사실적 6 · 개념적 3 · 논쟁적 0</li></ul>
+        </div>
+        <div>
+          <h3 style="margin-top:0">4. 선생님 한마디</h3>
+          <div class="fb"><b>잘한 점</b> 막힌 곳을 특정하는 습관이 생겼고, 스스로 해결 5회는 중등부 2위입니다.</div>
+          <div class="fb ff"><b>다만</b> A칸(원리·공식)에 「왜 그 공식인지」 한 문장을 더하면 다음 등급(사고자)에 닿습니다.</div>
+          <h3>5. 다음 시즌(11~12월) 목표</h3>
+          <ul><li>원리·공식 4 → 6 (「왜 이 공식」 한 문장)</li><li>되돌아보기 5 → 6 (AHA에 원리 한 문장)</li><li>등급 「사고자 Thinker」 승급 — 평균 질문력 8 이상</li></ul>
+        </div>
+      </div>
+
+      <h3>6. 집에서 도와주실 것</h3>
+      <ul><li>「답이 뭐야?」 대신 <b>「어디서 막혔어?」</b> — 아이가 P칸을 말로 설명하는 연습이 됩니다.</li>
+        <li>공책에 <b>L·A·M·P</b> 네 글자만 써 두면 집에서도 사진 한 장으로 올릴 수 있습니다.</li></ul>
+      <div class="sig"><span>IB(국제 바칼로레아) MYP 수학 평가기준 A~D와 학습자상을 참고해 루멘수학이 만든 척도입니다. 공식 IB 성적이 아닙니다.</span><span>루멘수학 원장 김정수</span></div>
+    </div>
+    <div class="note">진학 나침반 리포트와 같은 틀(한눈에 → 기준별 → 근거 → 처방). 학원앱에서 「AI 초안 → 원장 한마디 수정 → 발행」 3단계. 질문 원문은 학생이 쓴 그대로 싣습니다.</div>
+  </div>
+</div>
+
+<div class="stage" style="margin-top:26px">
+  <div style="width:100%;background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(13,34,64,.06)">
+    <div style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:10px">리포트에 들어가는 것 · 어디서 오는가</div>
+    <table class="cmp">
+      <tr><th style="width:190px">항목</th><th>근거 데이터</th><th style="width:220px">누가 쓰나</th></tr>
+      <tr><td>올린 노트·평균 질문력·스스로 해결·순위</td><td><code>aha_scores</code>(확정 점수만) + 리그 집계</td><td>자동</td></tr>
+      <tr><td>IB 다섯 기준 0~8</td><td>L·A·M·P·AHA 각 0·1·2 평균 × 4 (Q9 「0~8 척도」)</td><td>자동 · 원장 조정 가능</td></tr>
+      <tr><td>2주 단위 추이</td><td>확정 질문력의 2주 평균 (시즌 2달 = 4칸)</td><td>자동</td></tr>
+      <tr><td>베스트 질문 원문</td><td>시즌 중 「🏆 베스트」 표시된 노트의 P칸(AI가 읽고 학생이 확인한 글자)</td><td>자동 · 원장이 바꿀 수 있음</td></tr>
+      <tr><td>선생님 한마디 2줄 · 다음 목표</td><td>Haiku 초안(인정 → 다만 → 구체 → 처방 문형)</td><td><b>원장이 고쳐서 확정</b></td></tr>
+      <tr><td>집에서 도와주실 것</td><td>가장 낮은 기준에 맞춘 문장 2개(사전 12개 중 선택)</td><td>자동 · 원장 선택</td></tr>
+    </table>
+    <div style="margin-top:12px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.75;color:#0c4a6e">
+      <b>학부모앱 발행 규칙</b>은 진학 나침반과 같습니다 — 학원앱에서 원장님이 「발행」을 눌러야 학부모앱에 보이고, <code>parent.html</code> 고정 주소 교체는 원장님 명령 때만. 리포트 자체는 5단계(리그·성장 리포트)에서 코딩합니다.
+    </div>
+  </div>
+</div>
+</body></html>
