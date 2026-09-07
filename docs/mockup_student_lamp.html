@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📱 학생앱 미리보기 — 아하노트 LAMP (v3 1단계)</title>
+<style>
+:root{
+  --red:#e8192c; --navy:#0d2240; --navy2:#1d3a60; --blue:#1d6fe8;
+  --yellow:#fbbf24; --gray:#f1f5f9; --gray2:#e2e8f0; --text:#0f172a; --sub:#64748b;
+  --brown:#4a3a18;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#dfe4ec;color:var(--text);
+  font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',-apple-system,sans-serif;padding:20px 14px 60px}
+.head{max-width:1180px;margin:0 auto 16px;font-size:12.5px;color:#4b5563;line-height:1.75}
+.head h1{font-size:18px;color:var(--navy);margin:0 0 6px}
+.head b{color:var(--navy)}
+.stage{max-width:1180px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.col{width:360px}
+.cap{font-size:12.5px;font-weight:800;color:var(--navy);margin:0 0 7px;display:flex;align-items:center;gap:6px}
+.cap span{font-size:10.5px;font-weight:700;color:#fff;background:var(--navy);border-radius:50px;padding:2px 8px}
+.cap small{font-weight:600;color:#64748b;font-size:11px}
+
+/* 폰 */
+.phone{width:360px;height:720px;background:#fff;border-radius:34px;overflow:hidden;
+  box-shadow:0 16px 40px -14px rgba(13,34,64,.45);display:flex;flex-direction:column;position:relative}
+.hdr{background:var(--navy);padding:34px 18px 14px;display:flex;align-items:center;gap:11px;flex-shrink:0}
+.back{background:rgba(255,255,255,.14);border:none;border-radius:50%;width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:700;flex:none}
+.htitle{font-size:16px;font-weight:900;color:#fff}
+.hright{margin-left:auto;font-size:10.5px;font-weight:800;color:#cfe0ff;background:rgba(255,255,255,.12);
+  border-radius:50px;padding:4px 10px}
+.body{flex:1;overflow-y:auto;background:var(--gray);padding:14px 14px 10px}
+.body::-webkit-scrollbar{width:0}
+
+/* 폼 */
+.grp{margin-bottom:13px}
+.lb{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:5px;display:block}
+.lb.pri{color:var(--blue)}
+.lb .req{color:var(--red)}
+.hint{font-size:10.5px;color:var(--sub);margin-bottom:5px;line-height:1.5}
+.inp,.sel,.ta{width:100%;padding:0 10px;border:1px solid #cbd5e1;border-radius:10px;font-size:13.5px;
+  font-family:inherit;background:#fff;color:var(--text)}
+.inp,.sel{height:38px;line-height:38px}
+.ta{padding:8px 10px;min-height:54px;line-height:1.5;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.photo{background:#f8fafc;border:2px solid #cbd5e1;border-radius:12px;height:84px;display:flex;
+  align-items:center;justify-content:center;gap:9px;color:#64748b;font-size:12px;font-weight:700;overflow:hidden}
+.photo .th{width:64px;height:64px;border-radius:8px;background:linear-gradient(135deg,#e2e8f0,#cbd5e1);
+  display:flex;align-items:center;justify-content:center;font-size:22px}
+
+/* 칩 */
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{background:#fff;color:var(--sub);border:1.5px solid #cbd5e1;padding:6px 11px;border-radius:18px;
+  font-size:11.5px;font-weight:600;font-family:inherit}
+.chip.on{background:#fef3c7;color:#92400e;border-color:var(--yellow);font-weight:800}
+.chip.on::before{content:'✓ '}
+.chip.sm{padding:5px 9px;font-size:11px}
+.chip.blue.on{background:#dbeafe;color:#1e40af;border-color:#93c5fd}
+
+/* LAMP 카드 */
+.lamp{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:10px 11px 11px;margin-bottom:9px;
+  box-shadow:0 1px 4px rgba(13,34,64,.05)}
+.lamp.p{border-color:#fca5a5;background:#fffafa}
+.lamp .t{display:flex;align-items:center;gap:7px;margin-bottom:3px}
+.lamp .ltr{width:23px;height:23px;border-radius:7px;background:var(--brown);color:#fff;font-size:14px;
+  font-weight:900;display:flex;align-items:center;justify-content:center;flex:none;font-family:Georgia,serif}
+.lamp.p .ltr{background:var(--red)}
+.lamp .tt{font-size:12.5px;font-weight:800;color:var(--text)}
+.lamp.p .tt{color:var(--red)}
+.lamp .ok{margin-left:auto;font-size:10.5px;font-weight:800;color:#16a34a}
+.lamp .ok.no{color:#cbd5e1}
+.lamp .hh{font-size:10.5px;color:var(--sub);margin-bottom:5px;line-height:1.45}
+.lamp .val{border:1px solid #e2e8f0;border-radius:9px;background:#fbfcfe;padding:7px 9px;font-size:12.5px;
+  line-height:1.55;color:var(--text);min-height:40px}
+.lamp.p .val{background:#fff}
+.lamp .ph{color:#b6bdc9}
+
+/* 지시어 */
+.dir{border-top:1px dashed #fca5a5;margin-top:8px;padding-top:7px}
+.dir .dt{font-size:11px;font-weight:800;color:var(--red);margin-bottom:5px}
+.dir .mean{margin-top:6px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:6px 8px;
+  font-size:10.5px;color:#991b1b;line-height:1.5}
+
+/* 유형 태그 */
+.qtype{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;border-radius:6px;
+  padding:3px 8px;background:#ede9fe;color:#6d28d9;margin-top:7px}
+.qtype.plus{background:#dcfce7;color:#15803d}
+
+/* 자기평가 */
+.selfev{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:10px 11px;margin-bottom:9px}
+.selfev .t{font-size:12px;font-weight:800;color:var(--navy);margin-bottom:2px}
+.selfev .s{font-size:10.5px;color:var(--sub);margin-bottom:7px;line-height:1.45}
+.selfev .row{display:flex;flex-direction:column;gap:5px}
+.selfev .it{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text)}
+.cbx{width:17px;height:17px;border-radius:5px;border:1.6px solid #cbd5e1;flex:none;display:flex;
+  align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:900}
+.cbx.on{background:#16a34a;border-color:#16a34a}
+.selfev .exp{margin-top:8px;padding-top:7px;border-top:1px dashed #e2e8f0;font-size:11.5px;
+  display:flex;align-items:center;gap:6px;color:var(--sub)}
+.selfev .exp b{font-size:15px;color:var(--navy)}
+
+/* 하단 바 */
+.foot{flex-shrink:0;background:#fff;border-top:1px solid #e2e8f0;padding:9px 13px 12px;
+  box-shadow:0 -3px 14px rgba(13,34,64,.07)}
+.meter{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.meter .k{font-size:10.5px;font-weight:800;color:var(--brown);flex:none}
+.meter .bar{flex:1;display:flex;gap:3px}
+.meter .bar i{flex:1;height:7px;border-radius:4px;background:#e2e8f0}
+.meter .bar i.on{background:linear-gradient(90deg,#fbbf24,#f59e0b)}
+.meter .n{font-size:12px;font-weight:900;color:var(--navy);flex:none}
+.btns{display:flex;gap:7px}
+.btn{flex:1;padding:11px 8px;border:none;border-radius:11px;font-size:13px;font-weight:800;
+  font-family:inherit;color:#fff;background:linear-gradient(135deg,var(--blue),var(--navy))}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid #cbd5e1;flex:0 0 44%;font-size:12px}
+.btn.gold{background:linear-gradient(135deg,#f59e0b,#b45309)}
+
+/* 카드 (목록) */
+.ncard{background:#fff;border-radius:14px;padding:11px 12px;margin-bottom:9px;box-shadow:0 2px 8px rgba(13,34,64,.06)}
+.ncard .top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.ncard .src{font-size:12px;font-weight:800;color:var(--navy)}
+.ncard .st{margin-left:auto;font-size:10px;font-weight:800;border-radius:50px;padding:3px 8px}
+.st.temp{background:#f1f5f9;color:#64748b}
+.st.fin{background:#dcfce7;color:#15803d}
+.score{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#1d6fe8,#0d2240);
+  border-radius:11px;padding:9px 11px;color:#fff;margin-bottom:8px}
+.score .big{font-size:26px;font-weight:900;line-height:1}
+.score .u{font-size:11px;opacity:.75;font-weight:700}
+.score .rt{margin-left:auto;text-align:right;font-size:10.5px;line-height:1.5;opacity:.9}
+.lampres{display:flex;gap:4px;margin-bottom:8px}
+.lampres div{flex:1;text-align:center;border:1px solid #e2e8f0;border-radius:8px;padding:5px 0;background:#fff}
+.lampres .l{font-size:10px;font-weight:900;color:var(--brown);font-family:Georgia,serif}
+.lampres .v{font-size:13px;font-weight:900}
+.v2{color:#16a34a}.v1{color:#e08a00}.v0{color:#cbd5e1}
+.coach{border-left:3px solid #16a34a;background:#f0fdf4;border-radius:8px;padding:7px 9px;
+  font-size:11.5px;line-height:1.55;margin-bottom:6px;color:#14532d}
+.coach.ff{border-left-color:var(--blue);background:#eff6ff;color:#1e3a8a}
+.coach b{font-weight:800}
+.ladder{display:flex;gap:3px;margin:8px 0 6px}
+.ladder span{flex:1;text-align:center;font-size:10px;font-weight:800;padding:5px 0;border-radius:6px;
+  background:#f1f5f9;color:#94a3b8}
+.ladder span.cur{background:var(--red);color:#fff}
+.ladder span.next{background:#fff7ea;color:#b45309;border:1px dashed #f3dcae}
+
+/* 자체 해결 */
+.selfbox{background:#fffbeb;border:1.5px solid #fde68a;border-radius:13px;padding:11px 12px;margin-bottom:9px}
+.selfbox .t{font-size:13px;font-weight:900;color:#b45309;margin-bottom:3px}
+.selfbox .s{font-size:11px;color:#92400e;line-height:1.5;margin-bottom:8px}
+.pathrow{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+.pathrow .it{display:flex;align-items:center;gap:7px;font-size:12px;background:#fff;border:1px solid #e2e8f0;
+  border-radius:9px;padding:7px 9px}
+.pathrow .it.on{border-color:var(--yellow);background:#fffbeb;font-weight:800}
+.rdo{width:15px;height:15px;border-radius:50%;border:1.6px solid #cbd5e1;flex:none;position:relative}
+.rdo.on{border-color:#f59e0b;border-width:5px}
+.pathrow .it .pt{margin-left:auto;font-weight:900;color:#b45309;font-size:12px}
+
+.note{font-size:11.5px;color:#64748b;background:#fff;border:1px dashed #cbd5e1;border-radius:10px;
+  padding:9px 12px;margin-top:9px;line-height:1.7}
+.note b{color:var(--navy)}
+table.cmp{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
+table.cmp th,table.cmp td{border:1px solid #dde3ec;padding:7px 9px;text-align:left;vertical-align:top;line-height:1.55}
+table.cmp th{background:#f6f8fb;font-size:11.5px}
+</style></head><body>
+
+<div class="head">
+  <h1>📱 학생앱 미리보기 — 아하노트가 「LAMP」로 (1단계)</h1>
+  지금 학생앱의 <b>실제 색과 부품</b>(남색 머리·파랑 그라데이션 버튼·노란 칩)을 그대로 써서 그렸습니다.
+  종이 <b>LAMP 활동지와 같은 순서·같은 이름</b>이라 아이들이 새로 배울 것이 없습니다.
+  <b>활동지는 지금 그대로 두고</b>, 점수는 앱에서만 매깁니다.
+</div>
+
+<div class="stage">
+
+  <!-- ① 작성 화면 위 -->
+  <div class="col">
+    <div class="cap"><span>1</span> 아하노트 쓰기 — 윗부분 <small>지금과 같음</small></div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">💡 새 아하노트</div></div>
+      <div class="body">
+        <div class="grp">
+          <label class="lb pri">📷 노트 사진 (1장) <span class="req">*</span></label>
+          <div class="photo"><span class="th">📄</span><span>사진 1장 첨부됨<br><span style="font-weight:600;color:#94a3b8;font-size:10.5px">탭하면 바꾸기</span></span></div>
+        </div>
+        <div class="grp">
+          <label class="lb">📚 어디에서 나온 문제인가요? <span class="req">*</span></label>
+          <div class="sel" style="color:var(--text)">쎈 중2-1 &nbsp;▾</div>
+        </div>
+        <div class="grp two">
+          <div><label class="lb">📄 페이지 <span class="req">*</span></label><div class="inp">87</div></div>
+          <div><label class="lb">🔢 번호 <span class="req">*</span></label><div class="inp">12</div></div>
+        </div>
+        <div class="grp">
+          <label class="lb">⚠️ 틀린 이유 <span style="font-weight:600;color:var(--sub)">(선택, 여러 개)</span></label>
+          <div class="chips">
+            <span class="chip sm">연산오류</span><span class="chip sm">문제잘못읽음</span>
+            <span class="chip sm on">관련개념부족</span><span class="chip sm">문제이해못함</span><span class="chip sm">틀린이유모름</span>
+          </div>
+        </div>
+        <div class="grp">
+          <label class="lb">🔎 이 문제에서 걸린 것 <span style="font-weight:600;color:var(--sub)">(선택)</span></label>
+          <div class="hint">고르면 「내가 자주 걸리는 개념」이 쌓입니다</div>
+          <div class="chips">
+            <span class="chip sm">변하는 양</span><span class="chip sm on">같은 값 다른 모양</span><span class="chip sm">규칙 찾기</span>
+            <span class="chip sm">맞는지 따지기</span><span class="chip sm">어림</span><span class="chip sm">식으로 나타내기</span>
+            <span class="chip sm">패턴</span><span class="chip sm">양·개수</span><span class="chip sm on">표·그래프·식 바꾸기</span>
+            <span class="chip sm">간단히 하기</span><span class="chip sm">도형·공간</span><span class="chip sm">여러 조건 한꺼번에</span>
+          </div>
+        </div>
+        <div class="note" style="margin-bottom:6px">여기까지는 <b>지금 앱과 똑같습니다.</b> 아래로 내리면 LAMP 네 칸이 나옵니다 ↓</div>
+      </div>
+      <div class="foot">
+        <div class="meter"><span class="k">질문력</span><div class="bar"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="n">0 / 8</span></div>
+        <div class="btns"><button class="btn ghost">🙋 쓰다 보니 알았어요</button><button class="btn">질문 보내기</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② LAMP 4칸 -->
+  <div class="col">
+    <div class="cap"><span>2</span> LAMP 네 칸 <small>활동지와 같은 순서</small></div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">💡 새 아하노트</div><span class="hright">쎈 p.87 12번</span></div>
+      <div class="body">
+        <div class="lamp">
+          <div class="t"><span class="ltr">L</span><span class="tt">문제를 정확히 이해하기</span><span class="ok">✓</span></div>
+          <div class="hh">구하려는 것과 문제 조건을 내 말로</div>
+          <div class="val">기울기 2이고 (1,3)을 지나는 직선의 <b>x절편</b>을 구하는 문제. 조건은 기울기와 지나는 점 하나.</div>
+        </div>
+        <div class="lamp">
+          <div class="t"><span class="ltr">A</span><span class="tt">관련 이론·공식 떠올리기</span><span class="ok">✓</span></div>
+          <div class="hh">이 문제에 쓸 공식·성질은?</div>
+          <div class="val">일차함수 y=ax+b, 점을 대입해 b 구하기. 절편은 축과 만나는 점.</div>
+        </div>
+        <div class="lamp">
+          <div class="t"><span class="ltr">M</span><span class="tt">어떻게 풀었나요?</span><span class="ok">✓</span></div>
+          <div class="hh">어디까지, 어떤 논리로 풀었는지 식으로</div>
+          <div class="val">y=2x+b에 (1,3) 대입 → 3=2+b → b=1<br>그래서 y=2x+1까지 구했어요.</div>
+        </div>
+        <div class="lamp p">
+          <div class="t"><span class="ltr">P</span><span class="tt">막힌 곳을 콕 집기</span><span class="ok">✓</span></div>
+          <div class="hh">어느 줄·어느 단계에서 막혔는지</div>
+          <div class="val">그 다음 x절편을 구할 때 <b>y=0을 넣는지 x=0을 넣는지</b> 헷갈립니다. 답지는 −1/2인데 저는 1이 나왔어요.</div>
+          <div class="dir">
+            <div class="dt">선생님께 원하는 것 — 하나만</div>
+            <div class="chips">
+              <span class="chip sm blue on">설명</span><span class="chip sm">비교</span><span class="chip sm">논증</span>
+              <span class="chip sm">추론</span><span class="chip sm">적용</span><span class="chip sm">해석</span><span class="chip sm">평가</span>
+            </div>
+            <div class="mean"><b>설명하시오</b> — 구체적인 사례를 들어 용어를 정의한다</div>
+            <div class="val" style="margin-top:7px">x절편을 구할 때 <b>왜</b> y=0을 넣는지 예를 들어 설명해 주세요.</div>
+            <div><span class="qtype">개념적 질문</span> <span class="qtype plus">+1점</span></div>
+          </div>
+        </div>
+        <div class="note" style="margin:2px 0 6px">칸을 채울수록 아래 <b>질문력 막대</b>가 찹니다. 대충 써도 보낼 수는 있지만, 막대가 낮게 보입니다.</div>
+      </div>
+      <div class="foot">
+        <div class="meter"><span class="k">질문력</span><div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><span class="n">7 / 8</span></div>
+        <div class="btns"><button class="btn ghost">🙋 쓰다 보니 알았어요</button><button class="btn">질문 보내기</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 자기평가 + 스스로 해결 -->
+  <div class="col">
+    <div class="cap"><span>3</span> 내가 먼저 매겨 보기 · 스스로 해결</div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">💡 새 아하노트</div></div>
+      <div class="body">
+        <div class="selfev">
+          <div class="t">✅ 보내기 전, 내가 먼저 매겨 보기</div>
+          <div class="s">선생님도 <b>똑같은 표</b>로 봅니다. 내 예상과 맞으면 <b>+1점</b></div>
+          <div class="row">
+            <div class="it"><span class="cbx on">✓</span> <b style="font-family:Georgia,serif">L</b> 구하는 것·조건을 썼다</div>
+            <div class="it"><span class="cbx on">✓</span> <b style="font-family:Georgia,serif">A</b> 이론·공식을 떠올렸다</div>
+            <div class="it"><span class="cbx on">✓</span> <b style="font-family:Georgia,serif">M</b> 풀이를 순서대로 썼다</div>
+            <div class="it"><span class="cbx"></span> <b style="font-family:Georgia,serif">P</b> 막힌 줄을 콕 집었다</div>
+          </div>
+          <div class="exp">내 예상 질문력 <b>6</b> / 8 <span style="margin-left:auto;color:#94a3b8">AHA는 풀고 나서</span></div>
+        </div>
+
+        <div class="selfbox">
+          <div class="t">🙋 쓰다 보니 알았어요!</div>
+          <div class="s">질문을 쓰다가 스스로 풀렸다면 여기서 끝낼 수 있어요. <b>가장 큰 점수(+4)</b>입니다.</div>
+          <label class="lb" style="font-size:11.5px">어떻게 풀렸나요? <span class="req">*</span></label>
+          <div class="val" style="border:1px solid #e2e8f0;border-radius:9px;background:#fff;padding:7px 9px;font-size:12px;line-height:1.5">
+            「막힌 곳」을 쓰다가 x절편은 <b>x축 위의 점</b>이니까 y=0이라는 걸 알았어요. 제가 x=0을 넣어서 1이 나온 거였어요.</div>
+          <label class="lb" style="font-size:11.5px;margin-top:8px">다시 푼 사진 <span class="req">*</span></label>
+          <div class="photo" style="height:64px"><span class="th" style="width:48px;height:48px;font-size:18px">📸</span><span style="font-size:11.5px">재풀이 1장 첨부됨</span></div>
+          <div style="margin-top:8px;font-size:11px;color:#92400e;background:#fff;border:1px solid #fde68a;border-radius:8px;padding:6px 8px;line-height:1.5">
+            ✓ 답 <b>−1/2</b> · 교재 정답과 일치 → 선생님 확인만 남았어요</div>
+          <button class="btn gold" style="width:100%;margin-top:9px">🙋 스스로 해결로 보내기 <span style="opacity:.85">(예상 6 + 4 = 10)</span></button>
+        </div>
+
+        <div class="note" style="margin-top:4px">아니면 아래 <b>「질문 보내기」</b>로 그냥 보내면 됩니다. 힌트를 받아 풀어도 점수가 있습니다 — 다만 <b>적게 보고 풀수록 높습니다.</b></div>
+      </div>
+      <div class="foot">
+        <div class="meter"><span class="k">질문력</span><div class="bar"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><span class="n">6 / 8</span></div>
+        <div class="btns"><button class="btn ghost">🙋 쓰다 보니 알았어요</button><button class="btn">질문 보내기</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 결과 -->
+  <div class="col">
+    <div class="cap"><span>4</span> 보낸 뒤 — 임시 점수 → 확정</div>
+    <div class="phone">
+      <div class="hdr"><button class="back">←</button><div class="htitle">💡 아하노트</div><span class="hright">내 기록</span></div>
+      <div class="body">
+
+        <div class="ncard">
+          <div class="top"><span class="src">쎈 중2-1 · p.87 12번</span><span class="st temp">⏳ 임시</span></div>
+          <div style="font-size:11.5px;color:var(--sub);line-height:1.5;margin-bottom:7px">방금 보냈어요. 선생님이 확인하면 점수가 확정됩니다.</div>
+          <div class="score" style="background:linear-gradient(135deg,#94a3b8,#475569)">
+            <span class="big">7</span><span class="u">/ 10</span>
+            <span class="rt">임시 점수<br>선생님 확인 대기</span>
+          </div>
+        </div>
+
+        <div class="ncard">
+          <div class="top"><span class="src">쎈 중2-1 · p.87 12번</span><span class="st fin">✓ 확정</span></div>
+          <div class="score">
+            <span class="big">9</span><span class="u">/ 10</span>
+            <span class="rt">질문력 7 + 개념적 +1<br>자기평가 적중 +1</span>
+          </div>
+          <div class="lampres">
+            <div><div class="l">L</div><div class="v v2">2</div></div>
+            <div><div class="l">A</div><div class="v v1">1</div></div>
+            <div><div class="l">M</div><div class="v v2">2</div></div>
+            <div><div class="l">P</div><div class="v v2">2</div></div>
+            <div><div class="l">AHA</div><div class="v v0">–</div></div>
+          </div>
+          <div class="coach"><b>잘한 점</b> 「막힌 곳」에서 y=0인지 x=0인지 헷갈린다고 정확히 짚었고, 답지 값과 비교한 것이 좋았습니다.</div>
+          <div class="coach ff"><b>다만 다음엔</b> A칸에 「절편은 축과 만나는 점」만 썼는데, <b>어느 축인지</b>까지 쓰면 2점입니다.</div>
+          <div class="ladder"><span>E</span><span>D</span><span class="cur">C 지금</span><span class="next">B 다음</span><span>A</span></div>
+          <div style="font-size:11px;color:var(--sub);line-height:1.5">B가 되려면 — <b>x절편·y절편 용어를 정확히</b> 쓰고, 왜 그런지 한 문장으로 설명하기</div>
+          <div style="margin-top:9px;padding-top:8px;border-top:1px dashed #e2e8f0;font-size:11.5px;color:var(--text)">
+            💡 힌트 <b>1개</b> 열림 → 풀고 나서 <b>AHA</b>를 쓰면 <b>+2점</b>이에요</div>
+        </div>
+
+        <div class="note">📄 <b>종이 활동지로 썼다면?</b> 사진만 찍어 올리면 됩니다. AI가 L·A·M·P 칸을 읽어 옮겨 적고, 선생님이 확인합니다. <span style="color:#94a3b8">(2단계에서)</span></div>
+      </div>
+      <div class="foot">
+        <div class="btns"><button class="btn">＋ 새 아하노트</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 설명 -->
+<div class="stage" style="margin-top:26px">
+  <div style="width:100%;background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(13,34,64,.06)">
+    <div style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:10px">종이 활동지는 지금 그대로 둡니다</div>
+    <p style="font-size:12.5px;line-height:1.8;margin:0 0 12px;color:#333">
+      원장님 말씀이 맞습니다. <b>활동지는 손으로 생각을 정리하는 종이</b>이고, <b>점수는 앱에서 매기면</b> 됩니다.
+      종이에까지 채점란과 자기평가를 넣으면 원장님이 손으로 채점할 일이 하나 더 생깁니다.
+      L·A·M·P 네 칸이 이미 앱과 똑같으니, <b>지금 활동지만으로 충분합니다.</b>
+    </p>
+    <table class="cmp">
+      <tr><th style="width:150px">어디서</th><th>무엇을</th><th style="width:230px">누가 채점</th></tr>
+      <tr><td><b>📄 종이 활동지</b><br><span style="color:#64748b;font-size:11.5px">지금 그대로</span></td>
+          <td>L·A·M·P 네 칸 + 재풀이 + AHA. 손으로 생각을 정리하는 것이 목적.</td>
+          <td>채점 안 함. 원하면 사진만 앱에 올림.</td></tr>
+      <tr><td><b>📱 학생앱</b><br><span style="color:#64748b;font-size:11.5px">새로 만드는 것</span></td>
+          <td>같은 네 칸 + 지시어 + 개념 칩 + 자기평가 + 스스로 해결.</td>
+          <td>AI가 초안 → 원장님은 <b>버튼으로 확인만</b>.</td></tr>
+    </table>
+    <div style="margin-top:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.75;color:#14532d">
+      <b>나중에 종이에 딱 하나만 더한다면</b> — P칸에 <b>지시어 7개 동그라미</b>(설명·비교·논증·추론·적용·해석·평가) 한 줄입니다.
+      학생이 ○만 치면 되고 채점 부담이 전혀 없으면서, 「막혔다」에서 끝내지 않고 <b>어떤 도움을 원하는지</b>까지 생각하게 만듭니다.
+      지금은 넣지 않고, 앱을 몇 주 써 보신 뒤 결정하셔도 됩니다.
+    </div>
+    <div style="margin-top:10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:11px 13px;font-size:12.5px;line-height:1.75;color:#7c2d12">
+      <b>확인해 주실 것</b><br>
+      ① 이 네 화면대로 만들면 될까요? 고칠 곳이 있으면 말씀해 주세요.<br>
+      ② LAMP 네 칸을 <b>한 화면에 다 보이게</b> 할지, <b>한 칸씩 넘기며</b> 쓰게 할지 (지금은 한 화면에 다 보이는 안)<br>
+      ③ 「내가 먼저 매겨 보기」를 앱에는 <b>넣을지</b> (종이에서는 뺐습니다. 앱은 체크만 하면 되고 맞히면 +1점)<br>
+      ④ 아직 남은 SQL 두 칸(<code>q_learn</code>·<code>q_act</code>) 실행
+    </div>
+  </div>
+</div>
+</body></html>
