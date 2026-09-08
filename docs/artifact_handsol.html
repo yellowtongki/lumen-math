@@ -1,0 +1,526 @@
+<title>손풀이 자산 시안</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&family=Nanum+Pen+Script&display=swap">
+<style>
+:root{
+  --brown:#4a3a18; --gold:#a97b0c; --navy:#0d2240;
+  --paper:#f7f5f0; --panel:#fffdf9; --ink:#1f1a14; --ink2:#544b3e; --mute:#8d8272;
+  --line:#e6dfd1; --line2:#d8cfbc; --canvas:#e7eaf0;
+  --shadow:0 1px 3px rgba(74,58,24,.07), 0 8px 24px -14px rgba(74,58,24,.22);
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --brown:#d7bd7a; --gold:#e2b755; --navy:#93b4e8;
+    --paper:#16130f; --panel:#1f1b15; --ink:#f3efe6; --ink2:#c2b8a6; --mute:#8e8676;
+    --line:#332c21; --line2:#443b2c;
+    --shadow:0 1px 3px rgba(0,0,0,.5), 0 10px 28px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --brown:#d7bd7a; --gold:#e2b755; --navy:#93b4e8;
+  --paper:#16130f; --panel:#1f1b15; --ink:#f3efe6; --ink2:#c2b8a6; --mute:#8e8676;
+  --line:#332c21; --line2:#443b2c;
+  --shadow:0 1px 3px rgba(0,0,0,.5), 0 10px 28px -14px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased}
+
+.wrap{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:100vh}
+
+/* 왼쪽 목차 */
+.rail{border-right:1px solid var(--line);background:var(--panel);padding:26px 18px 30px;
+  position:sticky;top:0;height:100vh;overflow-y:auto}
+.mark{display:flex;align-items:center;gap:9px;margin-bottom:22px}
+.mark .bulb{width:34px;height:34px;flex:none}
+.mark .nm{font-family:'Gowun Batang',serif;font-size:17px;font-weight:700;color:var(--brown);line-height:1.15}
+.mark .nm small{display:block;font-family:'Noto Sans KR',sans-serif;font-size:9.5px;font-weight:700;
+  letter-spacing:.16em;color:var(--mute);margin-top:2px}
+.railhd{font-size:10px;font-weight:700;letter-spacing:.16em;color:var(--mute);margin:0 0 9px 2px}
+.nav{display:flex;flex-direction:column;gap:3px;list-style:none;padding:0;margin:0}
+.nav button{width:100%;text-align:left;border:1px solid transparent;background:none;cursor:pointer;
+  font-family:inherit;color:var(--ink2);padding:9px 10px;border-radius:9px;display:block}
+.nav button .t{font-size:13.5px;font-weight:700;color:var(--ink);display:block}
+.nav button .d{font-size:11px;line-height:1.45;color:var(--mute);display:block;margin-top:2px}
+.nav button:hover{background:color-mix(in srgb,var(--gold) 8%,transparent)}
+.nav button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.nav button[aria-current="true"]{background:color-mix(in srgb,var(--gold) 13%,transparent);
+  border-color:color-mix(in srgb,var(--gold) 34%,transparent)}
+.nav button[aria-current="true"] .t{color:var(--brown)}
+.railfoot{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);
+  font-size:11px;line-height:1.7;color:var(--mute)}
+.railfoot b{color:var(--ink2);font-weight:700}
+
+/* 본문 */
+main{min-width:0;display:flex;flex-direction:column}
+.top{padding:30px 34px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.15em;color:var(--gold);margin:0 0 7px}
+.top h1{font-family:'Gowun Batang',serif;font-size:29px;font-weight:700;margin:0 0 8px;
+  color:var(--ink);letter-spacing:-.01em;text-wrap:balance}
+.top p{margin:0;font-size:13.5px;line-height:1.75;color:var(--ink2);max-width:64ch}
+.top p b{color:var(--brown);font-weight:700}
+.sheethd{padding:20px 34px 0;display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+.sheethd h2{font-family:'Gowun Batang',serif;font-size:19px;font-weight:700;margin:0;color:var(--brown)}
+.sheethd span{font-size:12.5px;color:var(--mute)}
+
+/* 시안 판 — 밝은 바탕 고정(화면 시안 자체가 밝은 앱이라) */
+.board{margin:14px 20px 34px;border:1px solid var(--line2);border-radius:14px;
+  background:var(--canvas);box-shadow:var(--shadow);overflow-x:auto}
+.pane{display:none}
+.pane.on{display:block}
+
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  .rail{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line);
+    padding:18px 16px 14px}
+  .nav{flex-direction:row;overflow-x:auto;gap:7px;padding-bottom:4px}
+  .nav button{white-space:nowrap;width:auto;flex:none;padding:8px 12px;border:1px solid var(--line2)}
+  .nav button .d{display:none}
+  .railfoot{display:none}
+  .top{padding:22px 18px 16px}
+  .top h1{font-size:23px}
+  .sheethd{padding:16px 18px 0}
+  .board{margin:12px 10px 24px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+#s10{ --navy:#0d2240; --blue:#1d6fe8; --teal:#0f9d8a; --ink:#0f172a; --sub:#64748b; --red:#dc2626; --orange:#f97316; --paper:#fff; --gray:#f1f5f9; }
+#s10 *{box-sizing:border-box}
+#s10{margin:0;background:#dfe4ec;color:var(--ink);font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',-apple-system,sans-serif;padding:20px 14px 60px}
+#s10 .head{max-width:1180px;margin:0 auto 16px;font-size:12.5px;color:#4b5563;line-height:1.75}
+#s10 .head h1{font-size:18px;color:var(--navy);margin:0 0 6px}
+#s10 .head b{color:var(--navy)}
+#s10 .stage{max-width:1180px;margin:0 auto 24px}
+#s10 .cap{font-size:13px;font-weight:800;color:var(--navy);margin:0 0 8px;display:flex;align-items:center;gap:7px}
+#s10 .cap span{font-size:10.5px;font-weight:700;color:#fff;background:var(--navy);border-radius:50px;padding:2px 8px}
+#s10 .cap small{font-weight:600;color:var(--sub);font-size:11px}
+#s10 .card{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(13,34,64,.06)}
+#s10 .hand{font-family:'Nanum Pen Script','Apple SD Gothic Neo',cursive;color:#1e3a8a}
+#s10 .hl{background:linear-gradient(transparent 35%,rgba(249,115,22,.45) 35%,rgba(249,115,22,.45) 90%,transparent 90%)}
+#s10 .hlc{background:linear-gradient(transparent 35%,rgba(56,189,248,.5) 35%,rgba(56,189,248,.5) 90%,transparent 90%)}
+#s10 .hlp{background:linear-gradient(transparent 35%,rgba(244,114,182,.5) 35%,rgba(244,114,182,.5) 90%,transparent 90%)}
+#s10 /* ── 흐름 ── */
+.flow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+#s10 .step{background:#fff;border-radius:12px;padding:11px 10px 10px;box-shadow:0 2px 8px rgba(13,34,64,.06);position:relative;min-height:150px}
+#s10 .step .n{font-size:10px;font-weight:900;color:var(--teal);letter-spacing:.06em}
+#s10 .step .t{font-size:12.5px;font-weight:900;color:var(--navy);margin:3px 0 5px;line-height:1.3}
+#s10 .step .d{font-size:10.5px;color:#475569;line-height:1.55}
+#s10 .step .d b{color:var(--navy)}
+#s10 .step.now{outline:2px solid var(--teal)}
+#s10 .step .tag{position:absolute;top:8px;right:8px;font-size:9px;font-weight:900;border-radius:50px;padding:2px 6px;background:#ccfbf1;color:#0f766e}
+#s10 .step .tag.later{background:#e2e8f0;color:#475569}
+#s10 .fact{margin-top:10px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:9px 12px;font-size:11.5px;color:#134e4a;line-height:1.6}
+#s10 .fact b{color:#0f766e}
+#s10 /* ── 학원앱 ── */
+.tapp{display:grid;grid-template-columns:300px 1fr 330px;gap:14px}
+#s10 .tbox{background:var(--gray);border-radius:12px;padding:12px}
+#s10 .tbox h4{margin:0 0 8px;font-size:12px;font-weight:900;color:var(--navy)}
+#s10 .drop{border:2px dashed #94a3b8;border-radius:12px;padding:14px 12px;text-align:center;background:#fff;font-size:11.5px;color:var(--sub)}
+#s10 .drop b{display:block;font-size:13px;color:var(--navy);margin-bottom:3px}
+#s10 .match{background:#fff;border-radius:10px;padding:10px 12px;margin-top:10px;border-left:4px solid var(--teal)}
+#s10 .match .mt{font-size:13px;font-weight:900;color:var(--navy)}
+#s10 .match .ms{font-size:11px;color:#475569;line-height:1.65;margin-top:3px}
+#s10 .match .ok{display:inline-block;font-size:10px;font-weight:900;background:#dcfce7;color:#15803d;border-radius:50px;padding:2px 8px;margin-top:5px}
+#s10 .stu{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+#s10 .stu span{font-size:10.5px;font-weight:800;background:#fff;border:1px solid #cbd5e1;border-radius:50px;padding:3px 8px}
+#s10 .stu span.me{background:var(--navy);color:#fff;border-color:var(--navy)}
+#s10 .radio{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+#s10 .radio label{font-size:11.5px;background:#fff;border-radius:8px;padding:7px 9px;display:flex;gap:7px;align-items:flex-start;line-height:1.45}
+#s10 .radio label.on{outline:2px solid var(--teal)}
+#s10 .radio small{display:block;color:var(--sub);font-size:10px}
+#s10 .page{background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(13,34,64,.15);position:relative;width:100%;aspect-ratio:595/842;overflow:hidden}
+#s10 .page .hd{position:absolute;left:0;top:0;right:0;height:19%;background:linear-gradient(135deg,#d7f3ee,#fff 70%)}
+#s10 .page .ttl{position:absolute;left:12%;top:5.5%;font-size:13px;font-weight:900;color:#0f766e}
+#s10 .page .ttl small{display:block;font-size:8px;color:#475569;font-weight:700;margin-top:2px}
+#s10 .page .nm{position:absolute;right:6%;top:15%;font-size:8px;font-weight:700}
+#s10 .box{position:absolute;border:2px solid var(--teal);border-radius:4px;background:rgba(15,157,138,.05)}
+#s10 .box i{position:absolute;left:-2px;top:-2px;background:var(--teal);color:#fff;font-style:normal;font-size:9px;font-weight:900;padding:1px 5px;border-radius:4px 0 4px 0}
+#s10 .box .pen{position:absolute;left:8%;right:8%;top:38%;font-size:9px;line-height:1.5}
+#s10 .box.warn{border-color:#f59e0b;background:rgba(245,158,11,.06)}
+#s10 .box.warn i{background:#f59e0b}
+#s10 .pgs{display:flex;gap:6px;margin-top:8px}
+#s10 .pgs span{font-size:10.5px;font-weight:800;border-radius:6px;padding:3px 8px;background:#fff;border:1px solid #cbd5e1}
+#s10 .pgs span.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+#s10 .tbl{width:100%;border-collapse:collapse;font-size:11px}
+#s10 .tbl th,#s10 .tbl td{padding:5px 6px;border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap}
+#s10 .tbl th{font-size:10px;color:var(--sub);font-weight:800;background:#fff}
+#s10 .tbl td.x{color:var(--red);font-weight:900}
+#s10 .tbl td.o{color:#16a34a;font-weight:900}
+#s10 .tbl .ok{color:#0f766e;font-weight:800}
+#s10 .tbl .no{color:#b45309;font-weight:800}
+#s10 .tbtn{width:100%;border:none;border-radius:10px;padding:11px;font-family:inherit;font-size:13px;font-weight:900;color:#fff;background:linear-gradient(135deg,#0f9d8a,#0d2240);margin-top:10px;cursor:pointer}
+#s10 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+#s10 .stats div{background:#fff;border-radius:10px;padding:9px 11px;border:1px solid #e2e8f0}
+#s10 .stats .k{font-size:10px;color:var(--sub);font-weight:700}
+#s10 .stats .v{font-size:19px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums}
+#s10 .stats .v small{font-size:10px;color:var(--sub);font-weight:700;margin-left:3px}
+#s10 /* ── 학생앱 ── */
+.phones{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+#s10 .col{width:360px}
+#s10 .phone{width:360px;height:740px;background:#fff;border-radius:34px;overflow:hidden;box-shadow:0 16px 40px -14px rgba(13,34,64,.45);display:flex;flex-direction:column}
+#s10 .hdr{background:var(--navy);padding:34px 18px 14px;display:flex;align-items:center;gap:11px;flex-shrink:0}
+#s10 .back{background:rgba(255,255,255,.14);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:17px;font-weight:700;flex:none}
+#s10 .htitle{font-size:16px;font-weight:900;color:#fff}
+#s10 .hright{margin-left:auto;font-size:10.5px;font-weight:800;color:#cfe0ff;background:rgba(255,255,255,.12);border-radius:50px;padding:4px 10px}
+#s10 .body{flex:1;overflow-y:auto;background:var(--gray);padding:12px 14px 10px}
+#s10 .body::-webkit-scrollbar{width:0}
+#s10 .note{font-size:10.5px;color:var(--sub);line-height:1.55;margin-top:8px}
+#s10 .homebg{background:#0d2240;padding:14px}
+#s10 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#s10 .tile{background:#fff;border-radius:14px;padding:12px;min-height:82px;position:relative}
+#s10 .tile .ic{font-size:24px}
+#s10 .tile .fn{font-size:14px;font-weight:900;color:var(--navy);margin-top:3px}
+#s10 .tile .fd{font-size:10.5px;color:var(--sub)}
+#s10 .tile.new{outline:2px solid var(--teal)}
+#s10 .tile .nb{position:absolute;top:9px;right:9px;font-size:9.5px;font-weight:900;background:var(--red);color:#fff;border-radius:50px;padding:2px 7px}
+#s10 .ws{background:#fff;border-radius:13px;padding:11px 13px;margin-bottom:9px;display:flex;gap:10px;align-items:center;box-shadow:0 1px 5px rgba(13,34,64,.06)}
+#s10 .ws .dt{width:44px;text-align:center;flex:none}
+#s10 .ws .dt b{display:block;font-size:17px;font-weight:900;color:var(--navy);line-height:1}
+#s10 .ws .dt small{font-size:9.5px;color:var(--sub);font-weight:700}
+#s10 .ws .wt{font-size:12.5px;font-weight:900;color:var(--navy)}
+#s10 .ws .wd{font-size:10.5px;color:var(--sub);margin-top:2px}
+#s10 .ws .wd b{color:var(--red)}
+#s10 .ws .go{margin-left:auto;color:#94a3b8;font-weight:900}
+#s10 .ws.today{border-left:4px solid var(--teal)}
+#s10 .grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;background:#fff;border-radius:12px;padding:9px;margin-bottom:9px}
+#s10 .grid span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:11px;font-weight:900;background:#f1f5f9;color:#334155}
+#s10 .grid span.wr{background:#fee2e2;color:var(--red);outline:1.5px solid #fca5a5}
+#s10 .grid span.on{background:var(--navy);color:#fff;outline:none}
+#s10 .grid span.no{opacity:.35}
+#s10 .legend{font-size:9.5px;color:var(--sub);margin:-4px 0 8px;display:flex;gap:10px}
+#s10 .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:-1px;margin-right:3px}
+#s10 .crop{background:#fff;border-radius:12px;padding:12px 12px 10px;box-shadow:0 1px 5px rgba(13,34,64,.06);margin-bottom:9px}
+#s10 .crop .ptxt{font-size:11.5px;line-height:1.6;color:#111827;font-family:'Noto Serif KR',serif}
+#s10 .crop .pn{font-size:16px;font-weight:900;color:var(--teal);margin-right:6px}
+#s10 .crop .opts{display:grid;grid-template-columns:repeat(3,1fr);font-size:11px;margin:5px 0 2px;color:#111827}
+#s10 .crop .ink{margin-top:6px;font-size:22px;line-height:1.35}
+#s10 .crop .ink .ans{display:inline-block;border:2px solid var(--red);padding:0 6px;border-radius:3px;color:#111}
+#s10 .crop .cap2{font-size:9.5px;color:#94a3b8;text-align:center;margin-top:6px}
+#s10 .tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+#s10 .tags span{font-size:10.5px;font-weight:800;border-radius:50px;padding:4px 9px;background:#fff;border:1px solid #cbd5e1;color:#334155}
+#s10 .tags span.t{background:#ccfbf1;border-color:#5eead4;color:#0f766e}
+#s10 .tags span.x{background:#fee2e2;border-color:#fca5a5;color:var(--red)}
+#s10 .acts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px}
+#s10 .acts button{border:none;border-radius:10px;padding:10px 6px;font-family:inherit;font-size:11.5px;font-weight:900;background:#fff;color:var(--navy);border:1.5px solid #cbd5e1}
+#s10 .acts button.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+#s10 .acts button.soon{opacity:.5}
+#s10 .srch{background:#fff;border-radius:11px;padding:9px 12px;font-size:12px;color:var(--sub);display:flex;gap:8px;align-items:center;margin-bottom:9px}
+#s10 .srch b{color:var(--navy)}
+#s10 .typ{background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:9px}
+#s10 .typ .tt{font-size:12.5px;font-weight:900;color:var(--navy);display:flex;align-items:center;gap:6px}
+#s10 .typ .tt small{margin-left:auto;font-size:10px;color:var(--sub);font-weight:700}
+#s10 .typ ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+#s10 .typ li{font-size:11px;display:flex;gap:7px;align-items:center;background:#f8fafc;border-radius:8px;padding:6px 8px}
+#s10 .typ li b{color:var(--teal)}
+#s10 .typ li .x{margin-left:auto;font-size:10px;font-weight:900;color:var(--red)}
+#s10 .typ li .o{margin-left:auto;font-size:10px;font-weight:900;color:#16a34a}
+#s10 .rev{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:1.5px solid #fdba74;border-radius:12px;padding:10px 12px;margin-bottom:9px}
+#s10 .rev .rt{font-size:12.5px;font-weight:900;color:#9a3412}
+#s10 .rev .rd{font-size:10.5px;color:#7c2d12;margin-top:2px;line-height:1.5}
+#s10 .vid{background:#0f172a;border-radius:12px;padding:12px;color:#94a3b8;font-size:11px;text-align:center;margin-bottom:9px}
+#s10 .vid b{display:block;color:#fff;font-size:12.5px;margin-bottom:3px}
+#s10 /* ── 로드맵·용량·결정 ── */
+.road{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+#s10 .road div{background:#fff;border-radius:12px;padding:11px 12px;box-shadow:0 2px 8px rgba(13,34,64,.06)}
+#s10 .road .rn{font-size:10px;font-weight:900;color:var(--teal)}
+#s10 .road .rt{font-size:12.5px;font-weight:900;color:var(--navy);margin:3px 0 5px}
+#s10 .road .rd{font-size:10.5px;color:#475569;line-height:1.55}
+#s10 .road .rd b{color:var(--navy)}
+#s10 .road div.now{outline:2px solid var(--teal)}
+#s10 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+#s10 .cmp{width:100%;border-collapse:collapse;font-size:11.5px}
+#s10 .cmp th,#s10 .cmp td{border:1px solid #e2e8f0;padding:7px 9px;text-align:left;vertical-align:top;line-height:1.55}
+#s10 .cmp th{background:#f8fafc;font-size:10.5px;color:#475569}
+#s10 .cmp b{color:var(--navy)}
+#s10 .cmp td.g{background:#f0fdf4}
+#s10 .cmp td.r{background:#fef2f2}
+#s10 .ask{background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:12px 14px;margin-top:14px;font-size:12px;line-height:1.7}
+#s10 .ask b{color:#92400e}
+#s10 .ask ol{margin:4px 0 0;padding-left:18px}
+/* 시안 판은 밝은 바탕에서 보는 것이라 어두운 화면에서도 그대로 둔다 */
+#s10{color-scheme:light}
+</style>
+
+<div class="wrap">
+  <aside class="rail">
+    <div class="mark">
+      <svg class="bulb" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="44" r="25" fill="#e8b93a"/>
+        <rect x="41" y="68" width="18" height="7" rx="2" fill="currentColor" opacity=".5"/>
+        <rect x="44" y="78" width="12" height="5" rx="2" fill="currentColor" opacity=".5"/>
+        <text x="50" y="54" font-size="29" font-weight="700" fill="#4a3a18" text-anchor="middle"
+              font-family="Georgia,serif">&#960;</text>
+        <g stroke="#e8b93a" stroke-width="4.5" stroke-linecap="round">
+          <line x1="50" y1="7" x2="50" y2="13"/><line x1="19" y1="17" x2="24" y2="22"/>
+          <line x1="81" y1="17" x2="76" y2="22"/><line x1="9" y1="46" x2="16" y2="46"/>
+          <line x1="91" y1="46" x2="84" y2="46"/></g>
+      </svg>
+      <span class="nm">루멘수학<small>LUMEN MATH</small></span>
+    </div>
+    <p class="railhd">시안 한 장</p>
+    <nav class="nav">
+      <button type="button" data-go="1" aria-current="true">
+        <span class="t">손풀이 시안</span><span class="d">흐름 · 학원앱 올리기 · 학생앱 폴더 3화면 · 발전 5단계 · 저장 용량 · 정해 주실 것</span></button>
+    </nav>
+    <div class="railfoot">
+      화면 시안입니다. 실제 앱이 아니라 <b>어떻게 만들지 보여 드리는 그림</b>이라
+      버튼은 눌리지 않습니다.<br><br>
+      실제 시범 학습지 PDF로 <b>번호 좌표 추출·문제별 자르기 6/6</b>을 확인한 뒤 그린 시안입니다.
+    </div>
+  </aside>
+
+  <main>
+    <div class="top">
+      <p class="eyebrow">손풀이 &mdash; 굿노트 필기를 학원 자산으로</p>
+      <h1>수업 때 쓴 풀이가 그날 밤 문제별로 학생앱에</h1>
+      <p>원장님은 <b>지금처럼 굿노트에 필기</b>만 합니다. 필기된 매쓰플랫 학습지 PDF를 학원앱에 놓으면
+        문제 번호 좌표로 <b>문제마다 잘라</b>, 수집기가 이미 받는 학습지 기록과 묶어 <b>문항 id·유형·정오답</b>을 붙이고,
+        학생앱 <b>「✍️ 손풀이」</b> 폴더에서 그날 푼 문제의 손풀이를 봅니다. 이렇게 쌓인 손풀이 표가
+        <b>학원의 풀이 자산</b>이 되고, 뒤에 🎙 음성·🎬 영상 자동 분할이 같은 자리에 붙습니다.</p>
+    </div>
+
+    <div class="sheethd"><h2 id="sheetT">손풀이 시안</h2><span id="sheetD">흐름 · 학원앱 올리기 · 학생앱 폴더 3화면 · 발전 5단계 · 저장 용량 · 정해 주실 것</span></div>
+
+    <div class="board">
+      <div id="s10" class="pane on">
+
+<div class="head">
+  <h1>✍️ 손풀이 — 수업 때 굿노트에 쓴 풀이가 그날 밤 학생앱에 문제별로 올라간다</h1>
+  원장님이 하실 일은 <b>지금과 똑같이 굿노트에 필기하는 것</b>뿐입니다. 필기된 학습지 PDF를 학원앱에 놓으면
+  문제마다 잘라서 매쓰플랫 문항·유형과 묶어 저장하고, 학생앱 「손풀이」 폴더에서 <b>그날 푼 문제의 손풀이</b>를 봅니다.
+  이 화면은 그림입니다(버튼은 눌리지 않음). 이름·숫자는 예시입니다.
+</div>
+
+<!-- ① 흐름 -->
+<div class="stage">
+  <p class="cap"><span>1</span>어떻게 돌아가나 <small>일곱 칸 중 원장님이 손대는 곳은 ①·② 뿐</small></p>
+  <div class="flow">
+    <div class="step"><div class="n">① 수업 중</div><div class="t">굿노트에 필기</div><div class="d">지금 그대로. 매쓰플랫에서 뽑은 학습지에 풀이를 씁니다.</div></div>
+    <div class="step now"><div class="n">② 수업 후</div><div class="t">PDF를 학원앱에 놓기</div><div class="d">굿노트 「PDF 내보내기」 → 학원앱 「손풀이 올리기」에 끌어다 놓기. <b>나중엔 굿노트 자동 백업 폴더를 새벽에 읽어 이 단계도 없앨 수 있음</b></div><span class="tag">원장</span></div>
+    <div class="step"><div class="n">③ 자동</div><div class="t">문제별로 자르기</div><div class="d">매쓰플랫 학습지는 <b>큰 번호(01~20)의 위치가 글자로 남아 있어</b> AI 없이 0.3초에 경계를 찾습니다. 글자가 없는 스캔본만 AI가 봅니다.</div><span class="tag">자동</span></div>
+    <div class="step"><div class="n">④ 자동</div><div class="t">학습지 맞추기</div><div class="d">머리글 「단원 TEST 중3-2」+이름+날짜로 수집기의 학습지 기록을 찾아 <b>문항 id·유형·정오답</b>을 붙입니다.</div><span class="tag">자동</span></div>
+    <div class="step"><div class="n">⑤ 자동</div><div class="t">저장 = 학원 자산</div><div class="d">문제별 JPEG(약 80KB)를 Storage에, 문항 id·유형·날짜·학생을 <b>손풀이 표</b>에. 같은 문제가 다시 나오면 자동 재사용.</div><span class="tag">자동</span></div>
+    <div class="step"><div class="n">⑥ 학생</div><div class="t">학생앱 「손풀이」</div><div class="d">그날 학습지 → 번호 → 풀이. <b>내가 틀린 번호는 빨갛게</b>. 유형별 모아보기·검색.</div><span class="tag">학생</span></div>
+    <div class="step"><div class="n">⑦ 다음</div><div class="t">이어지는 것</div><div class="d">아하노트 「이미 풀이 있음」, 3·7·14일 복습 카드, 🎙 한마디 음성, 🎬 풀이영상(자동 분할).</div><span class="tag later">2~5단계</span></div>
+  </div>
+  <div class="fact">🔬 <b>오늘 실제 파일로 확인한 것</b> — 루멘이 매쓰플랫에서 뽑은 시범 학습지 PDF(5쪽·6문제)에서 큰 번호 01~06의 좌표가 글자층에서 그대로 나왔고(2단 칸, 번호 x=24·313), 문제별로 잘라 6/6 성공, 여섯 장 합쳐 133KB였습니다. 굿노트로 내보낸 PDF도 원본 글자층을 그대로 품으니 같은 방식이 됩니다. 매쓰플랫 학습지 기록(문항 id·유형·정오답)은 수집기가 이미 매일 받고 있습니다.</div>
+</div>
+
+<!-- ② 학원앱 -->
+<div class="stage">
+  <p class="cap"><span>2</span>학원앱 — 「✍️ 손풀이 올리기」 <small>PDF를 놓으면 30초 뒤 이 화면. 원장님은 확인하고 「올리기」만</small></p>
+  <div class="card">
+    <div class="tapp">
+      <div class="tbox">
+        <h4>파일</h4>
+        <div class="drop"><b>✅ 단원TEST_중3-2_통계_박진희.pdf</b>6쪽 · 4.1MB · 글자층 있음 → 자동 자르기</div>
+        <div class="match">
+          <div class="mt">단원 TEST 중3-2 (VII. 통계)</div>
+          <div class="ms">대푯값 ~ 산점도와 상관관계 · 20문제<br>박진희 · 2026-09-08 수업 · 매쓰플랫 학습지 #4187</div>
+          <span class="ok">✓ 학습지 기록과 20/20 문항 일치</span>
+        </div>
+        <h4 style="margin-top:12px">이 학습지를 받은 학생</h4>
+        <div class="stu"><span class="me">박진희</span><span>이서연</span><span>김도윤</span><span>최하늘</span></div>
+        <div class="note" style="margin-top:5px">같은 학습지를 받은 4명 모두에게 보입니다. 정오답 표시는 각자 것으로.</div>
+        <h4 style="margin-top:12px">학생에게 보이는 때</h4>
+        <div class="radio">
+          <label class="on">◉ 바로 공개 <small>수업에서 같이 푼 학습지(기본). 그날 밤 복습용</small></label>
+          <label>○ 힌트 뒤 공개 <small>숙제·교재 손풀이의 기존 규칙(힌트 1→2→3 → 재풀이 → 열람)</small></label>
+        </div>
+      </div>
+
+      <div class="tbox">
+        <h4>자른 자리 확인 <small style="font-weight:600;color:#64748b">— 상자를 끌어 고칠 수 있음</small></h4>
+        <div class="page">
+          <div class="hd"></div>
+          <div class="ttl">단원 TEST 중3-2 (VII. 통계)<small>대푯값 ~ 산점도와 상관관계 · 20문제 | 매쓰플랫</small></div>
+          <div class="nm">박진희</div>
+          <div class="box" style="left:4%;top:21%;width:44%;height:34%"><i>01</i><div class="pen hand" style="font-size:12px;color:#1e3a8a">11, 11, 15, x, 19, 21 → (15+x)/2 = 14 ∴ x = 13</div></div>
+          <div class="box" style="left:4%;top:57%;width:44%;height:38%"><i>02</i><div class="pen hand" style="font-size:12px;color:#1e3a8a">합 = 60, 4반 = 60−51 = <span class="hl">9</span></div></div>
+          <div class="box" style="left:52%;top:21%;width:44%;height:34%"><i>03</i><div class="pen hand" style="font-size:12px;color:#1e3a8a">흩어진 정도 ↑ → ② (1,2,8,8,1,1)</div></div>
+          <div class="box warn" style="left:52%;top:57%;width:44%;height:38%"><i>04</i><div class="pen" style="color:#b45309;font-weight:800">⚠ 필기 없음 — 안 올림(자동)</div></div>
+        </div>
+        <div class="pgs"><span class="on">1쪽</span><span>2쪽</span><span>3쪽</span><span>4쪽</span><span>5쪽</span><span style="opacity:.5">6쪽 정답표 제외</span></div>
+        <div class="note">번호 글자가 없는 쪽(사진으로 찍은 종이 등)만 AI가 상자를 찾고, 원장님이 한 번 봐 주면 됩니다.</div>
+      </div>
+
+      <div class="tbox">
+        <h4>문항 20개</h4>
+        <table class="tbl">
+          <tr><th>번호</th><th>유형</th><th>박진희</th><th>풀이</th></tr>
+          <tr><td>01</td><td>중앙값</td><td class="o">O</td><td class="ok">✓ 잘림</td></tr>
+          <tr><td>02</td><td>평균의 활용</td><td class="o">O</td><td class="ok">✓ 잘림</td></tr>
+          <tr><td>03</td><td>표준편차 비교</td><td class="o">O</td><td class="ok">✓ 잘림</td></tr>
+          <tr><td>04</td><td>평균·중앙값·최빈값</td><td class="x">X</td><td class="no">필기 없음</td></tr>
+          <tr><td>…</td><td></td><td></td><td></td></tr>
+          <tr><td>11</td><td>산점도 읽기</td><td class="x">X</td><td class="ok">✓ 잘림</td></tr>
+          <tr><td>16</td><td>상관관계 판단</td><td class="o">O</td><td class="ok">✓ 잘림</td></tr>
+          <tr><td>17</td><td>분산의 성질</td><td class="x">X</td><td class="ok">✓ 잘림 <small>♻ 8/21에도 풀이 있음</small></td></tr>
+          <tr><td>18</td><td>조건으로 평균 구하기</td><td class="o">O</td><td class="ok">✓ 잘림</td></tr>
+        </table>
+        <div class="note">유형 이름은 매쓰플랫 유형칩(conceptName), 정오답은 채점 기록. 「♻」는 같은 문항의 손풀이가 이미 자산에 있다는 뜻 — 이번 것을 새로 붙이고 옛것도 남깁니다.</div>
+        <button class="tbtn">✍️ 학생앱에 올리기 (풀이 18개 · 4명)</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div><div class="k">손풀이 자산 누적</div><div class="v">1,240<small>문항</small></div></div>
+      <div><div class="k">유형 덮은 수</div><div class="v">312<small>/ 중등 유형 480</small></div></div>
+      <div><div class="k">이번 달 올림</div><div class="v">205<small>문항 · 11 학습지</small></div></div>
+      <div><div class="k">저장 공간</div><div class="v">4.1<small>GB / 100GB</small></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 학생앱 -->
+<div class="stage">
+  <p class="cap"><span>3</span>학생앱 — 「✍️ 손풀이」 폴더 <small>홈 타일 → 날짜별 학습지 → 번호 → 풀이 → 유형별 모아보기</small></p>
+  <div class="phones">
+    <div class="col">
+      <div class="phone">
+        <div class="hdr"><span class="htitle">π 루멘수학</span><span class="hright">박진희 · 중3</span></div>
+        <div class="homebg">
+          <div class="tiles">
+            <div class="tile new"><span class="nb">오늘 18</span><div class="ic">✍️</div><div class="fn">손풀이</div><div class="fd">오늘 수업 풀이 보기</div></div>
+            <div class="tile"><div class="ic">💡</div><div class="fn">IB아하노트</div><div class="fd">활동지 사진으로 질문</div></div>
+            <div class="tile"><div class="ic">🏆</div><div class="fn">루멘 리그</div><div class="fd">진도 · 아하 · 종합</div></div>
+            <div class="tile"><div class="ic">🗺️</div><div class="fn">로드맵</div><div class="fd">교재 진도</div></div>
+          </div>
+        </div>
+        <div class="body">
+          <div style="font-size:12px;font-weight:900;color:var(--navy);margin:2px 0 8px">✍️ 손풀이 — 학습지별</div>
+          <div class="ws today"><div class="dt"><b>8</b><small>9월 · 오늘</small></div><div><div class="wt">단원 TEST 중3-2 (VII. 통계)</div><div class="wd">20문제 · 풀이 18개 · <b>내가 틀린 3</b></div></div><span class="go">›</span></div>
+          <div class="ws"><div class="dt"><b>5</b><small>9월</small></div><div><div class="wt">유형 학습지 — 산포도</div><div class="wd">16문제 · 풀이 16개 · <b>내가 틀린 2</b></div></div><span class="go">›</span></div>
+          <div class="ws"><div class="dt"><b>3</b><small>9월</small></div><div><div class="wt">유형 학습지 — 대푯값</div><div class="wd">16문제 · 풀이 14개 · 다 맞음 ✓</div></div><span class="go">›</span></div>
+          <div class="ws"><div class="dt"><b>29</b><small>8월</small></div><div><div class="wt">단원 TEST 중3-2 (VI. 원)</div><div class="wd">20문제 · 풀이 20개 · <b>내가 틀린 5</b></div></div><span class="go">›</span></div>
+          <div class="note">내가 받은 학습지만 보여요. 풀이가 있는 문제만 세고, 틀린 문제부터 보라고 빨갛게 표시합니다.</div>
+        </div>
+      </div>
+      <div class="note"><b>홈 타일 「✍️ 손풀이」</b>가 새로 생기고, 오늘 올라온 풀이 수가 빨간 배지로. 목록은 학습지(수업 날짜) 단위.</div>
+    </div>
+
+    <div class="col">
+      <div class="phone">
+        <div class="hdr"><span class="back">←</span><span class="htitle">단원 TEST 중3-2 통계</span><span class="hright">9/8</span></div>
+        <div class="body">
+          <div class="grid">
+            <span>1</span><span>2</span><span>3</span><span class="wr no">4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+            <span class="wr">11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span class="on">17</span><span>18</span><span>19</span><span>20</span>
+          </div>
+          <div class="legend"><span><i style="background:#fee2e2;outline:1px solid #fca5a5"></i>내가 틀린 문제</span><span><i style="background:#0d2240"></i>보는 중</span><span><i style="background:#e2e8f0"></i>풀이 없음(연하게)</span></div>
+          <div class="crop">
+            <div class="ptxt"><span class="pn">17</span>4개의 변량 <span class="hlc">a, b, c, d의 평균이 2</span>이고 분산이 11일 때, <span class="hlp">3a+5</span>, 3b+5, 3c+5, 3d+5의 평균은 m, 분산은 n이다. 이때 m+n의 값은?</div>
+            <div class="opts"><span>① 108</span><span>② 109</span><span>③ 110</span><span>④ 111</span><span>⑤ 112</span></div>
+            <div class="ink hand">a,b,c,d → 평균:2 &nbsp; 분산: 11<br><span class="hl">3a+5</span> → <span class="hl">3×2+5</span> = 11 = m<br><span class="hl">3²</span>×11 = 99 = n &nbsp; ∴ <span class="ans">110 ③</span></div>
+            <div class="cap2">이미지를 누르면 크게 볼 수 있어요 (선생님 필기 그대로)</div>
+          </div>
+          <div class="tags"><span class="t">유형 · 분산의 성질</span><span class="x">내 결과 ✗</span><span>정답률 62%</span><span>♻ 8/21 풀이도 있음</span></div>
+          <div class="acts">
+            <button class="pri">다음 틀린 문제 → 11번</button>
+            <button>🙋 이 문제로 IB아하노트</button>
+            <button>📚 같은 유형 손풀이 4개</button>
+            <button class="soon">🎬 풀이영상 (준비 중)</button>
+          </div>
+          <div class="note">위 풀이는 원장님이 보내신 학습지 17번 필기를 그림으로 흉내 낸 것. 실제로는 잘라 낸 사진 그대로 보입니다.</div>
+        </div>
+      </div>
+      <div class="note"><b>번호 판</b>은 다른 학원 풀이영상 화면(첫 사진)과 같은 문법. 틀린 번호는 빨강, 풀이 없는 번호는 연하게. 아래에 잘린 손풀이 한 장 + 유형·내 결과 + 다음 동작.</div>
+    </div>
+
+    <div class="col">
+      <div class="phone">
+        <div class="hdr"><span class="back">←</span><span class="htitle">손풀이 찾기</span><span class="hright">유형별</span></div>
+        <div class="body">
+          <div class="srch">🔍 <b>분산</b> <span style="margin-left:auto">×</span></div>
+          <div class="rev"><div class="rt">🔁 다시 볼 때예요 — 2문제</div><div class="rd">3일 전 틀린 「분산의 성질」 17번, 7일 전 「표준편차 비교」 3번. 풀이를 보기 전에 한 번 더 풀어 보세요.</div></div>
+          <div class="typ">
+            <div class="tt">📚 분산의 성질 <small>손풀이 5개</small></div>
+            <ul>
+              <li><b>9/8</b> 단원 TEST 17번 <span class="x">✗ 틀림</span></li>
+              <li><b>8/21</b> 유형 학습지 9번 <span class="o">O</span></li>
+              <li><b>8/21</b> 유형 학습지 10번 <span class="o">O</span></li>
+              <li><b>7/30</b> 단원 TEST 12번 <span class="x">✗ 틀림</span></li>
+            </ul>
+          </div>
+          <div class="typ">
+            <div class="tt">📚 분산과 표준편차 구하기 <small>손풀이 8개</small></div>
+            <ul>
+              <li><b>9/5</b> 유형 학습지 3번 <span class="o">O</span></li>
+              <li><b>9/5</b> 유형 학습지 4번 <span class="x">✗ 틀림</span></li>
+            </ul>
+          </div>
+          <div class="vid"><b>🎬 풀이영상 — 4단계</b>손풀이에 영상이 붙으면 같은 자리에서 재생돼요 (유튜브 비공개 링크)</div>
+          <div class="note">유형 이름은 매쓰플랫 유형 그대로라, 교재 채점·유형 성취도 화면과 같은 말을 씁니다.</div>
+        </div>
+      </div>
+      <div class="note"><b>유형별 모아보기 + 검색</b>. 손풀이가 쌓일수록 학생에게는 「우리 선생님 풀이집」이 되고, 복습 카드(3·7·14일)가 틀린 문제를 다시 불러옵니다.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 로드맵·용량·결정 -->
+<div class="stage">
+  <p class="cap"><span>4</span>어디까지 발전시킬 수 있나 <small>1단계가 4단계(영상 자동 분할)의 기초가 됩니다</small></p>
+  <div class="road">
+    <div class="now"><div class="rn">1단계 · 지금</div><div class="rt">✍️ 손풀이 자르기·폴더</div><div class="rd">학원앱 올리기 → 자동 자르기 → 학습지 맞추기 → 학생앱 폴더. <b>비용 0원</b>(글자층). 코딩 2~3일.</div></div>
+    <div><div class="rn">2단계</div><div class="rt">♻ 자산화·연결</div><div class="rd">같은 문항 재등장 시 자동 재사용. 아하노트에 「이미 풀이 있음」, 교재 채점 X → 손풀이, <b>3·7·14·30일 복습 카드</b>. 굿노트 자동 백업 폴더 새벽 읽기.</div></div>
+    <div><div class="rn">3단계</div><div class="rt">🎙 한마디 음성</div><div class="rd">학원앱에서 문제 옆 🎙 30초 녹음(또는 iPad 굿노트 녹음) → 손풀이 위에 재생. <b>영상 없이 영상 효과</b>. 파일 작음(~300KB).</div></div>
+    <div><div class="rn">4단계</div><div class="rt">🎬 풀이영상 자동 분할</div><div class="rd">수업 화면(굿노트)을 통째로 녹화 → <b>1단계가 만든 문제 상자 좌표</b>로 펜이 어느 문제 위에 있는지 보고 자동으로 끊음. 발판 없이 됨. 보조로 「18번」 말하기 자막 분할(8/8 확정안). 유튜브 비공개.</div></div>
+    <div><div class="rn">5단계</div><div class="rt">👪 학부모·리포트</div><div class="rd">학부모앱 「오늘 수업에서 푼 문제」 카드, 성장 리포트에 「선생님 풀이 열람 수·복습 완료율」.</div></div>
+  </div>
+
+  <div class="two">
+    <div class="card">
+      <h3 style="margin:0 0 8px;font-size:13.5px;color:var(--navy)">💾 저장 공간 — 외장하드는 백업용, 서비스는 클라우드</h3>
+      <table class="cmp">
+        <tr><th>무엇</th><th>크기</th><th>1년(수업일 250일)</th><th>둘 곳</th></tr>
+        <tr><td>손풀이 JPEG(문제 1개)</td><td>약 80KB</td><td>하루 100개 → <b>약 2GB</b></td><td class="g">Supabase Storage (지금 3.9GB 사용, 100GB 포함)</td></tr>
+        <tr><td>필기 PDF 원본(학습지 1장)</td><td>2~5MB</td><td>하루 5장 → 약 6GB</td><td class="g">굿노트 자동 백업(구글 드라이브) = 원본 보관. Storage엔 안 올림</td></tr>
+        <tr><td>풀이영상(문제 1개, 4분 720p)</td><td>약 30MB</td><td>하루 100개 → 약 700GB</td><td class="r">Storage 불가 → <b>유튜브 비공개</b>(무료·무제한) 링크만 저장</td></tr>
+        <tr><td>외장 SSD/HDD</td><td colspan="3">학생앱은 웹이라 외장 디스크에서 직접 못 읽습니다. <b>달마다 자산 묶음(zip) 내려받아 보관</b>하는 백업 용도로만. 자산 유실 대비로는 좋은 습관</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 8px;font-size:13.5px;color:var(--navy)">🧭 8/8에 정한 손풀이 규칙과의 관계</h3>
+      <table class="cmp">
+        <tr><th>8/8 확정</th><th>이번 안</th></tr>
+        <tr><td>굿노트 PDF → 「84쪽 12번」 글자로 색인 → <b>쪽 전체</b> JPEG</td><td class="g">학습지는 번호 좌표로 <b>문제별</b>로 자름. 교재 손풀이(쪽 단위)는 그대로 두고 둘 다 같은 자산 표에</td></tr>
+        <tr><td>공개: 힌트 1→2→3 → 재풀이 → 자동 열람</td><td class="g">숙제·교재는 그대로. <b>수업 학습지는 「바로 공개」 기본</b>(이미 수업에서 같이 본 풀이라 복습용). 올릴 때 선택</td></tr>
+        <tr><td>「답지의 복제품을 만들지 않는다」</td><td class="g">필기 없는 문제는 안 올림. 학생은 자기 학습지 것만 봄. 문제 그림은 원장님 필기가 얹힌 <b>루멘 학습지 사진</b>이라 매쓰플랫 문제 이미지 직접 사용(8/1 약관 판단으로 보류)과는 다름 — 다만 이 점은 한 번 더 판단 필요</td></tr>
+        <tr><td>영상: 유튜브 비공개 + 「말로 끊기」</td><td class="g">유지. 여기에 <b>문제 상자 좌표로 자동 끊기</b>를 4단계에 추가</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="ask">
+    <b>정해 주실 것 4가지</b>
+    <ol>
+      <li><b>공개 시점</b> — 수업 학습지 손풀이는 「바로 공개」 기본? (숙제·교재는 기존 「힌트 뒤」 유지)</li>
+      <li><b>누가 보나</b> — 같은 학습지를 받은 학생만(기본) / 그 반 전체 / 같은 학년 전체</li>
+      <li><b>필기 없는 문제</b> — 안 올림(기본) / 문제만이라도 올림</li>
+      <li><b>올리는 방법</b> — 1단계는 학원앱에 끌어다 놓기. 굿노트 자동 백업(구글 드라이브) 새벽 읽기는 2단계에 붙일지</li>
+    </ol>
+  </div>
+</div>
+
+</div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  var T=[["손풀이 시안","흐름 · 학원앱 올리기 · 학생앱 폴더 3화면 · 발전 5단계 · 저장 용량 · 정해 주실 것"]];
+  var ids=["s10"];
+  var btns=document.querySelectorAll('.nav button');
+  function go(n){
+    ids.forEach(function(id,i){ document.getElementById(id).classList.toggle('on', i===n-1); });
+    btns.forEach(function(b,i){ if(i===n-1) b.setAttribute('aria-current','true'); else b.removeAttribute('aria-current'); });
+    document.getElementById('sheetT').textContent=T[n-1][0];
+    document.getElementById('sheetD').textContent=T[n-1][1];
+    window.scrollTo({top:0,behavior:'instant'});
+  }
+  btns.forEach(function(b){ b.addEventListener('click',function(){ go(+b.dataset.go); }); });
+})();
+</script>
