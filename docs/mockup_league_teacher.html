@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🖥 학원앱 — 🏆 리그 그룹 (시즌 한눈에 · 아하 순위표 · 시상 확정 · 종합)</title>
+<style>
+:root{ --red:#e8192c; --navy:#0d2240; --blue:#1d6fe8; --brown:#4a3a18; --text:#0f172a; --sub:#64748b; --line:#e8eef8; }
+*{box-sizing:border-box}
+body{margin:0;background:#dfe4ec;color:var(--text);font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',-apple-system,sans-serif;padding:20px 14px 60px}
+.head{max-width:1180px;margin:0 auto 16px;font-size:12.5px;color:#4b5563;line-height:1.75}
+.head h1{font-size:18px;color:var(--navy);margin:0 0 6px}
+.head b{color:var(--navy)}
+.stage{max-width:1180px;margin:0 auto 26px}
+.cap{font-size:12.5px;font-weight:800;color:var(--navy);margin:0 0 7px;display:flex;align-items:center;gap:6px}
+.cap span{font-size:10.5px;font-weight:700;color:#fff;background:var(--navy);border-radius:50px;padding:2px 8px}
+.cap small{font-weight:600;color:#64748b;font-size:11px}
+.note{font-size:11px;color:var(--sub);line-height:1.55;margin-top:8px}
+.win{background:#f5f7fb;border-radius:14px;overflow:hidden;box-shadow:0 14px 40px -16px rgba(13,34,64,.45);border:1px solid #d5dbe6}
+.top{background:var(--navy);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:12px;font-size:12.5px}
+.top .lg{font-weight:900;font-size:14px}.top .lg small{opacity:.7;font-weight:600;margin-left:6px;font-size:10.5px}
+.top .tabs{display:flex;gap:4px;margin-left:12px}
+.top .tabs span{padding:5px 10px;border-radius:7px;background:rgba(255,255,255,.08);font-size:11.5px;font-weight:700;opacity:.8}
+.top .tabs span.on{background:#fff;color:var(--navy);opacity:1}
+.sub{background:#1a3564;padding:7px 16px;display:flex;gap:6px}
+.sub span{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:800;color:rgba(255,255,255,.75)}
+.sub span.on{background:#f59e0b;color:#2b1600}
+.pad{padding:14px}
+.card{background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px rgba(13,34,64,.08);border:1px solid var(--line);margin-bottom:12px}
+.card h4{margin:0 0 10px;font-size:13.5px;color:var(--navy);display:flex;align-items:center;gap:7px}
+.card h4 .rt{margin-left:auto;font-size:11px;color:var(--sub);font-weight:600}
+
+/* 시즌 한눈에 */
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sp{border:1px solid var(--line);border-radius:12px;padding:12px 13px;background:#fbfcfe;position:relative}
+.sp.soon{opacity:.6;border-style:dashed}
+.sp .t{font-size:14px;font-weight:900;color:var(--navy);display:flex;align-items:center;gap:6px}
+.sp .t .dd{margin-left:auto;font-size:11px;font-weight:800;color:#b45309;background:#fff7ed;border-radius:50px;padding:2px 8px}
+.sp .k{font-size:10.5px;color:var(--sub);margin-top:6px}
+.sp .v{font-size:13px;font-weight:800;color:var(--text)}
+.sp .prize{margin-top:8px;background:linear-gradient(135deg,#fffdf5,#fff4d6);border:1px solid #fcd34d;border-radius:9px;padding:7px 9px;text-align:center}
+.sp .prize b{font-size:18px;color:#c2410c;font-weight:900}
+.sp .prize span{font-size:10px;color:#a35a00;font-weight:700;display:block}
+.sp .lead{margin-top:8px;font-size:11px;color:var(--sub)}
+.sp .lead b{color:var(--navy)}
+.sp .btns{display:flex;gap:5px;margin-top:9px}
+.sp .btns div{flex:1;text-align:center;font-size:11px;font-weight:800;border-radius:7px;padding:6px;background:#fff;border:1px solid #cbd5e1;color:#0d2240}
+.sp .btns div.pri{background:#0d2240;color:#fff;border-color:#0d2240}
+
+/* 순위표 (진도레이스 표 문법) */
+.bigprize{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#fffdf5,#fff4d6);border:2px solid rgba(43,22,0,.16);border-radius:14px;padding:12px 16px;margin-bottom:12px}
+.bigprize .lb{font-size:12px;font-weight:900;color:#a35a00}
+.bigprize .amt{font-size:30px;font-weight:900;color:#c2410c;line-height:1}
+.bigprize .amt small{font-size:16px}
+.bigprize .aw{margin-left:auto;display:flex;gap:6px}
+.bigprize .aw div{background:rgba(255,255,255,.8);border-radius:8px;padding:5px 9px;text-align:center;font-size:10px;font-weight:900;color:#7a2e00}
+.bigprize .aw div i{display:block;font-style:normal;font-size:16px}
+.bigprize .aw div small{display:block;font-weight:700;color:#a35a00;font-size:9.5px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{padding:8px 6px;background:#f8fafc;color:#64748b;font-size:11px;font-weight:800;text-align:left}
+td{padding:9px 6px;border-top:1px solid #f1f5f9;vertical-align:middle}
+td.c{text-align:center}td.r{text-align:right}
+.tg{font-size:10px;font-weight:800;border-radius:5px;padding:2px 7px;white-space:nowrap}
+.tg.inq{background:#f1f5f9;color:#475569}.tg.kno{background:#eff6ff;color:#1d4ed8}.tg.thk{background:#f5f3ff;color:#6d28d9}.tg.ref{background:#fffbeb;color:#b45309}
+.aw1{font-size:10px;background:#fef3c7;color:#92400e;border-radius:5px;padding:1px 5px;font-weight:800;margin-left:4px}
+.aw2{font-size:10px;background:#dcfce7;color:#166534;border-radius:5px;padding:1px 5px;font-weight:800;margin-left:4px}
+.aw3{font-size:10px;background:#dbeafe;color:#1e40af;border-radius:5px;padding:1px 5px;font-weight:800;margin-left:4px}
+.bar{height:3px;border-radius:2px;background:#eef2f7;margin-top:3px}.bar i{display:block;height:3px;border-radius:2px}
+.spark{display:inline-flex;gap:1px;align-items:flex-end;height:14px}
+.spark i{display:inline-block;width:5px;background:#93c5fd;border-radius:1px}
+tr.dim td{opacity:.6}
+
+/* 시상 확정 */
+.awards{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.awd{border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:#fbfcfe}
+.awd .i{font-size:20px}.awd .n{font-size:12px;font-weight:900;color:var(--navy);margin:2px 0 1px}
+.awd .how{font-size:10px;color:var(--sub);line-height:1.45;min-height:28px}
+.awd .who{margin-top:7px;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:6px 8px;font-size:12px;font-weight:800;color:var(--text)}
+.awd .who small{display:block;font-weight:600;color:var(--sub);font-size:10px}
+.awd .alt{font-size:10px;color:#94a3b8;margin-top:4px}
+.awd .alt u{cursor:pointer;color:#1d6fe8;text-decoration:none;font-weight:700}
+.money{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--sub)}
+.money input{width:70px;border:1px solid #cbd5e1;border-radius:6px;padding:3px 6px;font-size:12px;font-weight:800;text-align:right;font-family:inherit}
+.btn{padding:9px 14px;border:none;border-radius:9px;font-size:12.5px;font-weight:800;font-family:inherit;color:#fff;background:linear-gradient(135deg,var(--blue),var(--navy));cursor:pointer}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid #cbd5e1}
+.btn.gold{background:linear-gradient(135deg,#f59e0b,#b45309)}
+.pub{background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:10px 12px;font-size:12px;color:#14532d;line-height:1.6;margin-top:10px}
+
+/* 종합 */
+.f1t td:first-child{font-weight:800}
+.pts{font-weight:900;color:var(--navy)}
+.cmp{width:100%;border-collapse:collapse;font-size:12px}
+.cmp th,.cmp td{border:1px solid #e2e8f0;padding:8px 10px;text-align:left;vertical-align:top;line-height:1.55}
+.cmp th{background:#f8fafc;font-size:11px;color:#475569}
+</style></head><body>
+
+<div class="head">
+  <h1>🖥 학원앱 — 「🏆 리그」를 한 자리로</h1>
+  진도·리포트 그룹 안에 <b>「🏆 리그」 서브탭</b>을 두고, 그 안에서 종목(진도·IB아하·말하기·종합)을 오갑니다. 아하노트 화면의 순위표 버튼은 여기로 바로 오는 지름길이 됩니다. 원장님이 하는 일은 <b>시즌 설정 → 확정 채점(이미 있음) → 시즌 끝 시상 확정 → 발행</b>입니다.
+</div>
+
+<!-- ① 시즌 한눈에 -->
+<div class="stage">
+  <div class="cap"><span>1</span> 🏆 리그 — 시즌 한눈에 <small>세 종목이 나란히</small></div>
+  <div class="win">
+    <div class="top"><span class="lg">π 루멘수학<small>학원앱</small></span>
+      <div class="tabs"><span>오늘의 확인</span><span>수업·출결</span><span>시험·기출</span><span class="on">진도·리포트</span><span>학생앱</span></div></div>
+    <div class="sub"><span>📊 진도 현황</span><span class="on">🏆 리그</span><span>📈 리포트</span><span>🧭 진학 나침반</span></div>
+    <div class="pad">
+      <div class="three">
+        <div class="sp">
+          <div class="t">🏁 진도 레이스 <span class="dd">D-22</span></div>
+          <div class="k">시즌</div><div class="v">8/18 ~ 9/30 · 2학기 중간고사</div>
+          <div class="k">참여</div><div class="v">중등 12 · 초등 6(체험) · 고등 기록</div>
+          <div class="prize"><b>100,000원</b><span>1·2·3등 + 꾸준상 + 성장상</span></div>
+          <div class="lead">1위 <b>최○○ 7,244점</b> · 골드 이상 5명</div>
+          <div class="btns"><div class="pri">순위표</div><div>⚙ 시즌</div></div>
+        </div>
+        <div class="sp">
+          <div class="t">💡 IB아하노트 <span class="dd">D-53</span></div>
+          <div class="k">시즌</div><div class="v">9/1 ~ 10/31 · 2달</div>
+          <div class="k">참여</div><div class="v">중등 8 · 초등 2 · 고등 0 · 확정 41건</div>
+          <div class="prize"><b>50,000원</b><span>질문왕 + 베스트질문 + 스스로해결 + 성장 + 성찰</span></div>
+          <div class="lead">1위 <b>박○○ 112점</b> · 사고자 2명 · 확정 대기 <b style="color:#dc2626">7건</b></div>
+          <div class="btns"><div class="pri">순위표</div><div>⚙ 시즌</div><div>채점 7</div></div>
+        </div>
+        <div class="sp soon">
+          <div class="t">🎙 하브루타 말하기 <span class="dd" style="background:#f1f5f9;color:#94a3b8">준비 중</span></div>
+          <div class="k">채점 방식</div><div class="v">STT 전사 → AI 초안(완결·정확·자기말) → 원장 확정</div>
+          <div class="k">시작 예정</div><div class="v">11월 시즌부터</div>
+          <div class="prize" style="opacity:.7"><b>미정</b><span>설명왕 + 꾸준상 + …</span></div>
+          <div class="lead">채점 체계부터 만들어야 합니다 (2단계)</div>
+          <div class="btns"><div>설계 보기</div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h4>👑 종합 챔피언 <span class="rt">두 종목 이상 참여 · 순위 포인트 합산</span></h4>
+        <table class="f1t">
+          <tr><th style="width:44px">순위</th><th>학생</th><th>🏁 진도</th><th>💡 IB아하</th><th>🎙 말하기</th><th>🔥 보너스</th><th style="text-align:right">포인트</th></tr>
+          <tr><td class="c">🥇</td><td>박○○ <span style="font-size:11px;color:#94a3b8">중2</span></td><td>2위 → 18</td><td>1위 → 25</td><td style="color:#cbd5e1">–</td><td>두 종목 5위 안 +9</td><td class="r pts">52</td></tr>
+          <tr><td class="c">🥈</td><td>홍○○ <span style="font-size:11px;color:#94a3b8">중2</span></td><td>4위 → 12</td><td>3위 → 15</td><td style="color:#cbd5e1">–</td><td>+18</td><td class="r pts">45</td></tr>
+          <tr><td class="c">🥉</td><td>이○○ <span style="font-size:11px;color:#94a3b8">중3</span></td><td>6위 → 8</td><td>2위 → 18</td><td style="color:#cbd5e1">–</td><td>+16</td><td class="r pts">42</td></tr>
+          <tr><td class="c">4</td><td>최○○ <span style="font-size:11px;color:#94a3b8">중2</span></td><td><b>1위 → 25</b></td><td>9위 → 4</td><td style="color:#cbd5e1">–</td><td>+4</td><td class="r pts">33</td></tr>
+        </table>
+        <div class="note">진도 1위가 종합 4위 — 점수를 그냥 더하지 않고 <b>순위를 포인트로 바꿔 합산</b>하기 때문입니다. 세 종목을 골고루 하는 학생이 이깁니다. 보너스: 두 종목 모두 5위 안이면 낮은 쪽 포인트만큼 더.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ② IB아하노트 순위표 (진도레이스 표 문법) -->
+<div class="stage">
+  <div class="cap"><span>2</span> 💡 IB아하노트 순위표 <small>진도레이스 표와 같은 문법 — 상 후보 배지 · 최근 14일</small></div>
+  <div class="win">
+    <div class="sub"><span>🏁 진도</span><span class="on">💡 IB아하노트</span><span>🎙 말하기</span><span>👑 종합</span><span style="margin-left:auto">⚙ 시즌 설정</span><span>🎁 시상 확정</span></div>
+    <div class="pad">
+      <div class="bigprize">
+        <div><div class="lb">🏆 이번 시즌 총상금</div><div class="amt">50,000<small>원</small></div>
+          <div style="font-size:11px;color:#a35a00;font-weight:700;margin-top:2px">학생·학부모에게는 총상금과 상 이름만 · 개별 금액은 숨김</div></div>
+        <div class="aw">
+          <div><i>🥇</i>질문왕<small>1위</small></div>
+          <div><i>🏆</i>베스트 질문<small>노트 1편</small></div>
+          <div><i>🙋</i>스스로 해결<small>최다</small></div>
+          <div><i>📈</i>성장상<small>평균 상승폭</small></div>
+          <div><i>🪞</i>성찰상<small>AHA 최다</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4>중등부 <span style="font-size:12px;color:#94a3b8;font-weight:700">18명 · 참여 8명</span><span class="rt">학생·학부모에게는 5위까지만 공개</span></h4>
+        <div style="overflow-x:auto"><table style="min-width:900px">
+          <tr><th style="text-align:center;width:44px">등수</th><th>학생</th><th style="width:96px">등급</th><th class="r" style="text-align:right;width:70px">리그 점수</th><th class="r" style="text-align:right;width:64px">평균 질문력</th><th class="r" style="text-align:right;width:52px">인정</th><th class="r" style="text-align:right;width:52px">🙋 스스로</th><th class="r" style="text-align:right;width:48px">AHA</th><th class="r" style="text-align:right;width:52px">상한초과</th><th style="text-align:center;width:100px">최근 14일</th></tr>
+          <tr><td class="c">🥇</td><td><b>박영희</b> <span style="font-size:11px;color:#94a3b8">중3 부천중</span><span class="aw1">질문왕 후보</span></td><td><span class="tg thk">💭 사고자</span></td><td class="r"><b>112</b><div class="bar"><i style="width:100%;background:#6d28d9"></i></div></td><td class="r">8.6</td><td class="r">13</td><td class="r" style="color:#b45309;font-weight:800">6</td><td class="r">9</td><td class="r" style="color:#cbd5e1">2</td><td class="c"><span class="spark"><i style="height:6px"></i><i style="height:9px"></i><i style="height:4px"></i><i style="height:11px"></i><i style="height:14px"></i><i style="height:8px"></i><i style="height:12px"></i></span></td></tr>
+          <tr><td class="c">🥈</td><td><b>이수민</b> <span style="font-size:11px;color:#94a3b8">중3 소사중</span><span class="aw2">스스로 해결상 후보</span></td><td><span class="tg thk">💭 사고자</span></td><td class="r"><b>98</b><div class="bar"><i style="width:88%;background:#6d28d9"></i></div></td><td class="r">8.1</td><td class="r">12</td><td class="r" style="color:#b45309;font-weight:800">9</td><td class="r">7</td><td class="r" style="color:#cbd5e1">0</td><td class="c"><span class="spark"><i style="height:8px"></i><i style="height:8px"></i><i style="height:10px"></i><i style="height:6px"></i><i style="height:9px"></i><i style="height:11px"></i><i style="height:7px"></i></span></td></tr>
+          <tr><td class="c">🥉</td><td><b>홍길동</b> <span style="font-size:11px;color:#94a3b8">중2 부천중</span><span class="aw1">베스트 질문 후보</span></td><td><span class="tg kno">🔎 탐구자</span></td><td class="r"><b>86</b><div class="bar"><i style="width:77%;background:#1d4ed8"></i></div></td><td class="r">7.8</td><td class="r">11</td><td class="r" style="color:#b45309;font-weight:800">5</td><td class="r">4</td><td class="r" style="color:#cbd5e1">1</td><td class="c"><span class="spark"><i style="height:3px"></i><i style="height:7px"></i><i style="height:9px"></i><i style="height:12px"></i><i style="height:10px"></i><i style="height:14px"></i><i style="height:13px"></i></span></td></tr>
+          <tr><td class="c">4</td><td><b>최민준</b> <span style="font-size:11px;color:#94a3b8">중2 원미중</span></td><td><span class="tg kno">🔎 탐구자</span></td><td class="r"><b>79</b><div class="bar"><i style="width:71%;background:#1d4ed8"></i></div></td><td class="r">7.2</td><td class="r">11</td><td class="r">2</td><td class="r">6</td><td class="r" style="color:#cbd5e1">0</td><td class="c"><span class="spark"><i style="height:9px"></i><i style="height:9px"></i><i style="height:8px"></i><i style="height:9px"></i><i style="height:10px"></i><i style="height:9px"></i><i style="height:8px"></i></span></td></tr>
+          <tr><td class="c">5</td><td><b>정하윤</b> <span style="font-size:11px;color:#94a3b8">중1 부천중</span><span class="aw3">성장상 후보</span></td><td><span class="tg kno">🔎 탐구자</span></td><td class="r"><b>71</b><div class="bar"><i style="width:63%;background:#1d4ed8"></i></div></td><td class="r">6.4</td><td class="r">11</td><td class="r">1</td><td class="r">3</td><td class="r" style="color:#cbd5e1">0</td><td class="c"><span class="spark"><i style="height:2px"></i><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:9px"></i><i style="height:12px"></i><i style="height:14px"></i></span></td></tr>
+          <tr class="dim"><td class="c">6</td><td><b>김도윤</b> <span style="font-size:11px;color:#94a3b8">중2 원미중</span></td><td><span class="tg inq">❓ 질문자</span></td><td class="r"><b>58</b><div class="bar"><i style="width:52%;background:#64748b"></i></div></td><td class="r">5.9</td><td class="r">9</td><td class="r">1</td><td class="r">2</td><td class="r" style="color:#cbd5e1">0</td><td class="c"><span class="spark"><i style="height:5px"></i><i style="height:0"></i><i style="height:6px"></i><i style="height:0"></i><i style="height:7px"></i><i style="height:4px"></i><i style="height:0"></i></span></td></tr>
+          <tr class="dim"><td class="c">7</td><td><b>윤서연</b> <span style="font-size:11px;color:#94a3b8">중1 소사중</span> <span style="color:#dc2626">⚠️ 2주째 없음</span></td><td><span class="tg inq">❓ 질문자</span></td><td class="r"><b>44</b><div class="bar"><i style="width:39%;background:#64748b"></i></div></td><td class="r">5.5</td><td class="r">8</td><td class="r">0</td><td class="r">1</td><td class="r" style="color:#cbd5e1">0</td><td class="c"><span class="spark"><i style="height:8px"></i><i style="height:6px"></i><i style="height:0"></i><i style="height:0"></i><i style="height:0"></i><i style="height:0"></i><i style="height:0"></i></span></td></tr>
+        </table></div>
+        <div class="note">상 후보 배지는 <b>지금 기준으로 받을 사람</b>을 미리 표시합니다(진도레이스의 꾸준상·성장상 후보와 같은 방식). 시즌 끝에 「🎁 시상 확정」에서 원장님이 확정합니다. 흐린 줄은 학생앱에 이름이 안 나가는 순위입니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 시상 확정 -->
+<div class="stage">
+  <div class="cap"><span>3</span> 🎁 시상 확정 <small>시즌 끝 · 자동 후보 → 원장 확정 → 발행</small></div>
+  <div class="win">
+    <div class="pad">
+      <div class="card">
+        <h4>💡 IB아하노트 9~10월 시즌 · 중등부 시상 <span class="rt">시즌 종료 10/31 · 총상금 50,000원</span></h4>
+        <div class="awards">
+          <div class="awd"><div class="i">🥇</div><div class="n">질문왕</div><div class="how">리그 점수 1위</div>
+            <div class="who">박영희<small>112점 · 평균 8.6</small></div>
+            <div class="money">상금 <input value="20,000"> 원</div></div>
+          <div class="awd"><div class="i">🏆</div><div class="n">베스트 질문상</div><div class="how">시즌 최고 질문 <b>한 편</b> — 순위 무관</div>
+            <div class="who">홍길동<small>개념원리 p.132 · 질문력 10</small></div>
+            <div class="alt">다른 후보: <u>박영희 p.87</u> · <u>이수민 p.41</u></div>
+            <div class="money">상금 <input value="10,000"> 원</div></div>
+          <div class="awd"><div class="i">🙋</div><div class="n">스스로 해결상</div><div class="how">힌트 없이 스스로 푼 횟수 최다</div>
+            <div class="who">이수민<small>9회</small></div>
+            <div class="money">상금 <input value="7,000"> 원</div></div>
+          <div class="awd"><div class="i">📈</div><div class="n">성장상</div><div class="how">시즌 앞 4주 → 뒤 4주 평균 질문력 상승폭 최대</div>
+            <div class="who">정하윤<small>3.2 → 6.9 (+3.7)</small></div>
+            <div class="money">상금 <input value="7,000"> 원</div></div>
+          <div class="awd"><div class="i">🪞</div><div class="n">성찰상</div><div class="how">되돌아보기(AHA) 제출 최다</div>
+            <div class="who">최민준<small>14건</small></div>
+            <div class="money">상금 <input value="6,000"> 원</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:11.5px;color:#0f8a4e;font-weight:800">개별 합계 50,000원 ✓ 총상금과 같습니다</div>
+        <div style="display:flex;gap:7px;margin-top:12px">
+          <button class="btn gold">🎁 시상 확정</button>
+          <button class="btn ghost">후보 다시 계산</button>
+          <button class="btn ghost">한 명이 두 상을 받으면? → 다음 후보로</button>
+        </div>
+        <div class="pub"><b>발행하면</b> 학생앱 리그 화면에 「🎉 시즌 결과」가 뜨고, 학부모앱 성장 리포트에 상 이름이 들어갑니다. 개별 금액은 어디에도 안 나갑니다. 발행 전에는 학생에게 아무것도 안 보입니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stage">
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 2px 10px rgba(13,34,64,.06)">
+    <div style="font-size:15px;font-weight:900;color:var(--navy);margin-bottom:10px">원장님이 시즌마다 하는 일</div>
+    <table class="cmp">
+      <tr><th style="width:150px">언제</th><th>무엇을</th><th style="width:150px">걸리는 시간</th></tr>
+      <tr><td>시즌 시작</td><td>⚙ 시즌 설정 — 기간·총상금·상 5개 이름(기본값 그대로면 안 해도 됨)</td><td>2분</td></tr>
+      <tr><td>평소</td><td>📝 채점 확정 (AI 초안 일괄 → 8점 이상 일괄확정, 나머지만 눌러서) — <b>이미 만들어 둔 것</b></td><td>하루 3~5분</td></tr>
+      <tr><td>시즌 끝</td><td>🎁 시상 확정 — 자동 후보 5명 확인, 금액 조정, 발행</td><td>5분</td></tr>
+      <tr><td>시즌 끝</td><td>📄 학부모 성장 리포트 — AI 초안 확인 후 발행 (5단계)</td><td>학생당 1~2분</td></tr>
+    </table>
+  </div>
+</div>
+</body></html>
