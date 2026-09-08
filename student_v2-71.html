@@ -837,6 +837,38 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .ib-loading .t { font-size:14px; font-weight:800; color:var(--navy); margin-bottom:5px; }
 .ib-loading .s { font-size:12px; color:var(--sub); line-height:1.7; }
 
+/* ★ v2-71: 「네 칸을 다 채워야 한다」 안내
+ * 실제 9월 활동지 사진을 보니 학생들이 P칸(막힌 곳)만 쓰고 L·A·M을 통째로 비워 둔다.
+ * 그래서 질문력이 2~3점에서 멈춘다. 사진을 잘 찍는 문제가 아니라 쓰는 습관 문제라,
+ * 시작 화면과 확인 화면에서 눈에 띄게 알려 준다. */
+.ib-how { background:#fff; border:1.5px solid #fcd34d; border-radius:14px; padding:13px 14px; margin-bottom:12px; }
+.ib-how .t { font-size:13px; font-weight:900; color:#92400e; margin-bottom:3px; }
+.ib-how .s { font-size:11.5px; color:#78350f; line-height:1.6; margin-bottom:9px; }
+.ib-how .grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.ib-how .cell { border:1px solid #e2e8f0; border-radius:8px; padding:6px 7px; background:#fbfcfe; }
+.ib-how .cell.p { border-color:#fca5a5; background:#fffafa; }
+.ib-how .cell .k { display:flex; align-items:center; gap:5px; margin-bottom:2px; }
+.ib-how .cell .ltr {
+  width:17px; height:17px; border-radius:5px; background:#4a3a18; color:#fff; font-size:10px;
+  font-weight:900; display:flex; align-items:center; justify-content:center; font-family:Georgia,serif; flex:none;
+}
+.ib-how .cell.p .ltr { background:var(--red); }
+.ib-how .cell .nm { font-size:10.5px; font-weight:800; color:var(--text); }
+.ib-how .cell .ex { font-size:10px; color:var(--sub); line-height:1.45; }
+.ib-how .warn {
+  margin-top:9px; background:#fef2f2; border:1px solid #fecaca; border-radius:9px;
+  padding:8px 10px; font-size:11px; color:#991b1b; line-height:1.6;
+}
+.ib-how .warn b { font-weight:800; }
+
+/* 확인 화면 — 빈 칸이 많을 때 뜨는 띠 */
+.ib-empty-warn {
+  background:#fef2f2; border:1.5px solid #fca5a5; border-radius:12px; padding:11px 13px;
+  margin-bottom:10px; font-size:12px; color:#991b1b; line-height:1.7;
+}
+.ib-empty-warn b { font-weight:900; }
+.ib-empty-warn .big { font-size:13px; font-weight:900; display:block; margin-bottom:3px; }
+
 /* ⑤ 점수 카드 (목록 안) */
 .ib-score {
   display:flex; align-items:center; gap:8px; background:linear-gradient(135deg,#1d6fe8,#0d2240);
@@ -2362,6 +2394,35 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
       📷 활동지 사진 찍기
       <span class="sub">학원에서는 LAMP 활동지에, 집에서는 공책에 L·A·M·P 제목을 쓰고 찍으세요</span>
     </button>
+
+    <!-- 네 칸을 다 채워야 한다는 안내 (실제로 P칸만 쓰는 학생이 많아서 넣음) -->
+    <div class="ib-how">
+      <div class="t">✍️ 네 칸을 <u>다</u> 채우고 찍어 주세요</div>
+      <div class="s">P칸(막힌 곳)만 쓰면 <b>10점 중 2점</b>밖에 못 받아요. 네 칸을 채우면 <b>8~10점</b>입니다.</div>
+      <div class="grid">
+        <div class="cell">
+          <div class="k"><span class="ltr">L</span><span class="nm">문제 이해</span></div>
+          <div class="ex">구하는 것과 조건을 내 말로<br><span style="color:#94a3b8">예: x절편·y절편을 구하기. 그래프가 주어짐</span></div>
+        </div>
+        <div class="cell">
+          <div class="k"><span class="ltr">A</span><span class="nm">이론·공식</span></div>
+          <div class="ex">이 문제에 쓸 공식<br><span style="color:#94a3b8">예: 절편은 축과 만나는 점</span></div>
+        </div>
+        <div class="cell">
+          <div class="k"><span class="ltr">M</span><span class="nm">풀이 논리</span></div>
+          <div class="ex">어디까지 어떻게 풀었나<br><span style="color:#94a3b8">예: y=0 넣으면 0=−2x+1</span></div>
+        </div>
+        <div class="cell p">
+          <div class="k"><span class="ltr">P</span><span class="nm">막힌 곳</span></div>
+          <div class="ex">몇 번째 줄에서 막혔나 + 질문<br><span style="color:#94a3b8">예: 왜 y에 0을 넣는지 설명해 주세요</span></div>
+        </div>
+      </div>
+      <div class="warn">
+        📷 찍을 때는 <b>활동지 한 장 전체</b>가 들어오게, <b>그림자가 지지 않게</b> 찍어 주세요.
+        네 칸이 다 보여야 AI가 읽을 수 있어요.
+      </div>
+    </div>
+
     <button class="ib-info-link" onclick="go('screen-aha-ib')">ⓘ IB아하노트란? — 왜 이렇게 쓰는지</button>
 
     <!-- 필터 탭 -->
@@ -2492,6 +2553,9 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <span class="badge badge-ai" id="aha-read-badge">🤖 AI가 읽었어요</span>
       </div>
       <div class="aha-form-hint" id="aha-read-msg" style="margin-bottom:10px">잘못 읽은 곳만 탭해서 고쳐 주세요. 노란 칸은 못 읽은 칸이에요.</div>
+
+      <!-- 빈 칸이 많으면 뜨는 띠 (활동지에 안 쓴 경우) -->
+      <div class="ib-empty-warn" id="aha-empty-warn" style="display:none"></div>
 
       <!-- 출처 -->
       <div class="aha-form-group">
@@ -5241,7 +5305,29 @@ function ahaUpdateMeter() {
   }
 }
 
-function ahaOnFieldEdit() { ahaUpdateMeter(); }
+function ahaOnFieldEdit() { ahaUpdateMeter(); ahaEmptyWarn(); }
+
+/* 활동지에 안 쓴 칸이 있으면 알려 준다 — 점수가 왜 낮은지 그 자리에서 보이게 */
+function ahaEmptyWarn() {
+  var el = document.getElementById('aha-empty-warn');
+  if (!el) return;
+  var NAMES = { L:'L 문제 이해', A:'A 이론·공식', M:'M 풀이 논리' };
+  var IDS = { L:'aha-q-learn', A:'aha-q-act', M:'aha-q-try' };
+  var missing = [];
+  ['L','A','M'].forEach(function(k) {
+    var v = ((document.getElementById(IDS[k]) || {}).value || '').trim();
+    if (v.length < 5) missing.push(NAMES[k]);
+  });
+  if (!missing.length) { el.style.display = 'none'; return; }
+  var m = ahaMeter();
+  el.style.display = 'block';
+  el.innerHTML = '<span class="big">✍️ ' + missing.length + '칸이 비어 있어요 — ' + ahaEscape(missing.join(' · ')) + '</span>'
+    + '활동지에 안 쓴 칸이에요. 이대로 보내면 <b>질문력 ' + m.total + '점</b>입니다. '
+    + (missing.length >= 3
+        ? '네 칸을 다 채우면 <b>8~10점</b>이에요.'
+        : '비어 있는 칸을 활동지에 적고 <b>다시 찍으면</b> 점수가 올라갑니다.')
+    + '<br><span style="font-size:11px;color:#b91c1c">활동지에는 썼는데 안 읽혔다면, 그 칸에 직접 적어 주셔도 됩니다.</span>';
+}
 
 /* 지시어 칩 */
 function ahaRenderDirChips() {
@@ -5458,6 +5544,7 @@ function ahaClearConfirm() {
   ahaRenderDirChips();
   ahaRenderConceptChips();
   ahaUpdateMeter();
+  ahaEmptyWarn();
 }
 
 /* 확인 영역 보이기/숨기기 */
@@ -5556,6 +5643,7 @@ async function ahaEdit(id) {
   ahaRenderDirChips();
   ahaRenderConceptChips();
   ahaUpdateMeter();
+  ahaEmptyWarn();
 }
 
 // 사진 슬롯 초기화
@@ -5660,7 +5748,7 @@ function ahaApplyRead(ai, failMsg) {
     ['L','A','M','P'].forEach(function(k) {
       var b = document.getElementById('aha-box-' + k); if (b) b.classList.add('unread');
     });
-    ahaRenderDirChips(); ahaRenderConceptChips(); ahaUpdateMeter();
+    ahaRenderDirChips(); ahaRenderConceptChips(); ahaUpdateMeter(); ahaEmptyWarn();
     return;
   }
 
@@ -5717,6 +5805,7 @@ function ahaApplyRead(ai, failMsg) {
   ahaRenderDirChips();
   ahaRenderConceptChips();
   ahaUpdateMeter();
+  ahaEmptyWarn();
 }
 
 // 이미지 압축 (1MB 이하, 가로 1600px 제한)
