@@ -446,6 +446,12 @@ async function runRace() {
     showTop: Number(season.showTop) || 5,
     prizeTotal: Number((season.prizes || {}).total) || 0,
     prizeCount: Number((season.prizes || {}).count) || 5,
+    /* ★ 개별 금액 공개 (원장 결정 2026-09-09 — 학생앱에만).
+     * 꺼져 있으면 detail 을 담지 않는다. ⚠️ 학원앱 raceCompute 와 같은 규칙이어야 한다. */
+    prizeOpen: !!(season.prizes || {}).open,
+    prizeDetail: (season.prizes || {}).open
+      ? ((season.prizes || {}).detail || []).map((p) => ({ r: p.r, w: Number(p.w) || 0 }))
+      : null,
     tiers: tiers.map((t) => ({ k: t.k, n: t.n, at: t.at })),
     rules: {
       pt: [{ lv: '하', base: 1, ok: 2 }, { lv: '중', base: 2, ok: 4 },
