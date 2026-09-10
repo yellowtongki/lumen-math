@@ -701,6 +701,206 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
   padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700;
 }
 
+/* ═══ v2-71: IB아하노트 ═══
+ * 종이 LAMP 활동지를 사진 한 장으로 올리면 AI가 읽어 준다.
+ * 학생은 「확인·고치기 + 지시어 하나」만 한다 (앱에 글을 두 번 쓰지 않는다). */
+.ib-hero { background:linear-gradient(135deg,#0d2240,#1d3a60); border-radius:16px; padding:16px 16px 14px; color:#fff; margin-bottom:12px; }
+.ib-hero .t { font-size:15px; font-weight:900; margin-bottom:4px; }
+.ib-hero .s { font-size:11.5px; opacity:0.8; line-height:1.6; }
+.ib-shoot {
+  width:100%; margin:12px 0 8px; background:linear-gradient(135deg,#1d6fe8,#0d2240); color:#fff;
+  border:none; border-radius:14px; padding:18px 14px; font-size:17px; font-weight:900;
+  font-family:inherit; cursor:pointer; box-shadow:0 4px 14px rgba(29,111,232,0.3);
+}
+.ib-shoot:active { transform:scale(0.98); }
+.ib-shoot .sub { display:block; font-size:11.5px; font-weight:600; opacity:0.85; margin-top:4px; }
+.ib-info-link {
+  display:block; width:100%; background:#fff; border:1.5px solid #cbd5e1; border-radius:11px;
+  padding:10px; font-size:12.5px; font-weight:700; color:var(--navy); font-family:inherit;
+  cursor:pointer; margin-bottom:12px;
+}
+
+/* ② IB 설명 화면 */
+.ib-sec { background:#fff; border:1px solid #e2e8f0; border-radius:13px; padding:13px 14px; margin-bottom:10px; }
+.ib-sec h4 { margin:0 0 6px; font-size:13.5px; font-weight:900; color:var(--navy); }
+.ib-sec p { margin:0 0 6px; font-size:12.5px; line-height:1.75; color:#334155; }
+.ib-sec p:last-child { margin-bottom:0; }
+.ib-sec b { color:#0d2240; font-weight:800; }
+.ib-map { display:flex; flex-direction:column; gap:5px; }
+.ib-map .r { display:flex; align-items:center; gap:8px; font-size:12px; }
+.ib-map .ltr {
+  width:24px; height:24px; border-radius:7px; background:#4a3a18; color:#fff; flex:none;
+  font-size:13px; font-weight:900; display:flex; align-items:center; justify-content:center;
+  font-family:Georgia,serif;
+}
+.ib-map .ltr.p { background:var(--red); }
+.ib-map .ltr.a { background:#94a3b8; font-size:10px; }
+.ib-map .ko { font-weight:800; color:var(--text); width:76px; flex:none; }
+.ib-map .en { color:var(--sub); font-size:11px; }
+.ib-tiers { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
+.ib-tiers span { font-size:11px; font-weight:800; background:#f1f5f9; color:#475569; border-radius:50px; padding:4px 10px; }
+.ib-tiers i { color:#cbd5e1; font-style:normal; }
+.ib-parent { background:#fffbeb; border:1px solid #fde68a; border-radius:11px; padding:11px 12px; }
+.ib-parent h4 { color:#92400e; }
+.ib-parent p { color:#78350f; }
+
+/* ③ 확인 화면 — AI가 읽은 칸 */
+.ib-read-hd { display:flex; align-items:center; gap:7px; margin-bottom:8px; flex-wrap:wrap; }
+.ib-read-hd .badge { font-size:10.5px; font-weight:800; border-radius:50px; padding:3px 9px; }
+.badge-ai { background:#dbeafe; color:#1e40af; }
+.badge-warn { background:#fef3c7; color:#92400e; }
+.badge-err { background:#fee2e2; color:#b91c1c; }
+.ib-box { background:#fff; border:1px solid #e2e8f0; border-radius:13px; padding:10px 11px 11px; margin-bottom:9px; }
+.ib-box.p { border-color:#fca5a5; background:#fffafa; }
+.ib-box.unread { border-color:#fbbf24; background:#fffdf5; }
+.ib-box .t { display:flex; align-items:center; gap:7px; margin-bottom:3px; }
+.ib-box .ltr {
+  width:23px; height:23px; border-radius:7px; background:#4a3a18; color:#fff; font-size:14px;
+  font-weight:900; display:flex; align-items:center; justify-content:center; flex:none; font-family:Georgia,serif;
+}
+.ib-box.p .ltr { background:var(--red); }
+.ib-box .tt { font-size:12.5px; font-weight:800; color:var(--text); }
+.ib-box.p .tt { color:var(--red); }
+.ib-box .tag { margin-left:auto; font-size:10px; font-weight:800; border-radius:50px; padding:2px 7px; }
+.ib-box .tag.ok { background:#dcfce7; color:#15803d; }
+.ib-box .tag.no { background:#fef3c7; color:#92400e; }
+.ib-box .hh { font-size:10.5px; color:var(--sub); margin-bottom:5px; line-height:1.45; }
+.ib-box textarea {
+  width:100%; border:1px solid #e2e8f0; border-radius:9px; background:#fbfcfe; padding:7px 9px;
+  font-size:12.5px; line-height:1.55; color:var(--text); min-height:52px; font-family:inherit;
+  resize:vertical; display:block;
+}
+.ib-box.unread textarea { background:#fff; border-color:#fcd34d; }
+.ib-box textarea:focus { outline:2px solid #1d6fe8; outline-offset:-1px; border-color:#1d6fe8; }
+
+/* 지시어 */
+.ib-dir { border-top:1px dashed #fca5a5; margin-top:8px; padding-top:8px; }
+.ib-dir .dt { font-size:11px; font-weight:800; color:var(--red); margin-bottom:6px; }
+.ib-dir .mean {
+  margin-top:7px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px;
+  padding:7px 9px; font-size:11px; color:#991b1b; line-height:1.55;
+}
+.ib-qtype {
+  display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800;
+  border-radius:6px; padding:3px 8px; background:#ede9fe; color:#6d28d9; margin-top:8px;
+}
+.ib-qtype.plus { background:#dcfce7; color:#15803d; }
+
+/* 자기평가 (접힘) */
+.ib-self { background:#fff; border:1px solid #e2e8f0; border-radius:13px; margin-bottom:9px; overflow:hidden; }
+.ib-self > .hd {
+  padding:11px 12px; font-size:12.5px; font-weight:800; color:var(--navy);
+  display:flex; align-items:center; gap:6px; cursor:pointer;
+}
+.ib-self > .hd .ar { margin-left:auto; font-size:11px; color:var(--sub); font-weight:700; }
+.ib-self .bd { display:none; padding:0 12px 12px; }
+.ib-self.open .bd { display:block; }
+.ib-self .s { font-size:10.5px; color:var(--sub); margin-bottom:8px; line-height:1.5; }
+.ib-self .it {
+  display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--text);
+  padding:6px 0; cursor:pointer;
+}
+.ib-cbx {
+  width:19px; height:19px; border-radius:6px; border:1.8px solid #cbd5e1; flex:none;
+  display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; font-weight:900;
+}
+.ib-cbx.on { background:#16a34a; border-color:#16a34a; }
+.ib-self .exp {
+  margin-top:9px; padding-top:8px; border-top:1px dashed #e2e8f0; font-size:11.5px;
+  display:flex; align-items:center; gap:6px; color:var(--sub);
+}
+.ib-self .exp b { font-size:16px; color:var(--navy); }
+
+/* 질문력 미터 + 하단 버튼 */
+.ib-meter { display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+.ib-meter .k { font-size:10.5px; font-weight:800; color:#4a3a18; flex:none; }
+.ib-meter .bar { flex:1; display:flex; gap:3px; }
+.ib-meter .bar i { flex:1; height:7px; border-radius:4px; background:#e2e8f0; }
+.ib-meter .bar i.on { background:linear-gradient(90deg,#fbbf24,#f59e0b); }
+.ib-meter .n { font-size:13px; font-weight:900; color:var(--navy); flex:none; }
+.ib-btns { display:flex; gap:8px; margin-top:4px; }
+.ib-btn {
+  flex:1; padding:14px 8px; border:none; border-radius:12px; font-size:14px; font-weight:900;
+  font-family:inherit; color:#fff; background:linear-gradient(135deg,#1d6fe8,#0d2240); cursor:pointer;
+}
+.ib-btn:disabled { opacity:0.5; }
+.ib-btn.gold { background:linear-gradient(135deg,#f59e0b,#b45309); flex:0 0 42%; font-size:12.5px; }
+.ib-btn:active:not(:disabled) { transform:scale(0.98); }
+
+/* 읽는 중 */
+.ib-loading { text-align:center; padding:40px 20px; }
+.ib-loading .sp {
+  width:38px; height:38px; border:3px solid #dbeafe; border-top-color:#1d6fe8;
+  border-radius:50%; margin:0 auto 14px; animation:ibspin 0.9s linear infinite;
+}
+@keyframes ibspin { to { transform:rotate(360deg); } }
+.ib-loading .t { font-size:14px; font-weight:800; color:var(--navy); margin-bottom:5px; }
+.ib-loading .s { font-size:12px; color:var(--sub); line-height:1.7; }
+
+/* ★ v2-71: 「네 칸을 다 채워야 한다」 안내
+ * 실제 9월 활동지 사진을 보니 학생들이 P칸(막힌 곳)만 쓰고 L·A·M을 통째로 비워 둔다.
+ * 그래서 질문력이 2~3점에서 멈춘다. 사진을 잘 찍는 문제가 아니라 쓰는 습관 문제라,
+ * 시작 화면과 확인 화면에서 눈에 띄게 알려 준다. */
+.ib-how { background:#fff; border:1.5px solid #fcd34d; border-radius:14px; padding:13px 14px; margin-bottom:12px; }
+.ib-how .t { font-size:13px; font-weight:900; color:#92400e; margin-bottom:3px; }
+.ib-how .s { font-size:11.5px; color:#78350f; line-height:1.6; margin-bottom:9px; }
+.ib-how .grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+.ib-how .cell { border:1px solid #e2e8f0; border-radius:8px; padding:6px 7px; background:#fbfcfe; }
+.ib-how .cell.p { border-color:#fca5a5; background:#fffafa; }
+.ib-how .cell .k { display:flex; align-items:center; gap:5px; margin-bottom:2px; }
+.ib-how .cell .ltr {
+  width:17px; height:17px; border-radius:5px; background:#4a3a18; color:#fff; font-size:10px;
+  font-weight:900; display:flex; align-items:center; justify-content:center; font-family:Georgia,serif; flex:none;
+}
+.ib-how .cell.p .ltr { background:var(--red); }
+.ib-how .cell .nm { font-size:10.5px; font-weight:800; color:var(--text); }
+.ib-how .cell .ex { font-size:10px; color:var(--sub); line-height:1.45; }
+.ib-how .warn {
+  margin-top:9px; background:#fef2f2; border:1px solid #fecaca; border-radius:9px;
+  padding:8px 10px; font-size:11px; color:#991b1b; line-height:1.6;
+}
+.ib-how .warn b { font-weight:800; }
+
+/* 확인 화면 — 빈 칸이 많을 때 뜨는 띠 */
+.ib-empty-warn {
+  background:#fef2f2; border:1.5px solid #fca5a5; border-radius:12px; padding:11px 13px;
+  margin-bottom:10px; font-size:12px; color:#991b1b; line-height:1.7;
+}
+.ib-empty-warn b { font-weight:900; }
+.ib-empty-warn .big { font-size:13px; font-weight:900; display:block; margin-bottom:3px; }
+
+/* ⑤ 점수 카드 (목록 안) */
+.ib-score {
+  display:flex; align-items:center; gap:8px; background:linear-gradient(135deg,#1d6fe8,#0d2240);
+  border-radius:11px; padding:9px 11px; color:#fff; margin:8px 0;
+}
+.ib-score.temp { background:linear-gradient(135deg,#94a3b8,#475569); }
+.ib-score .big { font-size:25px; font-weight:900; line-height:1; }
+.ib-score .u { font-size:11px; opacity:0.75; font-weight:700; }
+.ib-score .rt { margin-left:auto; text-align:right; font-size:10.5px; line-height:1.5; opacity:0.9; }
+.ib-lampres { display:flex; gap:4px; margin-bottom:7px; }
+.ib-lampres div { flex:1; text-align:center; border:1px solid #e2e8f0; border-radius:8px; padding:5px 0; background:#fff; }
+.ib-lampres .l { font-size:10px; font-weight:900; color:#4a3a18; font-family:Georgia,serif; }
+.ib-lampres .v { font-size:13px; font-weight:900; }
+.ib-v2 { color:#16a34a; } .ib-v1 { color:#e08a00; } .ib-v0 { color:#cbd5e1; }
+.ib-coach {
+  border-left:3px solid #16a34a; background:#f0fdf4; border-radius:8px; padding:7px 9px;
+  font-size:11.5px; line-height:1.6; margin-bottom:6px; color:#14532d;
+}
+.ib-coach.ff { border-left-color:#1d6fe8; background:#eff6ff; color:#1e3a8a; }
+.ib-coach b { font-weight:800; }
+.ib-ladder { display:flex; gap:3px; margin:8px 0 6px; }
+.ib-ladder span {
+  flex:1; text-align:center; font-size:10px; font-weight:800; padding:5px 0;
+  border-radius:6px; background:#f1f5f9; color:#94a3b8;
+}
+.ib-ladder span.cur { background:var(--red); color:#fff; }
+.ib-note { font-size:10.5px; color:var(--sub); line-height:1.6; margin-top:6px; }
+.ib-league-soon {
+  background:#f8fafc; border:1px dashed #cbd5e1; border-radius:11px; padding:11px 12px;
+  text-align:center; font-size:11.5px; color:var(--sub); line-height:1.6; margin-top:10px;
+}
+
 /* 잠금 화면 */
 #screen-locked { background:#f1f5f9; align-items:center; justify-content:center; padding:40px 24px; }
 .lk-wrap { text-align:center; max-width:280px; }
@@ -1272,6 +1472,27 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .rc-prize .amt{font-size:34px;font-weight:900;line-height:1.06;margin:3px 0 1px;color:#c2410c;text-shadow:0 1px 0 #fff,0 2px 6px rgba(194,65,12,.2)}
 .rc-prize .amt small{font-size:19px;font-weight:900;margin-left:1px}
 .rc-prize .who{font-size:12px;font-weight:800;color:#8a5a00;margin-top:3px}
+/* v2-76: 상마다 크게 (선생님이 공개를 켰을 때) — 총액 대신 이게 주인공 */
+.rc-pzd{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:9px}
+.rc-pzd>div{background:#fff;border:1.5px solid #f3ddb4;border-radius:11px;padding:9px 6px;
+  box-shadow:0 1px 4px rgba(180,120,20,.1)}
+.rc-pzd>div.one{grid-column:1/-1;border:2px solid #f0a83c;padding:11px 6px}
+.rc-pzd .r{font-size:11px;font-weight:900;color:#a35a00}
+.rc-pzd .w{font-size:20px;font-weight:900;color:#c2410c;line-height:1.15;margin-top:2px}
+.rc-pzd>div.one .w{font-size:29px}
+.rc-pzd .w small{font-size:12px;font-weight:900;margin-left:1px}
+.rc-prize .who2{font-size:11px;font-weight:800;color:#8a5a00;margin-top:8px}
+/* v2-75: 🎉 시즌 결과 */
+.rc-aw{background:linear-gradient(135deg,#312e81,#6366f1);border-radius:14px;padding:13px 14px 11px;margin-bottom:11px;color:#fff;box-shadow:0 3px 12px rgba(49,46,129,.28)}
+.rc-aw .t{font-size:14px;font-weight:900}
+.rc-aw .s{font-size:10.5px;font-weight:700;color:#c7d2fe;margin:2px 0 9px}
+.rc-aw .row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border-radius:10px;padding:8px 10px;margin-bottom:5px}
+.rc-aw .row.me{background:#fff;color:#312e81;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.rc-aw .ic{font-size:16px;flex:none}
+.rc-aw .r{font-size:11px;font-weight:800;opacity:.85;width:52px;flex:none}
+.rc-aw .row.me .r{opacity:1;color:#6366f1}
+.rc-aw .nm{font-size:13px;font-weight:900;flex:1;min-width:0}
+.rc-aw .w{font-size:12.5px;font-weight:900}
 .rc-prize .who b{color:#c2410c}
 .rc-me{background:var(--surface);border:1.5px solid #e2e8f0;border-radius:15px;padding:14px;margin-bottom:12px}
 .rc-me .top{display:flex;align-items:center;gap:12px}
@@ -1325,6 +1546,99 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .rc-tiers .t .e{width:16px;height:19px;margin:0 auto 3px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)}
 .rc-tiers .t b{display:block;font-size:10px;font-weight:900}
 .rc-tiers .t span{font-size:9px;font-weight:800;color:#94a3b8}
+
+/* ══ v2-72: 🏆 루멘 리그 — 진도·IB아하·말하기·종합을 한 화면에 ══
+   진도 레이스(rcbn·rc-*)와 같은 문법을 그대로 쓴다. 학생이 새로 배울 것이 없게. */
+.rcbn .chips{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
+.rcbn .chips span{font-size:9.5px;font-weight:900;border-radius:50px;padding:2px 7px;background:rgba(255,255,255,.62);color:#7a2e00}
+.rcbn .chips span.off{background:rgba(255,255,255,.32);color:#8a5a2e}
+.rcbn .t1 .cnt{font-size:9.5px;font-weight:800;background:rgba(255,255,255,.55);border-radius:50px;padding:1px 7px}
+.lg-sport{display:flex;gap:4px;background:var(--surface);border:1.5px solid #e2e8f0;border-radius:12px;padding:4px;margin-bottom:12px}
+.lg-sport button{flex:1;border:none;background:transparent;font-family:inherit;font-size:11.5px;font-weight:900;color:#94a3b8;padding:8px 2px;border-radius:9px;line-height:1.25;cursor:pointer}
+.lg-sport button.on{background:#0d2240;color:#fff}
+.lg-sport button small{display:block;font-size:9px;font-weight:800;opacity:.78;margin-top:1px}
+.lg-sport button.soon{opacity:.55}
+.lg-aw{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:9px}
+.lg-aw .a{background:rgba(255,255,255,.75);border-radius:9px;padding:6px 2px;text-align:center}
+.lg-aw .a.me{outline:2px solid #c2410c;outline-offset:-2px}
+.lg-aw .i{font-size:16px}
+.lg-aw .n{font-size:9px;font-weight:900;color:#7a2e00;line-height:1.2;margin-top:2px}
+.lg-badge{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex:none}
+.rc-me .lg small{font-size:10px;color:#94a3b8;font-weight:700;margin-left:4px}
+.lg-tiers{display:flex;gap:4px;margin-top:10px}
+.lg-tiers div{flex:1;text-align:center;border-radius:8px;padding:5px 2px;background:#f1f5f9;font-size:9.5px;font-weight:900;color:#94a3b8}
+.lg-tiers div.cur{background:#eff6ff;color:#1d4ed8;outline:1.5px solid #93c5fd}
+.rc-row.lg-blur .nm,.rc-row.lg-blur .sc,.rc-row.lg-blur .pt{filter:blur(4px);-webkit-filter:blur(4px);opacity:.55}
+.lg-best{background:#fffbeb;border:1px solid #fde68a;border-radius:11px;padding:10px 12px;font-size:11.5px;line-height:1.65;color:#78350f}
+.lg-best b{display:block;font-size:10.5px;color:#92400e;margin-bottom:3px}
+.lg-rule{font-size:11.5px;font-weight:700;color:#64748b;line-height:1.75}
+.lg-rule b{color:var(--text)}
+.lg-warn{margin-top:9px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:8px 11px;font-size:11px;font-weight:800;color:#b91c1c;line-height:1.6}
+.lg-f1 .r{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;padding:7px 0;border-top:1px solid #f1f5f9}
+.lg-f1 .r:first-child{border-top:none}
+.lg-f1 .r .k{width:76px;color:var(--text);flex:none}
+.lg-f1 .r .v{color:#94a3b8;flex:1;font-weight:700}
+.lg-f1 .r .p{font-weight:900;color:var(--text);width:38px;text-align:right}
+.lg-f1 .sum{display:flex;align-items:center;justify-content:space-between;border-top:2px solid #0d2240;margin-top:6px;padding-top:8px;font-size:13px;font-weight:900;color:var(--text)}
+.lg-champ{background:linear-gradient(135deg,#0d2240,#3b2f6e);color:#fff;border-radius:15px;padding:14px;margin-bottom:12px}
+.lg-champ .k{font-size:10.5px;opacity:.75;font-weight:800}
+.lg-champ .g{font-size:19px;font-weight:900;margin:3px 0}
+.lg-champ .s{font-size:11.5px;opacity:.88;line-height:1.65}
+.lg-confetti{background:linear-gradient(135deg,#fff7ed,#ffedd5);border:2px solid #fdba74;border-radius:15px;padding:15px 14px;text-align:center;margin-bottom:12px}
+.lg-confetti .t{font-size:11px;font-weight:900;color:#9a3412;letter-spacing:.5px}
+.lg-confetti .big{font-size:21px;font-weight:900;color:#c2410c;margin:5px 0}
+.lg-confetti .s{font-size:11.5px;color:#7c2d12;line-height:1.6}
+.lg-win{background:var(--surface);border:1.5px solid #e2e8f0;border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.lg-win .i{font-size:22px;flex:none}
+.lg-win .a{font-size:12.5px;font-weight:900;color:var(--text)}
+.lg-win .w{font-size:11px;font-weight:700;color:#94a3b8;margin-top:1px}
+.lg-win.me{background:#fffbeb;border-color:#fcd34d}
+.lg-empty{background:var(--surface);border:1.5px dashed #cbd5e1;border-radius:15px;padding:26px 16px;text-align:center;color:#94a3b8}
+.lg-empty .e1{font-size:36px}
+.lg-empty .e2{font-size:13px;font-weight:800;margin-top:8px;line-height:1.7}
+/* ══ v2-73: ✍️ 손풀이 — 선생님이 학습지에 쓴 풀이를 문제별로 본다 ══ */
+.hs-wrap{padding:14px 13px 40px}
+.hs-set{width:100%;background:var(--surface);border:1.5px solid #e2e8f0;border-radius:14px;padding:11px 13px;margin-bottom:9px;display:flex;gap:11px;align-items:center;text-align:left;font-family:inherit;cursor:pointer}
+.hs-set.today{border-left:5px solid #0f9d8a}
+.hs-set.lock{opacity:.72}
+.hs-set .dt{width:46px;text-align:center;flex:none}
+.hs-set .dt b{display:block;font-size:17px;font-weight:900;color:var(--text);line-height:1}
+.hs-set .dt small{font-size:9.5px;font-weight:800;color:#94a3b8}
+.hs-set .wt{font-size:13px;font-weight:900;color:var(--text);line-height:1.35}
+.hs-set .wd{font-size:10.5px;font-weight:800;color:#94a3b8;margin-top:3px}
+.hs-set .wd b{color:#dc2626}
+.hs-set .go{margin-left:auto;color:#cbd5e1;font-weight:900;font-size:16px;flex:none}
+.hs-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;background:var(--surface);border:1.5px solid #e2e8f0;border-radius:13px;padding:9px;margin-bottom:8px}
+.hs-grid button{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:none;border-radius:8px;font-size:11.5px;font-weight:900;background:#f1f5f9;color:#334155;font-family:inherit;cursor:pointer;padding:0}
+.hs-grid button.has{background:#e2e8f0;color:#0f172a}
+.hs-grid button.wr{background:#fee2e2;color:#dc2626;outline:1.5px solid #fca5a5}
+.hs-grid button.on{background:#0d2240;color:#fff;outline:none}
+.hs-grid button.no{opacity:.35}
+.hs-leg{font-size:9.5px;font-weight:800;color:#94a3b8;margin:-2px 0 9px;display:flex;gap:10px;flex-wrap:wrap}
+.hs-leg i{display:inline-block;width:9px;height:9px;border-radius:2px;vertical-align:-1px;margin-right:3px}
+.hs-crop{background:var(--surface);border:1.5px solid #e2e8f0;border-radius:14px;padding:11px;margin-bottom:9px}
+.hs-crop img{width:100%;border-radius:9px;display:block;background:#f8fafc;cursor:zoom-in}
+.hs-crop .cap{font-size:9.5px;font-weight:800;color:#94a3b8;text-align:center;margin-top:7px}
+.hs-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.hs-tags span{font-size:10.5px;font-weight:800;border-radius:50px;padding:4px 10px;background:var(--surface);border:1.5px solid #e2e8f0;color:#475569}
+.hs-tags span.t{background:#ccfbf1;border-color:#5eead4;color:#0f766e}
+.hs-tags span.x{background:#fee2e2;border-color:#fca5a5;color:#dc2626}
+.hs-tags span.o{background:#dcfce7;border-color:#86efac;color:#15803d}
+.hs-acts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.hs-acts button{border:1.5px solid #cbd5e1;border-radius:11px;padding:11px 6px;font-family:inherit;font-size:11.5px;font-weight:900;background:var(--surface);color:var(--text);cursor:pointer;line-height:1.35}
+.hs-acts button.pri{background:#0d2240;color:#fff;border-color:#0d2240}
+.hs-acts button.soon{opacity:.5}
+.hs-srch{display:flex;gap:8px;align-items:center;background:var(--surface);border:1.5px solid #e2e8f0;border-radius:12px;padding:9px 12px;margin-bottom:10px}
+.hs-srch input{flex:1;border:none;outline:none;font-family:inherit;font-size:13px;font-weight:700;color:var(--text);background:transparent;min-width:0}
+.hs-typ{background:var(--surface);border:1.5px solid #e2e8f0;border-radius:13px;padding:10px 12px;margin-bottom:9px}
+.hs-typ .tt{font-size:12.5px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:6px}
+.hs-typ .tt small{margin-left:auto;font-size:10px;font-weight:800;color:#94a3b8}
+.hs-typ .li{display:flex;gap:8px;align-items:center;background:#f8fafc;border-radius:9px;padding:7px 9px;margin-top:5px;font-size:11.5px;font-weight:800;color:#475569;width:100%;border:none;font-family:inherit;cursor:pointer;text-align:left}
+.hs-typ .li b{color:#0f766e}
+.hs-typ .li .r{margin-left:auto;font-size:10px;font-weight:900}
+.hs-vid{background:#0f172a;border-radius:13px;padding:13px;color:#94a3b8;font-size:11px;font-weight:700;text-align:center;line-height:1.6}
+.hs-vid b{display:block;color:#fff;font-size:12.5px;margin-bottom:4px}
+.hs-lock{background:#fffbeb;border:1px solid #fcd34d;border-radius:11px;padding:9px 11px;font-size:11px;font-weight:800;color:#92400e;line-height:1.6;margin-bottom:10px}
 /* v2-44: 교재 채점 잠시 닫음 (원장님 지시 2026-08-27 — 한 달 뒤 다시 엽니다) */
 .bkhub-off{opacity:.5;cursor:default;border-color:#cbd5e1 !important}
 .bkhub-off .hh .soon{margin-left:auto;font-size:10.5px;font-weight:900;background:#e2e8f0;color:#64748b;border-radius:50px;padding:3px 10px}
@@ -1585,16 +1899,18 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     </div>
     <!-- v2-47: 🖤 블랙반 배너 + 엠블럼 진열장 — 블랙반 학생에게만 보인다 -->
     <div id="blk-home" style="display:none;margin:0 14px 9px"></div>
-    <!-- v2-42: 🏁 진도 레이스 배너 — 시즌 중에만 보인다 -->
-    <button class="rcbn" id="rcbn" style="display:none" onclick="go('screen-race')">
-      <span class="em" id="rcbn-em" style="background:linear-gradient(135deg,#d9a441,#9a6b21)"></span>
+    <!-- v2-72: 🏆 루멘 리그 배너 — 진도 레이스 배너를 리그 배너 하나로 합쳤다.
+         진도·IB아하·종합 순위가 한 줄에, 종목별 D-day는 아래 작은 칩으로. -->
+    <button class="rcbn" id="rcbn" style="display:none" onclick="go('screen-league')">
+      <span class="em" id="rcbn-em" style="background:linear-gradient(135deg,#ffd76a,#e0a219)"></span>
       <span style="min-width:0;flex:1">
-        <span class="t1">🏁 <span id="rcbn-nm">진도 레이스</span></span>
+        <span class="t1">🏆 <span id="rcbn-nm">루멘 리그</span><span class="cnt" id="rcbn-cnt" style="display:none"></span></span>
         <span class="t2" id="rcbn-t2">불러오는 중…</span>
+        <span class="chips" id="rcbn-chips"></span>
         <!-- v2-62: 🔥 집중 버프는 진도 레이스 안으로 옮겼다. 홈에는 작은 칩만 남긴다 -->
         <span class="t3" id="rcbn-bf" style="display:none"></span>
       </span>
-      <span class="ddwrap"><span class="dd" id="rcbn-dd">D-0</span><span class="dt" id="rcbn-dt"></span></span>
+      <span class="ddwrap"><span class="dd" id="rcbn-dd"></span><span class="dt" id="rcbn-dt"></span></span>
       <span class="ch">›</span>
     </button>
     <!-- v2-59: 🧾 기출 다시풀기 — 진도 레이스 바로 아래 (원장 지시) -->
@@ -1639,14 +1955,21 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     </button>
     <!-- v2-54: 🧾 기출 다시풀기 배너 — 기출모의 채점 기록에 틀린 문항이 있는 학생에게만 -->
     <div class="h3-tiles4">
+      <!-- v2-73: ✍️ 손풀이 — 선생님이 올린 풀이가 있을 때만 보인다 -->
+      <button class="h3-tile" id="h3-hand" style="display:none;grid-column:span 2;background:#f0fdfa;border:1.8px solid #5eead4"
+        onclick="go('screen-hand')">
+        <span class="bdg3 hot" id="h3-hand-bdg" style="display:none">0</span>
+        <div class="ic3">✍️</div><div class="fn3" style="color:#0f766e">손풀이</div>
+        <div class="fd3" id="h3-hand-desc">선생님 풀이 보기</div>
+      </button>
       <button class="h3-tile hall3" onclick="hallOpen()">
         <span class="bdg3" id="h3-hall-bdg" style="display:none;background:#fff;color:#b45309">발표!</span>
         <div class="ic3">🏆</div><div class="fn3">주간테스트</div>
         <div class="fd3" id="h3-hall-desc">시험 범위 · 명예의 전당</div>
       </button>
       <button class="h3-tile aha3" onclick="go('screen-aha')">
-        <div class="ic3">💡</div><div class="fn3">아하노트</div>
-        <div class="fd3">문제 질문하기</div>
+        <div class="ic3">💡</div><div class="fn3">IB아하노트</div>
+        <div class="fd3">활동지 사진으로 질문</div>
       </button>
       <button class="h3-tile vod3" onclick="go('screen-vod')">
         <span class="bdg3 new" id="h3-vod-bdg" style="display:none">NEW</span>
@@ -1691,6 +2014,52 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     <div class="sub-title" style="color:#fff">🏁 진도 레이스</div>
   </div>
   <div class="rec-body" id="rc-body" style="padding:0">
+    <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- ══ v2-72: 🏆 루멘 리그 — 종목 탭 하나로 (진도 · IB아하 · 말하기 · 종합) ══ -->
+<div class="screen" id="screen-league">
+  <div class="sub-hdr" style="background:linear-gradient(135deg,#0d2240,#1d4e89)">
+    <button class="back-btn" onclick="go('screen-home')" style="color:#fff">←</button>
+    <div class="sub-title" style="color:#fff">🏆 루멘 리그</div>
+    <div id="lg-band" style="margin-left:auto;font-size:10.5px;font-weight:800;color:#cfe0ff;background:rgba(255,255,255,.14);border-radius:50px;padding:4px 10px"></div>
+  </div>
+  <div class="rec-body" id="lg-body" style="padding:0">
+    <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- ══ v2-73: ✍️ 손풀이 — 목록 · 세트 · 찾기 ══ -->
+<div class="screen" id="screen-hand">
+  <div class="sub-hdr" style="background:linear-gradient(135deg,#0d2240,#0f9d8a)">
+    <button class="back-btn" onclick="go('screen-home')" style="color:#fff">←</button>
+    <div class="sub-title" style="color:#fff">✍️ 손풀이</div>
+    <button onclick="go('screen-hand-find')" style="margin-left:auto;border:none;font-family:inherit;cursor:pointer;font-size:10.5px;font-weight:900;color:#cffafe;background:rgba(255,255,255,.14);border-radius:50px;padding:5px 11px">🔍 찾기</button>
+  </div>
+  <div class="rec-body" id="hs-body" style="padding:0">
+    <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
+  </div>
+</div>
+
+<div class="screen" id="screen-hand-set">
+  <div class="sub-hdr" style="background:linear-gradient(135deg,#0d2240,#0f9d8a)">
+    <button class="back-btn" onclick="go('screen-hand')" style="color:#fff">←</button>
+    <div class="sub-title" style="color:#fff" id="hs-set-title">손풀이</div>
+    <div id="hs-set-date" style="margin-left:auto;font-size:10.5px;font-weight:800;color:#cffafe;background:rgba(255,255,255,.14);border-radius:50px;padding:4px 10px"></div>
+  </div>
+  <div class="rec-body" id="hs-set-body" style="padding:0">
+    <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
+  </div>
+</div>
+
+<div class="screen" id="screen-hand-find">
+  <div class="sub-hdr" style="background:linear-gradient(135deg,#0d2240,#0f9d8a)">
+    <button class="back-btn" onclick="go('screen-hand')" style="color:#fff">←</button>
+    <div class="sub-title" style="color:#fff">🔍 손풀이 찾기</div>
+    <div style="margin-left:auto;font-size:10.5px;font-weight:800;color:#cffafe;background:rgba(255,255,255,.14);border-radius:50px;padding:4px 10px">유형별</div>
+  </div>
+  <div class="rec-body" id="hs-find-body" style="padding:0">
     <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
   </div>
 </div>
@@ -2173,11 +2542,12 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
   <div class="rec-body" id="notice-detail-body"></div>
 </div>
 
-<!-- ══ 아하노트 메인 (v1-23) ══ -->
+<!-- ══ ① IB아하노트 시작 화면 (v2-71) ══
+     원장 지시 2026-09-07: 앱에서 글로 쓰는 길은 없다. 사진 한 장만 받는다. -->
 <div class="screen" id="screen-aha">
   <div class="sub-hdr">
     <button class="back-btn" onclick="go('screen-home')">←</button>
-    <div class="sub-title">💡 아하노트</div>
+    <div class="sub-title">💡 IB아하노트</div>
   </div>
   <div class="rec-body">
     <!-- 통계 카드 -->
@@ -2188,10 +2558,41 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
       </div>
     </div>
 
-    <!-- 새로 추가 버튼 -->
-    <button class="aha-add-btn" onclick="ahaGoAdd()">
-      <span style="font-size:18px">+</span> 새 아하노트 추가
+    <!-- 사진 찍기 (이 앱에서 노트를 만드는 유일한 길) -->
+    <button class="ib-shoot" onclick="ahaGoAdd()">
+      📷 활동지 사진 찍기
+      <span class="sub">학원에서는 LAMP 활동지에, 집에서는 공책에 L·A·M·P 제목을 쓰고 찍으세요</span>
     </button>
+
+    <!-- 네 칸을 다 채워야 한다는 안내 (실제로 P칸만 쓰는 학생이 많아서 넣음) -->
+    <div class="ib-how">
+      <div class="t">✍️ 네 칸을 <u>다</u> 채우고 찍어 주세요</div>
+      <div class="s">P칸(막힌 곳)만 쓰면 <b>10점 중 2점</b>밖에 못 받아요. 네 칸을 채우면 <b>8~10점</b>입니다.</div>
+      <div class="grid">
+        <div class="cell">
+          <div class="k"><span class="ltr">L</span><span class="nm">문제 이해</span></div>
+          <div class="ex">구하는 것과 조건을 내 말로<br><span style="color:#94a3b8">예: x절편·y절편을 구하기. 그래프가 주어짐</span></div>
+        </div>
+        <div class="cell">
+          <div class="k"><span class="ltr">A</span><span class="nm">이론·공식</span></div>
+          <div class="ex">이 문제에 쓸 공식<br><span style="color:#94a3b8">예: 절편은 축과 만나는 점</span></div>
+        </div>
+        <div class="cell">
+          <div class="k"><span class="ltr">M</span><span class="nm">풀이 논리</span></div>
+          <div class="ex">어디까지 어떻게 풀었나<br><span style="color:#94a3b8">예: y=0 넣으면 0=−2x+1</span></div>
+        </div>
+        <div class="cell p">
+          <div class="k"><span class="ltr">P</span><span class="nm">막힌 곳</span></div>
+          <div class="ex">몇 번째 줄에서 막혔나 + 질문<br><span style="color:#94a3b8">예: 왜 y에 0을 넣는지 설명해 주세요</span></div>
+        </div>
+      </div>
+      <div class="warn">
+        📷 찍을 때는 <b>활동지 한 장 전체</b>가 들어오게, <b>그림자가 지지 않게</b> 찍어 주세요.
+        네 칸이 다 보여야 AI가 읽을 수 있어요.
+      </div>
+    </div>
+
+    <button class="ib-info-link" onclick="go('screen-aha-ib')">ⓘ IB아하노트란? — 왜 이렇게 쓰는지</button>
 
     <!-- 필터 탭 -->
     <div class="aha-tabs" id="aha-tabs">
@@ -2202,6 +2603,63 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 
     <!-- 노트 목록 -->
     <div id="aha-list"></div>
+
+    <!-- v2-72: 「곧 열려요」 자리를 🏆 루멘 리그 화면으로 잇는다 -->
+    <button class="ib-league-soon" id="aha-league-link" style="width:100%;cursor:pointer;font-family:inherit"
+      onclick="go('screen-league')">
+      🏆 <b>IB아하노트 리그</b> 보러 가기 ›<br>
+      2달마다 한 시즌 · 질문을 잘 쓸수록 점수가 쌓입니다
+    </button>
+  </div>
+</div>
+
+<!-- ══ ② ⓘ IB아하노트란? (v2-71) ══ -->
+<div class="screen" id="screen-aha-ib">
+  <div class="sub-hdr">
+    <button class="back-btn" onclick="go('screen-aha')">←</button>
+    <div class="sub-title">ⓘ IB아하노트란?</div>
+  </div>
+  <div class="rec-body">
+    <div class="ib-hero">
+      <div class="t">모르는 문제를 &lsquo;질문&rsquo;으로 바꾸는 연습</div>
+      <div class="s">「모르겠어요」 한 줄이 아니라, <b>어디서 왜 막혔는지</b>를 쓰는 것이 실력입니다.</div>
+    </div>
+
+    <div class="ib-sec">
+      <h4>IB가 뭔가요?</h4>
+      <p>IB(국제 바칼로레아)는 전 세계 학교가 쓰는 교육 과정입니다. 수학에서는 <b>답을 맞혔는가</b>보다
+        <b>어떻게 생각했는가</b>를 봅니다. 우리 학원이 원래 쓰던 <b>LAMP 활동지</b>가 마침 그것과 똑같습니다.</p>
+    </div>
+
+    <div class="ib-sec">
+      <h4>LAMP 다섯 칸 = IB가 수학에서 보는 다섯 가지</h4>
+      <div class="ib-map">
+        <div class="r"><span class="ltr">L</span><span class="ko">문제 이해</span><span class="en">Learn — 구하는 것과 조건을 내 말로</span></div>
+        <div class="r"><span class="ltr">A</span><span class="ko">원리·공식</span><span class="en">Activate — 이 문제에 쓸 이론</span></div>
+        <div class="r"><span class="ltr">M</span><span class="ko">풀이 논리</span><span class="en">Model — 어디까지 어떤 순서로</span></div>
+        <div class="r"><span class="ltr p">P</span><span class="ko">막힌 곳</span><span class="en">Pinpoint — 몇 번째 줄에서 막혔나</span></div>
+        <div class="r"><span class="ltr a">AHA</span><span class="ko">되돌아보기</span><span class="en">풀고 나서 — 무엇을 못 떠올렸나</span></div>
+      </div>
+    </div>
+
+    <div class="ib-sec">
+      <h4>점수는 이렇게</h4>
+      <p>L·A·M·P·AHA 각 0·1·2점 = <b>질문력 10점</b>. 여기에 「왜?」로 물으면 +1,
+        스스로 풀면 <b>+2</b>, 힌트를 적게 보고 풀수록 높습니다.
+        <b>많이 올리는 것이 아니라 잘 쓰는 것이 점수</b>입니다 — 하루 2개까지만 리그에 인정됩니다.</p>
+      <div class="ib-tiers" style="margin-top:8px">
+        <span>질문자</span><i>→</i><span>탐구자</span><i>→</i><span>사고자</span><i>→</i><span>성찰자</span>
+      </div>
+      <p style="margin-top:7px;font-size:11px;color:#64748b">등급 이름은 IB 학습자상에서 가져왔습니다. 한 번 오르면 내려가지 않습니다.</p>
+    </div>
+
+    <div class="ib-sec ib-parent">
+      <h4>부모님께</h4>
+      <p>「모르겠어요」 한 줄이 「어디서 막혔고 어떤 설명이 필요한지」 한 문단으로 바뀌는 과정입니다.
+        점수보다 <b>질문의 질이 달라지는 것</b>을 봐 주세요. 시즌마다 성장 리포트를 보내 드립니다.</p>
+    </div>
+
+    <button class="ib-btn" style="width:100%;margin-top:4px" onclick="go('screen-aha')">알겠어요</button>
   </div>
 </div>
 
@@ -2227,17 +2685,19 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
   <div class="pv-hint">아무 곳이나 탭하면 닫혀요</div>
 </div>
 
-<!-- ══ 아하노트 추가/수정 (v1-23) ══ -->
+<!-- ══ ③ 사진 → AI 읽기 → 확인 (v2-71) ══
+     학생은 「확인·고치기 + 지시어 하나」만 한다. 빈 화면에 글을 쓰게 하지 않는다. -->
 <div class="screen" id="screen-aha-add">
   <div class="sub-hdr">
     <button class="back-btn" onclick="ahaCancelAdd()">←</button>
-    <div class="sub-title" id="aha-add-title">💡 새 아하노트</div>
+    <div class="sub-title" id="aha-add-title">💡 새 IB아하노트</div>
   </div>
   <div class="rec-body">
 
     <!-- 사진 -->
     <div class="aha-form-group">
-      <label class="aha-form-label primary required">📷 노트 사진 (1장)</label>
+      <label class="aha-form-label primary required">📷 활동지 사진 (1장)</label>
+      <div class="aha-form-hint" id="aha-photo-hint">활동지 전체가 한 장에 들어오게, 글씨가 또렷하게 찍어 주세요</div>
       <div id="aha-photo-slot" class="aha-photo-slot" onclick="ahaTriggerPhoto()">
         <span class="aha-photo-slot-icon">📋</span>
         <span class="aha-photo-slot-text">탭하여 사진 추가</span>
@@ -2247,56 +2707,180 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
       <input type="file" id="aha-photo-gal" accept="image/*" onchange="ahaHandlePhoto(this)" style="display:none">
     </div>
 
-    <!-- 출처 -->
-    <div class="aha-form-group">
-      <label class="aha-form-label required">📚 출처</label>
-      <select id="aha-source" class="aha-select" onchange="ahaOnSourceChange()">
-        <option value="">교재 / 프린트 선택</option>
-      </select>
-    </div>
-
-    <!-- 페이지 + 번호 (교재일 때) -->
-    <div class="aha-form-group" id="aha-pagenum-row">
-      <div class="aha-row-2col">
-        <div>
-          <label class="aha-form-label required" id="aha-page-label">📄 페이지</label>
-          <input type="text" id="aha-page" class="aha-input" placeholder="127" inputmode="text">
-        </div>
-        <div>
-          <label class="aha-form-label required">🔢 번호</label>
-          <input type="text" id="aha-problem-no" class="aha-input" placeholder="4-2">
-        </div>
+    <!-- AI가 읽는 중 -->
+    <div id="aha-reading" style="display:none">
+      <div class="ib-loading">
+        <div class="sp"></div>
+        <div class="t">활동지를 읽는 중이에요…</div>
+        <div class="s">보통 5~10초 걸려요.<br>다 읽으면 맞게 읽었는지 확인만 해 주세요.</div>
       </div>
     </div>
 
-    <!-- 프린트물 이름 (프린트 선택 시만 표시) -->
-    <div class="aha-form-group" id="aha-print-row" style="display:none">
-      <label class="aha-form-label required">📝 프린트 이름</label>
-      <input type="text" id="aha-print-name" class="aha-input" placeholder="예: 4/27 활동지">
-    </div>
+    <!-- 읽은 결과 확인 (사진을 넣으면 나타남) -->
+    <div id="aha-confirm" style="display:none">
 
-    <!-- 틀린 이유 칩 -->
-    <div class="aha-form-group">
-      <label class="aha-form-label">⚠️ 틀린 이유 (선택, 여러 개 가능)</label>
-      <div class="aha-form-hint">해당하는 이유를 모두 탭하세요</div>
-      <div class="aha-chip-row" id="aha-error-chips">
-        <button type="button" class="aha-chip" data-err="연산오류" onclick="ahaToggleChip(this)">연산오류</button>
-        <button type="button" class="aha-chip" data-err="문제잘못읽음" onclick="ahaToggleChip(this)">문제잘못읽음</button>
-        <button type="button" class="aha-chip" data-err="관련개념부족" onclick="ahaToggleChip(this)">관련개념부족</button>
-        <button type="button" class="aha-chip" data-err="문제이해못함" onclick="ahaToggleChip(this)">문제이해못함</button>
-        <button type="button" class="aha-chip" data-err="틀린이유모름" onclick="ahaToggleChip(this)">틀린이유모름</button>
+      <div class="ib-read-hd">
+        <span style="font-size:13px;font-weight:900;color:var(--navy)">읽은 내용 확인</span>
+        <span class="badge badge-ai" id="aha-read-badge">🤖 AI가 읽었어요</span>
       </div>
+      <div class="aha-form-hint" id="aha-read-msg" style="margin-bottom:10px">잘못 읽은 곳만 탭해서 고쳐 주세요. 노란 칸은 못 읽은 칸이에요.</div>
+
+      <!-- 빈 칸이 많으면 뜨는 띠 (활동지에 안 쓴 경우) -->
+      <div class="ib-empty-warn" id="aha-empty-warn" style="display:none"></div>
+
+      <!-- 출처 -->
+      <div class="aha-form-group">
+        <label class="aha-form-label required">📚 출처</label>
+        <select id="aha-source" class="aha-select" onchange="ahaOnSourceChange()">
+          <option value="">교재 / 프린트 선택</option>
+        </select>
+      </div>
+
+      <div class="aha-form-group" id="aha-pagenum-row">
+        <div class="aha-row-2col">
+          <div id="aha-page-col">
+            <label class="aha-form-label required" id="aha-page-label">📄 페이지</label>
+            <input type="text" id="aha-page" class="aha-input" placeholder="127" inputmode="text">
+          </div>
+          <div>
+            <label class="aha-form-label required">🔢 번호</label>
+            <input type="text" id="aha-problem-no" class="aha-input" placeholder="4-2">
+          </div>
+        </div>
+      </div>
+
+      <div class="aha-form-group" id="aha-print-row" style="display:none">
+        <label class="aha-form-label required">📝 프린트 이름</label>
+        <input type="text" id="aha-print-name" class="aha-input" placeholder="예: 4/27 활동지">
+      </div>
+
+      <!-- LAMP 네 칸 (AI가 읽은 글자, 고칠 수 있음) -->
+      <div class="ib-box" id="aha-box-L">
+        <div class="t"><span class="ltr">L</span><span class="tt">문제 이해</span><span class="tag" id="aha-tag-L"></span></div>
+        <div class="hh">구하려는 것과 문제 조건</div>
+        <textarea id="aha-q-learn" maxlength="600" oninput="ahaOnFieldEdit()" placeholder="활동지의 L칸 내용"></textarea>
+      </div>
+
+      <div class="ib-box" id="aha-box-A">
+        <div class="t"><span class="ltr">A</span><span class="tt">이론·공식</span><span class="tag" id="aha-tag-A"></span></div>
+        <div class="hh">이 문제에 쓸 이론·공식</div>
+        <textarea id="aha-q-act" maxlength="600" oninput="ahaOnFieldEdit()" placeholder="활동지의 A칸 내용"></textarea>
+      </div>
+
+      <div class="ib-box" id="aha-box-M">
+        <div class="t"><span class="ltr">M</span><span class="tt">풀이 논리</span><span class="tag" id="aha-tag-M"></span></div>
+        <div class="hh">어디까지 어떤 순서로 풀었나</div>
+        <textarea id="aha-q-try" maxlength="900" oninput="ahaOnFieldEdit()" placeholder="활동지의 M칸 내용"></textarea>
+      </div>
+
+      <div class="ib-box p" id="aha-box-P">
+        <div class="t"><span class="ltr">P</span><span class="tt">막힌 곳 · 질문</span><span class="tag" id="aha-tag-P"></span></div>
+        <div class="hh">어느 단계에서 막혔는지 + 선생님께 묻고 싶은 한 문장</div>
+        <textarea id="aha-q-stuck" maxlength="900" oninput="ahaOnFieldEdit()" placeholder="활동지의 P칸 내용"></textarea>
+
+        <div class="ib-dir">
+          <div class="dt">❓ 어떻게 답해 주면 좋을까요? (하나만 골라 주세요)</div>
+          <div class="aha-chip-row" id="aha-dir-chips"></div>
+          <div class="mean" id="aha-dir-mean" style="display:none"></div>
+        </div>
+        <div id="aha-qtype-wrap"></div>
+      </div>
+
+      <!-- 틀린 이유 -->
+      <div class="aha-form-group">
+        <label class="aha-form-label">⚠️ 틀린 이유 (선택, 여러 개 가능)</label>
+        <div class="aha-chip-row" id="aha-error-chips">
+          <button type="button" class="aha-chip" data-err="연산오류" onclick="ahaToggleChip(this)">연산오류</button>
+          <button type="button" class="aha-chip" data-err="문제잘못읽음" onclick="ahaToggleChip(this)">문제잘못읽음</button>
+          <button type="button" class="aha-chip" data-err="관련개념부족" onclick="ahaToggleChip(this)">관련개념부족</button>
+          <button type="button" class="aha-chip" data-err="문제이해못함" onclick="ahaToggleChip(this)">문제이해못함</button>
+          <button type="button" class="aha-chip" data-err="틀린이유모름" onclick="ahaToggleChip(this)">틀린이유모름</button>
+        </div>
+      </div>
+
+      <!-- 개념 칩 (AI 추천 3개가 켜져 있고, 끄기만 하면 됨) -->
+      <div class="aha-form-group" id="aha-concept-group">
+        <label class="aha-form-label">🧩 이 문제와 관련 있는 것</label>
+        <div class="aha-form-hint">AI가 골라 둔 것이에요. 아니라고 생각되면 탭해서 끄면 됩니다.</div>
+        <div class="aha-chip-row" id="aha-concept-chips"></div>
+      </div>
+
+      <!-- 자기평가 (접힘, 선택) -->
+      <div class="ib-self" id="aha-selfeval">
+        <div class="hd" onclick="ahaToggleSelfEval()">
+          <span>✋ 내가 먼저 매겨 보기</span>
+          <span class="ar" id="aha-selfeval-ar">선택 · 펼치기 ▾</span>
+        </div>
+        <div class="bd">
+          <div class="s">잘 썼다고 생각하는 칸을 체크해 보세요. 선생님 점수와 비슷하면 <b>+1점</b>이에요.</div>
+          <div class="it" onclick="ahaToggleSelfChk(this,'L')"><span class="ib-cbx" data-k="L">✓</span> L 문제 이해</div>
+          <div class="it" onclick="ahaToggleSelfChk(this,'A')"><span class="ib-cbx" data-k="A">✓</span> A 이론·공식</div>
+          <div class="it" onclick="ahaToggleSelfChk(this,'M')"><span class="ib-cbx" data-k="M">✓</span> M 풀이 논리</div>
+          <div class="it" onclick="ahaToggleSelfChk(this,'P')"><span class="ib-cbx" data-k="P">✓</span> P 막힌 곳·질문</div>
+          <div class="exp">내 예상 질문력 <b id="aha-selfeval-n">0</b> / 10점</div>
+        </div>
+      </div>
+
+      <!-- 질문력 미터 + 버튼 -->
+      <div class="ib-meter">
+        <span class="k">질문력(임시)</span>
+        <span class="bar" id="aha-meter-bar"></span>
+        <span class="n" id="aha-meter-n">0</span>
+      </div>
+      <div class="ib-btns">
+        <button id="aha-submit-btn" class="ib-btn" onclick="ahaSubmit()">질문 보내기</button>
+        <button class="ib-btn gold" onclick="ahaGoSelfSolve()">🙋 쓰다 보니<br>알았어요</button>
+      </div>
+      <div class="ib-note">AHA(되돌아보기)는 풀고 나서 채웁니다 — 나중에 사진을 한 장 더 올리면 <b>+2점</b>이에요.</div>
     </div>
 
-    <!-- 메모 -->
+  </div>
+</div>
+
+<!-- ══ ④ 스스로 해결 (v2-71) ══ -->
+<div class="screen" id="screen-aha-self">
+  <div class="sub-hdr">
+    <button class="back-btn" onclick="ahaSelfBack()">←</button>
+    <div class="sub-title">🙋 스스로 해결</div>
+  </div>
+  <div class="rec-body">
+    <div class="ib-hero" style="background:linear-gradient(135deg,#f59e0b,#b45309)">
+      <div class="t">쓰다 보니 알았어요!</div>
+      <div class="s">스스로 푼 것은 <b>+2점</b>입니다. 힌트를 보고 풀어도 점수가 있어요 (1개 +3 · 2개 +2 · 3개 +1).</div>
+    </div>
+
     <div class="aha-form-group">
-      <label class="aha-form-label">💬 한 줄 메모 (선택)</label>
-      <textarea id="aha-memo" class="aha-textarea" placeholder="예: 답이 안 나와요"></textarea>
+      <label class="aha-form-label required">💬 어떻게 풀렸나요?</label>
+      <div class="aha-form-hint">무엇을 떠올렸더니 풀렸는지 한두 문장으로. 이 칸은 꼭 필요해요.</div>
+      <textarea id="aha-self-how" class="aha-textarea" maxlength="300" style="min-height:80px"
+        placeholder="예: P칸 쓰다가 상수항 부호를 먼저 보라던 게 생각났어요"></textarea>
     </div>
 
-    <!-- 제출 -->
-    <button id="aha-submit-btn" class="aha-submit-btn" onclick="ahaSubmit()">아하노트 제출하기</button>
+    <div class="aha-form-group">
+      <label class="aha-form-label required">📷 다시 푼 풀이 사진</label>
+      <div class="aha-form-hint">활동지 6단계 재풀이 칸을 찍거나, 공책에 다시 푼 것을 찍어 주세요</div>
+      <div id="aha-self-slot" class="aha-photo-slot" onclick="ahaSelfPickPhoto()">
+        <span class="aha-photo-slot-icon">📷</span>
+        <span class="aha-photo-slot-text">탭하여 사진 추가</span>
+        <span class="aha-photo-slot-sub">AI가 AHA 칸도 같이 읽어요</span>
+      </div>
+      <input type="file" id="aha-self-photo" accept="image/*" capture="environment" onchange="ahaSelfHandlePhoto(this)" style="display:none">
+    </div>
 
+    <div class="ib-box" id="aha-self-aha-box" style="display:none">
+      <div class="t"><span class="ltr" style="background:#94a3b8;font-size:10px">AHA</span><span class="tt">되돌아보기</span><span class="tag" id="aha-tag-AHA"></span></div>
+      <div class="hh">어떤 발상을 못 떠올렸나 / 배운 점 (사진에서 읽었어요 — 고칠 수 있어요)</div>
+      <textarea id="aha-self-learned" maxlength="600" placeholder="예: 상수항 부호부터 보기"></textarea>
+    </div>
+
+    <div class="aha-form-group">
+      <label class="aha-form-label">🤔 아직 궁금한 점 (선택)</label>
+      <textarea id="aha-self-wonder" class="aha-textarea" maxlength="300" placeholder="예: 부호가 같을 때는 어떻게 하나요?"></textarea>
+    </div>
+
+    <button id="aha-self-btn" class="ib-btn" style="width:100%" onclick="ahaSelfSubmit()">스스로 해결 보내기</button>
+    <div class="ib-note">선생님이 교재 정답과 맞는지 확인한 뒤 <b>+2점이 확정</b>됩니다. 그때까지는 「임시」로 보여요.<br>
+      🎲 선생님이 무작위로 설명을 시킬 수 있어요. 설명 못 하면 그 시즌 스스로 해결 점수가 모두 사라져요.</div>
   </div>
 </div>
 
@@ -2304,19 +2888,19 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 <div class="bs-overlay" id="aha-photo-bs" onclick="if(event.target===this)closeAhaPhotoBS()">
   <div class="bs-sheet">
     <div class="bs-handle"></div>
-    <div class="bs-title">📸 노트 사진 추가</div>
+    <div class="bs-title">📸 활동지 사진</div>
     <button class="bs-option" onclick="ahaPickCamera()">
       <div class="bs-option-icon">📷</div>
       <div class="bs-option-text">
         <div class="bs-option-title">카메라로 찍기</div>
-        <div class="bs-option-desc">지금 사진을 찍어서 추가</div>
+        <div class="bs-option-desc">활동지 전체가 한 장에 들어오게</div>
       </div>
     </button>
     <button class="bs-option" onclick="ahaPickGallery()">
       <div class="bs-option-icon">🖼️</div>
       <div class="bs-option-text">
         <div class="bs-option-title">갤러리에서 선택</div>
-        <div class="bs-option-desc">기존 사진을 골라서 추가</div>
+        <div class="bs-option-desc">이미 찍어 둔 사진 고르기</div>
       </div>
     </button>
     <button class="bs-cancel" onclick="closeAhaPhotoBS()">취소</button>
@@ -2518,7 +3102,59 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
 /* ★ v2-46: 화면에 보이는 버전을 한 곳(STU_VER)에서만 가져온다.
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
-var STU_VER = 'v2-70';
+/* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-76 (2026-09-09) 🏆 상금을 상마다 크게
+ *   · 개별 금액이 공개되면 총상금 대신 <b>상마다 큰 금액</b>이 주인공입니다.
+ *     1등은 한 줄 전체를 쓰고 가장 크게, 나머지 네 상은 아래에 3칸씩.
+ *     맨 아래에 「5명에게 · 모두 합쳐 100,000원」이 작게 붙습니다.
+ *   · 공개가 꺼져 있으면 예전처럼 총상금만 크게 보입니다.
+ *
+ * v2-75 (2026-09-09) 🏆 진도 레이스 상금 공개 · 🎉 시즌 결과
+ *   · 선생님이 학원앱에서 「개별 금액 공개」를 켜면, 총상금 아래에
+ *     1등 40,000원 · 2등 20,000원 … 처럼 상마다 금액이 보입니다.
+ *     꺼져 있으면 예전처럼 총상금만 보입니다.
+ *   · 선생님이 「🎁 시상 확정 → 학생앱에 발표하기」를 누르면
+ *     🎉 시즌 결과 카드가 뜹니다. 다섯 상의 수상자를 성+○○로 보여 주고,
+ *     내가 받은 상은 「나 ✨」로 하얗게 강조됩니다.
+ *   · 금액은 위 공개 스위치가 켜져 있을 때만 결과에도 같이 보입니다.
+ *
+ * v2-74 (2026-09-09) ✍️ 손풀이 타일 항상 보이기 · 🧾 기출 다시풀기 접기
+ *   · 손풀이 타일이 「아직 올라온 풀이가 없어요」 상태로도 홈에 보입니다.
+ *     예전에는 올라온 풀이가 하나도 없으면 타일 자체가 숨어서,
+ *     학생도 원장님도 손풀이가 어디 있는지 찾을 수 없었습니다.
+ *   · 🧾 기출 다시풀기 — 시험지마다 틀린 문항이 「폴더」로 접혀 있습니다.
+ *     시험지 줄을 누르면 그 시험의 틀린 문항만 펼쳐집니다.
+ *     시험이 하나뿐이면 처음부터 펼쳐 둡니다.
+ *
+ * v2-73 (2026-09-08) ✍️ 손풀이
+ *   · 홈에 「✍️ 손풀이」 타일이 생겼습니다. 오늘 새로 올라온 풀이 수가
+ *     빨간 배지로 보입니다. 올라온 풀이가 없으면 타일도 안 보입니다.
+ *   · 목록 화면 — 수업 날짜별 학습지 카드. 제목 · N문제 · 풀이 N개 ·
+ *     내가 틀린 N. 「힌트 뒤 공개」로 올린 세트는 자물쇠로 보입니다.
+ *   · 세트 화면 — 위쪽 번호 판에서 번호를 고릅니다. 풀이가 있는 번호는
+ *     진하게, 내가 틀린 번호는 빨갛게, 보고 있는 번호는 남색입니다.
+ *     아래에 선생님 필기 사진(누르면 크게), 유형·내 결과, 그리고
+ *     「다음 틀린 문제」 「🙋 이 문제로 IB아하노트」 「📚 같은 유형 손풀이」.
+ *   · 찾기 화면 — 유형별로 모아 보고 이름으로 검색합니다.
+ *     🎬 풀이영상 자리는 「준비 중」으로 남겨 두었습니다.
+ *   · 학원앱 기능 스위치에 「손풀이(handsol)」 항목이 추가되어,
+ *     학년별로 켜고 끌 수 있습니다.
+ *
+ * v2-72 (2026-09-08) 🏆 루멘 리그
+ *   · 홈의 「진도 레이스」 배너가 「🏆 루멘 리그」 배너 하나로 바뀌었습니다.
+ *     한 줄에 진도 순위 · IB아하 순위와 등급 · 종합 순위가 같이 보이고,
+ *     아래 작은 칩으로 종목별 남은 날짜(D-day)를 보여 줍니다.
+ *   · 배너를 누르면 새 화면 「🏆 루멘 리그」가 열립니다. 위쪽 종목 탭에서
+ *     [진도] [IB아하] [말하기(준비 중)] [👑 종합] 을 오갑니다.
+ *     진도 탭은 예전 진도 레이스 화면 그대로입니다.
+ *   · IB아하 탭 — 총상금과 4개 상, 내 등급·순위·점수 카드, 부별 순위표
+ *     (5위까지 이름 공개, 나머지는 흐리게, 내 줄은 늘 선명), 베스트 질문, 규칙.
+ *   · 종합 탭 — 종목 순위를 포인트로 바꿔 합산한 「루멘 종합 챔피언」.
+ *   · 시즌이 끝나고 원장님이 시상을 확정하면 🎉 결과 화면이 먼저 뜹니다.
+ *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
+ *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
+ * ══════════════════════════════════════════════════════════════ */
+var STU_VER = 'v2-76';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -2538,8 +3174,8 @@ var isRecording = false;
  *   peek=1  읽기 전용 — 제출·업로드를 전부 막는다. 원장님이 보시는 동안
  *           학생 자리에서 사진이 올라가거나 기록이 남는 일이 없어야 한다. */
 var PK={ ro:false, go:'' };
-var PK_SCREEN={ home:'screen-home', race:'screen-race', track:'screen-examtrack',
-  planner:'screen-planner', aha:'screen-aha', retry:'screen-retry',
+var PK_SCREEN={ home:'screen-home', race:'screen-league', league:'screen-league', track:'screen-examtrack',
+  planner:'screen-planner', aha:'screen-aha', retry:'screen-retry', hand:'screen-hand',
   notice:'screen-notice', roadmap:'screen-roadmap' };
 function pkNote(){
   try{
@@ -2593,6 +3229,9 @@ window.addEventListener('load', function() {
 });
 
 function go(id) {
+  /* v2-72: 진도 레이스는 「🏆 루멘 리그」의 첫 종목 탭이 되었다.
+   * 옛 주소·옛 버튼이 screen-race 를 불러도 리그 화면의 진도 탭으로 보낸다. */
+  if (id === 'screen-race') { if (window.LG) LG.tab = 'race'; id = 'screen-league'; }
   var target = document.getElementById(id);
   if (!target) { console.error('화면 없음:', id); return; }
   document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
@@ -2601,7 +3240,13 @@ function go(id) {
   if (id === 'screen-home' && typeof updateTodayCard === 'function') updateTodayCard();   // v2-34
   if (id === 'screen-home' && window.bfHomeChip) bfHomeChip();                            // v2-62: 🔥 버프 칩
   if (id === 'screen-record') loadSubmissionList();
-  if (id === 'screen-race' && window.rcInit) window.rcInit();
+  if (id === 'screen-league' && window.lgInit) window.lgInit();   // v2-72: 🏆 루멘 리그
+  /* v2-73: ✍️ 손풀이 — 원장님이 꺼 둔 학년은 주소로 들어와도 막는다 */
+  if (id === 'screen-hand' || id === 'screen-hand-set' || id === 'screen-hand-find') {
+    if (window.sfOn && !sfOn('handsol')) { go('screen-home'); return; }
+  }
+  if (id === 'screen-hand' && window.hsInit) hsInit();
+  if (id === 'screen-hand-find' && window.hsFindInit) hsFindInit();
   if (id === 'screen-bookscore' && typeof BK_LOCKED !== 'undefined' && BK_LOCKED) {  // v2-44: 잠금
     go('screen-home'); if(window.bkSoon) bkSoon(); return;
   }
@@ -2620,6 +3265,8 @@ function go(id) {
     if (typeof renderPlannerScoreScreen === 'function') renderPlannerScoreScreen();
   }
   if (id === 'screen-aha') {
+    /* v2-71: 사진 고르는 시트가 열린 채 목록으로 돌아오면 화면을 덮는다 */
+    if (typeof closeAhaPhotoBS === 'function') closeAhaPhotoBS();
     if (typeof renderAhaScreen === 'function') renderAhaScreen();
   }
   if (id === 'screen-notice') {
@@ -2810,6 +3457,7 @@ function renderHome() {
   if (window.rcHomeUpdate) rcHomeUpdate();  // v2-42: 🏁 진도 레이스 배너
   /* v2-59: 시험대비 트랙은 홈이 아니라 「진도 레이스」 화면 안에 있다 (원장 지시) */
   if (window.rtHomeUpdate) rtHomeUpdate();  // v2-54: 🧾 기출 다시풀기 배너
+  if (window.hsHomeUpdate) hsHomeUpdate();  // v2-73: ✍️ 손풀이 타일
   renderPlannerMission();
   // 백그라운드로 플래너 점수 데이터 미리 로드 (내 점수 탭 빠르게 뜨도록)
   if (!isTest && typeof loadMyPlannerData === 'function') {
@@ -4196,7 +4844,9 @@ async function renderAhaScreen() {
     '<div class="aha-empty"><div class="aha-empty-icon">⏳</div><div class="aha-empty-text">불러오는 중...</div></div>';
   document.getElementById('aha-list').innerHTML = '';
 
-  var loaded = await Promise.all([loadAhaNotes(), loadAhaRetry()]);
+  /* v2-72: 🏆 루멘 리그 줄에 쓸 내 등급·순위도 같이 읽어 둔다 */
+  var loaded = await Promise.all([loadAhaNotes(), loadAhaRetry(), loadAhaScores(),
+    (window.lgLoad ? lgLoad() : Promise.resolve(null))]);
   ahaNotes = loaded[0];
   ahaLoading = false;
 
@@ -4234,7 +4884,7 @@ function renderAhaStats() {
   var html = '';
   html += '<div class="aha-stat-card">';
   html += '<div class="aha-stat-top">';
-  html += '<div class="aha-stat-label">이번 달 아하노트</div>';
+  html += '<div class="aha-stat-label">이번 달 IB아하노트</div>';
   html += '<div class="aha-stat-date">' + dateStr + ' 기준</div>';
   html += '</div>';
   html += '<div class="aha-stat-mid">';
@@ -4249,12 +4899,31 @@ function renderAhaStats() {
   html += '</div>';
   html += '</div>';
 
+  /* v2-72: 개인 기록 카드 밑에서 바로 🏆 루멘 리그로 갈 수 있게 한다 */
+  html += ahaLeagueStrip();
+
   area.innerHTML = html;
 
   // 탭 카운트
   document.getElementById('aha-cnt-all').textContent = ahaNotes.length;
   document.getElementById('aha-cnt-pending').textContent = pendingCnt;
   document.getElementById('aha-cnt-resolved').textContent = resolvedCnt;
+}
+
+/* v2-72: 개인 기록 카드 아래 「🏆 루멘 리그」 줄.
+ * 리그가 발행돼 있으면 내 등급·순위를, 아직이면 「곧 열려요」를 보여 준다. */
+function ahaLeagueStrip() {
+  var b = (window.LG && LG.board) || null;
+  var me = b ? lgMyRow(b) : null;
+  var sub = me ? (lgTierName(me.tier) + ' · ' + me.rank + '위 · 리그 점수 ' + rcN(me.league || 0))
+               : (b ? '이번 시즌 순위표를 볼 수 있어요' : '곧 열려요 — 2달마다 한 시즌');
+  return '<button onclick="go(\'screen-league\')" style="width:100%;margin-top:9px;background:linear-gradient(135deg,#f9a825,#ef6c00);' +
+    'color:#2b1600;border:none;border-radius:13px;padding:11px 13px;text-align:left;font-family:inherit;cursor:pointer;' +
+    'display:flex;align-items:center;gap:10px">' +
+    '<span style="font-size:20px">🏆</span>' +
+    '<span style="flex:1;min-width:0"><span style="display:block;font-size:13px;font-weight:900">루멘 리그</span>' +
+    '<span style="display:block;font-size:11px;font-weight:800;opacity:.78;margin-top:2px">' + ahaEscape(sub) + '</span></span>' +
+    '<span style="font-size:16px;opacity:.55">›</span></button>';
 }
 
 // 필터 변경
@@ -4281,7 +4950,7 @@ function renderAhaList() {
     var msg = ahaFilter === 'all' ? '아직 아하노트가 없어요' :
               ahaFilter === 'pending' ? '미해결 노트가 없어요' :
               '아직 해결된 노트가 없어요';
-    var sub = ahaFilter === 'all' ? '"+ 새 아하노트 추가" 버튼을 눌러<br>모르는 문제를 질문해보세요!' :
+    var sub = ahaFilter === 'all' ? 'LAMP 활동지에 쓰고<br>「📷 활동지 사진 찍기」를 눌러 보세요!' :
               ahaFilter === 'pending' ? '모든 질문이 해결됐어요 🎉' :
               '선생님이 확인하면 여기에 표시돼요';
     listEl.innerHTML =
@@ -4375,8 +5044,10 @@ function renderAhaCard(n) {
     html += '</div>';
   }
 
-  if (n.memo && n.memo.trim()) {
-    html += '<div class="aha-card-memo">"' + ahaEscape(n.memo) + '"</div>';
+  var ask = n.q_ask || n.memo || '';
+  if (ask && ask.trim()) {
+    var dirTag = n.directive ? '<span class="aha-err-tag" style="background:#fee2e2;color:#b91c1c">' + ahaEscape(n.directive) + '</span> ' : '';
+    html += '<div class="aha-card-memo">' + dirTag + '"' + ahaEscape(ask) + '"</div>';
   } else {
     html += '<div class="aha-card-memo empty">(질문 없음)</div>';
   }
@@ -4387,18 +5058,31 @@ function renderAhaCard(n) {
     html += '<span class="aha-badge resolved">✅ 해결됨</span>';
     if (rt) html += '<button class="aha-card-btn" style="border-color:#93c5fd;color:#1d6fe8" onclick="openAhaPhoto(\'' + ahaEscape(rt.url) + '\')">🔁 내 재풀이</button>';
     else html += '<span class="aha-card-confirm">선생님이 확인</span>';
+  } else if (n.status === 'self_pending') {
+    html += '<span class="aha-badge" style="background:#fbbf24;color:#78350f">🙋 스스로 해결 — 확인 대기</span>';
+    if (n.self_solved && n.self_solved.photo_url) {
+      html += '<button class="aha-card-btn" style="border-color:#fcd34d;color:#b45309" onclick="openAhaPhoto(\'' + ahaEscape(n.self_solved.photo_url) + '\')">내 재풀이</button>';
+    }
   } else {
     html += '<span class="aha-badge pending">' + (ahaHintMap[n.id] ? '💡 힌트 도착' : '🟡 답변 대기') + '</span>';
-    html += '<button class="aha-card-btn" onclick="ahaEdit(\'' + ahaEscape(n.id) + '\')">수정</button>';
+    html += '<button class="aha-card-btn" onclick="ahaEdit(\'' + ahaEscape(n.id) + '\')">고치기</button>';
     html += '<button class="aha-card-btn danger" onclick="ahaDelete(\'' + ahaEscape(n.id) + '\')">삭제</button>';
   }
   html += '</div>';
 
+  // ⑤ 점수 (원장이 매긴 것이 있으면 확정, 없으면 내가 낸 임시 점수)
+  html += ahaScoreBlock(n);
+
   // v2-32: 선생님 힌트 (승인·발송된 것만, 순차 잠금)
   html += ahaHintBlock(n);
 
+  // v2-71: 🙋 스스로 풀었어요 — 아직 아무것도 안 낸 질문에만
+  if (n.status === 'pending' && !rt && !n.self_solved) {
+    html += '<button onclick="ahaSelfStart(\'' + ahaEscape(n.id) + '\')" style="margin-top:8px;width:100%;background:linear-gradient(135deg,#f59e0b,#b45309);color:#fff;border:none;border-radius:9px;padding:9px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">🙋 쓰다 보니 알았어요 (스스로 해결 +2)</button>';
+  }
+
   // v2-10: 다시 푼 풀이 제출 (재풀이)
-  if (n.status !== 'resolved') {
+  if (n.status !== 'resolved' && n.status !== 'self_pending') {
     if (rt) {
       var rtDate = (function(){ var d = new Date(rt.at); return isNaN(d.getTime()) ? '' : (d.getMonth()+1) + '/' + d.getDate(); })();
       html += '<div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap">';
@@ -4412,6 +5096,60 @@ function renderAhaCard(n) {
   }
 
   html += '</div></div>';
+  return html;
+}
+
+/* ⑤ 점수 칸 — 원장이 확정한 점수가 있으면 그것을, 없으면 「임시」를 보여 준다.
+ * 임시 점수는 학생이 낼 때 계산해 self_eval.meter에 넣어 둔 규칙 점수다. */
+function ahaScoreBlock(n) {
+  var s = ahaScores[n.id];
+  var pathKo = { self:'🙋 스스로 해결 +2', h1:'💡 힌트 1개 +3', h2:'💡 힌트 2개 +2', h3:'💡 힌트 3개 +1', hand:'✍️ 손풀이 +1', none:'' };
+  var html = '';
+
+  if (s && s.status === 'final') {
+    var bonus = [];
+    if (s.typeBonus) bonus.push('질문 유형 +' + s.typeBonus);
+    if (s.pathBonus) bonus.push((pathKo[s.path] || '해결 +' + s.pathBonus));
+    if (s.selfMatch) bonus.push('자기평가 적중 +1');
+    if (s.pick) bonus.push('⭐ 수업 채택 +2');
+    if (s.best) bonus.push('🏆 베스트 +3');
+
+    html += '<div class="ib-score"><span class="big">' + (s.total || 0) + '</span><span class="u">/ 10 질문력</span>' +
+      '<span class="rt">' + (bonus.length ? bonus.map(ahaEscape).join('<br>') : '확정 ✓') + '</span></div>';
+
+    html += '<div class="ib-lampres">';
+    ['L','A','M','P','AHA'].forEach(function(k) {
+      var v = s[k];
+      var cls = (v === 2) ? 'ib-v2' : (v === 1 ? 'ib-v1' : 'ib-v0');
+      html += '<div><div class="l">' + k + '</div><div class="v ' + cls + '">' + (v == null ? '–' : v) + '</div></div>';
+    });
+    html += '</div>';
+
+    if (s.coach && s.coach.fb) html += '<div class="ib-coach"><b>잘한 점</b> ' + ahaEscape(s.coach.fb) + '</div>';
+    // 코치 두 번째 줄은 「다만 ~」으로 시작하게 쓰므로, 앞의 「다만」이 겹치지 않게 떼어 낸다
+    if (s.coach && s.coach.ff) {
+      html += '<div class="ib-coach ff"><b>다만 다음엔</b> ' +
+        ahaEscape(String(s.coach.ff).replace(/^\s*다만[,\s]*/, '')) + '</div>';
+    }
+
+    // 성취수준 A~E 사다리 — 성취평가제와 같은 기준(90·80·70·60%)
+    var lv = (s.total >= 9) ? 4 : (s.total >= 8 ? 3 : (s.total >= 7 ? 2 : (s.total >= 6 ? 1 : 0)));
+    html += '<div class="ib-ladder">';
+    ['E','D','C','B','A'].forEach(function(g, i) {
+      html += '<span class="' + (i === lv ? 'cur' : '') + '">' + g + (i === lv ? ' 지금' : '') + '</span>';
+    });
+    html += '</div>';
+  } else if (s && s.status === 'temp') {
+    html += '<div class="ib-score temp"><span class="big">' + (s.total || 0) + '</span><span class="u">/ 10</span>' +
+      '<span class="rt">임시 점수<br>선생님 확인 대기</span></div>';
+  } else if (n.self_eval && typeof n.self_eval.meter === 'number' && n.status !== 'resolved') {
+    html += '<div class="ib-score temp"><span class="big">' + n.self_eval.meter + '</span><span class="u">/ 10</span>' +
+      '<span class="rt">임시 점수<br>선생님이 곧 매겨요</span></div>';
+  }
+
+  if (n.status === 'self_pending') {
+    html += '<div class="ib-note">🙋 스스로 해결 <b>임시 +2</b> — 선생님이 교재 정답과 맞는지 확인하면 확정돼요.</div>';
+  }
   return html;
 }
 
@@ -4704,6 +5442,225 @@ var ahaPendingPhotoFile = null; // 업로드 대기 중인 사진 파일
 var ahaPendingPhotoDataURL = null; // 미리보기용
 var ahaCachedBooks = null;      // 학원앱에서 로드한 학생 배정 교재 목록
 
+/* ═══════════════════════════════════════════════════════════════════
+ * v2-71  IB아하노트 — 사진 한 장 → AI가 읽음 → 학생은 확인만
+ * ═══════════════════════════════════════════════════════════════════
+ * 원장 지시(2026-09-07): 「앱에서 (직접 쓰는) 방법은 없게 하자」.
+ * 학생이 글을 쓰는 곳은 종이 활동지(또는 공책)뿐이고, 앱에서는
+ *   ① 사진을 찍고 ② AI가 읽은 것을 확인·고치고 ③ 지시어 하나를 고른다.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+var ahaUploadedUrl = null;   // 이번에 올린 사진의 주소(AI 읽기·제출에 함께 쓴다)
+var ahaLampAi = null;        // AI가 읽은 원본 (lamp_ai 칸에 그대로 저장)
+var ahaDirective = '';       // 고른 반응지시어
+var ahaConceptsOn = [];      // 켜져 있는 개념 칩
+var ahaSelfChk = { L:0, A:0, M:0, P:0 };
+var ahaScores = {};          // lumen_store aha_scores 의 byId (원장이 매긴 점수)
+var ahaSelfNoteId = null;    // ④ 스스로 해결 화면이 다루는 노트
+var ahaSelfPhotoFile = null, ahaSelfPhotoUrl = null;
+
+/* 반응지시어 7 — 뜻풀이는 경기도교육청 논술형 평가 자료 9쪽 원문 */
+var AHA_DIRECTIVES = [
+  { k:'설명', label:'설명해 주세요', mean:'구체적인 사례를 들어 용어를 정의한다.' },
+  { k:'비교', label:'비교해 주세요', mean:'두 개 이상의 대상에서 공통점(혹은 유사점)과 차이점을 드러내서 진술한다.' },
+  { k:'논증', label:'논증해 주세요', mean:'주장에 대해 이유와 근거를 들어 설명한다.' },
+  { k:'추론', label:'추론해 주세요', mean:'이미 알고 있는 또는 확인된 정보로부터 논리적 결론을 도출한다.' },
+  { k:'적용', label:'적용해 주세요', mean:'주어진 문제 상황에 지식, 이해(원리, 이론, 법칙 등)를 사용한다.' },
+  { k:'해석', label:'해석해 주세요', mean:'지식을 이용하여 주어진 정보의 흐름을 파악하고 결론을 내린다.' },
+  { k:'평가', label:'평가해 주세요', mean:'발상이나 의견의 상대적 중요성을 평가하고 판단한다.' }
+];
+
+/* 개념 12 — 중학생 말 + 괄호에 IB 용어 */
+var AHA_CONCEPTS = [
+  { k:'change', ko:'변하는 양', ib:'변화' },
+  { k:'equivalence', ko:'같은 값 다른 모양', ib:'동치성' },
+  { k:'generalization', ko:'규칙 찾기', ib:'일반화' },
+  { k:'validity', ko:'맞는지 따지기', ib:'타당성' },
+  { k:'approximation', ko:'어림', ib:'근사' },
+  { k:'model', ko:'식으로 나타내기', ib:'모델' },
+  { k:'pattern', ko:'패턴', ib:'패턴' },
+  { k:'quantity', ko:'양·개수', ib:'수량' },
+  { k:'representation', ko:'표·그래프·식 바꾸기', ib:'표현' },
+  { k:'simplification', ko:'간단히 하기', ib:'단순화' },
+  { k:'space', ko:'도형·공간', ib:'공간' },
+  { k:'system', ko:'여러 조건 한꺼번에', ib:'시스템' }
+];
+
+/* P칸 글을 「막힌 곳」과 「선생님께 묻는 한 문장」으로 나눈다.
+ * 규칙: 물음표로 끝나거나 「~요/~까」로 끝나는 마지막 문장이 질문. */
+function ahaSplitP(text) {
+  var t = String(text || '').trim();
+  if (!t) return { stuck:'', ask:'' };
+  var parts = t.split(/(?<=[.?!。])\s+|\n+/).map(function(s){ return s.trim(); }).filter(Boolean);
+  if (parts.length <= 1) return { stuck:t, ask:t };
+  for (var i = parts.length - 1; i >= 0; i--) {
+    if (/[?？]$/.test(parts[i]) || /(요|까|나요|가요|주세요)[.?!]?$/.test(parts[i])) {
+      return { stuck: parts.slice(0, i).join(' ') || parts[i], ask: parts[i] };
+    }
+  }
+  return { stuck: parts.slice(0, -1).join(' '), ask: parts[parts.length - 1] };
+}
+
+/* 질문 유형 자동 태그 (표 3-3, 규칙) */
+function ahaQType(ask) {
+  var s = String(ask || '');
+  if (/꼭|반드시|항상|정말|다른 방법|해야 하나|해도 되나|아니면|왜 굳이|더 나은/.test(s)) return 'debate';
+  if (/왜|어째서|이유|어떻게|무슨 차이|차이|관계|원리/.test(s)) return 'concept';
+  return 'fact';
+}
+var AHA_QTYPE_KO = { fact:'사실적 질문', concept:'개념적 질문 +1', debate:'논쟁적 질문 +1' };
+
+/* 질문력 미터 (표 3-4, 규칙 — AI 채점이 아니라 「임시」 표시용) */
+function ahaMeter() {
+  var L = (document.getElementById('aha-q-learn') || {}).value || '';
+  var A = (document.getElementById('aha-q-act') || {}).value || '';
+  var M = (document.getElementById('aha-q-try') || {}).value || '';
+  var P = (document.getElementById('aha-q-stuck') || {}).value || '';
+  var sp = ahaSplitP(P);
+
+  var sL = /구하|조건|주어진/.test(L) && L.length >= 20 ? 2 : (L.length >= 15 ? 1 : 0);
+  var sA = (A.length >= 15 && /공식|정리|성질|법칙|정의|원리|이론/.test(A)) ? 2 : (A.length >= 10 ? 1 : 0);
+  var sM = /[0-9=xy＝＋\-+*/√²]/.test(M) && M.length >= 10 ? 2 : (M.length >= 20 ? 1 : 0);
+  var pSpot = /단계|줄|번째|에서|부터|까지|계산|대입|식/.test(sp.stuck);
+  var pAsk = !!ahaDirective && /[?？]$|요[.?!]?$/.test(sp.ask.trim());
+  var sP = (pSpot && pAsk) ? 2 : ((pSpot || pAsk) ? 1 : 0);
+
+  return { L:sL, A:sA, M:sM, P:sP, total: sL + sA + sM + sP };
+}
+
+function ahaUpdateMeter() {
+  var m = ahaMeter();
+  var bar = document.getElementById('aha-meter-bar');
+  if (bar) {
+    var h = '';
+    for (var i = 0; i < 10; i++) h += '<i class="' + (i < m.total ? 'on' : '') + '"></i>';
+    bar.innerHTML = h;
+  }
+  var n = document.getElementById('aha-meter-n');
+  if (n) n.textContent = m.total;
+
+  // 칸별 ✓ / △ 표시
+  ['L','A','M','P'].forEach(function(k) {
+    var tag = document.getElementById('aha-tag-' + k);
+    if (!tag) return;
+    var v = m[k];
+    tag.className = 'tag ' + (v === 2 ? 'ok' : 'no');
+    tag.textContent = v === 2 ? '✓ 잘 썼어요' : (v === 1 ? '△ 조금 더' : '');
+    if (v === 0) tag.className = 'tag';
+  });
+
+  // 질문 유형
+  var sp = ahaSplitP((document.getElementById('aha-q-stuck') || {}).value || '');
+  var w = document.getElementById('aha-qtype-wrap');
+  if (w) {
+    if (sp.ask) {
+      var t = ahaQType(sp.ask);
+      w.innerHTML = '<span class="ib-qtype' + (t !== 'fact' ? ' plus' : '') + '">' + AHA_QTYPE_KO[t] + '</span>';
+    } else w.innerHTML = '';
+  }
+}
+
+function ahaOnFieldEdit() { ahaUpdateMeter(); ahaEmptyWarn(); }
+
+/* 활동지에 안 쓴 칸이 있으면 알려 준다 — 점수가 왜 낮은지 그 자리에서 보이게 */
+function ahaEmptyWarn() {
+  var el = document.getElementById('aha-empty-warn');
+  if (!el) return;
+  var NAMES = { L:'L 문제 이해', A:'A 이론·공식', M:'M 풀이 논리' };
+  var IDS = { L:'aha-q-learn', A:'aha-q-act', M:'aha-q-try' };
+  var missing = [];
+  ['L','A','M'].forEach(function(k) {
+    var v = ((document.getElementById(IDS[k]) || {}).value || '').trim();
+    if (v.length < 5) missing.push(NAMES[k]);
+  });
+  if (!missing.length) { el.style.display = 'none'; return; }
+  var m = ahaMeter();
+  el.style.display = 'block';
+  el.innerHTML = '<span class="big">✍️ ' + missing.length + '칸이 비어 있어요 — ' + ahaEscape(missing.join(' · ')) + '</span>'
+    + '활동지에 안 쓴 칸이에요. 이대로 보내면 <b>질문력 ' + m.total + '점</b>입니다. '
+    + (missing.length >= 3
+        ? '네 칸을 다 채우면 <b>8~10점</b>이에요.'
+        : '비어 있는 칸을 활동지에 적고 <b>다시 찍으면</b> 점수가 올라갑니다.')
+    + '<br><span style="font-size:11px;color:#b91c1c">활동지에는 썼는데 안 읽혔다면, 그 칸에 직접 적어 주셔도 됩니다.</span>';
+}
+
+/* 지시어 칩 */
+function ahaRenderDirChips() {
+  var box = document.getElementById('aha-dir-chips');
+  if (!box) return;
+  box.innerHTML = AHA_DIRECTIVES.map(function(d) {
+    return '<button type="button" class="aha-chip' + (ahaDirective === d.k ? ' on' : '') +
+      '" data-dir="' + d.k + '" onclick="ahaPickDir(\'' + d.k + '\')">' + ahaEscape(d.label) + '</button>';
+  }).join('');
+  ahaShowDirMean();
+}
+function ahaPickDir(k) {
+  ahaDirective = (ahaDirective === k) ? '' : k;
+  ahaRenderDirChips();
+  ahaUpdateMeter();
+}
+function ahaShowDirMean() {
+  var el = document.getElementById('aha-dir-mean');
+  if (!el) return;
+  var d = AHA_DIRECTIVES.find(function(x){ return x.k === ahaDirective; });
+  if (!d) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = '<b>' + ahaEscape(d.label) + '</b> — ' + ahaEscape(d.mean);
+}
+
+/* 개념 칩 */
+function ahaRenderConceptChips() {
+  var box = document.getElementById('aha-concept-chips');
+  if (!box) return;
+  box.innerHTML = AHA_CONCEPTS.map(function(c) {
+    var on = ahaConceptsOn.indexOf(c.k) >= 0;
+    return '<button type="button" class="aha-chip' + (on ? ' on' : '') +
+      '" data-cpt="' + c.k + '" onclick="ahaToggleConcept(\'' + c.k + '\')">' +
+      ahaEscape(c.ko) + '<span style="opacity:0.6;font-size:10px"> (' + ahaEscape(c.ib) + ')</span></button>';
+  }).join('');
+}
+function ahaToggleConcept(k) {
+  var i = ahaConceptsOn.indexOf(k);
+  if (i >= 0) ahaConceptsOn.splice(i, 1);
+  else if (ahaConceptsOn.length < 5) ahaConceptsOn.push(k);
+  else { ahaToast('개념은 5개까지만 고를 수 있어요', 'error'); return; }
+  ahaRenderConceptChips();
+}
+
+/* 자기평가 (선택) */
+function ahaToggleSelfEval() {
+  var el = document.getElementById('aha-selfeval');
+  if (!el) return;
+  el.classList.toggle('open');
+  var ar = document.getElementById('aha-selfeval-ar');
+  if (ar) ar.textContent = el.classList.contains('open') ? '접기 ▴' : '선택 · 펼치기 ▾';
+}
+function ahaToggleSelfChk(row, k) {
+  var box = row.querySelector('.ib-cbx');
+  ahaSelfChk[k] = ahaSelfChk[k] ? 0 : 1;
+  box.classList.toggle('on', !!ahaSelfChk[k]);
+  var n = 0;
+  ['L','A','M','P'].forEach(function(x){ n += ahaSelfChk[x] ? 2 : 0; });
+  var el = document.getElementById('aha-selfeval-n');
+  if (el) el.textContent = n;
+}
+function ahaSelfEvalExpected() {
+  var n = 0;
+  ['L','A','M','P'].forEach(function(x){ n += ahaSelfChk[x] ? 2 : 0; });
+  return n;
+}
+
+/* 원장이 매긴 점수 불러오기 (lumen_store aha_scores — 학생앱은 읽기만) */
+async function loadAhaScores() {
+  ahaScores = {};
+  if (!sb || isTest) return;
+  try {
+    var r = await sb.from('lumen_store').select('value').eq('key', 'aha_scores');
+    var v = (r.data && r.data[0] && r.data[0].value) || {};
+    ahaScores = v.byId || {};
+  } catch(e) { console.warn('점수 로드 실패:', e); }
+}
+
 // 토스트
 function ahaToast(msg, type) {
   var el = document.getElementById('aha-toast');
@@ -4814,37 +5771,71 @@ function ahaOnSourceChange() {
   var printRow = document.getElementById('aha-print-row');
   if (!sel || !pageRow || !printRow) return;
 
+  /* v2-73: 프린트(학습지)일 때도 <b>번호 칸</b>은 남긴다 —
+   * 손풀이에서 「이 문제로 IB아하노트」로 넘어오면 번호가 미리 채워지는데,
+   * 칸이 숨어 있으면 학생이 그 번호를 볼 수 없다. 페이지 칸만 숨긴다. */
+  var pageCol = document.getElementById('aha-page-col');
   if (sel.value === 'print') {
-    pageRow.style.display = 'none';
+    pageRow.style.display = 'block';
+    if (pageCol) pageCol.style.display = 'none';
     printRow.style.display = 'block';
-    // 페이지 칸은 비움 (프린트는 페이지 없음)
+    var pg = document.getElementById('aha-page'); if (pg) pg.value = '';
   } else {
     pageRow.style.display = 'block';
+    if (pageCol) pageCol.style.display = '';
     printRow.style.display = 'none';
   }
 }
 
-// 추가 화면 진입 (새 노트)
+/* 확인 화면의 모든 칸을 비운다 */
+function ahaClearConfirm() {
+  ahaUploadedUrl = null; ahaLampAi = null; ahaDirective = '';
+  ahaConceptsOn = []; ahaSelfChk = { L:0, A:0, M:0, P:0 };
+  ['aha-q-learn','aha-q-act','aha-q-try','aha-q-stuck','aha-page','aha-problem-no','aha-print-name']
+    .forEach(function(id){ var el = document.getElementById(id); if (el) el.value = ''; });
+  document.querySelectorAll('#aha-error-chips .aha-chip').forEach(function(c){ c.classList.remove('on'); });
+  document.querySelectorAll('#aha-selfeval .ib-cbx').forEach(function(c){ c.classList.remove('on'); });
+  var sv = document.getElementById('aha-selfeval');
+  if (sv) sv.classList.remove('open');
+  var svn = document.getElementById('aha-selfeval-n'); if (svn) svn.textContent = '0';
+  var svar = document.getElementById('aha-selfeval-ar'); if (svar) svar.textContent = '선택 · 펼치기 ▾';
+  ['aha-box-L','aha-box-A','aha-box-M','aha-box-P'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.classList.remove('unread');
+  });
+  ahaRenderDirChips();
+  ahaRenderConceptChips();
+  ahaUpdateMeter();
+  ahaEmptyWarn();
+}
+
+/* 확인 영역 보이기/숨기기 */
+function ahaShowStage(stage) {  // 'photo' | 'reading' | 'confirm'
+  var r = document.getElementById('aha-reading');
+  var c = document.getElementById('aha-confirm');
+  if (r) r.style.display = (stage === 'reading') ? 'block' : 'none';
+  if (c) c.style.display = (stage === 'confirm') ? 'block' : 'none';
+}
+
+// ① 시작 → ③ 사진 찍기
 async function ahaGoAdd() {
+  if (isTest) { ahaToast('테스트 모드에서는 제출할 수 없어요', 'error'); return; }
   ahaEditingId = null;
   ahaPendingPhotoFile = null;
   ahaPendingPhotoDataURL = null;
-  document.getElementById('aha-add-title').textContent = '💡 새 아하노트';
-  document.getElementById('aha-submit-btn').textContent = '아하노트 제출하기';
+  document.getElementById('aha-add-title').textContent = '💡 새 IB아하노트';
+  document.getElementById('aha-submit-btn').textContent = '질문 보내기';
 
-  // 폼 초기화
   ahaResetPhotoSlot();
-  document.getElementById('aha-page').value = '';
-  document.getElementById('aha-problem-no').value = '';
-  document.getElementById('aha-print-name').value = '';
-  document.getElementById('aha-memo').value = '';
-  document.querySelectorAll('#aha-error-chips .aha-chip').forEach(function(c){ c.classList.remove('on'); });
+  ahaClearConfirm();
+  ahaShowStage('photo');
 
   go('screen-aha-add');
   await ahaFillSourceDropdown('');
+  // 사진을 고르면 바로 카메라가 열리도록 안내
+  ahaTriggerPhoto();
 }
 
-// 수정 화면 진입
+// 수정 화면 진입 — 사진은 그대로 두고 읽은 글자·지시어만 고친다
 async function ahaEdit(id) {
   var note = ahaNotes.find(function(n){ return n.id === id; });
   if (!note) { ahaToast('노트를 찾을 수 없어요', 'error'); return; }
@@ -4856,22 +5847,24 @@ async function ahaEdit(id) {
   ahaEditingId = id;
   ahaPendingPhotoFile = null; // 사진은 유지 (변경 불가)
   ahaPendingPhotoDataURL = null;
+  ahaClearConfirm();
+  ahaUploadedUrl = note.photo_url || null;
+  ahaLampAi = note.lamp_ai || null;
 
-  document.getElementById('aha-add-title').textContent = '💡 아하노트 수정';
-  document.getElementById('aha-submit-btn').textContent = '수정 저장하기';
+  document.getElementById('aha-add-title').textContent = '💡 IB아하노트 고치기';
+  document.getElementById('aha-submit-btn').textContent = '고친 내용 저장';
 
   // 사진 슬롯 — 기존 사진 표시 (변경 불가 안내)
   var slot = document.getElementById('aha-photo-slot');
   slot.classList.add('has-photo');
   slot.innerHTML = '<img src="' + ahaEscape(note.photo_url) + '" alt=""><div class="aha-photo-replace" style="background:rgba(100,116,139,0.85);cursor:default" onclick="event.stopPropagation()">사진은 변경 불가</div>';
-  slot.onclick = function(){ ahaToast('사진은 수정할 수 없어요. 다시 만들어주세요', 'error'); };
+  slot.onclick = function(){ ahaToast('사진은 바꿀 수 없어요. 새로 만들어 주세요', 'error'); };
 
-  // 출처 드롭다운
   go('screen-aha-add');
+  ahaShowStage('confirm');
   var srcVal = note.source_type === 'print' ? 'print' : ('book::' + note.source_name);
   await ahaFillSourceDropdown(srcVal);
 
-  // 입력값 채우기
   if (note.source_type === 'book') {
     document.getElementById('aha-page').value = note.page || '';
     document.getElementById('aha-problem-no').value = note.problem_no || '';
@@ -4879,14 +5872,39 @@ async function ahaEdit(id) {
     document.getElementById('aha-print-name').value = note.source_name || '';
     document.getElementById('aha-problem-no').value = note.problem_no || '';
   }
-  document.getElementById('aha-memo').value = note.memo || '';
 
-  // 틀린 이유 칩 복원
+  // LAMP 네 칸 (옛 노트는 memo만 있으므로 P칸에 넣어 준다)
+  document.getElementById('aha-q-learn').value = note.q_learn || '';
+  document.getElementById('aha-q-act').value = note.q_act || '';
+  document.getElementById('aha-q-try').value = note.q_try || '';
+  document.getElementById('aha-q-stuck').value =
+    [note.q_stuck || '', note.q_ask || ''].filter(Boolean).join(' ') || note.memo || '';
+
+  ahaDirective = note.directive || '';
+  ahaConceptsOn = Array.isArray(note.concepts) ? note.concepts.slice(0, 5) : [];
+  if (note.self_eval) {
+    ['L','A','M','P'].forEach(function(k){ ahaSelfChk[k] = note.self_eval[k] ? 1 : 0; });
+    document.querySelectorAll('#aha-selfeval .ib-cbx').forEach(function(c) {
+      c.classList.toggle('on', !!ahaSelfChk[c.dataset.k]);
+    });
+    var el = document.getElementById('aha-selfeval-n');
+    if (el) el.textContent = ahaSelfEvalExpected();
+  }
+
   document.querySelectorAll('#aha-error-chips .aha-chip').forEach(function(c) {
     var err = c.dataset.err;
-    if (note.error_types && note.error_types.indexOf(err) >= 0) c.classList.add('on');
-    else c.classList.remove('on');
+    c.classList.toggle('on', !!(note.error_types && note.error_types.indexOf(err) >= 0));
   });
+
+  var badge = document.getElementById('aha-read-badge');
+  if (badge) { badge.className = 'badge badge-ai'; badge.textContent = '✏️ 고치는 중'; }
+  var msg = document.getElementById('aha-read-msg');
+  if (msg) msg.textContent = '잘못 읽힌 곳을 고치고 다시 저장하세요.';
+
+  ahaRenderDirChips();
+  ahaRenderConceptChips();
+  ahaUpdateMeter();
+  ahaEmptyWarn();
 }
 
 // 사진 슬롯 초기화
@@ -4916,24 +5934,139 @@ function ahaPickGallery() {
   document.getElementById('aha-photo-gal').click();
 }
 
-// 사진 선택 후 처리 — 압축 + 미리보기
+/* 사진을 Storage에 올리고 공개 주소를 돌려준다 */
+async function ahaUploadPhoto(blob, prefix) {
+  var code = (studentInfo && studentInfo.lumen_rec_code) || 'unknown';
+  var name = code + '/' + (prefix || '') + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.jpg';
+  var up = await sb.storage.from('aha_photos').upload(name, blob, { contentType:'image/jpeg', upsert:false });
+  if (up.error) throw new Error('사진 업로드 실패: ' + up.error.message);
+  return sb.storage.from('aha_photos').getPublicUrl(name).data.publicUrl;
+}
+
+/* AI에게 활동지를 읽어 달라고 한다 (Supabase Edge Function 'aha-read').
+ * 함수가 아직 배포되지 않았거나 실패해도 앱은 멈추지 않는다 — 그때는
+ * 빈 칸으로 두고 「선생님이 읽어 드립니다」로 안내한다. */
+async function ahaReadPhoto(url, mode) {
+  var r = await sb.functions.invoke('aha-read', { body: { photo_url: url, mode: mode || 'lamp' } });
+  if (r.error) throw new Error(r.error.message || 'AI 읽기 실패');
+  if (!r.data || r.data.error) throw new Error((r.data && r.data.error) || 'AI 읽기 실패');
+  return r.data;
+}
+
+// 사진 선택 후 처리 — 압축 → 미리보기 → 업로드 → AI 읽기 → 확인 화면
 async function ahaHandlePhoto(inp) {
   var file = inp.files[0];
   if (!file) return;
   inp.value = ''; // 같은 파일 다시 선택할 수 있게 초기화
+  closeAhaPhotoBS();   // 사진을 고른 뒤에는 시트를 반드시 닫는다
+  if (isTest) { ahaToast('테스트 모드에서는 제출할 수 없어요', 'error'); return; }
+  if (!sb || !studentInfo) { ahaToast('로그인 상태를 확인해주세요', 'error'); return; }
+
+  var slot = document.getElementById('aha-photo-slot');
   try {
     var compressed = await ahaCompressImage(file);
     ahaPendingPhotoFile = compressed.blob;
     ahaPendingPhotoDataURL = compressed.dataUrl;
-
-    var slot = document.getElementById('aha-photo-slot');
     slot.classList.add('has-photo');
     slot.innerHTML =
       '<img src="' + compressed.dataUrl + '" alt="">' +
-      '<button class="aha-photo-replace" onclick="event.stopPropagation();ahaTriggerPhoto()">교체</button>';
+      '<button class="aha-photo-replace" onclick="event.stopPropagation();ahaTriggerPhoto()">다시 찍기</button>';
   } catch(e) {
     ahaToast('사진 처리 실패: ' + e.message, 'error');
+    return;
   }
+
+  ahaShowStage('reading');
+  var ai = null, failMsg = '';
+  try {
+    ahaUploadedUrl = await ahaUploadPhoto(ahaPendingPhotoFile, '');
+  } catch(e) {
+    ahaShowStage('photo');
+    ahaToast(e.message || '사진 업로드 실패', 'error');
+    return;
+  }
+  try {
+    ai = await ahaReadPhoto(ahaUploadedUrl, 'lamp');
+  } catch(e) {
+    failMsg = e.message || '읽기 실패';
+    console.warn('활동지 읽기 실패:', failMsg);
+  }
+
+  ahaLampAi = ai ? ai : { err: failMsg, at: new Date().toISOString() };
+  ahaApplyRead(ai, failMsg);
+  ahaShowStage('confirm');
+}
+
+/* AI가 읽은 것을 확인 화면 칸에 넣는다 */
+function ahaApplyRead(ai, failMsg) {
+  var badge = document.getElementById('aha-read-badge');
+  var msg = document.getElementById('aha-read-msg');
+
+  if (!ai) {
+    if (badge) { badge.className = 'badge badge-err'; badge.textContent = '⚠ 지금은 못 읽었어요'; }
+    if (msg) msg.innerHTML = '사진은 잘 올라갔어요. 지금은 AI가 읽지 못했지만 <b>이대로 보내면 선생님이 읽어 드립니다</b>. ' +
+      '급하면 아래 칸에 직접 적어도 됩니다.';
+    ['L','A','M','P'].forEach(function(k) {
+      var b = document.getElementById('aha-box-' + k); if (b) b.classList.add('unread');
+    });
+    ahaRenderDirChips(); ahaRenderConceptChips(); ahaUpdateMeter(); ahaEmptyWarn();
+    return;
+  }
+
+  document.getElementById('aha-q-learn').value = ai.L || '';
+  document.getElementById('aha-q-act').value = ai.A || '';
+  document.getElementById('aha-q-try').value = ai.M || '';
+  document.getElementById('aha-q-stuck').value = ai.P || '';
+
+  // 못 읽은 칸은 노란 테두리로 표시
+  var unread = Array.isArray(ai.unread) ? ai.unread : [];
+  ['L','A','M','P'].forEach(function(k) {
+    var b = document.getElementById('aha-box-' + k);
+    if (b) b.classList.toggle('unread', unread.indexOf(k) >= 0);
+  });
+
+  // 머리(교재·쪽·번호·틀린이유)
+  if (ai.page) document.getElementById('aha-page').value = ai.page;
+  if (ai.num) document.getElementById('aha-problem-no').value = ai.num;
+  if (ai.book) {
+    var sel = document.getElementById('aha-source');
+    var want = ahaNormName(ai.book), hit = '';
+    for (var i = 0; i < sel.options.length; i++) {
+      var v = sel.options[i].value;
+      if (v.indexOf('book::') === 0 && ahaNormName(v.slice(6)).indexOf(want) >= 0) { hit = v; break; }
+    }
+    if (!hit) for (var j = 0; j < sel.options.length; j++) {
+      var v2 = sel.options[j].value;
+      if (v2.indexOf('book::') === 0 && want.indexOf(ahaNormName(v2.slice(6))) >= 0) { hit = v2; break; }
+    }
+    if (hit) { sel.value = hit; ahaOnSourceChange(); }
+    else {
+      sel.value = 'print'; ahaOnSourceChange();
+      document.getElementById('aha-print-name').value = ai.book;
+    }
+  }
+  if (ai.reason) {
+    document.querySelectorAll('#aha-error-chips .aha-chip').forEach(function(c) {
+      if (c.dataset.err === ai.reason) c.classList.add('on');
+    });
+  }
+
+  ahaConceptsOn = Array.isArray(ai.concepts) ? ai.concepts.slice(0, 3) : [];
+
+  var n = unread.length;
+  if (badge) {
+    badge.className = 'badge ' + (n ? 'badge-warn' : 'badge-ai');
+    badge.textContent = n ? ('🤖 ' + n + '칸은 못 읽었어요') : '🤖 AI가 읽었어요';
+  }
+  if (msg) msg.innerHTML = n
+    ? '<b>노란 칸</b>은 못 읽은 칸이에요. 활동지에 쓴 대로 채워 주세요. 나머지는 맞는지만 봐 주세요.'
+    : '잘못 읽은 곳만 탭해서 고쳐 주세요. 맞으면 그대로 두면 됩니다.';
+  if (failMsg && msg) msg.innerHTML += ' <span style="color:#b91c1c">(' + ahaEscape(failMsg) + ')</span>';
+
+  ahaRenderDirChips();
+  ahaRenderConceptChips();
+  ahaUpdateMeter();
+  ahaEmptyWarn();
 }
 
 // 이미지 압축 (1MB 이하, 가로 1600px 제한)
@@ -4973,122 +6106,278 @@ function ahaToggleChip(btn) {
 
 // 취소 (뒤로가기)
 function ahaCancelAdd() {
+  closeAhaPhotoBS();   // 사진 고르는 시트가 열린 채로 남지 않게
   // 변경사항 있을 때 확인
-  if (ahaPendingPhotoFile) {
-    if (!confirm('작성 중인 내용이 사라져요. 그래도 나갈까요?')) return;
+  if (ahaPendingPhotoFile || ahaUploadedUrl) {
+    if (!confirm('올리던 내용이 사라져요. 그래도 나갈까요?')) return;
   }
   ahaPendingPhotoFile = null;
   ahaPendingPhotoDataURL = null;
   ahaEditingId = null;
+  ahaClearConfirm();
+  ahaShowStage('photo');
   go('screen-aha');
+}
+
+/* 확인 화면의 값을 모아 저장할 모양으로 만든다. 문제가 있으면 {err:'...'} */
+function ahaCollect() {
+  var sourceVal = document.getElementById('aha-source').value;
+  var problemNo = document.getElementById('aha-problem-no').value.trim();
+  if (!sourceVal) return { err:'출처를 선택해 주세요' };
+
+  var sourceType, sourceName, page;
+  if (sourceVal === 'print') {
+    var printName = document.getElementById('aha-print-name').value.trim();
+    if (!printName) return { err:'프린트 이름을 적어 주세요' };
+    sourceType = 'print'; sourceName = printName; page = null;
+  } else if (sourceVal.indexOf('book::') === 0) {
+    page = document.getElementById('aha-page').value.trim();
+    if (!page) return { err:'페이지를 적어 주세요' };
+    if (!problemNo) return { err:'문제 번호를 적어 주세요' };
+    sourceType = 'book'; sourceName = sourceVal.slice(6);
+  } else return { err:'출처를 다시 골라 주세요' };
+
+  var qStuckRaw = document.getElementById('aha-q-stuck').value.trim();
+  if (!qStuckRaw) return { err:'P칸(막힌 곳·질문)은 비워 둘 수 없어요' };
+  if (!ahaDirective) return { err:'어떻게 답해 주면 좋을지 하나만 골라 주세요' };
+
+  var sp = ahaSplitP(qStuckRaw);
+  var errorTypes = [];
+  document.querySelectorAll('#aha-error-chips .aha-chip.on').forEach(function(c) {
+    errorTypes.push(c.dataset.err);
+  });
+
+  var m = ahaMeter();
+  return {
+    source_type: sourceType,
+    source_name: sourceName,
+    page: page,
+    problem_no: problemNo,
+    error_types: errorTypes,
+    q_learn: document.getElementById('aha-q-learn').value.trim() || null,
+    q_act:   document.getElementById('aha-q-act').value.trim() || null,
+    q_try:   document.getElementById('aha-q-try').value.trim() || null,
+    q_stuck: sp.stuck || null,
+    q_ask:   sp.ask || null,
+    directive: ahaDirective,
+    q_type: ahaQType(sp.ask),
+    concepts: ahaConceptsOn.slice(),
+    self_eval: { L:ahaSelfChk.L, A:ahaSelfChk.A, M:ahaSelfChk.M, P:ahaSelfChk.P,
+                 expected: ahaSelfEvalExpected(), meter: m.total },
+    lamp_ai: ahaLampAi,
+    // 옛 화면·학원앱이 memo를 읽으므로 질문 문장을 그대로 넣어 둔다(호환)
+    memo: sp.ask || qStuckRaw
+  };
 }
 
 // 제출 (추가 또는 수정)
 async function ahaSubmit() {
   if (isTest) { ahaToast('테스트 모드에서는 제출할 수 없어요', 'error'); return; }
   if (!sb || !studentInfo) { ahaToast('로그인 상태를 확인해주세요', 'error'); return; }
+  if (!ahaEditingId && !ahaUploadedUrl) { ahaToast('활동지 사진을 먼저 찍어 주세요', 'error'); return; }
+
+  var d = ahaCollect();
+  if (d.err) { ahaToast(d.err, 'error'); return; }
 
   var btn = document.getElementById('aha-submit-btn');
-  var sourceVal = document.getElementById('aha-source').value;
-  var memo = document.getElementById('aha-memo').value.trim();
-  var problemNo = document.getElementById('aha-problem-no').value.trim();
-
-  // 검증: 출처
-  if (!sourceVal) { ahaToast('출처를 선택해주세요', 'error'); return; }
-
-  // 출처 타입에 따라 분기
-  var sourceType, sourceName, page;
-  if (sourceVal === 'print') {
-    var printName = document.getElementById('aha-print-name').value.trim();
-    if (!printName) { ahaToast('프린트 이름을 입력해주세요', 'error'); return; }
-    sourceType = 'print';
-    sourceName = printName;
-    page = null;
-  } else if (sourceVal.indexOf('book::') === 0) {
-    page = document.getElementById('aha-page').value.trim();
-    if (!page) { ahaToast('페이지를 입력해주세요', 'error'); return; }
-    if (!problemNo) { ahaToast('문제 번호를 입력해주세요', 'error'); return; }
-    sourceType = 'book';
-    sourceName = sourceVal.slice(6);
-  } else {
-    ahaToast('출처를 다시 선택해주세요', 'error'); return;
-  }
-
-  // 검증: 사진 (추가 시만 필수, 수정 시는 기존 사진 유지)
-  if (!ahaEditingId && !ahaPendingPhotoFile) {
-    ahaToast('노트 사진을 추가해주세요', 'error'); return;
-  }
-
-  // 틀린이유 수집
-  var errorTypes = [];
-  document.querySelectorAll('#aha-error-chips .aha-chip.on').forEach(function(c) {
-    errorTypes.push(c.dataset.err);
-  });
-
+  var oldLabel = btn.textContent;
   btn.disabled = true;
   btn.textContent = '저장 중...';
 
   try {
-    var photoUrl = null;
-
-    // 사진 업로드 (새 사진이 있을 때만)
-    if (ahaPendingPhotoFile) {
-      var ts = Date.now();
-      var rand = Math.random().toString(36).slice(2, 8);
-      var fileName = (studentInfo.lumen_rec_code || 'unknown') + '/' + ts + '_' + rand + '.jpg';
-      var up = await sb.storage.from('aha_photos').upload(fileName, ahaPendingPhotoFile, {
-        contentType: 'image/jpeg', upsert: false
-      });
-      if (up.error) throw new Error('사진 업로드 실패: ' + up.error.message);
-      var pub = sb.storage.from('aha_photos').getPublicUrl(fileName);
-      photoUrl = pub.data.publicUrl;
-    }
-
-    // DB 저장
     if (ahaEditingId) {
-      // 수정
-      var updateData = {
-        source_type: sourceType,
-        source_name: sourceName,
-        page: page,
-        problem_no: problemNo,
-        memo: memo || null,
-        error_types: errorTypes
-      };
-      var ur = await sb.from('aha_notes').update(updateData).eq('id', ahaEditingId);
+      var ur = await sb.from('aha_notes').update(d).eq('id', ahaEditingId);
       if (ur.error) throw new Error('수정 실패: ' + ur.error.message);
-      ahaToast('수정 완료!', 'success');
+      ahaToast('고친 내용을 저장했어요!', 'success');
     } else {
-      // 추가
-      var insertData = {
-        student_code: studentInfo.lumen_rec_code,
-        student_name: studentInfo.name || '',
-        student_grade: studentInfo.grade || studentInfo.lumen_grade || '',
-        source_type: sourceType,
-        source_name: sourceName,
-        page: page,
-        problem_no: problemNo,
-        memo: memo || null,
-        photo_url: photoUrl,
-        error_types: errorTypes,
-        status: 'pending'
-      };
-      var ir = await sb.from('aha_notes').insert(insertData);
+      d.student_code = studentInfo.lumen_rec_code;
+      d.student_name = studentInfo.name || '';
+      d.student_grade = studentInfo.grade || studentInfo.lumen_grade || '';
+      d.photo_url = ahaUploadedUrl;
+      d.status = 'pending';
+      var ir = await sb.from('aha_notes').insert(d);
       if (ir.error) throw new Error('저장 실패: ' + ir.error.message);
-      ahaToast('아하노트 제출 완료! 🎉', 'success');
+      ahaToast('IB아하노트 제출 완료! 🎉', 'success');
     }
 
-    // 정리 후 메인으로
     ahaPendingPhotoFile = null;
     ahaPendingPhotoDataURL = null;
     ahaEditingId = null;
+    ahaClearConfirm();
+    ahaShowStage('photo');
     go('screen-aha');
     await renderAhaScreen();
   } catch(e) {
     ahaToast(e.message || '오류가 발생했어요', 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = ahaEditingId ? '수정 저장하기' : '아하노트 제출하기';
+    btn.textContent = oldLabel;
+  }
+}
+
+/* ═══ ④ 스스로 해결 ═══
+ * 두 갈래로 들어온다.
+ *   ㄱ 확인 화면에서 「🙋 쓰다 보니 알았어요」 → 질문을 먼저 저장한 뒤 이 화면
+ *   ㄴ 목록 카드에서 「🙋 스스로 풀었어요」 → 이미 있는 노트에 붙인다 */
+async function ahaGoSelfSolve() {
+  if (isTest) { ahaToast('테스트 모드에서는 제출할 수 없어요', 'error'); return; }
+  if (!ahaEditingId && !ahaUploadedUrl) { ahaToast('활동지 사진을 먼저 찍어 주세요', 'error'); return; }
+
+  var d = ahaCollect();
+  if (d.err) { ahaToast(d.err, 'error'); return; }
+
+  var btn = document.getElementById('aha-submit-btn');
+  btn.disabled = true;
+  try {
+    if (ahaEditingId) {
+      var ur = await sb.from('aha_notes').update(d).eq('id', ahaEditingId);
+      if (ur.error) throw new Error(ur.error.message);
+      ahaSelfNoteId = ahaEditingId;
+    } else {
+      d.student_code = studentInfo.lumen_rec_code;
+      d.student_name = studentInfo.name || '';
+      d.student_grade = studentInfo.grade || studentInfo.lumen_grade || '';
+      d.photo_url = ahaUploadedUrl;
+      d.status = 'pending';
+      var ir = await sb.from('aha_notes').insert(d).select('id');
+      if (ir.error) throw new Error(ir.error.message);
+      ahaSelfNoteId = (ir.data && ir.data[0] && ir.data[0].id) || null;
+    }
+    if (!ahaSelfNoteId) throw new Error('노트 번호를 받지 못했어요');
+    ahaPendingPhotoFile = null; ahaEditingId = null;
+    ahaOpenSelfScreen();
+  } catch(e) {
+    ahaToast('저장 실패: ' + (e.message || ''), 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* 목록 카드에서 바로 스스로 해결 */
+function ahaSelfStart(id) {
+  if (isTest) { ahaToast('테스트 모드에서는 제출할 수 없어요', 'error'); return; }
+  ahaSelfNoteId = id;
+  ahaOpenSelfScreen();
+}
+
+function ahaOpenSelfScreen() {
+  ahaSelfPhotoFile = null; ahaSelfPhotoUrl = null;
+  ['aha-self-how','aha-self-learned','aha-self-wonder'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
+  var box = document.getElementById('aha-self-aha-box');
+  if (box) box.style.display = 'none';
+  var slot = document.getElementById('aha-self-slot');
+  if (slot) {
+    slot.classList.remove('has-photo');
+    slot.innerHTML = '<span class="aha-photo-slot-icon">📷</span>' +
+      '<span class="aha-photo-slot-text">탭하여 사진 추가</span>' +
+      '<span class="aha-photo-slot-sub">AI가 AHA 칸도 같이 읽어요</span>';
+  }
+  go('screen-aha-self');
+}
+
+function ahaSelfBack() {
+  if (ahaSelfPhotoUrl || (document.getElementById('aha-self-how') || {}).value) {
+    if (!confirm('쓰던 내용이 사라져요. 그래도 나갈까요?')) return;
+  }
+  ahaSelfNoteId = null; ahaSelfPhotoFile = null; ahaSelfPhotoUrl = null;
+  go('screen-aha');
+  renderAhaScreen();
+}
+
+function ahaSelfPickPhoto() { document.getElementById('aha-self-photo').click(); }
+
+async function ahaSelfHandlePhoto(inp) {
+  var file = inp.files[0];
+  if (!file) return;
+  inp.value = '';
+  var slot = document.getElementById('aha-self-slot');
+  try {
+    var c = await ahaCompressImage(file);
+    ahaSelfPhotoFile = c.blob;
+    slot.classList.add('has-photo');
+    slot.innerHTML = '<img src="' + c.dataUrl + '" alt="">' +
+      '<button class="aha-photo-replace" onclick="event.stopPropagation();ahaSelfPickPhoto()">다시 찍기</button>';
+  } catch(e) { ahaToast('사진 처리 실패', 'error'); return; }
+
+  ahaToast('사진을 읽는 중이에요…', 'success');
+  try {
+    ahaSelfPhotoUrl = await ahaUploadPhoto(ahaSelfPhotoFile, 'retry_');
+  } catch(e) { ahaToast(e.message || '사진 업로드 실패', 'error'); return; }
+
+  // AHA 칸을 읽어 채워 준다 (실패해도 그냥 넘어간다)
+  try {
+    var ai = await ahaReadPhoto(ahaSelfPhotoUrl, 'retry');
+    var box = document.getElementById('aha-self-aha-box');
+    if (ai && ai.aha) {
+      document.getElementById('aha-self-learned').value = ai.aha;
+      if (box) box.style.display = 'block';
+      var tag = document.getElementById('aha-tag-AHA');
+      if (tag) { tag.className = 'tag ok'; tag.textContent = '🤖 읽었어요'; }
+    } else if (box) {
+      box.style.display = 'block';
+      var tag2 = document.getElementById('aha-tag-AHA');
+      if (tag2) { tag2.className = 'tag no'; tag2.textContent = '못 읽었어요'; }
+    }
+    if (ai && ai.answer) ahaSelfAnswer = ai.answer;
+  } catch(e) {
+    var box2 = document.getElementById('aha-self-aha-box');
+    if (box2) box2.style.display = 'block';
+  }
+}
+var ahaSelfAnswer = '';
+
+async function ahaSelfSubmit() {
+  if (!sb || !studentInfo || !ahaSelfNoteId) { ahaToast('다시 시도해 주세요', 'error'); return; }
+  var how = document.getElementById('aha-self-how').value.trim();
+  if (!how) { ahaToast('어떻게 풀렸는지 꼭 적어 주세요', 'error'); return; }
+  if (!ahaSelfPhotoUrl) { ahaToast('다시 푼 풀이 사진을 올려 주세요', 'error'); return; }
+
+  var btn = document.getElementById('aha-self-btn');
+  btn.disabled = true; btn.textContent = '보내는 중...';
+  try {
+    var learned = document.getElementById('aha-self-learned').value.trim();
+    var wonder = document.getElementById('aha-self-wonder').value.trim();
+    var now = new Date().toISOString();
+    var hints = ahaHintOpened(ahaSelfNoteId);
+    // 힌트를 한 번도 열지 않았으면 「스스로」, 열었으면 그 단계가 해결 경로가 된다
+    var openedAny = false;
+    try { openedAny = !!localStorage.getItem('aha_hint_open_' + ahaSelfNoteId); } catch(e) {}
+
+    var upd = {
+      status: 'self_pending',
+      hints_opened: openedAny ? hints : 0,
+      self_solved: {
+        how: how, photo_url: ahaSelfPhotoUrl, at: now,
+        answer: ahaSelfAnswer || '',
+        reflect: { learned: learned || '', wonder: wonder || '' }
+      }
+    };
+    if (learned || wonder) upd.reflect = { learned: learned || '', wonder: wonder || '', at: now };
+
+    var r = await sb.from('aha_notes').update(upd).eq('id', ahaSelfNoteId);
+    if (r.error) throw new Error(r.error.message);
+
+    // 학원앱이 이미 읽고 있는 재풀이 키에도 남긴다(기존 화면 호환)
+    try {
+      var key = 'aha_retry_' + studentInfo.lumen_rec_code;
+      var cur = {};
+      var r0 = await sb.from('lumen_store').select('value').eq('key', key);
+      if (r0.data && r0.data[0] && r0.data[0].value) cur = r0.data[0].value;
+      cur[ahaSelfNoteId] = { url: ahaSelfPhotoUrl, at: now, auto: false, self: true };
+      await sb.from('lumen_store').upsert({ key: key, value: cur });
+      ahaRetryMap = cur;
+    } catch(e) { console.warn('재풀이 기록 저장 실패:', e); }
+
+    ahaToast('보냈어요! 선생님 확인 뒤 +2점이 확정돼요 🎉', 'success');
+    ahaSelfNoteId = null; ahaSelfPhotoFile = null; ahaSelfPhotoUrl = null; ahaSelfAnswer = '';
+    go('screen-aha');
+    await renderAhaScreen();
+  } catch(e) {
+    ahaToast('보내기 실패: ' + (e.message || ''), 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '스스로 해결 보내기';
   }
 }
 
@@ -8188,7 +9477,7 @@ function bkCleanAns(a){
  *   · 공개는 상위 N명(원장님이 정함)까지 · 이름은 김○○
  *   · 6위 이하는 순위표에 안 나오지만, 「내 순위」는 자기 자신에게만 보인다
  * ══════════════════════════════════════════════════════════════ */
-var RC={loaded:false,board:null,at:0,band:''};
+var RC={loaded:false,board:null,awards:null,at:0,band:''};   /* v2-75: awards = 🎉 시상 발표 */
 /* 🏆 리그 — 롤 사다리 (v2-64). 브론즈 → … → 마스터까지는 점수로 오르고,
  * 그랜드마스터·챌린저는 마스터에 도달한 학생 중 2등·1등이 앉는 자리다.
  * 아이언은 일부러 뺐다 — 맨 밑 이름표가 아이에게 낙인이 된다. */
@@ -8451,10 +9740,16 @@ async function rcLoad(force){
   if(RC.loaded&&!force&&Date.now()-RC.at<180000) return RC.board;
   if(!sb) return null;
   try{
-    var r=await sb.from('lumen_store').select('value').eq('key','race_board').maybeSingle();
-    var v=r&&r.data&&r.data.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
-    RC.board=(v&&v.at)?v:null; RC.loaded=true; RC.at=Date.now();
-  }catch(e){ RC.board=null; }
+    /* v2-75: 🎉 시상 발표(race_awards)도 같이 읽는다 — 선생님이 발표해야만 생긴다 */
+    var r=await sb.from('lumen_store').select('key,value').in('key',['race_board','race_awards']);
+    var m={}; ((r&&r.data)||[]).forEach(function(row){
+      var v=row.value; if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } } m[row.key]=v;
+    });
+    var v=m.race_board;
+    RC.board=(v&&v.at)?v:null;
+    RC.awards=(m.race_awards&&m.race_awards.seasonId)?m.race_awards:null;
+    RC.loaded=true; RC.at=Date.now();
+  }catch(e){ RC.board=null; RC.awards=null; }
   return RC.board;
 }
 /* 홈 배너 */
@@ -8733,36 +10028,77 @@ window.xtInit=async function(){
   body.innerHTML=h;
 };
 
+/* ★ v2-72: 홈 배너는 이제 「🏆 루멘 리그」 하나다.
+ * 진도 레이스가 열려 있으면 진도를, IB아하 리그가 발행돼 있으면 아하를,
+ * 둘 다 있으면 종합 순위까지 한 줄에 담는다. 둘 다 없으면 배너를 감춘다. */
 async function rcHomeUpdate(){
   var el=document.getElementById('rcbn'); if(!el) return;
   if(isTest){ el.style.display='none'; return; }
-  var b=await rcLoad(); if(!b||b.open===false){ el.style.display='none'; return; }
-  var today=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
-  // v2-45: 끝나자마자 사라지면 결과를 볼 새가 없다 — 며칠 더 「최종 결과」로 남긴다
-  if(today<b.from){ el.style.display='none'; return; }
-  if(today>b.to && (Number(b.endedDays)||0) > (Number(b.showDaysAfter)||7)){ el.style.display='none'; return; }
+  var today=lgToday();
+  /* ── 진도 레이스 ── */
+  var b=await rcLoad();
+  var raceOn=!!(b && b.open!==false && today>=b.from
+    && !(today>b.to && (Number(b.endedDays)||0) > (Number(b.showDaysAfter)||7)));
   var code=studentInfo&&studentInfo.lumen_rec_code;
-  var myBand=rcMyBand(b);
-  var me=(b[myBand]||[]).filter(function(r){return r.code===code;})[0];
-  var demo=rcIsDemo(b,myBand);
-  el.style.display='';
-  document.getElementById('rcbn-nm').textContent=b.name||'진도 레이스';
-  var left=Math.max(0,Math.round((Date.parse(b.to+'T00:00:00')-Date.parse(today+'T00:00:00'))/86400000));
-  document.getElementById('rcbn-dd').textContent=(today>b.to)?'끝':('D-'+left);
-  var dtEl=document.getElementById('rcbn-dt');
-  if(dtEl) dtEl.textContent=String(b.to||'').slice(5).replace('-','/')+' 마감';
-  var em=document.getElementById('rcbn-em');
-  if(me){
-    em.style.background=rcT(me.tier).g;
-    document.getElementById('rcbn-t2').textContent=(demo?'🌱 체험 · ':'')+(me.label||rcT(me.tier).n)+' · '+rcN(me.pts)+'점 · 내 순위 '+me.rank+'위';
-  }else{
-    em.style.background=rcT('bronze').g;
-    document.getElementById('rcbn-t2').textContent='아직 기록이 없어요 — 문제를 풀면 점수가 쌓여요!';
+  var rMe=null, rBand='', demo=false;
+  if(raceOn){
+    rBand=rcMyBand(b);
+    rMe=(b[rBand]||[]).filter(function(r){return r.code===code;})[0]||null;
+    demo=rcIsDemo(b,rBand);
   }
+  /* ── IB아하 리그 ── */
+  await lgLoad();
+  var lb=LG.board;
+  var aMe=lb?lgMyRow(lb):null;
+  if(!raceOn && !lb){ el.style.display='none'; return; }
+  el.style.display='';
+
+  var nmEl=document.getElementById('rcbn-nm'); if(nmEl) nmEl.textContent='루멘 리그';
+  var sports=(raceOn?1:0)+(lb?1:0);
+  var cntEl=document.getElementById('rcbn-cnt');
+  if(cntEl){ cntEl.textContent=sports+'종목'; cntEl.style.display=sports>1?'':'none'; }
+
+  /* 한 줄 요약 — 종목별 내 순위 */
+  var line=[];
+  if(raceOn) line.push(rMe?('🏁 진도 '+rMe.rank+'위'+(demo?'(체험)':'')):'🏁 진도 기록 없음');
+  if(lb&&aMe) line.push('💡 아하 '+aMe.rank+'위 '+lgTierName(aMe.tier));
+  else if(lb) line.push('💡 아하 아직 질문 없음');
+  var cMe=lb?lgMyChamp(lb):null;
+  if(cMe&&cMe.rank) line.push('👑 종합 '+cMe.rank+'위');
+  var t2=document.getElementById('rcbn-t2');
+  if(t2) t2.textContent=line.length?line.join(' · '):'문제를 풀고 질문을 올리면 순위가 쌓여요!';
+
+  /* 종목 D-day 칩 */
+  var chips=[], nearest=null, nearestNm='';
+  if(raceOn){
+    var rLeft=lgDdayOf(b.to);
+    chips.push(['🏁 진도 '+(today>b.to?'끝':(rLeft>0?('D-'+rLeft):'오늘 마감')),false]);
+    if(rLeft!=null&&rLeft>=0&&(nearest===null||rLeft<nearest)){ nearest=rLeft; nearestNm='진도'; }
+  }
+  if(lb){
+    var aEnd=(lb.season||{}).end||'';
+    var aLeft=lgDdayOf(aEnd);
+    chips.push(['💡 아하 '+(aLeft==null?'진행 중':(aLeft<0?'끝':(aLeft>0?('D-'+aLeft):'오늘 마감'))),false]);
+    if(aLeft!=null&&aLeft>=0&&(nearest===null||aLeft<nearest)){ nearest=aLeft; nearestNm='아하'; }
+  }
+  chips.push(['🎙 말하기 준비 중',true]);
+  var chEl=document.getElementById('rcbn-chips');
+  if(chEl) chEl.innerHTML=chips.map(function(c){
+    return '<span'+(c[1]?' class="off"':'')+'>'+rcEsc(c[0])+'</span>';
+  }).join('');
+
+  var ddEl=document.getElementById('rcbn-dd'), dtEl=document.getElementById('rcbn-dt');
+  if(ddEl) ddEl.textContent=(nearest==null)?'':(nearest>0?('D-'+nearest):'오늘');
+  if(dtEl) dtEl.textContent=nearestNm?(nearestNm+' 마감'):'';
+
+  var em=document.getElementById('rcbn-em');
+  if(em) em.style.background=(raceOn&&rMe)?rcT(rMe.tier).g:'linear-gradient(135deg,#ffd76a,#e0a219)';
 }
 /* 화면 */
-window.rcInit=async function(){
-  var body=document.getElementById('rc-body'); if(!body) return;
+window.rcInit=async function(targetId){
+  /* v2-72: 리그 화면의 「진도」 탭이 이 함수를 그대로 재사용한다.
+   * 그릴 자리(targetId)만 갈아 끼우면 화면 내용은 예전 그대로다. */
+  var body=document.getElementById(targetId||'rc-body'); if(!body) return;
   if(isTest){ body.innerHTML='<div class="sp3-empty"><div class="e1">🧪</div><div class="e2">테스트 모드에서는 볼 수 없어요</div></div>'; return; }
   var b=await rcLoad(true);
   if(window.rdLoad) { try{ await rdLoad(); }catch(e){} }      // v2-66: ⚔️ 레이드
@@ -8800,12 +10136,40 @@ window.rcInit=async function(){
   if(demo) h+='<div class="pz" style="background:rgba(255,255,255,.5)">🌱 <b>체험 리그</b> — 상은 없지만, 중학생 형·누나들과 <b>똑같은 잣대</b>로 점수가 쌓여요</div>';
   else if(rcNoPrize(b,infoBand)) h+='<div class="pz">🏁 <b>기록 도전</b> — 상금은 걸려 있지 않아요. '
     +'내가 얼마나 풀었는지, 지난주보다 얼마나 늘었는지가 전부예요</div>';
+  /* ★ v2-76: 개별 금액이 공개되면 <b>상마다 크게</b> (원장 지시 2026-09-09).
+   * 학생이 보고 싶은 것은 총액이 아니라 「1등 하면 얼마」다.
+   * 공개가 꺼져 있으면 예전처럼 총상금을 크게 둔다. */
+  else if(b.prizeTotal && b.prizeOpen && (b.prizeDetail||[]).length){
+    h+='<div class="rc-prize"><div class="lb">🏆 이번 시즌 상금</div><div class="rc-pzd">';
+    (b.prizeDetail||[]).forEach(function(p,i){
+      h+='<div'+(i===0?' class="one"':'')+'><div class="r">'+(i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':'')+rcEsc(p.r)+'</div>'
+        +'<div class="w">'+rcN(p.w)+'<small>원</small></div></div>';
+    });
+    h+='</div><div class="who2">'+b.prizeCount+'명에게 · 모두 합쳐 '+rcN(b.prizeTotal)+'원</div></div>';
+  }
   else if(b.prizeTotal) h+='<div class="rc-prize">'
     +'<div class="lb">🏆 이번 시즌 총상금</div>'
     +'<div class="amt">'+rcN(b.prizeTotal)+'<small>원</small></div>'
     +'<div class="who"><b>'+b.prizeCount+'명</b>에게 · 1·2·3등 + 꾸준상 + 성장상</div>'
     +'</div>';
   h+='</div>';
+
+  /* ★ v2-75: 🎉 시즌 결과 — 선생님이 시상을 발표했을 때만 (내 부의 것만) */
+  var raw=RC.awards;
+  if(raw && raw.seasonId===b.seasonId && (!raw.band || raw.band===band)){
+    h+='<div class="rc-aw"><div class="t">🎉 시즌 결과 — 시상 발표</div>'
+      +'<div class="s">'+rcEsc(raw.name||'진도 레이스')+' · '+rcEsc(raw.from||'')+' ~ '+rcEsc(raw.to||'')+'</div>';
+    (raw.awards||[]).forEach(function(a,i){
+      var mine=(a.code&&studentInfo&&a.code===studentInfo.lumen_rec_code);
+      h+='<div class="row'+(mine?' me':'')+'">'
+        +'<span class="ic">'+(i===0?'🥇':i===1?'🥈':i===2?'🥉':i===3?'🎯':'📈')+'</span>'
+        +'<span class="r">'+rcEsc(a.r)+'</span>'
+        +'<span class="nm">'+rcEsc(mine?'나 ✨':(a.nm||'—'))+'</span>'
+        +(b.prizeOpen?('<span class="w">'+rcN(a.w)+'원</span>'):'')
+        +'</div>';
+    });
+    h+='</div>';
+  }
 
   /* 부 전환 탭 — 다른 부의 레이스도 구경할 수 있다 */
   var bands=rcBands(b);
@@ -8951,6 +10315,721 @@ window.rcInit=async function(){
     if(!window._rdTimer) window._rdTimer=setInterval(function(){ if(window.rdTick) rdTick(); },110);
   }
 };
+
+/* ══════════════════════════════════════════════════════════════════
+ * 🏆 루멘 리그 (v2-72) — 종목이 여럿인 한 개의 리그
+ * ══════════════════════════════════════════════════════════════════
+ * 종목   🏁 진도(진도 레이스 그대로) · 💡 IB아하 · 🎙 말하기(11월부터) · 👑 종합
+ * 자료   학원앱이 lumen_store 에 넣어 둔 것을 읽기만 한다.
+ *          race_board          진도 레이스 순위 (기존)
+ *          aha_league_board    IB아하 리그 순위·상금·규칙 (학원앱 「발행」)
+ *          aha_league_awards   시즌이 끝나고 확정한 시상 결과
+ * 이름   순위표는 공개 인원(publicTop)까지만 이름을 보이고 나머지는 흐리게.
+ *        내 줄은 언제나 선명하다 — 진도 레이스와 같은 문법.
+ * ══════════════════════════════════════════════════════════════════ */
+var LG = { board:null, awards:null, loaded:false, at:0, tab:'aha', band:'' };
+window.LG = LG;
+var LG_TIER = {
+  inquirer:{ n:'질문자', en:'Inquirer',      ic:'❓', c:'#64748b', bg:'#f1f5f9' },
+  knowledge:{ n:'탐구자', en:'Knowledgeable', ic:'🔎', c:'#1d4ed8', bg:'#eff6ff' },
+  thinker:{ n:'사고자', en:'Thinker',        ic:'💭', c:'#7c3aed', bg:'#f5f3ff' },
+  reflect:{ n:'성찰자', en:'Reflective',     ic:'🪞', c:'#b45309', bg:'#fffbeb' }
+};
+var LG_TIER_ORDER = ['inquirer','knowledge','thinker','reflect'];
+var LG_BN = { elem:'초등부', mid:'중등부', high:'고등부' };
+function lgT(k){ return LG_TIER[k] || LG_TIER.inquirer; }
+function lgTierName(k){ var t=lgT(k); return t.ic+' '+t.n; }
+function lgToday(){ return new Date(Date.now()+9*3600000).toISOString().slice(0,10); }
+function lgDdayOf(dateStr){
+  if(!dateStr) return null;
+  var t=Date.parse(String(dateStr)+'T00:00:00'); if(isNaN(t)) return null;
+  return Math.round((t-Date.parse(lgToday()+'T00:00:00'))/86400000);
+}
+function lgCode(){ return (studentInfo&&studentInfo.lumen_rec_code)||''; }
+
+async function lgLoad(force){
+  if(LG.loaded && !force && Date.now()-LG.at<120000) return LG;
+  LG.loaded=true; LG.at=Date.now();
+  if(!sb || isTest) return LG;
+  try{
+    var r=await sb.from('lumen_store').select('value').eq('key','aha_league_board').maybeSingle();
+    var v=r&&r.data&&r.data.value;
+    if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+    LG.board=(v&&v.divisions)?v:null;
+  }catch(e){ LG.board=null; }
+  try{
+    var r2=await sb.from('lumen_store').select('value').eq('key','aha_league_awards').maybeSingle();
+    var v2=r2&&r2.data&&r2.data.value;
+    if(typeof v2==='string'){ try{ v2=JSON.parse(v2); }catch(e){ v2=null; } }
+    LG.awards=(v2&&typeof v2==='object')?v2:null;
+  }catch(e){ LG.awards=null; }
+  return LG;
+}
+function lgDivs(b){ return (b&&b.divisions)||{}; }
+function lgSortRank(a,b){ return (Number(a.rank)||999)-(Number(b.rank)||999); }
+function lgMyBand(b){
+  var code=lgCode(), d=lgDivs(b), ks=['elem','mid','high'], i, j;
+  for(i=0;i<ks.length;i++){
+    if(code && (d[ks[i]]||[]).some(function(r){ return r.code===code; })) return ks[i];
+  }
+  for(j=0;j<ks.length;j++) if((d[ks[j]]||[]).length) return ks[j];
+  return 'mid';
+}
+function lgRows(b){
+  var d=lgDivs(b), band=LG.band||lgMyBand(b);
+  if(!(d[band]||[]).length) band=lgMyBand(b);
+  return { band:band, rows:(d[band]||[]).slice().sort(lgSortRank) };
+}
+function lgMyRow(b){
+  var code=lgCode(); if(!code) return null;
+  var d=lgDivs(b), ks=['elem','mid','high'], i, hit;
+  for(i=0;i<ks.length;i++){
+    hit=(d[ks[i]]||[]).filter(function(r){ return r.code===code; })[0];
+    if(hit) return hit;
+  }
+  return null;
+}
+function lgChampDivs(b){ return ((b&&b.champion)||{}).divisions||{}; }
+function lgChampRows(b,band){ return (lgChampDivs(b)[band]||[]).slice().sort(lgSortRank); }
+function lgMyChamp(b){
+  var code=lgCode(); if(!code) return null;
+  var d=lgChampDivs(b), ks=['elem','mid','high'], i, hit;
+  for(i=0;i<ks.length;i++){
+    hit=(d[ks[i]]||[]).filter(function(r){ return r.code===code; })[0];
+    if(hit) return hit;
+  }
+  return null;
+}
+/* 진도 레이스가 지금 열려 있나 (홈 배너·종목 탭이 같은 잣대를 쓴다) */
+function lgRaceOn(){
+  var b=RC.board;
+  if(!b || b.open===false) return false;
+  var today=lgToday();
+  if(today<b.from) return false;
+  if(today>b.to && (Number(b.endedDays)||0) > (Number(b.showDaysAfter)||7)) return false;
+  return true;
+}
+/* 시즌이 끝났고 시상이 확정됐으면 그 결과를 돌려준다 */
+function lgSeasonAwards(){
+  var b=LG.board; if(!b||!LG.awards) return null;
+  var a=LG.awards[b.seasonId]; if(!a) return null;
+  var end=(b.season||{}).end;
+  if(end && lgToday()<=String(end)) return null;
+  return a;
+}
+
+window.lgInit = async function(){
+  var body=document.getElementById('lg-body'); if(!body) return;
+  if(isTest){ body.innerHTML='<div class="sp3-empty"><div class="e1">🧪</div><div class="e2">테스트 모드에서는 볼 수 없어요</div></div>'; return; }
+  body.innerHTML='<div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>';
+  await lgLoad(true);
+  try{ await rcLoad(); }catch(e){}
+  if(!LG.tab) LG.tab='aha';
+  if(LG.tab==='race' && !lgRaceOn()) LG.tab='aha';
+  if(LG.tab==='aha' && !LG.board && lgRaceOn()) LG.tab='race';
+  lgPaint();
+};
+window.lgTab = function(k){ LG.tab=k; lgPaint(); };
+
+function lgPaint(){
+  var body=document.getElementById('lg-body'); if(!body) return;
+  var b=LG.board;
+  var band=b?lgRows(b).band:(lgRaceOn()?rcMyBand(RC.board):'');
+  var bandEl=document.getElementById('lg-band');
+  if(bandEl) bandEl.textContent=LG_BN[band]||'';
+  var tabs=lgTabsHtml();
+  if(LG.tab==='race'){
+    body.innerHTML='<div style="padding:14px 13px 0">'+tabs+'</div><div id="lg-race"></div>';
+    if(window.rcInit) rcInit('lg-race');
+    return;
+  }
+  var h='<div class="rcw">'+tabs;
+  if(LG.tab==='speak') h+=lgSpeakHtml();
+  else if(LG.tab==='total') h+=lgTotalHtml();
+  else h+=lgAhaHtml();
+  body.innerHTML=h+'</div>';
+}
+
+function lgTabsHtml(){
+  var b=LG.board, h='<div class="lg-sport">';
+  if(lgRaceOn()){
+    var rl=lgDdayOf(RC.board&&RC.board.to);
+    h+='<button class="'+(LG.tab==='race'?'on':'')+'" onclick="lgTab(\'race\')">🏁 진도'
+      +'<small>'+(rl==null?'진행 중':(rl<0?'끝':(rl>0?('D-'+rl):'오늘 마감')))+'</small></button>';
+  }
+  var al=b?lgDdayOf((b.season||{}).end):null;
+  h+='<button class="'+(LG.tab==='aha'?'on':'')+'" onclick="lgTab(\'aha\')">💡 IB아하'
+    +'<small>'+(b?(al==null?'진행 중':(al<0?'끝':(al>0?('D-'+al):'오늘 마감'))):'준비 중')+'</small></button>';
+  h+='<button class="soon'+(LG.tab==='speak'?' on':'')+'" onclick="lgTab(\'speak\')">🎙 말하기<small>준비 중</small></button>';
+  var cMe=b?lgMyChamp(b):null;
+  h+='<button class="'+(LG.tab==='total'?'on':'')+'" onclick="lgTab(\'total\')">👑 종합'
+    +'<small>'+((cMe&&cMe.rank)?(cMe.rank+'위'):'—')+'</small></button>';
+  return h+'</div>';
+}
+
+/* ── 💡 IB아하 탭 ── */
+function lgAhaHtml(){
+  var b=LG.board;
+  if(!b) return '<div class="lg-empty"><div class="e1">🏆</div>'
+    +'<div class="e2">IB아하노트 리그는 곧 열려요<br>'
+    +'<span style="font-size:11.5px;font-weight:700">2달마다 한 시즌 · 질문을 잘 쓸수록 점수가 쌓여요</span></div></div>';
+
+  var code=lgCode();
+  var rr=lgRows(b), rows=rr.rows, band=rr.band;
+  var me=rows.filter(function(r){ return r.code===code; })[0]||null;
+  var top=Number(b.publicTop||5)||5;
+  var season=b.season||{};
+  var h='';
+
+  /* 🎉 시즌이 끝났으면 결과부터 */
+  h+=lgAwardsHtml();
+
+  /* 상금 카드 */
+  var pz=b.prize||{}, aws=pz.awards||[];
+  var myAw=(me&&me.awards)||[];
+  h+='<div class="rc-prize" style="margin-top:0">'
+    +'<div class="lb">🏆 IB아하노트 시즌 총상금</div>'
+    +'<div class="amt">'+rcN(pz.total||0)+'<small>원</small></div>'
+    +'<div class="who"><b>'+aws.length+'개 상</b> · '+rcEsc(season.label||'이번 시즌')+'</div>';
+  if(aws.length){
+    h+='<div class="lg-aw">';
+    aws.forEach(function(a){
+      var mine=myAw.indexOf(a.k)>=0;
+      h+='<div class="a'+(mine?' me':'')+'"><div class="i">'+rcEsc(a.icon||'🏅')+'</div>'
+        +'<div class="n">'+rcEsc(a.name||'')+'</div></div>';
+    });
+    h+='</div>';
+  }
+  h+='<div style="font-size:10px;color:#a35a00;margin-top:7px;font-weight:800;line-height:1.6">'
+    +(myAw.length?('지금 <b>'+myAw.length+'개 상</b>의 후보예요! 테두리가 쳐진 상이에요'):
+                  '🏆 베스트 질문상은 <b>순위와 상관없이</b> 시즌 최고 질문 한 편에게 줍니다')
+    +'</div></div>';
+
+  /* 내 카드 */
+  if(me){
+    var t=lgT(me.tier);
+    var ti=LG_TIER_ORDER.indexOf(me.tier); if(ti<0) ti=0;
+    var pct=Math.max(8,Math.round((ti+1)/LG_TIER_ORDER.length*100));
+    h+='<div class="rc-me"><div class="top">'
+      +'<div class="lg-badge" style="background:'+t.bg+'">'+t.ic+'</div>'
+      +'<div style="min-width:0"><div class="lg" style="color:'+t.c+'">'+t.n+'<small>'+t.en+'</small></div>'
+      +'<div class="rk">내 순위 '+me.rank+'위 / '+rows.length+'명'+(me.rank<=top?' · 순위표 공개 중 ✨':'')+'</div></div>'
+      +'<div class="pt"><b>'+rcN(me.league||0)+'</b><span style="display:block">리그 점수</span></div></div>'
+      +'<div class="rc-bar"><i style="width:'+pct+'%;background:linear-gradient(90deg,#93c5fd,#1d6fe8)"></i></div>'
+      +'<div class="rc-nx">'+(me.nextTier
+          ? (lgT(me.nextTier.k).n+'까지 <b>'+rcEsc(me.nextTier.need||'')+'</b>')
+          : '최고 등급 달성! 🎉')+'</div>'
+      +'<div class="rc-st">'
+      +'<div class="s"><b>'+rcN(me.count||0)+'</b><span>인정 노트</span></div>'
+      +'<div class="s"><b style="color:#7c3aed">'+(me.avg==null?'-':me.avg)+'</b><span>평균 질문력</span></div>'
+      +'<div class="s"><b style="color:#b45309">'+rcN(me.self||0)+'</b><span>🙋 스스로</span></div>'
+      +'<div class="s"><b style="color:#1d78c9">'+rcN(me.aha||0)+'</b><span>🪞 AHA</span></div>'
+      +'</div>'
+      +'<div class="lg-tiers">';
+    LG_TIER_ORDER.forEach(function(k,i){
+      h+='<div'+(i===ti?' class="cur"':'')+'>'+lgT(k).ic+' '+lgT(k).n+'</div>';
+    });
+    h+='</div>';
+    if(me.selfVoid) h+='<div class="lg-warn">🎲 이번 시즌 <b>스스로 해결 점수가 취소</b>됐어요 — '
+      +'설명 검사에서 설명하지 못했어요. 다음 시즌에 다시 쌓을 수 있어요.</div>';
+    h+='</div>';
+  }else{
+    h+='<div class="rc-card"><div class="hd">아직 내 기록이 없어요</div>'
+      +'<div class="lg-rule">활동지에 L·A·M·P 네 칸을 채우고 사진을 올리면 이번 시즌 점수가 쌓이기 시작해요.</div></div>';
+  }
+
+  /* 순위표 */
+  h+='<div class="rc-card"><div class="hd">🏅 '+(LG_BN[band]||'')+' 순위 '
+    +'<span style="font-size:10.5px;font-weight:800;color:#94a3b8">'+top+'위까지 공개</span></div>';
+  if(!rows.length){
+    h+='<div class="lg-rule">아직 순위가 없어요 — 첫 질문의 주인공이 되어 보세요!</div>';
+  }else{
+    rows.forEach(function(r){
+      var open=(Number(r.rank)<=top)||(r.code===code);
+      var medal=r.rank===1?'🥇':(r.rank===2?'🥈':(r.rank===3?'🥉':String(r.rank)));
+      var t2=lgT(r.tier);
+      h+='<div class="rc-row'+(r.code===code?' mine':'')+(open?'':' lg-blur')+'">'
+        +'<div class="no">'+medal+'</div>'
+        +'<div style="min-width:0;flex:1">'
+        +'<div class="nm">'+(open?(rcEsc(r.name||'')+(r.code===code?' <span style="font-size:10px;color:#1d78c9">나</span>':'')):'○○○')+'</div>'
+        +'<div class="sc">'+t2.ic+' '+t2.n+' · 평균 '+(r.avg==null?'-':r.avg)+' · 인정 '+rcN(r.count||0)+'</div></div>'
+        +'<div class="pt">'+rcN(r.league||0)+'<em>리그 점수</em></div></div>';
+    });
+    if(rows.length>top) h+='<div class="rc-hid">'
+      +((me&&me.rank>top)?('… '+(top+1)+'위부터는 이름이 가려져요. <b style="color:#1d78c9">내 순위는 '+me.rank+'위!</b>')
+                        :('… '+(top+1)+'위부터는 이름이 가려져요'))+'</div>';
+  }
+  h+='</div>';
+
+  /* 베스트 질문 */
+  if(b.best){
+    h+='<div class="rc-card"><div class="hd">🏆 이번 시즌 베스트 질문 후보</div>'
+      +'<div class="lg-best"><b>'+rcEsc(b.best.name||'○○○')+' · 질문력 '+(b.best.total==null?'-':b.best.total)
+      +(b.best.date?(' · '+rcEsc(b.best.date)):'')+'</b>「'+rcEsc(b.best.q_ask||'')+'」</div></div>';
+  }
+
+  /* 규칙 */
+  h+='<div class="rc-card"><div class="hd">📏 점수 쌓이는 법</div>'
+    +'<div class="lg-rule">'
+    +(b.rules?(rcEsc(b.rules)+'<br>'):'')
+    +'질문력(0~10) + 「왜?」 +1 + <b>🙋 스스로 해결 +2</b> / 힌트 1개 +3 · 2개 +2 · 3개 +1 '
+    +'+ 🪞 AHA +2 + ⭐ 수업 채택 +2'
+    +'<br>등급은 한 번 오르면 <b>내려가지 않아요</b>.'
+    +'</div>'
+    +'<div class="lg-warn" style="background:#fffbeb;border-color:#fcd34d;color:#92400e">'
+    +'🎲 선생님이 무작위로 설명을 시킬 수 있어요. 설명 못 하면 그 시즌 스스로 해결 점수가 모두 사라져요.'
+    +'</div></div>';
+  return h;
+}
+
+/* 🎉 시즌 결과 (시상 확정 뒤) */
+function lgAwardsHtml(){
+  var a=lgSeasonAwards(); if(!a) return '';
+  var code=lgCode();
+  var list=a.awards||[];
+  var h='<div class="lg-confetti">'
+    +'<div class="t">🎉 IB아하노트 '+rcEsc(a.label||'')+' 시즌 결과</div>'
+    +'<div class="big">상 받은 사람 '+list.length+'명</div>'
+    +'<div class="s">시즌 총상금 '+rcN(a.total||0)+'원 · 결과가 확정되었어요</div></div>';
+  list.forEach(function(w){
+    var mine=(w.code===code);
+    h+='<div class="lg-win'+(mine?' me':'')+'"><span class="i">'+rcEsc(w.icon||'🏅')+'</span>'
+      +'<div style="min-width:0"><div class="a">'+rcEsc(w.name||'')+' · '+rcEsc(w.name_masked||'○○○')+(mine?' (나)':'')+'</div>'
+      +'<div class="w">'+(mine?'축하해요! 선생님이 따로 알려 드릴게요':'시즌 내내 꾸준히 해냈어요')+'</div></div></div>';
+  });
+  if(a.champion){
+    h+='<div class="lg-win'+((a.champion.code===code)?' me':'')+'" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#fcd34d">'
+      +'<span class="i">👑</span><div style="min-width:0">'
+      +'<div class="a">종합 챔피언 · '+rcEsc(a.champion.name_masked||'○○○')+'</div>'
+      +'<div class="w">'+rcEsc(a.champion.prize||'')+'</div></div></div>';
+  }
+  return h+'<div style="height:12px"></div>';
+}
+
+/* ── 🎙 말하기 탭 ── */
+function lgSpeakHtml(){
+  return '<div class="lg-empty"><div class="e1">🎙</div>'
+    +'<div class="e2">말하기 리그는 <b>11월 시즌부터</b> 열려요</div></div>'
+    +'<div class="rc-card"><div class="hd">채점 기준 (초안)</div>'
+    +'<div class="rc-rule">'
+    +'<div class="r"><b>완결</b><span>0~2점</span></div>'
+    +'<div class="r"><b>정확</b><span>0~2점</span></div>'
+    +'<div class="r"><b>자기 말</b><span>0~2점</span></div>'
+    +'</div>'
+    +'<div class="lg-rule" style="margin-top:10px">'
+    +'풀이를 <b>말로 설명한 녹음</b>을 올리면 점수가 됩니다. '
+    +'끝까지 말했는지(완결) · 맞게 말했는지(정확) · 외운 말이 아니라 자기 말인지(자기 말)를 봅니다.'
+    +'</div></div>';
+}
+
+/* ── 👑 종합 탭 ── */
+function lgTotalHtml(){
+  var b=LG.board;
+  if(!b || !b.champion) return '<div class="lg-empty"><div class="e1">👑</div>'
+    +'<div class="e2">종합 순위는 곧 열려요<br>'
+    +'<span style="font-size:11.5px;font-weight:700">두 종목 이상 참여하면 종합 순위가 생겨요</span></div></div>';
+
+  var ch=b.champion, code=lgCode();
+  var pts=ch.points||[25,18,15,12,10,8,6,4,2,1];
+  var minEv=Number(ch.minEvents||2)||2;
+  var band=lgRows(b).band;
+  var rows=lgChampRows(b,band);
+  var me=rows.filter(function(r){ return r.code===code; })[0]||null;
+  var top=Number(b.publicTop||5)||5;
+  var h='';
+
+  h+='<div class="lg-champ">'
+    +'<div class="k">👑 루멘 종합 챔피언 · '+rcEsc((b.season||{}).label||'이번 시즌')+'</div>'
+    +'<div class="g">여러 종목을 골고루 잘하는 사람</div>'
+    +'<div class="s">종목마다 순위를 <b>포인트</b>로 바꿔 더합니다. '
+    +'<b>'+minEv+'종목 이상</b> 참여해야 자격이 있어요.</div></div>';
+
+  if(ch.prize){
+    h+='<div class="rc-prize" style="margin-top:0;padding:11px 12px">'
+      +'<div class="lb">👑 종합 챔피언 상</div>'
+      +'<div class="amt" style="font-size:20px">'+rcEsc(ch.prize)+'</div>'
+      +'<div class="who">부별 1명 · 시즌 끝에 발표</div></div>';
+  }
+
+  /* 내 포인트 */
+  if(me){
+    h+='<div class="rc-me"><div class="top">'
+      +'<div class="lg-badge" style="background:#fffbeb">👑</div>'
+      +'<div style="min-width:0"><div class="lg">'+(me.rank?('종합 '+me.rank+'위'):'아직 자격 없음')
+      +'<small>'+(LG_BN[band]||'')+' '+rows.length+'명</small></div>'
+      +'<div class="rk">'+(me.rank?('두 종목 순위를 포인트로 바꿔 더한 값이에요'):'한 종목만 참여했어요 — 두 종목부터 종합 순위가 생겨요')+'</div></div>'
+      +'<div class="pt"><b>'+rcN(me.total||0)+'</b><span style="display:block">포인트</span></div></div>'
+      +'<div class="lg-f1" style="margin-top:11px">'
+      +lgEventRow('🏁 진도', me.race)
+      +lgEventRow('💡 IB아하', me.aha)
+      +lgEventRow('🎙 말하기', me.speak)
+      +'<div class="sum"><span>종합 포인트</span><span>'+rcN(me.total||0)+'</span></div>'
+      +'</div></div>';
+  }
+
+  /* 부별 종합 순위 */
+  h+='<div class="rc-card"><div class="hd">👑 '+(LG_BN[band]||'')+' 종합 순위 '
+    +'<span style="font-size:10.5px;font-weight:800;color:#94a3b8">'+top+'위까지 공개</span></div>';
+  if(!rows.length){
+    h+='<div class="lg-rule">아직 두 종목 이상 참여한 학생이 없어요.</div>';
+  }else{
+    rows.forEach(function(r){
+      var open=(Number(r.rank)<=top)||(r.code===code);
+      var medal=r.rank===1?'🥇':(r.rank===2?'🥈':(r.rank===3?'🥉':String(r.rank||'-')));
+      var sub=[];
+      if(r.race&&r.race.rank) sub.push('진도 '+r.race.rank);
+      if(r.aha&&r.aha.rank) sub.push('아하 '+r.aha.rank);
+      h+='<div class="rc-row'+(r.code===code?' mine':'')+(open?'':' lg-blur')+'">'
+        +'<div class="no">'+medal+'</div>'
+        +'<div style="min-width:0;flex:1">'
+        +'<div class="nm">'+(open?(rcEsc(r.name||'')+(r.code===code?' <span style="font-size:10px;color:#1d78c9">나</span>':'')):'○○○')+'</div>'
+        +'<div class="sc">'+(sub.length?sub.join(' · '):'한 종목만')+'</div></div>'
+        +'<div class="pt">'+rcN(r.total||0)+'<em>포인트</em></div></div>';
+    });
+  }
+  h+='</div>';
+
+  /* 포인트 규칙 표 */
+  h+='<div class="rc-card"><div class="hd">📏 순위 → 포인트</div><div class="rc-rule">';
+  pts.forEach(function(p,i){
+    h+='<div class="r"><b>'+(i+1)+'위</b><span><i>'+p+'점</i></span></div>';
+  });
+  h+='</div><div class="lg-rule" style="margin-top:10px">'
+    +'<b>왜 점수를 그냥 더하지 않나요?</b> 진도 레이스 점수는 수천 점, 아하 점수는 수십 점이라 '
+    +'그냥 더하면 진도만 남습니다. 순위를 포인트로 바꿔야 두 종목이 <b>같은 무게</b>가 돼요.'
+    +'<br>11위부터는 0점이고, 동점이면 진도 포인트가 큰 쪽이 앞섭니다.'
+    +'</div></div>';
+  return h;
+}
+function lgEventRow(label, ev){
+  if(!ev) return '<div class="r"><span class="k">'+label+'</span>'
+    +'<span class="v" style="color:#cbd5e1">아직 참여 안 함</span>'
+    +'<span class="p" style="color:#cbd5e1">–</span></div>';
+  return '<div class="r"><span class="k">'+label+'</span>'
+    +'<span class="v">'+(ev.rank?(ev.rank+'위'):'-')+'</span>'
+    +'<span class="p">'+rcN(ev.pts||0)+'</span></div>';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+ * ✍️ 손풀이 (v2-73) — 선생님이 학습지에 쓴 풀이를 문제별로 본다
+ * ══════════════════════════════════════════════════════════════════
+ * 자료   lumen_store 'hand_solutions' = { items:{id:…}, sets:{id:…} }
+ *        학원앱이 굿노트 PDF 를 문제별로 잘라 올린다. 학생앱은 읽기만 한다.
+ * 누가   세트의 codes 에 내 코드가 있고 publishedAt 이 있는 것만.
+ *        reveal='date' 면 그 날짜부터, reveal='hint' 면 힌트를 다 본 뒤
+ *        (1단계에서는 목록에 자물쇠만 보여 준다).
+ * 화면   목록(날짜별 학습지) → 세트(번호 판 → 풀이 한 장) → 찾기(유형별·검색)
+ * ══════════════════════════════════════════════════════════════════ */
+var HS = { data:null, loaded:false, at:0, setId:null, seq:null, q:'', typeFilter:'' };
+window.HS = HS;
+function hsCode(){ return (studentInfo&&studentInfo.lumen_rec_code)||''; }
+function hsEsc(s){ return rcEsc(s); }
+function hsToday(){ return new Date(Date.now()+9*3600000).toISOString().slice(0,10); }
+function hsSay(msg){
+  if(window.ahaToast){ try{ ahaToast(msg); return; }catch(e){} }
+  try{ alert(msg); }catch(e){}
+}
+async function hsLoad(force){
+  if(HS.loaded && !force && Date.now()-HS.at<120000) return HS;
+  HS.loaded=true; HS.at=Date.now();
+  if(!sb || isTest) return HS;
+  try{
+    var r=await sb.from('lumen_store').select('value').eq('key','hand_solutions').maybeSingle();
+    var v=r&&r.data&&r.data.value;
+    if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+    HS.data=(v&&(v.sets||v.items))?v:null;
+  }catch(e){ HS.data=null; }
+  return HS;
+}
+/* 내게 보이는 세트들 (수업 날짜 내림차순) */
+function hsSets(){
+  var d=HS.data; if(!d) return [];
+  var code=hsCode(); if(!code) return [];
+  var sets=d.sets||{}, items=d.items||{}, today=hsToday(), out=[];
+  Object.keys(sets).forEach(function(id){
+    var s=sets[id]; if(!s||!s.publishedAt) return;
+    if(!(s.codes||[]).some(function(c){ return c===code; })) return;
+    if(s.reveal==='date' && !(s.revealAt && today>=String(s.revealAt))) return;
+    var its=(s.items||[]).map(function(k){ return items[k]; }).filter(Boolean)
+      .slice().sort(function(a,b){ return (Number(a.seq)||0)-(Number(b.seq)||0); });
+    out.push({ id:id, set:s, items:its,
+      wrong:((s.wrong||{})[code])||[],
+      locked:(s.reveal==='hint') });
+  });
+  out.sort(function(a,b){ return String(b.set.date||'').localeCompare(String(a.set.date||'')); });
+  return out;
+}
+function hsSetById(id){ return hsSets().filter(function(x){ return x.id===id; })[0]||null; }
+/* 오늘 새로 올라온 풀이 수 (홈 타일 배지) */
+function hsTodayCount(){
+  var today=hsToday(), n=0;
+  hsSets().forEach(function(v){
+    if(v.locked) return;
+    if(String(v.set.date||'')===today) n+=v.items.length;
+  });
+  return n;
+}
+/* 내게 보이는 모든 풀이 (찾기 화면) */
+function hsAllItems(){
+  var out=[];
+  hsSets().forEach(function(v){
+    if(v.locked) return;
+    v.items.forEach(function(it){
+      out.push({ it:it, setId:v.id, set:v.set, wrong:(v.wrong.indexOf(Number(it.seq))>=0) });
+    });
+  });
+  return out;
+}
+
+/* ── 홈 타일 ── */
+window.hsHomeUpdate = async function(){
+  var el=document.getElementById('h3-hand'); if(!el) return;
+  /* 기능 스위치를 먼저 읽는다 — 안 그러면 꺼 둔 학년에도 타일이 잠깐 보인다 */
+  if(window.sfLoad){ try{ await sfLoad(); }catch(e){} }
+  if(isTest || (window.sfOn && !sfOn('handsol'))){ el.style.display='none'; return; }
+  /* v2-74: 올라온 풀이가 없어도 타일은 보인다.
+   * 예전에는 여기서 숨겨 버려서 「손풀이가 어디 있나」를 찾을 수 없었다(원장 제보 9/9). */
+  el.style.display='';
+  await hsLoad();
+  var list=hsSets();
+  var n=list.length?hsTodayCount():0;
+  var bd=document.getElementById('h3-hand-bdg');
+  if(bd){ bd.textContent='오늘 '+n; bd.style.display=n?'':'none'; }
+  var ds=document.getElementById('h3-hand-desc');
+  if(ds){
+    if(!list.length){ ds.textContent='아직 올라온 풀이가 없어요'; return; }
+    var wrongTot=0;
+    list.forEach(function(v){ if(!v.locked) wrongTot+=v.wrong.length; });
+    ds.textContent = n ? ('오늘 수업 풀이 '+n+'개가 올라왔어요')
+      : (wrongTot ? ('내가 틀린 '+wrongTot+'문제의 선생님 풀이') : '선생님 풀이 '+list.length+'개 학습지');
+  }
+};
+
+/* ── ① 목록 ── */
+window.hsInit = async function(){
+  var body=document.getElementById('hs-body'); if(!body) return;
+  if(isTest){ body.innerHTML='<div class="sp3-empty"><div class="e1">🧪</div><div class="e2">테스트 모드에서는 볼 수 없어요</div></div>'; return; }
+  body.innerHTML='<div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>';
+  await hsLoad(true);
+  var list=hsSets();
+  if(!list.length){
+    body.innerHTML='<div class="sp3-empty"><div class="e1">✍️</div>'
+      +'<div class="e2">아직 올라온 손풀이가 없어요<br>수업에서 푼 학습지의 선생님 풀이가 여기에 올라와요</div></div>';
+    return;
+  }
+  var today=hsToday();
+  var h='<div class="hs-wrap">';
+  h+='<div style="font-size:12px;font-weight:900;color:var(--text);margin:0 2px 9px">✍️ 손풀이 — 학습지별</div>';
+  list.forEach(function(v){
+    var d=String(v.set.date||''), dd=d.slice(8)||'-', mm=d.slice(5,7).replace(/^0/,'')||'';
+    var isToday=(d===today);
+    var solved=v.items.length;
+    var maxSeq=hsMaxSeq(v);
+    var wn=v.locked?0:v.wrong.length;
+    h+='<button class="hs-set'+(isToday?' today':'')+(v.locked?' lock':'')+'" '
+      +'onclick="hsOpenSet(\''+hsEsc(v.id)+'\')">'
+      +'<span class="dt"><b>'+hsEsc(dd)+'</b><small>'+(mm?(mm+'월'):'')+(isToday?' · 오늘':'')+'</small></span>'
+      +'<span style="min-width:0;flex:1">'
+      +'<span class="wt">'+(v.locked?'🔒 ':'')+hsEsc(v.set.title||'손풀이')+'</span>'
+      +'<span class="wd">'+(v.locked
+          ? '힌트를 다 본 뒤에 열려요'
+          : (maxSeq+'문제 · 풀이 '+solved+'개'+(wn?(' · <b>내가 틀린 '+wn+'</b>'):' · 다 맞음 ✓')))
+      +'</span></span>'
+      +'<span class="go">›</span></button>';
+  });
+  h+='<button class="hs-set" style="justify-content:center;color:#0f766e" onclick="go(\'screen-hand-find\')">'
+    +'<span style="font-size:12.5px;font-weight:900">🔍 유형별로 찾아보기</span></button>';
+  h+='<div style="font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.7;margin-top:10px">'
+    +'내가 받은 학습지만 보여요. 풀이가 있는 문제만 세고, 틀린 문제부터 보라고 빨갛게 표시합니다.</div>';
+  body.innerHTML=h+'</div>';
+};
+function hsMaxSeq(v){
+  var m=0;
+  v.items.forEach(function(it){ m=Math.max(m, Number(it.seq)||0); });
+  (v.wrong||[]).forEach(function(s){ m=Math.max(m, Number(s)||0); });
+  return m;
+}
+
+/* ── ② 세트 (번호 판 → 풀이) ── */
+window.hsOpenSet = function(setId, seq){
+  var v=hsSetById(setId);
+  if(!v){ hsSay('학습지를 찾을 수 없어요'); return; }
+  if(v.locked){ hsSay('이 학습지 풀이는 힌트를 다 본 뒤에 열려요 🔒'); return; }
+  HS.setId=setId;
+  HS.seq=(seq!=null)?Number(seq):(v.items[0]?Number(v.items[0].seq):null);
+  go('screen-hand-set');
+  hsPaintSet();
+};
+window.hsPick = function(seq){ HS.seq=Number(seq); hsPaintSet(); };
+function hsPaintSet(){
+  var body=document.getElementById('hs-set-body'); if(!body) return;
+  var v=hsSetById(HS.setId);
+  if(!v){ body.innerHTML='<div class="sp3-empty"><div class="e1">✍️</div><div class="e2">학습지를 찾을 수 없어요</div></div>'; return; }
+  var tEl=document.getElementById('hs-set-title'); if(tEl) tEl.textContent=v.set.title||'손풀이';
+  var dEl=document.getElementById('hs-set-date');
+  if(dEl) dEl.textContent=String(v.set.date||'').slice(5).replace('-','/');
+
+  var maxSeq=hsMaxSeq(v);
+  var bySeq={};
+  v.items.forEach(function(it){ bySeq[Number(it.seq)]=it; });
+  var cur=bySeq[HS.seq]||null;
+
+  var h='<div class="hs-wrap">';
+  /* 번호 판 */
+  h+='<div class="hs-grid">';
+  for(var i=1;i<=Math.max(1,maxSeq);i++){
+    var has=!!bySeq[i], wr=(v.wrong.indexOf(i)>=0), on=(Number(HS.seq)===i);
+    /* 틀린 번호는 빨강, 풀이가 없으면 연하게 — 둘 다인 번호(틀렸는데 필기가 없음)도 있다 */
+    var cls=(wr?'wr ':'')+(has?'has':'no')+(on?' on':'');
+    h+='<button class="'+cls+'"'+(has?(' onclick="hsPick('+i+')"'):' disabled')+'>'+i+'</button>';
+  }
+  h+='</div>';
+  h+='<div class="hs-leg">'
+    +'<span><i style="background:#fee2e2;outline:1px solid #fca5a5"></i>내가 틀린 문제</span>'
+    +'<span><i style="background:#0d2240"></i>보는 중</span>'
+    +'<span><i style="background:#f1f5f9"></i>풀이 없음(연하게)</span></div>';
+
+  if(!cur){
+    h+='<div class="sp3-empty"><div class="e1">✍️</div><div class="e2">위에서 번호를 골라 주세요</div></div>';
+    body.innerHTML=h+'</div>'; return;
+  }
+
+  /* 풀이 한 장 */
+  h+='<div class="hs-crop">';
+  if(cur.img) h+='<img src="'+hsEsc(cur.img)+'" alt="'+hsEsc(cur.seq+'번 손풀이')+'" '
+    +'onclick="openAhaPhoto(\''+hsEsc(cur.img)+'\')">';
+  else h+='<div style="padding:26px 10px;text-align:center;color:#94a3b8;font-size:12px;font-weight:800">사진이 아직 없어요</div>';
+  h+='<div class="cap">이미지를 누르면 크게 볼 수 있어요 (선생님 필기 그대로)</div></div>';
+
+  /* 유형 · 내 결과 */
+  var wrongNow=(v.wrong.indexOf(Number(cur.seq))>=0);
+  h+='<div class="hs-tags">'
+    +'<span class="t">'+(cur.conceptName?('유형 · '+hsEsc(cur.conceptName)):'유형 미확인')+'</span>'
+    +'<span class="'+(wrongNow?'x':'o')+'">'+(wrongNow?'내 결과 ✗ 틀림':'내 결과 O')+'</span>'
+    +'<span>'+hsEsc(cur.seq)+'번</span>'
+    +'</div>';
+
+  /* 다음 동작 */
+  var nx=hsNextWrongSeq(v);
+  var same=hsSameTypeCount(cur);
+  h+='<div class="hs-acts">'
+    +'<button class="pri"'+(nx?(' onclick="hsPick('+nx+')"'):' disabled')+'>'
+      +(nx?('다음 틀린 문제 → '+nx+'번'):'틀린 문제 없음 ✓')+'</button>'
+    +'<button onclick="hsToAha()">🙋 이 문제로<br>IB아하노트</button>'
+    +'<button onclick="hsSameType()">📚 같은 유형<br>손풀이 '+same+'개</button>'
+    +'<button class="soon" onclick="hsSay(\'🎬 풀이영상은 준비 중이에요\')">🎬 풀이영상<br>(준비 중)</button>'
+    +'</div>';
+  h+='<div style="font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.7">'
+    +'풀이를 보기 전에 한 번 더 풀어 보면 훨씬 오래 남아요.</div>';
+  body.innerHTML=h+'</div>';
+}
+/* 지금 번호 다음의 틀린 번호 (없으면 처음부터 다시 찾는다) */
+function hsNextWrongSeq(v){
+  var ws=(v.wrong||[]).map(Number).filter(function(s){
+    return v.items.some(function(it){ return Number(it.seq)===s; });
+  }).sort(function(a,b){ return a-b; });
+  if(!ws.length) return null;
+  var cur=Number(HS.seq)||0;
+  var after=ws.filter(function(s){ return s>cur; });
+  var pick=after.length?after[0]:ws[0];
+  return (pick===cur)?null:pick;
+}
+function hsSameTypeCount(it){
+  var name=String((it&&it.conceptName)||'');
+  if(!name) return 0;
+  return hsAllItems().filter(function(x){ return String(x.it.conceptName||'')===name; }).length;
+}
+window.hsSameType = function(){
+  var v=hsSetById(HS.setId); if(!v) return;
+  var bySeq={}; v.items.forEach(function(it){ bySeq[Number(it.seq)]=it; });
+  var cur=bySeq[HS.seq];
+  HS.q=String((cur&&cur.conceptName)||'');
+  go('screen-hand-find');
+};
+/* 🙋 이 문제로 IB아하노트 — 교재명(학습지 제목)·번호를 미리 채운다 */
+window.hsToAha = async function(){
+  var v=hsSetById(HS.setId); if(!v) return;
+  var bySeq={}; v.items.forEach(function(it){ bySeq[Number(it.seq)]=it; });
+  var cur=bySeq[HS.seq]; if(!cur) return;
+  if(isTest){ hsSay('테스트 모드에서는 쓸 수 없어요'); return; }
+  if(!window.ahaGoAdd){ hsSay('IB아하노트를 열 수 없어요'); return; }
+  await ahaGoAdd();
+  try{
+    var sel=document.getElementById('aha-source');
+    if(sel){ sel.value='print'; if(window.ahaOnSourceChange) ahaOnSourceChange(); }
+    var pn=document.getElementById('aha-print-name');
+    if(pn) pn.value=String(v.set.title||cur.srcTitle||'');
+    var no=document.getElementById('aha-problem-no');
+    if(no) no.value=String(cur.seq||'');
+  }catch(e){ console.warn('손풀이 → 아하노트 미리 채우기 실패', e); }
+};
+
+/* ── ③ 찾기 (유형별 + 검색) ── */
+window.hsFindInit = async function(){
+  var body=document.getElementById('hs-find-body'); if(!body) return;
+  if(isTest){ body.innerHTML='<div class="sp3-empty"><div class="e1">🧪</div><div class="e2">테스트 모드에서는 볼 수 없어요</div></div>'; return; }
+  await hsLoad();
+  hsPaintFind();
+};
+window.hsSearch = function(v){ HS.q=String(v==null?'':v); hsPaintFind(true); };
+function hsPaintFind(keepFocus){
+  var body=document.getElementById('hs-find-body'); if(!body) return;
+  var all=hsAllItems();
+  var q=String(HS.q||'').trim().toLowerCase();
+  var hit=all.filter(function(x){
+    if(!q) return true;
+    return String(x.it.conceptName||'').toLowerCase().indexOf(q)>=0
+        || String(x.it.srcTitle||x.set.title||'').toLowerCase().indexOf(q)>=0;
+  });
+  /* 유형별로 묶기 — 유형 미확인은 맨 뒤 */
+  var groups={}, order=[];
+  hit.forEach(function(x){
+    var k=String(x.it.conceptName||'')||'(유형 미확인)';
+    if(!groups[k]){ groups[k]=[]; order.push(k); }
+    groups[k].push(x);
+  });
+  order.sort(function(a,b){
+    if(a==='(유형 미확인)') return 1;
+    if(b==='(유형 미확인)') return -1;
+    return groups[b].length-groups[a].length;
+  });
+
+  var h='<div class="hs-wrap">';
+  h+='<div class="hs-srch">🔍'
+    +'<input id="hs-q" type="text" placeholder="유형·학습지 이름으로 찾기" value="'+hsEsc(HS.q)+'" '
+    +'oninput="hsSearch(this.value)">'
+    +(q?'<button onclick="hsSearch(\'\')" style="border:none;background:transparent;font-size:15px;color:#94a3b8;cursor:pointer;font-family:inherit">×</button>':'')
+    +'</div>';
+  if(!all.length){
+    h+='<div class="sp3-empty"><div class="e1">✍️</div><div class="e2">아직 올라온 손풀이가 없어요</div></div>';
+  }else if(!hit.length){
+    h+='<div class="sp3-empty"><div class="e1">🔍</div><div class="e2">「'+hsEsc(HS.q)+'」로 찾은 손풀이가 없어요</div></div>';
+  }else{
+    h+='<div style="font-size:10.5px;font-weight:800;color:#94a3b8;margin:0 2px 8px">손풀이 '+hit.length+'개 · 유형 '+order.length+'가지</div>';
+    order.forEach(function(k){
+      var rows=groups[k].slice().sort(function(a,b){
+        return String(b.set.date||'').localeCompare(String(a.set.date||''));
+      });
+      h+='<div class="hs-typ"><div class="tt">📚 '+hsEsc(k)+'<small>손풀이 '+rows.length+'개</small></div>';
+      rows.slice(0,8).forEach(function(x){
+        h+='<button class="li" onclick="hsOpenSet(\''+hsEsc(x.setId)+'\','+(Number(x.it.seq)||0)+')">'
+          +'<b>'+hsEsc(String(x.set.date||'').slice(5).replace('-','/'))+'</b>'
+          +'<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'
+          +hsEsc(x.it.srcTitle||x.set.title||'')+' '+hsEsc(x.it.seq)+'번</span>'
+          +'<span class="r" style="color:'+(x.wrong?'#dc2626':'#16a34a')+'">'+(x.wrong?'✗ 틀림':'O')+'</span>'
+          +'</button>';
+      });
+      if(rows.length>8) h+='<div style="font-size:10.5px;font-weight:800;color:#94a3b8;text-align:center;padding:7px 0 2px">… 그리고 '+(rows.length-8)+'개 더</div>';
+      h+='</div>';
+    });
+  }
+  h+='<div class="hs-vid"><b>🎬 풀이영상 — 준비 중</b>손풀이에 영상이 붙으면 같은 자리에서 바로 볼 수 있어요</div>';
+  body.innerHTML=h+'</div>';
+  if(keepFocus){
+    var inp=document.getElementById('hs-q');
+    if(inp){ inp.focus(); try{ inp.setSelectionRange(inp.value.length, inp.value.length); }catch(e){} }
+  }
+}
 
 /* ★ v2-44: 교재 채점을 잠시 닫아 둔다 (원장님 지시 2026-08-27).
  * 기능·데이터는 그대로 두고 들어가는 문만 잠근다. 다시 열 때는
@@ -10873,7 +12952,9 @@ function renderMockReportPreview(){
    재풀이 저장: lumen_store 'haesol_retry_<코드>' = { code,name,grade, items:{ '<examId>|<번호>': {photo,at} } }
    사진: photos 버킷 <코드>/<코드>_<시각>_retry<번호>.jpg (플래너와 같은 자동 압축) */
 var RT={ loaded:false, all:[], mine:[], subs:{}, open:false, cat:null, mockExams:[],
-         view:'list', repKey:null, target:null, busy:false, bodyCache:{} };
+         view:'list', repKey:null, target:null, busy:false, bodyCache:{},
+         /* v2-74: 시험지마다 틀린 문항을 접어 둔다. 열려 있는 시험 열쇠만 여기 담는다 */
+         fold:{}, foldInit:false };
 
 async function rtLoad(force){
   if(RT.loaded&&!force) return;
@@ -11077,6 +13158,8 @@ window.rtInit=async function(){
   rtRender();
 };
 window.rtBack=function(){ RT.view='list'; RT.repKey=null; rtRender(); };
+/* v2-74: 시험지 폴더 열고 닫기 */
+window.rtFold=function(key){ RT.fold[key]=!RT.fold[key]; rtRender(); };
 window.rtLockMsg=function(){ toast('🔒 풀이는 아직 열리지 않았어요 — 선생님이 여는 날 알려줄게요'); };
 window.rtOpenReport=function(itKey){ RT.view='report'; RT.repKey=itKey; rtRender(); };
 
@@ -11087,6 +13170,11 @@ function rtRender(){
   if(!RT.mine.length){
     body.innerHTML='<div class="sp3-empty"><div class="e1">🧾</div><div class="e2">아직 기출모의 기록이 없어요<br><span style="font-size:12px;font-weight:600;color:#94a3b8">학원에서 기출모의를 보면 여기에 떠요</span></div></div>';
     return;
+  }
+  /* v2-74: 처음 열 때 — 시험이 하나뿐이면 펼치고, 여럿이면 모두 접어 둔다 */
+  if(!RT.foldInit){
+    RT.foldInit=true;
+    if(RT.mine.length===1) RT.fold[RT.mine[0].key]=true;
   }
   RT.mine.forEach(function(it){
     var per=(it.per||[]), wrong=rtWrong(it);
@@ -11107,7 +13195,18 @@ function rtRender(){
     h+='<button onclick="rtOpenReport(\''+_mrEsc(it.key)+'\')" style="margin-top:10px;width:100%;padding:11px;border:0;border-radius:11px;background:linear-gradient(135deg,#312e81,#6366f1);color:#fff;font-size:13.5px;font-weight:900;font-family:inherit;cursor:pointer">🧾 내 성적표 보기</button>';
 
     if(wrong.length){
-      h+='<div style="font-size:12px;font-weight:900;color:#0d2240;margin:13px 0 7px">틀린 문항 — 다시 풀어서 📸 올리기</div>';
+      /* v2-74: 시험지 하나 = 폴더 하나. 줄을 눌러야 그 시험의 틀린 문항이 펼쳐진다
+       * (원장 지시 9/9 — 시험이 여러 개면 목록이 너무 길어진다) */
+      var opened=!!RT.fold[it.key];
+      h+='<button onclick="rtFold(\''+_mrEsc(it.key)+'\')" style="width:100%;margin:13px 0 '+(opened?'7px':'0')+';padding:11px 12px;border:1.5px solid '+(opened?'#c7d2fe':'#e6eaf1')+';border-radius:11px;background:'+(opened?'#eef2ff':'#f8fafc')+';display:flex;align-items:center;gap:8px;font-family:inherit;cursor:pointer;text-align:left">'
+        +'<span style="font-size:15px">'+(opened?'📂':'📁')+'</span>'
+        +'<span style="flex:1;min-width:0">'
+        +'<span style="display:block;font-size:12.5px;font-weight:900;color:#0d2240">틀린 문항 '+wrong.length+'개 — 다시 풀어서 📸 올리기</span>'
+        +'<span style="display:block;font-size:11px;font-weight:700;color:#64748b;margin-top:2px">'
+          +(subN?('재풀이 '+subN+'개 제출 · 남은 '+(wrong.length-subN)+'개'):(opened?'문항을 눌러 재풀이를 올려요':'눌러서 펼치기'))
+        +'</span></span>'
+        +'<span style="font-size:13px;font-weight:900;color:#6366f1">'+(opened?'▲':'▼')+'</span></button>';
+      if(!opened){ h+='</div>'; return; }
       wrong.forEach(function(p){
         var key=rtKey(it,p.seq), sub=RT.subs[key];
         var nm=(p.chapter||p.unit||'').replace(/^\d+\s*/,'');
