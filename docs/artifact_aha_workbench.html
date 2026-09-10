@@ -1,0 +1,404 @@
+<title>아하노트 채점 작업대</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+:root{ --brown:#4a3a18; --gold:#a97b0c; --paper:#f7f5f0; --panel:#fffdf9; --ink:#1f1a14; --ink2:#544b3e;
+  --mute:#8d8272; --line:#e6dfd1; --line2:#d8cfbc; --canvas:#e7eaf0;
+  --shadow:0 1px 3px rgba(74,58,24,.07), 0 8px 24px -14px rgba(74,58,24,.22); }
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --brown:#d7bd7a; --gold:#e2b755; --paper:#16130f; --panel:#1f1b15; --ink:#f3efe6; --ink2:#c2b8a6;
+  --mute:#8e8676; --line:#332c21; --line2:#443b2c; --shadow:0 1px 3px rgba(0,0,0,.5), 0 10px 28px -14px rgba(0,0,0,.7); } }
+:root[data-theme="dark"]{ --brown:#d7bd7a; --gold:#e2b755; --paper:#16130f; --panel:#1f1b15; --ink:#f3efe6;
+  --ink2:#c2b8a6; --mute:#8e8676; --line:#332c21; --line2:#443b2c; --shadow:0 1px 3px rgba(0,0,0,.5), 0 10px 28px -14px rgba(0,0,0,.7); }
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.top{padding:30px 34px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.15em;color:var(--gold);margin:0 0 7px}
+.top h1{font-family:'Gowun Batang',serif;font-size:29px;font-weight:700;margin:0 0 8px;color:var(--ink);letter-spacing:-.01em;text-wrap:balance}
+.top p{margin:0;font-size:13.5px;line-height:1.75;color:var(--ink2);max-width:70ch}
+.top p b{color:var(--brown);font-weight:700}
+.sheethd{padding:20px 34px 0;display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+.sheethd h2{font-family:'Gowun Batang',serif;font-size:19px;font-weight:700;margin:0;color:var(--brown)}
+.sheethd span{font-size:12.5px;color:var(--mute)}
+.board{margin:14px 20px 34px;border:1px solid var(--line2);border-radius:14px;background:var(--canvas);box-shadow:var(--shadow);overflow-x:auto}
+.pane{color-scheme:light}
+@media (max-width:900px){ .top{padding:22px 18px 16px} .top h1{font-size:23px} .sheethd{padding:16px 18px 0} .board{margin:12px 10px 24px} }
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+#s14{ --navy:#0d2240; --blue:#1d6fe8; --purple:#7c3aed; --green:#16a34a; --amber:#f59e0b; --ink:#0f172a; --sub:#64748b; --gray:#f1f5f9; --red:#dc2626; }
+#s14 *{box-sizing:border-box}
+#s14{margin:0;background:#dfe4ec;color:var(--ink);font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',-apple-system,sans-serif;padding:20px 14px 60px}
+#s14 .head{max-width:1240px;margin:0 auto 16px;font-size:12.5px;color:#4b5563;line-height:1.75}
+#s14 .head h1{font-size:18px;color:var(--navy);margin:0 0 6px}
+#s14 .head b{color:var(--navy)}
+#s14 .stage{max-width:1240px;margin:0 auto 26px}
+#s14 .cap{font-size:13px;font-weight:800;color:var(--navy);margin:0 0 8px;display:flex;align-items:center;gap:7px}
+#s14 .cap span{font-size:10.5px;font-weight:700;color:#fff;background:var(--navy);border-radius:50px;padding:2px 8px}
+#s14 .cap small{font-weight:600;color:var(--sub);font-size:11px}
+#s14 .card{background:#fff;border-radius:14px;padding:15px 17px;box-shadow:0 2px 10px rgba(13,34,64,.06)}
+#s14 .note{font-size:10.5px;color:var(--sub);line-height:1.6;margin-top:8px}
+#s14 /* 흐름도 */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+#s14 .st{border-radius:12px;padding:11px 12px;position:relative;border:1.5px solid #e2e8f0;background:#fff}
+#s14 .st.auto{background:#f0fdf4;border-color:#bbf7d0}
+#s14 .st.you{background:#eff6ff;border-color:#93c5fd}
+#s14 .st.opt{background:#faf5ff;border-color:#e9d5ff;border-style:dashed}
+#s14 .st .w{position:absolute;top:9px;right:10px;font-size:9px;font-weight:900;border-radius:50px;padding:2px 7px}
+#s14 .st.auto .w{background:#dcfce7;color:#15803d}
+#s14 .st.you .w{background:#dbeafe;color:#1e40af}
+#s14 .st.opt .w{background:#f3e8ff;color:#7c3aed}
+#s14 .st .n{font-size:10px;font-weight:900;color:var(--sub)}
+#s14 .st .t{font-size:12.5px;font-weight:900;color:var(--navy);margin:3px 0 5px}
+#s14 .st .d{font-size:10.5px;color:#475569;line-height:1.6}
+#s14 .st .d b{color:var(--navy)}
+#s14 .big{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+#s14 .big div{background:#f8fafc;border:1px solid #e2e8f0;border-radius:11px;padding:9px 13px;flex:1;min-width:130px}
+#s14 .big .k{font-size:10px;font-weight:800;color:var(--sub)}
+#s14 .big .v{font-size:21px;font-weight:900;color:var(--navy);margin-top:1px;font-variant-numeric:tabular-nums}
+#s14 .big .v small{font-size:11px;color:var(--sub);font-weight:800;margin-left:2px}
+#s14 .big .dd{font-size:10px;color:#475569;margin-top:2px;line-height:1.5}
+#s14 /* 학원앱 틀 */
+.app{background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(13,34,64,.1);overflow:hidden}
+#s14 .ahd{background:linear-gradient(135deg,#0d2240,#1a3564);color:#fff;padding:10px 15px;display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+#s14 .ahd .ti{font-size:16px;font-weight:900}
+#s14 .ahd .segs{display:flex;background:rgba(255,255,255,.12);border-radius:8px;padding:3px}
+#s14 .ahd .segs b{font-size:12px;font-weight:700;padding:5px 12px;border-radius:6px;color:rgba(255,255,255,.7)}
+#s14 .ahd .segs b.on{background:var(--blue);color:#fff}
+#s14 .ahd .chip{font-size:11.5px;font-weight:800;border-radius:20px;padding:3px 10px}
+#s14 .ahd .chip.r{background:var(--blue)}
+#s14 .ahd .chip.s{background:var(--amber);color:#78350f}
+#s14 .ahd .right{margin-left:auto;display:flex;gap:6px;align-items:center}
+#s14 .ahd button{border:none;border-radius:7px;padding:6px 11px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer}
+#s14 .b1{background:var(--purple);color:#fff}
+#s14 .b2{background:var(--green);color:#fff}
+#s14 .b3{background:rgba(255,255,255,.15);color:#fff}
+#s14 .old .ahd button{font-size:11px;padding:5px 9px}
+#s14 /* 옛 화면 */
+.split{display:flex;min-height:290px}
+#s14 .side{width:150px;flex:none;background:#fff;border-right:1px solid #e2e8f0;padding:9px 7px}
+#s14 .side .s{font-size:11.5px;padding:6px 8px;border-radius:6px;color:#334155;margin-bottom:3px;display:flex;justify-content:space-between}
+#s14 .side .s.on{background:#eff6ff;color:var(--blue);font-weight:900}
+#s14 .side .s small{color:#94a3b8;font-weight:700}
+#s14 .mainempty{flex:1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13.5px;background:#f8fafc}
+#s14 /* 새 작업대 */
+.wb{background:#f8fafc;padding:12px 14px}
+#s14 .daybar{display:flex;align-items:center;gap:9px;background:#fff;border:1.5px solid #dbe2ec;border-radius:11px;padding:9px 12px;margin-bottom:8px}
+#s14 .daybar .dt{font-size:14px;font-weight:900;color:var(--navy)}
+#s14 .daybar .dc{font-size:11.5px;font-weight:700;color:var(--sub)}
+#s14 .daybar .dc b{color:var(--red)}
+#s14 .daybar .db{margin-left:auto;display:flex;gap:6px}
+#s14 .daybar .db button{border:none;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:800;font-family:inherit;cursor:pointer}
+#s14 .daybar.done{opacity:.6;background:#f0fdf4;border-color:#bbf7d0}
+#s14 .row{background:#fff;border:1.5px solid #e6eaf1;border-radius:12px;padding:10px;margin-bottom:7px;display:grid;grid-template-columns:88px minmax(0,1fr) 236px;gap:11px;align-items:start}
+#s14 .row.done{border-color:#bbf7d0;background:#f7fdf9}
+#s14 .row.need{border-color:#fcd34d;background:#fffdf5}
+#s14 .ph{width:88px;height:104px;border-radius:9px;background:#fff;border:1.5px solid #e2e8f0;position:relative;overflow:hidden;padding:5px}
+#s14 .ph .g{position:absolute;inset:5px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:2px}
+#s14 .ph .g div{border:1px solid #dbe2ec;border-radius:2px;font-size:6px;font-weight:900;color:#94a3b8;padding:1px 2px}
+#s14 .ph .g div.f{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+#s14 .ph .zoom{position:absolute;right:3px;bottom:3px;font-size:8px;background:rgba(13,34,64,.75);color:#fff;border-radius:4px;padding:1px 4px}
+#s14 .who{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#s14 .who .nm{font-size:13.5px;font-weight:900;color:var(--navy)}
+#s14 .who .gr{font-size:10.5px;font-weight:700;color:var(--sub);background:var(--gray);border-radius:5px;padding:1px 6px}
+#s14 .who .tm{font-size:10.5px;color:#94a3b8;font-weight:700}
+#s14 .who .src{font-size:10.5px;color:#475569;font-weight:700}
+#s14 .qa{font-size:12px;color:#111827;line-height:1.6;margin-top:5px;background:#f8fafc;border-left:3px solid var(--blue);border-radius:0 7px 7px 0;padding:6px 9px}
+#s14 .qa b{color:var(--blue)}
+#s14 .lampline{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+#s14 .lampline span{font-size:10px;font-weight:800;border-radius:5px;padding:2px 6px;background:#f1f5f9;color:#475569}
+#s14 .lampline span.ok{background:#dcfce7;color:#15803d}
+#s14 .lampline span.mid{background:#fef3c7;color:#92400e}
+#s14 .lampline span.no{background:#fee2e2;color:#b91c1c}
+#s14 .sc{border-left:1.5px solid #eef2f7;padding-left:11px}
+#s14 .scg{display:flex;gap:3px}
+#s14 .scg div{flex:1;text-align:center;border:1.5px solid #e6eaf1;border-radius:7px;padding:4px 0}
+#s14 .scg .k{font-size:9px;font-weight:900;color:#94a3b8}
+#s14 .scg .v{font-size:14px;font-weight:900;color:var(--navy);margin-top:-1px}
+#s14 .scg div.p2{background:#f0fdf4;border-color:#bbf7d0}
+#s14 .scg div.p1{background:#fffbeb;border-color:#fde68a}
+#s14 .scg div.p0{background:#fef2f2;border-color:#fecaca}
+#s14 .tot{display:flex;align-items:center;gap:7px;margin-top:7px}
+#s14 .tot .tl{font-size:10.5px;font-weight:800;color:var(--sub)}
+#s14 .tot .tv{font-size:19px;font-weight:900;color:var(--navy)}
+#s14 .tot .tv small{font-size:11px;color:var(--sub)}
+#s14 .tot .bn{margin-left:auto;font-size:10px;font-weight:800;color:var(--green);background:#dcfce7;border-radius:5px;padding:2px 6px}
+#s14 .acts{display:flex;gap:5px;margin-top:7px}
+#s14 .acts button{border:none;border-radius:8px;padding:7px 10px;font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer;flex:1}
+#s14 .ok1{background:var(--green);color:#fff}
+#s14 .ed1{background:#fff;color:#475569;border:1.5px solid #cbd5e1;flex:0 0 auto}
+#s14 .hint1{background:#faf5ff;color:var(--purple);border:1.5px solid #e9d5ff;flex:0 0 auto}
+#s14 .doneb{background:#dcfce7;color:#15803d;font-size:11.5px;font-weight:900;border-radius:8px;padding:7px 10px;text-align:center}
+#s14 .coach{font-size:10.5px;color:#475569;line-height:1.55;margin-top:6px;background:#f8fafc;border-radius:7px;padding:6px 8px}
+#s14 .coach b{color:var(--navy)}
+#s14 .flag{display:inline-block;font-size:9.5px;font-weight:900;border-radius:50px;padding:2px 7px;margin-left:4px}
+#s14 .f-need{background:#fef3c7;color:#92400e}
+#s14 .f-self{background:#ffedd5;color:#9a3412}
+#s14 .f-old{background:#e2e8f0;color:#475569}
+#s14 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+#s14 .cmp{width:100%;border-collapse:collapse;font-size:11.5px}
+#s14 .cmp th,#s14 .cmp td{border:1px solid #e2e8f0;padding:7px 9px;text-align:left;vertical-align:top;line-height:1.6}
+#s14 .cmp th{background:#f8fafc;font-size:10.5px;color:#475569}
+#s14 .cmp b{color:var(--navy)}
+#s14 .cmp td.g{background:#f0fdf4}
+#s14 .cmp td.r{background:#fef2f2}
+#s14 .ask{background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:12px 15px;margin-top:14px;font-size:12.5px;line-height:1.8}
+#s14 .ask b{color:#92400e}
+#s14 .ask ol{margin:5px 0 0;padding-left:19px}
+#s14 .row{grid-template-columns:1fr}
+#s14 .two{grid-template-columns:1fr}
+</style>
+<div class="top">
+  <p class="eyebrow">학원앱 &mdash; 아하노트 채점</p>
+  <h1>힌트는 곁가지, 원장님 손은 한 번이면 됩니다</h1>
+  <p>「내가 힌트를 줘야 돌아가나?」 &mdash; <b>아닙니다.</b> 학생이 사진을 올리면 AI가 읽고 점수까지 매기고,
+    원장님은 <b>맞는지 보고 「✓ 확정」</b>만 하면 됩니다. 힌트는 막힌 아이를 도와주는 <b>선택 도구</b>입니다.
+    불편한 진짜 이유는 <b>날짜를 하나씩 눌러야 하고, 채점이 팝업 안에 있는 것</b>입니다.
+    날짜가 머리줄이 되어 <b>스크롤만 하면 끝나는 「채점 작업대」</b>를 놓았습니다.
+    실측 &mdash; 노트 200건 · 미해결 56건 · 하루 평균 5건.</p>
+</div>
+<div class="sheethd"><h2>채점 작업대</h2><span>힌트 흐름 정리 · 지금 화면의 문제 · 날짜별 한 화면 시안</span></div>
+<div class="board"><div id="s14" class="pane">
+
+<div class="head">
+  <h1>📋 아하노트 채점 작업대 — 날짜별로 한 화면에서 끝내기</h1>
+  원장님 두 가지 — ① <b>「내가 힌트를 줘야 돌아가나?」</b> ② <b>채점 화면이 불편하다. 날짜별로 한 번에 보고 싶다.</b>
+  먼저 지금 흐름을 정확히 정리하고, 새 화면 시안을 놓았습니다. 코딩 전 상의용입니다.
+</div>
+
+<!-- ① 흐름 -->
+<div class="stage">
+  <p class="cap"><span>1</span>「힌트를 줘야 돌아가나?」 — <small>아닙니다. 힌트는 곁가지고, 원장님 손은 <b>딱 한 번</b>만 필요합니다</small></p>
+  <div class="card">
+    <div class="flow">
+      <div class="st auto"><span class="w">자동</span><div class="n">①</div><div class="t">학생이 사진 한 장</div>
+        <div class="d">LAMP 활동지를 찍어 올립니다. 앱에 글자를 다시 치지 않습니다.</div></div>
+      <div class="st auto"><span class="w">자동</span><div class="n">②</div><div class="t">AI가 읽음</div>
+        <div class="d">L·A·M·P 네 칸과 되돌아보기를 읽어 글자로 바꿉니다. 학생이 확인·수정만 합니다.</div></div>
+      <div class="st auto"><span class="w">자동</span><div class="n">③</div><div class="t">AI 점수 초안</div>
+        <div class="d">각 칸 0·1·2점 → <b>질문력 10점</b>. 코치 문장까지 미리 씁니다.</div></div>
+      <div class="st you"><span class="w">원장님</span><div class="n">④</div><div class="t">확정 한 번</div>
+        <div class="d">보고 <b>「✓ 확정」</b>. 8점 이상은 <b>일괄확정 한 번</b>으로 끝납니다. 확정해야 리그 점수가 됩니다.</div></div>
+      <div class="st opt"><span class="w">선택</span><div class="n">⑤</div><div class="t">💡 힌트 (안 해도 됨)</div>
+        <div class="d">학생이 <b>계속 막혀 있을 때만</b>. 해설지 PDF가 등록된 교재만 AI가 3단계 힌트 초안을 만들고, 원장님이 승인해야 나갑니다.</div></div>
+    </div>
+
+    <div class="big">
+      <div><div class="k">지금까지 올라온 아하노트</div><div class="v">200<small>건</small></div><div class="dd">하루 평균 5건 · 많은 날 12건</div></div>
+      <div><div class="k">미해결로 쌓인 것</div><div class="v" style="color:#dc2626">56<small>건</small></div><div class="dd">이게 「불편하다」의 진짜 원인입니다</div></div>
+      <div><div class="k">새 IB 방식으로 올라온 것</div><div class="v">2<small>건</small></div><div class="dd">학생앱을 오늘 배포했으니 이제부터 쌓입니다</div></div>
+      <div><div class="k">힌트를 보낸 노트</div><div class="v">—</div><div class="dd">해설지 PDF를 등록한 교재만 가능 — <b>지금은 거의 안 씁니다</b></div></div>
+    </div>
+
+    <div style="margin-top:12px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:11px;padding:11px 13px;font-size:12.5px;line-height:1.85;color:#1e3a5f">
+      <b>정리</b> — 힌트 없이도 아하노트는 완전히 돕니다. 학생은 사진을 올리고, AI가 읽고 점수를 매기고,
+      원장님은 <b>맞는지 보고 확정</b>만 하면 됩니다. 힌트는 <b>「막힌 아이를 도와주는 선택 도구」</b>이지 필수 단계가 아닙니다.<br>
+      다만 지금 점수 규칙이 힌트를 쓰는 쪽에 유리하게 되어 있습니다 —
+      <b>스스로 해결 +2 · 힌트 1개 보고 해결 +3</b>. 힌트를 거의 안 쓰신다면 이 보너스는 <b>사실상 죽은 규칙</b>입니다.
+      아래 「정해 주실 것」에 이 얘기를 넣었습니다.
+    </div>
+  </div>
+</div>
+
+<!-- ② 지금 화면 -->
+<div class="stage">
+  <p class="cap"><span>2</span>지금 화면이 불편한 이유 <small>왼쪽에서 고르고 → 오른쪽에서 보고 → 다시 왼쪽으로</small></p>
+  <div class="app old">
+    <div class="ahd">
+      <span class="ti">💡 IB아하노트</span>
+      <span class="segs"><b>학생별</b><b class="on">일별</b><b>반별</b></span>
+      <span class="chip r">🔁 재풀이 확인 3건</span>
+      <span class="chip s">🙋 스스로 해결 1건</span>
+      <span class="right">
+        <button class="b3">재풀이 자동해결 ON</button>
+        <button class="b1">🤖 AI 초안 일괄</button>
+        <button class="b2">✓ 8점 이상 일괄확정</button>
+        <button style="background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff">🏆 리그 순위표</button>
+        <button style="background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff">🏆 리그 화면</button>
+        <button style="background:#0d2240;color:#ffd54a">⚙</button>
+        <button class="b1">📺 수업 모드</button>
+      </span>
+    </div>
+    <div class="split">
+      <div class="side">
+        <div class="s">9/10 <small>1</small></div>
+        <div class="s">9/09 <small>1</small></div>
+        <div class="s on">9/08 <small>2</small></div>
+        <div class="s">9/07 <small>4</small></div>
+        <div class="s">9/06 <small>5</small></div>
+        <div class="s">9/05 <small>8</small></div>
+        <div class="s">9/04 <small>12</small></div>
+      </div>
+      <div class="mainempty">💡 왼쪽에서 날짜를 선택하세요.</div>
+    </div>
+  </div>
+  <div class="two">
+    <div class="card">
+      <h3 style="margin:0 0 8px;font-size:13px;color:var(--navy)">무엇이 불편한가</h3>
+      <table class="cmp">
+        <tr><th>문제</th><th>왜 불편한가</th></tr>
+        <tr><td class="r"><b>날짜를 하나씩 눌러야</b></td><td>9/4의 12건을 처리하고 9/5로 가려면 다시 왼쪽으로. 56건이 밀려 있으면 이 왕복이 수십 번</td></tr>
+        <tr><td class="r"><b>채점이 팝업 안에</b></td><td>노트마다 창을 열고 → 점수 보고 → 닫고 → 다음. 한 건에 클릭 3~4번</td></tr>
+        <tr><td class="r"><b>머리에 단추 9개</b></td><td>「🏆 리그 순위표」와 「🏆 리그 화면」이 <b>둘 다</b> 있습니다(중복). 자주 쓰는 단추가 묻힘</td></tr>
+        <tr><td class="r"><b>사진을 봐야 판단되는데</b></td><td>목록에는 사진이 없습니다. 열어야 보입니다</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3 style="margin:0 0 8px;font-size:13px;color:var(--navy)">그래서 바꾸는 것</h3>
+      <table class="cmp">
+        <tr><th>바꿈</th><th>어떻게</th></tr>
+        <tr><td class="g"><b>왼쪽 목록을 없앰</b></td><td>날짜가 <b>머리줄</b>이 되어 위에서 아래로 죽 이어집니다. 스크롤만 하면 됩니다</td></tr>
+        <tr><td class="g"><b>줄 안에서 바로 채점</b></td><td>사진·질문·AI 점수·확정 단추가 <b>한 줄</b>에. 창을 안 엽니다</td></tr>
+        <tr><td class="g"><b>날짜마다 일괄</b></td><td>「이 날 8점 이상 확정」 — 12건짜리 날도 <b>한 번</b></td></tr>
+        <tr><td class="g"><b>머리 정리</b></td><td>자주 쓰는 3개만 남기고 나머지는 <b>⋯ 더보기</b>로</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 새 작업대 -->
+<div class="stage">
+  <p class="cap"><span>3</span>새 안 — 📋 채점 작업대 <small>날짜가 머리줄, 그 아래에 그날 노트가 줄줄이. 창을 열지 않습니다</small></p>
+  <div class="app">
+    <div class="ahd">
+      <span class="ti">💡 IB아하노트</span>
+      <span class="segs"><b class="on">📋 채점 작업대</b><b>학생별</b><b>반별</b></span>
+      <span class="chip s">🙋 스스로 해결 1건</span>
+      <span class="right">
+        <button class="b1">🤖 AI 초안 일괄</button>
+        <button class="b2">✓ 8점 이상 전체 확정</button>
+        <button style="background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff">🏆 리그</button>
+        <button class="b3">⋯ 더보기</button>
+      </span>
+    </div>
+    <div class="wb">
+      <!-- 9/8 -->
+      <div class="daybar">
+        <span class="dt">9월 8일 (화)</span>
+        <span class="dc">2건 · <b>미채점 2</b></span>
+        <span class="db"><button class="b2">✓ 이 날 8점 이상 확정 (1)</button><button style="background:#fff;color:#475569;border:1.5px solid #cbd5e1">접기</button></span>
+      </div>
+
+      <div class="row">
+        <div class="ph"><div class="g"><div class="f">L 문제이해</div><div class="f">A 이론·공식</div><div class="f">M 풀이논리</div><div class="f">P 막힌곳</div></div><span class="zoom">크게</span></div>
+        <div>
+          <div class="who"><span class="nm">박수아</span><span class="gr">중1</span><span class="tm">오후 7:42</span>
+            <span class="src">쎈 중1-1 · 84쪽 12번</span></div>
+          <div class="qa"><b>Q.</b> 왜 y에 0을 넣는지 설명해 주세요. 절편이 축과 만나는 점인 건 알겠는데 0을 넣는 이유를 모르겠어요.</div>
+          <div class="lampline">
+            <span class="ok">L 내 말로 다시 씀</span><span class="ok">A 공식 적음</span>
+            <span class="mid">M 어디까지만 · 왜가 없음</span><span class="ok">P 물음표 질문</span><span class="ok">AHA 배운 점</span>
+          </div>
+          <div class="coach">🤖 <b>코치 초안</b> — 「왜 0을 넣는지」를 물은 게 좋아요. 다만 M칸에 <b>「내가 왜 그렇게 했는지」</b>를 한 줄 더 쓰면 만점이에요.</div>
+        </div>
+        <div class="sc">
+          <div class="scg">
+            <div class="p2"><div class="k">L</div><div class="v">2</div></div>
+            <div class="p2"><div class="k">A</div><div class="v">2</div></div>
+            <div class="p1"><div class="k">M</div><div class="v">1</div></div>
+            <div class="p2"><div class="k">P</div><div class="v">2</div></div>
+            <div class="p2"><div class="k">AHA</div><div class="v">2</div></div>
+          </div>
+          <div class="tot"><span class="tl">질문력</span><span class="tv">9<small>/10</small></span><span class="bn">개념질문 +1</span></div>
+          <div class="acts"><button class="ok1">✓ 확정 (리그 10점)</button><button class="ed1">✏️</button><button class="hint1">💡</button></div>
+        </div>
+      </div>
+
+      <div class="row need">
+        <div class="ph"><div class="g"><div>L</div><div>A</div><div>M</div><div class="f">P 막힌곳</div></div><span class="zoom">크게</span></div>
+        <div>
+          <div class="who"><span class="nm">이상은</span><span class="gr">중3</span><span class="tm">오후 9:10</span>
+            <span class="src">개념원리 중3-2 · 41쪽 7번</span>
+            <span class="flag f-need">P칸만 씀</span></div>
+          <div class="qa"><b>Q.</b> 모르겠어요</div>
+          <div class="lampline"><span class="no">L 비었음</span><span class="no">A 비었음</span><span class="no">M 비었음</span><span class="mid">P 한 줄</span><span class="no">AHA 없음</span></div>
+          <div class="coach">🤖 <b>코치 초안</b> — 어디까지 풀었는지 M칸에 써 보면 선생님이 <b>정확히 어디서 막혔는지</b> 알 수 있어요. 네 칸을 채우면 8점 이상 받아요.</div>
+        </div>
+        <div class="sc">
+          <div class="scg">
+            <div class="p0"><div class="k">L</div><div class="v">0</div></div>
+            <div class="p0"><div class="k">A</div><div class="v">0</div></div>
+            <div class="p0"><div class="k">M</div><div class="v">0</div></div>
+            <div class="p1"><div class="k">P</div><div class="v">1</div></div>
+            <div class="p0"><div class="k">AHA</div><div class="v">0</div></div>
+          </div>
+          <div class="tot"><span class="tl">질문력</span><span class="tv" style="color:#dc2626">1<small>/10</small></span><span class="bn" style="background:#fee2e2;color:#b91c1c">리그 0점</span></div>
+          <div class="acts"><button class="ok1">✓ 확정</button><button class="ed1">✏️</button><button class="hint1">💡</button></div>
+          <div class="note" style="margin-top:5px">💡를 누르면 이 학생에게만 힌트를 보냅니다</div>
+        </div>
+      </div>
+
+      <!-- 9/7 -->
+      <div class="daybar" style="margin-top:14px">
+        <span class="dt">9월 7일 (월)</span>
+        <span class="dc">4건 · <b>미채점 3</b> · 확정 1</span>
+        <span class="db"><button class="b2">✓ 이 날 8점 이상 확정 (2)</button><button style="background:#fff;color:#475569;border:1.5px solid #cbd5e1">접기</button></span>
+      </div>
+
+      <div class="row done">
+        <div class="ph"><div class="g"><div class="f">L</div><div class="f">A</div><div class="f">M</div><div class="f">P</div></div><span class="zoom">크게</span></div>
+        <div>
+          <div class="who"><span class="nm">한소율</span><span class="gr">중1</span><span class="tm">오후 6:05</span>
+            <span class="src">쎈 중1-1 · 92쪽 3번</span><span class="flag f-self">🙋 스스로 해결</span></div>
+          <div class="qa"><b>Q.</b> 두 직선이 평행하면 기울기가 같다는 건 알겠는데, 왜 절편이 다르면 안 만나나요?</div>
+          <div class="lampline"><span class="ok">L</span><span class="ok">A</span><span class="ok">M</span><span class="ok">P</span><span class="ok">AHA</span></div>
+          <div class="coach">✅ <b>확정됨</b> — 오후 9:40 · 리그 12점 (질문력 10 + 개념 +1 + 스스로 해결... <b>재풀이 사진 확인 필요</b>)</div>
+        </div>
+        <div class="sc">
+          <div class="scg">
+            <div class="p2"><div class="k">L</div><div class="v">2</div></div>
+            <div class="p2"><div class="k">A</div><div class="v">2</div></div>
+            <div class="p2"><div class="k">M</div><div class="v">2</div></div>
+            <div class="p2"><div class="k">P</div><div class="v">2</div></div>
+            <div class="p2"><div class="k">AHA</div><div class="v">2</div></div>
+          </div>
+          <div class="tot"><span class="tl">질문력</span><span class="tv" style="color:#15803d">10<small>/10</small></span></div>
+          <div class="doneb">✅ 확정됨 · 되돌리기</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="ph"><div class="g"><div class="f">L</div><div class="f">A</div><div>M</div><div class="f">P</div></div><span class="zoom">크게</span></div>
+        <div>
+          <div class="who"><span class="nm">김예성</span><span class="gr">중1</span><span class="tm">오후 8:20</span>
+            <span class="src">📝 프린트물 · 5번</span><span class="flag f-old">옛 방식</span></div>
+          <div class="qa"><b>Q.</b> 인수분해할 때 공통인수를 먼저 묶는 이유가 뭔가요?</div>
+          <div class="lampline"><span class="ok">L</span><span class="ok">A</span><span class="no">M 비었음</span><span class="ok">P</span><span class="mid">AHA 짧음</span></div>
+          <div class="coach">🤖 <b>코치 초안</b> — 「왜 먼저 묶나」는 좋은 개념 질문이에요. 풀이 논리(M)를 한 줄만 더 써 보세요.</div>
+        </div>
+        <div class="sc">
+          <div class="scg">
+            <div class="p2"><div class="k">L</div><div class="v">2</div></div>
+            <div class="p2"><div class="k">A</div><div class="v">2</div></div>
+            <div class="p0"><div class="k">M</div><div class="v">0</div></div>
+            <div class="p2"><div class="k">P</div><div class="v">2</div></div>
+            <div class="p1"><div class="k">AHA</div><div class="v">1</div></div>
+          </div>
+          <div class="tot"><span class="tl">질문력</span><span class="tv">7<small>/10</small></span><span class="bn">개념질문 +1</span></div>
+          <div class="acts"><button class="ok1">✓ 확정 (리그 8점)</button><button class="ed1">✏️</button><button class="hint1">💡</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note">
+    <b>한 줄에 다 있습니다</b> — 왼쪽 활동지 사진(누르면 크게 · 어느 칸을 채웠는지 색으로), 가운데 AI가 읽은 질문과 칸별 평가·코치 초안,
+    오른쪽 AI 점수와 <b>「✓ 확정」 한 번</b>. 창을 열지 않고 스크롤만 하면 됩니다.
+    ✏️는 점수 손보기, 💡는 그 학생에게 힌트 보내기 — <b>필요할 때만</b> 누릅니다.
+  </div>
+</div>
+
+<!-- ④ 정해 주실 것 -->
+<div class="stage">
+  <div class="ask">
+    <b>정해 주실 것</b>
+    <ol>
+      <li><b>기본 화면</b> — 아하노트를 열면 <b>📋 채점 작업대</b>가 먼저 뜨게 할까요? (학생별·반별은 탭으로 남김)</li>
+      <li><b>몇 날치를 한 번에</b> — 최근 7일(추천) / 14일 / 미채점 전부(지금 56건)</li>
+      <li><b>사진 크기</b> — 작은 썸네일 + 누르면 크게(추천) / 줄마다 큰 사진</li>
+      <li><b>머리 단추 정리</b> — 자주 쓰는 3개(AI 초안 일괄 · 8점 이상 확정 · 🏆 리그)만 남기고 나머지 ⋯ 더보기로. <b>「리그 순위표」와 「리그 화면」 중복은 하나로 합칩니다</b></li>
+      <li><b>힌트 보너스</b> — 힌트를 거의 안 쓰시는데 <b>「힌트 1개 +3」이 「스스로 해결 +2」보다 높습니다</b>.
+        그대로 둘까요 / 힌트 보너스를 낮출까요(예: 힌트1 +2·힌트2 +1·힌트3 0) / 해설지 PDF를 등록해 힌트를 본격적으로 쓸까요</li>
+      <li><b>밀린 56건</b> — 옛 방식(LAMP 칸이 없는) 노트가 대부분입니다. 일괄로 <b>「리그 제외 · 해결 처리」</b> 할까요 / 그대로 둘까요</li>
+    </ol>
+  </div>
+</div>
+
+</div></div>
