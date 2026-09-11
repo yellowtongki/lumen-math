@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🏆 아하리그 화면 채우기 · 채점 작업대 3분할 · 학원앱 「가」</title>
+<style>
+:root{ --navy:#0d2240; --blue:#1d6fe8; --purple:#7c3aed; --green:#16a34a; --amber:#f59e0b; --ink:#0f172a; --sub:#64748b; --gray:#f1f5f9; --red:#dc2626; }
+*{box-sizing:border-box}
+body{margin:0;background:#dfe4ec;color:var(--ink);font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',-apple-system,sans-serif;padding:20px 14px 60px}
+.stage{max-width:1240px;margin:0 auto 30px}
+.cap{font-size:13px;font-weight:800;color:var(--navy);margin:0 0 8px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cap span{font-size:10.5px;font-weight:700;color:#fff;background:var(--navy);border-radius:50px;padding:2px 8px}
+.cap small{font-weight:600;color:var(--sub);font-size:11px}
+.note{font-size:11px;color:var(--sub);line-height:1.7;margin-top:8px}
+.note b{color:var(--navy)}
+.why{background:#fff;border-radius:14px;padding:14px 17px;box-shadow:0 2px 10px rgba(13,34,64,.06);margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.why div{background:#f8fafc;border:1px solid #e2e8f0;border-radius:11px;padding:10px 12px}
+.why .k{font-size:10.5px;font-weight:900;color:var(--sub)}
+.why .v{font-size:13px;font-weight:900;color:var(--navy);margin-top:3px;line-height:1.5}
+.why .d{font-size:10.5px;color:#475569;margin-top:4px;line-height:1.55}
+.why .v i{font-style:normal;color:var(--red)}
+
+/* 학원앱 틀 */
+.app{background:#f4f6fa;border-radius:14px;box-shadow:0 2px 12px rgba(13,34,64,.1);overflow:hidden;font-size:12px}
+.hero{background:linear-gradient(135deg,#0d2240,#164a7a);color:#fff;padding:16px 18px}
+.hero .r1{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hero .ti{font-size:19px;font-weight:900}
+.hero .ss{font-size:12px;opacity:.75;font-weight:700}
+.hero .dd{font-size:11px;font-weight:900;color:#ffd54a;background:rgba(255,255,255,.12);border-radius:50px;padding:3px 10px}
+.hero .bt{margin-left:auto;display:flex;gap:7px;flex-wrap:wrap}
+.hero button{padding:7px 13px;border-radius:8px;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#fff}
+.hero button.p{background:linear-gradient(135deg,#7c3aed,#312e81);border:none}
+.hero button.g{background:linear-gradient(135deg,#f59e0b,#e8192c);border:none}
+.hero button.v{background:#6d28d9;border:none}
+.hero .last{font-size:11.5px;opacity:.6;margin-top:7px}
+.body{padding:12px 14px}
+.stat{background:#fff7ed;border:1.5px solid #fdba74;border-radius:14px;padding:12px 16px;margin-bottom:12px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.stat .ic{font-size:26px}
+.stat .t{font-size:13.5px;font-weight:900;color:#9a3412}
+.stat .s{font-size:11.5px;color:#7c2d12;line-height:1.65;margin-top:2px}
+.stat .s b{background:#fff;border-radius:5px;padding:0 5px}
+.stat .steps{display:flex;gap:6px}
+.stat .steps div{font-size:11px;font-weight:800;border-radius:8px;padding:6px 10px;background:#fff;border:1px solid #fed7aa;color:#9a3412}
+.stat .steps div.done{background:#dcfce7;border-color:#86efac;color:#166534}
+.prz{background:linear-gradient(135deg,#fffdf5,#fff4d6);border:2px solid #f2cd85;border-radius:14px;padding:14px 18px;margin-bottom:12px;text-align:center;box-shadow:0 2px 10px rgba(180,120,20,.13)}
+.prz .h{font-size:12px;font-weight:900;color:#a35a00;letter-spacing:.5px;margin-bottom:10px}
+.prz .h span{font-weight:800;color:#a8825a}
+.prz .cards{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
+.prz .c{background:#fff;border:1.5px solid #f3ddb4;border-radius:12px;padding:10px 16px;min-width:118px;box-shadow:0 1px 4px rgba(180,120,20,.1)}
+.prz .c.big{border:2px solid #f0a83c;padding:11px 20px}
+.prz .c .n{font-size:11.5px;font-weight:900;color:#a35a00}
+.prz .c .w{font-size:23px;font-weight:900;color:#c2410c;line-height:1.15;margin-top:2px}
+.prz .c.big .w{font-size:27px}
+.prz .c .w small{font-size:13px}
+.prz .c .who{font-size:10.5px;color:#64748b;font-weight:700;margin-top:3px}
+.prz .c .who b{color:var(--navy)}
+.prz .f{font-size:11px;font-weight:800;color:#a35a00;margin-top:9px}
+.g3{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.card{background:#fff;border-radius:14px;padding:13px 15px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card .h{font-size:13px;font-weight:900;color:var(--navy);margin-bottom:8px;display:flex;align-items:baseline;gap:7px}
+.card .h small{font-size:10.5px;color:#94a3b8;font-weight:700}
+.card .h .r{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--blue);cursor:pointer}
+.kpi{display:flex;gap:8px}
+.kpi div{flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px}
+.kpi .k{font-size:10px;font-weight:800;color:var(--sub)}
+.kpi .v{font-size:20px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.15;margin-top:1px}
+.kpi .v small{font-size:10.5px;color:var(--sub);font-weight:800;margin-left:1px}
+.kpi .v.red{color:var(--red)}
+.kpi .v.grn{color:var(--green)}
+.enc{margin-top:9px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:8px 11px}
+.enc .t{font-size:11.5px;font-weight:900;color:#b91c1c}
+.enc .l{font-size:11px;color:#7f1d1d;margin-top:4px;line-height:1.7}
+.enc .l b{background:#fff;border-radius:4px;padding:0 5px;font-weight:800}
+.enc button{margin-top:6px;border:none;background:#b91c1c;color:#fff;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:800;font-family:inherit}
+.tier{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tier div{border-radius:9px;padding:7px 9px;display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800}
+.tier .n{margin-left:auto;font-size:15px;font-weight:900}
+.t1{background:#f1f5f9;color:#475569}.t2{background:#e0f2fe;color:#075985}.t3{background:#ede9fe;color:#5b21b6}.t4{background:#fef3c7;color:#92400e}
+.rule{display:flex;gap:6px;flex-wrap:wrap}
+.rule div{border:1.5px solid #eef2f7;border-radius:10px;padding:7px 10px;text-align:center;min-width:64px}
+.rule .a{font-size:12px;font-weight:900;color:var(--navy)}
+.rule .b{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:2px}
+.rule .b b{color:var(--green)}
+.rule div.sum{background:var(--navy);border-color:var(--navy)}
+.rule div.sum .a{color:#ffd54a}.rule div.sum .b{color:rgba(255,255,255,.7)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:7px 6px;background:#f8fafc;color:#64748b;font-size:11px;font-weight:800}
+td{padding:8px 6px;border-top:1px solid #f1f5f9}
+td.c,th.c{text-align:center}td.r,th.r{text-align:right}
+.tg{font-size:10px;font-weight:800;border-radius:5px;padding:2px 7px}
+.bar{height:3px;border-radius:2px;background:#eef2f7;margin-top:3px}
+.bar i{display:block;height:3px;border-radius:2px;background:#7c3aed}
+.samp{font-size:10px;font-weight:900;color:#fff;background:#94a3b8;border-radius:5px;padding:1px 6px;margin-left:5px;vertical-align:middle}
+.two{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px}
+.phone{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px;font-size:11px}
+.phone .ph{font-size:10.5px;font-weight:900;color:var(--sub);text-align:center;margin-bottom:6px}
+.phone .sc{border:6px solid #0f172a;border-radius:20px;overflow:hidden;background:#f8fafc}
+.phone .lg{background:linear-gradient(135deg,#0d2240,#164a7a);color:#fff;padding:10px 12px}
+.phone .lg b{font-size:13px}.phone .lg div{font-size:10px;opacity:.75;margin-top:2px}
+.phone .my{background:#fff;margin:8px;border-radius:10px;padding:8px 10px;border:1px solid #e2e8f0}
+.phone .my .n{font-size:10px;font-weight:800;color:var(--sub)}
+.phone .my .v{font-size:18px;font-weight:900;color:var(--navy)}
+.phone .my .v small{font-size:10px;color:var(--sub)}
+.phone .rank{margin:0 8px 8px;background:#fff;border-radius:10px;padding:6px 10px;border:1px solid #e2e8f0}
+.phone .rank div{display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid #f1f5f9;font-weight:700}
+.phone .rank div:first-child{border-top:none}
+.phone .rank div.me{background:#fffbeb;margin:0 -10px;padding:4px 10px}
+
+/* ── 채점 작업대 3분할 ── */
+.wb3{display:grid;grid-template-columns:168px minmax(0,1fr) 420px;min-height:560px;background:#fff}
+.nav{background:#f8fafc;border-right:1px solid #e2e8f0;padding:10px 8px}
+.nav .sg{display:flex;background:#e2e8f0;border-radius:8px;padding:2px;margin-bottom:9px}
+.nav .sg b{flex:1;text-align:center;font-size:10.5px;font-weight:800;padding:4px 0;border-radius:6px;color:#64748b}
+.nav .sg b.on{background:#fff;color:var(--navy)}
+.nav .lab{font-size:9.5px;font-weight:900;color:#94a3b8;letter-spacing:.06em;margin:8px 4px 4px}
+.nav .it{font-size:11.5px;padding:6px 8px;border-radius:7px;color:#334155;margin-bottom:2px;display:flex;align-items:center;gap:5px;font-weight:700}
+.nav .it small{margin-left:auto;font-weight:800;color:#94a3b8;font-size:10.5px}
+.nav .it small.red{color:var(--red)}
+.nav .it.on{background:#0d2240;color:#fff}
+.nav .it.on small{color:#ffd54a}
+.nav .it.done{color:#94a3b8}
+.lst{border-right:1px solid #e2e8f0;background:#f4f6fa;padding:10px}
+.lst .dh{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #dbe2ec;border-radius:10px;padding:7px 11px;margin-bottom:7px}
+.lst .dh .dt{font-size:13px;font-weight:900;color:var(--navy)}
+.lst .dh .dc{font-size:11px;font-weight:700;color:var(--sub)}
+.lst .dh .dc b{color:var(--red)}
+.lst .dh button{margin-left:auto;border:none;background:var(--green);color:#fff;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:800;font-family:inherit}
+.li{background:#fff;border:1.5px solid #e6eaf1;border-radius:11px;padding:8px 10px;margin-bottom:6px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:9px;align-items:center}
+.li.on{border-color:var(--blue);box-shadow:0 0 0 2px #bfdbfe}
+.li.done{border-color:#bbf7d0;background:#f7fdf9;opacity:.75}
+.li .th{width:44px;height:52px;border-radius:6px;background:#eef2f7;border:1px solid #dbe2ec;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;padding:3px}
+.li .th i{background:#fff;border-radius:2px}
+.li .th i.f{background:#dbeafe}
+.li .nm{font-size:12.5px;font-weight:900;color:var(--navy)}
+.li .nm small{font-size:10px;font-weight:700;color:var(--sub);background:var(--gray);border-radius:4px;padding:0 5px;margin-left:4px}
+.li .src{font-size:10.5px;color:#475569;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li .src em{font-style:normal;background:#fee2e2;color:#b91c1c;border-radius:4px;padding:0 4px;font-weight:800}
+.li .src em.ex{background:#ede9fe;color:#5b21b6}
+.li .sc{text-align:right}
+.li .sc .p{font-size:16px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums}
+.li .sc .p small{font-size:9.5px;color:var(--sub);font-weight:800}
+.li .sc .st{font-size:9.5px;font-weight:800;border-radius:4px;padding:1px 5px;background:#fef3c7;color:#92400e}
+.li.done .sc .st{background:#dcfce7;color:#166534}
+.dtl{padding:10px 12px;background:#fff}
+.dtl .top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.dtl .top .nm{font-size:14px;font-weight:900;color:var(--navy)}
+.dtl .top .q{font-size:11px;color:#475569;font-weight:700}
+.dtl .top .nx{margin-left:auto;display:flex;gap:4px}
+.dtl .top .nx button{border:1px solid #dbe2ec;background:#fff;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:800;font-family:inherit;color:#475569}
+.pic{height:250px;border-radius:10px;background:#fff;border:1.5px solid #dbe2ec;position:relative;overflow:hidden;padding:8px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:5px}
+.pic div{border:1px solid #dbe2ec;border-radius:4px;padding:4px 6px;font-size:9px;font-weight:900;color:#94a3b8;background:#fbfcfe;line-height:1.5}
+.pic div span{display:block;font-weight:600;color:#64748b;font-size:8.5px}
+.pic div.f{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+.pic .zoom{position:absolute;right:8px;bottom:8px;font-size:10px;background:rgba(13,34,64,.75);color:#fff;border-radius:5px;padding:2px 7px}
+.pic .sol{position:absolute;left:8px;bottom:8px;font-size:10px;background:#7c3aed;color:#fff;border-radius:5px;padding:2px 7px}
+.axes{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:9px}
+.ax{border:1.5px solid #e2e8f0;border-radius:9px;padding:6px 5px;text-align:center}
+.ax .k{font-size:10px;font-weight:900;color:var(--sub)}
+.ax .pts{display:flex;gap:2px;justify-content:center;margin-top:4px}
+.ax .pts b{width:20px;height:20px;border-radius:5px;background:#f1f5f9;color:#94a3b8;font-size:10.5px;display:flex;align-items:center;justify-content:center}
+.ax .pts b.on{background:var(--navy);color:#ffd54a}
+.ax .w{font-size:9px;color:#94a3b8;margin-top:3px;line-height:1.35}
+.bon{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.bon span{font-size:10.5px;font-weight:800;border-radius:50px;padding:3px 9px;border:1px solid #e2e8f0;color:#64748b;background:#fff}
+.bon span.on{background:#ede9fe;border-color:#c4b5fd;color:#5b21b6}
+.tot{display:flex;align-items:center;gap:10px;margin-top:9px;background:#f8fafc;border-radius:10px;padding:8px 11px}
+.tot .a{font-size:11px;color:var(--sub);font-weight:800}
+.tot .a b{color:var(--navy);font-size:18px;font-variant-numeric:tabular-nums}
+.tot button{margin-left:auto;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:900;font-family:inherit;color:#fff;background:var(--green)}
+.tot button.h{background:#fff;color:var(--purple);border:1.5px solid #ddd6fe;font-weight:800;font-size:11px}
+.wb2{display:grid;grid-template-columns:minmax(0,1fr) 420px;background:#fff;min-height:200px}
+.wb2 .lst{padding:8px}
+.wb2 .chips{display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap}
+.wb2 .chips b{font-size:10.5px;font-weight:800;border-radius:50px;padding:3px 9px;border:1px solid #dbe2ec;color:#475569;background:#fff}
+.wb2 .chips b.on{background:#0d2240;color:#fff;border-color:#0d2240}
+
+/* ── 「가」 ── */
+.fz{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hdrx{background:linear-gradient(135deg,#0d2240,#1a3564);color:#fff;border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;position:relative}
+.hdrx .a{font-size:10px;opacity:.5;letter-spacing:1.2px;font-weight:600;text-transform:uppercase}
+.hdrx .b{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.hdrx .b span{font-size:11px;opacity:.45;font-weight:600}
+.ga{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.pop{position:absolute;right:14px;top:56px;background:#fff;color:var(--navy);border-radius:12px;box-shadow:0 10px 30px rgba(13,34,64,.25);padding:8px;width:170px;z-index:2}
+.pop .t{font-size:10px;font-weight:900;color:var(--sub);padding:2px 6px 6px}
+.pop div.o{padding:7px 9px;border-radius:8px;font-weight:800;display:flex;align-items:center;gap:6px;color:#334155}
+.pop div.o.on{background:#eff6ff;color:var(--blue)}
+.pop div.o small{margin-left:auto;font-size:10px;color:#94a3b8;font-weight:700}
+.zoomdemo{background:#fff;border-radius:12px;padding:12px 14px;border:1px solid #e2e8f0}
+.zoomdemo .h{font-size:11px;font-weight:900;color:var(--sub);margin-bottom:6px}
+.zd{display:flex;gap:10px;align-items:flex-end}
+.zd div{flex:1;border:1px solid #e2e8f0;border-radius:9px;padding:8px;background:#f8fafc}
+.zd .l{font-size:10px;font-weight:900;color:var(--sub);margin-bottom:3px}
+.zd p{margin:0;color:var(--navy);font-weight:700;line-height:1.5}
+.spec{background:#fff;border-radius:14px;padding:13px 16px;box-shadow:0 2px 8px rgba(0,0,0,.04);font-size:12px;line-height:1.8;color:#334155}
+.spec b{color:var(--navy)}
+.spec ul{margin:4px 0 0;padding-left:18px}
+</style></head><body>
+
+<!-- ═══════════ A. 아하리그 화면 ═══════════ -->
+<div class="stage">
+  <div class="cap"><span>A</span>💡 아하리그 화면 — 진도 레이스와 같은 문법으로 <small>지금 「IB아하 순위표」 소탭이 텅 빈 이유부터</small></div>
+  <div class="why">
+    <div><div class="k">① 시즌이 아직 시작 전</div><div class="v">시즌 <i>10월 1일</i> ~ 11월 30일<br>오늘 9월 11일</div><div class="d">시즌 안의 노트만 세므로 지금은 <b>셀 노트가 0건</b>입니다. 연습 주간 22일(10/1~10/22)까지 더하면 실제 점수는 <b>10월 23일</b>부터 붙습니다. 이 설정이 의도인지 확인 필요.</div></div>
+    <div><div class="k">② 새 방식 노트가 아직 2건</div><div class="v">9월 노트 49건 · 9명<br>그중 활동지(IB형) <i>2건 · 1명</i></div><div class="d">옛 방식(한 줄 메모)은 리그에서 빠지므로(lampOnly) 순위표에 오를 재료가 거의 없습니다. 학생앱 v2-77(학습지 아코디언·탐구노트)이 배포돼야 늘어납니다.</div></div>
+    <div><div class="k">③ 아직 아무것도 발행 안 됨</div><div class="v">순위표 · 안내 모두 <i>미발행</i></div><div class="d">학생앱 리그 화면도 「준비 중」으로 보입니다. 화면을 채우는 것과 별개로, <b>📣 안내 발행</b>은 오늘 바로 누를 수 있습니다.</div></div>
+  </div>
+
+  <div class="app">
+    <div class="hero">
+      <div class="r1">
+        <div class="ti">💡 IB아하노트 리그</div>
+        <div class="ss">2026-10-01 ~ 11-30 · 통합 한 리그 · 🌱 연습 주간 10/1~10/22</div>
+        <div class="dd">시즌 시작 D-20</div>
+        <div class="bt">
+          <button>⚙️ 리그 설정</button>
+          <button class="p">📣 안내 발행</button>
+          <button class="g">🎁 시상 확정</button>
+          <button class="v">👁 학생 눈으로</button>
+        </div>
+      </div>
+      <div class="last">마지막 채점 확정 2026-09-10 21:40 · 채점 대기 <b>3건</b> → 📋 채점 작업대</div>
+    </div>
+    <div class="body">
+      <div class="stat">
+        <div class="ic">🚦</div>
+        <div><div class="t">시즌 열기까지 남은 일</div>
+          <div class="s">① 리그 설정 확인(시즌 10/1 · 연습 22일 · 통합) → ② <b>📣 안내 발행</b>(학생앱에 규칙·예시 등수표) → ③ 학생앱 v2-77 배포 → ④ 10/1 시즌 시작 · 10/23 실점수</div></div>
+        <div class="steps"><div class="done">① 설정</div><div>② 안내</div><div>③ 학생앱</div><div>④ 시즌</div></div>
+      </div>
+
+      <div class="prz">
+        <div class="h">🏆 이번 시즌 상금 <span>· 4상 · 개별 금액 공개</span></div>
+        <div class="cards">
+          <div class="c big"><div class="n">🥇 질문왕</div><div class="w">20,000<small>원</small></div><div class="who">지금 1위 <b>—</b></div></div>
+          <div class="c"><div class="n">🏆 베스트 질문</div><div class="w">15,000<small>원</small></div><div class="who">후보 <b>2건</b></div></div>
+          <div class="c"><div class="n">📈 성장</div><div class="w">10,000<small>원</small></div><div class="who">첫 2주 뒤 계산</div></div>
+          <div class="c"><div class="n">🪞 성찰</div><div class="w">5,000<small>원</small></div><div class="who">AHA 10점 · 재질문 0</div></div>
+        </div>
+        <div class="f">👁 학생앱에 공개 중 · 모두 합쳐 50,000원 · 👑 종합 챔피언은 별도(문화상품권 30,000원)</div>
+      </div>
+
+      <div class="g3">
+        <div class="card">
+          <div class="h">🙋 참여 현황 <small>최근 30일</small><span class="r">명단 보기</span></div>
+          <div class="kpi">
+            <div><div class="k">학습지 받은 학생</div><div class="v">27<small>명</small></div></div>
+            <div><div class="k">노트 쓴 학생</div><div class="v grn">9<small>명</small></div></div>
+            <div><div class="k">한 번도 안 쓴</div><div class="v red">18<small>명</small></div></div>
+          </div>
+          <div class="enc"><div class="t">📣 독려 대상 18명 — 틀린 문제는 있는데 노트가 0건</div>
+            <div class="l">학습지에 ❌ 틀린 문제 <b>3개 이상</b> 14명 · ⭐ 어려운 맞힌 문제만 있는(탐구노트 대상) 4명</div>
+            <button>학생앱 「오늘의 노트 후보」로 알림 보내기</button></div>
+        </div>
+        <div class="card">
+          <div class="h">🎖 등급 분포 <small>인정 노트 기준</small></div>
+          <div class="tier">
+            <div class="t1">🙋 질문자<span class="n">9</span></div>
+            <div class="t2">🔍 탐구자<span class="n">0</span></div>
+            <div class="t3">🧠 사고자<span class="n">0</span></div>
+            <div class="t4">🪞 성찰자<span class="n">0</span></div>
+          </div>
+          <div class="note">탐구자 = 평균 6점·5건 · 사고자 = 평균 8점·스스로/탐구 3건 · 성찰자 = AHA 10점·재질문 0. 지금은 전원 질문자 — <b>시즌이 돌면 채워집니다.</b></div>
+        </div>
+        <div class="card">
+          <div class="h">📏 점수 규칙 <small>학생앱에도 그대로</small></div>
+          <div class="rule">
+            <div><div class="a">L·A·M·P·AHA</div><div class="b">각 0~2 → <b>10</b></div></div>
+            <div><div class="a">🙋 스스로</div><div class="b">+2 · 확인 시 <b>+3</b></div></div>
+            <div><div class="a">🔎 탐구</div><div class="b">상 +1 · 최상 <b>+2</b></div></div>
+            <div><div class="a">💡 힌트</div><div class="b">1단계 +2 · 2·3단계 +1</div></div>
+            <div><div class="a">⭐ 뽑힘</div><div class="b">+2 · 베스트 <b>+3</b></div></div>
+            <div class="sum"><div class="a">노트 20</div><div class="b">하루 2 · 주 8건</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two">
+        <div class="card">
+          <div class="h">🏆 순위표 <small>통합 한 리그 · 학생·학부모에게는 5위까지</small><span class="samp">아래 줄은 예시 — 시즌 시작 전이라 실제는 비어 있음</span></div>
+          <table>
+            <tr><th class="c" style="width:44px">등수</th><th>학생</th><th style="width:90px">등급</th><th class="r" style="width:76px">리그 점수</th><th class="r" style="width:54px">평균</th><th class="r" style="width:46px">인정</th><th class="r" style="width:56px">🙋 스스로</th><th class="r" style="width:50px">🔎 탐구</th><th class="c" style="width:96px">최근 14일</th></tr>
+            <tr><td class="c">🥇</td><td><b>김○○</b> <small style="color:#94a3b8">중2</small></td><td><span class="tg t3">🧠 사고자</span></td><td class="r"><b>84</b><div class="bar"><i style="width:100%"></i></div></td><td class="r">8.4</td><td class="r">10</td><td class="r" style="color:#b45309;font-weight:800">4</td><td class="r" style="color:#6d28d9;font-weight:800">2</td><td class="c">▂▅▇▅▇▂▇</td></tr>
+            <tr><td class="c">🥈</td><td><b>이○○</b> <small style="color:#94a3b8">고1</small></td><td><span class="tg t2">🔍 탐구자</span></td><td class="r"><b>61</b><div class="bar"><i style="width:73%"></i></div></td><td class="r">6.8</td><td class="r">9</td><td class="r" style="color:#b45309;font-weight:800">1</td><td class="r" style="color:#6d28d9;font-weight:800">3</td><td class="c">▂▂▅▇▅▇▅</td></tr>
+            <tr><td class="c">🥉</td><td><b>박○○</b> <small style="color:#94a3b8">초6</small></td><td><span class="tg t2">🔍 탐구자</span></td><td class="r"><b>55</b><div class="bar"><i style="width:65%"></i></div></td><td class="r">6.1</td><td class="r">9</td><td class="r" style="color:#b45309;font-weight:800">2</td><td class="r" style="color:#6d28d9;font-weight:800">0</td><td class="c">▅▂▂▅▅▇▂</td></tr>
+            <tr style="opacity:.55"><td class="c">6</td><td><b>최○○</b> <small style="color:#94a3b8">중1</small></td><td><span class="tg t1">🙋 질문자</span></td><td class="r"><b>18</b><div class="bar"><i style="width:21%"></i></div></td><td class="r">4.5</td><td class="r">4</td><td class="r">0</td><td class="r">0</td><td class="c">▂▂▂▂▅▂▂</td></tr>
+          </table>
+          <div class="note">진도 레이스 표와 같은 골격(등수·이름·등급·점수 막대·최근 14일). <b>공개 밖(6위~)은 흐리게</b>. 이름은 채점 설정의 이름 표시 방식을 따릅니다.</div>
+        </div>
+        <div class="phone">
+          <div class="ph">📱 학생앱에서 보이는 모습 (👁 학생 눈으로)</div>
+          <div class="sc">
+            <div class="lg"><b>💡 IB아하노트 리그</b><div>연습 주간 · 10/22까지 점수 0 · 통합 한 리그</div></div>
+            <div class="my"><div class="n">내 리그 점수</div><div class="v">0 <small>점 · 질문자 · 연습 중</small></div></div>
+            <div class="rank">
+              <div><span>🥇 김○○</span><span>84</span></div>
+              <div><span>🥈 이○○</span><span>61</span></div>
+              <div><span>🥉 박○○</span><span>55</span></div>
+              <div class="me"><span>12 나</span><span>0</span></div>
+            </div>
+          </div>
+          <div class="note">오른쪽 칸은 진도 레이스의 <b>학생 미리보기 패널</b>과 같은 자리. 발행 전에는 「📣 안내」 예시 화면이, 발행 후엔 실제 순위가 보입니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note">「시즌 한눈에 · 순위표 · 시상 · 🎲 검사 · 발행」 소탭은 그대로 두고, <b>「IB아하 순위표」 소탭 한 장</b>을 이렇게 채웁니다. 진도 레이스에서 가져온 것: 머리띠 · 상마다 큰 상금 카드 · 규칙 카드 · 순위표 골격 · 오른쪽 학생 미리보기. 새로 붙는 것: 🚦 시즌 열기 단계 · 🙋 참여/독려(18명) · 🎖 등급 분포.</div>
+</div>
+
+<!-- ═══════════ B. 채점 작업대 3분할 ═══════════ -->
+<div class="stage">
+  <div class="cap"><span>B</span>📋 채점 작업대 — 3분할 <small>왼쪽 고르기 · 가운데 줄 목록 · 오른쪽 사진 크게 + 채점</small></div>
+  <div class="app">
+    <div class="hero" style="padding:10px 16px"><div class="r1"><div class="ti" style="font-size:15px">📋 채점 작업대</div><div class="ss">어제 이후 · 채점 대기 <b style="color:#ffd54a">3건</b> · 확정 12건</div>
+      <div class="bt"><button>어제</button><button style="background:#fff;color:#0d2240;border:none">7일</button><button>전체</button><button class="v">📚 학습지별</button></div></div></div>
+    <div class="wb3">
+      <div class="nav">
+        <div class="sg"><b class="on">📅 날짜</b><b>📚 학습지</b><b>🙋 학생</b></div>
+        <div class="lab">채점 대기</div>
+        <div class="it on">9/10 (수)<small>3</small></div>
+        <div class="it">9/9 (화)<small class="red">2</small></div>
+        <div class="lab">확정 끝</div>
+        <div class="it done">9/8 (월)<small>5 ✓</small></div>
+        <div class="it done">9/5 (금)<small>4 ✓</small></div>
+        <div class="it done">9/4 (목)<small>3 ✓</small></div>
+        <div class="lab">모아 보기</div>
+        <div class="it">⭐ 베스트 후보<small>2</small></div>
+        <div class="it">🔎 탐구노트<small>1</small></div>
+        <div class="it">🎲 검사 필요<small>1</small></div>
+      </div>
+      <div class="lst">
+        <div class="dh"><div class="dt">9월 10일 (수)</div><div class="dc">5건 · 대기 <b>3</b> · 확정 2</div><button>✓ 이 날 전부 확정</button></div>
+        <div class="li on"><div class="th"><i class="f"></i><i class="f"></i><i></i><i class="f"></i></div>
+          <div><div class="nm">김○○<small>중2</small></div><div class="src">📚 일차함수 응용 학습지 · <em>❌ 7번</em> · AI 초안 있음</div></div>
+          <div class="sc"><div class="p">7<small>/10</small></div><div class="st">대기</div></div></div>
+        <div class="li"><div class="th"><i class="f"></i><i></i><i class="f"></i><i class="f"></i></div>
+          <div><div class="nm">이○○<small>고1</small></div><div class="src">📚 이차방정식 심화 · <em class="ex">🔎 탐구 12번 (최상)</em></div></div>
+          <div class="sc"><div class="p">8<small>/10</small></div><div class="st">대기</div></div></div>
+        <div class="li"><div class="th"><i class="f"></i><i class="f"></i><i class="f"></i><i></i></div>
+          <div><div class="nm">박○○<small>초6</small></div><div class="src">📖 개념원리 p.84 · <em>❌ 3번</em> · 🙋 스스로 해결</div></div>
+          <div class="sc"><div class="p">6<small>/10</small></div><div class="st">대기</div></div></div>
+        <div class="li done"><div class="th"><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i></div>
+          <div><div class="nm">최○○<small>중1</small></div><div class="src">📚 확률 기초 · ❌ 4번 · 힌트 1단계</div></div>
+          <div class="sc"><div class="p">9<small>+2</small></div><div class="st">확정</div></div></div>
+        <div class="li done"><div class="th"><i class="f"></i><i></i><i class="f"></i><i class="f"></i></div>
+          <div><div class="nm">정○○<small>중3</small></div><div class="src">📚 도형의 닮음 · ❌ 9번</div></div>
+          <div class="sc"><div class="p">5</div><div class="st">확정</div></div></div>
+        <div class="dh" style="opacity:.6;margin-top:10px"><div class="dt">9월 9일 (화)</div><div class="dc">6건 · 대기 <b>2</b></div><button style="background:#94a3b8">…</button></div>
+      </div>
+      <div class="dtl">
+        <div class="top"><div class="nm">김○○ <small style="font-size:10px;color:#94a3b8">중2</small></div><div class="q">일차함수 응용 · ❌ 7번 · 9/10 19:22</div>
+          <div class="nx"><button>‹ 앞</button><button>다음 ›</button></div></div>
+        <div class="pic">
+          <div class="f">L 문제 이해<span>기울기가 -2이고 (3,1)을 지나는 직선… x절편을 구하라는 뜻</span></div>
+          <div class="f">A 내 시도<span>y=-2x+b 에 대입 → b=7, x절편은 y=0 → x=3.5</span></div>
+          <div>M 막힌 곳<span>답이 7/2인데 답지엔 -7/2… 부호를 어디서 놓쳤는지</span></div>
+          <div class="f">P·AHA<span>b 구할 때 1=-6+b → b=7 맞음. 0=-2x+7 → x=7/2. 답지가 틀림? → 문제 다시 읽기: (−3,1)이었다!</span></div>
+          <div class="sol">📐 매쓰플랫 해설 보기</div><div class="zoom">🔍 크게 · 회전</div>
+        </div>
+        <div class="axes">
+          <div class="ax"><div class="k">L 이해</div><div class="pts"><b>0</b><b>1</b><b class="on">2</b></div><div class="w">조건을 자기 말로</div></div>
+          <div class="ax"><div class="k">A 시도</div><div class="pts"><b>0</b><b>1</b><b class="on">2</b></div><div class="w">식 세움</div></div>
+          <div class="ax"><div class="k">M 막힘</div><div class="pts"><b>0</b><b class="on">1</b><b>2</b></div><div class="w">부호 의심까지</div></div>
+          <div class="ax"><div class="k">P 경로</div><div class="pts"><b>0</b><b class="on">1</b><b>2</b></div><div class="w">다시 읽기</div></div>
+          <div class="ax"><div class="k">AHA</div><div class="pts"><b>0</b><b class="on">1</b><b>2</b></div><div class="w">조건 오독 발견</div></div>
+        </div>
+        <div class="bon"><span class="on">🙋 스스로 해결 +3 (학습지 ❌ 확인됨)</span><span>💡 힌트 1단계</span><span>⭐ 뽑힘 +2</span><span>🏆 베스트 +3</span><span>💬 개념 +1</span><span>🎲 검사</span></div>
+        <div class="tot"><div class="a">노트 <b>7</b>/10 + 보너스 <b>3</b> = 리그 <b>10</b></div><button class="h">💡 힌트 만들기</button><button>✓ 확정 → 다음</button></div>
+        <div class="note" style="margin-top:6px">오른쪽 칸 폭 420px에 사진(활동지)을 <b>진짜 크게</b>. 점수는 AI 초안이 미리 눌려 있고, 원장님은 고칠 칸만 누른 뒤 <b>✓ 확정 → 다음</b>. 확정하면 가운데 줄이 초록으로 바뀌고 다음 줄이 자동 선택됩니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cap" style="margin-top:14px"><span>B′</span>2분할 — 화면이 좁을 때(1,100px 아래) 자동으로 <small>왼쪽 고르기 칸이 목록 위 칩으로 접힘</small></div>
+  <div class="app"><div class="wb2">
+    <div class="lst">
+      <div class="chips"><b class="on">9/10 · 3</b><b>9/9 · 2</b><b>9/8 ✓</b><b>9/5 ✓</b><b>⭐ 후보 2</b><b>🔎 탐구 1</b><b>🎲 1</b></div>
+      <div class="li on"><div class="th"><i class="f"></i><i class="f"></i><i></i><i class="f"></i></div><div><div class="nm">김○○<small>중2</small></div><div class="src">📚 일차함수 응용 · <em>❌ 7번</em></div></div><div class="sc"><div class="p">7<small>/10</small></div><div class="st">대기</div></div></div>
+      <div class="li"><div class="th"><i class="f"></i><i></i><i class="f"></i><i class="f"></i></div><div><div class="nm">이○○<small>고1</small></div><div class="src">📚 이차방정식 심화 · <em class="ex">🔎 12번</em></div></div><div class="sc"><div class="p">8<small>/10</small></div><div class="st">대기</div></div></div>
+    </div>
+    <div class="dtl" style="display:flex;align-items:center;justify-content:center;color:#94a3b8;font-weight:700">(오른쪽 사진+채점 칸은 위와 같음)</div>
+  </div></div>
+  <div class="note">지금 작업대(v18-164)는 <b>한 줄 = 사진 작게 + 채점 칸</b>이 세로로 쌓인 구조라, 사진을 크게 보려면 눌러 열어야 합니다. 3분할은 <b>사진과 채점 패널이 오른쪽에 고정</b>되고 가운데 줄만 스크롤됩니다 — 하루 5건이든 40건이든 손은 「누르고 → 확정」 두 번.</div>
+</div>
+
+<!-- ═══════════ C. 학원앱 「가」 ═══════════ -->
+<div class="stage">
+  <div class="cap"><span>C</span>🔍 학원앱 글씨 크기 「가」 <small>학생앱과 같은 단추 · 왼쪽 머리(LUMEN 옆)</small></div>
+  <div class="fz">
+    <div>
+      <div class="hdrx">
+        <div><div class="a">🏫 루멘수학</div><div class="b">LUMEN <span>v18-165</span></div></div>
+        <div class="ga">가</div>
+        <div class="pop"><div class="t">글씨 크기 · 이 기기에 저장</div>
+          <div class="o">가 보통<small>100%</small></div>
+          <div class="o on">가 크게<small>115%</small></div>
+          <div class="o" style="font-size:14px">가 아주 크게<small>130%</small></div>
+          <div class="o" style="font-size:16px">가 특대<small>145%</small></div>
+        </div>
+      </div>
+      <div class="spec" style="margin-top:56px">
+        <b>어떻게 되나</b>
+        <ul>
+          <li>학생앱과 같은 방식(화면 전체 확대). 표·단추·사진 <b>전부 같이 커집니다</b> — 글자만 키우면 표가 깨져서.</li>
+          <li>이 기기(원장님 PC·아이패드)에만 저장. 다른 기기는 각자.</li>
+          <li>학원앱은 가로가 넓어 130~145%도 대부분 화면이 그대로 들어갑니다. 넘치는 곳(넓은 표)은 가로 스크롤.</li>
+          <li>기본값은 <b>「크게 115%」</b>로 두는 것을 추천 — 지금 12~13px 글씨가 14~15px가 됩니다.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="zoomdemo">
+      <div class="h">같은 줄이 이렇게 보입니다</div>
+      <div class="zd">
+        <div><div class="l">보통 100%</div><p style="font-size:12px">🥇 김○○ 중2 · 리그 84점 · 사고자</p></div>
+        <div><div class="l">크게 115%</div><p style="font-size:13.8px">🥇 김○○ 중2 · 리그 84점 · 사고자</p></div>
+        <div><div class="l">아주 크게 130%</div><p style="font-size:15.6px">🥇 김○○ 중2 · 리그 84점 · 사고자</p></div>
+        <div><div class="l">특대 145%</div><p style="font-size:17.4px">🥇 김○○ 중2 · 리그 84점 · 사고자</p></div>
+      </div>
+      <div class="note">작은 일이라 다음 오퍼스 코딩 판(A+B와 함께 v18-165)에 바로 넣을 수 있습니다. 「특대」 한 단계가 학생앱(3단계)보다 더 있는 이유: 학원앱은 PC 큰 화면이라 여유가 있습니다.</div>
+    </div>
+  </div>
+</div>
+</body></html>
