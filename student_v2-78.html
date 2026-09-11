@@ -35,7 +35,13 @@
   --yellow: #fbbf24; --gray: #f1f5f9; --gray2: #e2e8f0; --text: #0f172a; --sub: #64748b;
 }
 html, body { height: 100%; background: #f8fafc; font-family: 'Apple SD Gothic Neo', -apple-system, 'Noto Sans KR', sans-serif; }
-.screen { display: none; height: 100vh; overflow-y: auto; flex-direction: column; }
+/* ★ v2-78: 화면 높이를 --scrh 로 뺀다.
+ * 글씨 크기(🔠)는 body 에 zoom 을 거는데, zoom 은 100vh 도 함께 부풀린다.
+ * 그래서 크게(1.1)로 보면 화면 한 장이 실제 폰 화면보다 10% 길어져
+ *  ① 홈 아래쪽이 화면 밖으로 밀려나고 ② 문서 전체가 한 번 더 스크롤돼
+ *  머리띠가 위로 밀리면서 그 밑 카드(💡 오늘의 노트 후보)가 잘려 보였다.
+ * fzApply() 가 --scrh 를 (100/zoom)vh 로 맞춰 준다 (기본은 100vh). */
+.screen { display: none; height: var(--scrh, 100vh); overflow-y: auto; flex-direction: column; }
 .screen.active { display: flex; }
 
 /* 헤더 */
@@ -1295,7 +1301,10 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .h3-me .nm3 .gd3{font-size:11px;font-weight:700;color:rgba(255,255,255,0.62);margin-left:4px;}
 .h3-me .nm3 .bdg3m{font-size:9.5px;font-weight:900;color:#7ee0a3;margin-left:4px;}
 .h3-me .goal3{font-size:11px;font-weight:800;color:#ffd54a;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.h3-body{flex:1;padding:12px 12px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+.h3-body{flex:1;min-height:0;padding:12px 12px 14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;}
+/* ★ v2-78: 홈 본문은 세로 flex 라서, 내용이 길어지면 칸들이 눌려 납작해지고
+ * 그 안 글씨가 위아래 칸을 침범했다(4칸 타일·후보 카드). 눌리지 않게 못을 박는다. */
+.h3-body > *{flex-shrink:0;}
 /* v2-12: 공지 크게 */
 .h3-nstrip{width:100%;background:#fff;border:none;border-radius:14px;padding:14px 15px;display:flex;align-items:center;gap:10px;cursor:pointer;font-family:inherit;text-align:left;box-shadow:0 2px 10px rgba(13,34,64,0.06);border-left:5px solid var(--red);flex-shrink:0;}
 .h3-nstrip .ni3{font-size:19px;flex-shrink:0;}
@@ -1482,6 +1491,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .rc-pzd>div.one .w{font-size:29px}
 .rc-pzd .w small{font-size:12px;font-weight:900;margin-left:1px}
 .rc-prize .who2{font-size:11px;font-weight:800;color:#8a5a00;margin-top:8px}
+/* ★ v2-78: IB아하 리그도 같은 상금 카드를 쓴다 — 내가 후보인 상만 테두리로 표시 */
+.rc-pzd>div.mine{border-color:#1d6fe8;box-shadow:0 0 0 2px rgba(29,111,232,.16)}
 /* v2-75: 🎉 시즌 결과 */
 .rc-aw{background:linear-gradient(135deg,#312e81,#6366f1);border-radius:14px;padding:13px 14px 11px;margin-bottom:11px;color:#fff;box-shadow:0 3px 12px rgba(49,46,129,.28)}
 .rc-aw .t{font-size:14px;font-weight:900}
@@ -1879,6 +1890,20 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .a7cand.q .ct{color:#b91c1c;}.a7cand.q .row .no{color:#b91c1c;}
 .a7cand.e .ct{color:#6d28d9;}.a7cand.e .row .no{color:#6d28d9;}.a7cand.e .row .go{background:#6d28d9;}
 .a7kb{display:inline-block;font-size:10px;font-weight:900;border-radius:50px;padding:2px 8px;margin-right:5px;}
+/* ★ v2-78: 🔁 재풀이 — 「어디에 무엇을 쓰라」가 없어서 학생이 몰랐다 (원장 지적).
+ * 미해결 노트 맨 아래에 큰 안내 상자 + 큰 단추를 둔다. 색·모양은 기존 파란 단추 그대로. */
+.ahrt{margin-top:10px;border:2px solid #bfdbfe;background:linear-gradient(135deg,#f4f9ff,#e8f1ff);border-radius:13px;padding:12px 13px;}
+.ahrt .t{font-size:13px;font-weight:900;color:#1d4ed8;line-height:1.5;}
+.ahrt .d{font-size:12px;font-weight:700;color:#334155;line-height:1.7;margin-top:5px;}
+.ahrt .d b{color:#1d4ed8;}
+.ahrt .btn{margin-top:10px;width:100%;background:linear-gradient(135deg,#1d6fe8,#3b82f6);color:#fff;border:none;
+  border-radius:12px;padding:14px 10px;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;
+  box-shadow:0 4px 12px rgba(29,111,232,.34);}
+/* 🔁 재풀이 상태 배지 — 안 올림(주황) · 올림(파랑) · 인정(초록) */
+.ahrtb{display:inline-block;font-size:11px;font-weight:900;border-radius:50px;padding:3px 9px;}
+.ahrtb.wait{background:#ffedd5;color:#9a3412;}
+.ahrtb.sent{background:#dbeafe;color:#1d4ed8;}
+.ahrtb.ok{background:#dcfce7;color:#15803d;}
 .fzh{margin-left:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);border-radius:9px;padding:5px 11px;font-size:13px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;flex:none;}
 .fzpop{position:absolute;right:14px;top:calc(100% - 6px);z-index:60;background:#fff;border-radius:12px;box-shadow:0 10px 28px rgba(13,34,64,.3);padding:11px 13px;min-width:190px;}
 .lgin{border:1.5px solid #e6eaf1;border-radius:13px;padding:11px 12px;margin-bottom:9px;background:#fff;width:100%;text-align:left;cursor:pointer;font-family:inherit;display:block;}
@@ -2030,8 +2055,9 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <!-- v2-41: 순공피드백 카드는 플래너 화면 안으로 이동 (원장님 지시) -->
       </div>
     </div>
-    <!-- v2-77: 💡 오늘의 노트 후보 — 어제 채점 기록에서 자동으로 골라 준다 (없으면 숨김) -->
-    <div id="a7-cand-home" style="display:none;margin:0 14px 10px"></div>
+    <!-- v2-77: 💡 오늘의 노트 후보 — 어제 채점 기록에서 자동으로 골라 준다 (없으면 숨김)
+         ★ v2-78: 옆 여백(14px)을 없애 📌 오늘 할 일 4칸과 같은 너비로 맞춘다 (원장 지적) -->
+    <div id="a7-cand-home" style="display:none"></div>
     <!-- v2-40: 📖 교재 채점 허브 — 진도·정답률·모름을 한 카드로 (성취도 스트립을 흡수, 원장님 승인) -->
     <button class="bkhub bkhub-off" id="bkhub" onclick="bkSoon()">
       <span class="hh"><span style="font-size:17px">📖</span><span class="ti">교재 채점</span>
@@ -2738,7 +2764,11 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
       <p>L·A·M·P·AHA 각 0·1·2점 = <b>질문력 10점</b>. 여기에 「왜?」로 물으면 +1,
         스스로 풀면 <b>+3</b>(학습지 기록으로 「틀렸던 문제」가 확인될 때 · 확인 안 되면 +2),
         힌트를 보고 풀어도 점수가 있어요(1개 +2 · 2개 +1 · 3개 +1 · ✍️ 손풀이 +1).
-        🔎 탐구노트는 난이도 보너스(상 +1 · 최상 +2)가 붙습니다.
+        🔎 탐구노트는 난이도 보너스(상 +1 · 최상 +2)가 붙습니다.</p>
+      <!-- ★ v2-78: 🔁 재풀이 한 줄 (원장: 재풀이가 뭘 하는 건지 설명이 없었다) -->
+      <p><b>🔁 재풀이 +1</b> — 아하노트 아래 <b>풀이 칸</b>(LAMP 활동지 6단계 재풀이 칸, 집이면 공책)에
+        다시 풀고 📷 찍어 올리면 +1점이에요.</p>
+      <p>
         <b>많이 올리는 것이 아니라 잘 쓰는 것이 점수</b>입니다 — 하루 2개까지만 리그에 인정됩니다
         (그중 🔎 탐구노트는 1개까지).</p>
       <div class="ib-tiers" style="margin-top:8px">
@@ -2994,7 +3024,9 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 
     <div class="aha-form-group">
       <label class="aha-form-label required">📷 다시 푼 풀이 사진</label>
-      <div class="aha-form-hint">활동지 6단계 재풀이 칸을 찍거나, 공책에 다시 푼 것을 찍어 주세요</div>
+      <!-- ★ v2-78: 「어디에 무엇을 쓰라」를 또렷하게 (원장 지적) -->
+      <div class="aha-form-hint">아하노트 <b>아래 풀이 칸</b>(LAMP 활동지 <b>6단계 재풀이 칸</b>, 집이면 공책)에
+        처음부터 다시 풀고, 그 칸을 📷 찍어 올려 주세요 — <b>🔁 재풀이 +1점</b>이 붙어요</div>
       <div id="aha-self-slot" class="aha-photo-slot" onclick="ahaSelfPickPhoto()">
         <span class="aha-photo-slot-icon">📷</span>
         <span class="aha-photo-slot-text">탭하여 사진 추가</span>
@@ -5234,6 +5266,8 @@ function renderAhaCard(n) {
     html += '<button class="aha-card-btn" onclick="ahaEdit(\'' + ahaEscape(n.id) + '\')">고치기</button>';
     html += '<button class="aha-card-btn danger" onclick="ahaDelete(\'' + ahaEscape(n.id) + '\')">삭제</button>';
   }
+  // ★ v2-78: 🔁 재풀이 상태 배지 — 세 가지 상태를 한눈에 (안 올림 · 올림 · 인정)
+  html += ahaRetryBadge(n);
   html += '</div>';
 
   // ⑤ 점수 (원장이 매긴 것이 있으면 확정, 없으면 내가 낸 임시 점수)
@@ -5247,22 +5281,47 @@ function renderAhaCard(n) {
     html += '<button onclick="ahaSelfStart(\'' + ahaEscape(n.id) + '\')" style="margin-top:8px;width:100%;background:linear-gradient(135deg,#f59e0b,#b45309);color:#fff;border:none;border-radius:9px;padding:9px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">🙋 쓰다 보니 알았어요 (스스로 해결 +3)</button>';
   }
 
-  // v2-10: 다시 푼 풀이 제출 (재풀이)
-  if (n.status !== 'resolved' && n.status !== 'self_pending') {
-    if (rt) {
-      var rtDate = (function(){ var d = new Date(rt.at); return isNaN(d.getTime()) ? '' : (d.getMonth()+1) + '/' + d.getDate(); })();
-      html += '<div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap">';
-      html += '<span style="font-size:11px;font-weight:800;background:#dbeafe;color:#1d4ed8;border-radius:8px;padding:3px 9px">🔁 재풀이 제출됨 ' + rtDate + '</span>';
-      html += '<button class="aha-card-btn" style="border-color:#93c5fd;color:#1d6fe8" onclick="openAhaPhoto(\'' + ahaEscape(rt.url) + '\')">보기</button>';
-      html += '<button class="aha-card-btn" onclick="ahaRetryStart(\'' + ahaEscape(n.id) + '\')">다시 제출</button>';
-      html += '</div>';
-    } else {
-      html += '<button onclick="ahaRetryStart(\'' + ahaEscape(n.id) + '\')" style="margin-top:8px;width:100%;background:linear-gradient(135deg,#1d6fe8,#3b82f6);color:#fff;border:none;border-radius:9px;padding:9px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">📷 다시 푼 풀이 제출하기</button>';
-    }
-  }
+  // v2-10: 다시 푼 풀이 제출 (재풀이) — ★ v2-78: 안내 상자·큰 단추로 바꿈
+  html += ahaRetryBox(n);
 
   html += '</div></div>';
   return html;
+}
+
+/* ★ v2-78: 🔁 재풀이 상태 배지 — 「올려야 한다 / 냈다 / 인정됐다」 셋만 또렷하게.
+ * 인정 여부는 원장이 매긴 점수(lumen_store aha_scores)의 retryOk 로 온다. */
+function ahaRetryOk(n) {
+  var s = ahaScores[n.id];
+  return !!(s && s.retryOk);
+}
+function ahaRetryBadge(n) {
+  if (ahaRetryOk(n)) return '<span class="ahrtb ok">✓ 재풀이 인정 +1</span>';
+  if (ahaRetryMap[n.id]) return '<span class="ahrtb sent">🔁 제출됨 · 선생님 확인 중</span>';
+  if (n.status === 'pending') return '<span class="ahrtb wait">🔁 재풀이 올려야 +1</span>';
+  return '';
+}
+
+/* ★ v2-78: 🔁 재풀이 안내 상자 + 큰 단추 (원장: 「어디에 무엇을 쓰라」는 말이 없었다).
+ * 아직 아무것도 안 낸 미해결 노트에만 큰 상자를 두고, 이미 낸 노트는 「보기 · 다시 제출」만. */
+function ahaRetryBox(n) {
+  if (n.status === 'resolved' || n.status === 'self_pending') return '';
+  var rt = ahaRetryMap[n.id];
+  if (rt) {
+    var rtDate = (function(){ var d = new Date(rt.at); return isNaN(d.getTime()) ? '' : (d.getMonth()+1) + '/' + d.getDate(); })();
+    var h2 = '<div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap">';
+    h2 += '<span style="font-size:11px;font-weight:800;color:#64748b">🔁 ' + rtDate + ' 에 올렸어요</span>';
+    h2 += '<button class="aha-card-btn" style="border-color:#93c5fd;color:#1d6fe8" onclick="openAhaPhoto(\'' + ahaEscape(rt.url) + '\')">보기</button>';
+    h2 += '<button class="aha-card-btn" onclick="ahaRetryStart(\'' + ahaEscape(n.id) + '\')">다시 제출</button>';
+    h2 += '</div>';
+    return h2;
+  }
+  var h = '<div class="ahrt">';
+  h += '<div class="t">✏️ 아하노트 아래 <b>풀이 칸</b>에 다시 풀어요</div>';
+  h += '<div class="d">LAMP 활동지 <b>6단계 재풀이 칸</b>(집이면 공책)에 처음부터 다시 풀고, '
+     + '📷 찍어 올리면 <b>🔁 재풀이 +1점</b>이 붙어요.</div>';
+  h += '<button type="button" class="btn" onclick="ahaRetryStart(\'' + ahaEscape(n.id) + '\')">📷 다시 푼 풀이 올리기</button>';
+  h += '</div>';
+  return h;
 }
 
 /* ⑤ 점수 칸 — 원장이 확정한 점수가 있으면 그것을, 없으면 「임시」를 보여 준다.
@@ -5294,6 +5353,8 @@ function ahaScoreBlock(n) {
     if (s.pathBonus) bonus.push((pathKo[s.path] || '해결') + ' +' + s.pathBonus);
     if (s.levelBonus) bonus.push('🔎 난이도 보너스 +' + s.levelBonus);
     if (s.selfMatch) bonus.push('자기평가 적중 +1');
+    /* ★ v2-78: 🔁 재풀이를 선생님이 인정하면 보너스 줄에도 보여 준다 */
+    if (s.retryOk) bonus.push('🔁 재풀이 +' + (Number(s.retryBonus) || 1));
     if (s.pick) bonus.push('⭐ 수업 채택 +2');
     if (s.best) bonus.push('🏆 베스트 +3');
 
@@ -10126,6 +10187,9 @@ function fzApply(){
   try{
     /* zoom을 쓰되, 안 먹는 브라우저를 위해 폰트 확대도 함께 건다 */
     document.body.style.zoom = z===1 ? '' : String(z);
+    /* ★ v2-78: zoom 이 100vh 까지 부풀려 화면 한 장이 폰 화면보다 길어지는 것을 되돌린다.
+     * (홈 아래가 잘리고 문서가 한 번 더 스크롤돼 카드가 머리띠 밑으로 들어가던 원인) */
+    document.documentElement.style.setProperty('--scrh', (z===1 ? 100 : (100/z)) + 'vh');
     if(z!==1 && !('zoom' in document.body.style)){
       document.documentElement.style.fontSize = Math.round(16*z)+'px';
     }
@@ -11082,7 +11146,11 @@ function lgIntroHomeHtml(){
     +'<div class="st">🏅 등수는 이렇게 보여요 ›</div>'
     +'<div class="sd">'+((iv.divisions==='band')?'부(초·중·고)마다 따로':'초·중·고 <b>통합 한 리그</b>')
     +' · <b>'+(Number(iv.publicTop||5)||5)+'위까지 이름 공개</b></div></button>';
-  if(aws.length){
+  /* ★ v2-78: 발행 전 안내의 상금도 모양이 같으면 리그와 똑같은 카드로 (원장 지시) */
+  if(lgPrizeOpen(pz)){
+    h+='<div style="margin-bottom:9px">'+lgPrizeCard(pz, s.label||'이번 시즌', [])+'</div>';
+  }
+  else if(aws.length){
     h+='<div class="lgin" style="cursor:default"><div class="st">🎁 상은 '+aws.length+'개</div>'
       +'<div class="sd">'+aws.map(function(a){ return rcEsc((a.icon||'🏅')+' '+(a.name||'')); }).join(' · ')
       +(pz.total?('<br>시즌 총상금 <b>'+rcN(pz.total)+'원</b>'):'')+'</div></div>';
@@ -11240,6 +11308,60 @@ function lgTabsHtml(){
   return h+'</div>';
 }
 
+/* ── ★ v2-78: 🏆 상금 카드 — 진도 레이스(rc-prize·rc-pzd)와 똑같은 방식을 그대로 쓴다 ──
+ * 학원앱이 보내는 모양: prize = { total, open:true/false, awards:[{k,name,icon,w(원, open일 때만)}] }
+ * open 이 켜지고 금액(w)이 하나라도 오면 → 상마다 큰 카드(첫 상은 한 줄 크게)
+ * open 이 없거나 꺼져 있으면 → 지금처럼 총상금 + 상 이름만 (닫힌 것으로 친다) */
+function lgPrizeOpen(pz){
+  if(!pz || pz.open!==true) return false;
+  var aws=pz.awards||[];
+  for(var i=0;i<aws.length;i++){
+    if(aws[i] && aws[i].w!=null && aws[i].w!=='') return true;
+  }
+  return false;
+}
+function lgPrizeCard(pz, label, myAw){
+  pz=pz||{}; myAw=myAw||[];
+  var aws=pz.awards||[];
+  var note='<div style="font-size:10px;color:#a35a00;margin-top:7px;font-weight:800;line-height:1.6">'
+    +(myAw.length?('지금 <b>'+myAw.length+'개 상</b>의 후보예요! 테두리가 쳐진 상이에요'):
+                  '🏆 베스트 질문상은 <b>순위와 상관없이</b> 시즌 최고 질문 한 편에게 줍니다')
+    +'</div>';
+  /* 공개됨 — 「1등 하면 얼마」가 주인공 */
+  if(lgPrizeOpen(pz)){
+    var h='<div class="rc-prize" style="margin-top:0"><div class="lb">🏆 IB아하노트 시즌 상금</div>'
+      +'<div class="rc-pzd">';
+    aws.forEach(function(a,i){
+      var mine=(a && a.k!=null && myAw.indexOf(a.k)>=0);
+      var cc=[];
+      if(i===0) cc.push('one');
+      if(mine) cc.push('mine');
+      var cls=cc.join(' ');
+      h+='<div'+(cls?(' class="'+cls+'"'):'')+'>'
+        +'<div class="r">'+rcEsc((a&&a.icon)||'🏅')+' '+rcEsc((a&&a.name)||'')+'</div>'
+        +'<div class="w">'+((a&&a.w!=null&&a.w!=='')?(rcN(a.w)+'<small>원</small>'):'—')+'</div></div>';
+    });
+    h+='</div><div class="who2">'+aws.length+'개 상 · '+rcEsc(label||'이번 시즌')
+      +(pz.total?(' · 모두 합쳐 '+rcN(pz.total)+'원'):'')+'</div>';
+    return h+note+'</div>';
+  }
+  /* 닫혀 있음 — 총상금 + 상 이름만 (예전 그대로) */
+  var h2='<div class="rc-prize" style="margin-top:0">'
+    +'<div class="lb">🏆 IB아하노트 시즌 총상금</div>'
+    +'<div class="amt">'+rcN(pz.total||0)+'<small>원</small></div>'
+    +'<div class="who"><b>'+aws.length+'개 상</b> · '+rcEsc(label||'이번 시즌')+'</div>';
+  if(aws.length){
+    h2+='<div class="lg-aw">';
+    aws.forEach(function(a){
+      var mine=(a && a.k!=null && myAw.indexOf(a.k)>=0);
+      h2+='<div class="a'+(mine?' me':'')+'"><div class="i">'+rcEsc((a&&a.icon)||'🏅')+'</div>'
+        +'<div class="n">'+rcEsc((a&&a.name)||'')+'</div></div>';
+    });
+    h2+='</div>';
+  }
+  return h2+note+'</div>';
+}
+
 /* ── 💡 IB아하 탭 ── */
 function lgAhaHtml(){
   var b=LG.board;
@@ -11264,26 +11386,10 @@ function lgAhaHtml(){
   /* 🧪 연습 주간 배너 (v2-77) */
   h+=lgPracticeBanner();
 
-  /* 상금 카드 */
-  var pz=b.prize||{}, aws=pz.awards||[];
+  /* 상금 카드 — ★ v2-78: 진도 레이스와 똑같은 방식 (lgPrizeCard) */
+  var pz=b.prize||{};
   var myAw=(me&&me.awards)||[];
-  h+='<div class="rc-prize" style="margin-top:0">'
-    +'<div class="lb">🏆 IB아하노트 시즌 총상금</div>'
-    +'<div class="amt">'+rcN(pz.total||0)+'<small>원</small></div>'
-    +'<div class="who"><b>'+aws.length+'개 상</b> · '+rcEsc(season.label||'이번 시즌')+'</div>';
-  if(aws.length){
-    h+='<div class="lg-aw">';
-    aws.forEach(function(a){
-      var mine=myAw.indexOf(a.k)>=0;
-      h+='<div class="a'+(mine?' me':'')+'"><div class="i">'+rcEsc(a.icon||'🏅')+'</div>'
-        +'<div class="n">'+rcEsc(a.name||'')+'</div></div>';
-    });
-    h+='</div>';
-  }
-  h+='<div style="font-size:10px;color:#a35a00;margin-top:7px;font-weight:800;line-height:1.6">'
-    +(myAw.length?('지금 <b>'+myAw.length+'개 상</b>의 후보예요! 테두리가 쳐진 상이에요'):
-                  '🏆 베스트 질문상은 <b>순위와 상관없이</b> 시즌 최고 질문 한 편에게 줍니다')
-    +'</div></div>';
+  h+=lgPrizeCard(pz, season.label||'이번 시즌', myAw);
 
   /* 내 카드 */
   if(me){
@@ -11356,6 +11462,8 @@ function lgAhaHtml(){
     +'질문력(0~10) + 「왜?」 +1 + <b>🙋 스스로 해결 +3</b>(학습지 기록으로 「틀렸던 문제」가 확인될 때 · '
     +'확인 안 되면 +2) / 💡 힌트 1개 +2 · 2개 +1 · 3개 +1 · ✍️ 손풀이 +1 '
     +'+ 🪞 AHA +2 + ⭐ 수업 채택 +2'
+    /* ★ v2-78: 🔁 재풀이 — 다시 푼 풀이를 올리면 +1 (원장 지시) */
+    +'<br>🔁 <b>재풀이 +1</b> — 아하노트 아래 풀이 칸(활동지 6단계 재풀이 칸)에 다시 풀고 📷 올리면 +1점.'
     +'<br>🔎 <b>탐구노트</b>(맞힌 어려운 문제)는 난이도 보너스 — 상 +1 · 최상 +2. 하루 1개까지 인정돼요.'
     +'<br>등급은 한 번 오르면 <b>내려가지 않아요</b>.'
     +'</div>'
