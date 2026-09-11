@@ -58,12 +58,20 @@ WS = { wid, title, type, assignedAt:'YYYY-MM-DD', gradedAt:'YYYY-MM-DD',
 ```
 divisions:'all'|'band'      // 기본 'all' (통합). 'band' 면 초·중·고 따로
 practiceDays:7              // 시즌 시작 후 N일은 연습 — 채점은 하되 league=0, score.practice=true
-pathPt:{ self:3, selfUnverified:2, h1:2, h2:1, h3:1, hand:1, none:0 }
+pathPt:{ self:3, selfUnverified:2, h1:2, h2:1, h3:1, hand:1, none:0, retry:1 }
 explorePt:{ lv3:1, lv4:2 }  // 탐구노트 난이도 보너스 (level>=4 → lv4)
 exploreDailyCap:1
 tiers:{ know:{avg:6,cnt:5}, think:{avg:8,selfOrExplore:3}, reflect:{aha:10,rec:0} }
 introNoteId:null            // 발행 전 안내에 쓸 예시 노트 id (원장이 채점 패널에서 「📌 예시로」)
+prize:{ total, open:false, awards:[{k,name,icon,w}] }   // v18-166 open = 개별 금액(w) 학생앱 공개 스위치
+autoPublish:true            // v18-166 확정하면 순위표(aha_league_board) 자동 발행
 ```
+### v18-166 추가 (원장 피드백 2026-09-12)
+- `pathPt.retry`(기본 1) — 🔁 재풀이 인정 보너스. 채점 기록에 `retryOk:true`(원장이 작업대에서 「✓ 재풀이 인정」)이고 `AHA_RETRY[note.id]`(lumen_store `aha_retry_<code>`)에 재풀이가 있을 때만 `retryBonus` 로 붙는다. 재풀이가 없으면 0.
+  - league = total + typeBonus + pathBonus + levelBonus + **retryBonus** + selfMatch + pick + best (경로 보너스와 **별개** — 스스로·힌트 보너스는 재풀이가 없어도 그대로).
+  - 인정하면 그 노트는 조용히 해결 처리(`ahaResolve`), 이미 resolved 면 건너뜀. 다시 누르면 인정 취소.
+- `autoPublish`(기본 true) — 확정(`wbConfirmNext`·`wbConfirm`·`wbConfirmDay`·`ibqConfirm`·일괄 확정)이 끝나면 오늘 ≥ `seasonStart` 일 때 `lgPublishBoard(true)` 를 **조용히**(확인창·alert 없이, 2초 디바운스, 실패는 토스트만) 부른다.
+- `prize.open`(기본 false) — 진도 레이스 `prizes.open` 과 같은 방식. 켜야 리그 화면에 상마다 금액 카드가 뜨고 발행에 금액이 실린다.
 - `IBQ_PATH_PT` 상수는 cfg.pathPt 로 대체. `ibqApplyBonus`:
   - kind==='explore': pathBonus 0, `levelBonus` = mf.level>=4?lv4 : mf.level===3?lv3 : 0 (mf 없으면 원장이 패널에서 난이도 고름, 기본 0). 후보 조건(mf.result==='O' && level>=3)이 아니면 패널에 「탐구 조건 미달」 경고, 저장은 가능.
   - kind==='ask' && path==='self': mf&&mf.result==='X' ? pathPt.self : pathPt.selfUnverified.
@@ -75,11 +83,15 @@ introNoteId:null            // 발행 전 안내에 쓸 예시 노트 id (원장
 ## 6. 발행 전 안내 — `lumen_store` 키 `aha_league_intro` (학원앱 「📣 안내 발행」 → 학생앱)
 ```
 { season:{start,end,label}, opensAt:'YYYY-MM-DD', practiceUntil:'YYYY-MM-DD',
-  divisions:'all'|'band', publicTop:5, prize:{total, awards:[{k,name,icon}]},
+  divisions:'all'|'band', publicTop:5, prize:{total, open, awards:[{k,name,icon,w?}]},
   sample:{ img, L,A,M,P,AHA, total, typeBonus, pathLabel, league, coach:{fb,ff}, q_ask, kind } | null,   // 이름·학생 정보 없음
   demoRows:[ {rank, name:'박○○', tier, league}, … 7개 ],   // 가짜 예시. 학생앱은 「예시입니다」 표시
   rules:'…', publishedAt:ISO }
 ```
+### v18-166 발행 모양 (`aha_league_intro`·`aha_league_board` 공통, `lgPrizeOut()`)
+- `prize:{ total, open:true|false, awards:[{k,name,icon,w?}] }` — **금액 `w` 는 `open:true` 일 때만 실린다.** 닫혀 있으면 총액과 상 이름·아이콘만 (진도 레이스 `prizeDetail` 과 같은 규칙 — 담기지 않은 것은 새어 나갈 수도 없다). 학생앱은 `prize.open` 을 보고 상마다 카드/총액 한 장을 고른다.
+- 채점 기록(`aha_scores.byId[id]`)에 `retryOk:true|false` 와 계산된 `retryBonus` 가 함께 저장된다. 나머지 payload 모양은 그대로 — 자동 발행도 손 발행과 **같은 payload**.
+
 학생앱 IB아하 탭: `aha_league_board` 없으면 `aha_league_intro` 로 ①열리는 날·지금 할 일 ②채점 방식(sample) ③등수 보는 법(demoRows·등급·상) 세 화면. 둘 다 없으면 지금 문구.
 
 ## 7. 학생앱 화면 (v2-77)

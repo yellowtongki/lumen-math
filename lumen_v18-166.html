@@ -328,6 +328,20 @@ function fzApply(){
       b.style.zoom = (z===1)?'':String(z);
       /* zoom 이 안 되는 브라우저 — 글꼴 크기로 대신한다 */
       if(!can) document.documentElement.style.fontSize = (z===1)?'':(Math.round(16*z)+'px');
+      /* ★ v18-166: 글씨를 키우면(zoom) 화면 높이 100vh 도 그만큼 같이 커져
+       *   「화면 높이만큼」으로 잡아 둔 칸의 아래가 잘린다 (원장 제보 — 작업대
+       *   오른쪽 칸의 ✓ 확정 단추가 안 보임). 지금 배율을 --fz 로 알려 두고,
+       *   높이를 잡을 때 calc(100vh / var(--fz,1) - …) 로 나눠 쓴다.
+       *   (v18-72 의 --lz 와 같은 방법 — 그쪽은 좁은 모니터 자동 축소용) */
+      document.documentElement.style.setProperty('--fz', String(can?z:1));
+      /* 앱 전체 높이(body·.app)는 v18-72 부터 --lz 로 보정한다. 그런데 --lz 는
+       * 「좁은 모니터 자동 축소(0.9·0.85…)」 값이라, 「가」로 키운 배율과 어긋나
+       * 앱 상자가 창보다 커지고 아래가 통째로 잘렸다. 「가」를 쓰는 동안에는
+       * --lz 도 이 배율로 덮어쓴다 (보통 100% 로 돌아오면 원래대로). */
+      if(can){
+        if(z===1) b.style.removeProperty('--lz');
+        else b.style.setProperty('--lz', String(z));
+      }
     }
   }catch(e){}
 }
@@ -7832,6 +7846,7 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v18-166',date:'2026',stability:'warn',memo:'🔁 <b>작업대에서 재풀이 확인 · 확정하면 순위표 자동 발행 · 상금 공개 스위치</b> (원장 피드백 2026-09-12). [① 아래가 잘리던 것] 「가」로 글씨를 키우면 작업대 <b>오른쪽 칸 아래(✓ 확정 단추)가 잘려</b> 안 보였습니다. 화면 높이를 글씨 배율만큼 나눠 잡도록 고쳐 <b>특대(145%)에서도</b> 단추가 보입니다. [② 머리띠에 AI 초안] 「🤖 AI 초안 일괄」이 작업대에서 멀어 못 찾으셨습니다. 작업대 머리띠에 <b>「🤖 이 범위 AI 초안 (n건)」</b>을 두었습니다 — <b>지금 보고 있는 범위</b>의 초안 없는 노트만 매기고, 진행 중에는 <b>「채점 중… 3/12」</b>로 몇 개째인지 보입니다. [③ 🔁 재풀이] 학생이 다시 푼 사진을 <b>작업대에서 바로</b> 봅니다 — 가운데 줄에 <b>🔁 재풀이</b> 배지(파랑=아직 안 봄, 초록 ✓=인정함), 오른쪽 칸에 <b>재풀이 사진</b>과 올린 시각, 그 아래 <b>「✓ 재풀이 인정 +1」</b>. 누르면 보너스 +1이 붙고 그 노트는 <b>조용히 해결 처리</b>됩니다(다시 누르면 취소). 왼쪽 「모아 보기」에 <b>🔁 재풀이 확인 n</b> 묶음이 생겨 확인할 것만 모아 볼 수 있습니다. 점수는 ⚙ 리그 설정의 <b>「🔁 재풀이 인정」</b> 칸에서 바꿉니다(기본 +1). 스스로·힌트 보너스는 재풀이가 없어도 <b>그대로</b> 붙습니다. [④ 순위표 자동 발행] 확정할 때마다 <b>순위표가 조용히 다시 발행</b>됩니다 — 이제 발행 단추를 따로 누르지 않아도 학생앱 순위가 최신입니다(시즌이 시작된 뒤에만, 2초 모아서 한 번). ⚙ 리그 설정에서 <b>끌 수 있습니다</b>. [⑤ 상금 공개 스위치] 진도 레이스와 <b>똑같은 방식</b>을 가져왔습니다 — ⚙ 리그 설정의 <b>「개별 금액을 학생앱에 공개」</b> 체크 하나로, 켜면 상마다 금액이 큰 카드로 보이고 발행에도 금액이 함께 나갑니다. 꺼 두면 <b>총상금과 상 이름만</b> 나가고 개별 금액은 아예 실리지 않습니다. [⑥ 힌트 창 한 줄] 교재 노트의 「해설지 없음」 안내 뒤에 <b>학습지 노트는 해설이 새벽에 자동으로 붙는다</b>는 한 줄을 덧붙였습니다. [⑦ 작은 것] 해결 경로 칩을 <b>다시 누르면 해제</b>됩니다(잘못 누르면 되돌릴 방법이 없었습니다). [남은 것] 학생앱(v2-78)에서 상금 카드·재풀이 표시는 다른 담당이 함께 만듭니다.'},
       {ver:'v18-165',date:'2026',stability:'warn',memo:'💡 <b>아하리그 화면 채우기 · 📋 채점 작업대 3분할 · 「가」 글씨 크기</b> (원장 지시 2026-09-11, 시안 docs/mockup_aha_league_screen.html). [① 💡 IB아하 순위표 소탭] 진도 레이스와 같은 문법으로 채웠습니다 — 남색 <b>머리띠</b>(시즌·통합/부별·연습 주간·D-day·⚙ 설정·📣 안내 발행·🎁 시상·👁 학생 눈으로), <b>🚦 시즌 열기 단계 띠</b>(설정→안내 발행→순위표 발행→시즌·실점수, 된 것은 초록), <b>🏆 상마다 큰 상금 카드</b>(⚙ 리그 설정에 상마다 금액 칸이 생겼고, 발행할 때 금액도 함께 나갑니다), <b>🙋 참여 현황</b>(최근 30일 학습지 받은 학생 / 노트 쓴 학생 / 한 번도 안 쓴 학생 · 「명단 보기」로 독려 대상 확인), <b>🎖 등급 분포</b>, <b>📏 점수 규칙</b> 카드, 그리고 순위표 오른쪽에 <b>📱 학생앱 미리보기</b> 칸. 표가 비면 <b>왜 비었는지</b>(시즌 시작 전 · 새 방식 노트 n건)를 알려 줍니다. [② 📋 채점 작업대 3분할] 왼쪽 <b>고르기</b>(📅 날짜 / 📚 학습지 / 🙋 학생 · 채점 대기 · 확정 끝 · ⭐ 베스트 후보 · 🔎 탐구 · 🎲 검사 필요) │ 가운데 <b>줄 목록</b>(썸네일·이름·출처·❌ 문항·AI 초안 점수·상태) │ 오른쪽 <b>사진 크게 + 채점 패널</b>(L·A·M·P·AHA 0/1/2 · 보너스 칩 · 합계 · 💡 힌트 · <b>✓ 확정 → 다음</b> 누르면 다음 대기 줄로 자동 이동). 화면이 1,100px보다 좁으면 왼쪽 칸이 목록 위 <b>칩 줄</b>로 접혀 2분할이 됩니다. 채점 로직은 기존 패널 그대로(복제 없음). [③ 「가」 글씨 크기] 왼쪽 머리 LUMEN 옆 <b>「가」</b> 단추 — 보통 100 / <b>크게 115(기본)</b> / 아주 크게 130 / 특대 145. 이 기기에만 저장됩니다(노안 대책). [설정] 리그 시즌은 <b>2026-09-07 시작 · 연습 10일(9/16까지) · 9/17부터 실점수</b>로 서버에 맞춰 두었습니다.'},
       {ver:'v18-164',date:'2026',stability:'warn',memo:'📋 <b>채점 작업대 · 🔎 탐구노트 · 📣 발행 전 안내</b> (원장 결정 2026-09-11, 계약서 docs/aha_league2_contract.md). [① 📋 채점 작업대 — 아하노트를 열면 이 화면이 먼저] 왼쪽 목록을 <b>없앴습니다</b>. 날짜가 <b>머리줄</b>이 되고 그 아래로 그날 노트가 줄줄이 이어집니다. 한 줄 안에 <b>사진·이름·학년·시각·출처·AI가 읽은 질문·칸별 평가·코치 초안·점수 다섯 칸·✓확정</b>이 모두 있어 <b>창을 열지 않고</b> 확정합니다. 날짜마다 <b>「✓ 이 날 8점 이상 확정」</b> 한 번이면 그날치가 끝납니다. 범위는 <b>어제 / 7일(기본) / 전체</b> — 밀린 노트는 7일 안의 것만 보이고 그 전 것은 「전체」에서 봅니다. <b>「학습지별 보기」</b>를 켜면 같은 매쓰플랫 학습지끼리 묶이고 같은 문항은 <b>「5번 — 3명」</b>으로 합쳐져, 여러 학생이 똑같이 막힌 문제가 한눈에 보입니다. [② 머리 정리] 단추가 아홉 개였고 <b>「🏆 리그 순위표」와 「🏆 리그 화면」이 겹쳐</b> 있었습니다. 자주 쓰는 <b>🤖 AI 초안 일괄 · ✓ 8점 이상 확정 · 🏆 리그</b> 셋만 남기고 나머지는 <b>⋯ 더보기</b>로 접었습니다(재풀이 자동해결·⚙ 설정·📺 수업 모드·🔁 재풀이 확인·🙋 스스로 해결·📖 해설지·📚 라이브러리·✍️ 손풀이). [③ 🔎 탐구노트] 질문노트(❓ 틀린 문제)와 <b>탐구노트(🔎 맞혔지만 어려웠던 문제)</b>를 나눕니다. 탐구노트는 <b>난이도 상 +1 · 최상 +2</b>를 받고 해결 경로 보너스는 없습니다. 학습지 기록이 있으면 난이도·정오가 자동으로 들어오고, 조건(진짜 맞힌 상·최상)에 안 맞으면 줄에 <b>「탐구 조건 미달」</b> 경고가 붙습니다. 하루 두 건 중 <b>탐구는 한 건까지</b>만 리그에 셉니다. [④ 점수 규칙] 🙋 스스로 해결은 학습지 기록으로 「틀렸던 문제」가 <b>확인되면 +3</b>, 확인 안 되면 +2. 힌트 1개 +2 · 2개 +1 · 3개 +1 · 손풀이 +1. 시즌 첫 <b>7일은 연습 주간</b> — 채점은 하되 <b>리그 점수 0</b>으로 두어 학생들이 익히는 시간을 줍니다. 사고자 등급은 <b>「스스로 해결 또는 탐구노트 3건」</b>, 성찰자는 <b>되돌아보기 10건만</b>(녹음 조건은 껐습니다). 이 숫자들은 모두 <b>⚙ 리그 설정</b>에서 바꿀 수 있습니다. [⑤ 통합 리그] 초·중·고를 <b>한 리그</b>로 시작합니다(설정에서 「부별」로 언제든 전환). 순위표·발행이 통합 한 표로 나가고, 👑 종합 챔피언만 예전처럼 부별로 뽑습니다. [⑥ 📣 발행 전 안내] 리그 화면 <b>「📤 발행」</b> 탭에 새 단추 — 리그가 열리기 <b>전에</b> 학생앱에 「언제 열리는지 · 어떻게 채점하는지 · 등수를 어떻게 보는지」를 먼저 보여 줍니다. 채점 예시는 원장님이 채점 패널에서 <b>「📌 발행 전 안내 예시로」</b>를 누른 실제 노트 하나를 <b>이름을 지우고</b> 씁니다. 순위표 예시는 가짜 일곱 줄입니다. [⑦ 힌트] 학습지 문항은 새벽에 복사해 둔 <b>해설 그림</b>을 힌트 재료로 씁니다(학생에게 그림을 직접 보여 주지는 않습니다). 아직 안 복사됐으면 「해설 아직 없음 — 새벽에 채워집니다」. [⑧ SQL 확인] 아하노트에 <b>kind·mf</b> 칸이 없으면 머리에 <b>「⚠ SQL 실행 필요」</b> 띠가 뜹니다 — <code>docs/aha_league2.sql</code> 을 Supabase SQL Editor 에 한 번 붙여 넣어 주세요. [남은 것] 학생앱(v2-77) 화면 문구·아코디언은 다른 담당이 함께 만듭니다. 해설 그림 복사와 <code>mf_ws_recent_*</code> 채우기는 새벽 수집기 몫입니다.'},
       {ver:'v18-163',date:'2026',stability:'ok',memo:'🏆 <b>상금을 상마다 크게</b> (원장 지시 2026-09-09). 어제 만든 개별 금액 공개는 <b>총상금이 주인공이고 상금은 깨알</b>이었습니다. 학생이 보고 싶은 것은 총액이 아니라 <b>「1등 하면 얼마」</b>라서 자리를 바꿨습니다. 이제 개별 금액을 공개하면 <b>상마다 큰 금액 칸</b>이 화면을 채우고, <b>1등 칸은 더 크고 굵은 테두리</b>로 눈에 먼저 들어옵니다. 총상금은 맨 아래에 <b>「5명에게 · 모두 합쳐 100,000원」</b> 한 줄로 작게만 남습니다. 학생앱(v2-76)도 같은 모양입니다 — 1등이 한 줄 전체를 쓰고, 나머지 네 상이 아래에 3칸씩 놓입니다. 개별 금액 공개를 <b>꺼 두면 예전 그대로</b> 총상금만 크게 보입니다. [확인] 학생앱 미리보기(👁 학생 눈으로)는 <b>배포된 학생앱</b>을 띄웁니다 — 학생앱 고정 주소를 새 버전으로 바꾸기 전에는 상금이 거기에 안 보입니다. [검증] 실브라우저 자동 검사 통과 · 퇴원생 노출 검사 10/10.'},
@@ -45848,6 +45863,54 @@ function wbNotes(){
   return arr;
 }
 
+/* ★ v18-166: 머리띠 「🤖 이 범위 AI 초안」 대상
+ *   — 지금 보고 있는 범위(wbNotes)에서 아직 확정 안 됐고 초안도 없는 노트.
+ *   원장님이 머리의 「AI 초안 일괄」을 작업대에서 못 찾으셔서 머리띠로 가져왔다. */
+function wbDraftTargets(notes){
+  return (notes||wbNotes()).filter(function(n){
+    return !ibqIsFinal(n.id) && !ibqOf(n.id)
+      && (n.q_learn||n.q_act||n.q_try||n.q_stuck||n.q_ask||n.memo);
+  });
+}
+async function wbBulkDraft(){
+  var t=wbDraftTargets(wbNotes());
+  if(!t.length) return;
+  await ibqBulkDraft(t);       /* 기존 일괄 함수를 대상만 넘겨 그대로 쓴다 */
+}
+window.wbBulkDraft=wbBulkDraft;
+
+/* ★ v18-166: 🔁 재풀이 — 학생앱이 올린 다시 푼 사진(AHA_RETRY)을 작업대에서 확인·인정 */
+/* 지금 고쳐 쓰는 중인 노트는 저장 전 값(IBQ_D)을 봐야 배지가 바로 바뀐다 */
+function wbDraftOf(id){ return (IBQ_ID===id && IBQ_D) ? IBQ_D : ibqOf(id); }
+function wbRetryOkOf(n){ var d=wbDraftOf(n.id); return !!(d && d.retryOk); }
+/* 재풀이가 올라왔는데 아직 인정하지 않은 노트 (왼쪽 「모아 보기」 묶음) */
+function wbRetryTodo(notes){
+  return (notes||[]).filter(function(n){ return !!ahaRetryOf(n) && !wbRetryOkOf(n); });
+}
+/* 가운데 줄에 붙는 🔁 배지 */
+function wbRetryBadge(n){
+  var rt=ahaRetryOf(n); if(!rt) return '';
+  var ok=wbRetryOkOf(n);
+  return '<span style="font-weight:800;border-radius:5px;padding:0 5px;'
+    +(ok?'background:#dcfce7;color:#166534;border:1px solid #86efac':'background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe')+'">'
+    +(ok?'🔁 재풀이 ✓':'🔁 재풀이')+'</span>';
+}
+/* ✓ 재풀이 인정 +1 / 인정 취소 — 보너스는 ibqApplyBonus 가 계산한다 */
+function wbRetryToggle(){
+  if(!IBQ_ID||!IBQ_D) return;
+  var n=ibqNote(IBQ_ID); if(!n) return;
+  if(!ahaRetryOf(n)) return;
+  IBQ_D.retryOk=!IBQ_D.retryOk;
+  /* 채점 기록이 이미 있으면 바로 저장해 둔다 — 확정을 안 하고 다른 줄로 넘어가도
+   * 인정 표시가 사라지지 않게 (점수는 건드리지 않는다. 보너스는 확정할 때 더해진다) */
+  var sv=ibqOf(IBQ_ID);
+  if(sv){ sv.retryOk=IBQ_D.retryOk; try{ ibqSaveScores(); }catch(e){} }
+  /* 인정하면 노트도 조용히 해결 처리 — 이미 해결된 노트는 건드리지 않는다 */
+  if(IBQ_D.retryOk && ahaIsPending(n)){ ahaResolve(n.id); return; }   /* ahaResolve 가 다시 그린다 */
+  ibqRender();
+}
+window.wbRetryToggle=wbRetryToggle;
+
 /* 칸별 평가 — 5자 기준 ok / mid / no */
 function wbCellGrade(txt){
   var s=String(txt==null?'':txt).trim();
@@ -46000,6 +46063,7 @@ async function wbConfirmDay(dayKey){
     d.status='final'; d.at=new Date().toISOString(); d.by='teacher-bulk';
   });
   await ibqSaveScores();
+  lgAutoPublish();          /* ★ v18-166: 확정하면 순위표 자동 발행 */
   render();
   ahaToast(arr.length+'건 확정');
 }
@@ -46034,11 +46098,22 @@ function wbTopBar(notes){
       +(on?'background:#fff;color:#0d2240;border:1px solid #fff':'background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)')+'">'+label+'</div>';
   }
   var rangeKo=(WB.range==='y'?'어제':(WB.range==='all'?'전체':'최근 7일'));
+  /* ★ v18-166: 머리띠에서 바로 「이 범위」만 AI 초안 (원장 — 머리의 일괄 단추를 못 찾음) */
+  var dn=wbDraftTargets(notes).length;
+  var bulking=(IBQ_BUSY==='bulk');
+  var draftBtn='<div id="wb-bulk-btn"'+((dn&&!bulking)?' onclick="wbBulkDraft()"':'')
+    +' title="'+(dn?('지금 범위에서 초안이 없는 '+dn+'건에 AI 초안 점수를 매깁니다'):'초안 없는 노트가 없습니다')+'"'
+    +' style="border-radius:8px;padding:6px 13px;font-size:12px;font-weight:800;'
+    +((dn&&!bulking)?'cursor:pointer;background:#7c3aed;color:#fff;border:1px solid #7c3aed'
+      :(bulking?'cursor:default;background:#c4b5fd;color:#fff;border:1px solid #c4b5fd'
+               :'cursor:default;background:rgba(255,255,255,.10);color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.18)'))+'">'
+    +(bulking?('채점 중… 0/'+dn):('🤖 이 범위 AI 초안 ('+dn+'건)'))+'</div>';
   return '<div style="background:linear-gradient(135deg,#0d2240,#164a7a);color:#fff;border-radius:12px 12px 0 0;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
     +'<div style="font-size:15px;font-weight:900">📋 채점 작업대</div>'
     +'<div style="font-size:12px;font-weight:700;opacity:.85">'+ahaEsc(rangeKo)+' · 채점 대기 <b style="color:#ffd54a">'+pend+'건</b> · 확정 '+done+'건'
       +(need?(' · 초안 없음 '+need+'건'):'')+'</div>'
     +'<div style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap;align-items:center">'
+    +draftBtn
     +rb('y','어제')+rb('7d','7일')+rb('all','전체')
     +'<div onclick="wbToggleWs()" style="cursor:pointer;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:800;'
       +(WB.ws?'background:#6d28d9;color:#fff;border:1px solid #6d28d9':'background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)')+'">📚 학습지별</div>'
@@ -46135,10 +46210,38 @@ function wbByWs(notes){
  *  문자열 결합만 사용 (중첩 템플릿 리터럴 금지).
  * ═══════════════════════════════════════════════════════════════════ */
 
+/* ★ v18-166: 세 칸 높이를 화면에 딱 맞춘다 (「가」로 글씨를 키워도 아래가 안 잘리게)
+ *   CSS 만으로는 「위에 무엇이 얼마나 있는지」를 알 수 없어 -210px 로 어림잡았는데,
+ *   글씨를 키우면 그 어림이 맞지 않아 ✓ 확정 단추가 화면 밖으로 밀렸다.
+ *   그려진 뒤에 칸의 실제 위치를 재서 남은 높이만큼만 준다. */
+function wbFitCols(){
+  try{
+    var z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fz'))||1;
+    var vh=(window.innerHeight||900)/z;              /* 화면 높이 (CSS px) */
+    ['wb-nav','wb-list','wb-panel'].forEach(function(id){
+      var el=document.getElementById(id); if(!el) return;
+      var top=el.getBoundingClientRect().top/z;      /* 칸이 시작되는 높이 (CSS px) */
+      var h=Math.max(240, vh-top-10);
+      el.style.minHeight='0px';
+      el.style.height=Math.round(h)+'px';
+    });
+  }catch(e){}
+}
+window.wbFitCols=wbFitCols;
+var WB_FIT_ON=false;
+function wbFitWatch(){
+  if(WB_FIT_ON) return; WB_FIT_ON=true;
+  try{ window.addEventListener('resize', function(){ if(document.getElementById('wb-grid')) wbFitCols(); }); }catch(e){}
+}
+
 /* 화면이 넓은가 (3분할) */
 function wbWide(){
   var w=(typeof window!=='undefined' && window.innerWidth)?window.innerWidth:1400;
-  return w>=1100;
+  /* ★ v18-166: 「가」로 글씨를 키우면 실제로 쓸 수 있는 폭도 그만큼 줄어든다 —
+   *   배율만큼 나눠 보고 좁으면 2분할로 접는다 (칸이 짓눌리지 않게) */
+  var z=1;
+  try{ z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fz'))||1; }catch(e){ z=1; }
+  return (w/z)>=1100;
 }
 /* 「9월 10일 (수)」 */
 function wbDayLong(k){
@@ -46199,7 +46302,10 @@ function wbSpecials(notes){
     /* 스스로 해결이라고 올렸는데 아직 검사(확인)를 안 한 것 */
     if(n.status==='self_pending' || (n.self_solved && !(d&&d.selfOk))) chk.push(n);
   });
-  var raw=[ {key:'x_best', label:'⭐ 베스트 후보', chip:'⭐ 후보', list:best},
+  /* ★ v18-166: 🔁 재풀이가 올라왔는데 아직 인정 안 한 것 — 확인할 것만 모아 본다 */
+  var rtd=wbRetryTodo(notes);
+  var raw=[ {key:'x_retry', label:'🔁 재풀이 확인', chip:'🔁 재풀이', list:rtd},
+            {key:'x_best', label:'⭐ 베스트 후보', chip:'⭐ 후보', list:best},
             {key:'x_explore', label:'🔎 탐구노트', chip:'🔎 탐구', list:exp},
             {key:'x_self', label:'🎲 검사 필요', chip:'🎲 검사', list:chk} ];
   return raw.filter(function(b){ return b.list.length; }).map(function(b){
@@ -46356,6 +46462,7 @@ function wbMiniRow(n, same){
     ? '<div style="flex:none;width:44px;height:52px;border-radius:6px;border:1px solid #dbe2ec;background:#f8fafc url('+ahaEsc(n.photo_url)+') center/cover no-repeat"></div>'
     : wbThumbBox(n);
   var pathKo=wbMiniPath(n,d);
+  var rtBadge=wbRetryBadge(n);      /* ★ v18-166: 🔁 재풀이 배지 */
   return '<div onclick="wbPick(\''+ahaEsc(String(n.id))+'\')" data-wbrow="'+ahaEsc(String(n.id))+'" style="cursor:pointer;background:'+(isFinal?'#f7fdf9':'#fff')
     +';border:1.5px solid '+(on?'#1d6fe8':(isFinal?'#bbf7d0':'#e6eaf1'))+';'+(on?'box-shadow:0 0 0 2px #bfdbfe;':'')
     +(isFinal&&!on?'opacity:.78;':'')+'border-radius:11px;padding:8px 10px;margin-bottom:6px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:9px;align-items:center">'
@@ -46364,7 +46471,7 @@ function wbMiniRow(n, same){
     +  '<div style="font-size:12.5px;font-weight:900;color:#0d2240">'+ahaEsc(st?st.name:(n.student_name||'?'))
     +    '<small style="font-size:10px;font-weight:700;color:#64748b;background:#f1f5f9;border-radius:4px;padding:0 5px;margin-left:4px">'+ahaEsc((st&&st.grade)||'')+'</small></div>'
     +  '<div style="font-size:10.5px;color:#475569;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+wbMiniSrc(n,d)+'</div>'
-    +  ((pathKo||same>1)?('<div style="font-size:10px;margin-top:2px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'+pathKo
+    +  ((pathKo||same>1||rtBadge)?('<div style="font-size:10px;margin-top:2px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'+pathKo+rtBadge
     +    ((same>1)?'<span style="font-weight:800;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;border-radius:5px;padding:0 5px">여러 명이 같은 문제 — '+same+'명</span>':'')
     +    '</div>'):'')
     +'</div>'
@@ -46470,7 +46577,8 @@ function wbPanelHtml(){
   var isFinal=(d.status==='final');
   var busy=IBQ_BUSY;
   var prev=Object.assign({},d); ibqApplyBonus(prev,n);
-  var bonus=(prev.typeBonus||0)+(prev.pathBonus||0)+(prev.levelBonus||0)+(prev.selfMatch||0)+(d.pick?2:0)+(d.best?3:0);
+  /* ★ v18-166: 🔁 재풀이 인정 보너스(retryBonus)도 합계에 넣는다 */
+  var bonus=(prev.typeBonus||0)+(prev.pathBonus||0)+(prev.levelBonus||0)+(prev.retryBonus||0)+(prev.selfMatch||0)+(d.pick?2:0)+(d.best?3:0);
   var mfSol=(n.mf&&n.mf.sol)?String(n.mf.sol):'';
   var esc=function(s){ return ahaEsc(String(s==null?'':s)).replace(/'/g,'&#39;'); };
 
@@ -46507,6 +46615,29 @@ function wbPanelHtml(){
   if(mfSol)
     h+='<div onclick="ahaPhotoModal(\''+esc(mfSol)+'\')" style="position:absolute;left:8px;bottom:8px;cursor:pointer;font-size:10px;font-weight:800;background:#7c3aed;color:#fff;border-radius:5px;padding:3px 8px">📐 매쓰플랫 해설 보기</div>';
   h+='</div>';
+
+  /* ★ v18-166: ②-2 🔁 재풀이 — 학생이 다시 푼 사진을 여기서 보고 인정한다 */
+  var _rt=ahaRetryOf(n);
+  if(_rt){
+    var _rtPt=Number((ibqPathPt().retry==null)?1:ibqPathPt().retry)||0;
+    var _rtOk=!!d.retryOk;
+    h+='<div id="wb-retry" style="margin-top:8px;border:1.5px solid '+(_rtOk?'#86efac':'#bfdbfe')+';background:'+(_rtOk?'#f0fdf4':'#f5f9ff')+';border-radius:10px;padding:8px 10px">'
+      +'<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px">'
+      +'<span style="font-size:11.5px;font-weight:900;color:'+(_rtOk?'#166534':'#1d4ed8')+'">🔁 다시 푼 사진</span>'
+      +'<span style="font-size:10.5px;color:#64748b;font-weight:700">'+ahaEsc(ahaDateTimeShort(_rt.at))+' 올림'
+      +(_rt.auto?' · 자동 해결':'')+'</span>'
+      +'<span style="margin-left:auto;font-size:10.5px;font-weight:800;color:'+(_rtOk?'#166534':'#94a3b8')+'">'
+      +(_rtOk?('인정됨 +'+_rtPt):'아직 확인 전')+'</span></div>';
+    if(_rt.url)
+      h+='<img src="'+ahaEsc(_rt.url)+'" onclick="wbZoom(\''+esc(_rt.url)+'\')" title="누르면 크게"'
+        +' style="display:block;width:100%;max-height:150px;object-fit:contain;background:#fff;border:1px solid #dbe2ec;border-radius:8px;cursor:zoom-in">';
+    else
+      h+='<div style="font-size:11px;color:#94a3b8;font-weight:700;padding:8px 0">사진 없이 제출되었습니다</div>';
+    h+='<div onclick="wbRetryToggle()" style="margin-top:7px;cursor:pointer;text-align:center;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:900;'
+      +(_rtOk?'background:#fff;border:1.5px solid #86efac;color:#166534':'background:#16a34a;border:1.5px solid #16a34a;color:#fff')+'">'
+      +(_rtOk?'✓ 인정함 — 다시 누르면 취소':('✓ 재풀이 인정 +'+_rtPt))+'</div>'
+      +'</div>';
+  }
 
   /* ③ L·A·M·P·AHA 다섯 칸 (AI 초안이 미리 눌려 있다) */
   h+='<div style="display:flex;align-items:center;gap:7px;margin:9px 0 5px;flex-wrap:wrap">'
@@ -46585,6 +46716,7 @@ async function wbConfirmNext(){
   IBQ_SCORES[id]=IBQ_D;
   IBQ_BUSY='save'; ibqRender();
   await ibqSaveScores();
+  lgAutoPublish();          /* ★ v18-166: 확정하면 순위표 자동 발행 */
   IBQ_BUSY='';
   ahaToast('확정했습니다 — 다음 노트로');
   WB.sel=wbNextPendingId(id);
@@ -46605,7 +46737,9 @@ function wbMain(){
   if(!ovOpen) wbSyncSel(list);
   IBQ_HOST='wb-panel';   /* 채점 패널을 오른쪽 칸에 그린다 */
 
-  var colH='height:calc(100vh - 210px);min-height:420px;overflow:auto';
+  /* ★ v18-166: 「가」로 글씨를 키우면(body zoom) 100vh 도 같이 커져 아래가 잘렸다.
+   *   --fz(지금 글씨 배율)로 나눠 어떤 배율에서도 ✓ 확정 단추가 화면 안에 들어온다. */
+  var colH='height:calc(100vh / var(--fz,1) - 210px);min-height:420px;overflow:auto';
   var h='<div id="wb-wrap" style="border:1px solid #dbe3ef;border-radius:12px;overflow:hidden;background:#fff">'
     +wbTopBar(notes)
     +'<div id="wb-grid" data-wbcols="'+(wide?3:2)+'" style="display:grid;grid-template-columns:'
@@ -46618,6 +46752,8 @@ function wbMain(){
     +wbListHtml(cur)+'</div>';
   h+='<div id="wb-panel" style="background:#fff;padding:10px 12px;'+colH+'">'+wbPanelHtml()+'</div>';
   h+='</div></div>';
+  /* ★ v18-166: 그려진 뒤에 세 칸 높이를 화면에 딱 맞춘다 (창 크기가 바뀌어도) */
+  try{ wbFitWatch(); setTimeout(wbFitCols,0); }catch(e){}
   return h;
 }
 
@@ -46835,7 +46971,7 @@ var IBQ_AWARD_HOW = { top:'리그 점수 1위', best:'시즌 최고 질문 한 �
  *   실제 점수는 설정(cfg.pathPt)에서 읽는다 — 아래는 문구용이다. */
 var IBQ_PATH_KO = { self:'🙋 스스로 해결 (+3 / 확인 안 되면 +2)', h1:'💡 힌트 1개 (+2)', h2:'💡 힌트 2개 (+1)',
                     h3:'💡 힌트 3개 (+1)', hand:'✍️ 손풀이 (+1)', none:'아직 안 풂 (0)' };
-var IBQ_PATH_PT = { self:3, selfUnverified:2, h1:2, h2:1, h3:1, hand:1, none:0 };
+var IBQ_PATH_PT = { self:3, selfUnverified:2, h1:2, h2:1, h3:1, hand:1, none:0, retry:1 };  /* ★ v18-166 retry 추가 */
 /* 설정에서 읽는 실제 점수표 */
 function ibqPathPt(){ var c=ibqCfg(); return (c && c.pathPt) ? c.pathPt : IBQ_PATH_PT; }
 
@@ -46904,14 +47040,19 @@ function ibqCfgDefault(){
     /* ★ v18-164: 계약서 5장 — 통합 리그·연습 주간·경로 점수·탐구 보너스 */
     divisions:'all',            /* 'all' 통합 한 리그 | 'band' 초·중·고 따로 */
     practiceDays:7,             /* 시즌 첫 N일은 연습 — 채점만 하고 리그 0점 */
-    pathPt:{ self:3, selfUnverified:2, h1:2, h2:1, h3:1, hand:1, none:0 },
+    /* ★ v18-166: retry = 🔁 재풀이 인정 보너스 (경로 보너스와 별개로 붙는다) */
+    pathPt:{ self:3, selfUnverified:2, h1:2, h2:1, h3:1, hand:1, none:0, retry:1 },
     explorePt:{ lv3:1, lv4:2 }, /* 탐구노트 난이도 보너스 */
+    /* ★ v18-166: 확정할 때마다 순위표를 조용히 다시 발행한다 (원장 결정 — 연습 리그 자동 발행) */
+    autoPublish:true,
     exploreDailyCap:1,          /* 하루 2건 중 탐구는 1건까지 */
     introNoteId:null,           /* 📣 발행 전 안내에 쓸 예시 노트 */
     /* ★ v18-160: 상금·종합 챔피언·말하기 종목 (계약서 1-1) */
     /* ★ v18-165: 상마다 금액 w(원) — 적어 두면 순위표 화면에 상마다 큰 카드로 나오고
      *   발행할 때 학생앱에도 금액이 함께 나간다. 0 이면 총상금만 크게 보여 준다. */
-    prize:{ total:50000, awards:[
+    /* ★ v18-166: open = 개별 금액을 학생앱에 공개할지 (진도 레이스 prizes.open 과 같은 방식).
+     *   꺼 두면 발행에 금액(w)을 아예 싣지 않는다 — 담기지 않은 것은 새어 나갈 수도 없다. */
+    prize:{ total:50000, open:false, awards:[
       {k:'top',     name:'질문왕',      icon:'🥇', w:20000},
       {k:'best',    name:'베스트 질문',  icon:'🏆', w:15000},
       {k:'growth',  name:'성장',        icon:'📈', w:10000},
@@ -46929,6 +47070,10 @@ function ibqCfgFill(c){
   var d=ibqCfgDefault();
   if(!c.prize || !Array.isArray(c.prize.awards) || !c.prize.awards.length) c.prize=d.prize;
   if(c.prize.total==null) c.prize.total=d.prize.total;
+  /* ★ v18-166: 예전 설정에는 상금 공개 스위치가 없다 — 기본은 「숨김」 */
+  if(c.prize.open==null) c.prize.open=false;
+  /* ★ v18-166: 확정하면 순위표 자동 발행 (기본 켜짐) */
+  if(c.autoPublish==null) c.autoPublish=d.autoPublish;
   /* ★ v18-165: 예전 설정에는 상마다 금액(w) 칸이 없다 — 같은 상의 기본 금액으로 채운다 */
   c.prize.awards.forEach(function(a){
     if(a.w!=null) return;
@@ -47172,7 +47317,9 @@ window.ibqClose=ibqClose;
 
 function ibqSet(k,v){ if(!IBQ_D) return; IBQ_D[k]=(IBQ_D[k]===v)?null:v; IBQ_D.total=ibqTotal(IBQ_D); ibqRender(); }
 window.ibqSet=ibqSet;
-function ibqSetPath(p){ if(!IBQ_D) return; IBQ_D.path=p; ibqRender(); }
+/* ★ v18-166: 같은 칩을 다시 누르면 해제(none) — 잘못 누르면 되돌릴 방법이 없었다(원장 제보).
+ *   작업대 오른쪽 칸(wbPanelHtml)과 채점 오버레이가 둘 다 이 함수를 쓴다. */
+function ibqSetPath(p){ if(!IBQ_D) return; IBQ_D.path=(IBQ_D.path===p)?'none':p; ibqRender(); }
 window.ibqSetPath=ibqSetPath;
 function ibqCoach(which,val){ if(!IBQ_D) return; IBQ_D.coach=IBQ_D.coach||{fb:'',ff:''}; IBQ_D.coach[which]=val; }
 window.ibqCoach=ibqCoach;
@@ -47230,9 +47377,12 @@ function ibqApplyBonus(d,n){
     else
       d.pathBonus = Number(pp[d.path||'none'])||0;
   }
+  /* ★ v18-166: 🔁 재풀이 인정 — 경로 보너스와 별개로 붙는다.
+   *   재풀이 사진이 안 올라왔으면 인정 표시가 있어도 0 (원장 결정: 스스로·힌트 보너스는 그대로). */
+  d.retryBonus=(ahaRetryOf(n) && d.retryOk) ? (Number(pp.retry==null?1:pp.retry)||0) : 0;
   var exp=(n.self_eval && typeof n.self_eval.expected==='number')?n.self_eval.expected:null;
   d.selfMatch=(exp!=null && Math.abs(exp-d.total)<=1)?1:0;
-  d.league=d.total+d.typeBonus+d.pathBonus+d.levelBonus+d.selfMatch+(d.pick?2:0)+(d.best?3:0);
+  d.league=d.total+d.typeBonus+d.pathBonus+d.levelBonus+d.retryBonus+d.selfMatch+(d.pick?2:0)+(d.best?3:0);
   if(d.total<(cfg.minQ||5)) d.league=0;   // 질문력이 낮으면 리그 0점(기록에는 남음)
   if(ibqIsPractice(n)){ d.practice=true; d.league=0; }   // 연습 주간
   else d.practice=false;
@@ -47250,6 +47400,7 @@ async function ibqConfirm(){
   IBQ_SCORES[IBQ_ID]=IBQ_D;
   IBQ_BUSY='save'; ibqRender();
   await ibqSaveScores();
+  lgAutoPublish();          /* ★ v18-166: 확정하면 순위표 자동 발행 */
   IBQ_BUSY='';
   ahaToast('확정했습니다 — 학생앱에 점수가 보입니다');
   ibqClose();
@@ -47505,19 +47656,31 @@ function ibqScopeNotes(){
 }
 /* 옛 방식 노트 — 활동지 사진(LAMP)이 없고 한 줄 메모만 있는 것 */
 function ibqIsOldNote(n){ return !(n.q_learn||n.q_act||n.q_try||n.q_stuck); }
+/* ★ v18-166: 일괄 초안이 몇 개째인지 머리띠 단추에 적어 준다 (화면 전체를 다시 그리지 않는다) */
+function ibqBulkProg(i,n){
+  try{ var el=document.getElementById('wb-bulk-btn'); if(el) el.textContent='채점 중… '+i+'/'+n; }catch(e){}
+}
 
 /* ── 일괄: AI 초안이 있고 질문력이 높은 것만 한 번에 확정 ── */
-async function ibqBulkDraft(){
+/* ★ v18-166: 대상 배열(list)을 받으면 그 노트들만 매긴다 — 작업대 머리띠의
+ *   「🤖 이 범위 AI 초안」이 지금 범위(wbNotes)만 넘겨 이 함수를 그대로 쓴다.
+ *   안 넘기면 예전 그대로 화면에서 고른 범위(ahaCurrentNotes)를 쓴다. */
+async function ibqBulkDraft(list){
   if(!apiKey){ alert('설정에서 Claude API 키를 먼저 등록해 주세요.'); return; }
   if(IBQ_BUSY) return;
-  var scope=ibqScopeNotes();
-  var targets=scope.list.filter(function(n){
-    return ahaIsPending(n) && !ibqIsFinal(n.id) && !(ibqOf(n.id)&&ibqOf(n.id).by==='ai')
-      && (n.q_learn||n.q_act||n.q_try||n.q_stuck||n.q_ask||n.memo);
-  });
+  var scope=null, targets;
+  if(Array.isArray(list)){
+    targets=list.slice();
+  } else {
+    scope=ibqScopeNotes();
+    targets=scope.list.filter(function(n){
+      return ahaIsPending(n) && !ibqIsFinal(n.id) && !(ibqOf(n.id)&&ibqOf(n.id).by==='ai')
+        && (n.q_learn||n.q_act||n.q_try||n.q_stuck||n.q_ask||n.memo);
+    });
+  }
   if(!targets.length){ alert('AI 초안을 매길 노트가 없습니다.\n(읽은 글자가 있고, 아직 초안이 없는 미해결 노트)'); return; }
   var oldCnt=targets.filter(ibqIsOldNote).length;
-  var msg=(scope.all?'왼쪽에서 아무도 안 고르셔서 ':'')+targets.length+'건에 AI 초안 점수를 매깁니다. (한 건씩 순서대로)\n';
+  var msg=((scope&&scope.all)?'왼쪽에서 아무도 안 고르셔서 ':'')+targets.length+'건에 AI 초안 점수를 매깁니다. (한 건씩 순서대로)\n';
   if(oldCnt){
     msg+='\n⚠️ 이 중 '+oldCnt+'건은 <옛 방식> 노트입니다 — 활동지 사진 없이 한 줄 메모만 있어\n'
       +'   L(문제 이해)·A(이론)·M(풀이 논리)가 비어 0점이 되고, 질문력이 2~3점으로 나옵니다.\n'
@@ -47529,10 +47692,11 @@ async function ibqBulkDraft(){
   var ok=0, fail=0;
   for(var i=0;i<targets.length;i++){
     ahaToast('AI 초안 '+(i+1)+'/'+targets.length);
+    ibqBulkProg(i+1, targets.length);      /* ★ v18-166: 머리띠 단추에 「채점 중… 3/12」 */
     try{ await ibqAiDraftOne(targets[i].id); ok++; }catch(e){ console.error('초안 실패',targets[i].id,e); fail++; }
   }
   await ibqSaveScores();
-  IBQ_BUSY=''; render();
+  IBQ_BUSY=''; render();                   /* 다 끝나면 다시 그린다 — 줄마다 점수가 채워진다 */
   ahaToast('AI 초안 '+ok+'건'+(fail?(' · 실패 '+fail+'건'):''));
 }
 window.ibqBulkDraft=ibqBulkDraft;
@@ -47553,6 +47717,7 @@ async function ibqBulkConfirm(){
     d.status='final'; d.at=new Date().toISOString(); d.by='teacher-bulk';
   });
   await ibqSaveScores();
+  lgAutoPublish();          /* ★ v18-166: 확정하면 순위표 자동 발행 */
   render();
   ahaToast(targets.length+'건 확정');
 }
@@ -47693,6 +47858,11 @@ function ibqCfgRender(){
      +' · 힌트2 +'+ibqNumBox('pathPt.h2',(c.pathPt&&c.pathPt.h2)||0,'')
      +' · 힌트3 +'+ibqNumBox('pathPt.h3',(c.pathPt&&c.pathPt.h3)||0,'')
      +' · 손풀이 +'+ibqNumBox('pathPt.hand',(c.pathPt&&c.pathPt.hand)||0,''));
+  /* ★ v18-166: 🔁 재풀이 인정 보너스 (작업대 오른쪽 칸의 「✓ 재풀이 인정」) */
+  h+=row('🔁 재풀이 인정','다시 푼 사진을 보고 인정할 때',
+      '+'+ibqNumBox('pathPt.retry',(c.pathPt&&c.pathPt.retry==null)?1:(c.pathPt.retry||0),'점')
+     +'<span style="font-size:10.5px;color:#94a3b8">📋 채점 작업대 오른쪽 칸에서 재풀이 사진을 보고 「✓ 재풀이 인정」을 누르면 붙습니다 · '
+     +'스스로·힌트 보너스와 <b>따로</b> 더해집니다</span>');
   h+=row('🔎 탐구노트 보너스','진짜 맞힌 어려운 문제',
       '난이도 상 +'+ibqNumBox('explorePt.lv3',(c.explorePt&&c.explorePt.lv3)||0,'')
      +' · 최상 +'+ibqNumBox('explorePt.lv4',(c.explorePt&&c.explorePt.lv4)||0,'')
@@ -47729,6 +47899,16 @@ function ibqCfgRender(){
      +'<span style="font-size:10.5px;color:#94a3b8">'
      +((_awSum===Number(c.prize.total||0))?'✓ 총상금과 같습니다':('총상금 '+Number(c.prize.total||0).toLocaleString()+'원과 다릅니다'))
      +' · 금액이 모두 0이면 학생앱에는 총상금만 나갑니다</span>');
+  /* ★ v18-166: 개별 금액 공개 스위치 — 진도 레이스(⚙ 시즌 설정)의 것을 그대로 가져왔다.
+   *   꺼 두면 발행 payload 에 금액(w)을 아예 담지 않는다. */
+  var _po=!!(c.prize&&c.prize.open);
+  h+='<label style="display:flex;align-items:center;gap:9px;background:'+(_po?'#fff7ed':'#f8fafc')+';border:1.5px solid '+(_po?'#fdba74':'#e2e8f0')+';border-radius:10px;padding:10px 12px;margin:8px 0 4px;cursor:pointer">'
+    +'<input id="ibq-prize-open" type="checkbox" '+(_po?'checked ':'')+'onchange="ibqCfgSet(\'prize.open\',this.checked)" style="width:17px;height:17px;cursor:pointer">'
+    +'<span style="font-size:12.5px;font-weight:900;color:'+(_po?'#9a3412':'#334155')+'">개별 금액을 <b>학생앱</b>에 공개</span>'
+    +'<span style="font-size:11px;color:#94a3b8;font-weight:700">'
+    +(_po?('학생앱 상금 카드에 '+ahaEsc(((c.prize.awards||[])[0]||{}).name||'1등')+' '+Number(((c.prize.awards||[])[0]||{}).w||0).toLocaleString()+'원처럼 다 보입니다 · 학부모앱은 총액만')
+        :'지금은 총상금만 보입니다 · 켜면 학생앱에서 상마다 금액이 보입니다')
+    +'</span></label>';
   h+='<div style="margin-top:12px;padding-top:10px;border-top:2px solid #e8eef8;font-size:13px;font-weight:900;color:#0d2240">👑 종합 챔피언</div>';
   h+=row('종합 상','부(초·중·고)마다 한 명',
       '<input value="'+ahaEsc((c.champion&&c.champion.prize)||'')+'" oninput="ibqCfgSet(\'champion.prize\',this.value)" '
@@ -47744,6 +47924,13 @@ function ibqCfgRender(){
      +ibqOptBtn('speaking.enabled','true',String(!!(c.speaking&&c.speaking.enabled)),'시작')
      +' <input type="date" value="'+ahaEsc((c.speaking&&c.speaking.startsAt)||'')+'" oninput="ibqCfgSet(\'speaking.startsAt\',this.value)" style="border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;font-size:12px;font-family:inherit">'
      +'<span style="font-size:10.5px;color:#94a3b8">채점 체계를 만든 뒤 켭니다 (11월 시즌 예정)</span>');
+
+  /* ★ v18-166: 확정하면 순위표 자동 발행 (원장 결정 — 연습 리그 자동 발행) */
+  h+=row('📤 순위표 자동 발행','확정할 때마다 조용히',
+      ibqOptBtn('autoPublish','true',String(c.autoPublish!==false),'확정하면 자동 발행')
+     +ibqOptBtn('autoPublish','false',String(c.autoPublish!==false),'손으로만')
+     +'<span style="font-size:10.5px;color:#94a3b8">켜 두면 점수를 확정할 때마다 학생앱 순위표가 <b>저절로</b> 최신이 됩니다 '
+     +'(시즌이 시작된 뒤에만 · 묻지 않고 조용히)</span>');
 
   h+=row('시즌 끝 리포트','학부모 성장 리포트',
       ibqOptBtn('autoReport','true',String(c.autoReport),'AI 초안 자동 생성')+ibqOptBtn('autoReport','false',String(c.autoReport),'안 함')
@@ -48365,6 +48552,8 @@ function lgRulesText(cfg){
     +'🙋 스스로 해결은 학습지 기록으로 「틀렸던 문제」가 확인되면 +'+Number(pp.self||3)+'점, 확인이 안 되면 +'+Number(pp.selfUnverified||2)+'점. '
     +'💡 힌트를 열고 풀면 1개 +'+Number(pp.h1||2)+' · 2개 +'+Number(pp.h2||1)+' · 3개 +'+Number(pp.h3||1)+'점. '
     +'🔎 탐구노트는 난이도 상 +'+Number(ep.lv3||1)+' · 최상 +'+Number(ep.lv4||2)+'점을 더 받아요. '
+    /* ★ v18-166: 🔁 재풀이 인정 */
+    +'🔁 다시 푼 사진을 올리고 선생님이 인정하면 +'+Number(pp.retry==null?1:pp.retry)+'점이 더 붙어요. '
     +(until?('첫 주('+until+'까지)는 연습 기간이라 점수가 0점이에요 — 마음 편히 연습하세요. '):'')
     +'🎲 선생님이 무작위로 설명을 시킬 수 있어요. 설명 못 하면 그 시즌 스스로 해결 점수가 모두 사라져요.';
 }
@@ -48684,9 +48873,11 @@ function lgStepStrip(board){
   var today=iblDay(new Date().toISOString());
   var started=(String(cfg.seasonStart||'') && today>=String(cfg.seasonStart||''));
   var practicing=!!(board.practiceUntil && today<=board.practiceUntil);
+  /* ★ v18-166: 확정하면 순위표가 저절로 다시 나가므로 ③에 「자동」을 붙여 알려 준다 */
+  var autoPub=(cfg.autoPublish!==false);
   var steps=[ {n:'① 설정', ok:true},
               {n:'② 📣 안내 발행', ok:!!LG_INTRO},
-              {n:'③ 📤 순위표 발행', ok:!!LG_PUB},
+              {n:'③ 📤 순위표 발행'+(autoPub?' (자동)':''), ok:!!LG_PUB},
               {n:(started?(practicing?'④ 🌱 연습 중':'④ 실점수 중'):'④ 시즌 시작'), ok:started} ];
   var left=steps.filter(function(s){ return !s.ok; }).length;
   var h='<div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:14px;padding:12px 16px;margin-bottom:12px;'
@@ -48697,7 +48888,9 @@ function lgStepStrip(board){
     +'<div style="font-size:11.5px;color:#7c2d12;line-height:1.65;margin-top:2px">'
     +'① 리그 설정 확인(시즌 '+lgEsc(cfg.seasonStart||'')+' · 연습 '+Number(cfg.practiceDays||0)+'일 · '
     +((cfg.divisions==='band')?'초·중·고 따로':'통합')+') → ② <b>📣 안내 발행</b>(학생앱에 규칙·예시 등수표) '
-    +'→ ③ <b>📤 순위표 발행</b> → ④ '+lgEsc(cfg.seasonStart||'')+' 시즌 시작'
+    +'→ ③ <b>📤 순위표 발행</b>'
+    +(autoPub?'<b style="color:#15803d"> — 점수를 확정하면 자동으로 다시 나갑니다</b>':' (자동 발행 꺼짐 — 손으로 누르세요)')
+    +' → ④ '+lgEsc(cfg.seasonStart||'')+' 시즌 시작'
     +(board.practiceUntil?(' · '+lgEsc(board.practiceUntil)+' 뒤 실점수'):'')+'</div></div>'
     +'<div style="display:flex;gap:6px;flex-wrap:wrap">';
   steps.forEach(function(s){
@@ -48726,9 +48919,12 @@ function lgPrizeCards(board, divKo){
       : '되돌아보기(AHA) 최다';
     return '&nbsp;';
   };
+  /* ★ v18-166: 진도 레이스와 같은 규칙 — 「개별 금액 공개」를 켰을 때만 상마다 크게.
+   *   꺼 두면 총상금 한 장만 크게 (금액은 발행에도 실리지 않는다). */
+  var open=!!prize.open;
   var h='<div style="background:linear-gradient(135deg,#fffdf5,#fff4d6);border:2px solid #f2cd85;border-radius:14px;'
     +'padding:14px 18px;margin-bottom:12px;text-align:center;box-shadow:0 2px 10px rgba(180,120,20,.13)">';
-  if(sum>0){
+  if(open && sum>0){
     h+='<div style="font-size:12px;font-weight:900;color:#a35a00;letter-spacing:.5px;margin-bottom:10px">🏆 이번 시즌 상금 '
       +'<span style="font-weight:800;color:#a8825a">· '+awards.length+'상 · 개별 금액 공개</span></div>'
       +'<div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center">';
@@ -48752,7 +48948,9 @@ function lgPrizeCards(board, divKo){
       +'<div style="font-size:12.5px;font-weight:800;color:#8a5a00">'
       +awards.map(function(a){ return lgEsc(a.icon+' '+a.name); }).join(' · ')+'</div>'
       +'<div style="font-size:11px;font-weight:700;color:#a8825a;margin-top:6px">'
-      +'상마다 금액을 적으면 <b>상마다 큰 카드</b>로 바뀌고 학생앱에도 금액이 함께 나갑니다 — ⚙️ 리그 설정에서 적어 주세요</div>';
+      +(sum>0?'개별 금액은 숨김 — ⚙️ 리그 설정에서 학생앱에 공개할 수 있습니다'
+             :'상마다 금액을 적고 ⚙️ 리그 설정에서 공개를 켜면 <b>상마다 큰 카드</b>로 바뀌고 학생앱에도 금액이 함께 나갑니다')
+      +'</div>';
   }
   return h+'</div>';
 }
@@ -48816,6 +49014,8 @@ function lgThreeCards(board, divKo){
     ['🙋 스스로','+'+Number(pp.selfUnverified||2)+' · 확인 시 <b style="color:#16a34a">+'+Number(pp.self||3)+'</b>'],
     ['🔎 탐구','상 +'+Number(ep.lv3||1)+' · 최상 <b style="color:#16a34a">+'+Number(ep.lv4||2)+'</b>'],
     ['💡 힌트','1단계 +'+Number(pp.h1||2)+' · 2·3단계 +'+Number(pp.h2||1)+'·+'+Number(pp.h3||1)],
+    /* ★ v18-166: 🔁 재풀이 인정 */
+    ['🔁 재풀이','인정하면 <b style="color:#16a34a">+'+Number(pp.retry==null?1:pp.retry)+'</b>'],
     ['⭐ 뽑힘','+2 · 베스트 <b style="color:#16a34a">+3</b>']
   ];
   h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:14px;padding:13px 15px">'
@@ -49356,6 +49556,18 @@ function lgIntroDemoRows(){
     return { rank:i+1, name:LG_DEMO_SURNAME[i]+'○○', tier:LG_DEMO_TIER[i], league:v };
   });
 }
+/* ★ v18-166: 발행에 실을 상금 — 「개별 금액 공개(prize.open)」일 때만 금액 w 를 싣는다.
+ *   진도 레이스의 prizeDetail 과 같은 규칙 — 담기지 않은 것은 새어 나갈 수도 없다.
+ *   닫혀 있으면 총액(total)과 상 이름·아이콘만 나간다. */
+function lgPrizeOut(){
+  var p=lgPrize(), open=!!p.open;
+  return { total:Number(p.total)||0, open:open,
+    awards:(p.awards||[]).map(function(a){
+      var o={ k:a.k, name:a.name, icon:a.icon };
+      if(open) o.w=Number(a.w)||0;
+      return o;
+    }) };
+}
 function lgIntroPayload(board){
   var cfg=(board&&board.cfg)||ibqCfg(), prize=lgPrize();
   return {
@@ -49364,9 +49576,8 @@ function lgIntroPayload(board){
     practiceUntil:ibqPracticeUntil()||'',
     divisions:(cfg.divisions==='band')?'band':'all',
     publicTop:Number(cfg.publicTop||5),
-    /* ★ v18-165: 상마다 금액(w)도 함께 실어 보낸다 (학생앱은 다음 판에서 쓴다) */
-    prize:{ total:Number(prize.total)||0,
-            awards:(prize.awards||[]).map(function(a){ return {k:a.k, name:a.name, icon:a.icon, w:Number(a.w)||0}; }) },
+    /* ★ v18-166: 공개(prize.open)일 때만 상마다 금액(w)이 함께 나간다 */
+    prize:lgPrizeOut(),
     sample:lgIntroSample(),
     demoRows:lgIntroDemoRows(),
     rules:lgRulesText(cfg),
@@ -49454,7 +49665,9 @@ function lgRowOut(r, cfg, cands){
   if(r.selfVoid) out.selfVoid=true;
   return out;
 }
-async function lgPublishBoard(){
+/* ★ v18-166: silent 로 부르면 묻지도 알리지도 않고 조용히 올린다 (확정 → 자동 발행).
+ *   손으로 누르는 「📤 순위표 발행」은 예전 그대로 확인 창을 띄운다. */
+async function lgPublishBoard(silent){
   var board=iblBoard(), cfg=board.cfg, prize=lgPrize(), champ=lgChampCfg();
   var divisions={}, champDiv={};
   var chAll=lgChampion(board);
@@ -49494,9 +49707,8 @@ async function lgPublishBoard(){
            exploreDaily:Number(cfg.exploreDailyCap==null?1:cfg.exploreDailyCap) },
     divMode:(board.divisions==='all')?'all':'band',    /* ★ v18-164 */
     practiceUntil:board.practiceUntil||'',
-    /* ★ v18-165: 상마다 금액(w)도 함께 실어 보낸다 (학생앱은 다음 판에서 쓴다) */
-    prize:{ total:Number(prize.total)||0,
-            awards:(prize.awards||[]).map(function(a){ return {k:a.k, name:a.name, icon:a.icon, w:Number(a.w)||0}; }) },
+    /* ★ v18-166: 공개(prize.open)일 때만 상마다 금액(w)이 함께 나간다 */
+    prize:lgPrizeOut(),
     rules:lgRulesText(cfg),
     divisions:divisions,
     best:best,
@@ -49504,24 +49716,51 @@ async function lgPublishBoard(){
                prize:champ.prize||'', divisions:champDiv }
   };
   var n=(divisions.all||[]).length+(divisions.elem||[]).length+(divisions.mid||[]).length+(divisions.high||[]).length;
-  if(!n){ alert('발행할 순위가 없습니다. 먼저 점수를 확정해 주세요.'); return; }
+  if(!n){ if(silent) return false; alert('발행할 순위가 없습니다. 먼저 점수를 확정해 주세요.'); return; }
   var who=(board.divisions==='all')
     ? ('통합 '+(divisions.all||[]).length+'명')
     : ('초 '+(divisions.elem||[]).length+'명 · 중 '+(divisions.mid||[]).length+'명 · 고 '+(divisions.high||[]).length+'명');
-  /* ★ v18-165: 상마다 금액(w)을 적어 두었으면 금액도 함께 올라간다 */
+  /* ★ v18-166: 상금을 「공개」로 켜 두었을 때만 상마다 금액이 함께 올라간다 */
   var _wSum=(prize.awards||[]).reduce(function(s,a){ return s+(Number(a.w)||0); },0);
-  if(!confirm('순위표를 학생앱에 발행할까요?\n'+who+'\n'
-    +(_wSum?('(이름은 가려서 · 상금은 상마다 금액까지 함께 — 모두 '+lgMoney(_wSum)+'원)')
-           :'(이름은 가려서 · 상금은 총액만)'))) return;
+  if(!silent && !confirm('순위표를 학생앱에 발행할까요?\n'+who+'\n'
+    +((prize.open&&_wSum)?('(이름은 가려서 · 상금은 상마다 금액까지 함께 — 모두 '+lgMoney(_wSum)+'원)')
+           :'(이름은 가려서 · 상금은 총액과 상 이름만)'))) return;
   var sb; try{ sb=getSupaClient(); }catch(e){ sb=null; }
-  if(!sb){ alert('클라우드 연결이 없어 저장하지 못했습니다.'); return; }
+  if(!sb){ if(silent){ ahaToast('순위표 자동 발행 실패 — 클라우드 연결 없음'); return false; } alert('클라우드 연결이 없어 저장하지 못했습니다.'); return; }
   var r2=await sb.from('lumen_store').upsert({key:'aha_league_board', value:payload},{onConflict:'key'});
-  if(r2&&r2.error){ alert('발행 실패: '+r2.error.message); return; }
+  if(r2&&r2.error){ if(silent){ console.warn('순위표 자동 발행 실패',r2.error); ahaToast('순위표 자동 발행 실패 — 잠시 뒤 다시 시도합니다'); return false; }
+    alert('발행 실패: '+r2.error.message); return; }
   LG_PUB=payload;
-  ahaToast('📤 순위표를 발행했습니다 — 학생 '+n+'명');
+  ahaToast(silent?('📤 순위표 자동 발행 — 학생 '+n+'명'):('📤 순위표를 발행했습니다 — 학생 '+n+'명'));
   render();
+  return true;
 }
 window.lgPublishBoard=lgPublishBoard;
+
+/* ★ v18-166: 확정하면 순위표 자동 발행 (원장 결정 — 연습 리그 자동 발행)
+ *   · ⚙ 리그 설정에서 끌 수 있다 (autoPublish)
+ *   · 시즌이 시작된 뒤에만 (시즌 시작 전에는 올릴 순위가 없다)
+ *   · 2초 모았다가 한 번 — 일괄 확정 때 여러 번 올라가지 않는다
+ *   · 실패해도 화면을 막지 않는다 (토스트만) */
+var LG_AUTOPUB_T=null;
+function lgAutoPublish(){
+  try{
+    var c=ibqCfg();
+    if(c.autoPublish===false) return;
+    var start=String(c.seasonStart||'');
+    if(!start) return;
+    if(iblDay(new Date().toISOString())<start) return;    /* 시즌 시작 전 */
+    if(LG_AUTOPUB_T){ clearTimeout(LG_AUTOPUB_T); LG_AUTOPUB_T=null; }
+    LG_AUTOPUB_T=setTimeout(function(){
+      LG_AUTOPUB_T=null;
+      try{
+        var p=lgPublishBoard(true);
+        if(p && p.catch) p.catch(function(e){ console.warn('순위표 자동 발행 실패',e); });
+      }catch(e){ console.warn('순위표 자동 발행 실패',e); }
+    }, 2000);
+  }catch(e){ console.warn('순위표 자동 발행 준비 실패',e); }
+}
+window.lgAutoPublish=lgAutoPublish;
 
 
 
@@ -64107,12 +64346,19 @@ function hntRender(){
   h+='</div>';
   // 해설지 매칭 상태
   if(loadingSol) h+='<div style="font-size:11px;color:#94a3b8;font-weight:700;margin-bottom:9px">📖 해설지 정보 불러오는 중…</div>';
+  /* ★ v18-166: 학습지(📚 매쓰플랫) 문항은 교재 해설지와 길이 다르다 — 새벽에 해설 그림이 붙는다.
+   *   아직 안 붙었으면 예전과 같은 문구(계약서 4장) 그대로 알려 준다. */
+  else if(n.mf && n.mf.wid) h+='<div style="font-size:11px;font-weight:800;margin-bottom:9px"><span style="background:'
+      +(n.mf.sol?'#ede9fe;color:#5b21b6':'#f1f5f9;color:#64748b')+';border-radius:50px;padding:3px 10px">📚 학습지 문항 — '
+      +(n.mf.sol?'매쓰플랫 해설 그림을 참고해 만듭니다':'해설 아직 없음 — 새벽에 채워집니다')+'</span></div>';
   else if(mt) h+='<div style="font-size:11px;font-weight:800;margin-bottom:9px"><span style="background:#dcfce7;color:#15803d;border-radius:50px;padding:3px 10px">📖 해설지 매칭 — '
       +((mt.by==='num'||mt.by==='numrange') ? ('<b>'+mt.no+'번</b> → 해설 '+mt.p+'페이지') : ('해설 '+mt.p+'페이지'))
       +' 참고</span></div>';
   else if(bk && !solHasNums(bk.book)) h+='<div style="font-size:11px;font-weight:800;margin-bottom:9px"><span style="background:#ffedd5;color:#9a3412;border-radius:50px;padding:3px 10px">📖 해설지에 <b>문제 번호 색인이 없습니다</b> — 해설지 관리에서 「🔁 색인 다시 만들기」를 한 번 눌러주세요</span> <span onclick="hntClose();solOpen()" style="color:#1d6fe8;cursor:pointer;text-decoration:underline;margin-left:5px">해설지 관리 열기</span></div>';
   else if(bk) h+='<div style="font-size:11px;font-weight:800;margin-bottom:9px"><span style="background:#ffedd5;color:#9a3412;border-radius:50px;padding:3px 10px">📖 해설지는 있지만 '+(n.problem_no?('#'+ahaEsc(n.problem_no)+'번'):('p'+ahaEsc(n.page||'?')))+'을 색인에서 못 찾음 — 학생 사진만으로 생성</span></div>';
-  else if(n.source_type==='book') h+='<div style="font-size:11px;font-weight:800;margin-bottom:9px"><span style="background:#f1f5f9;color:#64748b;border-radius:50px;padding:3px 10px">📖 해설지 없음 — 학생 사진만으로 생성 (품질이 낮을 수 있어요)</span> <span onclick="hntClose();solOpen()" style="color:#1d6fe8;cursor:pointer;text-decoration:underline">해설지 등록하기</span></div>';
+  /* ★ v18-166: 교재 노트에는 「학습지 노트는 새벽에 해설이 저절로 붙는다」를 한 줄 덧붙인다
+   *   (원장 — 왜 어떤 건 해설이 있고 어떤 건 없는지 헷갈린다) */
+  else if(n.source_type==='book') h+='<div style="font-size:11px;font-weight:800;margin-bottom:9px"><span style="background:#f1f5f9;color:#64748b;border-radius:50px;padding:3px 10px">📖 해설지 없음 — 학생 사진만으로 생성 (품질이 낮을 수 있어요)</span> <span onclick="hntClose();solOpen()" style="color:#1d6fe8;cursor:pointer;text-decoration:underline">해설지 등록하기</span> <span style="font-weight:700;color:#94a3b8">· 학습지 노트(📚 매쓰플랫 학습지에서 고른 문항)는 해설이 새벽에 자동으로 붙습니다</span></div>';
   h+='<div style="display:flex;gap:14px;flex-wrap:wrap">';
   // 왼쪽: 학생 사진 + 메모 + 진단
   h+='<div style="width:200px;flex-shrink:0">';
