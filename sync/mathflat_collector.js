@@ -33,6 +33,8 @@
  *   --skip-history  [B] 건너뛰기 (학습지 문항만)
  *   --out-dir DIR   결과 폴더 (기본 sync/_debug)
  *   --essay-ws ID,ID|auto  서술형 학습지 채점기준 사전(mf_essay_ws)만 갱신 — 학원앱 「✍️ 서술형 첨삭」용
+ *   --aha-sol       아하노트에 걸린 학습지 문항의 해설 그림만 복사 (매쓰플랫 로그인 필요)
+ *   --ws-recent     학생별 「최근 학습지 10장」(mf_ws_recent_*)만 발행 (로그인 불필요, --dry-run 가능)
  *
  * 출력 (개인정보 포함 → 커밋 금지, .gitignore 처리):
  *   {out-dir}/mf_answer_records.json   [A] 문항 단위 학습지 정오답
@@ -389,6 +391,131 @@ async function refreshEssayWorksheets(idsArg) {
     body: JSON.stringify([{ key: 'mf_essay_ws', value: cur, updated_at: new Date().toISOString() }]),
   });
   log(`서술형 채점기준(mf_essay_ws): ${Object.keys(cur).length}개 학습지 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status} (이번 ${ok}/${ids.length})`);
+}
+
+/* ═══════════ 🖼 아하노트 해설 이미지 복사 (아하리그 2차 §4) ═══════════
+ * 학생이 「매쓰플랫 학습지」에서 뽑아 올린 아하노트(mf.wid 가 있는 노트) 중
+ * 아직 해설 그림이 없는 것(mf.sol 이 비어 있음)만 골라,
+ *   학습지 문항 목록 API → 그 문항의 solutionImageUrl → 그림 내려받기
+ *   → Supabase Storage  aha_photos/mfsol/<학습지id>/<문항번호>.jpg  로 보관
+ *   → 노트의 mf.sol 을 그 공개 주소로 채운다
+ * 학원앱 힌트 만들기가 이 그림을 재료로 쓴다(학생에게 매쓰플랫 그림을 직접 보여 주지 않는다).
+ *
+ * · 질문이 올라온 문항만 복사한다(학습지 전체가 아니다).
+ * · 이미 올려 둔 그림이 있으면 다시 내려받지 않고 그대로 쓴다.
+ * · mf/kind 열이 아직 없는 학원(SQL 미실행)이면 조용히 건너뛴다.
+ * · 새벽 수집 맨 끝에서 호출한다(매쓰플랫 로그인 필요). */
+const AHA_BUCKET = 'aha_photos';
+const ahaSolPath = (wid, seq) => `${AHA_BUCKET}/mfsol/${wid}/${seq}.jpg`;
+const ahaSolPublicUrl = (wid, seq) => `${SB_URL}/storage/v1/object/public/${ahaSolPath(wid, seq)}`;
+
+// 이미 Storage 에 올라가 있는가 (있으면 다시 내려받지 않는다)
+async function ahaSolExists(wid, seq) {
+  try {
+    const r = await fetch(ahaSolPublicUrl(wid, seq), { method: 'HEAD' });
+    return r.ok;
+  } catch (_) { return false; }
+}
+
+// 학습지 한 장의 문항 목록 → { bySeq:{seq→solUrl}, byPid:{problemId→solUrl} }
+// 1순위 GET /worksheet/{wid}/problem?size=300 · 실패하면 학생 배정본 endpoint
+async function fetchWorksheetSolutions(wid) {
+  let rows = [];
+  try {
+    const d = await api(`/worksheet/${wid}/problem?size=300`);
+    rows = (d && d.content) || (Array.isArray(d) ? d : []);
+  } catch (e) { log(`  · 학습지 ${wid} 문항 목록 실패(${e.message}) → 배정본으로 재시도`); }
+  if (!rows.length) {
+    let swId = null;
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/mf_answer_records?worksheet_id=eq.${wid}&select=student_worksheet_id&limit=1`, { headers: sbH() });
+      const j = r.ok ? await r.json() : [];
+      if (j[0]) swId = j[0].student_worksheet_id;
+    } catch (_) { /* 배정본을 못 찾으면 아래에서 빈 결과 */ }
+    if (swId) {
+      const d = await api(`/student-worksheet/assign/${swId}/problem?size=300`);
+      rows = (d && d.content) || [];
+    }
+  }
+  const bySeq = {}, byPid = {};
+  rows.forEach((c, i) => {
+    const p = (c && c.problem) || c || {};
+    const url = p.solutionImageUrl || null;
+    if (!url) return;
+    bySeq[i + 1] = url;                       // 문항 순번은 목록 차례 그대로 (수집기 problem_seq 와 같은 규칙)
+    if (p.id != null) byPid[String(p.id)] = url;
+  });
+  return { bySeq, byPid, n: rows.length };
+}
+
+async function copyAhaSolutions() {
+  if (!SB_URL || !SB_KEY) return;
+  // 1) 해설이 필요한 노트 고르기 — 학습지에서 올라왔고(mf.wid) 아직 해설이 없는 것
+  let notes = [];
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/aha_notes?select=id,mf&mf->>wid=not.is.null&order=id.desc&limit=500`,
+      { headers: sbH({ accept: 'application/json' }) });
+    if (!r.ok) {
+      const t = await r.text().catch(() => '');
+      if (/mf.*does not exist|42703/.test(t)) { log('아하노트 해설 복사: mf 열이 아직 없습니다(docs/aha_league2.sql 실행 전) → 건너뜀'); return; }
+      log(`아하노트 조회 실패 ${r.status}: ${t.slice(0, 120)}`); return;
+    }
+    notes = await r.json();
+  } catch (e) { log(`아하노트 조회 실패: ${e.message}`); return; }
+
+  const need = notes.filter((n) => n && n.mf && n.mf.wid && !n.mf.sol && n.mf.seq != null);
+  if (!need.length) { log('아하노트 해설 복사: 채울 노트 없음'); return; }
+
+  // 2) 학습지(wid)별로 묶는다 — 같은 학습지의 여러 문항을 한 번의 API 호출로 처리
+  const byWid = {};
+  need.forEach((n) => { (byWid[String(n.mf.wid)] = byWid[String(n.mf.wid)] || []).push(n); });
+  log(`아하노트 해설 복사: 노트 ${need.length}건 · 학습지 ${Object.keys(byWid).length}장`);
+
+  let done = 0, reused = 0, miss = 0;
+  for (const wid of Object.keys(byWid)) {
+    const group = byWid[wid];
+    // 이미 보관된 그림만으로 해결되는지 먼저 본다 (매쓰플랫 호출을 줄인다)
+    const pending = [];
+    for (const n of group) {
+      if (await ahaSolExists(wid, n.mf.seq)) { await setAhaSol(n, ahaSolPublicUrl(wid, n.mf.seq)); reused++; }
+      else pending.push(n);
+    }
+    if (!pending.length) continue;
+    let sol;
+    try { sol = await fetchWorksheetSolutions(wid); }
+    catch (e) { log(`  · 학습지 ${wid} 해설 조회 실패: ${e.message}`); continue; }
+    for (const n of pending) {
+      const seq = n.mf.seq;
+      const url = (n.mf.pid != null && sol.byPid[String(n.mf.pid)]) || sol.bySeq[seq] || null;
+      if (!url) { miss++; log(`  · 학습지 ${wid} ${seq}번 해설 그림 없음`); continue; }
+      let buf = null;
+      try {
+        const res = await fetch(url, { headers: { accept: '*/*' } });
+        if (res.ok) buf = Buffer.from(await res.arrayBuffer());
+      } catch (_) { /* 아래에서 실패 처리 */ }
+      if (!buf || buf.length < 200) { miss++; log(`  · 학습지 ${wid} ${seq}번 해설 내려받기 실패`); continue; }
+      const ok = await storageUpload(ahaSolPath(wid, seq), buf, 'image/jpeg');
+      if (!ok) { miss++; continue; }
+      await setAhaSol(n, ahaSolPublicUrl(wid, seq));
+      done++;
+      await sleep(150);
+    }
+    await sleep(150);
+  }
+  log(`아하노트 해설 복사 완료: 새로 ${done}건 · 기존 재사용 ${reused}건 · 못 찾음 ${miss}건`);
+}
+
+// 노트 한 건의 mf.sol 만 채운다 — 기존 mf 의 다른 값(wid·title·seq·level…)은 그대로 둔다
+async function setAhaSol(note, url) {
+  const merged = Object.assign({}, note.mf, { sol: url });
+  const r = await fetch(`${SB_URL}/rest/v1/aha_notes?id=eq.${encodeURIComponent(note.id)}`, {
+    method: 'PATCH',
+    headers: sbH({ 'content-type': 'application/json', prefer: 'return=minimal' }),
+    body: JSON.stringify({ mf: merged }),
+  });
+  if (!r.ok) log(`  · 노트 ${note.id} 해설 주소 저장 실패 ${r.status}`);
+  else note.mf = merged;
+  return r.ok;
 }
 
 // ── [B] 학습지+교재 세션 단위 (학생별 학습내역, 시간순) ──
@@ -764,6 +891,21 @@ async function main() {
     await refreshEssayWorksheets(opt('--essay-ws', 'auto'));
     return;
   }
+  // --aha-sol: 아하노트 해설 그림 복사만 (매쓰플랫 로그인 필요) — 아하리그 2차 §4
+  if (has('--aha-sol')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meA = await login();
+    log(`로그인 성공 · 학원 ${meA.academyId}`);
+    await copyAhaSolutions();
+    return;
+  }
+  // --ws-recent: 매쓰플랫 로그인 없이 「최근 학습지 10장」 발행만 (Supabase 기존 기록 사용) — §2
+  if (has('--ws-recent')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    await require('./aha_ws_recent.js').run({ dry: has('--dry-run') });
+    return;
+  }
   // --bookans-only: 교재 정답사전만 새로고침 (매쓰플랫 로그인 필요) — v18-74
   if (has('--bookans-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -893,6 +1035,13 @@ async function main() {
         await runPipeline({ upload: true });   // 새벽 실행이므로 매쓰플랫 업로드 단계까지
       } catch (e) { log('수학비서 파이프라인 실패(치명적 아님):', e.message); }
     }
+    // ── 아하리그 2차 (2026-09-11) — 맨 끝 두 단계. 둘 다 실패해도 위 수집은 그대로 남는다.
+    // 🖼 질문 올라온 학습지 문항의 해설 그림을 우리 저장소로 복사 (§4)
+    try { await copyAhaSolutions(); }
+    catch (e) { log('아하노트 해설 복사 실패(치명적 아님):', e.message); }
+    // 📄 학생별 「최근 학습지 10장」 발행 — 학생앱 아하노트 출처 아코디언용 (§2)
+    try { const { run: runWsRecent } = require('./aha_ws_recent.js'); await runWsRecent(); }
+    catch (e) { log('최근 학습지 발행 실패(치명적 아님):', e.message); }
   } else {
     log('SUPABASE_URL/SERVICE_KEY 미설정 → 로컬 저장·검증만 (Supabase 저장 생략).');
   }
