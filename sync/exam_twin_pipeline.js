@@ -35,6 +35,14 @@
  *         --mylist "기출 쌍둥이"  만든 학습지를 이 마이리스트(폴더)에 넣기 (없으면 만든다)
  *         --similar-x 1      문항당 쌍둥이 수
  *         --skip-worksheet   원본 등록까지만
+ *         --original-only    기출 원본 학습지까지만 (쌍둥이 안 만듦)
+ *         --grade-value "고등수학(하)"  고등은 학년이 숫자가 아니라 과목명
+ *         --assign I2103268  만들면서 바로 학생에게 배정 (매쓰플랫 학생 id, 쉼표로 여러 명)
+ *
+ *   고등 예: node sync/exam_twin_pipeline.js --mydb 707019 --trie 1.2.7.42 \
+ *              --original-only --grade-value "고등수학(하)" --assign I2103268
+ *   고등 trieKey (15개정): 고등수학(상) 1.2.7.41 · 고등수학(하) 1.2.7.42 · 수학I 1.2.7.43
+ *              · 수학II 1.2.7.44 · 확률과통계 1.2.7.45 · 미적분 1.2.7.46 · 기하 1.2.7.47
  *
  * trieKey (22개정): 중1-1 1.4.4146.4154.4169 · 중1-2 1.4.4146.4154.4170
  *   중2-1 1.4.4146.4155.4171 · 중2-2 1.4.4146.4155.4172
@@ -208,6 +216,11 @@ async function runTwinPipeline(opts) {
    *   고등은 '공통수학1' 같은 <b>과목명</b>이라 밖에서 넣어 준다. */
   const ORIGINAL_ONLY = !!opts.originalOnly;
   const GRADE_VALUE = opts.gradeValue || '';
+  /* 2026-09-12 원장님 지시 — ASSIGN: 만든 학습지를 바로 학생에게 배정한다.
+   * 매쓰플랫 학생 id(mf_students.mf_student_id, 예: I2103268)를 쉼표로 여러 명.
+   * 배정은 학습지를 «만들 때» assignStudentIdList 로 넣어야 한다(만든 뒤 배정하는
+   * 엔드포인트는 확인되지 않았다). 비워 두면 예전처럼 배정 없이 만들기만 한다. */
+  const ASSIGN = String(opts.assign || '').split(',').map((s) => s.trim()).filter(Boolean);
   if (opts.log) log = opts.log;
   if (!MYDB) throw new Error('mydb(수학비서 시험지 id)가 필요합니다');
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -289,7 +302,7 @@ async function runTwinPipeline(opts) {
   // 학습지 공통 설정 (원본·쌍둥이 둘 다 같은 모양)
   const wsBase = {
     conceptIdList: [], littleChapterConceptIdList: [],
-    assignStudentIdList: [], shareScope: 'ACADEMY', writer: '루멘수학',
+    assignStudentIdList: ASSIGN, shareScope: 'ACADEMY', writer: '루멘수학',
     layoutType: 0, layoutColor: 'BLUE', partitionType: 0,
     wrongAnswerNoteFlag: false, conceptNameFlag: true, answerRateFlag: false,
     relationWorkbookFlag: false, includeProblemFlag: false,
@@ -425,6 +438,9 @@ if (require.main === module) {
     mylist: arg('mylist', ''),
     similarX: Number(arg('similar-x', 1)),
     skipWorksheet: args.includes('--skip-worksheet'),
+    originalOnly: args.includes('--original-only'),
+    gradeValue: arg('grade-value', ''),
+    assign: arg('assign', ''),
   }).then((r) => log('결과:', JSON.stringify(r)))
     .catch((e) => { console.error('오류:', e.message); process.exit(1); });
 }
