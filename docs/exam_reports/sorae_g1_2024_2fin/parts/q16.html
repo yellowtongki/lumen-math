@@ -1,0 +1,78 @@
+  <section class="sol killer" id="q16">
+    <div class="sol-head">
+      <span class="sol-k red">16</span>
+      <div>
+        <div class="sol-title">정팔각형 세 문장 — 셋 다 <b>「전체 − 예외」</b>로 센다</div>
+        <div class="sol-kind"><span class="dbadge red">4.6점 · 고난도</span> 조합 · 도형에서의 경우의 수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">그림과 같이 정팔각형 ABCDEFGH가 있다. &lt;보기&gt;에서 옳은 것만을 있는 대로 고른 것은?</div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 300 300" width="100%" style="max-width:290px" role="img" aria-label="정팔각형 ABCDEFGH">
+          <polygon points="109.8,53.0 53.0,109.8 53.0,190.2 109.8,247.0 190.2,247.0 247.0,190.2 247.0,109.8 190.2,53.0" fill="none" stroke="#0f172a" stroke-width="2"/>
+          <text x="101.4" y="37.7" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">A</text><text x="32.7" y="106.4" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">B</text><text x="32.7" y="203.6" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">C</text><text x="101.4" y="272.3" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">D</text><text x="198.6" y="272.3" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">E</text><text x="267.3" y="203.6" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">F</text><text x="267.3" y="106.4" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">G</text><text x="198.6" y="37.7" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">H</text>
+        </svg>
+        <div class="fig-tag">정팔각형 ABCDEFGH</div>
+      </div>      <div class="pstate cond">
+        <div class="row"><span class="lab">ㄱ</span><span>정팔각형 ABCDEFGH의 대각선의 개수는 \(28\)이다.</span></div>
+        <div class="row"><span class="lab">ㄴ</span><span>\(8\)개의 점 중에서 세 점을 꼭짓점으로 하는 삼각형을 만들 때, 이등변삼각형이 아닌 삼각형의 개수는 \(32\)이다.</span></div>
+        <div class="row"><span class="lab">ㄷ</span><span>\(8\)개의 점 중에서 네 점을 꼭짓점으로 하는 사각형을 만들 때, 직사각형이 아닌 사각형의 개수는 \(66\)이다.</span></div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>ㄱ. 대각선의 개수 — <b>변을 빼는 것을 잊지 말자</b></span>
+        <p>두 꼭짓점을 이으면 선분이 생긴다. 그 선분은 <b>변이거나 대각선</b>, 둘 중 하나다.</p>
+        <table class="calc">
+          <tr><th>구분</th><th>계산</th><th>개수</th></tr>
+          <tr><td>두 점을 잇는 모든 선분</td><td>\({}_8\mathrm{C}_2=\dfrac{8\times7}{2}\)</td><td>\(28\)</td></tr>
+          <tr><td>그중 변</td><td>팔각형이므로</td><td>\(8\)</td></tr>
+          <tr class="hi"><td>대각선</td><td>\(28-8\)</td><td>\(\mathbf{20}\)</td></tr>
+        </table>
+        <div class="mathrow">$$\text{공식: } \frac{n(n-3)}{2}=\frac{8\times 5}{2}=20$$</div>
+        <div class="warn"><div class="t">⚠️ 이 보기가 틀린 이유</div><p>보기의 \(28\)은 <b>변까지 포함한 모든 선분</b>의 개수다. 대각선은 여기서 변 \(8\)개를 뺀 \(20\)개. <b>ㄱ은 거짓.</b></p></div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>ㄴ. 이등변삼각형이 <b>아닌</b> 삼각형</span>
+        <p>먼저 전체를 센다. 정팔각형에서는 어느 세 점도 한 직선 위에 있지 않으므로, 세 점을 고르면 항상 삼각형이 된다.</p>
+        <div class="mathrow">$$\text{전체}={}_8\mathrm{C}_3=\frac{8\times7\times6}{3\times2\times1}=56$$</div>
+        <p>이제 <b>이등변삼각형</b>을 센다. 요령은 <b>「꼭지각이 될 점」을 먼저 고르는 것</b>이다. 꼭짓점 하나를 \(V\)라 하고, \(V\)를 지나는 대칭축을 그으면 나머지 \(7\)개 점이 좌우로 짝지어진다.</p>
+        <div class="cond">
+          <div class="row"><span class="lab">\(V\) 기준 대칭쌍</span><span>양옆 \(1\)칸끼리, \(2\)칸끼리, \(3\)칸끼리 — <b>\(3\)쌍</b></span></div>
+          <div class="row"><span class="lab">짝 없는 점</span><span>\(V\)의 정반대 점 \(1\)개 (혼자라 이등변을 못 만든다)</span></div>
+        </div>
+        <p>대칭쌍 하나를 고를 때마다 \(V\)를 꼭지각으로 하는 이등변삼각형이 하나씩 생기므로, 꼭짓점 하나당 \(3\)개.</p>
+        <div class="mathrow">$$8\times 3=24$$</div>
+        <p class="aside">중복을 걱정할 필요가 있을까? 한 삼각형이 두 번 세어지려면 꼭지각이 두 개, 즉 <b>정삼각형</b>이어야 한다. 그런데 정팔각형의 \(8\)개 점으로는 정삼각형을 만들 수 없다(\(8\)이 \(3\)으로 나누어떨어지지 않는다). 그래서 \(24\)개는 모두 서로 다르다.</p>
+        <div class="mathrow">$$56-24=32$$</div>
+        <div class="result"><span class="lab">ㄴ 판정</span><span class="val">\(32\)개 — <b>참</b> ✓</span></div>
+      </div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 300 300" width="100%" style="max-width:290px" role="img" aria-label="정팔각형의 지름 네 개 — 마주보는 꼭짓점을 잇는 대각선">
+          <polygon points="109.8,53.0 53.0,109.8 53.0,190.2 109.8,247.0 190.2,247.0 247.0,190.2 247.0,109.8 190.2,53.0" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+          <g stroke="#dc2626" stroke-width="2"><line x1="109.8" y1="53.0" x2="190.2" y2="247.0" /><line x1="53.0" y1="109.8" x2="247.0" y2="190.2" /><line x1="53.0" y1="190.2" x2="247.0" y2="109.8" /><line x1="109.8" y1="247.0" x2="190.2" y2="53.0" /></g>
+          <text x="101.4" y="37.7" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">A</text><text x="32.7" y="106.4" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">B</text><text x="32.7" y="203.6" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">C</text><text x="101.4" y="272.3" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">D</text><text x="198.6" y="272.3" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">E</text><text x="267.3" y="203.6" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">F</text><text x="267.3" y="106.4" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">G</text><text x="198.6" y="37.7" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">H</text>
+        </svg>
+        <div class="fig-tag">지름은 \(\overline{AE},\ \overline{BF},\ \overline{CG},\ \overline{DH}\) 네 개 — 이 중 둘을 고르면 직사각형</div>
+      </div>      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>ㄷ. 직사각형이 <b>아닌</b> 사각형</span>
+        <div class="mathrow">$$\text{전체}={}_8\mathrm{C}_4=\frac{8\times7\times6\times5}{4\times3\times2\times1}=70$$</div>
+        <p>직사각형은 몇 개일까? 정팔각형의 \(8\)개 점은 모두 <b>한 원 위에</b> 있다. 원에 내접하는 사각형이 직사각형이 되려면 <b>두 대각선이 모두 지름</b>이어야 한다(직각을 만들려면 지름이 필요하다).</p>
+        <div class="cond">
+          <div class="row"><span class="lab">지름</span><span>\(\overline{AE},\ \overline{BF},\ \overline{CG},\ \overline{DH}\) — \(4\)개</span></div>
+          <div class="row"><span class="lab">직사각형</span><span>지름 \(2\)개를 고르면 직사각형 하나 → \({}_4\mathrm{C}_2=6\)개</span></div>
+        </div>
+        <div class="mathrow">$$70-6=64$$</div>
+        <div class="warn"><div class="t">⚠️ 이 보기가 틀린 이유</div><p>정답은 \(64\)인데 보기는 \(66\)이라고 했다. <b>ㄷ은 거짓.</b> (\(66\)이 나오려면 직사각형이 \(4\)개여야 하는데, 지름 \(4\)개에서 <b>둘씩 짝짓는</b> \({}_4\mathrm{C}_2=6\)이 맞다. 지름 개수 \(4\)를 그대로 답으로 쓰면 함정에 걸린다.)</p></div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>정리</span>
+        <table class="calc">
+          <tr><th>보기</th><th>보기의 값</th><th>실제 값</th><th>판정</th></tr>
+          <tr><td>ㄱ</td><td>\(28\)</td><td>\(20\)</td><td>거짓</td></tr>
+          <tr class="hi"><td>ㄴ</td><td>\(32\)</td><td>\(32\)</td><td><b>참</b></td></tr>
+          <tr><td>ㄷ</td><td>\(66\)</td><td>\(64\)</td><td>거짓</td></tr>
+        </table>
+        <div class="result"><span class="lab">정답</span><span class="val">ㄴ \(\Rightarrow\) ②</span></div>
+      </div>
+    </div>
+  </section>

@@ -1,0 +1,40 @@
+  <section class="sol" id="q19">
+    <div class="sol-head">
+      <span class="sol-k">19</span>
+      <div>
+        <div class="sol-title">「두 쌍만 이웃」 — <b>이웃 두 쌍에서 세 쌍을 뺀다</b></div>
+        <div class="sol-kind"><span class="dbadge">4.9점</span> 순열 · 이웃 조건 · 여사건</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">세 쌍의 부부가 일렬로 나열된 \(6\)개의 의자에 앉을 때, 두 쌍만 부부끼리 이웃하고, 나머지 한 쌍의 부부는 이웃하지 않도록 앉는 경우의 수는?</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 문제를 정확히 읽자: 「<b>정확히</b> 두 쌍」</span>
+        <p>세 부부를 A, B, C라 하자. 조건은 <b>이웃한 부부가 정확히 두 쌍</b>이라는 뜻이다. 세 쌍 모두 이웃하면 조건 위반이다.</p>
+        <p>먼저 <b>어느 두 쌍</b>이 이웃할지 고른다.</p>
+        <div class="mathrow">$${}_3\mathrm{C}_2=3\ \text{가지} \quad (\{A,B\},\ \{B,C\},\ \{A,C\})$$</div>
+        <p>이제 그중 한 경우 — <b>A, B는 이웃하고 C는 이웃하지 않는</b> 경우의 수를 세고, 마지막에 \(3\)을 곱하면 된다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 「A·B 이웃」을 먼저 통째로 센다</span>
+        <p>A 부부를 하나로 묶고, B 부부도 하나로 묶는다. 그러면 자리에 놓을 덩어리는 <b>[A], [B], C의 남편, C의 아내</b> \(4\)개.</p>
+        <div class="mathrow">$$4!\times \underbrace{2!}_{A\text{ 내부}}\times \underbrace{2!}_{B\text{ 내부}}=24\times2\times2=96$$</div>
+        <p class="aside">묶음 안에서도 「남편-아내」와 「아내-남편」 두 가지가 있으므로 \(2!\)씩 곱한다. 이걸 빠뜨리는 학생이 아주 많다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 그중 C까지 이웃한 것을 빼낸다</span>
+        <p>\(96\)가지 안에는 <b>C도 우연히 이웃하게 된</b> 경우가 섞여 있다. 그건 조건 위반이므로 빼야 한다.</p>
+        <p>A, B, C 세 쌍이 모두 이웃 → 덩어리 \(3\)개를 배열하고, 각 덩어리 안에서 \(2!\)씩.</p>
+        <div class="mathrow">$$3!\times 2!\times 2!\times 2!=6\times 8=48$$</div>
+        <div class="mathrow">$$96-48=48$$</div>
+        <p>이것이 「A·B는 이웃, C는 이웃하지 않음」의 경우의 수다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>4단계 — 세 가지 선택을 곱한다</span>
+        <div class="mathrow">$$3\times 48=144$$</div>
+        <div class="result"><span class="lab">정답</span><span class="val">\(144\ \Rightarrow\) ④</span></div>
+        <div class="miss"><b>가장 잦은 실수</b> ⑤ \(168\)이나 ③ \(120\)은 3단계를 빠뜨리거나 잘못 뺀 값이다. 「\(A,B\)가 이웃」을 세면 <b>C가 이웃하든 말든 다 들어간다</b>는 점을 놓치면 안 된다. 「정확히 \(k\)개」 문제는 늘 <b>「\(k\)개 이상」에서 「더 많은 경우」를 빼는</b> 구조다.</div>
+        <p class="aside">검산: 전체 \(6!=720\). 이 중 이웃 쌍이 \(0\)쌍·\(1\)쌍·\(2\)쌍·\(3\)쌍인 경우를 다 더하면 \(720\)이 되어야 한다. 실제로 \(240+288+144+48=720\) ✓</p>
+      </div>
+    </div>
+  </section>
