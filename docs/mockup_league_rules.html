@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>점수 쌓이는 법 · 총상금 숨김</title>
+<style>
+:root{ --navy:#0d2240; --blue:#1d6fe8; --purple:#7c3aed; --green:#16a34a; --amber:#f59e0b; --ink:#0f172a; --sub:#64748b; --line:#e6eaf1; --red:#dc2626; }
+*{box-sizing:border-box}
+body{margin:0;background:#dfe4ec;color:var(--ink);font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',-apple-system,sans-serif;padding:20px 14px 60px}
+.wrap{max-width:1180px;margin:0 auto}
+.lead{background:#fff;border-radius:14px;padding:15px 18px;box-shadow:0 2px 10px rgba(13,34,64,.06);margin-bottom:16px}
+.lead h1{font-size:17px;color:var(--navy);margin:0 0 8px}
+.lead p{margin:0;font-size:12.5px;line-height:1.8;color:#475569}
+.lead b{color:var(--navy)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;align-items:start}
+.col{min-width:0}
+.cap{font-size:12.5px;font-weight:800;color:var(--navy);margin:0 0 7px;display:flex;align-items:center;gap:7px}
+.cap span{font-size:10px;font-weight:700;color:#fff;background:var(--navy);border-radius:50px;padding:2px 8px}
+.cap.bad span{background:var(--red)}
+.cap.good span{background:var(--green)}
+.cap small{font-weight:600;color:var(--sub);font-size:11px}
+
+/* 휴대폰 */
+.ph{border:7px solid #0f172a;border-radius:22px;overflow:hidden;background:#f4f6fa}
+.ph .hd{background:linear-gradient(135deg,#0d2240,#164a7a);color:#fff;padding:10px 13px;font-size:13.5px;font-weight:900;display:flex;align-items:center;gap:8px}
+.ph .hd .r{margin-left:auto;font-size:10.5px;font-weight:800;background:rgba(255,255,255,.16);border-radius:50px;padding:3px 9px}
+.bd{padding:10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px 13px;margin-bottom:9px}
+.card .t{font-size:12.5px;font-weight:900;color:var(--navy);margin-bottom:7px}
+
+/* 지금(나쁜 예) */
+.dump{font-size:10.5px;line-height:1.85;color:#334155}
+.dump .dup{background:#fee2e2;border-radius:3px;box-shadow:0 0 0 1px #fecaca}
+.flag{margin-top:8px;background:#fef2f2;border:1px solid #fecaca;border-radius:9px;padding:7px 9px;font-size:10.5px;font-weight:800;color:#b91c1c;line-height:1.6}
+
+/* 새 안 — 아코디언 */
+.acc{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden;margin-bottom:9px}
+.acc .hdr{display:flex;align-items:center;gap:9px;padding:11px 13px;cursor:pointer}
+.acc .hdr .ic{font-size:16px}
+.acc .hdr .tx{min-width:0}
+.acc .hdr .tt{font-size:13px;font-weight:900;color:var(--navy)}
+.acc .hdr .ss{font-size:10.5px;font-weight:700;color:var(--sub);margin-top:2px}
+.acc .hdr .ss b{color:var(--blue)}
+.acc .hdr .ar{margin-left:auto;font-size:11px;font-weight:900;color:#94a3b8;background:#f1f5f9;border-radius:50px;padding:4px 10px;white-space:nowrap}
+.acc .in{border-top:1px solid var(--line);padding:11px 13px}
+.sec{margin-bottom:13px}
+.sec:last-child{margin-bottom:0}
+.sec .sh{font-size:11px;font-weight:900;color:var(--navy);margin-bottom:6px;display:flex;align-items:baseline;gap:6px}
+.sec .sh em{font-style:normal;font-size:10px;font-weight:800;color:#fff;background:var(--navy);border-radius:4px;padding:1px 6px}
+.sec .sh small{margin-left:auto;font-size:10px;font-weight:800;color:var(--sub)}
+
+/* ① 기본 — LAMP 칸 */
+.lamp{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.lamp div{border:1px solid var(--line);border-radius:8px;padding:6px 3px;text-align:center;background:#fbfcfe}
+.lamp .l{font-size:12px;font-weight:900;color:var(--navy)}
+.lamp .n{font-size:9px;font-weight:700;color:var(--sub);margin-top:1px;line-height:1.3}
+.lamp .p{font-size:9.5px;font-weight:800;color:var(--blue);margin-top:3px}
+.note{font-size:10px;color:var(--sub);line-height:1.65;margin-top:6px}
+.note b{color:var(--navy)}
+
+/* ② 보너스 표 */
+.bon{border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.bon .r{display:grid;grid-template-columns:1fr 44px;gap:0;border-top:1px solid var(--line);align-items:center}
+.bon .r:first-child{border-top:none}
+.bon .r .k{padding:7px 9px;min-width:0}
+.bon .r .k .a{font-size:11.5px;font-weight:900;color:var(--navy)}
+.bon .r .k .b{font-size:9.5px;color:var(--sub);font-weight:700;margin-top:1px;line-height:1.45}
+.bon .r .v{text-align:center;font-size:13px;font-weight:900;color:var(--green);background:#f0fdf4;align-self:stretch;display:flex;align-items:center;justify-content:center}
+.bon .r.pu .v{color:var(--purple);background:#faf5ff}
+.bon .r.am .v{color:#b45309;background:#fffbeb}
+
+/* ③ 한도 */
+.lim{display:flex;gap:6px}
+.lim div{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 5px;text-align:center;background:#fbfcfe}
+.lim .v{font-size:15px;font-weight:900;color:var(--navy);line-height:1.1}
+.lim .k{font-size:9.5px;font-weight:700;color:var(--sub);margin-top:2px}
+.warn{background:#fffbeb;border:1px solid #fcd34d;border-radius:9px;padding:8px 10px;font-size:10.5px;font-weight:700;color:#92400e;line-height:1.65}
+.warn b{font-weight:900}
+
+/* 상금 */
+.pz{background:linear-gradient(135deg,#fffdf5,#fff4d6);border:1.5px solid #f2cd85;border-radius:13px;padding:12px;text-align:center;margin-bottom:9px}
+.pz .lb{font-size:10.5px;font-weight:900;color:#a35a00}
+.pz .big{font-size:29px;font-weight:900;color:#c2410c;line-height:1.1;margin:2px 0}
+.pz .big small{font-size:15px}
+.pz .sub2{font-size:10px;font-weight:800;color:#a35a00}
+.pz .aws{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:9px}
+.pz .aws div{background:rgba(255,255,255,.9);border-radius:8px;padding:6px 3px;font-size:9.5px;font-weight:900;color:#7a2e00}
+.pz .aws i{display:block;font-style:normal;font-size:15px;margin-bottom:1px}
+.pz.hide .big,.pz.hide .sub2{display:none}
+.pz .ttl2{font-size:13px;font-weight:900;color:#a35a00;margin-bottom:2px}
+
+/* 학원앱 설정 */
+.set{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 14px}
+.set .st{font-size:12.5px;font-weight:900;color:var(--navy);margin-bottom:9px}
+.sw{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:7px;background:#fbfcfe}
+.sw .bx{width:17px;height:17px;border-radius:4px;border:2px solid #cbd5e1;flex:none;margin-top:1px}
+.sw.on .bx{background:var(--blue);border-color:var(--blue);position:relative}
+.sw.on .bx:after{content:'✓';position:absolute;inset:0;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.sw .tx .a{font-size:12px;font-weight:900;color:var(--navy)}
+.sw .tx .b{font-size:10.5px;color:var(--sub);font-weight:700;margin-top:2px;line-height:1.6}
+.sw .tx .b b{color:var(--navy)}
+.amt{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+.amt div{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;font-size:10.5px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:5px}
+.amt input{flex:1;min-width:0;border:none;background:#f1f5f9;border-radius:5px;padding:3px 6px;font-size:11px;font-weight:900;color:var(--navy);text-align:right;font-family:inherit}
+.foot{font-size:11px;color:var(--sub);line-height:1.8;margin-top:12px;background:#fff;border-radius:12px;padding:12px 15px}
+.foot b{color:var(--navy)}
+</style></head><body>
+<div class="wrap">
+
+<div class="lead">
+  <h1>📏 「점수 쌓이는 법」을 접고, 표로 바꿉니다</h1>
+  <p>지금 화면이 읽기 어려운 진짜 이유는 글이 길어서가 아니라 <b>같은 규칙이 두 번 인쇄되고 있기 때문</b>입니다 —
+  학원앱이 보낸 규칙 글 한 덩어리 + 학생앱이 따로 쓴 문장 한 덩어리가 이어 붙어, 🎲 설명 검사·🙋 스스로 해결 +3 같은 항목이 두 번씩 나옵니다.
+  새 안은 <b>학원앱 설정값 하나만</b>으로 그리고, <b>접어 둔 아코디언</b> 안에 ① 기본 점수 ② 보너스 표 ③ 한도 ④ 주의로 나눠 담습니다.
+  숫자는 전부 ⚙ 리그 설정을 그대로 따라가므로, 설정을 바꾸면 학생 화면도 같이 바뀝니다.</p>
+</div>
+
+<div class="row">
+
+  <!-- ① 지금 -->
+  <div class="col">
+    <div class="cap bad"><span>지금</span>같은 내용이 두 번 <small>펼쳐진 채로 화면을 다 차지</small></div>
+    <div class="ph">
+      <div class="hd">🏆 루멘 리그 <span class="r">IB아하</span></div>
+      <div class="bd">
+        <div class="card">
+          <div class="t">📏 점수 쌓이는 법</div>
+          <div class="dump">
+            하루 2건·주 8건까지 인정해요(그중 🔎 탐구노트는 하루 1건까지). 질문력이 5점 미만이면 리그 점수는 0점이에요.
+            <span class="dup">🙋 스스로 해결은 학습지 기록으로 「틀렸던 문제」가 확인되면 +3점, 확인이 안 되면 +2점.</span>
+            <span class="dup">💡 힌트를 열고 풀면 1개 +2 · 2개 +1 · 3개 +1점.</span>
+            🔎 탐구노트는 난이도 상 +1 · 최상 +2점을 더 받아요.
+            <span class="dup">🔁 다시 푼 사진을 올리고 선생님이 인정하면 +1점이 더 붙어요.</span>
+            첫 주(2026-09-16까지)는 연습 기간이라 점수가 0점이에요 — 마음 편히 연습하세요.
+            <span class="dup">🎲 선생님이 무작위로 설명을 시킬 수 있어요. 설명 못 하면 그 시즌 스스로 해결 점수가 모두 사라져요.</span><br>
+            질문력(0~10) + 「왜?」 +1 + <span class="dup">🙋 스스로 해결 +3(학습지 기록으로 「틀렸던 문제」가 확인될 때 · 확인 안 되면 +2)</span> /
+            <span class="dup">💡 힌트 1개 +2 · 2개 +1 · 3개 +1</span> · ✍️ 손풀이 +1 + 🪞 AHA +2 + ⭐ 수업 채택 +2<br>
+            <span class="dup">🔁 재풀이 +1 — 아하노트 아래 풀이 칸(활동지 6단계 재풀이 칸)에 다시 풀고 📷 올리면 +1점.</span><br>
+            🔎 탐구노트(맞힌 어려운 문제)는 난이도 보너스 — 상 +1 · 최상 +2. 하루 1개까지 인정돼요.<br>
+            등급은 한 번 오르면 내려가지 않아요.
+          </div>
+          <div class="flag">🎲 선생님이 무작위로 설명을 시킬 수 있어요. 설명 못 하면 그 시즌 스스로 해결 점수가 모두 사라져요.</div>
+          <div class="flag" style="background:#fff;border-color:#fecaca">붉은 칸이 <b>두 번 나온 내용</b>입니다 — 🎲 설명 검사는 <b>세 번</b> 나옵니다</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 새 안 접힘 -->
+  <div class="col">
+    <div class="cap good"><span>새 안 · 접힘</span>평소에는 한 줄 <small>궁금할 때만 펼침</small></div>
+    <div class="ph">
+      <div class="hd">🏆 루멘 리그 <span class="r">IB아하</span></div>
+      <div class="bd">
+        <div class="acc">
+          <div class="hdr">
+            <div class="ic">📏</div>
+            <div class="tx"><div class="tt">점수 쌓이는 법</div>
+              <div class="ss">한 편에 최대 <b>20점</b> · 하루 <b>2편</b>까지</div></div>
+            <div class="ar">펼치기 ▾</div>
+          </div>
+        </div>
+        <div class="acc">
+          <div class="hdr">
+            <div class="ic">🎖</div>
+            <div class="tx"><div class="tt">등급 올라가는 법</div>
+              <div class="ss">🙋 질문자 → 🔍 탐구자 → 🧠 사고자 → 🪞 성찰자</div></div>
+            <div class="ar">펼치기 ▾</div>
+          </div>
+        </div>
+        <div class="warn">🎲 선생님이 무작위로 <b>설명을 시킬 수 있어요.</b> 설명 못 하면 그 시즌 🙋 스스로 해결 점수가 모두 사라져요.</div>
+        <div class="note" style="text-align:center">주의 한 줄만 <b>접지 않고</b> 남깁니다 — 꼭 알아야 하는 내용이라서요</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 새 안 펼침 -->
+  <div class="col">
+    <div class="cap good"><span>새 안 · 펼침</span>네 토막으로 나눠서 <small>숫자는 ⚙ 리그 설정 그대로</small></div>
+    <div class="ph">
+      <div class="hd">🏆 루멘 리그 <span class="r">IB아하</span></div>
+      <div class="bd">
+        <div class="acc">
+          <div class="hdr" style="border-bottom:0">
+            <div class="ic">📏</div>
+            <div class="tx"><div class="tt">점수 쌓이는 법</div>
+              <div class="ss">한 편에 최대 <b>20점</b> · 하루 <b>2편</b>까지</div></div>
+            <div class="ar">접기 ▴</div>
+          </div>
+          <div class="in">
+
+            <div class="sec">
+              <div class="sh"><em>①</em> 기본 — 활동지 네 칸 + 되돌아보기 <small>0~10점</small></div>
+              <div class="lamp">
+                <div><div class="l">L</div><div class="n">문제<br>이해</div><div class="p">0·1·2</div></div>
+                <div><div class="l">A</div><div class="n">이론<br>공식</div><div class="p">0·1·2</div></div>
+                <div><div class="l">M</div><div class="n">풀이<br>논리</div><div class="p">0·1·2</div></div>
+                <div><div class="l">P</div><div class="n">막힌<br>곳</div><div class="p">0·1·2</div></div>
+                <div><div class="l">🪞</div><div class="n">AHA<br>성찰</div><div class="p">0·1·2</div></div>
+              </div>
+              <div class="note">네 칸을 다 채우면 보통 <b>8~10점</b>. P칸만 쓰면 2점이에요.
+                <b>5점 미만이면 리그 점수는 0점</b>입니다.</div>
+            </div>
+
+            <div class="sec">
+              <div class="sh"><em>②</em> 더 받는 점수 <small>최대 +10</small></div>
+              <div class="bon">
+                <div class="r"><div class="k"><div class="a">🙋 스스로 해결</div>
+                  <div class="b">학습지에 「틀렸던 문제」로 확인되면 +3 · 확인 안 되면 +2</div></div><div class="v">+3</div></div>
+                <div class="r"><div class="k"><div class="a">💡 힌트 열고 풀기</div>
+                  <div class="b">1개 +2 · 2개 +1 · 3개 +1</div></div><div class="v">+2</div></div>
+                <div class="r"><div class="k"><div class="a">🔁 재풀이</div>
+                  <div class="b">다시 푼 사진을 올리고 선생님이 인정하면</div></div><div class="v">+1</div></div>
+                <div class="r pu"><div class="k"><div class="a">🔎 탐구노트</div>
+                  <div class="b">맞힌 어려운 문제 — 난이도 상 +1 · 최상 +2</div></div><div class="v">+2</div></div>
+                <div class="r am"><div class="k"><div class="a">⭐ 수업에 뽑힘</div>
+                  <div class="b">선생님이 수업에서 다룬 질문</div></div><div class="v">+2</div></div>
+                <div class="r am"><div class="k"><div class="a">🏆 베스트 질문</div>
+                  <div class="b">시즌 최고 질문 한 편</div></div><div class="v">+3</div></div>
+              </div>
+            </div>
+
+            <div class="sec">
+              <div class="sh"><em>③</em> 하루·주 한도</div>
+              <div class="lim">
+                <div><div class="v">2편</div><div class="k">하루</div></div>
+                <div><div class="v">8편</div><div class="k">한 주</div></div>
+                <div><div class="v">1편</div><div class="k">그중 🔎 탐구</div></div>
+              </div>
+              <div class="note">넘겨 써도 괜찮아요 — 기록은 남고 <b>점수만</b> 한도까지 셉니다.
+                등급은 한 번 오르면 <b>내려가지 않아요</b>.</div>
+            </div>
+
+            <div class="sec">
+              <div class="sh"><em>④</em> 지금은 연습 기간</div>
+              <div class="note" style="background:#eff6ff;border-radius:8px;padding:8px 10px;color:#1e40af;font-weight:700">
+                🌱 <b>2026-09-16까지</b>는 채점만 하고 리그 점수는 0점이에요.
+                「이렇게 쓰면 몇 점인지」 감을 잡아 두세요.</div>
+            </div>
+
+          </div>
+        </div>
+        <div class="warn">🎲 선생님이 무작위로 <b>설명을 시킬 수 있어요.</b> 설명 못 하면 그 시즌 🙋 스스로 해결 점수가 모두 사라져요.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 총상금 -->
+<div style="height:20px"></div>
+<div class="row">
+  <div class="col">
+    <div class="cap"><span>상금 A</span>지금 — 총상금 크게 <small>학생앱 기본</small></div>
+    <div class="ph"><div class="hd">🏆 루멘 리그 <span class="r">IB아하</span></div><div class="bd">
+      <div class="pz">
+        <div class="lb">🏆 IB아하노트 시즌 총상금</div>
+        <div class="big">50,000<small>원</small></div>
+        <div class="sub2">4개 상 · 9~11월 시즌</div>
+        <div class="aws"><div><i>🥇</i>질문왕</div><div><i>🏆</i>베스트 질문</div><div><i>📈</i>성장</div><div><i>🪞</i>성찰</div></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="col">
+    <div class="cap good"><span>상금 B</span>총상금 숨김 <small>새로 만드는 스위치</small></div>
+    <div class="ph"><div class="hd">🏆 루멘 리그 <span class="r">IB아하</span></div><div class="bd">
+      <div class="pz hide">
+        <div class="ttl2">🏆 이번 시즌 상 <span style="font-size:10px;font-weight:800;color:#a8825a">· 9~11월</span></div>
+        <div class="aws"><div><i>🥇</i>질문왕</div><div><i>🏆</i>베스트 질문</div><div><i>📈</i>성장</div><div><i>🪞</i>성찰</div></div>
+      </div>
+      <div class="note" style="text-align:center">금액은 한 줄도 안 나갑니다 — <b>상 이름만</b>.
+        학생들이 상금 액수보다 상 자체를 보게 됩니다</div>
+    </div></div>
+  </div>
+  <div class="col">
+    <div class="cap"><span>학원앱</span>⚙ 리그 설정 — 상금 칸 <small>스위치 두 개</small></div>
+    <div class="set">
+      <div class="st">🏆 상금</div>
+      <div class="sw on"><div class="bx"></div><div class="tx">
+        <div class="a">학생앱에 총상금 보이기</div>
+        <div class="b">끄면 <b>금액이 한 줄도 안 나가고</b> 상 이름만 보입니다. 학부모앱도 같이 숨깁니다.<br><b>← 새로 만드는 것</b></div></div></div>
+      <div class="sw"><div class="bx"></div><div class="tx">
+        <div class="a">상마다 금액까지 공개</div>
+        <div class="b">켜면 「1등 20,000원」처럼 상마다 크게 보입니다. 총상금을 숨기면 이 스위치는 꺼집니다.</div></div></div>
+      <div class="amt">
+        <div>🥇 질문왕 <input value="20,000"></div>
+        <div>🏆 베스트 <input value="15,000"></div>
+        <div>📈 성장 <input value="10,000"></div>
+        <div>🪞 성찰 <input value="5,000"></div>
+      </div>
+      <div class="note">합계 <b>50,000원</b> · 진도 레이스의 상금 공개 방식을 그대로 씁니다</div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  <b>함께 고치는 것</b> — 💡 <b>오늘의 노트 후보</b> 카드를 홈에서 <b>아하노트 화면 안</b>(📷 활동지 사진 찍기 바로 아래)으로 옮깁니다.
+  노트를 쓰러 들어온 자리에서 「무엇을 쓸지」가 바로 보이는 게 맞고, 홈은 다시 짧아집니다.
+</div>
+
+</div></body></html>
