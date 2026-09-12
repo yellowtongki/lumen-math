@@ -1630,7 +1630,13 @@ localStorage.setItem = function(key, value) {
       throw err2;
     }
   }
-  var skipKeys = ['or_api_key', 'or_gemini_key', 'or_ai_provider'];
+  /* ★ v18-168: 채점 작업대 칸 폭(lumen_wb_rw·lumen_wb_lw)은 「이 기기」 설정이다 —
+   *   클라우드에 올리면 다른 기기(작은 노트북)에서 끈 폭이 큰 모니터까지 따라와 버린다.
+   *   (올리면 supaFullPull 이 그대로 되돌려 받아 이 기기 선택을 덮어쓴다) */
+  /* ★ v18-168: 「이 기기에만」 저장할 것들은 클라우드로 올리지 않는다.
+   *   lumen_fz(「가」 글씨 배율)는 기기마다 화면 크기가 달라 따로 정하는 값인데
+   *   그동안 클라우드로 올라가, 다른 기기에서 고른 배율이 이 기기 선택을 덮어썼다. */
+  var skipKeys = ['or_api_key', 'or_gemini_key', 'or_ai_provider', 'lumen_wb_rw', 'lumen_wb_lw', 'lumen_fz'];
   if (skipKeys.indexOf(key) === -1) {
     scheduleSync(key);
   }
@@ -2614,6 +2620,30 @@ body{
 .lrp-r .rm-tabjov{position:relative;height:calc(100vh - 300px);min-height:430px;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 10px 28px rgba(6,16,38,0.45);}
 .lrp-r .rm-vjbody{flex:1;overflow-y:auto;}
 .lrp-r .rm-fab{position:absolute;bottom:14px;right:14px;}
+
+/* ★ v18-168: 📋 채점 작업대 — 끌어서 옮기는 세로 분할선(손잡이)
+ *   원장 지적 2026-09-12 「오른쪽 채점 칸이 3분할에서 너무 작다」.
+ *   손잡이는 얇은 띠(7px)지만 앞뒤로 5px 씩 더 잡히게 해 두었다(::before). */
+.wb-hnd{position:relative;cursor:col-resize;background:#eef2f7;border-left:1px solid #e6ebf2;border-right:1px solid #e6ebf2;touch-action:none;}
+.wb-hnd::before{content:'';position:absolute;left:-5px;right:-5px;top:0;bottom:0;}
+.wb-hnd-bar{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:2px;height:38px;border-radius:2px;background:#cbd5e1;pointer-events:none;}
+.wb-hnd:hover{background:#dbeafe;border-left-color:#93c5fd;border-right-color:#93c5fd;}
+.wb-hnd:hover .wb-hnd-bar{background:#2563eb;}
+.wb-hnd.on{background:#bfdbfe;border-left-color:#2563eb;border-right-color:#2563eb;}
+.wb-hnd.on .wb-hnd-bar{background:#1d4ed8;}
+/* 끄는 동안 — 글자가 선택되지 않게 · 커서는 계속 좌우 화살표 */
+body.wb-dragging{cursor:col-resize;}
+body.wb-dragging *{user-select:none !important;-webkit-user-select:none !important;}
+
+/* ★ v18-168: 오른쪽 채점 칸이 넓어지면(.wb-w) 정보를 더 보여 준다.
+ *   ① 사진과 「AI가 읽은 L·A·M·P 글」을 좌우 2열로 ② 사진을 더 크게
+ *   ③ 합계 줄(노트 n/10 + 보너스 n = 리그 n)이 줄바꿈되지 않게 */
+#wb-panel .wb-media{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;}
+#wb-panel .wb-media-text{display:none;}
+#wb-panel.wb-w .wb-media{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);}
+#wb-panel.wb-w .wb-media-text{display:block;align-self:start;}
+#wb-panel.wb-w img#wb-photo{max-height:calc(48vh / var(--fz,1)) !important;}
+#wb-panel.wb-w .wb-sum-t{white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -7846,6 +7876,7 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v18-168',date:'2026',stability:'warn',memo:'↔️ <b>채점 작업대 — 끌어서 옮기는 세로 분할선</b> (원장 지적 2026-09-12 — 오른쪽 채점 칸이 너무 좁다). [① 끌어서 폭을 바꿉니다] 가운데 목록과 오른쪽 채점 칸 사이에 <b>얇은 세로 손잡이</b>를 넣었습니다. 마우스로 잡고 좌우로 끌면 채점 칸 폭이 그 자리에서 바뀌고(아이패드 손가락도 됩니다), 고른 폭은 <b>이 기기에 기억</b>해 다시 열어도 그대로입니다. <b>손잡이를 두 번 누르면 기본 폭으로</b> 돌아옵니다. 이 폭은 <b>이 기기에만</b> 남고 클라우드로 올라가지 않으므로, 작은 노트북에서 좁힌 폭이 큰 모니터까지 따라오지 않습니다. 채점 칸은 <b>적어도 360px, 가운데 목록이 260px 보다 좁아지지 않는 선</b>까지만 넓어지므로 어느 칸도 짓눌리지 않습니다. 왼쪽 고르기 칸과 목록 사이에도 같은 손잡이를 하나 더 두었습니다(120~320px). [② 좁은 창에서 눌리던 것] 3분할/2분할을 <b>창 폭</b>만 보고 정하던 탓에, 왼쪽 학생 목록(사이드바)을 뺀 실제 폭이 모자라도 3분할을 유지해 <b>가운데 목록이 155px 로 짜부라져 이름·교재가 잘렸습니다</b>(창 1280 · 글씨 115% 실측). 이제 작업대 칸의 <b>실제 폭을 재서</b> 판단하고, 세 칸이 다 들어가지 않으면 <b>2분할로 내려갑니다</b>. 저장된 폭이 없을 때 기본 폭도 420 고정이 아니라 <b>창에 맞춰(작업대 폭의 38%, 최대 560·최소 360)</b> 잡습니다. [③ 넓힌 폭을 쓸모 있게] 채점 칸이 넓어지면(500px 이상) <b>사진 오른쪽에 「활동지에 쓴 L·A·M·P 글」이 나란히</b> 붙어 사진과 학생 글을 한눈에 같이 읽습니다. 사진도 남는 폭만큼 <b>더 크게</b> 보이고, 두 줄로 깨지던 합계 줄(<b>「노트 7/10 + 보너스 3 = 리그 10」</b>)이 <b>한 줄로</b> 들어갑니다. 좁을 때 모양은 지금까지와 똑같습니다.'},
       {ver:'v18-167',date:'2026',stability:'warn',memo:'🙈 <b>총상금 숨김 스위치 · 규칙을 표로 그릴 수 있게</b> (원장 지시 2026-09-12). [① 총상금을 숨길 수 있습니다] 지금은 학생앱에 <b>「시즌 총상금 50,000원」</b>이 늘 크게 떴습니다. ⚙ 리그 설정 <b>🏆 상금</b> 칸에 <b>「학생앱에 총상금 보이기」</b> 체크를 새로 두었습니다 — <b>끄면 금액이 한 줄도 나가지 않고 상 이름만</b> 보입니다(🥇 질문왕 · 🏆 베스트 질문 · 📈 성장 · 🪞 성찰). 학부모앱도 같은 값을 읽으므로 함께 숨겨집니다. 발행할 때 <b>총액도 상마다 금액도 아예 담지 않으므로</b>, 학생 휴대폰에 금액이 한 글자도 가지 않습니다. 총상금을 끄면 <b>「상마다 금액까지 공개」도 같이 꺼지고</b> 금액 입력칸은 흐려집니다(총액을 감추면서 상마다 금액을 보일 수는 없으니까요). 원장님 리그 화면에는 <b>「🙈 학생앱에 금액 숨김 중」</b> 표시와 함께 상 이름 카드 넉 장만 보입니다(금액은 ⚙ 리그 설정에서 그대로 확인·수정할 수 있습니다). [② 규칙이 두 번 나오던 것] 학생앱 📏 「점수 쌓이는 법」이 <b>같은 규칙을 두 번·세 번</b> 인쇄하고 있었습니다(학원앱이 보낸 줄글 + 학생앱이 따로 쓴 문장). 학원앱이 이제 규칙을 <b>표로 그릴 수 있는 조각(rules2)</b>으로도 함께 발행합니다 — 기본 점수 다섯 칸, 보너스 여섯 줄(🙋 스스로 · 💡 힌트 · 🔁 재풀이 · 🔎 탐구 · ⭐ 수업 채택 · 🏆 베스트), 하루·주 한도, 등급 네 단계, 🎲 설명 검사 주의. <b>숫자는 전부 ⚙ 리그 설정을 그대로 따라가므로</b>, 설정을 바꾸면 학생 화면 숫자도 같이 바뀝니다. 옛 줄글도 그대로 함께 보내 예전 학생앱이 깨지지 않습니다. [남은 것] 이 조각으로 <b>표·아코디언을 그리는 일은 학생앱(v2-79) 담당</b>이 이어서 합니다.'},
       {ver:'v18-166',date:'2026',stability:'warn',memo:'🔁 <b>작업대에서 재풀이 확인 · 확정하면 순위표 자동 발행 · 상금 공개 스위치</b> (원장 피드백 2026-09-12). [① 아래가 잘리던 것] 「가」로 글씨를 키우면 작업대 <b>오른쪽 칸 아래(✓ 확정 단추)가 잘려</b> 안 보였습니다. 화면 높이를 글씨 배율만큼 나눠 잡도록 고쳐 <b>특대(145%)에서도</b> 단추가 보입니다. [② 머리띠에 AI 초안] 「🤖 AI 초안 일괄」이 작업대에서 멀어 못 찾으셨습니다. 작업대 머리띠에 <b>「🤖 이 범위 AI 초안 (n건)」</b>을 두었습니다 — <b>지금 보고 있는 범위</b>의 초안 없는 노트만 매기고, 진행 중에는 <b>「채점 중… 3/12」</b>로 몇 개째인지 보입니다. [③ 🔁 재풀이] 학생이 다시 푼 사진을 <b>작업대에서 바로</b> 봅니다 — 가운데 줄에 <b>🔁 재풀이</b> 배지(파랑=아직 안 봄, 초록 ✓=인정함), 오른쪽 칸에 <b>재풀이 사진</b>과 올린 시각, 그 아래 <b>「✓ 재풀이 인정 +1」</b>. 누르면 보너스 +1이 붙고 그 노트는 <b>조용히 해결 처리</b>됩니다(다시 누르면 취소). 왼쪽 「모아 보기」에 <b>🔁 재풀이 확인 n</b> 묶음이 생겨 확인할 것만 모아 볼 수 있습니다. 점수는 ⚙ 리그 설정의 <b>「🔁 재풀이 인정」</b> 칸에서 바꿉니다(기본 +1). 스스로·힌트 보너스는 재풀이가 없어도 <b>그대로</b> 붙습니다. [④ 순위표 자동 발행] 확정할 때마다 <b>순위표가 조용히 다시 발행</b>됩니다 — 이제 발행 단추를 따로 누르지 않아도 학생앱 순위가 최신입니다(시즌이 시작된 뒤에만, 2초 모아서 한 번). ⚙ 리그 설정에서 <b>끌 수 있습니다</b>. [⑤ 상금 공개 스위치] 진도 레이스와 <b>똑같은 방식</b>을 가져왔습니다 — ⚙ 리그 설정의 <b>「개별 금액을 학생앱에 공개」</b> 체크 하나로, 켜면 상마다 금액이 큰 카드로 보이고 발행에도 금액이 함께 나갑니다. 꺼 두면 <b>총상금과 상 이름만</b> 나가고 개별 금액은 아예 실리지 않습니다. [⑥ 힌트 창 한 줄] 교재 노트의 「해설지 없음」 안내 뒤에 <b>학습지 노트는 해설이 새벽에 자동으로 붙는다</b>는 한 줄을 덧붙였습니다. [⑦ 작은 것] 해결 경로 칩을 <b>다시 누르면 해제</b>됩니다(잘못 누르면 되돌릴 방법이 없었습니다). [남은 것] 학생앱(v2-78)에서 상금 카드·재풀이 표시는 다른 담당이 함께 만듭니다.'},
       {ver:'v18-165',date:'2026',stability:'warn',memo:'💡 <b>아하리그 화면 채우기 · 📋 채점 작업대 3분할 · 「가」 글씨 크기</b> (원장 지시 2026-09-11, 시안 docs/mockup_aha_league_screen.html). [① 💡 IB아하 순위표 소탭] 진도 레이스와 같은 문법으로 채웠습니다 — 남색 <b>머리띠</b>(시즌·통합/부별·연습 주간·D-day·⚙ 설정·📣 안내 발행·🎁 시상·👁 학생 눈으로), <b>🚦 시즌 열기 단계 띠</b>(설정→안내 발행→순위표 발행→시즌·실점수, 된 것은 초록), <b>🏆 상마다 큰 상금 카드</b>(⚙ 리그 설정에 상마다 금액 칸이 생겼고, 발행할 때 금액도 함께 나갑니다), <b>🙋 참여 현황</b>(최근 30일 학습지 받은 학생 / 노트 쓴 학생 / 한 번도 안 쓴 학생 · 「명단 보기」로 독려 대상 확인), <b>🎖 등급 분포</b>, <b>📏 점수 규칙</b> 카드, 그리고 순위표 오른쪽에 <b>📱 학생앱 미리보기</b> 칸. 표가 비면 <b>왜 비었는지</b>(시즌 시작 전 · 새 방식 노트 n건)를 알려 줍니다. [② 📋 채점 작업대 3분할] 왼쪽 <b>고르기</b>(📅 날짜 / 📚 학습지 / 🙋 학생 · 채점 대기 · 확정 끝 · ⭐ 베스트 후보 · 🔎 탐구 · 🎲 검사 필요) │ 가운데 <b>줄 목록</b>(썸네일·이름·출처·❌ 문항·AI 초안 점수·상태) │ 오른쪽 <b>사진 크게 + 채점 패널</b>(L·A·M·P·AHA 0/1/2 · 보너스 칩 · 합계 · 💡 힌트 · <b>✓ 확정 → 다음</b> 누르면 다음 대기 줄로 자동 이동). 화면이 1,100px보다 좁으면 왼쪽 칸이 목록 위 <b>칩 줄</b>로 접혀 2분할이 됩니다. 채점 로직은 기존 패널 그대로(복제 없음). [③ 「가」 글씨 크기] 왼쪽 머리 LUMEN 옆 <b>「가」</b> 단추 — 보통 100 / <b>크게 115(기본)</b> / 아주 크게 130 / 특대 145. 이 기기에만 저장됩니다(노안 대책). [설정] 리그 시즌은 <b>2026-09-07 시작 · 연습 10일(9/16까지) · 9/17부터 실점수</b>로 서버에 맞춰 두었습니다.'},
@@ -46235,15 +46266,169 @@ function wbFitWatch(){
   try{ window.addEventListener('resize', function(){ if(document.getElementById('wb-grid')) wbFitCols(); }); }catch(e){}
 }
 
-/* 화면이 넓은가 (3분할) */
-function wbWide(){
-  var w=(typeof window!=='undefined' && window.innerWidth)?window.innerWidth:1400;
-  /* ★ v18-166: 「가」로 글씨를 키우면 실제로 쓸 수 있는 폭도 그만큼 줄어든다 —
-   *   배율만큼 나눠 보고 좁으면 2분할로 접는다 (칸이 짓눌리지 않게) */
+/* ═══════════════════════════════════════════════════════════════════
+ * ★ v18-168: 칸 폭 — 끌어서 옮기는 세로 분할선 (원장 지적 2026-09-12)
+ * ═══════════════════════════════════════════════════════════════════
+ *  왜: 오른쪽 채점 칸이 420px 고정이라 사진·읽은 글·점수·합계가 다 들어가지
+ *      못하고 글자가 두 줄로 깨졌다. 원장님이 「움직일 수 있는 세로 선」을
+ *      원하셨다.
+ *  무엇을: 가운데 목록 ↔ 오른쪽 채점 칸 사이(와 왼쪽 고르기 칸 ↔ 목록 사이)에
+ *      손잡이를 두고, 끌면 폭이 실시간으로 바뀌게 했다. 폭은 이 기기의
+ *      localStorage 에 기억한다.
+ *  또 하나: 3분할/2분할 판단이 「창 폭」만 보고 있어서, 왼쪽 사이드바(학생
+ *      목록 약 320px)를 빼면 실제로 쓸 폭이 없는데도 3분할을 유지해 가운데
+ *      목록이 155px 로 짓눌렸다(창 1280 · 배율 115% 실측). 이제 작업대 칸의
+ *      실제 폭을 재서 판단한다.
+ *  주의: 「가」 글씨 확대(body zoom)가 걸려 있으므로 좌표·폭은 모두 배율(--fz)로
+ *      나눠 CSS px 로 맞춘다. 그러지 않으면 손가락과 선이 어긋난다.
+ *  문자열 결합만 사용 (중첩 템플릿 리터럴 금지).
+ * ─────────────────────────────────────────────────────────────────── */
+var WB_RW_KEY='lumen_wb_rw';      /* 오른쪽 채점 칸 폭 (기기별) */
+var WB_LW_KEY='lumen_wb_lw';      /* 왼쪽 고르기 칸 폭 (기기별) */
+var WB_RW_MIN=360;                /* 오른쪽 칸 최소 */
+var WB_RW_CAP=560;                /* 기본 폭 상한 (저장된 값이 없을 때) */
+var WB_LW_DEF=168, WB_LW_MIN=120, WB_LW_MAX=320;
+var WB_MID_MIN=260;               /* 가운데 목록이 이보다 좁아지면 안 된다 */
+var WB_HND=7;                     /* 손잡이 띠 두께 */
+var WB_W2=500;                    /* 이만큼 넓어지면 오른쪽 칸을 「넓은 모양」으로 */
+
+/* 지금 글씨 배율 (「가」 단추 — body zoom) */
+function wbFz(){
   var z=1;
   try{ z=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fz'))||1; }catch(e){ z=1; }
-  return (w/z)>=1100;
+  return z||1;
 }
+/* 작업대가 실제로 쓸 수 있는 폭 (CSS px) — 창 폭이 아니라 칸의 실측 폭 */
+function wbWrapW(){
+  var z=wbFz(), w=0;
+  try{
+    var el=document.getElementById('wb-wrap');
+    if(el) w=el.getBoundingClientRect().width/z;
+    else {
+      var c=document.getElementById('CONTENT');
+      if(c) w=(c.getBoundingClientRect().width/z)-28;   /* 작업대 상자는 CONTENT 보다 28px 좁다 */
+    }
+  }catch(e){ w=0; }
+  if(!(w>0)) w=((typeof window!=='undefined'&&window.innerWidth)?window.innerWidth:1400)/z-360;
+  return Math.max(320, Math.round(w));
+}
+/* 저장된 폭 읽기 (없으면 0) */
+function wbSavedW(key){
+  var v=0;
+  try{ v=parseFloat(localStorage.getItem(key))||0; }catch(e){ v=0; }
+  return (v>0)?Math.round(v):0;
+}
+/* 왼쪽 고르기 칸 폭 */
+function wbLw(){
+  var v=wbSavedW(WB_LW_KEY)||WB_LW_DEF;
+  return Math.max(WB_LW_MIN, Math.min(WB_LW_MAX, v));
+}
+/* 저장된 값이 없을 때의 오른쪽 칸 기본 폭 — 창에 맞춰 (작업대 폭의 38%) */
+function wbRwDef(w){
+  if(!(w>0)) w=wbWrapW();
+  return Math.max(WB_RW_MIN, Math.min(WB_RW_CAP, Math.round(w*0.38)));
+}
+/* 오른쪽 칸 최대 폭 — 가운데 목록이 260px 아래로 안 내려가는 선.
+ *   lw = 3분할일 때 왼쪽 칸 폭, 2분할이면 0 */
+function wbRwMax(w, lw){
+  var used=(lw>0?(lw+WB_HND):0)+WB_HND+WB_MID_MIN;
+  return Math.max(WB_RW_MIN, Math.round(w-used));
+}
+/* 지금 쓸 오른쪽 칸 폭 (저장값 → 기본값, 한계 안으로 다시 맞춘다) */
+function wbRw(three, w){
+  if(!(w>0)) w=wbWrapW();
+  if(three===undefined) three=wbWide();
+  var v=wbSavedW(WB_RW_KEY)||wbRwDef(w);
+  return Math.max(WB_RW_MIN, Math.min(wbRwMax(w, three?wbLw():0), v));
+}
+/* 화면이 넓은가 (3분할) — ★ v18-168: 창 폭이 아니라 작업대의 실제 폭으로 판단.
+ *   「왼쪽 칸 + 오른쪽 칸(기억된 폭) + 가운데 260」이 안 들어가면 2분할 */
+function wbWide(){
+  var w=wbWrapW(), lw=wbLw();
+  var rw=Math.max(WB_RW_MIN, wbSavedW(WB_RW_KEY)||wbRwDef(w));
+  return (lw+WB_HND+WB_MID_MIN+WB_HND+rw)<=w;
+}
+/* 손잡이 한 개 */
+function wbHandleHtml(which){
+  return '<div id="wb-h'+which+'" class="wb-hnd" title="끌어서 넓히기 · 두 번 누르면 기본 폭"'
+    +' onpointerdown="wbDragStart(event,\''+which+'\')" ondblclick="wbDragReset(\''+which+'\')">'
+    +'<div class="wb-hnd-bar"></div></div>';
+}
+/* grid-template-columns 글 — 3분할: 왼쪽 · 손잡이 · 목록 · 손잡이 · 채점 */
+function wbColsCss(three, lw, rw){
+  return (three?(lw+'px '+WB_HND+'px '):'')+'minmax(0,1fr) '+WB_HND+'px '+rw+'px';
+}
+/* 폭만 바꿔 칠한다 (끄는 동안 render() 로 다시 그리면 끊긴다) */
+function wbApplyCols(three, lw, rw){
+  var g=document.getElementById('wb-grid'); if(!g) return;
+  g.style.gridTemplateColumns=wbColsCss(three, lw, rw);
+  wbSyncPanelW(rw);
+}
+/* 오른쪽 칸이 넓으면 .wb-w — 사진·읽은 글 2열 · 합계 한 줄 (CSS 가 받는다) */
+function wbSyncPanelW(rw){
+  var p=document.getElementById('wb-panel'); if(!p) return;
+  if(rw==null) rw=wbRw();
+  if(rw>=WB_W2) p.classList.add('wb-w'); else p.classList.remove('wb-w');
+}
+window.wbSyncPanelW=wbSyncPanelW;
+
+var WB_DRAG=null, WB_DRAG_ON=false;
+/* 마우스·터치(아이패드) 공용 — pointer 이벤트 하나로 */
+function wbDragWatch(){
+  if(WB_DRAG_ON) return; WB_DRAG_ON=true;
+  try{
+    window.addEventListener('pointermove', wbDragMove, {passive:false});
+    window.addEventListener('pointerup', wbDragEnd);
+    window.addEventListener('pointercancel', wbDragEnd);
+  }catch(e){}
+}
+function wbDragStart(ev, which){
+  if(!document.getElementById('wb-grid')) return;
+  try{ ev.preventDefault(); }catch(e){}
+  var z=wbFz(), w=wbWrapW(), three=!!document.getElementById('wb-nav');
+  WB_DRAG={ which:which, z:z, w:w, three:three, moved:false,
+            x0:(ev.clientX||0)/z, lw0:wbLw(), rw0:wbRw(three,w),
+            hnd:document.getElementById('wb-h'+which) };
+  WB_DRAG.lw=WB_DRAG.lw0; WB_DRAG.rw=WB_DRAG.rw0;
+  if(WB_DRAG.hnd) WB_DRAG.hnd.classList.add('on');
+  try{ document.body.classList.add('wb-dragging'); }catch(e){}
+  wbDragWatch();
+}
+window.wbDragStart=wbDragStart;
+function wbDragMove(ev){
+  var d=WB_DRAG; if(!d) return;
+  try{ ev.preventDefault(); }catch(e){}
+  /* ★ v18-168: 배율(zoom)로 나눠야 손가락과 선이 어긋나지 않는다 */
+  var dx=((ev.clientX||0)/d.z)-d.x0;
+  if(Math.abs(dx)>=1) d.moved=true;
+  if(d.which==='r'){
+    /* 오른쪽 손잡이 — 왼쪽으로 끌면(dx<0) 채점 칸이 넓어진다 */
+    d.rw=Math.max(WB_RW_MIN, Math.min(wbRwMax(d.w, d.three?d.lw:0), Math.round(d.rw0-dx)));
+  } else {
+    /* 왼쪽 손잡이 — 고르기 칸 폭 (가운데가 260 아래로 내려가지 않는 선까지) */
+    var lmax=Math.min(WB_LW_MAX, Math.max(WB_LW_MIN, Math.round(d.w-WB_HND-WB_MID_MIN-WB_HND-d.rw)));
+    d.lw=Math.max(WB_LW_MIN, Math.min(lmax, Math.round(d.lw0+dx)));
+  }
+  wbApplyCols(d.three, d.lw, d.rw);
+}
+function wbDragEnd(){
+  var d=WB_DRAG; if(!d) return;
+  WB_DRAG=null;
+  if(d.hnd) d.hnd.classList.remove('on');
+  try{ document.body.classList.remove('wb-dragging'); }catch(e){}
+  if(!d.moved) return;                  /* 두 번 누르기(기본 복귀)와 겹치지 않게 */
+  try{
+    localStorage.setItem(WB_RW_KEY, String(d.rw));
+    localStorage.setItem(WB_LW_KEY, String(d.lw));
+  }catch(e){}
+  render();                             /* 손을 떼고 나서 한 번만 다시 그린다 */
+}
+/* 두 번 누르면 기본 폭으로 */
+function wbDragReset(which){
+  try{ localStorage.removeItem((which==='l')?WB_LW_KEY:WB_RW_KEY); }catch(e){}
+  render();
+}
+window.wbDragReset=wbDragReset;
 /* 「9월 10일 (수)」 */
 function wbDayLong(k){
   if(!k||k==='날짜미상') return '날짜미상';
@@ -46566,6 +46751,21 @@ function wbPanelChip(on, label, onclick, color){
   return '<span onclick="'+onclick+'" style="cursor:pointer;font-size:10.5px;font-weight:800;border-radius:50px;padding:4px 10px;'
     +(on?('background:#ede9fe;border:1px solid #c4b5fd;color:'+color):'background:#fff;border:1px solid #e2e8f0;color:#64748b')+'">'+label+'</span>';
 }
+/* ★ v18-168: 활동지 네 칸(학생이 L·A·M·P 에 쓴 글) — 사진이 없을 때(2열)와
+ *   칸이 넓을 때 사진 옆(1열)이 같은 글을 쓴다. 함수를 복제하지 않고 인자로 넓혔다.
+ *   cols = 한 줄에 몇 칸 · cut = 몇 글자까지 · minH = 최소 높이(0이면 안 준다) */
+function wbLampBoxes(n, cols, cut, minH){
+  var h='<div style="display:grid;grid-template-columns:'+((cols===1)?'1fr':'1fr 1fr')+';gap:5px;padding:8px'
+    +((minH>0)?(';grid-template-rows:1fr 1fr;min-height:'+minH+'px'):'')+'">';
+  [['L 문제 이해','L'],['A 이론·공식','A'],['M 풀이 논리','M'],['P 막힌 곳·질문','P']].forEach(function(p){
+    var t=wbAxisText(n,p[1]);
+    h+='<div style="border:1px solid #dbe2ec;border-radius:4px;padding:5px 7px;font-size:9px;font-weight:900;line-height:1.5;overflow:hidden;'
+      +(t?'background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8':'background:#fbfcfe;color:#94a3b8')+'">'+p[0]
+      +'<span style="display:block;font-weight:600;color:#64748b;font-size:8.5px">'+ahaEsc(wbCut(t,cut||60)||'(비어 있음)')+'</span></div>';
+  });
+  return h+'</div>';
+}
+
 /* ★ v18-165: 오른쪽 칸에 그리는 채점 패널 — ibqRender 가 이 글을 그대로 쓴다 */
 function wbPanelHtml(){
   if(document.getElementById('ibq-ov'))
@@ -46596,7 +46796,10 @@ function wbPanelHtml(){
     +  '<div onclick="wbStep(1)" style="cursor:pointer;border:1px solid #dbe2ec;background:#fff;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:800;color:#475569">다음 ›</div>'
     +'</div></div>';
 
-  /* ② 사진 크게 */
+  /* ② 사진 크게
+   *   ★ v18-168: 칸이 넓으면(.wb-w) 사진 오른쪽에 「활동지에 쓴 L·A·M·P 글」을
+   *   나란히 놓는다 (좁으면 CSS 가 감춰 예전 모양 그대로). */
+  h+='<div class="wb-media">';
   h+='<div style="position:relative;border:1.5px solid #dbe2ec;border-radius:10px;background:#fff;overflow:hidden">';
   if(n.photo_url){
     h+='<img id="wb-photo" src="'+ahaEsc(n.photo_url)+'" onclick="wbZoom(\''+esc(n.photo_url)+'\')" '
@@ -46604,17 +46807,16 @@ function wbPanelHtml(){
       +'<div onclick="wbZoom(\''+esc(n.photo_url)+'\')" style="position:absolute;right:8px;bottom:8px;cursor:pointer;font-size:10px;font-weight:800;background:rgba(13,34,64,.75);color:#fff;border-radius:5px;padding:3px 8px">🔍 크게 · 회전</div>';
   } else {
     /* 사진이 없으면 활동지 네 칸에 학생이 쓴 글을 그대로 보여 준다 */
-    h+='<div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:5px;padding:8px;min-height:170px">';
-    [['L 문제 이해','L'],['A 이론·공식','A'],['M 풀이 논리','M'],['P 막힌 곳·질문','P']].forEach(function(p){
-      var t=wbAxisText(n,p[1]);
-      h+='<div style="border:1px solid #dbe2ec;border-radius:4px;padding:5px 7px;font-size:9px;font-weight:900;line-height:1.5;'
-        +(t?'background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8':'background:#fbfcfe;color:#94a3b8')+'">'+p[0]
-        +'<span style="display:block;font-weight:600;color:#64748b;font-size:8.5px">'+ahaEsc(wbCut(t,60)||'(비어 있음)')+'</span></div>';
-    });
-    h+='</div>';
+    h+=wbLampBoxes(n,2,60,170);
   }
   if(mfSol)
     h+='<div onclick="ahaPhotoModal(\''+esc(mfSol)+'\')" style="position:absolute;left:8px;bottom:8px;cursor:pointer;font-size:10px;font-weight:800;background:#7c3aed;color:#fff;border-radius:5px;padding:3px 8px">📐 매쓰플랫 해설 보기</div>';
+  h+='</div>';
+  /* 사진이 있을 때만 — 사진에 가려 안 보이던 「쓴 글」을 넓은 칸에서 함께 읽는다 */
+  if(n.photo_url)
+    h+='<div id="wb-read" class="wb-media-text" style="border:1.5px solid #dbe2ec;border-radius:10px;background:#fbfcfe;overflow:auto">'
+      +'<div style="font-size:9.5px;font-weight:900;color:#94a3b8;padding:7px 8px 0">📝 활동지에 쓴 글</div>'
+      +wbLampBoxes(n,1,90,0)+'</div>';
   h+='</div>';
 
   /* ★ v18-166: ②-2 🔁 재풀이 — 학생이 다시 푼 사진을 여기서 보고 인정한다 */
@@ -46685,10 +46887,12 @@ function wbPanelHtml(){
     h+='<div style="margin-top:6px;font-size:10.5px;color:#78350f;font-weight:800;background:#fef3c7;border:1px solid #fde68a;border-radius:7px;padding:5px 9px">🌱 연습 주간 — 리그 점수는 0입니다</div>';
 
   /* ⑤ 합계 · 힌트 · 확정 → 다음 */
-  h+='<div style="display:flex;align-items:center;gap:8px;margin-top:9px;background:#f8fafc;border-radius:10px;padding:8px 11px;flex-wrap:wrap">'
-    +'<div style="font-size:11px;color:#64748b;font-weight:800">노트 <b id="wb-total" style="color:#0d2240;font-size:18px">'+(d.total||0)+'</b>/10'
+  /* ★ v18-168: 합계 줄 — 칸이 넓으면(.wb-w) 줄바꿈 없이 한 줄로 (wb-sum-t) */
+  h+='<div id="wb-sum" style="display:flex;align-items:center;gap:8px;margin-top:9px;background:#f8fafc;border-radius:10px;padding:8px 11px;flex-wrap:wrap">'
+    +'<div class="wb-sum-t" style="font-size:11px;color:#64748b;font-weight:800">'
+    +  '<span class="wb-sum-in">노트 <b id="wb-total" style="color:#0d2240;font-size:18px">'+(d.total||0)+'</b>/10'
     +  ' + 보너스 <b style="color:#0d2240;font-size:16px">'+bonus+'</b>'
-    +  ' = 리그 <b id="wb-league" style="color:#0d2240;font-size:18px">'+(prev.league||0)+'</b></div>'
+    +  ' = 리그 <b id="wb-league" style="color:#0d2240;font-size:18px">'+(prev.league||0)+'</b></span></div>'
     +'<div onclick="hntOpen(\''+esc(IBQ_ID)+'\')" style="margin-left:auto;cursor:pointer;background:#fff;color:#7c3aed;border:1.5px solid #ddd6fe;border-radius:8px;padding:7px 11px;font-size:11px;font-weight:800">💡 힌트 만들기</div>'
     +'<div id="wb-confirm" onclick="wbConfirmNext()" style="cursor:pointer;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:900;color:#fff;background:'
     +(busy==='save'?'#94a3b8':(isFinal?'#64748b':'#16a34a'))+'">'
@@ -46741,20 +46945,24 @@ function wbMain(){
   /* ★ v18-166: 「가」로 글씨를 키우면(body zoom) 100vh 도 같이 커져 아래가 잘렸다.
    *   --fz(지금 글씨 배율)로 나눠 어떤 배율에서도 ✓ 확정 단추가 화면 안에 들어온다. */
   var colH='height:calc(100vh / var(--fz,1) - 210px);min-height:420px;overflow:auto';
+  /* ★ v18-168: 칸 폭은 기억해 둔 값(없으면 창에 맞춘 기본값) — 손잡이로 끌어 바꾼다 */
+  var wrapW=wbWrapW(), lw=wbLw(), rw=wbRw(wide, wrapW);
   var h='<div id="wb-wrap" style="border:1px solid #dbe3ef;border-radius:12px;overflow:hidden;background:#fff">'
     +wbTopBar(notes)
     +'<div id="wb-grid" data-wbcols="'+(wide?3:2)+'" style="display:grid;grid-template-columns:'
-      +(wide?'168px minmax(0,1fr) 420px':'minmax(0,1fr) 420px')+'">';
+      +wbColsCss(wide, lw, rw)+'">';
   if(wide)
-    h+='<div id="wb-nav" style="background:#f8fafc;border-right:1px solid #e2e8f0;padding:10px 8px;'+colH+'">'
-      +wbNavHtml(buckets, specials, cur)+'</div>';
-  h+='<div id="wb-list" style="background:#f4f6fa;border-right:1px solid #e2e8f0;padding:10px;'+colH+'">'
+    h+='<div id="wb-nav" style="background:#f8fafc;padding:10px 8px;'+colH+'">'
+      +wbNavHtml(buckets, specials, cur)+'</div>'
+      +wbHandleHtml('l');                 /* ★ v18-168: 고르기 칸 ↔ 목록 손잡이 */
+  h+='<div id="wb-list" style="background:#f4f6fa;padding:10px;'+colH+'">'
     +(wide?'':'<div id="wb-chips">'+wbChipsHtml(all, cur)+'</div>')
-    +wbListHtml(cur)+'</div>';
-  h+='<div id="wb-panel" style="background:#fff;padding:10px 12px;'+colH+'">'+wbPanelHtml()+'</div>';
+    +wbListHtml(cur)+'</div>'
+    +wbHandleHtml('r');                   /* ★ v18-168: 목록 ↔ 채점 칸 손잡이 (핵심) */
+  h+='<div id="wb-panel" class="'+((rw>=WB_W2)?'wb-w':'')+'" style="background:#fff;padding:10px 12px;'+colH+'">'+wbPanelHtml()+'</div>';
   h+='</div></div>';
   /* ★ v18-166: 그려진 뒤에 세 칸 높이를 화면에 딱 맞춘다 (창 크기가 바뀌어도) */
-  try{ wbFitWatch(); setTimeout(wbFitCols,0); }catch(e){}
+  try{ wbFitWatch(); wbDragWatch(); setTimeout(wbFitCols,0); setTimeout(function(){ wbSyncPanelW(); },0); }catch(e){}
   return h;
 }
 
