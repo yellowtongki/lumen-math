@@ -52,6 +52,39 @@
  *     그래도 묶음이 실패하면 하나씩 다시 보낸다. 못 넣은 문항은 정답만 빈 채로
  *     학습지에는 그대로 들어간다.
  *
+ *  【OCR 실패 = 학습지 자체가 안 만들어진다】 더 나쁜 것은 그 다음이다. OCR 이 실패한
+ *     문항은 매쓰플랫이 «문항 이미지»도 만들지 못해, copy-to-problem 이 그 묶음 전체를
+ *     MYDB_PROBLEM_IMAGE_NOT_COMPLETED 로 거절한다 — 108문항 중 2개 때문에 한 장이
+ *     통째로 못 만들어진다(2026-09-13 「[비상] 중등수학 1-2 중간 (위치,작도)」 78·89번).
+ *     그래서 «같은 PDF 를 그대로 한 번 더» 올리는 재시도는 쓸모가 없었다(두 번 다 같은
+ *     번호가 실패). 아래 두 단계로 자리를 채운다.
+ *
+ *  【① 크게 단독 배치】 못 읽은 문항만 «한 쪽에 혼자, 여백 넉넉히, 100% 크기»로 다시
+ *     배치해 그 장 전체를 새 job 으로 올린다. (by-custom 은 job 단위라 원래 paper 의
+ *     그 문항만 갈아끼울 수 없다 — 장을 통째로 다시 만든다.) 쪽 이미지 해상도가 A4 pt ×
+ *     2.08 로 고정이므로, 2단 배치(폭 47%)보다 픽셀이 두 배가 되어 AI가 읽을 확률이 오른다.
+ *
+ *  【② 자리 표시】 그래도 실패하면 그 칸에 «문제 이미지 대신» 안내 글을 크게 그려 넣는다
+ *     (pdf-lib 로 선·글자만. 한글 글꼴은 저장소/시스템에서 찾아 임베드, 없으면 영문).
+ *     그림이 없으니 OCR 은 반드시 COMPLETED 가 되고, 문항 번호가 밀리지 않는다.
+ *     학생은 종이 프린트를 보고 풀고 답만 입력한다 — 수학비서 정답을 그대로 주입하므로
+ *     객관식이면 자동채점까지 된다(주관식·수식형은 선생님이 직접 채점).
+ *     자리 표시로 바뀐 번호는 로그와 msecr_mf_state.processed[id].placeholders 에 남는다.
+ *     끄려면 --no-placeholder (그러면 옛날처럼 그 장이 실패한다).
+ *
+ *  【긴 LaTeX 정답은 500】 정답 주입은 답이 길고 복잡한 LaTeX 이면 그 문항 하나 때문에
+ *     500 이 난다(실측: 「$\triangle\mathrm{ABC}\equiv…$」 250자. 이것이 50개 묶음을 죽인 범인이다).
+ *     하나씩 다시 보내도 그 문항은 계속 500 → 「△ABC≡△QPR SAS합동), …」처럼 «글자로 풀어»
+ *     보내면 들어간다. 빈칸으로 두지 말고 풀어서 넣는다(simplifyAnswer).
+ *
+ *  【까다로운 문항 기억】 어떤 문항이 크게 올려야 읽히는지는 문제지마다 정해져 있다.
+ *     그래서 성공한 번호를 msecr_mf_state 의 hard 에 남겨, --force 로 다시 올릴 때는
+ *     «질 것이 뻔한 1차 시도»를 건너뛰고 처음부터 크게/자리 표시로 만든다.
+ *
+ *  【한글 글꼴】 pdf-lib 는 한글을 넣으려면 @pdf-lib/fontkit 과 한글 글꼴 파일이 필요하다.
+ *     둘 중 하나라도 없으면 «자동으로 영문 안내»로 바뀐다(No.78 — see printed sheet).
+ *     글꼴이 .ttc(글꼴 묶음)면 pdf-lib 가 그대로는 못 읽어, 묶음에서 첫 글꼴만 꺼내 준다.
+ *
  *  【학습지 만들기 재시도】 복사가 전부 COPIED 로 보인 직후에 바로 학습지를 만들면
  *     그래도 LAMBDA_INVOKE_EXCEPTION 이 날 때가 있다. 20초 쉬었다 만들고, 나면
  *     필터부터 다시 받아 최대 6번 다시 시도한다.
@@ -73,6 +106,8 @@
  *     --folder "이름"       수학비서 폴더 이름 (기본 「매쓰플랫 올리기」)
  *     --mylist "이름"       매쓰플랫 마이리스트 폴더 (기본 「수학비서」)
  *     --force              이미 옮긴 문제지도 다시 옮김
+ *     --no-placeholder     OCR 이 끝내 실패한 문항을 «자리 표시»로 대체하지 않음
+ *                          (기본은 대체함 — 그래야 번호가 1:1로 유지된다)
  *
  * 계정: MATHSECR_ID/PASSWORD, MATHFLAT_ID/PASSWORD (환경변수만, 커밋 금지)
  * 저장: SUPABASE_URL, SUPABASE_SERVICE_KEY (lumen_store)
@@ -102,6 +137,10 @@ const KEEP_RUNS = 14;
 /* PDF 한 장(=한 job)에 허용되는 쪽 수, 한 학습지에 담을 최대 문항 수 */
 const MAX_PAGES = 10;
 const MAX_Q_PER_PART = 150;
+/* OCR 이 못 읽은 문항을 «한 쪽에 혼자» 다시 올릴 때 쓰는 여백(pt) */
+const SOLO_M = 44;
+/* 자리 표시 칸의 높이(pt) — 한 단 폭에 안내 글 네 줄이 넉넉히 들어간다 */
+const PH_H = 132;
 
 /* ── 교육과정 키(trieKey) ─────────────────────────────────────────
  * 22개정 중학교: 1.4.4146.<학년>.<학년-학기>
@@ -259,24 +298,131 @@ function decideCurriculum(cells) {
   return { ok: true, rev, trie, schoolType: 'HIGH', grade: gradeValue, gradeSemester: '고 1-1', top, mix, tops: tops.length };
 }
 
+/* ── 한글 글꼴 찾기 (자리 표시 안내 글에만 쓴다) ───────────────────
+ * pdf-lib 기본 글꼴(Helvetica)은 한글이 없다. @pdf-lib/fontkit 과 한글 글꼴 파일이
+ * 둘 다 있어야 한글을 넣을 수 있고, 하나라도 없으면 영문 안내로 자동으로 바뀐다.
+ * .ttc(글꼴 묶음)는 pdf-lib 가 그대로 못 읽으므로 묶음에서 첫 글꼴만 꺼내 넘긴다. */
+let _fontkit = undefined, _koFile = undefined;
+function fontkitOrNull() {
+  if (_fontkit !== undefined) return _fontkit;
+  _fontkit = null;
+  for (const p of [path.join(__dirname, '..', 'node_modules', '@pdf-lib', 'fontkit'), '@pdf-lib/fontkit', 'fontkit']) {
+    try { _fontkit = require(p); break; } catch (e) {}
+  }
+  return _fontkit;
+}
+function koreanFontFile() {
+  if (_koFile !== undefined) return _koFile;
+  _koFile = null;
+  const fk = fontkitOrNull();
+  if (!fk) return _koFile;
+  const cands = [];
+  /* ① 저장소 안에 넣어 둔 글꼴이 있으면 그것을 가장 먼저 */
+  for (const d of [path.join(__dirname, 'fonts'), path.join(__dirname, '..', 'assets', 'fonts'), path.join(__dirname, '..', 'fonts')]) {
+    try { fs.readdirSync(d).forEach((f) => { if (/\.(ttf|otf|ttc)$/i.test(f)) cands.push(path.join(d, f)); }); } catch (e) {}
+  }
+  /* ② 시스템 글꼴 (나눔 → 노토 → 문천의정흑 → 유니폰트 순으로 예쁜 것부터) */
+  cands.push(
+    '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
+    '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf',
+    '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
+    '/usr/share/fonts/opentype/noto/NotoSansKR-Regular.otf',
+    '/usr/share/fonts/truetype/noto/NotoSansCJKkr-Regular.otf',
+    '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc',
+    '/usr/share/fonts/opentype/unifont/unifont.otf');
+  for (const f of cands) {
+    try {
+      if (!fs.statSync(f).isFile()) continue;
+      const parsed = fk.create(fs.readFileSync(f));
+      const one = parsed && parsed.fonts ? parsed.fonts[0] : parsed;
+      /* 한글(가)과 문장부호가 실제로 있는 글꼴만 쓴다 */
+      if (one && one.hasGlyphForCodePoint && one.hasGlyphForCodePoint('가'.codePointAt(0))) { _koFile = f; break; }
+    } catch (e) {}
+  }
+  return _koFile;
+}
+/* 문서에 한글 글꼴을 넣는다. 실패하면 null → 부르는 쪽이 영문으로 쓴다 */
+async function embedKoreanFont(doc) {
+  const fk = fontkitOrNull(), file = koreanFontFile();
+  if (!fk || !file) return null;
+  try {
+    /* pdf-lib 는 .ttc 를 모른다 → create() 를 감싸 «묶음의 첫 글꼴»을 돌려준다 */
+    doc.registerFontkit({ create: (b) => { const p = fk.create(b); return p && p.fonts ? p.fonts[0] : p; } });
+    return await doc.embedFont(fs.readFileSync(file), { subset: true });
+  } catch (e) { return null; }
+}
+
 /* ── A4 2단 PDF 조립 + 상자 좌표 기록 ─────────────────────────────
  * 1차 프로브와 «같은 치수»를 쓴다 (193문항 → 정확히 10쪽).
- * 반환 boxes 는 PDF pt 좌표(y는 아래가 0). 나중에 쪽 이미지 픽셀로 바꾼다. */
+ * 반환 boxes 는 PDF pt 좌표(y는 아래가 0). 나중에 쪽 이미지 픽셀로 바꾼다.
+ *
+ * 문항 하나는 세 가지 모습 중 하나로 들어간다.
+ *   보통       — 2단 배치, 이미지를 단 폭에 맞춰 축소(shrink 배)
+ *   r.solo     — 매쓰플랫 OCR 이 못 읽은 문항: «한 쪽에 혼자» 여백 넉넉히 100% 크기
+ *   r.placeholder — 그래도 못 읽은 문항: 이미지 대신 안내 글을 크게 그린 자리 표시 */
 async function buildPdf(recs, shrink) {
   const { PDFDocument, rgb, StandardFonts } = pdflib();
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.HelveticaBold);
+  const needKo = recs.some((r) => r.placeholder);
+  const ko = needKo ? await embedKoreanFont(doc) : null;
   const A4W = 595.28, A4H = 841.89;
   const M = 24, GAP = 12, COLW = (A4W - M * 2 - GAP) / 2;
   const NUMW = 22, PAD = 4, LEAD = 14;
-  let page = null, col = 0, y = 0, pageNo = 0;
-  const newPage = () => { page = doc.addPage([A4W, A4H]); pageNo++; col = 0; y = A4H - M; };
+  let page = null, col = 0, y = 0, pageNo = 0, pageUsed = false, forceNew = false;
+  const newPage = () => { page = doc.addPage([A4W, A4H]); pageNo++; col = 0; y = A4H - M; pageUsed = false; };
   newPage();
   const colX = () => M + col * (COLW + GAP);
   const boxes = [];
+  /* 글자가 칸을 넘지 않게 크기를 줄여 가며 그린다 */
+  const put = (txt, x, yy, size, f, color, maxW) => {
+    let s = size;
+    while (s > 6 && f.widthOfTextAtSize(txt, s) > maxW) s -= 0.5;
+    page.drawText(txt, { x, y: yy, size: s, font: f, color });
+  };
   for (const r of recs) {
+    /* ── 자리 표시: 문제 이미지 대신 안내 글 (OCR 이 반드시 성공한다) ── */
+    if (r.placeholder) {
+      const blockH = PH_H + LEAD;
+      if (forceNew) { newPage(); forceNew = false; }
+      if (y - blockH < M) { if (col === 0) { col = 1; y = A4H - M; } else { newPage(); } }
+      const x0 = colX(), yTop = y, yBot = y - blockH + 6, x1 = colX() + COLW;
+      page.drawRectangle({ x: x0 + 2, y: yBot + 2, width: COLW - 6, height: yTop - yBot - 6,
+        color: rgb(1, 1, 1), borderColor: rgb(0.15, 0.15, 0.15), borderWidth: 1.2 });
+      const tx = x0 + 12, maxW = COLW - 26;
+      const L = ko
+        ? [[`${r.no}번 문항`, 17, ko], ['프린트를 보고 푸세요.', 13, ko],
+           ['이 문제는 나눠 드린 종이에', 11, ko], ['있습니다. 답만 입력하세요.', 11, ko],
+           ['(선생님 확인 문항)', 10, ko], ['답:', 12, ko]]
+        : [[`No.${r.no}`, 17, font], ['See printed sheet', 13, font],
+           ['This question is on the', 11, font], ['paper handout. Type the', 11, font],
+           ['answer only.', 11, font], ['Answer:', 12, font]];
+      let ty = yTop - 22;
+      L.forEach(([t, s, f], i) => { put(t, tx, ty, s, f, i === 0 ? rgb(0.05, 0.25, 0.7) : rgb(0.1, 0.1, 0.1), maxW); ty -= s + 5; });
+      page.drawLine({ start: { x: tx + 26, y: ty + 12 }, end: { x: x0 + COLW - 14, y: ty + 12 }, thickness: 0.8, color: rgb(0.3, 0.3, 0.3) });
+      boxes.push({ no: r.no, pageNo, x0, y0: yBot, x1, y1: yTop });
+      y -= blockH; pageUsed = true;
+      continue;
+    }
     const buf = fs.readFileSync(r.file);
     const img = r.type === 'jpg' ? await doc.embedJpg(buf) : await doc.embedPng(buf);
+    /* ── 단독 배치: 한 쪽에 혼자, 여백 넉넉히, 최대 크기(쪽 이미지 픽셀이 두 배가 된다) ── */
+    if (r.solo) {
+      if (pageUsed) newPage();
+      const usableW = A4W - SOLO_M * 2 - NUMW - PAD;
+      const usableH = A4H - SOLO_M * 2 - 18;
+      const scale = Math.min(1, usableW / img.width, usableH / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      const top = A4H - SOLO_M;
+      page.drawText(String(r.no), { x: SOLO_M, y: top - 16, size: 15, font, color: rgb(0.05, 0.25, 0.7) });
+      page.drawImage(img, { x: SOLO_M + NUMW, y: top - 6 - h, width: w, height: h });
+      boxes.push({ no: r.no, pageNo,
+        x0: Math.max(0, SOLO_M - 10), y0: Math.max(0, top - 6 - h - 14),
+        x1: Math.min(A4W, SOLO_M + NUMW + w + 10), y1: Math.min(A4H, top + 10) });
+      pageUsed = true; forceNew = true;      /* 다음 문항은 새 쪽부터 */
+      continue;
+    }
+    if (forceNew) { newPage(); forceNew = false; }
     const scale = Math.min(1, (COLW - NUMW - PAD) / img.width) * shrink;
     const w = img.width * scale, h = img.height * scale;
     const blockH = Math.max(h, 18) + LEAD;
@@ -287,9 +433,9 @@ async function buildPdf(recs, shrink) {
     page.drawText(String(r.no), { x: x0 + 2, y: yTop - 13, size: 12, font, color: rgb(0.05, 0.25, 0.7) });
     page.drawImage(img, { x: x0 + NUMW, y: yTop - 2 - h, width: w, height: h });
     boxes.push({ no: r.no, pageNo, x0, y0: yBot, x1, y1: yTop });
-    y -= blockH;
+    y -= blockH; pageUsed = true;
   }
-  return { bytes: await doc.save(), pageCount: doc.getPageCount(), boxes, A4W, A4H };
+  return { bytes: await doc.save(), pageCount: doc.getPageCount(), boxes, A4W, A4H, koFont: !!ko };
 }
 /* PDF pt 좌표 → 쪽 이미지 픽셀 [x, y, w, h] (좌상단 원점) */
 function toPixelBoxes(pdf, imgW, imgH) {
@@ -366,6 +512,33 @@ function toMfAnswer(msAnswerArr, mfType) {
     if (fr) return { ok: true, answer: (v.startsWith('-') ? '-' : '') + fr[1].replace('-', '') + '/' + fr[2], problemType: 'SHORT_ANSWER' };
   }
   return { ok: false, reason: '수식·문장·복수답 — 자동채점 불가', answer: arr.join(', '), problemType: 'SHORT_ANSWER' };
+}
+/* 긴 LaTeX 정답을 «읽을 수 있는 글»로 풀어 준다 (주입이 500 으로 실패했을 때만 쓴다).
+ * 실측(2026-09-13): 250자짜리 $\triangle\mathrm{ABC}\equiv…$ 는 매쓰플랫이 500 으로 거절하지만
+ * 「△ABC≡△QPR SAS 합동), …」로 풀어 보내면 그대로 들어간다. 빈칸으로 두는 것보다 낫다. */
+function simplifyAnswer(s) {
+  if (typeof s !== 'string' || !s) return '';
+  return s
+    .replace(/\$/g, '')
+    .replace(/\\triangle\s*/g, '△').replace(/\\angle\s*/g, '∠').replace(/\\equiv\s*/g, '≡')
+    .replace(/\\overline\{([^}]*)\}/g, '$1').replace(/\\mathrm\{([^}]*)\}/g, '$1').replace(/\\text\{([^}]*)\}/g, '$1')
+    .replace(/\\frac\{([^}]*)\}\{([^}]*)\}/g, '$1/$2')
+    .replace(/\\degree/g, '°').replace(/\\times/g, '×').replace(/\\div/g, '÷')
+    .replace(/\\left\(?|\\right\.?\)?/g, '')
+    .replace(/\\[,;:!]/g, '')                       /* \, \; 같은 «간격» 기호는 그냥 없앤다 */
+    .replace(/\\[a-zA-Z]+/g, ' ').replace(/[\\~{}]/g, ' ')
+    .replace(/\s+/g, ' ').trim()
+    .slice(0, 120);
+}
+/* 수학비서가 적어 둔 문항 유형(answers[].type) → 매쓰플랫 유형.
+ * «자리 표시»로 바꾼 문항은 그림에 보기가 없어 매쓰플랫이 객관식인 줄 모르므로,
+ * 이 값을 대신 알려 주어야 학생이 번호를 고르고 자동채점이 된다.
+ * boolean_choice(O/X)·latex_answer 등은 단답으로 둔다(정답은 글자 그대로 들어간다). */
+function msChoiceType(rec) {
+  const t = (rec && rec.answerTypes ? rec.answerTypes : []).join(' ');
+  if (/multiple_choice/.test(t)) return 'MULTIPLE_CHOICE';
+  if (/single_choice/.test(t)) return 'SINGLE_CHOICE';
+  return 'SHORT_ANSWER';
 }
 
 /* ── 문항 상태(OCR·정답 반영)가 끝날 때까지 ───────────────────── */
@@ -471,8 +644,12 @@ async function cleanup(worksheetIds, paperIds) {
 /* ═══ 한 «장»(part) 을 매쓰플랫에 올린다 ═══════════════════════════ */
 async function runPart(part, cur, title, workDir, made) {
   const t0 = Date.now();
-  log(`  ── 「${title}」 ${part.recs.length}문항 · ${part.pdf.pageCount}쪽`);
-  fs.writeFileSync(path.join(workDir, `${part.tag}.pdf`), part.pdf.bytes);
+  const soloNos = part.recs.filter((r) => r.solo).map((r) => r.no);
+  const phNos = part.recs.filter((r) => r.placeholder).map((r) => r.no);
+  log(`  ── 「${title}」 ${part.recs.length}문항 · ${part.pdf.pageCount}쪽`
+    + (soloNos.length ? ` · 크게 단독 배치 ${soloNos.join(',')}` : '')
+    + (phNos.length ? ` · 자리 표시 ${phNos.join(',')}` : ''));
+  fs.writeFileSync(path.join(workDir, `${part.tag}${part.attempt > 1 ? `-a${part.attempt}` : ''}.pdf`), part.pdf.bytes);
 
   // ④ 업로드 + 쪽 이미지 만들기
   const jobId = await saiJob();
@@ -537,36 +714,53 @@ async function runPart(part, cur, title, workDir, made) {
     const key = String(d.ocrRawDataUrl || '').replace(/^https?:\/\/[^/]+\//, '');
     if (!key || d.processingStatus === 'FAILED') { skipNoKey++; return; }
     const lv = d.latestVersion || {};
-    const c = toMfAnswer(src.answer, lv.type);
+    /* 자리 표시 문항은 그림이 «안내 글»이라 매쓰플랫 OCR 이 객관식인 줄 모른다.
+     * 그래서 수학비서가 알고 있는 유형(단답/객관식)을 대신 알려 준다 —
+     * 객관식이면 학생이 번호를 골라 자동채점까지 된다. */
+    const c = toMfAnswer(src.answer, src.placeholder ? msChoiceType(src) : lv.type);
     if (c.ok) conv.ok++; else conv.raw++;
-    versions.push({ detailId: d.id, contentDataKey: key, answer: c.answer, problemType: c.problemType,
+    /* no 는 «우리»가 로그에 쓰려고 붙인 것 — 보낼 때는 떼고 보낸다 */
+    versions.push({ no: src.no, detailId: d.id, contentDataKey: key, answer: c.answer, problemType: c.problemType,
       ...(c.optionCount == null ? {} : { optionCount: c.optionCount }) });
   });
   /* OCR 이 실패한 문항은 매쓰플랫이 «문항 이미지»도 만들지 못한다. 그러면
    * copy-to-problem 이 그 묶음 전체를 MYDB_PROBLEM_IMAGE_NOT_COMPLETED 로 거절해
    * (한 문항이라도 안 되면 전부 안 된다) 이 장은 영영 학습지가 되지 못한다.
    * 10분씩 헛되이 기다리지 말고 여기서 «원 번호»를 밝히며 끝낸다. (부르는 쪽이 한 번 더 시도) */
-  const badNos = rows.filter((d) => d.processingStatus === 'FAILED' || !d.ocrRawDataUrl)
-    .map((d) => (part.recs[d.boxIndex - 1] ? part.recs[d.boxIndex - 1].no : `상자${d.boxIndex}`));
+  const badRows = rows.filter((d) => d.processingStatus === 'FAILED' || !d.ocrRawDataUrl);
+  const badNos = badRows.map((d) => (part.recs[d.boxIndex - 1] ? part.recs[d.boxIndex - 1].no : `상자${d.boxIndex}`));
   if (badNos.length) {
     const err = new Error(`매쓰플랫이 글자를 읽지 못한 문항이 있습니다 (원 번호 ${badNos.join(', ')}) — 이 문항은 문제은행으로 복사되지 않아 학습지를 만들 수 없습니다`);
     err.code = 'OCR_FAILED_ITEMS';
     err.badNos = badNos;
+    /* 부르는 쪽이 «그 문항만» 크게/자리 표시로 바꿀 수 있도록 자리(index)도 알려 준다 */
+    err.badIdx = badRows.map((d) => d.boxIndex - 1).filter((k) => k >= 0 && k < part.recs.length);
     throw err;
   }
   if (skipNoKey) log(`    ⚠ 본문 없음 ${skipNoKey}개`);
-  let injected = 0; const injectFailed = [];
+  let injected = 0; const injectFailed = [], simplified = [];
+  const send = (list) => mf(MF_API, 'POST', '/my-db-problems/versions', { versions: list.map(({ no, ...rest }) => rest) });
   for (let i = 0; i < versions.length; i += 50) {
     const c = versions.slice(i, i + 50);
-    try { await mf(MF_API, 'POST', '/my-db-problems/versions', { versions: c }); injected += c.length; }
+    try { await send(c); injected += c.length; }
     catch (e) {
       log(`    묶음 주입 실패(${c.length}개) → 하나씩 다시: ${e.message.slice(0, 140)}`);
       for (const v of c) {
-        try { await mf(MF_API, 'POST', '/my-db-problems/versions', { versions: [v] }); injected++; }
-        catch (e2) { injectFailed.push(v.detailId); }
+        try { await send([v]); injected++; }
+        catch (e2) {
+          /* 긴 LaTeX 정답은 매쓰플랫이 500 으로 삼키지 못한다(실측: 89번 △ABC≡… 250자).
+           * 그러면 «읽을 수 있는 글»로 풀어서 한 번 더 — 빈칸보다 낫다. */
+          const simple = simplifyAnswer(v.answer);
+          if (simple && simple !== v.answer) {
+            try { await send([{ ...v, answer: simple }]); injected++; simplified.push(`${v.no || v.detailId}`); continue; }
+            catch (e3) {}
+          }
+          injectFailed.push(v.detailId);
+        }
       }
     }
   }
+  if (simplified.length) log(`    ↻ 긴 수식 정답 ${simplified.length}개는 글자로 풀어서 넣었습니다 (원 번호 ${simplified.join(', ')})`);
   if (injectFailed.length) log(`    ⚠ 정답을 넣지 못한 문항 ${injectFailed.length}개`);
   log(`    정답 주입 ${injected}/${versions.length}개 (그대로 바꾼 것 ${conv.ok} · 원문 그대로 ${conv.raw})`);
   await sleep(11000);
@@ -633,12 +827,26 @@ async function runPart(part, cur, title, workDir, made) {
     await sleep(20000);
   }
   log(`    확인: 문항 ${probs.length}/${part.recs.length} · 번호순서 ${orderOk ? '일치' : '불일치'} · 정답 ${withAnswer} · 자동채점 ${autoScored}`);
+  /* 정답이 비어 있는 칸이 있으면 «원 번호»를 알려 준다 — 매쓰플랫이 가끔 몇 개를 흘린다
+   * (2026-09-13 실측: 같은 문제지를 두 번 올렸는데 한 번은 54/54, 한 번은 51/54).
+   * 원장님이 그 번호만 매쓰플랫에서 직접 채워 넣으시면 된다. */
+  const blankNos = probs.map((p, k) => ((p.answer != null && String(p.answer).trim() !== '' && String(p.answer).trim() !== '.')
+    ? null : (part.recs[k] ? part.recs[k].no : k + 1))).filter((x) => x != null);
+  if (blankNos.length) log(`    ⚠ 정답이 비어 있는 문항 (원 번호) ${blankNos.join(', ')} — 매쓰플랫에서 직접 채워 주세요`);
+  /* 자리 표시로 대체된 문항은 그 번호의 정답이 들어갔는지 따로 확인해 둔다 */
+  const phCheck = phNos.map((no) => {
+    const k = part.recs.findIndex((r) => r.no === no);
+    const p = probs[k] || {};
+    return { no, mfIndex: k + 1, answer: p.answer == null ? '' : String(p.answer).slice(0, 60), autoScored: !!p.autoScored };
+  });
+  if (phCheck.length) phCheck.forEach((x) => log(`    자리 표시 ${x.no}번(학습지 ${x.mfIndex}번) 정답 「${x.answer}」 자동채점 ${x.autoScored ? '가능' : '불가'}`));
   return {
     worksheetId: wsId, paperId: paper.id, title, n: part.recs.length,
     range: `${part.recs[0].no}~${part.recs[part.recs.length - 1].no}`,
     pages: part.pdf.pageCount, matched, matchedTotal: nBox,
     problemCount: probs.length, orderOk, withAnswer, autoScored,
     convOk: conv.ok, convRaw: conv.raw, reRequests: cp.reRequests,
+    soloNos, placeholders: phNos, placeholderCheck: phCheck, blankNos,
     sec: ((Date.now() - t0) / 1000) | 0,
   };
 }
@@ -678,9 +886,21 @@ async function runPaper(paperId, opt) {
     }
     const buf = fs.readFileSync(f);
     recs.push({ no: c.questionNumber, file: f, type: pngSize(buf).type,
-      answer: (c.answers || []).map((a) => a.answer).filter((x) => x != null).flat() });
+      answer: (c.answers || []).map((a) => a.answer).filter((x) => x != null).flat(),
+      /* 자리 표시로 바뀔 때 «객관식인지»를 판단하는 근거 (매쓰플랫 OCR 대신 쓴다) */
+      answerTypes: (c.answers || []).map((a) => String(a.type || '')) });
     if (recs.length % 50 === 0) log(`  이미지 ${recs.length}/${cells.length}`);
   }
+
+  /* 지난번에 «크게 올려야» 읽혔거나 «자리 표시»로 채운 문항이 있으면 처음부터 그렇게 만든다
+   * (--force 로 다시 올릴 때 실패할 것이 뻔한 1차 시도를 건너뛴다) */
+  const hint = opt.hint || {};
+  const hintSolo = (hint.solo || []).filter((no) => !(hint.placeholder || []).includes(no));
+  const hintPh = opt.placeholder ? (hint.placeholder || []) : [];
+  hintSolo.forEach((no) => { const r = recs.find((x) => x.no === no); if (r) r.solo = true; });
+  hintPh.forEach((no) => { const r = recs.find((x) => x.no === no); if (r) { r.solo = false; r.placeholder = true; } });
+  if (hintSolo.length || hintPh.length)
+    log(`  지난 기록대로 ${hintSolo.length ? `${hintSolo.join(',')}번은 크게` : ''}${hintSolo.length && hintPh.length ? ' · ' : ''}${hintPh.length ? `${hintPh.join(',')}번은 자리 표시로` : ''} 시작합니다`);
 
   /* ── 나누기 계획 ──────────────────────────────────────────────
    * ① 통째로 100% → 10쪽 이하면 한 장
@@ -690,7 +910,7 @@ async function runPaper(paperId, opt) {
   for (const shrink of [1, 0.85]) {
     const pdf = await buildPdf(recs, shrink);
     if (pdf.pageCount <= MAX_PAGES) {
-      parts = [{ tag: 'p1', recs, pdf }];
+      parts = [{ tag: 'p1', recs, pdf, shrink }];
       if (shrink !== 1) log(`  쪽 수를 맞추려 이미지를 85%로 줄였습니다 (${pdf.pageCount}쪽)`);
       break;
     }
@@ -707,7 +927,7 @@ async function runPaper(paperId, opt) {
         if (!slice.length) continue;
         const pdf = await buildPdf(slice, 1);
         if (pdf.pageCount > MAX_PAGES) { ok = false; break; }
-        cand.push({ tag: `p${i + 1}`, recs: slice, pdf });
+        cand.push({ tag: `p${i + 1}`, recs: slice, pdf, shrink: 1 });
       }
       if (ok) { parts = cand; break; }
     }
@@ -728,23 +948,69 @@ async function runPaper(paperId, opt) {
   try {
     const results = [];
     for (let i = 0; i < parts.length; i++) {
-      /* OCR 실패는 AI가 그때그때 다를 수 있어, 그 장만 처음부터 한 번 더 올려 본다 */
+      const part = parts[i];
+      /* ── OCR 이 못 읽은 문항 되살리기 (번호 1:1이 최우선) ──────────────
+       *   1차 그대로 → 2차 «그 문항만 한 쪽에 크게» → 3차 «자리 표시로 대체»
+       * by-custom 은 job 단위라 문항 하나만 갈아끼울 수 없다 → 그 장을 통째로 다시 만든다. */
+      const rebuild = async (why) => {
+        for (const sh of [part.shrink || 1, 0.85, 0.72]) {
+          const pdf = await buildPdf(part.recs, sh);
+          if (pdf.pageCount <= MAX_PAGES) {
+            part.pdf = pdf; part.shrink = sh;
+            log(`  ↻ ${why} — 다시 만든 PDF ${pdf.pageCount}쪽${sh !== 1 ? ` (다른 문항은 ${Math.round(sh * 100)}%로 줄임)` : ''}`
+              + (part.recs.some((r) => r.placeholder) ? (pdf.koFont ? ' · 자리 표시 한글' : ' · 자리 표시 영문(한글 글꼴 없음)') : ''));
+            return true;
+          }
+        }
+        log(`  ↻ ${why} — 그러나 10쪽 안에 들어가지 않습니다`);
+        return false;
+      };
       let r = null;
-      for (let attempt = 1; attempt <= 2; attempt++) {
+      for (let attempt = 1; attempt <= 3; attempt++) {
         const before = made.paperIds.length;
-        try { r = await runPart(parts[i], cur, titles[i], workDir, made); break; }
+        part.attempt = attempt;
+        try { r = await runPart(part, cur, titles[i], workDir, made); break; }
         catch (e) {
-          if (attempt === 2 || e.code !== 'OCR_FAILED_ITEMS') throw e;
-          log(`  ↻ ${e.message.slice(0, 160)}`);
-          log('  ↻ 이 장을 처음부터 한 번 더 올려 봅니다 (AI가 다시 읽으면 성공할 수 있습니다)');
+          if (e.code !== 'OCR_FAILED_ITEMS' || attempt === 3) throw e;
+          log(`  ↻ ${e.message.slice(0, 200)}`);
           await cleanup([], made.paperIds.splice(before));
+          const idx = (e.badIdx || []).filter((k) => part.recs[k]);
+          if (!idx.length) throw e;
+          const nosOf = (a) => a.map((k) => part.recs[k].no).join(', ');
+          /* 아직 크게 올려 보지 않은 문항 → ① 크게 / 크게 올렸는데도 실패한 문항 → ② 자리 표시 */
+          const fresh = idx.filter((k) => !part.recs[k].solo);
+          const stubborn = idx.filter((k) => part.recs[k].solo);
+          const why = [];
+          if (fresh.length) { fresh.forEach((k) => { part.recs[k].solo = true; }); why.push(`${nosOf(fresh)}번을 한 쪽에 크게 단독 배치`); }
+          if (stubborn.length) {
+            if (!opt.placeholder) { log('  ↻ --no-placeholder 라서 자리 표시로 대체하지 않습니다'); throw e; }
+            stubborn.forEach((k) => { part.recs[k].solo = false; part.recs[k].placeholder = true; });
+            why.push(`${nosOf(stubborn)}번을 자리 표시로 대체`);
+          }
+          let ok = await rebuild(why.join(' · '));
+          if (!ok) {
+            /* 쪽 수가 넘치면(크게 배치한 쪽이 늘어서) 전부 자리 표시로 — 자리 표시는 작다 */
+            if (!opt.placeholder) throw e;
+            idx.forEach((k) => { part.recs[k].solo = false; part.recs[k].placeholder = true; });
+            ok = await rebuild(`${nosOf(idx)}번을 자리 표시로 대체`);
+            if (!ok) throw e;
+          }
+          const phNow = part.recs.filter((r) => r.placeholder).map((r) => r.no);
+          if (phNow.length) log(`  ⚠ ${phNow.join(', ')}번은 자리 표시로 들어갑니다 — 학생은 종이 프린트를 보고 풀고 답만 입력합니다(선생님 확인 문항)`);
         }
       }
       results.push(r);
     }
     const filed = await putInMylist(opt.mylist, made.worksheetIds);
+    /* 자리 표시로 대체된 번호 — 기록으로 남겨 원장님이 그 번호만 직접 채점하실 수 있게 */
+    const placeholders = [];
+    results.forEach((x) => (x.placeholderCheck || []).forEach((c) => placeholders.push({ ...c, worksheetId: x.worksheetId })));
+    if (placeholders.length) log(`  ⚠ 자리 표시 ${placeholders.length}문항: ${placeholders.map((c) => `${c.no}번`).join(', ')} — 프린트를 보고 풀고 답만 입력하는 문항입니다`);
+    /* 다음 실행이 같은 헛수고를 하지 않도록 «까다로운 문항»을 기억해 둔다 */
+    const hard = { solo: [], placeholder: [] };
+    results.forEach((x) => { (x.soloNos || []).forEach((n) => hard.solo.push(n)); (x.placeholders || []).forEach((n) => hard.placeholder.push(n)); });
     return { paperId, title, n: recs.length, cur: { rev: cur.rev, trie: cur.trie, schoolType: cur.schoolType, grade: cur.grade },
-      parts: results, worksheetIds: made.worksheetIds, paperIds: made.paperIds, filed, sec: ((Date.now() - t0) / 1000) | 0 };
+      parts: results, worksheetIds: made.worksheetIds, paperIds: made.paperIds, filed, placeholders, hard, sec: ((Date.now() - t0) / 1000) | 0 };
   } catch (e) {
     log(`  ❌ 실패: ${e.message.slice(0, 400)}`);
     log('  만들다 만 것을 지웁니다 (반쪽짜리를 남기지 않기 위해)');
@@ -763,9 +1029,12 @@ async function main() {
     paper: Number(arg('paper', 0)) || 0,
     dry: args.includes('--dry'),
     force: args.includes('--force'),
+    /* OCR 이 끝내 못 읽은 문항을 «자리 표시»로 채울지 (기본 켬 — 그래야 번호가 1:1) */
+    placeholder: !args.includes('--no-placeholder') && arg('placeholder', 'on') !== 'off',
   };
   fs.mkdirSync(OUT_DIR, { recursive: true });
-  log(`수학비서 → 매쓰플랫${opt.dry ? ' (미리보기)' : ''} · 폴더 「${opt.folder}」 · 마이리스트 「${opt.mylist}」`);
+  log(`수학비서 → 매쓰플랫${opt.dry ? ' (미리보기)' : ''} · 폴더 「${opt.folder}」 · 마이리스트 「${opt.mylist}」`
+    + ` · 자리 표시 ${opt.placeholder ? '켬' : '끔'}`);
 
   await msLogin();
   log('수학비서 로그인 OK');
@@ -793,12 +1062,18 @@ async function main() {
       continue;
     }
     try {
+      /* 지난 실행에서 까다로웠던 문항 기억 (--force 재실행 때 1차 실패를 건너뛴다) */
+      opt.hint = (already && already.hard) || null;
       const r = await runPaper(p.id, opt);
       if (!opt.dry) {
         state.processed[String(p.id)] = {
           at: new Date().toISOString(), title: r.title, n: r.n,
           worksheetIds: r.worksheetIds, paperIds: r.paperIds,
           parts: r.parts.map((x) => ({ title: x.title, n: x.n, range: x.range, worksheetId: x.worksheetId })),
+          /* 자리 표시로 대체된 문항 (있을 때만) — 「이 번호는 프린트로 풀고 답만 입력」 */
+          ...(r.placeholders && r.placeholders.length ? { placeholders: r.placeholders } : {}),
+          /* 매쓰플랫이 잘 못 읽어 «크게/자리 표시»로 넣은 번호 — 다음 실행이 곧장 그렇게 만든다 */
+          ...(r.hard && (r.hard.solo.length || r.hard.placeholder.length) ? { hard: r.hard } : {}),
         };
         await kvSet(STATE_KEY, state);
       }
@@ -812,8 +1087,14 @@ async function main() {
   log('\n═══ 결과 ═══');
   done.forEach((r) => {
     if (r.dry) { log(`· ${r.paperId} 「${r.title}」 ${r.n}문항 → ${r.parts.map((x) => `「${x.title}」 ${x.n}문항 ${x.pages}쪽`).join(' + ')}`); return; }
-    r.parts.forEach((x) => log(`· 학습지 ${x.worksheetId} 「${x.title}」 문항 ${x.problemCount}/${x.n} · 번호순서 ${x.orderOk ? '일치' : '불일치'} · 정답 ${x.withAnswer} · 자동채점 ${x.autoScored} · 매칭 ${x.matched}/${x.matchedTotal} · 재요청 ${x.reRequests}회 · ${x.sec}초`));
+    r.parts.forEach((x) => {
+      log(`· 학습지 ${x.worksheetId} 「${x.title}」 문항 ${x.problemCount}/${x.n} · 번호순서 ${x.orderOk ? '일치' : '불일치'} · 정답 ${x.withAnswer} · 자동채점 ${x.autoScored} · 매칭 ${x.matched}/${x.matchedTotal} · 재요청 ${x.reRequests}회 · ${x.sec}초`);
+      if (x.soloNos && x.soloNos.length) log(`    (${x.soloNos.join(', ')}번은 매쓰플랫이 잘 못 읽어 «한 쪽에 크게» 넣었습니다)`);
+      if (x.blankNos && x.blankNos.length) log(`    ⚠ 정답이 빈 문항: ${x.blankNos.join(', ')}번`);
+    });
     log(`  (${r.paperId} 「${r.title}」 폴더 담김: ${r.filed && r.filed.ok ? '예' : '아니오'})`);
+    if (r.placeholders && r.placeholders.length)
+      log(`  ⚠ 자리 표시 문항 ${r.placeholders.length}개 — ${r.placeholders.map((c) => `${c.no}번(학습지 ${c.mfIndex}번, 정답 「${c.answer}」${c.autoScored ? ', 자동채점' : ''})`).join(' · ')}`);
   });
   skipped.forEach((s) => log(`· 건너뜀 ${s.paperId} 「${s.title}」 (이미 ${String(s.at).slice(0, 10)})`));
   failed.forEach((f) => log(`· ❌ ${f.paperId} 「${f.title}」 ${f.error}`));
