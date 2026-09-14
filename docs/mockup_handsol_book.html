@@ -1,0 +1,339 @@
+<title>교재·교과서 손풀이 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#f5f7fb; --paper:#ffffff; --ink:#0d2240; --ink2:#334155; --mute:#64748b; --line:#dbe3ee;
+  --pri:#1d6fe8; --pri-soft:#e6f0ff; --navy:#0d2240;
+  --ok:#15803d; --ok-soft:#dcfce7; --bad:#dc2626; --bad-soft:#fee2e2; --warn:#b45309; --warn-soft:#fef3c7;
+  --book:#7c3aed; --book-soft:#ede9fe; --chip:#eef2f7;
+  --shadow:0 8px 28px rgba(13,34,64,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f172a; --paper:#16213a; --ink:#e8eef8; --ink2:#c2cbe0; --mute:#8b98b4; --line:#2a3a5c;
+    --pri:#5b9cff; --pri-soft:#1b2d52; --navy:#e8eef8;
+    --ok:#4ade80; --ok-soft:#153a25; --bad:#f87171; --bad-soft:#4a1d1d; --warn:#fbbf24; --warn-soft:#3f2e0c;
+    --book:#b39cff; --book-soft:#2c2350; --chip:#1f2c48;
+    --shadow:0 8px 28px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f172a; --paper:#16213a; --ink:#e8eef8; --ink2:#c2cbe0; --mute:#8b98b4; --line:#2a3a5c;
+  --pri:#5b9cff; --pri-soft:#1b2d52; --navy:#e8eef8;
+  --ok:#4ade80; --ok-soft:#153a25; --bad:#f87171; --bad-soft:#4a1d1d; --warn:#fbbf24; --warn-soft:#3f2e0c;
+  --book:#b39cff; --book-soft:#2c2350; --chip:#1f2c48;
+  --shadow:0 8px 28px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;line-height:1.6;padding-inline:16px;padding-block:28px 60px}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:26px;font-weight:900;letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font-size:18px;font-weight:900;margin:44px 0 14px;display:flex;align-items:center;gap:10px}
+h2 .n{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--pri);background:var(--pri-soft);border-radius:6px;padding:2px 8px}
+p.lead{color:var(--ink2);margin:0 0 4px;max-width:70ch}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:2px 10px;margin-bottom:10px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0;font-size:12.5px;font-weight:700}
+.flow span{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px 11px}
+.flow i{color:var(--mute);font-style:normal}
+.flow .who{background:var(--navy);color:var(--bg);border-color:var(--navy)}
+
+/* 화면 틀 */
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.phone{width:300px;max-width:100%;background:var(--paper);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);overflow:hidden;flex:0 0 auto}
+.phone .top{background:var(--navy);color:var(--bg);padding:12px 14px 10px;font-weight:900;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.phone .top small{font-weight:700;opacity:.75;font-size:11px}
+.phone .body{padding:12px 12px 16px}
+.cap{font-size:12px;color:var(--mute);font-weight:700;margin:8px 2px 0;max-width:300px}
+.cap b{color:var(--ink)}
+.wide{flex:1 1 520px;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.wide .top{background:var(--navy);color:var(--bg);padding:10px 14px;font-weight:900;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.wide .top small{font-weight:700;opacity:.75;font-size:11px}
+.wide .body{padding:12px}
+
+/* 공용 조각 */
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs span{flex:1;text-align:center;font-size:12px;font-weight:800;padding:7px 4px;border-radius:9px;background:var(--chip);color:var(--mute)}
+.tabs span.on{background:var(--navy);color:var(--bg)}
+.tile{border:1px solid var(--line);border-radius:12px;padding:10px 11px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.tile .ic{width:38px;height:48px;border-radius:6px;background:linear-gradient(160deg,var(--book-soft),var(--pri-soft));border:1px solid var(--line);flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:18px}
+.tile .t{font-weight:900;font-size:13px;line-height:1.3}
+.tile .s{font-size:11px;color:var(--mute);font-weight:700;margin-top:2px}
+.tile .r{margin-left:auto;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--pri);white-space:nowrap}
+.bar{height:6px;border-radius:3px;background:var(--chip);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--pri)}
+.pill{display:inline-block;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.book{background:var(--book-soft);color:var(--book)} .pill.pri{background:var(--pri-soft);color:var(--pri)}
+
+/* 페이지·번호 판 (매쓰플랫 교재 채점 문법) */
+.pg{display:flex;gap:8px}
+.pg .pages{flex:0 0 58px;display:flex;flex-direction:column;gap:4px}
+.pg .pages b{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;text-align:center;padding:6px 2px;border-radius:8px;background:var(--chip);color:var(--mute)}
+.pg .pages b.on{background:var(--navy);color:var(--bg)}
+.pg .pages b.dot::after{content:'';display:block;width:5px;height:5px;border-radius:50%;background:var(--bad);margin:2px auto 0}
+.pg .nums{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:5px;align-content:start}
+.pg .nums button{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;border:1px solid var(--line);border-radius:8px;padding:8px 2px;background:var(--paper);color:var(--ink);cursor:pointer}
+.pg .nums button.no{color:var(--mute);background:var(--chip);border-color:transparent}
+.pg .nums button.wr{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.pg .nums button.on{background:var(--navy);color:var(--bg);border-color:var(--navy)}
+.leg{display:flex;gap:10px;flex-wrap:wrap;font-size:10.5px;font-weight:700;color:var(--mute);margin-top:8px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+
+/* 문제 그림 / 풀이 그림 (모형) */
+.fig{border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:10px;position:relative}
+.fig .lbl{position:absolute;top:6px;right:8px;font-size:10px;font-weight:800;color:var(--mute)}
+.ln{height:7px;border-radius:4px;background:var(--chip);margin:6px 0}
+.ln.s{width:60%} .ln.m{width:80%}
+.hand{border:1px dashed var(--book);border-radius:10px;background:var(--book-soft);padding:10px;position:relative;min-height:96px}
+.hand .lbl{position:absolute;top:6px;right:8px;font-size:10px;font-weight:800;color:var(--book)}
+.hand svg{width:100%;height:80px;display:block}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.acts button{font:inherit;font-size:11.5px;font-weight:800;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:9px;padding:8px 6px;line-height:1.3}
+.acts button.pri{background:var(--pri);color:#fff;border-color:var(--pri);grid-column:1/-1}
+
+/* 학원앱 작업대 */
+.wb{display:grid;grid-template-columns:150px 1fr 1fr;gap:10px;min-height:340px}
+@media(max-width:700px){.wb{grid-template-columns:1fr}}
+.col{border:1px solid var(--line);border-radius:10px;padding:8px;min-width:0}
+.col h4{margin:0 0 8px;font-size:12px;font-weight:900;color:var(--ink2);display:flex;justify-content:space-between;align-items:center}
+.col h4 small{font-weight:700;color:var(--mute)}
+.pl{display:flex;flex-direction:column;gap:4px}
+.pl div{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;font-weight:700;padding:5px 7px;border-radius:7px;background:var(--chip);color:var(--ink2)}
+.pl div.on{background:var(--navy);color:var(--bg)}
+.pl div em{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:10.5px}
+/* 교재 PDF 한 쪽 위에 문제 사각형 */
+.sheet{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:6px;aspect-ratio:210/297;max-width:100%;overflow:hidden}
+.sheet .hd{position:absolute;left:8%;top:3%;width:84%;height:4%;background:var(--chip);border-radius:3px}
+.box{position:absolute;border:1.5px solid var(--pri);border-radius:4px;background:rgba(29,111,232,.06)}
+.box::before{content:attr(data-n);position:absolute;left:-1px;top:-1px;background:var(--pri);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;padding:0 4px;border-radius:3px 0 3px 0}
+.box.done{border-color:var(--ok);background:rgba(21,128,61,.08)} .box.done::before{background:var(--ok)}
+.box.wr{border-color:var(--bad)} .box.wr::before{background:var(--bad)}
+.box.on{box-shadow:0 0 0 3px rgba(29,111,232,.35)}
+.box .l{position:absolute;left:6%;right:6%;height:5%;background:var(--chip);border-radius:2px}
+/* 수업 필기 쪽 */
+.note{position:relative;background:var(--paper);border:1px solid var(--line);border-radius:6px;aspect-ratio:210/297;max-width:100%;overflow:hidden}
+.note svg{position:absolute;inset:0;width:100%;height:100%}
+.clip{position:absolute;border:1.5px dashed var(--book);border-radius:4px;background:rgba(124,58,237,.07)}
+.clip::before{content:attr(data-n);position:absolute;left:-1px;top:-1px;background:var(--book);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;padding:0 4px;border-radius:3px 0 3px 0}
+.hint{font-size:11px;color:var(--mute);font-weight:700;margin-top:6px}
+.stat{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.stat span{font-size:11px;font-weight:800;border-radius:8px;padding:4px 8px;background:var(--chip);color:var(--ink2)}
+
+/* 질문·아이디어 */
+.q{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.q .h{font-weight:900;font-size:14px;margin-bottom:6px;display:flex;gap:8px;align-items:baseline}
+.q .h .k{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--pri)}
+.q ul{margin:4px 0 0;padding-left:18px;color:var(--ink2)}
+.q li{margin:2px 0}
+.q .rec{margin-top:6px;font-size:12.5px;font-weight:800;color:var(--ok)}
+.q .rec::before{content:'내 추천 · ';color:var(--mute);font-weight:700}
+.ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.idea{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.idea b{display:block;font-size:13.5px;margin-bottom:4px}
+.idea span{font-size:12.5px;color:var(--ink2)}
+.idea .w{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:800;color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--chip);font-weight:900;font-size:12px}
+td code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--chip);border-radius:4px;padding:1px 5px}
+.tw{overflow-x:auto}
+.foot{margin-top:40px;font-size:11.5px;color:var(--mute);font-weight:700}
+</style>
+
+<div class="wrap">
+  <span class="tag">상의용 시안 · 2026-09-14 · 코딩 전</span>
+  <h1>교재·교과서 손풀이</h1>
+  <p class="lead">학생은 <b>손풀이 → 교재(교과서) → 페이지·번호</b>를 눌러 선생님 필기 풀이 한 문제를 본다.
+  원장님은 학원앱에서 <b>교재 목록 → 페이지 → 문제 사각형</b>에 수업 필기를 잘라 붙인다.
+  학습지 손풀이(지금 있는 것)는 그대로 두고, 그 옆에 「교재」 서랍을 하나 더 다는 그림이다.</p>
+  <div class="flow">
+    <span class="who">학생</span><span>✍️ 손풀이</span><i>→</i><span>📚 교재·교과서</span><i>→</i><span>p.24 · 5.(1)</span><i>→</i><span>풀이 한 장</span>
+  </div>
+  <div class="flow">
+    <span class="who">학원</span><span>교재 목록</span><i>→</i><span>페이지 6/8</span><i>→</i><span>문제 사각형에 필기 붙이기</span><i>→</i><span>학생 자동 공개</span>
+  </div>
+
+  <!-- ───────── 학생앱 ───────── -->
+  <h2><span class="n">학생앱</span>세 화면</h2>
+  <div class="row">
+
+    <div>
+      <div class="phone">
+        <div class="top">✍️ 손풀이 <small>학생 A</small></div>
+        <div class="body">
+          <div class="tabs"><span>📄 학습지</span><span class="on">📚 교재·교과서</span><span>🔎 찾기</span></div>
+          <div class="tile"><div class="ic">📘</div><div><div class="t">중학 수학 2-2 교과서<br>(비상)</div><div class="s">III. 도형의 성질 · 풀이 있는 페이지 9</div></div><div class="r">p.24<br>최근</div></div>
+          <div class="tile"><div class="ic">📗</div><div><div class="t">개념+유형 라이트 2-2</div><div class="s">풀이 있는 페이지 14 · 내 오답 6</div></div><div class="r">p.61<br>최근</div></div>
+          <div class="tile" style="opacity:.55"><div class="ic">📙</div><div><div class="t">쎈 2-2</div><div class="s">아직 풀이 없음</div></div><div class="r">—</div></div>
+          <div class="hint" style="margin-top:4px">내가 매쓰플랫에 등록된 교재만 보여요. 최근에 채점한 페이지가 먼저 옵니다.</div>
+        </div>
+      </div>
+      <div class="cap">① <b>손풀이 홈</b>에 「교재·교과서」 탭. 학생의 매쓰플랫 등록 교재(수집기 <code>mf_swb</code>)만 나열. 풀이 없는 교재는 연하게.</div>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="top">📘 교과서 2-2 <small>III. 도형의 성질</small></div>
+        <div class="body">
+          <div class="pg">
+            <div class="pages">
+              <b>p.22</b><b class="dot">p.23</b><b class="on dot">p.24</b><b>p.25</b><b class="dot">p.26</b><b>p.27</b><b>p.28</b>
+            </div>
+            <div class="nums">
+              <button>1</button><button>2</button><button class="wr">3</button><button>4</button>
+              <button class="on">5.(1)</button><button>5.(2)</button><button class="wr">6</button><button class="no">7</button>
+              <button class="no">8</button><button>9</button>
+            </div>
+          </div>
+          <div class="leg"><span><i style="background:var(--bad-soft);outline:1px solid var(--bad)"></i>내가 틀린 문제</span><span><i style="background:var(--navy)"></i>보는 중</span><span><i style="background:var(--chip)"></i>풀이 없음</span></div>
+          <div class="acts" style="margin-top:12px"><button class="pri">🔴 내 오답만 보기 (2)</button></div>
+        </div>
+      </div>
+      <div class="cap">② <b>페이지·번호 판</b>. 왼쪽은 페이지(빨간 점 = 내 오답 있음), 오른쪽은 그 페이지 문항. 매쓰플랫 교재 채점 화면과 같은 문법이라 학생이 바로 이해한다. 소문항은 <code>5.(1)</code>처럼 표기.</div>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="top">p.24 · 5.(1) <small>교과서 2-2</small></div>
+        <div class="body">
+          <div class="fig"><span class="lbl">문제</span><div class="ln m"></div><div class="ln"></div><div class="ln s"></div></div>
+          <div class="hand" style="margin-top:8px"><span class="lbl">선생님 필기</span>
+            <svg viewBox="0 0 260 80" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--book)">
+              <path d="M12 20 c10 -8 22 4 30 -2 s18 6 30 0" /><path d="M14 40 c 20 -10 40 10 60 -4 s 30 8 50 0 s 20 -6 40 2" /><path d="M20 62 c 15 -6 30 6 44 0 s 22 -8 40 0" /><path d="M200 18 l 34 0 M200 30 l 30 0" /><circle cx="228" cy="60" r="9"/>
+            </svg>
+          </div>
+          <div class="stat"><span class="pill bad">내 결과 ✗ 9/12 틀림</span><span class="pill book">유형 · 이등변삼각형의 성질</span></div>
+          <div class="acts">
+            <button class="pri">다음 틀린 문제 → 6번</button>
+            <button>🙋 이 문제로<br>IB아하노트</button><button>📚 같은 유형<br>손풀이 3개</button>
+          </div>
+          <div class="hint">풀이를 보기 전에 한 번 더 풀어 보면 훨씬 오래 남아요.</div>
+        </div>
+      </div>
+      <div class="cap">③ <b>풀이 한 장</b>. 위에 문제(사각형으로 잘라 둔 그림), 아래 선생님 필기. 내 채점 결과·유형·아하노트 연결은 지금 학습지 손풀이와 같은 단추.</div>
+    </div>
+  </div>
+
+  <!-- ───────── 학원앱 ───────── -->
+  <h2><span class="n">학원앱</span>두 화면</h2>
+  <div class="row">
+
+    <div class="wide" style="flex:1 1 380px">
+      <div class="top">✍️ 손풀이 · 교재 <small>우리 학생 등록 교재 12권</small></div>
+      <div class="body">
+        <div class="tabs" style="max-width:360px"><span>📄 학습지</span><span class="on">📚 교재·교과서</span><span>📝 기출</span><span>📦 묶음</span></div>
+        <div class="tile"><div class="ic">📘</div><div><div class="t">중학 수학 2-2 교과서 (비상) <span class="pill book">교과서</span></div><div class="s">등록 학생 7 · 풀이 있는 페이지 9 / 도달 페이지 31</div><div class="bar" style="width:220px"><i style="width:29%"></i></div></div><div class="r">이번 주 오답 14<br><span class="pill warn">풀이 빈 곳 6</span></div></div>
+        <div class="tile"><div class="ic">📗</div><div><div class="t">개념+유형 라이트 2-2 <span class="pill pri">시그니처</span></div><div class="s">등록 학생 9 · 풀이 있는 페이지 14 / 도달 페이지 52 · PDF 있음</div><div class="bar" style="width:220px"><i style="width:27%"></i></div></div><div class="r">이번 주 오답 22<br><span class="pill warn">풀이 빈 곳 11</span></div></div>
+        <div class="tile"><div class="ic">📕</div><div><div class="t">미적분 I 교과서 (천재) <span class="pill book">교과서</span></div><div class="s">등록 학생 3 · 풀이 있는 페이지 0 / 도달 페이지 18</div><div class="bar" style="width:220px"><i style="width:0"></i></div></div><div class="r">이번 주 오답 9<br><span class="pill bad">풀이 없음</span></div></div>
+        <div class="hint">「풀이 빈 곳」 = 이번 주 학생들이 틀렸는데 아직 풀이가 없는 문항 수. 이 숫자가 큰 교재부터 손대면 된다.</div>
+      </div>
+    </div>
+    <div class="cap" style="flex:1 1 200px;max-width:260px">④ <b>교재·교과서 목록</b>. 수집기가 이미 가진 등록 교재·도달 페이지·오답 기록으로 「어디부터 풀이를 넣을지」가 보인다. 교재 풀이는 학생이 아니라 <b>교재에 붙는다</b>(한 번 만들면 매년 재사용).</div>
+  </div>
+
+  <div class="row" style="margin-top:22px">
+    <div class="wide">
+      <div class="top">📘 교과서 2-2 · p.24 <small>문제 8 · 풀이 5 · 빈 곳 3</small></div>
+      <div class="body">
+        <div class="wb">
+          <div class="col">
+            <h4>페이지 <small>도달 31</small></h4>
+            <div class="pl">
+              <div>p.22 <em>4/4</em></div><div>p.23 <em>6/7</em></div><div class="on">p.24 <em>5/8</em></div><div>p.25 <em>0/6</em></div><div>p.26 <em>2/9</em></div><div>p.27 <em>0/5</em></div><div>p.28 <em>0/8</em></div>
+            </div>
+            <div class="hint">숫자 = 풀이 있음 / 문항 수. 오답 많은 페이지가 위로.</div>
+          </div>
+          <div class="col">
+            <h4>교재 쪽 · 문제 사각형 <small>자동 배치</small></h4>
+            <div class="sheet">
+              <div class="hd"></div>
+              <div class="box done" data-n="1" style="left:6%;top:10%;width:42%;height:16%"><div class="l" style="top:30%"></div><div class="l" style="top:55%"></div></div>
+              <div class="box done" data-n="2" style="left:52%;top:10%;width:42%;height:16%"><div class="l" style="top:30%"></div><div class="l" style="top:55%"></div></div>
+              <div class="box done wr" data-n="3" style="left:6%;top:29%;width:42%;height:18%"><div class="l" style="top:30%"></div><div class="l" style="top:55%"></div></div>
+              <div class="box done" data-n="4" style="left:52%;top:29%;width:42%;height:18%"><div class="l" style="top:30%"></div><div class="l" style="top:55%"></div></div>
+              <div class="box on" data-n="5.(1)" style="left:6%;top:50%;width:42%;height:14%"><div class="l" style="top:35%"></div></div>
+              <div class="box" data-n="5.(2)" style="left:6%;top:66%;width:42%;height:14%"><div class="l" style="top:35%"></div></div>
+              <div class="box done wr" data-n="6" style="left:52%;top:50%;width:42%;height:30%"><div class="l" style="top:20%"></div><div class="l" style="top:45%"></div><div class="l" style="top:70%"></div></div>
+              <div class="box" data-n="7" style="left:6%;top:83%;width:88%;height:13%"><div class="l" style="top:35%"></div></div>
+            </div>
+            <div class="stat"><span style="color:var(--ok)">■ 풀이 있음 5</span><span style="color:var(--pri)">■ 비어 있음 3</span><span style="color:var(--bad)">■ 이번 주 오답</span></div>
+            <div class="hint">페이지를 넣으면 매쓰플랫 문항 목록(번호·유형·정답)으로 사각형을 먼저 만들고, 교재 PDF가 있으면 그 자리에 얹는다. 자리가 어긋나면 상자를 끌어 고친다.</div>
+          </div>
+          <div class="col">
+            <h4>수업 필기 <small>9/12 굿노트 PDF · 3쪽</small></h4>
+            <div class="note">
+              <svg viewBox="0 0 210 297" fill="none" stroke="var(--book)" stroke-width="1.6" stroke-linecap="round" opacity=".8">
+                <path d="M20 30 c 20 -10 40 10 60 -4 s 30 8 50 0" /><path d="M22 48 c 15 -6 30 6 44 0 s 22 -8 40 0 s 30 6 50 -2" /><path d="M24 66 c 10 -8 22 4 30 -2 s 18 6 30 0" />
+                <path d="M20 120 c 20 -10 40 10 60 -4 s 30 8 50 0 s 20 -6 40 2" /><path d="M22 140 c 15 -6 30 6 44 0 s 22 -8 40 0" /><path d="M24 160 l 60 0 M24 176 l 40 0" />
+                <path d="M20 220 c 20 -10 40 10 60 -4 s 30 8 50 0" /><path d="M22 240 c 15 -6 30 6 44 0 s 22 -8 40 0 s 30 6 50 -2" /><circle cx="150" cy="262" r="12"/>
+              </svg>
+              <div class="clip" data-n="3 → 붙임" style="left:6%;top:6%;width:88%;height:24%"></div>
+              <div class="clip" data-n="5.(1) ← 여기" style="left:6%;top:36%;width:88%;height:27%;border-style:solid;box-shadow:0 0 0 3px rgba(124,58,237,.3)"></div>
+              <div class="clip" data-n="6 → 붙임" style="left:6%;top:70%;width:88%;height:26%"></div>
+            </div>
+            <div class="stat"><span>① 번호 글자</span><span>② 펜 자국</span><span>③ AI 눈</span><span>④ 상자 끌기</span></div>
+            <div class="hint">필기에서 잘린 조각을 왼쪽 사각형에 끌어다 놓으면 배정 끝. 필기 첫 줄에 「p.24」라고 써 두면 페이지도 자동으로 잡는다.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cap" style="flex:1 1 200px;max-width:260px">⑤ <b>페이지 작업대</b>. 왼쪽 페이지 목록 → 가운데 교재 쪽에 문제 사각형(매쓰플랫 학습지 만들기와 같은 그림) → 오른쪽 수업 필기에서 자른 조각을 끌어 붙인다. 지금 작업대의 3분할·자르기 4단계를 그대로 쓴다.</div>
+  </div>
+
+  <!-- ───────── 질문 ───────── -->
+  <h2><span class="n">질문</span>원장님이 정해 주실 것</h2>
+
+  <div class="q"><div class="h"><span class="k">Q1</span>교과서 「문제 그림」은 어디서 가져오나?</div>
+    매쓰플랫은 시그니처·직접 만든 교재만 PDF를 준다. 시중 교재·교과서(출판사 것)는 <b>번호·유형·정답만</b> 주고 문제 그림은 안 준다.
+    <ul><li>㉠ 원장님이 교과서 해당 쪽을 사진·스캔해 올린다 (한 학기 한 번)</li><li>㉡ 수업 필기에 문제까지 같이 적혀 있으면 그 필기를 문제 그림으로 겸한다</li><li>㉢ 문제 그림 없이 번호 판 + 풀이만 보여 준다</li></ul>
+    <div class="rec">㉢으로 시작하고, 교과서는 ㉠을 원장님이 여유 있을 때 추가. 시그니처 교재는 PDF가 있으니 자동.</div></div>
+
+  <div class="q"><div class="h"><span class="k">Q2</span>「사각형으로 배정」의 뜻 — 두 가지 중 어느 쪽인가?</div>
+    <ul><li>㉠ 교재 쪽 그림 위에 문제 자리를 사각형으로 그려서(매쓰플랫 학습지 만들기처럼) 문제 그림까지 잘라 보여 준다</li><li>㉡ 문제 그림은 없고, 번호 타일(사각형)만 격자로 만들어 풀이를 붙인다</li></ul>
+    <div class="rec">PDF가 있는 교재는 ㉠, 교과서는 ㉡(사진 올리면 ㉠으로 승격). 시안 ⑤가 그 모양.</div></div>
+
+  <div class="q"><div class="h"><span class="k">Q3</span>풀이 원본은 수업 필기(굿노트) 그대로인가?</div>
+    사진 1처럼 한 쪽에 여러 문제 풀이가 섞여 있다. 지금 학습지 손풀이의 자르기 4단계(번호 글자 → 펜 자국 → AI 눈 → 상자 끌기)를 그대로 쓰면 되는지, 아니면 앞으로는 <b>문제마다 한 쪽씩</b> 정리해서 필기할 수 있는지.
+    <div class="rec">필기 습관은 바꾸지 말고, 필기 첫 줄에 「p.24」만 적어 주시면 페이지 자동 인식 + 번호 글자로 자른다.</div></div>
+
+  <div class="q"><div class="h"><span class="k">Q4</span>학생에게 언제 보여 주나?</div>
+    <ul><li>㉠ 붙이는 즉시 모두 공개</li><li>㉡ 그 문제를 채점(O/X)한 학생에게만 공개</li><li>㉢ 틀린 학생만 + 재풀이(또는 힌트 3단계)를 거친 뒤 공개</li></ul>
+    <div class="rec">㉡ 기본, 교재별로 ㉢ 스위치. 채점 전에 풀이가 보이면 매쓰플랫 채점이 의미 없어진다.</div></div>
+
+  <div class="q"><div class="h"><span class="k">Q5</span>교재 풀이는 누구 것인가?</div>
+    학습지 손풀이는 「세트 → 학생 코드」로 배정했다. 교재 풀이는 <b>교재에 붙여 두고</b>, 그 교재가 매쓰플랫에 등록된 학생이면 누구나(내년 학생도) 보게 하면 배정 작업이 없어진다. 반대로 「이 반만」 같은 제한이 필요한가?
+    <div class="rec">교재에 붙인다. 제한이 필요하면 나중에 교재별 「숨김」 하나만.</div></div>
+
+  <div class="q"><div class="h"><span class="k">Q6</span>소문항 번호 표기</div>
+    확인 결과, 우리 정답사전(교재 120권 · 문항 8만 9천)에서 매쓰플랫 번호는 이미 <code>5.(1)</code> 형식이다(교과서·쎈·개념원리 모두). 디딤돌 초등만 <code>1-1</code>, RPM은 <code>137.(1)</code>처럼 통번호. 그러니 <b>매쓰플랫 번호를 그대로</b> 쓰면 교과서 인쇄와 같아진다. 따로 정하실 것 없음.</div>
+
+  <div class="q"><div class="h"><span class="k">Q7</span>첫 대상 교재 — 지금 매쓰플랫에 등록된 교과서</div>
+    <ul><li>교과서_비상 중등수학1 (9명)</li><li>교과서_비상교육 공통수학2 (4명) · 공통수학1 (1명) · 대수 (3명) · 미적분1 (3명)</li><li>교과서_미래엔 미적분1 (2명) · 중등수학3 (2명) · 교과서_비상 중등수학2 (2명) · 마플교과서 미적분Ⅰ (2명)</li></ul>
+    사진의 수업 필기가 어느 교과서 몇 쪽인지 알려 주시면, 그 한 권으로 먼저 만들어 보고 나머지로 넓힌다.
+    <div class="rec">비상 중등수학1 (9명이 쓰니 효과가 가장 크다)</div></div>
+
+  <!-- ───────── 아이디어 ───────── -->
+  <h2><span class="n">아이디어</span>더 발전시킬 수 있는 것</h2>
+  <div class="ideas">
+    <div class="idea"><b>풀이 빈 곳 큐</b><span>이번 주 학생들이 많이 틀렸는데 풀이가 없는 문항을 교재·페이지 순으로 줄 세운다. 수업 전에 「오늘 필기할 문제」 목록이 된다.</span><br><span class="w">자료 이미 있음 · mf_answer_records</span></div>
+    <div class="idea"><b>아하노트 자동 첨부</b><span>학생이 아하노트에 교재+페이지+번호를 적으면 해당 손풀이를 「힌트 3단계 뒤」 자동으로 붙인다. 선생님이 풀이를 다시 쓰지 않아도 된다.</span><br><span class="w">아하노트에 이미 교재·페이지·번호 있음</span></div>
+    <div class="idea"><b>내 오답만 모아 보기</b><span>교재 전체에서 내가 틀린 문항만 페이지 순으로 넘기는 「오답 풀이 모드」. 시험 전 복습 동선이 짧아진다.</span></div>
+    <div class="idea"><b>복습 스케줄러 연결</b><span>망각곡선(1·3·7·14·30일) 복습 카드에서 손풀이를 바로 연다. 복습에서 또 틀리면 풀이를 다시 보게.</span><br><span class="w">로드맵의 에빙하우스 기능과 합침</span></div>
+    <div class="idea"><b>교과서 QR 스티커</b><span>교과서 쪽 여백에 붙일 QR을 학원앱에서 인쇄. 찍으면 학생앱 그 페이지 번호 판이 바로 열린다.</span></div>
+    <div class="idea"><b>고등부 진도 레이스와 겹치기</b><span>수학비서 학습지 파이프라인으로 고등부 진도 레이스가 열리면, 그 학습지 문항에도 같은 방식으로 풀이를 붙인다(출처만 다름).</span></div>
+    <div class="idea"><b>학부모앱 한 줄</b><span>「이번 주 선생님 풀이 12개 등록 · 우리 아이 오답 5개에 풀이 있음」 한 줄. 풀이 자체는 학생앱에서만.</span></div>
+    <div class="idea"><b>풀이 영상 자리</b><span>학생앱 「🎬 풀이영상(준비 중)」 단추가 이미 있다. 교재 풀이에 짧은 영상 링크 칸을 미리 두면 나중에 붙이기만 하면 된다.</span></div>
+  </div>
+
+  <!-- ───────── 자료 뼈대 ───────── -->
+  <h2><span class="n">뼈대</span>자료는 어디서 오나</h2>
+  <div class="tw"><table>
+    <tr><th>필요한 것</th><th>이미 있는 자료</th><th>비고</th></tr>
+    <tr><td>학생별 등록 교재·페이지 목록</td><td><code>mf_swb_&lt;학생코드&gt;</code> (수집기가 매일 갱신)</td><td>교재명·페이지 번호·제목·도달 상태</td></tr>
+    <tr><td>페이지별 문항 번호·유형·정답</td><td><code>mf_bookans_&lt;교재id&gt;</code></td><td>번호 형식(소문항)은 여기서 확인</td></tr>
+    <tr><td>학생별 문항 O/X</td><td><code>mf_answer_records</code> (workbook_page_id · workbook_problem_id · number)</td><td>빨간 표시·오답 큐의 근거</td></tr>
+    <tr><td>교재 PDF(문제 그림)</td><td><code>mf_workbook_pdfs</code> — 시그니처·직접 만든 교재만</td><td>교과서·시중교재는 없음 → Q1</td></tr>
+    <tr><td>풀이 그림·배정</td><td><code>hand_solutions</code> items에 출처 <code>book</code> 추가 (교재id·페이지id·문항id)</td><td>세트 개념 대신 「교재에 붙는 풀이」</td></tr>
+  </table></div>
+
+  <div class="foot">코딩은 원장님 답을 받은 뒤 오퍼스로. 이 시안의 이름·숫자는 모양을 보이기 위한 예시다.</div>
+</div>
