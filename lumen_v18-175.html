@@ -51467,6 +51467,1195 @@ function hslStuPane(){
 }
 
 
+/* ═══════════════════════════════════════════════════════════════════
+ * 📚 교재·교과서 손풀이 (v18-175 · docs/book_handsol_contract.md 3장)
+ * ═══════════════════════════════════════════════════════════════════
+ * 원장님은 ① 교과서 PDF를 한 번 등록하고 ② 쪽마다 문항 사각형을 놓고
+ * ③ 필기 조각을 잘라 번호에 붙인다. 학생은 「교재 → 쪽 → 번호」로 풀이를 본다.
+ *
+ * 화면 셋 (BKH.view)
+ *   list  교재 목록 — 등록 학생 수·문항 수·풀이 있는 쪽·PDF 배지
+ *   pages 쪽 목록   — 쪽 맞춤·공개 설정·쪽별 문항/풀이/🔥오답
+ *   page  쪽 작업대 — 왼쪽 쪽 목록 | 가운데 교과서 쪽+사각형 | 오른쪽 필기 조각
+ *
+ * 저장 (모두 lumen_store)
+ *   book_pdfs          { byBook:{ <bid>:{bid,title,path,url,pdfPages,offset,at,by} }, updated }
+ *   book_boxes_<bid>   { bid, pages:{ "<인쇄쪽>":{wpid,cols,boxes:[{n,x,y,w,h,ids,ok}],auto,at} }, updated }
+ *   book_cfg_<bid>     { reveal:'open'|'scored'|'hint', hidden:false, updated }
+ *   hand_solutions     기존 저장소에 src:'book' 항목을 더한다 (hslData()/hslSave() 재사용)
+ * 그림 — Storage aha_photos/hand/book/<bid>/<쪽>_<번호>_<ts>.jpg
+ *        교과서 PDF — school_pdfs/book/<ts>_<슬러그>.pdf (45MB 제한 없음)
+ * 좌표는 반드시 0~1 비율 (기기마다 렌더 배율이 다르다).
+ * 문자열 결합만 사용 (중첩 템플릿 리터럴 금지).
+ * ═══════════════════════════════════════════════════════════════════ */
+
+var BKH = { view:'list', loaded:false, loading:false, err:'', busy:'', step:'',
+            bid:'', page:0, sel:-1, dirty:false,
+            swb:{}, ans:{}, pdfs:null, cfg:{}, boxes:null, wrong7:{},
+            pg:null, pgBusy:false, pgErr:'',
+            hand:null, handSel:null,
+            off:{ pdf:1, print:1 }, offPrev:'' };
+var BKH_DOC = {};      // bid -> pdf.js 문서 (한 번 열면 다시 안 연다)
+
+function bkhEsc(s){ return ahaEsc(s); }
+/* onclick="…(' ')" 안에 넣을 글자 — 따옴표·역슬래시를 먼저 막고 HTML 로 다시 막는다 */
+function bkhJs(s){ return ahaEsc(String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,'')); }
+function bkhStep(msg){ BKH.step=msg||''; var el=document.getElementById('bkh-step'); if(el) el.textContent=BKH.step; }
+function bkhPdfs(){
+  if(!BKH.pdfs) BKH.pdfs={ byBook:{}, updated:'' };
+  if(!BKH.pdfs.byBook) BKH.pdfs.byBook={};
+  return BKH.pdfs;
+}
+function bkhCfg(bid){
+  var k=String(bid||'');
+  var c=BKH.cfg[k];
+  if(!c) c=BKH.cfg[k]={ reveal:'open', hidden:false, updated:'' };
+  if(!c.reveal) c.reveal='open';
+  return c;
+}
+/* 기본 번호 — 매쓰플랫 「5.(2)」는 「5」 하나로 묶인다 */
+function bkhBaseNum(num){
+  var s=String(num==null?'':num).trim();
+  var m=s.match(/^([0-9]+)/);
+  return m?m[1]:(s||'?');
+}
+/* 한 쪽의 문항 묶음 — 같은 기본 번호가 이어지면 한 묶음, 번호가 되돌아가면 새 묶음 */
+function bkhGroups(pageRec){
+  var probs=((pageRec||{}).problems)||[];
+  var out=[], last=null;
+  probs.forEach(function(p){
+    if(!p) return;
+    var base=bkhBaseNum(p.num);
+    if(!last || last.n!==base){ last={ n:base, ids:[], nums:[] }; out.push(last); }
+    last.ids.push(p.wpId);
+    last.nums.push(String(p.num));
+  });
+  return out;
+}
+function bkhSrcKey(bid,page,num){ return 'book|'+String(bid)+'|'+String(page)+'|'+String(num); }
+function bkhBookTitle(bid){
+  var k=String(bid||'');
+  var t='';
+  Object.keys(BKH.swb||{}).forEach(function(code){
+    (BKH.swb[code]||[]).forEach(function(b){ if(b && String(b.bid)===k && b.title && !t) t=String(b.title); });
+  });
+  var rec=(bkhPdfs().byBook||{})[k];
+  return t || (rec&&rec.title) || ('교재 '+k);
+}
+/* 교재 풀이 (hand_solutions 안의 src:'book') */
+function bkhSols(bid){
+  return hslItems().filter(function(it){ return it && it.src==='book' && String(it.bid)===String(bid); });
+}
+function bkhSolsOfNum(bid,page,num){
+  return bkhSols(bid).filter(function(it){ return Number(it.page)===Number(page) && String(it.num)===String(num); })
+    .sort(function(a,b){ return (Number(a.ord)||0)-(Number(b.ord)||0) || String(a.id).localeCompare(String(b.id)); });
+}
+/* 재원생 코드만 (퇴원생은 등록 학생 수에서 뺀다) */
+function bkhLiveCodes(){
+  var o={};
+  (activeStudents?activeStudents():(students||[])).forEach(function(s){ if(s&&s.lumen_rec_code) o[String(s.lumen_rec_code)]=1; });
+  return o;
+}
+
+/* ── 저장소 ── */
+async function bkhStoreSet(key,val){
+  var sb=null; try{ sb=getSupaClient(); }catch(e){}
+  if(!sb){ alert('클라우드 연결이 없어 저장하지 못했습니다.'); return false; }
+  try{
+    var r=await sb.from('lumen_store').upsert({ key:key, value:val },{ onConflict:'key' });
+    if(r && r.error) throw r.error;
+    return true;
+  }catch(e){ console.error('[교재손풀이] 저장 실패', key, e); alert('저장 실패: '+((e&&e.message)||e)); return false; }
+}
+async function bkhLoad(force){
+  if(BKH.loaded && !force) return;
+  if(BKH.loading) return;
+  BKH.loading=true; BKH.err='';
+  var sb=null; try{ sb=getSupaClient(); }catch(e){}
+  if(!sb){ BKH.loading=false; BKH.loaded=true; BKH.err='오프라인 — 연결된 뒤 「🔄 새로고침」을 눌러 주세요'; if(VIEW==='handsol') render(); return; }
+  try{
+    bkhStep('① 학생별 교재 목록 받는 중…');
+    var r1=await sb.from('lumen_store').select('key,value').like('key','mf_swb_%');
+    BKH.swb={};
+    ((r1&&r1.data)||[]).forEach(function(x){
+      var m=String((x&&x.key)||'').match(/^mf_swb_([^_]+)$/);
+      if(m) BKH.swb[m[1]]=((x.value&&x.value.books))||[];
+    });
+    bkhStep('② PDF 등록부·공개 설정 받는 중…');
+    var r2=await sb.from('lumen_store').select('key,value').eq('key','book_pdfs').maybeSingle();
+    BKH.pdfs=(r2&&r2.data&&r2.data.value)||{ byBook:{}, updated:'' };
+    if(!BKH.pdfs.byBook) BKH.pdfs.byBook={};
+    var r3=await sb.from('lumen_store').select('key,value').like('key','book_cfg_%');
+    BKH.cfg={};
+    ((r3&&r3.data)||[]).forEach(function(x){
+      var m=String((x&&x.key)||'').match(/^book_cfg_(.+)$/);
+      if(m && x.value) BKH.cfg[m[1]]=x.value;
+    });
+    /* 교재 정답사전 — 한 번에 다 받으면 무거워서 조각으로 나눠 받는다 */
+    var bids={};
+    Object.keys(BKH.swb).forEach(function(c){ (BKH.swb[c]||[]).forEach(function(b){ if(b&&b.bid) bids[String(b.bid)]=1; }); });
+    var list=Object.keys(bids);
+    BKH.ans={};
+    for(var i=0;i<list.length;i+=8){
+      var chunk=list.slice(i,i+8).map(function(b){ return 'mf_bookans_'+b; });
+      bkhStep('③ 교재 문항 자료 받는 중… '+Math.min(i+8,list.length)+' / '+list.length);
+      var rr=await sb.from('lumen_store').select('key,value').in('key',chunk);
+      ((rr&&rr.data)||[]).forEach(function(x){
+        var m=String((x&&x.key)||'').match(/^mf_bookans_(.+)$/);
+        if(m) BKH.ans[m[1]]=x.value||{};
+      });
+    }
+    bkhStep('');
+  }catch(e){
+    console.error('[교재손풀이] 불러오기 실패', e);
+    BKH.err='불러오기 실패: '+((e&&e.message)||e);
+    bkhStep('');
+  }
+  BKH.loaded=true; BKH.loading=false;
+  if(VIEW==='handsol') render();
+}
+window.bkhReload=function(){ BKH.loaded=false; BKH.boxes=null; BKH.wrong7={}; BKH.pg=null; bkhLoad(true); render(); };
+
+/* ── 교재 목록 모델 ── */
+function bkhBookList(){
+  var live=bkhLiveCodes(), byBid={};
+  Object.keys(BKH.swb||{}).forEach(function(code){
+    (BKH.swb[code]||[]).forEach(function(b){
+      if(!b||b.bid==null) return;
+      var k=String(b.bid);
+      var o=byBid[k]||(byBid[k]={ bid:k, title:'', codes:{} });
+      if(b.title && !o.title) o.title=String(b.title);
+      if(live[code]) o.codes[code]=1;
+    });
+  });
+  var pdfs=bkhPdfs().byBook||{};
+  var solPage={}, solN={};
+  hslItems().forEach(function(it){
+    if(!it || it.src!=='book' || it.bid==null) return;
+    var k=String(it.bid);
+    solN[k]=(solN[k]||0)+1;
+    (solPage[k]=solPage[k]||{})[String(it.page)]=1;
+  });
+  return Object.keys(byBid).map(function(k){
+    var o=byBid[k], ans=BKH.ans[k]||{}, pgs=(ans&&ans.pages)||{};
+    var nQ=0, nPage=0;
+    Object.keys(pgs).forEach(function(w){ nPage++; nQ+=bkhGroups(pgs[w]).length; });
+    return { bid:k, title:o.title||bkhBookTitle(k), nStu:Object.keys(o.codes).length,
+             nPage:nPage, nQ:nQ, nSolPage:Object.keys(solPage[k]||{}).length, nSol:solN[k]||0,
+             pdf:pdfs[k]||null, hidden:!!(BKH.cfg[k]&&BKH.cfg[k].hidden) };
+  }).sort(function(a,b){
+    return (b.pdf?1:0)-(a.pdf?1:0) || b.nStu-a.nStu || String(a.title).localeCompare(String(b.title),'ko');
+  });
+}
+/* ── 쪽 목록 모델 ── */
+function bkhPageList(bid){
+  var k=String(bid), ans=BKH.ans[k]||{}, pgs=(ans&&ans.pages)||{};
+  var wp={};
+  Object.keys(BKH.swb||{}).forEach(function(code){
+    (BKH.swb[code]||[]).forEach(function(b){
+      if(!b || String(b.bid)!==k) return;
+      (b.pages||[]).forEach(function(pg){
+        if(pg && pg.wpid!=null && pg.page!=null) wp[String(pg.wpid)]=Number(pg.page);
+      });
+    });
+  });
+  var sol={};
+  bkhSols(k).forEach(function(it){ (sol[String(it.page)]=sol[String(it.page)]||{})[String(it.num)]=1; });
+  var w7=BKH.wrong7[k]||{};
+  var seen={}, out=[];
+  Object.keys(pgs).forEach(function(wpid){
+    var p=wp[String(wpid)];
+    if(p==null) return;                 // 쪽 번호를 모르는 회차는 뺀다 (mf_swb 에 없다)
+    if(seen[p]) return; seen[p]=1;
+    out.push({ page:p, wpid:String(wpid), nQ:bkhGroups(pgs[wpid]).length,
+               nSol:Object.keys(sol[String(p)]||{}).length, wrong:w7[p]||0 });
+  });
+  out.sort(function(a,b){ return a.page-b.page; });
+  return out;
+}
+function bkhPageRow(p){
+  var arr=bkhPageList(BKH.bid);
+  for(var i=0;i<arr.length;i++){ if(Number(arr[i].page)===Number(p)) return arr[i]; }
+  return null;
+}
+function bkhPageData(){
+  if(!BKH.boxes || !BKH.boxes.pages) return null;
+  return BKH.boxes.pages[String(BKH.page)]||null;
+}
+
+/* ── 최근 7일 오답 (mf_answer_records) ── */
+async function bkhWrongLoad(bid){
+  var sb=null; try{ sb=getSupaClient(); }catch(e){}
+  if(!sb) return;
+  try{
+    var d0=new Date(Date.now()-7*86400000).toISOString().slice(0,10);
+    var rows=[], off=0;
+    while(off<10000){
+      var r=await sb.from('mf_answer_records').select('page,result,score_datetime')
+        .eq('book_id', bid).gte('score_datetime', d0).range(off, off+999);
+      if(r && r.error) throw r.error;
+      var b=(r&&r.data)||[];
+      rows=rows.concat(b);
+      if(b.length<1000) break;
+      off+=1000;
+    }
+    var w={};
+    rows.forEach(function(x){
+      if(String(x&&x.result)!=='X') return;
+      var rg=qiParseRange(x.page); if(!rg) return;
+      for(var p=rg[0]; p<=rg[1] && p-rg[0]<40; p++) w[p]=(w[p]||0)+1;
+    });
+    BKH.wrong7[String(bid)]=w;
+    if(VIEW==='handsol') render();
+  }catch(e){ console.warn('[교재손풀이] 최근 오답 조회 실패', e); }
+}
+
+/* ── PDF 다루기 ── */
+function bkhPdfWorker(){
+  if(typeof pdfjsLib==='undefined' || !pdfjsLib.getDocument) throw new Error('PDF 부품(pdf.js) 로딩 중입니다 — 잠시 후 다시 시도해 주세요.');
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+async function bkhDoc(bid){
+  var k=String(bid);
+  if(BKH_DOC[k]) return BKH_DOC[k];
+  var rec=(bkhPdfs().byBook||{})[k];
+  if(!rec || !rec.path) throw new Error('이 교재의 PDF가 아직 등록되지 않았습니다.');
+  bkhPdfWorker();
+  var url=rec.url||getPdfUrl(rec.path);
+  if(!url) throw new Error('PDF 주소를 만들지 못했습니다.');
+  var doc=null;
+  try{
+    /* 교과서는 48MB 라 통째로 내려받지 않고 필요한 조각만 읽는다 */
+    doc=await pdfjsLib.getDocument({ url:url, rangeChunkSize:262144, disableAutoFetch:true }).promise;
+  }catch(e){
+    console.warn('[교재손풀이] 조각 읽기 실패 — 통째로 내려받습니다', e);
+    var rr=await fetch(url);
+    if(!rr.ok) throw new Error('PDF 내려받기 실패 '+rr.status);
+    var ab=await rr.arrayBuffer();
+    doc=await pdfjsLib.getDocument({ data:ab.slice(0) }).promise;
+  }
+  BKH_DOC[k]=doc;
+  return doc;
+}
+async function bkhRenderPage(bid, printPage){
+  var rec=(bkhPdfs().byBook||{})[String(bid)]||{};
+  var offv=Number(rec.offset||0);
+  var pno=Number(printPage)-offv;                 // 인쇄쪽 = PDF쪽 + offset
+  var doc=await bkhDoc(bid);
+  if(!(pno>=1 && pno<=doc.numPages)) throw new Error('PDF에 인쇄 p.'+printPage+'이 없습니다 — 「쪽 맞춤」을 확인해 주세요 (PDF '+doc.numPages+'쪽).');
+  var page=await doc.getPage(pno);
+  var v1=page.getViewport({ scale:1 });
+  var vp=page.getViewport({ scale:1000/v1.width });   // 계약서 2장: 가로 1000px 기준
+  var cv=document.createElement('canvas');
+  cv.width=Math.round(vp.width); cv.height=Math.round(vp.height);
+  var ctx=cv.getContext('2d', { willReadFrequently:true });
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+  await page.render({ canvasContext:ctx, viewport:vp }).promise;
+  return { canvas:cv, img:cv.toDataURL('image/jpeg',0.86), cw:cv.width, ch:cv.height, pdfPage:pno };
+}
+
+/* ═══════════ 사각형 자동 배치 (계약서 2장) ═══════════
+ * 스캔본이라 글자층이 없다 → 「회색 숫자 + 색깔 숫자」 두 글자의 생김새로 번호를 찾는다. */
+function bkhBlobs(mask, W, H){
+  var n=W*H, seen=new Uint8Array(n), stack=new Int32Array(n), out=[];
+  for(var s=0;s<n;s++){
+    if(!mask[s] || seen[s]) continue;
+    var sp=0; stack[sp++]=s; seen[s]=1;
+    var x0=W, y0=H, x1=0, y1=0, cnt=0;
+    while(sp>0){
+      var p=stack[--sp];
+      var x=p%W, y=(p-x)/W;
+      if(x<x0) x0=x; if(x>x1) x1=x;
+      if(y<y0) y0=y; if(y>y1) y1=y;
+      cnt++;
+      if(x>0   && mask[p-1] && !seen[p-1]){ seen[p-1]=1; stack[sp++]=p-1; }
+      if(x<W-1 && mask[p+1] && !seen[p+1]){ seen[p+1]=1; stack[sp++]=p+1; }
+      if(y>0   && mask[p-W] && !seen[p-W]){ seen[p-W]=1; stack[sp++]=p-W; }
+      if(y<H-1 && mask[p+W] && !seen[p+W]){ seen[p+W]=1; stack[sp++]=p+W; }
+    }
+    out.push({ x0:x0, y0:y0, x1:x1, y1:y1, n:cnt, w:(x1-x0+1), h:(y1-y0+1) });
+  }
+  return out;
+}
+function bkhAnchors(cv){
+  var W=cv.width, H=cv.height;
+  var im=null;
+  try{ im=cv.getContext('2d').getImageData(0,0,W,H); }catch(e){ console.warn('[교재손풀이] 쪽 그림을 읽지 못했습니다', e); return null; }
+  var d=im.data, n=W*H;
+  var gm=new Uint8Array(n), cm=new Uint8Array(n);
+  for(var i=0;i<n;i++){
+    var q=i*4, r=d[q], g=d[q+1], b=d[q+2];
+    var mx=(r>g?(r>b?r:b):(g>b?g:b)), mn=(r<g?(r<b?r:b):(g<b?g:b));
+    if(Math.abs(r-g)<14 && Math.abs(g-b)<14 && r>=128 && r<=190) gm[i]=1;
+    if((mx-mn)>=40 && mx<=225) cm[i]=1;
+  }
+  var hMin=H*0.012, hMax=H*0.022, wMin=W*0.004, wMax=W*0.025;
+  var keep=function(o){ return o.h>=hMin && o.h<=hMax && o.w>=wMin && o.w<=wMax; };
+  var grays=bkhBlobs(gm,W,H).filter(keep);
+  var colors=bkhBlobs(cm,W,H).filter(keep);
+  var anchors=[];
+  grays.forEach(function(g){
+    for(var j=0;j<colors.length;j++){
+      var c=colors[j];
+      if(!(c.x0>=g.x1-3 && c.x0<=g.x1+9)) continue;
+      var ov=Math.min(g.y1,c.y1)-Math.max(g.y0,c.y0)+1;
+      if(ov <= 0) continue;
+      if(ov/Math.min(g.h,c.h) < 0.55) continue;
+      if(Math.abs(g.h-c.h) > 9) continue;
+      anchors.push({ x:g.x0/W, y:g.y0/H, col:0 });
+      return;
+    }
+  });
+  /* 열 수 판정 — x 가 두 무리로 갈리면 2열 */
+  var cols=1, split=1;
+  if(anchors.length>=2){
+    var xs=anchors.map(function(a){ return a.x; }).sort(function(p,q){ return p-q; });
+    var gap=0, at=0;
+    for(var t=1;t<xs.length;t++){ if(xs[t]-xs[t-1]>gap){ gap=xs[t]-xs[t-1]; at=t; } }
+    if(gap>0.20){ cols=2; split=(xs[at]+xs[at-1])/2; }
+  }
+  if(cols===2) anchors.forEach(function(a){ a.col=(a.x<split)?0:1; });
+  anchors.sort(function(a,b){ return (a.col-b.col) || (a.y-b.y); });
+  return { anchors:anchors, cols:cols, nGray:grays.length, nColor:colors.length };
+}
+/* 닻마다 상자 (계약서 2장 7번) */
+function bkhBoxesFromAnchors(anchors, cols, groups){
+  var byCol={};
+  anchors.forEach(function(a){ (byCol[a.col]=byCol[a.col]||[]).push(a); });
+  var order=[];
+  Object.keys(byCol).sort().forEach(function(c){
+    var arr=byCol[c].sort(function(p,q){ return p.y-q.y; });
+    arr.forEach(function(a,i){
+      var nx=arr[i+1];
+      var y0=Math.max(0, a.y-0.006);
+      var y1=nx ? Math.max(y0+0.03, nx.y-0.006) : 0.93;
+      var x0=Math.max(0, a.x-0.004);
+      var x1=(cols===2) ? ((Number(c)===0)?0.47:0.95) : 0.95;
+      order.push({ x:x0, y:y0, w:Math.max(0.05, x1-x0), h:Math.max(0.03, y1-y0) });
+    });
+  });
+  return order.map(function(o,i){
+    var gp=groups[i]||{ n:'?', ids:[] };
+    return { n:String(gp.n), x:o.x, y:o.y, w:o.w, h:o.h, ids:(gp.ids||[]).slice(), ok:true };
+  });
+}
+/* 균등 분할 (계약서 2장 8번) — 「확인 필요」 노란 점선 */
+function bkhEvenBoxes(groups, cols){
+  var y0=0.06, y1=0.93, out=[];
+  if(!groups.length) return out;
+  if(cols===2){
+    var half=Math.ceil(groups.length/2);
+    [groups.slice(0,half), groups.slice(half)].forEach(function(arr,c){
+      if(!arr.length) return;
+      var hg=(y1-y0)/arr.length;
+      arr.forEach(function(gp,i){
+        out.push({ n:String(gp.n), x:(c===0?0.05:0.52), y:y0+hg*i, w:(c===0?0.42:0.43),
+                   h:Math.max(0.03,hg-0.005), ids:(gp.ids||[]).slice(), ok:false });
+      });
+    });
+  } else {
+    var hg2=(y1-y0)/groups.length;
+    groups.forEach(function(gp,i){
+      out.push({ n:String(gp.n), x:0.05, y:y0+hg2*i, w:0.90, h:Math.max(0.03,hg2-0.005),
+                 ids:(gp.ids||[]).slice(), ok:false });
+    });
+  }
+  return out;
+}
+function bkhGroupsOfPage(){
+  var row=bkhPageRow(BKH.page);
+  var ans=BKH.ans[String(BKH.bid)]||{};
+  return bkhGroups((((ans.pages)||{})[row?row.wpid:''])||null);
+}
+window.bkhAuto=async function(colsWanted){
+  if(BKH.busy) return;
+  if(!BKH.pg){ alert('쪽 그림이 아직 준비되지 않았습니다.'); return; }
+  var pd=bkhPageData();
+  if(pd && (pd.boxes||[]).length && !colsWanted){
+    if(!confirm('이 쪽의 사각형을 지우고 다시 자동 배치할까요?\n(손으로 옮겨 둔 것도 사라집니다)')) return;
+  }
+  BKH.busy='auto'; bkhStep('번호 글자를 찾는 중…'); render();
+  await new Promise(function(r){ setTimeout(r,30); });
+  try{
+    var groups=bkhGroupsOfPage();
+    if(!groups.length) throw new Error('매쓰플랫에 이 쪽의 문항 목록이 없습니다 — 사각형은 「+ 상자 추가」로 직접 놓아 주세요.');
+    var an=bkhAnchors(BKH.pg.canvas);
+    var cols=Number(colsWanted)|| (pd&&Number(pd.cols)) || (an?an.cols:2) || 2;
+    var boxes, auto, msg;
+    if(an && an.anchors.length===groups.length){
+      boxes=bkhBoxesFromAnchors(an.anchors, cols, groups); auto='pair';
+      msg='✅ 번호 '+groups.length+'개를 그대로 찾았습니다';
+    } else {
+      boxes=bkhEvenBoxes(groups, cols); auto='even';
+      msg='⚠️ 번호를 '+((an&&an.anchors.length)||0)+'개만 찾아 문항 '+groups.length+'개로 균등 분할했습니다 — 노란 점선을 끌어서 맞춰 주세요';
+    }
+    var row=bkhPageRow(BKH.page);
+    if(!BKH.boxes) BKH.boxes={ bid:String(BKH.bid), pages:{}, updated:'' };
+    if(!BKH.boxes.pages) BKH.boxes.pages={};
+    BKH.boxes.pages[String(BKH.page)]={ wpid:(row?row.wpid:''), cols:cols, boxes:boxes,
+                                        auto:auto, at:new Date().toISOString() };
+    BKH.sel=-1; BKH.dirty=true;
+    ahaToast(msg);
+  }catch(e){ alert('자동 배치 실패: '+((e&&e.message)||e)); }
+  BKH.busy=''; bkhStep(''); render();
+};
+window.bkhCols=function(c){
+  var pd=bkhPageData();
+  if(!pd){ bkhAuto(c); return; }
+  pd.cols=Number(c)||1;
+  bkhAuto(Number(c)||1);
+};
+
+/* ── 상자 편집 ── */
+window.bkhBoxSel=function(i){ BKH.sel=(BKH.sel===Number(i)?-1:Number(i)); render(); };
+window.bkhBoxNum=function(i,v){
+  var pd=bkhPageData(); if(!pd||!pd.boxes[i]) return;
+  pd.boxes[i].n=String(v||'').trim();
+  pd.boxes[i].ok=true; BKH.dirty=true;
+};
+window.bkhBoxDel=function(i){
+  var pd=bkhPageData(); if(!pd) return;
+  pd.boxes.splice(Number(i),1);
+  BKH.sel=-1; BKH.dirty=true; render();
+};
+window.bkhBoxAdd=function(){
+  var pd=bkhPageData();
+  if(!pd){
+    var row=bkhPageRow(BKH.page);
+    if(!BKH.boxes) BKH.boxes={ bid:String(BKH.bid), pages:{}, updated:'' };
+    if(!BKH.boxes.pages) BKH.boxes.pages={};
+    pd=BKH.boxes.pages[String(BKH.page)]={ wpid:(row?row.wpid:''), cols:2, boxes:[], auto:'hand', at:new Date().toISOString() };
+  }
+  pd.boxes.push({ n:String(pd.boxes.length+1), x:0.06, y:0.20, w:0.40, h:0.16, ids:[], ok:true });
+  pd.auto='hand'; BKH.sel=pd.boxes.length-1; BKH.dirty=true; render();
+};
+/* 몸통을 끌면 옮기고, 오른쪽 아래 손잡이를 끌면 크기가 바뀐다 */
+window.bkhDrag=function(ev,i,mode){
+  ev.preventDefault(); ev.stopPropagation();
+  var pd=bkhPageData(); if(!pd) return;
+  var b=pd.boxes[i]; if(!b) return;
+  var wrap=document.getElementById('bkh-pg'); if(!wrap) return;
+  var rect=wrap.getBoundingClientRect();
+  if(!rect.width || !rect.height) return;
+  BKH.sel=Number(i);
+  var sx=ev.clientX, sy=ev.clientY;
+  var o={ x:b.x, y:b.y, w:b.w, h:b.h };
+  function paint(){
+    var el=document.getElementById('bkh-bx-'+i);
+    if(el){ el.style.left=(b.x*100)+'%'; el.style.top=(b.y*100)+'%';
+            el.style.width=(b.w*100)+'%'; el.style.height=(b.h*100)+'%'; }
+  }
+  function move(e){
+    var dx=(e.clientX-sx)/rect.width, dy=(e.clientY-sy)/rect.height;
+    if(mode==='size'){
+      b.w=Math.min(1-o.x, Math.max(0.03, o.w+dx));
+      b.h=Math.min(1-o.y, Math.max(0.02, o.h+dy));
+    } else {
+      b.x=Math.min(1-o.w, Math.max(0, o.x+dx));
+      b.y=Math.min(1-o.h, Math.max(0, o.y+dy));
+    }
+    paint();
+  }
+  function up(){
+    document.removeEventListener('mousemove',move);
+    document.removeEventListener('mouseup',up);
+    b.ok=true; pd.auto='hand'; BKH.dirty=true; render();
+  }
+  document.addEventListener('mousemove',move);
+  document.addEventListener('mouseup',up);
+};
+window.bkhSaveBoxes=async function(){
+  if(BKH.busy) return;
+  if(!BKH.boxes){ alert('저장할 사각형이 없습니다.'); return; }
+  BKH.busy='save'; render();
+  BKH.boxes.bid=String(BKH.bid);
+  BKH.boxes.updated=new Date().toISOString();
+  var pd=bkhPageData(); if(pd) pd.at=new Date().toISOString();
+  var ok=await bkhStoreSet('book_boxes_'+BKH.bid, BKH.boxes);
+  BKH.busy='';
+  if(ok){ BKH.dirty=false; ahaToast('💾 문항 사각형을 저장했습니다'); }
+  render();
+};
+
+/* ═══════════ 화면 이동 ═══════════ */
+window.bkhOpen=async function(bid){
+  BKH.bid=String(bid); BKH.view='pages'; BKH.page=0; BKH.boxes=null; BKH.pg=null; BKH.sel=-1;
+  BKH.handSel=null; BKH.offPrev='';
+  var rec=(bkhPdfs().byBook||{})[BKH.bid];
+  BKH.off={ pdf:1, print:1+Number((rec&&rec.offset)||0) };
+  render();
+  var sb=null; try{ sb=getSupaClient(); }catch(e){}
+  if(sb){
+    try{
+      var r=await sb.from('lumen_store').select('value').eq('key','book_boxes_'+BKH.bid).maybeSingle();
+      BKH.boxes=(r&&r.data&&r.data.value)||null;
+    }catch(e){ console.warn('[교재손풀이] 사각형 불러오기 실패', e); }
+  }
+  if(!BKH.boxes) BKH.boxes={ bid:BKH.bid, pages:{}, updated:'' };
+  if(!BKH.boxes.pages) BKH.boxes.pages={};
+  if(!BKH.wrong7[BKH.bid]) bkhWrongLoad(BKH.bid);
+  render();
+};
+window.bkhBack=function(v){
+  if(BKH.dirty && v!=='page'){
+    if(!confirm('저장하지 않은 사각형이 있습니다. 그냥 나갈까요?')) return;
+    BKH.dirty=false;
+  }
+  BKH.view=v||'list';
+  if(v==='list'){ BKH.bid=''; BKH.boxes=null; }
+  BKH.pg=null; BKH.sel=-1;
+  render();
+};
+window.bkhOpenPage=function(p){
+  if(BKH.dirty && Number(p)!==Number(BKH.page)){
+    if(!confirm('저장하지 않은 사각형이 있습니다. 그냥 옮길까요?')) return;
+    BKH.dirty=false;
+  }
+  BKH.page=Number(p); BKH.view='page'; BKH.pg=null; BKH.pgErr=''; BKH.sel=-1; BKH.handSel=null;
+  render();
+  bkhLoadPage();
+};
+async function bkhLoadPage(){
+  if(BKH.pgBusy) return;
+  BKH.pgBusy=true; BKH.pgErr='';
+  try{ BKH.pg=await bkhRenderPage(BKH.bid, BKH.page); }
+  catch(e){ BKH.pg=null; BKH.pgErr=(e&&e.message)||String(e); }
+  BKH.pgBusy=false;
+  if(VIEW==='handsol') render();
+}
+window.bkhPageRetry=function(){ BKH.pg=null; BKH.pgErr=''; render(); bkhLoadPage(); };
+
+/* ═══════════ 교과서 PDF 등록 ═══════════ */
+window.bkhPdfPick=function(bid){
+  BKH.bid=String(bid);
+  var inp=document.getElementById('bkh-pdf-file');
+  if(!inp){
+    inp=document.createElement('input'); inp.type='file'; inp.accept='application/pdf,.pdf';
+    inp.id='bkh-pdf-file'; inp.style.display='none'; document.body.appendChild(inp);
+  }
+  inp.onchange=function(){ if(this.files && this.files[0]) bkhPdfRun(BKH.bid, this.files[0]); this.value=''; };
+  inp.click();
+};
+async function bkhPdfRun(bid, file){
+  if(BKH.busy) return;
+  BKH.busy='pdf'; bkhStep('① PDF 쪽수 읽는 중…'); render();
+  try{
+    bkhPdfWorker();
+    var ab=await file.arrayBuffer();
+    var doc=await pdfjsLib.getDocument({ data:ab.slice(0) }).promise;
+    var nPage=doc.numPages;
+    var sb=null; try{ sb=getSupaClient(); }catch(e){}
+    if(!sb) throw new Error('클라우드 연결이 없습니다.');
+    var mb=Math.round(file.size/1024/1024*10)/10;
+    /* 교과서 PDF는 48MB 다 — 크기로 막지 않는다 (계약서 3-2) */
+    bkhStep('② 클라우드에 올리는 중… ('+mb+'MB · 교과서는 몇 분 걸릴 수 있습니다)'); render();
+    var title=bkhBookTitle(bid);
+    var path='book/'+Date.now()+'_'+storageSlug(title,40)+'.pdf';
+    var up=await sb.storage.from('school_pdfs').upload(path, file, { cacheControl:'3600', upsert:true, contentType:'application/pdf' });
+    if(up.error) throw new Error(up.error.message);
+    var url=(sb.storage.from('school_pdfs').getPublicUrl(path).data||{}).publicUrl||'';
+    var pdfs=bkhPdfs();
+    var old=pdfs.byBook[String(bid)]||{};
+    pdfs.byBook[String(bid)]={ bid:String(bid), title:title, path:path, url:url, pdfPages:nPage,
+      offset:Number(old.offset||0), at:new Date().toISOString(), by:'teacher' };
+    pdfs.updated=new Date().toISOString();
+    bkhStep('③ 등록부 저장 중…');
+    var ok=await bkhStoreSet('book_pdfs', pdfs);
+    if(!ok) throw new Error('등록부를 저장하지 못했습니다');
+    delete BKH_DOC[String(bid)];
+    ahaToast('📄 PDF 등록 완료 — '+nPage+'쪽 · '+mb+'MB');
+    BKH.busy=''; bkhStep('');
+    if(BKH.view==='list'){ await bkhOpen(bid); return; }
+  }catch(e){
+    console.error('[교재손풀이] PDF 등록 실패', e);
+    alert('PDF 등록 실패: '+((e&&e.message)||e));
+  }
+  BKH.busy=''; bkhStep(''); render();
+}
+window.bkhOffSet=function(k,v){ BKH.off[k]=Number(v)||1; };
+window.bkhOffPrev=async function(){
+  if(BKH.busy) return;
+  var rec=(bkhPdfs().byBook||{})[String(BKH.bid)];
+  if(!rec){ alert('먼저 PDF를 등록해 주세요.'); return; }
+  BKH.busy='off'; bkhStep('미리보기 만드는 중…'); render();
+  try{
+    var doc=await bkhDoc(BKH.bid);
+    var n=Number(BKH.off.pdf)||1;
+    if(!(n>=1 && n<=doc.numPages)) throw new Error('1 ~ '+doc.numPages+' 사이의 쪽을 적어 주세요.');
+    var pg=await doc.getPage(n);
+    var v1=pg.getViewport({ scale:1 });
+    var vp=pg.getViewport({ scale:Math.min(1.4, 520/v1.width) });
+    var cv=document.createElement('canvas');
+    cv.width=Math.round(vp.width); cv.height=Math.round(vp.height);
+    var ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+    await pg.render({ canvasContext:ctx, viewport:vp }).promise;
+    BKH.offPrev=cv.toDataURL('image/jpeg',0.8);
+  }catch(e){ alert('미리보기 실패: '+((e&&e.message)||e)); }
+  BKH.busy=''; bkhStep(''); render();
+};
+window.bkhOffSave=function(){
+  var pdfs=bkhPdfs(), rec=pdfs.byBook[String(BKH.bid)];
+  if(!rec){ alert('먼저 PDF를 등록해 주세요.'); return; }
+  var offv=(Number(BKH.off.print)||1)-(Number(BKH.off.pdf)||1);
+  rec.offset=offv;
+  pdfs.updated=new Date().toISOString();
+  bkhStoreSet('book_pdfs', pdfs).then(function(ok){
+    if(ok){ BKH.pg=null; ahaToast('쪽 맞춤 저장 — 인쇄쪽 = PDF쪽 '+(offv>=0?('+ '+offv):('− '+Math.abs(offv)))); }
+    render();
+  });
+};
+window.bkhPdfDel=function(){
+  var pdfs=bkhPdfs(), rec=pdfs.byBook[String(BKH.bid)];
+  if(!rec) return;
+  if(!confirm('이 교재의 PDF 등록을 지울까요?\n(이미 붙인 손풀이 그림은 그대로 남습니다)')) return;
+  delete pdfs.byBook[String(BKH.bid)];
+  pdfs.updated=new Date().toISOString();
+  delete BKH_DOC[String(BKH.bid)];
+  BKH.pg=null;
+  bkhStoreSet('book_pdfs', pdfs).then(function(ok){ if(ok) ahaToast('PDF 등록을 지웠습니다'); render(); });
+};
+
+/* ═══════════ 교재 공개 설정 ═══════════ */
+window.bkhCfgSet=function(k,v){
+  var c=bkhCfg(BKH.bid);
+  if(v==='true') v=true; else if(v==='false') v=false;
+  c[k]=v; c.updated=new Date().toISOString();
+  bkhStoreSet('book_cfg_'+BKH.bid, c).then(function(ok){ if(ok) ahaToast('교재 설정을 저장했습니다'); render(); });
+};
+
+/* ═══════════ 필기 조각 ═══════════ */
+function bkhSelBox(){
+  var s=BKH.handSel; if(!s) return null;
+  var x=Math.min(s.x0,s.x1), y=Math.min(s.y0,s.y1);
+  return { x:x, y:y, w:Math.abs(s.x1-s.x0), h:Math.abs(s.y1-s.y0) };
+}
+window.bkhHandPick=function(){
+  var inp=document.getElementById('bkh-hand-file');
+  if(!inp){
+    inp=document.createElement('input'); inp.type='file'; inp.accept='image/*,application/pdf,.pdf';
+    inp.id='bkh-hand-file'; inp.style.display='none'; document.body.appendChild(inp);
+  }
+  inp.onchange=function(){ if(this.files && this.files[0]) bkhHandRun(this.files[0]); this.value=''; };
+  inp.click();
+};
+function bkhImgCanvas(file){
+  return new Promise(function(res,rej){
+    var fr=new FileReader();
+    fr.onload=function(){
+      var im=new Image();
+      im.onload=function(){
+        var k=Math.min(1, 1800/Math.max(im.width||1, im.height||1));
+        var cv=document.createElement('canvas');
+        cv.width=Math.max(1,Math.round((im.width||1)*k));
+        cv.height=Math.max(1,Math.round((im.height||1)*k));
+        var ctx=cv.getContext('2d');
+        ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+        ctx.drawImage(im,0,0,cv.width,cv.height);
+        res(cv);
+      };
+      im.onerror=function(){ rej(new Error('그림을 읽지 못했습니다')); };
+      im.src=fr.result;
+    };
+    fr.onerror=function(){ rej(new Error('파일을 읽지 못했습니다')); };
+    fr.readAsDataURL(file);
+  });
+}
+async function bkhHandRun(file){
+  if(BKH.busy) return;
+  BKH.busy='hand'; bkhStep('필기를 읽는 중…'); render();
+  try{
+    var cv;
+    if(file.type==='application/pdf' || /\.pdf$/i.test(file.name||'')){
+      bkhPdfWorker();
+      var ab=await file.arrayBuffer();
+      var doc=await pdfjsLib.getDocument({ data:ab.slice(0) }).promise;
+      var pg=await doc.getPage(1);
+      var v1=pg.getViewport({ scale:1 });
+      var vp=pg.getViewport({ scale:Math.min(2.2, 1600/v1.width) });
+      cv=document.createElement('canvas');
+      cv.width=Math.round(vp.width); cv.height=Math.round(vp.height);
+      var ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
+      await pg.render({ canvasContext:ctx, viewport:vp }).promise;
+    } else {
+      cv=await bkhImgCanvas(file);
+    }
+    BKH.hand={ name:file.name||'', canvas:cv, img:cv.toDataURL('image/jpeg',0.86) };
+    BKH.handSel=null;
+  }catch(e){
+    console.error('[교재손풀이] 필기 읽기 실패', e);
+    alert('필기를 읽지 못했습니다: '+((e&&e.message)||e));
+  }
+  BKH.busy=''; bkhStep(''); render();
+}
+window.bkhHandDown=function(ev){
+  ev.preventDefault();
+  var wrap=document.getElementById('bkh-hand'); if(!wrap) return;
+  var rect=wrap.getBoundingClientRect();
+  if(!rect.width || !rect.height) return;
+  var cl=function(v){ return Math.min(1, Math.max(0, v)); };
+  var x0=cl((ev.clientX-rect.left)/rect.width), y0=cl((ev.clientY-rect.top)/rect.height);
+  BKH.handSel={ x0:x0, y0:y0, x1:x0, y1:y0 };
+  function move(e){
+    BKH.handSel.x1=cl((e.clientX-rect.left)/rect.width);
+    BKH.handSel.y1=cl((e.clientY-rect.top)/rect.height);
+    var el=document.getElementById('bkh-sel'), s=bkhSelBox();
+    if(el && s){ el.style.display='block'; el.style.left=(s.x*100)+'%'; el.style.top=(s.y*100)+'%';
+                 el.style.width=(s.w*100)+'%'; el.style.height=(s.h*100)+'%'; }
+  }
+  function up(){
+    document.removeEventListener('mousemove',move);
+    document.removeEventListener('mouseup',up);
+    render();
+  }
+  document.addEventListener('mousemove',move);
+  document.addEventListener('mouseup',up);
+};
+window.bkhSelClear=function(){ BKH.handSel=null; render(); };
+function bkhCropHand(s){
+  var cv=BKH.hand && BKH.hand.canvas; if(!cv) return null;
+  var x=Math.round(s.x*cv.width), y=Math.round(s.y*cv.height);
+  var w=Math.max(20, Math.round(s.w*cv.width)), h=Math.max(20, Math.round(s.h*cv.height));
+  if(x+w>cv.width) w=cv.width-x;
+  if(y+h>cv.height) h=cv.height-y;
+  if(w<10 || h<10) return null;
+  var lng=Math.max(w,h), k=(lng>1600)?(1600/lng):1;
+  var out=document.createElement('canvas');
+  out.width=Math.max(1,Math.round(w*k)); out.height=Math.max(1,Math.round(h*k));
+  var ctx=out.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,out.width,out.height);
+  ctx.drawImage(cv, x, y, w, h, 0, 0, out.width, out.height);
+  return out.toDataURL('image/jpeg',0.82);
+}
+/* 조각 → 번호 배정 → aha_photos 업로드 → hand_solutions 저장 */
+window.bkhAssign=async function(num){
+  if(BKH.busy) return;
+  var s=bkhSelBox();
+  if(!s || s.w<0.02 || s.h<0.015){ alert('먼저 오른쪽 필기 그림 위에서 잘라낼 영역을 끌어 주세요.'); return; }
+  if(!BKH.page){ alert('먼저 쪽을 열어 주세요.'); return; }
+  var du=bkhCropHand(s);
+  if(!du){ alert('잘라낼 영역이 너무 작습니다.'); return; }
+  var pd=bkhPageData();
+  var box=pd ? (pd.boxes||[]).filter(function(b){ return String(b.n)===String(num); })[0] : null;
+  var title=prompt('방법 제목을 적어 주세요 (없으면 그냥 확인)\n예: 분모의 최고차항으로 나누기', '');
+  if(title===null) return;
+  var sb=null; try{ sb=getSupaClient(); }catch(e){}
+  if(!sb){ alert('클라우드 연결이 없어 올리지 못했습니다.'); return; }
+  BKH.busy='assign'; bkhStep('필기 조각을 올리는 중…'); render();
+  try{
+    var ts=Date.now();
+    var path='hand/book/'+String(BKH.bid)+'/'+String(BKH.page)+'_'+storageSlug(String(num),12)+'_'+ts+'.jpg';
+    var up=await sb.storage.from('aha_photos').upload(path, dataUrlToBlob(du), { contentType:'image/jpeg', upsert:true });
+    if(up.error) throw new Error(up.error.message);
+    var url=(sb.storage.from('aha_photos').getPublicUrl(path).data||{}).publicUrl||'';
+    if(!url) throw new Error('그림 주소를 만들지 못했습니다');
+    var same=bkhSolsOfNum(BKH.bid, BKH.page, num);
+    var d=hslData();
+    var id='h_'+ts+'_'+storageSlug(String(num),8);
+    d.items[id]={ id:id, src:'book', srcKey:bkhSrcKey(BKH.bid, BKH.page, num),
+      bid:String(BKH.bid), page:Number(BKH.page), num:String(num),
+      ids:((box&&box.ids)||[]).slice(),
+      img:url, title:String(title||''), ord:same.length, vid:null,
+      date:hslToday(), by:'teacher', at:new Date().toISOString(),
+      /* 서랍·배분 화면이 함께 읽는 항목 (기존 관행) */
+      srcTitle:bkhBookTitle(BKH.bid)+' p.'+BKH.page, seq:Number(String(num).replace(/[^0-9]/g,''))||0,
+      conceptName:'', conceptSrc:'', audio:null, video:null, views:0 };
+    var ok=await hslSave();
+    if(!ok) throw new Error('hand_solutions 저장에 실패했습니다');
+    BKH.handSel=null;
+    ahaToast('✍️ p.'+BKH.page+' '+num+'번에 풀이를 붙였습니다'+(same.length?(' (방법 '+(same.length+1)+')'):''));
+  }catch(e){
+    console.error('[교재손풀이] 풀이 붙이기 실패', e);
+    alert('풀이 붙이기 실패: '+((e&&e.message)||e));
+  }
+  BKH.busy=''; bkhStep(''); render();
+};
+window.bkhSolDel=function(id){
+  var d=hslData(), it=d.items[id]; if(!it) return;
+  if(!confirm('이 풀이를 지울까요?')) return;
+  var bid=it.bid, page=it.page, num=it.num;
+  delete d.items[id];
+  Object.keys(d.sets||{}).forEach(function(k){
+    d.sets[k].items=(d.sets[k].items||[]).filter(function(x){ return x!==id; });
+  });
+  /* 같은 문항 안의 순서(ord)를 다시 매긴다 */
+  bkhSolsOfNum(bid,page,num).forEach(function(x,i){ x.ord=i; });
+  hslSave().then(function(ok){ if(ok) ahaToast('풀이를 지웠습니다'); render(); });
+};
+window.bkhSolTitle=function(id){
+  var d=hslData(), it=d.items[id]; if(!it) return;
+  var v=prompt('방법 제목', String(it.title||''));
+  if(v===null) return;
+  it.title=String(v);
+  hslSave().then(function(ok){ if(ok) ahaToast('제목을 고쳤습니다'); render(); });
+};
+/* 🎬 유튜브 주소 + 시작 시각 */
+function bkhYtId(s){
+  var t=String(s||'');
+  var m=t.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/);
+  if(m) return m[1];
+  m=t.match(/^([A-Za-z0-9_-]{11})(?:\s|$)/);
+  return m?m[1]:'';
+}
+function bkhSecOf(s){
+  var t=String(s||'');
+  var m=t.match(/[?&#]t=(\d+)/); if(m) return Number(m[1]);
+  m=t.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if(m) return m[3] ? (Number(m[1])*3600+Number(m[2])*60+Number(m[3])) : (Number(m[1])*60+Number(m[2]));
+  m=t.match(/\s(\d{1,5})\s*$/); if(m) return Number(m[1]);
+  return 0;
+}
+function bkhFmtSec(n){
+  var v=Math.max(0, Number(n)||0);
+  var mm=Math.floor(v/60), ss=v%60;
+  return mm+':'+(ss<10?'0':'')+ss;
+}
+window.bkhSolVid=function(id){
+  var d=hslData(), it=d.items[id]; if(!it) return;
+  var cur=it.vid ? ('https://youtu.be/'+it.vid.yt+' '+bkhFmtSec(it.vid.start)) : '';
+  var v=prompt('유튜브 주소와 시작 시각을 한 줄로 적어 주세요.\n예: https://youtu.be/AbCdEfGhIjK 1:51\n(비우고 확인하면 영상을 뺍니다)', cur);
+  if(v===null) return;
+  v=String(v).trim();
+  if(!v){ it.vid=null; }
+  else{
+    var yt=bkhYtId(v);
+    if(!yt){ alert('유튜브 주소를 알아보지 못했습니다.\n(주소 또는 11글자 영상 ID를 적어 주세요)'); return; }
+    it.vid={ yt:yt, start:bkhSecOf(v) };
+  }
+  hslSave().then(function(ok){ if(ok) ahaToast(it.vid?('🎬 영상을 붙였습니다 ('+bkhFmtSec(it.vid.start)+'부터)'):'영상을 뺐습니다'); render(); });
+};
+
+/* ═══════════ 화면 ═══════════ */
+function hslBookPane(){
+  if(!BKH.loaded){
+    if(!BKH.loading) setTimeout(function(){ bkhLoad(); },0);
+    return '<div style="padding:50px;text-align:center;color:#94a3b8;font-weight:700">📚 교재 자료를 불러오는 중…'
+      +'<div id="bkh-step" style="margin-top:8px;font-size:12px;color:#7c3aed;font-weight:800">'+bkhEsc(BKH.step)+'</div></div>';
+  }
+  var head='';
+  if(BKH.err) head+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:800;margin-bottom:10px">'+bkhEsc(BKH.err)+'</div>';
+  if(BKH.view==='pages') return head+bkhPagesPane();
+  if(BKH.view==='page')  return head+bkhPagePane();
+  return head+bkhListPane();
+}
+
+/* ① 교재 목록 */
+function bkhListPane(){
+  var rows=bkhBookList();
+  var h='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240">📚 교재·교과서 '+rows.length+'권</div>'
+    +'<div id="bkh-step" style="font-size:12px;font-weight:800;color:#7c3aed">'+bkhEsc(BKH.step)+'</div>'
+    +'<div onclick="bkhReload()" style="margin-left:auto;cursor:pointer;background:#fff;border:1px solid #dbe3ef;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800;color:#475569">🔄 교재 다시 읽기</div>'
+    +'</div>';
+  h+='<div style="background:#f8fafc;border-radius:11px;padding:11px 14px;font-size:11.5px;color:#475569;line-height:1.85;margin-bottom:11px">'
+    +'학생이 매쓰플랫에서 쓰는 교재가 그대로 나옵니다. <b>📄 PDF 올리기</b>로 교과서를 한 번 등록하면, '
+    +'쪽마다 문항 사각형을 놓고 필기 조각을 번호에 붙일 수 있습니다. '
+    +'학생앱에서는 <b>교재 → 쪽 → 번호</b>를 눌러 선생님 풀이를 봅니다.</div>';
+
+  if(!rows.length){
+    h+='<div style="background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:40px;text-align:center;color:#94a3b8;font-size:12.5px">'
+      +'아직 학생별 교재 자료(<b>mf_swb_…</b>)가 없습니다 — 새벽 수집이 한 번 돌고 나면 여기에 나옵니다</div>';
+    return h;
+  }
+  h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:6px 8px">'
+    +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px">'
+    +'<tr>'
+    +'<th style="text-align:left;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">교재</th>'
+    +'<th style="text-align:right;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">등록 학생</th>'
+    +'<th style="text-align:right;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">문항</th>'
+    +'<th style="text-align:right;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">풀이 있는 쪽</th>'
+    +'<th style="text-align:right;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">풀이</th>'
+    +'<th style="text-align:center;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">PDF</th>'
+    +'<th style="padding:8px 8px;background:#f8fafc"></th></tr>';
+  rows.forEach(function(r){
+    h+='<tr>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;font-weight:800;color:#0d2240">'+bkhEsc(r.title)
+        +(r.hidden?' <span style="font-size:9.5px;font-weight:900;background:#f1f5f9;color:#94a3b8;border-radius:50px;padding:2px 7px">학생앱 숨김</span>':'')
+        +'<div style="font-size:10px;color:#cbd5e1;font-weight:700">bid '+bkhEsc(r.bid)+'</div></td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right;font-weight:800">'+r.nStu+'명</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right">'+r.nQ+'</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right;font-weight:800;color:'+(r.nSolPage?'#15803d':'#cbd5e1')+'">'+r.nSolPage+' / '+r.nPage+'</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right;color:'+(r.nSol?'#0d2240':'#cbd5e1')+'">'+r.nSol+'</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:center">'
+        +(r.pdf?('<span style="font-size:10px;font-weight:900;background:#dcfce7;color:#15803d;border-radius:50px;padding:3px 9px">✅ '+(r.pdf.pdfPages||'?')+'쪽</span>')
+               :'<span style="font-size:10px;font-weight:900;background:#f1f5f9;color:#94a3b8;border-radius:50px;padding:3px 9px">없음</span>')+'</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right;white-space:nowrap">'
+        +'<span onclick="bkhPdfPick(\''+bkhJs(r.bid)+'\')" style="cursor:pointer;display:inline-block;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800;color:#475569;margin-right:5px">📄 PDF '+(r.pdf?'바꾸기':'올리기')+'</span>'
+        +'<span onclick="bkhOpen(\''+bkhJs(r.bid)+'\')" style="cursor:pointer;display:inline-block;background:#0d2240;color:#fff;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800">열기 →</span>'
+      +'</td></tr>';
+  });
+  h+='</table></div></div>';
+  return h;
+}
+
+/* ② 쪽 목록 */
+function bkhPagesPane(){
+  var rec=(bkhPdfs().byBook||{})[String(BKH.bid)]||null;
+  var cfg=bkhCfg(BKH.bid);
+  var pages=bkhPageList(BKH.bid);
+  var sols={};
+  bkhSols(BKH.bid).forEach(function(it){ (sols[String(it.page)]=sols[String(it.page)]||[]).push(it); });
+
+  var h='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">'
+    +'<div onclick="bkhBack(\'list\')" style="cursor:pointer;background:#fff;border:1px solid #dbe3ef;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800;color:#475569">← 교재 목록</div>'
+    +'<div style="font-size:15px;font-weight:900;color:#0d2240">'+bkhEsc(bkhBookTitle(BKH.bid))+'</div>'
+    +'<div style="font-size:11.5px;color:#64748b;font-weight:700">쪽 '+pages.length+' · 풀이 '+bkhSols(BKH.bid).length+'</div>'
+    +'<div id="bkh-step" style="font-size:12px;font-weight:800;color:#7c3aed">'+bkhEsc(BKH.step)+'</div>'
+    +'</div>';
+
+  /* PDF · 쪽 맞춤 */
+  h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:12px 14px;margin-bottom:10px">'
+    +'<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:8px">📄 교과서 PDF</div>';
+  if(!rec){
+    h+='<div style="font-size:12px;color:#b45309;font-weight:700;line-height:1.7">아직 등록된 PDF가 없습니다. 교과서 PDF를 올리면 쪽 그림 위에 문항 사각형을 놓을 수 있습니다.<br>'
+      +'<span style="color:#94a3b8;font-weight:600">(크기 제한 없이 그대로 올립니다 — 48MB 교과서도 괜찮습니다)</span></div>'
+      +'<div onclick="bkhPdfPick(\''+bkhJs(BKH.bid)+'\')" style="margin-top:9px;display:inline-block;cursor:pointer;background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border-radius:9px;padding:9px 18px;font-size:12.5px;font-weight:800">📄 PDF 고르기</div>';
+  } else {
+    h+='<div style="font-size:11.5px;color:#475569;font-weight:700;line-height:1.8">'
+      +'총 <b>'+(rec.pdfPages||'?')+'쪽</b> · 쪽 맞춤 <b>인쇄쪽 = PDF쪽 '+((Number(rec.offset||0))>=0?('+ '+Number(rec.offset||0)):('− '+Math.abs(Number(rec.offset||0))))+'</b>'
+      +' <span style="color:#cbd5e1">·</span> 올린 날 '+bkhEsc(String(rec.at||'').slice(0,10))+'</div>'
+      +'<div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:9px">'
+      +'<span style="font-size:11.5px;font-weight:800;color:#0d2240">PDF</span>'
+      +'<input type="number" value="'+(Number(BKH.off.pdf)||1)+'" oninput="bkhOffSet(\'pdf\',this.value)" style="width:72px;border:1px solid #cbd5e1;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:800;text-align:center;font-family:inherit">'
+      +'<span style="font-size:11.5px;font-weight:800;color:#0d2240">쪽이 &nbsp;인쇄 p.</span>'
+      +'<input type="number" value="'+(Number(BKH.off.print)||1)+'" oninput="bkhOffSet(\'print\',this.value)" style="width:72px;border:1px solid #cbd5e1;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:800;text-align:center;font-family:inherit">'
+      +'<span onclick="bkhOffPrev()" style="cursor:pointer;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:5px 11px;font-size:11.5px;font-weight:800;color:#475569">👁 미리보기</span>'
+      +'<span onclick="bkhOffSave()" style="cursor:pointer;background:#15803d;color:#fff;border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:800">💾 쪽 맞춤 저장</span>'
+      +'<span onclick="bkhPdfPick(\''+bkhJs(BKH.bid)+'\')" style="cursor:pointer;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:5px 11px;font-size:11.5px;font-weight:800;color:#475569">📄 다시 올리기</span>'
+      +'<span onclick="bkhPdfDel()" style="cursor:pointer;font-size:11px;font-weight:800;color:#dc2626">등록 지우기</span>'
+      +'</div>';
+    if(BKH.offPrev){
+      h+='<div style="margin-top:9px;display:flex;gap:10px;align-items:flex-start">'
+        +'<img src="'+BKH.offPrev+'" style="width:220px;border:1px solid #e2e8f0;border-radius:8px">'
+        +'<div style="font-size:11.5px;color:#475569;line-height:1.8">이 그림이 <b>PDF '+(Number(BKH.off.pdf)||1)+'쪽</b>입니다.<br>'
+        +'교과서에 적힌 쪽 번호를 오른쪽 칸에 적고 <b>💾 쪽 맞춤 저장</b>을 눌러 주세요.<br>'
+        +'<span style="color:#94a3b8">대부분은 그대로(1 = 1)가 맞습니다.</span></div></div>';
+    }
+  }
+  h+='</div>';
+
+  /* 공개 설정 */
+  var rev=[['open','누구나','등록 학생이면 번호를 누르면 바로 봅니다 (기본)'],
+           ['scored','채점한 학생만','그 문항을 O/X 채점한 기록이 있어야 열립니다'],
+           ['hint','힌트·재풀이 뒤','틀린 문항은 힌트 3단계를 보거나 다시 풀어 올린 뒤 열립니다']];
+  h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:12px 14px;margin-bottom:10px">'
+    +'<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:8px">🔓 학생앱 공개 규칙</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">';
+  rev.forEach(function(r){
+    var on=(cfg.reveal===r[0]);
+    h+='<div onclick="bkhCfgSet(\'reveal\',\''+r[0]+'\')" style="cursor:pointer;border-radius:10px;padding:9px 11px;'
+      +(on?'background:#eff6ff;border:2px solid #1d6fe8':'background:#fff;border:1px solid #e8eef8')+'">'
+      +'<div style="font-size:12.5px;font-weight:900;color:#0d2240">'+(on?'● ':'○ ')+bkhEsc(r[1])+'</div>'
+      +'<div style="font-size:10.5px;color:#64748b;line-height:1.55;margin-top:3px">'+bkhEsc(r[2])+'</div></div>';
+  });
+  h+='</div>'
+    +'<div onclick="bkhCfgSet(\'hidden\',\''+(cfg.hidden?'false':'true')+'\')" style="margin-top:9px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:'+(cfg.hidden?'#b91c1c':'#475569')+'">'
+    +'<span style="display:inline-block;width:34px;height:19px;border-radius:50px;background:'+(cfg.hidden?'#dc2626':'#cbd5e1')+';position:relative">'
+    +'<span style="position:absolute;top:2px;'+(cfg.hidden?'right:2px':'left:2px')+';width:15px;height:15px;border-radius:50%;background:#fff"></span></span>'
+    +'학생앱에서 이 교재를 숨김</div>'
+    +'</div>';
+
+  /* 쪽 목록 */
+  h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:6px 8px">';
+  if(!pages.length){
+    h+='<div style="padding:34px;text-align:center;color:#94a3b8;font-size:12.5px">'
+      +'이 교재의 쪽 목록을 만들지 못했습니다.<br>'
+      +'<span style="font-size:11px">매쓰플랫 문항 자료(<b>mf_bookans_'+bkhEsc(BKH.bid)+'</b>)와 '
+      +'학생별 쪽 목록(<b>mf_swb_…</b>)이 모두 있어야 쪽 번호를 알 수 있습니다.</span></div></div>';
+    return h;
+  }
+  h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">'
+    +'<tr>'
+    +'<th style="text-align:left;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">쪽</th>'
+    +'<th style="text-align:right;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">문항</th>'
+    +'<th style="text-align:right;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">풀이</th>'
+    +'<th style="text-align:right;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">최근 7일 오답</th>'
+    +'<th style="text-align:center;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">사각형</th>'
+    +'<th style="padding:8px 8px;background:#f8fafc"></th></tr>';
+  var bx=(BKH.boxes&&BKH.boxes.pages)||{};
+  pages.forEach(function(p){
+    var pd=bx[String(p.page)];
+    var nb=pd?((pd.boxes||[]).length):0;
+    var bad=pd && (pd.boxes||[]).some(function(b){ return !b.ok; });
+    h+='<tr>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;font-weight:900;color:#0d2240">p.'+p.page+'</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right">'+p.nQ+'</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right;font-weight:800;color:'+(p.nSol?'#15803d':'#cbd5e1')+'">'+p.nSol+' / '+p.nQ+'</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right;color:'+(p.wrong>=5?'#b91c1c':'#94a3b8')+';font-weight:'+(p.wrong>=5?'900':'700')+'">'+(p.wrong?((p.wrong>=5?'🔥 ':'')+p.wrong):'—')+'</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:center">'
+        +(nb?('<span style="font-size:10px;font-weight:900;border-radius:50px;padding:3px 9px;background:'+(bad?'#fef3c7':'#dcfce7')+';color:'+(bad?'#b45309':'#15803d')+'">'+(bad?'확인 필요 ':'')+nb+'개</span>')
+            :'<span style="font-size:10px;font-weight:900;border-radius:50px;padding:3px 9px;background:#f1f5f9;color:#94a3b8">없음</span>')+'</td>'
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right">'
+        +'<span onclick="bkhOpenPage('+p.page+')" style="cursor:pointer;display:inline-block;background:#0d2240;color:#fff;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800">작업대 열기 →</span></td>'
+      +'</tr>';
+  });
+  h+='</table></div></div>';
+  return h;
+}
+
+/* ③ 쪽 작업대 — 3분할 */
+function bkhPagePane(){
+  var pages=bkhPageList(BKH.bid);
+  var pd=bkhPageData();
+  var groups=bkhGroupsOfPage();
+  var h='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">'
+    +'<div onclick="bkhBack(\'pages\')" style="cursor:pointer;background:#fff;border:1px solid #dbe3ef;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800;color:#475569">← 쪽 목록</div>'
+    +'<div style="font-size:15px;font-weight:900;color:#0d2240">'+bkhEsc(bkhBookTitle(BKH.bid))+' <span style="color:#1d6fe8">p.'+BKH.page+'</span></div>'
+    +'<div style="font-size:11.5px;color:#64748b;font-weight:700">매쓰플랫 문항 '+groups.length+'개</div>'
+    +'<div id="bkh-step" style="font-size:12px;font-weight:800;color:#7c3aed">'+bkhEsc(BKH.step)+'</div>'
+    +(BKH.dirty?'<div style="font-size:11.5px;font-weight:900;color:#b45309">● 저장하지 않은 변경</div>':'')
+    +'</div>';
+
+  h+='<div style="display:grid;grid-template-columns:150px minmax(300px,1fr) minmax(280px,380px);gap:11px;align-items:start">';
+
+  /* ── 왼쪽: 쪽 목록 ── */
+  h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:8px;max-height:760px;overflow-y:auto">'
+    +'<div style="font-size:10px;font-weight:900;color:#94a3b8;margin:3px 0 5px">쪽</div>';
+  var bxAll=(BKH.boxes&&BKH.boxes.pages)||{};
+  pages.forEach(function(p){
+    var on=(Number(p.page)===Number(BKH.page));
+    var np=bxAll[String(p.page)];
+    h+='<div onclick="bkhOpenPage('+p.page+')" style="cursor:pointer;display:flex;align-items:center;gap:5px;border-radius:7px;padding:5px 8px;font-size:11.5px;font-weight:'
+      +(on?'900':'700')+';color:'+(on?'#0d2240':'#475569')+';'+(on?'background:#eff6ff;':'')+'">'
+      +'<span style="flex:1">p.'+p.page+'</span>'
+      +(p.nSol?'<span style="font-size:9.5px;color:#15803d;font-weight:900">✍'+p.nSol+'</span>':'')
+      +(np&&(np.boxes||[]).length?'<span style="font-size:9.5px;color:#94a3b8">▦</span>':'')
+      +(p.wrong>=5?'<span style="font-size:9.5px">🔥</span>':'')
+      +'</div>';
+  });
+  h+='</div>';
+
+  /* ── 가운데: 교과서 쪽 + 사각형 ── */
+  h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:10px 12px">';
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'
+    +'<span onclick="bkhAuto()" style="cursor:pointer;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:800;color:#475569">🔄 자동 배치'+(pd?' 다시':'')+'</span>'
+    +'<span onclick="bkhCols(1)" style="cursor:pointer;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:800;'+((pd&&Number(pd.cols)===1)?'background:#0d2240;color:#fff':'background:#fff;color:#475569;border:1px solid #cbd5e1')+'">1열</span>'
+    +'<span onclick="bkhCols(2)" style="cursor:pointer;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:800;'+((!pd||Number(pd.cols)!==1)?'background:#0d2240;color:#fff':'background:#fff;color:#475569;border:1px solid #cbd5e1')+'">2열</span>'
+    +'<span onclick="bkhBoxAdd()" style="cursor:pointer;background:#fff;border:1px solid #bfdbfe;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:800;color:#1d6fe8">+ 상자 추가</span>'
+    +'<span onclick="bkhSaveBoxes()" style="margin-left:auto;cursor:pointer;background:'+(BKH.dirty?'#15803d':'#cbd5e1')+';color:#fff;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800">💾 저장</span>'
+    +'</div>';
+
+  if(BKH.pgErr){
+    h+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:10px;padding:14px;font-size:12px;font-weight:700;line-height:1.7">'
+      +bkhEsc(BKH.pgErr)
+      +'<div onclick="bkhPageRetry()" style="margin-top:9px;display:inline-block;cursor:pointer;background:#fff;border:1px solid #fecaca;border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:800">다시 시도</div></div>';
+  } else if(!BKH.pg){
+    if(!BKH.pgBusy) setTimeout(function(){ bkhLoadPage(); },0);
+    h+='<div style="padding:60px;text-align:center;color:#94a3b8;font-weight:700;font-size:12.5px">📄 교과서 '+BKH.page+'쪽을 그리는 중…</div>';
+  } else {
+    h+='<div id="bkh-pg" style="position:relative;width:100%;max-width:700px;user-select:none">'
+      +'<img src="'+BKH.pg.img+'" style="width:100%;display:block;border:1px solid #e2e8f0;border-radius:8px">';
+    if(pd){
+      (pd.boxes||[]).forEach(function(b,i){
+        var nSol=bkhSolsOfNum(BKH.bid, BKH.page, b.n).length;
+        var col = !b.ok ? '#d97706' : (nSol?'#15803d':'#1d6fe8');
+        var on=(BKH.sel===i);
+        h+='<div id="bkh-bx-'+i+'" onmousedown="bkhDrag(event,'+i+',\'move\')" '
+          +'style="position:absolute;cursor:move;left:'+(b.x*100)+'%;top:'+(b.y*100)+'%;width:'+(b.w*100)+'%;height:'+(b.h*100)+'%;'
+          +'border:'+(on?'3px':'2px')+' '+(b.ok?'solid':'dashed')+' '+col+';border-radius:6px;background:'+(on?'rgba(29,111,232,.10)':'rgba(29,111,232,.04)')+'">'
+          +'<div style="position:absolute;left:-2px;top:-2px;background:'+col+';color:#fff;font-size:10px;font-weight:900;border-radius:5px;padding:1px 6px">'
+            +bkhEsc(b.n)+(nSol?(' ✍'+nSol):'')+'</div>'
+          +'<div onmousedown="bkhDrag(event,'+i+',\'size\')" style="position:absolute;right:-6px;bottom:-6px;width:12px;height:12px;border-radius:3px;background:'+col+';cursor:nwse-resize"></div>'
+          +'</div>';
+      });
+    }
+    h+='</div>';
+    h+='<div style="margin-top:8px;font-size:10.5px;color:#94a3b8;line-height:1.7">'
+      +'<span style="color:#15803d;font-weight:900">■</span> 풀이 있음 &nbsp; '
+      +'<span style="color:#1d6fe8;font-weight:900">■</span> 비어 있음 &nbsp; '
+      +'<span style="color:#d97706;font-weight:900">▨</span> 확인 필요(노란 점선) — 끌어서 맞추면 확정됩니다</div>';
+  }
+
+  /* 상자 목록 */
+  if(pd && (pd.boxes||[]).length){
+    h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px">';
+    (pd.boxes||[]).forEach(function(b,i){
+      var nSol=bkhSolsOfNum(BKH.bid, BKH.page, b.n).length;
+      h+='<div style="display:flex;align-items:center;gap:5px;background:'+((BKH.sel===i)?'#eff6ff':'#f8fafc')+';border-radius:8px;padding:4px 8px;font-size:11px">'
+        +'<span onclick="bkhBoxSel('+i+')" style="cursor:pointer;color:#94a3b8">▦</span>'
+        +'<input value="'+bkhEsc(b.n)+'" oninput="bkhBoxNum('+i+',this.value)" style="width:48px;border:1px solid #cbd5e1;border-radius:6px;padding:2px 5px;font-size:11px;font-weight:800;text-align:center;font-family:inherit">번'
+        +'<span style="color:'+(nSol?'#15803d':'#cbd5e1')+';font-weight:800">✍'+nSol+'</span>'
+        +'<span style="color:#cbd5e1">·</span><span style="color:#94a3b8">문항 '+((b.ids||[]).length)+'</span>'
+        +'<span onclick="bkhBoxDel('+i+')" style="cursor:pointer;color:#dc2626;font-weight:900">✕</span>'
+        +'</div>';
+    });
+    h+='</div>';
+  } else if(BKH.pg){
+    h+='<div style="margin-top:9px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 12px;font-size:11.5px;color:#92400e;font-weight:700;line-height:1.7">'
+      +'아직 이 쪽의 문항 사각형이 없습니다 — <b>🔄 자동 배치</b>를 눌러 주세요.'
+      +(groups.length?(' (매쓰플랫 문항 '+groups.length+'개: '+bkhEsc(groups.map(function(g){ return g.n; }).join(' · '))+')'):' (매쓰플랫 문항 목록이 없어 「+ 상자 추가」로 직접 놓아야 합니다)')
+      +'</div>';
+  }
+  h+='</div>';
+
+  /* ── 오른쪽: 필기 조각 ── */
+  h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:10px 12px">';
+  h+='<div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">'
+    +'<div style="font-size:12.5px;font-weight:900;color:#0d2240">✍️ 필기 올리기</div>'
+    +'<span onclick="bkhHandPick()" style="margin-left:auto;cursor:pointer;background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800">📎 사진·PDF 고르기</span>'
+    +'</div>';
+  if(!BKH.hand){
+    h+='<div style="background:#f8fafc;border-radius:10px;padding:16px;font-size:11.5px;color:#475569;line-height:1.85">'
+      +'풀이를 적은 <b>사진(JPG·PNG)</b>이나 <b>PDF 한 장</b>을 올려 주세요.<br>'
+      +'올린 그림 위에서 <b>영역을 끌어</b> 조각을 만들고, 아래 번호 단추를 누르면 그 문항의 풀이가 됩니다.<br>'
+      +'같은 번호에 또 붙이면 <b>방법 2, 방법 3</b>으로 쌓입니다.</div>';
+  } else {
+    var s=bkhSelBox();
+    h+='<div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-bottom:5px">'+bkhEsc(BKH.hand.name)+' — 그림 위를 끌어서 자를 영역을 고르세요</div>'
+      +'<div id="bkh-hand" onmousedown="bkhHandDown(event)" style="position:relative;width:100%;user-select:none;cursor:crosshair">'
+      +'<img src="'+BKH.hand.img+'" style="width:100%;display:block;border:1px solid #e2e8f0;border-radius:8px">'
+      +'<div id="bkh-sel" style="position:absolute;display:'+(s?'block':'none')+';'
+        +(s?('left:'+(s.x*100)+'%;top:'+(s.y*100)+'%;width:'+(s.w*100)+'%;height:'+(s.h*100)+'%;'):'')
+        +'border:2px solid #dc2626;background:rgba(220,38,38,.10);border-radius:4px;pointer-events:none"></div>'
+      +'</div>';
+    if(s && s.w>0.02 && s.h>0.015){
+      h+='<div style="margin-top:9px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 12px">'
+        +'<div style="font-size:11.5px;font-weight:900;color:#0d2240;margin-bottom:7px">이 조각을 어느 번호에 붙일까요?'
+        +'<span onclick="bkhSelClear()" style="cursor:pointer;float:right;font-size:10.5px;font-weight:800;color:#64748b">영역 다시 고르기</span></div>'
+        +'<div style="display:flex;gap:5px;flex-wrap:wrap">';
+      var nums=(pd&&(pd.boxes||[]).length) ? (pd.boxes||[]).map(function(b){ return String(b.n); })
+                                          : groups.map(function(g){ return String(g.n); });
+      if(!nums.length){
+        h+='<div style="font-size:11.5px;color:#b45309;font-weight:700">번호가 없습니다 — 가운데에서 「🔄 자동 배치」나 「+ 상자 추가」를 먼저 해 주세요.</div>';
+      } else {
+        nums.forEach(function(n){
+          var k=bkhSolsOfNum(BKH.bid, BKH.page, n).length;
+          h+='<span onclick="bkhAssign(\''+bkhJs(n)+'\')" style="cursor:pointer;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:900;'
+            +(k?'background:#15803d;color:#fff':'background:#fff;color:#0d2240;border:1.5px solid #bfdbfe')+'">'+bkhEsc(n)+(k?(' ✍'+k):'')+'</span>';
+        });
+      }
+      h+='</div></div>';
+    }
+  }
+
+  /* 붙인 조각 목록 */
+  var mine=bkhSols(BKH.bid).filter(function(it){ return Number(it.page)===Number(BKH.page); })
+    .sort(function(a,b){ return String(a.num).localeCompare(String(b.num),undefined,{numeric:true}) || (Number(a.ord)||0)-(Number(b.ord)||0); });
+  h+='<div style="margin-top:11px;font-size:12px;font-weight:900;color:#0d2240;margin-bottom:6px">📌 이 쪽에 붙인 풀이 '+mine.length+'장</div>';
+  if(!mine.length){
+    h+='<div style="background:#f8fafc;border-radius:10px;padding:14px;text-align:center;color:#cbd5e1;font-size:11.5px">아직 없습니다</div>';
+  } else {
+    mine.forEach(function(it){
+      h+='<div style="display:flex;gap:8px;align-items:flex-start;background:#f8fafc;border-radius:10px;padding:7px 9px;margin-bottom:6px">'
+        +'<img src="'+bkhEsc(it.img)+'" style="width:64px;height:64px;object-fit:cover;object-position:top;border-radius:7px;border:1px solid #e2e8f0;background:#fff">'
+        +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:11.5px;font-weight:900;color:#0d2240">'+bkhEsc(it.num)+'번 <span style="color:#94a3b8;font-weight:700">· 방법 '+((Number(it.ord)||0)+1)+'</span></div>'
+        +'<div onclick="bkhSolTitle(\''+it.id+'\')" style="cursor:pointer;font-size:11px;color:'+(it.title?'#b91c1c':'#cbd5e1')+';font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+          +bkhEsc(it.title||'＋ 방법 제목 적기')+'</div>'
+        +'<div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap">'
+        +'<span onclick="bkhSolVid(\''+it.id+'\')" style="cursor:pointer;font-size:10.5px;font-weight:800;border-radius:6px;padding:3px 8px;'
+          +(it.vid?'background:#dc2626;color:#fff':'background:#fff;color:#475569;border:1px solid #cbd5e1')+'">🎬 '
+          +(it.vid?('영상 '+bkhFmtSec(it.vid.start)):'영상 링크')+'</span>'
+        +'<span onclick="bkhSolDel(\''+it.id+'\')" style="cursor:pointer;font-size:10.5px;font-weight:800;color:#dc2626;padding:3px 6px">🗑 지우기</span>'
+        +'</div></div></div>';
+    });
+  }
+  h+='</div>';
+
+  h+='</div>';
+  return h;
+}
+
+
 // ═══════════════════ ✍️ 서술형 첨삭 (v18-154 · 1단계) ═══════════════════
 /* 태블릿이 없는 학생의 서술형 답안(종이)을 스캔 PDF로 올리면
      ① pdf.js 이미지화 → ② Haiku 학생 분리(수학풀이분석 paSplitPage·paGroup 재사용)
