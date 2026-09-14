@@ -1781,7 +1781,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .ans-fld.foc{box-shadow:0 0 0 3px rgba(20,184,166,0.18)}
 .dunno-b{border:1.5px solid #d9a441;color:#a15c00;background:var(--surface);border-radius:10px;padding:9px 10px;font-family:inherit;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap}
 .rev-line{font-size:12px;font-weight:800;display:flex;gap:8px;align-items:baseline}
-.rev-line .lb{color:#94a3b8;font-size:10.5px;width:30px;flex-shrink:0}
+.rev-line .lb{color:#94a3b8;font-size:10.5px;width:44px;flex-shrink:0}
 .rev-line .vv{word-break:break-all}
 .man-line{font-size:11px;font-weight:900;color:#a15c00;background:#fdf3e0;border:1px dashed #d9a441;border-radius:9px;padding:8px 10px;text-align:center}
 /* 키패드 */
@@ -1816,9 +1816,9 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .bk-lock{border:1px solid var(--border);border-radius:11px;background:#f8fafc;padding:18px 10px;text-align:center;font-size:12px;font-weight:900;color:#94a3b8}
 .bk-ansbox{border:1px solid var(--border);border-radius:11px;background:var(--surface);padding:9px}
 .bk-ansbox .cap{font-size:9.5px;font-weight:900;color:#94a3b8;margin-bottom:5px}
-.bk-ansbox img{width:100%;border-radius:8px;display:block;cursor:zoom-in}
+.bk-ansbox img{width:100%;max-height:340px;object-fit:contain;border-radius:8px;display:block;cursor:zoom-in;background:#f8fafc}
 .bk-ansbox .txt{font-size:15.5px;font-weight:900;color:#15803d;word-break:break-all}
-.bk-myphoto{width:100%;border-radius:9px;display:block;border:1px solid var(--border);cursor:zoom-in}
+.bk-myphoto{width:100%;max-height:300px;object-fit:contain;border-radius:9px;display:block;border:1px solid var(--border);cursor:zoom-in;background:#f8fafc}
 .bk-acts{display:flex;gap:7px}
 .bk-acts button{flex:1;border-radius:10px;padding:11px 0;font-family:inherit;font-size:13.5px;font-weight:900;cursor:pointer;border:1.8px solid var(--border);background:var(--surface);color:#334155}
 .bk-acts button.o{background:#e7f6ec;border-color:#15803d;color:#15803d}
@@ -13014,6 +13014,185 @@ window.bkNavGo=function(idx){
   try{ window.scrollTo(0,0); }catch(e){}
 };
 
+/* ══════════════════════════════════════════════════════════════════════
+ * ★ v2-81: 교재 채점 2판 — 답 모양(shape)에 맞는 입력칸
+ *   · 답 모양은 채점 엔진이 정한다(HWGrade.shapeOf). 엔진에 아직 그 기능이 없으면
+ *     정답사전에 적힌 shape/self를 쓰고, 그것도 없으면 앱이 스스로 짐작한다(bkGuessShape).
+ *   · 화면은 언제나 bkShape(p) 하나만 부른다 — 엔진이 바뀌어도 화면은 그대로.
+ *   · 오채점 방지가 먼저다. 앱이 학생 답을 못 읽으면 틀렸다고 하지 않고
+ *     「사진 찍고 내가 채점」으로 넘긴다.
+ * ════════════════════════════════════════════════════════════════════ */
+
+/* 답 한 줄을 「바깥 쉼표」로 자른다 — {} ( ) 안의 쉼표는 자르지 않는다 */
+function bkSplitTop(s){
+  var out=[], cur='', d=0; s=String(s==null?'':s);
+  for(var i=0;i<s.length;i++){
+    var c=s.charAt(i);
+    if(c==='{'||c==='(') d++;
+    else if(c==='}'||c===')') d--;
+    if(c===','&&d<=0){ out.push(cur); cur=''; continue; }
+    cur+=c;
+  }
+  out.push(cur);
+  var r=[]; out.forEach(function(x){ x=x.trim(); if(x!=='') r.push(x); });
+  return r;
+}
+/* 이름표 다듬기: "[공약수: ]" → "공약수:" */
+function bkLabelText(u){
+  var s=String(u==null?'':u).replace(/\\;|\\,|\\!/g,' ').replace(/^\s*\[/,'').replace(/\]\s*$/,'').trim();
+  if(s&&!/[:=]$/.test(s)) s+=':';
+  return s;
+}
+var BK_UNITS='㎠|㎡|㎤|㎥|㎝|㎜|㎞|㎖|˚|°|℃|cm³|cm²|cm|mm|km|kg|mL|L|g|m|개|명|원|번|회|점|초|분|시간|일|주|장|권|살|층|칸|마리|송이|그루|줄|바퀴|배|%';
+function bkUnitTail(a){
+  var m=String(a==null?'':a).match(new RegExp('('+BK_UNITS+')\\s*$'));
+  return m?m[1]:'';
+}
+/* 엔진에 shapeOf가 아직 없을 때 앱이 짐작하는 답 모양 */
+function bkGuessShape(p){
+  var a=String((p&&p.answer)==null?'':p.answer).trim();
+  var t=String((p&&p.type)||'');
+  if(t==='ESSAY'||a===''||a==='.') return 'essay';
+  if(/^[OXox○×]$/.test(a)) return 'ox';
+  if(/[ㄱ-ㅎ]/.test(a)||/[①-⑩]/.test(a)||/^\(\s*\d\s*\)/.test(a)) return 'mark';
+  if(/overline|overrightarrow|overleftrightarrow|overgroup|overarc|∠|△|⊥|∥/.test(a)) return 'geo';
+  if(a.indexOf(':')>=0||(((p&&p.units)||[]).length>0)) return 'labeled';
+  if(/≤|≥|\\le|\\ge|<|>/.test(a)) return 'ineq';
+  if(/^[A-Z]?\(/.test(a)&&a.indexOf(',')>=0&&a.indexOf(')')>=0) return 'coord';
+  if(a.indexOf('=')>=0) return 'eq';
+  var bare=a.replace(/\\[a-zA-Z]+/g,'').replace(new RegExp('('+BK_UNITS+')','g'),'');
+  if(/[a-zA-Z]/.test(bare)) return 'alg';
+  if(/[가-힣]/.test(bare)) return 'word';
+  if(bkUnitTail(a)||a.indexOf('π')>=0) return 'unit';
+  if(/^[-+±0-9.,/{}\s]*$/.test(a.replace(/\\frac|\\pm|\\d?frac/g,''))) return 'num';
+  return 'free';
+}
+/* 입력칸 설계도 — 엔진이 parts를 주지 않을 때 앱이 만든다 */
+function bkParts(p, shape, unit){
+  var a=String((p&&p.answer)==null?'':p.answer);
+  var mk=function(label,kind,u){ return { label:label||'', kind:kind||'num', unit:u||'' }; };
+  if(shape==='ox') return [mk('','ox')];
+  if(shape==='essay'||shape==='free') return [mk('','free')];
+  if(shape==='word') return [mk('','word')];
+  if(shape==='mark') return [mk('','mark')];
+  if(shape==='geo') return [mk('','geo')];
+  if(shape==='labeled'){
+    var out=[], us=(p&&p.units)||[];
+    us.forEach(function(u){ out.push(mk(bkLabelText(u&&u.u!=null?u.u:u),'num')); });
+    if(!out.length){
+      bkSplitTop(a).forEach(function(seg){
+        var m2=seg.match(/^([^:]{1,14}):\s*(.*)$/);
+        if(m2) out.push(mk(bkLabelText(m2[1]), /[가-힣a-zA-Z]/.test(m2[2])?'word':'num'));
+      });
+    }
+    if(!out.length) out=[mk('','num')];
+    if(out.length>4) out=out.slice(0,4);
+    return out;
+  }
+  if(shape==='eq'){
+    var segs=bkSplitTop(a), allEq=true;
+    segs.forEach(function(s){ if(s.indexOf('=')<0) allEq=false; });
+    if(segs.length>1&&allEq&&segs.length<=4){
+      return segs.map(function(s){ return mk(s.slice(0,s.indexOf('=')).trim()+'=','num'); });
+    }
+    var lhs=(a.indexOf('=')>=0)?a.slice(0,a.lastIndexOf('=')).trim():'';
+    var pre=/^[a-zA-Zㄱ-힣∠][a-zA-Z0-9]{0,3}$/.test(lhs)?(lhs+'='):'';
+    return [mk(pre,'num',unit)];
+  }
+  var segs2=bkSplitTop(a);
+  var n=segs2.length;
+  if(p&&p.cnt&&Number(p.cnt)>n&&Number(p.cnt)<=4) n=Number(p.cnt);
+  if(n>4||n<1) n=1;                                   // 칸이 너무 많으면 한 칸에 쉼표로
+  var kind=(shape==='alg'||shape==='ineq'||shape==='coord')?shape:'num';
+  var parts=[];
+  for(var i=0;i<n;i++) parts.push(mk('',kind,''));
+  if(unit) parts[parts.length-1].unit=unit;
+  return parts;
+}
+/* ★ 화면이 부르는 단 하나의 창구 — 엔진 → 정답사전 → 앱 짐작 순서 */
+function bkShape(p){
+  p=p||{};
+  var s=null;
+  try{ if(typeof HWGrade!=='undefined'&&typeof HWGrade.shapeOf==='function') s=HWGrade.shapeOf(p); }catch(e){ s=null; }
+  if(!s||typeof s!=='object') s={};
+  var a=String(p.answer==null?'':p.answer);
+  var shape=s.shape||p.shape||bkGuessShape(p);
+  var unit=(s.unit!=null&&s.unit!=='')?String(s.unit):'';
+  if(!unit&&(shape==='unit'||shape==='num'||shape==='eq')){
+    unit=bkUnitTail(a);
+    if(a.indexOf('π')>=0) unit='π'+unit;
+  }
+  if(!unit&&p.unit) unit=String(p.unit);
+  var self=(s.self!=null)?!!s.self
+    :((p.self!=null)?!!p.self:(shape==='essay'||shape==='free'||!p.gradable));
+  var parts=(s.parts&&s.parts.length)?s.parts:bkParts(p,shape,unit);
+  var gradable=(s.gradable!=null)?!!s.gradable:(self?false:(p.gradable!=null?!!p.gradable:true));
+  return { shape:shape, self:self, unit:unit, parts:parts, gradable:gradable };
+}
+function bkTabFor(shape){
+  if(shape==='geo') return 'geo';
+  if(shape==='alg'||shape==='ineq'||shape==='coord') return 'alg';
+  if(shape==='mark') return 'mark';
+  return 'num';
+}
+/* 따옴표 안전한 onclick 인자 */
+function bkQ(v){ return "'"+String(v==null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;')+"'"; }
+
+/* ── 자판 넷: 숫자 · 도형 · 문자식 · 기호 ── [보이는 글자, 넣을 글자/기능, 꾸밈, 칸 넓이] */
+var BK_KPAD={
+  num:{ cols:4, keys:[
+    ['7'],['8'],['9'],['⌫','BS','fn'],
+    ['4'],['5'],['6'],['−','-','fn'],
+    ['1'],['2'],['3'],['.','.','fn'],
+    ['0'],[',',',','fn'],['／분수','/','fn'],['π','π','fn'],
+    ['다음 칸','NEXT','fn'],['제출','GO','go',3]
+  ]},
+  geo:{ cols:5, keys:[
+    ['선분','선분','fn'],['반직선','반직선','fn'],['직선','직선','fn'],['호','호','fn'],['∠'],
+    ['△'],['□'],['⊥'],['∥'],[',',',','fn'],
+    ['A'],['B'],['C'],['D'],['M'],
+    ['N'],['O'],['P'],['X'],['Y'],
+    ['E'],['F'],['G'],['H'],['⌫','BS','fn'],
+    ['다음 칸','NEXT','fn'],['제출','GO','go',4]
+  ]},
+  alg:{ cols:5, keys:[
+    ['x'],['y'],['a'],['b'],['n'],
+    ['+'],['−','-'],['×'],['÷'],['^'],
+    ['('],[')'],['／분수','/','fn'],['='],['π'],
+    ['<'],['>'],['≤'],['≥'],[',',',','fn'],
+    ['1'],['2'],['3'],['4'],['5'],
+    ['6'],['7'],['8'],['9'],['0'],
+    ['.'],['⌫','BS','fn'],['다음 칸','NEXT','fn'],['제출','GO','go',2]
+  ]},
+  mark:{ cols:5, keys:[
+    ['ㄱ'],['ㄴ'],['ㄷ'],['ㄹ'],['ㅁ'],
+    ['ㅂ'],['ㅅ'],['ㅇ'],['ㅈ'],['ㅊ'],
+    ['①'],['②'],['③'],['④'],['⑤'],
+    ['(1)'],['(2)'],['(3)'],['(4)'],['(5)'],
+    [',',',','fn'],['⌫','BS','fn'],['다음 칸','NEXT','fn'],['제출','GO','go',2]
+  ]}
+};
+function bkKpadShow(on){ var k=document.getElementById('bk-kpad'); if(k) k.classList.toggle('show',!!on); }
+function bkKpadRender(){
+  var tabs=document.getElementById('bk-kptabs'), wrap=document.getElementById('bk-kwrap'), pad=document.getElementById('bk-kpad');
+  if(!tabs||!wrap) return;
+  var defs=[['num','숫자'],['geo','도형'],['alg','문자식'],['mark','기호']];
+  var th='';
+  defs.forEach(function(d){ th+='<button class="'+(BK.tab===d[0]?'on':'')+'" onclick="bkTab('+bkQ(d[0])+')">'+d[1]+'</button>'; });
+  tabs.innerHTML=th;
+  var L=BK_KPAD[BK.tab]||BK_KPAD.num;
+  wrap.style.gridTemplateColumns='repeat('+L.cols+',1fr)';
+  if(pad) pad.classList.toggle('cmp', L.keys.length>20);
+  var h='';
+  L.keys.forEach(function(k){
+    var lb=k[0], act=(k[1]==null?k[0]:k[1]), cls=k[2]||'', span=k[3]||0;
+    h+='<button'+(cls?(' class="'+cls+'"'):'')+(span?(' style="grid-column:span '+span+'"'):'')
+      +' onclick="bkKey('+bkQ(act)+')">'+h3Esc(lb)+'</button>';
+  });
+  wrap.innerHTML=h;
+}
+window.bkTab=function(t){ BK.tab=t; bkKpadRender(); };
+
 /* ── 화면 3: 문항 채점 ── */
 window.bkRenderQ=function(){
   var b=BK.book, pg=BK.page; if(!b||!pg){ go('screen-bookscore'); return; }
@@ -13024,83 +13203,399 @@ window.bkRenderQ=function(){
   var body=document.getElementById('bkq-body');
   if(!pageAns){ body.innerHTML=bkNavHtml()+'<div class="sp3-empty"><div class="e1">⏳</div><div class="e2">정답 준비 중</div></div>'; return; }
   var probs=pageAns.problems||[];
+  var st=bkPageStat(pg,probs);
   var h=bkNavHtml();
-  h+='<div style="font-size:11px;font-weight:800;color:#94a3b8;margin-bottom:9px">종이에 푼 답을 입력하고 제출하면 바로 채점돼요 · 제출해야 정답이 보여요</div>';
-  probs.forEach(function(p,i){
-    var m=BK.scores[bkKeyOf(pg.pid,p.wpId)];
-    var st=m?(m.r==='O'?'st-o':(m.r==='X'?'st-x':'st-q')):'';
-    var icon=m?(m.r==='O'?'◯':(m.r==='X'?'✕':'?')):'✎';
-    h+='<div class="q-card '+st+'" id="qc-'+p.wpId+'">';
-    h+='<div class="mk"><span class="ic">'+icon+'</span><span class="nm">'+h3Esc(p.num||String(i+1))+'</span></div>';
-    h+='<div class="bd">';
-    if(m){
-      // 채점 완료 — 정답 공개
-      h+='<div class="rev-line"><span class="lb">내 답</span><span class="vv" style="color:'+(m.r==='O'?'#1d78c9':(m.r==='X'?'#dc3b34':'#a15c00'))+'">'+(m.r==='?'?'모름':h3Esc(m.a||''))+'</span></div>';
-      h+='<div class="rev-line"><span class="lb">정답</span><span class="vv" style="color:#15803d">'+h3Esc(bkCleanAns(p.answer))+'</span></div>';
-      if(m.r==='?') h+='<div style="font-size:10px;font-weight:900;color:#a15c00">💡 아하노트에 질문해 보세요</div>';
-    } else if(p.objective){
-      var oc=p.optionCount||5, marks=['①','②','③','④','⑤'];
-      h+='<div class="qt"><span class="ty">객관식</span></div>';
-      h+='<div class="opt5">';
-      for(var k=1;k<=Math.min(oc,5);k++) h+='<button onclick="bkPick('+p.wpId+','+k+')">'+marks[k-1]+'</button>';
-      h+='</div>';
-      h+='<div style="display:flex;justify-content:flex-end"><button class="dunno-b" onclick="bkDunno('+p.wpId+')">모름 ?</button></div>';
-    } else if(p.gradable){
-      h+='<div class="qt"><span class="ty">단답</span>'+(p.unit?'<span class="un">단위: '+h3Esc(p.unit)+' (숫자만)</span>':'')+'</div>';
-      h+='<div class="ans-line"><div class="ans-fld" id="fld-'+p.wpId+'" onclick="bkFocus('+p.wpId+')"></div>';
-      h+='<button class="dunno-b" onclick="bkDunno('+p.wpId+')">모름 ?</button></div>';
-    } else {
-      h+='<div class="qt"><span class="ty" style="background:#fdf3e0;color:#a15c00">'+(p.type==='ESSAY'?'서술형':'단답·도형')+'</span></div>';
-      h+='<div class="man-line">✍️ 선생님이 채점할 문제예요 — 종이에 풀어두세요</div>';
-      h+='<div style="display:flex;justify-content:flex-end"><button class="dunno-b" onclick="bkDunno('+p.wpId+')">모름 ? (표시만)</button></div>';
-    }
-    h+='</div></div>';
-  });
+  h+='<div class="bk-strip"><span>'+probs.length+'문항</span><span>채점 '+st.done+'</span>'
+    +(st.self?'<span style="background:#e5f5f2;color:#0f766e">자기채점 '+st.self+'</span>':'')+'</div>';
+  h+='<div class="bk-hint" style="margin-bottom:9px">종이에 푼 답을 넣고 제출하면 바로 채점돼요 · 제출해야 정답이 보여요</div>';
+  probs.forEach(function(p,i){ h+=bkCardHtml(p,i,pg,probs); });
+  h+=bkDoneHtml(pg,probs);
   body.innerHTML=h;
+  BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
   bkKpadShow(false);
 };
-window.bkFocus=function(wpId){
-  if(BK.active&&BK.active!==wpId){ var prev=document.getElementById('fld-'+BK.active); if(prev) prev.classList.remove('foc'); }
-  BK.active=wpId; BK.buf=(document.getElementById('fld-'+wpId)||{}).textContent||'';
-  var el=document.getElementById('fld-'+wpId); if(el) el.classList.add('foc');
-  // v2-41: 정답이 보기 기호(ㄱㄴㄷ…)인 문제면 키패드에 ㄱㄴㄷㄹㅁ 줄을 보여준다
-  var p=bkFindProb(wpId), jr=document.getElementById('bk-jrow');
-  if(jr) jr.classList.toggle('on', !!(p&&/[ㄱ-ㅎ]/.test(p.answer||'')));
-  bkKpadShow(true);
+/* 이 쪽의 채점 현황 */
+function bkPageStat(pg,probs){
+  var s={ on:0, xn:0, qn:0, auto:0, self:0, done:0, tot:probs.length, wrong:[] };
+  probs.forEach(function(p){
+    var m=BK.scores[bkKeyOf(pg.pid,p.wpId)]; if(!m) return;
+    s.done++;
+    if(m.r==='O') s.on++; else if(m.r==='X'){ s.xn++; s.wrong.push(p); } else s.qn++;
+    if(m.self) s.self++; else s.auto++;
+  });
+  return s;
+}
+function bkCardHtml(p,i,pg,probs){
+  var wp=String(p.wpId), key=bkKeyOf(pg.pid,wp);
+  var m=BK.scores[key], sh=bkShape(p);
+  var stc=m?(m.r==='O'?'st-o':(m.r==='X'?'st-x':'st-q')):'';
+  var icon=m?(m.r==='O'?'◯':(m.r==='X'?'✕':'?')):'✎';
+  var h='<div class="q-card '+stc+'" id="qc-'+h3Esc(wp)+'">';
+  h+='<div class="mk"><span class="ic">'+icon+'</span><span class="nm">'+h3Esc(p.num||String(i+1))+'</span></div>';
+  h+='<div class="bd">';
+  if(m) h+=bkGradedBody(p,sh,m);
+  else if(p.objective) h+=bkObjBody(p,wp);
+  else if(sh.self||BK.soft[key]) h+=bkSelfBody(p,sh,wp,key);
+  else h+=bkInputBody(p,sh,wp,key,probs);
+  h+='</div></div>';
+  return h;
+}
+/* 정답 보여주기 — 그림이 있으면 그림, 없으면 글자 */
+function bkAnsBox(p){
+  if(p.img) return '<div class="bk-ansbox"><div class="cap">정답 (매쓰플랫)</div>'
+    +'<img src="'+h3Esc(p.img)+'" alt="정답" onclick="openPvPhoto('+bkQ(p.img)+')"></div>';
+  var t=bkCleanAns(p.answer);
+  if(t===''||t==='.') t='이 문제는 글자 정답이 없어요 — 풀이 과정을 선생님과 확인해요';
+  return '<div class="bk-ansbox"><div class="cap">정답</div><div class="txt">'+h3Esc(t)+'</div></div>';
+}
+function bkGradedBody(p,sh,m){
+  var col=(m.r==='O'?'#1d78c9':(m.r==='X'?'#dc3b34':'#a15c00'));
+  var h='';
+  if(m.self) h+='<div class="rev-line"><span class="lb">내 채점</span><span class="vv" style="color:'+col+'">'
+    +(m.r==='O'?'◯ 맞았어요':(m.r==='X'?'✗ 틀렸어요':'모름'))+'</span></div>';
+  else h+='<div class="rev-line"><span class="lb">내 답</span><span class="vv" style="color:'+col+'">'
+    +(m.r==='?'?'모름':h3Esc(m.a||''))+'</span></div>';
+  h+=bkAnsBox(p);
+  if(m.photo){
+    var u=bkPhotoUrl(m.photo);
+    if(u) h+='<img class="bk-myphoto" src="'+h3Esc(u)+'" alt="내 풀이" onclick="openPvPhoto('+bkQ(u)+')">';
+  }
+  if(m.r==='?') h+='<div style="font-size:10px;font-weight:900;color:#a15c00">💡 아하노트에 질문해 보세요</div>';
+  return h;
+}
+function bkObjBody(p,wp){
+  var oc=p.optionCount||5, marks=['①','②','③','④','⑤'];
+  var h='<div class="qt"><span class="ty">객관식</span></div><div class="opt5">';
+  for(var k=1;k<=Math.min(oc,5);k++) h+='<button onclick="bkPick('+bkQ(wp)+','+k+')">'+marks[k-1]+'</button>';
+  h+='</div>';
+  h+='<div style="display:flex;justify-content:flex-end"><button class="dunno-b" onclick="bkDunno('+bkQ(wp)+')">모름 ?</button></div>';
+  return h;
+}
+/* 자기채점 — 사진을 올려야 정답이 열린다 */
+function bkSelfBody(p,sh,wp,key){
+  var ph=BK.photos[key]||'';
+  var h='<div class="qt"><span class="ty" style="background:#fdf3e0;color:#a15c00">'
+    +(BK.soft[key]?'내가 채점':'서술형 · 내가 채점')+'</span><span class="un">사진 → 정답 → ◯✗</span></div>';
+  if(!ph){
+    var busy=(BK.upBusy&&String(BK.upFor)===wp);
+    h+='<button class="bk-photo"'+(busy?' disabled':'')+' onclick="bkPhotoOpen('+bkQ(wp)+')">'
+      +(busy?'📤 사진 올리는 중…':'📷 내 풀이 사진 찍기')+'</button>';
+    h+='<div class="bk-lock">🔒 사진을 찍으면 정답이 열려요</div>';
+    h+='<div style="display:flex;justify-content:flex-end"><button class="dunno-b" onclick="bkDunno('+bkQ(wp)+')">모름 ?</button></div>';
+  } else {
+    var u=bkPhotoUrl(ph);
+    if(u) h+='<img class="bk-myphoto" src="'+h3Esc(u)+'" alt="내 풀이" onclick="openPvPhoto('+bkQ(u)+')">';
+    h+=bkAnsBox(p);
+    h+='<div class="bk-acts"><button class="o" onclick="bkSelfMark('+bkQ(wp)+',\'O\')">◯ 맞았어요</button>'
+      +'<button class="x" onclick="bkSelfMark('+bkQ(wp)+',\'X\')">✗ 틀렸어요</button></div>';
+    h+='<div class="bk-hint">내 풀이와 정답을 비교해서 골라요. 사진은 선생님도 보십니다.</div>';
+  }
+  return h;
+}
+/* 낱말 칩 — 정답 + 같은 쪽의 다른 낱말 정답 + 기본 낱말, 문제마다 늘 같은 자리 */
+var BK_WORDS=['예각','직각','둔각','평각','약수','배수','소수','합성수','서로소','교점','교선','맞꼭지각','동위각','엇각','예','아니오'];
+function bkWordChips(p,probs){
+  var right=bkCleanAns(p.answer).trim();
+  var seen={}, pool=[]; seen[right]=1;
+  probs.forEach(function(o){
+    if(String(o.wpId)===String(p.wpId)) return;
+    var w=bkCleanAns(o.answer).trim();
+    if(!w||w.length>8||seen[w]) return;
+    if(bkShape(o).shape!=='word') return;
+    seen[w]=1; pool.push(w);
+  });
+  BK_WORDS.forEach(function(w){ if(!seen[w]){ seen[w]=1; pool.push(w); } });
+  var seed=0, id=String(p.wpId);
+  for(var i=0;i<id.length;i++) seed=(seed*31+id.charCodeAt(i))%9973;
+  var pick=[];
+  for(var k=0;k<3&&pool.length;k++){ seed=(seed*137+41)%9973; pick.push(pool.splice(seed%pool.length,1)[0]); }
+  pick.push(right);
+  for(var j=pick.length-1;j>0;j--){ seed=(seed*137+41)%9973; var t=seed%(j+1); var tm=pick[j]; pick[j]=pick[t]; pick[t]=tm; }
+  return pick;
+}
+var BK_TYNAME={ num:'숫자', unit:'숫자 + 단위', ox:'O / X', word:'낱말 고르기', mark:'보기 기호',
+  labeled:'이름표 칸', eq:'식의 값', geo:'도형 기호', alg:'문자식', ineq:'부등식', coord:'좌표' };
+function bkInputBody(p,sh,wp,key,probs){
+  var h='<div class="qt"><span class="ty">'+(BK_TYNAME[sh.shape]||'단답')+'</span>'
+    +(sh.unit?'<span class="un">단위 '+h3Esc(sh.unit)+' — 숫자만</span>':'')+'</div>';
+  var dunno='<button class="dunno-b" onclick="bkDunno('+bkQ(wp)+')">모름 ?</button>';
+  if(sh.shape==='ox'){
+    h+='<div class="bk-ox"><button onclick="bkGrade('+bkQ(wp)+',\'O\')">O</button>'
+      +'<button onclick="bkGrade('+bkQ(wp)+',\'X\')">X</button></div>';
+    h+='<div style="display:flex;justify-content:flex-end">'+dunno+'</div>';
+    return h;
+  }
+  if(sh.shape==='word'&&!BK.wordIn[key]&&bkSplitTop(p.answer).length<=1){
+    h+='<div class="bk-chips">';
+    bkWordChips(p,probs).forEach(function(w){ h+='<button onclick="bkGrade('+bkQ(wp)+','+bkQ(w)+')">'+h3Esc(w)+'</button>'; });
+    h+='</div>';
+    h+='<div style="display:flex;gap:6px;justify-content:flex-end">'
+      +'<button class="bk-mini" onclick="bkWordOpen('+bkQ(wp)+')">✏️ 직접 입력</button>'+dunno+'</div>';
+    return h;
+  }
+  if(sh.shape==='word'||sh.shape==='free'){
+    h+='<div class="bk-wordin"><input type="text" id="bkw-'+h3Esc(wp)+'" placeholder="답을 적어요">'
+      +'<button class="bk-mini" style="background:#0f766e;border-color:#0f766e;color:#fff" onclick="bkWordSubmit('+bkQ(wp)+')">제출</button></div>';
+    h+='<div style="display:flex;justify-content:flex-end">'+dunno+'</div>';
+    return h;
+  }
+  h+='<div class="bk-fields">';
+  sh.parts.forEach(function(pt,ix){
+    if(pt.label) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
+    h+='<div class="bk-fld" id="bkf-'+h3Esc(wp)+'-'+ix+'" onclick="bkFocus('+bkQ(wp)+','+ix+')"></div>';
+    if(pt.unit) h+='<span class="bk-unit">'+h3Esc(pt.unit)+'</span>';
+  });
+  h+='</div>';
+  h+='<div style="display:flex;align-items:center;gap:6px">';
+  if(sh.parts.length>1) h+='<span class="bk-hint">칸이 '+sh.parts.length+'개예요 — 「다음 칸」으로 옮겨요</span>';
+  h+='<span style="margin-left:auto"></span>'+dunno+'</div>';
+  return h;
+}
+/* 쪽 마무리 — 결과 요약 · 틀린 문항 이어가기 · 반영 대기 */
+function bkDoneHtml(pg,probs){
+  var s=bkPageStat(pg,probs);
+  if(!s.done) return '';
+  var h='<div class="bk-done">';
+  h+='<div class="t1">'+(s.done>=s.tot?'🎉 이 쪽 채점을 다 했어요!':('채점 중 '+s.done+' / '+s.tot))+'</div>';
+  h+='<div class="bk-strip"><span style="color:#1d78c9">◯ '+s.on+'</span>'
+    +'<span style="color:#dc3b34">✗ '+s.xn+'</span><span style="color:#a15c00">? '+s.qn+'</span>'
+    +'<span style="background:#e5f5f2;color:#0f766e">자동 '+s.auto+' · 자기채점 '+s.self+'</span></div>';
+  if(s.wrong.length){
+    h+='<div class="bk-hint" style="margin-top:8px">틀린 문제는 여기서 바로 이어가요.</div>';
+    s.wrong.forEach(function(p){
+      h+='<div class="bk-wrow"><span class="n">✗ '+h3Esc(p.num||'')+'</span>'
+        +'<button class="bk-mini" onclick="bkToHandsol('+bkQ(String(p.num||''))+')">✍️ 손풀이</button>'
+        +'<button class="bk-mini" onclick="bkToAha('+bkQ(String(p.wpId))+')">🙋 아하노트</button></div>';
+    });
+  }
+  if(BK.qn) h+='<div class="bk-hint" style="margin-top:8px">⏳ 매쓰플랫에 반영 대기 '+BK.qn+'건 — 5분 안에 선생님 화면으로 들어가요.</div>';
+  var nx=bkNavIdx(1);
+  if(s.done>=s.tot&&nx>=0){
+    var np=(BK.book.pages||[])[nx];
+    h+='<button class="bk-next" onclick="bkNavGo('+nx+')">다음 쪽 '+(np&&np.page!=null?('p.'+h3Esc(np.page)):'')+' →</button>';
+  }
+  h+='</div>';
+  return h;
+}
+
+/* ── 입력칸 다루기 ── */
+function bkPaintFields(){
+  if(BK.active==null) return;
+  for(var i=0;i<BK.fields.length;i++){
+    var el=document.getElementById('bkf-'+BK.active+'-'+i);
+    if(!el) continue;
+    el.textContent=BK.fields[i]||'';
+    el.classList.toggle('foc', i===BK.fi);
+  }
+}
+function bkBlur(){
+  if(BK.active==null) return;
+  for(var i=0;i<BK.fields.length;i++){
+    var el=document.getElementById('bkf-'+BK.active+'-'+i);
+    if(el){ el.textContent=''; el.classList.remove('foc'); }
+  }
+  BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
+}
+window.bkFocus=function(wpId, idx){
+  wpId=String(wpId);
+  var p=bkFindProb(wpId); if(!p) return;
+  if(String(BK.active)!==wpId){
+    bkBlur();
+    BK.active=wpId; BK.sh=bkShape(p);
+    BK.fields=[]; for(var i=0;i<BK.sh.parts.length;i++) BK.fields.push('');
+    BK.tab=bkTabFor(BK.sh.shape);          // 앱이 답 모양을 보고 자판을 먼저 고른다
+  }
+  BK.fi=Math.max(0,Math.min(Number(idx)||0,BK.fields.length-1));
+  bkPaintFields(); bkKpadRender(); bkKpadShow(true);
 };
-function bkKpadShow(on){ var k=document.getElementById('bk-kpad'); if(k) k.classList.toggle('show',!!on); }
 window.bkKey=function(k){
-  if(!BK.active) return;
-  if(k==='BS') BK.buf=BK.buf.slice(0,-1);
-  else BK.buf+=k;
-  var el=document.getElementById('fld-'+BK.active); if(el) el.textContent=BK.buf;
+  if(BK.active==null) return;
+  if(k==='GO'){ bkSubmit(); return; }
+  if(k==='NEXT'){ BK.fi=(BK.fi+1)%Math.max(1,BK.fields.length); bkPaintFields(); return; }
+  var i=BK.fi;
+  if(k==='BS') BK.fields[i]=String(BK.fields[i]||'').slice(0,-1);
+  else BK.fields[i]=String(BK.fields[i]||'')+k;
+  bkPaintFields();
 };
 window.bkSubmit=function(){
-  if(!BK.active) return;
-  var v=BK.buf.trim();
-  if(!v){ alert('답을 입력해 주세요. 모르면 「모름 ?」을 눌러요.'); return; }
-  bkGrade(BK.active, v);
+  if(BK.active==null) return;
+  var vals=[], any=false;
+  BK.fields.forEach(function(v){ v=String(v==null?'':v).trim(); if(v) any=true; vals.push(v); });
+  if(!any){ alert('답을 넣어 주세요. 모르면 「모름 ?」을 눌러요.'); return; }
+  bkGrade(BK.active, vals.join(','), { vals:vals, sh:BK.sh });
+};
+window.bkWordOpen=function(wp){
+  BK.wordIn[bkKeyOf(BK.page.pid,String(wp))]=true; bkRenderQ();
+  var el=document.getElementById('bkw-'+wp); if(el) el.focus();
+};
+window.bkWordSubmit=function(wp){
+  var el=document.getElementById('bkw-'+wp);
+  var v=el?String(el.value||'').trim():'';
+  if(!v){ alert('답을 적어 주세요'); return; }
+  bkGrade(wp, v);
 };
 window.bkPick=function(wpId, n){ bkGrade(wpId, String(n)); };
 window.bkDunno=function(wpId){ bkGrade(wpId, null); };
 
+/* ── 자기채점 사진 (photos 버킷 · bookscore/<학생코드>/<wpId>_<시각>.jpg) ── */
+window.bkPhotoOpen=function(wpId){
+  if(BK.upBusy) return;
+  if(isTest){ alert('테스트 모드에서는 사진을 올릴 수 없어요'); return; }
+  if(!sb||!studentInfo){ alert('로그인이 풀렸어요. 다시 들어와 주세요.'); return; }
+  BK.target=String(wpId);
+  var f=document.getElementById('bk-file'); if(f){ f.value=''; f.click(); }
+};
+window.bkPhotoPick=async function(input){
+  var f=input&&input.files&&input.files[0]; if(input) input.value='';
+  var wpId=BK.target; BK.target=null;
+  if(!f||wpId==null) return;
+  if(!sb||!studentInfo||!BK.page) return;
+  BK.upBusy=true; BK.upFor=wpId; bkRenderQ();
+  try{
+    var blob; try{ blob=await resizePlannerImage(f,1600,0.82); }catch(e){ blob=f; }
+    var code=studentInfo.lumen_rec_code, now=new Date();
+    var ts=now.getFullYear()+('0'+(now.getMonth()+1)).slice(-2)+('0'+now.getDate()).slice(-2)+'_'
+      +('0'+now.getHours()).slice(-2)+('0'+now.getMinutes()).slice(-2)+('0'+now.getSeconds()).slice(-2);
+    var path='bookscore/'+code+'/'+wpId+'_'+ts+'.jpg';
+    var up=await sb.storage.from('photos').upload(path, blob, { contentType:'image/jpeg', upsert:true });
+    if(up&&up.error) throw up.error;
+    BK.photos[bkKeyOf(BK.page.pid,wpId)]=path;
+    if(typeof toast==='function') toast('📷 사진을 올렸어요 — 이제 정답이 열려요');
+  }catch(e){ alert('사진 올리기 실패: '+(e&&e.message||e)); }
+  BK.upBusy=false; BK.upFor=null; bkRenderQ();
+};
+function bkPhotoUrl(path){
+  if(!path) return '';
+  if(/^https?:/.test(path)) return path;
+  try{ var r=sb.storage.from('photos').getPublicUrl(path); return (r&&r.data&&r.data.publicUrl)||''; }catch(e){ return ''; }
+}
+window.bkSelfMark=function(wpId,r){
+  var key=bkKeyOf(BK.page.pid,String(wpId));
+  var ph=BK.photos[key]||'';
+  if(!ph){ alert('내 풀이 사진을 먼저 올려 주세요'); return; }
+  bkGrade(wpId, '', { r:r, self:true, photo:ph });
+};
+
+/* ── 틀린 문제 이어가기 ── */
+window.bkToHandsol=async function(num){
+  var b=BK.book, pg=BK.page; if(!b||!pg) return;
+  if(isTest){ alert('테스트 모드에서는 쓸 수 없어요'); return; }
+  if(typeof sfOn==='function'&&!sfOn('handsol')){ alert('손풀이는 아직 열리지 않았어요'); return; }
+  if(typeof hsbOpenBook!=='function'){ alert('손풀이 화면을 열 수 없어요'); return; }
+  try{ if(typeof hsLoad==='function') await hsLoad(); }catch(e){}
+  var base=String(num||'').split('.')[0].replace(/[^0-9]/g,'');
+  var gi=0, bk=null;
+  try{
+    bk=hsbBuild(String(b.bid));
+    var p2=bk&&hsbPageOf(bk,String(pg.page));
+    ((p2&&p2.groups)||[]).forEach(function(g,ix){ if(String(g.num)===base) gi=ix; });
+  }catch(e){}
+  if(!bk){ go('screen-hand'); return; }
+  hsbOpenBook(String(b.bid), String(pg.page), gi);
+};
+window.bkToAha=async function(wpId){
+  var b=BK.book, pg=BK.page; if(!b||!pg) return;
+  if(isTest){ alert('테스트 모드에서는 쓸 수 없어요'); return; }
+  if(typeof ahaGoAdd!=='function'){ alert('IB아하노트를 열 수 없어요'); return; }
+  var p=bkFindProb(wpId);
+  await ahaGoAdd();
+  try{
+    try{ a7Ws=null; }catch(e0){}
+    var sel=document.getElementById('aha-source'), hit='', i;
+    if(sel&&typeof ahaNormName==='function'){
+      var want=ahaNormName(b.title);
+      for(i=0;i<sel.options.length;i++){
+        var v=sel.options[i].value;
+        if(v.indexOf('book::')!==0) continue;
+        var nm=ahaNormName(v.slice(6));
+        if(nm===want||(nm&&want.indexOf(nm)>=0)||(want&&nm.indexOf(want)>=0)){ hit=v; break; }
+      }
+    }
+    try{ a7Open=hit?'book':'print'; }catch(e2){}
+    if(sel){ sel.value=hit||'print'; if(typeof ahaOnSourceChange==='function') ahaOnSourceChange(); }
+    if(!hit){ var pn=document.getElementById('aha-print-name'); if(pn) pn.value=String(b.title||''); }
+    if(typeof a7PaintAcc==='function') a7PaintAcc();
+    var pe=document.getElementById('aha-page'); if(pe) pe.value=String(pg.page==null?'':pg.page);
+    var no=document.getElementById('aha-problem-no'); if(no) no.value=String((p&&p.num)||'');
+  }catch(e){ console.warn('교재 채점 → 아하노트 미리 채우기 실패', e); }
+};
+
+/* 객관식 답 번호만 남긴다 — 「③」「(3)」「3번」 모두 3 */
+function bkObjNum(a){
+  var s=String(a==null?'':a).trim();
+  s=s.replace(/[①②③④⑤⑥⑦⑧⑨⑩]/g,function(c){ return String('①②③④⑤⑥⑦⑧⑨⑩'.indexOf(c)+1); });
+  return s.replace(/[^0-9]/g,'');
+}
 function bkFindProb(wpId){
   var ans=BK.ans[BK.book.bid]; var pa=ans&&ans.pages&&ans.pages[BK.page.wpid];
-  return (pa&&pa.problems||[]).find(function(p){ return p.wpId===wpId; });
+  var k=String(wpId);
+  return (pa&&pa.problems||[]).find(function(p){ return String(p.wpId)===k; });
 }
-async function bkGrade(wpId, userAnswer){
+/* 자동채점 — 학생이 넣은 값을 정답과 견준다.
+ * 이름표·단위·「x=」를 붙인 꼴도 한 번씩 견줘 본다(엔진이 어느 꼴을 기대하든 맞도록).
+ * 엔진이 못 읽으면 gradable:false → 자기채점으로 넘긴다. */
+function bkAutoGrade(p, sh, joined, vals){
+  var cands=[String(joined)];
+  var parts=(sh&&sh.parts)||[];
+  vals=(vals&&vals.length)?vals:[String(joined)];
+  if(parts.length===vals.length){
+    var hasLab=false, i;
+    for(i=0;i<parts.length;i++){ if(parts[i].label) hasLab=true; }
+    if(hasLab){
+      var a1=[], a2=[];
+      for(i=0;i<parts.length;i++){
+        var L=String(parts[i].label||'');
+        a1.push(L?(L+' '+vals[i]):vals[i]);
+        a2.push(L?(L.replace(/[:=]\s*$/,'')+':'+vals[i]):vals[i]);
+      }
+      cands.push(a1.join(','));
+      cands.push(a2.join(','));
+      if(parts.length===1&&parts[0].label) cands.push(String(parts[0].label)+vals[0]);
+    }
+  }
+  if(sh&&sh.unit) cands.push(String(joined)+sh.unit);
+  var anyG=false;
+  for(var k=0;k<cands.length;k++){
+    var g=null;
+    try{ g=HWGrade.grade(p.answer, cands[k]); }catch(e){ g=null; }
+    if(!g) continue;
+    if(g.gradable) anyG=true;
+    if(g.gradable&&g.correct) return { gradable:true, correct:true };
+  }
+  return { gradable:anyG, correct:false };
+}
+async function bkGrade(wpId, userAnswer, opt){
+  opt=opt||{};
   if(BK.busy) return; BK.busy=true;
   try{
-    var p=bkFindProb(wpId); if(!p){ BK.busy=false; return; }
-    var r;
-    if(userAnswer==null) r='?';
-    else if(p.objective) r=(String(userAnswer).trim()===String(p.answer).trim().replace(/[^0-9]/g,''))?'O':'X';
-    else { var g=HWGrade.grade(p.answer, userAnswer); r=(g.gradable&&g.correct)?'O':'X'; }
+    wpId=String(wpId);
+    var p=bkFindProb(wpId); if(!p) return;
     var key=bkKeyOf(BK.page.pid, wpId);
-    BK.scores[key]={ r:r, a:userAnswer, at:new Date().toISOString(), pid:BK.page.pid };
-    if(BK.active===wpId){ BK.active=null; BK.buf=''; bkKpadShow(false); }
+    var r, a='';
+    if(opt.r){ r=opt.r; }
+    else if(userAnswer==null){ r='?'; }
+    else {
+      a=String(userAnswer);
+      if(p.objective) r=(bkObjNum(a)===bkObjNum(p.answer))?'O':'X';
+      else {
+        var sh=opt.sh||bkShape(p);
+        var res=bkAutoGrade(p, sh, a, opt.vals);
+        if(!res.gradable){                       // 못 읽으면 틀렸다고 하지 않는다
+          BK.soft[key]=true; bkBlur(); bkKpadShow(false); BK.busy=false; bkRenderQ();
+          if(typeof toast==='function') toast('앱이 이 답을 읽지 못했어요 — 사진을 찍고 내가 채점해요');
+          return;
+        }
+        r=res.correct?'O':'X';
+      }
+    }
+    BK.scores[key]={ r:r, a:a, at:new Date().toISOString(), pid:BK.page.pid,
+                     self:!!opt.self, photo:opt.photo||'' };
+    delete BK.photos[key]; delete BK.soft[key]; delete BK.wordIn[key];
+    bkBlur(); bkKpadShow(false);
+    BK.qn++;
     bkRenderQ();
-    await bkPersist(wpId, r, userAnswer);
+    if(window.bkHomeUpdate) bkHomeUpdate();      // v2-81: 홈 허브 숫자도 바로 맞춘다
+    await bkPersist(wpId, r, a);
   } finally { BK.busy=false; }
 }
 /* 저장: 내 기록(hw_scores) + 매쓰플랫 반영 대기열(hw_sync) */
@@ -13114,6 +13609,7 @@ async function bkPersist(wpId, r, userAnswer){
     var q=(st['hw_sync_'+code]&&st['hw_sync_'+code].items)||[];
     q.push({ id:Date.now()+'_'+wpId, pid:BK.page.pid, wpId:wpId, result:r, userAnswer:userAnswer, at:new Date().toISOString() });
     await sb.from('lumen_store').upsert({ key:'hw_sync_'+code, value:{ items:q, updated:new Date().toISOString() } });
+    BK.qn=q.length;
   }catch(e){ /* 오프라인이어도 화면 채점은 유지 — 다음 채점 때 다시 저장 시도 */ }
 }
 
