@@ -12245,6 +12245,557 @@ function hsPaintFind(keepFocus){
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════
+ * 📚 교재·교과서 손풀이 (v2-80) — 「📄 학습지」 옆 두 번째 탭
+ * ══════════════════════════════════════════════════════════════════
+ * 자료 (전부 읽기만 한다 — 학생앱은 아무것도 쓰지 않는다)
+ *   lumen_store 'hand_solutions'      → items 중 src==='book' 인 것
+ *   lumen_store 'mf_swb_<내코드>'      → 내 교재·쪽 목록 (books[].pages[]{pid,wpid,page})
+ *   lumen_store 'mf_bookans_<bid>'     → 쪽별 문항 (pages[wpid].problems[]{wpId,num})
+ *   lumen_store 'book_cfg_<bid>'       → 공개 규칙 {reveal:'open'|'scored'|'hint', hidden}
+ *   lumen_store 'mf_concept_names'     → 유형 이름
+ *   테이블 mf_answer_records           → 내 O/X (mf_student_id + book_id, workbook_problem_id로 맞춤)
+ * 화면 교재 목록 → 쪽·번호 판 → 풀이 한 장 / 내 오답 모아 보기
+ * 묶음 한 문항 = 매쓰플랫 「기본 번호」 하나. 5.(1) 5.(2) 는 5 하나로 묶인다.
+ *      같은 쪽에 같은 번호가 두 묶음 나오면 순서대로 따로 센다.
+ * ══════════════════════════════════════════════════════════════════ */
+var HSB = { tab:'sheet', tabSet:false, loaded:false, at:0, sid:null,
+            swb:null, cfg:{}, ans:{}, recs:null, names:null,
+            bid:null, page:null, gi:-1, books:null, cache:{} };
+window.HSB = HSB;
+
+/* 선생님이 교재에 올린 풀이 조각들 */
+function hsbBookItems(){
+  var d=HS&&HS.data, items=(d&&d.items)||{}, out=[];
+  Object.keys(items).forEach(function(k){
+    var it=items[k];
+    if(!it||it.src!=='book') return;
+    if(!it.id) it.id=k;
+    out.push(it);
+  });
+  return out;
+}
+function hsbRawCount(){ try{ return hsbBookItems().length; }catch(e){ return 0; } }
+function hsbBidsWithSol(){
+  var seen={}, out=[];
+  hsbBookItems().forEach(function(it){
+    var b=String(it.bid==null?'':it.bid);
+    if(!b||seen[b]) return; seen[b]=1; out.push(b);
+  });
+  return out.slice(0,12);
+}
+async function hsbFetch(keys){
+  var out={};
+  if(!sb||!keys||!keys.length) return out;
+  try{
+    var r=await sb.from('lumen_store').select('key,value').in('key',keys);
+    ((r&&r.data)||[]).forEach(function(row){
+      var v=row.value;
+      if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+      out[row.key]=v;
+    });
+  }catch(e){ console.warn('lumen_store 읽기 실패', e); }
+  return out;
+}
+async function hsbLoad(force){
+  if(HSB.loaded && !force && Date.now()-HSB.at<120000) return HSB;
+  if(isTest || !sb || !studentInfo || !studentInfo.lumen_rec_code){ HSB.loaded=true; return HSB; }
+  HSB.loaded=true; HSB.at=Date.now(); HSB.books=null; HSB.cache={};
+  try{
+    await hsLoad();
+    /* 다른 화면이 HS.loaded 를 먼저 세워 둔 경우가 있어 한 번 더 확인한다 */
+    if(!HS.data) await hsLoad(true);
+    var bids=hsbBidsWithSol();
+    if(!bids.length) return HSB;
+    var code=studentInfo.lumen_rec_code;
+    var keys=['mf_swb_'+code];
+    bids.forEach(function(b){ keys.push('book_cfg_'+b); keys.push('mf_bookans_'+b); });
+    if(!HSB.names) keys.push('mf_concept_names');
+    var st=await hsbFetch(keys);
+    HSB.swb=st['mf_swb_'+code]||null;
+    bids.forEach(function(b){
+      HSB.cfg[b]=st['book_cfg_'+b]||null;
+      if(st['mf_bookans_'+b]) HSB.ans[b]=st['mf_bookans_'+b];
+    });
+    if(st['mf_concept_names']) HSB.names=st['mf_concept_names'];
+    else if(!HSB.names && window.SP3 && SP3.names) HSB.names=SP3.names;
+    await hsbLoadRecs(bids);
+  }catch(e){ console.warn('교재 손풀이 자료 불러오기 실패', e); }
+  return HSB;
+}
+/* 내 문항별 O/X — mf_answer_records (스포트라이트·명예의전당과 같은 학생 매칭 규칙) */
+async function hsbLoadRecs(bids){
+  HSB.recs={};
+  if(!bids.length||!sb) return;
+  if(HSB.sid==null){
+    try{
+      var r2=await sb.from('mf_students').select('mf_student_id,name,lumen_rec_code');
+      var list=(r2&&r2.data)||[], m=null, i;
+      for(i=0;i<list.length;i++){
+        if(list[i].lumen_rec_code && list[i].lumen_rec_code===studentInfo.lumen_rec_code){ m=list[i]; break; }
+      }
+      if(!m){ var same=list.filter(function(x){ return x.name===studentInfo.name; }); if(same.length===1) m=same[0]; }
+      HSB.sid=m?m.mf_student_id:null;
+    }catch(e){ HSB.sid=null; }
+  }
+  if(HSB.sid==null) return;
+  var nums=bids.map(Number).filter(function(x){ return !isNaN(x)&&x>0; });
+  if(!nums.length) return;
+  try{
+    var off=0;
+    while(off<8000){
+      var r=await sb.from('mf_answer_records')
+        .select('workbook_problem_id,result,score_datetime,book_id,concept_id')
+        .eq('mf_student_id',HSB.sid).in('book_id',nums).range(off,off+999);
+      var rows=(r&&r.data)||[];
+      rows.forEach(function(x){
+        if(x.workbook_problem_id==null) return;
+        var k=String(x.workbook_problem_id), old=HSB.recs[k];
+        if(!old || String(x.score_datetime||'')>String(old.at||'')){
+          HSB.recs[k]={ r:x.result, at:x.score_datetime||'', cid:x.concept_id };
+        }
+      });
+      if(rows.length<1000) break;
+      off+=1000;
+    }
+  }catch(e){ console.warn('내 채점 기록 불러오기 실패', e); }
+}
+
+/* 「5.(2)」→「5」 · 「4」→「4」 · 「필수 문제 2.(1)」→「필수 문제 2」 */
+function hsbBase(n){
+  var raw=String(n==null?'':n).trim();
+  var s=raw.replace(/\s*[.\-]?\s*\([^()]*\)\s*$/,'').replace(/[.\s]+$/,'');
+  return s||raw;
+}
+/* 「5.(2)」→「(2)」 (번호 단추 아래 작은 글씨) */
+function hsbTail(n, base){
+  var raw=String(n==null?'':n).trim();
+  if(!base||raw.indexOf(base)!==0) return '';
+  return raw.slice(base.length).replace(/^[.\-\s]+/,'').trim();
+}
+/* 문항 목록 → 번호 묶음 (연달아 같은 기본 번호면 한 묶음) */
+function hsbGroups(probs){
+  var gs=[], cur=null;
+  (probs||[]).forEach(function(p){
+    var base=hsbBase(p.num);
+    if(!cur || cur.num!==base){
+      cur={ num:base, ids:[], idset:{}, nums:[], tails:[], sols:[], wrong:false, scored:false, cid:null };
+      gs.push(cur);
+    }
+    if(p.wpId!=null){ cur.ids.push(p.wpId); cur.idset[String(p.wpId)]=1; }
+    if(p.num!=null){ cur.nums.push(String(p.num)); var t=hsbTail(p.num, base); if(t) cur.tails.push(t); }
+    var rec=(HSB.recs||{})[String(p.wpId)];
+    if(rec && (rec.r==='O'||rec.r==='X'||rec.r==='?')){
+      cur.scored=true;
+      if(rec.r==='X') cur.wrong=true;
+      if(rec.cid!=null && cur.cid==null) cur.cid=rec.cid;
+    }
+  });
+  gs.forEach(function(g,i){ g.gi=i; });
+  return gs;
+}
+/* 매쓰플랫 문항 자료가 아직 없는 쪽 — 풀이에 적힌 번호만으로 묶음을 만든다 */
+function hsbGroupsFromSols(sols){
+  var gs=[], byNum={};
+  sols.forEach(function(it){
+    var base=hsbBase(it.num);
+    if(!base) return;
+    var g=byNum[base];
+    if(!g){
+      g={ num:base, ids:[], idset:{}, nums:[base], tails:[], sols:[], wrong:false, scored:false, cid:null };
+      byNum[base]=g; gs.push(g);
+    }
+    (it.ids||[]).forEach(function(id){ if(!g.idset[String(id)]){ g.ids.push(id); g.idset[String(id)]=1; } });
+  });
+  gs.forEach(function(g,i){
+    g.gi=i;
+    g.ids.forEach(function(id){
+      var rec=(HSB.recs||{})[String(id)];
+      if(rec && (rec.r==='O'||rec.r==='X'||rec.r==='?')){
+        g.scored=true;
+        if(rec.r==='X') g.wrong=true;
+        if(rec.cid!=null && g.cid==null) g.cid=rec.cid;
+      }
+    });
+  });
+  return gs;
+}
+/* 묶음마다 풀이 조각 붙이기 — 매쓰플랫 문항 id 가 먼저, 없으면 번호로 */
+function hsbAttach(pg, sols){
+  var mine=sols.filter(function(it){ return String(it.page)===String(pg.page); });
+  var used={};
+  pg.groups.forEach(function(g){
+    g.sols=mine.filter(function(it){
+      if(!(it.ids&&it.ids.length)) return false;
+      for(var i=0;i<it.ids.length;i++){ if(g.idset[String(it.ids[i])]) return true; }
+      return false;
+    });
+    g.sols.forEach(function(it){ used[it.id]=1; });
+  });
+  pg.groups.forEach(function(g){
+    if(g.sols.length) return;
+    g.sols=mine.filter(function(it){ return !used[it.id] && hsbBase(it.num)===g.num; });
+    g.sols.forEach(function(it){ used[it.id]=1; });
+  });
+  pg.groups.forEach(function(g){
+    g.sols.sort(function(a,b){ return (Number(a.ord)||0)-(Number(b.ord)||0); });
+  });
+}
+/* 교재 한 권을 화면용으로 조립 (한 번 만들고 캐시) */
+function hsbBuild(bid){
+  bid=String(bid==null?'':bid);
+  if(!bid) return null;
+  if(HSB.cache[bid]!==undefined) return HSB.cache[bid];
+  var books=(HSB.swb&&HSB.swb.books)||[];
+  var mine=books.filter(function(b){ return String(b.bid)===bid; });
+  if(!mine.length){ HSB.cache[bid]=null; return null; }
+  var ans=HSB.ans[bid]||{pages:{}};
+  var sols=hsbBookItems().filter(function(it){ return String(it.bid)===bid; });
+  var title=mine[0].title||'교재', recent=null;
+  var seen={}, pages=[];
+  mine.forEach(function(b){
+    if(recent==null && b.recentPage!=null) recent=b.recentPage;
+    (b.pages||[]).forEach(function(p){
+      var wp=String(p.wpid==null?'':p.wpid);
+      if(!wp||seen[wp]) return;
+      seen[wp]=1;
+      pages.push({ page:String(p.page==null?'':p.page), wpid:wp, pid:p.pid, title:p.title||'' });
+    });
+  });
+  /* 내 교재 목록에 없는 쪽에 풀이가 올라와 있으면 그 쪽도 보여 준다 */
+  var havePage={};
+  pages.forEach(function(p){ havePage[String(p.page)]=1; });
+  sols.forEach(function(it){
+    var pv=String(it.page==null?'':it.page);
+    if(!pv||havePage[pv]) return;
+    havePage[pv]=1;
+    pages.push({ page:pv, wpid:'', pid:null, title:'' });
+  });
+  pages.sort(function(a,b){ return (Number(a.page)||0)-(Number(b.page)||0); });
+
+  var solPages=0, wrongN=0, wrongSol=0, groupN=0, solN=0;
+  pages.forEach(function(pg){
+    var pa=(ans.pages&&ans.pages[pg.wpid])||null;
+    var probs=(pa&&pa.problems)||[];
+    pg.groups=probs.length
+      ? hsbGroups(probs)
+      : hsbGroupsFromSols(sols.filter(function(it){ return String(it.page)===String(pg.page); }));
+    hsbAttach(pg, sols);
+    pg.hasSol=false;
+    pg.wrong=false;
+    pg.groups.forEach(function(g){
+      groupN++;
+      solN+=g.sols.length;
+      if(g.sols.length) pg.hasSol=true;
+      if(g.wrong){ wrongN++; pg.wrong=true; if(g.sols.length) wrongSol++; }
+    });
+    if(pg.hasSol) solPages++;
+  });
+  var cfg=HSB.cfg[bid]||{};
+  var bk={ bid:bid, title:title, recent:recent, pages:pages,
+           solPages:solPages, solN:solN, wrong:wrongN, wrongSol:wrongSol, groups:groupN,
+           reveal:String(cfg.reveal||'open') };
+  HSB.cache[bid]=bk;
+  return bk;
+}
+/* 화면에 내보낼 교재들 — 풀이가 하나라도 있고 숨김이 아닌 것 */
+function hsbBooks(){
+  if(HSB.books) return HSB.books;
+  var out=[];
+  hsbBidsWithSol().forEach(function(bid){
+    var cfg=HSB.cfg[bid]||{};
+    if(cfg.hidden) return;
+    var bk=hsbBuild(bid);
+    if(!bk||!bk.solPages) return;
+    out.push(bk);
+  });
+  out.sort(function(a,b){ return (b.wrongSol-a.wrongSol)||(b.solPages-a.solPages); });
+  HSB.books=out;
+  return out;
+}
+function hsbPageOf(bk, page){
+  if(!bk) return null;
+  var want=String(page==null?'':page);
+  return bk.pages.filter(function(p){ return String(p.page)===want; })[0]||null;
+}
+function hsbFirstGi(pg){
+  if(!pg||!pg.groups||!pg.groups.length) return -1;
+  var i;
+  for(i=0;i<pg.groups.length;i++){ if(pg.groups[i].wrong && pg.groups[i].sols.length) return i; }
+  for(i=0;i<pg.groups.length;i++){ if(pg.groups[i].sols.length) return i; }
+  return -1;
+}
+/* 공개 규칙 — 잠겨 있으면 학생에게 보여 줄 말, 열려 있으면 '' */
+function hsbLockMsg(bk, g){
+  if(!bk||!g) return '';
+  if(bk.reveal==='scored' && !g.scored)
+    return '🔒 이 문제는 <b>내가 채점한 뒤</b>에 열려요.<br>교재를 풀고 매쓰플랫에 채점하면 바로 볼 수 있어요.';
+  if(bk.reveal==='hint' && g.wrong)
+    return '🔒 틀린 문제라서 <b>힌트를 보거나 다시 풀어 올린 뒤</b>에 열려요.<br>IB아하노트에 질문을 올리면 선생님이 열어 주세요.';
+  return '';
+}
+
+/* ── 교재 목록 (손풀이 화면의 📚 탭) ── */
+function hsbListHtml(){
+  if(!sb||!studentInfo||!studentInfo.lumen_rec_code){
+    return '<div class="sp3-empty"><div class="e1">🔒</div><div class="e2">로그인이 풀렸어요</div></div>';
+  }
+  var books=hsbBooks();
+  if(!books.length){
+    return '<div class="sp3-empty"><div class="e1">📚</div>'
+      +'<div class="e2">아직 교재 풀이가 없어요<br>선생님이 내 교재에 풀이를 올리면 여기에 보여요</div></div>';
+  }
+  var h='<div style="font-size:12px;font-weight:900;color:var(--text);margin:0 2px 9px">📚 손풀이 — 교재·교과서</div>';
+  var wrongTot=0;
+  books.forEach(function(bk){
+    wrongTot+=bk.wrongSol;
+    var sub='풀이 있는 쪽 '+bk.solPages;
+    if(bk.wrong) sub+=' · 내 오답 '+bk.wrong;
+    if(bk.wrongSol) sub+=' · <b>풀이 있는 오답 '+bk.wrongSol+'</b>';
+    if(!bk.wrong) sub+=' · 풀이 '+bk.solN+'장';
+    h+='<button class="hs-set" onclick="hsbOpenBook(\''+hsEsc(bk.bid)+'\')">'
+      +'<span class="dt"><b>📕</b><small>'+(bk.recent!=null?('p.'+hsEsc(bk.recent)):'')+'</small></span>'
+      +'<span style="min-width:0;flex:1">'
+      +'<span class="wt">'+hsEsc(bkShortTitle(bk.title))+'</span>'
+      +'<span class="wd">'+sub+'</span></span>'
+      +'<span class="go">›</span></button>';
+  });
+  h+='<button class="hsb-big'+(wrongTot?'':' off')+'"'
+    +(wrongTot?' onclick="go(\'screen-hand-wrong\')"':' disabled')+'>'
+    +'🔴 내 오답 풀이만 모아 보기 ('+wrongTot+')</button>';
+  h+='<div style="font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.7;margin-top:10px">'
+    +'내가 매쓰플랫에서 받은 교재 중 <b>선생님 풀이가 올라온 교재</b>만 보여요.<br>'
+    +'빨간 표시는 내가 틀린 문제예요.</div>';
+  return h;
+}
+
+/* ── 쪽·번호 판 + 풀이 한 장 ── */
+window.hsbOpenBook = function(bid, page, gi){
+  var bk=hsbBuild(bid);
+  if(!bk){ hsSay('교재를 찾을 수 없어요'); return; }
+  HSB.bid=bk.bid;
+  var pg=(page!=null)?hsbPageOf(bk,page):null;
+  if(!pg) pg=bk.pages.filter(function(p){ return p.hasSol; })[0]||bk.pages[0]||null;
+  HSB.page=pg?pg.page:null;
+  HSB.gi=(gi!=null)?Number(gi):hsbFirstGi(pg);
+  go('screen-hand-book');
+  hsbPaint();
+};
+window.hsbPickPage = function(page){
+  var bk=hsbBuild(HSB.bid); if(!bk) return;
+  HSB.page=String(page);
+  HSB.gi=hsbFirstGi(hsbPageOf(bk,HSB.page));
+  hsbPaint();
+};
+window.hsbPick = function(gi){ HSB.gi=Number(gi); hsbPaint(); };
+window.hsbGoto = function(page, gi){
+  HSB.page=String(page); HSB.gi=Number(gi);
+  hsbPaint();
+  try{ window.scrollTo(0,0); }catch(e){}
+};
+function hsbPaint(){
+  var body=document.getElementById('hsb-body'); if(!body) return;
+  var bk=hsbBuild(HSB.bid);
+  if(!bk){ body.innerHTML='<div class="sp3-empty"><div class="e1">📚</div><div class="e2">교재를 찾을 수 없어요</div></div>'; return; }
+  var tEl=document.getElementById('hsb-title'); if(tEl) tEl.textContent='📚 '+bkShortTitle(bk.title);
+  var sEl=document.getElementById('hsb-sub'); if(sEl) sEl.textContent='풀이 '+bk.solPages+'쪽';
+
+  var shown=bk.pages.filter(function(p){ return p.hasSol; });
+  if(!shown.length) shown=bk.pages.slice(0,1);
+  var pg=hsbPageOf(bk,HSB.page);
+  if(!pg||shown.indexOf(pg)<0){ pg=shown[0]; HSB.page=pg?pg.page:null; HSB.gi=hsbFirstGi(pg); }
+
+  var h='<div class="hs-wrap">';
+  h+='<div class="hsb-pg"><div class="pgs">';
+  shown.forEach(function(p){
+    h+='<button class="'+((pg&&p.page===pg.page)?'on':'')+'" onclick="hsbPickPage(\''+hsEsc(p.page)+'\')">'
+      +'p.'+hsEsc(p.page)+(p.wrong?'<i></i>':'')+'</button>';
+  });
+  h+='</div><div class="nums">';
+  var groups=(pg&&pg.groups)||[];
+  if(!groups.length){
+    h+='<div style="grid-column:1/-1;font-size:11px;font-weight:800;color:#94a3b8;padding:12px 4px;text-align:center">이 쪽의 문항 정보가 아직 없어요</div>';
+  }
+  groups.forEach(function(g){
+    var has=!!g.sols.length;
+    var cls=(g.wrong?'wr ':'')+(has?'':'no ')+((g.gi===Number(HSB.gi))?'on':'');
+    var tail=g.tails.length?('<small>'+hsEsc(g.tails.slice(0,3).join('')) +'</small>'):'';
+    h+='<button class="'+cls.trim()+'"'+(has?(' onclick="hsbPick('+g.gi+')"'):' disabled')+'>'
+      +hsEsc(g.num)+tail+'</button>';
+  });
+  h+='</div></div>';
+  h+='<div class="hs-leg">'
+    +'<span><i style="background:#fee2e2;outline:1px solid #fca5a5"></i>내가 틀린 문제</span>'
+    +'<span><i style="background:#0d2240"></i>보는 중</span>'
+    +'<span><i style="background:#f1f5f9"></i>풀이 없음(연하게)</span>'
+    +'<span>🔴 쪽 옆 빨간 점 = 그 쪽에 내 오답</span></div>';
+
+  var cur=(HSB.gi>=0)?groups[Number(HSB.gi)]:null;
+  if(!cur){
+    h+='<div class="sp3-empty"><div class="e1">📚</div><div class="e2">위에서 번호를 골라 주세요</div></div>';
+    body.innerHTML=h+'</div>';
+    return;
+  }
+  h+=hsbSolHtml(bk, pg, cur);
+  body.innerHTML=h+'</div>';
+}
+/* 풀이 한 장 — 🎬 영상이 맨 위, 아래에 방법별 풀이 여러 장 */
+function hsbSolHtml(bk, pg, g){
+  var h='';
+  var lock=hsbLockMsg(bk,g);
+  if(lock){
+    h+='<div class="hs-lock">'+lock+'</div>';
+    h+='<div style="font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.7">'
+      +'선생님이 이 교재를 「'+(bk.reveal==='scored'?'채점한 뒤 공개':'힌트 뒤 공개')+'」로 정해 두셨어요.</div>';
+    return h;
+  }
+  var vid=null;
+  g.sols.forEach(function(it){ if(!vid && it.vid && it.vid.yt) vid=it.vid; });
+  if(vid){
+    var st=Math.floor(Number(vid.start)||0);
+    var src='https://www.youtube.com/embed/'+encodeURIComponent(String(vid.yt))+'?rel=0'+(st>0?('&start='+st):'');
+    h+='<div class="hsb-play"><iframe src="'+hsEsc(src)+'" title="풀이 영상" '
+      +'allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" '
+      +'allowfullscreen loading="lazy"></iframe></div>';
+  }
+  if(!g.sols.length){
+    h+='<div class="sp3-empty"><div class="e1">✍️</div><div class="e2">이 번호에는 아직 풀이가 없어요</div></div>';
+    return h;
+  }
+  g.sols.forEach(function(it,i){
+    var ttl=String(it.title||'');
+    if(ttl || g.sols.length>1){
+      h+='<div class="hsb-sub"><b>'+(i+1)+'</b>'+hsEsc(ttl||('풀이 '+(i+1)))+'</div>';
+    }
+    h+='<div class="hs-crop">';
+    if(it.img){
+      h+='<img src="'+hsEsc(it.img)+'" alt="'+hsEsc(g.num+'번 선생님 풀이')+'" '
+        +'onclick="openAhaPhoto(\''+hsEsc(it.img)+'\')">';
+    }else{
+      h+='<div style="padding:26px 10px;text-align:center;color:#94a3b8;font-size:12px;font-weight:800">사진이 아직 없어요</div>';
+    }
+    h+='</div>';
+  });
+  h+='<div style="font-size:9.5px;font-weight:800;color:#94a3b8;text-align:center;margin:-2px 0 10px">'
+    +'이미지를 누르면 크게 볼 수 있어요 (선생님 필기 그대로)</div>';
+
+  var cname=(HSB.names && g.cid!=null && HSB.names[g.cid] && HSB.names[g.cid].n) || '';
+  h+='<div class="hs-tags">';
+  if(cname) h+='<span class="t">유형 · '+hsEsc(cname)+'</span>';
+  h+='<span class="'+(g.wrong?'x':(g.scored?'o':''))+'">'
+    +(g.wrong?'내 결과 ✗ 틀림':(g.scored?'내 결과 O':'아직 채점 안 함'))+'</span>';
+  h+='<span>p.'+hsEsc(pg.page)+' · '+hsEsc(g.num)+'번</span>';
+  h+='</div>';
+
+  var nx=hsbNextWrong(bk, pg, g);
+  h+='<div class="hs-acts">'
+    +'<button class="pri" style="grid-column:span 2"'
+      +(nx?(' onclick="hsbGoto(\''+hsEsc(nx.page)+'\','+nx.gi+')"'):' disabled')+'>'
+      +(nx?('다음 틀린 문제 → p.'+hsEsc(nx.page)+' '+hsEsc(nx.num)+'번'):'틀린 문제 없음 ✓')+'</button>'
+    +'<button onclick="hsbToAha()">🙋 이 문제로<br>IB아하노트</button>'
+    +'<button class="soon" onclick="hsSay(\'🔁 다시 풀어 올리기는 준비 중이에요. 지금은 IB아하노트에 사진을 올려 주세요!\')">'
+      +'🔁 다시 풀어<br>올리기 (준비 중)</button>'
+    +'</div>';
+  h+='<div style="font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.7">'
+    +'풀이를 보기 전에 한 번 더 풀어 보면 훨씬 오래 남아요.</div>';
+  return h;
+}
+/* 이 교재에서 지금 다음으로 볼 「틀렸고 풀이가 있는」 문항 */
+function hsbNextWrong(bk, pg, g){
+  var list=[];
+  bk.pages.forEach(function(p){
+    p.groups.forEach(function(x){
+      if(x.wrong && x.sols.length) list.push({ page:p.page, gi:x.gi, num:x.num });
+    });
+  });
+  if(!list.length) return null;
+  var here=-1, i;
+  for(i=0;i<list.length;i++){
+    if(String(list[i].page)===String(pg.page) && list[i].gi===g.gi){ here=i; break; }
+  }
+  if(list.length===1 && here===0) return null;
+  return list[(here+1)%list.length];
+}
+/* 🙋 이 문제로 IB아하노트 — 교재·쪽·번호를 미리 채운다 */
+window.hsbToAha = async function(){
+  var bk=hsbBuild(HSB.bid); if(!bk) return;
+  var pg=hsbPageOf(bk,HSB.page); if(!pg) return;
+  var g=(pg.groups||[])[Number(HSB.gi)]; if(!g) return;
+  if(isTest){ hsSay('테스트 모드에서는 쓸 수 없어요'); return; }
+  if(!window.ahaGoAdd){ hsSay('IB아하노트를 열 수 없어요'); return; }
+  await ahaGoAdd();
+  try{
+    try{ a7Ws=null; }catch(e){}
+    var sel=document.getElementById('aha-source'), hit='', i;
+    if(sel && window.ahaNormName){
+      var want=ahaNormName(bk.title);
+      for(i=0;i<sel.options.length;i++){
+        var v=sel.options[i].value;
+        if(v.indexOf('book::')!==0) continue;
+        var nm=ahaNormName(v.slice(6));
+        if(nm===want || (nm && want.indexOf(nm)>=0) || (want && nm.indexOf(want)>=0)){ hit=v; break; }
+      }
+    }
+    try{ a7Open=hit?'book':'print'; }catch(e2){}
+    if(sel){
+      sel.value=hit||'print';
+      if(window.ahaOnSourceChange) ahaOnSourceChange();
+    }
+    if(!hit){
+      var pn=document.getElementById('aha-print-name');
+      if(pn) pn.value=String(bk.title||'');
+    }
+    if(window.a7PaintAcc) a7PaintAcc();
+    var pe=document.getElementById('aha-page'); if(pe) pe.value=String(pg.page||'');
+    var no=document.getElementById('aha-problem-no'); if(no) no.value=String(g.num||'');
+  }catch(e){ console.warn('교재 손풀이 → 아하노트 미리 채우기 실패', e); }
+};
+
+/* ── 🔴 내 오답 풀이만 모아 보기 ── */
+function hsbWrongRows(){
+  var out=[];
+  hsbBooks().forEach(function(bk){
+    bk.pages.forEach(function(pg){
+      (pg.groups||[]).forEach(function(g){
+        if(g.wrong && g.sols.length) out.push({ bk:bk, page:pg.page, gi:g.gi, num:g.num, cid:g.cid, n:g.sols.length });
+      });
+    });
+  });
+  out.sort(function(a,b){
+    return String(a.bk.title).localeCompare(String(b.bk.title))
+      || ((Number(a.page)||0)-(Number(b.page)||0)) || (a.gi-b.gi);
+  });
+  return out;
+}
+window.hsbWrongInit = async function(){
+  var body=document.getElementById('hsb-wrong-body'); if(!body) return;
+  if(isTest){ body.innerHTML='<div class="sp3-empty"><div class="e1">🧪</div><div class="e2">테스트 모드에서는 볼 수 없어요</div></div>'; return; }
+  body.innerHTML='<div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>';
+  await hsbLoad();
+  var rows=hsbWrongRows();
+  var h='<div class="hs-wrap">';
+  if(!rows.length){
+    h+='<div class="sp3-empty"><div class="e1">🎉</div>'
+      +'<div class="e2">틀린 문제 중 풀이가 올라온 것이 없어요<br>다 맞았거나, 선생님 풀이를 기다리는 중이에요</div></div>';
+    body.innerHTML=h+'</div>';
+    return;
+  }
+  h+='<div style="font-size:12px;font-weight:900;color:var(--text);margin:0 2px 9px">'
+    +'내가 틀렸는데 선생님 풀이가 있는 문제 '+rows.length+'개</div>';
+  rows.forEach(function(r){
+    var cname=(HSB.names && r.cid!=null && HSB.names[r.cid] && HSB.names[r.cid].n) || '';
+    h+='<button class="hsb-card" onclick="hsbOpenBook(\''+hsEsc(r.bk.bid)+'\',\''+hsEsc(r.page)+'\','+r.gi+')">'
+      +'<span class="p">p.'+hsEsc(r.page)+'<br>'+hsEsc(r.num)+'번</span>'
+      +'<span style="min-width:0;flex:1">'
+      +'<span class="t" style="display:block">'+hsEsc(bkShortTitle(r.bk.title))+'</span>'
+      +'<span class="s" style="display:block">'+(cname?(hsEsc(cname)+' · '):'')+'선생님 풀이 '+r.n+'장</span>'
+      +'</span><span style="color:#cbd5e1;font-weight:900;font-size:16px">›</span></button>';
+  });
+  h+='<div style="font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.7;margin-top:10px">'
+    +'쪽 순서로 모았어요. 하나씩 눌러 풀이를 보고, 꼭 한 번 다시 풀어 보세요.</div>';
+  body.innerHTML=h+'</div>';
+};
+
 /* ★ v2-44: 교재 채점을 잠시 닫아 둔다 (원장님 지시 2026-08-27).
  * 기능·데이터는 그대로 두고 들어가는 문만 잠근다. 다시 열 때는
  * BK_LOCKED를 false로 바꾸고 홈 버튼의 onclick을 go('screen-bookscore')로 되돌리면 된다. */
