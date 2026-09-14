@@ -69,7 +69,8 @@ function mutate(ans) {
   for (const b of books) {
     if (ONE_BOOK && b.bid !== ONE_BOOK) continue;
     for (const pid of Object.keys(b.store.pages || {})) {
-      for (const p of (b.store.pages[pid].problems || [])) all.push({ bid: b.bid, grade: grade[b.bid] || '', p });
+      const v = Number(b.store.pages[pid].v || 1);      // 정답사전 판(2판이면 img·cnt·units 가 들어 있다)
+      for (const p of (b.store.pages[pid].problems || [])) all.push({ bid: b.bid, grade: grade[b.bid] || '', v, p });
     }
   }
   console.log(`전체 문항 ${all.length}개 (교재 ${new Set(all.map((x) => x.bid)).size}권)\n`);
@@ -153,7 +154,7 @@ function mutate(ans) {
       per[b].forEach((x) => {
         const s = HW.shapeOf({ type: x.p.type, answer: x.p.answer, objective: x.p.objective, cnt: x.p.cnt, units: x.p.units });
         if (!s.self) auto++;
-        if (x.p.shape) v2++;
+        if (x.v >= 2) v2++;
       });
       console.log(`     ${pad(grade[b] || '?', 4)} 학생 ${pad(students[b] || 0, 3)} · 문항 ${pad(per[b].length, 5)} · 자동 ${pad(pct(auto, per[b].length) + '%', 7)} · 2판저장 ${pct(v2, per[b].length)}%  ${b}`);
     });

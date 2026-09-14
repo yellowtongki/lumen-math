@@ -265,6 +265,7 @@
       f = readFactor(s, i); if (!f) return null; out.push(f.tok); i = f.i;
     }
     if (!out.length) return null;
+    for (var q = 0; q < out.length; q++) out[q] = peelTok(out[q]);
     out = out.filter(function (x) { return x !== '1'; });   // 계수 1은 없는 셈
     if (!out.length) out = ['1'];
     out.sort();
@@ -433,7 +434,7 @@
     if (!s) return { label: '', kind: 'free', keys: [], unit: '', eq: false };
     // 이름표:  「교점: 8」 「l: 6π cm」 「(나): \overline{OD}」
     m = s.match(/^([^:\d]{1,10}):\s*([\s\S]+)$/);
-    if (m && trim(m[1])) { label = trim(m[1]); s = trim(m[2]); }
+    if (m && trim(m[1])) { label = trim(m[1]) + ':'; s = trim(m[2]); }   // 이름표는 화면에 그대로 쓴다
     else {
       m = s.match(/^(\((?:가|나|다|라|마|바|사|아)\))\s*:?\s*([\s\S]+)$/);
       if (m) { label = m[1]; s = trim(m[2]); }
@@ -462,7 +463,7 @@
     var alts, mAlt = s.match(/^([\s\S]*?)\(\s*또는\s*([\s\S]*)\)\s*$/);
     if (mAlt && trim(mAlt[1])) alts = [trim(mAlt[1])].concat(String(mAlt[2]).split(/\s*또는\s*/));
     else alts = [s];
-    var reads = [], keys = [], kind = null, unit = '', i2;
+    var reads = [], keys = [], kind = null, unit = '';
     for (i = 0; i < alts.length; i++) {
       if (!trim(alts[i])) continue;
       var r = readValue(alts[i]);
@@ -507,8 +508,9 @@
   }
 
   /* ── 9. 정답/입력 전체 읽기 ──────────────────────────────────── */
+  //  ±8 → 8 과 -8 두 답으로 펼친다. 「x=±8」처럼 앞에 이름이 붙어 있어도 같다.
   function expandPM(chunk) {
-    var m = String(chunk).match(/^\s*([±∓])\s*([\s\S]+)$/);
+    var m = String(chunk).match(/^\s*(?:[A-Za-z∠]{1,3}\s*=\s*)?([±∓])\s*([\s\S]+)$/);
     if (!m) return [chunk];
     var body = trim(m[2]);
     return [body, '-' + body];
@@ -578,7 +580,7 @@
     var cLab = 0, sLab = 0;
     for (i = 0; i < cp.length; i++) if (cp[i].label) cLab++;
     for (i = 0; i < sp.length; i++) if (sp[i].label) sLab++;
-    var used = [], k;
+    var used = [];
     if (cLab === cp.length && sLab === sp.length) {
       for (i = 0; i < cp.length; i++) {
         var found = -1;
