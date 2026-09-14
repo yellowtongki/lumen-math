@@ -50,6 +50,8 @@ jobs:
           MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          # 교재 채점 2판(2026-09-14): 정답사전을 밤마다 1,500쪽씩 채운다(중2·중3이 이틀이면 끝남). 다 채워지면 자동으로 가벼워진다.
+          BOOKANS_PAGE_CAP: '1500'
         run: |
           node sync/mathflat_collector.js --days ${{ github.event.inputs.days || '7' }}
           node sync/mockexam_engine.js || echo "기출모의 엔진 실패 (수집은 정상)"
