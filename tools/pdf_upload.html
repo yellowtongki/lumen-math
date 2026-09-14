@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>루멘수학 · 교재 PDF 올리기</title>
+<style>
+  :root{ --ink:#0d2240; --pri:#1d6fe8; --mute:#64748b; --line:#dbe3ee; --ok:#15803d; --bad:#dc2626; }
+  *{ box-sizing:border-box }
+  body{ margin:0; background:#f5f7fb; color:var(--ink); font-family:-apple-system,'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif; padding:24px 16px 60px; line-height:1.55 }
+  .card{ max-width:520px; margin:0 auto; background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px 20px; box-shadow:0 8px 28px rgba(13,34,64,.08) }
+  h1{ font-size:20px; margin:0 0 4px; font-weight:900 }
+  p{ margin:0 0 14px; color:var(--mute); font-size:13.5px; font-weight:600 }
+  label{ display:block; font-size:12.5px; font-weight:800; margin:14px 0 6px }
+  input[type=text]{ width:100%; font:inherit; font-size:15px; padding:11px 12px; border:1px solid var(--line); border-radius:10px }
+  .pick{ display:block; width:100%; text-align:center; padding:16px; border:2px dashed var(--pri); border-radius:12px; color:var(--pri); font-weight:900; font-size:15px; cursor:pointer; background:#eef4ff }
+  .pick input{ display:none }
+  .file{ margin-top:8px; font-size:13px; font-weight:700; color:var(--ink); min-height:20px }
+  button{ width:100%; margin-top:16px; font:inherit; font-size:16px; font-weight:900; padding:14px; border:none; border-radius:12px; background:var(--pri); color:#fff; cursor:pointer }
+  button:disabled{ background:#cbd5e1; cursor:default }
+  .bar{ height:10px; border-radius:5px; background:#eef2f7; overflow:hidden; margin-top:14px }
+  .bar i{ display:block; height:100%; width:0; background:var(--pri); transition:width .2s }
+  .st{ margin-top:8px; font-size:13.5px; font-weight:800; min-height:22px }
+  .st.ok{ color:var(--ok) } .st.bad{ color:var(--bad) }
+  .done{ margin-top:14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; font-size:13px; font-weight:700; color:#166534; word-break:break-all; display:none }
+  .list{ margin-top:22px; border-top:1px solid var(--line); padding-top:12px }
+  .list h2{ font-size:13px; margin:0 0 6px; color:var(--mute) }
+  .list div{ font-size:12.5px; font-weight:700; padding:6px 0; border-bottom:1px dashed var(--line); display:flex; justify-content:space-between; gap:8px }
+  .list span{ color:var(--mute); font-weight:600; white-space:nowrap }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>📕 교재 PDF 올리기</h1>
+  <p>교과서·교재 PDF를 루멘 저장소에 올립니다. 폰·아이패드·맥 어디서나 됩니다. 50MB까지.</p>
+
+  <label>교재 이름 (화면에 보일 이름)</label>
+  <input type="text" id="name" placeholder="예: 비상 미적분1 교과서 (22개정)" autocomplete="off">
+
+  <label>PDF 파일</label>
+  <label class="pick">📎 파일 고르기 (구글 드라이브·파일 앱에서 선택)
+    <input type="file" id="file" accept="application/pdf,.pdf">
+  </label>
+  <div class="file" id="fname"></div>
+
+  <button id="go" disabled>⬆️ 올리기</button>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="st" id="st"></div>
+  <div class="done" id="done"></div>
+
+  <div class="list" id="list"><h2>이미 올린 파일</h2><div><span>불러오는 중…</span></div></div>
+</div>
+
+<script>
+/* 학원앱과 같은 공개 키(publishable) — 저장소에 올리기만 할 수 있는 키라 여기 있어도 됩니다. */
+var SUPA_URL='https://bhkkkbcytcrlxhrtjgen.supabase.co';
+var SUPA_KEY='sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
+var BUCKET='school_pdfs', FOLDER='book';
+var fileEl=document.getElementById('file'), nameEl=document.getElementById('name'), go=document.getElementById('go');
+var st=document.getElementById('st'), bar=document.getElementById('bar'), done=document.getElementById('done'), fname=document.getElementById('fname');
+var cur=null;
+function slug(s){ var a=String(s||'').replace(/[^A-Za-z0-9_-]/g,'').slice(0,30); var h=0; for(var i=0;i<s.length;i++){ h=((h<<5)-h+s.charCodeAt(i))|0; } return (a?a+'_':'book_')+(h>>>0).toString(36); }
+function mb(n){ return (Math.round(n/1024/1024*10)/10)+'MB'; }
+fileEl.addEventListener('change', function(){
+  cur=fileEl.files && fileEl.files[0] || null;
+  if(!cur){ fname.textContent=''; go.disabled=true; return; }
+  fname.textContent='📄 '+cur.name+' · '+mb(cur.size);
+  if(!nameEl.value) nameEl.value=cur.name.replace(/\.pdf$/i,'');
+  if(cur.size>50*1024*1024){ st.className='st bad'; st.textContent='50MB를 넘습니다. 맥 「미리보기 → 내보내기 → 파일 크기 줄이기」로 줄여 주세요.'; go.disabled=true; return; }
+  st.className='st'; st.textContent=''; go.disabled=false;
+});
+go.addEventListener('click', function(){
+  if(!cur) return;
+  var name=(nameEl.value||cur.name).trim();
+  var path=FOLDER+'/'+Date.now()+'_'+slug(name)+'.pdf';
+  go.disabled=true; done.style.display='none'; st.className='st'; st.textContent='올리는 중… 0%'; bar.style.width='0';
+  var xhr=new XMLHttpRequest();
+  xhr.open('POST', SUPA_URL+'/storage/v1/object/'+BUCKET+'/'+path, true);
+  xhr.setRequestHeader('apikey', SUPA_KEY);
+  xhr.setRequestHeader('authorization', 'Bearer '+SUPA_KEY);
+  xhr.setRequestHeader('content-type', 'application/pdf');
+  xhr.setRequestHeader('x-upsert', 'true');
+  xhr.setRequestHeader('cache-control', 'max-age=3600');
+  xhr.upload.onprogress=function(e){ if(e.lengthComputable){ var p=Math.round(e.loaded/e.total*100); bar.style.width=p+'%'; st.textContent='올리는 중… '+p+'% ('+mb(e.loaded)+' / '+mb(e.total)+')'; } };
+  xhr.onload=function(){
+    if(xhr.status>=200 && xhr.status<300){
+      bar.style.width='100%'; st.className='st ok'; st.textContent='✅ 올렸습니다. 이 화면을 캡처하거나 「올렸다」고만 알려 주세요.';
+      done.style.display='block'; done.textContent='저장 위치: '+BUCKET+'/'+path+'\n이름: '+name+' · '+mb(cur.size);
+      try{ localStorage.setItem('lumen_pdf_upload_last', JSON.stringify({path:path,name:name,size:cur.size,at:new Date().toISOString()})); }catch(e){}
+      loadList();
+    } else {
+      st.className='st bad'; st.textContent='실패 ('+xhr.status+'): '+(xhr.responseText||'').slice(0,160); go.disabled=false;
+    }
+  };
+  xhr.onerror=function(){ st.className='st bad'; st.textContent='네트워크 오류 — 와이파이 상태를 확인하고 다시 눌러 주세요.'; go.disabled=false; };
+  xhr.send(cur);
+});
+function loadList(){
+  var el=document.getElementById('list');
+  fetch(SUPA_URL+'/storage/v1/object/list/'+BUCKET, { method:'POST', headers:{ apikey:SUPA_KEY, authorization:'Bearer '+SUPA_KEY, 'content-type':'application/json' },
+    body: JSON.stringify({ prefix: FOLDER, limit: 50, sortBy:{ column:'created_at', order:'desc' } }) })
+  .then(function(r){ return r.json(); })
+  .then(function(rows){
+    var h='<h2>이미 올린 파일</h2>';
+    rows=(rows||[]).filter(function(x){ return x && x.name && /\.pdf$/i.test(x.name); });
+    if(!rows.length) h+='<div><span>아직 없습니다</span></div>';
+    rows.forEach(function(x){ var sz=x.metadata && x.metadata.size; h+='<div>'+x.name.replace(/</g,'&lt;')+'<span>'+(sz?mb(sz):'')+' · '+String(x.created_at||'').slice(0,10)+'</span></div>'; });
+    el.innerHTML=h;
+  }).catch(function(){ el.innerHTML='<h2>이미 올린 파일</h2><div><span>목록을 못 불러왔습니다</span></div>'; });
+}
+loadList();
+</script>
+</body>
+</html>
