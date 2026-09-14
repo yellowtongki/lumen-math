@@ -1666,8 +1666,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .hs-set .dt{width:46px;text-align:center;flex:none}
 .hs-set .dt b{display:block;font-size:17px;font-weight:900;color:var(--text);line-height:1}
 .hs-set .dt small{font-size:9.5px;font-weight:800;color:#94a3b8}
-.hs-set .wt{font-size:13px;font-weight:900;color:var(--text);line-height:1.35}
-.hs-set .wd{font-size:10.5px;font-weight:800;color:#94a3b8;margin-top:3px}
+.hs-set .wt{display:block;font-size:13px;font-weight:900;color:var(--text);line-height:1.35}
+.hs-set .wd{display:block;font-size:10.5px;font-weight:800;color:#94a3b8;margin-top:3px;line-height:1.5}
 .hs-set .wd b{color:#dc2626}
 .hs-set .go{margin-left:auto;color:#cbd5e1;font-weight:900;font-size:16px;flex:none}
 .hs-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;background:var(--surface);border:1.5px solid #e2e8f0;border-radius:13px;padding:9px;margin-bottom:8px}
@@ -2263,8 +2263,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 <div class="screen" id="screen-hand-book">
   <div class="sub-hdr" style="background:linear-gradient(135deg,#0d2240,#0f9d8a)">
     <button class="back-btn" onclick="go('screen-hand')" style="color:#fff">←</button>
-    <div class="sub-title" style="color:#fff" id="hsb-title">교재 손풀이</div>
-    <div id="hsb-sub" style="margin-left:auto;font-size:10.5px;font-weight:800;color:#cffafe;background:rgba(255,255,255,.14);border-radius:50px;padding:4px 10px"></div>
+    <div class="sub-title" style="color:#fff;font-size:15px;min-width:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="hsb-title">교재 손풀이</div>
+    <div id="hsb-sub" style="margin-left:auto;flex:none;font-size:10.5px;font-weight:800;color:#cffafe;background:rgba(255,255,255,.14);border-radius:50px;padding:4px 10px"></div>
   </div>
   <div class="rec-body" id="hsb-body" style="padding:0">
     <div class="sp3-empty"><div class="e1">⏳</div><div class="e2">불러오는 중...</div></div>
@@ -3422,11 +3422,11 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * v2-80 (2026-09-14) 📚 교재·교과서 손풀이
  *   · ✍️ 손풀이 화면 맨 위에 탭 두 개가 생겼습니다 — 「📄 학습지」 「📚 교재·교과서」.
  *     학습지 탭은 예전 그대로이고, 교재 탭이 새로 생긴 자리입니다.
- *   · 교재 탭 — 내가 매쓰플랫에서 받은 교재 중 <b>선생님 풀이가 올라온 교재만</b>
+ *   · 교재 탭 — 내가 매쓰플랫에서 받은 교재 중 「선생님 풀이가 올라온 교재」만
  *     보입니다. 줄마다 「풀이 있는 쪽 · 내 오답 · 풀이 있는 내 오답 · 최근 쪽」.
  *   · 교재를 누르면 왼쪽에 쪽 목록(내 오답이 있는 쪽은 빨간 점),
  *     오른쪽에 그 쪽의 번호 판이 뜹니다. 번호는 매쓰플랫 번호 그대로이고
- *     5.(1) 5.(2) 처럼 소문항이 있으면 <b>5 하나로 묶어</b> 보여 줍니다.
+ *     5.(1) 5.(2) 처럼 소문항이 있으면 「5」 하나로 묶어 보여 줍니다.
  *     내가 틀린 번호는 빨강, 풀이가 없는 번호는 연하게, 보는 중은 남색입니다.
  *   · 번호를 누르면 풀이 한 장이 열립니다. 🎬 영상이 있으면 맨 위에 붙고
  *     (선생님이 정해 둔 시각부터 재생), 그 아래로 방법별 풀이가 순서대로
@@ -9180,9 +9180,12 @@ function shelfRender(){
    내 기록(나만 보임): mf_weekly에서 내 sid의 점수·학원등수, 전국등수는 발행 리포트(stu_reports_)에서
    등수 기준 = 같은 시험지를 푼 학생 전원 (다른 친구의 등수·점수는 표시하지 않음) */
 var HS={loaded:false,ann:null,weekly:[],sid:null,cat:[],next:null,groups:[],behav:{},natmap:{},pub:null,series:null};  // v2-37: series = 원장님이 고른 내 과정
+/* v2-80 버그 수정: 아래쪽(손풀이)에도 같은 이름의 전역 HS 가 있어 「다 불러왔다」 표시를
+ * 서로 덮어썼다. 손풀이를 먼저 열면 이 함수가 그냥 돌아가 버려 홈·명예의전당 자료가
+ * 비어 보였다. 표시 이름을 hallLoaded 로 따로 둬서 서로 간섭하지 않게 한다. */
 async function hallStuLoad(force){
-  if(HS.loaded&&!force) return;
-  if(isTest||!sb||!studentInfo){ HS.loaded=true; return; }
+  if(HS.hallLoaded&&!force) return;
+  if(isTest||!sb||!studentInfo){ HS.hallLoaded=true; return; }
   try{
     var r=await sb.from('lumen_store').select('key,value').in('key',['hall_announce','mf_weekly','mf_wk_catalog','wk_next','wk_groups','mf_ws_behaviors','wk_pub','wk_series']);
     (r.data||[]).forEach(function(row){
@@ -9212,7 +9215,7 @@ async function hallStuLoad(force){
       }catch(e3){}
     }
   }catch(e){}
-  HS.loaded=true;
+  HS.hallLoaded=true;
 }
 // v2-30: 내 전국 등수 — 학원앱 hallNatOf와 같은 규칙 (전국 응시자>학원 응시자일 때만 진짜 전국)
 function hsMyNat(wid){
