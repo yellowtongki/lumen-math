@@ -35,6 +35,9 @@
  *   --essay-ws ID,ID|auto  서술형 학습지 채점기준 사전(mf_essay_ws)만 갱신 — 학원앱 「✍️ 서술형 첨삭」용
  *   --aha-sol       아하노트에 걸린 학습지 문항의 해설 그림만 복사 (매쓰플랫 로그인 필요)
  *   --ws-recent     학생별 「최근 학습지 10장」(mf_ws_recent_*)만 발행 (로그인 불필요, --dry-run 가능)
+ *   --bookans-only  교재 정답사전(mf_bookans_*)만 갱신 — 학생에게 배정된 중등 교재만
+ *   --book ID       정답사전을 그 교재 하나만 갱신 (--bookans-only 와 함께)
+ *   --skip-swb      학생 교재상태(mf_swb_*) 재수집을 건너뛰고 저장된 것을 쓴다 (빠름)
  *
  * 출력 (개인정보 포함 → 커밋 금지, .gitignore 처리):
  *   {out-dir}/mf_answer_records.json   [A] 문항 단위 학습지 정오답
@@ -64,6 +67,8 @@ const OUT_DIR = opt('--out-dir', path.join(__dirname, '_debug'));
 const SKIP_PROBLEMS = has('--skip-problems');
 const SKIP_HISTORY = has('--skip-history');
 const SKIP_WORKBOOK = has('--skip-workbook'); // 교재 문항단위 수집 건너뛰기
+const ONE_BOOK = opt('--book', '');           // 정답사전을 이 교재(bookId) 하나만 갱신
+const SKIP_SWB = has('--skip-swb');           // 학생 교재상태(mf_swb_*) 재수집 건너뛰기 (저장된 것 사용)
 
 function log(...a) { const t = new Date().toISOString().replace('T', ' ').slice(0, 19); console.log(`[${t}]`, ...a); }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -912,7 +917,9 @@ async function main() {
     if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
     const meBa = await login();
     log(`로그인 성공 · 학원 ${meBa.academyId}`);
-    await refreshStudentWorkbooks();
+    // 교재 하나만 다시 받을 때(--book)나 --skip-swb 일 때는 저장된 학생 교재상태를 그대로 쓴다(빠름)
+    if (!ONE_BOOK && !SKIP_SWB) await refreshStudentWorkbooks();
+    else log('학생 교재상태(mf_swb_*) 재수집 생략 — 저장된 것 사용');
     await refreshBookAnswers();
     return;
   }
@@ -1514,73 +1521,118 @@ async function refreshStudentWorkbooks() {
 // 받아 채점엔진으로 정규화·gradable 판정해 저장. 회차와 무관(같은 교재는 문항·정답 동일).
 // 약관: 등록·도달 페이지에 한정. 문제 이미지는 저장하지 않음(번호·정답·유형만).
 const HWGrade = require('./hw_grade_engine.js');
+const BOOKANS_VER = 2;   // 정답사전 형식 판 수 (pages[wpid].v). v가 없거나 낮으면 다시 받는다
+
+// 한 문항을 정답사전 항목으로 (계약 docs/bookscore_v2_contract.md §1)
+function bookAnsRec(p) {
+  // ★ 객관식 판정은 「유형」으로만. optionCount는 모든 문항에 기본 5가 붙어 신뢰할 수 없다.
+  const objective = (p.type === 'MULTIPLE_CHOICE' || p.type === 'SINGLE_CHOICE');
+  const units = (p.answerUnits || []).map((u) => ({ u: String(u.unit != null ? u.unit : u.u || ''), i: Number(u.index != null ? u.index : u.i || 0) }));
+  const sh = HWGrade.shapeOf({
+    type: p.type, answer: p.answer, objective,
+    cnt: Number(p.answerCount || 0), units,
+  });
+  return {
+    wpId: p.id, num: p.number || '', type: p.type || '',
+    answer: p.answer != null ? String(p.answer) : '',
+    objective: !!objective, optionCount: (objective ? (p.optionCount || 5) : 0),
+    gradable: !!sh.gradable, unit: sh.unit || '',
+    img: p.answerImageUrl || '',                 // 정답 그림 (자기채점 때 보여 준다)
+    cnt: Number(p.answerCount || 0),
+    units,
+    shape: sh.shape, self: !!sh.self,
+  };
+}
+
+// 학생에게 배정된 교재 목록 (mf_swb_* → 교재별 배정 학생 수·학년) + 교재별 전체 페이지(mf_bookpages)
+async function loadAssignedBooks(url, sbHeaders) {
+  const books = {};   // bid → { students, grade, title }
+  try {
+    const rs = await fetch(`${url}/rest/v1/lumen_store?key=like.mf_swb_*&select=key,value&limit=500`, { headers: sbHeaders });
+    if (rs.ok) {
+      for (const row of await rs.json()) {
+        const v = (typeof row.value === 'string' ? JSON.parse(row.value) : row.value) || {};
+        for (const b of v.books || []) {
+          if (!b || !b.bid) continue;
+          const e = books[b.bid] || (books[b.bid] = { students: 0, grade: '', title: '' });
+          e.students++; e.grade = e.grade || b.grade || ''; e.title = e.title || b.title || '';
+        }
+      }
+    }
+  } catch (e) { log('배정 교재 조회 실패:', e.message); }
+  const pages = {};
+  try {
+    const rp = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_bookpages&select=value`, { headers: sbHeaders });
+    if (rp.ok) { const j = await rp.json(); const map = ((j[0] || {}).value || {}).map || {};
+      Object.keys(map).forEach((bid) => { pages[bid] = (map[bid] || []).map(String); }); }
+  } catch (e) {}
+  return { books, pages };
+}
+
 async function refreshBookAnswers() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
   try {
-    // 우리 학생이 채점 기록을 남긴 (교재, 페이지) 쌍 = 도달한 페이지
-    const pairs = new Set(); const bookName = {};
-    for (let off = 0; off < 200000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=book_id,workbook_page_id&source=eq.${encodeURIComponent('교재')}&book_id=not.is.null&workbook_page_id=not.is.null&limit=1000&offset=${off}`, { headers: sbHeaders });
-      if (!res.ok) break;
-      const batch = await res.json();
-      batch.forEach((r) => pairs.add(r.book_id + '|' + r.workbook_page_id));
-      if (batch.length < 1000) break;
-    }
-    // 등록 교재의 「전체 페이지」 (refreshStudentWorkbooks가 만든 mf_bookpages) — 학생앱 채점 대상
-    try {
-      const rp = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_bookpages&select=value`, { headers: sbHeaders });
-      if (rp.ok) { const j = await rp.json(); const map = ((j[0] || {}).value || {}).map || {};
-        Object.keys(map).forEach((bid) => (map[bid] || []).forEach((wpid) => pairs.add(bid + '|' + wpid))); }
-    } catch (e) {}
-    if (!pairs.size) { log('교재 정답사전: 도달 페이지 없음 → 건너뜀'); return; }
+    const { books, pages } = await loadAssignedBooks(url, sbHeaders);
+    if (!Object.keys(books).length) { log('교재 정답사전: 배정 교재 없음 → 건너뜀'); return; }
     // 교재명 사전 (mf_books)
+    const bookName = {};
     try {
       const rb = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_books&select=value`, { headers: sbHeaders });
       if (rb.ok) { const j = await rb.json(); const bk = ((j[0] || {}).value || {}).books || {}; Object.keys(bk).forEach((id) => { bookName[id] = bk[id].n || ''; }); }
     } catch (e) {}
-    // 교재별로 묶기
-    const byBook = {};
-    pairs.forEach((k) => { const [b, p] = k.split('|'); (byBook[b] = byBook[b] || new Set()).add(p); });
+
+    // 대상 = 학생에게 배정된 교재 중 고등 제외.
+    // 순서 = 중등 먼저(초등은 나중) → 배정 학생 많은 순 → 중1 → 중2 → 중3
+    const gradeRank = (g) => (g === '중1' ? 1 : g === '중2' ? 2 : g === '중3' ? 3 : 9);
+    const midFirst = (g) => (/^중/.test(g || '') ? 0 : 1);
+    const targets = Object.keys(books).filter((bid) => {
+      if (ONE_BOOK && String(bid) !== String(ONE_BOOK)) return false;
+      if (/^고/.test(books[bid].grade || '')) return false;           // 고등 교재는 하지 않는다
+      return (pages[bid] || []).length > 0;
+    }).sort((a, b) => (midFirst(books[a].grade) - midFirst(books[b].grade))
+      || (books[b].students - books[a].students)
+      || (gradeRank(books[a].grade) - gradeRank(books[b].grade)));
+    if (!targets.length) { log('교재 정답사전: 대상 교재 없음'); return; }
 
     // 한 번에 받는 새 페이지 상한 — 매쓰플랫 부하·약관 고려해 점진적으로 채운다(매일 새벽 반복)
-    const PAGE_CAP = Number(process.env.BOOKANS_PAGE_CAP || 500);   // 밤마다 500페이지씩 점진 수집(전체 채워질 때까지)
+    const PAGE_CAP = Number(process.env.BOOKANS_PAGE_CAP || 500);
     let capLeft = PAGE_CAP;
-    let totBooks = 0, totPages = 0, totProb = 0, totGrad = 0;
-    for (const bid of Object.keys(byBook)) {
+    let totBooks = 0, totPages = 0, totProb = 0, totGrad = 0, totSelf = 0, nAuto = 0;
+    log(`교재 정답사전: 대상 ${targets.length}권 (쪽 상한 ${PAGE_CAP})`);
+    for (const bid of targets) {
       if (capLeft <= 0) break;
-      const pageIds = Array.from(byBook[bid]);
-      // 이미 저장된 사전 불러와 병합(같은 페이지는 스킵 — 정답 안 바뀜)
+      const pageIds = pages[bid] || [];
+      // 이미 저장된 사전 불러와 병합 (같은 판(v)으로 받아 둔 쪽은 건너뛴다 — 정답은 안 바뀐다)
       let store = { book: '', pages: {} };
       try {
         const rr = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_bookans_${bid}&select=value`, { headers: sbHeaders });
-        if (rr.ok) { const j = await rr.json(); if (j[0] && j[0].value) store = j[0].value; }
+        if (rr.ok) { const j = await rr.json(); if (j[0] && j[0].value) store = (typeof j[0].value === 'string' ? JSON.parse(j[0].value) : j[0].value); }
       } catch (e) {}
       store.pages = store.pages || {};
-      let changed = false;
+      let changed = false, bPages = 0;
       for (const pid of pageIds) {
         if (capLeft <= 0) break;
-        if (store.pages[pid]) continue;                       // 이미 있음
+        const old = store.pages[pid];
+        if (old && Number(old.v || 0) >= BOOKANS_VER) continue;        // 이미 새 형식으로 있음
         capLeft--;
         let page = null;
         try { page = await api(`/workbook/${bid}/page/${pid}`); } catch (e) { continue; }
         const items = (page && (page.content || page)) || [];
         if (!Array.isArray(items) || !items.length) continue;
-        const probs = items.map((p) => {
-          // ★ 객관식 판정은 「유형」으로만. optionCount는 모든 문항에 기본 5가 붙어 신뢰할 수 없다.
-          const objective = (p.type === 'MULTIPLE_CHOICE' || p.type === 'SINGLE_CHOICE');
-          const gradable = objective ? true : (p.type === 'SHORT_ANSWER' && HWGrade.isGradable(p.answer));
-          const rec = {
-            wpId: p.id, num: p.number || '', type: p.type || '',
-            answer: p.answer != null ? String(p.answer) : '',
-            objective: !!objective, optionCount: (objective ? (p.optionCount || 5) : 0),
-            gradable: !!gradable, unit: objective ? '' : HWGrade.unitOf(p.answer),
-          };
-          return rec;
-        });
-        store.pages[pid] = { title: (items[0] && items[0].title) || '', page: (items[0] && items[0].page) || '', problems: probs };
-        store.book = bookName[bid] || store.book || '';
-        changed = true; totPages++; totProb += probs.length; totGrad += probs.filter((x) => x.gradable).length;
+        const probs = items.map(bookAnsRec);
+        items.forEach((p) => { if (p.autoScoredType && p.autoScoredType !== 'IMPOSSIBLE') nAuto++; });
+        store.pages[pid] = {
+          v: BOOKANS_VER,
+          title: (items[0] && items[0].title) || (old && old.title) || '',
+          page: (items[0] && items[0].page) || (old && old.page) || '',
+          problems: probs,
+        };
+        store.book = bookName[bid] || books[bid].title || store.book || '';
+        changed = true; totPages++; bPages++;
+        totProb += probs.length;
+        totGrad += probs.filter((x) => !x.self).length;
+        totSelf += probs.filter((x) => x.self).length;
         await sleep(90);
       }
       if (changed) {
@@ -1589,31 +1641,41 @@ async function refreshBookAnswers() {
           method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
           body: JSON.stringify([{ key: `mf_bookans_${bid}`, value: store, updated_at: new Date().toISOString() }]),
         });
-        if (res.ok) totBooks++;
+        if (res.ok) { totBooks++; log(`  · ${books[bid].grade || '?'} ${(store.book || bid).slice(0, 40)} — 새 쪽 ${bPages} (남은 상한 ${capLeft})`); }
+        else log(`  · 저장 실패 ${bid} (${res.status})`);
       }
     }
     const pct = totProb ? Math.round(totGrad / totProb * 100) : 0;
-    log(`교재 정답사전: 교재 ${totBooks} · 새 페이지 ${totPages} · 문항 ${totProb}(자동채점 ${totGrad}=${pct}%)`);
+    log(`교재 정답사전(2판): 교재 ${totBooks} · 새 페이지 ${totPages} · 문항 ${totProb}(자동채점 ${totGrad}=${pct}% · 자기채점 ${totSelf})`);
+    if (nAuto) log(`  ※ 매쓰플랫 자체 자동채점(autoScoredType≠IMPOSSIBLE) 문항 ${nAuto}개 발견`);
   } catch (e) { log('교재 정답사전 갱신 실패(치명적 아님):', e.message); }
 }
 
-// v2-41: 저장된 정답사전 전체의 gradable·unit을 현재 엔진 기준으로 재계산 (로그인 불필요)
+// v2-41 → 2판: 저장된 정답사전 전체를 현재 엔진 기준으로 다시 판정 (매쓰플랫 로그인 불필요)
+//   gradable·unit 뿐 아니라 shape·self 도 새로 쓴다. (img·cnt·units 는 수집 때만 채워진다)
 async function regradeBookAnswers() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
   const rr = await fetch(`${url}/rest/v1/lumen_store?key=like.mf_bookans_*&select=key,value&limit=1000`, { headers: sbHeaders });
   if (!rr.ok) { log('정답사전 재계산: 목록 조회 실패'); return; }
   const rows = (await rr.json()).filter((x) => /^mf_bookans_/.test(x.key));
-  let nBook = 0, nProb = 0, nFlip = 0;
+  let nBook = 0, nProb = 0, nFlip = 0, nSelf = 0;
   for (const row of rows) {
+    if (ONE_BOOK && row.key !== `mf_bookans_${ONE_BOOK}`) continue;
     const store = (typeof row.value === 'string' ? JSON.parse(row.value) : row.value) || {};
     let changed = false;
     Object.keys(store.pages || {}).forEach((pid) => {
       (store.pages[pid].problems || []).forEach((p) => {
         nProb++;
-        const g = p.objective ? true : (p.type === 'SHORT_ANSWER' && HWGrade.isGradable(p.answer));
-        const u = p.objective ? '' : HWGrade.unitOf(p.answer);
-        if (!!g !== !!p.gradable || u !== (p.unit || '')) { if (!!g !== !!p.gradable) nFlip++; p.gradable = !!g; p.unit = u; changed = true; }
+        const sh = HWGrade.shapeOf({ type: p.type, answer: p.answer, objective: p.objective, cnt: p.cnt, units: p.units });
+        if (sh.self) nSelf++;
+        if (!!sh.gradable !== !!p.gradable || (sh.unit || '') !== (p.unit || '')
+            || sh.shape !== p.shape || !!sh.self !== !!p.self) {
+          if (!!sh.gradable !== !!p.gradable) nFlip++;
+          p.gradable = !!sh.gradable; p.unit = sh.unit || '';
+          p.shape = sh.shape; p.self = !!sh.self;
+          changed = true;
+        }
       });
     });
     if (changed) {
@@ -1626,7 +1688,7 @@ async function regradeBookAnswers() {
       await sleep(60);
     }
   }
-  log(`정답사전 재계산: 갱신 교재 ${nBook}/${rows.length} · 검사 문항 ${nProb} · 판정 바뀜 ${nFlip}`);
+  log(`정답사전 재계산(2판): 갱신 교재 ${nBook}/${rows.length} · 검사 문항 ${nProb} · 판정 바뀜 ${nFlip} · 자기채점 ${nSelf}`);
 }
 
 async function refreshBookCatalog() {

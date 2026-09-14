@@ -97,6 +97,7 @@
     t = t.replace(/[＋]/g, '+').replace(/[－−–—ー]/g, '-').replace(/[＝]/g, '=')
          .replace(/[（]/g, '(').replace(/[）]/g, ')').replace(/[，、]/g, ',')
          .replace(/[％]/g, '%').replace(/[／]/g, '/').replace(/[：]/g, ':')
+         .replace(/[＜]/g, '<').replace(/[＞]/g, '>').replace(/[＊]/g, '*')
          .replace(/[˚º∘⁰]/g, '°').replace(/[·․]/g, '·');
     return trim(t.replace(/\s+/g, ' '));
   }
@@ -197,7 +198,14 @@
   }
   function algPrep(s0) {
     var s = String(s0).replace(/\s+/g, '');
-    s = unfrac(s);
+    // 분수·근호를 안쪽부터 차례로 푼다 (\frac{\sqrt{3}}{3} 처럼 겹친 경우 대비)
+    var pv = null, gd = 0;
+    while (pv !== s && gd++ < 20) {
+      pv = s;
+      s = s.replace(/\\sqrt\[3\]\s*\{([^{}]*)\}/g, '∛($1)');     // 세제곱근
+      s = s.replace(/\\sqrt\s*\{([^{}]*)\}/g, '√($1)');          // 제곱근 √3
+      s = s.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g, '($1)/($2)');
+    }
     s = s.replace(/\^\{([^{}]*)\}/g, '^$1');
     var prev = null, guard = 0;
     while (prev !== s && guard++ < 10) { prev = s; s = s.replace(/\{([^{}]*)\}/g, '$1'); } // {2}^{4} → 2^4
@@ -205,8 +213,22 @@
     s = s.replace(/[×·*]/g, '*').replace(/÷/g, '/');
     return s;
   }
+  /* 인자 하나에 씌워진 괄호 한 겹 벗기기 : "(+3)" → "3", "÷(+a)" → "÷a" */
+  function peelTok(t) {
+    var pre = '';
+    t = String(t);
+    if (t.charAt(0) === '÷') { pre = '÷'; t = t.substring(1); }
+    var m = t.match(/^\(\+?([0-9A-Za-zπ√∛.]+)\)$/);
+    if (m) t = m[1];
+    return pre + t;
+  }
   function readFactor(s, i) {
     var n = s.length, c = s.charAt(i), tok = '', d, j;
+    if (c === '√' || c === '∛') {                      // 근호 — 뒤에 오는 인자를 통째로 묶는다
+      var inr = readFactor(s, i + 1);
+      if (!inr) return null;
+      return { tok: c + peelTok(inr.tok), i: inr.i };                     // √(3) = √3
+    }
     if (c === '(') {
       d = 0; j = i;
       for (; j < n; j++) { if (s.charAt(j) === '(') d++; else if (s.charAt(j) === ')') { d--; if (!d) break; } }
@@ -274,7 +296,7 @@
   function normAlg(s0) {
     var s = peel(algPrep(s0));                                // 바깥 괄호 한 겹은 벗긴다 ((8π-16) = 8π-16)
     if (!s) return null;
-    if (!/^[0-9A-Za-zπ+\-*/^().]+$/.test(s)) return null;    // 읽을 수 없는 글자가 섞였다
+    if (!/^[0-9A-Za-zπ√∛+\-*/^().]+$/.test(s)) return null;  // 읽을 수 없는 글자가 섞였다
     if (!/[A-Za-zπ0-9]/.test(s)) return null;
     return normExpr(s);
   }
@@ -322,6 +344,7 @@
   /* ── 6. 보기 기호(mark) ───────────────────────────────────────── */
   var CIRC_NUM = '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮';
   var CIRC_KOR = '㉠㉡㉢㉣㉤㉥㉦㉧㉨㉩㉪㉫㉬㉭';
+  var PAREN_KOR = '㈀㈁㈂㈃㈄㈅㈆㈇㈈㈉㈊㈋㈌㈍';
   var KOR_JA = 'ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎ';
   function markTok(t) {
     t = trim(t).replace(/\s+/g, '');
@@ -329,8 +352,11 @@
     if (/^[ㄱ-ㅎ]$/.test(t)) return 'ㄱ' + KOR_JA.indexOf(t);
     if (CIRC_KOR.indexOf(t) >= 0 && t.length === 1) return 'ㄱ' + CIRC_KOR.indexOf(t);   // ㉠ = ㄱ
     if (CIRC_NUM.indexOf(t) >= 0 && t.length === 1) return '#' + (CIRC_NUM.indexOf(t) + 1);
+    if (PAREN_KOR.indexOf(t) >= 0 && t.length === 1) return 'ㄱ' + PAREN_KOR.indexOf(t);   // ㈀ = ㄱ
     var m = t.match(/^\(\s*(\d{1,2})\s*\)$/);
     if (m) return '#' + Number(m[1]);
+    m = t.match(/^\(\s*([ㄱ-ㅎ])\s*\)$/);                      // (ㄱ) = ㄱ
+    if (m) return 'ㄱ' + KOR_JA.indexOf(m[1]);
     return null;
   }
   function markSeq(s) {          // "㉢ → ㉠ → ㉡", "ㄱ과 ㄷ" 처럼 이어진 기호들
@@ -348,7 +374,7 @@
     var s = String(s0).replace(/\s+/g, '').replace(/[.。]+$/, '');
     if (!s) return null;
     if (ANGLE_SHORT[s]) return ANGLE_SHORT[s];
-    if (!/^[가-힣A-Za-z0-9%°.,~≒·:()]+$/.test(s)) return null;
+    if (!/^[가-힣A-Za-z0-9%°.,~≒·:()○△□×✓]+$/.test(s)) return null;
     if (s.replace(/[^가-힣A-Za-z]/g, '').length === 0 && !/[가-힣]/.test(s)) return null;
     return s;
   }
@@ -380,7 +406,7 @@
     if (v != null) return { kind: 'num', keys: [v], unit: unit };
     if (looksGeo(core)) { var g = normGeo(core); if (g) return { kind: 'geo', keys: [g], unit: unit }; }
     // 문자식·계산식 (문자가 있거나 연산기호가 있는 식)
-    if (/[A-Za-zπ]/.test(core) || /[+\-*/^×÷()]/.test(core)) {
+    if (/[A-Za-zπ√∛]/.test(core) || /[+\-*/^×÷()]/.test(core)) {
       var a = normAlg(core);
       if (a) return { kind: 'alg', keys: [a], unit: unit };
     }
@@ -412,6 +438,10 @@
       m = s.match(/^(\((?:가|나|다|라|마|바|사|아)\))\s*:?\s*([\s\S]+)$/);
       if (m) { label = m[1]; s = trim(m[2]); }
     }
+    // 부등호 한 글자만 답인 문제 (「□ 안에 알맞은 부등호」)
+    if (/^[<>≤≥=≠]$/.test(s.replace(/\s+/g, ''))) {
+      return { label: label, kind: 'mark', keys: ['부등호' + s.replace(/\s+/g, '')], unit: '', eq: false };
+    }
     // 부등식
     if (/[<>≤≥]/.test(s)) {
       var iq = normIneq(s);
@@ -427,9 +457,12 @@
         s = rhs; isEq = true;
       }
     }
-    // 「또는」으로 여러 답이 허용되는 경우 → 하나만 맞아도 정답
-    var body = s.replace(/\(\s*또는([\s\S]*?)\)/g, function (_, inner) { return ' 또는' + inner; });
-    var alts = body.split(/\s*또는\s*/), reads = [], keys = [], kind = null, unit = '';
+    // 「(또는 …)」로 여러 답이 허용되는 경우 → 하나만 맞아도 정답
+    //   ※ 괄호 안에 든 「또는」만 대안으로 본다. 문장 속 「0 또는 양수」까지 쪼개면 안 되기 때문.
+    var alts, mAlt = s.match(/^([\s\S]*?)\(\s*또는\s*([\s\S]*)\)\s*$/);
+    if (mAlt && trim(mAlt[1])) alts = [trim(mAlt[1])].concat(String(mAlt[2]).split(/\s*또는\s*/));
+    else alts = [s];
+    var reads = [], keys = [], kind = null, unit = '', i2;
     for (i = 0; i < alts.length; i++) {
       if (!trim(alts[i])) continue;
       var r = readValue(alts[i]);
@@ -439,11 +472,11 @@
       for (var k = 0; k < r.keys.length; k++) keys.push(r.keys[k]);
     }
     if (!reads.length) return { label: label, kind: 'free', keys: [], unit: '', eq: isEq };
-    if (kind === 'geo') {   // 「점 D」는 학생이 그냥 「D」라고 쓸 수도 있다
+    if (kind === 'geo') {   // 「점 D」는 학생이 그냥 「D」라고 쓸 수도 있다 → 둘 다 정답으로 본다
       var extra = [];
       for (i = 0; i < keys.length; i++) {
         var mm = String(keys[i]).match(/^(점|꼭짓점|변|면)([A-Z]+)$/);
-        if (mm) extra.push(mm[2]);
+        if (mm) { extra.push(mm[2]); var al = normAlg(mm[2]); if (al) extra.push(al); }
       }
       for (i = 0; i < extra.length; i++) keys.push(extra[i]);
     }
@@ -612,16 +645,20 @@
     for (i = 0; i < a.parts.length; i++) {
       parts.push({ label: a.parts[i].label || '', kind: a.parts[i].kind, unit: a.parts[i].unit || '' });
     }
-    // 매쓰플랫이 준 답칸 이름표(answerUnits)가 있으면 그것을 우선한다
-    var us = p.units || [];
-    for (i = 0; i < us.length; i++) {
-      var idx = Number(us[i].i != null ? us[i].i : us[i].index);
-      var txt = trim(String(us[i].u != null ? us[i].u : us[i].unit || '')).replace(/^\[|\]$/g, '');
-      txt = trim(unlatex(txt));
-      if (!txt) continue;
-      if (!parts[idx]) parts[idx] = { label: '', kind: 'num', unit: '' };
-      if (/:$/.test(txt) || /[가-힣]/.test(txt)) parts[idx].label = txt;
-      else if (!parts[idx].unit) parts[idx].unit = txt;
+    // 매쓰플랫이 준 답칸 이름표(answerUnits)가 있으면 그것을 우선한다.
+    //   ※ answerUnits[].index 는 「몇 번째 칸」이 아니라 정답 글자 속 위치라서
+    //      칸 번호로 쓰면 안 된다. 위치 순서대로 줄 세워 칸 수가 딱 맞을 때만 갖다 붙인다.
+    var us = (p.units || []).slice().sort(function (x, y) {
+      return Number(x.i != null ? x.i : x.index || 0) - Number(y.i != null ? y.i : y.index || 0);
+    });
+    if (us.length === parts.length) {
+      for (i = 0; i < us.length; i++) {
+        var txt = trim(String(us[i].u != null ? us[i].u : us[i].unit || '')).replace(/^\[|\]$/g, '');
+        txt = trim(unlatex(txt));
+        if (!txt) continue;
+        if (/:$/.test(txt) || /[가-힣]/.test(txt)) { if (!parts[i].label) parts[i].label = txt; }
+        else if (!parts[i].unit) parts[i].unit = txt;
+      }
     }
     // 답칸 수(cnt)가 더 많으면 빈 칸을 채워 둔다 (학생앱이 칸을 그릴 수 있게)
     var cnt = Number(p.cnt || 0);

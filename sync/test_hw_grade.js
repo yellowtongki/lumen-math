@@ -50,14 +50,12 @@ async function loadGrades() {
   return { grade: g, students: cnt };
 }
 
-// 정답 하나를 「틀린 답」으로 바꾼다 (숫자면 +1, 아니면 글자를 덧붙임)
+// 정답 하나를 「틀린 답」으로 바꾼다 (맨 뒤 숫자를 +7, 숫자가 없으면 글자를 덧붙임)
+//   ※ 식(eq)은 「마지막 = 뒤 값」만 채점하므로 앞쪽 숫자가 아니라 맨 뒤 숫자를 건드려야
+//      진짜 오답이 된다.
 function mutate(ans) {
   const s = String(ans);
-  const m = s.match(/\d+/);
-  if (m) {
-    const n = String(Number(m[0]) + 7);
-    return s.slice(0, m.index) + n + s.slice(m.index + m[0].length);
-  }
+  if (/\d/.test(s)) return s.replace(/\d+/g, (d) => String(Number(d) + 7));
   return s + '틀';
 }
 
