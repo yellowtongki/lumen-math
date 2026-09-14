@@ -1,0 +1,203 @@
+<title>교재 채점 2판 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{ --bg:#f5f7fb; --paper:#fff; --ink:#0d2240; --ink2:#334155; --mute:#64748b; --line:#dbe3ee; --pri:#1d6fe8; --pri-soft:#e6f0ff; --navy:#0d2240;
+  --ok:#15803d; --ok-soft:#dcfce7; --bad:#dc2626; --bad-soft:#fee2e2; --warn:#b45309; --warn-soft:#fef3c7; --teal:#0f766e; --teal-soft:#e5f5f2; --chip:#eef2f7; --shadow:0 8px 28px rgba(13,34,64,.10); }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f172a; --paper:#16213a; --ink:#e8eef8; --ink2:#c2cbe0; --mute:#8b98b4; --line:#2a3a5c; --pri:#5b9cff; --pri-soft:#1b2d52; --navy:#e8eef8; --ok:#4ade80; --ok-soft:#153a25; --bad:#f87171; --bad-soft:#4a1d1d; --warn:#fbbf24; --warn-soft:#3f2e0c; --teal:#5eead4; --teal-soft:#134e4a; --chip:#1f2c48; --shadow:0 8px 28px rgba(0,0,0,.35); } }
+:root[data-theme="dark"]{ --bg:#0f172a; --paper:#16213a; --ink:#e8eef8; --ink2:#c2cbe0; --mute:#8b98b4; --line:#2a3a5c; --pri:#5b9cff; --pri-soft:#1b2d52; --navy:#e8eef8; --ok:#4ade80; --ok-soft:#153a25; --bad:#f87171; --bad-soft:#4a1d1d; --warn:#fbbf24; --warn-soft:#3f2e0c; --teal:#5eead4; --teal-soft:#134e4a; --chip:#1f2c48; --shadow:0 8px 28px rgba(0,0,0,.35); }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:14px;line-height:1.6;padding-inline:16px;padding-block:28px 60px}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:26px;font-weight:900;letter-spacing:-.02em;margin:0 0 6px;text-wrap:balance}
+h2{font-size:18px;font-weight:900;margin:44px 0 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h2 .n{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--pri);background:var(--pri-soft);border-radius:6px;padding:2px 8px}
+p.lead{color:var(--ink2);margin:0 0 4px;max-width:72ch}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:2px 10px;margin-bottom:10px}
+.row{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-start}
+.phone{width:300px;max-width:100%;background:var(--paper);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);overflow:hidden;flex:0 0 auto}
+.phone .top{background:var(--navy);color:var(--bg);padding:12px 14px 10px;font-weight:900;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.phone .top small{font-weight:700;opacity:.75;font-size:11px;text-align:right}
+.phone .body{padding:12px 12px 16px}
+.cap{font-size:12px;color:var(--mute);font-weight:700;margin:8px 2px 0;max-width:300px}
+.cap b{color:var(--ink)}
+.pill{display:inline-block;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 8px}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.pri{background:var(--pri-soft);color:var(--pri)} .pill.teal{background:var(--teal-soft);color:var(--teal)} .pill.mute{background:var(--chip);color:var(--mute)}
+.tile{border:1px solid var(--line);border-radius:12px;padding:10px 11px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.tile .t{font-weight:900;font-size:13px;line-height:1.3} .tile .s{font-size:11px;color:var(--mute);font-weight:700;margin-top:2px}
+.tile .r{margin-left:auto;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--pri);white-space:nowrap}
+.bar{height:6px;border-radius:3px;background:var(--chip);overflow:hidden;margin-top:6px} .bar i{display:block;height:100%;background:var(--teal)}
+.q{border:1px solid var(--line);border-radius:12px;padding:9px 10px;margin-bottom:8px}
+.q .h{display:flex;align-items:center;gap:6px;font-weight:900;font-size:12.5px}
+.q .h .num{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;background:var(--chip);border-radius:6px;padding:1px 6px}
+.q .h .kind{margin-left:auto;font-size:10px;font-weight:800;color:var(--mute)}
+.q .in{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.fld{min-width:64px;flex:1;border:1.5px solid var(--line);border-radius:9px;padding:7px 9px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;background:var(--paper);min-height:34px}
+.fld.on{border-color:var(--pri);box-shadow:0 0 0 3px rgba(29,111,232,.18)}
+.fld .ph{color:var(--mute);font-weight:500;font-family:'Noto Sans KR',sans-serif;font-size:11.5px}
+.lbl{font-size:11.5px;font-weight:800;color:var(--ink2)} .unit{font-size:12px;font-weight:800;color:var(--mute)}
+.ox{display:flex;gap:6px} .ox b{flex:1;text-align:center;border:1.5px solid var(--line);border-radius:9px;padding:7px;font-size:15px;font-weight:900}
+.ox b.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.chips{display:flex;gap:5px;flex-wrap:wrap} .chips span{border:1.5px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:800}
+.chips span.on{background:var(--navy);color:var(--bg);border-color:var(--navy)}
+.res{font-size:11px;font-weight:800;margin-top:5px}
+.kpad{background:var(--chip);border-radius:12px;padding:8px;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:10px}
+.kpad b{background:var(--paper);border:1px solid var(--line);border-radius:8px;text-align:center;padding:8px 2px;font-size:13px;font-weight:800;font-family:'IBM Plex Mono',monospace}
+.kpad b.fn{background:var(--pri-soft);color:var(--pri);font-family:'Noto Sans KR',sans-serif;font-size:11px}
+.kpad b.go{background:var(--pri);color:#fff;border-color:var(--pri);grid-column:span 2;font-family:'Noto Sans KR',sans-serif}
+.kpad b.wide{grid-column:span 2}
+.kptabs{display:flex;gap:4px;margin-top:10px} .kptabs span{flex:1;text-align:center;font-size:11px;font-weight:800;border-radius:8px;padding:5px 2px;background:var(--chip);color:var(--mute)}
+.kptabs span.on{background:var(--navy);color:var(--bg)}
+.photo{border:1.5px dashed var(--pri);border-radius:12px;background:var(--pri-soft);padding:14px;text-align:center;font-weight:900;font-size:13px;color:var(--pri)}
+.anspic{border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:10px;position:relative;margin-top:8px}
+.anspic .lbl2{position:absolute;top:6px;right:8px;font-size:10px;font-weight:800;color:var(--mute)}
+.ln{height:7px;border-radius:4px;background:var(--chip);margin:6px 0} .ln.s{width:55%} .ln.m{width:80%}
+.lock{filter:blur(3px);opacity:.5}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.acts button{font:inherit;font-size:12px;font-weight:900;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:9px;padding:9px 6px}
+.acts button.pri{background:var(--pri);color:#fff;border-color:var(--pri);grid-column:1/-1}
+.acts button.o{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)} .acts button.x{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+.stat{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px} .stat span{font-size:11px;font-weight:800;border-radius:8px;padding:4px 8px;background:var(--chip);color:var(--ink2)}
+.hint{font-size:11px;color:var(--mute);font-weight:700;margin-top:6px}
+.card{border:1px solid var(--line);border-radius:12px;padding:10px 11px;margin-bottom:8px}
+.qa{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.qa .h{font-weight:900;font-size:14px;margin-bottom:6px}
+.qa ul{margin:4px 0 0;padding-left:18px;color:var(--ink2)} .qa li{margin:2px 0}
+table{border-collapse:collapse;width:100%;font-size:12.5px;background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top} th{background:var(--chip);font-weight:900;font-size:12px}
+td code,.qa code{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--chip);border-radius:4px;padding:1px 5px}
+.tw{overflow-x:auto} .foot{margin-top:40px;font-size:11.5px;color:var(--mute);font-weight:700}
+</style>
+
+<div class="wrap">
+  <span class="tag">상의용 시안 · 2026-09-14 · 학생앱 교재 채점 2판 · 코딩 전</span>
+  <h1>교재 채점 2판</h1>
+  <p class="lead">첫 교재는 <b>개념+유형 유형편 기초탄탄 라이트 중1-2</b>(11명). 답 모양에 맞는 입력칸을 골라 주고, 글자 정답이 없는 서술형은
+  <b>내 풀이 사진 → 정답 그림 → O/X 자기채점</b>으로 간다. 원장님 손이 가는 채점은 없다. 아래 문항·정답은 이 교재의 실제 자료다.</p>
+
+  <h2><span class="n">학생앱</span>흐름 다섯 화면</h2>
+  <div class="row">
+
+    <div>
+      <div class="phone">
+        <div class="top">📖 교재 채점 <small>학생 A · 중1</small></div>
+        <div class="body">
+          <div class="tile"><div><div class="t">개념+유형 라이트 1-2 <span class="pill teal">자동 93%</span></div><div class="s">106쪽 · 오늘 채점할 쪽 p.8 「각」</div><div class="bar" style="width:200px"><i style="width:31%"></i></div></div><div class="r">p.8<br>이어서</div></div>
+          <div class="tile" style="opacity:.75"><div><div class="t">RPM 1-2 <span class="pill teal">자동 99%</span></div><div class="s">숙제 p.40~41 · 미채점 2쪽</div></div><div class="r">p.40</div></div>
+          <div class="stat"><span>이번 주 ◯ 41</span><span>✗ 9</span><span>? 3</span></div>
+          <div class="hint">「자동 93%」는 앱이 바로 채점하는 문항 비율. 나머지는 내가 정답 그림 보고 O/X를 눌러요.</div>
+        </div>
+      </div>
+      <div class="cap">① <b>교재·쪽 고르기</b>. 매쓰플랫에 등록된 내 교재만. 교재마다 자동채점 비율 배지.</div>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="top">p.8 각 <small>10문항 · 채점 3</small></div>
+        <div class="body">
+          <div class="q"><div class="h"><span class="num">1</span>보기 기호<span class="kind">기호 여러 개</span></div>
+            <div class="in"><div class="fld">ㄱ,ㄹ,ㅁ</div></div><div class="res" style="color:var(--ok)">◯ 맞았어요 (순서 상관없이)</div></div>
+          <div class="q"><div class="h"><span class="num">2.(1)</span>각의 종류<span class="kind">낱말 고르기</span></div>
+            <div class="in chips"><span>예각</span><span class="on">직각</span><span>둔각</span><span>평각</span></div><div class="res" style="color:var(--bad)">✗ 정답은 예각</div></div>
+          <div class="q"><div class="h"><span class="num">3.(1)</span>x, y 값<span class="kind">숫자 2칸</span></div>
+            <div class="in"><span class="lbl">x=</span><div class="fld">180</div><span class="lbl">y=</span><div class="fld on"><span class="ph">입력 중…</span></div></div></div>
+          <div class="q"><div class="h"><span class="num">4.(1)</span>∠x의 크기<span class="kind">숫자 + 단위</span></div>
+            <div class="in"><div class="fld"><span class="ph">?</span></div><span class="unit">˚</span></div></div>
+          <div class="kpad"><b>7</b><b>8</b><b>9</b><b>−</b><b class="fn">분수</b><b>4</b><b>5</b><b>6</b><b>.</b><b class="fn">,</b><b>1</b><b>2</b><b>3</b><b>0</b><b class="fn">⌫</b><b class="fn wide">모름 ?</b><b class="fn">다음 칸</b><b class="go">제출</b></div>
+        </div>
+      </div>
+      <div class="cap">② <b>쪽 채점</b>. 문항마다 답 모양이 다르니 입력칸도 다르다. 「180,60」처럼 답이 두 개면 칸이 두 개, 「20˚」면 단위가 옆에 붙는다. 제출하면 바로 ◯✗.</div>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="top">p.6 점, 선, 면 <small>자판 바꾸기</small></div>
+        <div class="body">
+          <div class="q"><div class="h"><span class="num">1.(1)</span>옳으면 O, 틀리면 X<span class="kind">O/X</span></div>
+            <div class="in ox"><b class="on">O</b><b>X</b></div><div class="res" style="color:var(--ok)">◯ 맞았어요</div></div>
+          <div class="q"><div class="h"><span class="num">2</span>교점·교선의 개수<span class="kind">이름표 칸</span></div>
+            <div class="in"><span class="lbl">교점:</span><div class="fld">8</div><span class="lbl">교선:</span><div class="fld">12</div></div><div class="res" style="color:var(--ok)">◯ 둘 다 맞았어요</div></div>
+          <div class="q"><div class="h"><span class="num">5.(1)</span>기호로 나타내기<span class="kind">도형 자판</span></div>
+            <div class="in"><div class="fld on">반직선 MN</div></div></div>
+          <div class="kptabs"><span>숫자</span><span class="on">도형</span><span>문자식</span><span>기호</span></div>
+          <div class="kpad"><b class="fn">선분</b><b class="fn">반직선</b><b class="fn">직선</b><b class="fn">호</b><b>∠</b><b>A</b><b>B</b><b>C</b><b>D</b><b>M</b><b>N</b><b>O</b><b>P</b><b>X</b><b class="fn">⌫</b><b class="fn wide">△ □ ⊥ ∥</b><b class="fn">,</b><b class="go">제출</b></div>
+          <div class="hint">문자식 자판: x y a b + − × ÷ ( ) ^ = &lt; &gt; ≤ ≥ π. 자판을 학생이 고르지 않아도 앱이 답 모양을 보고 먼저 띄운다.</div>
+        </div>
+      </div>
+      <div class="cap">③ <b>답 모양별 자판</b>. O/X는 단추 둘, 「교점: 8, 교선: 12」는 이름표 칸, 「반직선 MN」은 도형 자판. 「x=14」 같은 답은 학생이 14만 치면 된다(앱이 x=를 붙여 둔다).</div>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="top">p.6 · 3.(1) <small>서술형 · 자기채점</small></div>
+        <div class="body">
+          <div class="q"><div class="h"><span class="num">3.(1)</span>서술형<span class="kind">정답 글자 없음</span></div>
+            <div class="photo" style="margin-top:6px">📷 내 풀이 사진 찍기</div>
+            <div class="hint">사진을 찍어야 정답 그림이 열려요.</div></div>
+          <div class="anspic"><span class="lbl2">매쓰플랫 정답 그림</span>
+            <div class="lock"><div class="ln m"></div><div class="ln"></div><div class="ln s"></div><div class="ln m"></div></div>
+            <div style="text-align:center;font-size:12px;font-weight:900;color:var(--mute);margin-top:-30px;position:relative">🔒 사진 찍으면 열려요</div></div>
+          <div class="acts"><button class="o">◯ 맞았어요</button><button class="x">✗ 틀렸어요</button></div>
+          <div class="hint">내 사진과 정답 그림이 나란히 보이고, 내가 ◯/✗를 골라요. 사진은 선생님도 볼 수 있어요.</div>
+        </div>
+      </div>
+      <div class="cap">④ <b>서술형 자기채점</b>. 매쓰플랫에 글자 정답이 없는 문항(이 교재 7%). 사진을 먼저 올려야 정답 그림이 열리고, 학생이 ◯✗를 고른다. 원장님은 나중에 사진만 훑어보면 된다.</div>
+    </div>
+
+    <div>
+      <div class="phone">
+        <div class="top">p.8 채점 끝 <small>10문항</small></div>
+        <div class="body">
+          <div class="stat" style="margin:0 0 8px"><span style="color:var(--ok)">◯ 7</span><span style="color:var(--bad)">✗ 2</span><span style="color:var(--warn)">? 1</span><span class="pill teal">자동 9 · 자기채점 1</span></div>
+          <div class="card"><div style="font-weight:900;font-size:12.5px">✗ 2.(1) 각의 종류 · ✗ 4.(2) ∠x</div><div class="hint">틀린 문제는 손풀이·아하노트로 바로 이어져요.</div>
+            <div class="acts"><button>✍️ 선생님 손풀이</button><button>🙋 아하노트</button></div></div>
+          <div class="card"><div style="font-weight:900;font-size:12.5px">⏳ 매쓰플랫에 반영 대기 10건</div><div class="hint">5분 안에 매쓰플랫 채점 기록으로 들어가요. 선생님 화면에는 ✅로 바뀝니다.</div></div>
+          <div class="acts"><button class="pri">다음 쪽 p.9 →</button></div>
+        </div>
+      </div>
+      <div class="cap">⑤ <b>쪽 마무리</b>. 결과 요약, 틀린 문항은 손풀이·아하노트 연결, 매쓰플랫 되돌려쓰기 상태. 기존 v2-40 흐름 그대로.</div>
+    </div>
+  </div>
+
+  <h2><span class="n">규칙</span>어떤 답이 어떤 입력칸으로 가나 (라이트 1-2 실제 정답에서)</h2>
+  <div class="tw"><table>
+    <tr><th>매쓰플랫 정답 모양</th><th>입력칸</th><th>채점</th><th>예</th></tr>
+    <tr><td>숫자·분수·소수·복수답</td><td>숫자 키패드 (지금 것)</td><td>값 비교, 복수답은 순서 무관</td><td><code>2,2,10</code> <code>\frac{1}{2},\frac{1}{4}</code></td></tr>
+    <tr><td>숫자 + 단위 글자</td><td>숫자 키패드 + 단위 표시</td><td>단위 벗기고 값 비교</td><td><code>20˚</code> <code>8 cm</code> <code>24㎤</code> <code>20π㎠</code></td></tr>
+    <tr><td>O / X</td><td>단추 둘</td><td>글자 비교</td><td><code>O</code> <code>X</code> <code>○</code> <code>×</code></td></tr>
+    <tr><td>낱말</td><td>낱말 칩 (정답 + 같은 쪽의 다른 답 섞음)</td><td>글자 비교</td><td><code>예</code> <code>둔</code> <code>정구각형</code> <code>약수</code></td></tr>
+    <tr><td>보기 기호</td><td>ㄱㄴㄷㄹㅁ 키패드 (지금 것)</td><td>순서 무관</td><td><code>ㄱ,ㄹ,ㅁ</code></td></tr>
+    <tr><td>이름표 달린 여러 답</td><td>이름표별 칸 (매쓰플랫 <code>answerUnits</code>가 알려 줌)</td><td>칸마다 비교</td><td><code>교점: 8, 교선: 12</code> <code>공약수: 1,2,4,8, 최대공약수: 8</code></td></tr>
+    <tr><td>등식 <code>x=14</code> · 식 뒤에 값</td><td>앱이 <code>x=</code>를 붙여 두고 값만 받음</td><td>마지막 <code>=</code> 뒤 값 비교</td><td><code>x=14</code> <code>\frac{360˚}{9}=40˚</code> → 40</td></tr>
+    <tr><td>도형 기호</td><td>도형 자판 (선분·반직선·직선·호·∠·△ + 점 이름)</td><td>기호 정규화 후 글자 비교 (AB=BA 같은 것은 같게)</td><td><code>\overrightarrow{MN}</code> <code>∠AOE</code> <code>\overline{OA},\overline{OB}</code></td></tr>
+    <tr><td>문자식</td><td>문자식 자판 (x y a b + − × ÷ ( ) ^ π)</td><td>정리해서 비교 (항 순서·곱셈 기호 무시)</td><td><code>-ab</code> <code>2x+3</code> <code>250-x명</code> <code>2^4×3^2</code></td></tr>
+    <tr><td>부등식·좌표</td><td>문자식 자판 (&lt; &gt; ≤ ≥ 포함)</td><td>정리해서 비교</td><td><code>a≥-4</code> <code>(3,6)</code></td></tr>
+    <tr><td><b>서술형 (정답 글자 없음)</b></td><td><b>사진 → 정답 그림 → ◯✗</b></td><td>학생 자기채점</td><td>이 교재 54문항 (7%)</td></tr>
+  </table></div>
+  <p class="lead" style="margin-top:10px">원칙은 그대로다. <b>정답을 그대로 넣으면 반드시 맞음(오채점 0)</b>. 엔진이 확신 못 하는 답은 자동채점을 포기하고 자기채점(정답 보고 ◯✗)으로 넘긴다. 답을 못 맞히게 하는 것보다 잘못 채점하지 않는 것이 먼저다.</p>
+
+  <h2><span class="n">답</span>학습지도 학원앱에서 채점할 수 있나 · 매쓰플랫 정답 비공개</h2>
+  <div class="qa"><div class="h">할 수 있다. 재료가 다 있다.</div>
+    <ul>
+      <li><b>학습지 문항·정답</b>: 매쓰플랫 <code>student-worksheet/assign/{배정id}/problem</code>이 문항마다 정답·문제 그림을 준다. 수집기가 이미 이 주소로 정오답을 읽고 있다.</li>
+      <li><b>학습지 되돌려쓰기</b>: <code>student-worksheet/assign/{배정id}/scoring</code>이 있다(교재의 <code>student-workbook/scoring</code>과 같은 꼴). 교재는 8/19에 실제로 쓰고 되돌려 검증했고, 학습지는 같은 방식으로 한 번 검증하면 된다.</li>
+      <li><b>정답 비공개</b>: 매쓰플랫 학생 설정에 「채점 전 정답 공개 / 채점 후 정답 공개」 두 스위치가 학생별로 있다. 둘 다 끄면 매쓰플랫 학생앱에서는 정답을 못 본다. 그때부터 학생이 채점하는 곳은 루멘 학생앱 하나가 된다.</li>
+      <li>그래서 순서는 <b>교재 채점 2판 → 학습지도 같은 화면으로 → 그다음 매쓰플랫 정답 비공개</b>. 비공개를 먼저 하면 학습지 주관식을 채점할 곳이 사라진다.</li>
+    </ul></div>
+  <div class="qa"><div class="h">학습지에서 달라지는 것</div>
+    <ul>
+      <li>객관식은 매쓰플랫이 자동채점하므로 우리 앱은 주관식만 맡으면 된다. 교재보다 쉽다.</li>
+      <li>학습지 문항은 매쓰플랫이 만든 것이라 정답 글자가 거의 다 있고, 서술형에도 채점 기준(<code>essay slots</code>)이 있다. 자기채점 비율이 교재보다 낮을 것이다.</li>
+      <li>수학비서에서 옮긴 학습지(MY_DB 원본)는 우리가 정답을 넣었으니 그대로 읽힌다.</li>
+    </ul></div>
+
+  <h2><span class="n">순서</span>코딩 순서 (오퍼스)</h2>
+  <div class="tw"><table>
+    <tr><th>단계</th><th>내용</th><th>결과</th></tr>
+    <tr><td>1</td><td>수집기: 정답 그림·답 칸 수·이름표(<code>answerImageUrl</code>, <code>answerCount</code>, <code>answerUnits</code>) 저장. 중1부터, 라이트 1-2 먼저</td><td>정답사전에 새 칸</td></tr>
+    <tr><td>2</td><td>채점 엔진: 단위 글자·π·O/X·%·부호·낱말·소인수분해 → 등식·도형 기호·문자식·부등식·좌표</td><td>라이트 1-2 41% → 93%</td></tr>
+    <tr><td>3</td><td>학생앱 v2-81: 답 모양별 입력칸 + 도형·문자식 자판 + 서술형 사진·정답 그림·◯✗ + 잠금 해제</td><td>학생이 라이트 1-2 전 문항 채점</td></tr>
+    <tr><td>4</td><td>학원앱: 서술형 사진·자기채점 훑어보기 화면(수기채점 큐를 이것으로 바꿈)</td><td>원장님은 확인만</td></tr>
+    <tr><td>5</td><td>중1 나머지 교재 → 중2 → 중3 → 학습지 → 매쓰플랫 정답 비공개</td><td></td></tr>
+  </table></div>
+  <div class="foot">이 판을 확인해 주시면 1단계 수집기부터 오퍼스로 시작한다. 화면 속 문항·정답은 개념+유형 라이트 1-2의 실제 매쓰플랫 자료(p.6·7·8·51).</div>
+</div>
