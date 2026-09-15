@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-1';
+var APP_VER = 'v19-2';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -7909,6 +7909,17 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-2',date:'2026-09-15',stability:'warn',memo:'📄 <b>학습지 채점도 「자기채점 훑어보기」에서 함께 봅니다</b> (원장 지시 2026-09-15 · docs/worksheet_score_contract.md §4). '
+        +'<b>왜 바뀌었나</b> — 원장님이 매쓰플랫의 「채점 전 정답 공개」를 끄시면서, 학생이 매쓰플랫 학생앱에서는 주관식을 스스로 채점할 수 없게 되었습니다. '
+        +'그래서 <b>교재에 이어 학습지도 루멘 학생앱에서 채점</b>하게 했고(학생앱 v2-83), 그 결과를 원장님이 훑어보는 자리가 바로 이 화면입니다. '
+        +'<b>무엇이 달라졌나</b> — 「숙제체크 › 📗 교재 채점」 탭에 이제 <b>학습지 문항이 교재 문항과 나란히</b> 나옵니다. '
+        +'줄마다 <b>📄 학습지 / 📚 교재</b> 배지가 붙어 어디 것인지 한눈에 보이고, 학습지 줄은 <b>학습지 이름과 출제일</b>로 묶어 보여 줍니다. '
+        +'학생 풀이 사진·정답 그림·학생이 고른 ◯✕ 를 보는 방법과, 다르게 보일 때 <b style="color:#1d78c9">◯</b> <b style="color:#dc3b34">✕</b> <b style="color:#a15c00">?</b> 를 눌러 고치는 방법은 교재와 똑같습니다. '
+        +'<b>상단 요약</b>에 「📄 학습지 자기채점 n건」이 새로 생겼고, 「⏳ 매쓰플랫 되돌려쓰기 대기」 수에도 학습지 항목이 함께 들어갑니다(괄호 안이 학습지 몫). '
+        +'<b>속사정(개발 메모)</b> — 학습지 채점 기록은 교재와 같은 hw_scores_&lt;코드&gt; 에 저장되고 키만 "ws_&lt;배정id&gt;_&lt;문항id&gt;" 로 다릅니다. '
+        +'학습지 이름·문항 번호·정답 그림은 새벽 수집기가 만드는 mf_wsq_&lt;코드&gt; 에서 찾습니다. '
+        +'원장님이 고치면 되돌려쓰기 대기열에 kind:"ws" 와 배정id 를 실어 보내고, 워커가 그것을 보고 매쓰플랫 학습지 쪽 주소로 반영합니다. '
+        +'<b>주의</b> — 새벽 수집기(mf_wsq)와 학생앱 v2-83, 워커의 학습지 되돌려쓰기가 모두 올라간 뒤라야 이 화면에 학습지가 실제로 쌓입니다. 그 전에는 교재만 보이는 것이 정상입니다.'},
       {ver:'v19-1',date:'2026-09-15',stability:'ok',memo:'🔢 v19 시작 — 원장 지시로 큰 번호를 올렸다(내용은 v18-176과 같음: 📚 교재·교과서 손풀이 + 📖 교재 채점 2판). [고친 것] 자동 업데이트의 버전 비교가 「큰 자리×100」이라 v18-176(1976)이 v19-1(1901)보다 크게 읽혀 v19로 넘어가지 못했다 → ×1000으로 고침. [저장소 정리] 옛 버전 파일 lumen_v10~v17 전부와 v18-1~100(191개, 582MB)을 main에서 지웠다 — GitHub Pages 1GB 한도(953MB까지 차 있었음) 대비. 깃 이력에는 그대로 남아 있어 필요하면 되살릴 수 있다. 배포 뒤 app_latest 기록이 v18-133 이후 빠져 있던 것도 이번에 발견해 규칙에 넣었다.'},
       {ver:'v18-176',date:'2026',stability:'warn',memo:'📗 <b>교재 채점 2판 — 「수기채점 큐」를 「자기채점 훑어보기」로</b> (원장 승인 2026-09-14 · docs/bookscore_v2_contract.md §4). <b>무엇이 달라졌나</b> — 지금까지는 학생앱이 매쓰플랫 정답으로 자동채점을 하다가 <b>엔진이 못 읽는 문항(도형·문자식·서술형, 약 4할)을 원장님께 넘겨</b> 「숙제체크 › 📗 교재 채점」에서 하나하나 ◯✕를 눌러 주셔야 했습니다. 2판부터는 <b>그 문항도 학생이 스스로 채점</b>합니다 — 학생앱에서 ① 내 풀이 사진을 찍어 올리고 ② 그제서야 열리는 정답(매쓰플랫 정답 그림, 없으면 정답 글자)을 보고 ③ ◯ 맞았어요 / ✕ 틀렸어요를 고릅니다. 사진을 올리지 않고 정답을 먼저 보는 길은 없습니다. <b>그래서 원장님이 채점해야 하는 큐는 없어졌습니다.</b> <b>이 화면은 이제 무엇을 하나</b> — 학생별 카드에 <b>최근 7일 자기채점</b>이 모입니다. 한 줄에 <b>문항 번호 · 학생 풀이 사진(작게, 누르면 크게) · 정답 그림 · 학생이 고른 ◯✕</b>가 나란히 놓여, 눈으로 훑다가 <b>학생이 잘못 봤다 싶은 것만</b> ◯ ✕ ? 를 눌러 고치시면 됩니다. 고친 결과는 예전과 똑같이 학생 기록에 저장되고 매쓰플랫 되돌려쓰기 대기열에 올라가 워커가 5분마다 반영합니다(원장님이 고친 줄에는 <b>학생 ◯ → 원장 ✕</b> 처럼 둘 다 보입니다). <b>맨 위 요약</b> — ⓐ 최근 7일 자기채점 건수와 학생 수 ⓑ 원장님이 고친 건수 ⓒ 매쓰플랫 되돌려쓰기 대기 ⓓ <b>교재별 자동채점 비율</b>(정답사전 문항 중 앱이 스스로 채점하는 비율 — 목표 93%. 새 정답사전을 아직 못 받은 교재는 「옛 사전」 딱지가 붙고 옛 기준으로 셉니다). <b>옛 기록</b> — 자기채점이 생기기 전 수기채점 시절 기록은 학생 카드 아래 🗂 칸에 접어 두었고, 눌러 펼쳐 그대로 고칠 수 있습니다. <b>함께 필요한 것</b> — 학생앱 v2-81(자기채점 화면)과 새 정답사전 수집(sync)이 같이 올라가야 완성됩니다. 이 버전만으로는 화면이 비어 보일 수 있습니다.'},
       {ver:'v18-175',date:'2026',stability:'warn',memo:'📚 <b>교재·교과서 손풀이 1단계</b> (원장 승인 2026-09-14 「추천대로 진행」 · docs/book_handsol_contract.md 3장). <b>무엇을 하는 화면인가</b> — 「📱 학생앱 › ✍️ 손풀이」 맨 앞에 <b>📚 교재</b> 칸이 새로 생겼습니다. 학생이 매쓰플랫에서 쓰는 교재가 그대로 목록에 나오고, 교과서 PDF를 <b>한 번만</b> 올려 두면 쪽마다 문제 사각형을 놓고 손으로 쓴 풀이 조각을 번호에 붙일 수 있습니다. 나중에 학생앱에서 <b>교재 → 쪽 → 번호</b>를 눌러 선생님 풀이를 보게 됩니다(학생앱 쪽은 다음 단계). <b>세 걸음</b> ① <b>교재 목록</b> — 교재마다 등록 학생 수·문항 수·풀이 있는 쪽·PDF 등록 배지. PDF 있는 교재가 위로 옵니다. ② <b>쪽 목록</b> — 「PDF 몇 쪽이 인쇄 p.몇 쪽인가」를 두 칸으로 맞추는 <b>쪽 맞춤</b>(미리보기로 눈으로 확인), <b>공개 규칙</b>(누구나 / 채점한 학생만 / 힌트·재풀이 뒤)과 「학생앱에서 숨김」 스위치, 그리고 쪽마다 문항 수·풀이 수·<b>최근 7일 오답 🔥</b>. ③ <b>쪽 작업대</b> — 왼쪽 쪽 목록 · 가운데 교과서 쪽 그림과 문제 사각형 · 오른쪽 필기 조각. <b>사각형 자동 배치</b> — 교과서는 스캔본이라 글자를 읽을 수 없어서, 문제 번호가 늘 <b>「회색 숫자 + 색깔 숫자」</b> 두 글자인 점을 이용해 번호 자리를 찾습니다. 찾은 번호 개수가 매쓰플랫 문항 수와 <b>딱 맞으면</b> 번호마다 초록·파랑 상자를 놓고(확정), 맞지 않으면 <b>노란 점선</b>으로 균등 분할해 「확인 필요」를 보여 줍니다 — 상자를 끌거나 크기를 바꾸면 그 자리로 확정됩니다. [1열/2열] 단추로 단 수를 바꿔 다시 배치할 수도 있고, 「+ 상자 추가」로 직접 놓을 수도 있습니다. <b>풀이 붙이기</b> — 오른쪽에 필기 사진(JPG·PNG)이나 PDF 한 장을 올리고 그림 위에서 <b>영역을 끌면</b> 번호 단추가 나옵니다. 번호를 누르면 그 조각만 잘라 올리고 방법 제목을 물어봅니다. 같은 번호에 또 붙이면 <b>방법 2, 방법 3</b>으로 쌓입니다. 조각마다 <b>🎬 유튜브 주소 + 시작 시각</b>(1:51 또는 111)도 붙일 수 있습니다. <b>새 저장소</b> — book_pdfs(교재별 PDF 등록부) · book_boxes_&lt;교재번호&gt;(쪽별 사각형, 좌표는 0~1 비율로 저장해 어느 기기에서나 같은 자리) · book_cfg_&lt;교재번호&gt;(공개 규칙). 풀이 자체는 기존 hand_solutions에 출처 book으로 함께 들어가 서랍·배분 화면에도 그대로 보입니다. <b>교과서 PDF</b>는 school_pdfs 버킷 book/ 밑에 넣습니다 — 해설지에 있던 <b>45MB 제한은 두지 않았습니다</b>(원장님 교과서가 48MB). 여는 쪽만 조각으로 읽어 오기 때문에 48MB를 통째로 내려받지 않습니다. <b>주의</b> — 쪽 번호는 매쓰플랫 정답사전(mf_bookans)에 없고 학생별 쪽 목록(mf_swb)에만 있어서, <b>학생이 아직 한 번도 열지 않은 회차의 쪽은 목록에 나오지 않습니다</b>. 새벽 수집이 돌면 채워집니다. 저장은 모두 클라우드이고, 실패하면 조용히 넘기지 않고 알려 드립니다.'},
@@ -33899,10 +33910,19 @@ window.hwcCmFull=function(){
  *   hw_synced_<코드>   반영 완료 이력 (최근 500)
  *   mf_swb_<코드>      학생별 교재·회차·페이지 목록 (새벽 수집)
  *   mf_bookans_<교재>  교재 정답사전 (새벽 수집. 2판부터 img·cnt·units·shape·self 가 더 있다)
+ *
+ * ★ v19-2 — 학습지(매쓰플랫 「학습지」)도 같은 화면에서 훑어본다
+ *   (docs/worksheet_score_contract.md §4). 학생앱 v2-83부터 학습지 주관식도 자기채점이다.
+ *   교재와 저장소는 같고 hw_scores 의 <b>키만</b> 다르다:
+ *     교재   "<pid>_<wpId>"        (예: 9001_1002)
+ *     학습지 "ws_<swId>_<wpId>"    (예: ws_77001_5001)   ← ws_ 로 시작하면 학습지
+ *   학습지명·문항 번호·정답 그림은 mf_wsq_<코드>.list[] 에서 찾는다(색인 hwbIndex 가 같이 만든다).
+ *   되돌려쓰기 대기열도 같은 hw_sync_<코드> 를 쓰되 학습지 항목에는 kind:'ws', swId 를 싣는다
+ *   (워커가 이 표시를 보고 student-worksheet/assign/<swId>/scoring 으로 보낸다).
  * 주의: SQL LIKE 의 _ 는 한 글자 와일드카드 → hw_sync_% 가 hw_synced_% 까지 잡는다.
  *       그래서 받아온 뒤 정규식으로 정확한 키만 남긴다. */
 var HWB={ loaded:false, kicked:false, err:'', busy:'', open:{}, old:{},
-  scores:{}, sync:{}, synced:{}, swb:{}, ans:{}, _idx:null, _model:null };
+  scores:{}, sync:{}, synced:{}, swb:{}, ans:{}, wsq:{}, _idx:null, _model:null };
 
 var HWB_SELF_DAYS=7;      // 자기채점 훑어보기 기간 (계약 §4-1 「최근 7일」)
 var HWB_OLD_CAP=60;       // 옛 기록은 학생당 최신 60개까지만 (화면이 넘치지 않게)
@@ -33913,8 +33933,8 @@ function hwbLoad(){
   var sb=null; try{ sb=getSupaClient(); }catch(e){}
   if(!sb){ HWB.loaded=true; HWB.err='오프라인 — 연결 후 다시 열어 주세요'; return Promise.resolve(); }
   var like=function(pat){ return sb.from('lumen_store').select('key,value').like('key',pat); };
-  return Promise.all([like('hw_scores_%'),like('hw_sync_%'),like('mf_swb_%')]).then(function(rs){
-    HWB.scores={}; HWB.sync={}; HWB.synced={}; HWB.swb={}; HWB._idx=null; HWB._model=null;
+  return Promise.all([like('hw_scores_%'),like('hw_sync_%'),like('mf_swb_%'),like('mf_wsq_%')]).then(function(rs){
+    HWB.scores={}; HWB.sync={}; HWB.synced={}; HWB.swb={}; HWB.wsq={}; HWB._idx=null; HWB._model=null;
     ((rs[0]&&rs[0].data)||[]).forEach(function(x){
       var m=String(x&&x.key||'').match(/^hw_scores_([^_]+)$/);
       if(m) HWB.scores[m[1]]=(x.value&&x.value.items)||{};
@@ -33930,11 +33950,19 @@ function hwbLoad(){
       var m=String(x&&x.key||'').match(/^mf_swb_([^_]+)$/);
       if(m) HWB.swb[m[1]]=(x.value&&x.value.books)||[];
     });
+    // v19-2: 학습지 목록 (mf_wsq_<코드>) — 학습지명·문항 번호·정답 그림이 여기 들어 있다
+    ((rs[3]&&rs[3].data)||[]).forEach(function(x){
+      var m=String(x&&x.key||'').match(/^mf_wsq_([^_]+)$/);
+      if(m) HWB.wsq[m[1]]=(x.value&&x.value.list)||[];
+    });
     // 학생이 손댄 교재만 정답사전을 가져온다 (전부 받으면 무겁다)
     var bids={};
     Object.keys(HWB.scores).forEach(function(code){
       var pids={};
-      Object.keys(HWB.scores[code]).forEach(function(k){ pids[String(k).split('_')[0]]=1; });
+      Object.keys(HWB.scores[code]).forEach(function(k){
+        if(hwbIsWsKey(k)) return;                         // 학습지 항목은 교재 정답사전과 상관없다
+        pids[String(k).split('_')[0]]=1;
+      });
       (HWB.swb[code]||[]).forEach(function(b){
         (b.pages||[]).forEach(function(pg){ if(pids[String(pg.pid)]) bids[b.bid]=1; });
       });
@@ -33993,7 +34021,24 @@ function hwbIsAuto(p){
   return !!(p.objective||p.gradable);
 }
 
-/* "<pid>_<wpId>" → 교재·쪽·문항 정보 (학생별로 한 번 만들어 둔다) */
+/* v19-2: 채점 기록 키가 학습지 것인가 — "ws_<swId>_<wpId>" 면 학습지, 아니면 교재 */
+function hwbIsWsKey(k){ return String(k==null?'':k).indexOf('ws_')===0; }
+
+/* v19-2: 채점 기록 키를 뜯어 본다
+ *   교재   "9001_1002"      → { ws:false, pid:'9001',  wpId:'1002' }
+ *   학습지 "ws_77001_5001"  → { ws:true,  swId:'77001', wpId:'5001' } */
+function hwbParseKey(k){
+  var s=String(k==null?'':k);
+  if(hwbIsWsKey(s)){
+    var a=s.slice(3).split('_');
+    return { ws:true, swId:a[0]||'', wpId:a[1]||'' };
+  }
+  var b=s.split('_');
+  return { ws:false, pid:b[0]||'', wpId:b[1]||'' };
+}
+
+/* 채점 기록 키 → 교재·쪽·문항 정보 (학생별로 한 번 만들어 둔다)
+ * v19-2: 학습지 키("ws_<swId>_<wpId>")도 같은 색인에 넣는다 — 재료는 mf_wsq_<코드>.list[] */
 function hwbIndex(code){
   if(!HWB._idx) HWB._idx={};
   if(HWB._idx[code]) return HWB._idx[code];
@@ -34004,9 +34049,17 @@ function hwbIndex(code){
       var pa=ans.pages[pg.wpid]; if(!pa) return;
       (pa.problems||[]).forEach(function(p){
         if(!p||p.wpId==null) return;
-        idx[String(pg.pid)+'_'+String(p.wpId)]={ bid:b.bid, book:b.title||'', round:b.round||1,
+        idx[String(pg.pid)+'_'+String(p.wpId)]={ ws:false, bid:b.bid, book:b.title||'', round:b.round||1,
                                                  page:pg.page, wpid:pg.wpid, p:p };
       });
+    });
+  });
+  (HWB.wsq[code]||[]).forEach(function(w){
+    if(!w||w.swId==null) return;
+    (w.problems||[]).forEach(function(p){
+      if(!p||p.wpId==null) return;
+      idx['ws_'+String(w.swId)+'_'+String(p.wpId)]={ ws:true, swId:w.swId, wid:w.wid,
+        sheet:w.title||'', date:w.date||'', status:w.status||'', auto:(w.auto===true), p:p };
     });
   });
   HWB._idx[code]=idx;
@@ -34034,7 +34087,7 @@ function hwbAutoStats(){
     var idx=hwbIndex(code), items=HWB.scores[code]||{};
     Object.keys(items).forEach(function(k){
       var it=items[k]; if(!it||it.self!==true) return;
-      var hit=idx[k]; if(!hit) return;
+      var hit=idx[k]; if(!hit||hit.ws) return;            // v19-2: 학습지는 교재 정답사전 통계에서 뺀다
       selfHit[hit.bid]=(selfHit[hit.bid]||0)+1;
     });
   });
@@ -34075,11 +34128,11 @@ function hwbModel(){
     var idx=hwbIndex(code);
     var keys=Object.keys(items);
     var selfRows=[], oldRows=[];
-    var mcnt={O:0,X:0,'?':0}, auto7=0, fix7=0;
+    var mcnt={O:0,X:0,'?':0}, auto7=0, fix7=0, wsSelf=0, bkSelf=0;
     keys.forEach(function(k){
       var it=items[k]; if(!it) return;
       if(it.r in mcnt && String(it.at||'').slice(0,7)===month) mcnt[it.r]++;
-      var parts=String(k).split('_');
+      var pk=hwbParseKey(k);                               // v19-2: 교재 키 / 학습지 키 둘 다 받는다
       var hit=idx[k]||null, p=hit?hit.p:null;
       var fresh=(String(it.at||'')>=since);
       if(it.self!==true){
@@ -34087,41 +34140,65 @@ function hwbModel(){
         // self 표시가 없는 옛 기록 — 예전에 수기채점으로 넘어가던 문항만 그대로 보인다
         if(!p||hwbIsAuto(p)) return;
       }
-      var row={ code:code, key:k, pid:parts[0], wpId:parts[1],
-                bid:hit?hit.bid:'', book:hit?hit.book:'', round:hit?hit.round:1,
-                page:hit?hit.page:null, num:(p&&p.num)||'', type:(p&&p.type)||'',
+      var row={ code:code, key:k, ws:pk.ws, pid:(pk.ws?null:pk.pid), swId:(pk.ws?pk.swId:''), wpId:pk.wpId,
+                bid:(hit&&!hit.ws)?hit.bid:'', book:(hit&&!hit.ws)?hit.book:'', round:(hit&&!hit.ws)?hit.round:1,
+                page:(hit&&!hit.ws)?hit.page:null,
+                sheet:(hit&&hit.ws)?hit.sheet:'', date:(hit&&hit.ws)?hit.date:'',
+                num:(p&&p.num)||'', type:(p&&p.type)||'',
                 answer:(p&&p.answer)||'', img:(p&&p.img)||'',
                 r:it.r||'', sr:it.sr||'', by:it.by||'', photo:it.photo||'', at:it.at||'',
                 self:(it.self===true) };
       if(it.self===true){
         if(!fresh) return;                       // 최근 7일만 훑어본다
         if(it.by==='T') fix7++;
+        if(row.ws) wsSelf++; else bkSelf++;
         selfRows.push(row);
       } else oldRows.push(row);
     });
+    /* v19-2: 학습지와 교재가 섞이므로 「같은 학습지 / 같은 교재·쪽」끼리 붙여 놓는다.
+     * 묶음 차례는 그 묶음에서 가장 최근에 채점한 시각 순(최신이 위). */
+    var gk=function(r){ return r.ws?('W|'+String(r.swId)):('B|'+String(r.bid)+'|'+String(r.round)+'|'+String(r.page)); };
+    var gNew={};
+    selfRows.concat(oldRows).forEach(function(r){ var g=gk(r); if(!gNew[g]||String(r.at||'')>gNew[g]) gNew[g]=String(r.at||''); });
     var byAt=function(a,b){
+      var ga=gk(a), gb=gk(b);
+      if(ga!==gb){
+        var na=gNew[ga]||'', nb=gNew[gb]||'';
+        if(na!==nb) return na<nb?1:-1;
+        return ga<gb?-1:1;
+      }
       if(a.at!==b.at) return a.at<b.at?1:-1;
       return String(a.num).localeCompare(String(b.num),undefined,{numeric:true});
     };
     selfRows.sort(byAt); oldRows.sort(byAt);
     var oldMore=Math.max(0,oldRows.length-HWB_OLD_CAP);
     if(oldMore) oldRows=oldRows.slice(0,HWB_OLD_CAP);
+    // 되돌려쓰기 대기는 교재·학습지가 같은 대기열(hw_sync_<코드>)을 쓴다 — 둘 다 센다
     var pend=(HWB.sync[code]||[]).length, lastSync='';
+    var wsPend=(HWB.sync[code]||[]).filter(function(q){ return q&&q.kind==='ws'; }).length;
     (HWB.synced[code]||[]).forEach(function(it){ if(it&&it.syncedAt&&it.syncedAt>lastSync) lastSync=it.syncedAt; });
     if(!selfRows.length&&!oldRows.length&&!pend) return;
     var st=byCode[code];
     out.push({ code:code, name:st?st.name:('코드 '+code), group:(st&&st.group)||'',
                selfRows:selfRows, oldRows:oldRows, oldMore:oldMore,
-               mcnt:mcnt, auto7:auto7, fix7:fix7, pend:pend, lastSync:lastSync, total:keys.length });
+               mcnt:mcnt, auto7:auto7, fix7:fix7, wsSelf:wsSelf, bkSelf:bkSelf,
+               pend:pend, wsPend:wsPend, lastSync:lastSync, total:keys.length });
   });
   out.sort(function(a,b){ return (b.selfRows.length-a.selfRows.length)||(b.total-a.total); });
   HWB._model=out;
   return out;
 }
 
-/* 문항 하나의 되돌려쓰기 상태: ⏳대기 / ✅반영 / null(이력 지남·없음) */
-function hwbSyncState(code,pid,wpId){
-  var same=function(it){ return it&&String(it.pid)===String(pid)&&String(it.wpId)===String(wpId); };
+/* 문항 하나의 되돌려쓰기 상태: ⏳대기 / ✅반영 / null(이력 지남·없음)
+ * v19-2: 줄 하나를 통째로 받는다. 학습지 항목은 대기열에 kind:'ws', swId 로 들어 있다. */
+function hwbSyncState(code,row){
+  var same;
+  if(row&&row.ws){
+    same=function(it){ return it&&it.kind==='ws'&&String(it.swId)===String(row.swId)&&String(it.wpId)===String(row.wpId); };
+  } else {
+    var pid=row?row.pid:null, wpId=row?row.wpId:null;
+    same=function(it){ return it&&it.kind!=='ws'&&String(it.pid)===String(pid)&&String(it.wpId)===String(wpId); };
+  }
   if((HWB.sync[code]||[]).some(same)) return ['⏳','#d97706','매쓰플랫 반영 대기 — 워커가 5분마다 처리'];
   if((HWB.synced[code]||[]).some(same)) return ['✅','#16a34a','매쓰플랫 반영됨'];
   return null;
@@ -34131,10 +34208,16 @@ window.hwbReload=function(){ HWB.loaded=false; HWB.kicked=false; HWB.err=''; HWB
 window.hwbToggle=function(code){ HWB.open[code]=!HWB.open[code]; render(); };
 window.hwbOldToggle=function(code){ HWB.old[code]=!HWB.old[code]; render(); };
 
-/* 원장 채점(고치기): hw_scores 저장 + hw_sync 대기열 적재 (학생앱과 같은 계약) */
-window.hwbGrade=async function(code,pid,wpId,r){
+/* 원장 채점(고치기): hw_scores 저장 + hw_sync 대기열 적재 (학생앱과 같은 계약)
+ * v19-2: 마지막 인자 swId 가 있으면 학습지 문항이다.
+ *   - hw_scores 키가 "ws_<swId>_<wpId>" (교재는 그대로 "<pid>_<wpId>")
+ *   - 대기열 항목에 kind:'ws', swId 를 실어 보낸다 (워커가 학습지 주소로 보내도록) */
+window.hwbGrade=async function(code,pid,wpId,r,swId){
   if(HWB.busy) return;
-  HWB.busy=code+'_'+pid+'_'+wpId; render();
+  var isWs=(swId!=null&&swId!=='');
+  var sw=isWs?(/^\d+$/.test(String(swId))?Number(swId):String(swId)):null;
+  var key=isWs?('ws_'+String(swId)+'_'+String(wpId)):(pid+'_'+wpId);
+  HWB.busy=code+'_'+key; render();
   var sb=null; try{ sb=getSupaClient(); }catch(e){}
   if(!sb){ HWB.busy=''; HWB.err='오프라인 — 저장하지 못했습니다'; alert('오프라인입니다 — 연결 후 다시 시도해 주세요'); render(); return; }
   try{
@@ -34142,18 +34225,23 @@ window.hwbGrade=async function(code,pid,wpId,r){
     // 최신 기록을 다시 읽어 합친다 (학생앱이 동시에 쓸 수 있으므로)
     var r1=await sb.from('lumen_store').select('value').eq('key','hw_scores_'+code);
     var items=(r1&&r1.data&&r1.data[0]&&r1.data[0].value&&r1.data[0].value.items)||{};
-    var prev=items[pid+'_'+wpId]||{};
-    var keep={ r:r, a:(prev.a!=null?prev.a:null), at:now, pid:Number(pid), by:'T' };
+    var prev=items[key]||{};
+    var keep={ r:r, a:(prev.a!=null?prev.a:null), at:now, by:'T' };
+    // 학습지는 kind:'ws' + swId, 교재는 pid — 학생앱 v2-83 이 쓰는 모양 그대로 유지한다
+    if(isWs){ keep.kind='ws'; keep.swId=sw; } else keep.pid=Number(pid);
     if(prev.self!=null) keep.self=prev.self;                      // 자기채점 표시 보존
     if(prev.photo) keep.photo=prev.photo;                         // 학생 풀이 사진 보존
     var sr=prev.sr||(prev.by==='T'?'':(prev.r||''));
     if(sr) keep.sr=sr;                                            // 학생이 처음 고른 값
-    items[pid+'_'+wpId]=keep;
+    items[key]=keep;
     var e1=await sb.from('lumen_store').upsert({ key:'hw_scores_'+code, value:{ items:items, updated:now } });
     if(e1&&e1.error) throw e1.error;
     var r2=await sb.from('lumen_store').select('value').eq('key','hw_sync_'+code);
     var q=(r2&&r2.data&&r2.data[0]&&r2.data[0].value&&r2.data[0].value.items)||[];
-    q.push({ id:Date.now()+'_'+wpId, pid:Number(pid), wpId:Number(wpId), result:r, userAnswer:null, at:now, by:'T' });
+    var qi={ id:Date.now()+'_'+wpId, wpId:Number(wpId), result:r, userAnswer:null, at:now, by:'T' };
+    if(isWs){ qi.kind='ws'; qi.swId=sw; }                          // 워커가 학습지 주소로 보낸다
+    else qi.pid=Number(pid);
+    q.push(qi);
     var e2=await sb.from('lumen_store').upsert({ key:'hw_sync_'+code, value:{ items:q, updated:now } });
     if(e2&&e2.error) throw e2.error;
     HWB.scores[code]=items; HWB.sync[code]=q; HWB._model=null; HWB.err='';
@@ -34164,14 +34252,17 @@ window.hwbGrade=async function(code,pid,wpId,r){
   HWB.busy=''; render();
 };
 
-/* ◯ ✕ ? 단추 세 개 */
+/* ◯ ✕ ? 단추 세 개 — v19-2: 학습지 줄이면 swId 를 같이 넘긴다 */
 function hwbBtns(row,on){
-  var key=row.code+'_'+row.pid+'_'+row.wpId;
+  var key=row.code+'_'+(row.ws?('ws_'+row.swId):row.pid)+'_'+row.wpId;
   var busy=(HWB.busy===key);
+  var swSafe=String(row.swId==null?'':row.swId).replace(/[^A-Za-z0-9_-]/g,'');   // 따옴표 섞임 방지
+  var arg=row.ws ? ('\''+row.code+'\',null,'+Number(row.wpId)+',\'%R%\',\''+swSafe+'\'')
+                 : ('\''+row.code+'\','+Number(row.pid)+','+Number(row.wpId)+',\'%R%\'');
   var h='<span style="display:flex;gap:4px">';
   [['O','◯','#1d78c9'],['X','✕','#dc3b34'],['?','?','#a15c00']].forEach(function(b){
     var sel=(on===b[0]);
-    h+='<button '+(busy?'disabled ':'')+'onclick="hwbGrade(\''+row.code+'\','+row.pid+','+row.wpId+',\''+b[0]+'\')" '
+    h+='<button '+(busy?'disabled ':'')+'onclick="hwbGrade('+arg.replace('%R%',b[0])+')" '
       +'title="이 문항을 '+b[1]+' 로 바꾸고 매쓰플랫에도 반영합니다" '
       +'style="width:34px;height:31px;border-radius:9px;border:1.5px solid '+(sel?b[2]:'#e2e8f0')+';background:'+(sel?b[2]:'#fff')+';color:'+(sel?'#fff':b[2])+';font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;opacity:'+(busy?'.4':'1')+'">'+b[1]+'</button>';
   });
@@ -34179,12 +34270,19 @@ function hwbBtns(row,on){
   return h;
 }
 
-/* 자기채점 한 줄: 번호 · 학생 사진 · 정답(그림/글자) · 학생이 고른 ◯✗ · 고치기 */
+/* v19-2: 「📄 학습지」/「📚 교재」 구분 배지 — 줄만 보고도 어디 것인지 알 수 있게 */
+function hwbKindChip(row){
+  if(row&&row.ws) return '<span title="매쓰플랫 학습지 문항입니다" style="font-size:9.5px;font-weight:900;border-radius:50px;padding:2px 8px;background:#e0f2fe;color:#0369a1;white-space:nowrap">📄 학습지</span>';
+  return '<span title="매쓰플랫 교재 문항입니다" style="font-size:9.5px;font-weight:900;border-radius:50px;padding:2px 8px;background:#f1f5f9;color:#475569;white-space:nowrap">📚 교재</span>';
+}
+
+/* 자기채점 한 줄: 구분 배지 · 번호 · 학생 사진 · 정답(그림/글자) · 학생이 고른 ◯✗ · 고치기 */
 function hwbSelfRowHtml(row){
   var mine=(row.by==='T');
   var pick=mine?(row.sr||''):row.r;
   var pu=hwbPhotoUrl(row.photo);
   var h='<div style="display:flex;align-items:center;gap:10px;padding:9px 11px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap">';
+  h+=hwbKindChip(row);
   h+='<span style="font-size:13px;font-weight:900;color:#0d2240;min-width:42px">'+esc2(row.num||'—')+'</span>';
   if(pu) h+='<img src="'+hwbAttr(pu)+'" onclick="hwbPhotoBig(\''+hwbAttr(pu)+'\')" title="학생 풀이 사진 — 누르면 크게" style="width:64px;height:64px;object-fit:cover;border-radius:9px;border:1px solid #e2e8f0;background:#f8fafc;cursor:zoom-in">';
   else h+='<span title="학생이 사진 없이 「모름 ?」으로 넘긴 문항입니다" style="width:64px;height:64px;border-radius:9px;border:1px dashed #e2e8f0;background:#f8fafc;color:#b6c2d1;font-size:9.5px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;text-align:center">사진<br>없음</span>';
@@ -34199,7 +34297,7 @@ function hwbSelfRowHtml(row){
   };
   h+=chip(pick);
   if(mine) h+='<span title="원장님이 고친 문항입니다" style="font-size:11px;font-weight:900;color:#fff;background:#0d2240;border-radius:50px;padding:4px 10px">→ 원장 '+(row.r==='O'?'◯':row.r==='X'?'✕':'?')+'</span>';
-  var ss=hwbSyncState(row.code,row.pid,row.wpId);
+  var ss=hwbSyncState(row.code,row);
   if(ss) h+='<span title="'+ss[2]+'" style="font-size:11px;font-weight:900;color:'+ss[1]+'">'+ss[0]+'</span>';
   h+=hwbBtns(row,row.r);
   h+='</div>';
@@ -34210,23 +34308,31 @@ function hwbSelfRowHtml(row){
 function hwbOldRowHtml(row){
   var tyIsEssay=(row.type==='ESSAY');
   var h='<div style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-bottom:1px solid #f1f5f9;flex-wrap:wrap">';
+  h+=hwbKindChip(row);
   h+='<span style="font-size:12px;font-weight:900;color:#0d2240;min-width:34px">'+esc2(row.num||'—')+'</span>';
   h+='<span style="font-size:9.5px;font-weight:900;border-radius:50px;padding:2px 8px;background:'+(tyIsEssay?'#fdf3e0':'#eef2ff')+';color:'+(tyIsEssay?'#a15c00':'#4f46e5')+'">'+(tyIsEssay?'서술형':'단답·도형')+'</span>';
   h+='<span style="font-size:11.5px;color:#475569;flex:1;min-width:120px"><b style="color:#15803d">정답</b> '+esc2(hwbCleanAns(row.answer)||'(정답 글자 없음)')+'</span>';
   if(row.by!=='T'&&row.r==='?') h+='<span style="font-size:10px;font-weight:900;color:#a15c00;background:#fdf3e0;border-radius:50px;padding:2px 8px">학생: 모름 ?</span>';
-  var ss=hwbSyncState(row.code,row.pid,row.wpId);
+  var ss=hwbSyncState(row.code,row);
   if(row.by==='T'&&ss) h+='<span title="'+ss[2]+'" style="font-size:10.5px;font-weight:900;color:'+ss[1]+'">'+ss[0]+'</span>';
   h+=hwbBtns(row,(row.by==='T'?row.r:''));
   h+='</div>';
   return h;
 }
 
-/* 줄 묶음 — 교재·쪽이 바뀔 때마다 작은 머리글 */
+/* 줄 묶음 — 교재·쪽(학습지는 학습지명·출제일)이 바뀔 때마다 작은 머리글 */
 function hwbGroupHtml(rows,fn){
   var out='', last='';
   rows.forEach(function(row){
-    var head=(String(row.book||'교재 모름').split(' ')[0])+(row.round>1?' '+row.round+'회차':'')+' · '+(row.page!=null?row.page+'P':'쪽 모름');
-    if(head!==last){ out+='<div style="font-size:10.5px;font-weight:900;color:#7c3aed;background:#faf5ff;padding:4px 10px">'+esc2(head)+'</div>'; last=head; }
+    var head, col, bg;
+    if(row.ws){                                    // v19-2: 학습지는 학습지명을 통째로 보여 준다
+      head='📄 '+String(row.sheet||('학습지 '+(row.swId||'')))+(row.date?(' · '+row.date):'');
+      col='#0369a1'; bg='#eff8ff';
+    } else {
+      head=(String(row.book||'교재 모름').split(' ')[0])+(row.round>1?' '+row.round+'회차':'')+' · '+(row.page!=null?row.page+'P':'쪽 모름');
+      col='#7c3aed'; bg='#faf5ff';
+    }
+    if(head!==last){ out+='<div style="font-size:10.5px;font-weight:900;color:'+col+';background:'+bg+';padding:4px 10px">'+esc2(head)+'</div>'; last=head; }
     out+=fn(row);
   });
   return out;
@@ -34260,27 +34366,30 @@ function rHwBook(){
   if(!HWB.kicked){ HWB.kicked=true; setTimeout(function(){ hwbLoad().then(function(){ render(); }); },0); }
   var h='';
   h+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">';
-  h+='<span style="font-size:15px;font-weight:900;color:#0d2240">📗 교재 채점 — 자기채점 훑어보기</span>';
+  h+='<span style="font-size:15px;font-weight:900;color:#0d2240">📗 교재·📄 학습지 채점 — 자기채점 훑어보기</span>';
   h+='<button onclick="hwbReload()" style="border:1px solid #e2e8f0;background:#fff;border-radius:9px;padding:5px 12px;font-size:11.5px;font-weight:800;color:#475569;cursor:pointer;font-family:inherit">🔄 새로고침</button>';
   if(!HWB.loaded) h+='<span style="font-size:11px;font-weight:800;color:#94a3b8">불러오는 중…</span>';
   if(HWB.err) h+='<span style="font-size:11px;font-weight:800;color:#dc2626;background:#fee2e2;border-radius:50px;padding:4px 12px">⚠️ '+esc2(HWB.err)+'</span>';
   h+='</div>';
   h+='<div style="font-size:11.5px;font-weight:700;color:#475569;margin-bottom:12px;line-height:1.7">'
-    +'학생앱 「교재 채점」에서 앱이 못 읽는 답과 서술형은 <b>학생이 풀이 사진을 올린 뒤 정답을 보고 스스로 ◯✗</b> 를 고릅니다(자기채점). '
+    +'학생앱 「교재 채점」(<b style="color:#0369a1">📄 학습지</b>·<b style="color:#475569">📚 교재</b> 둘 다)에서 앱이 못 읽는 답과 서술형은 <b>학생이 풀이 사진을 올린 뒤 정답을 보고 스스로 ◯✗</b> 를 고릅니다(자기채점). '
     +'최근 '+HWB_SELF_DAYS+'일치가 아래에 모입니다 — <b>사진과 정답을 나란히 보고</b> 학생이 잘못 봤다 싶으면 '
     +'<b style="color:#1d78c9">◯</b> <b style="color:#dc3b34">✕</b> <b style="color:#a15c00">?</b> 를 눌러 고쳐 주세요. '
     +'고친 결과는 학생 기록과 매쓰플랫에 함께 반영됩니다. <b>원장님이 채점해야 할 큐는 이제 없습니다.</b></div>';
   if(!HWB.loaded) return h;
   var model=hwbModel();
-  var totSelf=0, totFix=0, totPend=0, totOld=0, stuN=0;
+  var totSelf=0, totFix=0, totPend=0, totOld=0, stuN=0, totWs=0, totWsPend=0;
   model.forEach(function(s){
     totSelf+=s.selfRows.length; totFix+=s.fix7; totPend+=s.pend; totOld+=s.oldRows.length;
+    totWs+=(s.wsSelf||0); totWsPend+=(s.wsPend||0);
     if(s.selfRows.length) stuN++;
   });
   h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">';
   h+='<span style="font-size:12px;font-weight:900;color:'+(totSelf?'#7c3aed':'#64748b')+';background:'+(totSelf?'#f3e8ff':'#f1f5f9')+';border-radius:50px;padding:6px 14px">🙋 최근 '+HWB_SELF_DAYS+'일 자기채점 '+hwbNum(totSelf)+'건 · 학생 '+stuN+'명</span>';
+  // v19-2: 그중 학습지가 몇 건인지 따로 (나머지가 교재)
+  h+='<span title="매쓰플랫 「학습지」에서 온 자기채점입니다 (나머지 '+hwbNum(Math.max(0,totSelf-totWs))+'건은 교재)" style="font-size:12px;font-weight:900;color:'+(totWs?'#0369a1':'#64748b')+';background:'+(totWs?'#e0f2fe':'#f1f5f9')+';border-radius:50px;padding:6px 14px">📄 학습지 자기채점 '+hwbNum(totWs)+'건</span>';
   h+='<span style="font-size:12px;font-weight:900;color:'+(totFix?'#0d2240':'#64748b')+';background:'+(totFix?'#e7f1fb':'#f1f5f9')+';border-radius:50px;padding:6px 14px">✋ 원장님이 고친 것 '+hwbNum(totFix)+'건</span>';
-  h+='<span style="font-size:12px;font-weight:900;color:'+(totPend?'#d97706':'#64748b')+';background:'+(totPend?'#fef3c7':'#f1f5f9')+';border-radius:50px;padding:6px 14px">⏳ 매쓰플랫 되돌려쓰기 대기 '+hwbNum(totPend)+'건</span>';
+  h+='<span title="교재·학습지를 합친 수입니다'+(totWsPend?(' (학습지 '+hwbNum(totWsPend)+'건 포함)'):'')+'" style="font-size:12px;font-weight:900;color:'+(totPend?'#d97706':'#64748b')+';background:'+(totPend?'#fef3c7':'#f1f5f9')+';border-radius:50px;padding:6px 14px">⏳ 매쓰플랫 되돌려쓰기 대기 '+hwbNum(totPend)+'건'+(totWsPend?(' <small style="font-weight:800;opacity:.75">(📄 '+hwbNum(totWsPend)+')</small>'):'')+'</span>';
   if(totOld) h+='<span style="font-size:12px;font-weight:900;color:#64748b;background:#f1f5f9;border-radius:50px;padding:6px 14px">🗂 옛 기록 '+hwbNum(totOld)+'건</span>';
   h+='</div>';
   h+=hwbAutoBoxHtml();
@@ -34298,6 +34407,7 @@ function rHwBook(){
     h+='<span style="font-size:13.5px;font-weight:900;color:#0d2240">'+esc2(s.name)+'</span>';
     if(s.group) h+='<span style="font-size:10px;font-weight:800;color:#7c3aed;background:#f3e8ff;border-radius:50px;padding:2px 9px">'+esc2(s.group)+'</span>';
     if(s.selfRows.length) h+='<span style="font-size:10.5px;font-weight:900;color:#fff;background:#7c3aed;border-radius:50px;padding:2px 9px">🙋 자기채점 '+s.selfRows.length+'</span>';
+    if(s.wsSelf) h+='<span title="그중 학습지 문항" style="font-size:10.5px;font-weight:900;color:#0369a1;background:#e0f2fe;border-radius:50px;padding:2px 9px">📄 학습지 '+s.wsSelf+'</span>';
     if(s.fix7) h+='<span style="font-size:10.5px;font-weight:900;color:#fff;background:#0d2240;border-radius:50px;padding:2px 9px">✋ 고침 '+s.fix7+'</span>';
     h+='<span style="font-size:11px;font-weight:800;color:#64748b">최근 '+HWB_SELF_DAYS+'일 자동채점 '+hwbNum(s.auto7)+' · 이번 달 <b style="color:#1d78c9">◯'+s.mcnt.O+'</b> <b style="color:#dc3b34">✕'+s.mcnt.X+'</b> <b style="color:#a15c00">?'+s.mcnt['?']+'</b> · 전체 '+hwbNum(s.total)+'문항</span>';
     h+='<span style="flex:1"></span>';
