@@ -1746,6 +1746,38 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .hsb-card .p{flex:none;font-size:12.5px;font-weight:900;color:#dc2626;background:#fee2e2;border-radius:8px;padding:5px 8px;min-width:54px;text-align:center;line-height:1.3}
 .hsb-card .t{font-size:12.5px;font-weight:900;color:var(--text);line-height:1.35}
 .hsb-card .s{font-size:10.5px;font-weight:800;color:#94a3b8;margin-top:3px}
+/* ── v2-86: 교재 손풀이 문항 카드 (문제 그림 + 방법별 풀이 + 단추 줄) ── */
+.hsq{background:var(--surface);border:1.5px solid #e2e8f0;border-radius:14px;padding:11px;margin-bottom:10px}
+.hsq.wr{border-color:#fca5a5}
+.hsq .hd{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:900;color:var(--text);margin-bottom:8px;line-height:1.35}
+.hsq .hd .f{margin-left:auto;flex:none;font-size:10.5px;font-weight:800;color:#94a3b8}
+.hsq.wr .hd .f{color:#dc2626}
+.hsq .qi{border:1px solid #e2e8f0;border-radius:10px;background:#fff;padding:7px;margin-bottom:9px}
+.hsq .qi .ql{font-size:10px;font-weight:800;color:#94a3b8;margin-bottom:4px}
+.hsq .qi img{width:100%;display:block;border-radius:6px;object-fit:contain;max-height:38vh;cursor:zoom-in;background:#f8fafc}
+.hsq .mt{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:900;color:#dc2626;margin:0 1px 6px}
+.hsq .mt .tabs{margin-left:auto;flex:none;display:flex;gap:4px}
+.hsq .mt .tabs button{border:1px solid #cbd5e1;background:var(--surface);color:#475569;border-radius:50px;padding:3px 9px;font-family:inherit;font-size:10.5px;font-weight:900;cursor:pointer}
+.hsq .mt .tabs button.on{background:#0d2240;border-color:#0d2240;color:#fff}
+.hsq .sv{position:relative;border:1px solid #e2e8f0;border-radius:10px;background:#fff;padding:7px}
+.hsq .sv img{width:100%;display:block;border-radius:6px;object-fit:contain;max-height:55vh;cursor:zoom-in;background:#f8fafc}
+.hsq .sv .zm{position:absolute;right:11px;bottom:11px;background:rgba(13,34,64,.82);color:#fff;font-size:10px;font-weight:900;border-radius:6px;padding:3px 8px;pointer-events:none}
+.hsq .sv .no{padding:26px 10px;text-align:center;color:#94a3b8;font-size:12px;font-weight:800}
+.hsq .ac{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.hsq .ac button{flex:1;min-width:92px;border:1.5px solid #cbd5e1;border-radius:10px;padding:9px 4px;font-family:inherit;font-size:11.5px;font-weight:900;background:var(--surface);color:var(--text);cursor:pointer;line-height:1.35}
+.hsq .ac button.on{background:#1d6fe8;border-color:#1d6fe8;color:#fff}
+.hsq .nt{font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.6;margin-top:6px}
+/* 🔍 크게 보기 — 전체 화면 (두 손가락 확대 · 끌기 · 회전 · 좌우로 다른 방법) */
+.hsb-zoom{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#000;display:none;flex-direction:column;touch-action:none;overscroll-behavior:none}
+.hsb-zoom.show{display:flex}
+.hsb-zoom .tb{flex:none;display:flex;align-items:center;gap:8px;padding:10px 12px}
+.hsb-zoom .tb button{flex:none;border:none;background:rgba(255,255,255,.16);color:#fff;border-radius:8px;padding:7px 12px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer}
+.hsb-zoom .tb .ttl{flex:1;min-width:0;text-align:center;color:#cbd5e1;font-size:11.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hsb-zoom .st{flex:1;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none;position:relative}
+.hsb-zoom .st img{display:block;max-width:none;transform-origin:center center;will-change:transform;background:#fff;-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
+.hsb-zoom .nav{flex:none;display:flex;align-items:center;gap:8px;padding:8px 12px 14px}
+.hsb-zoom .nav button{flex:none;border:none;background:rgba(255,255,255,.16);color:#fff;border-radius:8px;padding:7px 12px;font-family:inherit;font-size:11.5px;font-weight:900;cursor:pointer}
+.hsb-zoom .nav .hint{flex:1;min-width:0;text-align:center;color:#94a3b8;font-size:10px;font-weight:700;line-height:1.5}
 /* v2-44: 교재 채점 잠시 닫음 (원장님 지시 2026-08-27 — 한 달 뒤 다시 엽니다) */
 .bkhub-off{opacity:.5;cursor:default;border-color:#cbd5e1 !important}
 .bkhub-off .hh .soon{margin-left:auto;font-size:10.5px;font-weight:900;background:#e2e8f0;color:#64748b;border-radius:50px;padding:3px 10px}
@@ -3531,6 +3563,18 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-86 (2026-09-15) 📚 교재 손풀이 — 문제 그림과 함께, 틀린 문제부터, 크게 보기·회전
+ *   · 교재 손풀이에서 한 쪽을 열면 이제 그 쪽의 문항이 <b>카드로 죽 나옵니다</b>.
+ *     <b>내가 틀린(✗) 문항이 맨 위</b>, 그다음 번호순입니다. 카드 머리에 「6번 · 내 채점 ✗」.
+ *   · 카드 위에 <b>문제 그림</b>이 같이 보여서 교재를 안 펴도 어떤 문제인지 압니다
+ *     (선생님이 올린 풀이에 문제 그림이 붙어 있을 때만 나옵니다).
+ *   · 풀이 그림 아래 단추 — 「🔍 크게 보기」 「🎬 영상 2:14」(영상이 붙은 것만) 「🙋 IB아하노트」.
+ *     풀이가 여러 개면 「방법 2 ›」 탭으로 바꿔 봅니다.
+ *   · 「🔍 크게 보기」는 <b>화면 전체</b>를 씁니다 — 두 손가락으로 확대(최대 5배),
+ *     끌어서 옮기기, 두 번 톡 = 2배, 「↻ 회전」 90°씩, 옆으로 밀면 다른 방법.
+ *     세로가 긴 풀이는 처음에 화면 폭에 맞춰 줍니다.
+ *   · 공개 규칙(누구나 / 채점한 뒤 / 힌트 뒤)은 <b>그대로</b>입니다.
+ *
  * v2-85 (2026-09-15) ✓ 이제 알아요 — 밀린 질문을 학생이 정리해 달라고 부탁합니다
  *   · 아직 답을 못 받은 IB아하노트 카드에서 「🙋 쓰다 보니 알았어요」 아래에
  *     작은 줄 「✓ 이제 알아요 — 정리해 주세요」가 생겼습니다. 누르면
@@ -3714,7 +3758,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-85';
+var STU_VER = 'v2-86';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -13572,13 +13616,17 @@ function hsPaintFind(keepFocus){
  *   lumen_store 'book_cfg_<bid>'       → 공개 규칙 {reveal:'open'|'scored'|'hint', hidden}
  *   lumen_store 'mf_concept_names'     → 유형 이름
  *   테이블 mf_answer_records           → 내 O/X (mf_student_id + book_id, workbook_problem_id로 맞춤)
- * 화면 교재 목록 → 쪽·번호 판 → 풀이 한 장 / 내 오답 모아 보기
+ * 화면 교재 목록 → 쪽·번호 판 → 문항 카드들(v2-86: 문제 그림 + 방법별 풀이 + 🔍 크게 보기)
+ *      / 내 오답 모아 보기
  * 묶음 한 문항 = 매쓰플랫 「기본 번호」 하나. 5.(1) 5.(2) 는 5 하나로 묶인다.
  *      같은 쪽에 같은 번호가 두 묶음 나오면 순서대로 따로 센다.
  * ══════════════════════════════════════════════════════════════════ */
+/* v2-86 추가 칸: mi = 문항마다 지금 보고 있는 「방법」 번호, vid = 영상을 펼친 문항,
+ *   zoom = 🔍 크게 보기 상태(보고 있는 풀이들 · 배율 · 밀어 옮긴 거리 · 회전 각도) */
 var HSB = { tab:'sheet', tabSet:false, loaded:false, at:0, sid:null,
             swb:null, cfg:{}, ans:{}, recs:null, names:null,
-            bid:null, page:null, gi:-1, books:null, cache:{} };
+            bid:null, page:null, gi:-1, books:null, cache:{},
+            mi:{}, vid:{}, zoom:null, bodyOv:'' };
 window.HSB = HSB;
 
 /* 선생님이 교재에 올린 풀이 조각들 */
@@ -13636,6 +13684,8 @@ async function hsbLoad(force){
     });
     if(st['mf_concept_names']) HSB.names=st['mf_concept_names'];
     else if(!HSB.names && window.SP3 && SP3.names) HSB.names=SP3.names;
+    /* v2-86: 내가 학생앱에서 매긴 채점(hw_scores_<코드>)도 읽는다 — ✗ 문항을 먼저 보여 주려고 */
+    try{ if(window.bkLoad) await bkLoad(); }catch(e){ console.warn('내 채점 기록(hw_scores) 불러오기 실패', e); }
     await hsbLoadRecs(bids);
   }catch(e){ console.warn('교재 손풀이 자료 불러오기 실패', e); }
   return HSB;
@@ -13835,10 +13885,12 @@ function hsbPageOf(bk, page){
   var want=String(page==null?'':page);
   return bk.pages.filter(function(p){ return String(p.page)===want; })[0]||null;
 }
+/* v2-86: 카드 차례와 똑같이 — 내 채점 ✗ 문항이 첫 번째 */
 function hsbFirstGi(pg){
   if(!pg||!pg.groups||!pg.groups.length) return -1;
+  var list=hsbOrder(pg);
+  if(list.length) return list[0].gi;
   var i;
-  for(i=0;i<pg.groups.length;i++){ if(pg.groups[i].wrong && pg.groups[i].sols.length) return i; }
   for(i=0;i<pg.groups.length;i++){ if(pg.groups[i].sols.length) return i; }
   return -1;
 }
@@ -13895,20 +13947,30 @@ window.hsbOpenBook = function(bid, page, gi){
   if(!pg) pg=bk.pages.filter(function(p){ return p.hasSol; })[0]||bk.pages[0]||null;
   HSB.page=pg?pg.page:null;
   HSB.gi=(gi!=null)?Number(gi):hsbFirstGi(pg);
+  HSB.vid={};
   go('screen-hand-book');
   hsbPaint();
+  if(gi!=null) hsbScrollTo(HSB.gi);
 };
 window.hsbPickPage = function(page){
   var bk=hsbBuild(HSB.bid); if(!bk) return;
   HSB.page=String(page);
   HSB.gi=hsbFirstGi(hsbPageOf(bk,HSB.page));
+  HSB.vid={};
   hsbPaint();
 };
-window.hsbPick = function(gi){ HSB.gi=Number(gi); hsbPaint(); };
+/* v2-86: 번호를 누르면 그 문항 카드로 데려간다 (카드는 다 펼쳐져 있다) */
+function hsbScrollTo(gi){
+  try{
+    var el=document.getElementById('hsb-c'+Number(gi));
+    if(el && el.scrollIntoView) el.scrollIntoView({ block:'start' });
+  }catch(e){}
+}
+window.hsbPick = function(gi){ HSB.gi=Number(gi); hsbPaint(); hsbScrollTo(gi); };
 window.hsbGoto = function(page, gi){
   HSB.page=String(page); HSB.gi=Number(gi);
   hsbPaint();
-  try{ window.scrollTo(0,0); }catch(e){}
+  hsbScrollTo(gi);
 };
 function hsbPaint(){
   var body=document.getElementById('hsb-body'); if(!body) return;
@@ -13947,75 +14009,389 @@ function hsbPaint(){
     +'<span><i style="background:#f1f5f9"></i>풀이 없음(연하게)</span>'
     +'<span>🔴 쪽 옆 빨간 점 = 그 쪽에 내 오답</span></div>';
 
-  var cur=(HSB.gi>=0)?groups[Number(HSB.gi)]:null;
-  if(!cur){
-    h+='<div class="sp3-empty"><div class="e1">📚</div><div class="e2">위에서 번호를 골라 주세요</div></div>';
+  /* v2-86: 쪽 안의 문항을 카드로 죽 늘어놓는다 — 내 채점 ✗ 먼저, 그다음 번호순 */
+  var cards=hsbOrder(pg);
+  if(!cards.length){
+    h+='<div class="sp3-empty"><div class="e1">✍️</div><div class="e2">이 쪽에는 아직 선생님 풀이가 없어요</div></div>';
     body.innerHTML=h+'</div>';
     return;
   }
-  h+=hsbSolHtml(bk, pg, cur);
+  var wrN=0;
+  cards.forEach(function(g){ if(hsbMyR(pg,g)==='X') wrN++; });
+  if(wrN){
+    h+='<div style="font-size:11px;font-weight:900;color:#dc2626;margin:0 2px 8px">'
+      +'✗ 내가 틀린 '+wrN+'문항을 맨 위에 놓았어요</div>';
+  }
+  cards.forEach(function(g){ h+=hsbCardHtml(bk, pg, g); });
+  var last=cards[cards.length-1];
+  var nx=hsbNextWrong(bk, pg, last);
+  h+='<div class="hs-acts"><button class="pri" style="grid-column:span 2"'
+    +(nx?(' onclick="hsbGoto(\''+hsEsc(nx.page)+'\','+nx.gi+')"'):' disabled')+'>'
+    +(nx?('다음 틀린 문제 → p.'+hsEsc(nx.page)+' '+hsEsc(nx.num)+'번'):'틀린 문제 없음 ✓')+'</button></div>';
+  h+='<div style="font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.7">'
+    +'풀이를 보기 전에 한 번 더 풀어 보면 훨씬 오래 남아요.</div>';
   body.innerHTML=h+'</div>';
 }
-/* 풀이 한 장 — 🎬 영상이 맨 위, 아래에 방법별 풀이 여러 장 */
-function hsbSolHtml(bk, pg, g){
-  var h='';
+/* ══ v2-86: 문항 카드 ══════════════════════════════════════════════
+ * 카드 한 장 = 문항 하나. 위에 문제 그림(qimg, 있을 때만),
+ * 아래에 「✍️ 선생님 풀이 · 방법 N」 그림, 그 밑에 단추 줄.
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* 내 채점 — 학생앱에서 내가 매긴 것(hw_scores_<코드>)이 먼저, 없으면 매쓰플랫 기록 */
+function hsbMyR(pg, g){
+  var sc=(window.BK && BK.scores) || {};
+  var pid=(pg && pg.pid), got='', i, m;
+  if(pid!=null && pid!==''){
+    for(i=0;i<(g.ids||[]).length;i++){
+      m=sc[pid+'_'+g.ids[i]];
+      if(!m || !m.r) continue;
+      if(m.r==='X') return 'X';
+      if(!got && (m.r==='O'||m.r==='?')) got=m.r;
+    }
+  }
+  if(got) return got;
+  if(g.wrong) return 'X';
+  if(g.scored) return 'O';
+  return '';
+}
+function hsbRTxt(r){
+  return (r==='X')?'내 채점 ✗':(r==='O'?'내 채점 ◯':(r==='?'?'내 채점 ? (확인 중)':'내 채점 –'));
+}
+/* 번호 안의 첫 숫자 — 번호순으로 줄 세울 때 쓴다 */
+function hsbNumKey(g){
+  var m=String((g&&g.num)||'').match(/\d+/);
+  return m?Number(m[0]):999999;
+}
+/* 이 쪽에서 카드로 보여 줄 문항 — 내 채점 ✗ 먼저, 그다음 번호순 */
+function hsbOrder(pg){
+  var list=[];
+  ((pg&&pg.groups)||[]).forEach(function(g,i){
+    if(g.sols && g.sols.length) list.push({ g:g, i:i });
+  });
+  list.sort(function(a,b){
+    var ax=(hsbMyR(pg,a.g)==='X')?0:1, bx=(hsbMyR(pg,b.g)==='X')?0:1;
+    return (ax-bx) || (hsbNumKey(a.g)-hsbNumKey(b.g)) || (a.i-b.i);
+  });
+  return list.map(function(x){ return x.g; });
+}
+/* 문항마다 지금 보고 있는 방법 번호 */
+function hsbMiKey(g){ return String(HSB.bid)+'|'+String(HSB.page)+'|'+String(g.gi); }
+function hsbMi(g){
+  var v=Number(HSB.mi[hsbMiKey(g)]||0);
+  if(isNaN(v)||v<0||v>=g.sols.length) v=0;
+  return v;
+}
+window.hsbMethod = function(gi, i){
+  var bk=hsbBuild(HSB.bid); if(!bk) return;
+  var pg=hsbPageOf(bk,HSB.page); if(!pg) return;
+  var g=(pg.groups||[])[Number(gi)]; if(!g) return;
+  HSB.mi[hsbMiKey(g)]=Number(i)||0;
+  hsbPaint();
+  try{
+    var el=document.getElementById('hsb-c'+Number(gi));
+    if(el && el.scrollIntoView) el.scrollIntoView({ block:'nearest' });
+  }catch(e){}
+};
+/* 134초 → 「2:14」 */
+function hsbMs(s){
+  var n=Math.max(0, Math.floor(Number(s)||0));
+  return Math.floor(n/60)+':'+('0'+(n%60)).slice(-2);
+}
+/* 🎬 영상 펼치기·접기 (유튜브 vid:{yt,start} 그대로 씀) */
+window.hsbVidToggle = function(gi){
+  var box=document.getElementById('hsb-v'+Number(gi)); if(!box) return;
+  var on=(box.getAttribute('data-on')==='1');
+  if(on){ box.innerHTML=''; box.style.display='none'; box.setAttribute('data-on','0'); HSB.vid[String(gi)]=0; return; }
+  var yt=box.getAttribute('data-yt')||'', st=Math.floor(Number(box.getAttribute('data-st'))||0);
+  if(!yt) return;
+  var src='https://www.youtube.com/embed/'+encodeURIComponent(yt)+'?rel=0'+(st>0?('&start='+st):'');
+  box.innerHTML='<iframe src="'+hsEsc(src)+'" title="풀이 영상" '
+    +'allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" '
+    +'allowfullscreen loading="lazy"></iframe>';
+  box.style.display='';
+  box.setAttribute('data-on','1');
+  HSB.vid[String(gi)]=1;
+};
+/* 🙋 이 카드의 문제로 IB아하노트 */
+window.hsbAha = function(gi){ HSB.gi=Number(gi); hsbToAha(); };
+
+function hsbCardHtml(bk, pg, g){
+  var gi=g.gi;
+  var r=hsbMyR(pg,g);
+  var h='<div class="hsq'+(r==='X'?' wr':'')+'" id="hsb-c'+gi+'">';
+  h+='<div class="hd"><span>'+hsEsc(g.num)+'번 · '+hsbRTxt(r)+'</span>';
+  h+='<span class="f">'+(r==='X'?'틀린 문제부터':('풀이 '+g.sols.length+'개'))+'</span>';
+  h+='</div>';
+
   var lock=hsbLockMsg(bk,g);
   if(lock){
     h+='<div class="hs-lock">'+lock+'</div>';
-    h+='<div style="font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.7">'
-      +'선생님이 이 교재를 「'+(bk.reveal==='scored'?'채점한 뒤 공개':'힌트 뒤 공개')+'」로 정해 두셨어요.</div>';
-    return h;
+    h+='<div class="nt">선생님이 이 교재를 「'
+      +(bk.reveal==='scored'?'채점한 뒤 공개':'힌트 뒤 공개')+'」로 정해 두셨어요.</div>';
+    return h+'</div>';
   }
-  var vid=null;
-  g.sols.forEach(function(it){ if(!vid && it.vid && it.vid.yt) vid=it.vid; });
-  if(vid){
-    var st=Math.floor(Number(vid.start)||0);
-    var src='https://www.youtube.com/embed/'+encodeURIComponent(String(vid.yt))+'?rel=0'+(st>0?('&start='+st):'');
-    h+='<div class="hsb-play"><iframe src="'+hsEsc(src)+'" title="풀이 영상" '
-      +'allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" '
-      +'allowfullscreen loading="lazy"></iframe></div>';
-  }
-  if(!g.sols.length){
-    h+='<div class="sp3-empty"><div class="e1">✍️</div><div class="e2">이 번호에는 아직 풀이가 없어요</div></div>';
-    return h;
-  }
-  g.sols.forEach(function(it,i){
-    var ttl=String(it.title||'');
-    if(ttl || g.sols.length>1){
-      h+='<div class="hsb-sub"><b>'+(i+1)+'</b>'+hsEsc(ttl||('풀이 '+(i+1)))+'</div>';
-    }
-    h+='<div class="hs-crop">';
-    if(it.img){
-      h+='<img src="'+hsEsc(it.img)+'" alt="'+hsEsc(g.num+'번 선생님 풀이')+'" '
-        +'onclick="openAhaPhoto(\''+hsEsc(it.img)+'\')">';
-    }else{
-      h+='<div style="padding:26px 10px;text-align:center;color:#94a3b8;font-size:12px;font-weight:800">사진이 아직 없어요</div>';
-    }
-    h+='</div>';
-  });
-  h+='<div style="font-size:9.5px;font-weight:800;color:#94a3b8;text-align:center;margin:-2px 0 10px">'
-    +'이미지를 누르면 크게 볼 수 있어요 (선생님 필기 그대로)</div>';
 
-  var cname=(HSB.names && g.cid!=null && HSB.names[g.cid] && HSB.names[g.cid].n) || '';
-  h+='<div class="hs-tags">';
-  if(cname) h+='<span class="t">유형 · '+hsEsc(cname)+'</span>';
-  h+='<span class="'+(g.wrong?'x':(g.scored?'o':''))+'">'
-    +(g.wrong?'내 결과 ✗ 틀림':(g.scored?'내 결과 O':'아직 채점 안 함'))+'</span>';
-  h+='<span>p.'+hsEsc(pg.page)+' · '+hsEsc(g.num)+'번</span>';
+  var mi=hsbMi(g);
+  var it=g.sols[mi]||g.sols[0]||null;
+  /* 문제 그림 — 이 방법에 붙은 것이 없으면 같은 문항의 다른 방법 것을 쓴다 */
+  var qimg=(it&&it.qimg)||'';
+  if(!qimg) g.sols.forEach(function(s){ if(!qimg && s.qimg) qimg=s.qimg; });
+  if(qimg){
+    h+='<div class="qi"><div class="ql">문제</div>'
+      +'<img src="'+hsEsc(qimg)+'" alt="'+hsEsc(g.num+'번 문제')+'" '
+      +'onclick="openAhaPhoto(\''+hsEsc(qimg)+'\')"></div>';
+  }
+
+  var ttl=String((it&&it.title)||'');
+  h+='<div class="mt"><span>✍️ 선생님 풀이 · 방법 '+(mi+1)+(ttl?(' · '+hsEsc(ttl)):'')+'</span>';
+  if(g.sols.length>1){
+    h+='<span class="tabs">';
+    g.sols.forEach(function(s,j){
+      h+='<button class="'+((j===mi)?'on':'')+'" onclick="hsbMethod('+gi+','+j+')">'
+        +'방법 '+(j+1)+((j===mi)?'':' ›')+'</button>';
+    });
+    h+='</span>';
+  }
   h+='</div>';
 
-  var nx=hsbNextWrong(bk, pg, g);
-  h+='<div class="hs-acts">'
-    +'<button class="pri" style="grid-column:span 2"'
-      +(nx?(' onclick="hsbGoto(\''+hsEsc(nx.page)+'\','+nx.gi+')"'):' disabled')+'>'
-      +(nx?('다음 틀린 문제 → p.'+hsEsc(nx.page)+' '+hsEsc(nx.num)+'번'):'틀린 문제 없음 ✓')+'</button>'
-    +'<button onclick="hsbToAha()">🙋 이 문제로<br>IB아하노트</button>'
-    +'<button class="soon" onclick="hsSay(\'🔁 다시 풀어 올리기는 준비 중이에요. 지금은 IB아하노트에 사진을 올려 주세요!\')">'
-      +'🔁 다시 풀어<br>올리기 (준비 중)</button>'
+  h+='<div class="sv">';
+  if(it && it.img){
+    h+='<img src="'+hsEsc(it.img)+'" alt="'+hsEsc(g.num+'번 선생님 풀이')+'" '
+      +'onclick="hsbZoomOpen(\''+hsEsc(String(it.id))+'\')">'
+      +'<span class="zm">🔍 크게</span>';
+  }else{
+    h+='<div class="no">사진이 아직 없어요</div>';
+  }
+  h+='</div>';
+
+  /* 🎬 영상 — 이 방법에 붙은 것이 먼저, 없으면 같은 문항의 다른 방법 것 */
+  var vid=(it&&it.vid&&it.vid.yt)?it.vid:null;
+  if(!vid) g.sols.forEach(function(s){ if(!vid && s.vid && s.vid.yt) vid=s.vid; });
+  var vOn=!!HSB.vid[String(gi)];
+  h+='<div class="hsb-play" id="hsb-v'+gi+'" data-on="0" style="display:none;margin-top:9px"'
+    +(vid?(' data-yt="'+hsEsc(String(vid.yt))+'" data-st="'+Math.floor(Number(vid.start)||0)+'"'):'')
+    +'></div>';
+
+  h+='<div class="ac">';
+  h+='<button class="on"'+((it&&it.img)?(' onclick="hsbZoomOpen(\''+hsEsc(String(it.id))+'\')"'):' disabled')
+    +'>🔍 크게 보기</button>';
+  if(vid) h+='<button onclick="hsbVidToggle('+gi+')">🎬 영상 '+hsbMs(vid.start)+'</button>';
+  /* 「🔁 다시 풀기」 — 교재 문항을 다시 풀어 올리는 길이 아직 없어서 숨겨 둔다.
+   * 그 길이 생기면 여기에 단추 한 줄만 붙이면 된다. */
+  h+='<button onclick="hsbAha('+gi+')">🙋 IB아하노트</button>';
+  h+='</div>';
+
+  var cname=(HSB.names && g.cid!=null && HSB.names[g.cid] && HSB.names[g.cid].n) || '';
+  h+='<div class="hs-tags" style="margin-top:9px;margin-bottom:0">';
+  if(cname) h+='<span class="t">유형 · '+hsEsc(cname)+'</span>';
+  h+='<span class="'+((r==='X')?'x':((r==='O')?'o':''))+'">'+hsbRTxt(r)+'</span>';
+  h+='<span>p.'+hsEsc(pg.page)+' · '+hsEsc(g.num)+'번</span>';
+  h+='</div>';
+  if(vOn) setTimeout(function(){ try{ hsbVidToggle(gi); }catch(e){} }, 0);
+  return h+'</div>';
+}
+
+/* ══ 🔍 크게 보기 — 전체 화면 ══════════════════════════════════════
+ * 두 손가락으로 확대(1~5배) · 한 손가락으로 끌기 · 두 번 톡 = 2배/원복
+ * 「↻ 회전」 90°씩 · 「‹ 닫기」 · 좌우로 밀면 같은 문항의 다른 방법
+ * ═══════════════════════════════════════════════════════════════ */
+function hsbZoomDist(a,b){
+  var dx=a.x-b.x, dy=a.y-b.y;
+  return Math.sqrt(dx*dx+dy*dy);
+}
+function hsbZoomEl(){
+  var el=document.getElementById('hsb-zoom');
+  if(el) return el;
+  el=document.createElement('div');
+  el.id='hsb-zoom';
+  el.className='hsb-zoom';
+  el.innerHTML='<div class="tb">'
+      +'<button id="hsb-zoom-close" onclick="hsbZoomClose()">‹ 닫기</button>'
+      +'<div class="ttl" id="hsb-zoom-ttl"></div>'
+      +'<button id="hsb-zoom-rot" onclick="hsbZoomRot()">↻ 회전</button>'
+    +'</div>'
+    +'<div class="st" id="hsb-zoom-st"><img id="hsb-zoom-img" alt="선생님 풀이 크게 보기"></div>'
+    +'<div class="nav">'
+      +'<button id="hsb-zoom-prev" onclick="hsbZoomStep(-1)">‹</button>'
+      +'<div class="hint" id="hsb-zoom-hint"></div>'
+      +'<button id="hsb-zoom-next" onclick="hsbZoomStep(1)">›</button>'
     +'</div>';
-  h+='<div style="font-size:10.5px;font-weight:700;color:#94a3b8;line-height:1.7">'
-    +'풀이를 보기 전에 한 번 더 풀어 보면 훨씬 오래 남아요.</div>';
-  return h;
+  document.body.appendChild(el);
+  hsbZoomBind(el);
+  return el;
+}
+function hsbZoomBind(el){
+  var st=el.querySelector('.st');
+  if(!st) return;
+  var pts={}, d0=0, s0=1, lx=0, ly=0, moved=0, sw=0, lastTap=0;
+  function arr(){
+    var out=[], k;
+    for(k in pts){ if(Object.prototype.hasOwnProperty.call(pts,k)) out.push(pts[k]); }
+    return out;
+  }
+  st.addEventListener('pointerdown', function(e){
+    if(!HSB.zoom) return;
+    try{ e.preventDefault(); }catch(x){}
+    try{ st.setPointerCapture(e.pointerId); }catch(x){}
+    pts[e.pointerId]={ x:e.clientX, y:e.clientY };
+    var a=arr();
+    if(a.length===1){ lx=e.clientX; ly=e.clientY; moved=0; sw=0; }
+    else if(a.length===2){ d0=hsbZoomDist(a[0],a[1]); s0=HSB.zoom.scale; }
+  }, false);
+  st.addEventListener('pointermove', function(e){
+    if(!HSB.zoom || !pts[e.pointerId]) return;
+    try{ e.preventDefault(); }catch(x){}
+    pts[e.pointerId]={ x:e.clientX, y:e.clientY };
+    var a=arr(), z=HSB.zoom;
+    if(a.length>=2){
+      var d=hsbZoomDist(a[0],a[1]);
+      if(d0>0){
+        z.scale=Math.max(1, Math.min(5, s0*d/d0));
+        hsbZoomApply();
+      }
+      return;
+    }
+    var dx=e.clientX-lx, dy=e.clientY-ly;
+    lx=e.clientX; ly=e.clientY;
+    moved+=Math.abs(dx)+Math.abs(dy);
+    if(z.scale>1.02){ z.tx+=dx; z.ty+=dy; }
+    else { sw+=dx; z.ty+=dy; }     /* 안 키운 상태에서 좌우로 밀면 방법 바꾸기 */
+    hsbZoomApply();
+  }, false);
+  function up(e){
+    if(!pts[e.pointerId]) return;
+    delete pts[e.pointerId];
+    var a=arr(), z=HSB.zoom;
+    if(!z) return;
+    if(a.length===1){ lx=a[0].x; ly=a[0].y; return; }
+    if(a.length>0) return;
+    if(z.scale<=1.02 && Math.abs(sw)>60){ var d=(sw<0)?1:-1; sw=0; hsbZoomStep(d); return; }
+    if(moved<10){
+      var t=Date.now();
+      if(t-lastTap<330){
+        lastTap=0;
+        z.scale=(z.scale>1.2)?1:2;
+        z.tx=0; z.ty=0;
+        hsbZoomApply();
+      }else lastTap=t;
+    }
+    sw=0;
+  }
+  st.addEventListener('pointerup', up, false);
+  st.addEventListener('pointercancel', up, false);
+  st.addEventListener('dblclick', function(e){
+    if(!HSB.zoom) return;
+    try{ e.preventDefault(); }catch(x){}
+    HSB.zoom.scale=(HSB.zoom.scale>1.2)?1:2;
+    HSB.zoom.tx=0; HSB.zoom.ty=0;
+    hsbZoomApply();
+  }, false);
+}
+/* 그림을 화면 폭에 맞춘다 — 세로가 긴 풀이는 아래가 넘쳐 끌어서 본다 */
+function hsbZoomFit(){
+  var st=document.getElementById('hsb-zoom-st'), img=document.getElementById('hsb-zoom-img');
+  if(!st||!img||!HSB.zoom) return;
+  var w=st.clientWidth||window.innerWidth||360;
+  var hgt=st.clientHeight||window.innerHeight||640;
+  var rot=HSB.zoom.rot;
+  var fit=(rot===90||rot===270)?hgt:w;
+  img.style.width=fit+'px';
+  img.style.height='auto';
+}
+function hsbZoomApply(){
+  var img=document.getElementById('hsb-zoom-img');
+  if(!img||!HSB.zoom) return;
+  var z=HSB.zoom;
+  img.style.transform='translate('+Math.round(z.tx)+'px, '+Math.round(z.ty)+'px) '
+    +'scale('+(Math.round(z.scale*1000)/1000)+') rotate('+z.rot+'deg)';
+  img.className='hsb-rot'+z.rot;
+}
+/* 이 풀이가 어느 쪽·어느 문항의 몇 번째 방법인지 찾는다 */
+function hsbZoomFind(itemId){
+  var id=String(itemId), out=null;
+  var bk=hsbBuild(HSB.bid);
+  if(!bk) return null;
+  bk.pages.forEach(function(p){
+    (p.groups||[]).forEach(function(g){
+      (g.sols||[]).forEach(function(it,i){
+        if(!out && String(it.id)===id) out={ pg:p, g:g, i:i };
+      });
+    });
+  });
+  return out;
+}
+window.hsbZoomOpen = function(itemId){
+  var f=hsbZoomFind(itemId);
+  var sols=f?(f.g.sols||[]):[];
+  var i=f?f.i:0;
+  if(!sols.length){
+    var one=hsbBookItems().filter(function(x){ return String(x.id)===String(itemId); })[0];
+    if(!one||!one.img){ hsSay('풀이 그림을 찾을 수 없어요'); return; }
+    sols=[one]; i=0;
+  }
+  HSB.zoom={ sols:sols, i:i, scale:1, tx:0, ty:0, rot:0,
+             page:f?f.pg.page:'', num:f?f.g.num:'', gi:f?f.g.gi:-1 };
+  var el=hsbZoomEl();
+  el.classList.add('show');
+  try{ HSB.bodyOv=document.body.style.overflow||''; document.body.style.overflow='hidden'; }catch(e){}
+  hsbZoomPaint();
+};
+window.hsbZoomClose = function(){
+  var el=document.getElementById('hsb-zoom');
+  if(el) el.classList.remove('show');
+  HSB.zoom=null;
+  try{ document.body.style.overflow=HSB.bodyOv||''; }catch(e){}
+};
+window.hsbZoomRot = function(){
+  if(!HSB.zoom) return;
+  HSB.zoom.rot=(HSB.zoom.rot+90)%360;
+  HSB.zoom.tx=0; HSB.zoom.ty=0;
+  hsbZoomFit();
+  hsbZoomApply();
+};
+window.hsbZoomStep = function(d){
+  if(!HSB.zoom) return;
+  var n=HSB.zoom.sols.length;
+  if(n<2) return;
+  HSB.zoom.i=((Number(HSB.zoom.i)+Number(d))%n+n)%n;
+  HSB.zoom.scale=1; HSB.zoom.tx=0; HSB.zoom.ty=0; HSB.zoom.rot=0;
+  hsbZoomPaint();
+  /* 뒤쪽 카드의 방법 탭도 같이 옮겨 둔다 */
+  try{
+    var bk=hsbBuild(HSB.bid), pg=bk&&hsbPageOf(bk,HSB.zoom.page);
+    var g=pg&&(pg.groups||[])[Number(HSB.zoom.gi)];
+    if(g){ HSB.mi[hsbMiKey(g)]=HSB.zoom.i; hsbPaint(); }
+  }catch(e){}
+};
+function hsbZoomPaint(){
+  var z=HSB.zoom; if(!z) return;
+  var img=document.getElementById('hsb-zoom-img');
+  var ttl=document.getElementById('hsb-zoom-ttl');
+  var hint=document.getElementById('hsb-zoom-hint');
+  var pv=document.getElementById('hsb-zoom-prev');
+  var nx=document.getElementById('hsb-zoom-next');
+  var it=z.sols[z.i]||z.sols[0]||{};
+  var n=z.sols.length;
+  if(img){
+    img.onload=function(){ hsbZoomFit(); hsbZoomApply(); };
+    img.src=String(it.img||'');
+  }
+  if(ttl) ttl.textContent='p.'+String(z.page)+' · '+String(z.num)+'번 · 방법 '+(z.i+1)+(n>1?(' / '+n):'');
+  if(pv){
+    pv.style.display=(n>1)?'':'none';
+    pv.textContent='‹ 방법 '+(((z.i-1)%n+n)%n+1);
+  }
+  if(nx){
+    nx.style.display=(n>1)?'':'none';
+    nx.textContent='방법 '+((z.i+1)%n+1)+' ›';
+  }
+  if(hint){
+    hint.textContent=(n>1)
+      ? '두 손가락으로 확대 · 끌어서 옮기기 · 옆으로 밀면 다른 방법'
+      : '두 손가락으로 확대 · 끌어서 옮기기 · 두 번 톡 = 2배';
+  }
+  hsbZoomFit();
+  hsbZoomApply();
 }
 /* 이 교재에서 지금 다음으로 볼 「틀렸고 풀이가 있는」 문항 */
 function hsbNextWrong(bk, pg, g){
