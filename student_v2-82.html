@@ -1785,7 +1785,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .rev-line .vv{word-break:break-all}
 .man-line{font-size:11px;font-weight:900;color:#a15c00;background:#fdf3e0;border:1px dashed #d9a441;border-radius:9px;padding:8px 10px;text-align:center}
 /* 키패드 */
-.kpad{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1.5px solid var(--border);padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:80;display:none;box-shadow:0 -8px 24px rgba(13,34,64,0.14)}
+/* v2-82: 자판이 비쳐 보이던 것을 고침 (--surface/--border 에 값이 없었다) */
+.kpad{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1.5px solid #cbd5e1;padding:8px 8px calc(8px + env(safe-area-inset-bottom));z-index:80;display:none;box-shadow:0 -8px 24px rgba(13,34,64,0.14)}
 .kpad.show{display:block}
 .kpad .kwrap{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .kpad button{border:1px solid var(--border);background:#f4f7fb;border-radius:10px;padding:13px 0;font-family:inherit;font-size:18px;font-weight:900;color:var(--text);cursor:pointer}
@@ -1802,13 +1803,15 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .bk-fields{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
 .bk-lbl{font-size:11.5px;font-weight:900;color:#475569;white-space:nowrap}
 .bk-unit{font-size:13px;font-weight:900;color:#0f766e;white-space:nowrap}
-.bk-fld{flex:1 1 62px;min-width:62px;border:1.8px solid var(--border);border-radius:10px;padding:8px 10px;background:var(--surface);font-family:ui-monospace,Menlo,monospace;font-size:15.5px;font-weight:800;min-height:39px;color:var(--text);overflow-x:auto;white-space:nowrap;cursor:text}
+/* v2-82: --border/--surface 는 이 파일에 값이 없어 테두리가 안 보였다 — 색을 직접 적는다 */
+.bk-fld{flex:1 1 62px;min-width:62px;border:1.8px solid #cbd5e1;border-radius:10px;padding:8px 10px;background:#fff;font-family:ui-monospace,Menlo,monospace;font-size:15.5px;font-weight:800;min-height:39px;color:var(--text);overflow-x:auto;white-space:nowrap;cursor:text}
 .bk-fld:empty::before{content:"?";color:#cbd5e1;font-family:inherit;font-size:13px;font-weight:700}
 .bk-fld.foc{border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,0.18)}
+.bk-fld.sm{flex:0 1 84px;max-width:110px}   /* v2-82: 「3 시 20 분」처럼 이름표가 뒤에 붙는 칸 */
 .bk-ox{display:flex;gap:7px}
-.bk-ox button{flex:1;border:1.8px solid var(--border);background:var(--surface);border-radius:10px;padding:10px 0;font-family:inherit;font-size:19px;font-weight:900;color:#334155;cursor:pointer}
+.bk-ox button{flex:1;border:1.8px solid #cbd5e1;background:#fff;border-radius:10px;padding:10px 0;font-family:inherit;font-size:19px;font-weight:900;color:#334155;cursor:pointer}
 .bk-chips{display:flex;flex-wrap:wrap;gap:6px}
-.bk-chips button{border:1.8px solid var(--border);background:var(--surface);border-radius:50px;padding:7px 14px;font-family:inherit;font-size:13px;font-weight:900;color:#334155;cursor:pointer}
+.bk-chips button{border:1.8px solid #cbd5e1;background:#fff;border-radius:50px;padding:7px 14px;font-family:inherit;font-size:13px;font-weight:900;color:#334155;cursor:pointer}
 .bk-wordin{display:flex;gap:6px;align-items:center}
 .bk-wordin input{flex:1;min-width:0;border:1.8px solid #14b8a6;border-radius:10px;padding:9px 11px;font-family:inherit;font-size:15px;font-weight:800;color:var(--text);background:var(--surface)}
 .bk-mini{border:1.5px solid var(--border);background:var(--surface);border-radius:9px;padding:7px 10px;font-family:inherit;font-size:11px;font-weight:900;color:#0f766e;cursor:pointer;white-space:nowrap}
@@ -1838,22 +1841,26 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .bk-strip span{font-size:11px;font-weight:900;border-radius:8px;padding:4px 9px;background:#eef2f7;color:#475569}
 /* ★ v2-82: 초등 답 모양 — ○표 자리(pick) · 낱말 고르기(choice) · 연산 기호(op) · 단위 칩 */
 .bk-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.bk-pick button{width:54px;height:46px;border:1.8px solid var(--border);border-radius:11px;background:var(--surface);font-family:inherit;font-size:21px;font-weight:900;color:#0f766e;cursor:pointer;line-height:1;padding:0}
-.bk-pick button.on{border-color:#14b8a6;background:#eefbf8;box-shadow:0 0 0 3px rgba(20,184,166,0.18)}
+.bk-pick button{width:54px;height:46px;border:2px dashed #94a3b8;border-radius:11px;background:#fff;font-family:inherit;font-size:22px;font-weight:900;color:#0f766e;cursor:pointer;line-height:1;padding:0}
+.bk-pick button.on{border-style:solid;border-color:#14b8a6;background:#eefbf8;box-shadow:0 0 0 3px rgba(20,184,166,0.18)}
 .bk-pick .bk-picknum{font-size:9px;font-weight:800;color:#94a3b8;text-align:center;width:54px;margin-top:-4px}
 .bk-picks{display:flex;flex-direction:column;gap:2px;align-items:center}
 .bk-pgrp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.bk-pgrp button{border:1.8px solid var(--border);background:var(--surface);border-radius:50px;padding:8px 15px;font-family:inherit;font-size:14px;font-weight:900;color:#334155;cursor:pointer}
+.bk-pgrp button{border:1.8px solid #cbd5e1;background:#fff;border-radius:50px;padding:8px 15px;font-family:inherit;font-size:14px;font-weight:900;color:#334155;cursor:pointer}
 .bk-pgrp button.on{border-color:#0f766e;background:#0f766e;color:#fff}
 .bk-pgrp.op button{border-radius:11px;padding:8px 0;width:46px;font-size:19px}
-.bk-slot{display:flex;flex-direction:column;gap:5px;padding:8px;border:1px dashed var(--border);border-radius:11px;background:#f8fafc}
+.bk-slot{display:flex;flex-direction:column;gap:5px;padding:8px;border:1px dashed #cbd5e1;border-radius:11px;background:#f8fafc}
 .bk-slot .cap{font-size:9.5px;font-weight:900;color:#94a3b8}
 .bk-slots{display:flex;flex-direction:column;gap:7px}
 .bk-ugrp{display:flex;flex-direction:column;gap:6px}
 .bk-ugrp .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .bk-ugrp .cap{font-size:9.5px;font-weight:900;color:#94a3b8;width:34px;flex-shrink:0}
-.bk-ugrp button{border:1.8px solid var(--border);background:var(--surface);border-radius:50px;padding:7px 13px;font-family:inherit;font-size:13.5px;font-weight:900;color:#334155;cursor:pointer}
-.bk-go{border:none;background:#0f766e;color:#fff;border-radius:10px;padding:9px 16px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer}
+.bk-ugrp button{border:1.8px solid #cbd5e1;background:#fff;border-radius:50px;padding:7px 13px;font-family:inherit;font-size:13.5px;font-weight:900;color:#334155;cursor:pointer}
+.bk-go{border:none;background:#0f766e;color:#fff;border-radius:10px;padding:9px 16px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.bk-taprow{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:2px}
+.kpad.cmp2 button{padding:6px 0;font-size:14px}
+.kpad.cmp2 button.fn{font-size:11px}
+.kpad.cmp2 button.go{font-size:13px}
 
 .h3-tiles4 .fn3{font-size:19px}
 .h3-tiles4 .fd3{font-size:13px}
@@ -2369,7 +2376,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     <button class="back-btn" onclick="go('screen-bookpages')" style="color:#fff">←</button>
     <div class="sub-title" style="color:#fff" id="bkq-title">채점</div>
   </div>
-  <div class="rec-body" id="bkq-body" style="padding:12px 12px 250px"></div>
+  <div class="rec-body" id="bkq-body" style="padding:12px 12px 340px"></div>
   <!-- v2-81: 자판 탭 4개(숫자·도형·문자식·기호) — 안쪽은 bkKpadRender()가 그린다 -->
   <div class="kpad" id="bk-kpad">
     <div class="kptabs" id="bk-kptabs"></div>
@@ -10892,6 +10899,7 @@ function bkCleanAns(a){
     .replace(/\\d?frac\{(-?[0-9]+)\}\{(-?[0-9]+)\}/g,'$1/$2')
     .replace(/\\text\s*\{([^}]*)\}/g,'$1')
     .replace(/\\;|\\,|\\!/g,' ').replace(/\\pm/g,'±')
+    .replace(/\\times/g,'×').replace(/\\div/g,'÷').replace(/\\cdot/g,'·')
     .replace(/\\overline\{([^}]*)\}/g,'$1̄')
     .replace(/\s+/g,' ').trim();
 }
@@ -13662,7 +13670,7 @@ function bkLabelText(u){
   if(s&&!/[:=]$/.test(s)) s+=':';
   return s;
 }
-var BK_UNITS='㎠|㎡|㎤|㎥|㎝|㎜|㎞|㎖|˚|°|℃|cm³|cm²|cm|mm|km|kg|mL|L|g|m|개|명|원|번|회|점|초|분|시간|일|주|장|권|살|층|칸|마리|송이|그루|줄|바퀴|배|%';
+var BK_UNITS='㎟|㎠|㎡|㎢|㎤|㎥|㎝|㎜|㎞|㎖|˚|°|℃|cm³|cm²|cm|mm|km|kg|mL|L|g|m|개|명|원|번|회|점|초|분|시간|일|주|장|권|살|층|칸|마리|송이|그루|줄|바퀴|배|%';
 function bkUnitTail(a){
   var m=bkDegNorm(a).match(new RegExp('('+BK_UNITS+')\\s*$'));
   return m?m[1]:'';
@@ -13712,6 +13720,7 @@ function bkGuessShape(p){
   if(/[(\[]\s*(\\?\s)*\s*[)\]]/.test(a)&&/○/.test(a)) return 'pick';
   if(/에\s*○\s*표/.test(a)) return 'choice';
   if(/^[\s,()]*(\\times|\\div|[+\-×÷=])([\s,()]*(\\times|\\div|[+\-×÷=]))*[\s,()]*$/.test(a)) return 'op';
+  if(BK_UNITSET[a.replace(/\s+/g,'')]) return 'word';          /* 단위 자체가 답 */
   /* v2-82: 「점 ㄱ」 「선분 ㄱㄴ」 처럼 한글 점 이름을 쓰는 초등 도형 답 */
   if(/(점|선분|직선|반직선|변|면|각|호)\s*[ㄱ-ㅎ]/.test(a)) return 'geo';
   if(/[ㄱ-ㅎ]/.test(a)||/[①-⑮]/.test(a)||/[㈎-㈛㉮-㉻㉠-㉭]/.test(a)||/^\(\s*\d\s*\)/.test(a)) return 'mark';
@@ -13742,17 +13751,21 @@ function bkParts(p, shape, unit){
     if(!n0||n0<1) n0=2; if(n0>8) n0=8;
     var pk=mk('','pick'); pk.n=n0; return [pk];
   }
-  /* v2-82: 낱말 고르기 — 「십에 ○표 / 백에 ○표」의 낱말을 보기로 */
+  /* v2-82: 낱말 고르기 — 「십에 ○표 / 백에 ○표」는 고를 칸이 둘이다 */
   if(shape==='choice'){
-    var opts=[], seenw={};
+    var words=[];
     String(a).split(/[\/·]/).forEach(function(seg){
       var m3=String(seg).match(/([^\s,()\/]+)\s*에\s*○\s*표/);
-      if(m3&&!seenw[m3[1]]){ seenw[m3[1]]=1; opts.push(m3[1]); }
+      if(m3) words.push(m3[1]);
     });
-    if(opts.length<2){ var pair=BK_CHOICE_PAIRS.find(function(g){ return opts.length? g.indexOf(opts[0])>=0 : false; });
-      if(pair) pair.forEach(function(w){ if(!seenw[w]){ seenw[w]=1; opts.push(w); } }); }
-    if(!opts.length) opts=BK_CHOICE_PAIRS[0].slice();
-    var ch=mk('','choice'); ch.options=opts; return [ch];
+    if(!words.length) words=['십'];
+    /* 보기 낱말 = 이 문항에 나온 낱말들 + 흔한 짝 */
+    var opts=[], seenw={};
+    words.forEach(function(w){ if(!seenw[w]){ seenw[w]=1; opts.push(w); } });
+    var pair=BK_CHOICE_PAIRS.find(function(g){ return g.indexOf(words[0])>=0; });
+    if(pair) pair.forEach(function(w){ if(!seenw[w]){ seenw[w]=1; opts.push(w); } });
+    if(opts.length<2) opts=opts.concat(BK_CHOICE_PAIRS[0].filter(function(w){ return !seenw[w]; }));
+    return words.map(function(){ var ch=mk('','choice'); ch.options=opts.slice(); return ch; });
   }
   /* v2-82: 연산 기호 — 기호 개수만큼 단추 칸 (순서 그대로) */
   if(shape==='op'){
@@ -13904,7 +13917,7 @@ function bkKpadRender(){
   tabs.innerHTML=th;
   var L=bkPadOf(BK.tab);
   wrap.style.gridTemplateColumns='repeat('+L.cols+',1fr)';
-  if(pad) pad.classList.toggle('cmp', L.keys.length>20);
+  if(pad){ pad.classList.toggle('cmp', L.keys.length>20); pad.classList.toggle('cmp2', L.keys.length>34); }
   var h='';
   L.keys.forEach(function(k){
     var lb=k[0], act=(k[1]==null?k[0]:k[1]), cls=k[2]||'', span=k[3]||0;
@@ -14039,7 +14052,8 @@ var BK_TYNAME={ num:'숫자', unit:'숫자 + 단위', ox:'O / X', word:'낱말 �
   labeled:'이름표 칸', eq:'식의 값', geo:'도형 기호', alg:'문자식', ineq:'부등식', coord:'좌표',
   pick:'○표 하기', choice:'낱말 고르기', op:'연산 기호' };
 function bkInputBody(p,sh,wp,key,probs){
-  var h='<div class="qt"><span class="ty">'+(BK_TYNAME[sh.shape]||'단답')+'</span>'
+  var ty=bkIsUnitWord(sh,p)?'단위 고르기':(BK_TYNAME[sh.shape]||'단답');
+  var h='<div class="qt"><span class="ty">'+ty+'</span>'
     +(sh.unit?'<span class="un">단위 '+h3Esc(sh.unit)+' — 숫자만</span>':'')+'</div>';
   var dunno='<button class="dunno-b" onclick="bkDunno('+bkQ(wp)+')">모름 ?</button>';
   if(sh.shape==='ox'){
@@ -14082,9 +14096,8 @@ function bkInputBody(p,sh,wp,key,probs){
     h+='<div class="bk-slots">';
     sh.parts.forEach(function(pt,ix){ h+=bkSlotHtml(p,sh,pt,ix,wp); });
     h+='</div>';
-    h+='<div style="display:flex;align-items:center;gap:6px;margin-top:2px">';
-    h+='<span class="bk-hint">'+h3Esc(bkTapHint(sh))+'</span>';
-    h+='<span style="margin-left:auto"></span>'
+    h+='<div class="bk-hint">'+h3Esc(bkTapHint(sh))+'</div>';
+    h+='<div class="bk-taprow">'
       +'<button class="bk-go" onclick="bkSubmitFor('+bkQ(wp)+')">제출</button>'+dunno+'</div>';
     return h;
   }
@@ -14092,7 +14105,7 @@ function bkInputBody(p,sh,wp,key,probs){
   sh.parts.forEach(function(pt,ix){
     var after=bkLabelAfter(pt.label);
     if(pt.label&&!after) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
-    h+='<div class="bk-fld" id="bkf-'+h3Esc(wp)+'-'+ix+'" onclick="bkFocus('+bkQ(wp)+','+ix+')"></div>';
+    h+='<div class="bk-fld'+(after?' sm':'')+'" id="bkf-'+h3Esc(wp)+'-'+ix+'" onclick="bkFocus('+bkQ(wp)+','+ix+')"></div>';
     if(pt.label&&after) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
     if(pt.unit) h+='<span class="bk-unit">'+h3Esc(pt.unit)+'</span>';
   });
@@ -14132,7 +14145,7 @@ function bkSlotHtml(p,sh,pt,ix,wp){
     h+='<div class="cap">'+(pt.label?h3Esc(pt.label):((ix+1)+'번째 칸'))+'</div>';
     h+='<div class="bk-fields">';
     if(pt.label&&!after) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
-    h+='<div class="bk-fld" id="bkf-'+h3Esc(wp)+'-'+ix+'" onclick="bkFocus('+bkQ(wp)+','+ix+')"></div>';
+    h+='<div class="bk-fld'+(after?' sm':'')+'" id="bkf-'+h3Esc(wp)+'-'+ix+'" onclick="bkFocus('+bkQ(wp)+','+ix+')"></div>';
     if(pt.label&&after) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
     if(pt.unit) h+='<span class="bk-unit">'+h3Esc(pt.unit)+'</span>';
     h+='</div>';
