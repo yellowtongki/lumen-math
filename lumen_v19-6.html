@@ -51488,7 +51488,11 @@ function rHandSol(){
     +'<div onclick="hslReload()" style="margin-left:auto;cursor:pointer;background:#eff6ff;color:#1d6fe8;border:1.5px solid #bfdbfe;border-radius:9px;padding:7px 13px;font-size:12px;font-weight:800">🔄 새로고침</div>'
     +'</div>';
   var nBook=0; Object.keys(d.items).forEach(function(k){ if(d.items[k] && d.items[k].src==='book') nBook++; });
+  /* v19-6: 📥 받은함 — 자동 배치가 올려 둔, 아직 승인 안 한 조각 수 */
+  if(!BKH.loaded && !BKH.loading) setTimeout(function(){ bkhLoad(); },0);
+  var nInbox=bkhInboxCount();
   var tabs=[['book','📚','교재',nBook?String(nBook):''],
+            ['inbox','📥','받은함',nInbox?String(nInbox):''],
             ['up','⬆','올리기',''],['drawer','📚','서랍',String(nItems)],['dist','📤','배분',''],
             ['gap','🕳','빈 곳',''],['stu','👤','학생별','']];
   h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">';
@@ -51501,6 +51505,7 @@ function rHandSol(){
   h+='</div>';
 
   if(HSL.tab==='book')        h+=hslBookPane();
+  else if(HSL.tab==='inbox')  h+=bkhInboxPane();
   else if(HSL.tab==='up')     h+=hslUpPane();
   else if(HSL.tab==='drawer') h+=hslDrawerPane();
   else if(HSL.tab==='dist')   h+=hslDistPane();
@@ -52822,6 +52827,7 @@ window.bkhOpen=async function(bid){
   }
   if(!BKH.boxes) BKH.boxes={ bid:BKH.bid, pages:{}, updated:'' };
   if(!BKH.boxes.pages) BKH.boxes.pages={};
+  BKH_BOXES[BKH.bid]=BKH.boxes;          /* v19-6: 받은함 승인에서도 같은 것을 본다 */
   if(!BKH.wrong7[BKH.bid]) bkhWrongLoad(BKH.bid);
   render();
 };
@@ -53304,14 +53310,17 @@ async function bkhAutoMap(bid, doc, inkDoc, onStep){
       var p=want[u];
       if(p>=1 && p<=doc.numPages && !seen[p]){ seen[p]=1; uniq.push(p); }
     }
-    var best=null;
+    var sc=[];
     for(var i=0;i<uniq.length;i++){
       var t=await bkhOrigTiny(bid, doc, uniq[i]);
-      var d=bkhTinyDiff(tin, t);
-      if(!best || d<best.diff) best={ pno:uniq[i], diff:d };
-      if(best.diff<=8) break;                 // 딱 맞으면 더 볼 것 없다
+      sc.push({ pno:uniq[i], diff:bkhTinyDiff(tin, t) });
     }
-    if(best && best.diff<=BKH_MATCH_MAX){
+    sc.sort(function(p,q){ return p.diff-q.diff; });
+    var best=sc[0]||null, second=sc[1]||null;
+    /* 「가장 닮은 쪽」이 2등보다 뚜렷이 닮아야 그 쪽으로 본다.
+     * (별지는 원본 어느 쪽과도 어중간하게 닮아 2등과 차이가 안 난다) */
+    var clear=!second || (best.diff <= second.diff*0.5) || ((second.diff-best.diff) >= 4);
+    if(best && best.diff<=BKH_MATCH_MAX && clear){
       last=best.pno;
       map.push({ j:j, kind:'page', pno:best.pno, diff:best.diff });
     } else {
@@ -53428,16 +53437,22 @@ async function bkhUploadJpg(path, dataUrl){
   if(!url) throw new Error('그림 주소를 만들지 못했습니다');
   return url;
 }
-/* 흰 여백을 뺀 내용 bbox (별지 조각 자르기에 쓴다) */
-function bkhContentBox(cv){
+/* 흰 여백을 뺀 내용 bbox (별지 조각 자르기에 쓴다)
+ * skipColor=true 면 색 있는 픽셀(= 펜 잉크)은 빼고 「인쇄된 것」만 본다 —
+ * 별지에 붙인 문제 스샷을 원본 상자와 견줄 때 쓴다 (계약서 §2-5) */
+function bkhContentBox(cv, skipColor){
   var W=cv.width, H=cv.height, d;
   try{ d=cv.getContext('2d',{ willReadFrequently:true }).getImageData(0,0,W,H).data; }
   catch(e){ return null; }
   var x0=W, y0=H, x1=-1, y1=-1;
   for(var y=0;y<H;y+=2){
     for(var x=0;x<W;x+=2){
-      var q=(y*W+x)*4;
-      if(d[q]>242 && d[q+1]>242 && d[q+2]>242) continue;
+      var q=(y*W+x)*4, r=d[q], g=d[q+1], b=d[q+2];
+      if(r>242 && g>242 && b>242) continue;
+      if(skipColor){
+        var mx=(r>g?(r>b?r:b):(g>b?g:b)), mn=(r<g?(r<b?r:b):(g<b?g:b));
+        if((mx-mn)>=40) continue;
+      }
       if(x<x0) x0=x;
       if(x>x1) x1=x;
       if(y<y0) y0=y;
@@ -53484,8 +53499,9 @@ function bkhInboxDup(bid, page, num, srcFile){
     var it=arr[i];
     if(Number(it.page)!==Number(page) || String(it.num)!==String(num)) continue;
     var st=it.status||'pending';
-    if(st==='pending') return true;                                                  // 이미 기다리는 것이 있다
-    if(st==='approved' && String(it.srcFile||'')===String(srcFile||'')) return true;  // 같은 파일 다시 돌림
+    if(st==='pending') return true;                                   // 이미 기다리는 것이 있다
+    /* 같은 파일을 다시 돌린 것이면 이미 처리한 것(승인·버림)은 되살리지 않는다 */
+    if(String(it.srcFile||'')===String(srcFile||'')) return true;
   }
   return false;
 }
@@ -53614,7 +53630,8 @@ async function bkhAutoQimg(bid, origBig, printPage, num, b, qdone){
 }
 /* 별지 — 앞쪽 P(와 P±1)의 상자와 견줘 번호 후보를 고른다 (계약서 §2-5) */
 async function bkhExtraCands(bid, doc, offv, P, inkCv, boxesDoc){
-  var cb=bkhContentBox(inkCv)||{ x0:0, y0:0, x1:inkCv.width, y1:inkCv.height };
+  /* 견주는 것은 「별지에 붙인 문제 스샷」 — 펜 잉크는 빼고 인쇄된 부분만 본다 */
+  var cb=bkhContentBox(inkCv,true)||bkhContentBox(inkCv)||{ x0:0, y0:0, x1:inkCv.width, y1:inkCv.height };
   var tin=bkhGrayTinyRect(inkCv, cb.x0, cb.y0, cb.x1-cb.x0, cb.y1-cb.y0, 48, 48);
   var pages=[P, P-1, P+1], out=[];
   for(var i=0;i<pages.length;i++){
@@ -53706,6 +53723,7 @@ window.bkhAutoRun=async function(bid, fileOrUrl){
     var map=await bkhAutoMap(bid, doc, inkDoc, function(j){
       a.pg=j; a.msg='쪽 맞추는 중 '+j+' / '+a.total; bkhAutoPaint();
     });
+    a.map=map;                       /* 쪽 맞추기 결과 — 화면·검증에서 들여다볼 수 있게 */
     var qdone={};
     for(var i=0;i<map.length;i++){
       if(BKH.autoAbort) break;
@@ -54119,9 +54137,17 @@ function hslBookPane(){
   }
   var head='';
   if(BKH.err) head+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:800;margin-bottom:10px">'+bkhEsc(BKH.err)+'</div>';
-  if(BKH.view==='pages') return head+bkhPagesPane()+bkhCloudModal();
-  if(BKH.view==='page')  return head+bkhPagePane()+bkhCloudModal();
-  return head+bkhListPane()+bkhCloudModal();
+  /* v19-6: 교재 탭 머리 — 🪄 필기본 자동 배치 (계약서 §3) */
+  var nPend=bkhInboxCount();
+  head+='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:linear-gradient(135deg,#eff6ff,#f8fafc);border:1px solid #bfdbfe;border-radius:12px;padding:9px 13px;margin-bottom:11px">'
+    +'<div style="font-size:12.5px;font-weight:900;color:#0d2240">🪄 굿노트 필기본을 올리면 앱이 번호에 붙여 드립니다</div>'
+    +'<div style="font-size:11px;color:#64748b;font-weight:700">승인 전에는 학생에게 보이지 않습니다</div>'
+    +(nPend?('<div onclick="hslTab(\'inbox\')" style="cursor:pointer;background:#fffbeb;border:1px solid #fde68a;color:#b45309;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:900">📥 받은함 '+nPend+'장 기다리는 중</div>'):'')
+    +'<div onclick="bkhAutoOpen()" style="margin-left:auto;cursor:pointer;background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border-radius:9px;padding:8px 15px;font-size:12.5px;font-weight:800">🪄 필기본 자동 배치</div>'
+    +'</div>';
+  if(BKH.view==='pages') return head+bkhPagesPane()+bkhCloudModal()+bkhAutoModal();
+  if(BKH.view==='page')  return head+bkhPagePane()+bkhCloudModal()+bkhAutoModal();
+  return head+bkhListPane()+bkhCloudModal()+bkhAutoModal();
 }
 
 /* v19-3: 종류 배지 한 조각 */
@@ -54193,9 +54219,12 @@ function bkhCloudModal(){
       h+='<div style="display:flex;align-items:center;gap:9px;border-top:1px solid #f1f5f9;padding:9px 2px">'
         +'<div style="min-width:0;flex:1">'
         +'<div style="font-size:12px;font-weight:800;color:#0d2240;word-break:break-all">'+bkhEsc(f.name)+'</div>'
-        +'<div style="font-size:10.5px;color:#94a3b8;font-weight:700">'+bkhEsc((f.dir||'book')+' 폴더 · '+mb)+(at?(' · 올린 시각 '+bkhEsc(at)):'')+'</div></div>'
-        +'<span onclick="bkhCloudPick(\''+bkhJs((f.dir||'book')+'/'+f.name)+'\')" style="cursor:pointer;flex:none;background:#0d2240;color:#fff;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;white-space:nowrap">'
-        +((c.mode==='ink')?'이 파일로 자동 배치':'이 파일로 등록')+'</span>'
+        +'<div style="font-size:10.5px;color:#94a3b8;font-weight:700">'
+        +((c.mode==='ink')?bkhEsc((f.dir||'book')+' 폴더 · '):'')+bkhEsc(mb)+(at?(' · 올린 시각 '+bkhEsc(at)):'')+'</div></div>'
+        /* 등록 모드는 예전 그대로 bkhPdfUse(파일이름), 필기본 모드만 bkhCloudPick(폴더/파일) */
+        +((c.mode==='ink')
+          ? ('<span onclick="bkhCloudPick(\''+bkhJs((f.dir||'book')+'/'+f.name)+'\')" style="cursor:pointer;flex:none;background:#0d2240;color:#fff;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;white-space:nowrap">이 파일로 자동 배치</span>')
+          : ('<span onclick="bkhPdfUse(\''+bkhJs(f.name)+'\')" style="cursor:pointer;flex:none;background:#0d2240;color:#fff;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;white-space:nowrap">이 파일로 등록</span>'))
         +'</div>';
     });
   }
