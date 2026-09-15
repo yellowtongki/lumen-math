@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-5';
+var APP_VER = 'v19-6';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -7909,6 +7909,19 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-6',date:'2026-09-15',stability:'ok',memo:'🪄 <b>굿노트 필기본 PDF를 올리면 앱이 스스로 문제 번호에 붙여 「받은함」에 올려 둡니다</b> (원장 지시 2026-09-15 · docs/handsol_auto_contract.md 1단계). '
+        +'<b>어디에 있나</b> — ✍️ 손풀이 › 📚 교재 탭 맨 위의 <b>「🪄 필기본 자동 배치」</b> 단추, 그리고 탭 줄에 새로 생긴 <b>「📥 받은함」</b>입니다. '
+        +'<b>어떻게 쓰나</b> — ① 「🪄 필기본 자동 배치」를 누르고 ② <b>교재를 고르고</b>(교과서 PDF가 등록된 교재만 고를 수 있습니다) ③ 필기본 PDF를 <b>내 컴퓨터</b>에서 고르거나 <b>☁️ 올린 파일</b>에서 고른 뒤 ④ <b>「시작」</b>을 누르면 됩니다. '
+        +'<b>앱이 하는 일</b>(AI를 쓰지 않습니다 · 전부 이 컴퓨터 안에서 그림끼리 견줍니다) — 필기본 한 쪽 한 쪽을 교과서 원본 쪽과 겹쳐 보고 <b>어느 쪽인지 찾아낸 뒤</b>, '
+        +'두 그림의 <b>다른 점(= 원장님 필기)만 떼어</b> 냅니다. 떼어 낸 잉크 뭉치가 어느 문제 상자 안에 있는지 보고 <b>그 번호의 풀이</b>로 잘라 둡니다. '
+        +'문항 상자가 아직 없는 쪽은 <b>자동 배치를 먼저 돌려 상자를 만들어 저장</b>하므로(나중에 작업대에서 끌어 고치실 수 있습니다) 미리 준비하지 않으셔도 됩니다. '
+        +'<b>별지(뒷장)</b> — 굿노트에서 교과서 뒤에 빈 장을 끼워 푸시면 원본보다 쪽이 하나 늘어납니다. 앱은 이것을 <b>「별지」</b>로 알아채고 앞쪽에 붙입니다. '
+        +'별지에 문제 스샷을 붙여 두셨으면 앞쪽 문제 상자들과 견줘 <b>번호 후보</b>를 고릅니다 — 하나로 딱 떨어지면 「번호 읽음」, 아니면 <b>「번호 확인」</b> 표시가 붙습니다. '
+        +'<b>📥 받은함</b> — 교재별로 접히는 목록에 「문제 | 풀이」가 나란히 놓인 카드가 쪽 순서로 쌓입니다. 머리에 <b>「확인 필요만」</b> 거르개와 <b>「✓ 전부 승인」</b>(번호가 확실한 것만)이 있습니다. '
+        +'카드마다 <b>✓ 승인 · 번호 고르기 · ✎ 상자 · 🎬 영상 · ✕</b>가 있습니다. <b>승인하기 전에는 학생에게 아무것도 보이지 않습니다</b> — 승인해야 비로소 학생앱 손풀이로 넘어갑니다. '
+        +'<b>오래 걸리나</b> — 한 쪽에 대략 1~2초입니다. 188쪽 교과서 한 권이면 <b>4~6분쯤</b> 걸리며, 진행 중에 <b>「취소」</b>를 누르면 그때까지 찾은 것만 남기고 멈춥니다. 읽지 못한 쪽은 끝에 목록으로 알려 드립니다. '
+        +'<b>다시 돌려도 안전합니다</b> — 같은 쪽·같은 번호가 이미 받은함에 있으면 새로 만들지 않습니다. '
+        +'<b>다음 단계</b> — 굿노트 → 구글 드라이브 <b>자동 백업 연동</b>(밤에 저절로 들어오게 하는 것)은 원장님이 드라이브 계정을 연결해 주신 뒤에 붙입니다. 학생앱 손풀이 카드 개편(문제 그림·크게 보기·회전)은 v2-86으로 이어집니다.'},
       {ver:'v19-5',date:'2026-09-15',stability:'ok',memo:'🗂️ <b>밀린 아하노트를 「왜 해결했는지」 남기며 한 번에 정리합니다</b> (원장 지시 2026-09-15 · docs/aha_backlog_resolve.md). '
         +'<b>무엇이 문제였나</b> — 미해결 질문이 <b>67건</b>(7일 안 11건 · 8~30일 56건) 쌓였습니다. 김예성 43 · 성재연 15 · 윤이솔 4 · 그 밖 5건입니다. '
         +'그 안에는 이미 수업에서 다뤘거나 학생이 스스로 풀어 버린 것이 섞여 있는데, 지금까지는 해결 단추를 눌러도 <b>왜 해결했는지</b>가 남지 않았습니다. '
@@ -52155,9 +52168,17 @@ var BKH = { view:'list', loaded:false, loading:false, err:'', busy:'', step:'',
             /* v19-3: 교재 목록 거르개 (학년 칩 · 종류 칩 · 이름 찾기) */
             f:{ grade:'', kind:'', q:'' },
             /* v19-3: 「☁️ 올린 파일」 고르기 창 */
-            cloud:{ open:false, busy:false, err:'', bid:'', files:[] },
-            off:{ pdf:1, print:1 }, offPrev:'' };
+            cloud:{ open:false, busy:false, err:'', bid:'', files:[], mode:'register' },
+            off:{ pdf:1, print:1 }, offPrev:'',
+            /* v19-6: 🪄 필기본 자동 배치 창 (계약서 handsol_auto §3) */
+            auto:{ open:false, bid:'', file:null, fileName:'', srcFile:'', running:false,
+                   pg:0, total:0, cuts:0, msg:'', fails:[], done:false },
+            autoAbort:false,
+            /* v19-6: 📥 받은함 — bid -> {bid,updated,items:[]} */
+            inbox:{}, inboxLoaded:false, inboxOpen:{}, inboxNeed:false, inboxDone:{} };
 var BKH_DOC = {};      // bid -> pdf.js 문서 (한 번 열면 다시 안 연다)
+var BKH_SCRATCH = {};  // v19-6: 한 쪽씩 처리할 때 다시 쓰는 캔버스 (메모리 아끼기)
+var BKH_TINY = {};     // v19-6: 원본 쪽의 100px 회색조 축소판 (쪽 맞추기용 · bid|pdf쪽)
 
 function bkhEsc(s){ return ahaEsc(s); }
 /* onclick="…(' ')" 안에 넣을 글자 — 따옴표·역슬래시를 먼저 막고 HTML 로 다시 막는다 */
@@ -52253,6 +52274,14 @@ async function bkhLoad(force){
       var m=String((x&&x.key)||'').match(/^book_cfg_(.+)$/);
       if(m && x.value) BKH.cfg[m[1]]=x.value;
     });
+    /* v19-6: 📥 받은함 — 교재별 자동 배치 결과 */
+    var r4=await sb.from('lumen_store').select('key,value').like('key','book_inbox_%');
+    BKH.inbox={};
+    ((r4&&r4.data)||[]).forEach(function(x){
+      var m=String((x&&x.key)||'').match(/^book_inbox_(.+)$/);
+      if(m && x.value) BKH.inbox[m[1]]=x.value;
+    });
+    BKH.inboxLoaded=true;
     /* 교재 정답사전 — 한 번에 다 받으면 무거워서 조각으로 나눠 받는다 */
     var bids={};
     Object.keys(BKH.swb).forEach(function(c){ (BKH.swb[c]||[]).forEach(function(b){ if(b&&b.bid) bids[String(b.bid)]=1; }); });
@@ -52427,10 +52456,17 @@ function bkhPageList(bid){
   out.sort(function(a,b){ return a.page-b.page; });
   return out;
 }
-function bkhPageRow(p){
-  var arr=bkhPageList(BKH.bid);
+/* v19-6: 화면(BKH.bid) 밖에서도 쓸 수 있게 교재를 인자로 받는다 */
+function bkhPageRowOf(bid,p){
+  var arr=bkhPageList(bid);
   for(var i=0;i<arr.length;i++){ if(Number(arr[i].page)===Number(p)) return arr[i]; }
   return null;
+}
+function bkhPageRow(p){ return bkhPageRowOf(BKH.bid, p); }
+function bkhGroupsOfBid(bid,page){
+  var row=bkhPageRowOf(bid,page);
+  var ans=BKH.ans[String(bid)]||{};
+  return bkhGroups((((ans.pages)||{})[row?row.wpid:''])||null);
 }
 function bkhPageData(){
   if(!BKH.boxes || !BKH.boxes.pages) return null;
@@ -52491,20 +52527,50 @@ async function bkhDoc(bid){
   BKH_DOC[k]=doc;
   return doc;
 }
+/* v19-6: 어떤 PDF 문서든 열 수 있게 — 파일(File)이든 주소(url)든 같은 길로 (계약서 §2) */
+async function bkhDocFrom(fileOrUrl){
+  bkhPdfWorker();
+  if(!fileOrUrl) throw new Error('필기본 파일이 없습니다.');
+  if(typeof fileOrUrl === 'string'){
+    try{
+      return await pdfjsLib.getDocument({ url:fileOrUrl, rangeChunkSize:262144, disableAutoFetch:true }).promise;
+    }catch(e){
+      console.warn('[교재손풀이] 필기본 조각 읽기 실패 — 통째로 내려받습니다', e);
+      var rr=await fetch(fileOrUrl);
+      if(!rr.ok) throw new Error('필기본 PDF 내려받기 실패 '+rr.status);
+      var ab2=await rr.arrayBuffer();
+      return await pdfjsLib.getDocument({ data:ab2.slice(0) }).promise;
+    }
+  }
+  var ab=await fileOrUrl.arrayBuffer();
+  return await pdfjsLib.getDocument({ data:ab.slice(0) }).promise;
+}
+/* v19-6: 다시 쓰는 캔버스 — 188쪽을 한 쪽씩 처리해도 메모리가 늘지 않게 */
+function bkhScratch(key){
+  if(!BKH_SCRATCH[key]) BKH_SCRATCH[key]=document.createElement('canvas');
+  return BKH_SCRATCH[key];
+}
+/* v19-6: 문서·쪽·가로폭을 받아 그린다 (원본이든 필기본이든 같은 폭으로 그려야 픽셀 비교가 된다) */
+async function bkhRenderDocPage(doc, pno, width, cv){
+  var w=Number(width)||1000;
+  if(!(pno>=1 && pno<=doc.numPages)) throw new Error('PDF '+doc.numPages+'쪽 가운데 '+pno+'쪽은 없습니다.');
+  var page=await doc.getPage(pno);
+  var v1=page.getViewport({ scale:1 });
+  var vp=page.getViewport({ scale:w/v1.width });
+  var out=cv||document.createElement('canvas');
+  out.width=Math.round(vp.width); out.height=Math.round(vp.height);
+  var ctx=out.getContext('2d', { willReadFrequently:true });
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,out.width,out.height);
+  await page.render({ canvasContext:ctx, viewport:vp }).promise;
+  return out;
+}
 async function bkhRenderPage(bid, printPage){
   var rec=(bkhPdfs().byBook||{})[String(bid)]||{};
   var offv=Number(rec.offset||0);
   var pno=Number(printPage)-offv;                 // 인쇄쪽 = PDF쪽 + offset
   var doc=await bkhDoc(bid);
   if(!(pno>=1 && pno<=doc.numPages)) throw new Error('PDF에 인쇄 p.'+printPage+'이 없습니다 — 「쪽 맞춤」을 확인해 주세요 (PDF '+doc.numPages+'쪽).');
-  var page=await doc.getPage(pno);
-  var v1=page.getViewport({ scale:1 });
-  var vp=page.getViewport({ scale:1000/v1.width });   // 계약서 2장: 가로 1000px 기준
-  var cv=document.createElement('canvas');
-  cv.width=Math.round(vp.width); cv.height=Math.round(vp.height);
-  var ctx=cv.getContext('2d', { willReadFrequently:true });
-  ctx.fillStyle='#fff'; ctx.fillRect(0,0,cv.width,cv.height);
-  await page.render({ canvasContext:ctx, viewport:vp }).promise;
+  var cv=await bkhRenderDocPage(doc, pno, 1000);   // 계약서 2장: 가로 1000px 기준
   return { canvas:cv, img:cv.toDataURL('image/jpeg',0.86), cw:cv.width, ch:cv.height, pdfPage:pno };
 }
 
@@ -52616,10 +52682,23 @@ function bkhEvenBoxes(groups, cols){
   }
   return out;
 }
-function bkhGroupsOfPage(){
-  var row=bkhPageRow(BKH.page);
-  var ans=BKH.ans[String(BKH.bid)]||{};
-  return bkhGroups((((ans.pages)||{})[row?row.wpid:''])||null);
+function bkhGroupsOfPage(){ return bkhGroupsOfBid(BKH.bid, BKH.page); }
+/* ═══ v19-6: 「화면 없이」 도는 한 쪽 자동 배치 (계약서 §2-3) ═══
+ * bkhAuto 안에 있던 판단을 그대로 뽑아 둔 것 — 받은함 자동 배치에서도 같은 규칙을 쓴다.
+ * 돌려주는 값: { boxes, cols, auto, groups, nAnchor } · 매쓰플랫 문항 목록이 없으면 null */
+function bkhAutoBoxesFor(bid, page, canvas, colsWanted){
+  var groups=bkhGroupsOfBid(bid, page);
+  if(!groups.length) return null;
+  var an=null;
+  try{ an=canvas?bkhAnchors(canvas):null; }catch(e){ an=null; }
+  var cols=Number(colsWanted) || (an?an.cols:2) || 2;
+  var boxes, auto;
+  if(an && an.anchors.length===groups.length){
+    boxes=bkhBoxesFromAnchors(an.anchors, cols, groups); auto='pair';
+  } else {
+    boxes=bkhEvenBoxes(groups, cols); auto='even';
+  }
+  return { boxes:boxes, cols:cols, auto:auto, groups:groups, nAnchor:(an&&an.anchors.length)||0 };
 }
 window.bkhAuto=async function(colsWanted){
   if(BKH.busy) return;
@@ -52631,23 +52710,17 @@ window.bkhAuto=async function(colsWanted){
   BKH.busy='auto'; bkhStep('번호 글자를 찾는 중…'); render();
   await new Promise(function(r){ setTimeout(r,30); });
   try{
-    var groups=bkhGroupsOfPage();
-    if(!groups.length) throw new Error('매쓰플랫에 이 쪽의 문항 목록이 없습니다 — 사각형은 「+ 상자 추가」로 직접 놓아 주세요.');
-    var an=bkhAnchors(BKH.pg.canvas);
-    var cols=Number(colsWanted)|| (pd&&Number(pd.cols)) || (an?an.cols:2) || 2;
-    var boxes, auto, msg;
-    if(an && an.anchors.length===groups.length){
-      boxes=bkhBoxesFromAnchors(an.anchors, cols, groups); auto='pair';
-      msg='✅ 번호 '+groups.length+'개를 그대로 찾았습니다';
-    } else {
-      boxes=bkhEvenBoxes(groups, cols); auto='even';
-      msg='⚠️ 번호를 '+((an&&an.anchors.length)||0)+'개만 찾아 문항 '+groups.length+'개로 균등 분할했습니다 — 노란 점선을 끌어서 맞춰 주세요';
-    }
+    var want=Number(colsWanted)|| (pd&&Number(pd.cols)) || 0;
+    var res=bkhAutoBoxesFor(BKH.bid, BKH.page, BKH.pg.canvas, want);
+    if(!res) throw new Error('매쓰플랫에 이 쪽의 문항 목록이 없습니다 — 사각형은 「+ 상자 추가」로 직접 놓아 주세요.');
+    var msg=(res.auto==='pair')
+      ? ('✅ 번호 '+res.groups.length+'개를 그대로 찾았습니다')
+      : ('⚠️ 번호를 '+res.nAnchor+'개만 찾아 문항 '+res.groups.length+'개로 균등 분할했습니다 — 노란 점선을 끌어서 맞춰 주세요');
     var row=bkhPageRow(BKH.page);
     if(!BKH.boxes) BKH.boxes={ bid:String(BKH.bid), pages:{}, updated:'' };
     if(!BKH.boxes.pages) BKH.boxes.pages={};
-    BKH.boxes.pages[String(BKH.page)]={ wpid:(row?row.wpid:''), cols:cols, boxes:boxes,
-                                        auto:auto, at:new Date().toISOString() };
+    BKH.boxes.pages[String(BKH.page)]={ wpid:(row?row.wpid:''), cols:res.cols, boxes:res.boxes,
+                                        auto:res.auto, at:new Date().toISOString() };
     BKH.sel=-1; BKH.dirty=true;
     ahaToast(msg);
   }catch(e){ alert('자동 배치 실패: '+((e&&e.message)||e)); }
@@ -52836,15 +52909,23 @@ async function bkhPdfRun(bid, file){
 
 /* ═══════════ v19-3: ☁️ 이미 올린 파일 고르기 (계약서 §5-3) ═══════════
  * 원장님이 tools/pdf_upload.html 로 올려 둔 48MB 교과서를 다시 올리지 않고 그대로 쓴다. */
-window.bkhPdfFromStorage=async function(bid){
-  BKH.cloud={ open:true, busy:true, err:'', bid:String(bid), files:[] };
+/* v19-6: mode='register' 면 이 교재의 교과서 PDF 로 등록, mode='ink' 면 필기본으로 골라 자동 배치를 시작한다 */
+window.bkhPdfFromStorage=async function(bid, mode){
+  BKH.cloud={ open:true, busy:true, err:'', bid:String(bid), files:[], mode:(mode==='ink'?'ink':'register') };
   render();
   var sb=null; try{ sb=getSupaClient(); }catch(e){}
   if(!sb){ BKH.cloud.busy=false; BKH.cloud.err='클라우드 연결이 없습니다.'; render(); return; }
   try{
-    var r=await sb.storage.from('school_pdfs').list('book',{ limit:100, sortBy:{ column:'created_at', order:'desc' } });
-    if(r && r.error) throw new Error(r.error.message||r.error);
-    var list=((r&&r.data)||[]).filter(function(f){ return f && f.name && String(f.name).charAt(0)!=='.'; });
+    var dirs=(BKH.cloud.mode==='ink')?['ink','book']:['book'];
+    var list=[];
+    for(var di=0; di<dirs.length; di++){
+      var r=await sb.storage.from('school_pdfs').list(dirs[di],{ limit:100, sortBy:{ column:'created_at', order:'desc' } });
+      if(r && r.error){ if(di===0 && dirs.length===1) throw new Error(r.error.message||r.error); else continue; }
+      ((r&&r.data)||[]).forEach(function(f){
+        if(!f || !f.name || String(f.name).charAt(0)==='.') return;
+        f.dir=dirs[di]; list.push(f);
+      });
+    }
     BKH.cloud.files=list; BKH.cloud.busy=false;
   }catch(e){
     console.error('[교재손풀이] 올린 파일 목록 실패', e);
@@ -52854,6 +52935,19 @@ window.bkhPdfFromStorage=async function(bid){
   render();
 };
 window.bkhCloudClose=function(){ if(BKH.cloud) BKH.cloud.open=false; render(); };
+/* v19-6: 창에서 고른 파일 — 등록이냐 필기본 자동 배치냐로 갈린다 (path 는 'book/…' 또는 'ink/…') */
+window.bkhCloudPick=function(path){
+  var p=String(path||'');
+  var slash=p.indexOf('/');
+  var dir=(slash>0)?p.slice(0,slash):'book';
+  var name=(slash>0)?p.slice(slash+1):p;
+  if(BKH.cloud && BKH.cloud.mode==='ink'){
+    BKH.cloud.open=false;
+    bkhAutoUseCloud(dir+'/'+name);
+    return;
+  }
+  bkhPdfUse(name);
+};
 /* 고른 파일을 이 교재의 PDF 로 등록 — 파일 전체를 내려받지 않고 쪽수만 읽는다 */
 window.bkhPdfUse=async function(name){
   if(BKH.busy) return;
@@ -53064,7 +53158,7 @@ window.bkhAssign=async function(num){
     d.items[id]={ id:id, src:'book', srcKey:bkhSrcKey(BKH.bid, BKH.page, num),
       bid:String(BKH.bid), page:Number(BKH.page), num:String(num),
       ids:((box&&box.ids)||[]).slice(),
-      img:url, title:String(title||''), ord:same.length, vid:null,
+      img:url, qimg:'', title:String(title||''), ord:same.length, vid:null,   /* v19-6: qimg = 문제 그림 칸 */
       date:hslToday(), by:'teacher', at:new Date().toISOString(),
       /* 서랍·배분 화면이 함께 읽는 항목 (기존 관행) */
       srcTitle:bkhBookTitle(BKH.bid)+' p.'+BKH.page, seq:Number(String(num).replace(/[^0-9]/g,''))||0,
@@ -53134,6 +53228,888 @@ window.bkhSolVid=function(id){
   hslSave().then(function(ok){ if(ok) ahaToast(it.vid?('🎬 영상을 붙였습니다 ('+bkhFmtSec(it.vid.start)+'부터)'):'영상을 뺐습니다'); render(); });
 };
 
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-6 🪄 굿노트 필기본 자동 배치 + 📥 받은함
+ * (docs/handsol_auto_contract.md §1~§3 · 학원앱 부분)
+ *
+ * 원장님은 굿노트에 교과서 PDF를 깔고 그 위에 필기만 한다. 그 필기본 PDF를 올리면
+ *   ① 필기본 쪽마다 「원본 어느 쪽인가」를 그림끼리 견줘 찾고 (AI 안 씀)
+ *   ② 두 쪽의 다른 점(= 필기 잉크)만 떼어 내고
+ *   ③ 잉크 뭉치가 앉은 문항 상자의 번호로 조각을 잘라
+ *   ④ 📥 받은함에 pending 으로 쌓는다. 승인해야 비로소 학생에게 보인다.
+ * 좌표는 전부 0~1 비율. 문자열 결합만 사용(중첩 템플릿 리터럴 금지).
+ * ═══════════════════════════════════════════════════════════════════ */
+
+var BKH_BOXES = {};          // bid -> book_boxes 문서 (받은함 승인에서 ids 를 찾을 때)
+var BKH_TW = 100, BKH_TH = 130;   // 쪽 맞추기용 축소판 크기 (계약서 §2-1: 가로 100px)
+var BKH_MATCH_MAX = 18;      // 축소판 픽셀 차 평균이 이보다 작으면 「같은 쪽」
+var BKH_INK_MIN = 200;       // 잉크 픽셀이 이보다 적으면 「필기 없음」
+
+/* ── 번호를 파일 이름에 쓸 수 있게 다듬는다 (계약서 §1 q_<쪽>_<번호>.jpg) ── */
+function bkhNumSlug(num){
+  var s=String(num==null?'':num).replace(/[^0-9A-Za-z]/g,'');
+  return s || storageSlug(String(num||'n'),8);
+}
+
+/* ── ① 작은 회색 그림으로 줄여 견주기 (계약서 §2-1) ── */
+function bkhGrayTinyRect(cv, x, y, w, h, tw, th){
+  tw=Number(tw)||48; th=Number(th)||48;
+  var s=bkhScratch('tiny');
+  s.width=tw; s.height=th;
+  var ctx=s.getContext('2d',{ willReadFrequently:true });
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,tw,th);
+  if(w>0 && h>0){
+    try{ ctx.drawImage(cv, x, y, w, h, 0, 0, tw, th); }catch(e){}
+  }
+  var d=ctx.getImageData(0,0,tw,th).data;
+  var out=new Uint8Array(tw*th);
+  for(var i=0;i<out.length;i++){
+    var q=i*4;
+    out[i]=((d[q]*299+d[q+1]*587+d[q+2]*114)/1000)|0;
+  }
+  return out;
+}
+function bkhGrayTiny(cv){ return bkhGrayTinyRect(cv, 0, 0, cv.width, cv.height, BKH_TW, BKH_TH); }
+/* 픽셀 차 평균 (0~255) — 잉크는 몇 % 밖에 안 되므로 배경이 결정한다 */
+function bkhTinyDiff(a,b){
+  if(!a || !b || a.length!==b.length) return 255;
+  var s=0;
+  for(var i=0;i<a.length;i++){ var v=a[i]-b[i]; s+=(v<0?-v:v); }
+  return s/a.length;
+}
+async function bkhOrigTiny(bid, doc, pno){
+  var k=String(bid)+'|'+pno;
+  if(BKH_TINY[k]) return BKH_TINY[k];
+  var cv=await bkhRenderDocPage(doc, pno, 320, bkhScratch('o320'));
+  BKH_TINY[k]=bkhGrayTiny(cv);
+  return BKH_TINY[k];
+}
+
+/* ── 쪽 맞추기 (계약서 §2-1) ──
+ * 필기본 쪽 j 마다 원본 쪽 후보와 견준다. 쪽수가 같으면 j 를 먼저 보므로
+ * 1:1 인 보통의 경우는 한 번 견주고 바로 넘어간다. 맞는 쪽이 없으면 「별지」. */
+async function bkhAutoMap(bid, doc, inkDoc, onStep){
+  var map=[], last=0, same=(inkDoc.numPages===doc.numPages);
+  for(var j=1;j<=inkDoc.numPages;j++){
+    if(BKH.autoAbort) break;
+    if(onStep) onStep(j);
+    var cv=await bkhRenderDocPage(inkDoc, j, 320, bkhScratch('i320'));
+    var tin=bkhGrayTiny(cv);
+    var want=[];
+    if(same) want.push(j);
+    if(last===0) want.push(1,2,3);
+    else want.push(last+1, last, last+2, last-1);
+    var uniq=[], seen={};
+    for(var u=0;u<want.length;u++){
+      var p=want[u];
+      if(p>=1 && p<=doc.numPages && !seen[p]){ seen[p]=1; uniq.push(p); }
+    }
+    var best=null;
+    for(var i=0;i<uniq.length;i++){
+      var t=await bkhOrigTiny(bid, doc, uniq[i]);
+      var d=bkhTinyDiff(tin, t);
+      if(!best || d<best.diff) best={ pno:uniq[i], diff:d };
+      if(best.diff<=8) break;                 // 딱 맞으면 더 볼 것 없다
+    }
+    if(best && best.diff<=BKH_MATCH_MAX){
+      last=best.pno;
+      map.push({ j:j, kind:'page', pno:best.pno, diff:best.diff });
+    } else {
+      map.push({ j:j, kind:'extra', pno:(last||1), diff:(best?best.diff:255) });
+    }
+    await new Promise(function(r){ setTimeout(r,0); });
+  }
+  return map;
+}
+
+/* ── ② 잉크 떼기 (계약서 §2-2) ──
+ * 같은 가로 1000px 로 그린 두 쪽의 픽셀 차. 원본 글자를 1px 부풀린 자리는 빼고,
+ * 나머지에서 |필기−원본| > 60 인 픽셀만 잉크로 본다. */
+function bkhInkMask(origCv, inkCv){
+  var W=Math.min(origCv.width, inkCv.width), H=Math.min(origCv.height, inkCv.height);
+  if(W<10 || H<10) return null;
+  var a, b;
+  try{
+    a=origCv.getContext('2d',{ willReadFrequently:true }).getImageData(0,0,W,H).data;
+    b=inkCv.getContext('2d',{ willReadFrequently:true }).getImageData(0,0,W,H).data;
+  }catch(e){ console.warn('[교재손풀이] 쪽 그림을 읽지 못했습니다', e); return null; }
+  var n=W*H;
+  var go=new Uint8Array(n), gi=new Uint8Array(n), dark=new Uint8Array(n);
+  for(var i=0;i<n;i++){
+    var q=i*4;
+    var vo=((a[q]*299+a[q+1]*587+a[q+2]*114)/1000)|0;
+    var vi=((b[q]*299+b[q+1]*587+b[q+2]*114)/1000)|0;
+    go[i]=vo; gi[i]=vi;
+    if(vo<160) dark[i]=1;
+  }
+  var dil=new Uint8Array(n);
+  for(var y=0;y<H;y++){
+    for(var x=0;x<W;x++){
+      var p=y*W+x;
+      if(!dark[p]) continue;
+      dil[p]=1;
+      if(x>0) dil[p-1]=1;
+      if(x<W-1) dil[p+1]=1;
+      if(y>0) dil[p-W]=1;
+      if(y<H-1) dil[p+W]=1;
+    }
+  }
+  var mask=new Uint8Array(n), cnt=0;
+  for(var k=0;k<n;k++){
+    if(dil[k]) continue;
+    var dv=gi[k]-go[k]; if(dv<0) dv=-dv;
+    if(dv>60){ mask[k]=1; cnt++; }
+  }
+  return { mask:mask, W:W, H:H, count:cnt };
+}
+/* 잉크 마스크를 20px 격자로 — hslInkClusters 가 그대로 먹는 모양으로 만든다 */
+function bkhMaskGrid(m, cell){
+  cell=Number(cell)||20;
+  var gx=Math.ceil(m.W/cell), gy=Math.ceil(m.H/cell);
+  var g=[], r;
+  for(r=0;r<gy;r++){ g.push(new Array(gx).fill(0)); }
+  for(var y=0;y<m.H;y++){
+    var row=g[(y/cell)|0], base=y*m.W;
+    for(var x=0;x<m.W;x++){ if(m.mask[base+x]) row[(x/cell)|0]++; }
+  }
+  return { g:g, gx:gx, gy:gy, cell:cell, total:m.count };
+}
+
+/* ── ③ 뭉치 → 번호 (계약서 §2-3) ── */
+function bkhBoxPx(b,W,H){ return { x0:b.x*W, y0:b.y*H, x1:(b.x+b.w)*W, y1:(b.y+b.h)*H }; }
+function bkhOverlapArea(a,b){
+  var w=Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0);
+  var h=Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0);
+  return (w>0 && h>0) ? (w*h) : 0;
+}
+function bkhPickBox(cl, boxes, W, H){
+  var sc=[];
+  (boxes||[]).forEach(function(b,i){ sc.push({ i:i, ov:bkhOverlapArea(cl, bkhBoxPx(b,W,H)) }); });
+  sc.sort(function(a,b){ return b.ov-a.ov; });
+  if(sc.length && sc[0].ov>0){
+    var f=sc[0], s=sc[1];
+    var amb=!!(s && s.ov>0 && s.ov >= f.ov*0.35);
+    return { i:f.i, ok:!amb, second:(amb?s.i:-1) };
+  }
+  /* 겹치는 상자가 없다 — 가장 가까운 상자 (세로 거리 먼저) */
+  var cy=(cl.y0+cl.y1)/2, cx=(cl.x0+cl.x1)/2, best=-1, bd=1e9;
+  (boxes||[]).forEach(function(b,i){
+    var p=bkhBoxPx(b,W,H);
+    var dy=(cy<p.y0)?(p.y0-cy):((cy>p.y1)?(cy-p.y1):0);
+    var dx=(cx<p.x0)?(p.x0-cx):((cx>p.x1)?(cx-p.x1):0);
+    var d=dy*3+dx;
+    if(d<bd){ bd=d; best=i; }
+  });
+  return { i:best, ok:true, second:-1 };
+}
+
+/* ── ④ 조각 자르기·올리기 ── */
+function bkhCropTo(cv, x, y, w, h, maxLong, q){
+  var W=cv.width, H=cv.height;
+  x=Math.max(0, Math.round(x)); y=Math.max(0, Math.round(y));
+  w=Math.round(w); h=Math.round(h);
+  if(x+w>W) w=W-x;
+  if(y+h>H) h=H-y;
+  if(w<8 || h<8) return null;
+  var lng=Math.max(w,h), k=(maxLong && lng>maxLong)?(maxLong/lng):1;
+  var out=document.createElement('canvas');
+  out.width=Math.max(1,Math.round(w*k)); out.height=Math.max(1,Math.round(h*k));
+  var ctx=out.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,out.width,out.height);
+  ctx.drawImage(cv, x, y, w, h, 0, 0, out.width, out.height);
+  return out.toDataURL('image/jpeg', q||0.86);
+}
+async function bkhUploadJpg(path, dataUrl){
+  var sb=null; try{ sb=getSupaClient(); }catch(e){}
+  if(!sb) throw new Error('클라우드 연결이 없습니다.');
+  var up=await sb.storage.from('aha_photos').upload(path, dataUrlToBlob(dataUrl), { contentType:'image/jpeg', upsert:true });
+  if(up && up.error) throw new Error(up.error.message||up.error);
+  var url=(sb.storage.from('aha_photos').getPublicUrl(path).data||{}).publicUrl||'';
+  if(!url) throw new Error('그림 주소를 만들지 못했습니다');
+  return url;
+}
+/* 흰 여백을 뺀 내용 bbox (별지 조각 자르기에 쓴다) */
+function bkhContentBox(cv){
+  var W=cv.width, H=cv.height, d;
+  try{ d=cv.getContext('2d',{ willReadFrequently:true }).getImageData(0,0,W,H).data; }
+  catch(e){ return null; }
+  var x0=W, y0=H, x1=-1, y1=-1;
+  for(var y=0;y<H;y+=2){
+    for(var x=0;x<W;x+=2){
+      var q=(y*W+x)*4;
+      if(d[q]>242 && d[q+1]>242 && d[q+2]>242) continue;
+      if(x<x0) x0=x;
+      if(x>x1) x1=x;
+      if(y<y0) y0=y;
+      if(y>y1) y1=y;
+    }
+  }
+  if(x1<0) return null;
+  return { x0:x0, y0:y0, x1:Math.min(W,x1+2), y1:Math.min(H,y1+2) };
+}
+
+/* ── 📥 받은함 저장 (계약서 §1) ── */
+function bkhInboxData(bid){
+  var k=String(bid);
+  if(!BKH.inbox) BKH.inbox={};
+  if(!BKH.inbox[k]) BKH.inbox[k]={ bid:k, updated:'', items:[] };
+  if(!BKH.inbox[k].items) BKH.inbox[k].items=[];
+  return BKH.inbox[k];
+}
+async function bkhInboxSave(bid){
+  var d=bkhInboxData(bid);
+  d.bid=String(bid); d.updated=new Date().toISOString();
+  return await bkhStoreSet('book_inbox_'+String(bid), d);
+}
+function bkhInboxItems(bid, status){
+  return bkhInboxData(bid).items.filter(function(it){ return (it.status||'pending')===status; });
+}
+function bkhInboxPending(bid){ return bkhInboxItems(bid,'pending'); }
+function bkhInboxCount(){
+  var n=0;
+  Object.keys(BKH.inbox||{}).forEach(function(k){ n+=bkhInboxPending(k).length; });
+  return n;
+}
+function bkhInboxFind(bid,id){
+  var arr=bkhInboxData(bid).items;
+  for(var i=0;i<arr.length;i++){ if(String(arr[i].id)===String(id)) return arr[i]; }
+  return null;
+}
+function bkhInboxAdd(bid, item){ bkhInboxData(bid).items.push(item); }
+/* 중복 (계약서 §2-6) */
+function bkhInboxDup(bid, page, num, srcFile){
+  if(!String(num||'')) return false;
+  var arr=bkhInboxData(bid).items;
+  for(var i=0;i<arr.length;i++){
+    var it=arr[i];
+    if(Number(it.page)!==Number(page) || String(it.num)!==String(num)) continue;
+    var st=it.status||'pending';
+    if(st==='pending') return true;                                                  // 이미 기다리는 것이 있다
+    if(st==='approved' && String(it.srcFile||'')===String(srcFile||'')) return true;  // 같은 파일 다시 돌림
+  }
+  return false;
+}
+/* 상자 문서 — 화면에 열려 있지 않은 교재도 읽어 온다 */
+async function bkhBoxesOf(bid){
+  var k=String(bid);
+  if(String(BKH.bid)===k && BKH.boxes) return BKH.boxes;
+  if(BKH_BOXES[k]) return BKH_BOXES[k];
+  var v=null, sb=null;
+  try{ sb=getSupaClient(); }catch(e){}
+  if(sb){
+    try{
+      var r=await sb.from('lumen_store').select('value').eq('key','book_boxes_'+k).maybeSingle();
+      v=(r && r.data && r.data.value)||null;
+    }catch(e){ console.warn('[교재손풀이] 상자 불러오기 실패', e); }
+  }
+  if(!v) v={ bid:k, pages:{}, updated:'' };
+  if(!v.pages) v.pages={};
+  BKH_BOXES[k]=v;
+  return v;
+}
+function bkhBoxIn(boxesDoc, page, num){
+  var pd=(boxesDoc && boxesDoc.pages) ? boxesDoc.pages[String(page)] : null;
+  if(!pd) return null;
+  var arr=(pd.boxes||[]).filter(function(b){ return String(b.n)===String(num); });
+  return arr[0]||null;
+}
+
+/* ═══════════ 🪄 자동 배치 본체 (계약서 §2) ═══════════ */
+function bkhAutoPaint(){
+  var a=BKH.auto; if(!a) return;
+  var el=document.getElementById('bkh-auto-prog');
+  if(el) el.textContent=String(a.msg||'');
+}
+/* 교과서 위 필기 한 쪽 — 잉크를 떼어 번호마다 조각을 만든다 */
+async function bkhAutoPage(bid, doc, inkDoc, m, offv, boxesDoc, qdone, a){
+  var pno=m.pno, printPage=pno+offv;
+  var origCv=await bkhRenderDocPage(doc, pno, 1000, bkhScratch('o1000'));
+  var inkCv =await bkhRenderDocPage(inkDoc, m.j, 1000, bkhScratch('i1000'));
+  var mk=bkhInkMask(origCv, inkCv);
+  if(!mk || mk.count<BKH_INK_MIN) return 0;               // 필기 없음 — 건너뛴다
+  /* 상자가 없는 쪽은 자동 배치해서 auto:true 로 저장해 둔다 (원장님이 나중에 끌어 고칠 수 있게) */
+  var pd=boxesDoc.pages[String(printPage)];
+  if(!pd || !(pd.boxes||[]).length){
+    var res=bkhAutoBoxesFor(bid, printPage, origCv, (pd&&Number(pd.cols))||0);
+    if(!res) return 0;                                    // 매쓰플랫 문항 목록이 없는 쪽
+    var row=bkhPageRowOf(bid, printPage);
+    pd=boxesDoc.pages[String(printPage)]={ wpid:(row?row.wpid:''), cols:res.cols, boxes:res.boxes,
+                                           auto:true, how:res.auto, at:new Date().toISOString() };
+    a.boxDirty=true;
+  }
+  var grid=bkhMaskGrid(mk, 20);
+  var cls=hslInkClusters(grid, 2);
+  if(!cls.length) return 0;
+  /* 같은 상자에 붙은 뭉치를 하나로 합친다 */
+  var byBox={};
+  cls.forEach(function(cl){
+    var pick=bkhPickBox(cl, pd.boxes, mk.W, mk.H);
+    if(pick.i<0) return;
+    var g=byBox[pick.i];
+    if(!g) g=byBox[pick.i]={ i:pick.i, ok:true, second:-1, x0:1e9, y0:1e9, x1:-1, y1:-1 };
+    if(!pick.ok){ g.ok=false; if(g.second<0) g.second=pick.second; }
+    if(cl.x0<g.x0) g.x0=cl.x0;
+    if(cl.y0<g.y0) g.y0=cl.y0;
+    if(cl.x1>g.x1) g.x1=cl.x1;
+    if(cl.y1>g.y1) g.y1=cl.y1;
+  });
+  var keys=Object.keys(byBox), made=0, big=null, origBig=null;
+  var nums=(pd.boxes||[]).map(function(x){ return String(x.n); });
+  for(var t=0;t<keys.length;t++){
+    if(BKH.autoAbort) break;
+    var g=byBox[keys[t]];
+    var b=pd.boxes[g.i];
+    if(!b) continue;
+    var num=String(b.n);
+    if(bkhInboxDup(bid, printPage, num, a.srcFile)) continue;
+    if(!big) big=await bkhRenderDocPage(inkDoc, m.j, 2000, bkhScratch('i2000'));
+    var bp=bkhBoxPx(b, mk.W, mk.H);
+    var rx0=Math.min(bp.x0, g.x0), ry0=Math.min(bp.y0, g.y0);
+    var rx1=Math.max(bp.x1, g.x1), ry1=Math.max(bp.y1, g.y1);
+    var mw=(rx1-rx0)*0.03, mh=(ry1-ry0)*0.03;              // 여백 3%
+    rx0-=mw; ry0-=mh; rx1+=mw; ry1+=mh;
+    var k2=big.width/mk.W;                                  // 2배 (가로 2000px 렌더)
+    var du=bkhCropTo(big, rx0*k2, ry0*k2, (rx1-rx0)*k2, (ry1-ry0)*k2, 2400, 0.86);
+    if(!du) continue;
+    var ts=Date.now()+t;
+    var url=await bkhUploadJpg('hand/book/'+String(bid)+'/'+printPage+'_'+bkhNumSlug(num)+'_'+ts+'.jpg', du);
+    if(!origBig) origBig=await bkhRenderDocPage(doc, pno, 2000, bkhScratch('o2000'));
+    var qurl=await bkhAutoQimg(bid, origBig, printPage, num, b, qdone);
+    var cands=[num];
+    if(!g.ok && pd.boxes[g.second]) cands.push(String(pd.boxes[g.second].n));
+    bkhInboxAdd(bid, {
+      id:'ib_'+ts+'_'+bkhNumSlug(num), kind:'page', page:printPage, num:num,
+      ok:!!g.ok, cands:cands, nums:nums,
+      img:url, qimg:qurl||'',
+      box:{ x:b.x, y:b.y, w:b.w, h:b.h },
+      ink:{ x:g.x0/mk.W, y:g.y0/mk.H, w:(g.x1-g.x0)/mk.W, h:(g.y1-g.y0)/mk.H },
+      srcFile:String(a.srcFile||''), pdfPage:m.j, at:new Date().toISOString(),
+      status:'pending', solId:'' });
+    made++; a.cuts++;
+    a.msg='쪽 '+m.j+' / '+a.total+' · 조각 '+a.cuts;
+    bkhAutoPaint();
+  }
+  return made;
+}
+/* 문제 그림 — 원본 쪽의 그 번호 상자를 2배로 잘라 같은 이름에 덮어쓴다 (계약서 §1) */
+async function bkhAutoQimg(bid, origBig, printPage, num, b, qdone){
+  var key=printPage+'|'+num;
+  if(qdone[key]!==undefined) return qdone[key];
+  var old='';
+  bkhInboxData(bid).items.forEach(function(x){
+    if(!old && Number(x.page)===Number(printPage) && String(x.num)===String(num) && x.qimg) old=String(x.qimg);
+  });
+  if(old){ qdone[key]=old; return old; }
+  try{
+    var du=bkhCropTo(origBig, b.x*origBig.width, b.y*origBig.height, b.w*origBig.width, b.h*origBig.height, 2400, 0.86);
+    if(!du){ qdone[key]=''; return ''; }
+    var url=await bkhUploadJpg('hand/book/'+String(bid)+'/q_'+printPage+'_'+bkhNumSlug(num)+'.jpg', du);
+    qdone[key]=url;
+    return url;
+  }catch(e){
+    console.warn('[교재손풀이] 문제 그림 만들기 실패', e);
+    qdone[key]='';
+    return '';
+  }
+}
+/* 별지 — 앞쪽 P(와 P±1)의 상자와 견줘 번호 후보를 고른다 (계약서 §2-5) */
+async function bkhExtraCands(bid, doc, offv, P, inkCv, boxesDoc){
+  var cb=bkhContentBox(inkCv)||{ x0:0, y0:0, x1:inkCv.width, y1:inkCv.height };
+  var tin=bkhGrayTinyRect(inkCv, cb.x0, cb.y0, cb.x1-cb.x0, cb.y1-cb.y0, 48, 48);
+  var pages=[P, P-1, P+1], out=[];
+  for(var i=0;i<pages.length;i++){
+    var pp=pages[i];
+    var pd=boxesDoc.pages[String(pp)];
+    if(!pd || !(pd.boxes||[]).length) continue;
+    var pno=pp-offv;
+    if(!(pno>=1 && pno<=doc.numPages)) continue;
+    var cv=await bkhRenderDocPage(doc, pno, 1000, bkhScratch('ob1000'));
+    for(var b=0;b<pd.boxes.length;b++){
+      var bx=pd.boxes[b];
+      var t=bkhGrayTinyRect(cv, bx.x*cv.width, bx.y*cv.height, bx.w*cv.width, bx.h*cv.height, 48, 48);
+      out.push({ n:String(bx.n), page:pp, d:bkhTinyDiff(tin,t) });
+    }
+  }
+  out.sort(function(a,b){ return a.d-b.d; });
+  var cands=[], seen={};
+  out.forEach(function(o){ if(cands.length<3 && !seen[o.n]){ seen[o.n]=1; cands.push(o.n); } });
+  var ok=!!(out.length && out[0].d<=30 && (!out[1] || (out[1].d-out[0].d)>=8));
+  return { cands:cands, ok:ok, page:(out[0]?out[0].page:P), nums:(function(){
+    var pd=boxesDoc.pages[String(P)];
+    return pd ? (pd.boxes||[]).map(function(x){ return String(x.n); }) : cands.slice();
+  })() };
+}
+async function bkhAutoExtra(bid, doc, inkDoc, m, offv, boxesDoc, qdone, a){
+  var printPage=(m.pno||1)+offv;
+  var inkCv=await bkhRenderDocPage(inkDoc, m.j, 1000, bkhScratch('i1000'));
+  var cb=bkhContentBox(inkCv);
+  if(!cb) return 0;
+  if((cb.x1-cb.x0)<40 || (cb.y1-cb.y0)<40) return 0;      // 거의 빈 쪽
+  var an=null;
+  try{ an=bkhAnchors(inkCv); }catch(e){ an=null; }
+  var cd=await bkhExtraCands(bid, doc, offv, printPage, inkCv, boxesDoc);
+  var num=String(cd.cands[0]||'');
+  var okNum=!!(cd.ok && num && an && an.anchors.length>=1);
+  if(num && bkhInboxDup(bid, printPage, num, a.srcFile)) return 0;
+  var big=await bkhRenderDocPage(inkDoc, m.j, 2000, bkhScratch('i2000'));
+  var k2=big.width/inkCv.width;
+  var mw=(cb.x1-cb.x0)*0.03, mh=(cb.y1-cb.y0)*0.03;
+  var du=bkhCropTo(big, (cb.x0-mw)*k2, (cb.y0-mh)*k2, (cb.x1-cb.x0+mw*2)*k2, (cb.y1-cb.y0+mh*2)*k2, 2400, 0.86);
+  if(!du) return 0;
+  var ts=Date.now();
+  var url=await bkhUploadJpg('hand/book/'+String(bid)+'/'+printPage+'_x'+bkhNumSlug(num||'0')+'_'+ts+'.jpg', du);
+  var qurl='';
+  if(num){
+    var b=bkhBoxIn(boxesDoc, printPage, num);
+    if(b){
+      var pno=printPage-offv;
+      if(pno>=1 && pno<=doc.numPages){
+        var origBig=await bkhRenderDocPage(doc, pno, 2000, bkhScratch('o2000'));
+        qurl=await bkhAutoQimg(bid, origBig, printPage, num, b, qdone);
+      }
+    }
+  }
+  bkhInboxAdd(bid, {
+    id:'ib_'+ts+'_x'+bkhNumSlug(num||'0'), kind:'extra', page:printPage, num:num,
+    ok:okNum, cands:cd.cands.slice(), nums:cd.nums,
+    img:url, qimg:qurl||'',
+    box:{ x:0, y:0, w:1, h:1 },
+    ink:{ x:cb.x0/inkCv.width, y:cb.y0/inkCv.height,
+          w:(cb.x1-cb.x0)/inkCv.width, h:(cb.y1-cb.y0)/inkCv.height },
+    srcFile:String(a.srcFile||''), pdfPage:m.j, at:new Date().toISOString(),
+    status:'pending', solId:'' });
+  a.cuts++;
+  a.msg='쪽 '+m.j+' / '+a.total+' · 조각 '+a.cuts;
+  bkhAutoPaint();
+  return 1;
+}
+/* 전체 절차 */
+window.bkhAutoRun=async function(bid, fileOrUrl){
+  var a=BKH.auto;
+  if(!a){ a=BKH.auto={ open:true }; }
+  if(a.running) return 0;
+  BKH.autoAbort=false;
+  a.bid=String(bid); a.running=true; a.done=false;
+  a.pg=0; a.total=0; a.cuts=0; a.fails=[]; a.boxDirty=false;
+  a.msg='필기본 PDF를 여는 중…';
+  render();
+  var made=0, err='';
+  try{
+    var rec=(bkhPdfs().byBook||{})[String(bid)]||{};
+    var offv=Number(rec.offset||0);
+    var doc=await bkhDoc(bid);
+    var inkDoc=await bkhDocFrom(fileOrUrl);
+    a.total=inkDoc.numPages;
+    var boxesDoc=await bkhBoxesOf(bid);
+    a.msg='쪽 맞추는 중… 0 / '+a.total;
+    render();
+    var map=await bkhAutoMap(bid, doc, inkDoc, function(j){
+      a.pg=j; a.msg='쪽 맞추는 중 '+j+' / '+a.total; bkhAutoPaint();
+    });
+    var qdone={};
+    for(var i=0;i<map.length;i++){
+      if(BKH.autoAbort) break;
+      var m=map[i];
+      a.pg=m.j; a.msg='쪽 '+m.j+' / '+a.total+' · 조각 '+a.cuts;
+      bkhAutoPaint();
+      try{
+        if(m.kind==='page') made+=await bkhAutoPage(bid, doc, inkDoc, m, offv, boxesDoc, qdone, a);
+        else                made+=await bkhAutoExtra(bid, doc, inkDoc, m, offv, boxesDoc, qdone, a);
+      }catch(e){
+        console.warn('[교재손풀이] 자동 배치 '+m.j+'쪽 실패', e);
+        a.fails.push(m.j+'쪽 — '+((e&&e.message)||e));
+      }
+      await new Promise(function(r){ setTimeout(r,0); });
+    }
+    if(a.boxDirty){
+      boxesDoc.bid=String(bid); boxesDoc.updated=new Date().toISOString();
+      await bkhStoreSet('book_boxes_'+String(bid), boxesDoc);
+      if(String(BKH.bid)===String(bid)) BKH.boxes=boxesDoc;
+      BKH_BOXES[String(bid)]=boxesDoc;
+    }
+    if(made) await bkhInboxSave(bid);
+  }catch(e){
+    console.error('[교재손풀이] 자동 배치 실패', e);
+    err=(e&&e.message)||String(e);
+  }
+  a.running=false; a.done=true; a.msg='';
+  var stop=BKH.autoAbort;
+  BKH.autoAbort=false;
+  if(err){ alert('자동 배치 실패: '+err); render(); return 0; }
+  var txt=(stop?'취소했습니다 — ':'')+(made?('🪄 받은함에 '+made+'장이 들어왔습니다'):'새로 찾은 필기가 없습니다');
+  if(a.fails.length) txt+=' · 읽지 못한 쪽 '+a.fails.length+'개';
+  ahaToast(txt);
+  a.open=false;
+  try{ if(typeof HSL!=='undefined' && HSL) HSL.tab='inbox'; }catch(e2){}
+  if(!BKH.inboxOpen) BKH.inboxOpen={};
+  BKH.inboxOpen[String(bid)]=true;
+  render();
+  if(a.fails.length){
+    setTimeout(function(){ alert('읽지 못하고 건너뛴 쪽입니다 (나머지는 그대로 받았습니다):\n'+a.fails.slice(0,20).join('\n')); },60);
+  }
+  return made;
+};
+
+/* ═══════════ 🪄 창 (계약서 §3 ①②③) ═══════════ */
+window.bkhAutoOpen=function(bid){
+  BKH.auto={ open:true, bid:String(bid||BKH.bid||''), file:null, fileName:'', srcFile:'',
+             running:false, pg:0, total:0, cuts:0, msg:'', fails:[], done:false, boxDirty:false };
+  BKH.autoAbort=false;
+  render();
+};
+window.bkhAutoClose=function(){
+  if(BKH.auto && BKH.auto.running){
+    if(!confirm('자동 배치가 도는 중입니다. 창을 닫을까요?\n(멈추려면 「취소」를 눌러 주세요)')) return;
+  }
+  if(BKH.auto) BKH.auto.open=false;
+  render();
+};
+window.bkhAutoCancel=function(){ BKH.autoAbort=true; if(BKH.auto) BKH.auto.msg='멈추는 중…'; bkhAutoPaint(); };
+window.bkhAutoBook=function(bid){ if(BKH.auto){ BKH.auto.bid=String(bid); } render(); };
+window.bkhAutoFilePick=function(){
+  var inp=document.getElementById('bkh-ink-file');
+  if(!inp){
+    inp=document.createElement('input'); inp.type='file'; inp.accept='application/pdf,.pdf';
+    inp.id='bkh-ink-file'; inp.style.display='none'; document.body.appendChild(inp);
+  }
+  inp.onchange=function(){
+    if(this.files && this.files[0] && BKH.auto){
+      BKH.auto.file=this.files[0];
+      BKH.auto.fileName=this.files[0].name||'필기본.pdf';
+      BKH.auto.srcFile='';
+      render();
+    }
+    this.value='';
+  };
+  inp.click();
+};
+window.bkhAutoCloudPick=function(){
+  if(!BKH.auto || !BKH.auto.bid){ alert('먼저 교재를 골라 주세요.'); return; }
+  bkhPdfFromStorage(BKH.auto.bid, 'ink');
+};
+/* ☁️ 창에서 고른 필기본 — 등록이 아니라 자동 배치 쪽으로 간다 */
+window.bkhAutoUseCloud=function(path){
+  if(!BKH.auto) BKH.auto={ open:true, bid:String(BKH.bid||'') };
+  BKH.auto.open=true;
+  BKH.auto.file=null;
+  BKH.auto.srcFile=String(path||'');
+  BKH.auto.fileName=String(path||'').split('/').pop();
+  render();
+};
+window.bkhAutoStart=async function(){
+  var a=BKH.auto;
+  if(!a || a.running) return;
+  if(!a.bid){ alert('먼저 교재를 골라 주세요.'); return; }
+  var rec=(bkhPdfs().byBook||{})[String(a.bid)];
+  if(!rec || !rec.path){ alert('이 교재는 교과서 PDF가 등록되어 있지 않습니다 — 먼저 「📄 PDF 올리기」로 교과서를 등록해 주세요.'); return; }
+  if(!a.file && !a.srcFile){ alert('필기본 PDF를 골라 주세요.'); return; }
+  var src=String(a.srcFile||''), file=a.file;
+  if(file){
+    /* 내 컴퓨터에서 고른 파일은 school_pdfs/ink/ 에 올려 둔다 (계약서 §3②) */
+    a.running=true; a.msg='필기본을 클라우드에 올리는 중…'; render();
+    try{
+      var sb=null; try{ sb=getSupaClient(); }catch(e){}
+      if(sb){
+        var p='ink/'+Date.now()+'_'+storageSlug(a.fileName||'ink',40)+'.pdf';
+        var up=await sb.storage.from('school_pdfs').upload(p, file, { cacheControl:'3600', upsert:true, contentType:'application/pdf' });
+        if(up && up.error) throw new Error(up.error.message||up.error);
+        src=p;
+      }
+    }catch(e){
+      console.warn('[교재손풀이] 필기본 올리기 실패 — 이 컴퓨터의 파일로 그대로 진행합니다', e);
+    }
+    a.running=false;
+  }
+  if(!src) src='local:'+(a.fileName||'ink.pdf');
+  a.srcFile=src;
+  await bkhAutoRun(a.bid, file || getPdfUrl(src));
+};
+function bkhAutoModal(){
+  var a=BKH.auto;
+  if(!a || !a.open) return '';
+  var all=bkhBookList().filter(function(r){ return !!r.pdf; });   // PDF 등록된 교재만
+  var rows=bkhBookFilter(all);
+  var h='<div id="bkh-auto" onclick="if(event.target.id===\'bkh-auto\')bkhAutoClose()" style="position:fixed;inset:0;background:rgba(13,34,64,0.55);display:flex;align-items:center;justify-content:center;z-index:9998;padding:20px">'
+    +'<div style="background:#fff;border-radius:14px;padding:15px 17px;width:100%;max-width:640px;max-height:82vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,0.3)">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+    +'<div style="font-size:14.5px;font-weight:900;color:#0d2240">🪄 필기본 자동 배치</div>'
+    +'<div onclick="bkhAutoClose()" style="margin-left:auto;cursor:pointer;font-size:14px;font-weight:900;color:#94a3b8">✕</div></div>'
+    +'<div style="font-size:11.5px;color:#64748b;line-height:1.75;margin-bottom:11px">'
+    +'굿노트에서 교과서 위에 필기한 <b>PDF</b>를 올리면, 앱이 원본과 겹쳐 보고 <b>필기만 떼어</b> 문제 번호에 붙여 '
+    +'<b>📥 받은함</b>에 쌓아 둡니다. <b>승인하기 전에는 학생에게 보이지 않습니다.</b></div>';
+
+  if(a.running){
+    h+='<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:16px">'
+      +'<div style="font-size:13px;font-weight:900;color:#0d2240;margin-bottom:6px">진행 중…</div>'
+      +'<div id="bkh-auto-prog" style="font-size:12.5px;font-weight:800;color:#1d6fe8">'+bkhEsc(a.msg||'')+'</div>'
+      +'<div style="font-size:11px;color:#64748b;margin-top:7px;line-height:1.7">쪽마다 1~2초쯤 걸립니다. 창을 닫아도 계속 돕니다.</div>'
+      +'<div onclick="bkhAutoCancel()" style="margin-top:11px;display:inline-block;cursor:pointer;background:#fff;border:1px solid #fecaca;color:#dc2626;border-radius:9px;padding:8px 16px;font-size:12.5px;font-weight:800">■ 취소</div>'
+      +'</div></div></div>';
+    return h;
+  }
+
+  /* ① 교재 고르기 */
+  h+='<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:6px">① 교재 고르기 <span style="font-size:10.5px;font-weight:700;color:#94a3b8">— 교과서 PDF가 등록된 '+all.length+'권</span></div>';
+  if(!all.length){
+    h+='<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px;font-size:11.5px;color:#92400e;font-weight:700;line-height:1.7">'
+      +'교과서 PDF가 등록된 교재가 아직 없습니다 — 📚 교재 목록에서 <b>📄 PDF 올리기</b>를 먼저 해 주세요.</div>';
+  } else {
+    h+=bkhChipBar(all);
+    h+='<div style="max-height:190px;overflow:auto;border:1px solid #e8eef8;border-radius:10px;padding:5px 6px;margin-bottom:11px">';
+    if(!rows.length){
+      h+='<div style="padding:18px;text-align:center;color:#94a3b8;font-size:11.5px">고른 조건에 맞는 교재가 없습니다</div>';
+    } else {
+      rows.forEach(function(r){
+        var on=(String(a.bid)===String(r.bid));
+        h+='<div onclick="bkhAutoBook(\''+bkhJs(r.bid)+'\')" style="cursor:pointer;display:flex;align-items:center;gap:7px;border-radius:8px;padding:7px 9px;'
+          +(on?'background:#eff6ff;border:1.5px solid #1d6fe8':'border:1.5px solid transparent')+'">'
+          +'<span style="font-size:12px;font-weight:900;color:'+(on?'#1d6fe8':'#cbd5e1')+'">'+(on?'●':'○')+'</span>'
+          +bkhKindBadge(r.cls)
+          +'<span style="flex:1;min-width:0;font-size:12px;font-weight:800;color:#0d2240;word-break:break-all">'+bkhEsc(r.title)+'</span>'
+          +'<span style="font-size:10px;font-weight:900;color:#15803d;white-space:nowrap">'+((r.pdf&&r.pdf.pdfPages)||'?')+'쪽</span>'
+          +'</div>';
+      });
+    }
+    h+='</div>';
+  }
+
+  /* ② 필기본 파일 */
+  h+='<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:6px">② 필기본 PDF 고르기</div>'
+    +'<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'
+    +'<span onclick="bkhAutoFilePick()" style="cursor:pointer;background:#fff;border:1px solid #cbd5e1;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:800;color:#475569">💻 내 컴퓨터</span>'
+    +'<span onclick="bkhAutoCloudPick()" style="cursor:pointer;background:#fff;border:1px solid #cbd5e1;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:800;color:#475569">☁️ 올린 파일</span>'
+    +'<span style="font-size:11.5px;font-weight:800;color:'+(a.fileName?'#0d2240':'#cbd5e1')+';word-break:break-all">'
+    +bkhEsc(a.fileName||'아직 고르지 않았습니다')+'</span>'
+    +'</div>'
+    +'<div style="font-size:10.5px;color:#94a3b8;line-height:1.7;margin-bottom:12px">내 컴퓨터에서 고른 파일은 클라우드 <b>school_pdfs › ink</b> 에 보관해 두고 씁니다.</div>';
+
+  /* ③ 시작 */
+  var ready=!!(a.bid && (a.file||a.srcFile));
+  h+='<div style="display:flex;gap:8px;align-items:center">'
+    +'<div onclick="'+(ready?'bkhAutoStart()':'')+'" style="cursor:'+(ready?'pointer':'not-allowed')+';background:'+(ready?'linear-gradient(135deg,#1d6fe8,#0d2240)':'#cbd5e1')+';color:#fff;border-radius:10px;padding:10px 22px;font-size:13px;font-weight:900">▶ 시작</div>'
+    +'<div onclick="bkhAutoClose()" style="cursor:pointer;background:#fff;border:1px solid #dbe3ef;color:#475569;border-radius:10px;padding:10px 18px;font-size:12.5px;font-weight:800">닫기</div>'
+    +'<div id="bkh-auto-prog" style="font-size:12px;font-weight:800;color:#1d6fe8">'+bkhEsc(a.msg||'')+'</div>'
+    +'</div>';
+  h+='</div></div>';
+  return h;
+}
+
+/* ═══════════ 📥 받은함 (계약서 §3) ═══════════ */
+window.bkhInboxToggle=function(bid){
+  if(!BKH.inboxOpen) BKH.inboxOpen={};
+  BKH.inboxOpen[String(bid)]=!BKH.inboxOpen[String(bid)];
+  render();
+};
+window.bkhInboxNeedOnly=function(){ BKH.inboxNeed=!BKH.inboxNeed; render(); };
+window.bkhInboxDoneToggle=function(bid){
+  if(!BKH.inboxDone) BKH.inboxDone={};
+  BKH.inboxDone[String(bid)]=!BKH.inboxDone[String(bid)];
+  render();
+};
+window.bkhInboxPickOpen=function(id){ BKH.inboxPick=(BKH.inboxPick===id?'':String(id)); render(); };
+/* hand_solutions 항목을 만든다 (저장은 밖에서 한 번에) */
+async function bkhInboxMake(bid, it){
+  var bx=await bkhBoxesOf(bid);
+  var box=bkhBoxIn(bx, it.page, it.num);
+  var same=bkhSolsOfNum(bid, it.page, it.num);
+  var ts=Date.now()+Math.floor(Math.random()*1000);
+  var sid='h_'+ts+'_'+bkhNumSlug(it.num);
+  var d=hslData();
+  d.items[sid]={ id:sid, src:'book', srcKey:bkhSrcKey(bid, it.page, it.num),
+    bid:String(bid), page:Number(it.page), num:String(it.num),
+    ids:((box&&box.ids)||[]).slice(),
+    img:String(it.img||''), qimg:String(it.qimg||''), title:'', ord:same.length, vid:null,
+    date:hslToday(), by:'teacher', at:new Date().toISOString(),
+    srcTitle:bkhBookTitle(bid)+' p.'+it.page, seq:Number(String(it.num).replace(/[^0-9]/g,''))||0,
+    conceptName:'', conceptSrc:'', audio:null, video:null, views:0 };
+  it.status='approved'; it.solId=sid; it.doneAt=new Date().toISOString();
+  return sid;
+}
+window.bkhInboxApprove=async function(bid,id){
+  var it=bkhInboxFind(bid,id);
+  if(!it) return;
+  if(!String(it.num||'')){ alert('먼저 「번호 고르기」로 번호를 정해 주세요.'); return; }
+  if(BKH.busy) return;
+  BKH.busy='inbox'; render();
+  try{
+    await bkhInboxMake(bid, it);
+    var ok=await hslSave();
+    if(!ok) throw new Error('hand_solutions 저장에 실패했습니다');
+    await bkhInboxSave(bid);
+    ahaToast('✓ p.'+it.page+' '+it.num+'번 풀이를 학생에게 공개했습니다');
+  }catch(e){
+    console.error('[받은함] 승인 실패', e);
+    alert('승인 실패: '+((e&&e.message)||e));
+  }
+  BKH.busy=''; render();
+};
+window.bkhInboxApproveAll=async function(bid){
+  var list=bkhInboxPending(bid).filter(function(it){ return it.ok && String(it.num||''); });
+  if(!list.length){ alert('바로 승인할 수 있는 조각이 없습니다 — 「번호 확인」 카드는 번호를 먼저 골라 주세요.'); return; }
+  if(!confirm('번호가 확실한 '+list.length+'장을 한 번에 승인할까요?\n승인하면 학생앱에 바로 보입니다.')) return;
+  if(BKH.busy) return;
+  BKH.busy='inbox'; render();
+  var n=0;
+  try{
+    for(var i=0;i<list.length;i++){ await bkhInboxMake(bid, list[i]); n++; }
+    var ok=await hslSave();
+    if(!ok) throw new Error('hand_solutions 저장에 실패했습니다');
+    await bkhInboxSave(bid);
+    ahaToast('✓ '+n+'장을 승인했습니다 — 학생앱에 보입니다');
+  }catch(e){
+    console.error('[받은함] 전부 승인 실패', e);
+    alert('전부 승인 실패: '+((e&&e.message)||e));
+  }
+  BKH.busy=''; render();
+};
+window.bkhInboxReject=function(bid,id){
+  var it=bkhInboxFind(bid,id);
+  if(!it) return;
+  if(!confirm('이 조각을 버릴까요?\n(학생에게는 원래부터 보이지 않습니다)')) return;
+  it.status='rejected'; it.doneAt=new Date().toISOString();
+  bkhInboxSave(bid).then(function(){ ahaToast('버렸습니다'); render(); });
+};
+window.bkhInboxNum=function(bid,id,num){
+  var it=bkhInboxFind(bid,id);
+  if(!it) return;
+  var v=String(num||'').trim();
+  if(!v) return;
+  it.num=v; it.ok=true;
+  BKH.inboxPick='';
+  bkhInboxSave(bid).then(function(){ ahaToast(v+'번으로 정했습니다'); render(); });
+};
+window.bkhInboxBoxes=function(bid,id){
+  var it=bkhInboxFind(bid,id);
+  if(!it) return;
+  try{ if(typeof HSL!=='undefined' && HSL) HSL.tab='book'; }catch(e){}
+  bkhOpen(bid).then(function(){ bkhOpenPage(Number(it.page)); });
+};
+function bkhInboxChip(txt, kind){
+  var st={ b:['#eff6ff','#1d6fe8'], ok:['#dcfce7','#15803d'], w:['#fffbeb','#b45309'], g:['#f1f5f9','#64748b'] }[kind||'g'];
+  return '<span style="font-size:10px;font-weight:900;border-radius:5px;padding:2px 7px;background:'+st[0]+';color:'+st[1]+'">'+bkhEsc(txt)+'</span>';
+}
+function bkhInboxCard(bid, it){
+  var need=!it.ok;
+  var nMethod=bkhSolsOfNum(bid, it.page, it.num).length;
+  var h='<div style="border:1px solid '+(need?'#f59e0b':'#e8eef8')+';border-radius:12px;overflow:hidden;background:#fff">'
+    +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 10px;border-bottom:1px solid #f1f5f9">'
+    +'<b style="font-size:12.5px;color:#0d2240">p.'+bkhEsc(it.page)+(String(it.num||'')?(' · '+bkhEsc(it.num)+'번'):' · 번호 미정')+'</b>'
+    +bkhInboxChip(it.kind==='extra'?'별지':'교과서 위','b')
+    +(it.ok?bkhInboxChip(it.kind==='extra'?'별지 · 번호 읽음':'번호 확실','ok'):bkhInboxChip('번호 확인','w'))
+    +(nMethod?bkhInboxChip('방법 '+(nMethod+1),'g'):'')
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:0">'
+    +'<div style="padding:8px;min-height:110px">'
+    +'<div style="font-size:10px;color:#94a3b8;font-weight:800;margin-bottom:4px">문제 (원본에서 자른 것)</div>'
+    +(it.qimg?('<img src="'+bkhEsc(it.qimg)+'" style="width:100%;display:block;border:1px solid #e2e8f0;border-radius:6px;background:#fff">')
+             :'<div style="padding:22px 8px;text-align:center;color:#cbd5e1;font-size:11px;font-weight:700">문제 그림 없음</div>')
+    +'</div>'
+    +'<div style="padding:8px;min-height:110px;border-left:1px dashed #e8eef8">'
+    +'<div style="font-size:10px;color:#94a3b8;font-weight:800;margin-bottom:4px">풀이 (잉크만 떼어 낸 것)</div>'
+    +'<img src="'+bkhEsc(it.img)+'" style="width:100%;display:block;border:1px solid #e2e8f0;border-radius:6px;background:#fff">'
+    +'</div></div>';
+  /* 번호 고르기 */
+  if(BKH.inboxPick===String(it.id)){
+    var nums=(it.nums&&it.nums.length)?it.nums:(it.cands||[]);
+    h+='<div style="padding:8px 10px;background:#eff6ff;border-top:1px solid #bfdbfe">'
+      +'<div style="font-size:11px;font-weight:900;color:#0d2240;margin-bottom:6px">어느 번호의 풀이인가요?'
+      +(it.cands&&it.cands.length?('<span style="font-weight:700;color:#64748b"> — 앱이 고른 후보: '+bkhEsc(it.cands.join(' · '))+'</span>'):'')
+      +'</div><div style="display:flex;gap:5px;flex-wrap:wrap">';
+    if(!nums.length){
+      h+='<span style="font-size:11px;color:#b45309;font-weight:700">이 쪽의 문항 상자가 없습니다 — 「✎ 상자」에서 먼저 놓아 주세요</span>';
+    } else {
+      nums.forEach(function(n){
+        var on=(String(n)===String(it.num));
+        h+='<span onclick="bkhInboxNum(\''+bkhJs(bid)+'\',\''+bkhJs(it.id)+'\',\''+bkhJs(n)+'\')" style="cursor:pointer;border-radius:8px;padding:5px 11px;font-size:11.5px;font-weight:900;'
+          +(on?'background:#1d6fe8;color:#fff':'background:#fff;color:#0d2240;border:1.5px solid #bfdbfe')+'">'+bkhEsc(n)+'</span>';
+      });
+    }
+    h+='</div></div>';
+  }
+  /* 단추 줄 */
+  var st=(it.status||'pending');
+  h+='<div style="display:flex;gap:5px;padding:8px 10px;border-top:1px solid #f1f5f9;flex-wrap:wrap">';
+  if(st==='pending'){
+    h+='<span onclick="bkhInboxApprove(\''+bkhJs(bid)+'\',\''+bkhJs(it.id)+'\')" style="flex:1;text-align:center;cursor:pointer;background:#15803d;color:#fff;border-radius:8px;padding:6px 0;font-size:11.5px;font-weight:800">✓ 승인</span>'
+      +'<span onclick="bkhInboxPickOpen(\''+bkhJs(it.id)+'\')" style="flex:1;text-align:center;cursor:pointer;background:#fff;border:1px solid #dbe3ef;color:#475569;border-radius:8px;padding:6px 0;font-size:11.5px;font-weight:800">번호 고르기</span>'
+      +'<span onclick="bkhInboxBoxes(\''+bkhJs(bid)+'\',\''+bkhJs(it.id)+'\')" style="flex:1;text-align:center;cursor:pointer;background:#fff;border:1px solid #dbe3ef;color:#475569;border-radius:8px;padding:6px 0;font-size:11.5px;font-weight:800">✎ 상자</span>'
+      +'<span onclick="bkhInboxReject(\''+bkhJs(bid)+'\',\''+bkhJs(it.id)+'\')" style="cursor:pointer;background:#fff;border:1px solid #fecaca;color:#dc2626;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:800">✕</span>';
+  } else {
+    h+='<span style="flex:1;font-size:11.5px;font-weight:800;color:#15803d">✅ 승인됨 — 학생앱에 보입니다</span>'
+      +(it.solId?('<span onclick="bkhSolVid(\''+bkhJs(it.solId)+'\')" style="cursor:pointer;background:#fff;border:1px solid #dbe3ef;color:#475569;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:800">🎬 영상</span>'):'');
+  }
+  h+='</div></div>';
+  return h;
+}
+function bkhInboxPane(){
+  if(!BKH.loaded){
+    if(!BKH.loading) setTimeout(function(){ bkhLoad(); },0);
+    return '<div style="padding:50px;text-align:center;color:#94a3b8;font-weight:700">📥 받은함을 불러오는 중…'
+      +'<div id="bkh-step" style="margin-top:8px;font-size:12px;color:#7c3aed;font-weight:800">'+bkhEsc(BKH.step)+'</div></div>';
+  }
+  var bids=Object.keys(BKH.inbox||{}).filter(function(k){ return bkhInboxData(k).items.length; });
+  bids.sort(function(a,b){ return bkhInboxPending(b).length-bkhInboxPending(a).length; });
+  var h='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240">📥 받은함 — 승인 기다리는 조각 '+bkhInboxCount()+'장</div>'
+    +'<div onclick="bkhInboxNeedOnly()" style="cursor:pointer;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800;'
+      +(BKH.inboxNeed?'background:#0d2240;color:#fff':'background:#fff;border:1px solid #dbe3ef;color:#475569')+'">확인 필요만</div>'
+    +'<div onclick="bkhAutoOpen()" style="margin-left:auto;cursor:pointer;background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:800">🪄 필기본 자동 배치</div>'
+    +'</div>'
+    +'<div style="background:#f8fafc;border-radius:11px;padding:11px 14px;font-size:11.5px;color:#475569;line-height:1.85;margin-bottom:11px">'
+    +'굿노트 필기본에서 앱이 떼어 낸 풀이 조각입니다. <b>승인하기 전에는 학생에게 보이지 않습니다.</b> '
+    +'「번호 확실」은 <b>✓ 전부 승인</b>으로 한 번에 공개하고, 「번호 확인」은 <b>번호 고르기</b>로 번호를 정한 뒤 승인해 주세요. '
+    +'상자가 잘못 놓였으면 <b>✎ 상자</b>로 그 쪽 작업대에 가서 고칠 수 있습니다.</div>';
+
+  if(!bids.length){
+    h+='<div style="background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:40px;text-align:center;color:#94a3b8;font-size:12.5px">'
+      +'아직 받은 것이 없습니다 — 위의 <b>🪄 필기본 자동 배치</b>로 굿노트 PDF를 올려 보세요</div>';
+    return h+bkhAutoModal()+bkhCloudModal();
+  }
+  bids.forEach(function(bid){
+    var d=bkhInboxData(bid);
+    var pend=bkhInboxPending(bid).sort(function(a,b){
+      return Number(a.page)-Number(b.page)
+        || String(a.num).localeCompare(String(b.num),undefined,{ numeric:true })
+        || String(a.at).localeCompare(String(b.at));
+    });
+    var shown=BKH.inboxNeed ? pend.filter(function(it){ return !it.ok; }) : pend;
+    var okN=pend.filter(function(it){ return it.ok && String(it.num||''); }).length;
+    var open=!BKH.inboxOpen ? true : (BKH.inboxOpen[String(bid)]!==false);
+    var d3=new Date(Date.now()-3*86400000).toISOString();
+    var done=bkhInboxItems(bid,'approved').filter(function(it){ return String(it.doneAt||it.at||'')>=d3; });
+    h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;margin-bottom:11px;overflow:hidden">'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#0d2240;color:#fff;padding:10px 13px">'
+      +'<span onclick="bkhInboxToggle(\''+bkhJs(bid)+'\')" style="cursor:pointer;font-size:13px;font-weight:900">'+(open?'▾':'▸')+' '+bkhEsc(bkhBookTitle(bid))+'</span>'
+      +'<span style="font-size:11.5px;opacity:.85;font-weight:700">기다리는 조각 '+pend.length+' · 확인 필요 '+(pend.length-okN)+'</span>'
+      +'<span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">'
+      +(pend.length?('<span onclick="bkhInboxBoxes(\''+bkhJs(bid)+'\',\''+bkhJs(pend[0].id)+'\')" style="cursor:pointer;background:#1d6fe8;color:#fff;border-radius:8px;padding:6px 11px;font-size:11px;font-weight:800">🔍 상자 고쳐 다시 배치</span>'):'')
+      +'<span onclick="bkhInboxApproveAll(\''+bkhJs(bid)+'\')" style="cursor:pointer;background:#16a34a;color:#fff;border-radius:8px;padding:6px 11px;font-size:11px;font-weight:800">✓ 전부 승인 ('+okN+')</span>'
+      +'</span></div>';
+    if(open){
+      if(!shown.length){
+        h+='<div style="padding:26px;text-align:center;color:#cbd5e1;font-size:12px;font-weight:700">'
+          +(BKH.inboxNeed?'확인이 필요한 조각이 없습니다':'기다리는 조각이 없습니다')+'</div>';
+      } else {
+        h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;padding:13px">';
+        shown.forEach(function(it){ h+=bkhInboxCard(bid, it); });
+        h+='</div>';
+      }
+      if(done.length){
+        var dOpen=!!(BKH.inboxDone && BKH.inboxDone[String(bid)]);
+        h+='<div onclick="bkhInboxDoneToggle(\''+bkhJs(bid)+'\')" style="cursor:pointer;border-top:1px solid #f1f5f9;padding:9px 13px;font-size:11.5px;font-weight:800;color:#15803d">'
+          +(dOpen?'▾':'▸')+' 최근 3일 승인됨 '+done.length+'장</div>';
+        if(dOpen){
+          h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;padding:0 13px 13px">';
+          done.forEach(function(it){ h+=bkhInboxCard(bid, it); });
+          h+='</div>';
+        }
+      }
+    }
+    h+='</div>';
+  });
+  return h+bkhAutoModal()+bkhCloudModal();
+}
+
 /* ═══════════ 화면 ═══════════ */
 function hslBookPane(){
   if(!BKH.loaded){
@@ -53199,7 +54175,10 @@ function bkhCloudModal(){
     +'<div style="font-size:14px;font-weight:900;color:#0d2240">☁️ 이미 올린 파일 고르기</div>'
     +'<div onclick="bkhCloudClose()" style="margin-left:auto;cursor:pointer;font-size:14px;font-weight:900;color:#94a3b8">✕</div></div>'
     +'<div style="font-size:11.5px;color:#64748b;line-height:1.75;margin-bottom:10px"><b>'+bkhEsc(bkhBookTitle(c.bid))+'</b> 에 붙일 파일을 고르세요.<br>'
-    +'클라우드(school_pdfs › book)에 이미 올라간 PDF 목록입니다 — 48MB 교과서를 다시 올리지 않아도 됩니다.</div>';
+    +((c.mode==='ink')
+      ? '클라우드(school_pdfs › ink · book)에 올라간 <b>필기본 PDF</b> 목록입니다 — 고르면 바로 자동 배치를 시작합니다.'
+      : '클라우드(school_pdfs › book)에 이미 올라간 PDF 목록입니다 — 48MB 교과서를 다시 올리지 않아도 됩니다.')
+    +'</div>';
   if(c.busy){
     h+='<div style="padding:26px;text-align:center;color:#94a3b8;font-size:12px;font-weight:800">불러오는 중…</div>';
   } else if(c.err){
@@ -53214,8 +54193,9 @@ function bkhCloudModal(){
       h+='<div style="display:flex;align-items:center;gap:9px;border-top:1px solid #f1f5f9;padding:9px 2px">'
         +'<div style="min-width:0;flex:1">'
         +'<div style="font-size:12px;font-weight:800;color:#0d2240;word-break:break-all">'+bkhEsc(f.name)+'</div>'
-        +'<div style="font-size:10.5px;color:#94a3b8;font-weight:700">'+bkhEsc(mb)+(at?(' · 올린 시각 '+bkhEsc(at)):'')+'</div></div>'
-        +'<span onclick="bkhPdfUse(\''+bkhJs(f.name)+'\')" style="cursor:pointer;flex:none;background:#0d2240;color:#fff;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;white-space:nowrap">이 파일로 등록</span>'
+        +'<div style="font-size:10.5px;color:#94a3b8;font-weight:700">'+bkhEsc((f.dir||'book')+' 폴더 · '+mb)+(at?(' · 올린 시각 '+bkhEsc(at)):'')+'</div></div>'
+        +'<span onclick="bkhCloudPick(\''+bkhJs((f.dir||'book')+'/'+f.name)+'\')" style="cursor:pointer;flex:none;background:#0d2240;color:#fff;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;white-space:nowrap">'
+        +((c.mode==='ink')?'이 파일로 자동 배치':'이 파일로 등록')+'</span>'
         +'</div>';
     });
   }
