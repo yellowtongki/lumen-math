@@ -3507,6 +3507,9 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *     붙습니다. 학생이 그 칸을 고치면 표시가 사라집니다.
  *   · 「다시 찍기」 뒤 AI가 읽지 못하면 L·A·M·P 네 칸을 <b>비웁니다</b>
  *     (앞 사진에서 읽은 글이 남아 잘못 채점되던 것을 막습니다).
+ *   · <b>질문력 미터</b>도 학원앱과 같은 규칙으로 셉니다 — 종이에 없는 칸(노란 칸)은
+ *     앱에 글을 적어도 <b>0점</b>입니다. 자기평가 「기대 점수」와 「비어 있어요」 띠도 같습니다.
+ *     사진을 읽기 전 옛 노트는 예전처럼 다 셉니다.
  *
  * v2-83 (2026-09-15) 📄 학습지도 학생앱에서 채점
  *   · 「📖 교재 채점」 화면 맨 위에 <b>탭 두 개</b>가 생겼습니다 — 「📚 교재」와 「📄 학습지」.
@@ -6082,6 +6085,16 @@ function ahaQType(ask) {
 }
 var AHA_QTYPE_KO = { fact:'사실적 질문', concept:'개념적 질문 +1', debate:'논쟁적 질문 +1' };
 
+/* ★ v2-84: 「점수는 종이에 쓴 것만」 (원장 결정 2026-09-15, docs/aha_paper_only.md)
+ * AI가 사진에서 못 읽은 칸(lamp_ai.unread)은 종이에 없는 칸이다.
+ * 학생이 앱에서 그 칸에 글을 타이핑해도 점수로 세지 않는다 — 학원앱도 같은 규칙으로 0점을 준다.
+ * lamp_ai 가 없는 옛 노트(사진 읽기 전)는 예전처럼 다 센다. */
+function ahaPaperOnly(k) {
+  if (!ahaLampAi) return false;
+  var u = ahaLampAi.unread;
+  return Array.isArray(u) && u.indexOf(k) >= 0;
+}
+
 /* 질문력 미터 (표 3-4, 규칙 — AI 채점이 아니라 「임시」 표시용) */
 function ahaMeter() {
   var L = (document.getElementById('aha-q-learn') || {}).value || '';
@@ -6096,6 +6109,12 @@ function ahaMeter() {
   var pSpot = /단계|줄|번째|에서|부터|까지|계산|대입|식/.test(sp.stuck);
   var pAsk = !!ahaDirective && /[?？]$|요[.?!]?$/.test(sp.ask.trim());
   var sP = (pSpot && pAsk) ? 2 : ((pSpot || pAsk) ? 1 : 0);
+
+  /* ★ v2-84: 종이에 없는 칸은 0점 */
+  if (ahaPaperOnly('L')) sL = 0;
+  if (ahaPaperOnly('A')) sA = 0;
+  if (ahaPaperOnly('M')) sM = 0;
+  if (ahaPaperOnly('P')) sP = 0;
 
   return { L:sL, A:sA, M:sM, P:sP, total: sL + sA + sM + sP };
 }
@@ -6143,7 +6162,8 @@ function ahaEmptyWarn() {
   var missing = [];
   ['L','A','M'].forEach(function(k) {
     var v = ((document.getElementById(IDS[k]) || {}).value || '').trim();
-    if (v.length < 5) missing.push(NAMES[k]);
+    /* ★ v2-84: 종이에 없는 칸은 앱에 글이 있어도 「안 쓴 칸」으로 센다 (미터와 같은 규칙) */
+    if (v.length < 5 || ahaPaperOnly(k)) missing.push(NAMES[k]);
   });
   if (!missing.length) { el.style.display = 'none'; return; }
   var m = ahaMeter();
@@ -6211,14 +6231,16 @@ function ahaToggleSelfChk(row, k) {
   var box = row.querySelector('.ib-cbx');
   ahaSelfChk[k] = ahaSelfChk[k] ? 0 : 1;
   box.classList.toggle('on', !!ahaSelfChk[k]);
-  var n = 0;
-  ['L','A','M','P'].forEach(function(x){ n += ahaSelfChk[x] ? 2 : 0; });
   var el = document.getElementById('aha-selfeval-n');
-  if (el) el.textContent = n;
+  if (el) el.textContent = ahaSelfEvalExpected();
 }
+/* ★ v2-84: 자기평가 「기대 점수」도 종이에 쓴 칸만 센다 (미터와 같은 규칙) */
 function ahaSelfEvalExpected() {
   var n = 0;
-  ['L','A','M','P'].forEach(function(x){ n += ahaSelfChk[x] ? 2 : 0; });
+  ['L','A','M','P'].forEach(function(x){
+    if (ahaPaperOnly(x)) return;
+    n += ahaSelfChk[x] ? 2 : 0;
+  });
   return n;
 }
 
