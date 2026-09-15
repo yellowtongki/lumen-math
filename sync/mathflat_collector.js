@@ -39,6 +39,7 @@
  *   --book ID       정답사전을 그 교재 하나만 갱신 (--bookans-only 와 함께)
  *   --skip-swb      학생 교재상태(mf_swb_*) 재수집을 건너뛰고 저장된 것을 쓴다 (빠름)
  *   --elem          정답사전을 초등 배정 교재만 갱신 (--bookans-only 와 함께 · 학생 많은 순 → 초6 → 초5 → 초4)
+ *   --wsq-only      학습지 채점목록(mf_wsq_*)만 갱신 — 학생앱 「📄 학습지」 탭용 (고등 포함)
  *
  * 출력 (개인정보 포함 → 커밋 금지, .gitignore 처리):
  *   {out-dir}/mf_answer_records.json   [A] 문항 단위 학습지 정오답
@@ -925,6 +926,15 @@ async function main() {
     await refreshBookAnswers();
     return;
   }
+  // --wsq-only: 학습지 채점목록(mf_wsq_*)만 갱신 (매쓰플랫 로그인 필요) — 학습지 채점 계약 §2
+  if (has('--wsq-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meWq = await login();
+    log(`로그인 성공 · 학원 ${meWq.academyId}`);
+    await refreshWorksheetQueue();
+    return;
+  }
   // --kmm-only: KMM 경시 성적만 수집
   if (has('--kmm-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -1034,6 +1044,7 @@ async function main() {
     await refreshStuck();          // v18-46: 「막힌 문제」 사전 계산 (아하노트 퍼센트의 분모)
     await refreshStudentWorkbooks(); // v18-74: 학생별 교재·회차·페이지(progressId)
     await refreshBookAnswers();    // v18-74: 교재 채점용 정답사전
+    await refreshWorksheetQueue(); // 학습지 채점 계약 §2: 학생별 학습지 채점목록(mf_wsq_*)
     // v18-86: 🏁 진도 레이스 순위 집계 (시즌이 없으면 스스로 건너뛴다)
     try { const { runRace } = require('./race_engine.js'); await runRace(); }
     catch (e) { log('진도 레이스 집계 실패(치명적 아님):', e.message); }
@@ -1701,6 +1712,161 @@ async function regradeBookAnswers() {
     }
   }
   log(`정답사전 재계산(2판): 갱신 교재 ${nBook}/${rows.length} · 검사 문항 ${nProb} · 판정 바뀜 ${nFlip} · 자기채점 ${nSelf}`);
+}
+
+/* ── 학습지 채점 목록 (mf_wsq_<학생코드>) — 계약 docs/worksheet_score_contract.md §1·§2 ──
+ * 학생앱 「📄 학습지」 탭의 재료. 학생은 매쓰플랫에 직접 못 붙으므로
+ * 배정된 학습지(최근 30일 + 아직 안 끝난 것)와 문항·정답·그림을 여기서 미리 만들어 둔다.
+ * 교재(mf_bookans_*)와 같은 규칙(HWGrade.shapeOf)으로 shape·self·parts 를 붙인다.
+ *
+ * 경로 (2026-09-15 실측):
+ *   GET /lesson-classes                                              → 반 목록
+ *   GET /student-worksheet/lesson-class/{classId}?size=100&sort=assignDatetime,desc
+ *        → { content:[ { worksheet:{id,title,autoScorable,problemCount,...},
+ *                        assignedStudentList:[{studentWorksheetId,studentId,status,score}],
+ *                        assignDatetime } ] }   ※ sort 없이 부르면 옛날 것부터 나와 최신이 잘린다
+ *   GET /student-worksheet/assign/{swId}/problem?size=300             → 문항·정답·그림·학생 결과
+ * 학생 상태 enum: INCOMPLETE(학습가능) · PROGRESS(풀이 중) · COMPLETE(학습완료)
+ * 문항 결과 enum: CORRECT · WRONG · UNKNOWN(모름) · NONE(미채점)
+ * 교재와 달리 고등도 포함한다(학습지는 고등부도 쓴다).
+ */
+const WSQ_VER = 1;                                            // mf_wsq 항목 형식 판 수
+const WSQ_DAYS = Number(process.env.WSQ_DAYS || 30);          // 목록에 담을 최근 배정 기간
+const WSQ_BACK_DAYS = Number(process.env.WSQ_BACK_DAYS || 90); // 미완료 학습지를 찾아 거슬러 볼 기간
+const WSQ_FETCH_CAP = Number(process.env.WSQ_FETCH_CAP || 1500); // 한 번에 새로 받을 학습지 수 상한
+const WSQ_STATUS = { INCOMPLETE: '학습가능', PROGRESS: '풀이 중', COMPLETE: '학습완료' };
+const WSQ_OX = { CORRECT: 'O', WRONG: 'X', INCORRECT: 'X', UNKNOWN: '?' };
+
+// 학습지 문항 한 개 → 계약 §1 모양 (교재 bookAnsRec 와 같은 규칙 + 문제 그림)
+function wsqProblem(row, idx) {
+  const p = (row && row.problem) || {};
+  const objective = (p.type === 'MULTIPLE_CHOICE' || p.type === 'SINGLE_CHOICE');
+  const units = (p.answerUnits || []).map((u) => ({ u: String(u.unit != null ? u.unit : u.u || ''), i: Number(u.index != null ? u.index : u.i || 0) }));
+  const sh = HWGrade.shapeOf({ type: p.type, answer: p.answer, objective, cnt: Number(p.answerCount || 0), units });
+  return {
+    wpId: row.worksheetProblemId, num: String(p.index != null ? p.index : idx + 1),
+    type: p.type || '', optionCount: (objective ? (p.optionCount || 5) : 0),
+    answer: p.answer != null ? String(p.answer) : '',
+    img: p.answerImageUrl || '', pimg: p.problemImageUrl || '', solimg: p.solutionImageUrl || '',
+    cnt: Number(p.answerCount || 0), units,
+    shape: sh.shape, self: !!sh.self, unit: sh.unit || '', parts: sh.parts || [],
+    result: WSQ_OX[row.result] || '-',
+    userAnswer: row.userAnswer != null ? String(row.userAnswer) : '',
+  };
+}
+
+async function refreshWorksheetQueue() {
+  const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+  const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
+  try {
+    // ① 학생 사전 (매쓰플랫 학생ID → 우리 학생코드). 코드가 없는 학생은 학생앱을 안 쓰므로 건너뛴다.
+    const rs = await fetch(`${url}/rest/v1/mf_students?select=mf_student_id,lumen_rec_code,name,status`, { headers: sbHeaders });
+    if (!rs.ok) { log('학습지 채점목록: mf_students 조회 실패'); return; }
+    const codeOf = {}, nameOf = {};
+    for (const s of await rs.json()) {
+      if (!s.lumen_rec_code || !s.mf_student_id) continue;
+      if (s.status && s.status !== 'ACTIVE') continue;                // 활동 학생만
+      codeOf[s.mf_student_id] = String(s.lumen_rec_code); nameOf[s.mf_student_id] = s.name || '';
+    }
+    if (!Object.keys(codeOf).length) { log('학습지 채점목록: 학생 매핑 없음 → 건너뜀'); return; }
+
+    // ② 반별 배정 학습지 (최신순). 최근 WSQ_DAYS일 배정 + 그 이전이라도 아직 안 끝난 것
+    const today = new Date();
+    const dayCut = fmt(new Date(today.getTime() - WSQ_DAYS * 86400000));
+    const backCut = fmt(new Date(today.getTime() - WSQ_BACK_DAYS * 86400000));
+    let classes = [];
+    try { const c = await api('/lesson-classes'); classes = Array.isArray(c) ? c : ((c && c.content) || []); }
+    catch (e) { log(`학습지 채점목록: 반 목록 실패 ${e.message}`); return; }
+
+    const bySid = {};        // sid → { swId → 항목(문항 제외) }
+    let nSeen = 0;
+    for (const cls of classes) {
+      for (let page = 0; page < 6; page++) {
+        let d = null;
+        try { d = await api(`/student-worksheet/lesson-class/${cls.id}?size=100&page=${page}&sort=assignDatetime,desc`); }
+        catch (e) { log(`  · 반 ${cls.id} 학습지 목록 실패: ${e.message}`); break; }
+        const rows = (d && d.content) || [];
+        if (!rows.length) break;
+        let oldest = '9999-99-99';
+        for (const it of rows) {
+          const date = String(it.assignDatetime || '').slice(0, 10);
+          if (date && date < oldest) oldest = date;
+          if (!date || date < backCut) continue;
+          const w = it.worksheet || {};
+          for (const as of it.assignedStudentList || []) {
+            const sid = as.studentId;
+            if (!sid || !codeOf[sid] || !as.studentWorksheetId) continue;
+            const done = as.status === 'COMPLETE';
+            if (date < dayCut && done) continue;                      // 오래된 것은 미완료만
+            const m = bySid[sid] || (bySid[sid] = {});
+            if (m[as.studentWorksheetId]) continue;                   // 반이 겹쳐도 한 번만
+            m[as.studentWorksheetId] = {
+              swId: as.studentWorksheetId, wid: w.id || null, title: w.title || '', date,
+              status: WSQ_STATUS[as.status] || '학습가능', auto: !!w.autoScorable,
+              score: as.score != null ? as.score : null, tag: w.tag || '',
+              n: w.problemCount || 0, o: 0, x: 0, q: 0, _st: as.status || '',
+            };
+            nSeen++;
+          }
+        }
+        if (d.last || oldest < backCut) break;
+        await sleep(90);
+      }
+      await sleep(90);
+    }
+    log(`학습지 채점목록: 배정 ${nSeen}건 · 학생 ${Object.keys(bySid).length}명 (최근 ${WSQ_DAYS}일 + 미완료 ${WSQ_BACK_DAYS}일)`);
+
+    // ③ 학생별로 저장된 것과 합치고, 새로 받을 학습지만 문항을 받는다
+    let capLeft = WSQ_FETCH_CAP;
+    let nStu = 0, nFetch = 0, nReuse = 0, nProb = 0, nSelf = 0, nAuto = 0;
+    for (const sid of Object.keys(bySid)) {
+      const code = codeOf[sid];
+      let old = {};
+      try {
+        const rr = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_wsq_${code}&select=value`, { headers: sbHeaders });
+        if (rr.ok) {
+          const j = await rr.json();
+          const v = j[0] && (typeof j[0].value === 'string' ? JSON.parse(j[0].value) : j[0].value);
+          (((v || {}).list) || []).forEach((it) => { old[it.swId] = it; });
+        }
+      } catch (e) {}
+      const list = [];
+      const items = Object.values(bySid[sid]).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+      for (const it of items) {
+        const prev = old[it.swId];
+        // 이미 받아 둔 것이 같은 판·같은 상태면 문항을 다시 받지 않는다 (끝난 학습지는 결과가 안 바뀐다)
+        if (prev && Number(prev.v || 0) >= WSQ_VER && prev.status === it.status && (prev.problems || []).length) {
+          list.push({ ...prev, title: it.title, date: it.date, auto: it.auto, score: it.score });
+          nReuse++; continue;
+        }
+        if (capLeft <= 0) { if (prev) list.push(prev); continue; }
+        capLeft--;
+        let rows = [];
+        try { rows = ((await api(`/student-worksheet/assign/${it.swId}/problem?size=300`)) || {}).content || []; }
+        catch (e) { log(`  · 문항 조회 실패 sw=${it.swId}: ${e.message}`); if (prev) list.push(prev); await sleep(90); continue; }
+        const problems = rows.map(wsqProblem);
+        const rec = { ...it, v: WSQ_VER, n: problems.length,
+          o: problems.filter((p) => p.result === 'O').length,
+          x: problems.filter((p) => p.result === 'X').length,
+          q: problems.filter((p) => p.result === '?').length,
+          problems };
+        delete rec._st;
+        list.push(rec);
+        nFetch++; nProb += problems.length; nSelf += problems.filter((p) => p.self).length;
+        if (it.auto) nAuto++;
+        await sleep(90);
+      }
+      list.forEach((it) => { delete it._st; });
+      const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
+        method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify([{ key: `mf_wsq_${code}`, value: { code, name: nameOf[sid] || '', updated: new Date().toISOString(), list }, updated_at: new Date().toISOString() }]),
+      });
+      if (res.ok) nStu++;
+      else log(`  · 저장 실패 mf_wsq_${code} (${res.status})`);
+    }
+    const pct = nProb ? Math.round((nProb - nSelf) / nProb * 100) : 0;
+    log(`학습지 채점목록(mf_wsq_*): 학생 ${nStu} · 새로 받은 학습지 ${nFetch}(재사용 ${nReuse}) · 문항 ${nProb}(자동채점 ${pct}% · 자기채점 ${nSelf}) · 매쓰플랫 자동채점 학습지 ${nAuto}`);
+  } catch (e) { log('학습지 채점목록 갱신 실패(치명적 아님):', e.message); }
 }
 
 async function refreshBookCatalog() {
