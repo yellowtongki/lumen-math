@@ -2099,6 +2099,14 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .ahrtb.wait{background:#ffedd5;color:#9a3412;}
 .ahrtb.sent{background:#dbeafe;color:#1d4ed8;}
 .ahrtb.ok{background:#dcfce7;color:#15803d;}
+/* ★ v2-85: 「✓ 이제 알아요 — 정리해 주세요」 작은 줄 + 「정리 요청함」 배지.
+ * 점수는 없고, 선생님께 「이건 이제 알아요」라고 알려 주기만 하는 길이다. */
+.ahlk{display:block;width:100%;margin-top:6px;background:none;border:none;padding:4px 2px;
+  font-family:inherit;font-size:11.5px;font-weight:800;color:#64748b;text-decoration:underline;
+  text-underline-offset:3px;cursor:pointer;text-align:center;}
+.ahlk:active{color:#0d2240;}
+.ahlkd{display:block;margin-top:6px;text-align:center;font-size:11.5px;font-weight:900;
+  color:#15803d;background:#dcfce7;border-radius:50px;padding:5px 9px;}
 .fzh{margin-left:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);border-radius:9px;padding:5px 11px;font-size:13px;font-weight:900;color:#fff;cursor:pointer;font-family:inherit;flex:none;}
 .fzpop{position:absolute;right:14px;top:calc(100% - 6px);z-index:60;background:#fff;border-radius:12px;box-shadow:0 10px 28px rgba(13,34,64,.3);padding:11px 13px;min-width:190px;}
 .lgin{border:1.5px solid #e6eaf1;border-radius:13px;padding:11px 12px;margin-bottom:9px;background:#fff;width:100%;text-align:left;cursor:pointer;font-family:inherit;display:block;}
@@ -3301,6 +3309,32 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
   </div>
 </div>
 
+<!-- ★ v2-85: 「✓ 이제 알아요」 하단시트 — 점수 없이 선생님께 정리만 부탁한다 -->
+<div class="bs-overlay" id="aha-later-bs" onclick="if(event.target===this)closeAhaLaterBS()">
+  <div class="bs-sheet">
+    <div class="bs-handle"></div>
+    <div class="bs-title">✓ 이제 알아요</div>
+    <button class="bs-option" id="aha-later-class" onclick="ahaLaterPick('class')">
+      <div class="bs-option-icon">🏫</div>
+      <div class="bs-option-text">
+        <div class="bs-option-title">수업에서 배웠어요</div>
+        <div class="bs-option-desc">선생님이 수업에서 다뤄 주셨어요</div>
+      </div>
+    </button>
+    <button class="bs-option" id="aha-later-self" onclick="ahaLaterPick('self')">
+      <div class="bs-option-icon">💡</div>
+      <div class="bs-option-text">
+        <div class="bs-option-title">다른 데서 알게 됐어요</div>
+        <div class="bs-option-desc">혼자 보거나 친구에게 듣고 알았어요</div>
+      </div>
+    </button>
+    <div class="bs-option-desc" id="aha-later-help" style="text-align:center;margin:2px 0 10px;line-height:1.6">
+      점수는 없어요. 스스로 풀이를 보내려면 위의 🙋 단추를 눌러요
+    </div>
+    <button class="bs-cancel" onclick="closeAhaLaterBS()">취소</button>
+  </div>
+</div>
+
 <!-- 플래너 사진 추가 하단시트 모달 (v1-23) -->
 <div class="bs-overlay" id="planner-photo-bs" onclick="if(event.target===this)closePlannerPhotoBS()">
   <div class="bs-sheet">
@@ -3497,6 +3531,14 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-85 (2026-09-15) ✓ 이제 알아요 — 밀린 질문을 학생이 정리해 달라고 부탁합니다
+ *   · 아직 답을 못 받은 IB아하노트 카드에서 「🙋 쓰다 보니 알았어요」 아래에
+ *     작은 줄 「✓ 이제 알아요 — 정리해 주세요」가 생겼습니다. 누르면
+ *     「🏫 수업에서 배웠어요」 · 「💡 다른 데서 알게 됐어요」 둘 중 하나를 고릅니다.
+ *     <b>점수는 없습니다</b>(점수를 받으려면 예전처럼 🙋 단추로 풀이를 보냅니다).
+ *     보내고 나면 그 자리에 「✓ 정리 요청함 — 선생님 확인 중」 배지가 뜨고,
+ *     선생님 학원앱의 「✓ 학생이 정리 요청」 묶음에 모여서 해결 처리됩니다.
+ *
  * v2-84 (2026-09-15) ✍️ 종이에 쓴 것만 점수 · 못 읽은 칸 안내 · AI 읽은 번호 확인 · 다시 찍기 뒤 읽기 실패 시 칸 비움
  *   · IB아하노트 사진 단계 위에 안내가 붙었습니다 —
  *     「점수는 <b>종이에 쓴 것만</b> 매겨요. 앱에서 적어 넣은 글은 점수에 들어가지 않아요.」
@@ -3672,7 +3714,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-84';
+var STU_VER = 'v2-85';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -5603,6 +5645,13 @@ function renderAhaCard(n) {
   // v2-71: 🙋 스스로 풀었어요 — 아직 아무것도 안 낸 질문에만
   if (n.status === 'pending' && !rt && !n.self_solved) {
     html += '<button onclick="ahaSelfStart(\'' + ahaEscape(n.id) + '\')" style="margin-top:8px;width:100%;background:linear-gradient(135deg,#f59e0b,#b45309);color:#fff;border:none;border-radius:9px;padding:9px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit">🙋 쓰다 보니 알았어요 (스스로 해결 +3)</button>';
+    /* ★ v2-85: 풀이를 낼 것까지는 없지만 「이제 알아요」인 질문 —
+     * 점수 없이 선생님께 정리만 부탁한다. 이미 부탁했으면 배지로 바뀐다. */
+    if (ahaRNote(n).student) {
+      html += '<div class="ahlkd" data-nid="' + ahaEscape(n.id) + '">✓ 정리 요청함 — 선생님 확인 중</div>';
+    } else {
+      html += '<button type="button" class="ahlk" data-nid="' + ahaEscape(n.id) + '" onclick="ahaLaterKnow(\'' + ahaEscape(n.id) + '\')">✓ 이제 알아요 — 정리해 주세요</button>';
+    }
   }
 
   // v2-10: 다시 푼 풀이 제출 (재풀이) — ★ v2-78: 안내 상자·큰 단추로 바꿈
@@ -7245,6 +7294,64 @@ async function ahaGoSelfSolve() {
     ahaToast('저장 실패: ' + (e.message || ''), 'error');
   } finally {
     btn.disabled = false;
+  }
+}
+
+/* ★ v2-85: resolved_note 는 JSON 글이다 (계약 docs/aha_backlog_resolve.md §1) —
+ * {"reason":..,"by":..,"at":.., "student":"class"|"self", "student_at":".."}.
+ * 옛 노트에는 빈 값이나 자유 글이 들어 있으므로, 못 읽으면 조용히 {} 로 본다. */
+function ahaRNote(n) {
+  if (!n) return {};
+  var v = n.resolved_note;
+  if (!v) return {};
+  if (typeof v === 'object') return v;
+  try {
+    var o = JSON.parse(v);
+    return (o && typeof o === 'object') ? o : {};
+  } catch(e) { return {}; }
+}
+
+var ahaLaterId = null;
+
+/* 「✓ 이제 알아요 — 정리해 주세요」 — 점수는 없고, 선생님께 알려 주기만 한다 */
+function ahaLaterKnow(id) {
+  if (isTest) { ahaToast('테스트 모드에서는 보낼 수 없어요', 'error'); return; }
+  ahaLaterId = id;
+  var bs = document.getElementById('aha-later-bs');
+  if (bs) bs.classList.add('show');
+}
+function closeAhaLaterBS() {
+  var bs = document.getElementById('aha-later-bs');
+  if (bs) bs.classList.remove('show');
+  ahaLaterId = null;
+}
+
+/* kind: 'class' 수업에서 배웠어요 · 'self' 다른 데서 알게 됐어요.
+ * 기존 resolved_note JSON에 student·student_at 만 합쳐 저장한다.
+ * 상태(status)는 그대로 pending — 정리는 선생님이 한다. */
+async function ahaLaterPick(kind) {
+  var id = ahaLaterId;
+  closeAhaLaterBS();
+  if (!id) return;
+  if (!sb) { ahaToast('로그인 상태를 확인해주세요', 'error'); return; }
+
+  var note = null;
+  for (var i = 0; i < ahaNotes.length; i++) {
+    if (ahaNotes[i].id === id) { note = ahaNotes[i]; break; }
+  }
+  var merged = ahaRNote(note);
+  merged.student = (kind === 'self') ? 'self' : 'class';
+  merged.student_at = new Date().toISOString();
+  var noteTxt = JSON.stringify(merged);
+
+  try {
+    var r = await sb.from('aha_notes').update({ resolved_note: noteTxt }).eq('id', id);
+    if (r && r.error) throw new Error(r.error.message);
+    if (note) note.resolved_note = noteTxt;
+    renderAhaList();
+    ahaToast('선생님께 정리 요청을 보냈어요');
+  } catch(e) {
+    ahaToast('보내기 실패: ' + (e.message || ''), 'error');
   }
 }
 

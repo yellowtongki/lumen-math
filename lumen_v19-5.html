@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-4';
+var APP_VER = 'v19-5';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -45617,19 +45617,67 @@ window.ahaToggleGroup=ahaToggleGroup;
 function ahaToggleResolved(){ AHA_SHOW_RESOLVED=!AHA_SHOW_RESOLVED; render(); }
 window.ahaToggleResolved=ahaToggleResolved;
 
+/* ═══════════ ★ v19-5: 「왜 해결했나」 이유 기록 (docs/aha_backlog_resolve.md §1) ═══════════
+ *   aha_notes 의 이미 있는 칸 resolved_note(text)에 JSON 글월 하나를 넣는다.
+ *   {"reason":"answered|self|class|skip","by":"teacher","at":ISO,
+ *    "student":"class|self","student_at":ISO}
+ *   student·student_at 은 학생앱이 먼저 남긴 「정리해 주세요」 표시라, 선생님이 정리할 때
+ *   지우지 않고 합쳐 쓴다. 옛 값(빈 값·자유롭게 쓴 글)은 JSON 이 아니므로 그냥 무시한다. */
+var AHA_REASONS=[['answered','💬','답변함'],['self','🙋','스스로 해결'],['class','🏫','수업에서 다룸'],['skip','⏭','넘어감(오래됨)']];
+function ahaReasonOf(code){
+  for(var i=0;i<AHA_REASONS.length;i++){ if(AHA_REASONS[i][0]===code) return AHA_REASONS[i]; }
+  return null;
+}
+/* resolved_note → 객체 (못 읽으면 빈 객체) */
+function ahaRNote(n){
+  if(!n) return {};
+  var v=n.resolved_note;
+  if(!v) return {};
+  if(typeof v==='object') return v;
+  try{ var o=JSON.parse(String(v)); return (o && typeof o==='object' && !(o instanceof Array)) ? o : {}; }
+  catch(e){ return {}; }
+}
+/* 기존 값에 patch 를 합친 JSON 글월 (학생 표시를 지우지 않는다) */
+function ahaRNoteMerge(n, patch){
+  var o=ahaRNote(n), k;
+  if(patch){ for(k in patch){ if(Object.prototype.hasOwnProperty.call(patch,k)) o[k]=patch[k]; } }
+  return JSON.stringify(o);
+}
+/* 해결된 줄에 붙는 이유 배지 (💬 · 🙋 · 🏫 · ⏭) */
+function ahaReasonBadge(n, small){
+  if(!n || ahaIsPending(n)) return '';
+  var info=ahaReasonOf(ahaRNote(n).reason);
+  if(!info) return '';
+  return '<span title="해결 이유" style="display:inline-block;font-size:'+(small?'9.5px':'11px')+';font-weight:800;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;border-radius:7px;padding:0 7px;margin-left:5px;white-space:nowrap">'+info[1]+' '+info[2]+'</span>';
+}
+/* 학생앱이 먼저 남긴 표시 배지 (아직 미해결인 줄에 보여 준다) */
+function ahaStudentMarkBadge(n){
+  var o=ahaRNote(n);
+  if(!o.student || !ahaIsPending(n)) return '';
+  var ko=(o.student==='class')?'수업에서 배움':'이제 알아요';
+  return '<span title="학생이 학생앱에서 「정리해 주세요」를 눌렀습니다" style="font-weight:800;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:5px;padding:0 5px">🙋 학생: '+ko+'</span>';
+}
+
 function ahaResolve(id){
   var n=null; for(var i=0;i<ahaNotes.length;i++){ if(ahaNotes[i].id===id){ n=ahaNotes[i]; break; } }
   if(!n) return;
   var newStatus = (n.status==='resolved') ? 'pending' : 'resolved';
   var ra = (newStatus==='resolved') ? new Date().toISOString() : null;
+  /* ★ v19-5: 단건 「✓ 해결」은 지금처럼 바로 해결하되 이유를 「💬 답변함」으로 적어 둔다.
+   *   미해결로 되돌릴 때는 resolved_note 를 건드리지 않는다(학생 표시를 지우지 않으려고). */
+  var prevNote=n.resolved_note;
+  var rn=(newStatus==='resolved') ? ahaRNoteMerge(n,{reason:'answered', by:'teacher', at:ra}) : null;
   n.status=newStatus; n.resolved_at=ra; // 낙관적 반영
+  if(rn!=null) n.resolved_note=rn;
   render();
   var sb; try{ sb=getSupaClient(); }catch(e){ sb=null; }
   if(!sb) return;
   sb.from('aha_notes').update({status:newStatus}).eq('id',id).then(function(r){
-    if(r && r.error){ console.error('상태 변경 실패',r.error); alert('상태 변경 실패: '+r.error.message); n.status=(newStatus==='resolved'?'pending':'resolved'); n.resolved_at=(newStatus==='resolved'?null:ra); render(); }
+    if(r && r.error){ console.error('상태 변경 실패',r.error); alert('상태 변경 실패: '+r.error.message); n.status=(newStatus==='resolved'?'pending':'resolved'); n.resolved_at=(newStatus==='resolved'?null:ra); n.resolved_note=prevNote; render(); }
   });
-  sb.from('aha_notes').update({resolved_at:ra}).eq('id',id).then(function(r){ if(r && r.error){ console.warn('resolved_at 저장 실패 — aha_notes에 resolved_at 컬럼을 추가하세요.', r.error.message); } });
+  var extra={resolved_at:ra};
+  if(rn!=null) extra.resolved_note=rn;
+  sb.from('aha_notes').update(extra).eq('id',id).then(function(r){ if(r && r.error){ console.warn('resolved_at/resolved_note 저장 실패 — aha_notes에 해당 컬럼이 있는지 확인하세요.', r.error.message); } });
 }
 window.ahaResolve=ahaResolve;
 
@@ -45639,42 +45687,119 @@ window.ahaMselToggle=ahaMselToggle;
 function ahaMselClear(){ AHA_MSEL={}; render(); }
 window.ahaMselClear=ahaMselClear;
 function ahaMselCount(){ return Object.keys(AHA_MSEL).length; }
-function ahaBulkResolve(){
+/* ★ v19-5: 「이 묶음 모두 고르기」가 고를 대상 — 지금 화면에 보이는 미해결 노트 */
+function ahaMselScope(){
+  var arr=[];
+  try{
+    if(typeof VIEW!=='undefined' && VIEW==='aha'){
+      arr=(AHA_AXIS==='bench') ? wbCurList() : ahaCurrentNotes();
+    }
+  }catch(e){ arr=[]; }
+  return (arr||[]).filter(ahaIsPending);
+}
+function ahaMselAll(){
+  var arr=ahaMselScope();
+  if(!arr.length){ ahaToast('고를 미해결 노트가 없습니다'); return; }
+  arr.forEach(function(n){ AHA_MSEL[n.id]=true; });
+  render();
+}
+window.ahaMselAll=ahaMselAll;
+
+/* ── 이유 고르기 창 (오버레이는 한 번에 하나 — IBQ_OVERLAYS 규칙) ── */
+function ahaReasonClose(){ var ov=document.getElementById('aha-reason-ov'); if(ov) ov.remove(); }
+window.ahaReasonClose=ahaReasonClose;
+function ahaReasonPick(){
+  var c=ahaMselCount();
+  if(!c) return;
+  /* 채점 칸에서 고치던 점수(IBQ_D)는 지켜 준다 — 창만 정리한다 */
+  var keepId=(typeof IBQ_ID!=='undefined')?IBQ_ID:null, keepD=(typeof IBQ_D!=='undefined')?IBQ_D:null;
+  ibqCloseOthers('aha-reason-ov');
+  try{ IBQ_ID=keepId; IBQ_D=keepD; }catch(e){}
+  var ov=document.getElementById('aha-reason-ov');
+  if(!ov){ ov=document.createElement('div'); ov.id='aha-reason-ov'; document.body.appendChild(ov); }
+  ov.style.cssText=IBQ_OV_CSS;
+  ov.onclick=function(e){ if(e.target===ov) ahaReasonClose(); };
+  var btns='';
+  AHA_REASONS.forEach(function(r){
+    btns+='<button onclick="ahaBulkResolve(\''+r[0]+'\')" style="display:block;width:100%;text-align:left;background:#fff;border:1.5px solid #e2e8f0;border-radius:11px;padding:13px 15px;font-size:14.5px;font-weight:800;color:#0d2240;cursor:pointer;font-family:inherit;margin-bottom:8px">'
+      +r[1]+' '+r[2]
+      +(r[0]==='self'?'<span style="display:block;font-size:11px;font-weight:600;color:#b45309;margin-top:3px">이것만 리그의 「스스로 해결」로 들어갑니다</span>':'')
+      +'</button>';
+  });
+  ov.innerHTML='<div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;width:min(420px,96vw);max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(13,34,64,.4)">'
+    +'<div style="background:#0d2240;color:#fff;padding:13px 16px;display:flex;align-items:center;gap:9px">'
+    +  '<div style="font-size:14.5px;font-weight:800">✓ '+c+'건을 왜 해결하나요?</div>'
+    +  '<div onclick="ahaReasonClose()" style="margin-left:auto;cursor:pointer;background:rgba(255,255,255,.15);border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700">닫기</div>'
+    +'</div>'
+    +'<div style="padding:14px 16px 6px">'+btns+'</div>'
+    +'<div style="padding:0 16px 16px">'
+    +  '<button onclick="ahaReasonClose()" style="width:100%;background:#f1f5f9;border:none;border-radius:11px;padding:11px;font-size:13px;font-weight:700;color:#64748b;cursor:pointer;font-family:inherit">취소</button>'
+    +  '<div style="font-size:11px;color:#94a3b8;margin-top:9px;line-height:1.7">고른 이유는 노트마다 기록으로 남습니다. 학생이 학생앱에서 남긴 표시는 지워지지 않습니다.</div>'
+    +'</div></div>';
+}
+window.ahaReasonPick=ahaReasonPick;
+
+/* ★ v19-5: 일괄 해결 — 이유 없이 부르면 이유 고르기 창부터 띄운다.
+ *   학생 표시를 지키려면 노트마다 resolved_note 값이 달라지므로 노트별로 따로 저장한다. */
+function ahaBulkResolve(reason){
   var ids=Object.keys(AHA_MSEL);
   if(!ids.length) return;
-  if(!confirm('선택한 '+ids.length+'건을 모두 해결 처리할까요?')) return;
+  if(!ahaReasonOf(reason)){ ahaReasonPick(); return; }
+  ahaReasonClose();
+  var info=ahaReasonOf(reason);
   var now=new Date().toISOString();
-  var prev={};
-  ahaNotes.forEach(function(n){ if(AHA_MSEL[n.id]){ prev[n.id]={s:n.status,r:n.resolved_at}; n.status='resolved'; n.resolved_at=now; } });
+  var prev={}, payloads={}, order=[];
+  (ahaNotes||[]).forEach(function(n){
+    if(!AHA_MSEL[n.id]) return;
+    prev[n.id]={s:n.status, r:n.resolved_at, note:n.resolved_note, self:n.self_solved};
+    var pay={ status:'resolved', resolved_at:now, resolved_note:ahaRNoteMerge(n,{reason:reason, by:'teacher', at:now}) };
+    /* 「🙋 스스로 해결」만 기존 리그 규칙(해결 경로 「스스로」·🎲 검사)에 걸리게 한다 */
+    if(reason==='self' && !n.self_solved){
+      pay.self_solved={ how:'선생님이 스스로 해결로 정리', at:now, by:'teacher' };
+      n.self_solved=pay.self_solved;
+    }
+    payloads[n.id]=pay; order.push(n.id);
+    n.status='resolved'; n.resolved_at=now; n.resolved_note=pay.resolved_note;   // 낙관적 반영
+  });
   AHA_MSEL={};
   render();
+  if(!order.length) return;
   var sb; try{ sb=getSupaClient(); }catch(e){ sb=null; }
   if(!sb) return;
-  sb.from('aha_notes').update({status:'resolved'}).in('id',ids).then(function(r){
-    if(r && r.error){
-      console.error('일괄 해결 실패',r.error); alert('일괄 해결 실패: '+r.error.message);
-      ahaNotes.forEach(function(n){ if(prev[n.id]){ n.status=prev[n.id].s; n.resolved_at=prev[n.id].r; } });
-      render();
-    } else { ahaToast(ids.length+'건 해결 처리됨'); }
-  });
-  sb.from('aha_notes').update({resolved_at:now}).in('id',ids).then(function(r){ if(r && r.error){ console.warn('resolved_at 저장 실패', r.error.message); } });
+  var rollback=function(msg){
+    console.error('일괄 해결 실패', msg); alert('일괄 해결 실패: '+msg);
+    (ahaNotes||[]).forEach(function(n){
+      if(!prev[n.id]) return;
+      n.status=prev[n.id].s; n.resolved_at=prev[n.id].r; n.resolved_note=prev[n.id].note; n.self_solved=prev[n.id].self;
+    });
+    render();
+  };
+  Promise.all(order.map(function(id){ return sb.from('aha_notes').update(payloads[id]).eq('id',id); })).then(function(rs){
+    var bad=null;
+    (rs||[]).forEach(function(r){ if(r && r.error && !bad) bad=r.error; });
+    if(bad) rollback(bad.message||String(bad));
+    else ahaToast(order.length+'건 해결 — '+info[1]+' '+info[2]);
+  }, function(err){ rollback((err&&err.message)||String(err)); });
 }
 window.ahaBulkResolve=ahaBulkResolve;
 // 선택 시 화면 하단에 뜨는 일괄 해결 바
 function ahaMselBar(){
   var c=ahaMselCount();
   if(!c) return '';
-  return '<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9500;background:#0d2240;color:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(13,34,64,.4);display:flex;align-items:center;gap:12px;padding:10px 16px">'
+  var scope=ahaMselScope().length;
+  return '<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9500;background:#0d2240;color:#fff;border-radius:14px;box-shadow:0 10px 30px rgba(13,34,64,.4);display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap;max-width:94vw">'
     +'<span style="font-size:13.5px;font-weight:800">☑️ '+c+'건 선택</span>'
     +'<button onclick="ahaBulkResolve()" style="background:#10b981;color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit">✓ 일괄 해결</button>'
-    +'<button onclick="ahaMselClear()" style="background:rgba(255,255,255,0.14);color:#fff;border:none;border-radius:9px;padding:9px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">해제</button>'
+    +(scope?('<button onclick="ahaMselAll()" style="background:rgba(255,255,255,0.14);color:#fff;border:none;border-radius:9px;padding:9px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">이 묶음 모두 고르기 ('+scope+')</button>'):'')
+    +'<button onclick="ahaMselClear()" style="background:rgba(255,255,255,0.14);color:#fff;border:none;border-radius:9px;padding:9px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">모두 해제</button>'
     +'</div>';
 }
-// 노트 카드용 선택 체크박스 (미해결 노트만)
-function ahaMselCbx(n){
+// 노트 카드용 선택 체크박스 (미해결 노트만) — stop=true 면 줄 클릭(노트 고르기)까지 번지지 않게 막는다
+function ahaMselCbx(n, stop){
   if(!ahaIsPending(n)) return '';
   var on=!!AHA_MSEL[n.id];
-  return '<span onclick="ahaMselToggle(\''+n.id+'\')" title="선택 후 일괄 해결" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;flex:none;'+(on?'background:#1d6fe8;border:2px solid #1d6fe8;color:#fff;font-size:13px;font-weight:900':'background:#fff;border:2px solid #cbd5e1')+'">'+(on?'✓':'')+'</span>';
+  var click=(stop?'event.stopPropagation();':'')+'ahaMselToggle(\''+n.id+'\')';
+  return '<span onclick="'+click+'" title="선택 후 일괄 해결" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;flex:none;'+(on?'background:#1d6fe8;border:2px solid #1d6fe8;color:#fff;font-size:13px;font-weight:900':'background:#fff;border:2px solid #cbd5e1')+'">'+(on?'✓':'')+'</span>';
 }
 
 /* ═══════════ v16-15: 재풀이 제출 확인 ═══════════ */
@@ -46879,7 +47004,18 @@ function wbSpecials(notes){
   });
   /* ★ v18-166: 🔁 재풀이가 올라왔는데 아직 인정 안 한 것 — 확인할 것만 모아 본다 */
   var rtd=wbRetryTodo(notes);
+  /* ★ v19-5: 밀린 질문 정리 — 「⏳ 14일 넘게 밀림」과 「✓ 학생이 정리 요청」을 따로 모아 본다 */
+  var old14=[], stuReq=[];
+  var cut=Date.now()-14*864e5;
+  notes.forEach(function(n){
+    if(!ahaIsPending(n)) return;
+    var t=new Date(n.created_at).getTime();
+    if(!isNaN(t) && t<cut) old14.push(n);
+    if(ahaRNote(n).student) stuReq.push(n);
+  });
   var raw=[ {key:'x_retry', label:'🔁 재풀이 확인', chip:'🔁 재풀이', list:rtd},
+            {key:'x_stureq', label:'✓ 학생이 정리 요청', chip:'✓ 정리요청', list:stuReq},
+            {key:'x_old14', label:'⏳ 14일 넘게 밀림', chip:'⏳ 밀림', list:old14},
             {key:'x_best', label:'⭐ 베스트 후보', chip:'⭐ 후보', list:best},
             {key:'x_explore', label:'🔎 탐구노트', chip:'🔎 탐구', list:exp},
             {key:'x_self', label:'🎲 검사 필요', chip:'🎲 검사', list:chk} ];
@@ -47046,9 +47182,15 @@ function wbMiniRow(n, same){
   var _off=ibqPaperOff(n), _offN=0;
   ['L','A','M','P'].forEach(function(k){ if(_off[k] && wbAxisText(n,k)) _offN++; });
   if(_offN) unBadge+='<span title="앱에서 직접 적은 칸 '+_offN+'개 · 점수 제외" style="font-weight:800;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:5px;padding:0 5px">✍️'+_offN+'</span>';
+  /* ★ v19-5: 학생이 학생앱에서 남긴 「정리해 주세요」 표시 */
+  unBadge+=ahaStudentMarkBadge(n);
+  /* ★ v19-5: 작업대에서도 여러 건을 골라 한 번에 해결할 수 있게 체크 상자를 붙인다.
+   *   (해결된 줄은 체크 상자가 없으므로 빈 칸을 넣어 줄 모양을 맞춘다) */
+  var cbx=ahaMselCbx(n, true) || '<span style="display:inline-block;width:22px;height:22px"></span>';
   return '<div onclick="wbPick(\''+ahaEsc(String(n.id))+'\')" data-wbrow="'+ahaEsc(String(n.id))+'" style="cursor:pointer;background:'+(isFinal?'#f7fdf9':'#fff')
     +';border:1.5px solid '+(on?'#1d6fe8':(isFinal?'#bbf7d0':'#e6eaf1'))+';'+(on?'box-shadow:0 0 0 2px #bfdbfe;':'')
-    +(isFinal&&!on?'opacity:.78;':'')+'border-radius:11px;padding:8px 10px;margin-bottom:6px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:9px;align-items:center">'
+    +(isFinal&&!on?'opacity:.78;':'')+'border-radius:11px;padding:8px 10px;margin-bottom:6px;display:grid;grid-template-columns:22px 44px minmax(0,1fr) auto;gap:9px;align-items:center">'
+    +cbx
     +thumb
     +'<div style="min-width:0">'
     +  '<div style="font-size:12.5px;font-weight:900;color:#0d2240">'+ahaEsc(st?st.name:(n.student_name||'?'))
@@ -47524,7 +47666,7 @@ function ahaRow(n, showName){
     +'<div style="flex:1;min-width:0">'
     +  '<div style="font-size:19px;font-weight:800;color:'+tMain+';line-height:1.25;word-break:break-word">'+nm+ahaEsc(ahaSourceName(n))+srcCheck+'</div>'
     +  '<div style="font-size:17px;font-weight:800;color:'+tNum+';margin-top:2px">'+detail+'</div>'
-    +  '<div style="font-size:11px;color:#94a3b8;margin-top:3px">'+ahaDateLabel(n.created_at)+(resolved?' · ✅ 해결됨':'')+'</div>'
+    +  '<div style="font-size:11px;color:#94a3b8;margin-top:3px">'+ahaDateLabel(n.created_at)+(resolved?' · ✅ 해결됨':'')+ahaReasonBadge(n)+'</div>'
     +  retryBadge
     +'</div>'
     +'<div style="flex:1;flex-shrink:1;min-width:120px;max-width:320px">'+errs+memo+ai+'</div>'
@@ -47561,6 +47703,7 @@ function ahaCell(n, showName){
     +  '<span style="font-size:13px;font-weight:800;color:'+tNum+';white-space:nowrap">'+nm+detail+'</span>'
     +  '<span style="font-size:11px;font-weight:600;color:'+tTitle+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">'+ahaEsc(ahaSourceName(n))+' '+srcCheck+'</span>'
     +  aiMark
+    +  ahaReasonBadge(n, true)      /* ★ v19-5: 해결된 노트에 왜 해결했는지 */
     +  '<span style="font-size:9.5px;color:#94a3b8;margin-left:auto;white-space:nowrap;flex:none">'+dt+'</span>'
     +'</div>'
     + row2
@@ -47988,7 +48131,8 @@ window.ibqDoReadPhoto=ibqDoReadPhoto;
  *   큰 창은 한 번에 하나만 띄우고, 뒷배경도 충분히 어둡게 한다.
  *   사진 크게 보기(aha-photo-modal)는 위에 겹쳐도 되는 것이라 건드리지 않는다. */
 /* ★ v18-165: 'lg-enc-ov' = 리그 화면 「명단 보기」 창 (한 번에 하나 규칙에 함께 둔다) */
-var IBQ_OVERLAYS=['ibq-ov','ibq-cfg-ov','ibl-ov','pltt-ov','aha-print-ov','race-aw-ov','lg-enc-ov'];
+/* ★ v19-5: 'aha-reason-ov' = 일괄 해결 「이유 고르기」 창 (한 번에 하나 규칙에 함께 둔다) */
+var IBQ_OVERLAYS=['ibq-ov','ibq-cfg-ov','ibl-ov','pltt-ov','aha-print-ov','race-aw-ov','lg-enc-ov','aha-reason-ov'];
 function ibqCloseOthers(keep){
   IBQ_OVERLAYS.forEach(function(id){
     if(id===keep) return;
