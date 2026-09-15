@@ -24,6 +24,25 @@
 - 객관식(`MULTIPLE_CHOICE`)은 매쓰플랫이 채점하므로 `auto` 여부와 무관하게 **학생앱에서 보기 번호 단추**로 받고 우리가 채점해 되돌려쓴다(정답 비공개 상태에서도 되게).
 - `ESSAY`·`self:true`는 교재와 같은 자기채점(사진 → 정답 그림 → ◯✗).
 
+### 검증된 되돌려쓰기 본문 (2026-09-15 실측 — 쓰기→확인→원복 전부 성공)
+```
+PATCH https://api.mathflat.com/student-worksheet/assign/{swId}/scoring
+헤더: 교재와 같음 (Bearer 토큰 · x-platform: TEACHER_WEB · x-freewheelin-host: mathflat.com)
+본문: [ { studentWorksheetId: 93968559,      // 배정 id (주소의 {swId}와 같은 값)
+          worksheetProblemId: 2384635378,   // 문항 id (problem API의 worksheetProblemId)
+          userAnswer: "",                   // 학생이 쓴 답 (없으면 빈 문자열)
+          result: "CORRECT" } ]             // CORRECT · WRONG · UNKNOWN · NONE
+응답 200: { id, scoreDatetime, score, status }
+```
+- **오답은 `WRONG` 이다.** 교재의 `INCORRECT`를 보내면 `400 MESSAGE_NOT_READABLE`. (O→CORRECT, X→**WRONG**, ?→UNKNOWN, 되돌리기→NONE)
+- `?version=v2`는 필요 없다(붙여도 200). `studentWorksheetId`를 빼도 200이지만, 확인된 꼴은 넣은 쪽이라 워커는 넣어 보낸다. 배열이 아닌 단일 객체·`scoringList` 래핑은 시험하지 않았다(첫 시도가 성공).
+- 실검증 기록: 학습지 `sw=93968559`(중2-2 도형의 성질1) 의 미채점 문항 `wpId=2384635378` 하나로
+  `WRONG → 확인 → NONE 원복` · `UNKNOWN → 확인 → NONE 원복` · `CORRECT → 확인 → NONE 원복` 3회.
+  문항 값·점수(90)·정답 수(9)는 원래대로 돌아왔다. 다만 **배정 요약(`GET /student-worksheet/assign/{swId}`)의
+  `status`가 PROGRESS→COMPLETE로 바뀐 채 되돌아오지 않았고 `scoreDatetime`이 오늘로 바뀌었다**
+  (반 목록의 학생 상태는 그대로 PROGRESS). 채점 상태를 되돌리는 API는 찾지 못했다.
+  → 되돌려쓰기는 학생이 실제로 채점한 문항에만 하므로 운영에는 영향이 없다.
+
 ### `hw_scores_<코드>` / `hw_sync_<코드>` — 교재와 같은 저장. 키만 `"ws_<swId>_<wpId>"`, 대기열 항목에 `kind:'ws', swId` 추가.
 ### 워커: `kind:'ws'` 항목은 `PATCH student-worksheet/assign/{swId}/scoring` 로 보낸다(본문 모양은 검증 결과대로).
 

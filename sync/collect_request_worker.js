@@ -209,7 +209,16 @@ async function runWsRequests() {
  *              userAnswer, at }], updated }
  * 워커가 progressId별로 묶어 PATCH /student-workbook/scoring (본문=배열 그대로) 후
  * 성공한 항목을 대기열에서 제거하고 'hw_synced_<code>'에 이력으로 남긴다.
- * 실패 항목은 남겨서 다음 실행(5분 뒤·새벽)에 재시도된다. */
+ * 실패 항목은 남겨서 다음 실행(5분 뒤·새벽)에 재시도된다.
+ *
+ * ── 학습지 항목 (2026-09-15 추가, 계약: docs/worksheet_score_contract.md §1)
+ * 같은 대기열에 kind:'ws' 항목이 섞여 온다:
+ *   { id, kind:'ws', swId(studentWorksheetId), wpId(worksheetProblemId), result:'O|X|?', userAnswer, at }
+ * 학습지는 배정(swId)별로 묶어
+ *   PATCH /student-worksheet/assign/{swId}/scoring
+ *   본문 [{ studentWorksheetId, worksheetProblemId, userAnswer, result }]  (교재와 같은 배열 꼴)
+ * ★ 학습지의 오답 값은 교재와 달리 'WRONG' 이다 ('INCORRECT'는 400 MESSAGE_NOT_READABLE).
+ *   2026-09-15 실측: NONE 문항 1개로 WRONG·UNKNOWN·CORRECT 쓰기→확인→NONE 원복 모두 성공. */
 async function runHwSync() {
   const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=like.hw_sync_*&select=key,value`, { headers: sbH() });
   if (!r.ok) return false;
@@ -223,15 +232,47 @@ async function runHwSync() {
 
   let token = null;
   try { token = await mfLogin(); } catch (e) { log(`교재채점 반영: 매쓰플랫 로그인 실패 — ${e.message}`); return true; }
-  const RES_MAP = { O: 'CORRECT', X: 'INCORRECT', '?': 'UNKNOWN' };
-  let totOk = 0, totFail = 0;
+  const RES_MAP = { O: 'CORRECT', X: 'INCORRECT', '?': 'UNKNOWN' };      // 교재
+  const RES_MAP_WS = { O: 'CORRECT', X: 'WRONG', '?': 'UNKNOWN' };       // 학습지(오답은 WRONG)
+  let totOk = 0, totFail = 0, totWsOk = 0;
 
   for (const q of queues) {
     const items = q.v.items;
-    // progressId별로 묶어 한 번에 PATCH
-    const byPid = {};
-    items.forEach((it) => { (byPid[it.pid] = byPid[it.pid] || []).push(it); });
     const okIds = new Set(); const failNote = {};
+
+    // ── 학습지 항목(kind:'ws') — 배정(swId)별로 묶어 PATCH ──
+    const wsItems = items.filter((it) => it && it.kind === 'ws' && it.swId && it.wpId);
+    const bySw = {};
+    wsItems.forEach((it) => { (bySw[it.swId] = bySw[it.swId] || []).push(it); });
+    for (const swId of Object.keys(bySw)) {
+      const group = bySw[swId];
+      const mkBody = (arr) => arr.map((it) => ({
+        studentWorksheetId: Number(swId),
+        worksheetProblemId: Number(it.wpId),
+        userAnswer: it.userAnswer != null ? String(it.userAnswer) : '',
+        result: RES_MAP_WS[it.result] || it.result || 'NONE',
+      }));
+      try {
+        await mfCall('PATCH', `/student-worksheet/assign/${swId}/scoring`, mkBody(group));
+        group.forEach((it) => okIds.add(it.id));
+      } catch (e) {
+        // 한 문항이 거부되면 나머지까지 막히지 않도록 개별 재시도
+        let recovered = 0;
+        for (const it of group) {
+          try { await mfCall('PATCH', `/student-worksheet/assign/${swId}/scoring`, mkBody([it])); okIds.add(it.id); recovered++; }
+          catch (e2) { failNote[it.id] = e2.message; }
+          await new Promise((z) => setTimeout(z, 120));
+        }
+        if (!recovered) log(`학습지채점 반영: 학습지 ${swId} 실패 — ${e.message}`);
+      }
+      await new Promise((z) => setTimeout(z, 150));
+    }
+    totWsOk += wsItems.filter((it) => okIds.has(it.id)).length;
+
+    // ── 교재 항목 — progressId별로 묶어 한 번에 PATCH (기존 그대로) ──
+    const bkItems = items.filter((it) => !(it && it.kind === 'ws'));
+    const byPid = {};
+    bkItems.forEach((it) => { (byPid[it.pid] = byPid[it.pid] || []).push(it); });
     for (const pid of Object.keys(byPid)) {
       const group = byPid[pid];
       const body = group.map((it) => ({
@@ -283,7 +324,7 @@ async function runHwSync() {
       body: JSON.stringify([{ key: q.key, value: { items: remain, updated: new Date().toISOString(), lastRun: new Date().toISOString(), lastFail: Object.keys(failNote).length ? failNote : undefined } }]),
     });
   }
-  log(`교재채점 반영: 성공 ${totOk} · 실패(재시도 예정) ${totFail}`);
+  log(`채점 반영: 성공 ${totOk}(그중 학습지 ${totWsOk}) · 실패(재시도 예정) ${totFail}`);
   return true;
 }
 
