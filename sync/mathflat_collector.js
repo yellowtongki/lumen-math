@@ -38,6 +38,7 @@
  *   --bookans-only  교재 정답사전(mf_bookans_*)만 갱신 — 학생에게 배정된 중등 교재만
  *   --book ID       정답사전을 그 교재 하나만 갱신 (--bookans-only 와 함께)
  *   --skip-swb      학생 교재상태(mf_swb_*) 재수집을 건너뛰고 저장된 것을 쓴다 (빠름)
+ *   --elem          정답사전을 초등 배정 교재만 갱신 (--bookans-only 와 함께 · 학생 많은 순 → 초6 → 초5 → 초4)
  *
  * 출력 (개인정보 포함 → 커밋 금지, .gitignore 처리):
  *   {out-dir}/mf_answer_records.json   [A] 문항 단위 학습지 정오답
@@ -69,6 +70,7 @@ const SKIP_HISTORY = has('--skip-history');
 const SKIP_WORKBOOK = has('--skip-workbook'); // 교재 문항단위 수집 건너뛰기
 const ONE_BOOK = opt('--book', '');           // 정답사전을 이 교재(bookId) 하나만 갱신
 const SKIP_SWB = has('--skip-swb');           // 학생 교재상태(mf_swb_*) 재수집 건너뛰기 (저장된 것 사용)
+const ELEM_ONLY = has('--elem');              // 정답사전을 초등 배정 교재만 (2판 초등 확장)
 
 function log(...a) { const t = new Date().toISOString().replace('T', ' ').slice(0, 19); console.log(`[${t}]`, ...a); }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -1468,7 +1470,9 @@ async function refreshStudentWorkbooks() {
     let nStu = 0, nBook = 0;
     for (const st of students) {
       const books = [];
-      for (const wt of ['PUBLIC', 'SCHOOL', 'CUSTOM']) {
+      // 시그니처 교재(Lumen Brilliance 등)는 CUSTOM_SIGNATURE 로 온다 — 빠뜨리면 학생앱 교재 목록에 안 보인다.
+      // 이 교재들은 매쓰플랫이 스스로 채점하므로 auto:true 로 표시해 둔다.
+      for (const wt of ['PUBLIC', 'SCHOOL', 'CUSTOM', 'CUSTOM_SIGNATURE', 'SIGNATURE']) {
         let list = null;
         try { list = await api(`/student-workbook/student/${st.mf_student_id}?workbookType=${wt}`); } catch (e) { continue; }
         if (!Array.isArray(list)) list = (list && list.content) || [];
@@ -1488,7 +1492,8 @@ async function refreshStudentWorkbooks() {
           })).filter((p) => p.pid && p.wpid);
           pages.forEach((p) => { (allPages[b.id] = allPages[b.id] || new Set()).add(String(p.wpid)); });
           books.push({
-            bid: b.id, type: wt, title: (b.fulltitle || ((b.title || '') + ' ' + (b.subtitle || ''))).replace(/\s+/g, ' ').trim(),
+            bid: b.id, type: wt, auto: /SIGNATURE/.test(wt),   // auto = 매쓰플랫이 스스로 채점하는 시그니처 교재
+            title: (b.fulltitle || ((b.title || '') + ' ' + (b.subtitle || ''))).replace(/\s+/g, ' ').trim(),
             swId, revId, round: b.recentRevisionRound || 1,
             rounds: Object.keys(b.roundToRevisionRoundMap || {}).length || 1,
             recentPage: b.recentPageNumber || null,
@@ -1583,17 +1588,23 @@ async function refreshBookAnswers() {
     } catch (e) {}
 
     // 대상 = 학생에게 배정된 교재 중 고등 제외.
-    // 순서 = 중등 먼저(초등은 나중) → 배정 학생 많은 순 → 중1 → 중2 → 중3
+    // 기본 순서 = 중등 먼저(초등은 나중) → 배정 학생 많은 순 → 중1 → 중2 → 중3
+    // --elem 이면 = 초등만 → 배정 학생 많은 순 → 초6 → 초5 → 초4
     const gradeRank = (g) => (g === '중1' ? 1 : g === '중2' ? 2 : g === '중3' ? 3 : 9);
+    const elemRank = (g) => (/^초6/.test(g || '') ? 1 : /^초5/.test(g || '') ? 2 : /^초4/.test(g || '') ? 3 : 9);
     const midFirst = (g) => (/^중/.test(g || '') ? 0 : 1);
     const targets = Object.keys(books).filter((bid) => {
       if (ONE_BOOK && String(bid) !== String(ONE_BOOK)) return false;
       if (/^고/.test(books[bid].grade || '')) return false;           // 고등 교재는 하지 않는다
+      if (ELEM_ONLY && !/^초/.test(books[bid].grade || '')) return false;   // --elem: 초등 교재만
       return (pages[bid] || []).length > 0;
-    }).sort((a, b) => (midFirst(books[a].grade) - midFirst(books[b].grade))
-      || (books[b].students - books[a].students)
-      || (gradeRank(books[a].grade) - gradeRank(books[b].grade)));
+    }).sort((a, b) => (ELEM_ONLY
+      ? ((books[b].students - books[a].students) || (elemRank(books[a].grade) - elemRank(books[b].grade)))
+      : ((midFirst(books[a].grade) - midFirst(books[b].grade))
+        || (books[b].students - books[a].students)
+        || (gradeRank(books[a].grade) - gradeRank(books[b].grade)))));
     if (!targets.length) { log('교재 정답사전: 대상 교재 없음'); return; }
+    if (ELEM_ONLY) log(`  (--elem) 초등 교재만 · ${targets.length}권`);
 
     // 한 번에 받는 새 페이지 상한 — 매쓰플랫 부하·약관 고려해 점진적으로 채운다(매일 새벽 반복)
     const PAGE_CAP = Number(process.env.BOOKANS_PAGE_CAP || 500);
@@ -1653,6 +1664,7 @@ async function refreshBookAnswers() {
 
 // v2-41 → 2판: 저장된 정답사전 전체를 현재 엔진 기준으로 다시 판정 (매쓰플랫 로그인 불필요)
 //   gradable·unit 뿐 아니라 shape·self 도 새로 쓴다. (img·cnt·units 는 수집 때만 채워진다)
+//   2판 초등 확장 뒤에는 초등 답 모양(○표 고르기·한글 점 이름·연산 기호 …)까지 여기서 다시 쓰인다.
 async function regradeBookAnswers() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
