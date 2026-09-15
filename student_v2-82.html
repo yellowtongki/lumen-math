@@ -1836,6 +1836,24 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .bk-next{width:100%;margin-top:9px;border:none;background:#0f766e;color:#fff;border-radius:11px;padding:12px 0;font-family:inherit;font-size:13.5px;font-weight:900;cursor:pointer}
 .bk-strip{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .bk-strip span{font-size:11px;font-weight:900;border-radius:8px;padding:4px 9px;background:#eef2f7;color:#475569}
+/* ★ v2-82: 초등 답 모양 — ○표 자리(pick) · 낱말 고르기(choice) · 연산 기호(op) · 단위 칩 */
+.bk-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bk-pick button{width:54px;height:46px;border:1.8px solid var(--border);border-radius:11px;background:var(--surface);font-family:inherit;font-size:21px;font-weight:900;color:#0f766e;cursor:pointer;line-height:1;padding:0}
+.bk-pick button.on{border-color:#14b8a6;background:#eefbf8;box-shadow:0 0 0 3px rgba(20,184,166,0.18)}
+.bk-pick .bk-picknum{font-size:9px;font-weight:800;color:#94a3b8;text-align:center;width:54px;margin-top:-4px}
+.bk-picks{display:flex;flex-direction:column;gap:2px;align-items:center}
+.bk-pgrp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bk-pgrp button{border:1.8px solid var(--border);background:var(--surface);border-radius:50px;padding:8px 15px;font-family:inherit;font-size:14px;font-weight:900;color:#334155;cursor:pointer}
+.bk-pgrp button.on{border-color:#0f766e;background:#0f766e;color:#fff}
+.bk-pgrp.op button{border-radius:11px;padding:8px 0;width:46px;font-size:19px}
+.bk-slot{display:flex;flex-direction:column;gap:5px;padding:8px;border:1px dashed var(--border);border-radius:11px;background:#f8fafc}
+.bk-slot .cap{font-size:9.5px;font-weight:900;color:#94a3b8}
+.bk-slots{display:flex;flex-direction:column;gap:7px}
+.bk-ugrp{display:flex;flex-direction:column;gap:6px}
+.bk-ugrp .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.bk-ugrp .cap{font-size:9.5px;font-weight:900;color:#94a3b8;width:34px;flex-shrink:0}
+.bk-ugrp button{border:1.8px solid var(--border);background:var(--surface);border-radius:50px;padding:7px 13px;font-family:inherit;font-size:13.5px;font-weight:900;color:#334155;cursor:pointer}
+.bk-go{border:none;background:#0f766e;color:#fff;border-radius:10px;padding:9px 16px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer}
 
 .h3-tiles4 .fn3{font-size:19px}
 .h3-tiles4 .fd3{font-size:13px}
@@ -3408,6 +3426,23 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-82 (2026-09-15) 📖 교재 채점 2판 — 초등 4~6학년 답 모양까지
+ *   · 초등 교재에만 나오는 답 모양을 앱이 알아보고, 그에 맞는 입력칸을 보여 줍니다.
+ *   · <b>도형 자판에 한글 자모 줄</b>이 생겼습니다. 초등은 점 이름을 ㄱ ㄴ ㄷ 로 쓰기
+ *     때문입니다(「점 ㄱ」 「선분 ㄱㄴ」 「각 ㄹㄴㄷ」). 낱말 단추도 함께 있습니다 —
+ *     점 · 선분 · 직선 · 반직선 · 변 · 면 · 각.
+ *     <b>학생이 초등이면 한글 자모 줄이 먼저</b> 나오고, 중·고등이면 A B C 가 먼저 나옵니다.
+ *   · <b>( )( ○ )( ) 처럼 ○표 하는 문제</b>는 빈 상자를 그려 줍니다. 상자를 누르면 ○ 가
+ *     들어가고, 다시 누르면 지워집니다. ○ 는 여러 개도 됩니다.
+ *   · <b>「십에 ○표 / 백에 ○표」처럼 낱말을 고르는 문제</b>는 낱말 칩으로 보여 줍니다.
+ *     고를 칸이 여럿이면 칸마다 칩 묶음이 따로 나옵니다.
+ *   · <b>+ − × ÷ = 를 넣는 문제</b>는 기호 단추 칸으로 보여 줍니다(왼쪽부터 차례로).
+ *   · <b>단위만 답인 문제</b>(㎢ · ㎡ · cm · L 등)는 단위 칩을 눌러서 답합니다.
+ *   · <b>「3시 20분」 「3m 20cm」처럼 칸이 여럿인 답</b>은 칸마다 이름표(시 · 분 · m · cm)를
+ *     붙여 두었습니다. 학생은 숫자만 칩니다.
+ *   · 보기 기호 자판에 ㉠ ㉡ ㉢ · ㉮ ㉯ ㉰ 를 넣었습니다(초등 교재에 자주 나옵니다).
+ *   · 각도 <b>40°</b> 처럼 적힌 정답이 화면에 바르게 보이도록 다듬었습니다.
+ *
  * v2-81 (2026-09-14) 📖 교재 채점 2판 — 답 모양에 맞는 입력칸 · 서술형은 내가 채점
  *   · 홈의 「📖 교재 채점」 단추가 <b>열렸습니다</b>(그동안 「준비 중」이었습니다).
  *   · 문항마다 <b>답 모양에 맞는 입력칸</b>이 나옵니다.
@@ -3527,7 +3562,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-81';
+var STU_VER = 'v2-82';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -10848,8 +10883,12 @@ function bkTypeTag(t){ return t==='PUBLIC'?['pub','시중교재']:(t==='SCHOOL'?
 function bkShortTitle(t){
   return String(t||'교재').replace(/\s+-\s+/g,' ').replace(/중등수학/g,'중').replace(/초등수학/g,'초').replace(/고등수학/g,'고').replace(/\(2\d개정\)/g,'').replace(/\s+/g,' ').trim();
 }
+/* v2-82: 각도 표기를 하나로 — 40^{\circ} · 40^\circ · 40˚ → 40° */
+function bkDegNorm(s){
+  return String(s==null?'':s).replace(/\^\s*\{\s*\\circ\s*\}/g,'°').replace(/\^\s*\\circ/g,'°').replace(/[˚]/g,'°');
+}
 function bkCleanAns(a){
-  return String(a==null?'':a)
+  return bkDegNorm(a)
     .replace(/\\d?frac\{(-?[0-9]+)\}\{(-?[0-9]+)\}/g,'$1/$2')
     .replace(/\\text\s*\{([^}]*)\}/g,'$1')
     .replace(/\\;|\\,|\\!/g,' ').replace(/\\pm/g,'±')
@@ -13625,16 +13664,57 @@ function bkLabelText(u){
 }
 var BK_UNITS='㎠|㎡|㎤|㎥|㎝|㎜|㎞|㎖|˚|°|℃|cm³|cm²|cm|mm|km|kg|mL|L|g|m|개|명|원|번|회|점|초|분|시간|일|주|장|권|살|층|칸|마리|송이|그루|줄|바퀴|배|%';
 function bkUnitTail(a){
-  var m=String(a==null?'':a).match(new RegExp('('+BK_UNITS+')\\s*$'));
+  var m=bkDegNorm(a).match(new RegExp('('+BK_UNITS+')\\s*$'));
   return m?m[1]:'';
+}
+/* ── v2-82: 초등 확장 ── */
+/* 학생이 초등인가? studentInfo.grade 는 「초등학교 5학년」 「초5」 같은 글자다 */
+function bkIsElem(){
+  try{ return /^\s*초/.test(String((window.studentInfo&&studentInfo.grade)||'')); }catch(e){ return false; }
+}
+/* 단위만 답인 문항에 보여 줄 단위 칩 — 넓이 / 길이 / 들이 / 무게 */
+var BK_UNITCHIPS=[
+  ['넓이',['㎟','㎠','㎡','㎢']],
+  ['길이',['mm','cm','m','km']],
+  ['들이',['mL','L']],
+  ['무게',['g','kg','t']]
+];
+var BK_UNITSET=(function(){ var o={}; BK_UNITCHIPS.forEach(function(g){ g[1].forEach(function(u){ o[u]=1; }); }); return o; })();
+/* 「X에 ○표」에서 보기를 못 찾았을 때 쓰는 흔한 짝 */
+var BK_CHOICE_PAIRS=[['십','백','천'],['이상','이하'],['초과','미만'],['크다','작다'],['예','아니요']];
+/* 이름표를 칸 앞에 둘까 뒤에 둘까 — 「교점:」 「x=」는 앞, 「시」 「분」 「cm」는 뒤 */
+function bkLabelAfter(lb){
+  lb=String(lb==null?'':lb).trim();
+  return !!lb && !/[:=]\s*$/.test(lb);
+}
+/* 이 칸이 「눌러서 고르는 칸」인가 (자판을 열지 않는다) */
+function bkTapKind(k){ k=String(k||''); return k==='pick'||k==='choice'||k==='op'; }
+function bkHasTapKind(sh){
+  var ps=(sh&&sh.parts)||[];
+  for(var i=0;i<ps.length;i++){ if(bkTapKind(ps[i]&&ps[i].kind)) return true; }
+  return false;
+}
+/* 단위 자체가 답인 문항인가 — 엔진이 알려 주면 그대로, 없으면 앱이 짐작 */
+function bkIsUnitWord(sh,p){
+  var ps=(sh&&sh.parts)||[];
+  if(ps.length===1&&(String(ps[0].kind||'')==='unitWord'||ps[0].unitWord===true)) return true;
+  if(!sh||sh.shape!=='word'||ps.length>1) return false;
+  var a=bkCleanAns(p&&p.answer).replace(/\s+/g,'');
+  return !!BK_UNITSET[a];
 }
 /* 엔진에 shapeOf가 아직 없을 때 앱이 짐작하는 답 모양 */
 function bkGuessShape(p){
-  var a=String((p&&p.answer)==null?'':p.answer).trim();
+  var a=bkDegNorm(String((p&&p.answer)==null?'':p.answer)).trim();
   var t=String((p&&p.type)||'');
   if(t==='ESSAY'||a===''||a==='.') return 'essay';
   if(/^[OXox○×]$/.test(a)) return 'ox';
-  if(/[ㄱ-ㅎ]/.test(a)||/[①-⑩]/.test(a)||/^\(\s*\d\s*\)/.test(a)) return 'mark';
+  /* v2-82: 초등 ○표 자리 · 낱말 고르기 · 연산 기호를 먼저 가려낸다 */
+  if(/[(\[]\s*(\\?\s)*\s*[)\]]/.test(a)&&/○/.test(a)) return 'pick';
+  if(/에\s*○\s*표/.test(a)) return 'choice';
+  if(/^[\s,()]*(\\times|\\div|[+\-×÷=])([\s,()]*(\\times|\\div|[+\-×÷=]))*[\s,()]*$/.test(a)) return 'op';
+  /* v2-82: 「점 ㄱ」 「선분 ㄱㄴ」 처럼 한글 점 이름을 쓰는 초등 도형 답 */
+  if(/(점|선분|직선|반직선|변|면|각|호)\s*[ㄱ-ㅎ]/.test(a)) return 'geo';
+  if(/[ㄱ-ㅎ]/.test(a)||/[①-⑮]/.test(a)||/[㈎-㈛㉮-㉻㉠-㉭]/.test(a)||/^\(\s*\d\s*\)/.test(a)) return 'mark';
   if(/overline|overrightarrow|overleftrightarrow|overgroup|overarc|∠|△|⊥|∥/.test(a)) return 'geo';
   if(a.indexOf(':')>=0||(((p&&p.units)||[]).length>0)) return 'labeled';
   if(/≤|≥|\\le|\\ge|<|>/.test(a)) return 'ineq';
@@ -13653,9 +13733,39 @@ function bkParts(p, shape, unit){
   var mk=function(label,kind,u){ return { label:label||'', kind:kind||'num', unit:u||'' }; };
   if(shape==='ox') return [mk('','ox')];
   if(shape==='essay'||shape==='free') return [mk('','free')];
-  if(shape==='word') return [mk('','word')];
   if(shape==='mark') return [mk('','mark')];
   if(shape==='geo') return [mk('','geo')];
+  /* v2-82: ○표 자리 — 괄호/대괄호 칸을 세어 상자 수를 정한다 */
+  if(shape==='pick'){
+    var n0=(a.match(/[(\[][^()\[\]]*[)\]]/g)||[]).length;
+    if(p&&p.cnt&&Number(p.cnt)>n0) n0=Number(p.cnt);
+    if(!n0||n0<1) n0=2; if(n0>8) n0=8;
+    var pk=mk('','pick'); pk.n=n0; return [pk];
+  }
+  /* v2-82: 낱말 고르기 — 「십에 ○표 / 백에 ○표」의 낱말을 보기로 */
+  if(shape==='choice'){
+    var opts=[], seenw={};
+    String(a).split(/[\/·]/).forEach(function(seg){
+      var m3=String(seg).match(/([^\s,()\/]+)\s*에\s*○\s*표/);
+      if(m3&&!seenw[m3[1]]){ seenw[m3[1]]=1; opts.push(m3[1]); }
+    });
+    if(opts.length<2){ var pair=BK_CHOICE_PAIRS.find(function(g){ return opts.length? g.indexOf(opts[0])>=0 : false; });
+      if(pair) pair.forEach(function(w){ if(!seenw[w]){ seenw[w]=1; opts.push(w); } }); }
+    if(!opts.length) opts=BK_CHOICE_PAIRS[0].slice();
+    var ch=mk('','choice'); ch.options=opts; return [ch];
+  }
+  /* v2-82: 연산 기호 — 기호 개수만큼 단추 칸 (순서 그대로) */
+  if(shape==='op'){
+    var ops=String(a).replace(/\\times/g,'×').replace(/\\div/g,'÷').match(/[+\-−×÷=]/g)||[];
+    var no=ops.length||1; if(no>6) no=6;
+    var arr=[]; for(var oi=0;oi<no;oi++) arr.push(mk('','op'));
+    return arr;
+  }
+  if(shape==='word'){
+    var w0=mk('','word');
+    if(BK_UNITSET[bkCleanAns(a).replace(/\s+/g,'')]) w0.unitWord=true;
+    return [w0];
+  }
   if(shape==='labeled'){
     var out=[], us=(p&&p.units)||[];
     us.forEach(function(u){ out.push(mk(bkLabelText(u&&u.u!=null?u.u:u),'num')); });
@@ -13727,14 +13837,8 @@ var BK_KPAD={
     ['0'],[',',',','fn'],['／분수','/','fn'],['π','π','fn'],
     ['다음 칸','NEXT','fn'],['제출','GO','go',3]
   ]},
-  geo:{ cols:5, keys:[
-    ['선분','선분','fn'],['반직선','반직선','fn'],['직선','직선','fn'],['호','호','fn'],['∠'],
-    ['△'],['□'],['⊥'],['∥'],[',',',','fn'],
-    ['A'],['B'],['C'],['D'],['M'],
-    ['N'],['O'],['P'],['X'],['Y'],
-    ['E'],['F'],['G'],['H'],['⌫','BS','fn'],
-    ['다음 칸','NEXT','fn'],['제출','GO','go',4]
-  ]},
+  /* 도형 자판은 학년에 따라 줄 차례가 바뀐다 — bkGeoKeys() 를 보라 */
+  geo:{ cols:5, keys:null },
   alg:{ cols:5, keys:[
     ['x'],['y'],['a'],['b'],['n'],
     ['+'],['−','-'],['×'],['÷'],['^'],
@@ -13744,14 +13848,52 @@ var BK_KPAD={
     ['6'],['7'],['8'],['9'],['0'],
     ['.'],['⌫','BS','fn'],['다음 칸','NEXT','fn'],['제출','GO','go',2]
   ]},
-  mark:{ cols:5, keys:[
-    ['ㄱ'],['ㄴ'],['ㄷ'],['ㄹ'],['ㅁ'],
-    ['ㅂ'],['ㅅ'],['ㅇ'],['ㅈ'],['ㅊ'],
-    ['①'],['②'],['③'],['④'],['⑤'],
-    ['(1)'],['(2)'],['(3)'],['(4)'],['(5)'],
-    [',',',','fn'],['⌫','BS','fn'],['다음 칸','NEXT','fn'],['제출','GO','go',2]
-  ]}
+  mark:{ cols:5, keys:null }
 };
+/* ── v2-82: 도형 자판 ──
+ * 한글 자모 줄(ㄱ~ㅊ + 점·변·면·각)과 영문 점 이름 줄(A~H) 둘 다 둔다.
+ * 초등은 점 이름을 ㄱ ㄴ ㄷ 로 쓰므로 한글 자모 줄을 먼저 보여 준다. */
+var BK_GEO_HEAD=[ ['선분','선분','fn'],['반직선','반직선','fn'],['직선','직선','fn'],['호','호','fn'],['∠'] ];
+var BK_GEO_KO=[
+  ['ㄱ'],['ㄴ'],['ㄷ'],['ㄹ'],['ㅁ'],
+  ['ㅂ'],['ㅅ'],['ㅇ'],['ㅈ'],['ㅊ'],
+  ['점','점','fn'],['변','변','fn'],['면','면','fn'],['각','각','fn'],[',',',','fn']
+];
+var BK_GEO_EN=[
+  ['A'],['B'],['C'],['D'],['M'],
+  ['N'],['O'],['P'],['X'],['Y'],
+  ['E'],['F'],['G'],['H'],['L']
+];
+var BK_GEO_TAIL=[ ['△'],['□'],['⊥'],['∥'],['⌫','BS','fn'],
+  ['다음 칸','NEXT','fn'],['제출','GO','go',4] ];
+function bkGeoKeys(){
+  var mid=bkIsElem()?BK_GEO_KO.concat(BK_GEO_EN):BK_GEO_EN.concat(BK_GEO_KO);
+  return BK_GEO_HEAD.concat(mid, BK_GEO_TAIL);
+}
+/* ── v2-82: 기호 자판 — 초등 교재에 나오는 ㉠ ㉮ 도 넣는다 ── */
+var BK_MARK_KO=[
+  ['ㄱ'],['ㄴ'],['ㄷ'],['ㄹ'],['ㅁ'],
+  ['ㅂ'],['ㅅ'],['ㅇ'],['ㅈ'],['ㅊ'],
+  ['㉠'],['㉡'],['㉢'],['㉣'],['㉤'],
+  ['㉮'],['㉯'],['㉰'],['㉱'],['㉲']
+];
+var BK_MARK_NUM=[
+  ['①'],['②'],['③'],['④'],['⑤'],
+  ['(1)'],['(2)'],['(3)'],['(4)'],['(5)']
+];
+var BK_MARK_TAIL=[ [',',',','fn'],['⌫','BS','fn'],['다음 칸','NEXT','fn'],['제출','GO','go',2] ];
+function bkMarkKeys(){
+  var mid=bkIsElem()?BK_MARK_KO.concat(BK_MARK_NUM):BK_MARK_NUM.concat(BK_MARK_KO);
+  return mid.concat(BK_MARK_TAIL);
+}
+/* 자판 한 벌을 꺼낸다 — keys 가 없으면 학년에 맞춰 그때그때 만든다 */
+function bkPadOf(tab){
+  var L=BK_KPAD[tab]||BK_KPAD.num;
+  if(L.keys) return L;
+  if(tab==='geo') return { cols:L.cols, keys:bkGeoKeys() };
+  if(tab==='mark') return { cols:L.cols, keys:bkMarkKeys() };
+  return BK_KPAD.num;
+}
 function bkKpadShow(on){ var k=document.getElementById('bk-kpad'); if(k) k.classList.toggle('show',!!on); }
 function bkKpadRender(){
   var tabs=document.getElementById('bk-kptabs'), wrap=document.getElementById('bk-kwrap'), pad=document.getElementById('bk-kpad');
@@ -13760,7 +13902,7 @@ function bkKpadRender(){
   var th='';
   defs.forEach(function(d){ th+='<button class="'+(BK.tab===d[0]?'on':'')+'" onclick="bkTab('+bkQ(d[0])+')">'+d[1]+'</button>'; });
   tabs.innerHTML=th;
-  var L=BK_KPAD[BK.tab]||BK_KPAD.num;
+  var L=bkPadOf(BK.tab);
   wrap.style.gridTemplateColumns='repeat('+L.cols+',1fr)';
   if(pad) pad.classList.toggle('cmp', L.keys.length>20);
   var h='';
@@ -13894,7 +14036,8 @@ function bkWordChips(p,probs){
   return pick;
 }
 var BK_TYNAME={ num:'숫자', unit:'숫자 + 단위', ox:'O / X', word:'낱말 고르기', mark:'보기 기호',
-  labeled:'이름표 칸', eq:'식의 값', geo:'도형 기호', alg:'문자식', ineq:'부등식', coord:'좌표' };
+  labeled:'이름표 칸', eq:'식의 값', geo:'도형 기호', alg:'문자식', ineq:'부등식', coord:'좌표',
+  pick:'○표 하기', choice:'낱말 고르기', op:'연산 기호' };
 function bkInputBody(p,sh,wp,key,probs){
   var h='<div class="qt"><span class="ty">'+(BK_TYNAME[sh.shape]||'단답')+'</span>'
     +(sh.unit?'<span class="un">단위 '+h3Esc(sh.unit)+' — 숫자만</span>':'')+'</div>';
@@ -13905,7 +14048,21 @@ function bkInputBody(p,sh,wp,key,probs){
     h+='<div style="display:flex;justify-content:flex-end">'+dunno+'</div>';
     return h;
   }
-  if(sh.shape==='word'&&!BK.wordIn[key]&&bkSplitTop(p.answer).length<=1){
+  /* v2-82: 단위만 답 — 단위 칩을 눌러서 답한다 */
+  if(!BK.wordIn[key]&&bkIsUnitWord(sh,p)){
+    h+='<div class="bk-ugrp">';
+    BK_UNITCHIPS.forEach(function(g){
+      h+='<div class="row"><span class="cap">'+h3Esc(g[0])+'</span>';
+      g[1].forEach(function(u){ h+='<button class="bk-uchip" onclick="bkGrade('+bkQ(wp)+','+bkQ(u)+')">'+h3Esc(u)+'</button>'; });
+      h+='</div>';
+    });
+    h+='</div>';
+    h+='<div class="bk-hint">단위만 고르면 돼요.</div>';
+    h+='<div style="display:flex;gap:6px;justify-content:flex-end">'
+      +'<button class="bk-mini" onclick="bkWordOpen('+bkQ(wp)+')">✏️ 직접 입력</button>'+dunno+'</div>';
+    return h;
+  }
+  if(sh.shape==='word'&&!BK.wordIn[key]&&bkSplitTop(p.answer).length<=1&&!bkHasTapKind(sh)){
     h+='<div class="bk-chips">';
     bkWordChips(p,probs).forEach(function(w){ h+='<button onclick="bkGrade('+bkQ(wp)+','+bkQ(w)+')">'+h3Esc(w)+'</button>'; });
     h+='</div>';
@@ -13913,16 +14070,30 @@ function bkInputBody(p,sh,wp,key,probs){
       +'<button class="bk-mini" onclick="bkWordOpen('+bkQ(wp)+')">✏️ 직접 입력</button>'+dunno+'</div>';
     return h;
   }
-  if(sh.shape==='word'||sh.shape==='free'){
+  if((sh.shape==='word'||sh.shape==='free')&&!bkHasTapKind(sh)){
     h+='<div class="bk-wordin"><input type="text" id="bkw-'+h3Esc(wp)+'" placeholder="답을 적어요">'
       +'<button class="bk-mini" style="background:#0f766e;border-color:#0f766e;color:#fff" onclick="bkWordSubmit('+bkQ(wp)+')">제출</button></div>';
     h+='<div style="display:flex;justify-content:flex-end">'+dunno+'</div>';
     return h;
   }
+  /* v2-82: 눌러서 고르는 칸(○표 자리 · 낱말 고르기 · 연산 기호)이 섞여 있으면 칸마다 따로 그린다 */
+  var tap=bkHasTapKind(sh);
+  if(tap){
+    h+='<div class="bk-slots">';
+    sh.parts.forEach(function(pt,ix){ h+=bkSlotHtml(p,sh,pt,ix,wp); });
+    h+='</div>';
+    h+='<div style="display:flex;align-items:center;gap:6px;margin-top:2px">';
+    h+='<span class="bk-hint">'+h3Esc(bkTapHint(sh))+'</span>';
+    h+='<span style="margin-left:auto"></span>'
+      +'<button class="bk-go" onclick="bkSubmitFor('+bkQ(wp)+')">제출</button>'+dunno+'</div>';
+    return h;
+  }
   h+='<div class="bk-fields">';
   sh.parts.forEach(function(pt,ix){
-    if(pt.label) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
+    var after=bkLabelAfter(pt.label);
+    if(pt.label&&!after) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
     h+='<div class="bk-fld" id="bkf-'+h3Esc(wp)+'-'+ix+'" onclick="bkFocus('+bkQ(wp)+','+ix+')"></div>';
+    if(pt.label&&after) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
     if(pt.unit) h+='<span class="bk-unit">'+h3Esc(pt.unit)+'</span>';
   });
   h+='</div>';
@@ -13930,6 +14101,52 @@ function bkInputBody(p,sh,wp,key,probs){
   if(sh.parts.length>1) h+='<span class="bk-hint">칸이 '+sh.parts.length+'개예요 — 「다음 칸」으로 옮겨요</span>';
   h+='<span style="margin-left:auto"></span>'+dunno+'</div>';
   return h;
+}
+/* v2-82: 눌러서 고르는 칸 하나를 그린다 */
+var BK_OPKEYS=['+','−','×','÷','='];
+function bkSlotHtml(p,sh,pt,ix,wp){
+  var kind=String((pt&&pt.kind)||'num'), many=(sh.parts.length>1);
+  var h='<div class="bk-slot">';
+  if(kind==='pick'){
+    var n=Number(pt.n||pt.cnt||0); if(!n||n<1) n=2; if(n>8) n=8;
+    h+='<div class="cap">빈 칸을 누르면 ○ 가 들어가요 (여러 개도 돼요)</div>';
+    h+='<div class="bk-pick" id="bkpk-'+h3Esc(wp)+'-'+ix+'">';
+    for(var k=1;k<=n;k++){
+      h+='<div class="bk-picks"><button type="button" onclick="bkPickTap('+bkQ(wp)+','+ix+','+k+')"></button>'
+        +'<div class="bk-picknum">'+k+'번</div></div>';
+    }
+    h+='</div>';
+  } else if(kind==='choice'){
+    var opts=(pt.options&&pt.options.length)?pt.options:BK_CHOICE_PAIRS[0];
+    h+='<div class="cap">'+(pt.label?h3Esc(pt.label)+' ':'')+(many?(ix+1)+'번째 칸 — ':'')+'알맞은 낱말을 골라요</div>';
+    h+='<div class="bk-pgrp" id="bkg-'+h3Esc(wp)+'-'+ix+'">';
+    opts.forEach(function(w){ h+='<button type="button" onclick="bkChoiceTap('+bkQ(wp)+','+ix+','+bkQ(w)+')">'+h3Esc(w)+'</button>'; });
+    h+='</div>';
+  } else if(kind==='op'){
+    h+='<div class="cap">'+(many?(ix+1)+'번째 기호':'기호를 골라요')+'</div>';
+    h+='<div class="bk-pgrp op" id="bkg-'+h3Esc(wp)+'-'+ix+'">';
+    BK_OPKEYS.forEach(function(o){ h+='<button type="button" onclick="bkChoiceTap('+bkQ(wp)+','+ix+','+bkQ(o)+')">'+h3Esc(o)+'</button>'; });
+    h+='</div>';
+  } else {
+    var after=bkLabelAfter(pt.label);
+    h+='<div class="cap">'+(pt.label?h3Esc(pt.label):((ix+1)+'번째 칸'))+'</div>';
+    h+='<div class="bk-fields">';
+    if(pt.label&&!after) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
+    h+='<div class="bk-fld" id="bkf-'+h3Esc(wp)+'-'+ix+'" onclick="bkFocus('+bkQ(wp)+','+ix+')"></div>';
+    if(pt.label&&after) h+='<span class="bk-lbl">'+h3Esc(pt.label)+'</span>';
+    if(pt.unit) h+='<span class="bk-unit">'+h3Esc(pt.unit)+'</span>';
+    h+='</div>';
+  }
+  h+='</div>';
+  return h;
+}
+function bkTapHint(sh){
+  var ps=(sh&&sh.parts)||[], k={};
+  ps.forEach(function(x){ k[String(x&&x.kind||'')]=1; });
+  if(k.pick) return '○ 를 놓을 칸을 누르고 「제출」을 눌러요.';
+  if(k.op) return '왼쪽부터 차례로 기호를 고르고 「제출」을 눌러요.';
+  if(k.choice) return '낱말을 고르고 「제출」을 눌러요.';
+  return '고른 뒤 「제출」을 눌러요.';
 }
 /* 쪽 마무리 — 결과 요약 · 틀린 문항 이어가기 · 반영 대기 */
 function bkDoneHtml(pg,probs){
@@ -13959,34 +14176,81 @@ function bkDoneHtml(pg,probs){
 }
 
 /* ── 입력칸 다루기 ── */
+/* v2-82: 칸 종류(글자칸 · ○표 상자 · 낱말/기호 칩)에 맞게 다시 그린다 */
+function bkPaintOne(wp,ix,kind,v,foc,clear){
+  if(kind==='pick'){
+    var box=document.getElementById('bkpk-'+wp+'-'+ix); if(!box) return;
+    var sel={}; if(!clear) String(v||'').split(',').forEach(function(x){ if(x) sel[x]=1; });
+    var bs=box.querySelectorAll('button');
+    for(var k=0;k<bs.length;k++){
+      var on=!!sel[String(k+1)];
+      bs[k].textContent=on?'○':'';
+      bs[k].classList.toggle('on',on);
+    }
+    return;
+  }
+  if(kind==='choice'||kind==='op'){
+    var g=document.getElementById('bkg-'+wp+'-'+ix); if(!g) return;
+    var gb=g.querySelectorAll('button');
+    for(var j=0;j<gb.length;j++) gb[j].classList.toggle('on', !clear&&gb[j].textContent===String(v||'')&&String(v||'')!=='');
+    return;
+  }
+  var el=document.getElementById('bkf-'+wp+'-'+ix); if(!el) return;
+  el.textContent=clear?'':(v||'');
+  el.classList.toggle('foc', !clear&&foc);
+}
+function bkKindAt(ix){
+  var ps=(BK.sh&&BK.sh.parts)||[];
+  return String((ps[ix]&&ps[ix].kind)||'num');
+}
 function bkPaintFields(){
   if(BK.active==null) return;
-  for(var i=0;i<BK.fields.length;i++){
-    var el=document.getElementById('bkf-'+BK.active+'-'+i);
-    if(!el) continue;
-    el.textContent=BK.fields[i]||'';
-    el.classList.toggle('foc', i===BK.fi);
-  }
+  for(var i=0;i<BK.fields.length;i++) bkPaintOne(BK.active,i,bkKindAt(i),BK.fields[i]||'',i===BK.fi,false);
 }
 function bkBlur(){
   if(BK.active==null) return;
-  for(var i=0;i<BK.fields.length;i++){
-    var el=document.getElementById('bkf-'+BK.active+'-'+i);
-    if(el){ el.textContent=''; el.classList.remove('foc'); }
-  }
+  for(var i=0;i<BK.fields.length;i++) bkPaintOne(BK.active,i,bkKindAt(i),'',false,true);
   BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
 }
-window.bkFocus=function(wpId, idx){
+/* 자판을 열지 않고 이 문항을 「고르는 중」으로 잡아 둔다 */
+function bkArm(wpId, idx){
   wpId=String(wpId);
-  var p=bkFindProb(wpId); if(!p) return;
+  var p=bkFindProb(wpId); if(!p) return false;
   if(String(BK.active)!==wpId){
     bkBlur();
     BK.active=wpId; BK.sh=bkShape(p);
     BK.fields=[]; for(var i=0;i<BK.sh.parts.length;i++) BK.fields.push('');
-    BK.tab=bkTabFor(BK.sh.shape);          // 앱이 답 모양을 보고 자판을 먼저 고른다
   }
-  BK.fi=Math.max(0,Math.min(Number(idx)||0,BK.fields.length-1));
+  if(idx!=null) BK.fi=Math.max(0,Math.min(Number(idx)||0,BK.fields.length-1));
+  return true;
+}
+window.bkFocus=function(wpId, idx){
+  if(!bkArm(wpId, idx)) return;
+  BK.tab=bkTabFor(BK.sh.shape);            // 앱이 답 모양을 보고 자판을 먼저 고른다
   bkPaintFields(); bkKpadRender(); bkKpadShow(true);
+};
+/* v2-82: ○표 상자 — 누르면 ○, 다시 누르면 지운다 (여러 개 가능) */
+window.bkPickTap=function(wpId, ix, k){
+  if(!bkArm(wpId, ix)) return;
+  bkKpadShow(false);
+  var cur=String(BK.fields[ix]||'').split(',').filter(function(x){ return x!==''; });
+  var at=cur.indexOf(String(k));
+  if(at>=0) cur.splice(at,1); else cur.push(String(k));
+  cur.sort(function(a,b){ return Number(a)-Number(b); });
+  BK.fields[ix]=cur.join(',');
+  bkPaintFields();
+};
+/* v2-82: 낱말 칩 · 연산 기호 단추 — 누르면 그 칸의 답이 된다 */
+window.bkChoiceTap=function(wpId, ix, v){
+  if(!bkArm(wpId, ix)) return;
+  bkKpadShow(false);
+  BK.fields[ix]=(String(BK.fields[ix]||'')===String(v))?'':String(v);
+  bkPaintFields();
+};
+/* v2-82: 카드 안 「제출」 — 자판을 안 쓰는 칸에서 쓴다 */
+window.bkSubmitFor=function(wpId){
+  if(!bkArm(wpId, null)) return;
+  bkSubmit();
 };
 window.bkKey=function(k){
   if(BK.active==null) return;
@@ -14122,14 +14386,21 @@ function bkAutoGrade(p, sh, joined, vals){
     var hasLab=false, i;
     for(i=0;i<parts.length;i++){ if(parts[i].label) hasLab=true; }
     if(hasLab){
-      var a1=[], a2=[];
+      var a1=[], a2=[], a3=[], a4=[];
       for(i=0;i<parts.length;i++){
         var L=String(parts[i].label||'');
         a1.push(L?(L+' '+vals[i]):vals[i]);
         a2.push(L?(L.replace(/[:=]\s*$/,'')+':'+vals[i]):vals[i]);
+        /* v2-82: 「3시 20분」 「3m 20cm」처럼 이름표가 숫자 뒤에 붙는 꼴도 견줘 본다 */
+        a3.push(L?(vals[i]+L):vals[i]);
+        a4.push(L?(vals[i]+' '+L):vals[i]);
       }
       cands.push(a1.join(','));
       cands.push(a2.join(','));
+      cands.push(a3.join(''));
+      cands.push(a3.join(' '));
+      cands.push(a3.join(','));
+      cands.push(a4.join(' '));
       if(parts.length===1&&parts[0].label) cands.push(String(parts[0].label)+vals[0]);
     }
   }
