@@ -1858,6 +1858,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .bk-ugrp button{border:1.8px solid #cbd5e1;background:#fff;border-radius:50px;padding:7px 13px;font-family:inherit;font-size:13.5px;font-weight:900;color:#334155;cursor:pointer}
 .bk-go{border:none;background:#0f766e;color:#fff;border-radius:10px;padding:9px 16px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .bk-taprow{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:2px}
+.bk-note{font-size:11.5px;font-weight:800;color:#a15c00;background:#fdf3e0;border:1px solid #f0d9a8;border-radius:9px;padding:8px 10px;line-height:1.6}
 .kpad.cmp2 button{padding:6px 0;font-size:14px}
 .kpad.cmp2 button.fn{font-size:11px}
 .kpad.cmp2 button.go{font-size:13px}
@@ -3449,6 +3450,11 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *     붙여 두었습니다. 학생은 숫자만 칩니다.
  *   · 보기 기호 자판에 ㉠ ㉡ ㉢ · ㉮ ㉯ ㉰ 를 넣었습니다(초등 교재에 자주 나옵니다).
  *   · 각도 <b>40°</b> 처럼 적힌 정답이 화면에 바르게 보이도록 다듬었습니다.
+ *   · <b>정답이 「보기」 하나로만 적힌 문제</b>(「(예) 3, 6, 9」처럼 여러 답 가운데 하나를
+ *     적어 둔 것, 초등 교재에 416문항 있습니다)는 앱이 함부로 ✗ 를 주지 않습니다.
+ *     학생 답이 보기와 다르면 <b>보기 답을 보여 주고</b> 「◯ 내 답도 맞아요 / ✗ 틀렸어요」 를
+ *     학생이 고릅니다(사진은 필요 없습니다). 보기와 똑같이 썼으면 그냥 자동으로 ◯ 입니다.
+ *   · ○표 문제에서 상자가 필요한 개수보다 많이 나오던 것을 고쳤습니다.
  *
  * v2-81 (2026-09-14) 📖 교재 채점 2판 — 답 모양에 맞는 입력칸 · 서술형은 내가 채점
  *   · 홈의 「📖 교재 채점」 단추가 <b>열렸습니다</b>(그동안 「준비 중」이었습니다).
@@ -11189,9 +11195,10 @@ window.sgSubmit = async function(){
 
 /* v2-81 추가 칸: fields/fi = 지금 쓰고 있는 입력칸들, tab = 자판 탭,
  *   photos = 아직 ◯✗ 안 누른 자기채점 사진, soft = 앱이 못 읽어 자기채점으로 넘긴 문항,
- *   wordIn = 낱말 「직접 입력」을 연 문항, qn = 매쓰플랫 반영 대기 건수 */
+ *   wordIn = 낱말 「직접 입력」을 연 문항, qn = 매쓰플랫 반영 대기 건수
+ *   v2-82 추가: sample = 보기 답(「(예) 2:3」) 문항에서 학생이 ◯✗ 를 정하기를 기다리는 중 */
 var BK={ loaded:false, swb:null, scores:{}, ans:{}, book:null, page:null, active:null, buf:'', busy:false,
-         fields:[], fi:0, tab:'num', sh:null, photos:{}, soft:{}, wordIn:{}, qn:0, upBusy:false, target:null };
+         fields:[], fi:0, tab:'num', sh:null, photos:{}, soft:{}, wordIn:{}, sample:{}, qn:0, upBusy:false, target:null };
 function bkKeyOf(pid,wpId){ return pid+'_'+wpId; }
 
 async function bkFetchStore(keys){
@@ -14169,9 +14176,24 @@ function bkShape(p){
   if(!unit&&p.unit) unit=String(p.unit);
   var self=(s.self!=null)?!!s.self
     :((p.self!=null)?!!p.self:(shape==='essay'||shape==='free'||!p.gradable));
-  var parts=(s.parts&&s.parts.length)?s.parts:bkParts(p,shape,unit);
+  var parts=bkFoldPick((s.parts&&s.parts.length)?s.parts:bkParts(p,shape,unit));
   var gradable=(s.gradable!=null)?!!s.gradable:(self?false:(p.gradable!=null?!!p.gradable:true));
-  return { shape:shape, self:self, unit:unit, parts:parts, gradable:gradable };
+  /* v2-82: 보기 답(「(예) 2:3」) — 학생이 다르게 써도 맞을 수 있다 */
+  var sample=(s.sample!=null)?!!s.sample:!!p.sample;
+  return { shape:shape, self:self, unit:unit, parts:parts, gradable:gradable, sample:sample };
+}
+/* ★ v2-82: ○표(pick)는 「○ 가 있는 칸 번호」 하나가 답이다.
+ * 엔진이 답 칸 수(cnt)에 맞춰 빈 pick 칸을 덧붙여 보내면(n 없는 칸) 한 칸으로 줄인다.
+ * 이렇게 하지 않으면 상자가 3+2+2=7개로 그려지고 제출값이 「2,,」가 된다. */
+function bkFoldPick(parts){
+  if(!parts||parts.length<2) return parts;
+  var i, allPick=true;
+  for(i=0;i<parts.length;i++){ if(String((parts[i]&&parts[i].kind)||'')!=='pick') allPick=false; }
+  if(!allPick) return parts;
+  for(i=0;i<parts.length;i++){ if(Number(parts[i].n)>0) return [parts[i]]; }
+  var head={}; for(var k in parts[0]) if(Object.prototype.hasOwnProperty.call(parts[0],k)) head[k]=parts[0][k];
+  head.n=parts.length;
+  return [head];
 }
 function bkTabFor(shape){
   if(shape==='geo') return 'geo';
@@ -14311,6 +14333,7 @@ function bkCardHtml(p,i,pg,probs){
   h+='<div class="bd">';
   if(m) h+=bkGradedBody(p,sh,m);
   else if(p.objective) h+=bkObjBody(p,wp);
+  else if(BK.sample[key]) h+=bkSampleBody(p,sh,wp,key);
   else if(sh.self||BK.soft[key]) h+=bkSelfBody(p,sh,wp,key);
   else h+=bkInputBody(p,sh,wp,key,probs);
   h+='</div></div>';
@@ -14368,6 +14391,27 @@ function bkSelfBody(p,sh,wp,key){
   }
   return h;
 }
+/* ★ v2-82: 보기 답(sample) — 정답이 「(예) 2:3」처럼 여러 답 가운데 하나를 적어 둔 것.
+ * 학생이 다르게 써도 맞을 수 있으므로, 앱이 「틀렸다」고 정하지 않고
+ * 보기 답을 보여 준 뒤 학생이 직접 ◯✗ 를 고르게 한다. 사진은 필요 없다. */
+function bkSampleBody(p,sh,wp,key){
+  var mine=String((BK.sample[key]&&BK.sample[key].a)||'');
+  var h='<div class="qt"><span class="ty" style="background:#fdf3e0;color:#a15c00">보기 답 · 내가 채점</span>'
+    +'<span class="un">내 답과 견줘 봐요</span></div>';
+  h+='<div class="bk-note">💡 정답이 <b>보기(예시) 한 가지</b>로 적혀 있어요. 다르게 써도 맞을 수 있어요.</div>';
+  h+='<div class="rev-line"><span class="lb">내 답</span><span class="vv">'+h3Esc(mine||'(빈칸)')+'</span></div>';
+  h+=bkAnsBox(p);
+  h+='<div class="bk-acts"><button class="o" onclick="bkSampleMark('+bkQ(wp)+',\'O\')">◯ 내 답도 맞아요</button>'
+    +'<button class="x" onclick="bkSampleMark('+bkQ(wp)+',\'X\')">✗ 틀렸어요</button></div>';
+  h+='<div class="bk-taprow"><span class="bk-hint" style="margin-right:auto">헷갈리면 선생님께 여쭤봐요.</span>'
+    +'<button class="dunno-b" onclick="bkDunno('+bkQ(wp)+')">모름 ?</button></div>';
+  return h;
+}
+window.bkSampleMark=function(wpId,r){
+  var key=bkKeyOf(BK.page.pid,String(wpId));
+  var mine=String((BK.sample[key]&&BK.sample[key].a)||'');
+  bkGrade(wpId, null, { r:r, self:true, a:mine });
+};
 /* 낱말 칩 — 정답 + 같은 쪽의 다른 낱말 정답 + 기본 낱말, 문제마다 늘 같은 자리 */
 var BK_WORDS=['예각','직각','둔각','평각','약수','배수','소수','합성수','서로소','교점','교선','맞꼭지각','동위각','엇각','예','아니오'];
 function bkWordChips(p,probs){
@@ -14394,8 +14438,11 @@ var BK_TYNAME={ num:'숫자', unit:'숫자 + 단위', ox:'O / X', word:'낱말 �
   pick:'○표 하기', choice:'낱말 고르기', op:'연산 기호' };
 function bkInputBody(p,sh,wp,key,probs){
   var ty=bkIsUnitWord(sh,p)?'단위 고르기':(BK_TYNAME[sh.shape]||'단답');
+  /* v2-82: 칸마다 이름표(시·분·m·cm)가 있으면 위쪽 단위 안내는 겹치므로 접는다 */
+  var hasLbl=false;
+  (sh.parts||[]).forEach(function(pt){ if(pt&&pt.label) hasLbl=true; });
   var h='<div class="qt"><span class="ty">'+ty+'</span>'
-    +(sh.unit?'<span class="un">단위 '+h3Esc(sh.unit)+' — 숫자만</span>':'')+'</div>';
+    +((sh.unit&&!hasLbl)?'<span class="un">단위 '+h3Esc(sh.unit)+' — 숫자만</span>':'')+'</div>';
   var dunno='<button class="dunno-b" onclick="bkDunno('+bkQ(wp)+')">모름 ?</button>';
   if(sh.shape==='ox'){
     h+='<div class="bk-ox"><button onclick="bkGrade('+bkQ(wp)+',\'O\')">O</button>'
@@ -14777,7 +14824,7 @@ async function bkGrade(wpId, userAnswer, opt){
     var p=bkFindProb(wpId); if(!p) return;
     var key=bkKeyOf(BK.page.pid, wpId);
     var r, a='';
-    if(opt.r){ r=opt.r; }
+    if(opt.r){ r=opt.r; a=String(opt.a==null?'':opt.a); }
     else if(userAnswer==null){ r='?'; }
     else {
       a=String(userAnswer);
@@ -14790,12 +14837,18 @@ async function bkGrade(wpId, userAnswer, opt){
           if(typeof toast==='function') toast('앱이 이 답을 읽지 못했어요 — 사진을 찍고 내가 채점해요');
           return;
         }
+        /* v2-82: 보기 답 문항에서 ✗ 가 나오면 앱이 정하지 않고 학생에게 넘긴다 */
+        if(!res.correct&&sh.sample){
+          BK.sample[key]={ a:a }; bkBlur(); bkKpadShow(false); BK.busy=false; bkRenderQ();
+          if(typeof toast==='function') toast('보기 답이에요 — 내 답도 맞는지 살펴봐요');
+          return;
+        }
         r=res.correct?'O':'X';
       }
     }
     BK.scores[key]={ r:r, a:a, at:new Date().toISOString(), pid:BK.page.pid,
                      self:!!opt.self, photo:opt.photo||'' };
-    delete BK.photos[key]; delete BK.soft[key]; delete BK.wordIn[key];
+    delete BK.photos[key]; delete BK.soft[key]; delete BK.wordIn[key]; delete BK.sample[key];
     bkBlur(); bkKpadShow(false);
     BK.qn++;
     bkRenderQ();
