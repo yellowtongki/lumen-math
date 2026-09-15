@@ -596,7 +596,12 @@
     if (isOx(s)) return { kind: 'ox', keys: [normOx(s)], unit: '' };
     // 초등 ① ○표 자리 고르기 — 낱말로 읽히기 전에 먼저 본다
     var pk = readPick(s);
-    if (pk) return { kind: 'pick', keys: [pk.key], unit: '', n: pk.n };
+    if (pk) {
+      var pkeys = [pk.key];
+      // 학생앱이 「몇째 칸」을 숫자 하나로 보내와도 맞다고 본다 (○ 가 한 칸일 때)
+      if (pk.idx.length === 1 && pk.key.indexOf('|') < 0) pkeys.push(String(pk.idx[0]));
+      return { kind: 'pick', keys: pkeys, unit: '', n: pk.n };
+    }
     // 초등 ② 연산 기호 한 칸
     var op = readOp(s);
     if (op) return { kind: 'op', keys: ['op' + op], unit: '' };
@@ -832,9 +837,11 @@
   }
 
   /* 답 전체 읽기.
-     ① 「(예)…」 처럼 보기로 든 답, ○표·△표가 섞인 답은 바로 자기채점으로 보낸다
-     ② 앞의 안내문 「(위에서부터)」 를 뗀다
-     ③ 「A 또는 B」 는 A·B 를 각각 읽어 어느 쪽으로 써도 맞다고 본다 */
+     ① ○표·△표가 섞여 어느 쪽을 고른 건지 못 가르는 답은 바로 자기채점으로 보낸다
+     ② 안내문 「(위에서부터)」·「[방법1]」·「①②③」 을 칸 구분으로 바꾼다
+     ③ 「(예)…」 는 보기로 든 답 — 그대로 채점하되 sample 표시를 남기고,
+        ○△□ 를 학생이 마음대로 정하는 답이면 자기채점으로 보낸다
+     ④ 「A 또는 B」 는 A·B 를 각각 읽어 어느 쪽으로 써도 맞다고 본다 */
   function analyze(raw) {
     var s0 = trim(raw);
     var res = { parts: [], gradable: false, shape: 'free', unit: '', labeled: false, essay: false };
@@ -1001,7 +1008,9 @@
       while (parts.length < cnt && parts.length < 12) parts.push({ label: '', kind: kind0, unit: '' });
     }
     var shape = a.gradable ? a.shape : 'free';
-    return { shape: shape, self: !a.gradable, gradable: a.gradable, unit: a.unit || '', parts: parts };
+    // sample = 「(예)…」로 적힌 보기 답 (학생이 달리 써도 맞을 수 있다 — 화면에 알려 주면 좋다)
+    return { shape: shape, self: !a.gradable, gradable: a.gradable, unit: a.unit || '',
+      parts: parts, sample: !!a.sample };
   }
 
   /* ── 옛 API 호환 (v2-41 학생앱이 쓰던 것) ─────────────────────── */
