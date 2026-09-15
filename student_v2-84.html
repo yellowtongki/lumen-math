@@ -779,6 +779,26 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .ib-box.unread textarea { background:#fff; border-color:#fcd34d; }
 .ib-box textarea:focus { outline:2px solid #1d6fe8; outline-offset:-1px; border-color:#1d6fe8; }
 
+/* ★ v2-84: 「종이에 쓴 것만 점수」 — 못 읽은(노란) 칸 밑에만 나오는 안내 줄 */
+.aha-paper-note {
+  display:none; margin-top:6px; background:#fffbeb; border:1px solid #fcd34d; border-radius:9px;
+  padding:6px 8px; font-size:11px; font-weight:700; color:#92400e; line-height:1.5;
+}
+.ib-box.unread .aha-paper-note { display:block; }
+.aha-paper-note b.lk {
+  color:#1d6fe8; text-decoration:underline; cursor:pointer; font-weight:900; white-space:nowrap;
+}
+/* ★ v2-84: 사진 단계 맨 위 안내 — 점수는 종이에 쓴 것만 */
+.aha-paper-first {
+  background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:8px 10px;
+  font-size:11.5px; font-weight:700; color:#1e40af; line-height:1.55; margin-bottom:8px;
+}
+.aha-paper-first b { color:#1d4ed8; font-weight:900; }
+/* ★ v2-84: AI가 읽은 쪽·번호 칸을 파랗게 + 확인 안내 한 줄 */
+.aha-input.ai-read { border-color:#1d6fe8; background:#eff6ff; }
+.aha-ai-note { display:none; margin-top:4px; font-size:10.5px; font-weight:800; color:#1d6fe8; line-height:1.45; }
+.aha-ai-note.on { display:block; }
+
 /* 지시어 */
 .ib-dir { border-top:1px dashed #fca5a5; margin-top:8px; padding-top:8px; }
 .ib-dir .dt { font-size:11px; font-weight:800; color:var(--red); margin-bottom:6px; }
@@ -3017,6 +3037,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     <div class="aha-form-group">
       <label class="aha-form-label primary required">📷 활동지 사진 (1장)</label>
       <div class="aha-form-hint" id="aha-photo-hint">활동지 전체가 한 장에 들어오게, 글씨가 또렷하게 찍어 주세요</div>
+      <!-- ★ v2-84: 점수는 종이에 쓴 것만 (원장 결정 2026-09-15) -->
+      <div class="aha-paper-first" id="aha-paper-first">✍️ 점수는 <b>종이에 쓴 것만</b> 매겨요. 앱에서 적어 넣은 글은 점수에 들어가지 않아요.</div>
       <div id="aha-photo-slot" class="aha-photo-slot" onclick="ahaTriggerPhoto()">
         <span class="aha-photo-slot-icon">📋</span>
         <span class="aha-photo-slot-text">탭하여 사진 추가</span>
@@ -3100,11 +3122,14 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <div class="aha-row-2col">
           <div id="aha-page-col">
             <label class="aha-form-label required" id="aha-page-label">📄 페이지</label>
-            <input type="text" id="aha-page" class="aha-input" placeholder="127" inputmode="text">
+            <input type="text" id="aha-page" class="aha-input" placeholder="127" inputmode="text" oninput="ahaClearAiRead('aha-page')">
+            <!-- ★ v2-84: AI가 읽은 쪽이면 파랗게 + 확인 안내 -->
+            <div class="aha-ai-note" id="aha-page-ainote">🤖 AI가 읽은 번호예요 — 맞는지 확인해요</div>
           </div>
           <div>
             <label class="aha-form-label required">🔢 번호</label>
-            <input type="text" id="aha-problem-no" class="aha-input" placeholder="4-2">
+            <input type="text" id="aha-problem-no" class="aha-input" placeholder="4-2" oninput="ahaClearAiRead('aha-problem-no')">
+            <div class="aha-ai-note" id="aha-problem-no-ainote">🤖 AI가 읽은 번호예요 — 맞는지 확인해요</div>
           </div>
         </div>
       </div>
@@ -3119,24 +3144,29 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <div class="t"><span class="ltr">L</span><span class="tt">문제 이해</span><span class="tag" id="aha-tag-L"></span></div>
         <div class="hh">구하려는 것과 문제 조건</div>
         <textarea id="aha-q-learn" maxlength="600" oninput="ahaOnFieldEdit()" placeholder="활동지의 L칸 내용"></textarea>
+        <!-- ★ v2-84: 종이에 없는 칸 안내 (.unread 일 때만 보인다) -->
+        <div class="aha-paper-note" id="aha-paper-note-L">📝 종이에 없는 칸이에요 → 점수에 안 들어가요. 종이에 쓰고 <b class="lk" onclick="ahaTriggerPhoto()">📷 다시 찍기</b></div>
       </div>
 
       <div class="ib-box" id="aha-box-A">
         <div class="t"><span class="ltr">A</span><span class="tt">이론·공식</span><span class="tag" id="aha-tag-A"></span></div>
         <div class="hh">이 문제에 쓸 이론·공식</div>
         <textarea id="aha-q-act" maxlength="600" oninput="ahaOnFieldEdit()" placeholder="활동지의 A칸 내용"></textarea>
+        <div class="aha-paper-note" id="aha-paper-note-A">📝 종이에 없는 칸이에요 → 점수에 안 들어가요. 종이에 쓰고 <b class="lk" onclick="ahaTriggerPhoto()">📷 다시 찍기</b></div>
       </div>
 
       <div class="ib-box" id="aha-box-M">
         <div class="t"><span class="ltr">M</span><span class="tt">풀이 논리</span><span class="tag" id="aha-tag-M"></span></div>
         <div class="hh">어디까지 어떤 순서로 풀었나</div>
         <textarea id="aha-q-try" maxlength="900" oninput="ahaOnFieldEdit()" placeholder="활동지의 M칸 내용"></textarea>
+        <div class="aha-paper-note" id="aha-paper-note-M">📝 종이에 없는 칸이에요 → 점수에 안 들어가요. 종이에 쓰고 <b class="lk" onclick="ahaTriggerPhoto()">📷 다시 찍기</b></div>
       </div>
 
       <div class="ib-box p" id="aha-box-P">
         <div class="t"><span class="ltr">P</span><span class="tt">막힌 곳 · 질문</span><span class="tag" id="aha-tag-P"></span></div>
         <div class="hh">어느 단계에서 막혔는지 + 선생님께 묻고 싶은 한 문장</div>
         <textarea id="aha-q-stuck" maxlength="900" oninput="ahaOnFieldEdit()" placeholder="활동지의 P칸 내용"></textarea>
+        <div class="aha-paper-note" id="aha-paper-note-P">📝 종이에 없는 칸이에요 → 점수에 안 들어가요. 종이에 쓰고 <b class="lk" onclick="ahaTriggerPhoto()">📷 다시 찍기</b></div>
 
         <div class="ib-dir">
           <div class="dt">❓ 어떻게 답해 주면 좋을까요? (하나만 골라 주세요)</div>
@@ -3467,6 +3497,17 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-84 (2026-09-15) ✍️ 종이에 쓴 것만 점수 · 못 읽은 칸 안내 · AI 읽은 번호 확인 · 다시 찍기 뒤 읽기 실패 시 칸 비움
+ *   · IB아하노트 사진 단계 위에 안내가 붙었습니다 —
+ *     「점수는 <b>종이에 쓴 것만</b> 매겨요. 앱에서 적어 넣은 글은 점수에 들어가지 않아요.」
+ *   · 확인 화면에서 AI가 <b>못 읽은 노란 칸</b> 밑에 안내 줄이 나옵니다 —
+ *     「종이에 없는 칸이에요 → 점수에 안 들어가요. 종이에 쓰고 📷 다시 찍기」.
+ *     칸은 그대로 고칠 수 있습니다(AI가 잘못 읽은 글을 바로잡을 때 씁니다).
+ *   · AI가 읽은 <b>쪽·번호</b> 칸이 파랗게 표시되고 「🤖 AI가 읽은 번호예요 — 맞는지 확인해요」가
+ *     붙습니다. 학생이 그 칸을 고치면 표시가 사라집니다.
+ *   · 「다시 찍기」 뒤 AI가 읽지 못하면 L·A·M·P 네 칸을 <b>비웁니다</b>
+ *     (앞 사진에서 읽은 글이 남아 잘못 채점되던 것을 막습니다).
+ *
  * v2-83 (2026-09-15) 📄 학습지도 학생앱에서 채점
  *   · 「📖 교재 채점」 화면 맨 위에 <b>탭 두 개</b>가 생겼습니다 — 「📚 교재」와 「📄 학습지」.
  *     매쓰플랫 학생앱과 비슷한 모양입니다.
@@ -3628,7 +3669,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-83';
+var STU_VER = 'v2-84';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -6655,6 +6696,7 @@ function ahaOnSourceChange() {
     if (pageCol) pageCol.style.display = 'none';
     printRow.style.display = 'block';
     var pg = document.getElementById('aha-page'); if (pg) pg.value = '';
+    ahaClearAiRead('aha-page');   /* v2-84: 칸을 비우면 「AI가 읽은 번호」 표시도 지운다 */
   } else {
     pageRow.style.display = 'block';
     if (pageCol) pageCol.style.display = '';
@@ -6679,6 +6721,9 @@ function ahaClearConfirm() {
   ['aha-box-L','aha-box-A','aha-box-M','aha-box-P'].forEach(function(id){
     var el = document.getElementById(id); if (el) el.classList.remove('unread');
   });
+  /* ★ v2-84: AI가 읽은 쪽·번호 강조도 같이 지운다 */
+  ahaClearAiRead('aha-page');
+  ahaClearAiRead('aha-problem-no');
   ahaRenderDirChips();
   ahaRenderConceptChips();
   ahaUpdateMeter();
@@ -6890,6 +6935,21 @@ async function ahaHandlePhoto(inp) {
   ahaShowStage('confirm');
 }
 
+/* ★ v2-84: AI가 읽은 쪽·번호 칸을 파랗게 하고 「맞는지 확인해요」 한 줄을 보여 준다.
+ * 학생이 그 칸을 손대면(oninput) 바로 지운다 — 이미 확인한 것이므로. */
+function ahaMarkAiRead(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.add('ai-read');
+  var note = document.getElementById(id + '-ainote');
+  if (note) note.classList.add('on');
+}
+function ahaClearAiRead(id) {
+  var el = document.getElementById(id);
+  if (el) el.classList.remove('ai-read');
+  var note = document.getElementById(id + '-ainote');
+  if (note) note.classList.remove('on');
+}
+
 /* AI가 읽은 것을 확인 화면 칸에 넣는다 */
 function ahaApplyRead(ai, failMsg) {
   var badge = document.getElementById('aha-read-badge');
@@ -6899,9 +6959,17 @@ function ahaApplyRead(ai, failMsg) {
     if (badge) { badge.className = 'badge badge-err'; badge.textContent = '⚠ 지금은 못 읽었어요'; }
     if (msg) msg.innerHTML = '사진은 잘 올라갔어요. 지금은 AI가 읽지 못했지만 <b>이대로 보내면 선생님이 읽어 드립니다</b>. ' +
       '급하면 아래 칸에 직접 적어도 됩니다.';
+    /* ★ v2-84: 「다시 찍기」 뒤 읽기가 실패하면 앞 사진에서 읽은 글이 남으면 안 된다 —
+     * 네 칸을 비우고 넷 다 「종이에 없는 칸」으로 둔다 (원장 결정 2026-09-15). */
+    ['aha-q-learn','aha-q-act','aha-q-try','aha-q-stuck'].forEach(function(id){
+      var el = document.getElementById(id); if (el) el.value = '';
+    });
+    if (ahaLampAi) ahaLampAi.unread = ['L','A','M','P'];
     ['L','A','M','P'].forEach(function(k) {
       var b = document.getElementById('aha-box-' + k); if (b) b.classList.add('unread');
     });
+    ahaClearAiRead('aha-page');
+    ahaClearAiRead('aha-problem-no');
     ahaRenderDirChips(); ahaRenderConceptChips(); ahaUpdateMeter(); ahaEmptyWarn();
     return;
   }
@@ -6919,8 +6987,11 @@ function ahaApplyRead(ai, failMsg) {
   });
 
   // 머리(교재·쪽·번호·틀린이유)
-  if (ai.page && !a7Ws) document.getElementById('aha-page').value = ai.page;
-  if (ai.num && !(a7Ws && a7Ws.seq != null)) document.getElementById('aha-problem-no').value = ai.num;
+  /* ★ v2-84: AI가 읽은 쪽·번호는 파랗게 표시해 「맞는지 확인」하게 한다 (틀리게 읽는 일이 잦다) */
+  ahaClearAiRead('aha-page');
+  ahaClearAiRead('aha-problem-no');
+  if (ai.page && !a7Ws) { document.getElementById('aha-page').value = ai.page; ahaMarkAiRead('aha-page'); }
+  if (ai.num && !(a7Ws && a7Ws.seq != null)) { document.getElementById('aha-problem-no').value = ai.num; ahaMarkAiRead('aha-problem-no'); }
   /* v2-77: 학생이 학습지 칩으로 이미 고른 뒤라면 AI가 읽은 교재로 덮어쓰지 않는다 */
   if (ai.book && !a7Ws) {
     var sel = document.getElementById('aha-source');

@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-3';
+var APP_VER = 'v19-4';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -7909,6 +7909,21 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-4',date:'2026-09-15',stability:'ok',memo:'✍️ <b>질문력 점수는 「종이(활동지)에 쓴 것」만 매깁니다</b> (원장 결정 2026-09-15 · docs/aha_paper_only.md). '
+        +'<b>무슨 일이 있었나</b> — 김예성 학생의 9월 14일 밤 노트를 사진과 나란히 놓고 보니, <b>활동지 종이에는 P칸(막힌 곳)에 「옳은 게 없는 것 같아요」 한 줄만</b> 있었고 '
+        +'L(문제 이해)·A(이론·공식)·M(풀이 논리)은 <b>빈칸</b>이었습니다. 그런데 학원앱에는 세 칸이 모두 채워져 있었고 AI 초안이 <b>5/10</b>을 매겼습니다. '
+        +'까닭은 이렇습니다 — 학생앱은 AI가 사진에서 못 읽은 칸을 노란 칸으로 보여 주며 「고쳐 주세요」라고 하는데, 학생이 그 빈칸에 <b>문제 지문과 이론을 손으로 타이핑</b>해 넣었습니다. '
+        +'앱은 그 타이핑한 글을 「활동지에 쓴 글」로 알고 점수를 준 것입니다. 원장님 말씀대로 <b>사진과 채점이 달랐습니다</b>. '
+        +'<b>이제 어떻게 되나</b> — ① <b>점수는 종이에 쓴 것만</b> 매깁니다. 사진에서 읽히지 않은 칸은 앱에 글이 있어도 <b>0점으로 고정</b>되고, AI에게도 그 칸은 「(종이에 없음)」이라고만 보냅니다. '
+        +'② 오른쪽 채점 칸의 글 상자 이름을 「📝 활동지에 쓴 글」에서 <b>「📝 앱에 적힌 글」</b>로 바꾸고, 학생이 앱에서 직접 적은 칸에는 주황색으로 <b>「✍️ 앱에서 직접 적음 · 점수 제외」</b> 딱지를 붙였습니다. '
+        +'③ 그 칸의 <b>0·1·2 점수 단추는 회색</b>이 되고 밑에 <b>「종이에 없음」</b>이라고 적힙니다. 눌러도 점수가 바뀌지 않습니다(안내 쪽지가 뜹니다). '
+        +'④ 가운데 목록 줄에도 <b>「✍️3」</b>처럼 앱에서 적은 칸이 몇 개인지 작게 보입니다. '
+        +'<b>다시 풀려면</b> — 학생이 <b>종이에 제대로 쓰고 다시 찍어</b> 올리거나, 원장님이 오른쪽 칸의 <b>「📷 사진 읽기」</b>를 눌러 사진을 다시 읽히면 됩니다. '
+        +'그때 AI가 그 칸에서 글씨를 읽어 내면 「종이에 있는 칸」이 되어 점수를 매길 수 있게 풀립니다. '
+        +'<b>바뀌지 않은 것</b> — AHA(7단계 되돌아보기)·자기평가 적중·해결 경로 보너스는 예전 그대로입니다. '
+        +'<b>옛 노트는 그대로</b> — 사진 읽기 기능이 생기기 전에 올라온 노트(읽은 기록 자체가 없는 노트)는 이 규칙을 적용하지 않고 <b>지금까지처럼</b> 매깁니다. '
+        +'확정·임시저장·일괄 확정 모두 저장 직전에 한 번 더 이 규칙을 걸어, 예전에 매겨 둔 초안이 남아 있어도 <b>확정하면 0점으로 바로잡힙니다</b>. '
+        +'<b>함께 필요한 것</b> — 학생앱 v2-84가 같이 올라가야 학생 쪽에도 「종이에 쓴 것만 점수에 들어간다」는 안내와 📷 다시 찍기 길이 보입니다.'},
       {ver:'v19-3',date:'2026-09-15',stability:'ok',memo:'📚 <b>손풀이 교재 목록을 학년·종류로 나눠 보여 줍니다 + ☁️ 이미 올린 파일 고르기</b> (원장 지시 2026-09-15 · docs/book_handsol_contract.md §5). '
         +'<b>무엇이 불편했나</b> — 「✍️ 손풀이 › 📚 교재」의 교재 목록은 124권이 한 줄로 죽 늘어서 있었고, 순서도 「PDF 있는 것 → 학생 많은 것」뿐이라 '
         +'찾으시던 <b>교과서_비상교육 - 미적분1</b>이 한참 아래에 묻혀 있었습니다. '
@@ -46396,9 +46411,14 @@ function wbRow(n, opt){
   var ask=String(n.q_ask||n.memo||'').trim();
   h+='<div style="font-size:12.5px;color:#0f172a;line-height:1.5;word-break:break-word">'
     +(ask?('<b style="color:#7c3aed">Q.</b> '+ahaEsc(ask)):'<span style="color:#cbd5e1">아직 읽은 질문이 없습니다</span>')+'</div>';
+  /* ★ v19-4: 앱에서 직접 타이핑한 칸(종이에 없는 칸) 수 — 점수에 안 들어가는 칸이 몇 개인지 */
+  var _off=ibqPaperOff(n), _offN=0;
+  ['L','A','M','P'].forEach(function(k){ if(_off[k] && wbAxisText(n,k)) _offN++; });
   h+='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">'
     +wbCellChip('L', n.q_learn)+wbCellChip('A', n.q_act)+wbCellChip('M', n.q_try)
-    +wbCellChip('P', n.q_stuck||n.q_ask)+wbCellChip('AHA', wbReflectText(n))+'</div>';
+    +wbCellChip('P', n.q_stuck||n.q_ask)+wbCellChip('AHA', wbReflectText(n))
+    +(_offN?('<span title="앱에서 직접 적은 칸 '+_offN+'개 · 점수 제외" style="font-size:9.5px;font-weight:800;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:6px;padding:1px 7px;white-space:nowrap">✍️'+_offN+'</span>'):'')
+    +'</div>';
   if(d && d.coach && (d.coach.fb||d.coach.ff)){
     h+='<div style="margin-top:5px;font-size:11px;color:#475569;background:#faf5ff;border:1px solid #e9d5ff;border-radius:7px;padding:5px 8px;line-height:1.5">'
       +'🤖 <b style="color:#7c3aed">코치 초안</b> '+ahaEsc([d.coach.fb||'', d.coach.ff||''].filter(Boolean).join(' '))+'</div>';
@@ -46459,6 +46479,7 @@ async function wbConfirmDay(dayKey){
   if(!confirm(ahaDayHeadLabel(dayKey)+' — '+arr.length+'건을 AI 초안 그대로 확정할까요?')) return;
   arr.forEach(function(n){
     var d=IBQ_SCORES[n.id];
+    ibqPaperApply(n,d);   /* ★ v19-4: 그 날 일괄 확정도 종이 규칙을 탄다 */
     ibqApplyBonus(d, n);
     d.status='final'; d.at=new Date().toISOString(); d.by='teacher-bulk';
   });
@@ -47021,6 +47042,10 @@ function wbMiniRow(n, same){
   var unBadge=ibqNeedsRead(n)
     ? '<span title="활동지 사진을 아직 AI가 읽지 않았습니다 — 오른쪽 칸의 📷 사진 읽기를 먼저 눌러 주세요" style="font-weight:800;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:5px;padding:0 5px">📷 안 읽음</span>'
     : '';
+  /* ★ v19-4: 앱에서 직접 타이핑한 칸(종이에 없는 칸) 수 — 점수에 안 들어가는 칸을 줄에서도 알려 준다 */
+  var _off=ibqPaperOff(n), _offN=0;
+  ['L','A','M','P'].forEach(function(k){ if(_off[k] && wbAxisText(n,k)) _offN++; });
+  if(_offN) unBadge+='<span title="앱에서 직접 적은 칸 '+_offN+'개 · 점수 제외" style="font-weight:800;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:5px;padding:0 5px">✍️'+_offN+'</span>';
   return '<div onclick="wbPick(\''+ahaEsc(String(n.id))+'\')" data-wbrow="'+ahaEsc(String(n.id))+'" style="cursor:pointer;background:'+(isFinal?'#f7fdf9':'#fff')
     +';border:1.5px solid '+(on?'#1d6fe8':(isFinal?'#bbf7d0':'#e6eaf1'))+';'+(on?'box-shadow:0 0 0 2px #bfdbfe;':'')
     +(isFinal&&!on?'opacity:.78;':'')+'border-radius:11px;padding:8px 10px;margin-bottom:6px;display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:9px;align-items:center">'
@@ -47127,12 +47152,18 @@ function wbPanelChip(on, label, onclick, color){
  *   칸이 넓을 때 사진 옆(1열)이 같은 글을 쓴다. 함수를 복제하지 않고 인자로 넓혔다.
  *   cols = 한 줄에 몇 칸 · cut = 몇 글자까지 · minH = 최소 높이(0이면 안 준다) */
 function wbLampBoxes(n, cols, cut, minH){
+  /* ★ v19-4: 종이(활동지)에 없던 칸 — 학생이 학생앱에서 직접 타이핑해 넣은 글이다.
+   *   글은 그대로 보여 드리되 「점수 제외」 배지를 붙여 사진과 점수가 어긋나 보이지 않게 한다. */
+  var off=ibqPaperOff(n);
   var h='<div style="display:grid;grid-template-columns:'+((cols===1)?'1fr':'1fr 1fr')+';gap:5px;padding:8px'
     +((minH>0)?(';grid-template-rows:1fr 1fr;min-height:'+minH+'px'):'')+'">';
   [['L 문제 이해','L'],['A 이론·공식','A'],['M 풀이 논리','M'],['P 막힌 곳·질문','P']].forEach(function(p){
     var t=wbAxisText(n,p[1]);
+    var typed=(!!off[p[1]] && !!t);      /* 앱에서 직접 적은 칸 */
     h+='<div style="border:1px solid #dbe2ec;border-radius:4px;padding:5px 7px;font-size:9px;font-weight:900;line-height:1.5;overflow:hidden;'
-      +(t?'background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8':'background:#fbfcfe;color:#94a3b8')+'">'+p[0]
+      +(typed?'background:#fffbeb;border-color:#fde68a;color:#b45309'
+             :(t?'background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8':'background:#fbfcfe;color:#94a3b8'))+'">'+p[0]
+      +(typed?'<span style="display:block;margin-top:2px;font-size:8px;font-weight:900;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:1px 5px">✍️ 앱에서 직접 적음 · 점수 제외</span>':'')
       +'<span style="display:block;font-weight:600;color:#64748b;font-size:8.5px">'+ahaEsc(wbCut(t,cut||60)||'(비어 있음)')+'</span></div>';
   });
   return h+'</div>';
@@ -47188,6 +47219,9 @@ function wbPanelHtml(){
   var st=ahaStudentByCode(n.student_code);
   var isFinal=(d.status==='final');
   var busy=IBQ_BUSY;
+  /* ★ v19-4: 「점수는 종이에 쓴 것만」 — 종이에 없는 칸은 그리기 전에 0으로 맞춘다.
+   *   합계·리그 점수도 이 값으로 계산되도록 보너스 계산보다 먼저 한다. */
+  ibqPaperApply(n,d);
   var prev=Object.assign({},d); ibqApplyBonus(prev,n);
   /* ★ v18-166: 🔁 재풀이 인정 보너스(retryBonus)도 합계에 넣는다 */
   var bonus=(prev.typeBonus||0)+(prev.pathBonus||0)+(prev.levelBonus||0)+(prev.retryBonus||0)+(prev.selfMatch||0)+(d.pick?2:0)+(d.best?3:0);
@@ -47226,7 +47260,8 @@ function wbPanelHtml(){
   /* 사진이 있을 때만 — 사진에 가려 안 보이던 「쓴 글」을 넓은 칸에서 함께 읽는다 */
   if(n.photo_url)
     h+='<div id="wb-read" class="wb-media-text" style="border:1.5px solid #dbe2ec;border-radius:10px;background:#fbfcfe;overflow:auto">'
-      +'<div style="font-size:9.5px;font-weight:900;color:#94a3b8;padding:7px 8px 0">📝 활동지에 쓴 글</div>'
+      /* ★ v19-4: 이 칸에는 종이에 쓴 글과 앱에서 타이핑한 글이 섞여 있으므로 이름을 바꿨다 */
+      +'<div style="font-size:9.5px;font-weight:900;color:#94a3b8;padding:7px 8px 0">📝 앱에 적힌 글</div>'
       +wbLampBoxes(n,1,90,0)+'</div>';
   h+='</div>';
   /* ★ v18-171: 사진 바로 아래 「📷 사진 읽기」 — 옛 채점 창에만 있던 것을 작업대에도 놓는다 */
@@ -47269,19 +47304,23 @@ function wbPanelHtml(){
       +(busy==='draft'?'#94a3b8':'#faf5ff')+';border:1px solid #e9d5ff;color:'+(busy==='draft'?'#fff':'#7c3aed')+';border-radius:7px;padding:4px 10px">'
       +(busy==='draft'?'채점 중…':'🤖 AI 초안')+'</div>')
     +'</div>';
+  /* ★ v19-4: 종이에 없는 칸은 회색 + 「종이에 없음」 — 눌러도 0에서 안 바뀐다 */
+  var paperOff=ibqPaperOff(n);
   h+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px">';
   IBQ_KEYS.forEach(function(k){
     var cur=d[k];
-    h+='<div style="border:1.5px solid #e2e8f0;border-radius:9px;padding:6px 4px;text-align:center;background:#fff">'
+    var offCell=!!paperOff[k];
+    h+='<div style="border:1.5px solid '+(offCell?'#e2e8f0':'#e2e8f0')+';border-radius:9px;padding:6px 4px;text-align:center;background:'+(offCell?'#f1f5f9':'#fff')+'">'
       +'<div style="font-size:10px;font-weight:900;color:#64748b">'+k+' <span style="font-weight:700;color:#94a3b8">'+(WB_AXIS_KO[k]||'')+'</span></div>'
       +'<div style="display:flex;gap:2px;justify-content:center;margin-top:4px">';
     [0,1,2].forEach(function(v){
       var on=(cur===v);
-      h+='<b onclick="ibqSet(\''+k+'\','+v+')" style="width:20px;height:20px;border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;'
-        +(on?'background:#0d2240;color:#ffd54a':'background:#f1f5f9;color:#94a3b8')+'">'+v+'</b>';
+      h+='<b onclick="ibqSet(\''+k+'\','+v+')" title="'+(offCell?'종이에 없는 칸이라 0으로 고정됩니다':'')+'" style="width:20px;height:20px;border-radius:5px;cursor:'+(offCell?'not-allowed':'pointer')+';display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;'
+        +(offCell?(on?'background:#cbd5e1;color:#64748b':'background:#e2e8f0;color:#cbd5e1')
+                 :(on?'background:#0d2240;color:#ffd54a':'background:#f1f5f9;color:#94a3b8'))+'">'+v+'</b>';
     });
-    h+='</div><div style="font-size:9px;color:#94a3b8;margin-top:3px;line-height:1.35;height:25px;overflow:hidden">'
-      +ahaEsc(wbCut(wbAxisText(n,k),14)||'(빈칸)')+'</div></div>';
+    h+='</div><div style="font-size:9px;margin-top:3px;line-height:1.35;height:25px;overflow:hidden;color:'+(offCell?'#b45309':'#94a3b8')+';font-weight:'+(offCell?'900':'400')+'">'
+      +(offCell?'종이에 없음':ahaEsc(wbCut(wbAxisText(n,k),14)||'(빈칸)'))+'</div></div>';
   });
   h+='</div>';
 
@@ -47332,6 +47371,7 @@ async function wbConfirmNext(){
   var id=IBQ_ID;
   if(IBQ_D.status==='final'){ WB.sel=wbNextPendingId(id); IBQ_ID=null; IBQ_D=null; render(); return; }
   var n=ibqNote(id);
+  ibqPaperApply(n,IBQ_D);   /* ★ v19-4: 작업대 「✓ 확정 → 다음」도 종이 규칙을 탄다 */
   var miss=IBQ_KEYS.filter(function(k){ return k!=='AHA' && typeof IBQ_D[k]!=='number'; });
   if(miss.length){ alert('아직 점수를 안 매긴 칸이 있습니다: '+miss.join(', ')); return; }
   IBQ_D.total=ibqTotal(IBQ_D);
@@ -47830,10 +47870,18 @@ async function ibqReadPhoto(id){
     if(stuck===P && ask===P){ stuck=parts.slice(0,-1).join(' '); ask=parts[parts.length-1]; }
   }
 
+  /* ★ v19-4: AI가 빈칸으로 읽은 칸(L·A·M·P 값이 '')은 unread 목록에 반드시 넣는다.
+   *   엣지 함수(aha-read)와 같은 규칙 — 「종이에 없는 칸」 판정이 두 길에서 어긋나지 않게 한다.
+   *   AI가 unread 를 빠뜨리고 빈 문자열만 돌려주는 일이 실제로 있었다. */
+  var _un=Array.isArray(out.unread)?out.unread.slice():[];
+  ['L','A','M','P'].forEach(function(k){
+    if(!String(out[k]==null?'':out[k]).trim() && _un.indexOf(k)<0) _un.push(k);
+  });
+
   var upd={ q_learn:String(out.L||'').trim()||null, q_act:String(out.A||'').trim()||null,
             q_try:String(out.M||'').trim()||null, q_stuck:stuck||null, q_ask:ask||null,
             lamp_ai:{ L:out.L||'', A:out.A||'', M:out.M||'', P:out.P||'', aha:out.aha||'',
-                      unread:Array.isArray(out.unread)?out.unread:[], model:IBQ_MODEL,
+                      unread:_un, model:IBQ_MODEL,
                       at:new Date().toISOString(), by:'teacher' } };
   var sb; try{ sb=getSupaClient(); }catch(e2){ sb=null; }
   if(sb){ var r=await sb.from('aha_notes').update(upd).eq('id',id); if(r.error) throw new Error(r.error.message); }
@@ -47853,12 +47901,17 @@ async function ibqAiDraftOne(id){
   if(n.reflect && (n.reflect.learned||n.reflect.wonder))
     aha=[n.reflect.learned||'', n.reflect.wonder||''].filter(Boolean).join(' / ');
 
+  /* ★ v19-4: 종이에 없는 칸(사진에서 못 읽어 학생이 앱에서 타이핑한 칸)은
+   *   글을 보내지 않고 「(종이에 없음)」으로 보낸다 — AI가 그 글로 점수를 주지 못하게.
+   *   P가 종이에 없으면 q_stuck·q_ask 두 줄 모두 「(종이에 없음)」이다. */
+  var off=ibqPaperOff(n);
+  var NOPAPER='(종이에 없음)';
   var body='교재/출처: '+(ahaSourceName(n)||'')+' p'+(n.page||'')+' #'+(n.problem_no||'')+'\n'
-    +'L 문제 이해: '+(n.q_learn||'(비어 있음)')+'\n'
-    +'A 이론·공식: '+(n.q_act||'(비어 있음)')+'\n'
-    +'M 풀이 논리: '+(n.q_try||'(비어 있음)')+'\n'
-    +'P 막힌 곳: '+(n.q_stuck||'(비어 있음)')+'\n'
-    +'P 질문 한 문장: '+(n.q_ask||n.memo||'(비어 있음)')+'\n'
+    +'L 문제 이해: '+(off.L?NOPAPER:(n.q_learn||'(비어 있음)'))+'\n'
+    +'A 이론·공식: '+(off.A?NOPAPER:(n.q_act||'(비어 있음)'))+'\n'
+    +'M 풀이 논리: '+(off.M?NOPAPER:(n.q_try||'(비어 있음)'))+'\n'
+    +'P 막힌 곳: '+(off.P?NOPAPER:(n.q_stuck||'(비어 있음)'))+'\n'
+    +'P 질문 한 문장: '+(off.P?NOPAPER:(n.q_ask||n.memo||'(비어 있음)'))+'\n'
     +'학생이 고른 지시어: '+(n.directive||'(없음)')+'\n'
     +'AHA 되돌아보기: '+(aha||'(아직 없음)');
 
@@ -47871,7 +47924,9 @@ async function ibqAiDraftOne(id){
     +'질문 유형: fact(답이 뭐예요) / concept(왜·어떻게) / debate(꼭 그래야 하나·다른 방법)\n'
     +'코치: fb(피드백) = 잘 쓴 부분을 학생 문장을 인용해 한 문장 인정. ff(피드포워드) = 「다만 」으로 시작해 '
     +'다음 질문에서 고칠 것 하나만, 구체적으로. 모든 문장 「~합니다」체, 「~요」 금지. 각 60자 이내.\n'
-    +'출력 JSON만: {"L":2,"A":1,"M":2,"P":2,"AHA":null,"type":"concept","fb":"...","ff":"..."}\n\n'
+    +'출력 JSON만: {"L":2,"A":1,"M":2,"P":2,"AHA":null,"type":"concept","fb":"...","ff":"..."}\n'
+    /* ★ v19-4: 종이에 없는 칸은 무조건 0 (앱이 한 번 더 0으로 고정하지만 AI에게도 알려 준다) */
+    +'주의: 「(종이에 없음)」이라고 적힌 칸은 활동지(종이)에 아무것도 쓰지 않은 칸이다. 그 칸은 반드시 0점으로 매긴다.\n\n'
     +'── 학생이 쓴 것 ──\n'+body;
 
   var resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -47891,7 +47946,8 @@ async function ibqAiDraftOne(id){
   var clamp=function(v){ var x=Number(v); return (x===0||x===1||x===2)?x:null; };
   IBQ_KEYS.forEach(function(k){ d[k]=clamp(out[k]); });
   if(!aha) d.AHA=null;
-  d.total=ibqTotal(d);
+  /* ★ v19-4: AI가 무슨 점수를 돌려주든 종이에 없는 칸은 0으로 고정하고 합계를 다시 낸다 */
+  ibqPaperApply(n,d);
   d.aiType=(['fact','concept','debate'].indexOf(out.type)>=0)?out.type:(n.q_type||'fact');
   d.coach={ fb:String(out.fb||'').trim(), ff:String(out.ff||'').trim() };
   d.path=ibqPathOf(n);
@@ -47963,7 +48019,16 @@ window.ibqOpen=ibqOpen;
 function ibqClose(){ IBQ_ID=null; IBQ_D=null; IBQ_HOST=null; var ov=document.getElementById('ibq-ov'); if(ov) ov.remove(); render(); }
 window.ibqClose=ibqClose;
 
-function ibqSet(k,v){ if(!IBQ_D) return; IBQ_D[k]=(IBQ_D[k]===v)?null:v; IBQ_D.total=ibqTotal(IBQ_D); ibqRender(); }
+/* ★ v19-4: 종이에 없는 칸(L·A·M·P)은 눌러도 점수가 바뀌지 않는다 — 0 고정.
+ *   다시 풀려면 「📷 사진 읽기」로 사진을 다시 읽어 그 칸이 종이에 있다고 판정되어야 한다. */
+function ibqSet(k,v){
+  if(!IBQ_D) return;
+  if(ibqPaperOff(ibqNote(IBQ_ID)||{})[k]){
+    ahaToast('종이에 없는 칸이에요 — 📷 사진 읽기로 다시 읽으면 풀려요');
+    return;
+  }
+  IBQ_D[k]=(IBQ_D[k]===v)?null:v; IBQ_D.total=ibqTotal(IBQ_D); ibqRender();
+}
 window.ibqSet=ibqSet;
 /* ★ v18-166: 같은 칩을 다시 누르면 해제(none) — 잘못 누르면 되돌릴 방법이 없었다(원장 제보).
  *   작업대 오른쪽 칸(wbPanelHtml)과 채점 오버레이가 둘 다 이 함수를 쓴다. */
@@ -48042,6 +48107,8 @@ function ibqApplyBonus(d,n){
 async function ibqConfirm(){
   if(!IBQ_ID||!IBQ_D) return;
   var n=ibqNote(IBQ_ID);
+  /* ★ v19-4: 확정 직전에 한 번 더 — 옛 초안이 남아 있어도 종이에 없는 칸은 0으로 저장된다 */
+  ibqPaperApply(n,IBQ_D);
   var miss=IBQ_KEYS.filter(function(k){ return k!=='AHA' && typeof IBQ_D[k]!=='number'; });
   if(miss.length){ alert('아직 점수를 안 매긴 칸이 있습니다: '+miss.join(', ')); return; }
   IBQ_D.total=ibqTotal(IBQ_D);
@@ -48059,6 +48126,7 @@ window.ibqConfirm=ibqConfirm;
 
 async function ibqSaveTemp(){
   if(!IBQ_ID||!IBQ_D) return;
+  ibqPaperApply(ibqNote(IBQ_ID), IBQ_D);   /* ★ v19-4: 임시저장도 종이 규칙을 탄다 */
   IBQ_D.total=ibqTotal(IBQ_D); IBQ_D.status='temp'; IBQ_D.at=new Date().toISOString(); IBQ_D.by='teacher';
   IBQ_SCORES[IBQ_ID]=IBQ_D;
   IBQ_BUSY='save'; ibqRender();
@@ -48104,10 +48172,14 @@ window.ibqSelfBack=ibqSelfBack;
 /* ── 패널 그리기 ── */
 function ibqScoreRow(k){
   var d=IBQ_D, cur=d[k];
-  var h='<div style="display:grid;grid-template-columns:128px minmax(0,1fr) 108px;gap:11px;align-items:start;border:1px solid #e8eef8;border-radius:10px;padding:9px 11px;background:#fff;margin-bottom:6px">'
-    +'<div><div style="font-size:12px;font-weight:800;color:#0d2240;white-space:nowrap">'+k+' '+IBQ_LABEL[k]+'</div>'
-    +'<div style="font-size:9.5px;color:#94a3b8;line-height:1.45;margin-top:3px">'+ahaEsc(IBQ_HINT[k])+'</div></div>';
   var n=ibqNote(IBQ_ID)||{};
+  /* ★ v19-4: 종이(활동지)에 없던 칸 — 0 고정, 회색, 눌러도 안 바뀐다 */
+  var offCell=!!ibqPaperOff(n)[k];
+  var h='<div style="display:grid;grid-template-columns:128px minmax(0,1fr) 108px;gap:11px;align-items:start;border:1px solid #e8eef8;border-radius:10px;padding:9px 11px;background:'+(offCell?'#f1f5f9':'#fff')+';margin-bottom:6px">'
+    +'<div><div style="font-size:12px;font-weight:800;color:#0d2240;white-space:nowrap">'+k+' '+IBQ_LABEL[k]+'</div>'
+    +'<div style="font-size:9.5px;color:#94a3b8;line-height:1.45;margin-top:3px">'+ahaEsc(IBQ_HINT[k])+'</div>'
+    +(offCell?'<div style="margin-top:4px;font-size:9.5px;font-weight:900;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:2px 6px;display:inline-block">종이에 없음</div>':'')
+    +'</div>';
   var txt='';
   if(k==='L') txt=n.q_learn||'';
   else if(k==='A') txt=n.q_act||'';
@@ -48115,13 +48187,15 @@ function ibqScoreRow(k){
   else if(k==='P') txt=[n.q_stuck||'', n.q_ask||n.memo||''].filter(Boolean).join(' → ');
   else if(k==='AHA') txt=(n.reflect?[n.reflect.learned||'',n.reflect.wonder||''].filter(Boolean).join(' / '):'');
   h+='<div style="font-size:12px;line-height:1.55;color:#334155;white-space:pre-wrap;word-break:break-word">'
+    +((offCell&&txt)?'<span style="font-size:9.5px;font-weight:900;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:1px 6px">✍️ 앱에서 직접 적음 · 점수 제외</span><br>':'')
     +(txt?ahaEsc(txt):'<span style="color:#cbd5e1">(비어 있음)</span>')+'</div>';
   h+='<div style="display:flex;gap:4px;justify-content:flex-end">';
   [0,1,2].forEach(function(v){
     var on=(cur===v);
-    h+='<div onclick="ibqSet(\''+k+'\','+v+')" style="width:28px;height:28px;border-radius:7px;cursor:pointer;'
+    h+='<div onclick="ibqSet(\''+k+'\','+v+')" title="'+(offCell?'종이에 없는 칸이라 0으로 고정됩니다':'')+'" style="width:28px;height:28px;border-radius:7px;cursor:'+(offCell?'not-allowed':'pointer')+';'
       +'display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;'
-      +(on?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#94a3b8;border:1px solid #cbd5e1')+'">'+v+'</div>';
+      +(offCell?(on?'background:#cbd5e1;color:#64748b;border:1px solid #cbd5e1':'background:#e2e8f0;color:#cbd5e1;border:1px solid #e2e8f0')
+              :(on?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#94a3b8;border:1px solid #cbd5e1'))+'">'+v+'</div>';
   });
   h+='</div></div>';
   return h;
@@ -48146,6 +48220,8 @@ function ibqRender(target){
   var busy=IBQ_BUSY;
   var hasText=!!(n.q_learn||n.q_act||n.q_try||n.q_stuck||n.q_ask||n.memo);
   var unread=(n.lamp_ai&&Array.isArray(n.lamp_ai.unread))?n.lamp_ai.unread:[];
+  /* ★ v19-4: 옛 채점 창에서도 종이에 없는 칸은 0으로 맞춘 뒤 그린다 (작업대와 같은 규칙) */
+  ibqPaperApply(n,d);
   var qt=d.aiType||n.q_type||'fact';
 
   var h='<div onclick="event.stopPropagation()" style="background:#f5f7fb;border-radius:16px;width:min(1080px,96vw);max-height:92vh;overflow:auto;box-shadow:0 20px 60px rgba(13,34,64,.4)">';
@@ -48316,6 +48392,30 @@ var IBQ_READ_COST_KRW=9;
 function ibqNeedsRead(n){ return !!(n && n.photo_url && ibqIsOldNote(n)); }
 /* ★ v18-171: AI가 「못 읽었다」고 알려 준 칸 목록 (L·A·M·P 중) */
 function ibqUnreadCells(n){ return (n&&n.lamp_ai&&Array.isArray(n.lamp_ai.unread))?n.lamp_ai.unread:[]; }
+/* ★ v19-4: 「점수는 종이에 쓴 것만」 (원장 결정 2026-09-15 · docs/aha_paper_only.md §1)
+ *   사진에서 못 읽은 칸(lamp_ai.unread)은 학생이 학생앱에서 손으로 타이핑해 채운 칸이다.
+ *   그 글은 활동지(종이)에 없는 글이므로 점수에 넣지 않는다.
+ *   돌려주는 값은 {L:true, A:true, …} 꼴이고, lamp_ai 가 아예 없는 옛 노트(사진 읽기 전)는
+ *   빈 객체를 돌려준다 = 제한하지 않는다(예전 그대로 매긴다). */
+function ibqPaperOff(n){
+  var off={};
+  if(!n || !n.lamp_ai) return off;
+  var un=ibqUnreadCells(n), i, k;
+  for(i=0;i<un.length;i++){
+    k=String(un[i]==null?'':un[i]).toUpperCase();
+    if(k==='L'||k==='A'||k==='M'||k==='P') off[k]=true;
+  }
+  return off;
+}
+/* ★ v19-4: 종이에 없는 칸의 점수를 0으로 고치고 합계를 다시 낸다.
+ *   AI 초안·확정·임시저장·일괄확정이 모두 이 한 곳을 거쳐 같은 규칙을 탄다. */
+function ibqPaperApply(n,d){
+  if(!d) return d;
+  var off=ibqPaperOff(n), ks=['L','A','M','P'], i;
+  for(i=0;i<ks.length;i++){ if(off[ks[i]]) d[ks[i]]=0; }
+  d.total=ibqTotal(d);
+  return d;
+}
 /* ★ v18-166: 일괄 초안이 몇 개째인지 머리띠 단추에 적어 준다 (화면 전체를 다시 그리지 않는다)
  *   ★ v18-171: 앞에 「사진 읽는 중…」 단계가 생겨서, 지금 무슨 일을 하는 중인지(head)도 받는다. */
 function ibqBulkProg(i,n,head){
@@ -48422,6 +48522,7 @@ async function ibqBulkConfirm(){
     +targets.length+'건을 AI 초안 그대로 확정할까요? (질문력 '+min+'점 이상)')) return;
   targets.forEach(function(n){
     var d=IBQ_SCORES[n.id];
+    ibqPaperApply(n,d);   /* ★ v19-4: 일괄 확정도 종이 규칙을 탄다 */
     ibqApplyBonus(d,n);
     d.status='final'; d.at=new Date().toISOString(); d.by='teacher-bulk';
   });
