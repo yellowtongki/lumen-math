@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-2';
+var APP_VER = 'v19-3';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -7909,6 +7909,26 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-3',date:'2026-09-15',stability:'ok',memo:'📚 <b>손풀이 교재 목록을 학년·종류로 나눠 보여 줍니다 + ☁️ 이미 올린 파일 고르기</b> (원장 지시 2026-09-15 · docs/book_handsol_contract.md §5). '
+        +'<b>무엇이 불편했나</b> — 「✍️ 손풀이 › 📚 교재」의 교재 목록은 124권이 한 줄로 죽 늘어서 있었고, 순서도 「PDF 있는 것 → 학생 많은 것」뿐이라 '
+        +'찾으시던 <b>교과서_비상교육 - 미적분1</b>이 한참 아래에 묻혀 있었습니다. '
+        +'<b>이제 어떻게 보이나</b> — 목록 위에 칩(작은 단추) 두 줄이 생겼습니다. ① <b>학년</b> — 전체 · 초4~초6 · 중1~중3 · 고1 · 고2 · 기타(각각 몇 권인지 함께 표시) '
+        +'② <b>종류</b> — 전체 · 📘 교과서 · 📗 시중교재 · ✨ 시그니처(루멘 자체 교재) · 🏫 학원자체(옥길중 대비 등), 그 오른쪽에 <b>🔍 교재 이름 찾기</b> 칸이 있습니다. '
+        +'목록 자체도 <b>「중1-1 · 12권」처럼 학년(학기) 묶음</b>으로 나뉘고, 묶음 안에서는 <b>교과서 → 시그니처 → 학원자체 → 시중교재</b> 순으로, '
+        +'같은 종류 안에서는 PDF 있는 것 → 학생 많은 것 → 이름 순으로 놓입니다. 줄마다 종류 배지(교과서 파랑 · 시그니처 보라 · 학원자체 주황 · 시중교재 회색)가 붙고, '
+        +'고등 교재는 <b>과목 이름(미적분1 · 대수 · 공통수학2 …)</b>도 함께 보입니다. 등록 학생 · 문항 · 풀이 있는 쪽 · 풀이 · PDF 칸은 그대로입니다. '
+        +'<b>학년은 어떻게 아나</b> — 매쓰플랫은 학년을 따로 주지 않아 <b>교재 이름에서 읽습니다</b>. '
+        +'「초등수학6-2」→초6-2, 「중등수학1(상)」→중1-1, 「Lumen Brilliance M1-2」→중1-2, 「옥길중 1-2 …」→중1-2, '
+        +'「공통수학1·2」→고1, 「미적분1 · 대수 · 확률과 통계 · 기하」→고2 로 봅니다. 이름에서 학년을 못 읽는 교재(예 「Lumen Beam」)는 <b>기타</b> 묶음에 모입니다. '
+        +'<b>👉 찾으시던 미적분1 교과서는 「고2」 묶음 맨 첫 줄</b>에 있습니다(교과서가 묶음 안에서 제일 먼저 나오기 때문입니다). '
+        +'<b>☁️ 올린 파일</b> — 줄마다 「📄 PDF 올리기」 옆에 새 단추가 생겼습니다. 누르면 <b>클라우드(school_pdfs 안 book 칸)에 이미 올라가 있는 PDF 목록</b>이 '
+        +'작은 창으로 뜨고(파일 이름 · 크기 MB · 올린 시각), 「이 파일로 등록」을 누르면 그 파일이 이 교재의 교과서 PDF로 바로 등록됩니다. '
+        +'원장님이 전에 도구(tools/pdf_upload.html)로 올려 두신 <b>48MB 미적분1 교과서</b>가 클라우드에는 있는데 앱 등록부에는 없어서 같은 파일을 다시 올려야 했는데, '
+        +'이제 <b>다시 올릴 필요 없이</b> 목록에서 고르기만 하면 됩니다(쪽수만 읽어 오므로 48MB를 통째로 내려받지 않아 빠릅니다. 이미 맞춰 두신 쪽 맞춤 값은 그대로 지킵니다). '
+        +'같은 단추는 교재를 연 뒤 「📄 교과서 PDF」 칸에서도 쓸 수 있습니다. '
+        +'<b>⬆ 올리기 탭</b> — 출처 카드가 3개에서 4개로 늘었습니다. 새 카드 <b>「📗 교재·교과서」</b>(배지 「교재」)를 고르면 PDF 고르기 단추 대신 '
+        +'<b>같은 분류의 간단한 교재 목록</b>(제목 · 종류 배지 · 학생 수 · PDF 배지)이 나오고, 「열기 →」를 누르면 📚 교재 탭의 그 교재 쪽 목록으로 넘어갑니다. '
+        +'기존 세 출처(📄 매쓰플랫 학습지 · 🏫 학교 기출 · 📎 기타 자료)의 동작은 하나도 바뀌지 않았습니다.'},
       {ver:'v19-2',date:'2026-09-15',stability:'warn',memo:'📄 <b>학습지 채점도 「자기채점 훑어보기」에서 함께 봅니다</b> (원장 지시 2026-09-15 · docs/worksheet_score_contract.md §4). '
         +'<b>왜 바뀌었나</b> — 원장님이 매쓰플랫의 「채점 전 정답 공개」를 끄시면서, 학생이 매쓰플랫 학생앱에서는 주관식을 스스로 채점할 수 없게 되었습니다. '
         +'그래서 <b>교재에 이어 학습지도 루멘 학생앱에서 채점</b>하게 했고(학생앱 v2-83), 그 결과를 원장님이 훑어보는 자리가 바로 이 화면입니다. '
@@ -51221,7 +51241,9 @@ function hslUpPane(){
   /* 출처 고르기 */
   var srcs=[['mf','자동','📄 매쓰플랫 학습지','머리글로 학습지 기록을 찾아 문항 id·유형·정오답을 자동으로 붙입니다. 번호 좌표로 자릅니다.'],
             ['exam','반자동','🏫 학교 기출','기출모의에 있는 시험을 고르면 문항 번호와 이어집니다. 유형은 AI 추천 → 원장님 확인.'],
-            ['etc','반자동','📎 기타 자료','시중 교재 복사본·직접 만든 프린트. 자료 이름을 한 번 적고, 필기 자국·AI 번호 읽기로 자릅니다.']];
+            ['etc','반자동','📎 기타 자료','시중 교재 복사본·직접 만든 프린트. 자료 이름을 한 번 적고, 필기 자국·AI 번호 읽기로 자릅니다.'],
+            /* v19-3: 네 번째 카드 — 교재·교과서 (계약서 §5-3) */
+            ['book','교재','📗 교재·교과서','교과서·교재 PDF는 한 번만 등록하고, 쪽마다 필기 조각을 붙입니다.']];
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:12px">';
   srcs.forEach(function(s){
     var on=(HSU.src===s[0]);
@@ -51232,6 +51254,9 @@ function hslUpPane(){
       +'<div style="font-size:10.5px;color:#64748b;line-height:1.55;margin-top:4px">'+s[3]+'</div></div>';
   });
   h+='</div>';
+
+  /* v19-3: 교재·교과서를 고르면 PDF 고르기 대신 교재 목록을 보여 준다 (여기서는 자르지 않는다) */
+  if(HSU.src==='book') return h+hslUpBookPane();
 
   /* 출처별 입력칸 */
   if(HSU.src==='exam'){
@@ -51325,6 +51350,49 @@ function hslUpPane(){
     }
     h+='</div>';
   });
+  return h;
+}
+/* v19-3: ⬆ 올리기 탭의 간단 교재 목록 (📚 교재 탭과 같은 칩·묶음) */
+function hslUpBookPane(){
+  if(!BKH.loaded){
+    if(!BKH.loading) setTimeout(function(){ bkhLoad(); },0);
+    return '<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:40px;text-align:center;color:#94a3b8;font-weight:700;font-size:12.5px">'
+      +'📚 교재 목록을 불러오는 중…</div>';
+  }
+  var all=bkhBookList();
+  var rows=bkhBookFilter(all);
+  var h='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:12px 14px;margin-bottom:12px">'
+    +'<div style="font-size:12.5px;font-weight:900;color:#0d2240;margin-bottom:4px">📗 어느 교재인가요</div>'
+    +'<div style="font-size:11.5px;color:#64748b;line-height:1.75;margin-bottom:9px">'
+    +'교과서·교재는 <b>PDF를 한 번만 등록</b>하고, 쪽마다 문항 사각형 위에 필기 조각을 붙입니다. '
+    +'아래에서 교재를 골라 <b>열기 →</b>를 누르면 📚 교재 탭의 쪽 목록으로 갑니다.</div>';
+  if(!all.length){
+    h+='<div style="border:1px dashed #cbd5e1;border-radius:11px;padding:30px;text-align:center;color:#94a3b8;font-size:12px">'
+      +'아직 학생별 교재 자료(<b>mf_swb_…</b>)가 없습니다</div></div>';
+    return h;
+  }
+  h+=bkhChipBar(all);
+  if(!rows.length){
+    h+='<div style="border:1px dashed #cbd5e1;border-radius:11px;padding:26px;text-align:center;color:#94a3b8;font-size:12px">'
+      +'고른 조건에 맞는 교재가 없습니다 — 위의 <b>전체</b>를 눌러 보세요</div></div>';
+    return h;
+  }
+  bkhBookGroups(rows).forEach(function(g){
+    h+=bkhGroupHead(g);
+    g.rows.forEach(function(r){
+      var isHigh=(String((r.cls&&r.cls.gradeKey)||'').charAt(0)==='고');
+      h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid #f1f5f9;padding:8px 2px">'
+        +bkhKindBadge(r.cls)
+        +'<span style="font-size:12px;font-weight:800;color:#0d2240">'+bkhEsc(r.title)+'</span>'
+        +((isHigh && r.cls && r.cls.subject)?('<span style="font-size:10.5px;font-weight:800;color:#1d6fe8">'+bkhEsc(r.cls.subject)+'</span>'):'')
+        +'<span style="font-size:10.5px;font-weight:700;color:#94a3b8">학생 '+r.nStu+'명</span>'
+        +(r.pdf?('<span style="font-size:9.5px;font-weight:900;background:#dcfce7;color:#15803d;border-radius:50px;padding:2px 8px">✅ PDF '+(r.pdf.pdfPages||'?')+'쪽</span>')
+               :'<span style="font-size:9.5px;font-weight:900;background:#f1f5f9;color:#94a3b8;border-radius:50px;padding:2px 8px">PDF 없음</span>')
+        +'<span onclick="bkhOpen(\''+bkhJs(r.bid)+'\')" style="margin-left:auto;cursor:pointer;background:#0d2240;color:#fff;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;white-space:nowrap">열기 →</span>'
+        +'</div>';
+    });
+  });
+  h+='</div>';
   return h;
 }
 window.hslUnSol=function(pi){
@@ -51821,6 +51889,10 @@ var BKH = { view:'list', loaded:false, loading:false, err:'', busy:'', step:'',
             swb:{}, ans:{}, pdfs:null, cfg:{}, boxes:null, wrong7:{},
             pg:null, pgBusy:false, pgErr:'',
             hand:null, handSel:null,
+            /* v19-3: 교재 목록 거르개 (학년 칩 · 종류 칩 · 이름 찾기) */
+            f:{ grade:'', kind:'', q:'' },
+            /* v19-3: 「☁️ 올린 파일」 고르기 창 */
+            cloud:{ open:false, busy:false, err:'', bid:'', files:[] },
             off:{ pdf:1, print:1 }, offPrev:'' };
 var BKH_DOC = {};      // bid -> pdf.js 문서 (한 번 열면 다시 안 연다)
 
@@ -51943,6 +52015,95 @@ async function bkhLoad(force){
 }
 window.bkhReload=function(){ BKH.loaded=false; BKH.boxes=null; BKH.wrong7={}; BKH.pg=null; bkhLoad(true); render(); };
 
+/* ══════════ v19-3: 교재 분류 (계약서 §5-2) ══════════
+ * 매쓰플랫은 학년을 따로 주지 않는다 → 제목 글자와 type 으로 「어떤 종류·몇 학년 교재인가」를 읽는다.
+ * 종류: 교과서 / 시그니처 / 학원자체 / 시중교재   학년: 초4-1 … 중1-2 … 고1 · 고2 · 기타 */
+var BKH_KINDS=[['교과서','📘','#1d6fe8','#eff6ff'],
+               ['시그니처','✨','#7c3aed','#f5f3ff'],
+               ['학원자체','🏫','#ea580c','#fff7ed'],
+               ['시중교재','📗','#475569','#f1f5f9']];
+var BKH_GRADES=['초4','초5','초6','중1','중2','중3','고1','고2','고3','기타'];
+function bkhGradeOrd(gk){ var i=BKH_GRADES.indexOf(String(gk||'기타')); return i<0?99:i; }
+function bkhKindOrd(k){
+  for(var i=0;i<BKH_KINDS.length;i++){ if(BKH_KINDS[i][0]===k) return i; }
+  return 99;
+}
+function bkhKindStyle(kind){
+  for(var i=0;i<BKH_KINDS.length;i++){ if(BKH_KINDS[i][0]===kind) return BKH_KINDS[i]; }
+  return ['시중교재','📗','#475569','#f1f5f9'];
+}
+/* 고등 과목 이름 — 앞의 것부터 찾는다 (긴 이름을 먼저 둔다) */
+var BKH_SUB1=['공통수학1','공통수학2','공통수학Ⅰ','공통수학Ⅱ'];                         /* 고1 */
+var BKH_SUB2=['미적분1','미적분Ⅰ','미적분 1','확률과 통계','확률과통계','대수','기하'];   /* 고2 */
+function bkhClassify(title, type){
+  var t=String(title==null?'':title);
+  var ty=String(type==null?'':type).toUpperCase();
+  /* ① 종류 */
+  var kind;
+  if(ty==='SCHOOL' || t.indexOf('교과서_')===0) kind='교과서';
+  else if(ty==='CUSTOM_SIGNATURE' || ty==='SIGNATURE' || t.indexOf('Lumen ')===0) kind='시그니처';
+  else if(ty==='CUSTOM') kind='학원자체';
+  else kind='시중교재';
+  /* ② 학년 (제목에서 읽는다) */
+  var grade='기타', subject='', m=null, i=0;
+  if((m=t.match(/초등수학\s*([1-6])\s*-\s*([1-2])/))) grade='초'+m[1]+'-'+m[2];
+  else if((m=t.match(/중등수학\s*([1-3])\s*\(\s*(상|하)\s*\)/))) grade='중'+m[1]+'-'+(m[2]==='상'?'1':'2');
+  else if((m=t.match(/중등수학\s*([1-3])/))) grade='중'+m[1];                      /* 학기 없음 */
+  else if((m=t.match(/[가-힣](초|중|고)\s*([1-6])\s*-\s*([1-2])/))) grade=m[1]+m[2]+'-'+m[3];  /* 「옥길중 1-2」 */
+  else if((m=t.match(/(?:^|[^A-Za-z0-9])M\s*([1-3])\s*-\s*([1-2])/))) grade='중'+m[1]+'-'+m[2]; /* 시그니처 M1-2 */
+  else {
+    for(i=0;i<BKH_SUB1.length;i++){ if(t.indexOf(BKH_SUB1[i])>=0){ grade='고1'; subject=BKH_SUB1[i]; break; } }
+    if(grade==='기타'){
+      for(i=0;i<BKH_SUB2.length;i++){ if(t.indexOf(BKH_SUB2[i])>=0){ grade='고2'; subject=BKH_SUB2[i]; break; } }
+    }
+    if(grade==='기타' && (m=t.match(/고\s*([1-3])/))) grade='고'+m[1];             /* 「… - 고1 (2025)」 */
+  }
+  var gradeKey=String(grade).split('-')[0];
+  return { kind:kind, grade:grade, gradeKey:gradeKey, subject:subject };
+}
+/* 칩으로 거르기 */
+function bkhBookFilter(rows){
+  var f=BKH.f||{ grade:'', kind:'', q:'' };
+  var q=String(f.q||'').trim().toLowerCase();
+  return (rows||[]).filter(function(r){
+    var c=r.cls||{};
+    if(f.grade && c.gradeKey!==f.grade) return false;
+    if(f.kind && c.kind!==f.kind) return false;
+    if(q && String(r.title||'').toLowerCase().indexOf(q)<0) return false;
+    return true;
+  });
+}
+/* 학년(학기) 묶음 — 묶음 안은 교과서 → 시그니처 → 학원자체 → 시중교재, 그 안에서 PDF 있음 → 학생 수 → 이름 */
+function bkhBookGroups(rows){
+  var by={}, out=[];
+  (rows||[]).forEach(function(r){
+    var g=(r.cls&&r.cls.grade)||'기타';
+    if(!by[g]){ by[g]={ grade:g, gradeKey:(r.cls&&r.cls.gradeKey)||'기타', rows:[] }; out.push(by[g]); }
+    by[g].rows.push(r);
+  });
+  out.sort(function(a,b){
+    return bkhGradeOrd(a.gradeKey)-bkhGradeOrd(b.gradeKey) || String(a.grade).localeCompare(String(b.grade),'ko');
+  });
+  out.forEach(function(o){
+    o.rows.sort(function(a,b){
+      return bkhKindOrd(a.cls.kind)-bkhKindOrd(b.cls.kind)
+        || (b.pdf?1:0)-(a.pdf?1:0)
+        || b.nStu-a.nStu
+        || String(a.title).localeCompare(String(b.title),'ko');
+    });
+  });
+  return out;
+}
+window.bkhFilter=function(k,v){
+  if(!BKH.f) BKH.f={ grade:'', kind:'', q:'' };
+  BKH.f[k]=(v==null?'':String(v));
+  render();
+  if(k==='q') setTimeout(function(){
+    var el=document.getElementById('bkh-q');
+    if(el){ try{ el.focus(); el.setSelectionRange(el.value.length,el.value.length); }catch(e){} }
+  },0);
+};
+
 /* ── 교재 목록 모델 ── */
 function bkhBookList(){
   var live=bkhLiveCodes(), byBid={};
@@ -51950,8 +52111,9 @@ function bkhBookList(){
     (BKH.swb[code]||[]).forEach(function(b){
       if(!b||b.bid==null) return;
       var k=String(b.bid);
-      var o=byBid[k]||(byBid[k]={ bid:k, title:'', codes:{} });
+      var o=byBid[k]||(byBid[k]={ bid:k, title:'', type:'', codes:{} });
       if(b.title && !o.title) o.title=String(b.title);
+      if(b.type && !o.type) o.type=String(b.type);       /* v19-3: 분류에 쓸 매쓰플랫 종류 */
       if(live[code]) o.codes[code]=1;
     });
   });
@@ -51967,7 +52129,9 @@ function bkhBookList(){
     var o=byBid[k], ans=BKH.ans[k]||{}, pgs=(ans&&ans.pages)||{};
     var nQ=0, nPage=0;
     Object.keys(pgs).forEach(function(w){ nPage++; nQ+=bkhGroups(pgs[w]).length; });
-    return { bid:k, title:o.title||bkhBookTitle(k), nStu:Object.keys(o.codes).length,
+    var title=o.title||bkhBookTitle(k);
+    return { bid:k, title:title, type:o.type||'', cls:bkhClassify(title, o.type),
+             nStu:Object.keys(o.codes).length,
              nPage:nPage, nQ:nQ, nSolPage:Object.keys(solPage[k]||{}).length, nSol:solN[k]||0,
              pdf:pdfs[k]||null, hidden:!!(BKH.cfg[k]&&BKH.cfg[k].hidden) };
   }).sort(function(a,b){
@@ -52306,6 +52470,8 @@ window.bkhSaveBoxes=async function(){
 
 /* ═══════════ 화면 이동 ═══════════ */
 window.bkhOpen=async function(bid){
+  /* v19-3: ⬆ 올리기 탭의 교재 목록에서 열어도 📚 교재 탭으로 넘어간다 */
+  try{ if(typeof HSL!=='undefined' && HSL) HSL.tab='book'; }catch(e){}
   BKH.bid=String(bid); BKH.view='pages'; BKH.page=0; BKH.boxes=null; BKH.pg=null; BKH.sel=-1;
   BKH.handSel=null; BKH.offPrev='';
   var rec=(bkhPdfs().byBook||{})[BKH.bid];
@@ -52363,6 +52529,18 @@ window.bkhPdfPick=function(bid){
   inp.onchange=function(){ if(this.files && this.files[0]) bkhPdfRun(BKH.bid, this.files[0]); this.value=''; };
   inp.click();
 };
+/* 등록부(book_pdfs)에 한 권을 적는다 — 내 컴퓨터에서 올린 것도, 이미 올라간 파일도 같은 모양으로 적는다 */
+async function bkhPdfRecord(bid, path, url, nPage){
+  var pdfs=bkhPdfs();
+  var old=pdfs.byBook[String(bid)]||{};
+  pdfs.byBook[String(bid)]={ bid:String(bid), title:bkhBookTitle(bid), path:path, url:url, pdfPages:nPage,
+    offset:Number(old.offset||0), at:new Date().toISOString(), by:'teacher' };   /* 쪽 맞춤(offset)은 그대로 둔다 */
+  pdfs.updated=new Date().toISOString();
+  var ok=await bkhStoreSet('book_pdfs', pdfs);
+  if(!ok) throw new Error('등록부를 저장하지 못했습니다');
+  delete BKH_DOC[String(bid)];
+  return true;
+}
 async function bkhPdfRun(bid, file){
   if(BKH.busy) return;
   BKH.busy='pdf'; bkhStep('① PDF 쪽수 읽는 중…'); render();
@@ -52381,15 +52559,8 @@ async function bkhPdfRun(bid, file){
     var up=await sb.storage.from('school_pdfs').upload(path, file, { cacheControl:'3600', upsert:true, contentType:'application/pdf' });
     if(up.error) throw new Error(up.error.message);
     var url=(sb.storage.from('school_pdfs').getPublicUrl(path).data||{}).publicUrl||'';
-    var pdfs=bkhPdfs();
-    var old=pdfs.byBook[String(bid)]||{};
-    pdfs.byBook[String(bid)]={ bid:String(bid), title:title, path:path, url:url, pdfPages:nPage,
-      offset:Number(old.offset||0), at:new Date().toISOString(), by:'teacher' };
-    pdfs.updated=new Date().toISOString();
     bkhStep('③ 등록부 저장 중…');
-    var ok=await bkhStoreSet('book_pdfs', pdfs);
-    if(!ok) throw new Error('등록부를 저장하지 못했습니다');
-    delete BKH_DOC[String(bid)];
+    await bkhPdfRecord(bid, path, url, nPage);
     ahaToast('📄 PDF 등록 완료 — '+nPage+'쪽 · '+mb+'MB');
     BKH.busy=''; bkhStep('');
     if(BKH.view==='list'){ await bkhOpen(bid); return; }
@@ -52399,6 +52570,55 @@ async function bkhPdfRun(bid, file){
   }
   BKH.busy=''; bkhStep(''); render();
 }
+
+/* ═══════════ v19-3: ☁️ 이미 올린 파일 고르기 (계약서 §5-3) ═══════════
+ * 원장님이 tools/pdf_upload.html 로 올려 둔 48MB 교과서를 다시 올리지 않고 그대로 쓴다. */
+window.bkhPdfFromStorage=async function(bid){
+  BKH.cloud={ open:true, busy:true, err:'', bid:String(bid), files:[] };
+  render();
+  var sb=null; try{ sb=getSupaClient(); }catch(e){}
+  if(!sb){ BKH.cloud.busy=false; BKH.cloud.err='클라우드 연결이 없습니다.'; render(); return; }
+  try{
+    var r=await sb.storage.from('school_pdfs').list('book',{ limit:100, sortBy:{ column:'created_at', order:'desc' } });
+    if(r && r.error) throw new Error(r.error.message||r.error);
+    var list=((r&&r.data)||[]).filter(function(f){ return f && f.name && String(f.name).charAt(0)!=='.'; });
+    BKH.cloud.files=list; BKH.cloud.busy=false;
+  }catch(e){
+    console.error('[교재손풀이] 올린 파일 목록 실패', e);
+    BKH.cloud.busy=false; BKH.cloud.err='목록을 받지 못했습니다: '+((e&&e.message)||e);
+    alert('올린 파일 목록을 받지 못했습니다: '+((e&&e.message)||e));
+  }
+  render();
+};
+window.bkhCloudClose=function(){ if(BKH.cloud) BKH.cloud.open=false; render(); };
+/* 고른 파일을 이 교재의 PDF 로 등록 — 파일 전체를 내려받지 않고 쪽수만 읽는다 */
+window.bkhPdfUse=async function(name){
+  if(BKH.busy) return;
+  var bid=String((BKH.cloud&&BKH.cloud.bid)||BKH.bid||'');
+  if(!bid){ alert('어느 교재인지 알 수 없습니다.'); return; }
+  if(BKH.cloud) BKH.cloud.open=false;
+  BKH.busy='pdf'; bkhStep('① 올린 파일의 쪽수 읽는 중…'); render();
+  try{
+    var sb=null; try{ sb=getSupaClient(); }catch(e){}
+    if(!sb) throw new Error('클라우드 연결이 없습니다.');
+    var path='book/'+name;
+    var url=(sb.storage.from('school_pdfs').getPublicUrl(path).data||{}).publicUrl||'';
+    if(!url) throw new Error('파일 주소를 만들지 못했습니다.');
+    bkhPdfWorker();
+    var doc=await pdfjsLib.getDocument({ url:url, rangeChunkSize:1048576, disableAutoFetch:true }).promise;
+    var nPage=doc.numPages;
+    bkhStep('② 등록부 저장 중…'); render();
+    await bkhPdfRecord(bid, path, url, nPage);
+    ahaToast('☁️ 올린 파일로 등록했습니다 — '+nPage+'쪽');
+    BKH.busy=''; bkhStep('');
+    await bkhOpen(bid);
+    return;
+  }catch(e){
+    console.error('[교재손풀이] 올린 파일 등록 실패', e);
+    alert('올린 파일로 등록하지 못했습니다: '+((e&&e.message)||e));
+  }
+  BKH.busy=''; bkhStep(''); render();
+};
 window.bkhOffSet=function(k,v){ BKH.off[k]=Number(v)||1; };
 window.bkhOffPrev=async function(){
   if(BKH.busy) return;
@@ -52660,27 +52880,111 @@ function hslBookPane(){
   }
   var head='';
   if(BKH.err) head+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:800;margin-bottom:10px">'+bkhEsc(BKH.err)+'</div>';
-  if(BKH.view==='pages') return head+bkhPagesPane();
-  if(BKH.view==='page')  return head+bkhPagePane();
-  return head+bkhListPane();
+  if(BKH.view==='pages') return head+bkhPagesPane()+bkhCloudModal();
+  if(BKH.view==='page')  return head+bkhPagePane()+bkhCloudModal();
+  return head+bkhListPane()+bkhCloudModal();
+}
+
+/* v19-3: 종류 배지 한 조각 */
+function bkhKindBadge(cls){
+  var k=bkhKindStyle((cls&&cls.kind)||'시중교재');
+  return '<span style="font-size:9.5px;font-weight:900;background:'+k[3]+';color:'+k[2]+';border-radius:50px;padding:2px 8px;white-space:nowrap">'+k[1]+' '+bkhEsc(k[0])+'</span>';
+}
+/* v19-3: 학년 칩 줄 + 종류 칩 줄 + 🔍 이름 찾기 (계약서 §5-3) */
+function bkhChip(k, v, label, n, on){
+  return '<span onclick="bkhFilter(\''+bkhJs(k)+'\',\''+bkhJs(v)+'\')" style="cursor:pointer;border-radius:50px;padding:4px 11px;font-size:11px;font-weight:800;'
+    +(on?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#475569;border:1px solid #dbe3ef')+'">'
+    +bkhEsc(label)+(n==null?'':(' <span style="opacity:.65;font-size:10px">'+n+'</span>'))+'</span>';
+}
+function bkhChipBar(all){
+  var f=BKH.f||{ grade:'', kind:'', q:'' };
+  var gc={}, kc={};
+  (all||[]).forEach(function(r){
+    var c=r.cls||{};
+    gc[c.gradeKey]=(gc[c.gradeKey]||0)+1;
+    kc[c.kind]=(kc[c.kind]||0)+1;
+  });
+  var h='<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:6px">'
+    +'<span style="font-size:10.5px;font-weight:800;color:#94a3b8;margin-right:2px">학년</span>'
+    +bkhChip('grade','','전체',(all||[]).length,!f.grade);
+  BKH_GRADES.forEach(function(g){ if(!gc[g]) return; h+=bkhChip('grade',g,g,gc[g],f.grade===g); });
+  h+='</div>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:9px">'
+    +'<span style="font-size:10.5px;font-weight:800;color:#94a3b8;margin-right:2px">종류</span>'
+    +bkhChip('kind','','전체',(all||[]).length,!f.kind);
+  BKH_KINDS.forEach(function(k){ if(!kc[k[0]]) return; h+=bkhChip('kind',k[0],k[1]+' '+k[0],kc[k[0]],f.kind===k[0]); });
+  h+='<input id="bkh-q" value="'+bkhEsc(f.q||'')+'" oninput="bkhFilter(\'q\',this.value)" placeholder="🔍 교재 이름 찾기"'
+    +' style="margin-left:auto;width:170px;border:1px solid #dbe3ef;border-radius:50px;padding:5px 12px;font-size:11.5px;font-family:inherit">'
+    +'</div>';
+  return h;
+}
+/* v19-3: 학년 묶음 머리줄 */
+function bkhGroupHead(g, colspan){
+  var inner='<div style="display:flex;align-items:center;gap:7px">'
+    +'<span style="font-size:12px;font-weight:900;color:#0d2240">'+bkhEsc(g.grade)+'</span>'
+    +'<span style="font-size:11px;font-weight:800;color:#94a3b8">· '+g.rows.length+'권</span></div>';
+  if(colspan==null) return '<div style="background:#f1f5f9;border-radius:8px;padding:6px 10px;margin:9px 0 5px">'+inner+'</div>';
+  return '<tr><td colspan="'+colspan+'" style="padding:8px 8px 5px;background:#f8fafc;border-top:1px solid #e8eef8">'+inner+'</td></tr>';
+}
+/* v19-3: ☁️ 올린 파일 고르기 창 */
+function bkhCloudModal(){
+  var c=BKH.cloud;
+  if(!c || !c.open) return '';
+  var h='<div id="bkh-cloud" onclick="if(event.target.id===\'bkh-cloud\')bkhCloudClose()" style="position:fixed;inset:0;background:rgba(13,34,64,0.55);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px">'
+    +'<div style="background:#fff;border-radius:14px;padding:15px 17px;width:100%;max-width:560px;max-height:78vh;overflow:auto;box-shadow:0 20px 50px rgba(0,0,0,0.3)">'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240">☁️ 이미 올린 파일 고르기</div>'
+    +'<div onclick="bkhCloudClose()" style="margin-left:auto;cursor:pointer;font-size:14px;font-weight:900;color:#94a3b8">✕</div></div>'
+    +'<div style="font-size:11.5px;color:#64748b;line-height:1.75;margin-bottom:10px"><b>'+bkhEsc(bkhBookTitle(c.bid))+'</b> 에 붙일 파일을 고르세요.<br>'
+    +'클라우드(school_pdfs › book)에 이미 올라간 PDF 목록입니다 — 48MB 교과서를 다시 올리지 않아도 됩니다.</div>';
+  if(c.busy){
+    h+='<div style="padding:26px;text-align:center;color:#94a3b8;font-size:12px;font-weight:800">불러오는 중…</div>';
+  } else if(c.err){
+    h+='<div style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:800">'+bkhEsc(c.err)+'</div>';
+  } else if(!c.files.length){
+    h+='<div style="padding:26px;text-align:center;color:#94a3b8;font-size:12px;font-weight:700">아직 올라간 파일이 없습니다 — 「📄 PDF 올리기」로 올려 주세요</div>';
+  } else {
+    c.files.forEach(function(f){
+      var sz=Number((f.metadata&&f.metadata.size)||0);
+      var mb=sz?(Math.round(sz/1024/1024*10)/10+'MB'):'크기 모름';
+      var at=String(f.created_at||f.updated_at||'').replace('T',' ').slice(0,16);
+      h+='<div style="display:flex;align-items:center;gap:9px;border-top:1px solid #f1f5f9;padding:9px 2px">'
+        +'<div style="min-width:0;flex:1">'
+        +'<div style="font-size:12px;font-weight:800;color:#0d2240;word-break:break-all">'+bkhEsc(f.name)+'</div>'
+        +'<div style="font-size:10.5px;color:#94a3b8;font-weight:700">'+bkhEsc(mb)+(at?(' · 올린 시각 '+bkhEsc(at)):'')+'</div></div>'
+        +'<span onclick="bkhPdfUse(\''+bkhJs(f.name)+'\')" style="cursor:pointer;flex:none;background:#0d2240;color:#fff;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:800;white-space:nowrap">이 파일로 등록</span>'
+        +'</div>';
+    });
+  }
+  h+='</div></div>';
+  return h;
 }
 
 /* ① 교재 목록 */
 function bkhListPane(){
-  var rows=bkhBookList();
+  var all=bkhBookList();
+  var rows=bkhBookFilter(all);
   var h='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">'
-    +'<div style="font-size:14px;font-weight:900;color:#0d2240">📚 교재·교과서 '+rows.length+'권</div>'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240">📚 교재·교과서 '+all.length+'권'
+      +((rows.length!==all.length)?('<span style="color:#1d6fe8"> · 고른 것 '+rows.length+'권</span>'):'')+'</div>'
     +'<div id="bkh-step" style="font-size:12px;font-weight:800;color:#7c3aed">'+bkhEsc(BKH.step)+'</div>'
     +'<div onclick="bkhReload()" style="margin-left:auto;cursor:pointer;background:#fff;border:1px solid #dbe3ef;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800;color:#475569">🔄 교재 다시 읽기</div>'
     +'</div>';
   h+='<div style="background:#f8fafc;border-radius:11px;padding:11px 14px;font-size:11.5px;color:#475569;line-height:1.85;margin-bottom:11px">'
     +'학생이 매쓰플랫에서 쓰는 교재가 그대로 나옵니다. <b>📄 PDF 올리기</b>로 교과서를 한 번 등록하면, '
     +'쪽마다 문항 사각형을 놓고 필기 조각을 번호에 붙일 수 있습니다. '
-    +'학생앱에서는 <b>교재 → 쪽 → 번호</b>를 눌러 선생님 풀이를 봅니다.</div>';
+    +'학생앱에서는 <b>교재 → 쪽 → 번호</b>를 눌러 선생님 풀이를 봅니다. '
+    +'이미 클라우드에 올려 둔 PDF 가 있으면 <b>☁️ 올린 파일</b>로 바로 붙일 수 있습니다.</div>';
 
-  if(!rows.length){
+  if(!all.length){
     h+='<div style="background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:40px;text-align:center;color:#94a3b8;font-size:12.5px">'
       +'아직 학생별 교재 자료(<b>mf_swb_…</b>)가 없습니다 — 새벽 수집이 한 번 돌고 나면 여기에 나옵니다</div>';
+    return h;
+  }
+  h+=bkhChipBar(all);
+  if(!rows.length){
+    h+='<div style="background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:34px;text-align:center;color:#94a3b8;font-size:12.5px">'
+      +'고른 조건에 맞는 교재가 없습니다 — 위의 <b>전체</b>를 눌러 보세요</div>';
     return h;
   }
   h+='<div style="background:#fff;border:1px solid #e8eef8;border-radius:12px;padding:6px 8px">'
@@ -52693,9 +52997,14 @@ function bkhListPane(){
     +'<th style="text-align:right;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">풀이</th>'
     +'<th style="text-align:center;padding:8px 8px;background:#f8fafc;color:#64748b;font-size:11px">PDF</th>'
     +'<th style="padding:8px 8px;background:#f8fafc"></th></tr>';
-  rows.forEach(function(r){
+  bkhBookGroups(rows).forEach(function(g){
+  h+=bkhGroupHead(g,7);
+  g.rows.forEach(function(r){
+    var isHigh=(String((r.cls&&r.cls.gradeKey)||'').charAt(0)==='고');
     h+='<tr>'
-      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;font-weight:800;color:#0d2240">'+bkhEsc(r.title)
+      +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;font-weight:800;color:#0d2240">'
+        +bkhKindBadge(r.cls)+' '+bkhEsc(r.title)
+        +((isHigh && r.cls && r.cls.subject)?(' <span style="font-size:10px;font-weight:800;color:#1d6fe8">'+bkhEsc(r.cls.subject)+'</span>'):'')
         +(r.hidden?' <span style="font-size:9.5px;font-weight:900;background:#f1f5f9;color:#94a3b8;border-radius:50px;padding:2px 7px">학생앱 숨김</span>':'')
         +'<div style="font-size:10px;color:#cbd5e1;font-weight:700">bid '+bkhEsc(r.bid)+'</div></td>'
       +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right;font-weight:800">'+r.nStu+'명</td>'
@@ -52707,8 +53016,10 @@ function bkhListPane(){
                :'<span style="font-size:10px;font-weight:900;background:#f1f5f9;color:#94a3b8;border-radius:50px;padding:3px 9px">없음</span>')+'</td>'
       +'<td style="padding:9px 8px;border-top:1px solid #f1f5f9;text-align:right;white-space:nowrap">'
         +'<span onclick="bkhPdfPick(\''+bkhJs(r.bid)+'\')" style="cursor:pointer;display:inline-block;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800;color:#475569;margin-right:5px">📄 PDF '+(r.pdf?'바꾸기':'올리기')+'</span>'
+        +'<span onclick="bkhPdfFromStorage(\''+bkhJs(r.bid)+'\')" style="cursor:pointer;display:inline-block;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800;color:#475569;margin-right:5px">☁️ 올린 파일</span>'
         +'<span onclick="bkhOpen(\''+bkhJs(r.bid)+'\')" style="cursor:pointer;display:inline-block;background:#0d2240;color:#fff;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800">열기 →</span>'
       +'</td></tr>';
+  });
   });
   h+='</table></div></div>';
   return h;
@@ -52735,7 +53046,8 @@ function bkhPagesPane(){
   if(!rec){
     h+='<div style="font-size:12px;color:#b45309;font-weight:700;line-height:1.7">아직 등록된 PDF가 없습니다. 교과서 PDF를 올리면 쪽 그림 위에 문항 사각형을 놓을 수 있습니다.<br>'
       +'<span style="color:#94a3b8;font-weight:600">(크기 제한 없이 그대로 올립니다 — 48MB 교과서도 괜찮습니다)</span></div>'
-      +'<div onclick="bkhPdfPick(\''+bkhJs(BKH.bid)+'\')" style="margin-top:9px;display:inline-block;cursor:pointer;background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border-radius:9px;padding:9px 18px;font-size:12.5px;font-weight:800">📄 PDF 고르기</div>';
+      +'<div onclick="bkhPdfPick(\''+bkhJs(BKH.bid)+'\')" style="margin-top:9px;display:inline-block;cursor:pointer;background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border-radius:9px;padding:9px 18px;font-size:12.5px;font-weight:800">📄 PDF 고르기</div>'
+      +'<div onclick="bkhPdfFromStorage(\''+bkhJs(BKH.bid)+'\')" style="margin-top:9px;margin-left:7px;display:inline-block;cursor:pointer;background:#fff;border:1px solid #cbd5e1;color:#475569;border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:800">☁️ 올린 파일</div>';
   } else {
     h+='<div style="font-size:11.5px;color:#475569;font-weight:700;line-height:1.8">'
       +'총 <b>'+(rec.pdfPages||'?')+'쪽</b> · 쪽 맞춤 <b>인쇄쪽 = PDF쪽 '+((Number(rec.offset||0))>=0?('+ '+Number(rec.offset||0)):('− '+Math.abs(Number(rec.offset||0))))+'</b>'
