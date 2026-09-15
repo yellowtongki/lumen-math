@@ -10711,6 +10711,24 @@ window.sgSubmit = async function(){
     return out;
   }
 
+  /* ⑥ 「학생이 칠 수 없는 답」 가려내기 (오채점 0 원칙)
+        - 말로 쓴 식 : 「(원주율)×(반지름)×(반지름)」 처럼 한글 낱말 둘 이상에 연산 기호가 섞인 것
+        - 긴 한글    : 한글이 든 답이 18자를 넘는 것 (낱말 답에 이미 있던 기준을 식·이름표 칸에도 똑같이)
+        「9개 이상 11개 이하」 「장미 샴푸」 처럼 학생이 칠 수 있는 짧은 낱말 답은 그대로 채점한다. */
+  function koWords(s) { return (String(s).match(/[가-힣]{2,}/g) || []).length; }
+  function unTypable(s) {
+    var t = String(s).replace(/\(\s*또는[^()]*\)/g, ' ');       // 「(또는 아래쪽)」 같은 덧붙임은 빼고 센다
+    if (!/[가-힣]/.test(t)) return false;                       // 한글이 없으면 숫자·식이니 상관없다
+    if (koWords(t) >= 2 && /[×÷+\-=\/()]/.test(t)) return true;  // 말로 쓴 식
+    return t.replace(/\s+/g, '').length > 18;                   // 낱말 답과 같은 18자 기준
+  }
+  /* 「= 뒤만 보는 식」인데 원문이 긴 한글 문장이면 앞부분을 학생이 쓸 수 없다 → 채점하지 않는다 */
+  function longKoSentence(s) {
+    var t = String(s);
+    if (!/[가-힣]/.test(t)) return false;
+    return koWords(t) >= 2 || t.replace(/\s+/g, '').length > 18;
+  }
+
   /* ③ 「×」「÷」처럼 연산 기호 하나가 답인 칸 */
   function readOp(s0) {
     var s = peel(trim(s0)).replace(/\s+/g, '');
@@ -10841,6 +10859,7 @@ window.sgSubmit = async function(){
       return { label: label, kind: iq ? 'ineq' : 'free', keys: iq ? [iq] : [], unit: '', eq: false };
     }
     // 식 : 마지막 = 뒤 값만 본다. 왼쪽이 짧은 이름이면 이름표로 쓴다
+    var full = s;                    // = 로 자르기 전 원문 (학생이 칠 수 있는 답인지 볼 때 쓴다)
     var isEq = false;
     if (has(s, '=')) {
       var segs = splitTop(s, '=');
@@ -10866,11 +10885,16 @@ window.sgSubmit = async function(){
       var r = readValue(alts[i]);
       reads.push(r);
       if (!r.keys.length) continue;          // 못 읽은 대안 하나 때문에 답 전체를 버리지는 않는다
+      if (unTypable(alts[i])) continue;      // 학생이 칠 수 없는 답(말로 쓴 식·긴 한글)은 세지 않는다
       if (kind === null) { kind = r.kind; unit = r.unit; }
       for (var k = 0; k < r.keys.length; k++) keys.push(r.keys[k]);
     }
     if (!reads.length) return { label: label, kind: 'free', keys: [], unit: '', eq: isEq };
     if (!keys.length) { kind = reads[0].kind; unit = reads[0].unit; }
+    // 「= 뒤만 보는 식」인데 원문이 긴 한글 문장이면 앞부분을 학생이 쓸 수 없다 → 자기채점
+    if (keys.length && isEq && longKoSentence(full)) {
+      return { label: label, kind: 'free', keys: [], unit: '', eq: isEq };
+    }
     // 「(수건의 수)+1=(빨래집게의 수)」 「□×5+2=△」 처럼 = 뒤가 기호·말풀이뿐이면
     //   식을 어떻게 쓰든 다 맞다고 하게 된다 → 채점하지 않고 자기채점으로 보낸다
     if (isEq && keys.length) {
