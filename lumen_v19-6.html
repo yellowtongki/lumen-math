@@ -53400,16 +53400,18 @@ function bkhPickBox(cl, boxes, W, H){
     var amb=!!(s && s.ov>0 && s.ov >= f.ov*0.35);
     return { i:f.i, ok:!amb, second:(amb?s.i:-1) };
   }
-  /* 겹치는 상자가 없다 — 가장 가까운 상자 (세로 거리 먼저) */
-  var cy=(cl.y0+cl.y1)/2, cx=(cl.x0+cl.x1)/2, best=-1, bd=1e9;
+  /* 겹치는 상자가 없다 — 가장 가까운 상자 (세로 거리 먼저).
+   * 상자 밖 여백에 쓴 것이라 확실하지 않으므로 「번호 확인」으로 두고 후보를 둘 준다. */
+  var cy=(cl.y0+cl.y1)/2, cx=(cl.x0+cl.x1)/2, near=[];
   (boxes||[]).forEach(function(b,i){
     var p=bkhBoxPx(b,W,H);
     var dy=(cy<p.y0)?(p.y0-cy):((cy>p.y1)?(cy-p.y1):0);
     var dx=(cx<p.x0)?(p.x0-cx):((cx>p.x1)?(cx-p.x1):0);
-    var d=dy*3+dx;
-    if(d<bd){ bd=d; best=i; }
+    near.push({ i:i, d:dy*3+dx });
   });
-  return { i:best, ok:true, second:-1 };
+  near.sort(function(a,b){ return a.d-b.d; });
+  if(!near.length) return { i:-1, ok:false, second:-1 };
+  return { i:near[0].i, ok:false, second:(near[1]?near[1].i:-1) };
 }
 
 /* ── ④ 조각 자르기·올리기 ── */
