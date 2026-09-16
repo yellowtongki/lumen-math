@@ -58367,7 +58367,8 @@ function finChartMonths(){
   return (ms.length>12)?ms.slice(-12):ms.slice();
 }
 function finChartSvg(ms){
-  var W=720, H=250, L=62, R=16, T=30, B=48;
+  /* 오른쪽 여백(R)을 넉넉히 둬서 「순 n만」 글자가 마지막 막대 위에 겹치지 않게 한다 */
+  var W=720, H=250, L=62, R=64, T=30, B=48;
   var iw=W-L-R, ih=H-T-B;
   var data=ms.map(function(m){ return finMonth(m); });
   var hi=0, lo=0;
@@ -58403,9 +58404,9 @@ function finChartSvg(ms){
     pts.push(c.toFixed(1)+','+yOf(d.net).toFixed(1));
     /* 값 글자 — 매출 막대 위에 (겹치지 않게 막대 하나만) */
     if(d.sales>0) s+='<text class="fin-val" x="'+(c-bw/2-1).toFixed(1)+'" y="'+(ys-5).toFixed(1)
-      +'" font-size="10" font-weight="700" fill="#0d2240" text-anchor="middle">'+finMan(d.sales)+'</text>';
+      +'" font-size="10" font-weight="700" fill="#0d2240" text-anchor="middle" stroke="#fff" stroke-width="3" paint-order="stroke">'+finMan(d.sales)+'</text>';
     if(i===data.length-1 && d.cost>0) s+='<text class="fin-val" x="'+(c+1+bw/2).toFixed(1)+'" y="'+(yc-5).toFixed(1)
-      +'" font-size="10" font-weight="700" fill="'+FIN_C.cost+'" text-anchor="middle">'+finMan(d.cost)+'</text>';
+      +'" font-size="10" font-weight="700" fill="'+FIN_C.cost+'" text-anchor="middle" stroke="#fff" stroke-width="3" paint-order="stroke">'+finMan(d.cost)+'</text>';
     s+='<text x="'+c.toFixed(1)+'" y="'+(H-B+20)+'" font-size="11" fill="#64748b" text-anchor="middle">'+Number(String(d.ym).slice(5,7))+'월</text>';
   });
   s+='<polyline class="fin-line-net" points="'+pts.join(' ')+'" fill="none" stroke="'+FIN_C.net+'" stroke-width="2"/>';
@@ -58413,12 +58414,11 @@ function finChartSvg(ms){
     var c=L+slot*(i+0.5);
     s+='<circle class="fin-dot" cx="'+c.toFixed(1)+'" cy="'+yOf(d.net).toFixed(1)+'" r="3.5" fill="'+FIN_C.net+'"></circle>';
   });
-  /* 선의 마지막 점에만 값 */
+  /* 선의 마지막 점에만 값 — 막대 오른쪽 빈 자리에 적는다 */
   if(data.length){
     var lastD=data[data.length-1], cx=L+slot*(data.length-0.5), cy=yOf(lastD.net);
-    var lx=Math.min(cx, W-R-34);
-    s+='<text class="fin-val" x="'+lx.toFixed(1)+'" y="'+((cy<T+16)?(cy+16):(cy-8)).toFixed(1)
-      +'" font-size="10.5" font-weight="800" fill="'+FIN_C.net+'" text-anchor="middle">순 '+finMan(lastD.net)+'</text>';
+    s+='<text class="fin-val" x="'+(cx+bw+9).toFixed(1)+'" y="'+(cy+4).toFixed(1)
+      +'" font-size="10.5" font-weight="800" fill="'+FIN_C.net+'" text-anchor="start">순 '+finMan(lastD.net)+'</text>';
   }
   s+='</svg>';
   return s;
@@ -58442,7 +58442,7 @@ function finBox(title, sub, inner, id){
 function finBarRow(label, pct, right, color, lw){
   var p=Math.max(0, Math.min(100, Number(pct)||0));
   return '<div class="fin-bar-row" style="display:flex;align-items:center;gap:8px;font-size:11.5px;margin-top:6px">'
-    +'<span style="width:'+(lw||62)+'px;flex:none;color:#64748b;font-weight:700">'+label+'</span>'
+    +'<span style="width:'+(lw||62)+'px;flex:none;color:#64748b;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+label+'</span>'
     +'<span style="flex:1;min-width:40px;height:10px;background:#eef2f7;border-radius:5px;overflow:hidden;display:block">'
     +'<i style="display:block;height:100%;width:'+p.toFixed(1)+'%;background:'+color+';border-radius:5px"></i></span>'
     +'<span style="flex:none;font-weight:800;color:#0d2240;min-width:104px;text-align:right">'+right+'</span></div>';
@@ -58602,7 +58602,7 @@ function payPanelPl(){
   if(!mt.length) mh='<div style="font-size:11.5px;color:#94a3b8;font-weight:700;padding:6px 0">이 기간 매출 보고서 자료가 없습니다</div>';
   else mt.forEach(function(x,i){
     mh+=finBarRow(esc2(x.name), mtot?(x.amount/mtot*100):0,
-        finMan(x.amount)+' · '+(mtot?Math.round(x.amount/mtot*100):0)+'%', finShade(i), 78);
+        finMan(x.amount)+' · '+(mtot?Math.round(x.amount/mtot*100):0)+'%', finShade(i), 94);
   });
   h+=finBox('결제수단','한 색의 진하기로', mh, 'fin-method');
   /* 학년별 매출 구성 */
@@ -58697,9 +58697,9 @@ function payPanelCost(ym){
       if(f&&ym<f) return false; if(t&&ym>t) return false; return true; })();
     h+='<tr class="fin-fixed-row" data-id="'+esc2(String(it.id))+'" style="border-top:1px solid #eef2f7;'+(live?'':'opacity:.45;')+'">'
       +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'name\',this.value)', it.name, '항목 이름', 160)+'</td>'
-      +'<td style="padding:7px 11px;text-align:right">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'amount\',this.value)', Number(it.amount)||0, '0', 100, true)+'</td>'
-      +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'from\',this.value)', it.from, '2025-03', 84)+'</td>'
-      +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'to\',this.value)', it.to, '2026-10', 84)+'</td>'
+      +'<td style="padding:7px 11px;text-align:right">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'amount\',this.value)', (Number(it.amount)||0).toLocaleString(), '0', 100, true)+'</td>'
+      +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'from\',this.value)', it.from, '처음부터', 88)+'</td>'
+      +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'to\',this.value)', it.to, '계속', 88)+'</td>'
       +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'memo\',this.value)', it.memo, '', 200)+'</td>'
       +'<td style="padding:7px 11px;text-align:right"><button class="fin-fixed-del" onclick="finCfgDelFixed(\''+esc2(String(it.id))+'\')" '
       +'style="border:1px solid #fecaca;border-radius:7px;background:#fef2f2;color:#b91c1c;font-size:11px;font-weight:800;padding:3px 9px;cursor:pointer;font-family:inherit">✕</button></td></tr>';
@@ -58733,7 +58733,7 @@ function payPanelCost(ym){
   items.forEach(function(it){
     h+='<tr class="fin-var-row" data-id="'+esc2(String(it.id))+'" style="border-top:1px solid #eef2f7">'
       +'<td style="padding:7px 11px">'+finInput('finCfgVarSet(\''+esc2(ym)+'\',\''+esc2(String(it.id))+'\',\'name\',this.value)', it.name, '항목 이름', 170)+'</td>'
-      +'<td style="padding:7px 11px;text-align:right">'+finInput('finCfgVarSet(\''+esc2(ym)+'\',\''+esc2(String(it.id))+'\',\'amount\',this.value)', Number(it.amount)||0, '0', 100, true)+'</td>'
+      +'<td style="padding:7px 11px;text-align:right">'+finInput('finCfgVarSet(\''+esc2(ym)+'\',\''+esc2(String(it.id))+'\',\'amount\',this.value)', (Number(it.amount)||0).toLocaleString(), '0', 100, true)+'</td>'
       +'<td style="padding:7px 11px;color:#94a3b8;font-weight:700">직접 입력</td>'
       +'<td style="padding:7px 11px">'+finInput('finCfgVarSet(\''+esc2(ym)+'\',\''+esc2(String(it.id))+'\',\'memo\',this.value)', it.memo, '', 200)+'</td>'
       +'<td style="padding:7px 11px;text-align:right"><button class="fin-var-del" onclick="finCfgDelVar(\''+esc2(ym)+'\',\''+esc2(String(it.id))+'\')" '
@@ -58745,11 +58745,11 @@ function payPanelCost(ym){
   /* 목표 · 원장 인건비 */
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:16px">';
   h+=finBox('🎯 월 매출 목표','0이면 카드에 안 보입니다',
-      '<div style="display:flex;align-items:center;gap:8px">'+finInput('finCfgGoalSet(this.value)', Number(cfg.goal.monthly)||0, '13500000', 130, true)
+      '<div style="display:flex;align-items:center;gap:8px">'+finInput('finCfgGoalSet(this.value)', (Number(cfg.goal.monthly)||0).toLocaleString(), '1,350,000', 130, true)
       +'<span style="font-size:12px;color:#64748b;font-weight:700">원 / 달</span>'
       +'<button onclick="finCfgSave(true)" style="margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:#1d6fe8;color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">💾 저장</button></div>', 'fin-goal');
   h+=finBox('👤 원장님 인건비','0이면 「인건비 전」으로 적습니다',
-      '<div style="display:flex;align-items:center;gap:8px">'+finInput('finCfgOwnerSet(this.value)', Number(cfg.ownerPay)||0, '0', 130, true)
+      '<div style="display:flex;align-items:center;gap:8px">'+finInput('finCfgOwnerSet(this.value)', (Number(cfg.ownerPay)||0).toLocaleString(), '0', 130, true)
       +'<span style="font-size:12px;color:#64748b;font-weight:700">원 / 달</span>'
       +'<button onclick="finCfgSave(true)" style="margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:#1d6fe8;color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">💾 저장</button></div>', 'fin-owner');
   h+='</div>';
@@ -58766,7 +58766,7 @@ function payPanelRule(){
   h+='<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">';
   ['초','중','고'].forEach(function(b){
     h+='<div><div style="font-size:11px;font-weight:800;color:#64748b;margin-bottom:3px">'+b+'등부 기본</div>'
-      +finInput('finRuleBaseSet(\''+b+'\',this.value)', Number((r.base||{})[b])||0, '0', 110, true)+'</div>';
+      +finInput('finRuleBaseSet(\''+b+'\',this.value)', (Number((r.base||{})[b])||0).toLocaleString(), '0', 110, true)+'</div>';
   });
   h+='<div><div style="font-size:11px;font-weight:800;color:#64748b;margin-bottom:3px">형제 할인 (%)</div>'
     +finInput('finRuleSibSet(this.value)', Number(r.siblingPct)||0, '10', 70, true)+'</div>';
@@ -58794,7 +58794,7 @@ function payPanelRule(){
       var s=list.filter(function(x){ return String(x.id)===String(k); })[0];
       h+='<tr class="fin-exc-row" data-id="'+esc2(k)+'" style="border-top:1px solid #eef2f7">'
         +'<td style="padding:6px 10px;font-weight:800;color:#0d2240">'+esc2(s.name||'')+' <span style="font-size:10.5px;color:#94a3b8;font-weight:700">'+esc2(s.group||'-')+' · '+esc2(s.grade||'-')+'</span></td>'
-        +'<td style="padding:6px 10px;text-align:right">'+finInput('finRuleExcSet(\''+esc2(k)+'\',this.value)', Number(r.byStudent[k])||0, '0', 110, true)+'</td>'
+        +'<td style="padding:6px 10px;text-align:right">'+finInput('finRuleExcSet(\''+esc2(k)+'\',this.value)', (Number(r.byStudent[k])||0).toLocaleString(), '0', 110, true)+'</td>'
         +'<td style="padding:6px 10px;text-align:right"><button onclick="finRuleDelExc(\''+esc2(k)+'\')" '
         +'style="border:1px solid #fecaca;border-radius:7px;background:#fef2f2;color:#b91c1c;font-size:11px;font-weight:800;padding:3px 9px;cursor:pointer;font-family:inherit">✕</button></td></tr>';
     });
