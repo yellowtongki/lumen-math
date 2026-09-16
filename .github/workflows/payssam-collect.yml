@@ -1,0 +1,78 @@
+name: 결제선생 수납 수집 (매일 새벽)
+
+# 결제선생(manager.payssam.kr)의 청구·결제 내역을 가져와 Supabase(lumen_store)에 저장한다.
+# 학원앱 「운영 › 💳 수강료」가 이 자료를 읽는다.
+#
+# - 컴퓨터를 켜둘 필요 없음(GitHub 서버에서 실행).
+# - 매일 새벽 4시 40분(한국)에 자동 실행 — 원장님이 결제선생을 안 쓰실 시간대.
+#   (결제선생은 동시 로그인하면 먼저 접속한 쪽이 끊길 수 있다)
+# - 이 워크플로가 실패해도 매쓰플랫 수집(mathflat-collect.yml)과는 아무 상관이 없다.
+#
+# 필요한 비밀값 (Repo Settings → Secrets and variables → Actions):
+#   PAYSSAM_ID, PAYSSAM_PASSWORD, SUPABASE_URL, SUPABASE_SERVICE_KEY
+#
+# 손으로 돌리기: Actions 탭 → 이 워크플로 → "Run workflow"
+#   mode = dry  : 저장하지 않고 건수·합계만 본다 (처음엔 이걸로)
+#   mode = save : 실제로 Supabase에 저장한다
+#
+# ⚠ 이 저장소는 공개이고 실행 기록(로그)도 공개다.
+#   수집기는 건수·합계·달만 찍고 이름·전화·개별 금액·토큰은 절대 찍지 않는다.
+
+on:
+  schedule:
+    - cron: '40 19 * * *'    # UTC 19:40 = 한국 04:40 새벽
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '실행 방식 (dry = 저장 안 하고 확인만, save = 저장)'
+        required: false
+        type: choice
+        default: 'dry'
+        options:
+          - dry
+          - save
+      days:
+        description: '결제·청구를 며칠치 가져올지 (기본 120)'
+        required: false
+        default: '120'
+      months:
+        description: '달별 요약을 몇 달치 가져올지 (기본 4)'
+        required: false
+        default: '4'
+
+concurrency:
+  group: payssam-collect
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 파싱·집계 자체 점검
+        run: node sync/test_payssam.js
+
+      - name: Playwright 설치
+        run: |
+          npm install --no-save playwright@1.47.2
+          npx playwright install --with-deps chromium
+
+      - name: 결제선생 수집 실행
+        env:
+          PAYSSAM_ID: ${{ secrets.PAYSSAM_ID }}
+          PAYSSAM_PASSWORD: ${{ secrets.PAYSSAM_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          node sync/payssam_collector.js \
+            --days ${{ github.event.inputs.days || '120' }} \
+            --months ${{ github.event.inputs.months || '4' }} \
+            ${{ github.event.inputs.mode == 'dry' && '--dry' || '' }}
