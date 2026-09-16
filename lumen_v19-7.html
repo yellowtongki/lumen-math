@@ -48781,7 +48781,9 @@ function ibqCfgSet(path,val){
   if(path==='seasonLen') ibqCfgApplyLen(val);
   /* v18-160: 글자를 적는 칸(상 이름·종합 상)은 다시 그리면 커서가 튄다 */
   /* ★ v18-165: 상마다 금액(w) 칸도 적는 도중에 다시 그리면 커서가 튄다 */
-  if(/^prize\.awards\.\d+\.(name|w)$/.test(path) || path==='champion.prize' || path==='speaking.startsAt') return;
+  /* ★ v19-7: 📔 플래너 상 이름·금액 칸도 적는 도중에 다시 그리면 커서가 튄다 */
+  if(/^prize\.awards\.\d+\.(name|w)$/.test(path) || /^planner\.awards\.\d+\.(name|w)$/.test(path)
+     || path==='champion.prize' || path==='speaking.startsAt') return;
   ibqCfgRender();
 }
 window.ibqCfgSet=ibqCfgSet;
@@ -48798,6 +48800,8 @@ function ibqCfgApplyLen(len){
 }
 async function ibqCfgSave(){
   await ibqSaveCfg();
+  /* ★ v19-7: 설정을 저장하면 학생앱이 읽는 플래너 발행본(league_planner)도 바로 다시 쓴다 */
+  try{ await lgPlannerPublish(); }catch(e){ console.warn('league_planner 발행 실패', e); }
   ahaToast('리그 설정을 저장했습니다');
   ibqCfgClose();
 }
@@ -48830,7 +48834,21 @@ function ibqCfgRender(){
     +'<div style="font-size:15px;font-weight:800">🏆 IB아하노트 리그 설정</div>'
     +'<div style="font-size:11.5px;opacity:.8">저장하면 학생앱에 바로 반영됩니다</div>'
     +'<div onclick="ibqCfgClose()" style="margin-left:auto;cursor:pointer;background:rgba(255,255,255,.15);border-radius:8px;padding:5px 11px;font-size:12px;font-weight:700">닫기</div>'
-    +'</div><div style="padding:14px 18px 18px">';
+    +'</div>';
+  /* ★ v19-7: 머리에 「시즌 상금 합계」 한 줄 (계약서 §2)
+   *   진도(공개일 때만)+IB아하+플래너(한 달 상금 × 시즌 개월)+종합(문자열).
+   *   「보이기」를 끈 종목은 「비공개」라고만 적고 합계에서도 뺀다 — 안 나가는 돈은 세지 않는다. */
+  var _psum=lgSeasonPrizeSum();
+  var _pmon=function(v){ return (v==null)?'<b style="color:#94a3b8">비공개</b>':('<b style="color:#0f172a">'+Number(v).toLocaleString()+'원</b>'); };
+  h+='<div id="ibq-cfg-sum" style="background:#f8fafc;border-bottom:1px solid #e8eef8;padding:9px 16px;display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:#64748b;font-weight:700">'
+    +'<span>시즌 상금 합계 <b style="font-size:15px;color:#0d2240">'+Number(_psum.total).toLocaleString()+'원</b></span>'
+    +'<span>🏁 진도 '+_pmon(_psum.race)+'</span>'
+    +'<span>💡 IB아하 '+_pmon(_psum.aha)+'</span>'
+    +'<span>📔 플래너 '+_pmon(_psum.planner)+' <span style="font-weight:600;color:#94a3b8">(한 달 '
+      +Number(_psum.plannerPerMonth||0).toLocaleString()+'원 × '+Number(_psum.plannerMonths||0)+'개월)</span></span>'
+    +'<span>👑 종합 <b style="color:#0f172a">'+ahaEsc(_psum.champ||'—')+'</b></span>'
+    +'</div>';
+  h+='<div style="padding:14px 18px 18px">';
 
   h+=row('시즌 길이','끝나면 다음 시즌으로',
       ibqOptBtn('seasonLen','1m',c.seasonLen,'1달')+ibqOptBtn('seasonLen','2m',c.seasonLen,'2달')
@@ -48940,6 +48958,66 @@ function ibqCfgRender(){
         :(_po?('학생앱 상금 카드에 '+ahaEsc(((c.prize.awards||[])[0]||{}).name||'1등')+' '+Number(((c.prize.awards||[])[0]||{}).w||0).toLocaleString()+'원처럼 다 보입니다 · 학부모앱은 총액만')
             :'지금은 총상금만 보입니다 · 켜면 학생앱에서 상마다 금액이 보입니다'))
     +'</span></label>';
+  /* ══ ★ v19-7: 📔 플래너 상금 (원장 결정 2026-09-16 · docs/planner_league_contract.md §2) ══
+   *   IB아하 상금 칸을 그대로 본떴다 — 총상금 · 보이기 두 스위치 · 상 목록(순위 순) 편집.
+   *   다른 점은 ① 매달 새로 시작한다 ② 리그 탭 켜기(enabled) ③ 종합 챔피언 포함(inChampion)
+   *   ④ 최소 제출일(minDays) ⑤ 공개 순위 Top N(publicTop) 이 더 있다는 것. */
+  var _pl=c.planner||ibqCfgDefault().planner;
+  var _plSt=(_pl.showTotal!==false);
+  var _plOn=(_pl.enabled!==false);
+  h+='<div style="margin-top:14px;padding-top:10px;border-top:2px solid #e8eef8;font-size:13px;font-weight:900;color:#0d2240">'
+    +'📔 플래너 상금 <span style="font-size:11px;font-weight:700;color:#94a3b8">매달 새로 시작 · 상은 순위 순(1·2·3등)</span></div>';
+  h+=row('📔 플래너 탭','학생앱 리그에 종목으로 넣기',
+      ibqOptBtn('planner.enabled','true',String(_plOn),'리그 탭 켜기')
+     +ibqOptBtn('planner.enabled','false',String(_plOn),'끄기')
+     +'<span style="font-size:10.5px;color:#94a3b8">끄면 학생앱 리그에서 📔 플래너 탭이 사라집니다 (점수 계산은 그대로)</span>');
+  h+=row('한 달 총상금','매달 새로 시작합니다',
+      ibqNumBox('planner.total',(_pl.total)||0,'원')
+     +'<span style="font-size:10.5px;color:#94a3b8">시즌 '+Number(lgPlSeasonMonths().length)+'개월이면 모두 '
+     +Number((Number(_pl.total)||0)*lgPlSeasonMonths().length).toLocaleString()+'원</span>');
+  var _plSum=0;
+  (_pl.awards||[]).forEach(function(a,i){
+    _plSum+=Number(a.w)||0;
+    h+=row(a.icon+' '+(i+1)+'등 상','그달 플래너 점수 '+(i+1)+'위',
+      '<input value="'+ahaEsc(a.name)+'" oninput="ibqCfgSet(\'planner.awards.'+i+'.name\',this.value)" '
+      +'style="width:150px;border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;font-size:12px;font-weight:800;font-family:inherit;color:#0d2240">'
+      +'<input type="number" value="'+(Number(a.w)||0)+'" '+(_plSt?'':'disabled ')
+      +'oninput="ibqCfgSet(\'planner.awards.'+i+'.w\',Number(this.value))" '
+      +'style="width:96px;border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;font-size:12px;font-weight:800;font-family:inherit;color:#c2410c;text-align:right;'
+      +(_plSt?'':'opacity:.4;background:#f1f5f9;cursor:not-allowed')+'"> 원'
+      +'<span onclick="lgPlannerAwardDel('+i+')" style="cursor:pointer;font-size:11px;font-weight:800;color:#b91c1c;border:1px solid #fca5a5;border-radius:7px;padding:3px 9px">✕ 삭제</span>');
+  });
+  h+=row('상 추가·합계','상마다 적은 금액의 합',
+      '<span onclick="lgPlannerAwardAdd()" style="cursor:pointer;font-size:11.5px;font-weight:800;color:#1d6fe8;border:1px solid #bfdbfe;background:#eff6ff;border-radius:7px;padding:4px 11px">+ 상 추가</span>'
+     +'<b style="font-size:13px;color:'+((_plSum===Number(_pl.total||0))?'#16a34a':'#b91c1c')+'">'+Number(_plSum).toLocaleString()+'원</b>'
+     +'<span style="font-size:10.5px;color:#94a3b8">'
+     +((_plSum===Number(_pl.total||0))?'✓ 총상금과 같습니다'
+        :('총상금 '+Number(_pl.total||0).toLocaleString()+'원과 다릅니다 — 저장은 됩니다'))+'</span>');
+  h+='<label style="display:flex;align-items:center;gap:9px;background:'+(_plSt?'#f0fdf4':'#f1f5f9')+';border:1.5px solid '+(_plSt?'#86efac':'#cbd5e1')+';border-radius:10px;padding:10px 12px;margin:8px 0 4px;cursor:pointer">'
+    +'<input id="ibq-pl-showtotal" type="checkbox" '+(_plSt?'checked ':'')+'onchange="ibqCfgSet(\'planner.showTotal\',this.checked)" style="width:17px;height:17px;cursor:pointer">'
+    +'<span style="font-size:12.5px;font-weight:900;color:'+(_plSt?'#15803d':'#334155')+'">학생앱에 📔 플래너 <b>총상금</b> 보이기</span>'
+    +'<span style="font-size:11px;color:#94a3b8;font-weight:700">끄면 <b>금액이 한 줄도 안 나가고</b> 상 이름만 보입니다'
+    +(_plSt?'':' <b style="color:#b91c1c">— 지금 숨기는 중</b>')+'</span></label>';
+  var _plOp=!!(_pl.open);
+  h+='<label style="display:flex;align-items:center;gap:9px;background:'+(_plOp?'#fff7ed':'#f8fafc')+';border:1.5px solid '+(_plOp?'#fdba74':'#e2e8f0')+';border-radius:10px;padding:10px 12px;margin:8px 0 4px;'
+    +(_plSt?'cursor:pointer':'opacity:.45;cursor:not-allowed')+'">'
+    +'<input id="ibq-pl-open" type="checkbox" '+(_plOp?'checked ':'')+(_plSt?'':'disabled ')+'onchange="ibqCfgSet(\'planner.open\',this.checked)" style="width:17px;height:17px;cursor:pointer">'
+    +'<span style="font-size:12.5px;font-weight:900;color:'+(_plOp?'#9a3412':'#334155')+'">상마다 금액을 <b>학생앱</b>에 공개</span>'
+    +'<span style="font-size:11px;color:#94a3b8;font-weight:700">'
+    +(!_plSt?'총상금을 숨기는 동안에는 켤 수 없습니다'
+        :(_plOp?'학생앱 상금 카드에 1등 '+Number(((_pl.awards||[])[0]||{}).w||0).toLocaleString()+'원처럼 다 보입니다'
+              :'지금은 총상금만 보입니다'))+'</span></label>';
+  h+=row('👑 종합 챔피언에 포함','달마다 순위 점수를 더할지',
+      ibqOptBtn('planner.inChampion','true',String(_pl.inChampion!==false),'더하기')
+     +ibqOptBtn('planner.inChampion','false',String(_pl.inChampion!==false),'안 더하기')
+     +'<span style="font-size:10.5px;color:#94a3b8"><b>월말에 확정한 달</b>만 더합니다 — 확정 안 한 달은 0점</span>');
+  h+=row('수상 최소 제출일','이만큼은 내야 후보',
+      ibqNumBox('planner.minDays',(_pl.minDays==null?5:_pl.minDays),'일 이상')
+     +'<span style="font-size:10.5px;color:#94a3b8">모자란 학생은 순위표에 회색 「후보 제외」로 나옵니다</span>');
+  h+=row('공개 순위','학생앱에 보여 줄 수',
+      '상위 '+ibqNumBox('planner.publicTop',(_pl.publicTop==null?5:_pl.publicTop),'명')
+     +'<span style="font-size:10.5px;color:#94a3b8">이름은 가운데를 가립니다</span>');
+
   h+='<div style="margin-top:12px;padding-top:10px;border-top:2px solid #e8eef8;font-size:13px;font-weight:900;color:#0d2240">👑 종합 챔피언</div>';
   h+=row('종합 상','부(초·중·고)마다 한 명',
       '<input value="'+ahaEsc((c.champion&&c.champion.prize)||'')+'" oninput="ibqCfgSet(\'champion.prize\',this.value)" '
@@ -49422,6 +49500,15 @@ var LG_PUB    = null;               // 마지막으로 발행한 순위표
 var LG_INTRO  = null;               // ★ v18-164: 마지막으로 발행한 「발행 전 안내」 (aha_league_intro)
 var LG = { tab:'season', div:'중', pick:{}, amt:{}, roll:null, rollWho:'', busy:'' };
 
+/* ★ v19-7: 📔 플래너 리그 (docs/planner_league_contract.md)
+ *   PL_AWARDS  planner_awards  = { byMonth:{ '2026-08':{winners:[…], at, by} } } — 월말 확정본
+ *   LG_PLPUB   league_planner  = 학생앱이 읽는 발행본 (마지막으로 올린 것)
+ *   LGP        화면 상태 — 고른 달(ym)과 상별로 고른 학생(sel) */
+var PL_AWARDS = { byMonth:{} };
+var PL_LOADED = false;
+var LG_PLPUB  = null;
+var LGP = { ym:'', sel:{}, selYm:'' };
+
 var LG_DIV_KO = { elem:'초', mid:'중', high:'고' };
 var LG_DIV_BAND = { '초':'elem', '중':'mid', '고':'high' };
 var LG_DIV_NAME = { '초':'초등부', '중':'중등부', '고':'고등부', '전체':'통합 리그' };
@@ -49470,9 +49557,295 @@ function lgPoints(rank){
   return Number(pts[rank-1])||0;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+ * ★ v19-7: 📔 플래너 리그 (원장 결정 2026-09-16 · docs/planner_league_contract.md)
+ * ═══════════════════════════════════════════════════════════════════
+ * 무엇인가 — 매달 플래너 점수로 1·2·3등을 뽑아 상금(기본 3만 원)을 준다.
+ * 점수는 이미 쓰고 있는 플래너 점수 그대로다(calcPlannerRankingForMonth).
+ * 새로 만드는 저장은 둘뿐이다.
+ *   league_planner  학생앱이 읽는 발행본 (상금·최소 제출일·공개 순위·지난달 수상)
+ *   planner_awards  월말에 원장님이 「✓ 확정」을 눌렀을 때만 남는 수상자
+ * 금액 규칙은 IB아하와 똑같다 — showTotal 을 끄면 발행본에 total 도 상마다 금액(w)도
+ * 아예 담기지 않는다. 담기지 않은 것은 새어 나갈 수도 없다.
+ * 문자열 결합만 사용 (중첩 템플릿 리터럴 금지).
+ * ═══════════════════════════════════════════════════════════════════ */
+
+function lgPlannerCfg(){
+  var c=ibqCfg();
+  return (c.planner && Array.isArray(c.planner.awards) && c.planner.awards.length)
+    ? c.planner : ibqCfgDefault().planner;
+}
+/* 상 하나의 이름·아이콘 (설정에서 찾는다) */
+function lgPlannerAwardMeta(k){
+  var aw=lgPlannerCfg().awards||[];
+  for(var i=0;i<aw.length;i++){ if(aw[i].k===k) return aw[i]; }
+  return { k:k, name:k, icon:'🏅' };
+}
+/* 이 상이 몇 등 상인가 (0부터 세는 자리 → 등수) */
+function lgPlannerAwardIdx(k){
+  var aw=lgPlannerCfg().awards||[];
+  for(var i=0;i<aw.length;i++){ if(aw[i].k===k) return i; }
+  return -1;
+}
+
+/* ── 달 계산 몇 가지 ── */
+function lgPlMonthEnd(ym){                    /* '2026-09' → '2026-09-30' */
+  var a=String(ym||'').split('-');
+  if(a.length<2) return '';
+  var d=new Date(Number(a[0]), Number(a[1]), 0);
+  if(isNaN(d.getTime())) return '';
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function lgPlShiftMonth(ym, n){
+  var a=String(ym||'').split('-');
+  if(a.length<2) return '';
+  var d=new Date(Number(a[0]), Number(a[1])-1+Number(n||0), 1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+/* 시즌(seasonStart~seasonEnd) 안에 들어 있는 달 목록 */
+function lgPlSeasonMonths(){
+  var c=ibqCfg();
+  var s=String(c.seasonStart||'').slice(0,7), e=String(c.seasonEnd||'').slice(0,7);
+  if(s.length!==7 || e.length!==7 || s>e) return [];
+  var out=[], cur=s, guard=0;
+  while(cur<=e && guard++<60){ out.push(cur); cur=lgPlShiftMonth(cur,1); }
+  return out;
+}
+/* 지금 화면에서 보고 있는 달 */
+function lgPlannerYm(){ return LGP.ym || getCurrentYearMonth(); }
+
+/* ── 한 달 순위 (플래너 점수 그대로) ──
+ *   calcPlannerRankingForMonth 가 주는 줄을 리그가 쓰기 좋은 모양으로 옮긴다.
+ *   ok = 최소 제출일(minDays)을 넘겨 수상 후보가 될 수 있는 학생 */
+function lgPlannerRows(ym){
+  var minD=Number(lgPlannerCfg().minDays||0);
+  var rows=[];
+  try{ rows=calcPlannerRankingForMonth(ym)||[]; }catch(e){ rows=[]; }
+  return rows.map(function(r){
+    var st=lgStudentByCode(r.code);
+    return { code:String(r.code||''), id:r.id,
+             name:(st&&st.name)||r.maskedName||'',        /* 학원앱 화면에는 실제 이름 */
+             masked:r.maskedName||'',
+             score:Number(r.total)||0, days:Number(r.days)||0, max:Number(r.max)||0,
+             rank:Number(r.rank)||0, ok:(Number(r.days)||0)>=minD };
+  });
+}
+/* 수상 후보 — 최소 제출일을 넘긴 학생만 다시 줄 세운다 (동점은 같은 등수) */
+function lgPlannerCands(ym){
+  var rows=lgPlannerRows(ym).filter(function(r){ return r.ok && r.code; });
+  var last=null, lastRank=0, out=[];
+  rows.forEach(function(r,i){
+    if(r.score!==last){ lastRank=i+1; last=r.score; }
+    out.push({ code:r.code, name:r.name, masked:r.masked, score:r.score,
+               days:r.days, max:r.max, rank:r.rank, crank:lastRank });
+  });
+  return out;
+}
+/* 이 달에 원장님이 고른 수상자 (처음 열면 기본값을 채워 준다) */
+function lgPlannerSel(ym){
+  if(LGP.selYm===ym) return LGP.sel;
+  LGP.selYm=ym; LGP.sel={};
+  var done=((PL_AWARDS&&PL_AWARDS.byMonth)||{})[ym];
+  if(done && Array.isArray(done.winners) && done.winners.length){
+    /* 이미 확정한 달 — 확정된 그대로 고른 상태로 보여 준다 */
+    done.winners.forEach(function(w){
+      if(!LGP.sel[w.k]) LGP.sel[w.k]={};
+      LGP.sel[w.k][String(w.code)]=true;
+    });
+    return LGP.sel;
+  }
+  /* 아직 확정 전 — 후보가 딱 한 명이면 미리 골라 두고, 동점이면 비워 둔다(원장이 고른다) */
+  var cands=lgPlannerCands(ym);
+  (lgPlannerCfg().awards||[]).forEach(function(a,i){
+    var tie=cands.filter(function(r){ return r.crank===(i+1); });
+    if(tie.length===1){ LGP.sel[a.k]={}; LGP.sel[a.k][tie[0].code]=true; }
+  });
+  return LGP.sel;
+}
+function lgPlannerMonth(ym){ LGP.ym=ym; LGP.selYm=''; LGP.sel={}; render(); }
+window.lgPlannerMonth=lgPlannerMonth;
+function lgPlannerPick(k, code){
+  var ym=lgPlannerYm(); lgPlannerSel(ym);
+  if(!LGP.sel[k]) LGP.sel[k]={};
+  if(LGP.sel[k][code]) delete LGP.sel[k][code]; else LGP.sel[k][code]=true;
+  render();
+}
+window.lgPlannerPick=lgPlannerPick;
+/* 「둘 다 주기」 — 동점자 모두에게 같은 상을 준다 (금액 w 는 그대로 각자에게) */
+function lgPlannerPickAll(k){
+  var ym=lgPlannerYm(); lgPlannerSel(ym);
+  var i=lgPlannerAwardIdx(k);
+  var tie=lgPlannerCands(ym).filter(function(r){ return r.crank===(i+1); });
+  var m={};
+  tie.forEach(function(r){ m[r.code]=true; });
+  LGP.sel[k]=m;
+  render();
+}
+window.lgPlannerPickAll=lgPlannerPickAll;
+
+/* ── 설정 편집: 상 추가·삭제 ── */
+function lgPlannerAwardAdd(){
+  var c=ibqCfg();
+  if(!c.planner) c.planner=ibqCfgDefault().planner;
+  if(!Array.isArray(c.planner.awards)) c.planner.awards=[];
+  var used={};
+  c.planner.awards.forEach(function(a){ used[a.k]=1; });
+  var n=1; while(used['p'+n]) n++;
+  var pos=c.planner.awards.length+1;
+  c.planner.awards.push({ k:'p'+n, icon:(['🥇','🥈','🥉'][pos-1]||'🏅'), name:pos+'등', w:0 });
+  ibqCfgRender();
+}
+window.lgPlannerAwardAdd=lgPlannerAwardAdd;
+function lgPlannerAwardDel(i){
+  var c=ibqCfg();
+  var aw=(c.planner&&c.planner.awards)||[];
+  if(aw.length<=1){ alert('상은 하나 이상 있어야 합니다.'); return; }
+  aw.splice(i,1);
+  LGP.selYm='';
+  ibqCfgRender();
+}
+window.lgPlannerAwardDel=lgPlannerAwardDel;
+
+/* ── 발행에 실을 상금 (IB아하 lgPrizeOut 과 똑같은 규칙) ──
+ *   showTotal 이 꺼져 있으면 total 도 상마다 금액(w)도 아예 담지 않는다. */
+function lgPlannerPrizeOut(){
+  var p=lgPlannerCfg(), show=(p.showTotal!==false), open=(show && !!p.open);
+  var out={ showTotal:show, open:open,
+    awards:(p.awards||[]).map(function(a){
+      var o={ k:a.k, name:a.name, icon:a.icon };
+      if(open) o.w=Number(a.w)||0;
+      return o;
+    }) };
+  if(show) out.total=Number(p.total)||0;
+  return out;
+}
+/* 가장 최근에 확정한 달의 수상자 — 학생앱 「🏅 지난달 수상」 */
+function lgPlannerLast(){
+  var by=(PL_AWARDS&&PL_AWARDS.byMonth)||{};
+  var ms=Object.keys(by).filter(function(m){
+    var r=by[m]; return r && Array.isArray(r.winners) && r.winners.length;
+  }).sort();
+  if(!ms.length) return null;
+  var ym=ms[ms.length-1], rec=by[ym];
+  var p=lgPlannerCfg(), open=(p.showTotal!==false && !!p.open);
+  var nm=ibqCfg().nameMode;
+  return { month:ym, winners:(rec.winners||[]).map(function(w){
+    var meta=lgPlannerAwardMeta(w.k);
+    var o={ rank:Number(w.rank)||0, k:w.k, icon:meta.icon, name:meta.name,
+            who:iblMask(w.name||'', nm), code:String(w.code||''), score:Number(w.score)||0 };
+    if(open) o.w=Number(w.w)||0;
+    return o;
+  }) };
+}
+
+/* 아직 서버에서 한 번도 읽지 않았다면 먼저 읽어 온다 —
+ * 그러지 않으면 「지난달 수상」을 빈 값으로 덮어쓸 수 있다 (플래너 승인은 리그 화면을 거치지 않는다) */
+async function lgPlannerEnsure(sb){
+  if(PL_LOADED && IBQ_CFG) return;
+  try{
+    var r=await sb.from('lumen_store').select('key,value').in('key',['planner_awards','aha_league_cfg']);
+    if(r && !r.error && r.data){
+      r.data.forEach(function(row){
+        if(row.key==='planner_awards' && row.value) PL_AWARDS=(row.value.byMonth?row.value:{byMonth:{}});
+        if(row.key==='aha_league_cfg' && row.value && !IBQ_CFG) IBQ_CFG=Object.assign(ibqCfgDefault(), row.value);
+      });
+    }
+    PL_LOADED=true;
+  }catch(e){ console.warn('planner_awards 읽기 실패', e); }
+}
+
+/* ── 📤 학생앱이 읽는 발행본 (league_planner) ──
+ *   설정 저장 · 플래너 승인 · 월말 확정 · 리그 발행, 네 곳에서 부른다. */
+async function lgPlannerPublish(){
+  var sb; try{ sb=getSupaClient(); }catch(e){ sb=null; }
+  if(!sb) return false;
+  await lgPlannerEnsure(sb);
+  var c=lgPlannerCfg();
+  var ym=getCurrentYearMonth();
+  var payload={
+    month:ym,
+    end:lgPlMonthEnd(ym),
+    enabled:(c.enabled!==false),
+    prize:lgPlannerPrizeOut(),
+    minDays:Number(c.minDays||0),
+    publicTop:Number(c.publicTop==null?5:c.publicTop),
+    inChampion:(c.inChampion!==false),
+    last:lgPlannerLast(),
+    updatedAt:new Date().toISOString()
+  };
+  var r=await sb.from('lumen_store').upsert({key:'league_planner', value:payload, updated_at:new Date().toISOString()},{onConflict:'key'});
+  if(r && r.error){ console.warn('league_planner 발행 실패', r.error); return false; }
+  LG_PLPUB=payload;
+  return true;
+}
+window.lgPlannerPublish=lgPlannerPublish;
+
+/* ── 🏅 월말 수상자 확정 (원장님이 「✓ 확정」을 눌러야만 저장된다) ── */
+async function lgPlannerConfirm(){
+  var ym=lgPlannerYm();
+  var cfg=lgPlannerCfg(), sel=lgPlannerSel(ym);
+  var byCode={};
+  lgPlannerRows(ym).forEach(function(r){ byCode[r.code]=r; });
+  var winners=[];
+  (cfg.awards||[]).forEach(function(a,i){
+    var m=sel[a.k]||{};
+    Object.keys(m).forEach(function(code){
+      if(!m[code]) return;
+      var r=byCode[code]||{};
+      var st=lgStudentByCode(code);
+      winners.push({ rank:i+1, k:a.k, code:String(code),
+        name:(st&&st.name)||r.name||'', score:Number(r.score)||0, w:Number(a.w)||0 });
+    });
+  });
+  if(!winners.length){ alert('상을 받을 학생을 한 명 이상 골라 주세요.'); return; }
+  var already=!!((PL_AWARDS.byMonth||{})[ym]);
+  if(!confirm(ym+' 플래너 수상자를 '+(already?'다시 ':'')+'확정할까요?\n'
+    + winners.map(function(w){ return lgPlannerAwardMeta(w.k).icon+' '+lgPlannerAwardMeta(w.k).name+' — '+w.name+' '+w.score+'점'; }).join('\n')
+    + '\n\n확정하면 학생앱 「🏅 지난달 수상」에 올라갑니다.')) return;
+  var sb; try{ sb=getSupaClient(); }catch(e){ sb=null; }
+  if(!sb){ alert('클라우드 연결이 없어 저장하지 못했습니다.'); return; }
+  await lgPlannerEnsure(sb);
+  if(!PL_AWARDS.byMonth) PL_AWARDS.byMonth={};
+  PL_AWARDS.byMonth[ym]={ winners:winners, at:new Date().toISOString(), by:'teacher' };
+  var r=await sb.from('lumen_store').upsert({key:'planner_awards', value:PL_AWARDS, updated_at:new Date().toISOString()},{onConflict:'key'});
+  if(r && r.error){ alert('확정 저장 실패: '+r.error.message); return; }
+  await lgPlannerPublish();
+  ahaToast('🏅 '+ym+' 플래너 수상자 '+winners.length+'명을 확정했습니다');
+  render();
+}
+window.lgPlannerConfirm=lgPlannerConfirm;
+
+/* ── 👑 종합 챔피언에 더할 플래너 점수 ──
+ *   시즌 안의 달 중 「확정된 달」만 센다. 그 달 순위(1~10위)에 lgPoints 를 주고 달마다 누적.
+ *   확정 안 된 달은 0 — 원장님이 「✓ 확정」을 누르기 전에는 종합 점수가 움직이지 않는다. */
+function lgPlannerChampPts(){
+  var out={};
+  var c=lgPlannerCfg();
+  if(c.enabled===false || c.inChampion===false) return out;
+  var by=(PL_AWARDS&&PL_AWARDS.byMonth)||{};
+  lgPlSeasonMonths().forEach(function(ym){
+    var rec=by[ym];
+    if(!rec || !Array.isArray(rec.winners) || !rec.winners.length) return;   /* 확정 안 된 달 */
+    var rankBy={};
+    lgPlannerRows(ym).forEach(function(r){ if(r.code) rankBy[r.code]=r.rank; });
+    /* 확정된 수상자는 원장님이 정한 등수를 그대로 쓴다 (동점을 골라 준 결과) */
+    rec.winners.forEach(function(w){ if(w.code) rankBy[String(w.code)]=Number(w.rank)||rankBy[String(w.code)]||0; });
+    Object.keys(rankBy).forEach(function(code){
+      var pt=lgPoints(rankBy[code]);
+      if(!out[code]) out[code]={ pts:0, months:0, ranks:[] };
+      out[code].pts+=pt;
+      out[code].months++;
+      out[code].ranks.push({ ym:ym, rank:rankBy[code], pts:pt });
+    });
+  });
+  return out;
+}
+
 /* ── 👑 종합 챔피언 (계약서 1-5) ── */
 function lgChampion(board){
   var cfg=lgChampCfg(), minEv=Number(cfg.minEvents||2);
+  /* ★ v19-7: 📔 플래너 — 시즌 안에서 확정된 달의 순위 점수 (확정 안 된 달은 0) */
+  var plPts=lgPlannerChampPts();
   var out={};
   ['초','중','고'].forEach(function(dk){
     var rows=(board.divs&&board.divs[dk])||[];
@@ -49480,20 +49853,28 @@ function lgChampion(board){
     var map={};
     rows.forEach(function(r){
       if(!(r.qcnt>0)) return;
-      map[r.code]=map[r.code]||{ code:r.code, name:r.name, race:null, aha:null, speak:null };
+      map[r.code]=map[r.code]||{ code:r.code, name:r.name, race:null, aha:null, speak:null, planner:null };
       map[r.code].aha={ rank:r.rank, pts:lgPoints(r.rank) };
     });
     raceRows.forEach(function(r){
       if(!r || !(Number(r.n)>0)) return;
       var st=lgStudentByCode(r.code);
-      map[r.code]=map[r.code]||{ code:r.code, name:(st?st.name:(r.nm||'?')), race:null, aha:null, speak:null };
+      map[r.code]=map[r.code]||{ code:r.code, name:(st?st.name:(r.nm||'?')), race:null, aha:null, speak:null, planner:null };
       if(!map[r.code].name || map[r.code].name==='?') map[r.code].name=(st?st.name:(r.nm||'?'));
       map[r.code].race={ rank:r.rank, pts:lgPoints(r.rank) };
     });
+    /* ★ v19-7: 📔 플래너 — 같은 부(초·중·고)의 학생만 이 표에 더한다 */
+    Object.keys(plPts).forEach(function(code){
+      var st=lgStudentByCode(code);
+      if(!st || st.withdrawn) return;
+      if(getGradeMajor(st.grade)!==dk) return;
+      map[code]=map[code]||{ code:code, name:st.name||'?', race:null, aha:null, speak:null, planner:null };
+      map[code].planner={ pts:plPts[code].pts, months:plPts[code].months, ranks:plPts[code].ranks };
+    });
     var list=Object.keys(map).map(function(c){ return map[c]; });
     list.forEach(function(x){
-      x.events=(x.race?1:0)+(x.aha?1:0)+(x.speak?1:0);
-      x.total=(x.race?x.race.pts:0)+(x.aha?x.aha.pts:0)+(x.speak?x.speak.pts:0);
+      x.events=(x.race?1:0)+(x.aha?1:0)+(x.speak?1:0)+(x.planner?1:0);
+      x.total=(x.race?x.race.pts:0)+(x.aha?x.aha.pts:0)+(x.speak?x.speak.pts:0)+(x.planner?x.planner.pts:0);
       x.ok=(x.events>=minEv);
     });
     var eligible=list.filter(function(x){ return x.ok; })
@@ -49670,7 +50051,9 @@ function rLeague(){
     +'</div>';
 
   /* 소탭 */
-  var tabs=[['season','🏆','시즌 한눈에'],['board','💡','IB아하 순위표'],['awards','🎁','시상 확정'],
+  /* ★ v19-7: 📔 플래너 탭 추가 (docs/planner_league_contract.md §2) */
+  var tabs=[['season','🏆','시즌 한눈에'],['board','💡','IB아하 순위표'],['planner','📔','플래너'],
+            ['awards','🎁','시상 확정'],
             ['check','🎲','무작위 설명 검사'],['publish','📤','순위표 발행']];
   h+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">';
   tabs.forEach(function(t){
@@ -49687,6 +50070,7 @@ function rLeague(){
 
   if(LG.tab==='season')       h+=lgSeasonPane(board);
   else if(LG.tab==='board')   h+=lgBoardPane(board);
+  else if(LG.tab==='planner') h+=lgPlannerPane();      /* ★ v19-7 */
   else if(LG.tab==='awards')  h+=lgAwardsPane(board);
   else if(LG.tab==='check')   h+=lgCheckPane(board);
   else                        h+=lgPublishPane(board);
@@ -49767,11 +50151,12 @@ function lgSeasonPane(board){
       h+='<div style="padding:12px;text-align:center;color:#cbd5e1;font-size:11.5px;background:#f8fafc;border-radius:9px">아직 두 종목을 함께 하는 학생이 없습니다</div></div>';
       return;
     }
-    h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">'
+    h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:620px">'
       +'<tr><th style="text-align:center;width:44px;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">순위</th>'
       +'<th style="text-align:left;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">학생</th>'
       +'<th style="text-align:left;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">🏁 진도</th>'
       +'<th style="text-align:left;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">💡 IB아하</th>'
+      +'<th style="text-align:left;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">📔 플래너</th>'
       +'<th style="text-align:left;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">🎙 말하기</th>'
       +'<th style="text-align:right;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">포인트</th></tr>';
     c.rows.slice(0,10).forEach(function(x){
@@ -49780,6 +50165,8 @@ function lgSeasonPane(board){
         +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9;font-weight:800">'+lgEsc(iblMask(x.name, board.cfg.nameMode))+'</td>'
         +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9">'+(x.race?(x.race.rank+'위 → '+x.race.pts):'<span style="color:#cbd5e1">–</span>')+'</td>'
         +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9">'+(x.aha?(x.aha.rank+'위 → '+x.aha.pts):'<span style="color:#cbd5e1">–</span>')+'</td>'
+        /* ★ v19-7: 📔 플래너 — 확정된 달 수와 누적 점수 */
+        +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9">'+(x.planner?(x.planner.months+'달 → '+x.planner.pts):'<span style="color:#cbd5e1">–</span>')+'</td>'
         +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9;color:#cbd5e1">–</td>'
         +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9;text-align:right;font-weight:900;color:#0d2240">'+x.total+'</td></tr>';
     });
