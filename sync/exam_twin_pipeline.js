@@ -241,6 +241,27 @@ async function saiPoll(jobId, timeoutMs) {
   }
   throw new Error('AI 작업 시간 초과');
 }
+/* AI 작업 한 판을 «보내고 → 기다리고 → 실패하면 다시» 한다.
+ * 매쓰플랫 AI 서버는 문항 상자 이미지를 스스로 못 읽어 통째로 실패하는 일이 잦다
+ *   (2026-09-16: 「19/20 boxes failed … unreachable」 → 다시 돌리니 「11/20」 → 매번 다름).
+ * 실패하는 상자가 판마다 달라지므로 같은 입력으로 다시 보내는 것만으로 살아날 때가 있다.
+ * 같은 jobId에 다시 보내면 결과만 덮어써지므로 업로드·문항 인식을 반복할 필요는 없다. */
+async function saiRun(jobId, functionName, parameters, timeoutMs, tries) {
+  const n = tries || 3;
+  let last = null;
+  for (let i = 1; i <= n; i++) {
+    try {
+      await mf(MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, { functionName, parameters });
+      return await saiPoll(jobId, timeoutMs);
+    } catch (e) {
+      last = e;
+      if (i === n) break;
+      log(`AI 작업 재시도 ${i}/${n - 1} — ${String(e.message).slice(0, 120)}`);
+      await sleep(20000);
+    }
+  }
+  throw last;
+}
 
 async function runTwinPipeline(opts) {
   const MYDB = Number(opts.mydb || 0);
@@ -314,20 +335,14 @@ async function runTwinPipeline(opts) {
   log(`업로드 완료 · job ${jobId}`);
 
   // ④ 문항 인식 (pageIndexes는 "1~N" 형식의 문자열)
-  await mf(MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, {
-    functionName: '/matchers/document-processing-flow',
-    parameters: { paperDocumentUrl: pres.url, pageIndexes: `1~${pdf.pages}`, pageImageQuality: 'HIGH' },
-  });
-  const doc = await saiPoll(jobId);
+  const doc = await saiRun(jobId, '/matchers/document-processing-flow',
+    { paperDocumentUrl: pres.url, pageIndexes: `1~${pdf.pages}`, pageImageQuality: 'HIGH' }, 240000, 3);
   const nBox = [].concat(...doc.boxesOnEachPage).length;
   log(`문항 인식: ${doc.pageImageUrls.length}쪽 · ${nBox}상자`);
 
   // ⑤ 문제은행 매칭
-  await mf(MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, {
-    functionName: '/matchers/analysis-flow',
-    parameters: { pageImageUrls: doc.pageImageUrls, boxesOnEachPage: doc.boxesOnEachPage, trieKey: TRIE },
-  });
-  const an = await saiPoll(jobId, 360000);
+  const an = await saiRun(jobId, '/matchers/analysis-flow',
+    { pageImageUrls: doc.pageImageUrls, boxesOnEachPage: doc.boxesOnEachPage, trieKey: TRIE }, 420000, 4);
   const matched = an.sourceData.filter((x) => x && x.sourceProblemId).length;
   log(`문제은행 매칭: ${matched}/${an.sourceData.length}`);
 
