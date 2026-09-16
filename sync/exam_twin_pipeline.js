@@ -336,13 +336,15 @@ async function runTwinPipeline(opts) {
 
   // ④ 문항 인식 (pageIndexes는 "1~N" 형식의 문자열)
   const doc = await saiRun(jobId, '/matchers/document-processing-flow',
-    { paperDocumentUrl: pres.url, pageIndexes: `1~${pdf.pages}`, pageImageQuality: 'HIGH' }, 240000, 3);
+    { paperDocumentUrl: pres.url, pageIndexes: `1~${pdf.pages}`, pageImageQuality: 'HIGH' }, 300000, 3);
   const nBox = [].concat(...doc.boxesOnEachPage).length;
   log(`문항 인식: ${doc.pageImageUrls.length}쪽 · ${nBox}상자`);
 
   // ⑤ 문제은행 매칭
+  /* 매칭은 한 판에 6~13분까지 걸린다(2026-09-16 실측). 7분에서 끊으면 살아 있는 작업을
+   * 버리고 다시 보내게 되므로, 판당 20분을 기다리고 3판까지 시도한다. */
   const an = await saiRun(jobId, '/matchers/analysis-flow',
-    { pageImageUrls: doc.pageImageUrls, boxesOnEachPage: doc.boxesOnEachPage, trieKey: TRIE }, 420000, 4);
+    { pageImageUrls: doc.pageImageUrls, boxesOnEachPage: doc.boxesOnEachPage, trieKey: TRIE }, 1200000, 3);
   const matched = an.sourceData.filter((x) => x && x.sourceProblemId).length;
   log(`문제은행 매칭: ${matched}/${an.sourceData.length}`);
 
