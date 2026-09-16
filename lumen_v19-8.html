@@ -7923,7 +7923,11 @@ function getDefaultVersionMemo(){
         +'화면 오른쪽 위에 <b>「마지막 수집」 시각</b>이 적혀 있으니, 날짜가 오래됐으면 수집이 멈춘 것입니다. 「🔄 다시 불러오기」는 <b>저장된 자료를 다시 읽는</b> 것이지 결제선생에 새로 들어가는 것은 아닙니다. '
         +'<b>이 화면은 보기만 합니다</b> — 청구서를 새로 보내거나 다시 보내는 일은 <b>「↗ 결제선생 열기」</b>로 결제선생에서 하십니다. 비밀번호는 앱에 들어 있지 않습니다. '
         +'<b>⚙ 리그 설정의 새 줄</b> — 「시즌 상금 합계」 바로 아래에 <b>이번 달 수납 n원 · 월 환산 상금 n원 · 비율 n%</b>가 나옵니다. '
-        +'월 환산 상금은 <b>진도 상금 ÷ 시즌 개월 + IB아하 상금 ÷ 시즌 개월 + 플래너 한 달 상금</b>입니다(달마다 실제로 나가는 돈). 수납 자료가 아직 없으면 「수납 자료 없음」이라고만 나옵니다.'},
+        +'월 환산 상금은 <b>진도 상금 ÷ 시즌 개월 + IB아하 상금 ÷ 시즌 개월 + 플래너 한 달 상금</b>입니다(달마다 실제로 나가는 돈). 수납 자료가 아직 없으면 「수납 자료 없음」이라고만 나옵니다. '
+        +'<b>⚠️ 「파기」 청구서도 빠짐없이 보여 드립니다</b>(실제 자료 확인 2026-09-16) — 결제선생은 보낸 청구서를 <b>5일 안에 안 내면 스스로 없애고(파기)</b>, 그 뒤로는 <b>미납으로도 세지 않습니다</b>. '
+        +'8월 청구 38건 중 8건이 그렇게 빠져 있어 <b>안 내신 분이 화면에서 사라지고</b> 있었습니다. 이제 파기된 청구서도 <b>청구 합계와 학생별 청구액에 넣고</b> 상태를 <b>「파기 · 재발송 필요」</b>로 빨갛게 보여 드립니다. '
+        +'「⚠️ 미납」 카드에도 함께 세고 아래에 <b>「파기 n건 포함」</b>이라고 적으며, <b>📋 미납 목록 복사</b> 글에도 줄 끝에 <b>「(파기·재발송 필요)」</b>가 붙습니다. '
+        +'파기된 뒤 <b>이미 다시 보내신 청구서</b>가 있으면 두 번 세지 않고 최신 것만 세며, 이름 옆에 <b>「파기 후 재발송 n건」</b>이라고만 적어 둡니다. 재발송은 <b>결제선생</b>에서 하십니다.'},
       {ver:'v19-7',date:'2026-09-16',stability:'ok',memo:'📔 <b>플래너를 「루멘 리그」 한 종목으로 넣었습니다</b> (원장 결정 2026-09-16 · docs/planner_league_contract.md). '
         +'<b>무엇이 문제였나</b> — 플래너 점수는 매일 쌓이는데 <b>「이달 1·2·3등이 누구인지」</b>를 학원앱 어디에서도 한눈에 볼 수 없었습니다. '
         +'매달 드리는 상금 3만 원도 학생앱에는 한 글자도 나가지 않아, 학생들은 상이 있는 줄도 몰랐습니다. '
@@ -57486,7 +57490,15 @@ function paySortedStudents(){
 /* ── 한 달치 계산 (계약서 §3) ──
  *   이달 청구 = pay_bills 중 billedAt 이 그달인 것 (같은 학생 여러 건이면 합계)
  *   수납      = 그 청구 중 paidAt 이 있는 것의 청구액 합
- *              + pay_payments 중 「청구서가 아예 없는 결제」(같은 txID 는 한 번만) */
+ *              + pay_payments 중 「청구서가 아예 없는 결제」(같은 txID 는 한 번만)
+ *
+ *   ★ v19-8 보완 — 「파기」된 청구서 (원장 지시 2026-09-16, 실제 자료 확인)
+ *   결제선생은 보낸 청구서를 5일 안에 안 내면 <b>스스로 파기</b>한다(destroyedAt 이 찍히고
+ *   paidAt 은 없다). 결제선생의 미납 집계에서도 빠지기 때문에, 그대로 두면
+ *   <b>안 낸 학생이 화면에서 사라진다</b>(8월 청구 38건 중 8건이 그랬다).
+ *   그래서 파기된 청구서도 <b>청구에 넣고</b> 「파기 · 재발송 필요」로 빨갛게 보여 준다.
+ *   단, 같은 학생·같은 달에 <b>파기 뒤 다시 보낸 청구서</b>가 있으면 두 번 세면 안 되므로
+ *   최신 것만 세고 파기본은 「재발송됨」으로 접어 둔다(금액이 같은 것을 먼저 짝지운다). */
 function payData(ym){
   var bills=((PAY.bills&&PAY.bills.items)||[]);
   var pays=((PAY.pays&&PAY.pays.items)||[]);
@@ -57499,35 +57511,68 @@ function payData(ym){
 
   var blank=function(name,phone4){
     return { name:String(name==null?'':name), phone4:payPhone4(phone4), st:null,
-             billed:0, paid:0, nBill:0, nPaid:0, reasons:[], methods:[], paidAt:'', billedAt:'' };
+             billed:0, paid:0, nBill:0, nPaid:0, reasons:[], methods:[], paidAt:'', billedAt:'',
+             dead:0, nDead:0, resent:0 };   /* dead = 재발송 안 된 파기 청구액 */
   };
   var slot=function(name,phone4){
     var st=payFindStudent(name,phone4);
     if(st){
       var k=payStuKey(st);
-      if(!byStu[k]){ byStu[k]=blank(st.name,st.parentPhone); byStu[k].st=st; }
+      if(!byStu[k]){ byStu[k]=blank(st.name,st.parentPhone); byStu[k].st=st; byStu[k].__k=k; }
       return byStu[k];
     }
     var mk=String(name==null?'':name)+'#'+payPhone4(phone4);
-    if(!miss[mk]) miss[mk]=blank(name,phone4);
+    if(!miss[mk]){ miss[mk]=blank(name,phone4); miss[mk].__k=mk; }
     return miss[mk];
   };
 
+  /* ① 이 달 청구서를 학생(또는 미매칭 이름)별로 「살아 있는 것 / 파기된 것」으로 나눠 모은다 */
+  var groups={};
   bills.forEach(function(b){
     if(!b) return;
-    if(b.destroyedAt) return;                       /* 폐기한 청구서는 세지 않는다 */
     if(payYmOf(b.billedAt)!==ym) return;
-    var o=slot(b.name,b.phone4);
-    o.billed+=Number(b.amount)||0; o.nBill++;
-    if(!o.billedAt || String(b.billedAt)<o.billedAt) o.billedAt=String(b.billedAt||'');
-    if(b.reason && o.reasons.indexOf(b.reason)<0) o.reasons.push(b.reason);
-    if(b.paidAt){
-      o.paid+=Number(b.amount)||0; o.nPaid++;
-      if(b.txID) seenTx[String(b.txID)]=1;
-      if(String(b.paidAt)>o.paidAt) o.paidAt=String(b.paidAt);
-      var bm=b.payType||'';
-      if(bm && o.methods.indexOf(bm)<0) o.methods.push(bm);
-    }
+    var o=slot(b.name,b.phone4), k=o.__k;
+    if(!groups[k]) groups[k]={ o:o, live:[], dead:[] };
+    if(b.destroyedAt && !b.paidAt) groups[k].dead.push(b);
+    else groups[k].live.push(b);
+  });
+
+  var deadAll={ count:0, amount:0 }, resentAll=0;
+  var byAt=function(a,b){ return String(a.billedAt).localeCompare(String(b.billedAt)); };
+  Object.keys(groups).forEach(function(k){
+    var g=groups[k], o=g.o;
+    var live=g.live.slice().sort(byAt), dead=g.dead.slice().sort(byAt), used={};
+    /* ② 파기본마다 「그 뒤에 다시 보낸 청구서」를 찾는다 — 금액이 같은 것을 먼저,
+     *    없으면 그냥 뒤에 보낸 것. 한 번 짝지은 청구서는 다시 쓰지 않는다(이중 상계 방지). */
+    dead.forEach(function(d){
+      var pick=-1;
+      for(var i=0;i<live.length;i++){
+        if(used[i]) continue;
+        if(String(live[i].billedAt)<=String(d.billedAt)) continue;
+        if(Number(live[i].amount)===Number(d.amount)){ pick=i; break; }
+        if(pick<0) pick=i;
+      }
+      if(pick>=0){ used[pick]=1; o.resent++; resentAll++; return; }   /* 재발송됨 — 접어 둔다 */
+      /* 재발송 안 된 파기 — 청구에 넣고 「파기 · 재발송 필요」로 */
+      o.billed+=Number(d.amount)||0; o.nBill++;
+      o.dead+=Number(d.amount)||0; o.nDead++;
+      if(!o.billedAt || String(d.billedAt)<o.billedAt) o.billedAt=String(d.billedAt||'');
+      if(d.reason && o.reasons.indexOf(d.reason)<0) o.reasons.push(d.reason);
+      deadAll.count++; deadAll.amount+=Number(d.amount)||0;
+    });
+    /* ③ 살아 있는 청구서 */
+    live.forEach(function(b){
+      o.billed+=Number(b.amount)||0; o.nBill++;
+      if(!o.billedAt || String(b.billedAt)<o.billedAt) o.billedAt=String(b.billedAt||'');
+      if(b.reason && o.reasons.indexOf(b.reason)<0) o.reasons.push(b.reason);
+      if(b.paidAt){
+        o.paid+=Number(b.amount)||0; o.nPaid++;
+        if(b.txID) seenTx[String(b.txID)]=1;
+        if(String(b.paidAt)>o.paidAt) o.paidAt=String(b.paidAt);
+        var bm=b.payType||'';
+        if(bm && o.methods.indexOf(bm)<0) o.methods.push(bm);
+      }
+    });
   });
   pays.forEach(function(p){
     if(!p) return;
@@ -57563,23 +57608,25 @@ function payData(ym){
     var s=miss[mk]||null;
     missArr.push({ name:String(nm), phone4:payPhone4(info.phone4),
                    lastBilledAt:info.lastBilledAt||'', lastPaidAt:info.lastPaidAt||'',
-                   billed:s?s.billed:0, paid:s?s.paid:0 });
+                   billed:s?s.billed:0, paid:s?s.paid:0, dead:s?s.dead:0, nDead:s?s.nDead:0 });
   });
   Object.keys(miss).forEach(function(mk){
     if(seenName[mk]) return;
     var s=miss[mk];
     missArr.push({ name:s.name, phone4:s.phone4, lastBilledAt:s.billedAt, lastPaidAt:s.paidAt,
-                   billed:s.billed, paid:s.paid });
+                   billed:s.billed, paid:s.paid, dead:s.dead, nDead:s.nDead });
   });
   missArr.sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'ko'); });
 
-  return { rows:rows, miss:missArr, byStu:byStu };
+  return { rows:rows, miss:missArr, byStu:byStu, dead:deadAll, resent:resentAll };
 }
 window.payData=payData;
 
-/* 상태 — 수납 / 미납 / 부분 / 청구 없음 */
+/* 상태 — 파기 / 수납 / 미납 / 부분 / 청구 없음
+ *   「파기」(재발송 안 된 것)는 원장님이 지금 손을 써야 하는 것이라 미납보다 먼저 알린다. */
 function payState(o){
   if(!o) return '청구 없음';
+  if(o.nDead>0) return '파기';
   if(!(o.billed>0)) return (o.paid>0)?'수납':'청구 없음';
   if(!(o.paid>0)) return '미납';
   if(o.paid>=o.billed) return '수납';
@@ -57591,28 +57638,36 @@ window.payState=payState;
  *   pay_monthly(결제선생이 스스로 낸 합계)를 먼저 쓰고, 그달 자료가 없으면
  *   청구·결제 줄에서 직접 센다. */
 function paySummary(ym){
+  var d=payData(ym);
+  var dead=d.dead||{count:0,amount:0};
   var mm=(((PAY.monthly||{}).byMonth||{})[ym])||null;
   if(mm){
+    /* 결제선생의 합계에는 파기된 청구서가 빠져 있다 — 재발송 안 된 파기를 다시 얹는다 */
     var pd=mm.paid||{count:0,amount:0};
-    var pct=(typeof pd.pct==='number')?pd.pct
-          : (((mm.billed&&mm.billed.amount)>0)?Math.round(Number(pd.amount||0)/Number(mm.billed.amount)*1000)/10:0);
+    var bl=mm.billed||{count:0,amount:0};
+    var up=mm.unpaid||{count:0,amount:0};
+    var billed={ count:(Number(bl.count)||0)+dead.count, amount:(Number(bl.amount)||0)+dead.amount };
+    var paidAmt=Number(pd.amount)||0;
     return { src:'monthly',
-             billed:mm.billed||{count:0,amount:0},
-             paid:{count:Number(pd.count)||0, amount:Number(pd.amount)||0, pct:pct},
-             unpaid:mm.unpaid||{count:0,amount:0},
-             sales:mm.sales||null };
+             billed:billed,
+             paid:{ count:Number(pd.count)||0, amount:paidAmt,
+                    pct:(billed.amount>0)?Math.round(paidAmt/billed.amount*1000)/10:0 },
+             unpaid:{ count:(Number(up.count)||0)+dead.count, amount:(Number(up.amount)||0)+dead.amount },
+             dead:dead, sales:mm.sales||null };
   }
-  var d=payData(ym), bc=0, ba=0, pc=0, pa=0, uc=0, ua=0;
-  d.rows.concat(d.miss.map(function(m){ return { o:{billed:m.billed,paid:m.paid,nBill:m.billed?1:0,nPaid:m.paid?1:0}, state:null }; }))
-   .forEach(function(r){
-     var o=r.o; if(!o) return;
-     bc+=Number(o.nBill)||0; ba+=Number(o.billed)||0;
-     pc+=Number(o.nPaid)||0; pa+=Number(o.paid)||0;
-     if(o.billed>o.paid){ uc++; ua+=(Number(o.billed)||0)-(Number(o.paid)||0); }
-   });
+  /* 그달 합계 자료가 없으면 청구·결제 줄에서 직접 센다 (파기는 이미 청구에 들어 있다) */
+  var bc=0, ba=0, pc=0, pa=0, uc=0, ua=0;
+  var all=Object.keys(d.byStu).map(function(k){ return d.byStu[k]; })
+    .concat(d.miss.map(function(m){ return { billed:m.billed, paid:m.paid, nBill:m.billed?1:0, nPaid:m.paid?1:0 }; }));
+  all.forEach(function(o){
+    if(!o) return;
+    bc+=Number(o.nBill)||0; ba+=Number(o.billed)||0;
+    pc+=Number(o.nPaid)||0; pa+=Number(o.paid)||0;
+    if(o.billed>o.paid){ uc++; ua+=(Number(o.billed)||0)-(Number(o.paid)||0); }
+  });
   return { src:'calc', billed:{count:bc,amount:ba},
            paid:{count:pc,amount:pa,pct:ba>0?Math.round(pa/ba*1000)/10:0},
-           unpaid:{count:uc,amount:ua}, sales:null };
+           unpaid:{count:uc,amount:ua}, dead:dead, sales:null };
 }
 window.paySummary=paySummary;
 
@@ -57620,10 +57675,11 @@ window.paySummary=paySummary;
 function payUnpaidText(ym){
   var d=payData(ym), lines=[], n=0, sum=0;
   d.rows.forEach(function(r){
-    if(r.state!=='미납' && r.state!=='부분') return;
+    if(r.state!=='미납' && r.state!=='부분' && r.state!=='파기') return;
     var rest=Math.max(0,(r.o?r.o.billed:0)-(r.o?r.o.paid:0));
     n++; sum+=rest;
-    lines.push(String(r.st.name||'')+' · '+payWon(rest)+' · '+(payDayLabel(r.o&&r.o.billedAt)||'청구일 모름'));
+    lines.push(String(r.st.name||'')+' · '+payWon(rest)+' · '+(payDayLabel(r.o&&r.o.billedAt)||'청구일 모름')
+      +((r.state==='파기')?' (파기·재발송 필요)':''));
   });
   if(!lines.length) return '';
   return '[루멘수학] '+ym+' 미납 '+n+'건 · '+payWon(sum)+'\n'+lines.join('\n');
@@ -57736,9 +57792,14 @@ function payCard(ic,title,big,sub,tint){
     +'<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-top:2px">'+sub+'</div></div>';
 }
 function payStateChip(s){
-  var c={'수납':['#ecfdf5','#047857'],'미납':['#fef2f2','#b91c1c'],'부분':['#fff7ed','#c2410c'],'청구 없음':['#f1f5f9','#94a3b8']}[s]||['#f1f5f9','#94a3b8'];
-  return '<span style="display:inline-block;border-radius:50px;padding:3px 10px;font-size:11px;font-weight:800;background:'+c[0]+';color:'+c[1]+'">'+esc2(s)+'</span>';
+  var c={'수납':['#ecfdf5','#047857'],'미납':['#fef2f2','#b91c1c'],'부분':['#fff7ed','#c2410c'],
+         '파기':['#fee2e2','#991b1b'],'청구 없음':['#f1f5f9','#94a3b8']}[s]||['#f1f5f9','#94a3b8'];
+  /* 「파기」는 그냥 안 낸 것이 아니라 <b>청구서를 다시 보내야</b> 하는 것이라 그렇게 적어 준다 */
+  var label=(s==='파기')?'파기 · 재발송 필요':s;
+  return '<span style="display:inline-block;border-radius:50px;padding:3px 10px;font-size:11px;font-weight:800;background:'+c[0]+';color:'+c[1]+'">'+esc2(label)+'</span>';
 }
+/* 빨간 줄 — 미납 · 부분 · 파기 (원장님이 손을 써야 하는 줄) */
+function payIsBad(s){ return s==='미납'||s==='부분'||s==='파기'; }
 function rTuition(){
   var ym=payYm();
   var h='<div style="max-width:1220px">';
@@ -57772,7 +57833,11 @@ function rTuition(){
   h+='<div id="pay-cards" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px">';
   h+=payCard('🧾','청구 합계', payWon(sm.billed.amount), (Number(sm.billed.count)||0)+'건', '#1d6fe8');
   h+=payCard('💰','수납 합계', payWon(sm.paid.amount), (Number(sm.paid.count)||0)+'건 · 수납률 '+(Number(sm.paid.pct)||0)+'%', '#22c55e');
-  h+=payCard('⚠️','미납', (Number(sm.unpaid.count)||0)+'건', payWon(sm.unpaid.amount), '#ef4444');
+  /* 「미납」에는 결제선생이 스스로 파기한 청구서(재발송 안 된 것)도 함께 센다 —
+   * 파기된 것은 결제선생 미납 집계에서 빠져 원장님이 놓치게 되기 때문이다 */
+  var deadN=Number((sm.dead||{}).count)||0;
+  h+=payCard('⚠️','미납', (Number(sm.unpaid.count)||0)+'건',
+     payWon(sm.unpaid.amount)+(deadN?('<br><span style="color:#b91c1c">파기 '+deadN+'건 포함</span>'):''), '#ef4444');
   if(sm.sales){
     h+=payCard('📊','매출 보고서',
       payWon(sm.sales.total),
@@ -57788,7 +57853,7 @@ function rTuition(){
 
   /* 표 */
   var d=payData(ym);
-  var unpaidN=d.rows.filter(function(r){ return r.state==='미납'||r.state==='부분'; }).length;
+  var unpaidN=d.rows.filter(function(r){ return payIsBad(r.state); }).length;
   h+='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px">'
     +'<div style="font-size:14px;font-weight:900;color:#0d2240">'+esc2(ym)+' 학생별 수납</div>'
     +'<div style="font-size:11.5px;font-weight:700;color:#94a3b8">명단 순(반 → 학년 → 이름) · 재원생 '+d.rows.length+'명</div>'
@@ -57802,12 +57867,14 @@ function rTuition(){
     +'<th style="padding:9px 12px">결제일</th><th style="padding:9px 12px">품목</th><th style="padding:9px 12px">결제수단</th>'
     +'</tr></thead><tbody>';
   d.rows.forEach(function(r){
-    var o=r.o, bad=(r.state==='미납'||r.state==='부분');
+    var o=r.o, bad=payIsBad(r.state);
     h+='<tr class="pay-row'+(bad?' pay-unpaid':'')+'" data-state="'+esc2(r.state)+'" style="border-top:1px solid #eef2f7;'+(bad?'background:#fef2f2;':'')+'">'
       +'<td style="padding:9px 12px">'
         +'<span style="font-weight:800;color:'+(bad?'#b91c1c':'#0d2240')+'">'+esc2(r.st.name||'')+'</span>'
         +'<span style="font-size:10.5px;color:#94a3b8;font-weight:700"> '+esc2(r.st.group||'-')+' · '+esc2(r.st.grade||'-')+'</span>'
         +(r.st.payssamName?('<span style="font-size:10px;color:#6d28d9;font-weight:800"> · 결제선생 「'+esc2(r.st.payssamName)+'」 <span onclick="payUnlink(\''+esc2(String(r.st.id))+'\')" style="cursor:pointer;text-decoration:underline">풀기</span></span>'):'')
+        /* 파기됐다가 다시 보낸 청구서는 두 번 세지 않고 이렇게만 적어 둔다 */
+        +((o&&o.resent)?('<span class="pay-resent" style="font-size:10px;color:#94a3b8;font-weight:700"> · 파기 후 재발송 '+o.resent+'건</span>'):'')
       +'</td>'
       +'<td style="padding:9px 12px;text-align:right;font-weight:800;color:#0d2240">'+(o&&o.billed?payWon(o.billed):'—')+'</td>'
       +'<td style="padding:9px 12px;text-align:right;font-weight:800;color:'+((o&&o.paid)?'#047857':'#94a3b8')+'">'+((o&&o.paid)?payWon(o.paid):'—')+'</td>'
@@ -57846,6 +57913,7 @@ function rTuition(){
   h+='</div>';
 
   h+='<div style="font-size:11.5px;color:#94a3b8;font-weight:700;margin-top:12px;line-height:1.8">'
+    +'<b>「파기 · 재발송 필요」</b>는 결제선생이 <b>5일 안에 안 낸 청구서를 스스로 없앤 것</b>입니다 — 결제선생 화면에서는 미납으로도 안 보이니, 여기에서 확인하시고 <b>청구서를 다시 보내</b>셔야 합니다.<br>'
     +'청구서를 새로 보내거나 다시 보내는 일은 <b>결제선생</b>에서 하십니다 — 위 「↗ 결제선생 열기」를 누르세요.<br>'
     +'이 화면의 숫자는 새벽에 받아 온 것이라, 오늘 낮에 들어온 결제는 <b>내일 새벽</b>에 보입니다.</div>';
   return h+'</div>';
