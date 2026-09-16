@@ -66,8 +66,11 @@ async function main() {
 
   await page.goto('https://manager.payssam.kr/', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForSelector('input[type="password"]', { timeout: 30000 });
-  const idIn = (await page.$('input[type="email"]')) || (await page.$('input[type="text"]'));
-  await idIn.fill(ID);
+  const ins = await page.$$eval('input', (els) => els.map((e) => (e.type || '') + '|' + (e.name || '') + '|' + (e.placeholder || '')));
+  log('입력칸:', ins.join(' , '));
+  const idIn = await page.$('input:not([type="password"]):not([type="hidden"]):not([type="checkbox"])');
+  if (!idIn) throw new Error('아이디 칸을 못 찾음');
+  await idIn.click(); await idIn.fill(ID);
   await page.fill('input[type="password"]', PW);
   await page.click('button:has-text("로그인")');
   // 로그인 응답 기다리기
