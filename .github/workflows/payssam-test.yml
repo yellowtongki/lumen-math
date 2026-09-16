@@ -1,0 +1,28 @@
+name: 결제선생 로그인 시험
+
+# 결제선생(manager.payssam.kr) 매니저 로그인이 자동으로 되는지, 어떤 내부 주소를 쓰는지 관찰한다.
+# 수동 실행 전용 (Actions 탭 → 이 워크플로 → Run workflow).
+# 필요한 비밀값: PAYSSAM_ID, PAYSSAM_PASSWORD  (Settings → Secrets and variables → Actions)
+# 로그에는 비밀번호·토큰을 찍지 않고, 학생 이름·전화번호는 가린다.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright 설치
+        run: |
+          npm install --no-save playwright@1.47.2
+          npx playwright install --with-deps chromium
+      - name: 로그인 시험
+        env:
+          PAYSSAM_ID: ${{ secrets.PAYSSAM_ID }}
+          PAYSSAM_PASSWORD: ${{ secrets.PAYSSAM_PASSWORD }}
+        run: node sync/payssam_login_test.js
