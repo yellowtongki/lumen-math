@@ -83,7 +83,16 @@ async function main() {
   await page.click('button:has-text("로그인")');
   // 로그인 응답 기다리기
   let loginHit = null;
-  for (let i = 0; i < 40 && !loginHit; i++) { await page.waitForTimeout(500); loginHit = api.find((a) => /login/i.test(a.url)); }
+  for (let i = 0; i < 60 && !loginHit; i++) { await page.waitForTimeout(500); loginHit = api.find((a) => /login/i.test(a.url)); }
+  if (!loginHit) {
+    // 화면에 안내창이 떠 있으면 그 글(개인정보 없음)만 남기고 한 번 더 시도
+    const dlg = await page.evaluate(() => { const els = Array.from(document.querySelectorAll('[role=dialog], .modal, .swal2-container, .popup')); return els.map((e) => (e.innerText || '').replace(/\s+/g, ' ').slice(0, 120)).join(' / '); });
+    log('로그인 응답 없음 · 안내창:', dlg || '(없음)', '· 주소', page.url());
+    try { const ok = await page.$('button:has-text("확인")'); if (ok) await ok.click(); } catch (e) {}
+    await page.waitForTimeout(1500);
+    try { await page.fill('input[type="password"]', PW); await page.click('button:has-text("로그인")'); } catch (e) {}
+    for (let i = 0; i < 60 && !loginHit; i++) { await page.waitForTimeout(500); loginHit = api.find((a) => /login/i.test(a.url)); }
+  }
   log('로그인 응답:', loginHit ? (loginHit.status + ' ' + loginHit.url) : '(못 잡음)');
   if (loginHit && loginHit.shape) log('로그인 응답 모양:', JSON.stringify(loginHit.shape).slice(0, 800));
   await page.waitForTimeout(4000);
@@ -91,23 +100,27 @@ async function main() {
   // 첫 화면 안내창 닫기
   try { const ok = await page.$('button:has-text("확인")'); if (ok) { await ok.click(); await page.waitForTimeout(1500); log('안내창 닫음'); } } catch (e) {}
 
-  // 메뉴 탐색 — 왼쪽 메뉴 글자로 이동하고, 조회 단추가 있으면 누른다. 화면 글은 남기지 않는다.
-  const menus = ['학생', '수납내역', '결제내역', '매출 보고서', '청구서 관리', '현금영수증'];
-  for (const m of menus) {
-    const before = api.length;
-    let el = null;
-    try { el = await page.$('nav >> text="' + m + '"'); } catch (e) {}
-    if (!el) { try { el = await page.$('text="' + m + '"'); } catch (e) {} }
-    if (!el) { log('· 「' + m + '」 메뉴 못 찾음'); continue; }
-    try { await el.click({ timeout: 5000 }); } catch (e) { log('· 「' + m + '」 클릭 실패'); continue; }
-    await page.waitForTimeout(6000);
-    const url1 = page.url();
-    let btn = null;
-    for (const b of ['조회', '검색', '전체']) { try { btn = await page.$('button:has-text("' + b + '")'); } catch (e) {} if (btn) { try { await btn.click({ timeout: 3000 }); log('   「' + b + '」 단추 누름'); } catch (e) {} break; } }
+  // 왼쪽 메뉴의 주소만 모은다 (글자 없이 href)
+  try {
+    await page.goto('https://manager.payssam.kr/bills', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(5000);
+    const hrefs = await page.$$eval('a[href]', (els) => Array.from(new Set(els.map((a) => a.getAttribute('href')))).filter((h) => h && h.startsWith('/')).slice(0, 60));
+    log('메뉴 주소:', hrefs.join(' '));
+  } catch (e) { log('메뉴 주소 수집 실패', e.message.slice(0, 80)); }
+  // 화면을 직접 열고, 조회 단추가 있으면 누른 뒤 자료 모양(자료형만)과 표 머리를 남긴다
+  const pages = ['/students', '/payments', '/bills', '/receipts', '/collections', '/collection', '/sales-report', '/report', '/reports', '/cash-receipt'];
+  for (const path of pages) {
+    const before = api.length;
+    try { await page.goto('https://manager.payssam.kr' + path, { waitUntil: 'domcontentloaded', timeout: 30000 }); } catch (e) { log('· ' + path + ' 열기 실패'); continue; }
+    await page.waitForTimeout(7000);
+    if (/\/404/.test(page.url())) { log('· ' + path + ' → 없음'); continue; }
+    let pressed = '';
+    for (const b of ['조회', '검색']) { let btn = null; try { btn = await page.$('button:has-text("' + b + '")'); } catch (e) {} if (btn) { try { await btn.click({ timeout: 3000 }); pressed = b; } catch (e) {} break; } }
+    await page.waitForTimeout(6000);
     const heads = await page.$$eval('th', (els) => els.map((e) => (e.innerText || '').trim()).filter(Boolean).slice(0, 30));
-    log('▶ 「' + m + '」 → ' + url1 + ' · 새 요청 ' + (api.length - before) + ' · 표 머리: ' + heads.join(' | '));
-    api.slice(before).forEach((a) => { if (!/fail\/count|charge\/auto|configuration|active-events|merchants\/list|offline-payment|reserved\/count|point\/available|calculate\/menu/.test(a.url)) log('   ', a.status, a.method, a.url, a.shape ? JSON.stringify(a.shape).slice(0, 1500) : ''); });
+    const rows = await page.$$eval('tbody tr', (els) => els.length);
+    log('▶ ' + path + ' → ' + page.url() + (pressed ? ' · 「' + pressed + '」 누름' : '') + ' · 새 요청 ' + (api.length - before) + ' · 표 줄 ' + rows + ' · 표 머리: ' + heads.join(' | '));
+    api.slice(before).forEach((a) => { if (!/fail\/count|charge\/auto|configuration|active-events|merchants\/list|offline-payment|reserved\/count|point\/available|calculate\/menu|merchant\/v2\/user/.test(a.url)) log('   ', a.status, a.method, a.url, a.shape ? JSON.stringify(a.shape).slice(0, 1500) : ''); });
   }
   await browser.close();
   log('끝');
