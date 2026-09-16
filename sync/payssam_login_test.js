@@ -47,6 +47,13 @@ function shape(obj, depth, key) {
   return typeof obj;
 }
 
+const KEEP_KEYS = /date|time|page|size|limit|offset|type|state|sort|order|merchantCode|month|year|from|to$|start|end|status|flag|count|search|keyword$/i;
+function reqShape(o) {
+  if (Array.isArray(o)) return o.length ? ['[' + o.length + '개]', reqShape(o[0])] : '[]';
+  if (o && typeof o === 'object') { const r = {}; Object.keys(o).forEach((k) => { r[k] = (KEEP_KEYS.test(k) && !/name|phone/i.test(k)) ? o[k] : shape(o[k], 0, k); }); return r; }
+  return o;
+}
+
 async function main() {
   if (!ID || !PW) { console.error('❌ PAYSSAM_ID / PAYSSAM_PASSWORD 환경변수가 없습니다'); process.exit(1); }
   log('로그인 아이디:', ID.slice(0, 3) + '***');
@@ -68,8 +75,10 @@ async function main() {
     const ct = r.headers()['content-type'] || '';
     let body = null;
     if (/json/.test(ct)) { try { body = await r.json(); } catch (e) {} }
-    if (!body) return;
-    api.push({ method: r.request().method(), url: u.replace(/([?&])(token|key)=[^&]*/gi, '$1$2=***'), status: r.status(), shape: body ? shape(body) : null });
+    if (!body && !/student/i.test(u)) return;
+    let req = null;
+    try { const pd = r.request().postData(); if (pd) { const o = JSON.parse(pd); req = reqShape(o); } } catch (e) { req = '(json 아님)'; }
+    api.push({ method: r.request().method(), url: u.replace(/([?&])(token|key)=[^&]*/gi, '$1$2=***'), status: r.status(), req: req, shape: body ? shape(body) : null });
   });
 
   await page.goto('https://manager.payssam.kr/', { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -108,7 +117,7 @@ async function main() {
     log('메뉴 주소:', hrefs.join(' '));
   } catch (e) { log('메뉴 주소 수집 실패', e.message.slice(0, 80)); }
   // 화면을 직접 열고, 조회 단추가 있으면 누른 뒤 자료 모양(자료형만)과 표 머리를 남긴다
-  const pages = ['/students', '/payments', '/bills', '/receipts', '/collections', '/collection', '/sales-report', '/report', '/reports', '/cash-receipt'];
+  const pages = ['/students', '/payments', '/bills', '/report'];
   for (const path of pages) {
     const before = api.length;
     try { await page.goto('https://manager.payssam.kr' + path, { waitUntil: 'domcontentloaded', timeout: 30000 }); } catch (e) { log('· ' + path + ' 열기 실패'); continue; }
@@ -120,7 +129,7 @@ async function main() {
     const heads = await page.$$eval('th', (els) => els.map((e) => (e.innerText || '').trim()).filter(Boolean).slice(0, 30));
     const rows = await page.$$eval('tbody tr', (els) => els.length);
     log('▶ ' + path + ' → ' + page.url() + (pressed ? ' · 「' + pressed + '」 누름' : '') + ' · 새 요청 ' + (api.length - before) + ' · 표 줄 ' + rows + ' · 표 머리: ' + heads.join(' | '));
-    api.slice(before).forEach((a) => { if (!/fail\/count|charge\/auto|configuration|active-events|merchants\/list|offline-payment|reserved\/count|point\/available|calculate\/menu|merchant\/v2\/user/.test(a.url)) log('   ', a.status, a.method, a.url, a.shape ? JSON.stringify(a.shape).slice(0, 1500) : ''); });
+    api.slice(before).forEach((a) => { if (path === '/students' || !/fail\/count|charge\/auto|configuration|active-events|merchants\/list|offline-payment|reserved\/count|point\/available|calculate\/menu|merchant\/v2\/user/.test(a.url)) log('   ', a.status, a.method, a.url, '요청:', a.req ? JSON.stringify(a.req).slice(0, 500) : '-', '응답:', a.shape ? JSON.stringify(a.shape).slice(0, 900) : ''); });
   }
   await browser.close();
   log('끝');
