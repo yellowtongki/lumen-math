@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-8';
+var APP_VER = 'v19-9';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -7909,6 +7909,34 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-9',date:'2026-09-16',stability:'ok',memo:'📈 <b>「얼마 벌어 얼마 남았나」를 학원앱에서 보십니다 — 경영 현황판</b> (원장 지시 2026-09-16 · docs/finance_contract.md). '
+        +'<b>무엇이 불편했나</b> — v19-8 에서 청구·수납은 보이게 됐지만, <b>나가는 돈(임대료·관리비·상금·구독료)</b>은 앱 어디에도 없어서 '
+        +'「이번 달 실제로 남은 돈」을 원장님 머릿속으로 계산하셔야 했습니다. '
+        +'<b>어디에 생겼나</b> — 🏫 운영 › 💳 수강료 화면 맨 위에 <b>가로 칩 줄</b>이 생기고 칸이 다섯으로 나뉘었습니다. '
+        +'<b>📈 손익</b> · <b>👨‍👩‍👧 학생별 납부</b>(v19-8 에서 보시던 표 그대로) · <b>⚠ 점검</b> · <b>🧾 고정비·변동비</b> · <b>⚙ 수강료 규칙</b>. '
+        +'<b>① 먼저 하실 일 — 🧾 고정비·변동비 칸에 금액 적기</b>. 임대료 · 관리비·전기·수도 · 통신·인터넷 · 매쓰플랫 구독 · 보험·기타 다섯 줄이 <b>0원으로 미리 놓여</b> 있습니다. '
+        +'금액만 채우고 <b>💾 저장</b>을 누르시면 됩니다. <b>한 번 적으면 매달 자동</b>으로 계산에 들어갑니다 — 달마다 다시 적지 않으셔도 됩니다. '
+        +'「+ 항목」으로 줄을 더하고 「✕」로 지우실 수 있습니다. <b>시작·종료</b>에 「2025-03」처럼 적으시면 <b>그 달 범위에서만</b> 셉니다(예: 10월에 해지할 구독은 종료에 2026-10). '
+        +'<b>변동비</b>는 달마다 다른 돈이라 달을 골라 적으십니다. 맨 위 두 줄 <b>🔗 리그 상금(월 환산)</b>과 <b>🔗 결제선생 쌤포인트</b>(청구서 건수 × 55원)는 <b>저절로 계산</b>되어 회색으로 나오고 고치실 수 없습니다. '
+        +'「⧉ 지난달 것 복사」를 누르시면 지난달에 적으신 줄이 그대로 옮겨옵니다. 아래에 <b>🎯 월 매출 목표</b>와 <b>👤 원장님 인건비</b>도 적으실 수 있습니다(0이면 안 보입니다). '
+        +'<b>② 📈 손익 칸에서 보시는 것</b> — 맨 위 <b>기간 단추</b>(이달 · 지난달 · 최근 3개월 · 올해 · 📅 직접 날짜 두 칸)를 고르면 <b>아래 숫자가 모두 함께 바뀝니다</b>. 여러 달을 고르시면 그 달들을 더해서 보여 드립니다. '
+        +'카드는 <b>매출</b>(승인 − 취소) · <b>고정비</b> · <b>변동비</b> · <b>순이익</b>(매출 − 고정 − 변동, 파랗게 크게) · '
+        +'<b>손익분기 학생 수</b> · <b>목표 달성률</b>입니다. '
+        +'<b>「순이익」</b>은 그 기간에 <b>실제로 남은 돈</b>이고, <b>「손익분기 학생 수」</b>는 <b>몇 명만 다녀도 비용을 메우는지</b>입니다(비용 ÷ 학생 1명 평균 수납액, 올림). '
+        +'카드 밑에 <b>「원장님 인건비 전입니다」</b>라고 적혀 있습니다 — 인건비를 적어 두시면 그것을 뺀 금액도 함께 보여 드립니다. '
+        +'그 아래 <b>월별 그래프</b>는 달마다 <b>파란 막대(매출) · 주황 막대(비용) · 초록 선(순이익)</b>이고, 무엇이 무슨 색인지 <b>범례</b>가 위에 붙어 있습니다. '
+        +'옆에는 <b>다음 달 예상</b> 표 — 명단 규칙 합계에 최근 3개월 평균 수납률을 곱하고 비용을 뺀 <b>예상 순이익</b>입니다. '
+        +'맨 아래 <b>📅 수납 흐름</b>에는 <b>납부 소요일</b>(1일 안 / 2~5일 / 6일 넘게 / 미납·파기)과 <b>납부일 달력</b>(진할수록 많이 들어온 날 · 칸에 손을 올리면 날짜와 금액), '
+        +'<b>결제수단</b> 비율, <b>학년별 매출 구성</b>(초·중·고 금액과 인원·1인 평균)이 나옵니다. '
+        +'<b>③ ⚠ 점검 칸 — 다섯 가지를 대신 세어 드립니다</b>. ① <b>청구 누락</b>(재원인데 그 달 청구서가 없는 학생) ② <b>이중 청구 의심</b>(같은 학생에게 두 번 간 청구서 — 수강료와 교재비처럼 일부러 나누신 것이면 그냥 두셔도 됩니다) '
+        +'③ <b>금액 다름</b>(규칙 금액과 청구액이 1,000원 넘게 다름 — 두 금액을 함께 적어 드립니다) ④ <b>파기 · 재발송 필요</b>(「📋 카톡 문구 복사」 단추가 함께 있습니다) '
+        +'⑤ <b>연체 습관</b>(최근 3달 중 2달 이상 청구에서 납부까지 6일이 넘은 학생). 줄마다 <b>학생 이름</b>과 <b>「↗ 결제선생 열기」</b>가 붙어 있습니다. 칩 줄의 「⚠ 점검」에 <b>건수 배지</b>도 나옵니다. '
+        +'<b>④ ⚙ 수강료 규칙 칸</b> — 예상 매출과 「금액 다름」 점검에 쓰는 금액입니다. <b>초 280,000 · 중 320,000 · 고 450,000 · 형제 10% 할인</b>으로 미리 놓여 있으니 원장님 금액으로 고쳐 주세요. '
+        +'형제는 학생 정보의 <b>👨‍👩‍👧 형제 연결</b>을 보고 자동으로 할인합니다. 한 명만 다른 금액이면 <b>「학생별 예외」</b>에서 학생을 고르고 금액을 적으시면 됩니다. '
+        +'맨 아래에 <b>「명단 n명 규칙 합계 = n원」</b>이 나옵니다. '
+        +'<b>알아 두실 것</b> — <b>퇴원한 학생은 어떤 표·계산에도 들어가지 않습니다.</b> 적으신 고정비·규칙은 클라우드(<code>fin_cfg</code>·<code>fin_rule</code>)에 저장되어 기기를 바꾸셔도 그대로입니다. '
+        +'글자를 적는 동안에는 화면을 다시 그리지 않으니 <b>커서가 튀지 않습니다</b> — 다 적으신 뒤 <b>💾 저장</b>을 눌러 주세요(항목 추가·삭제는 바로 저장됩니다). '
+        +'<b>다음 판</b> — 학생 경제(누적 납부·이탈률) · 세금 준비 · 「만약에」 시뮬레이션은 v19-10 으로 이어집니다.'},
       {ver:'v19-8',date:'2026-09-16',stability:'ok',memo:'💳 <b>결제선생 수납 현황을 학원앱에서 보십니다</b> (원장 지시 2026-09-16 · docs/payssam_contract.md). '
         +'<b>무엇이 불편했나</b> — 누가 냈고 누가 안 냈는지 보시려면 매번 <b>결제선생 홈페이지에 따로 들어가</b> 확인하셔야 했습니다. '
         +'학원앱 안에는 수강료 이야기가 한 글자도 없었고, 상금을 얼마나 쓰고 있는지도 매출과 나란히 볼 곳이 없었습니다. '
@@ -57373,7 +57401,9 @@ function rStuFeat(){
  * 퇴원생은 표에 나오지 않습니다(맞추기에는 쓰되 화면에는 안 보입니다).
  * 문자열 결합만 사용 (중첩 템플릿 리터럴 금지).
  * ══════════════════════════════════════════════════════════════════ */
-var PAY = { loaded:false, loading:false, err:'', bills:null, pays:null, monthly:null, stus:null, ym:'' };
+/* v19-9: 칸(tab) · 기간(range) · 고정비 설정(cfg) · 수강료 규칙(rule)이 더 붙었습니다 */
+var PAY = { loaded:false, loading:false, err:'', bills:null, pays:null, monthly:null, stus:null, ym:'',
+            tab:'pl', range:null, cfg:null, rule:null };
 
 /* ── 잔손 ── */
 function payWon(n){ return Number(n||0).toLocaleString()+'원'; }
@@ -57411,7 +57441,7 @@ async function payLoad(force){
   try{
     var sb=getSupaClient();
     if(!sb){ PAY.loading=false; return; }
-    var r=await sb.from('lumen_store').select('key,value').in('key',['pay_bills','pay_payments','pay_monthly','pay_students']);
+    var r=await sb.from('lumen_store').select('key,value').in('key',['pay_bills','pay_payments','pay_monthly','pay_students','fin_cfg','fin_rule']);
     var m={};
     ((r&&r.data)||[]).forEach(function(row){
       var v=row.value;
@@ -57422,6 +57452,9 @@ async function payLoad(force){
     PAY.pays=m.pay_payments||null;
     PAY.monthly=m.pay_monthly||null;
     PAY.stus=m.pay_students||null;
+    /* v19-9 경영 현황판 — 없으면 씨앗(고정비 5줄 0원 · 초280,000 중320,000 고450,000 · 형제 10%)을 깐다 */
+    PAY.cfg=m.fin_cfg||finDefaultCfg();
+    PAY.rule=m.fin_rule||finDefaultRule();
     PAY.err='';
     PAY.loaded=true;
   }catch(e){
@@ -57439,7 +57472,14 @@ async function payLoad(force){
 }
 window.payLoad=payLoad;
 window.payReload=function(){ PAY.loaded=false; payLoad(true); try{ plToast('결제선생 자료를 다시 불러옵니다…'); }catch(e){} };
-window.payGoMonth=function(ym){ PAY.ym=String(ym||''); render(); };
+/* 달 하나 고르기 — v19-9 부터는 「기간 설정」도 같이 그 달로 맞춘다 */
+window.payGoMonth=function(ym){
+  PAY.ym=String(ym||'');
+  var ms=payRecentMonths(2);
+  PAY.range={ kind:'month', ym:PAY.ym, from:'', to:'',
+              preset:(PAY.ym===ms[0])?'m0':((PAY.ym===ms[1])?'m1':'custom') };
+  render();
+};
 
 /* ── 이름 → 학생 (계약서 §1 명단 매칭 규칙) ──
  *   퇴원생도 「맞추기」에는 쓴다 — 그래야 옛 학생의 결제가 미매칭으로 튀지 않는다.
@@ -57512,7 +57552,8 @@ function payData(ym){
   var blank=function(name,phone4){
     return { name:String(name==null?'':name), phone4:payPhone4(phone4), st:null,
              billed:0, paid:0, nBill:0, nPaid:0, reasons:[], methods:[], paidAt:'', billedAt:'',
-             dead:0, nDead:0, resent:0 };   /* dead = 재발송 안 된 파기 청구액 */
+             dead:0, nDead:0, resent:0,     /* dead = 재발송 안 된 파기 청구액 */
+             bills:[] };                    /* v19-9: 점검(이중 청구·연체 습관)에 쓰는 청구서 낱개 목록 */
   };
   var slot=function(name,phone4){
     var st=payFindStudent(name,phone4);
@@ -57558,6 +57599,7 @@ function payData(ym){
       o.dead+=Number(d.amount)||0; o.nDead++;
       if(!o.billedAt || String(d.billedAt)<o.billedAt) o.billedAt=String(d.billedAt||'');
       if(d.reason && o.reasons.indexOf(d.reason)<0) o.reasons.push(d.reason);
+      o.bills.push({ amount:Number(d.amount)||0, reason:String(d.reason||''), billedAt:String(d.billedAt||''), paidAt:'', dead:true });
       deadAll.count++; deadAll.amount+=Number(d.amount)||0;
     });
     /* ③ 살아 있는 청구서 */
@@ -57565,6 +57607,7 @@ function payData(ym){
       o.billed+=Number(b.amount)||0; o.nBill++;
       if(!o.billedAt || String(b.billedAt)<o.billedAt) o.billedAt=String(b.billedAt||'');
       if(b.reason && o.reasons.indexOf(b.reason)<0) o.reasons.push(b.reason);
+      o.bills.push({ amount:Number(b.amount)||0, reason:String(b.reason||''), billedAt:String(b.billedAt||''), paidAt:String(b.paidAt||''), dead:false });
       if(b.paidAt){
         o.paid+=Number(b.amount)||0; o.nPaid++;
         if(b.txID) seenTx[String(b.txID)]=1;
@@ -57784,6 +57827,1000 @@ function payCfgLineInner(){
 }
 window.payCfgLineInner=payCfgLineInner;
 
+/* ══════════════════════════════════════════════════════════════════
+ * 📈 경영 현황판 — 고정비·변동비 · 순이익 · 점검 · 수납 흐름 (v19-9)
+ *   docs/finance_contract.md §0~§9 (원장 지시 2026-09-16 「순서대로 코딩」)
+ *
+ *   결제선생이 새벽에 모아 둔 청구·수납·매출(PAY.bills / pays / monthly / stus)에
+ *   원장님이 한 번 적어 두시는 <b>고정비·변동비</b>(lumen_store `fin_cfg`)와
+ *   <b>수강료 규칙</b>(`fin_rule`)을 더하면 「얼마 벌어 얼마 남았나」가 나옵니다.
+ *
+ *   ※ ES5 문자열 결합만 씁니다(중첩 템플릿 리터럴 금지).
+ *   ※ 퇴원생은 어떤 표·계산에도 넣지 않습니다(activeStudents / paySortedStudents).
+ * ══════════════════════════════════════════════════════════════════ */
+
+/* ── 잔손 ── */
+function finNum(v){ return Number(String(v==null?'':v).replace(/[^0-9.\-]/g,''))||0; }
+/* 큰 수는 「1,237만」처럼 만 단위로 줄여 쓴다 (표 안에서는 원 단위 그대로) */
+function finMan(n){
+  var v=Number(n)||0, sg=(v<0)?'-':'';
+  v=Math.abs(v);
+  if(v>=10000) return sg+Math.round(v/10000).toLocaleString()+'만';
+  return sg+Math.round(v).toLocaleString()+'원';
+}
+function finDays(a,b){
+  var x=Date.parse(String(a||'')), y=Date.parse(String(b||''));
+  if(!x||!y) return 0;
+  return (y-x)/86400000;
+}
+/* '2026-09' → '2026-09-30' */
+function finMonthEnd(ym){
+  var a=String(ym||'').split('-');
+  if(a.length<2) return '';
+  var d=new Date(Number(a[0]), Number(a[1]), 0);
+  return ym+'-'+String(d.getDate()).padStart(2,'0');
+}
+function finGradeBand(g){ var s=String(g==null?'':g); return /초/.test(s)?'초':(/고/.test(s)?'고':'중'); }
+
+/* ── 🧾 fin_cfg (고정비·변동비·목표) ── */
+function finDefaultCfg(){
+  /* 처음 열 때 한 번만 씨앗 — 금액은 0, 원장님이 채우십니다 (계약서 §1) */
+  return { updated:'', fixed:[
+      { id:'fx1', name:'임대료',            amount:0, from:'', to:'', memo:'' },
+      { id:'fx2', name:'관리비·전기·수도',  amount:0, from:'', to:'', memo:'' },
+      { id:'fx3', name:'통신·인터넷',       amount:0, from:'', to:'', memo:'' },
+      { id:'fx4', name:'매쓰플랫 구독',     amount:0, from:'', to:'', memo:'' },
+      { id:'fx5', name:'보험·기타',         amount:0, from:'', to:'', memo:'' }
+    ], varByMonth:{}, goal:{ monthly:0 }, ownerPay:0 };
+}
+function finCfg(){
+  if(!PAY.cfg) PAY.cfg=finDefaultCfg();
+  if(!Array.isArray(PAY.cfg.fixed)) PAY.cfg.fixed=[];
+  if(!PAY.cfg.varByMonth || typeof PAY.cfg.varByMonth!=='object') PAY.cfg.varByMonth={};
+  if(!PAY.cfg.goal || typeof PAY.cfg.goal!=='object') PAY.cfg.goal={ monthly:0 };
+  if(PAY.cfg.ownerPay==null) PAY.cfg.ownerPay=0;
+  return PAY.cfg;
+}
+window.finCfg=finCfg;
+
+/* ── ⚙ fin_rule (수강료 규칙) ── */
+function finDefaultRule(){
+  return { updated:'', base:{ '초':280000, '중':320000, '고':450000 }, siblingPct:10, byStudent:{}, siblingIds:[] };
+}
+function finRule(){
+  if(!PAY.rule) PAY.rule=finDefaultRule();
+  if(!PAY.rule.base || typeof PAY.rule.base!=='object') PAY.rule.base={ '초':280000, '중':320000, '고':450000 };
+  if(PAY.rule.siblingPct==null) PAY.rule.siblingPct=10;
+  if(!PAY.rule.byStudent || typeof PAY.rule.byStudent!=='object') PAY.rule.byStudent={};
+  if(!Array.isArray(PAY.rule.siblingIds)) PAY.rule.siblingIds=[];
+  return PAY.rule;
+}
+window.finRule=finRule;
+
+/* 형제인가 — 학생 정보의 lumen_siblings 또는 규칙의 siblingIds */
+function finIsSibling(st){
+  if(!st) return false;
+  if(Array.isArray(st.lumen_siblings) && st.lumen_siblings.length) return true;
+  return (finRule().siblingIds||[]).indexOf(String(st.id))>=0;
+}
+/* 학생 1명의 규칙 금액 (계약서 §1) */
+function finRuleAmount(st){
+  if(!st) return 0;
+  var r=finRule();
+  var ex=(r.byStudent||{})[String(st.id)];
+  var amt=(ex==null||ex==='')?(Number((r.base||{})[finGradeBand(st.grade)])||0):(Number(ex)||0);
+  if(finIsSibling(st)) amt=Math.round(amt*(1-(Number(r.siblingPct)||0)/100));
+  return amt;
+}
+window.finRuleAmount=finRuleAmount;
+/* 명단(재원생) 규칙 합계 */
+function finRuleTotal(){
+  var t=0;
+  activeStudents().forEach(function(s){ t+=finRuleAmount(s); });
+  return t;
+}
+window.finRuleTotal=finRuleTotal;
+
+/* ── 📅 기간 설정 (계약서 §3 — 모든 화면 공통) ── */
+function payRangeDefault(){
+  var m=payRecentMonths(1)[0];
+  return { kind:'month', ym:m, from:'', to:'', preset:'m0' };
+}
+function payRange(){ if(!PAY.range) PAY.range=payRangeDefault(); return PAY.range; }
+window.payRange=payRange;
+window.payRangeSet=function(preset, a, b){
+  var ms=payRecentMonths(13), y=new Date().getFullYear();
+  if(preset==='m1')      PAY.range={ kind:'month', ym:ms[1], from:'', to:'', preset:'m1' };
+  else if(preset==='r3') PAY.range={ kind:'range', ym:ms[0], from:ms[2]+'-01', to:finMonthEnd(ms[0]), preset:'r3' };
+  else if(preset==='yr') PAY.range={ kind:'range', ym:ms[0], from:y+'-01-01',  to:finMonthEnd(ms[0]), preset:'yr' };
+  else if(preset==='custom'){
+    var f=String(a||''), t=String(b||'');
+    if(f.length<7 || t.length<7){ try{ plToast('시작일과 종료일을 모두 골라 주세요'); }catch(e){} return; }
+    if(f>t){ var sw=f; f=t; t=sw; }
+    PAY.range={ kind:'range', ym:t.slice(0,7), from:f, to:t, preset:'custom' };
+  }
+  else PAY.range={ kind:'month', ym:ms[0], from:'', to:'', preset:'m0' };
+  /* 한 달짜리면 「학생별 납부·점검」이 보는 달도 같이 옮겨 준다 */
+  if(PAY.range.kind==='month') PAY.ym=PAY.range.ym;
+  else PAY.ym=String(PAY.range.to||'').slice(0,7)||PAY.ym;
+  try{ render(); }catch(e){}
+};
+/* 고른 기간에 들어 있는 달 목록 (오름차순) */
+function payRangeMonths(){
+  var r=payRange();
+  if(r.kind==='month') return [r.ym||payYm()];
+  var a=String(r.from||'').slice(0,7), b=String(r.to||'').slice(0,7);
+  if(a.length!==7 || b.length!==7 || a>b) return [payYm()];
+  var out=[], cur=a, guard=0;
+  while(cur<=b && guard++<40){ out.push(cur); cur=lgPlShiftMonth(cur,1); }
+  return out;
+}
+window.payRangeMonths=payRangeMonths;
+/* 화면 제목 옆에 붙는 글 — 「2026-06-01 ~ 2026-08-31 · 3개월」 */
+function payRangeLabel(){
+  var r=payRange(), n=payRangeMonths().length;
+  if(r.kind==='month') return (r.ym||payYm())+' · 1개월';
+  return String(r.from||'')+' ~ '+String(r.to||'')+' · '+n+'개월';
+}
+window.payRangeLabel=payRangeLabel;
+
+/* ── 매출·청구 건수 (달 하나) ── */
+function finSales(ym){
+  var mm=(((PAY.monthly||{}).byMonth||{})[ym])||null;
+  if(mm && mm.sales && mm.sales.total!=null) return Number(mm.sales.total)||0;
+  /* pay_monthly 에 그달이 없으면 결제 줄에서 직접 센다 (취소 뺀 것, 같은 결제는 한 번만) */
+  var t=0, seen={};
+  ((PAY.pays&&PAY.pays.items)||[]).forEach(function(p){
+    if(!p || p.cancelledAt) return;
+    if(payYmOf(p.approvedAt)!==ym) return;
+    var tx=String(p.txID||'');
+    if(tx && seen[tx]) return;
+    if(tx) seen[tx]=1;
+    t+=Number(p.amount)||0;
+  });
+  return t;
+}
+window.finSales=finSales;
+function finBilledCount(ym){
+  var mm=(((PAY.monthly||{}).byMonth||{})[ym])||null;
+  if(mm && mm.billed && mm.billed.count!=null) return Number(mm.billed.count)||0;
+  var n=0;
+  ((PAY.bills&&PAY.bills.items)||[]).forEach(function(b){ if(b && payYmOf(b.billedAt)===ym) n++; });
+  return n;
+}
+
+/* ── 고정비 (계약서 §1 — from/to 가 있으면 그 달 범위에서만 센다) ── */
+function finFixedFor(ym){
+  return (finCfg().fixed||[]).filter(function(it){
+    if(!it) return false;
+    var f=String(it.from||'').slice(0,7), t=String(it.to||'').slice(0,7);
+    if(f && ym<f) return false;
+    if(t && ym>t) return false;
+    return true;
+  });
+}
+function finFixedSum(ym){
+  var t=0;
+  finFixedFor(ym).forEach(function(it){ t+=Number(it.amount)||0; });
+  return t;
+}
+window.finFixedSum=finFixedSum;
+
+/* ── 변동비 ──
+ *   ① 자동 2줄 (입력 없이 계산 · 🔗 표시 · 고칠 수 없음 — 계약서 §2)
+ *      · 리그 상금(월 환산) = v19-8 payPrizeMonthly()
+ *      · 결제선생 쌤포인트 = 그 달 청구서 건수 × 55원
+ *   ② 원장님이 그 달에 직접 적으신 줄 */
+function finVarAuto(ym){
+  var pz=(function(){ try{ return payPrizeMonthly(); }catch(e){ return {total:0}; } })();
+  var cnt=finBilledCount(ym);
+  return [
+    { id:'__prize', name:'리그 상금 (월 환산)', amount:Number(pz.total)||0, src:'리그 설정', memo:'진도·IB아하·플래너', auto:true },
+    { id:'__point', name:'결제선생 쌤포인트',   amount:cnt*55,             src:'청구서 '+cnt+'건 × 55원', memo:'', auto:true }
+  ];
+}
+function finVarItems(ym){
+  var c=finCfg();
+  var box=(c.varByMonth||{})[ym];
+  return (box && Array.isArray(box.items))?box.items:[];
+}
+function finVarSum(ym){
+  var t=0;
+  finVarAuto(ym).forEach(function(x){ t+=Number(x.amount)||0; });
+  finVarItems(ym).forEach(function(x){ t+=Number(x.amount)||0; });
+  return t;
+}
+window.finVarSum=finVarSum;
+
+/* ── 달 하나의 손익 ── */
+function finMonth(ym){
+  var sales=finSales(ym), fixed=finFixedSum(ym), vari=finVarSum(ym);
+  return { ym:ym, sales:sales, fixed:fixed, vari:vari, cost:fixed+vari, net:sales-fixed-vari };
+}
+window.finMonth=finMonth;
+/* ── 고른 기간 전체의 손익 (여러 달이면 각 달을 더한다 — 계약서 §3) ── */
+function finRangeStat(){
+  var ms=payRangeMonths(), o={ months:ms.slice(), per:[], sales:0, fixed:0, vari:0, cost:0, net:0, owner:0 };
+  ms.forEach(function(m){
+    var x=finMonth(m);
+    o.per.push(x); o.sales+=x.sales; o.fixed+=x.fixed; o.vari+=x.vari;
+  });
+  o.cost=o.fixed+o.vari;
+  o.net=o.sales-o.cost;
+  o.owner=(Number(finCfg().ownerPay)||0)*ms.length;
+  return o;
+}
+window.finRangeStat=finRangeStat;
+
+/* ── 1인 평균 수납액 · 손익분기 학생 수 (계약서 §4) ──
+ *   1인 평균 = 그 기간 수납액 ÷ 수납 학생 수 (재원생만) */
+function finPaidPerStudent(months){
+  var amt=0, keys={}, n=0;
+  (months||[]).forEach(function(m){
+    payData(m).rows.forEach(function(r){
+      if(!r.o || !(r.o.paid>0)) return;
+      amt+=Number(r.o.paid)||0;
+      var k=payStuKey(r.st);
+      if(!keys[k]){ keys[k]=1; n++; }
+    });
+  });
+  return { amount:amt, students:n, avg:n?Math.round(amt/n):0 };
+}
+window.finPaidPerStudent=finPaidPerStudent;
+function finBreakeven(cost, avg){ return (avg>0)?Math.ceil(cost/avg):0; }
+window.finBreakeven=finBreakeven;
+
+/* ── 다음 달 예상 (계약서 §4) ──
+ *   명단 규칙 합계(예상 청구) × 최근 3개월 평균 수납률 − (고정+변동) = 예상 순이익 */
+function finForecast(){
+  var now=payRecentMonths(1)[0], next=lgPlShiftMonth(now,1);
+  var bill=finRuleTotal();
+  var ms=payRecentMonths(4).slice(1,4);          /* 이달을 뺀 최근 3개월 */
+  var sum=0, cnt=0;
+  ms.forEach(function(m){
+    var s=paySummary(m);
+    if(s && s.billed && s.billed.amount>0){ sum+=s.paid.amount/s.billed.amount; cnt++; }
+  });
+  var rate=cnt?(sum/cnt):0;
+  var expect=Math.round(bill*rate);
+  var cost=finFixedSum(next)+finVarSum(now);     /* 다음 달 고정비 + 이번 달 변동비 */
+  return { next:next, months:ms, bill:bill, rate:Math.round(rate*1000)/10, expect:expect, cost:cost, net:expect-cost };
+}
+window.finForecast=finForecast;
+
+/* ── 수납한 사건 목록 (달력·학년별·결제수단에 쓴다) ──
+ *   청구서로 낸 돈 + 청구서 없이 그 자리에서 받은 돈 (같은 결제는 한 번만) */
+function finPaidEvents(ym){
+  var bills=((PAY.bills&&PAY.bills.items)||[]), pays=((PAY.pays&&PAY.pays.items)||[]);
+  var billTx={}, seen={}, out=[];
+  bills.forEach(function(b){ if(b&&b.txID) billTx[String(b.txID)]=1; });
+  bills.forEach(function(b){
+    if(!b || !b.paidAt) return;
+    if(payYmOf(b.paidAt)!==ym) return;
+    if(b.txID) seen[String(b.txID)]=1;
+    out.push({ date:String(b.paidAt).slice(0,10), amount:Number(b.amount)||0,
+               st:payFindStudent(b.name,b.phone4), method:String(b.payType||'') });
+  });
+  pays.forEach(function(p){
+    if(!p || p.cancelledAt) return;
+    if(payYmOf(p.approvedAt)!==ym) return;
+    var tx=String(p.txID||'');
+    if(tx && billTx[tx]) return;
+    if(tx && seen[tx]) return;
+    if(tx) seen[tx]=1;
+    out.push({ date:String(p.approvedAt).slice(0,10), amount:Number(p.amount)||0,
+               st:payFindStudent(p.name,p.phone4), method:String(p.ledger||p.payType||'') });
+  });
+  return out;
+}
+window.finPaidEvents=finPaidEvents;
+
+/* ── 📅 납부 소요일 (계약서 §6) ── */
+function finFlow(months){
+  var o={ d1:0, d2:0, d3:0, d4:0, total:0, avg:0 }, sum=0, n=0;
+  (months||[]).forEach(function(m){
+    ((PAY.bills&&PAY.bills.items)||[]).forEach(function(b){
+      if(!b || payYmOf(b.billedAt)!==m) return;
+      o.total++;
+      if(b.paidAt){
+        var d=finDays(b.billedAt,b.paidAt);
+        sum+=d; n++;
+        if(d<1) o.d1++; else if(d<=5) o.d2++; else o.d3++;
+      }else o.d4++;                              /* 미납 · 파기 */
+    });
+  });
+  o.avg=n?(Math.round(sum/n*10)/10):0;
+  return o;
+}
+window.finFlow=finFlow;
+
+/* ── 📅 납부일 달력 (한 색 명도 4단계) ── */
+function finCalendar(ym){
+  var last=Number(String(finMonthEnd(ym)).slice(8,10))||30;
+  var arr=[], i;
+  for(i=0;i<last;i++) arr.push(0);
+  finPaidEvents(ym).forEach(function(e){
+    var d=Number(String(e.date).slice(8,10));
+    if(d>=1 && d<=last) arr[d-1]+=Number(e.amount)||0;
+  });
+  var mx=0;
+  arr.forEach(function(v){ if(v>mx) mx=v; });
+  return { days:last, amounts:arr, max:mx };
+}
+window.finCalendar=finCalendar;
+function finCalLevel(v, mx){
+  if(!(v>0) || !(mx>0)) return 0;
+  var r=v/mx;
+  if(r<=0.34) return 1;
+  if(r<=0.67) return 2;
+  return 3;
+}
+
+/* ── 💳 결제수단 (한 색 명도 단계) ── */
+function finMethods(months){
+  var map={}, order=[];
+  (months||[]).forEach(function(m){
+    var mm=(((PAY.monthly||{}).byMonth||{})[m])||null;
+    var list=(mm && mm.sales && mm.sales.byMethod)||[];
+    list.forEach(function(x){
+      if(!x) return;
+      var k=String(x.name||'기타');
+      if(map[k]==null){ map[k]=0; order.push(k); }
+      map[k]+=Number(x.total)||0;
+    });
+  });
+  var out=order.map(function(k){ return { name:k, amount:map[k] }; });
+  if(!out.length){
+    /* 매출 보고서가 없는 달이면 결제 줄의 수단으로 대신 센다 */
+    var m2={}, o2=[];
+    (months||[]).forEach(function(m){
+      finPaidEvents(m).forEach(function(e){
+        var k=String(e.method||'기타');
+        if(m2[k]==null){ m2[k]=0; o2.push(k); }
+        m2[k]+=Number(e.amount)||0;
+      });
+    });
+    out=o2.map(function(k){ return { name:k, amount:m2[k] }; });
+  }
+  out=out.filter(function(x){ return x.amount>0; });           /* 금액 0인 수단은 뺀다 */
+  out.sort(function(a,b){ return b.amount-a.amount; });
+  return out;
+}
+window.finMethods=finMethods;
+/* 파랑 한 색의 명도 단계 (연 → 진) */
+function finShade(i){
+  var a=['#1d4ed8','#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe'];
+  return a[Math.min(i,a.length-1)];
+}
+
+/* ── 🎓 학년별 매출 구성 (퇴원생 제외) ── */
+function finByGrade(months){
+  var g={ '초':{ amt:0, keys:{}, n:0 }, '중':{ amt:0, keys:{}, n:0 }, '고':{ amt:0, keys:{}, n:0 } };
+  (months||[]).forEach(function(m){
+    finPaidEvents(m).forEach(function(e){
+      if(!e.st || e.st.withdrawn) return;
+      var b=finGradeBand(e.st.grade);
+      g[b].amt+=Number(e.amount)||0;
+      var k=payStuKey(e.st);
+      if(!g[b].keys[k]){ g[b].keys[k]=1; g[b].n++; }
+    });
+  });
+  return ['초','중','고'].map(function(k){
+    return { band:k, amount:g[k].amt, students:g[k].n, avg:g[k].n?Math.round(g[k].amt/g[k].n):0 };
+  });
+}
+window.finByGrade=finByGrade;
+
+/* ── ⚠ 점검 다섯 가지 (계약서 §5) ── */
+function finChecks(ym){
+  var d=payData(ym);
+  var miss=[], dup=[], diff=[], dead=[], late=[];
+  d.rows.forEach(function(r){
+    var o=r.o;
+    if(!o || !(o.nBill>0)){ miss.push({ st:r.st }); return; }       /* ① 청구 누락 */
+    if(o.nBill>=2) dup.push({ st:r.st, n:o.nBill, bills:(o.bills||[]).slice() });  /* ② 이중 청구 */
+    var want=finRuleAmount(r.st);                                   /* ③ 금액 다름 */
+    if(want>0 && Math.abs((Number(o.billed)||0)-want)>1000) diff.push({ st:r.st, billed:Number(o.billed)||0, want:want });
+    if(o.nDead>0) dead.push({ st:r.st, amount:Number(o.dead)||0, billedAt:o.billedAt });  /* ④ 파기 재발송 */
+  });
+  /* ⑤ 연체 습관 — 최근 3달 중 2달 이상 「청구 → 납부」가 6일 넘게 */
+  var ms=[ym, lgPlShiftMonth(ym,-1), lgPlShiftMonth(ym,-2)], cnt={}, who={};
+  ms.forEach(function(m){
+    payData(m).rows.forEach(function(r){
+      var slow=false;
+      ((r.o&&r.o.bills)||[]).forEach(function(b){ if(b.paidAt && finDays(b.billedAt,b.paidAt)>6) slow=true; });
+      if(!slow) return;
+      var k=payStuKey(r.st);
+      cnt[k]=(cnt[k]||0)+1; who[k]=r.st;
+    });
+  });
+  Object.keys(cnt).forEach(function(k){ if(cnt[k]>=2) late.push({ st:who[k], n:cnt[k] }); });
+  return { miss:miss, dup:dup, diff:diff, dead:dead, late:late,
+           total:miss.length+dup.length+diff.length+dead.length+late.length };
+}
+window.finChecks=finChecks;
+
+/* 파기된 청구서 카톡 문구 */
+function finDeadText(ym){
+  var d=payData(ym), lines=[];
+  d.rows.forEach(function(r){
+    if(r.state!=='파기' || !r.o) return;
+    lines.push(String(r.st.name||'')+' · '+payWon(r.o.dead)+' · '+(payDayLabel(r.o.billedAt)||'청구일 모름')+' 청구');
+  });
+  if(!lines.length) return '';
+  return '[루멘수학] '+ym+' 파기된 청구서 '+lines.length+'건 — 결제선생에서 다시 보내 주세요\n'+lines.join('\n');
+}
+window.finDeadText=finDeadText;
+window.finCopyDead=function(){
+  var t=finDeadText(payYm());
+  if(!t){ try{ plToast('파기된 청구서가 없습니다 👍'); }catch(e){} return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(
+      function(){ try{ plToast('📋 파기 목록을 복사했습니다'); }catch(e){} },
+      function(){ window.prompt('복사(Ctrl+C) 후 붙여넣기:', t); });
+  }else window.prompt('복사(Ctrl+C) 후 붙여넣기:', t);
+};
+
+/* ══════════ 저장 (lumen_store upsert) ══════════
+ *   ★ 입력 중에는 다시 그리지 않는다 — 원장님이 적고 계신 칸에서 커서가 튀기 때문
+ *     (v19-7 ibqCfgSet 과 같은 방식: 값만 상태에 넣고 render 안 함) */
+window.finCfgFixSet=function(id, field, val){
+  (finCfg().fixed||[]).forEach(function(it){
+    if(String(it.id)!==String(id)) return;
+    it[field]=(field==='amount')?finNum(val):String(val==null?'':val);
+  });
+};
+window.finCfgVarSet=function(ym, id, field, val){
+  finVarItems(ym).forEach(function(it){
+    if(String(it.id)!==String(id)) return;
+    it[field]=(field==='amount')?finNum(val):String(val==null?'':val);
+  });
+};
+window.finCfgGoalSet=function(val){ finCfg().goal.monthly=finNum(val); };
+window.finCfgOwnerSet=function(val){ finCfg().ownerPay=finNum(val); };
+
+async function finCfgSave(redraw){
+  var c=finCfg();
+  c.updated=new Date().toISOString();
+  var okk=await bkhStoreSet('fin_cfg', c);
+  if(okk){ try{ plToast('💾 고정비·변동비를 저장했습니다'); }catch(e){} }
+  if(redraw){ try{ render(); }catch(e){} }
+  return okk;
+}
+window.finCfgSave=finCfgSave;
+window.finCfgAddFixed=function(){
+  finCfg().fixed.push({ id:'fx'+Date.now(), name:'새 항목', amount:0, from:'', to:'', memo:'' });
+  try{ render(); }catch(e){}
+  finCfgSave(false);
+};
+window.finCfgDelFixed=function(id){
+  var c=finCfg();
+  c.fixed=(c.fixed||[]).filter(function(x){ return String(x.id)!==String(id); });
+  try{ render(); }catch(e){}
+  finCfgSave(false);
+};
+window.finCfgAddVar=function(ym){
+  var c=finCfg();
+  if(!c.varByMonth[ym]) c.varByMonth[ym]={ items:[] };
+  if(!Array.isArray(c.varByMonth[ym].items)) c.varByMonth[ym].items=[];
+  c.varByMonth[ym].items.push({ id:'vr'+Date.now(), name:'새 항목', amount:0, memo:'' });
+  try{ render(); }catch(e){}
+  finCfgSave(false);
+};
+window.finCfgDelVar=function(ym, id){
+  var c=finCfg();
+  if(!c.varByMonth[ym]) return;
+  c.varByMonth[ym].items=(c.varByMonth[ym].items||[]).filter(function(x){ return String(x.id)!==String(id); });
+  try{ render(); }catch(e){}
+  finCfgSave(false);
+};
+window.finCfgCopyVar=function(ym){
+  var c=finCfg(), prev=lgPlShiftMonth(ym,-1);
+  var src=((c.varByMonth||{})[prev]||{}).items||[];
+  if(!src.length){ try{ plToast('지난달('+prev+')에 적어 두신 변동비가 없습니다'); }catch(e){} return; }
+  if(!c.varByMonth[ym]) c.varByMonth[ym]={ items:[] };
+  c.varByMonth[ym].items=src.map(function(x,i){
+    return { id:'vr'+Date.now()+'_'+i, name:String(x.name||''), amount:Number(x.amount)||0, memo:String(x.memo||'') };
+  });
+  try{ render(); }catch(e){}
+  finCfgSave(false);
+};
+
+window.finRuleBaseSet=function(band, val){ finRule().base[band]=finNum(val); };
+window.finRuleSibSet=function(val){ finRule().siblingPct=finNum(val); };
+window.finRuleExcSet=function(stuId, val){ finRule().byStudent[String(stuId)]=finNum(val); };
+async function finRuleSave(redraw){
+  var r=finRule();
+  r.updated=new Date().toISOString();
+  var okk=await bkhStoreSet('fin_rule', r);
+  if(okk){ try{ plToast('💾 수강료 규칙을 저장했습니다'); }catch(e){} }
+  if(redraw){ try{ render(); }catch(e){} }
+  return okk;
+}
+window.finRuleSave=finRuleSave;
+window.finRuleAddExc=function(stuId){
+  if(!stuId) return;
+  var r=finRule(), st=activeStudents().filter(function(s){ return String(s.id)===String(stuId); })[0];
+  if(!st) return;
+  r.byStudent[String(stuId)]=Number((r.base||{})[finGradeBand(st.grade)])||0;
+  try{ render(); }catch(e){}
+  finRuleSave(false);
+};
+window.finRuleDelExc=function(stuId){
+  delete finRule().byStudent[String(stuId)];
+  try{ render(); }catch(e){}
+  finRuleSave(false);
+};
+
+/* ══════════ 📊 월별 그래프 (계약서 §4) ══════════
+ *   색은 검증된 값 그대로 — 매출 #1d6fe8 · 비용 #d97706 · 순이익 #0f9d8a
+ *   범례 필수 · 막대 사이 2px 틈 · 축은 한 개(원) · 격자는 옅은 점선
+ *   값 글자는 중요한 것만(매출 막대 · 마지막 달 비용 · 순이익 마지막 점) */
+var FIN_C = { sales:'#1d6fe8', cost:'#d97706', net:'#0f9d8a' };
+function finChartMonths(){
+  var ms=payRangeMonths();
+  if(ms.length<2){
+    var base=ms[0]||payYm(), out=[], i;
+    for(i=5;i>=0;i--) out.push(lgPlShiftMonth(base,-i));      /* 최근 6개월 */
+    return out;
+  }
+  return (ms.length>12)?ms.slice(-12):ms.slice();
+}
+function finChartSvg(ms){
+  var W=720, H=250, L=62, R=16, T=30, B=48;
+  var iw=W-L-R, ih=H-T-B;
+  var data=ms.map(function(m){ return finMonth(m); });
+  var hi=0, lo=0;
+  data.forEach(function(d){
+    hi=Math.max(hi, d.sales, d.cost, d.net);
+    lo=Math.min(lo, d.net, 0);
+  });
+  if(hi<=0) hi=1;
+  var span=hi-lo; if(span<=0) span=1;
+  var yOf=function(v){ return T+(hi-v)/span*ih; };
+  var slot=iw/ms.length;
+  var bw=Math.max(8, Math.min(30, (slot-16)/2-1));            /* 막대 둘 + 2px 틈 */
+  var s='<svg id="fin-chart-svg" viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="월별 매출·비용·순이익" style="display:block">';
+  /* 격자 — 옅은 점선 · 축은 하나(원)뿐 */
+  var ticks=[hi, hi/2, 0];
+  if(lo<0) ticks.push(lo);
+  ticks.forEach(function(v){
+    var y=yOf(v);
+    s+='<line x1="'+L+'" y1="'+y.toFixed(1)+'" x2="'+(W-R)+'" y2="'+y.toFixed(1)+'" stroke="#e6ebf2"'
+      +((v===0)?'':' stroke-dasharray="3 3"')+'/>';
+    s+='<text x="'+(L-8)+'" y="'+(y+3.5).toFixed(1)+'" font-size="10" fill="#94a3b8" text-anchor="end">'+finMan(v)+'</text>';
+  });
+  /* 막대 · 선 */
+  var pts=[];
+  data.forEach(function(d,i){
+    var c=L+slot*(i+0.5);
+    var y0=yOf(0);
+    var ys=yOf(d.sales), yc=yOf(d.cost);
+    s+='<rect class="fin-bar fin-bar-sales" x="'+(c-bw-1).toFixed(1)+'" y="'+ys.toFixed(1)+'" width="'+bw.toFixed(1)
+      +'" height="'+Math.max(0,y0-ys).toFixed(1)+'" rx="3" fill="'+FIN_C.sales+'"></rect>';
+    s+='<rect class="fin-bar fin-bar-cost" x="'+(c+1).toFixed(1)+'" y="'+yc.toFixed(1)+'" width="'+bw.toFixed(1)
+      +'" height="'+Math.max(0,y0-yc).toFixed(1)+'" rx="3" fill="'+FIN_C.cost+'"></rect>';
+    pts.push(c.toFixed(1)+','+yOf(d.net).toFixed(1));
+    /* 값 글자 — 매출 막대 위에 (겹치지 않게 막대 하나만) */
+    if(d.sales>0) s+='<text class="fin-val" x="'+(c-bw/2-1).toFixed(1)+'" y="'+(ys-5).toFixed(1)
+      +'" font-size="10" font-weight="700" fill="#0d2240" text-anchor="middle">'+finMan(d.sales)+'</text>';
+    if(i===data.length-1 && d.cost>0) s+='<text class="fin-val" x="'+(c+1+bw/2).toFixed(1)+'" y="'+(yc-5).toFixed(1)
+      +'" font-size="10" font-weight="700" fill="'+FIN_C.cost+'" text-anchor="middle">'+finMan(d.cost)+'</text>';
+    s+='<text x="'+c.toFixed(1)+'" y="'+(H-B+20)+'" font-size="11" fill="#64748b" text-anchor="middle">'+Number(String(d.ym).slice(5,7))+'월</text>';
+  });
+  s+='<polyline class="fin-line-net" points="'+pts.join(' ')+'" fill="none" stroke="'+FIN_C.net+'" stroke-width="2"/>';
+  data.forEach(function(d,i){
+    var c=L+slot*(i+0.5);
+    s+='<circle class="fin-dot" cx="'+c.toFixed(1)+'" cy="'+yOf(d.net).toFixed(1)+'" r="3.5" fill="'+FIN_C.net+'"></circle>';
+  });
+  /* 선의 마지막 점에만 값 */
+  if(data.length){
+    var lastD=data[data.length-1], cx=L+slot*(data.length-0.5), cy=yOf(lastD.net);
+    var lx=Math.min(cx, W-R-34);
+    s+='<text class="fin-val" x="'+lx.toFixed(1)+'" y="'+((cy<T+16)?(cy+16):(cy-8)).toFixed(1)
+      +'" font-size="10.5" font-weight="800" fill="'+FIN_C.net+'" text-anchor="middle">순 '+finMan(lastD.net)+'</text>';
+  }
+  s+='</svg>';
+  return s;
+}
+function finLegend(){
+  var one=function(c,t){
+    return '<span style="display:inline-flex;align-items:center;gap:4px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:'+c+'"></i>'+t+'</span>';
+  };
+  return '<span class="fin-legend" style="display:inline-flex;gap:11px;font-size:11px;color:#64748b;font-weight:700;flex-wrap:wrap">'
+    +one(FIN_C.sales,'매출')+one(FIN_C.cost,'비용(고정+변동)')+one(FIN_C.net,'순이익')+'</span>';
+}
+
+/* ══════════ 화면 조각 ══════════ */
+function finBox(title, sub, inner, id){
+  return '<div'+(id?(' id="'+id+'"'):'')+' style="background:#fff;border:1px solid #e6eaf1;border-radius:13px;padding:11px 13px;min-width:0">'
+    +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px">'
+    +'<div style="font-size:12.5px;font-weight:900;color:#0d2240">'+title+'</div>'
+    +(sub?('<div style="font-size:11px;font-weight:700;color:#94a3b8">'+sub+'</div>'):'')
+    +'</div>'+inner+'</div>';
+}
+function finBarRow(label, pct, right, color, lw){
+  var p=Math.max(0, Math.min(100, Number(pct)||0));
+  return '<div class="fin-bar-row" style="display:flex;align-items:center;gap:8px;font-size:11.5px;margin-top:6px">'
+    +'<span style="width:'+(lw||62)+'px;flex:none;color:#64748b;font-weight:700">'+label+'</span>'
+    +'<span style="flex:1;min-width:40px;height:10px;background:#eef2f7;border-radius:5px;overflow:hidden;display:block">'
+    +'<i style="display:block;height:100%;width:'+p.toFixed(1)+'%;background:'+color+';border-radius:5px"></i></span>'
+    +'<span style="flex:none;font-weight:800;color:#0d2240;min-width:104px;text-align:right">'+right+'</span></div>';
+}
+function finAlert(kind, title, body, link){
+  var c={ bad:['#fef2f2','#fca5a5','#b91c1c'], warn:['#fffbeb','#fde68a','#b45309'], ok:['#ecfdf5','#a7f3d0','#047857'] }[kind]||['#f8fafc','#e2e8f0','#64748b'];
+  return '<div class="fin-alert" data-kind="'+kind+'" style="display:flex;gap:9px;align-items:flex-start;padding:8px 11px;border-radius:10px;font-size:12px;margin-top:6px;background:'+c[0]+';border:1px solid '+c[1]+'">'
+    +'<b style="flex:none;color:'+c[2]+'">'+title+'</b>'
+    +'<span style="color:#475569;min-width:0;word-break:break-all">'+body+'</span>'
+    +(link?('<a href="https://manager.payssam.kr" target="_blank" rel="noopener" class="fin-open" style="margin-left:auto;flex:none;text-decoration:none;font-size:10.5px;font-weight:800;color:#0d2240;background:#fff;border:1px solid #cbd5e1;border-radius:7px;padding:3px 8px;white-space:nowrap">↗ 결제선생 열기</a>'):'')
+    +'</div>';
+}
+function finInput(oninput, val, ph, width, right){
+  return '<input value="'+esc2(val==null?'':String(val))+'" oninput="'+oninput+'" placeholder="'+esc2(ph||'')+'" '
+    +'style="width:'+(width||90)+'px;font:inherit;font-size:12px;border:1px solid #e2e8f0;border-radius:7px;padding:4px 7px;'
+    +(right?'text-align:right;':'')+'color:#0d2240;background:#fff;font-family:inherit">';
+}
+
+/* ── 가로 칩 줄 (왼쪽 세로 메뉴 대신 — 앱 관행) ── */
+var PAY_TABS=[ { k:'pl', label:'📈 손익' }, { k:'stu', label:'👨‍👩‍👧 학생별 납부' }, { k:'chk', label:'⚠ 점검' },
+               { k:'cost', label:'🧾 고정비·변동비' }, { k:'rule', label:'⚙ 수강료 규칙' } ];
+window.payTab=function(k){ PAY.tab=String(k||'pl'); try{ render(); }catch(e){} };
+function payTabBar(){
+  var cur=PAY.tab||'pl', chk=0;
+  try{ chk=finChecks(payYm()).total; }catch(e){}
+  var h='<div id="pay-tabs" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px">';
+  PAY_TABS.forEach(function(t){
+    var on=(t.k===cur);
+    h+='<button class="pay-tab'+(on?' on':'')+'" data-tab="'+t.k+'" onclick="payTab(\''+t.k+'\')" '
+      +'style="border-radius:50px;padding:7px 15px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;'
+      +(on?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'">'
+      +t.label+((t.k==='chk'&&chk)?('<span style="margin-left:5px;background:'+(on?'#f59e0b':'#fee2e2')+';color:'+(on?'#1f2937':'#b91c1c')+';border-radius:50px;padding:1px 7px;font-size:10.5px">'+chk+'</span>'):'')
+      +'</button>';
+  });
+  return h+'</div>';
+}
+
+/* ── 기간 설정 줄 (계약서 §3) ── */
+function finRangeBar(){
+  var r=payRange();
+  var one=function(p,label){
+    var on=(r.preset===p);
+    return '<button class="fin-range-btn" data-preset="'+p+'" onclick="payRangeSet(\''+p+'\')" '
+      +'style="border-radius:9px;padding:6px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;'
+      +(on?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'">'+label+'</button>';
+  };
+  var ms=payRecentMonths(13);
+  var f=r.from||(ms[2]+'-01'), t=r.to||finMonthEnd(ms[0]);
+  var h='<div id="fin-range" style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:10px">';
+  h+=one('m0','이달')+one('m1','지난달')+one('r3','최근 3개월')+one('yr','올해');
+  h+='<span style="display:inline-flex;gap:5px;align-items:center;background:#fff;border:1px solid #cbd5e1;border-radius:9px;padding:4px 8px">'
+    +'<span style="font-size:11.5px;font-weight:800;color:'+((r.preset==='custom')?'#0d2240':'#94a3b8')+'">📅 직접</span>'
+    +'<input id="fin-from" type="date" value="'+esc2(f)+'" style="font:inherit;font-size:11.5px;border:1px solid #e2e8f0;border-radius:6px;padding:2px 5px;font-family:inherit;color:#0d2240">'
+    +'<span style="color:#94a3b8">~</span>'
+    +'<input id="fin-to" type="date" value="'+esc2(t)+'" style="font:inherit;font-size:11.5px;border:1px solid #e2e8f0;border-radius:6px;padding:2px 5px;font-family:inherit;color:#0d2240">'
+    +'<button onclick="payRangeSet(\'custom\',document.getElementById(\'fin-from\').value,document.getElementById(\'fin-to\').value)" '
+    +'style="border:none;border-radius:7px;background:#1d6fe8;color:#fff;font-size:11px;font-weight:800;padding:4px 10px;cursor:pointer;font-family:inherit">적용</button>'
+    +'</span>';
+  h+='<div id="fin-range-label" style="font-size:11.5px;font-weight:800;color:#0d2240;margin-left:4px">'+esc2(payRangeLabel())+'</div>';
+  return h+'</div>';
+}
+/* 한 달만 보는 칸(학생별 납부·점검)의 달 고르기 줄 — v19-8 그대로 */
+function payMonthBar(ym){
+  var h='<div id="pay-months" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:11px">';
+  payRecentMonths(4).forEach(function(m){
+    var on=(m===ym);
+    h+='<button onclick="payGoMonth(\''+m+'\')" style="border-radius:9px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;'
+      +(on?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'">'+m+'</button>';
+  });
+  h+='<div style="font-size:11px;font-weight:700;color:#94a3b8">이 칸은 <b>한 달</b>을 기준으로 봅니다</div>';
+  return h+'</div>';
+}
+
+/* ══════════ 📈 손익 현황판 + 📅 수납 흐름 ══════════ */
+function payPanelPl(){
+  var st=finRangeStat(), ms=st.months, ym=ms[ms.length-1]||payYm();
+  var per=finPaidPerStudent(ms);
+  var cfg=finCfg();
+  var be=finBreakeven(st.cost, per.avg);
+  var goal=(Number(cfg.goal.monthly)||0)*ms.length;
+  var goalPct=(goal>0)?Math.round(st.sales/goal*1000)/10:0;
+
+  var h=finRangeBar();
+  /* 카드 */
+  h+='<div id="fin-cards" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:6px">';
+  h+=payCard('💰','매출 (승인 − 취소)', finMan(st.sales), Number(st.sales).toLocaleString()+'원 · '+esc2(payRangeLabel()), FIN_C.sales);
+  h+=payCard('🏠','고정비', finMan(st.fixed), finFixedFor(ym).length+'개 항목 · 달마다 자동', '#64748b');
+  h+=payCard('🧺','변동비', finMan(st.vari), '🔗 자동 2줄 + 직접 입력', FIN_C.cost);
+  /* 순이익은 크게 */
+  h+='<div id="fin-net" style="flex:1.4;min-width:220px;border-radius:12px;padding:12px 14px;background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff">'
+    +'<div style="font-size:11px;font-weight:800;color:rgba(255,255,255,.82)">📈 순이익 (매출 − 고정 − 변동)</div>'
+    +'<div style="font-size:27px;font-weight:900;margin-top:2px">'+finMan(st.net)+'</div>'
+    +'<div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.82);margin-top:2px">'
+    +Number(st.net).toLocaleString()+'원 · 매출의 '+((st.sales>0)?Math.round(st.net/st.sales*100):0)+'%</div></div>';
+  h+=payCard('⚖️','손익분기 학생 수', be?(be+'명'):'—',
+     be?('비용 '+finMan(st.cost)+' ÷ 1인 평균 '+finMan(per.avg)):'수납 자료가 있어야 셉니다', '#6d28d9');
+  if(goal>0) h+=payCard('🎯','목표 달성률', goalPct+'%',
+     '목표 '+finMan(goal)+' · '+((st.sales>=goal)?('+'+finMan(st.sales-goal)):('남은 '+finMan(goal-st.sales))), (goalPct>=100)?'#22c55e':'#f59e0b');
+  h+='</div>';
+  /* 카드 밑 한 줄 — 원장님 인건비 */
+  var own=Number(cfg.ownerPay)||0;
+  h+='<div id="fin-owner-line" style="font-size:11.5px;font-weight:700;color:#64748b;margin:0 0 12px">'
+    +((own>0)
+      ?('👤 위 순이익은 <b style="color:#0d2240">원장님 인건비 '+Number(own).toLocaleString()+'원</b>을 빼기 <b>전</b>입니다 — 빼면 <b style="color:#0d2240">'+finMan(st.net-st.owner)+'</b>입니다.')
+      :('👤 <b style="color:#0d2240">원장님 인건비 전</b>입니다 — 「🧾 고정비·변동비」 칸에서 인건비를 적으시면 뺀 금액도 함께 보여 드립니다.'))
+    +'</div>';
+
+  /* 그래프 + 다음 달 예상 */
+  var cm=finChartMonths();
+  h+='<div style="display:grid;grid-template-columns:1.55fr 1fr;gap:12px;align-items:start">';
+  h+=finBox('월별 매출 · 비용 · 순이익', finLegend(),
+      '<div style="overflow:auto">'+finChartSvg(cm)+'</div>'
+      +'<div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:3px">축은 <b>원</b> 하나입니다 · 비용 = 고정비 + 변동비(리그 상금·쌤포인트 포함)</div>',
+      'fin-chart');
+  var fc=finForecast();
+  h+=finBox('다음 달 예상 <span style="font-size:11px;font-weight:700;color:#94a3b8">'+esc2(fc.next)+'</span>','',
+      '<table id="fin-forecast-table" style="width:100%;border-collapse:collapse;font-size:12px">'
+      +'<tr><td style="padding:5px 2px;color:#475569">예상 청구 (명단 '+activeStudents().length+'명 × 규칙)</td><td style="padding:5px 2px;text-align:right;font-weight:800">'+Number(fc.bill).toLocaleString()+'원</td></tr>'
+      +'<tr><td style="padding:5px 2px;color:#475569;border-top:1px solid #eef2f7">최근 3개월 평균 수납률 '+fc.rate+'% 적용</td><td style="padding:5px 2px;text-align:right;font-weight:800;border-top:1px solid #eef2f7">'+Number(fc.expect).toLocaleString()+'원</td></tr>'
+      +'<tr><td style="padding:5px 2px;color:#475569;border-top:1px solid #eef2f7">고정비 + 변동비</td><td style="padding:5px 2px;text-align:right;font-weight:800;color:'+FIN_C.cost+';border-top:1px solid #eef2f7">−'+Number(fc.cost).toLocaleString()+'원</td></tr>'
+      +'<tr><td style="padding:6px 2px;color:#0d2240;font-weight:900;border-top:2px solid #e6eaf1">예상 순이익</td><td id="fin-forecast-net" style="padding:6px 2px;text-align:right;font-weight:900;color:'+FIN_C.net+';border-top:2px solid #e6eaf1">'+Number(fc.net).toLocaleString()+'원</td></tr>'
+      +'</table>'
+      +'<div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:5px">규칙 금액은 「⚙ 수강료 규칙」 칸에서 고치십니다 · 비용은 다음 달 고정비 + 이번 달 변동비로 셉니다</div>',
+      'fin-forecast');
+  h+='</div>';
+
+  /* ── 📅 수납 흐름 (계약서 §6) ── */
+  h+='<div style="font-size:14px;font-weight:900;color:#0d2240;margin:16px 0 8px">📅 수납 흐름 <span style="font-size:11.5px;font-weight:700;color:#94a3b8">'+esc2(payRangeLabel())+'</span></div>';
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;align-items:start">';
+  /* 납부 소요일 */
+  var fl=finFlow(ms), ft=fl.total||1;
+  var flow='<div style="font-size:11.5px;color:#64748b;font-weight:700">청구 뒤 납부까지 평균 <b style="color:#0d2240">'+fl.avg+'일</b> · 청구서 '+fl.total+'건</div>';
+  flow+=finBarRow('1일 안', fl.d1/ft*100, fl.d1+'건 · '+Math.round(fl.d1/ft*100)+'%', '#1d6fe8');
+  flow+=finBarRow('2~5일',  fl.d2/ft*100, fl.d2+'건 · '+Math.round(fl.d2/ft*100)+'%', '#60a5fa');
+  flow+=finBarRow('6일 넘게',fl.d3/ft*100, fl.d3+'건 · '+Math.round(fl.d3/ft*100)+'%', FIN_C.cost);
+  flow+=finBarRow('미납·파기',fl.d4/ft*100, fl.d4+'건 · '+Math.round(fl.d4/ft*100)+'%', '#dc2626');
+  h+=finBox('납부 소요일','청구 → 납부', flow, 'fin-flow');
+  /* 납부일 달력 */
+  var cal=finCalendar(ym), sh=['#eef2f7','#bfdbfe','#60a5fa','#1d4ed8'];
+  var cells='<div style="display:grid;grid-template-columns:repeat(31,1fr);gap:2px">';
+  cal.amounts.forEach(function(v,i){
+    var lv=finCalLevel(v, cal.max);
+    cells+='<i class="fin-cal-cell" data-level="'+lv+'" title="'+esc2(ym+'-'+String(i+1).padStart(2,'0'))+' · '+Number(v).toLocaleString()+'원" '
+      +'style="display:block;aspect-ratio:1;border-radius:2px;background:'+sh[lv]+'"></i>';
+  });
+  cells+='</div>';
+  cells+='<div style="display:flex;align-items:center;gap:5px;font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:6px">적음'
+    +'<i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:'+sh[1]+'"></i>'
+    +'<i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:'+sh[2]+'"></i>'
+    +'<i style="display:inline-block;width:11px;height:11px;border-radius:2px;background:'+sh[3]+'"></i>많음'
+    +'<span style="margin-left:auto">가장 많이 들어온 날 '+finMan(cal.max)+'</span></div>';
+  h+=finBox('납부일 달력','<span>'+esc2(ym)+' · 진할수록 많이 들어온 날</span>', cells, 'fin-cal');
+  /* 결제수단 */
+  var mt=finMethods(ms), mtot=0;
+  mt.forEach(function(x){ mtot+=x.amount; });
+  var mh='';
+  if(!mt.length) mh='<div style="font-size:11.5px;color:#94a3b8;font-weight:700;padding:6px 0">이 기간 매출 보고서 자료가 없습니다</div>';
+  else mt.forEach(function(x,i){
+    mh+=finBarRow(esc2(x.name), mtot?(x.amount/mtot*100):0,
+        finMan(x.amount)+' · '+(mtot?Math.round(x.amount/mtot*100):0)+'%', finShade(i), 78);
+  });
+  h+=finBox('결제수단','한 색의 진하기로', mh, 'fin-method');
+  /* 학년별 매출 구성 */
+  var bg=finByGrade(ms), btot=0;
+  bg.forEach(function(x){ btot+=x.amount; });
+  var bh='';
+  bg.forEach(function(x,i){
+    bh+=finBarRow(x.band+'등', btot?(x.amount/btot*100):0,
+        finMan(x.amount)+' · '+x.students+'명', finShade(i), 46);
+  });
+  bh+='<div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:6px">1인 평균 — '
+    +bg.map(function(x){ return x.band+' '+finMan(x.avg); }).join(' · ')+'</div>';
+  h+=finBox('학년별 매출 구성','수납액 기준 · 퇴원생 제외', bh, 'fin-grade');
+  h+='</div>';
+  return h;
+}
+
+/* ══════════ ⚠ 점검 (계약서 §5) ══════════ */
+function payPanelChk(ym){
+  var c=finChecks(ym);
+  var h=payMonthBar(ym);
+  h+='<div style="font-size:14px;font-weight:900;color:#0d2240;margin:0 0 3px">⚠ '+esc2(ym)+' 점검 '
+    +'<span style="font-size:11.5px;font-weight:700;color:#94a3b8">모두 '+c.total+'건 · 원장님만 보시는 화면이라 이름을 그대로 적습니다</span></div>';
+  h+='<div id="fin-checks" style="background:#fff;border:1px solid #e6eaf1;border-radius:13px;padding:10px 13px 13px">';
+  var nameList=function(arr, fn){
+    return arr.map(function(x){ return '<b style="color:#0d2240">'+esc2(x.st.name||'')+'</b>'+(fn?fn(x):''); }).join(' · ');
+  };
+  /* ① 청구 누락 */
+  h+='<div class="fin-check" data-check="miss" style="margin-top:4px">';
+  h+=c.miss.length
+    ? finAlert('bad','청구 누락 '+c.miss.length+'명', '재원인데 '+esc2(ym)+' 청구서가 없습니다 — '+nameList(c.miss,function(x){ return '<span style="color:#94a3b8;font-weight:700">('+esc2(x.st.group||'-')+')</span>'; }), true)
+    : finAlert('ok','청구 누락 없음','재원생 모두 '+esc2(ym)+' 청구서가 있습니다', false);
+  h+='</div>';
+  /* ② 이중 청구 */
+  h+='<div class="fin-check" data-check="dup">';
+  h+=c.dup.length
+    ? finAlert('warn','이중 청구 의심 '+c.dup.length+'명', nameList(c.dup,function(x){
+        return '<span style="color:#94a3b8;font-weight:700">('+x.n+'건 '+x.bills.map(function(b){ return Number(b.amount).toLocaleString()+(b.reason?('·'+esc2(b.reason)):''); }).join(' + ')+')</span>';
+      })+' — 수강료와 교재비처럼 <b>일부러 나눠 보내신 것</b>이면 그대로 두셔도 됩니다', true)
+    : finAlert('ok','이중 청구 없음','같은 학생에게 두 번 간 청구서가 없습니다', false);
+  h+='</div>';
+  /* ③ 금액 다름 */
+  h+='<div class="fin-check" data-check="diff">';
+  h+=c.diff.length
+    ? finAlert('warn','금액 다름 '+c.diff.length+'명', c.diff.map(function(x){
+        return '<b style="color:#0d2240">'+esc2(x.st.name||'')+'</b> 규칙 '+Number(x.want).toLocaleString()+'원 vs 청구 '+Number(x.billed).toLocaleString()+'원';
+      }).join(' · '), true)
+    : finAlert('ok','금액 다름 없음','청구액이 모두 규칙 금액과 같습니다(±1,000원 안)', false);
+  h+='</div>';
+  /* ④ 파기 재발송 필요 */
+  h+='<div class="fin-check" data-check="dead">';
+  h+=c.dead.length
+    ? finAlert('bad','파기 · 재발송 필요 '+c.dead.length+'건', c.dead.map(function(x){
+        return '<b style="color:#0d2240">'+esc2(x.st.name||'')+'</b> '+Number(x.amount).toLocaleString()+'원';
+      }).join(' · ')+' — 결제선생이 5일 안에 안 낸 청구서를 스스로 없앤 것입니다', true)
+    : finAlert('ok','파기된 청구서 없음','다시 보내실 청구서가 없습니다', false);
+  if(c.dead.length) h+='<div style="margin-top:6px"><button id="fin-copy-dead" onclick="finCopyDead()" '
+    +'style="padding:6px 13px;border:none;border-radius:9px;background:#b91c1c;color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">📋 카톡 문구 복사</button></div>';
+  h+='</div>';
+  /* ⑤ 연체 습관 */
+  h+='<div class="fin-check" data-check="late">';
+  h+=c.late.length
+    ? finAlert('warn','연체 습관 '+c.late.length+'명', c.late.map(function(x){
+        return '<b style="color:#0d2240">'+esc2(x.st.name||'')+'</b> 최근 3달 중 '+x.n+'달';
+      }).join(' · ')+' — 청구에서 납부까지 6일이 넘었습니다. 상담 때 자동이체를 권해 보세요', true)
+    : finAlert('ok','연체 습관 없음','최근 3달 동안 늦게 내신 분이 없습니다', false);
+  h+='</div>';
+  h+='</div>';
+  return h;
+}
+
+/* ══════════ 🧾 고정비 · 변동비 (계약서 §7) ══════════ */
+function payPanelCost(ym){
+  var cfg=finCfg();
+  var h=payMonthBar(ym);
+  /* 고정비 */
+  var fixSum=0;
+  (cfg.fixed||[]).forEach(function(it){ fixSum+=Number(it.amount)||0; });
+  h+='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:7px">'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240">🏠 고정비 <span style="font-size:11.5px;font-weight:700;color:#94a3b8">매달 같은 돈 — 한 번 적으면 매달 자동</span></div>'
+    +'<button onclick="finCfgAddFixed()" style="padding:5px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0d2240;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">+ 항목</button>'
+    +'<button onclick="finCfgSave(true)" style="padding:5px 12px;border:none;border-radius:8px;background:#1d6fe8;color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">💾 저장</button>'
+    +'<div style="margin-left:auto;font-size:11.5px;font-weight:700;color:#64748b">'+esc2(ym)+' 적용 합계 <b style="color:#0d2240">'+Number(finFixedSum(ym)).toLocaleString()+'원</b> · 전체 '+Number(fixSum).toLocaleString()+'원</div>'
+    +'</div>';
+  h+='<div style="background:#fff;border:1px solid #e6eaf1;border-radius:13px;overflow:auto"><table id="fin-fixed" style="width:100%;border-collapse:collapse;font-size:12.5px">'
+    +'<thead><tr style="background:#f8fafc;color:#64748b;font-size:11px;font-weight:800;text-align:left">'
+    +'<th style="padding:8px 11px">항목</th><th style="padding:8px 11px;text-align:right">금액(원)</th>'
+    +'<th style="padding:8px 11px">시작</th><th style="padding:8px 11px">종료</th><th style="padding:8px 11px">메모</th><th style="padding:8px 11px"></th>'
+    +'</tr></thead><tbody>';
+  (cfg.fixed||[]).forEach(function(it){
+    var live=(function(){ var f=String(it.from||'').slice(0,7), t=String(it.to||'').slice(0,7);
+      if(f&&ym<f) return false; if(t&&ym>t) return false; return true; })();
+    h+='<tr class="fin-fixed-row" data-id="'+esc2(String(it.id))+'" style="border-top:1px solid #eef2f7;'+(live?'':'opacity:.45;')+'">'
+      +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'name\',this.value)', it.name, '항목 이름', 160)+'</td>'
+      +'<td style="padding:7px 11px;text-align:right">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'amount\',this.value)', Number(it.amount)||0, '0', 100, true)+'</td>'
+      +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'from\',this.value)', it.from, '2025-03', 84)+'</td>'
+      +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'to\',this.value)', it.to, '2026-10', 84)+'</td>'
+      +'<td style="padding:7px 11px">'+finInput('finCfgFixSet(\''+esc2(String(it.id))+'\',\'memo\',this.value)', it.memo, '', 200)+'</td>'
+      +'<td style="padding:7px 11px;text-align:right"><button class="fin-fixed-del" onclick="finCfgDelFixed(\''+esc2(String(it.id))+'\')" '
+      +'style="border:1px solid #fecaca;border-radius:7px;background:#fef2f2;color:#b91c1c;font-size:11px;font-weight:800;padding:3px 9px;cursor:pointer;font-family:inherit">✕</button></td></tr>';
+  });
+  if(!(cfg.fixed||[]).length) h+='<tr><td colspan="6" style="padding:22px;text-align:center;color:#94a3b8;font-weight:700">「+ 항목」으로 고정비를 적어 주세요</td></tr>';
+  h+='</tbody></table></div>';
+  h+='<div style="font-size:11px;color:#94a3b8;font-weight:700;margin-top:5px">시작·종료를 적으시면 <b>그 달 범위에서만</b> 셉니다(빈 칸이면 늘 셉니다) · 지금 달에 안 세는 줄은 흐리게 보입니다</div>';
+
+  /* 변동비 */
+  var auto=finVarAuto(ym), items=finVarItems(ym);
+  h+='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:16px 0 7px">'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240">🧺 변동비 <span style="font-size:11.5px;font-weight:700;color:#94a3b8">'+esc2(ym)+' — 달마다 다른 돈</span></div>'
+    +'<button onclick="finCfgAddVar(\''+esc2(ym)+'\')" style="padding:5px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0d2240;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">+ 항목</button>'
+    +'<button onclick="finCfgCopyVar(\''+esc2(ym)+'\')" style="padding:5px 12px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#0d2240;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">⧉ 지난달 것 복사</button>'
+    +'<button onclick="finCfgSave(true)" style="padding:5px 12px;border:none;border-radius:8px;background:#1d6fe8;color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">💾 저장</button>'
+    +'<div style="margin-left:auto;font-size:11.5px;font-weight:700;color:#64748b">합계 <b style="color:#0d2240">'+Number(finVarSum(ym)).toLocaleString()+'원</b></div>'
+    +'</div>';
+  h+='<div style="background:#fff;border:1px solid #e6eaf1;border-radius:13px;overflow:auto"><table id="fin-var" style="width:100%;border-collapse:collapse;font-size:12.5px">'
+    +'<thead><tr style="background:#f8fafc;color:#64748b;font-size:11px;font-weight:800;text-align:left">'
+    +'<th style="padding:8px 11px">항목</th><th style="padding:8px 11px;text-align:right">금액(원)</th>'
+    +'<th style="padding:8px 11px">어디서</th><th style="padding:8px 11px">메모</th><th style="padding:8px 11px"></th>'
+    +'</tr></thead><tbody>';
+  auto.forEach(function(x){
+    h+='<tr class="fin-var-auto" style="border-top:1px solid #eef2f7;background:#f8fafc;color:#64748b">'
+      +'<td style="padding:8px 11px;font-weight:800">🔗 '+esc2(x.name)+'</td>'
+      +'<td style="padding:8px 11px;text-align:right;font-weight:800;color:#475569">'+Number(x.amount).toLocaleString()+'</td>'
+      +'<td style="padding:8px 11px">'+esc2(x.src)+'</td>'
+      +'<td style="padding:8px 11px">'+esc2(x.memo)+'</td>'
+      +'<td style="padding:8px 11px;text-align:right;font-size:10.5px;font-weight:700">자동</td></tr>';
+  });
+  items.forEach(function(it){
+    h+='<tr class="fin-var-row" data-id="'+esc2(String(it.id))+'" style="border-top:1px solid #eef2f7">'
+      +'<td style="padding:7px 11px">'+finInput('finCfgVarSet(\''+esc2(ym)+'\',\''+esc2(String(it.id))+'\',\'name\',this.value)', it.name, '항목 이름', 170)+'</td>'
+      +'<td style="padding:7px 11px;text-align:right">'+finInput('finCfgVarSet(\''+esc2(ym)+'\',\''+esc2(String(it.id))+'\',\'amount\',this.value)', Number(it.amount)||0, '0', 100, true)+'</td>'
+      +'<td style="padding:7px 11px;color:#94a3b8;font-weight:700">직접 입력</td>'
+      +'<td style="padding:7px 11px">'+finInput('finCfgVarSet(\''+esc2(ym)+'\',\''+esc2(String(it.id))+'\',\'memo\',this.value)', it.memo, '', 200)+'</td>'
+      +'<td style="padding:7px 11px;text-align:right"><button class="fin-var-del" onclick="finCfgDelVar(\''+esc2(ym)+'\',\''+esc2(String(it.id))+'\')" '
+      +'style="border:1px solid #fecaca;border-radius:7px;background:#fef2f2;color:#b91c1c;font-size:11px;font-weight:800;padding:3px 9px;cursor:pointer;font-family:inherit">✕</button></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<div style="font-size:11px;color:#94a3b8;font-weight:700;margin-top:5px">🔗 표시된 두 줄은 <b>저절로 계산</b>되는 것이라 고치실 수 없습니다 — 리그 상금은 ⚙ 리그 설정에서, 쌤포인트는 청구서 건수에서 옵니다</div>';
+
+  /* 목표 · 원장 인건비 */
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:16px">';
+  h+=finBox('🎯 월 매출 목표','0이면 카드에 안 보입니다',
+      '<div style="display:flex;align-items:center;gap:8px">'+finInput('finCfgGoalSet(this.value)', Number(cfg.goal.monthly)||0, '13500000', 130, true)
+      +'<span style="font-size:12px;color:#64748b;font-weight:700">원 / 달</span>'
+      +'<button onclick="finCfgSave(true)" style="margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:#1d6fe8;color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">💾 저장</button></div>', 'fin-goal');
+  h+=finBox('👤 원장님 인건비','0이면 「인건비 전」으로 적습니다',
+      '<div style="display:flex;align-items:center;gap:8px">'+finInput('finCfgOwnerSet(this.value)', Number(cfg.ownerPay)||0, '0', 130, true)
+      +'<span style="font-size:12px;color:#64748b;font-weight:700">원 / 달</span>'
+      +'<button onclick="finCfgSave(true)" style="margin-left:auto;padding:5px 12px;border:none;border-radius:8px;background:#1d6fe8;color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">💾 저장</button></div>', 'fin-owner');
+  h+='</div>';
+  return h;
+}
+
+/* ══════════ ⚙ 수강료 규칙 (계약서 §7) ══════════ */
+function payPanelRule(){
+  var r=finRule(), list=paySortedStudents();
+  var h='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px">'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240">⚙ 수강료 규칙 <span style="font-size:11.5px;font-weight:700;color:#94a3b8">예상 매출·「금액 다름」 점검에 씁니다</span></div>'
+    +'<button onclick="finRuleSave(true)" style="margin-left:auto;padding:5px 13px;border:none;border-radius:8px;background:#1d6fe8;color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">💾 저장</button></div>';
+  h+='<div id="fin-rule" style="background:#fff;border:1px solid #e6eaf1;border-radius:13px;padding:12px 14px">';
+  h+='<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">';
+  ['초','중','고'].forEach(function(b){
+    h+='<div><div style="font-size:11px;font-weight:800;color:#64748b;margin-bottom:3px">'+b+'등부 기본</div>'
+      +finInput('finRuleBaseSet(\''+b+'\',this.value)', Number((r.base||{})[b])||0, '0', 110, true)+'</div>';
+  });
+  h+='<div><div style="font-size:11px;font-weight:800;color:#64748b;margin-bottom:3px">형제 할인 (%)</div>'
+    +finInput('finRuleSibSet(this.value)', Number(r.siblingPct)||0, '10', 70, true)+'</div>';
+  h+='<div style="font-size:11px;color:#94a3b8;font-weight:700;max-width:330px">형제는 학생 정보의 <b>👨‍👩‍👧 형제 연결</b>로 알아봅니다 — 연결된 학생은 자동으로 할인이 붙습니다</div>';
+  h+='</div>';
+  /* 학생별 예외 */
+  var keys=Object.keys(r.byStudent||{}).filter(function(k){
+    return list.filter(function(s){ return String(s.id)===String(k); }).length>0;   /* 퇴원생은 빼고 */
+  });
+  h+='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:14px 0 6px">'
+    +'<div style="font-size:12.5px;font-weight:900;color:#0d2240">학생별 예외 '+(keys.length?('('+keys.length+'명)'):'')+'</div>'
+    +'<select id="fin-rule-add" onchange="finRuleAddExc(this.value)" style="border:1px solid #cbd5e1;border-radius:8px;padding:5px 9px;font-size:12px;font-weight:700;font-family:inherit;color:#0d2240">'
+    +'<option value="">학생 고르기…</option>';
+  list.forEach(function(s){
+    if(keys.indexOf(String(s.id))>=0) return;
+    h+='<option value="'+esc2(String(s.id))+'">'+esc2(s.name||'')+' ('+esc2(s.group||'-')+' · '+esc2(s.grade||'-')+')</option>';
+  });
+  h+='</select></div>';
+  if(!keys.length) h+='<div style="font-size:11.5px;color:#94a3b8;font-weight:700">예외가 없습니다 — 모두 학년대 기본 금액으로 셉니다</div>';
+  else{
+    h+='<table id="fin-rule-exc" style="width:100%;border-collapse:collapse;font-size:12.5px">'
+      +'<thead><tr style="background:#f8fafc;color:#64748b;font-size:11px;font-weight:800;text-align:left">'
+      +'<th style="padding:7px 10px">학생</th><th style="padding:7px 10px;text-align:right">금액(원)</th><th style="padding:7px 10px"></th></tr></thead><tbody>';
+    keys.forEach(function(k){
+      var s=list.filter(function(x){ return String(x.id)===String(k); })[0];
+      h+='<tr class="fin-exc-row" data-id="'+esc2(k)+'" style="border-top:1px solid #eef2f7">'
+        +'<td style="padding:6px 10px;font-weight:800;color:#0d2240">'+esc2(s.name||'')+' <span style="font-size:10.5px;color:#94a3b8;font-weight:700">'+esc2(s.group||'-')+' · '+esc2(s.grade||'-')+'</span></td>'
+        +'<td style="padding:6px 10px;text-align:right">'+finInput('finRuleExcSet(\''+esc2(k)+'\',this.value)', Number(r.byStudent[k])||0, '0', 110, true)+'</td>'
+        +'<td style="padding:6px 10px;text-align:right"><button onclick="finRuleDelExc(\''+esc2(k)+'\')" '
+        +'style="border:1px solid #fecaca;border-radius:7px;background:#fef2f2;color:#b91c1c;font-size:11px;font-weight:800;padding:3px 9px;cursor:pointer;font-family:inherit">✕</button></td></tr>';
+    });
+    h+='</tbody></table>';
+  }
+  h+='<div id="fin-rule-total" style="margin-top:12px;padding-top:10px;border-top:2px solid #e6eaf1;font-size:13px;font-weight:900;color:#0d2240">'
+    +'명단 '+list.length+'명 규칙 합계 = '+Number(finRuleTotal()).toLocaleString()+'원'
+    +' <span style="font-size:11px;font-weight:700;color:#94a3b8">(퇴원생은 빼고 셉니다)</span></div>';
+  h+='</div>';
+  /* 학생별 규칙 금액 표 */
+  h+='<div style="margin-top:12px;background:#fff;border:1px solid #e6eaf1;border-radius:13px;overflow:auto">'
+    +'<table id="fin-rule-list" style="width:100%;border-collapse:collapse;font-size:12.5px">'
+    +'<thead><tr style="background:#f8fafc;color:#64748b;font-size:11px;font-weight:800;text-align:left">'
+    +'<th style="padding:8px 11px">학생</th><th style="padding:8px 11px">기준</th><th style="padding:8px 11px;text-align:right">규칙 금액</th></tr></thead><tbody>';
+  list.forEach(function(s){
+    var ex=(r.byStudent||{})[String(s.id)];
+    var why=((ex==null||ex==='')?(finGradeBand(s.grade)+'등부 기본'):'학생별 예외')+(finIsSibling(s)?(' · 형제 −'+(Number(r.siblingPct)||0)+'%'):'');
+    h+='<tr class="fin-rule-row" style="border-top:1px solid #eef2f7">'
+      +'<td style="padding:7px 11px;font-weight:800;color:#0d2240">'+esc2(s.name||'')+' <span style="font-size:10.5px;color:#94a3b8;font-weight:700">'+esc2(s.group||'-')+' · '+esc2(s.grade||'-')+'</span></td>'
+      +'<td style="padding:7px 11px;color:#64748b;font-weight:700">'+esc2(why)+'</td>'
+      +'<td style="padding:7px 11px;text-align:right;font-weight:800;color:#0d2240">'+Number(finRuleAmount(s)).toLocaleString()+'원</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  return h;
+}
+
 /* ══════════ 화면 ══════════ */
 function payCard(ic,title,big,sub,tint){
   return '<div style="flex:1;min-width:180px;background:#fff;border:1px solid #e6eaf1;border-left:4px solid '+tint+';border-radius:12px;padding:12px 14px">'
@@ -57800,34 +58837,9 @@ function payStateChip(s){
 }
 /* 빨간 줄 — 미납 · 부분 · 파기 (원장님이 손을 써야 하는 줄) */
 function payIsBad(s){ return s==='미납'||s==='부분'||s==='파기'; }
-function rTuition(){
-  var ym=payYm();
-  var h='<div style="max-width:1220px">';
-  /* 머리 */
-  h+='<div style="background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:14px 20px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
-    +'<div><div style="font-size:18px;font-weight:900;color:#fff">💳 수강료</div>'
-    +'<div style="font-size:11.5px;color:#aebfd8;margin-top:2px">결제선생 청구·수납 현황 — 새벽 04:40 에 저절로 받아 옵니다 (이 화면은 보기만 합니다)</div></div>'
-    +'<div style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap;align-items:center">'
-    +'<a href="https://manager.payssam.kr" target="_blank" rel="noopener" id="pay-open-payssam" style="text-decoration:none;padding:7px 13px;border-radius:9px;background:#f59e0b;color:#1f2937;font-size:11.5px;font-weight:800">↗ 결제선생 열기</a>'
-    +'<button onclick="payReload()" style="padding:7px 13px;border:none;border-radius:9px;background:rgba(255,255,255,.16);color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">🔄 다시 불러오기</button>'
-    +'</div></div>';
-
-  if(!PAY.loaded) return h+'<div style="padding:50px;text-align:center;color:#94a3b8;font-weight:700">💳 결제선생 자료를 불러오는 중…</div></div>';
-  if(PAY.err) h+='<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:11px;padding:10px 13px;margin-bottom:10px;font-size:12px;color:#b91c1c;font-weight:700">자료를 못 받았습니다 — '+esc2(PAY.err)+'</div>';
-
-  /* 달 고르기 + 마지막 수집 시각 */
-  var months=payRecentMonths(4);
-  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:11px">';
-  months.forEach(function(m){
-    var on=(m===ym);
-    h+='<button onclick="payGoMonth(\''+m+'\')" style="border-radius:9px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;'
-      +(on?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'">'+m+'</button>';
-  });
-  var upd=(PAY.monthly&&PAY.monthly.updated)?payStampLabel(PAY.monthly.updated):'';
-  h+='<div id="pay-updated" style="margin-left:auto;font-size:11.5px;font-weight:700;color:'+(upd?'#64748b':'#b91c1c')+'">'
-    +(upd?('🕐 마지막 수집 '+esc2(upd)):'🕐 마지막 수집 기록 없음')+'</div>';
-  h+='</div>';
-
+/* ══════════ 👨‍👩‍👧 학생별 납부 (v19-8 그대로 — 칸 하나로 옮겼습니다) ══════════ */
+function payPanelStu(ym){
+  var h=payMonthBar(ym);
   /* 요약 카드 넉 장 */
   var sm=paySummary(ym);
   h+='<div id="pay-cards" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px">';
@@ -57916,6 +58928,39 @@ function rTuition(){
     +'<b>「파기 · 재발송 필요」</b>는 결제선생이 <b>5일 안에 안 낸 청구서를 스스로 없앤 것</b>입니다 — 결제선생 화면에서는 미납으로도 안 보이니, 여기에서 확인하시고 <b>청구서를 다시 보내</b>셔야 합니다.<br>'
     +'청구서를 새로 보내거나 다시 보내는 일은 <b>결제선생</b>에서 하십니다 — 위 「↗ 결제선생 열기」를 누르세요.<br>'
     +'이 화면의 숫자는 새벽에 받아 온 것이라, 오늘 낮에 들어온 결제는 <b>내일 새벽</b>에 보입니다.</div>';
+  return h;
+}
+
+/* ══════════ 💳 수강료 · 📈 경영 현황판 (칸 다섯 — 가로 칩 줄) ══════════ */
+function rTuition(){
+  var ym=payYm();
+  var h='<div style="max-width:1220px">';
+  /* 머리 */
+  h+='<div style="background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:14px 20px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+    +'<div><div style="font-size:18px;font-weight:900;color:#fff">💳 수강료 · 📈 경영</div>'
+    +'<div style="font-size:11.5px;color:#aebfd8;margin-top:2px">결제선생 청구·수납은 새벽 04:40 에 저절로 받아 옵니다 — 여기에 고정비·변동비를 적으시면 <b>순이익</b>까지 나옵니다</div></div>'
+    +'<div style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap;align-items:center">'
+    +'<a href="https://manager.payssam.kr" target="_blank" rel="noopener" id="pay-open-payssam" style="text-decoration:none;padding:7px 13px;border-radius:9px;background:#f59e0b;color:#1f2937;font-size:11.5px;font-weight:800">↗ 결제선생 열기</a>'
+    +'<button onclick="payReload()" style="padding:7px 13px;border:none;border-radius:9px;background:rgba(255,255,255,.16);color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">🔄 다시 불러오기</button>'
+    +'</div></div>';
+
+  if(!PAY.loaded) return h+'<div style="padding:50px;text-align:center;color:#94a3b8;font-weight:700">💳 결제선생 자료를 불러오는 중…</div></div>';
+  if(PAY.err) h+='<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:11px;padding:10px 13px;margin-bottom:10px;font-size:12px;color:#b91c1c;font-weight:700">자료를 못 받았습니다 — '+esc2(PAY.err)+'</div>';
+
+  /* 가로 칩 줄 + 마지막 수집 시각 (모든 칸 공통) */
+  h+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">';
+  h+=payTabBar();
+  var upd=(PAY.monthly&&PAY.monthly.updated)?payStampLabel(PAY.monthly.updated):'';
+  h+='<div id="pay-updated" style="margin-left:auto;margin-bottom:11px;font-size:11.5px;font-weight:700;color:'+(upd?'#64748b':'#b91c1c')+'">'
+    +(upd?('🕐 마지막 수집 '+esc2(upd)):'🕐 마지막 수집 기록 없음')+'</div>';
+  h+='</div>';
+
+  var tab=PAY.tab||'pl';
+  if(tab==='stu')       h+=payPanelStu(ym);
+  else if(tab==='chk')  h+=payPanelChk(ym);
+  else if(tab==='cost') h+=payPanelCost(ym);
+  else if(tab==='rule') h+=payPanelRule();
+  else                  h+=payPanelPl();
   return h+'</div>';
 }
 window.rTuition=rTuition;
