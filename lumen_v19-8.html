@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-7';
+var APP_VER = 'v19-8';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -7909,6 +7909,21 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-8',date:'2026-09-16',stability:'ok',memo:'💳 <b>결제선생 수납 현황을 학원앱에서 보십니다</b> (원장 지시 2026-09-16 · docs/payssam_contract.md). '
+        +'<b>무엇이 불편했나</b> — 누가 냈고 누가 안 냈는지 보시려면 매번 <b>결제선생 홈페이지에 따로 들어가</b> 확인하셔야 했습니다. '
+        +'학원앱 안에는 수강료 이야기가 한 글자도 없었고, 상금을 얼마나 쓰고 있는지도 매출과 나란히 볼 곳이 없었습니다. '
+        +'<b>어디에 생겼나</b> — ① 위쪽 <b>🏫 운영 › 💳 수강료</b> 탭이 새로 생겼습니다. ② ⚙ <b>리그 설정 맨 위</b>에 「이번 달 수납 · 월 환산 상금 · 비율」 한 줄이 붙었습니다. '
+        +'<b>💳 수강료 화면에서 보시는 것</b> — 맨 위에서 <b>달을 고르고</b>(최근 4개월, 처음에는 이달), 그 아래 <b>요약 카드 넉 장</b>(청구 합계 · 수납 합계와 수납률 · 미납 건수와 금액 · 매출 보고서 승인−취소 합계)을 보십니다. '
+        +'그 아래 표는 <b>우리 명단 순서</b>(반 → 학년 → 이름)로, 학생마다 <b>청구액 · 수납액 · 상태 · 결제일 · 품목 · 결제수단</b>이 한 줄입니다. '
+        +'상태는 <b>수납 · 미납 · 부분 · 청구 없음</b> 네 가지이고, <b>안 내신 분은 줄 전체가 빨갛게</b> 표시됩니다. <b>퇴원한 학생은 나오지 않습니다.</b> '
+        +'<b>📋 미납 목록 복사</b>를 누르시면 「이름 · 금액 · 청구일」이 줄마다 적힌 글이 복사됩니다 — 카톡에 그대로 붙여넣으시면 됩니다(복사가 막힌 기기에서는 창이 떠서 직접 복사하실 수 있습니다). '
+        +'<b>이름은 이렇게 맞춥니다</b> — 결제선생에는 학생 코드가 없고 이름뿐입니다. ① 이름이 똑같은 학생이 한 명이면 그 학생, ② <b>같은 이름이 둘 이상이면 학부모 전화 뒤 4자리</b>로 가릅니다, '
+        +'③ 그래도 못 찾으면 화면 아래 <b>「🔗 미매칭」</b> 묶음에 따로 모아 둡니다. 거기에서 <b>학생을 한 번만 골라 주시면</b> 그 학생 정보에 결제선생 이름이 적혀(<code>payssamName</code>) 다음부터는 저절로 이어집니다. 잘못 고르셨으면 표에서 「풀기」를 누르시면 됩니다. '
+        +'<b>자료는 언제 들어오나</b> — 깃허브가 <b>매일 새벽 04:40</b>에 결제선생에 들어가 최근 청구서·결제를 받아 옵니다. 그래서 <b>오늘 낮에 들어온 결제는 내일 새벽에</b> 보입니다. '
+        +'화면 오른쪽 위에 <b>「마지막 수집」 시각</b>이 적혀 있으니, 날짜가 오래됐으면 수집이 멈춘 것입니다. 「🔄 다시 불러오기」는 <b>저장된 자료를 다시 읽는</b> 것이지 결제선생에 새로 들어가는 것은 아닙니다. '
+        +'<b>이 화면은 보기만 합니다</b> — 청구서를 새로 보내거나 다시 보내는 일은 <b>「↗ 결제선생 열기」</b>로 결제선생에서 하십니다. 비밀번호는 앱에 들어 있지 않습니다. '
+        +'<b>⚙ 리그 설정의 새 줄</b> — 「시즌 상금 합계」 바로 아래에 <b>이번 달 수납 n원 · 월 환산 상금 n원 · 비율 n%</b>가 나옵니다. '
+        +'월 환산 상금은 <b>진도 상금 ÷ 시즌 개월 + IB아하 상금 ÷ 시즌 개월 + 플래너 한 달 상금</b>입니다(달마다 실제로 나가는 돈). 수납 자료가 아직 없으면 「수납 자료 없음」이라고만 나옵니다.'},
       {ver:'v19-7',date:'2026-09-16',stability:'ok',memo:'📔 <b>플래너를 「루멘 리그」 한 종목으로 넣었습니다</b> (원장 결정 2026-09-16 · docs/planner_league_contract.md). '
         +'<b>무엇이 문제였나</b> — 플래너 점수는 매일 쌓이는데 <b>「이달 1·2·3등이 누구인지」</b>를 학원앱 어디에서도 한눈에 볼 수 없었습니다. '
         +'매달 드리는 상금 3만 원도 학생앱에는 한 글자도 나가지 않아, 학생들은 상이 있는 줄도 몰랐습니다. '
@@ -10441,6 +10456,8 @@ var GROUPS=[
   {key:'ops', icon:'🏫', label:'운영', memo:'가끔', subs:[
     {v:'studentdb', icon:'👤', label:'학생관리', act:function(){ VIEW='studentdb'; }},
     {v:'leveldb', icon:'🏆', label:'레벨관리', act:function(){ VIEW='leveldb'; }},
+    /* v19-8: 💳 수강료 — 결제선생 청구·수납 현황 (docs/payssam_contract.md §3) */
+    {v:'tuition', icon:'💳', label:'수강료', act:function(){ VIEW='tuition'; }},
     {v:'push', icon:'🔔', label:'알림', act:function(){ VIEW='push'; }},
     {v:'settings', icon:'⚙️', label:'설정', act:function(){ VIEW='settings'; }}
   ]}
@@ -16951,8 +16968,8 @@ function render(){
   if(RT){
     const groupLabel=MENU_GROUP==='all'?'전체 학생':MENU_GROUP==='none'?'미배정':MENU_GROUP;
     const selName=SELECTED_STUDENT?SELECTED_STUDENT.split('__')[0]:'';
-    const titles={home:'🏠 홈',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실'};
-    const subtitles={typeach:'AI 판독 · 검토 · 전송',list:'학생 카드',student_detail:STUDENT_TAB,studentdb:'등록부',books:'교재 라이브러리',quick:QUICK_TAB+' 입력',class_overview:'진도 현황 · 지연 감지',typedb:'수학 유형 분류 체계',form:'편집 · 미리보기 · 공유',preview:'편집 · 미리보기 · 공유',share:'편집 · 미리보기 · 공유',settings:'설정',bulk:'일괄 작업',exam:'시험지 분석 · O/X · 리포트',record:'특기사항 · 날짜별',pwa:'풀이 분석 · 검토 · 발송',notice:'작성 · 발행 · 읽음 현황',attend:'출석 · 결석보충 · 리커버리',vod:'강의 등록 · 배정 · 시청 모니터링'};
+    const titles={home:'🏠 홈',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실',tuition:'💳 수강료'};
+    const subtitles={typeach:'AI 판독 · 검토 · 전송',list:'학생 카드',student_detail:STUDENT_TAB,studentdb:'등록부',books:'교재 라이브러리',quick:QUICK_TAB+' 입력',class_overview:'진도 현황 · 지연 감지',typedb:'수학 유형 분류 체계',form:'편집 · 미리보기 · 공유',preview:'편집 · 미리보기 · 공유',share:'편집 · 미리보기 · 공유',settings:'설정',bulk:'일괄 작업',exam:'시험지 분석 · O/X · 리포트',record:'특기사항 · 날짜별',pwa:'풀이 분석 · 검토 · 발송',notice:'작성 · 발행 · 읽음 현황',attend:'출석 · 결석보충 · 리커버리',vod:'강의 등록 · 배정 · 시청 모니터링',tuition:'결제선생 청구 · 수납 · 미납'};
     RT.textContent=titles[VIEW]||'학생을 선택해주세요';
     const RST=document.getElementById('RIGHT_SUBTITLE');
     if(RST)RST.textContent=subtitles[VIEW]||'';
@@ -17066,6 +17083,7 @@ function render(){
     else if(VIEW==='record') C.innerHTML=rRecordTab();
     else if(VIEW==='attend') C.innerHTML=rAttend();
     else if(VIEW==='leveldb') C.innerHTML=rLevelMgr();
+    else if(VIEW==='tuition'){ try{ C.innerHTML=rTuition(); if(!PAY.loaded) setTimeout(payLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
     else if(VIEW==='form') C.innerHTML=rForm();
     else if(VIEW==='preview') C.innerHTML=rPreview();
     else if(VIEW==='share') C.innerHTML=rShare();
@@ -17117,6 +17135,7 @@ function render(){
     else if(VIEW==='record') C.innerHTML=rRecordTab();
     else if(VIEW==='attend') C.innerHTML=rAttend();
     else if(VIEW==='leveldb') C.innerHTML=rLevelMgr();
+    else if(VIEW==='tuition'){ try{ C.innerHTML=rTuition(); if(!PAY.loaded) setTimeout(payLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
     else if(VIEW==='form') C.innerHTML=rForm();
     else if(VIEW==='preview') C.innerHTML=rPreview();
     else if(VIEW==='share') C.innerHTML=rShare();
@@ -48784,6 +48803,18 @@ function ibqCfgOpen(from){
   if(!ov){ ov=document.createElement('div'); ov.id='ibq-cfg-ov'; document.body.appendChild(ov); }
   ov.style.cssText=IBQ_OV_CSS;
   ov.onclick=function(e){ if(e.target===ov) ibqCfgClose(); };
+  /* v19-8: 머리에 「매출 대비 상금」 줄을 넣으려면 수납 자료(pay_monthly)와
+   * 진도 레이스 시즌(race_season)이 있어야 한다 — 아직 없으면 조용히 받아 온다.
+   * 다 받으면 그 한 줄만 갈아 끼우므로 고치던 칸이 되돌아가지 않는다. */
+  try{ if(!PAY.loaded) payLoad(); }catch(e){}
+  try{
+    if(typeof raceLoad==='function' && typeof RACE!=='undefined' && !RACE.loaded){
+      var _rp=raceLoad();
+      if(_rp && _rp.then) _rp.then(function(){
+        try{ var pe=document.getElementById('ibq-cfg-pay'); if(pe) pe.innerHTML=payCfgLineInner(); }catch(e){}
+      });
+    }
+  }catch(e){}
   ibqCfgRender();
 }
 window.ibqCfgOpen=ibqCfgOpen;
@@ -48876,6 +48907,11 @@ function ibqCfgRender(){
       +Number(_psum.plannerPerMonth||0).toLocaleString()+'원 × '+Number(_psum.plannerMonths||0)+'개월)</span></span>'
     +'<span>👑 종합 <b style="color:#0f172a">'+ahaEsc(_psum.champ||'—')+'</b></span>'
     +'</div>';
+  /* ★ v19-8: 그 아래 「이번 달 수납 · 월 환산 상금 · 비율」 한 줄 (docs/payssam_contract.md §3)
+   *   상금을 얼마나 쓰고 있는지 매출과 나란히 보이게 한다. 수납 자료(pay_monthly)가
+   *   아직 없으면 「수납 자료 없음」으로만 적는다. */
+  h+='<div id="ibq-cfg-pay" style="background:#f8fafc;border-bottom:1px solid #e8eef8;padding:8px 16px;display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:#64748b;font-weight:700">'
+    +payCfgLineInner()+'</div>';
   h+='<div style="padding:14px 18px 18px">';
 
   h+=row('시즌 길이','끝나면 다음 시즌으로',
@@ -57310,6 +57346,508 @@ function rStuFeat(){
     +'설정을 한 번도 저장하지 않으면 학생앱은 <b>전부 켜진 것</b>으로 봅니다.</div>';
   return h+'</div>';
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+ * 💳 수강료 — 결제선생(payssam) 수납 현황 (v19-8 · docs/payssam_contract.md §1·§3)
+ * ══════════════════════════════════════════════════════════════════
+ * 새벽 04:40 에 깃허브가 결제선생 매니저(manager.payssam.kr)에 들어가
+ * 청구서·결제내역을 긁어와 lumen_store 의 네 칸에 넣어 둡니다.
+ * 이 화면은 그것을 <b>읽기만</b> 합니다 — 여기에서 청구서를 새로 보내거나
+ * 고칠 수는 없습니다(그 일은 「결제선생 열기」로 결제선생에서).
+ *
+ *   pay_bills     청구서(최근 120일)  items[{billId,txID,name,phone4,amount,billedAt,paidAt,…}]
+ *   pay_payments  결제  (최근 120일)  items[{txID,name,phone4,amount,approvedAt,cancelledAt,…}]
+ *   pay_monthly   달마다 합계         byMonth['2026-09']={billed,paid,unpaid,cancelled,destroyed,sales}
+ *   pay_students  결제선생 쪽 이름 목록 byName['홍길동']={studentSeq,phone4,lastBilledAt,lastPaidAt}
+ *
+ * [이름 맞추기] 결제선생에는 학생 코드가 없고 이름뿐이라 이렇게 맞춥니다.
+ *   ① 원장님이 손으로 이어 두신 이름(학생 항목의 payssamName)이 있으면 그것이 먼저
+ *   ② 이름이 똑같은 학생이 한 명이면 그 학생
+ *   ③ 같은 이름이 둘 이상(동명이인)이면 <b>학부모 전화 뒤 4자리</b>로 가릅니다
+ *   ④ 그래도 못 맞추면 「미매칭」 묶음에 두고, 드롭다운으로 손수 이어 줍니다
+ * 퇴원생은 표에 나오지 않습니다(맞추기에는 쓰되 화면에는 안 보입니다).
+ * 문자열 결합만 사용 (중첩 템플릿 리터럴 금지).
+ * ══════════════════════════════════════════════════════════════════ */
+var PAY = { loaded:false, loading:false, err:'', bills:null, pays:null, monthly:null, stus:null, ym:'' };
+
+/* ── 잔손 ── */
+function payWon(n){ return Number(n||0).toLocaleString()+'원'; }
+function payPhone4(p){ var d=String(p==null?'':p).replace(/[^0-9]/g,''); return d.length>=4?d.slice(-4):''; }
+function payYmOf(iso){ return String(iso==null?'':iso).slice(0,7); }
+/* '2026-09-01T…' → '9월 1일' (카톡 글에 쓰는 짧은 날짜) */
+function payDayLabel(iso){
+  var s=String(iso==null?'':iso);
+  if(s.length<10) return '';
+  return Number(s.slice(5,7))+'월 '+Number(s.slice(8,10))+'일';
+}
+/* '2026-09-01T04:40:11Z' → '2026.09.01 04:40' */
+function payStampLabel(iso){
+  var s=String(iso==null?'':iso);
+  if(s.length<10) return '';
+  return s.slice(0,10).replace(/-/g,'.')+((s.length>=16)?(' '+s.slice(11,16)):'');
+}
+/* 최근 n개월 (이달이 맨 앞) */
+function payRecentMonths(n){
+  var t=new Date(), out=[];
+  for(var i=0;i<(n||4);i++){
+    var d=new Date(t.getFullYear(), t.getMonth()-i, 1);
+    out.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+  }
+  return out;
+}
+function payYm(){ return PAY.ym || payRecentMonths(1)[0]; }
+function payStuKey(st){ return 's'+((st&&st.id!=null)?st.id:((st&&st.lumen_rec_code)||(st&&st.name)||'?')); }
+
+/* ── ☁️ 네 칸 한 번에 읽기 ── */
+async function payLoad(force){
+  if(PAY.loading) return;
+  if(PAY.loaded && !force) return;
+  PAY.loading=true;
+  try{
+    var sb=getSupaClient();
+    if(!sb){ PAY.loading=false; return; }
+    var r=await sb.from('lumen_store').select('key,value').in('key',['pay_bills','pay_payments','pay_monthly','pay_students']);
+    var m={};
+    ((r&&r.data)||[]).forEach(function(row){
+      var v=row.value;
+      if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+      m[row.key]=v;
+    });
+    PAY.bills=m.pay_bills||null;
+    PAY.pays=m.pay_payments||null;
+    PAY.monthly=m.pay_monthly||null;
+    PAY.stus=m.pay_students||null;
+    PAY.err='';
+    PAY.loaded=true;
+  }catch(e){
+    PAY.err=(e&&e.message)||String(e);
+    PAY.loaded=true;
+  }
+  PAY.loading=false;
+  try{ if(VIEW==='tuition') render(); }catch(e){}
+  /* 리그 설정 창이 열려 있으면 「매출 대비 상금」 한 줄만 조용히 갈아 끼운다
+   * (창 전체를 다시 그리면 원장님이 고치던 칸이 되돌아간다) */
+  try{
+    var pe=document.getElementById('ibq-cfg-pay');
+    if(pe) pe.innerHTML=payCfgLineInner();
+  }catch(e){}
+}
+window.payLoad=payLoad;
+window.payReload=function(){ PAY.loaded=false; payLoad(true); try{ plToast('결제선생 자료를 다시 불러옵니다…'); }catch(e){} };
+window.payGoMonth=function(ym){ PAY.ym=String(ym||''); render(); };
+
+/* ── 이름 → 학생 (계약서 §1 명단 매칭 규칙) ──
+ *   퇴원생도 「맞추기」에는 쓴다 — 그래야 옛 학생의 결제가 미매칭으로 튀지 않는다.
+ *   다만 화면 표에는 재원생만 나온다. */
+function payFindStudent(name, phone4){
+  var all=(typeof students!=='undefined'&&students)?students:[];
+  var nm=String(name==null?'':name).trim();
+  if(!nm) return null;
+  var p4=payPhone4(phone4);
+  /* ① 손 매칭(payssamName)이 가장 먼저 */
+  var man=all.filter(function(s){ return String(s.payssamName||'').trim()===nm; });
+  if(man.length===1) return man[0];
+  if(man.length>1){
+    var m2=p4?man.filter(function(s){ return payPhone4(s.parentPhone)===p4; }):[];
+    if(m2.length===1) return m2[0];
+    return null;
+  }
+  /* ② 이름 완전 일치 */
+  var hit=all.filter(function(s){ return String(s.name||'').trim()===nm; });
+  if(hit.length===1) return hit[0];
+  /* ③ 동명이인 → 학부모 전화 뒤 4자리로 가른다 */
+  if(hit.length>1){
+    var h2=p4?hit.filter(function(s){ return payPhone4(s.parentPhone)===p4; }):[];
+    if(h2.length===1) return h2[0];
+  }
+  return null;
+}
+window.payFindStudent=payFindStudent;
+
+/* 학년을 순서로 (초1=0 … 고3=22) */
+function payGradeRank(g){
+  var s=String(g==null?'':g);
+  var lv=/초/.test(s)?0:(/고/.test(s)?2:1);
+  var m=s.match(/(\d)/);
+  return lv*10+(m?Number(m[1]):9);
+}
+/* 명단 순 — 반 → 학년 → 이름 (퇴원생 제외) */
+function paySortedStudents(){
+  return activeStudents().slice().sort(function(a,b){
+    var ga=String(a.group||'힣'), gb=String(b.group||'힣');
+    if(ga!==gb) return ga.localeCompare(gb,'ko');
+    var ra=payGradeRank(a.grade), rb=payGradeRank(b.grade);
+    if(ra!==rb) return ra-rb;
+    return String(a.name||'').localeCompare(String(b.name||''),'ko');
+  });
+}
+
+/* ── 한 달치 계산 (계약서 §3) ──
+ *   이달 청구 = pay_bills 중 billedAt 이 그달인 것 (같은 학생 여러 건이면 합계)
+ *   수납      = 그 청구 중 paidAt 이 있는 것의 청구액 합
+ *              + pay_payments 중 「청구서가 아예 없는 결제」(같은 txID 는 한 번만) */
+function payData(ym){
+  var bills=((PAY.bills&&PAY.bills.items)||[]);
+  var pays=((PAY.pays&&PAY.pays.items)||[]);
+  var byStu={}, miss={};
+  /* 청구서가 물고 있는 결제번호는 달을 가리지 않고 모두 모은다 —
+   * 「청구서 없는 결제」인지 가려내려면 지난달 청구서도 알아야 한다 */
+  var billTx={};
+  bills.forEach(function(b){ if(b&&b.txID) billTx[String(b.txID)]=1; });
+  var seenTx={};
+
+  var blank=function(name,phone4){
+    return { name:String(name==null?'':name), phone4:payPhone4(phone4), st:null,
+             billed:0, paid:0, nBill:0, nPaid:0, reasons:[], methods:[], paidAt:'', billedAt:'' };
+  };
+  var slot=function(name,phone4){
+    var st=payFindStudent(name,phone4);
+    if(st){
+      var k=payStuKey(st);
+      if(!byStu[k]){ byStu[k]=blank(st.name,st.parentPhone); byStu[k].st=st; }
+      return byStu[k];
+    }
+    var mk=String(name==null?'':name)+'#'+payPhone4(phone4);
+    if(!miss[mk]) miss[mk]=blank(name,phone4);
+    return miss[mk];
+  };
+
+  bills.forEach(function(b){
+    if(!b) return;
+    if(b.destroyedAt) return;                       /* 폐기한 청구서는 세지 않는다 */
+    if(payYmOf(b.billedAt)!==ym) return;
+    var o=slot(b.name,b.phone4);
+    o.billed+=Number(b.amount)||0; o.nBill++;
+    if(!o.billedAt || String(b.billedAt)<o.billedAt) o.billedAt=String(b.billedAt||'');
+    if(b.reason && o.reasons.indexOf(b.reason)<0) o.reasons.push(b.reason);
+    if(b.paidAt){
+      o.paid+=Number(b.amount)||0; o.nPaid++;
+      if(b.txID) seenTx[String(b.txID)]=1;
+      if(String(b.paidAt)>o.paidAt) o.paidAt=String(b.paidAt);
+      var bm=b.payType||'';
+      if(bm && o.methods.indexOf(bm)<0) o.methods.push(bm);
+    }
+  });
+  pays.forEach(function(p){
+    if(!p) return;
+    if(p.cancelledAt) return;                       /* 취소된 결제는 수납이 아니다 */
+    if(payYmOf(p.approvedAt)!==ym) return;
+    var tx=String(p.txID||'');
+    if(tx && billTx[tx]) return;                    /* 청구서로 이미 센 결제 */
+    if(tx && seenTx[tx]) return;                    /* 같은 결제가 두 번 들어온 경우 */
+    if(tx) seenTx[tx]=1;
+    var o=slot(p.name,p.phone4);
+    o.paid+=Number(p.amount)||0; o.nPaid++;
+    if(String(p.approvedAt)>o.paidAt) o.paidAt=String(p.approvedAt);
+    if(p.reason && o.reasons.indexOf(p.reason)<0) o.reasons.push(p.reason);
+    var pm=p.ledger||p.payType||'';
+    if(pm && o.methods.indexOf(pm)<0) o.methods.push(pm);
+  });
+
+  /* 표 — 명단 순(재원생만). 자료가 없는 학생도 「청구 없음」으로 한 줄 */
+  var rows=paySortedStudents().map(function(st){
+    var o=byStu[payStuKey(st)]||null;
+    return { st:st, o:o, state:payState(o) };
+  });
+
+  /* 미매칭 — pay_students.byName 중 명단에 못 맞춘 이름이 먼저,
+   * 청구·결제에만 있고 명단에 없는 이름도 빠뜨리지 않는다 */
+  var missArr=[], seenName={};
+  var byName=((PAY.stus&&PAY.stus.byName)||{});
+  Object.keys(byName).forEach(function(nm){
+    var info=byName[nm]||{};
+    if(payFindStudent(nm,info.phone4)) return;
+    var mk=String(nm)+'#'+payPhone4(info.phone4);
+    seenName[mk]=1;
+    var s=miss[mk]||null;
+    missArr.push({ name:String(nm), phone4:payPhone4(info.phone4),
+                   lastBilledAt:info.lastBilledAt||'', lastPaidAt:info.lastPaidAt||'',
+                   billed:s?s.billed:0, paid:s?s.paid:0 });
+  });
+  Object.keys(miss).forEach(function(mk){
+    if(seenName[mk]) return;
+    var s=miss[mk];
+    missArr.push({ name:s.name, phone4:s.phone4, lastBilledAt:s.billedAt, lastPaidAt:s.paidAt,
+                   billed:s.billed, paid:s.paid });
+  });
+  missArr.sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'ko'); });
+
+  return { rows:rows, miss:missArr, byStu:byStu };
+}
+window.payData=payData;
+
+/* 상태 — 수납 / 미납 / 부분 / 청구 없음 */
+function payState(o){
+  if(!o) return '청구 없음';
+  if(!(o.billed>0)) return (o.paid>0)?'수납':'청구 없음';
+  if(!(o.paid>0)) return '미납';
+  if(o.paid>=o.billed) return '수납';
+  return '부분';
+}
+window.payState=payState;
+
+/* ── 요약 카드 넉 장 ──
+ *   pay_monthly(결제선생이 스스로 낸 합계)를 먼저 쓰고, 그달 자료가 없으면
+ *   청구·결제 줄에서 직접 센다. */
+function paySummary(ym){
+  var mm=(((PAY.monthly||{}).byMonth||{})[ym])||null;
+  if(mm){
+    var pd=mm.paid||{count:0,amount:0};
+    var pct=(typeof pd.pct==='number')?pd.pct
+          : (((mm.billed&&mm.billed.amount)>0)?Math.round(Number(pd.amount||0)/Number(mm.billed.amount)*1000)/10:0);
+    return { src:'monthly',
+             billed:mm.billed||{count:0,amount:0},
+             paid:{count:Number(pd.count)||0, amount:Number(pd.amount)||0, pct:pct},
+             unpaid:mm.unpaid||{count:0,amount:0},
+             sales:mm.sales||null };
+  }
+  var d=payData(ym), bc=0, ba=0, pc=0, pa=0, uc=0, ua=0;
+  d.rows.concat(d.miss.map(function(m){ return { o:{billed:m.billed,paid:m.paid,nBill:m.billed?1:0,nPaid:m.paid?1:0}, state:null }; }))
+   .forEach(function(r){
+     var o=r.o; if(!o) return;
+     bc+=Number(o.nBill)||0; ba+=Number(o.billed)||0;
+     pc+=Number(o.nPaid)||0; pa+=Number(o.paid)||0;
+     if(o.billed>o.paid){ uc++; ua+=(Number(o.billed)||0)-(Number(o.paid)||0); }
+   });
+  return { src:'calc', billed:{count:bc,amount:ba},
+           paid:{count:pc,amount:pa,pct:ba>0?Math.round(pa/ba*1000)/10:0},
+           unpaid:{count:uc,amount:ua}, sales:null };
+}
+window.paySummary=paySummary;
+
+/* ── 📋 미납 목록 복사 글 (카톡용) ── */
+function payUnpaidText(ym){
+  var d=payData(ym), lines=[], n=0, sum=0;
+  d.rows.forEach(function(r){
+    if(r.state!=='미납' && r.state!=='부분') return;
+    var rest=Math.max(0,(r.o?r.o.billed:0)-(r.o?r.o.paid:0));
+    n++; sum+=rest;
+    lines.push(String(r.st.name||'')+' · '+payWon(rest)+' · '+(payDayLabel(r.o&&r.o.billedAt)||'청구일 모름'));
+  });
+  if(!lines.length) return '';
+  return '[루멘수학] '+ym+' 미납 '+n+'건 · '+payWon(sum)+'\n'+lines.join('\n');
+}
+window.payUnpaidText=payUnpaidText;
+window.payCopyUnpaid=function(){
+  var t=payUnpaidText(payYm());
+  if(!t){ try{ plToast('미납이 없습니다 — 모두 수납되었습니다'); }catch(e){} return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(
+      function(){ try{ plToast('📋 미납 목록을 복사했습니다 — 카톡에 붙여넣으세요'); }catch(e){} },
+      function(){ window.prompt('복사(Ctrl+C) 후 카톡에 붙여넣기:', t); });
+  }else{
+    window.prompt('복사(Ctrl+C) 후 카톡에 붙여넣기:', t);
+  }
+};
+
+/* ── 손 매칭 — 결제선생 이름을 학생에게 이어 둔다 (or_studentdb 의 payssamName) ── */
+function payLink(payName, stuId){
+  var nm=String(payName==null?'':payName).trim();
+  if(!nm || !stuId) return false;
+  var st=((typeof students!=='undefined'&&students)||[]).filter(function(s){ return String(s.id)===String(stuId); })[0];
+  if(!st){ try{ alert('학생을 찾지 못했습니다'); }catch(e){} return false; }
+  st.payssamName=nm;
+  saveStudents();
+  try{ plToast('✅ '+st.name+' ↔ 결제선생 「'+nm+'」 로 이어 두었습니다'); }catch(e){}
+  try{ render(); }catch(e){}
+  return true;
+}
+window.payLink=payLink;
+window.payLinkAt=function(i, stuId){
+  if(!stuId) return;
+  var m=payData(payYm()).miss[Number(i)];
+  if(!m) return;
+  payLink(m.name, stuId);
+};
+window.payUnlink=function(stuId){
+  var st=((typeof students!=='undefined'&&students)||[]).filter(function(s){ return String(s.id)===String(stuId); })[0];
+  if(!st) return;
+  delete st.payssamName;
+  saveStudents();
+  try{ plToast('손 매칭을 풀었습니다'); }catch(e){}
+  try{ render(); }catch(e){}
+};
+
+/* ══ 🏆 리그 설정 머리의 「매출 대비 상금」 한 줄 (계약서 §3) ══
+ *   시즌 상금을 한 달치로 환산해 이번 달 수납액과 견준다.
+ *     진도  = race_season 상금 total ÷ 시즌 개월(from~to)
+ *     IB아하 = 리그 상금 total ÷ 시즌 개월(seasonStart~seasonEnd)
+ *     플래너 = 한 달 총상금 그대로 (원래 달마다 주는 상금이다)
+ *   여기 숫자는 원장님만 보시는 것이라, 학생앱에 숨긴 종목도 금액을 셉니다 —
+ *   실제로 나가는 돈이기 때문입니다. */
+function payMonthsBetween(from,to){
+  var a=String(from==null?'':from).slice(0,7), b=String(to==null?'':to).slice(0,7);
+  if(a.length!==7||b.length!==7||a>b) return 0;
+  var n=0, cur=a, guard=0;
+  while(cur<=b && guard++<60){ n++; cur=lgPlShiftMonth(cur,1); }
+  return n;
+}
+function payPrizeMonthly(){
+  var out={ race:0, aha:0, planner:0, total:0 };
+  try{
+    var s=(typeof RACE!=='undefined'&&RACE&&RACE.season)?RACE.season:null;
+    var rt=Number(((s||{}).prizes||{}).total)||0;
+    var rm=s?payMonthsBetween(s.from,s.to):0;
+    out.race=(rt&&rm)?Math.round(rt/rm):0;
+  }catch(e){}
+  try{
+    var am=lgPlSeasonMonths().length;
+    var at=Number(lgPrize().total)||0;
+    out.aha=(at&&am)?Math.round(at/am):0;
+  }catch(e){}
+  try{ out.planner=Number(lgPlannerCfg().total)||0; }catch(e){}
+  out.total=out.race+out.aha+out.planner;
+  return out;
+}
+window.payPrizeMonthly=payPrizeMonthly;
+/* 이번 달 수납액 — pay_monthly 에 이달 자료가 없으면 null */
+function payThisMonthPaid(){
+  var ym=payRecentMonths(1)[0];
+  var mm=(((PAY.monthly||{}).byMonth||{})[ym])||null;
+  if(mm && mm.paid && mm.paid.amount!=null) return Number(mm.paid.amount)||0;
+  return null;
+}
+window.payThisMonthPaid=payThisMonthPaid;
+function payCfgLineInner(){
+  var pz=payPrizeMonthly();
+  var brk='<span style="font-weight:600;color:#94a3b8">(🏁 진도 '+Number(pz.race).toLocaleString()
+    +' + 💡 IB아하 '+Number(pz.aha).toLocaleString()
+    +' + 📔 플래너 '+Number(pz.planner).toLocaleString()+')</span>';
+  var paid=payThisMonthPaid();
+  if(paid==null){
+    return '<span>💳 이번 달 수납 <b style="color:#94a3b8">수납 자료 없음</b></span>'
+      +'<span>🎁 월 환산 상금 <b style="color:#0f172a">'+Number(pz.total).toLocaleString()+'원</b></span>'
+      +brk;
+  }
+  var pct=(paid>0)?(Math.round(pz.total/paid*1000)/10):0;
+  return '<span>💳 이번 달 수납 <b style="font-size:13px;color:#0d2240">'+Number(paid).toLocaleString()+'원</b></span>'
+    +'<span>🎁 월 환산 상금 <b style="color:#0f172a">'+Number(pz.total).toLocaleString()+'원</b></span>'
+    +'<span>📉 비율 <b style="color:'+((pct>=10)?'#b91c1c':'#0f172a')+'">'+pct+'%</b></span>'
+    +brk;
+}
+window.payCfgLineInner=payCfgLineInner;
+
+/* ══════════ 화면 ══════════ */
+function payCard(ic,title,big,sub,tint){
+  return '<div style="flex:1;min-width:180px;background:#fff;border:1px solid #e6eaf1;border-left:4px solid '+tint+';border-radius:12px;padding:12px 14px">'
+    +'<div style="font-size:11px;font-weight:800;color:#64748b">'+ic+' '+esc2(title)+'</div>'
+    +'<div style="font-size:20px;font-weight:900;color:#0d2240;margin-top:3px">'+big+'</div>'
+    +'<div style="font-size:11px;font-weight:700;color:#94a3b8;margin-top:2px">'+sub+'</div></div>';
+}
+function payStateChip(s){
+  var c={'수납':['#ecfdf5','#047857'],'미납':['#fef2f2','#b91c1c'],'부분':['#fff7ed','#c2410c'],'청구 없음':['#f1f5f9','#94a3b8']}[s]||['#f1f5f9','#94a3b8'];
+  return '<span style="display:inline-block;border-radius:50px;padding:3px 10px;font-size:11px;font-weight:800;background:'+c[0]+';color:'+c[1]+'">'+esc2(s)+'</span>';
+}
+function rTuition(){
+  var ym=payYm();
+  var h='<div style="max-width:1220px">';
+  /* 머리 */
+  h+='<div style="background:linear-gradient(135deg,#0d2240,#1d3a60);border-radius:14px;padding:14px 20px;margin-bottom:12px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">'
+    +'<div><div style="font-size:18px;font-weight:900;color:#fff">💳 수강료</div>'
+    +'<div style="font-size:11.5px;color:#aebfd8;margin-top:2px">결제선생 청구·수납 현황 — 새벽 04:40 에 저절로 받아 옵니다 (이 화면은 보기만 합니다)</div></div>'
+    +'<div style="margin-left:auto;display:flex;gap:7px;flex-wrap:wrap;align-items:center">'
+    +'<a href="https://manager.payssam.kr" target="_blank" rel="noopener" id="pay-open-payssam" style="text-decoration:none;padding:7px 13px;border-radius:9px;background:#f59e0b;color:#1f2937;font-size:11.5px;font-weight:800">↗ 결제선생 열기</a>'
+    +'<button onclick="payReload()" style="padding:7px 13px;border:none;border-radius:9px;background:rgba(255,255,255,.16);color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">🔄 다시 불러오기</button>'
+    +'</div></div>';
+
+  if(!PAY.loaded) return h+'<div style="padding:50px;text-align:center;color:#94a3b8;font-weight:700">💳 결제선생 자료를 불러오는 중…</div></div>';
+  if(PAY.err) h+='<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:11px;padding:10px 13px;margin-bottom:10px;font-size:12px;color:#b91c1c;font-weight:700">자료를 못 받았습니다 — '+esc2(PAY.err)+'</div>';
+
+  /* 달 고르기 + 마지막 수집 시각 */
+  var months=payRecentMonths(4);
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:11px">';
+  months.forEach(function(m){
+    var on=(m===ym);
+    h+='<button onclick="payGoMonth(\''+m+'\')" style="border-radius:9px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;'
+      +(on?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#64748b;border:1px solid #cbd5e1')+'">'+m+'</button>';
+  });
+  var upd=(PAY.monthly&&PAY.monthly.updated)?payStampLabel(PAY.monthly.updated):'';
+  h+='<div id="pay-updated" style="margin-left:auto;font-size:11.5px;font-weight:700;color:'+(upd?'#64748b':'#b91c1c')+'">'
+    +(upd?('🕐 마지막 수집 '+esc2(upd)):'🕐 마지막 수집 기록 없음')+'</div>';
+  h+='</div>';
+
+  /* 요약 카드 넉 장 */
+  var sm=paySummary(ym);
+  h+='<div id="pay-cards" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px">';
+  h+=payCard('🧾','청구 합계', payWon(sm.billed.amount), (Number(sm.billed.count)||0)+'건', '#1d6fe8');
+  h+=payCard('💰','수납 합계', payWon(sm.paid.amount), (Number(sm.paid.count)||0)+'건 · 수납률 '+(Number(sm.paid.pct)||0)+'%', '#22c55e');
+  h+=payCard('⚠️','미납', (Number(sm.unpaid.count)||0)+'건', payWon(sm.unpaid.amount), '#ef4444');
+  if(sm.sales){
+    h+=payCard('📊','매출 보고서',
+      payWon(sm.sales.total),
+      '승인 '+Number(sm.sales.approval||0).toLocaleString()+' − 취소 '+Number(sm.sales.cancel||0).toLocaleString()+' · '+(Number(sm.sales.count)||0)+'건',
+      '#6d28d9');
+  }else{
+    h+=payCard('📊','매출 보고서','—','이 달 보고서 자료가 없습니다','#94a3b8');
+  }
+  h+='</div>';
+
+  /* 표 */
+  var d=payData(ym);
+  var unpaidN=d.rows.filter(function(r){ return r.state==='미납'||r.state==='부분'; }).length;
+  h+='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px">'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240">'+esc2(ym)+' 학생별 수납</div>'
+    +'<div style="font-size:11.5px;font-weight:700;color:#94a3b8">명단 순(반 → 학년 → 이름) · 재원생 '+d.rows.length+'명</div>'
+    +'<button onclick="payCopyUnpaid()" id="pay-copy-btn" style="margin-left:auto;padding:7px 14px;border:none;border-radius:9px;background:'+(unpaidN?'#b91c1c':'#94a3b8')+';color:#fff;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">📋 미납 목록 복사'+(unpaidN?(' ('+unpaidN+')'):'')+'</button>'
+    +'</div>';
+  h+='<div style="background:#fff;border:1px solid #e6eaf1;border-radius:13px;overflow:auto">'
+    +'<table id="pay-table" style="width:100%;border-collapse:collapse;font-size:12.5px">'
+    +'<thead><tr style="background:#f8fafc;color:#64748b;font-size:11px;font-weight:800;text-align:left">'
+    +'<th style="padding:9px 12px">이름</th><th style="padding:9px 12px;text-align:right">청구액</th>'
+    +'<th style="padding:9px 12px;text-align:right">수납액</th><th style="padding:9px 12px">상태</th>'
+    +'<th style="padding:9px 12px">결제일</th><th style="padding:9px 12px">품목</th><th style="padding:9px 12px">결제수단</th>'
+    +'</tr></thead><tbody>';
+  d.rows.forEach(function(r){
+    var o=r.o, bad=(r.state==='미납'||r.state==='부분');
+    h+='<tr class="pay-row'+(bad?' pay-unpaid':'')+'" data-state="'+esc2(r.state)+'" style="border-top:1px solid #eef2f7;'+(bad?'background:#fef2f2;':'')+'">'
+      +'<td style="padding:9px 12px">'
+        +'<span style="font-weight:800;color:'+(bad?'#b91c1c':'#0d2240')+'">'+esc2(r.st.name||'')+'</span>'
+        +'<span style="font-size:10.5px;color:#94a3b8;font-weight:700"> '+esc2(r.st.group||'-')+' · '+esc2(r.st.grade||'-')+'</span>'
+        +(r.st.payssamName?('<span style="font-size:10px;color:#6d28d9;font-weight:800"> · 결제선생 「'+esc2(r.st.payssamName)+'」 <span onclick="payUnlink(\''+esc2(String(r.st.id))+'\')" style="cursor:pointer;text-decoration:underline">풀기</span></span>'):'')
+      +'</td>'
+      +'<td style="padding:9px 12px;text-align:right;font-weight:800;color:#0d2240">'+(o&&o.billed?payWon(o.billed):'—')+'</td>'
+      +'<td style="padding:9px 12px;text-align:right;font-weight:800;color:'+((o&&o.paid)?'#047857':'#94a3b8')+'">'+((o&&o.paid)?payWon(o.paid):'—')+'</td>'
+      +'<td style="padding:9px 12px">'+payStateChip(r.state)+'</td>'
+      +'<td style="padding:9px 12px;color:#475569;font-weight:700">'+((o&&o.paidAt)?esc2(payStampLabel(o.paidAt).slice(0,10)):'—')+'</td>'
+      +'<td style="padding:9px 12px;color:#475569">'+esc2((o&&o.reasons.length)?o.reasons.join(', '):'—')+'</td>'
+      +'<td style="padding:9px 12px;color:#475569">'+esc2((o&&o.methods.length)?o.methods.join(', '):'—')+'</td>'
+      +'</tr>';
+  });
+  if(!d.rows.length) h+='<tr><td colspan="7" style="padding:26px;text-align:center;color:#94a3b8;font-weight:700">재원생이 없습니다</td></tr>';
+  h+='</tbody></table></div>';
+
+  /* 미매칭 묶음 */
+  h+='<div id="pay-unmatched" style="margin-top:14px">';
+  h+='<div style="font-size:14px;font-weight:900;color:#0d2240;margin-bottom:4px">🔗 미매칭 '+(d.miss.length?('('+d.miss.length+'명)'):'')+'</div>';
+  if(!d.miss.length){
+    h+='<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:11px;padding:11px 14px;font-size:12px;color:#047857;font-weight:700">결제선생의 이름이 모두 우리 명단과 이어져 있습니다 👍</div>';
+  }else{
+    h+='<div style="font-size:11.5px;color:#64748b;font-weight:700;margin-bottom:7px">결제선생에는 있는데 우리 명단에서 못 찾은 이름입니다 — 학생을 골라 주시면 다음부터는 저절로 이어집니다.</div>';
+    var opts='<option value="">학생 고르기…</option>';
+    paySortedStudents().forEach(function(s){
+      opts+='<option value="'+esc2(String(s.id))+'">'+esc2(s.name||'')+' ('+esc2(s.group||'-')+' · '+esc2(s.grade||'-')+')</option>';
+    });
+    h+='<div style="background:#fff;border:1px solid #e6eaf1;border-radius:13px;padding:6px 0">';
+    d.miss.forEach(function(m,i){
+      h+='<div class="pay-miss-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 14px;border-top:'+(i?'1px solid #eef2f7':'none')+'">'
+        +'<div style="min-width:150px"><span style="font-size:13px;font-weight:900;color:#c2410c">'+esc2(m.name)+'</span>'
+        +(m.phone4?('<span style="font-size:10.5px;color:#94a3b8;font-weight:700"> · 뒤 '+esc2(m.phone4)+'</span>'):'')+'</div>'
+        +'<div style="font-size:11.5px;color:#64748b;font-weight:700;min-width:190px">청구 '+payWon(m.billed)+' · 수납 '+payWon(m.paid)
+        +(m.lastPaidAt?(' · 최근 결제 '+esc2(String(m.lastPaidAt).slice(0,10))):'')+'</div>'
+        +'<select class="pay-miss-sel" onchange="payLinkAt('+i+',this.value)" style="margin-left:auto;border:1px solid #cbd5e1;border-radius:8px;padding:6px 9px;font-size:12px;font-weight:700;font-family:inherit;color:#0d2240">'+opts+'</select>'
+        +'</div>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+
+  h+='<div style="font-size:11.5px;color:#94a3b8;font-weight:700;margin-top:12px;line-height:1.8">'
+    +'청구서를 새로 보내거나 다시 보내는 일은 <b>결제선생</b>에서 하십니다 — 위 「↗ 결제선생 열기」를 누르세요.<br>'
+    +'이 화면의 숫자는 새벽에 받아 온 것이라, 오늘 낮에 들어온 결제는 <b>내일 새벽</b>에 보입니다.</div>';
+  return h+'</div>';
+}
+window.rTuition=rTuition;
 
 function rPeek(){
   var all=activeStudents().filter(function(s){ return s.lumen_rec_code; });
