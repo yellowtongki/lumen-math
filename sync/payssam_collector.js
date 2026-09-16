@@ -304,6 +304,18 @@ function buildStudents(payments, bills) {
 const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const SB_KEY = process.env.SUPABASE_SERVICE_KEY;
 function sbH(extra) { return Object.assign({ apikey: SB_KEY, authorization: `Bearer ${SB_KEY}` }, extra || {}); }
+async function storeGet(keys) {
+  const url = SB_URL + '/rest/v1/lumen_store?key=in.(' + keys.join(',') + ')&select=key,value';
+  try {
+    const r = await fetch(url, { headers: { apikey: SB_KEY, authorization: 'Bearer ' + SB_KEY } });
+    if (!r.ok) return {};
+    const rows = await r.json();
+    const out = {};
+    rows.forEach((x) => { out[x.key] = x.value; });
+    return out;
+  } catch (e) { return {}; }
+}
+
 async function storeSet(key, value) {
   if (!SB_URL || !SB_KEY) { log(`저장 건너뜀 (SUPABASE 환경변수 없음): ${key}`); return false; }
   const r = await fetch(`${SB_URL}/rest/v1/lumen_store`, {
@@ -319,8 +331,25 @@ async function storeSet(key, value) {
 /* ═══════════════════════ 3. 날짜 도구 (한국 시간 기준) ═══════════════════════ */
 
 function kstNow() { return new Date(Date.now() + 9 * 3600 * 1000); }
+let FORCE = false;                 // --force 일 때만 빈 결과로 덮어쓴다
 function ymd(d) { return d.toISOString().slice(0, 10).replace(/-/g, ''); }        // YYYYMMDD
 function daysAgo(d, n) { return new Date(d.getTime() - n * 86400000); }
+/* 결제선생은 1년이 넘는 기간을 조회하면 빈 결과를 돌려준다(2026-09-16 실측: 730일 → 0건).
+ * 그래서 긴 기간은 90일짜리 조각으로 나눠 받아 합친다. */
+function dateChunks(nowDate, days, win) {
+  win = win || 90;
+  const out = [];
+  let end = new Date(nowDate.getTime());
+  let left = days;
+  while (left > 0) {
+    const take = Math.min(left, win);
+    const start = daysAgo(end, take);
+    out.push({ start: ymd(start), end: ymd(end) });
+    end = daysAgo(start, 1);
+    left -= take;
+  }
+  return out.reverse();
+}
 /** 최근 n개월의 {ym:'YYYY-MM', start:'YYYYMMDD', end:'YYYYMMDD'} 목록 (이번 달 포함, 옛→새) */
 function recentMonths(n) {
   const now = kstNow();
@@ -407,14 +436,15 @@ function parseArgs(argv) {
     const n = Number(argv[i + 1]);
     return isFinite(n) && n > 0 ? n : def;
   };
-  return { days: get('--days', 120), months: get('--months', 4), dry: argv.includes('--dry') };
+  return { days: get('--days', 120), months: get('--months', 4), dry: argv.includes('--dry'), force: argv.includes('--force') };
 }
 
 async function main() {
   const opt = parseArgs(process.argv.slice(2));
   const ID = process.env.PAYSSAM_ID, PW = process.env.PAYSSAM_PASSWORD;
   if (!ID || !PW) { console.error('❌ PAYSSAM_ID / PAYSSAM_PASSWORD 환경변수가 없습니다'); process.exit(1); }
-  log(`시작 · 최근 ${opt.days}일 · 달 ${opt.months}개 · ${opt.dry ? '시험(저장 안 함)' : '저장'}`);
+  FORCE = !!opt.force;
+  log(`시작 · 최근 ${opt.days}일 · 달 ${opt.months}개 · ${opt.dry ? '시험(저장 안 함)' : '저장'}${FORCE ? ' · 강제 덮어쓰기' : ''}`);
 
   const { chromium } = require('playwright');
   const proxy = process.env.HTTPS_PROXY || process.env.https_proxy;
@@ -513,19 +543,27 @@ async function main() {
     const endDate = ymd(now), startDate = ymd(daysAgo(now, opt.days));
     log(`조회 기간: ${startDate} ~ ${endDate}`);
 
-    /* ── (f) 결제 목록 (쪽 넘김) ── */
-    stage = '결제 목록';
-    const payRows = await fetchPaged(call, `${MGR_API}/payment/detail/v2`, {
-      state: 'ALL', payType: null, startDate, endDate, vatRate: null, keyword: '',
-      merchantCode, rowNumber: 100, businessType: null,
-    }, '결제 목록');
-
-    /* ── (g) 청구 목록 (쪽 넘김) ── */
-    stage = '청구 목록';
-    const billRows = await fetchPaged(call, `${MGR_API}/bill/detail/v2/unpaid/bills`, {
-      state: 'BILL_ALL', startDate, endDate, vatRate: null, keyword: '',
-      merchantCode, rowNumber: 100, businessType: null,
-    }, '청구 목록');
+    /* ── (f)(g) 결제·청구 목록 — 90일 조각으로 나눠 받아 합친다 ── */
+    const chunks = dateChunks(now, opt.days, 90);
+    if (chunks.length > 1) log(`기간을 ${chunks.length}조각으로 나눠 받습니다 (한 번에 1년이 넘으면 결제선생이 빈 결과를 줍니다)`);
+    const payRows = [], billRows = [];
+    const seenPay = {}, seenBill = {};
+    for (const ch of chunks) {
+      stage = '결제 목록';
+      const pr = await fetchPaged(call, `${MGR_API}/payment/detail/v2`, {
+        state: 'ALL', payType: null, startDate: ch.start, endDate: ch.end, vatRate: null, keyword: '',
+        merchantCode, rowNumber: 100, businessType: null,
+      }, `결제 목록 ${ch.start}~${ch.end}`);
+      pr.forEach((x) => { const k = String(x && (x.txID || x.approvalNumber) || Math.random()); if (!seenPay[k]) { seenPay[k] = 1; payRows.push(x); } });
+      await sleep(GAP);
+      stage = '청구 목록';
+      const br = await fetchPaged(call, `${MGR_API}/bill/detail/v2/unpaid/bills`, {
+        state: 'BILL_ALL', startDate: ch.start, endDate: ch.end, vatRate: null, keyword: '',
+        merchantCode, rowNumber: 100, businessType: null,
+      }, `청구 목록 ${ch.start}~${ch.end}`);
+      br.forEach((x) => { const k = String(x && (x.billId || x.txID) || Math.random()); if (!seenBill[k]) { seenBill[k] = 1; billRows.push(x); } });
+      await sleep(GAP);
+    }
 
     /* ── (h) 달별 요약·매출 보고서 ── */
     stage = '달별 요약';
@@ -565,10 +603,21 @@ async function main() {
     if (opt.dry) { log('시험 실행(--dry) — 저장하지 않음'); }
     else {
       stage = '저장';
-      await storeSet('pay_payments', { updated, from: startDate, to: endDate, items: payments });
-      await storeSet('pay_bills', { updated, from: startDate, to: endDate, items: bills });
+      /* 안전장치: 이번에 하나도 못 받았는데 전에 받아 둔 것이 있으면 덮어쓰지 않는다.
+       * (2026-09-16: 730일 조회가 빈 결과를 줘서 청구 116건·결제 100건이 통째로 지워졌던 일) */
+      const prev = await storeGet(['pay_payments', 'pay_bills', 'pay_students']);
+      const keep = (name, got, before) => {
+        if (got > 0 || FORCE) return true;
+        if (before > 0) { log(`⚠ ${name}: 이번엔 0건인데 전에 ${before}건이 있어 덮어쓰지 않습니다 (강제로 덮으려면 --force)`); return false; }
+        return true;
+      };
+      const nPrevPay = ((prev.pay_payments || {}).items || []).length;
+      const nPrevBill = ((prev.pay_bills || {}).items || []).length;
+      const nPrevStu = Object.keys((prev.pay_students || {}).byName || {}).length;
+      if (keep('결제 목록', payments.length, nPrevPay)) await storeSet('pay_payments', { updated, from: startDate, to: endDate, items: payments });
+      if (keep('청구 목록', bills.length, nPrevBill)) await storeSet('pay_bills', { updated, from: startDate, to: endDate, items: bills });
       await storeSet('pay_monthly', { updated, byMonth });
-      await storeSet('pay_students', { updated, byName });
+      if (keep('학생 목록', Object.keys(byName).length, nPrevStu)) await storeSet('pay_students', { updated, byName });
     }
     await browser.close();
     log('끝');
