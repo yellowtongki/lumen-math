@@ -57,10 +57,12 @@ async function main() {
   const api = [];       // { method, url, status, keys }
   page.on('response', async (r) => {
     const u = r.url();
-    if (!/payssam|paymint/.test(u) || /\.(js|css|png|jpg|svg|woff2?|ico|json\?\d+)$/.test(u)) return;
+    let host = ''; try { host = new URL(u).hostname; } catch (e) {}
+    if (!/payssam\.kr$|paymint/.test(host) || /manager\.payssam\.kr$/.test(host) || /\.(js|css|png|jpg|svg|woff2?|ico)(\?|$)/.test(u)) return;
     const ct = r.headers()['content-type'] || '';
     let body = null;
     if (/json/.test(ct)) { try { body = await r.json(); } catch (e) {} }
+    if (!body) return;
     api.push({ method: r.request().method(), url: u.replace(/([?&])(token|key)=[^&]*/gi, '$1$2=***'), status: r.status(), shape: body ? shape(body) : null });
   });
 
@@ -89,17 +91,25 @@ async function main() {
   log('메뉴 후보(' + links.length + '):', Array.from(new Set(links)).slice(0, 60).join(' · '));
 
   // 결제·청구 관련 메뉴를 눌러 자료 모양 관찰
-  const words = ['결제내역', '결제 내역', '수납', '청구', '납부', '매출', '정산', '학생', '원생'];
+  const words = ['결제내역', '결제 내역', '청구내역', '청구 내역', '수납', '청구', '납부', '매출', '정산', '학생', '원생', '회원'];
   for (const w of words) {
-    const el = await page.$('a:has-text("' + w + '"), button:has-text("' + w + '")');
-    if (!el) continue;
+    const el = await page.$('a:has-text("' + w + '"), button:has-text("' + w + '"), li:has-text("' + w + '"), span:has-text("' + w + '")');
+    if (!el) { log('· 「' + w + '」 메뉴 없음'); continue; }
     const before = api.length;
-    try { await el.click({ timeout: 5000 }); } catch (e) { continue; }
-    await page.waitForTimeout(3500);
+    try { await el.click({ timeout: 5000 }); } catch (e) { log('· 「' + w + '」 클릭 실패'); continue; }
+    await page.waitForTimeout(4000);
     log('▶ 「' + w + '」 눌렀음 → 주소', page.url(), '· 새 요청', api.length - before);
+    api.slice(before).forEach((a) => log('   ', a.status, a.method, a.url, a.shape ? JSON.stringify(a.shape).slice(0, 900) : ''));
   }
-  log('── payssam 요청 목록 (' + api.length + ') ──');
-  api.forEach((a) => log(a.status, a.method, a.url, a.shape ? JSON.stringify(a.shape).slice(0, 700) : ''));
+  // 자주 쓰는 주소를 직접 열어 본다
+  for (const path of ['/bill', '/bills', '/payment', '/payments', '/sales', '/settlement', '/member', '/members', '/student', '/students']) {
+    const before = api.length;
+    try { await page.goto('https://manager.payssam.kr' + path, { waitUntil: 'domcontentloaded', timeout: 20000 }); } catch (e) { continue; }
+    await page.waitForTimeout(3000);
+    const t = (await page.evaluate(() => document.body.innerText)).replace(/\s+/g, ' ').slice(0, 120);
+    log('▶ 직접 열기', path, '→', page.url(), '· 새 요청', api.length - before, '· 글:', t);
+    api.slice(before).forEach((a) => log('   ', a.status, a.method, a.url, a.shape ? JSON.stringify(a.shape).slice(0, 900) : ''));
+  }
   await browser.close();
   log('끝');
 }
