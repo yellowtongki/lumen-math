@@ -7909,6 +7909,21 @@ function sortVersionMemo(data){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-7',date:'2026-09-16',stability:'ok',memo:'📔 <b>플래너를 「루멘 리그」 한 종목으로 넣었습니다</b> (원장 결정 2026-09-16 · docs/planner_league_contract.md). '
+        +'<b>무엇이 문제였나</b> — 플래너 점수는 매일 쌓이는데 <b>「이달 1·2·3등이 누구인지」</b>를 학원앱 어디에서도 한눈에 볼 수 없었습니다. '
+        +'매달 드리는 상금 3만 원도 학생앱에는 한 글자도 나가지 않아, 학생들은 상이 있는 줄도 몰랐습니다. '
+        +'<b>어디에 생겼나</b> — ① 🏆 루멘 리그 화면에 <b>「📔 플래너」 탭</b>이 새로 생겼습니다. ② ⚙ 리그 설정 안에 <b>「📔 플래너 상금」 칸</b>이 생겼습니다. '
+        +'<b>⚙ 설정에서 정하는 것</b> — 한 달 총상금(기본 30,000원) · 상 목록(1등 15,000 · 2등 10,000 · 3등 5,000 — 이름과 금액을 고치고 상을 더하거나 뺄 수 있습니다) · '
+        +'<b>학생앱에 총상금 보이기</b> · <b>상마다 금액 보이기</b> · 학생앱 <b>리그 탭 켜기/끄기</b> · <b>👑 종합 챔피언에 포함</b> · 수상 <b>최소 제출일</b>(기본 5일) · 공개 순위 <b>Top 5</b>. '
+        +'금액 숨김 규칙은 💡 IB아하 상금과 똑같습니다 — <b>「총상금 보이기」를 끄면 학생앱으로 나가는 자료에 금액이 아예 담기지 않습니다</b>(담기지 않은 것은 새어 나갈 수도 없습니다). '
+        +'또 설정 창 <b>맨 위에 「시즌 상금 합계」 한 줄</b>이 생겨 진도·IB아하·플래너·종합 상금을 한눈에 보실 수 있습니다(숨긴 종목은 「비공개」로 나오고 합계에서도 뺍니다). '
+        +'<b>📔 플래너 탭에서 하시는 일</b> — 이달(또는 지난달) 순위표를 보고, 맨 아래에서 <b>수상자를 확정</b>합니다. 제출일이 모자란 학생은 회색 「후보 제외」로 내려갑니다. '
+        +'<b>점수가 같으면</b> 후보 두 사람이 나란히 나오고, 한 명을 고르시거나 <b>「둘 다 주기」</b>로 두 사람 모두에게 같은 상을 주실 수 있습니다. '
+        +'<b>「✓ 확정」을 누르셔야만 저장됩니다</b> — 누르기 전에는 학생에게 아무것도 나가지 않습니다. 이미 확정한 달은 「확정됨 · 다시 확정」으로 바꾸실 수 있습니다. '
+        +'<b>👑 종합 챔피언</b> — 「종합 챔피언에 포함」을 켜 두면 <b>확정하신 달</b>마다 그달 순위를 포인트로 바꿔 종합 점수에 더합니다(확정하지 않은 달은 0점입니다). '
+        +'리그 「시즌 한눈에」의 종합 표에도 <b>「📔 플래너」 칸</b>이 생겼습니다. '
+        +'<b>학생앱에는 언제 반영되나</b> — 플래너를 <b>승인하실 때</b>, ⚙ <b>리그 설정을 저장</b>하실 때, <b>수상자를 확정</b>하실 때, <b>순위표를 발행</b>하실 때 자동으로 올라갑니다(<code>league_planner</code>). '
+        +'따로 누르실 단추는 없습니다. <b>학생 화면(📔 플래너 탭 · 💰 상금 한눈에 · 🏅 지난달 수상)</b>은 학생앱 v2-87에서 이어집니다.'},
       {ver:'v19-6',date:'2026-09-15',stability:'ok',memo:'🪄 <b>굿노트 필기본 PDF를 올리면 앱이 스스로 문제 번호에 붙여 「받은함」에 올려 둡니다</b> (원장 지시 2026-09-15 · docs/handsol_auto_contract.md 1단계). '
         +'<b>어디에 있나</b> — ✍️ 손풀이 › 📚 교재 탭 맨 위의 <b>「🪄 필기본 자동 배치」</b> 단추, 그리고 탭 줄에 새로 생긴 <b>「📥 받은함」</b>입니다. '
         +'<b>어떻게 쓰나</b> — ① 「🪄 필기본 자동 배치」를 누르고 ② <b>교재를 고르고</b>(교과서 PDF가 등록된 교재만 고를 수 있습니다) ③ 필기본 PDF를 <b>내 컴퓨터</b>에서 고르거나 <b>☁️ 올린 파일</b>에서 고른 뒤 ④ <b>「시작」</b>을 누르면 됩니다. '
@@ -32392,6 +32407,13 @@ async function publishPlannerDataForStudent(student) {
         updated_at: new Date().toISOString()
       }, { onConflict: 'key' });   // v18-31
     }
+
+    // ★ v19-7: 3) 📔 플래너 리그 발행본(league_planner)도 함께 갱신 —
+    //   학생앱 리그의 「📔 플래너」 탭이 상금·최소 제출일·지난달 수상을 여기서 읽는다.
+    //   (docs/planner_league_contract.md §2 — 승인·설정 저장·월말 확정·리그 발행 네 곳에서 부른다)
+    if (typeof lgPlannerPublish === 'function') {
+      try { await lgPlannerPublish(); } catch(e3) { console.warn('league_planner 발행 실패', e3); }
+    }
   } catch(e) {
     console.warn('publishPlannerDataForStudent 실패:', e.message);
     try { plToast('⚠️ 학생앱 점수 반영 중 오류 — 승인을 다시 눌러주세요'); } catch(e2) {}
@@ -45432,7 +45454,8 @@ function ahaLoad(force){
   if(!sb){ ahaNotes=[]; ahaNotesAll=[]; AHA_LOADING=false; if(VIEW==='aha'||VIEW==='home') render(); return; }
   var pNotes=sb.from('aha_notes').select('*').order('created_at',{ascending:false});
   var pRetry=sb.from('lumen_store').select('key,value').like('key','aha_retry_%');
-  var pMeta=sb.from('lumen_store').select('key,value').in('key',['aha_ai_texts','aha_config','aha_scores','aha_league_cfg','aha_league_awards','aha_self_void','aha_league_board','aha_league_intro']);
+  /* ★ v19-7: planner_awards(월말 확정본)·league_planner(발행본)도 함께 읽는다 */
+  var pMeta=sb.from('lumen_store').select('key,value').in('key',['aha_ai_texts','aha_config','aha_scores','aha_league_cfg','aha_league_awards','aha_self_void','aha_league_board','aha_league_intro','planner_awards','league_planner']);
   /* ★ v18-164: 학생별 최근 학습지 — 없어도 화면은 그대로 돈다 (계약서 2·9장) */
   var pWs=sb.from('lumen_store').select('key,value').like('key','mf_ws_recent_%');
   try{ ahaCheckSql2(); }catch(e){}
@@ -45458,7 +45481,12 @@ function ahaLoad(force){
       if(row.key==='aha_self_void' && row.value) LG_VOID=(row.value.byCode?row.value:{byCode:{}});
       if(row.key==='aha_league_board' && row.value) LG_PUB=row.value;
       if(row.key==='aha_league_intro' && row.value) LG_INTRO=row.value;                     /* v18-164 */
+      /* ★ v19-7: 📔 플래너 리그 */
+      if(row.key==='planner_awards' && row.value) PL_AWARDS=(row.value.byMonth?row.value:{byMonth:{}});
+      if(row.key==='league_planner' && row.value) LG_PLPUB=row.value;
     }); }
+    PL_LOADED=true;   /* ★ v19-7: 한 번 읽었으면 발행할 때 다시 읽지 않는다 */
+    LGP.selYm='';     /* 읽어 온 확정본으로 고른 상태를 다시 계산한다 */
     /* ★ v18-164: 학생별 최근 학습지 */
     var rw=rs[3];
     if(rw && !rw.error && rw.data){
@@ -50183,6 +50211,176 @@ function lgSeasonPane(board){
 }
 
 /* ══════════════════════════════════════════════════════════════════
+ * ★ v19-7: 📔 플래너 탭 — 이달 순위 · 상금 요약 · 월말 수상자 확정
+ * ══════════════════════════════════════════════════════════════════
+ * 왜: 플래너 점수는 이미 매일 쌓이는데 「누가 1·2·3등인지」와 「상금을 줬는지」를
+ *     학원앱 어디에서도 볼 수 없었다. 여기 한 화면에서 보고 확정한다.
+ * 문자열 결합만 사용 (중첩 템플릿 리터럴 금지).
+ * ────────────────────────────────────────────────────────────────── */
+function lgPlannerPane(){
+  var cfgP=lgPlannerCfg(), nameMode=ibqCfg().nameMode;
+  var ym=lgPlannerYm(), thisYm=getCurrentYearMonth(), prevYm=lgPlShiftMonth(thisYm,-1);
+  var rows=lgPlannerRows(ym), cands=lgPlannerCands(ym), sel=lgPlannerSel(ym);
+  var done=((PL_AWARDS&&PL_AWARDS.byMonth)||{})[ym]||null;
+  var show=(cfgP.showTotal!==false), open=(show && !!cfgP.open);
+  var endDay=lgPlMonthEnd(ym);
+
+  var h='<div style="background:#fff;border:1px solid #e8eef8;border-radius:13px;padding:13px 15px">';
+  /* 머리 — 달 고르기 */
+  h+='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">'
+    +'<div style="font-size:14px;font-weight:900;color:#0d2240">📔 플래너 리그</div>'
+    +'<div style="font-size:11px;font-weight:900;border-radius:50px;padding:3px 10px;'
+      +((cfgP.enabled!==false)?'color:#15803d;background:#dcfce7':'color:#b91c1c;background:#fee2e2')+'">'
+      +((cfgP.enabled!==false)?'학생앱 탭 켜짐':'학생앱 탭 꺼짐')+'</div>'
+    +'<div style="font-size:11.5px;color:#64748b;font-weight:700">'+lgEsc(ym)+' · 마감 '+lgEsc(endDay)
+      +(ym===thisYm?(' · '+lgEsc(iblDdayLabel(endDay))):'')+'</div>'
+    +'<div style="margin-left:auto;display:flex;gap:6px">'
+    +'<div onclick="lgPlannerMonth(\''+thisYm+'\')" style="cursor:pointer;border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:800;'
+      +((ym===thisYm)?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#64748b;border:1px solid #dbe3ef')+'">이달 '+lgEsc(thisYm)+'</div>'
+    +'<div onclick="lgPlannerMonth(\''+prevYm+'\')" style="cursor:pointer;border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:800;'
+      +((ym===prevYm)?'background:#0d2240;color:#fff;border:1px solid #0d2240':'background:#fff;color:#64748b;border:1px solid #dbe3ef')+'">지난달 '+lgEsc(prevYm)+'</div>'
+    +'<div onclick="ibqCfgOpen(\'league\')" style="cursor:pointer;border-radius:8px;padding:5px 12px;font-size:11.5px;font-weight:800;background:#fff;color:#1d6fe8;border:1px solid #bfdbfe">⚙ 상금 설정</div>'
+    +'</div></div>';
+
+  /* 상금 요약 */
+  h+='<div style="background:linear-gradient(135deg,#fffdf5,#fff4d6);border:1px solid #fcd34d;border-radius:11px;padding:10px 12px">'
+    +'<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">'
+    +'<b style="font-size:20px;color:#c2410c;font-weight:900">'+lgMoney(cfgP.total)+'원</b>'
+    +'<span style="font-size:11px;color:#a35a00;font-weight:800">한 달 총상금 · 매달 새로 시작</span>'
+    +'<span style="margin-left:auto;font-size:10.5px;font-weight:800;color:'+(show?'#15803d':'#b91c1c')+'">'
+      +(show?(open?'학생앱에 상마다 금액까지 공개':'학생앱에 총상금만 공개'):'학생앱에 금액 숨김')+'</span>'
+    +'</div>'
+    +'<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:8px">';
+  (cfgP.awards||[]).forEach(function(a,i){
+    h+='<div style="flex:1;min-width:120px;background:#fff;border:1px solid #fde3b5;border-radius:9px;padding:7px 9px">'
+      +'<div style="font-size:11.5px;font-weight:900;color:#7c2d12">'+lgEsc(a.icon+' '+a.name)+'</div>'
+      +'<div style="font-size:14px;font-weight:900;color:#c2410c">'+lgMoney(a.w)+'원</div>'
+      +'<div style="font-size:10px;color:#a35a00;font-weight:700">그달 점수 '+(i+1)+'위</div></div>';
+  });
+  h+='</div></div>';
+
+  /* 이달 순위표 */
+  h+='<div style="display:flex;align-items:baseline;gap:8px;margin:13px 0 6px;flex-wrap:wrap">'
+    +'<div style="font-size:13px;font-weight:900;color:#0d2240">📊 '+lgEsc(ym)+' 순위</div>'
+    +'<div style="font-size:11px;color:#64748b;font-weight:700">제출 '+Number(cfgP.minDays||0)+'일 미만은 수상 후보에서 뺍니다 · 학생앱 공개 Top '
+      +Number(cfgP.publicTop==null?5:cfgP.publicTop)+'</div></div>';
+  if(!rows.length){
+    h+='<div style="padding:24px;text-align:center;color:#cbd5e1;font-size:12.5px;background:#f8fafc;border-radius:10px">이 달에는 아직 승인된 플래너 점수가 없습니다</div>';
+  } else {
+    h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">'
+      +'<tr><th style="text-align:center;width:44px;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">순위</th>'
+      +'<th style="text-align:left;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">학생</th>'
+      +'<th style="text-align:right;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">점수</th>'
+      +'<th style="text-align:right;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">제출일</th>'
+      +'<th style="text-align:right;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">하루 최고</th>'
+      +'<th style="text-align:left;padding:7px 5px;background:#f8fafc;color:#64748b;font-size:11px">수상</th></tr>';
+    rows.forEach(function(r){
+      var got=[];
+      if(done){ (done.winners||[]).forEach(function(w){ if(String(w.code)===r.code) got.push(lgPlannerAwardMeta(w.k).icon+' '+lgPlannerAwardMeta(w.k).name); }); }
+      var dim=!r.ok;
+      var medal=(r.rank===1?'🥇':r.rank===2?'🥈':r.rank===3?'🥉':String(r.rank));
+      h+='<tr style="'+(dim?'opacity:.5':'')+'">'
+        +'<td style="text-align:center;padding:8px 5px;border-top:1px solid #f1f5f9;font-weight:900">'+medal+'</td>'
+        +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9;font-weight:800;color:#0d2240">'+lgEsc(r.name)
+          +'<span style="font-size:10px;color:#94a3b8;font-weight:700"> ('+lgEsc(iblMask(r.name,nameMode))+')</span></td>'
+        +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9;text-align:right;font-weight:900;color:#0d2240">'+r.score+'</td>'
+        +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9;text-align:right;color:#475569">'+r.days+'일</td>'
+        +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9;text-align:right;color:#475569">'+r.max+'</td>'
+        +'<td style="padding:8px 5px;border-top:1px solid #f1f5f9;font-size:11px;font-weight:800;color:'+(got.length?'#b45309':'#cbd5e1')+'">'
+          +(got.length?lgEsc(got.join(' · ')):(dim?'후보 제외':'–'))+'</td></tr>';
+    });
+    h+='</table></div>';
+  }
+
+  /* 월말 수상자 확정 */
+  h+='<div style="margin-top:14px;padding-top:11px;border-top:2px solid #e8eef8">'
+    +'<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:8px">'
+    +'<div style="font-size:13px;font-weight:900;color:#0d2240">🏅 '+lgEsc(ym)+' 수상자 확정</div>'
+    +(done?('<div style="font-size:11px;font-weight:900;color:#15803d;background:#dcfce7;border-radius:50px;padding:3px 10px">확정됨 '
+        +lgEsc(String(done.at||'').replace('T',' ').slice(0,16))+'</div>')
+       :'<div style="font-size:11px;font-weight:900;color:#b45309;background:#fff7ed;border-radius:50px;padding:3px 10px">아직 확정 전</div>')
+    +'<div style="font-size:11px;color:#64748b;font-weight:700">동점이면 나란히 나옵니다 — 한 명을 고르거나 「둘 다 주기」</div>'
+    +'</div>';
+  if(!cands.length){
+    h+='<div style="padding:22px;text-align:center;color:#cbd5e1;font-size:12.5px;background:#f8fafc;border-radius:10px">'
+      +'수상 후보가 없습니다 (제출 '+Number(cfgP.minDays||0)+'일 이상인 학생이 아직 없습니다)</div>';
+  } else {
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px">';
+    (cfgP.awards||[]).forEach(function(a,i){
+      var tie=cands.filter(function(r){ return r.crank===(i+1); });
+      var m=sel[a.k]||{};
+      var picked=Object.keys(m).filter(function(cd){ return m[cd]; });
+      h+='<div style="border:1px solid #e8eef8;border-radius:11px;padding:10px 11px;background:#fbfcfe">'
+        +'<div style="font-size:19px">'+lgEsc(a.icon)+'</div>'
+        +'<div style="font-size:12px;font-weight:900;color:#0d2240;margin:2px 0 1px">'+lgEsc(a.name)
+          +' <span style="font-size:10.5px;font-weight:800;color:#c2410c">'+lgMoney(a.w)+'원</span></div>'
+        +'<div style="font-size:10px;color:#64748b;margin-bottom:6px">그달 점수 '+(i+1)+'위'
+          +(tie.length>1?(' · <b style="color:#b45309">동점 '+tie.length+'명</b>'):'')+'</div>';
+      if(!tie.length){
+        h+='<div style="font-size:11.5px;color:#cbd5e1;font-weight:700">후보 없음</div>';
+      } else {
+        tie.forEach(function(r){
+          var on=!!m[r.code];
+          h+='<div onclick="lgPlannerPick(\''+lgEsc(a.k)+'\',\''+lgEsc(r.code)+'\')" '
+            +'style="cursor:pointer;display:flex;align-items:center;gap:7px;margin-top:4px;border-radius:8px;padding:6px 8px;font-size:12px;font-weight:800;'
+            +(on?'background:#dcfce7;border:1.5px solid #86efac;color:#14532d':'background:#fff;border:1px solid #dbe3ef;color:#475569')+'">'
+            +'<span>'+(on?'☑':'☐')+'</span><span>'+lgEsc(r.name)+'</span>'
+            +'<span style="margin-left:auto;font-weight:900">'+r.score+'점</span></div>';
+        });
+        if(tie.length>1){
+          h+='<div onclick="lgPlannerPickAll(\''+lgEsc(a.k)+'\')" style="cursor:pointer;margin-top:6px;text-align:center;border-radius:8px;padding:5px;font-size:11px;font-weight:800;background:#fff7ed;border:1px solid #fdba74;color:#9a3412">둘 다 주기</div>';
+        }
+      }
+      h+='<div style="font-size:10px;color:#94a3b8;font-weight:700;margin-top:5px">'
+        +(picked.length?('고름 '+picked.length+'명 · 모두 '+lgMoney((Number(a.w)||0)*picked.length)+'원'):'아직 안 골랐습니다')+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+    h+='<div style="display:flex;gap:7px;margin-top:11px;flex-wrap:wrap">'
+      +'<div onclick="lgPlannerConfirm()" style="cursor:pointer;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border-radius:9px;padding:10px 18px;font-size:13px;font-weight:800">'
+        +(done?'✓ 다시 확정':'✓ 확정')+'</div>'
+      +'<div onclick="lgPlannerMonth(\''+ym+'\')" style="cursor:pointer;background:#fff;border:1.5px solid #cbd5e1;color:#0d2240;border-radius:9px;padding:10px 16px;font-size:12.5px;font-weight:800">후보 다시 계산</div>'
+      +'</div>';
+  }
+  h+='<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:10px 12px;font-size:12px;color:#14532d;line-height:1.7;margin-top:10px">'
+    +'<b>「✓ 확정」을 눌러야만</b> 저장됩니다. 확정하면 학생앱 「🏅 지난달 수상」에 올라가고, '
+    +'👑 종합 챔피언 점수에도 <b>그달 순위</b>가 더해집니다(확정 안 한 달은 0점).</div>';
+  h+='</div>';
+
+  /* 마지막 발행 */
+  if(LG_PLPUB){
+    h+='<div style="margin-top:11px;background:#f8fafc;border-radius:11px;padding:10px 12px;font-size:11.5px;color:#475569;line-height:1.8">'
+      +'<b>마지막 발행</b>(league_planner) — '+lgEsc(String(LG_PLPUB.updatedAt||'').replace('T',' ').slice(0,16))
+      +' · 달 '+lgEsc(LG_PLPUB.month||'')
+      +' · 금액 '+((LG_PLPUB.prize&&LG_PLPUB.prize.showTotal)?(LG_PLPUB.prize.open?'상마다 공개':'총액만'):'숨김')
+      +' · 지난달 수상 '+(((LG_PLPUB.last||{}).winners||[]).length)+'명</div>';
+  }
+  h+='</div>';
+  return h;
+}
+window.lgPlannerPane=lgPlannerPane;
+
+/* ── 🏆 시즌 상금 합계 (리그 설정 머리 한 줄 · 계약서 §2) ──
+ *   「보이기」를 끈 종목은 금액 대신 null 을 돌려주고 합계에서도 뺀다. */
+function lgSeasonPrizeSum(){
+  var p=lgPrize(), pl=lgPlannerCfg();
+  var months=lgPlSeasonMonths().length;
+  var out={ race:null, aha:null, planner:null, plannerPerMonth:Number(pl.total)||0,
+            plannerMonths:months, champ:String(lgChampCfg().prize||''), total:0 };
+  /* 🏁 진도 레이스 — race_season 의 상금은 「개별 금액 공개(open)」일 때만 센다 */
+  var rp=null;
+  try{ rp=(RACE && RACE.season && RACE.season.prizes)?RACE.season.prizes:null; }catch(e){ rp=null; }
+  if(rp && rp.open){ out.race=Number(rp.total)||0; out.total+=out.race; }
+  /* 💡 IB아하 */
+  if(p.showTotal!==false){ out.aha=Number(p.total)||0; out.total+=out.aha; }
+  /* 📔 플래너 — 한 달 총상금 × 시즌 개월 */
+  if(pl.enabled!==false && pl.showTotal!==false){
+    out.planner=(Number(pl.total)||0)*months; out.total+=out.planner;
+  }
+  return out;
+}
+
+/* ══════════════════════════════════════════════════════════════════
  * ★ v18-165: ② 💡 IB아하 순위표 — 진도 레이스와 같은 문법으로
  * ══════════════════════════════════════════════════════════════════
  * 왜: 이 소탭이 「총상금 띠 + 빈 표」뿐이라, 열어도 지금 무엇을 해야
@@ -51195,7 +51393,10 @@ async function lgPublishBoard(silent){
     champDiv[p[0]]=((chAll[dk]||{rows:[]}).rows||[]).map(function(x){
       return { code:x.code, name:iblMask(x.name, cfg.nameMode), rank:x.rank, total:x.total,
                race:x.race?{rank:x.race.rank, pts:x.race.pts}:null,
-               aha:x.aha?{rank:x.aha.rank, pts:x.aha.pts}:null, speak:null };
+               aha:x.aha?{rank:x.aha.rank, pts:x.aha.pts}:null,
+               /* ★ v19-7: 📔 플래너 — 확정된 달 수와 누적 점수 (학생앱 종합 탭에 줄 하나로 나온다) */
+               planner:x.planner?{pts:x.planner.pts, months:x.planner.months}:null,
+               speak:null };
     });
   });
   /* 베스트 질문 — 부를 가리지 않고 원장이 고른 노트 하나 */
@@ -51242,6 +51443,8 @@ async function lgPublishBoard(silent){
   if(r2&&r2.error){ if(silent){ console.warn('순위표 자동 발행 실패',r2.error); ahaToast('순위표 자동 발행 실패 — 잠시 뒤 다시 시도합니다'); return false; }
     alert('발행 실패: '+r2.error.message); return; }
   LG_PUB=payload;
+  /* ★ v19-7: 리그를 발행할 때 📔 플래너 발행본(league_planner)도 함께 최신으로 */
+  try{ await lgPlannerPublish(); }catch(e){ console.warn('league_planner 발행 실패', e); }
   ahaToast(silent?('📤 순위표 자동 발행 — 학생 '+n+'명'):('📤 순위표를 발행했습니다 — 학생 '+n+'명'));
   render();
   return true;
