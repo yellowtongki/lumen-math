@@ -48999,8 +48999,10 @@ function ibqCfgRender(){
       ibqOptBtn('planner.enabled','true',String(_plOn),'리그 탭 켜기')
      +ibqOptBtn('planner.enabled','false',String(_plOn),'끄기')
      +'<span style="font-size:10.5px;color:#94a3b8">끄면 학생앱 리그에서 📔 플래너 탭이 사라집니다 (점수 계산은 그대로)</span>');
+  /* 총상금은 자릿수가 많아 ibqNumBox(56px)로는 글자가 잘린다 — 칸을 넓게 쓴다 */
   h+=row('한 달 총상금','매달 새로 시작합니다',
-      ibqNumBox('planner.total',(_pl.total)||0,'원')
+      '<input type="number" value="'+(Number(_pl.total)||0)+'" oninput="ibqCfgSet(\'planner.total\',Number(this.value))" '
+      +'style="width:104px;border:1px solid #cbd5e1;border-radius:7px;padding:4px 8px;font-size:12px;font-weight:800;color:#0d2240;text-align:right;font-family:inherit"> 원 '
      +'<span style="font-size:10.5px;color:#94a3b8">시즌 '+Number(lgPlSeasonMonths().length)+'개월이면 모두 '
      +Number((Number(_pl.total)||0)*lgPlSeasonMonths().length).toLocaleString()+'원</span>');
   var _plSum=0;
