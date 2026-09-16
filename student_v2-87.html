@@ -1678,6 +1678,34 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .lg-empty{background:var(--surface);border:1.5px dashed #cbd5e1;border-radius:15px;padding:26px 16px;text-align:center;color:#94a3b8}
 .lg-empty .e1{font-size:36px}
 .lg-empty .e2{font-size:13px;font-weight:800;margin-top:8px;line-height:1.7}
+/* ══ v2-87: 💰 상금 한눈에 (모든 탭 공통) · 📔 플래너 탭 ══
+ * 종목마다 상금을 한 장에 모아 준다. 학원앱이 「보이기」를 꺼 둔 종목은
+ * 금액이 아예 오지 않으므로 「비공개」로만 적고, 합계에도 넣지 않는다. */
+.lg-money{background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.lg-money .t{font-size:11px;font-weight:800;opacity:.85}
+.lg-money .big{font-size:26px;font-weight:900;margin:2px 0 6px;line-height:1.1}
+.lg-money .big small{font-size:13px;font-weight:800;margin-left:2px}
+.lg-money .r{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;padding:5px 0;border-top:1px solid rgba(255,255,255,.18)}
+.lg-money .r .v{font-weight:900;white-space:nowrap}
+.lg-money .r .v.off{opacity:.7;font-weight:800}
+.lg-money .cap{font-size:10px;font-weight:700;opacity:.72;margin-top:7px;line-height:1.6}
+.lgpl-me{display:flex;gap:6px;margin-top:9px}
+.lgpl-me>div{flex:1;background:#eff6ff;border-radius:10px;padding:8px 4px;text-align:center;font-size:10px;font-weight:800;color:#64748b}
+.lgpl-me>div b{display:block;font-size:16px;font-weight:900;color:#0d2240;line-height:1.2;margin-bottom:2px}
+.lgpl-rk{margin-top:9px}
+.lgpl-rk .r{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;background:#f6f8fb;margin-top:4px;font-size:12.5px;font-weight:800;color:var(--text)}
+.lgpl-rk .r .no{width:21px;height:21px;border-radius:50%;background:#cbd5e1;color:#fff;font-size:10.5px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none}
+.lgpl-rk .r.g1 .no{background:#f59e0b}
+.lgpl-rk .r.g2 .no{background:#94a3b8}
+.lgpl-rk .r.g3 .no{background:#ea580c}
+.lgpl-rk .r.mine{background:#eff6ff;border:1.5px dashed #1d6fe8}
+.lgpl-rk .r .nm{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lgpl-rk .r .pt{margin-left:auto;flex:none;font-weight:900;color:#0d2240}
+.lgpl-rk .r .bd{font-size:9.5px;font-weight:900;background:#fff7e6;color:#b45309;border-radius:5px;padding:2px 6px;flex:none}
+.lgpl-gap{height:1px;background:#e2e8f0;margin:6px 2px}
+.lgpl-link{display:block;width:100%;margin-top:10px;border:none;background:#eff6ff;color:#1d6fe8;font-family:inherit;
+  font-size:12.5px;font-weight:900;border-radius:11px;padding:11px 8px;cursor:pointer}
+.lgpl-foot{font-size:10px;font-weight:700;color:#94a3b8;text-align:center;margin:8px 0 2px;line-height:1.6}
 /* ══ v2-73: ✍️ 손풀이 — 선생님이 학습지에 쓴 풀이를 문제별로 본다 ══ */
 .hs-wrap{padding:14px 13px 40px}
 .hs-set{width:100%;background:var(--surface);border:1.5px solid #e2e8f0;border-radius:14px;padding:11px 13px;margin-bottom:9px;display:flex;gap:11px;align-items:center;text-align:left;font-family:inherit;cursor:pointer}
@@ -3563,6 +3591,19 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-87 (2026-09-16) 📔 플래너가 루멘 리그에 들어왔습니다 · 💰 상금 한눈에
+ *   · 🏆 루멘 리그에 <b>「📔 플래너」 탭</b>이 생겼습니다. 원장님이 학원앱에서
+ *     「플래너 탭 켜기」를 켜 두었을 때만 보이고, D-일수는 <b>그달 말일까지</b>입니다.
+ *   · 탭 줄 바로 아래에 <b>「💰 상금 한눈에」</b> 카드가 모든 탭에 공통으로 붙습니다.
+ *     🏁 진도 · 💡 IB아하 · 📔 플래너 · 👑 종합 상금을 한 장에 모으고,
+ *     원장님이 「보이기」를 꺼 둔 종목은 금액 대신 <b>「비공개」</b>로만 나옵니다.
+ *     합계는 공개된 금액만 더하고, 비공개가 하나라도 있으면 「+ α」가 붙습니다.
+ *   · 📔 플래너 탭 안 — 이달 상금 카드, 「📊 이번 달 나」(점수·제출일·연속🔥·순위),
+ *     Top N 순위(이름은 가운데를 가림), 「🏅 지난달 수상」(내가 받았으면 배지),
+ *     그리고 「📊 내 플래너 점수 자세히 ›」로 예전 점수 화면이 그대로 열립니다.
+ *   · 👑 종합 탭 표에 「📔 플래너」 줄이 생깁니다(학원앱이 플래너 점수를 보낼 때만).
+ *     홈 배너 둘째 줄에도 「📔 플래너 n위」가 같이 보입니다.
+ *
  * v2-86 (2026-09-15) 📚 교재 손풀이 — 문제 그림과 함께, 틀린 문제부터, 크게 보기·회전
  *   · 교재 손풀이에서 한 쪽을 열면 이제 그 쪽의 문항이 <b>카드로 죽 나옵니다</b>.
  *     <b>내가 틀린(✗) 문항이 맨 위</b>, 그다음 번호순입니다. 카드 머리에 「6번 · 내 채점 ✗」.
@@ -3758,7 +3799,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-86';
+var STU_VER = 'v2-87';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -12479,7 +12520,8 @@ window.rcInit=async function(targetId){
  * 이름   순위표는 공개 인원(publicTop)까지만 이름을 보이고 나머지는 흐리게.
  *        내 줄은 언제나 선명하다 — 진도 레이스와 같은 문법.
  * ══════════════════════════════════════════════════════════════════ */
-var LG = { board:null, awards:null, intro:null, introView:'home', loaded:false, at:0, tab:'aha', band:'' };
+/* v2-87: planner = lumen_store 'league_planner' (학원앱이 발행하는 📔 플래너 종목 설정) */
+var LG = { board:null, awards:null, intro:null, planner:null, introView:'home', loaded:false, at:0, tab:'aha', band:'' };
 window.LG = LG;
 var LG_TIER = {
   inquirer:{ n:'질문자', en:'Inquirer',      ic:'❓', c:'#64748b', bg:'#f1f5f9' },
@@ -12522,6 +12564,13 @@ async function lgLoad(force){
     if(typeof v3==='string'){ try{ v3=JSON.parse(v3); }catch(e){ v3=null; } }
     LG.intro=(v3&&typeof v3==='object')?v3:null;
   }catch(e){ LG.intro=null; }
+  /* ★ v2-87: 📔 플래너 종목 (학원앱 「리그 발행」·플래너 승인 때마다 갱신) */
+  try{
+    var r4=await sb.from('lumen_store').select('value').eq('key','league_planner').maybeSingle();
+    var v4=r4&&r4.data&&r4.data.value;
+    if(typeof v4==='string'){ try{ v4=JSON.parse(v4); }catch(e){ v4=null; } }
+    LG.planner=(v4&&typeof v4==='object')?v4:null;
+  }catch(e){ LG.planner=null; }
   return LG;
 }
 function lgDivs(b){ return (b&&b.divisions)||{}; }

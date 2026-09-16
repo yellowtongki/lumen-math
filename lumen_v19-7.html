@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-6';
+var APP_VER = 'v19-7';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -47906,6 +47906,17 @@ function ibqCfgDefault(){
       {k:'best',    name:'베스트 질문',  icon:'🏆', w:15000},
       {k:'growth',  name:'성장',        icon:'📈', w:10000},
       {k:'reflect', name:'성찰',        icon:'🪞', w:5000} ] },
+    /* ★ v19-7: 📔 플래너 상금 (원장 결정 2026-09-16 · docs/planner_league_contract.md §1)
+     *   상은 「순위 순」이다 — 1등·2등·3등. 매달 새로 시작하고, 월말에 원장님이 「✓ 확정」을
+     *   눌러야만 수상자가 남는다. showTotal·open 규칙은 IB아하 상금과 똑같다
+     *   (showTotal 끄면 발행에 total 도 상마다 금액 w 도 아예 담기지 않는다).
+     *   minDays = 이 달에 이만큼은 제출해야 수상 후보 · publicTop = 학생앱에 보여 줄 순위 수
+     *   inChampion = 👑 종합 챔피언 점수에 플래너 순위를 더할지 */
+    planner:{ enabled:true, total:30000, showTotal:true, open:true,
+      awards:[ {k:'p1', icon:'🥇', name:'1등', w:15000},
+               {k:'p2', icon:'🥈', name:'2등', w:10000},
+               {k:'p3', icon:'🥉', name:'3등', w:5000} ],
+      inChampion:true, minDays:5, publicTop:5 },
     champion:{ prize:'문화상품권 30,000원', points:[25,18,15,12,10,8,6,4,2,1], minEvents:2 },
     speaking:{ enabled:false, startsAt:'2026-11-01' },
     /* ★ v18-159: 옛 방식 노트(활동지 사진 없이 한 줄 메모만)는 리그에서 뺀다.
@@ -47932,6 +47943,23 @@ function ibqCfgFill(c){
     if(a.w!=null) return;
     var hit=d.prize.awards.filter(function(x){ return x.k===a.k; })[0];
     a.w=hit?hit.w:0;
+  });
+  /* ★ v19-7: 예전 설정에는 planner 칸이 아예 없다 — 기본값으로 채운다 */
+  if(!c.planner || !Array.isArray(c.planner.awards) || !c.planner.awards.length) c.planner=d.planner;
+  if(c.planner.enabled==null)    c.planner.enabled=d.planner.enabled;
+  if(c.planner.total==null)      c.planner.total=d.planner.total;
+  if(c.planner.showTotal==null)  c.planner.showTotal=d.planner.showTotal;
+  if(c.planner.open==null)       c.planner.open=d.planner.open;
+  /* 총액을 숨기면서 상마다 금액을 공개할 수는 없다 (IB아하와 같은 규칙) */
+  if(c.planner.showTotal===false) c.planner.open=false;
+  if(c.planner.inChampion==null) c.planner.inChampion=d.planner.inChampion;
+  if(c.planner.minDays==null)    c.planner.minDays=d.planner.minDays;
+  if(c.planner.publicTop==null)  c.planner.publicTop=d.planner.publicTop;
+  c.planner.awards.forEach(function(a,i){
+    if(!a.k)    a.k='p'+(i+1);
+    if(!a.icon) a.icon=(['🥇','🥈','🥉'][i]||'🏅');
+    if(!a.name) a.name=(i+1)+'등';
+    if(a.w==null) a.w=0;
   });
   if(!c.champion || !Array.isArray(c.champion.points) || !c.champion.points.length) c.champion=d.champion;
   if(c.champion.minEvents==null) c.champion.minEvents=d.champion.minEvents;
