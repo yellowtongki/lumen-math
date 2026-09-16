@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>플래너 리그 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+:root{--bg:#f4f6fa;--paper:#fff;--ink:#0d2240;--mute:#64748b;--line:#dbe2ec;--acc:#1d6fe8;--acc2:#eff6ff;--gold:#b45309;--goldbg:#fff7e6;--ok:#16a34a;--navy:#0d2240}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1622;--paper:#18212f;--ink:#e6edf7;--mute:#95a3b8;--line:#2b3a50;--acc:#5b9cff;--acc2:#1a2a45;--gold:#fbbf24;--goldbg:#3a2b0d;--ok:#4ade80;--navy:#0b1220}}
+:root[data-theme="dark"]{--bg:#0f1622;--paper:#18212f;--ink:#e6edf7;--mute:#95a3b8;--line:#2b3a50;--acc:#5b9cff;--acc2:#1a2a45;--gold:#fbbf24;--goldbg:#3a2b0d;--ok:#4ade80;--navy:#0b1220}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR",system-ui,sans-serif;font-size:14px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:22px;margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 22px;max-width:72ch}
+h2{font-size:16px;margin:30px 0 10px;display:flex;align-items:center;gap:8px}
+.tag{font-size:11px;font-weight:700;border-radius:6px;padding:2px 8px;background:var(--acc2);color:var(--acc)}
+.phones{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+.phone{width:320px;flex:none;border:10px solid #111;border-radius:34px;background:#f4f6fa;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.18);color:#111}
+.ph-top{background:#0d2240;color:#fff;padding:14px 14px 12px;font-size:15px;font-weight:900;display:flex;align-items:center;gap:10px}
+.ph-top .back{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.18);display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+.ph-top .seg{margin-left:auto;font-size:11px;background:#5b9cff;border-radius:12px;padding:3px 10px}
+.ph-body{padding:10px 10px 16px}
+.tabs{display:flex;background:#fff;border:1px solid #dbe2ec;border-radius:12px;padding:4px;gap:2px}
+.tabs div{flex:1;text-align:center;font-size:11px;font-weight:900;color:#94a3b8;padding:7px 0 5px;border-radius:9px;line-height:1.2}
+.tabs div small{display:block;font-size:9.5px;font-weight:700}
+.tabs div.on{background:#0d2240;color:#fff}
+.tabs div.dim{opacity:.55}
+.money{margin-top:10px;background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border-radius:14px;padding:12px 14px}
+.money .t{font-size:11px;opacity:.85;font-weight:700}
+.money .big{font-size:26px;font-weight:900;margin:2px 0 6px}
+.money .big small{font-size:13px;font-weight:700}
+.money .row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-top:1px solid rgba(255,255,255,.18)}
+.money .row b{font-variant-numeric:tabular-nums}
+.money .row .dim{opacity:.7}
+.card{background:#fff;border:1px solid #dbe2ec;border-radius:14px;padding:12px;margin-top:10px}
+.card .h{font-size:12.5px;font-weight:900;display:flex;justify-content:space-between;align-items:center}
+.card .h span.d{font-size:11px;color:#64748b;font-weight:700}
+.prize{background:#fff7e6;border:1px solid #fde3b5;border-radius:12px;padding:12px;text-align:center;margin-top:10px}
+.prize .lb{font-size:11px;color:#b45309;font-weight:800}
+.prize .amt{font-size:30px;font-weight:900;color:#c2410c;line-height:1.1}
+.prize .amt small{font-size:14px}
+.prize .sub{font-size:11px;color:#92400e;font-weight:700;margin-top:2px}
+.aw{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.aw div{background:#fff;border:1px solid #fde3b5;border-radius:9px;padding:7px 4px;font-size:11px;font-weight:800;color:#7c2d12}
+.aw div b{display:block;font-size:13px;color:#c2410c;font-variant-numeric:tabular-nums}
+.me{display:flex;gap:8px;margin-top:10px}
+.me div{flex:1;background:#eff6ff;border-radius:10px;padding:8px 6px;text-align:center;font-size:10.5px;color:#475569;font-weight:700}
+.me div b{display:block;font-size:17px;color:#0d2240;font-variant-numeric:tabular-nums}
+.rk{margin-top:8px}
+.rk div{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:9px;font-size:12.5px;font-weight:800;background:#f6f8fb;margin-top:4px}
+.rk div .n{width:20px;height:20px;border-radius:50%;background:#cbd5e1;color:#fff;font-size:11px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.rk div.g1 .n{background:#f59e0b}.rk div.g2 .n{background:#94a3b8}.rk div.g3 .n{background:#ea580c}
+.rk div.meRow{border:1.5px dashed #1d6fe8;background:#eff6ff}
+.rk div .pt{margin-left:auto;font-variant-numeric:tabular-nums}
+.rk div .aw2{font-size:10px;background:#fff7e6;color:#b45309;border-radius:5px;padding:1px 5px;font-weight:800}
+.link{display:block;text-align:center;font-size:12px;color:#1d6fe8;font-weight:800;margin-top:10px}
+.foot{font-size:10.5px;color:#94a3b8;text-align:center;margin-top:8px}
+/* 학원앱 */
+.app{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.bar{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bar b{font-size:15px}
+.bar .n{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.btn{border-radius:8px;padding:7px 12px;font-weight:800;font-size:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.btn.p{background:var(--ok);border-color:var(--ok);color:#fff}.btn.g{background:var(--acc);border-color:var(--acc);color:#fff}
+.sec{padding:14px 16px;border-bottom:1px solid var(--line)}
+.sec h3{margin:0 0 8px;font-size:13.5px}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.fld{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--paper)}
+.fld .l{font-size:11px;color:var(--mute);font-weight:800;margin-bottom:4px}
+.fld .v{font-size:15px;font-weight:900;font-variant-numeric:tabular-nums}
+.fld .v input{width:110px;font:inherit;border:1px solid var(--line);border-radius:6px;padding:3px 6px;text-align:right}
+.tg{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800}
+.tg i{width:34px;height:18px;border-radius:9px;background:#cbd5e1;position:relative;display:inline-block}
+.tg i::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff}
+.tg.on i{background:var(--ok)}.tg.on i::after{left:18px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:11px;color:var(--mute)}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.note{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:14px;font-size:13px}
+.note ul{margin:6px 0 0;padding-left:18px}.note li{margin:2px 0}
+.sum{display:flex;gap:18px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap;font-size:12.5px;color:var(--mute)}
+.sum b{color:var(--ink);font-size:16px;font-variant-numeric:tabular-nums}
+</style>
+<div class="wrap">
+<h1>플래너를 루멘 리그에 넣기 — 학생앱 · 학원앱 시안</h1>
+<p class="lead">지금은 「내 플래너 점수」가 따로 숨어 있고 매달 상금(3만 원)은 학생이 앱에서 볼 수 없습니다. 루멘 리그에 「📔 플래너」 종목 탭을 넣고, 맨 위에 <b>모든 종목 상금을 한 장</b>으로 보여 줍니다. 상금 액수·상 이름·보이기 여부는 학원앱에서 조정합니다.</p>
+
+<h2>학생앱 — 🏆 루멘 리그 <span class="tag">상금 한눈에 · 📔 플래너 탭</span></h2>
+<div class="phones">
+  <div class="phone"><div class="ph-top"><span class="back">←</span>🏆 루멘 리그<span class="seg">통합</span></div>
+    <div class="ph-body">
+      <div class="tabs"><div>🏁 진도<small>D-14</small></div><div>💡 IB아하<small>D-75</small></div><div class="on">📔 플래너<small>D-15</small></div><div class="dim">🎙 말하기<small>준비 중</small></div><div>👑 종합<small>—</small></div></div>
+      <div class="money"><div class="t">💰 이번 시즌 상금 한눈에</div><div class="big">80,000<small>원 + α</small></div>
+        <div class="row"><span>💡 IB아하노트 (9~11월)</span><b>50,000원</b></div>
+        <div class="row"><span>📔 플래너 (매달)</span><b>30,000원</b></div>
+        <div class="row"><span>🏁 진도 레이스</span><b class="dim">비공개</b></div>
+        <div class="row"><span>👑 종합 챔피언</span><b>문화상품권 30,000원</b></div></div>
+      <div class="prize"><div class="lb">📔 9월 플래너 상금</div><div class="amt">30,000<small>원</small></div><div class="sub">3개 상 · 9월 30일 마감 · 매달 새로 시작</div>
+        <div class="aw"><div>🥇 플래너왕<b>15,000</b></div><div>🔥 꾸준왕<b>10,000</b></div><div>📈 성장상<b>5,000</b></div></div></div>
+      <div class="card"><div class="h">📊 이번 달 나<span class="d">원장님이 승인할 때마다 업데이트</span></div>
+        <div class="me"><div>점수<b>52점</b></div><div>제출<b>10일</b></div><div>연속<b>🔥 4일</b></div><div>순위<b>19위</b></div></div>
+        <div class="rk"><div class="g1"><span class="n">1</span>박○희<span class="aw2">🥇 후보</span><span class="pt">140점</span></div>
+          <div class="g1"><span class="n">1</span>윤○솔<span class="aw2">🥇 후보</span><span class="pt">140점</span></div>
+          <div class="g3"><span class="n">3</span>유○준<span class="pt">138점</span></div>
+          <div><span class="n">4</span>유○상<span class="pt">132점</span></div>
+          <div><span class="n">5</span>유○아<span class="pt">123점</span></div>
+          <div class="meRow"><span class="n">19</span>나 (옥○희)<span class="pt">52점</span></div></div>
+        <span class="link">📊 내 플래너 점수 자세히 (주·달·전체) ›</span></div>
+      <div class="card"><div class="h">🏅 지난달 수상 (8월)</div>
+        <div class="rk"><div class="g1"><span class="n">🥇</span>플래너왕 · 박○희<span class="pt">15,000원</span></div>
+          <div><span class="n">🔥</span>꾸준왕 · 유○준<span class="pt">10,000원</span></div>
+          <div><span class="n">📈</span>성장상 · 옥○희<span class="pt">5,000원</span></div></div></div>
+      <div class="foot">상금은 원장님이 월말에 확정합니다 · 이름은 가운데 글자를 가립니다</div>
+    </div></div>
+
+  <div class="phone"><div class="ph-top"><span class="back">←</span>🏆 루멘 리그<span class="seg">통합</span></div>
+    <div class="ph-body">
+      <div class="tabs"><div>🏁 진도<small>D-14</small></div><div>💡 IB아하<small>D-75</small></div><div>📔 플래너<small>D-15</small></div><div class="dim">🎙 말하기<small>준비 중</small></div><div class="on">👑 종합<small>7위</small></div></div>
+      <div class="card"><div class="h">👑 종합 챔피언 점수<span class="d">종목마다 순위 → 점수</span></div>
+        <table><tr><th>종목</th><th style="text-align:right">내 순위</th><th style="text-align:right">점수</th></tr>
+          <tr><td>🏁 진도 레이스</td><td class="num">5위</td><td class="num">10</td></tr>
+          <tr><td>💡 IB아하</td><td class="num">9위</td><td class="num">2</td></tr>
+          <tr><td>📔 플래너 (9월)</td><td class="num">19위</td><td class="num">0</td></tr>
+          <tr><td><b>합계</b></td><td></td><td class="num"><b>12</b></td></tr></table>
+        <div class="foot" style="text-align:left">플래너는 매달 순위가 새로 나므로 달마다 점수가 더해져요 (학원앱에서 켜고 끌 수 있음)</div></div>
+      <div class="card"><div class="h">홈 배너</div>
+        <div style="background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border-radius:12px;padding:10px 12px;font-size:12px"><b>🏆 루멘 리그</b> · 총상금 80,000원+<br><span style="opacity:.85">📔 플래너 19위 · 💡 IB아하 9위 · 🏁 진도 5위</span></div>
+        <div class="foot" style="text-align:left">홈에서도 상금과 내 순위가 한 줄로 보입니다</div></div>
+    </div></div>
+</div>
+<div class="note"><b>학생앱에서 바뀌는 것</b>
+<ul><li>루멘 리그에 <b>📔 플래너</b> 탭. 매달 1일 새로 시작(D-일수는 그달 말일까지). 점수는 지금 쓰는 플래너 점수 그대로(원장님 승인 시 갱신).</li>
+<li>맨 위 <b>💰 상금 한눈에</b> 카드: 종목별 상금과 합계. 학원앱에서 「보이기」를 끈 종목은 「비공개」로만 나옵니다(금액은 아예 보내지 않음).</li>
+<li>기존 「내 플래너 점수」 화면은 없애지 않고 탭 안에서 「자세히 ›」로 이어집니다(숨김 설정이 켜져 있어도 리그 탭에서는 보임).</li>
+<li>월말에 원장님이 확정하면 「🏅 지난달 수상」에 이름과 상이 남고, 수상자 앱에는 배지가 뜹니다.</li></ul></div>
+
+<h2>학원앱 — 🏆 리그 설정 › 📔 플래너 상금 <span class="tag">조정 · 노출 여부</span></h2>
+<div class="app">
+  <div class="bar"><b>🏆 루멘 리그 설정</b><span>종목: 진도 · IB아하 · 📔 플래너 · 말하기 · 종합</span><div class="n"><span class="btn">미리보기(학생앱)</span><span class="btn g">📣 발행</span><span class="btn p">💾 저장</span></div></div>
+  <div class="sum"><span>시즌 상금 합계 <b>80,000원</b></span><span>IB아하 <b>50,000</b></span><span>📔 플래너 <b>30,000</b> / 달</span><span>진도 <b>비공개</b></span><span>종합 <b>문화상품권 30,000</b></span></div>
+  <div class="sec"><h3>📔 플래너 상금</h3>
+    <div class="row2">
+      <div class="fld"><div class="l">한 달 총상금</div><div class="v"><input value="30,000"> 원</div></div>
+      <div class="fld"><div class="l">학생앱에 보이기</div><div class="v"><span class="tg on"><i></i>총상금 보이기</span> &nbsp; <span class="tg on"><i></i>상마다 금액 보이기</span></div></div>
+      <div class="fld"><div class="l">리그 탭에 넣기</div><div class="v"><span class="tg on"><i></i>📔 플래너 탭 켜기</span></div></div>
+      <div class="fld"><div class="l">종합 챔피언에 포함</div><div class="v"><span class="tg on"><i></i>달마다 순위 점수 더하기</span></div></div>
+    </div>
+    <table style="margin-top:10px"><tr><th>상</th><th>이름</th><th>기준</th><th style="text-align:right">금액</th><th></th></tr>
+      <tr><td>🥇</td><td>플래너왕</td><td>그달 점수 1위</td><td class="num">15,000</td><td>✎ ✕</td></tr>
+      <tr><td>🔥</td><td>꾸준왕</td><td>제출일 수 1위 (연속 제출 우선)</td><td class="num">10,000</td><td>✎ ✕</td></tr>
+      <tr><td>📈</td><td>성장상</td><td>지난달보다 점수가 가장 많이 오른 학생</td><td class="num">5,000</td><td>✎ ✕</td></tr>
+      <tr><td colspan="3"><span class="btn">+ 상 추가</span> &nbsp; <span style="font-size:11px;color:var(--mute)">합계가 총상금과 다르면 빨간 글씨로 알려 줍니다</span></td><td class="num"><b>30,000</b></td><td></td></tr></table>
+    <div style="margin-top:8px;font-size:12px;color:var(--mute)">공개 순위: Top <b>5</b> · 이름 표기: <b>가운데 가림</b> · 최소 제출일 <b>5일</b> 이상만 수상 후보 · 한 학생이 두 상을 받으면: <b>큰 상 하나만</b></div></div>
+  <div class="sec"><h3>🏅 9월 수상자 확정 (월말)</h3>
+    <div class="row2">
+      <div class="fld"><div class="l">🥇 플래너왕 · 자동 후보</div><div class="v">박○희 140점 · 윤○솔 140점 <span style="font-size:11px;color:#b45309">동점 — 원장님이 고르거나 나눠 주기</span></div></div>
+      <div class="fld"><div class="l">🔥 꾸준왕 · 자동 후보</div><div class="v">유○준 · 22일 제출(연속 15일)</div></div>
+      <div class="fld"><div class="l">📈 성장상 · 자동 후보</div><div class="v">옥○희 · 8월 12점 → 9월 52점 (+40)</div></div>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><span class="btn p">✓ 이대로 확정 → 학생앱 「지난달 수상」에 올리기</span><span class="btn">수상자 바꾸기</span><span class="btn">🖨 상장 인쇄</span><span class="btn">📱 학부모앱 알림</span></div></div>
+</div>
+<div class="note"><b>학원앱에서 바뀌는 것</b>
+<ul><li>리그 설정에 <b>📔 플래너 상금</b> 칸: 총상금(기본 30,000원), 상 목록(이름·기준·금액 편집, 추가·삭제), 보이기 두 가지(총상금 / 상마다 금액), 리그 탭 켜기, 종합 챔피언 포함. 저장·발행하면 학생앱이 바로 따라갑니다.</li>
+<li><b>월말 수상자 확정</b>: 기준대로 후보를 자동으로 세워 주고(동점·중복은 표시), 「확정」 한 번이면 학생앱 「지난달 수상」과 수상 배지에 반영. 기존 상장 인쇄·학부모앱 알림과 이어집니다.</li>
+<li>기존 IB아하 상금 설정(총상금·open·showTotal)과 같은 방식이라 화면과 저장 모양을 그대로 씁니다. 진도 레이스 상금 「비공개」도 같은 스위치입니다.</li></ul></div>
+</div>
+
+</body></html>
