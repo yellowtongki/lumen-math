@@ -544,6 +544,19 @@ function msChoiceType(rec) {
   if (/single_choice/.test(t)) return 'SINGLE_CHOICE';
   return 'SHORT_ANSWER';
 }
+/* «순수 객관식»일 때만 유형을 돌려준다 (2026-09-17).
+ * 매쓰플랫은 객관식만 자동채점하므로 객관식을 놓치면 그만큼 자동채점이 줄어든다.
+ * 그런데 매쓰플랫 OCR 은 보기가 그림에 흐릿하면 객관식을 단답으로 잘못 읽는다
+ * (실측: 108문항 중 33번 — 수학비서는 single_choice, 매쓰플랫은 SHORT_ANSWER).
+ * 원본 프린트를 만든 수학비서의 유형이 가장 정확하므로 그쪽을 따른다.
+ * 다만 「서술 + 보기 고르기」처럼 답이 섞인 문항은 보기 번호만 남기면 나머지 답이
+ * 사라지므로 손대지 않는다 — 답이 «전부» 객관식일 때만 바꾼다. */
+function msPureChoice(rec) {
+  const ts = (rec && rec.answerTypes ? rec.answerTypes : []).filter(Boolean);
+  if (!ts.length) return '';
+  if (!ts.every((t) => /^(single_choice|multiple_choice)$/.test(String(t)))) return '';
+  return ts.some((t) => /multiple_choice/.test(t)) ? 'MULTIPLE_CHOICE' : 'SINGLE_CHOICE';
+}
 
 /* ── 문항 상태(OCR·정답 반영)가 끝날 때까지 ───────────────────── */
 async function fetchDetails(detailIds) {
@@ -711,7 +724,7 @@ async function runPart(part, cur, title, workDir, made) {
    * 이런 문항을 50개 묶음에 섞어 보내면 묶음 전체가 500 INTERNAL_SERVER_ERROR 로 죽는다
    * (2026-09-13 실측). 그래서 «빼고» 보내고, 그래도 묶음이 실패하면 하나씩 다시 보낸다.
    * 못 넣은 문항은 정답만 비어 있을 뿐 학습지에는 그대로 들어간다. */
-  const versions = []; const conv = { ok: 0, raw: 0 }; let skipNoKey = 0;
+  const versions = []; const conv = { ok: 0, raw: 0 }; let skipNoKey = 0; const fixedType = [];
   rows.forEach((d) => {
     const src = part.recs[d.boxIndex - 1];
     if (!src) return;
@@ -721,7 +734,13 @@ async function runPart(part, cur, title, workDir, made) {
     /* 자리 표시 문항은 그림이 «안내 글»이라 매쓰플랫 OCR 이 객관식인 줄 모른다.
      * 그래서 수학비서가 알고 있는 유형(단답/객관식)을 대신 알려 준다 —
      * 객관식이면 학생이 번호를 골라 자동채점까지 된다. */
-    const c = toMfAnswer(src.answer, src.placeholder ? msChoiceType(src) : lv.type);
+    /* 유형: ① 자리 표시 문항은 그림에 보기가 없으니 수학비서 유형을 쓴다
+     *       ② 수학비서가 «순수 객관식»이라고 하면 그 말을 따른다 (매쓰플랫 OCR 이 놓친 것)
+     *       ③ 그 밖에는 매쓰플랫이 읽은 유형 그대로 */
+    const pure = msPureChoice(src);
+    const useType = src.placeholder ? msChoiceType(src) : (pure || lv.type);
+    if (!src.placeholder && pure && pure !== lv.type) fixedType.push(`${src.no}번(${lv.type}→${pure})`);
+    const c = toMfAnswer(src.answer, useType);
     if (c.ok) conv.ok++; else conv.raw++;
     /* no 는 «우리»가 로그에 쓰려고 붙인 것 — 보낼 때는 떼고 보낸다 */
     versions.push({ no: src.no, detailId: d.id, contentDataKey: key, answer: c.answer, problemType: c.problemType,
@@ -742,6 +761,7 @@ async function runPart(part, cur, title, workDir, made) {
     throw err;
   }
   if (skipNoKey) log(`    ⚠ 본문 없음 ${skipNoKey}개`);
+  if (fixedType.length) log(`    ✎ 수학비서 유형대로 객관식으로 바로잡음 ${fixedType.length}개 — ${fixedType.join(', ')} (그만큼 자동채점이 늘어납니다)`);
   let injected = 0; const injectFailed = [], simplified = [];
   const send = (list) => mf(MF_API, 'POST', '/my-db-problems/versions', { versions: list.map(({ no, ...rest }) => rest) });
   for (let i = 0; i < versions.length; i += 50) {
@@ -832,11 +852,12 @@ async function runPart(part, cur, title, workDir, made) {
   /* 정답이 문제은행 쪽으로 퍼지는 데 시간이 걸려, 만들자마자 읽으면 아직 덜 채워져 보인다
    * (같은 학습지가 37개 → 54개로 늘어나는 것을 실측). 다 찰 때까지 몇 번 더 읽는다. */
   const expectIds = detailIds.map((d) => cp.copied[d]);
-  let probs = [], orderOk = false, withAnswer = 0, autoScored = 0;
+  let probs = [], orderOk = false, withAnswer = 0, autoScored = 0, autoFlag = false;
   for (let i = 0; i < 6; i++) {
     const { data: got } = await mf(MF_API, 'GET', `/worksheet/${wsId}?ignoredForDeleted=true`);
     const ws = got.worksheet || got;
     probs = got.problems || ws.problems || [];
+    autoFlag = !!ws.autoScorableFlag;
     orderOk = probs.length === expectIds.length && probs.every((p, k) => (p.id || p.problemId) === expectIds[k]);
     withAnswer = 0; autoScored = 0;
     probs.forEach((p) => {
@@ -848,6 +869,7 @@ async function runPart(part, cur, title, workDir, made) {
     await sleep(20000);
   }
   log(`    확인: 문항 ${probs.length}/${part.recs.length} · 번호순서 ${orderOk ? '일치' : '불일치'} · 정답 ${withAnswer} · 자동채점 ${autoScored}`);
+  log(`    자동채점 학습지: ${autoFlag ? '예 ✅' : `아니오 — 객관식이 아닌 문항 ${probs.length - autoScored}개 때문입니다 (매쓰플랫은 객관식만 자동채점합니다)`}`);
   /* 정답이 비어 있는 칸이 있으면 «원 번호»를 알려 준다 — 매쓰플랫이 가끔 몇 개를 흘린다
    * (2026-09-13 실측: 같은 문제지를 두 번 올렸는데 한 번은 54/54, 한 번은 51/54).
    * 원장님이 그 번호만 매쓰플랫에서 직접 채워 넣으시면 된다. */
@@ -865,7 +887,7 @@ async function runPart(part, cur, title, workDir, made) {
     worksheetId: wsId, paperId: paper.id, title, n: part.recs.length,
     range: `${part.recs[0].no}~${part.recs[part.recs.length - 1].no}`,
     pages: part.pdf.pageCount, matched, matchedTotal: nBox,
-    problemCount: probs.length, orderOk, withAnswer, autoScored,
+    problemCount: probs.length, orderOk, withAnswer, autoScored, autoFlag,
     convOk: conv.ok, convRaw: conv.raw, reRequests: cp.reRequests,
     soloNos, placeholders: phNos, placeholderCheck: phCheck, blankNos,
     sec: ((Date.now() - t0) / 1000) | 0,
@@ -916,11 +938,12 @@ async function makeOneWorksheet(preps, cur, title, made) {
   log(`    ✅ 학습지 ${wsId} 「${title}」 — ${recs.length}문항 한 장`);
 
   /* 확인 — 문항 수·번호 순서·정답 (정답은 퍼지는 데 시간이 걸린다) */
-  let probs = [], orderOk = false, withAnswer = 0, autoScored = 0;
+  let probs = [], orderOk = false, withAnswer = 0, autoScored = 0, autoFlag = false;
   for (let i = 0; i < 6; i++) {
     const { data: got } = await mf(MF_API, 'GET', `/worksheet/${wsId}?ignoredForDeleted=true`);
     const ws = got.worksheet || got;
     probs = got.problems || ws.problems || [];
+    autoFlag = !!ws.autoScorableFlag;
     orderOk = probs.length === problemIds.length && probs.every((p, k) => (p.id || p.problemId) === problemIds[k]);
     withAnswer = 0; autoScored = 0;
     probs.forEach((p) => {
@@ -932,6 +955,11 @@ async function makeOneWorksheet(preps, cur, title, made) {
     await sleep(20000);
   }
   log(`    확인: 문항 ${probs.length}/${recs.length} · 번호순서 ${orderOk ? '일치' : '불일치'} · 정답 ${withAnswer} · 자동채점 ${autoScored}`);
+  /* 「자동채점 학습지」는 매쓰플랫이 스스로 정한다 — «모든 문항이 객관식»일 때만 참이다
+   * (2026-09-17 실측: 객관식 3개면 참, 객관식 2 + 단답 1이면 거짓. 만들 때 값을 줘도 무시된다).
+   * 매쓰플랫은 단답·서술을 자동채점하지 않는다(숫자 한 개짜리 답도 IMPOSSIBLE). */
+  const notAuto = probs.length - autoScored;
+  log(`    자동채점 학습지: ${autoFlag ? '예 ✅' : `아니오 — 객관식이 아닌 문항 ${notAuto}개 때문입니다 (매쓰플랫은 객관식만 자동채점합니다)`}`);
   const blankNos = probs.map((p, k) => ((p.answer != null && String(p.answer).trim() !== '' && String(p.answer).trim() !== '.')
     ? null : (recs[k] ? recs[k].no : k + 1))).filter((x) => x != null);
   if (blankNos.length) log(`    ⚠ 정답이 비어 있는 문항 (원 번호) ${blankNos.join(', ')} — 매쓰플랫에서 직접 채워 주세요`);
@@ -947,7 +975,7 @@ async function makeOneWorksheet(preps, cur, title, made) {
     range: `${recs[0].no}~${recs[recs.length - 1].no}`,
     pages: preps.reduce((a, p) => a + p.pages, 0),
     matched: preps.reduce((a, p) => a + p.matched, 0), matchedTotal: preps.reduce((a, p) => a + p.matchedTotal, 0),
-    problemCount: probs.length, orderOk, withAnswer, autoScored,
+    problemCount: probs.length, orderOk, withAnswer, autoScored, autoFlag,
     convOk: preps.reduce((a, p) => a + p.convOk, 0), convRaw: preps.reduce((a, p) => a + p.convRaw, 0),
     reRequests: preps.reduce((a, p) => a + p.reRequests, 0),
     soloNos: preps.flatMap((p) => p.soloNos), placeholders: phNos, placeholderCheck: phCheck, blankNos,
@@ -1217,7 +1245,8 @@ async function main() {
   done.forEach((r) => {
     if (r.dry) { log(`· ${r.paperId} 「${r.title}」 ${r.n}문항 → ${r.parts.map((x) => `「${x.title}」 ${x.n}문항 ${x.pages}쪽`).join(' + ')}`); return; }
     r.parts.forEach((x) => {
-      log(`· 학습지 ${x.worksheetId} 「${x.title}」 문항 ${x.problemCount}/${x.n} · 번호순서 ${x.orderOk ? '일치' : '불일치'} · 정답 ${x.withAnswer} · 자동채점 ${x.autoScored} · 매칭 ${x.matched}/${x.matchedTotal} · 재요청 ${x.reRequests}회 · ${x.sec}초`);
+      log(`· 학습지 ${x.worksheetId} 「${x.title}」 문항 ${x.problemCount}/${x.n} · 번호순서 ${x.orderOk ? '일치' : '불일치'} · 정답 ${x.withAnswer} · 자동채점 ${x.autoScored}${x.autoFlag ? ' (자동채점 학습지 ✅)' : ''} · 매칭 ${x.matched}/${x.matchedTotal} · 재요청 ${x.reRequests}회 · ${x.sec}초`);
+      if (!x.autoFlag) log(`    ※ 「자동채점 학습지」가 되려면 «모든 문항이 객관식»이어야 합니다 — 지금은 객관식 아닌 문항이 ${x.problemCount - x.autoScored}개입니다 (매쓰플랫은 단답·서술을 자동채점하지 않습니다)`);
       if (x.soloNos && x.soloNos.length) log(`    (${x.soloNos.join(', ')}번은 매쓰플랫이 잘 못 읽어 «한 쪽에 크게» 넣었습니다)`);
       if (x.blankNos && x.blankNos.length) log(`    ⚠ 정답이 빈 문항: ${x.blankNos.join(', ')}번`);
     });
