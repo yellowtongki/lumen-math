@@ -30,17 +30,19 @@
 - **cdnjs는 Node fetch로 차단**(403) — MathJax 파일이 필요하면 `npm pack mathjax@3.2.2` 후 `es5/tex-svg.js` 추출해 로컬 사용. (최종 해설집 HTML 자체는 cdnjs `<script>` 태그로 두면 됨 — 아티팩트/브라우저에서는 로드됨.)
 - **head.html의 MathJax 설정**: inlineMath `\(\)`, displayMath `$$`, svg fontCache global (외부 폰트파일 안 씀 → CSP 통과).
 - 앱 버전 파일(lumen_v*, student_v*)은 **건드리지 말 것** — 여긴 해설집 전용.
+- **어두운 모드에서 그래프가 사라진다** (원장님 제보 2026-09-17). 해설집 CSS는 `@media (prefers-color-scheme: dark)`로
+  기기 설정을 따라가는데, 문항 그림(SVG)은 밝은 종이 전용 색(축 `#0f172a`, 흰 채움)으로 그려 놓아
+  어두운 화면에서 검은 축이 검은 배경에 묻힌다. 둘 중 하나를 지킬 것:
+  ① `<html data-theme="light">`로 밝은 모드에 못 박고 어두운 규칙은 `:root:not([data-theme="light"])`로 감싸거나,
+  ② SVG 색을 `var(--ink)`·`currentColor`처럼 테마를 따라가는 값으로 그린다.
+  (학원앱 v19-13부터 앱이 띄울 때는 ①을 자동으로 걸어 준다 — 앱 밖에서 파일을 직접 열 때를 위해 해설집 자체도 지킬 것)
 
 ## 나중 연동 계획 (지금은 참고만)
 완성된 해설집은 나중에 학생앱(student_v2)에 심을 예정. 방식은 해설집을 Supabase(`lumen_store`, 예: `haesol_<시험코드>` 키)에 저장 → 학생앱이 읽어와 "해설 보기" 버튼으로 노출 → 매쓰플랫 정오답 연동과 묶어 "틀린 문항 → 그 해설" 자동 표시. 이 연동 작업은 앱 개발 세션에서 별도로 진행하므로, 이 세션은 **해설집 제작과 Supabase 저장까지만** 담당하면 됨.
 
 ## 작업 규칙
 - 비밀번호·API키 커밋 금지(환경변수만). 학생 개인정보 실데이터 커밋 금지.
-- **작업은 `main`에서 합니다** (2026-08-31 원장 지시 — 전용 브랜치 `claude/haesol-reports`는 이때 main에 병합하고 종료).
-- ⚠️ **무엇을 하든 시작 전에 반드시 최신을 받으세요**: `git fetch origin main && git checkout main && git merge --ff-only origin/main`.
-  특히 **앱(lumen_v18-*)을 만질 때는 최신 버전 파일을 base로 삼아 새 번호를 붙입니다.** (2026-08-31 사고: 낡은 v18-103을 바탕으로 v18-104를 만들었으나 그 사이 main은 v18-121까지 나가 있었고 파일명도 충돌했다. v18-121 위에 다시 얹어 v18-122로 배포했다.)
-- 앱을 배포할 때는 새 버전 파일을 만들고 **고정 주소 `lumen_v1.html`도 함께 최신본으로 교체**합니다(CLAUDE.md 배포 규칙).
-- 커밋 메시지 끝에 `Co-Authored-By` 줄을 붙이되, **모델명은 커밋·PR·코드 주석 등 저장소에 남는 곳 어디에도 따로 적지 않습니다.**
+- 해설집 작업은 **전용 브랜치 `claude/haesol-reports`**에서 하세요(앱 개발 브랜치와 분리). 시작 시: `git fetch origin main && git checkout -B claude/haesol-reports origin/main`. 커밋 메시지 끝에 `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>` 붙이고, 그 외 모델명은 어디에도 넣지 말 것.
 
 지금은 첫 인사만 하세요: 위 역할을 한 줄로 요약하고, **어떤 시험지부터 해설집을 만들지** 원장님께 물어보세요(학교·학년·학기·과목, 또는 시험지 이미지 첨부). 길게 설명하지 말고 짧게.
 
