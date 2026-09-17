@@ -1258,6 +1258,22 @@ async function main() {
   failed.forEach((f) => log(`· ❌ ${f.paperId} 「${f.title}」 ${f.error}`));
   log(`성공 ${done.length} · 실패 ${failed.length} · 건너뜀 ${skipped.length}`);
 
+  /* ── 정답 대장 만들기 (2026-09-17) ─────────────────────────────
+   * 매쓰플랫은 객관식만 자동채점한다. 나머지는 루멘 학생앱이 채점하는데,
+   * 그러려면 «칸마다»의 유형·정답·정답 그림이 필요하다 — 매쓰플랫에 들어간 한 줄짜리
+   * 답으로는 알 수 없으므로 수학비서 원본에서 뽑아 lumen_store 에 따로 저장한다.
+   * (sync/mf_answerkey.js · 키 mf_wsans_<학습지id>) */
+  if (!opt.dry && done.length) {
+    try {
+      const { execFileSync } = require('child_process');
+      log('\n── 정답 대장 만들기 (학생앱 자동채점용) ──');
+      const out = execFileSync(process.execPath, [path.join(__dirname, 'mf_answerkey.js')], { encoding: 'utf8', timeout: 600000 });
+      String(out).split('\n').filter(Boolean).slice(-12).forEach((l) => log('  ' + l.replace(/^\[[\d.]+s\]\s*/, '')));
+    } catch (e) {
+      log(`  ⚠ 정답 대장 만들기 실패 — 나중에 «node sync/mf_answerkey.js» 를 돌리면 됩니다 (${String(e.message).slice(0, 160)})`);
+    }
+  }
+
   if (!opt.dry) {
     const lg = (await kvGet(LOG_KEY)) || { runs: [] };
     lg.runs = (lg.runs || []).concat([{ at: new Date().toISOString(), lines: LINES }]).slice(-KEEP_RUNS);
