@@ -35,6 +35,9 @@
  *         --mylist "기출 쌍둥이"  만든 학습지를 이 마이리스트(폴더)에 넣기 (없으면 만든다)
  *         --similar-x 1      문항당 쌍둥이 수
  *         --skip-worksheet   원본 등록까지만
+ *         --mypaper 1997465  「나만의 DB」 대신 「내 문제지」(범위맞춤 묶음)에서 가져오기.
+ *                            --mydb 자리에 이걸 쓴다. 제목은 문제지 이름에서 뽑으므로
+ *                            「23,24년 옥길중 3-2 중간 범위맞춤」처럼 학교명이 들어 있어야 좋다
  *         --assign "김가희"   기출원본 학습지를 이 학생에게 배정 (이름 또는 매쓰플랫 id, 쉼표로 여러 명)
  *         --assign-twin      쌍둥이 학습지도 같이 배정 (기본은 원본만)
  *
@@ -148,17 +151,23 @@ function sourceTitleOf(msTitle) {
 }
 
 /* cells 응답의 Set-Cookie(Cloud-CDN-Cookie)가 문항 이미지 열쇠 (약 78분 유효) */
-async function msCells(id) {
-  // 응답은 data.pages[].cells[] 꼴이고 cursor 페이지네이션 (?curriculumId=2&limit=48 필수)
+/* 수학비서에는 문항 묶음이 두 군데 있다 — 생김새가 살짝 다르다.
+ *   「나만의 DB」 /mydbs/{id}/cells   → data.pages[].cells[]  (학교 기출 시험지 통째로)
+ *   「내 문제지」 /my-papers/{id}/cells → data.cells[]        (원장님이 범위에 맞춰 직접 고른 묶음)
+ * 둘 다 문항 한 칸의 생김새(questionNumber·imagePath·answers…)는 같아서 뒤쪽은 그대로 쓴다. */
+async function msCells(id, isPaper) {
+  const base = isPaper ? 'my-papers' : 'mydbs';
   const cells = [];
   let cursor = '';
   for (let i = 0; i < 10; i++) {
-    const r = await fetch(`${MS_API}/bms/api/v1/mydbs/${id}/cells?curriculumId=2&limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, { headers: msH() });
+    const r = await fetch(`${MS_API}/bms/api/v1/${base}/${id}/cells?curriculumId=2&limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, { headers: msH() });
     const sc = r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean);
     const hit = sc.find((c) => c && c.includes('Cloud-CDN-Cookie'));
     if (hit) MS_CDN_COOKIE = hit.split(';')[0];
     const j = await r.json();
-    ((j.data && j.data.pages) || []).forEach((pg) => (pg.cells || []).forEach((c) => cells.push(c)));
+    const d = (j && j.data) || {};
+    (d.pages || []).forEach((pg) => (pg.cells || []).forEach((c) => cells.push(c)));
+    (d.cells || []).forEach((c) => cells.push(c));
     cursor = j.pagination && j.pagination.cursor;
     if (!cursor) break;
   }
@@ -181,17 +190,26 @@ async function buildPdf(images, headTitle) {
   page.drawText(headTitle.replace(/[^\x20-\x7E]/g, '').trim() || 'EXAM', { x: M, y: A4[1] - M - 18, size: 14, font });
   page.drawLine({ start: { x: M, y: A4[1] - M - 30 }, end: { x: A4[0] - M, y: A4[1] - M - 30 }, thickness: 1, color: rgb(0.2, 0.2, 0.2) });
   const colX = () => M + col * (COLW + GAP);
-  for (const { no, buf } of images) {
+  /* 여러 문항이 하나의 그림·표(지문)를 함께 쓰는 경우가 있다(예: 산점도 하나로 20·21번).
+   * 지문을 빼고 보내면 학습지에서 그 문항들을 아예 풀 수 없으므로, 문항마다 자기 지문을
+   * 위에 같이 붙여 «한 덩어리»로 싣는다. 같은 지문이 두 번 나와도 각 문항이 혼자 완결된다. */
+  for (const { no, buf, passBuf } of images) {
     const png = await doc.embedPng(buf);
+    const pas = passBuf ? await doc.embedPng(passBuf) : null;
     const scale = Math.min(1, (COLW - 22) / png.width);
-    const w = png.width * scale, h = png.height * scale, blockH = h + 26;
+    const w = png.width * scale, h = png.height * scale;
+    const pScale = pas ? Math.min(1, (COLW - 22) / pas.width) : 0;
+    const pw = pas ? pas.width * pScale : 0, ph = pas ? pas.height * pScale : 0;
+    const blockH = h + ph + (pas ? 8 : 0) + 26;
     if (y - blockH < M) {
       if (col === 0) { col = 1; y = A4[1] - M - (pageNo === 1 ? 60 : 20); }
       else { page = doc.addPage(A4); pageNo++; col = 0; y = A4[1] - M - 20; }
       if (y - blockH < M) y = A4[1] - M - 20;
     }
     page.drawText(String(no).padStart(2, '0'), { x: colX(), y: y - 12, size: 12, font, color: rgb(0.1, 0.3, 0.7) });
-    page.drawImage(png, { x: colX() + 22, y: y - 14 - h, width: w, height: h });
+    let iy = y - 14;
+    if (pas) { page.drawImage(pas, { x: colX() + 22, y: iy - ph, width: pw, height: ph }); iy -= ph + 8; }
+    page.drawImage(png, { x: colX() + 22, y: iy - h, width: w, height: h });
     y -= blockH + 12;
   }
   return { bytes: await doc.save(), pages: doc.getPageCount() };
@@ -264,7 +282,8 @@ async function saiRun(jobId, functionName, parameters, timeoutMs, tries) {
 }
 
 async function runTwinPipeline(opts) {
-  const MYDB = Number(opts.mydb || 0);
+  const MYPAPER = Number(opts.mypaper || 0);          // 「내 문제지」 id (범위맞춤 묶음)
+  const MYDB = Number(opts.mydb || 0) || MYPAPER;     // 아래 로직은 둘을 같은 「시험지 id」로 다룬다
   let TRIE = opts.trie || '';
   let GRADE_LABEL = opts.grade || '';
   let TITLE = opts.title || '';
@@ -276,20 +295,22 @@ async function runTwinPipeline(opts) {
   let IS_HIGH = false, HS_SUBJECT = '', WS_GRADE = '1';
   let assignIds = [], assignNames = [];
   if (opts.log) log = opts.log;
-  if (!MYDB) throw new Error('mydb(수학비서 시험지 id)가 필요합니다');
+  if (!MYDB) throw new Error('mydb(나만의 DB) 또는 mypaper(내 문제지) id가 필요합니다');
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   // ① 수학비서에서 문항 이미지 + 시험명(출처)
   await msLogin();
   let msMeta = {};
   {
-    const dr = await fetch(`${MS_API}/bms/api/v1/mydbs/${MYDB}`, { headers: msH() });
+    const dr = await fetch(`${MS_API}/bms/api/v1/${MYPAPER ? 'my-papers' : 'mydbs'}/${MYDB}`, { headers: msH() });
     const dj = await dr.json();
     const md = (dj && dj.data) || {};
     msMeta = md;
     const t = String(md.title || '');
-    const g = (t.match(/[중고](\d)/) || [])[1] || '1';
-    const sem = (t.match(/(\d)학기/) || [])[1] || '1';
+    /* 학년·학기는 시험지 이름에서 읽는다. 「…범박중 중2공통 2학기중간」처럼 붙여 쓴 것도,
+     * 「23,24년 옥길중 3-2 중간 범위맞춤」처럼 「학년-학기」로 줄여 쓴 것도 잡아야 한다. */
+    const g = ((t.match(/[중고]\s*(\d)/) || t.match(/(\d)\s*-\s*[12]/) || t.match(/(\d)학년/) || [])[1]) || '1';
+    const sem = ((t.match(/(\d)학기/) || t.match(/\d\s*-\s*([12])/) || [])[1]) || '1';
     const yr = (t.match(/(20\d\d)년/) || [])[1] || '';
     IS_HIGH = /고$/.test(schoolTokenOf(t)) || (!schoolTokenOf(t) && t.includes('고') && !t.includes('중'));
     if (!TITLE) TITLE = sourceTitleOf(t) || ('기출 연습 ' + MYDB);
@@ -314,11 +335,17 @@ async function runTwinPipeline(opts) {
     WS_GRADE = IS_HIGH ? (HS_SUBJECT || '공통수학1') : g;
   }
   log(`제목(출처): ${TITLE} · 학년 ${GRADE_LABEL}`);
-  const cells = await msCells(MYDB);
+  const cells = await msCells(MYDB, !!MYPAPER);
   if (!cells.length) throw new Error('문항이 없습니다 (mydb id 확인)');
   log(`수학비서: ${cells.length}문항`);
   const images = [];
-  for (const c of cells) images.push({ no: c.questionNumber, buf: await msImage(c.imagePath) });
+  let nPass = 0;
+  for (const c of cells) {
+    const passPath = c.passage && c.passage.imagePath;
+    if (passPath) nPass++;
+    images.push({ no: c.questionNumber, buf: await msImage(c.imagePath), passBuf: passPath ? await msImage(passPath) : null });
+  }
+  if (nPass) log(`공용 지문(그림·표) ${nPass}문항에 함께 싣습니다`);
 
   // ② PDF 조립
   const pdf = await buildPdf(images, TITLE);
@@ -489,6 +516,7 @@ if (require.main === module) {
   const arg = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 1] : d; };
   runTwinPipeline({
     mydb: Number(arg('mydb', 0)),
+    mypaper: Number(arg('mypaper', 0)),
     trie: arg('trie', ''),
     grade: arg('grade', ''),
     title: arg('title', ''),
