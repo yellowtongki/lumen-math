@@ -779,6 +779,45 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .ib-box.unread textarea { background:#fff; border-color:#fcd34d; }
 .ib-box textarea:focus { outline:2px solid #1d6fe8; outline-offset:-1px; border-color:#1d6fe8; }
 
+/* ★ v2-88: 네 칸은 「읽기 전용 상자」가 기본 — 처음부터 열린 textarea 를 두지 않는다.
+ * (원장 결정 2026-09-17 · docs/aha_paper_input_contract.md §1)
+ * 「✏️ 고치기」를 눌렀을 때만 그 칸의 textarea 가 열리고, 「완료」로 닫힌다. */
+.ib-box textarea, .ib-box .ib-done { display:none; }
+.ib-box.editing textarea { display:block; }
+.ib-box.editing .ib-done { display:inline-block; }
+.ib-box.editing .ib-ro { display:none; }
+.ib-ro {
+  position:relative; border:1px solid #e2e8f0; border-radius:9px; background:#fbfcfe;
+  padding:8px 70px 8px 9px; min-height:52px; box-sizing:border-box;
+}
+.ib-box.unread .ib-ro { background:#fff; border-color:#fcd34d; }
+.ib-box.locked .ib-ro { background:#f8fafc; border-style:dashed; padding-right:9px; }
+.ib-ro .tx {
+  font-size:12.5px; line-height:1.55; color:var(--text); font-weight:600;
+  white-space:pre-wrap; word-break:break-word;
+}
+.ib-ro .tx.em { color:#94a3b8; font-weight:700; }
+.ib-fix {
+  position:absolute; top:6px; right:6px; border:1px solid #bfdbfe; background:#eff6ff;
+  color:#1d4ed8; font-family:inherit; font-size:10.5px; font-weight:900; border-radius:7px;
+  padding:4px 7px; cursor:pointer; line-height:1.2; white-space:nowrap;
+}
+.ib-fix:active { transform:scale(0.96); }
+.ib-done {
+  margin-top:6px; border:none; background:#0d2240; color:#fff; font-family:inherit;
+  font-size:11.5px; font-weight:900; border-radius:8px; padding:7px 16px; cursor:pointer;
+}
+/* ★ v2-88: P칸만 예외 — 사진이 끝내 안 읽히면 직접 적을 수 있는 작은 길 */
+.aha-type-self {
+  display:none; margin-top:5px; font-size:10.5px; font-weight:700; color:#92400e; line-height:1.5;
+}
+.aha-type-self b.lk { color:#1d6fe8; text-decoration:underline; cursor:pointer; font-weight:900; white-space:nowrap; }
+.aha-typed-badge {
+  display:none; margin-top:5px; font-size:10.5px; font-weight:800; color:#b45309;
+  background:#fffbeb; border:1px solid #fde68a; border-radius:7px; padding:4px 7px;
+}
+.ib-box.typed .aha-typed-badge { display:block; }
+
 /* ★ v2-84: 「종이에 쓴 것만 점수」 — 못 읽은(노란) 칸 밑에만 나오는 안내 줄 */
 .aha-paper-note {
   display:none; margin-top:6px; background:#fffbeb; border:1px solid #fcd34d; border-radius:9px;
@@ -1578,7 +1617,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .rc-tiers .t b{display:block;font-size:10px;font-weight:900}
 .rc-tiers .t span{font-size:9px;font-weight:800;color:#94a3b8}
 
-/* ══ v2-72: 🏆 루멘 리그 — 진도·IB아하·말하기·종합을 한 화면에 ══
+/* ══ v2-72: 🏆 루멘 리그 — 진도·IB아하·루멘스피치·종합을 한 화면에 ══
    진도 레이스(rcbn·rc-*)와 같은 문법을 그대로 쓴다. 학생이 새로 배울 것이 없게. */
 .rcbn .chips{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
 .rcbn .chips span{font-size:9.5px;font-weight:900;border-radius:50px;padding:2px 7px;background:rgba(255,255,255,.62);color:#7a2e00}
@@ -1659,7 +1698,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .lg-f1 .r{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;padding:7px 0;border-top:1px solid #f1f5f9}
 .lg-f1 .r:first-child{border-top:none}
 .lg-f1 .r .k{width:76px;color:var(--text);flex:none}
-.lg-f1 .r .v{color:#94a3b8;flex:1;font-weight:700}
+.lg-f1 .r .v{color:#94a3b8;flex:1;font-weight:700;min-width:0}
+.lg-f1 .r .v i{display:block;font-style:normal;font-size:10px;font-weight:800;color:#1d78c9;margin-top:2px;line-height:1.35}
 .lg-f1 .r .p{font-weight:900;color:var(--text);width:38px;text-align:right}
 .lg-f1 .sum{display:flex;align-items:center;justify-content:space-between;border-top:2px solid #0d2240;margin-top:6px;padding-top:8px;font-size:13px;font-weight:900;color:var(--text)}
 .lg-champ{background:linear-gradient(135deg,#0d2240,#3b2f6e);color:#fff;border-radius:15px;padding:14px;margin-bottom:12px}
@@ -2397,7 +2437,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
   </div>
 </div>
 
-<!-- ══ v2-72: 🏆 루멘 리그 — 종목 탭 하나로 (진도 · IB아하 · 말하기 · 종합) ══ -->
+<!-- ══ v2-72: 🏆 루멘 리그 — 종목 탭 하나로 (진도 · IB아하 · 플래너 · 루멘스피치 · 종합) ══ -->
 <div class="screen" id="screen-league">
   <div class="sub-hdr" style="background:linear-gradient(135deg,#0d2240,#1d4e89)">
     <button class="back-btn" onclick="go('screen-home')" style="color:#fff">←</button>
@@ -3106,7 +3146,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
       <label class="aha-form-label primary required">📷 활동지 사진 (1장)</label>
       <div class="aha-form-hint" id="aha-photo-hint">활동지 전체가 한 장에 들어오게, 글씨가 또렷하게 찍어 주세요</div>
       <!-- ★ v2-84: 점수는 종이에 쓴 것만 (원장 결정 2026-09-15) -->
-      <div class="aha-paper-first" id="aha-paper-first">✍️ 점수는 <b>종이에 쓴 것만</b> 매겨요. 앱에서 적어 넣은 글은 점수에 들어가지 않아요.</div>
+      <!-- ★ v2-88: 종이 전용 입력 (원장 결정 2026-09-17) -->
+      <div class="aha-paper-first" id="aha-paper-first">✍️ <b>노트에 적고 사진 찍으세요.</b> AI가 글씨를 제대로 읽었는지 확인하고 고쳐 주세요. 점수는 종이에 쓴 것만 매겨요.</div>
       <div id="aha-photo-slot" class="aha-photo-slot" onclick="ahaTriggerPhoto()">
         <span class="aha-photo-slot-icon">📋</span>
         <span class="aha-photo-slot-text">탭하여 사진 추가</span>
@@ -3132,7 +3173,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
         <span style="font-size:13px;font-weight:900;color:var(--navy)">읽은 내용 확인</span>
         <span class="badge badge-ai" id="aha-read-badge">🤖 AI가 읽었어요</span>
       </div>
-      <div class="aha-form-hint" id="aha-read-msg" style="margin-bottom:10px">잘못 읽은 곳만 탭해서 고쳐 주세요. 노란 칸은 못 읽은 칸이에요.</div>
+      <!-- ★ v2-88: 확인 단계 안내 (계약 §1) -->
+      <div class="aha-form-hint" id="aha-read-msg" style="margin-bottom:10px">AI가 읽은 글이에요. 잘못 읽은 곳만 <b>✏️ 고치기</b>로 바로잡아 주세요. 종이에 없는 칸은 점수에 안 들어가요.</div>
 
       <!-- 빈 칸이 많으면 뜨는 띠 (활동지에 안 쓴 경우) -->
       <div class="ib-empty-warn" id="aha-empty-warn" style="display:none"></div>
@@ -3211,7 +3253,11 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
       <div class="ib-box" id="aha-box-L">
         <div class="t"><span class="ltr">L</span><span class="tt">문제 이해</span><span class="tag" id="aha-tag-L"></span></div>
         <div class="hh">구하려는 것과 문제 조건</div>
+        <!-- ★ v2-88: 읽기 전용 상자 + ✏️ 고치기 (계약 §1) -->
+        <div class="ib-ro" id="aha-ro-L"><div class="tx" id="aha-ro-L-tx"></div>
+          <button type="button" class="ib-fix" id="aha-fix-L" onclick="ahaFieldEdit('L')">✏️ 고치기</button></div>
         <textarea id="aha-q-learn" maxlength="600" oninput="ahaOnFieldEdit()" placeholder="활동지의 L칸 내용"></textarea>
+        <button type="button" class="ib-done" id="aha-done-L" onclick="ahaFieldDone('L')">완료</button>
         <!-- ★ v2-84: 종이에 없는 칸 안내 (.unread 일 때만 보인다) -->
         <div class="aha-paper-note" id="aha-paper-note-L">📝 종이에 없는 칸이에요 → 점수에 안 들어가요. 종이에 쓰고 <b class="lk" onclick="ahaTriggerPhoto()">📷 다시 찍기</b></div>
       </div>
@@ -3219,22 +3265,34 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
       <div class="ib-box" id="aha-box-A">
         <div class="t"><span class="ltr">A</span><span class="tt">이론·공식</span><span class="tag" id="aha-tag-A"></span></div>
         <div class="hh">이 문제에 쓸 이론·공식</div>
+        <div class="ib-ro" id="aha-ro-A"><div class="tx" id="aha-ro-A-tx"></div>
+          <button type="button" class="ib-fix" id="aha-fix-A" onclick="ahaFieldEdit('A')">✏️ 고치기</button></div>
         <textarea id="aha-q-act" maxlength="600" oninput="ahaOnFieldEdit()" placeholder="활동지의 A칸 내용"></textarea>
+        <button type="button" class="ib-done" id="aha-done-A" onclick="ahaFieldDone('A')">완료</button>
         <div class="aha-paper-note" id="aha-paper-note-A">📝 종이에 없는 칸이에요 → 점수에 안 들어가요. 종이에 쓰고 <b class="lk" onclick="ahaTriggerPhoto()">📷 다시 찍기</b></div>
       </div>
 
       <div class="ib-box" id="aha-box-M">
         <div class="t"><span class="ltr">M</span><span class="tt">풀이 논리</span><span class="tag" id="aha-tag-M"></span></div>
         <div class="hh">어디까지 어떤 순서로 풀었나</div>
+        <div class="ib-ro" id="aha-ro-M"><div class="tx" id="aha-ro-M-tx"></div>
+          <button type="button" class="ib-fix" id="aha-fix-M" onclick="ahaFieldEdit('M')">✏️ 고치기</button></div>
         <textarea id="aha-q-try" maxlength="900" oninput="ahaOnFieldEdit()" placeholder="활동지의 M칸 내용"></textarea>
+        <button type="button" class="ib-done" id="aha-done-M" onclick="ahaFieldDone('M')">완료</button>
         <div class="aha-paper-note" id="aha-paper-note-M">📝 종이에 없는 칸이에요 → 점수에 안 들어가요. 종이에 쓰고 <b class="lk" onclick="ahaTriggerPhoto()">📷 다시 찍기</b></div>
       </div>
 
       <div class="ib-box p" id="aha-box-P">
         <div class="t"><span class="ltr">P</span><span class="tt">막힌 곳 · 질문</span><span class="tag" id="aha-tag-P"></span></div>
         <div class="hh">어느 단계에서 막혔는지 + 선생님께 묻고 싶은 한 문장</div>
+        <div class="ib-ro" id="aha-ro-P"><div class="tx" id="aha-ro-P-tx"></div>
+          <button type="button" class="ib-fix" id="aha-fix-P" onclick="ahaFieldEdit('P')">✏️ 고치기</button></div>
         <textarea id="aha-q-stuck" maxlength="900" oninput="ahaOnFieldEdit()" placeholder="활동지의 P칸 내용"></textarea>
-        <div class="aha-paper-note" id="aha-paper-note-P">📝 종이에 없는 칸이에요 → 점수에 안 들어가요. 종이에 쓰고 <b class="lk" onclick="ahaTriggerPhoto()">📷 다시 찍기</b></div>
+        <button type="button" class="ib-done" id="aha-done-P" onclick="ahaFieldDone('P')">완료</button>
+        <div class="aha-paper-note" id="aha-paper-note-P">📝 P칸을 못 읽었어요 → 점수에 안 들어가요. 종이에 쓰고 <b class="lk" onclick="ahaTriggerPhoto()">📷 다시 찍기</b></div>
+        <!-- ★ v2-88: P칸만 예외 — 사진이 끝내 안 읽히면 직접 적을 수 있게 (계약 §1) -->
+        <div class="aha-type-self" id="aha-type-self-P">그래도 사진이 잘 안 읽히면 → <b class="lk" onclick="ahaTypeSelfP()">✏️ 직접 적기</b></div>
+        <div class="aha-typed-badge" id="aha-typed-badge-P">✏️ 직접 적은 칸이에요 — 점수는 0점이고, 선생님께 「직접 적음」으로 보입니다.</div>
 
         <div class="ib-dir">
           <div class="dt">❓ 어떻게 답해 주면 좋을까요? (하나만 골라 주세요)</div>
@@ -3591,6 +3649,29 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-88 (2026-09-17) ✍️ 아하노트는 「노트에 적고 사진」만 · 🎤 루멘스피치
+ *   · 아하노트 확인 화면의 네 칸(L·A·M·P)이 <b>읽기 전용 상자</b>로 바뀌었습니다.
+ *     앱을 열자마자 글 쓰는 칸이 열려 있지 않습니다. 상자 오른쪽 위 <b>「✏️ 고치기」</b>를
+ *     눌러야 그 칸만 열리고, 「완료」를 누르면 다시 닫힙니다.
+ *     → 학생이 앱에서 글을 새로 쓰는 것이 아니라, <b>노트에 쓴 글을 확인·수정</b>하게 됩니다.
+ *   · 안내도 바뀌었습니다. 사진 단계는 「노트에 적고 사진 찍으세요. AI가 글씨를 제대로
+ *     읽었는지 확인하고 고쳐 주세요」, 확인 단계는 「잘못 읽은 곳만 ✏️ 고치기로 바로잡아
+ *     주세요」입니다.
+ *   · AI가 <b>빈칸으로 읽은 칸</b>은 아예 잠깁니다(고치기 단추 없음·타이핑 불가).
+ *     「종이에 쓰고 📷 다시 찍기」만 할 수 있습니다.
+ *     다만 <b>P칸(막힌 곳·질문)</b>은 비면 보낼 수 없어서, 다시 찍기를 먼저 권한 뒤
+ *     작은 글씨로 「✏️ 직접 적기」를 둡니다. 직접 적으면 점수는 그대로 0점이고,
+ *     선생님 화면에 「직접 적음」으로 표시됩니다.
+ *   · 학생이 AI 글을 <b>얼마나 고쳤는지</b>가 함께 저장됩니다(칸별 고침 여부와 정도).
+ *     선생님 채점 화면에서 「많이 고친 노트 = 사진을 확인해야 할 노트」를 가려낼 수 있습니다.
+ *   · 🏆 루멘 리그의 「🎙 말하기」 이름이 <b>「🎤 루멘스피치」</b>로 바뀌었습니다
+ *     (준비 중 표시는 「11월 시작」).
+ *   · 👑 종합 탭 맨 위 설명을 「종합 챔피언은 이렇게 정해요 ①②③ + 예시」로 바꿨습니다.
+ *     점수표(1위 25점 · 2위 18점 …)는 원장님이 학원앱에서 발행한 값 그대로 그립니다.
+ *     내 줄에는 「진도 3위 → 15점」과 「한 계단 오르면 +3점」이 같이 보입니다.
+ *   · 원장님이 학원앱에서 종합 챔피언 상을 <b>감추면</b> 💰 상금 한눈에에 「비공개」로만
+ *     나오고, 종합 탭의 상 카드는 보이지 않습니다.
+ *
  * v2-87 (2026-09-16) 📔 플래너가 루멘 리그에 들어왔습니다 · 💰 상금 한눈에
  *   · 🏆 루멘 리그에 <b>「📔 플래너」 탭</b>이 생겼습니다. 원장님이 학원앱에서
  *     「플래너 탭 켜기」를 켜 두었을 때만 보이고, D-일수는 <b>그달 말일까지</b>입니다.
@@ -3790,7 +3871,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *     한 줄에 진도 순위 · IB아하 순위와 등급 · 종합 순위가 같이 보이고,
  *     아래 작은 칩으로 종목별 남은 날짜(D-day)를 보여 줍니다.
  *   · 배너를 누르면 새 화면 「🏆 루멘 리그」가 열립니다. 위쪽 종목 탭에서
- *     [진도] [IB아하] [말하기(준비 중)] [👑 종합] 을 오갑니다.
+ *     [진도] [IB아하] [🎤 루멘스피치(11월 시작)] [👑 종합] 을 오갑니다.
  *     진도 탭은 예전 진도 레이스 화면 그대로입니다.
  *   · IB아하 탭 — 총상금과 4개 상, 내 등급·순위·점수 카드, 부별 순위표
  *     (5위까지 이름 공개, 나머지는 흐리게, 내 줄은 늘 선명), 베스트 질문, 규칙.
@@ -3799,7 +3880,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-87';
+var STU_VER = 'v2-88';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -6239,6 +6320,127 @@ function ahaPaperOnly(k) {
   return Array.isArray(u) && u.indexOf(k) >= 0;
 }
 
+/* ★ v2-88: 종이 전용 입력 (원장 결정 2026-09-17 · docs/aha_paper_input_contract.md §1)
+ * ───────────────────────────────────────────────────────────────────
+ * 네 칸(L·A·M·P)은 「읽기 전용 상자」로 보인다. 상자 오른쪽 위 「✏️ 고치기」를
+ * 눌러야 그 칸의 textarea 가 열리고 「완료」로 닫힌다. 처음부터 열린 칸은 없다.
+ * AI가 못 읽은 칸(unread)은 아예 잠긴다 — 고치기 단추도 없고 타이핑도 안 된다.
+ * 다만 P칸은 노트의 핵심이라, 사진이 끝내 안 읽히면 「✏️ 직접 적기」로 열 수 있고
+ * 그때는 lamp_ai.edits.P.typed = true 로 표시해 학원앱에 알린다(점수는 그대로 0점).
+ * ─────────────────────────────────────────────────────────────────── */
+var AHA_TA = { L:'aha-q-learn', A:'aha-q-act', M:'aha-q-try', P:'aha-q-stuck' };
+var ahaBoxEdit = { L:false, A:false, M:false, P:false };  // 지금 열려 있는 칸
+var ahaTypedP = false;                                    // P칸을 직접 적었는가
+
+/* 잠긴 칸인가 — 종이에 없는 칸은 잠근다 (P만 「직접 적기」로 풀 수 있다) */
+function ahaBoxLocked(k) {
+  if (!ahaPaperOnly(k)) return false;
+  if (k === 'P' && ahaTypedP) return false;
+  return true;
+}
+
+/* 네 칸을 다시 그린다 — 읽기 전용 글·잠금·고치기 단추·P 직접 적기 줄 */
+function ahaPaintBoxes() {
+  ['L','A','M','P'].forEach(function(k) {
+    var box = document.getElementById('aha-box-' + k);
+    var ta  = document.getElementById(AHA_TA[k]);
+    if (!box || !ta) return;
+    var locked = ahaBoxLocked(k);
+    if (locked) ahaBoxEdit[k] = false;
+    box.classList.toggle('editing', !!ahaBoxEdit[k]);
+    box.classList.toggle('locked', locked);
+    box.classList.toggle('typed', k === 'P' && ahaTypedP);
+    ta.readOnly = locked;
+
+    var tx = document.getElementById('aha-ro-' + k + '-tx');
+    if (tx) {
+      var v = String(ta.value || '');
+      if (v.replace(/\s+/g, '')) { tx.textContent = v; tx.className = 'tx'; }
+      else {
+        tx.textContent = locked ? '종이에 안 적었어요' : '(빈칸)';
+        tx.className = 'tx em';
+      }
+    }
+    var fix = document.getElementById('aha-fix-' + k);
+    if (fix) fix.style.display = locked ? 'none' : '';
+  });
+  var self = document.getElementById('aha-type-self-P');
+  if (self) self.style.display = (ahaPaperOnly('P') && !ahaTypedP) ? 'block' : 'none';
+}
+
+/* 「✏️ 고치기」 — 그 칸만 연다 */
+function ahaFieldEdit(k) {
+  if (ahaBoxLocked(k)) {
+    ahaToast('종이에 없는 칸이에요. 종이에 쓰고 📷 다시 찍어 주세요', 'error');
+    return;
+  }
+  ahaBoxEdit[k] = true;
+  ahaPaintBoxes();
+  var ta = document.getElementById(AHA_TA[k]);
+  if (ta) { try { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } catch(e) {} }
+}
+/* 「완료」 — 그 칸을 닫고 읽기 전용 글을 새로 그린다 */
+function ahaFieldDone(k) {
+  ahaBoxEdit[k] = false;
+  ahaPaintBoxes();
+  ahaUpdateMeter();
+  ahaEmptyWarn();
+}
+/* P칸만 — 사진이 끝내 안 읽힐 때 직접 적는 길 */
+function ahaTypeSelfP() {
+  ahaTypedP = true;
+  ahaBoxEdit.P = true;
+  ahaPaintBoxes();
+  var ta = document.getElementById(AHA_TA.P);
+  if (ta) { try { ta.focus(); } catch(e) {} }
+  ahaToast('직접 적은 칸은 점수가 0점이에요 (선생님께 「직접 적음」으로 보여요)', 'error');
+}
+
+/* ★ v2-88: 고친 정도 — 레벤슈타인 편집 거리 ÷ 둘 중 긴 길이 (0.0 ~ 1.0)
+ * 같은 글이면 0, 절반을 바꾸면 ≈0.5, 전혀 다른 글이면 1 에 가깝다.
+ * 글이 길면(900자 넘으면) 앞 900자만 본다 — 휴대폰에서도 바로 끝나게. */
+function ahaEditRatio(a, b) {
+  var s = String(a == null ? '' : a), t = String(b == null ? '' : b);
+  if (s === t) return 0;
+  var LIM = 900;
+  if (s.length > LIM) s = s.slice(0, LIM);
+  if (t.length > LIM) t = t.slice(0, LIM);
+  var n = s.length, m = t.length;
+  if (!n || !m) return 1;
+  var prev = new Array(m + 1), cur = new Array(m + 1), i, j;
+  for (j = 0; j <= m; j++) prev[j] = j;
+  for (i = 1; i <= n; i++) {
+    cur[0] = i;
+    var ci = s.charAt(i - 1);
+    for (j = 1; j <= m; j++) {
+      var sub = prev[j - 1] + (ci === t.charAt(j - 1) ? 0 : 1);
+      var del = prev[j] + 1;
+      var ins = cur[j - 1] + 1;
+      var best = sub < del ? sub : del;
+      cur[j] = ins < best ? ins : best;
+    }
+    var tmp = prev; prev = cur; cur = tmp;
+  }
+  var mx = (n > m) ? n : m;
+  return Math.round((prev[m] / mx) * 1000) / 1000;
+}
+
+/* 제출 본문에 실을 「고친 정도」 — AI 원문(lamp_ai.L/A/M/P)과 지금 글을 견준다.
+ * AI 읽기가 실패한 노트(lamp_ai.err)는 견줄 원문이 없으니 붙이지 않는다. */
+function ahaEditsPayload() {
+  if (!ahaLampAi || ahaLampAi.err) return null;
+  var out = {};
+  ['L','A','M','P'].forEach(function(k) {
+    var ta = document.getElementById(AHA_TA[k]);
+    var now = String((ta && ta.value) || '').trim();
+    var src = String(ahaLampAi[k] == null ? '' : ahaLampAi[k]).trim();
+    var e = { changed: (now !== src), ratio: ahaEditRatio(src, now) };
+    if (k === 'P' && ahaTypedP) e.typed = true;
+    out[k] = e;
+  });
+  return out;
+}
+
 /* 질문력 미터 (표 3-4, 규칙 — AI 채점이 아니라 「임시」 표시용) */
 function ahaMeter() {
   var L = (document.getElementById('aha-q-learn') || {}).value || '';
@@ -6295,7 +6497,7 @@ function ahaUpdateMeter() {
   }
 }
 
-function ahaOnFieldEdit() { ahaUpdateMeter(); ahaEmptyWarn(); }
+function ahaOnFieldEdit() { ahaPaintBoxes(); ahaUpdateMeter(); ahaEmptyWarn(); }
 
 /* 활동지에 안 쓴 칸이 있으면 알려 준다 — 점수가 왜 낮은지 그 자리에서 보이게 */
 function ahaEmptyWarn() {
@@ -6885,13 +7087,18 @@ function ahaClearConfirm() {
   var svn = document.getElementById('aha-selfeval-n'); if (svn) svn.textContent = '0';
   var svar = document.getElementById('aha-selfeval-ar'); if (svar) svar.textContent = '선택 · 펼치기 ▾';
   ['aha-box-L','aha-box-A','aha-box-M','aha-box-P'].forEach(function(id){
-    var el = document.getElementById(id); if (el) el.classList.remove('unread');
+    var el = document.getElementById(id);
+    if (el) { el.classList.remove('unread'); el.classList.remove('editing'); el.classList.remove('locked'); el.classList.remove('typed'); }
   });
+  /* ★ v2-88: 열어 두었던 칸·「직접 적기」 표시도 되돌린다 */
+  ahaBoxEdit = { L:false, A:false, M:false, P:false };
+  ahaTypedP = false;
   /* ★ v2-84: AI가 읽은 쪽·번호 강조도 같이 지운다 */
   ahaClearAiRead('aha-page');
   ahaClearAiRead('aha-problem-no');
   ahaRenderDirChips();
   ahaRenderConceptChips();
+  ahaPaintBoxes();
   ahaUpdateMeter();
   ahaEmptyWarn();
 }
@@ -6942,6 +7149,9 @@ async function ahaEdit(id) {
   ahaClearConfirm();
   ahaUploadedUrl = note.photo_url || null;
   ahaLampAi = note.lamp_ai || null;
+  /* ★ v2-88: 고치기 화면도 읽기 전용 + ✏️ 고치기 방식 그대로. 원문은 note.lamp_ai 다.
+   * 지난번에 P칸을 직접 적었다면 그 표시를 이어받는다(다시 잠기면 안 되니까). */
+  ahaTypedP = !!(ahaLampAi && ahaLampAi.edits && ahaLampAi.edits.P && ahaLampAi.edits.P.typed);
 
   document.getElementById('aha-add-title').textContent = '💡 IB아하노트 고치기';
   document.getElementById('aha-submit-btn').textContent = '고친 내용 저장';
@@ -7003,10 +7213,18 @@ async function ahaEdit(id) {
   var badge = document.getElementById('aha-read-badge');
   if (badge) { badge.className = 'badge badge-ai'; badge.textContent = '✏️ 고치는 중'; }
   var msg = document.getElementById('aha-read-msg');
-  if (msg) msg.textContent = '잘못 읽힌 곳을 고치고 다시 저장하세요.';
+  if (msg) msg.innerHTML = 'AI가 읽은 글이에요. 잘못 읽은 곳만 <b>✏️ 고치기</b>로 바로잡아 주세요. '
+    + '종이에 없는 칸은 점수에 안 들어가요.';
+
+  /* ★ v2-88: 종이에 없던 칸(lamp_ai.unread)은 고치기 화면에서도 노랗게·잠긴 채로 보인다 */
+  ['L','A','M','P'].forEach(function(k) {
+    var bx = document.getElementById('aha-box-' + k);
+    if (bx) bx.classList.toggle('unread', ahaPaperOnly(k));
+  });
 
   ahaRenderDirChips();
   ahaRenderConceptChips();
+  ahaPaintBoxes();
   ahaUpdateMeter();
   ahaEmptyWarn();
 }
@@ -7123,8 +7341,10 @@ function ahaApplyRead(ai, failMsg) {
 
   if (!ai) {
     if (badge) { badge.className = 'badge badge-err'; badge.textContent = '⚠ 지금은 못 읽었어요'; }
-    if (msg) msg.innerHTML = '사진은 잘 올라갔어요. 지금은 AI가 읽지 못했지만 <b>이대로 보내면 선생님이 읽어 드립니다</b>. ' +
-      '급하면 아래 칸에 직접 적어도 됩니다.';
+    /* ★ v2-88: 못 읽었으면 네 칸이 다 잠긴다 — 종이에 쓰고 다시 찍는 것이 먼저다.
+     * P칸만은 「✏️ 직접 적기」로 열 수 있어 이대로도 보낼 수 있다. */
+    if (msg) msg.innerHTML = '사진은 잘 올라갔어요. 지금은 AI가 글씨를 읽지 못했어요. ' +
+      '<b>종이에 쓴 그대로 📷 다시 찍어</b> 주세요. 그래도 안 읽히면 P칸만 <b>✏️ 직접 적기</b>로 보낼 수 있어요.';
     /* ★ v2-84: 「다시 찍기」 뒤 읽기가 실패하면 앞 사진에서 읽은 글이 남으면 안 된다 —
      * 네 칸을 비우고 넷 다 「종이에 없는 칸」으로 둔다 (원장 결정 2026-09-15). */
     ['aha-q-learn','aha-q-act','aha-q-try','aha-q-stuck'].forEach(function(id){
@@ -7134,9 +7354,11 @@ function ahaApplyRead(ai, failMsg) {
     ['L','A','M','P'].forEach(function(k) {
       var b = document.getElementById('aha-box-' + k); if (b) b.classList.add('unread');
     });
+    ahaBoxEdit = { L:false, A:false, M:false, P:false };
+    ahaTypedP = false;
     ahaClearAiRead('aha-page');
     ahaClearAiRead('aha-problem-no');
-    ahaRenderDirChips(); ahaRenderConceptChips(); ahaUpdateMeter(); ahaEmptyWarn();
+    ahaRenderDirChips(); ahaRenderConceptChips(); ahaPaintBoxes(); ahaUpdateMeter(); ahaEmptyWarn();
     return;
   }
 
@@ -7144,6 +7366,9 @@ function ahaApplyRead(ai, failMsg) {
   document.getElementById('aha-q-act').value = ai.A || '';
   document.getElementById('aha-q-try').value = ai.M || '';
   document.getElementById('aha-q-stuck').value = ai.P || '';
+  /* ★ v2-88: 새로 읽었으니 열어 두었던 칸·「직접 적기」 표시는 되돌린다 */
+  ahaBoxEdit = { L:false, A:false, M:false, P:false };
+  ahaTypedP = false;
 
   // 못 읽은 칸은 노란 테두리로 표시
   var unread = Array.isArray(ai.unread) ? ai.unread : [];
@@ -7189,13 +7414,14 @@ function ahaApplyRead(ai, failMsg) {
     badge.className = 'badge ' + (n ? 'badge-warn' : 'badge-ai');
     badge.textContent = n ? ('🤖 ' + n + '칸은 못 읽었어요') : '🤖 AI가 읽었어요';
   }
-  if (msg) msg.innerHTML = n
-    ? '<b>노란 칸</b>은 못 읽은 칸이에요. 활동지에 쓴 대로 채워 주세요. 나머지는 맞는지만 봐 주세요.'
-    : '잘못 읽은 곳만 탭해서 고쳐 주세요. 맞으면 그대로 두면 됩니다.';
+  /* ★ v2-88: 확인 단계 안내는 계약 §1 의 한 문장으로 고정한다 */
+  if (msg) msg.innerHTML = 'AI가 읽은 글이에요. 잘못 읽은 곳만 <b>✏️ 고치기</b>로 바로잡아 주세요. '
+    + '종이에 없는 칸은 점수에 안 들어가요.';
   if (failMsg && msg) msg.innerHTML += ' <span style="color:#b91c1c">(' + ahaEscape(failMsg) + ')</span>';
 
   ahaRenderDirChips();
   ahaRenderConceptChips();
+  ahaPaintBoxes();
   ahaUpdateMeter();
   ahaEmptyWarn();
 }
@@ -7274,7 +7500,7 @@ function ahaCollect() {
   } else return { err:'출처를 다시 골라 주세요' };
 
   var qStuckRaw = document.getElementById('aha-q-stuck').value.trim();
-  if (!qStuckRaw) return { err:'P칸(막힌 곳·질문)은 비워 둘 수 없어요' };
+  if (!qStuckRaw) return { err:'P칸(막힌 곳·질문)은 비워 둘 수 없어요 — 📷 다시 찍거나 ✏️ 직접 적기로 채워 주세요' };
   if (!ahaDirective) return { err:'어떻게 답해 주면 좋을지 하나만 골라 주세요' };
 
   var sp = ahaSplitP(qStuckRaw);
@@ -7284,6 +7510,11 @@ function ahaCollect() {
   });
 
   var m = ahaMeter();
+  /* ★ v2-88: 학생이 AI 글을 얼마나 고쳤는지 함께 실어 보낸다 (계약 §1).
+   * AI 원문(lamp_ai.L/A/M/P)은 그대로 두고 edits 만 덧붙인다. */
+  var edits = ahaEditsPayload();
+  if (ahaLampAi && edits) ahaLampAi.edits = edits;
+
   return {
     source_type: sourceType,
     source_name: sourceName,
@@ -12290,7 +12521,7 @@ async function rcHomeUpdate(){
     chips.push(['💡 아하 '+(aLeft==null?'진행 중':(aLeft<0?'끝':(aLeft>0?('D-'+aLeft):'오늘 마감'))),false]);
     if(aLeft!=null&&aLeft>=0&&(nearest===null||aLeft<nearest)){ nearest=aLeft; nearestNm='아하'; }
   }
-  chips.push(['🎙 말하기 준비 중',true]);
+  chips.push(['🎤 루멘스피치 11월 시작',true]);
   var chEl=document.getElementById('rcbn-chips');
   if(chEl) chEl.innerHTML=chips.map(function(c){
     return '<span'+(c[1]?' class="off"':'')+'>'+rcEsc(c[0])+'</span>';
@@ -12528,7 +12759,7 @@ window.rcInit=async function(targetId){
 /* ══════════════════════════════════════════════════════════════════
  * 🏆 루멘 리그 (v2-72) — 종목이 여럿인 한 개의 리그
  * ══════════════════════════════════════════════════════════════════
- * 종목   🏁 진도(진도 레이스 그대로) · 💡 IB아하 · 🎙 말하기(11월부터) · 👑 종합
+ * 종목   🏁 진도(진도 레이스 그대로) · 💡 IB아하 · 📔 플래너 · 🎤 루멘스피치(11월 시작) · 👑 종합
  * 자료   학원앱이 lumen_store 에 넣어 둔 것을 읽기만 한다.
  *          race_board          진도 레이스 순위 (기존)
  *          aha_league_board    IB아하 리그 순위·상금·규칙 (학원앱 「발행」)
@@ -12975,7 +13206,7 @@ function lgTabsHtml(){
     h+='<button class="'+(LG.tab==='planner'?'on':'')+'" onclick="lgTab(\'planner\')">📔 플래너'
       +'<small>'+(pl==null?'진행 중':(pl<0?'끝':(pl>0?('D-'+pl):'오늘 마감')))+'</small></button>';
   }
-  h+='<button class="soon'+(LG.tab==='speak'?' on':'')+'" onclick="lgTab(\'speak\')">🎙 말하기<small>준비 중</small></button>';
+  h+='<button class="soon'+(LG.tab==='speak'?' on':'')+'" onclick="lgTab(\'speak\')">🎤 루멘스피치<small>11월 시작</small></button>';
   var cMe=b?lgMyChamp(b):null;
   h+='<button class="'+(LG.tab==='total'?'on':'')+'" onclick="lgTab(\'total\')">👑 종합'
     +'<small>'+((cMe&&cMe.rank)?(cMe.rank+'위'):'—')+'</small></button>';
@@ -13006,8 +13237,10 @@ function lgMoneyRows(){
     var pt=lgPrizeHide(pp)?0:Number(pp.total||0);
     out.push({ nm:'📔 플래너 (매달)', amt:(pt>0?pt:null) });
   }
+  /* ★ v2-88: 종합 챔피언 상은 「글」이라 합계에 더하지 않는다(word:true).
+   * 원장님이 학원앱에서 「학생앱에 보이기」를 꺼 두면 prize 가 아예 안 실려 오므로 「비공개」로만 적는다. */
   var ch=(b&&b.champion)||null;
-  if(ch && ch.prize) out.push({ nm:'👑 종합 챔피언', txt:String(ch.prize) });
+  if(ch) out.push({ nm:'👑 종합 챔피언', txt:(ch.prize?String(ch.prize):null), word:true });
   return out;
 }
 function lgMoneyHtml(){
@@ -13015,7 +13248,8 @@ function lgMoneyHtml(){
   if(!rows.length) return '';
   var sum=0, got=false, hidden=false, i;
   for(i=0;i<rows.length;i++){
-    if(rows[i].txt!=null) continue;             // 글로 온 상은 더하지 않는다
+    if(rows[i].word) continue;                  // 글로 온 상(종합 챔피언)은 더하지도, 「+ α」로 세지도 않는다
+    if(rows[i].txt!=null) continue;
     if(rows[i].amt!=null){ sum+=rows[i].amt; got=true; }
     else hidden=true;
   }
@@ -13479,10 +13713,10 @@ function lgPlannerHtml(){
   return h;
 }
 
-/* ── 🎙 말하기 탭 ── */
+/* ── 🎤 루멘스피치 탭 (옛 이름 「말하기」 · 저장 키는 speak 그대로) ── */
 function lgSpeakHtml(){
-  return '<div class="lg-empty"><div class="e1">🎙</div>'
-    +'<div class="e2">말하기 리그는 <b>11월 시즌부터</b> 열려요</div></div>'
+  return '<div class="lg-empty"><div class="e1">🎤</div>'
+    +'<div class="e2">🎤 루멘스피치는 <b>11월 시작</b>이에요</div></div>'
     +'<div class="rc-card"><div class="hd">채점 기준 (초안)</div>'
     +'<div class="rc-rule">'
     +'<div class="r"><b>완결</b><span>0~2점</span></div>'
@@ -13511,11 +13745,20 @@ function lgTotalHtml(){
   var top=Number(b.publicTop||5)||5;
   var h='';
 
+  /* ★ v2-88: 종합 챔피언 설명 (계약 §2) — 점수표는 학원앱이 발행한 champion.points 로 그린다 */
+  var ptTbl = pts.map(function(p,i){ return (i+1)+'위 '+p+'점'; }).join(' · ');
+  var ptOf = function(r){ var v=pts[r-1]; return Number(v||0); };
+  var exRace=ptOf(3), exAha=ptOf(9), exPl=ptOf(1);
+
   h+='<div class="lg-champ">'
     +'<div class="k">👑 루멘 종합 챔피언 · '+rcEsc((b.season||{}).label||'이번 시즌')+'</div>'
-    +'<div class="g">여러 종목을 골고루 잘하는 사람</div>'
-    +'<div class="s">종목마다 순위를 <b>포인트</b>로 바꿔 더합니다. '
-    +'<b>'+minEv+'종목 이상</b> 참여해야 자격이 있어요.</div></div>';
+    +'<div class="g">👑 종합 챔피언은 이렇게 정해요</div>'
+    +'<div class="s">① 종목(🏁 진도 · 💡 IB아하 · 📔 플래너 · 🎤 루멘스피치)마다 순위가 나오면 점수로 바꿔요: '
+    +'<b>'+ptTbl+'</b> ('+(pts.length+1)+'위부터 0점이지만 참여한 걸로 쳐요)'
+    +'<br>② 종목 점수를 다 더해요. <b>'+minEv+'종목 이상</b> 참여한 사람만 순위에 들어요.'
+    +'<br>③ 시즌이 끝나면 1등이 종합 챔피언이에요.'
+    +'<br>예) 진도 3위('+exRace+') + IB아하 9위('+exAha+') + 플래너 1위('+exPl+') = '+(exRace+exAha+exPl)+'점'
+    +'<br>📔 플래너는 달마다 순위가 새로 나와서 달마다 점수를 받아요.</div></div>';
 
   if(ch.prize){
     h+='<div class="rc-prize" style="margin-top:0;padding:11px 12px">'
@@ -13533,11 +13776,11 @@ function lgTotalHtml(){
       +'<div class="rk">'+(me.rank?('두 종목 순위를 포인트로 바꿔 더한 값이에요'):'한 종목만 참여했어요 — 두 종목부터 종합 순위가 생겨요')+'</div></div>'
       +'<div class="pt"><b>'+rcN(me.total||0)+'</b><span style="display:block">포인트</span></div></div>'
       +'<div class="lg-f1" style="margin-top:11px">'
-      +lgEventRow('🏁 진도', me.race)
-      +lgEventRow('💡 IB아하', me.aha)
+      +lgEventRow('🏁 진도', me.race, pts)
+      +lgEventRow('💡 IB아하', me.aha, pts)
       /* ★ v2-87: 📔 플래너는 학원앱이 점수를 보낼 때만 한 줄 (안 보내면 줄 자체를 감춘다) */
-      +(me.planner ? lgEventRow('📔 플래너', me.planner) : '')
-      +lgEventRow('🎙 말하기', me.speak)
+      +(me.planner ? lgEventRow('📔 플래너', me.planner, pts) : '')
+      +lgEventRow('🎤 루멘스피치', me.speak, pts)
       +'<div class="sum"><span>종합 포인트</span><span>'+rcN(me.total||0)+'</span></div>'
       +'</div></div>';
   }
@@ -13577,13 +13820,19 @@ function lgTotalHtml(){
     +'</div></div>';
   return h;
 }
-function lgEventRow(label, ev){
+/* ★ v2-88: 내 줄은 「n위 → n점」으로 적고, 한 계단 올라가면 몇 점이 느는지 같이 보여 준다 (계약 §2) */
+function lgEventRow(label, ev, pts){
   if(!ev) return '<div class="r"><span class="k">'+label+'</span>'
     +'<span class="v" style="color:#cbd5e1">아직 참여 안 함</span>'
     +'<span class="p" style="color:#cbd5e1">–</span></div>';
+  var r=Number(ev.rank||0), p=Number(ev.pts||0), up='';
+  if(pts && pts.length && r>1){
+    var nx=Number(pts[r-2]||0);
+    if(nx>p) up='한 계단 오르면 +'+(nx-p)+'점';
+  }
   return '<div class="r"><span class="k">'+label+'</span>'
-    +'<span class="v">'+(ev.rank?(ev.rank+'위'):'-')+'</span>'
-    +'<span class="p">'+rcN(ev.pts||0)+'</span></div>';
+    +'<span class="v">'+(r?(r+'위 → '+p+'점'):'-')+(up?('<i>'+up+'</i>'):'')+'</span>'
+    +'<span class="p">'+rcN(p)+'</span></div>';
 }
 
 /* ══════════════════════════════════════════════════════════════════
