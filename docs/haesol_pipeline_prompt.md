@@ -30,6 +30,12 @@
 - **cdnjs는 Node fetch로 차단**(403) — MathJax 파일이 필요하면 `npm pack mathjax@3.2.2` 후 `es5/tex-svg.js` 추출해 로컬 사용. (최종 해설집 HTML 자체는 cdnjs `<script>` 태그로 두면 됨 — 아티팩트/브라우저에서는 로드됨.)
 - **head.html의 MathJax 설정**: inlineMath `\(\)`, displayMath `$$`, svg fontCache global (외부 폰트파일 안 씀 → CSP 통과).
 - 앱 버전 파일(lumen_v*, student_v*)은 **건드리지 말 것** — 여긴 해설집 전용.
+- **어두운 모드에서 그래프가 사라진다** (원장님 제보 2026-09-17). 해설집 CSS는 `@media (prefers-color-scheme: dark)`로
+  기기 설정을 따라가는데, 문항 그림(SVG)은 밝은 종이 전용 색(축 `#0f172a`, 흰 채움)으로 그려 놓아
+  어두운 화면에서 검은 축이 검은 배경에 묻힌다. 둘 중 하나를 지킬 것:
+  ① `<html data-theme="light">`로 밝은 모드에 못 박고 어두운 규칙은 `:root:not([data-theme="light"])`로 감싸거나,
+  ② SVG 색을 `var(--ink)`·`currentColor`처럼 테마를 따라가는 값으로 그린다.
+  (학원앱 v19-13부터 앱이 띄울 때는 ①을 자동으로 걸어 준다 — 앱 밖에서 파일을 직접 열 때를 위해 해설집 자체도 지킬 것)
 
 ## 나중 연동 계획 (지금은 참고만)
 완성된 해설집은 나중에 학생앱(student_v2)에 심을 예정. 방식은 해설집을 Supabase(`lumen_store`, 예: `haesol_<시험코드>` 키)에 저장 → 학생앱이 읽어와 "해설 보기" 버튼으로 노출 → 매쓰플랫 정오답 연동과 묶어 "틀린 문항 → 그 해설" 자동 표시. 이 연동 작업은 앱 개발 세션에서 별도로 진행하므로, 이 세션은 **해설집 제작과 Supabase 저장까지만** 담당하면 됨.
