@@ -631,7 +631,12 @@
     var mx = readMix(s);
     if (mx) return { kind: 'num', keys: [mx.key], unit: mx.unit, multi: mx.labels };
     var mk = markSeq(s);
-    if (mk) return { kind: 'mark', keys: [mk], unit: '' };
+    if (mk) {
+      // ★ 2026-09-18: 보기 번호는 숫자로 써도 같은 답이다 (「①」=「1」, 「(3)」=「3」).
+      //   학생 자판에는 ①②③ 도 괄호도 없어서 숫자로 칠 수밖에 없다.
+      var mkNum = mk.match(/^#(\d+)$/);
+      return { kind: 'mark', keys: mkNum ? [mk, String(Number(mkNum[1]))] : [mk], unit: '' };
+    }
     // 좌표 (3,6) / A(3,6)
     var mc = s.replace(/\s+/g, '').match(/^([A-Za-z]?)\(([^()]*,[^()]*)\)$/);
     if (mc) {
@@ -679,7 +684,18 @@
   }
 
   /* 한 조각을 「이름표 + 값」으로 읽는다 */
+  /* 조각을 감싼 괄호는 «못 읽었을 때만» 껍데기로 보고 벗긴다.
+     먼저 그대로 읽어 보므로 좌표 「(3,6)」은 예전처럼 좌표로 읽힌다. */
   function analyzePart(raw) {
+    var r = analyzePart0(raw);
+    if (r && r.keys && r.keys.length) return r;
+    var s = trim(raw), t = stripWrapParen(s);
+    if (t === s || !t) return r;
+    var r2 = analyzePart0(t);
+    return (r2 && r2.keys && r2.keys.length) ? r2 : r;
+  }
+
+  function analyzePart0(raw) {
     var s = trim(raw), label = '', m, i;
     if (!s) return { label: '', kind: 'free', keys: [], unit: '', eq: false };
     s = trim(s.replace(/^약\s+/, ''));                 // 어림한 답 「약 1600」 — 「약」은 떼고 값만 본다
@@ -866,8 +882,37 @@
      ③ 「(예)…」 는 보기로 든 답 — 그대로 채점하되 sample 표시를 남기고,
         ○△□ 를 학생이 마음대로 정하는 답이면 자기채점으로 보낸다
      ④ 「A 또는 B」 는 A·B 를 각각 읽어 어느 쪽으로 써도 맞다고 본다 */
+  /* ★ 2026-09-18 (원장 제보): 「괄호가 없어서 틀렸다고 한다」
+   *   정답이 「(3, 4)」 「(2)」 「(가)」 인데 학생 자판에는 괄호가 없어 칠 수가 없었다 →
+   *   무조건 오답이 되었다. 맨 앞과 맨 끝을 «감싸는» 괄호는 껍데기로 보고 벗긴다.
+   *   짝이 맞고 처음부터 끝까지 감쌀 때만 벗기므로 f(x)·2(x+1) 같은 속 괄호는 그대로 둔다. */
+  function stripWrapParen(str) {
+    var t = trim(str), guard = 0;
+    var open = '([（［', close = ')]）］';
+    while (guard++ < 3 && t.length > 2) {
+      var oi = open.indexOf(t.charAt(0));
+      if (oi < 0 || t.charAt(t.length - 1) !== close.charAt(oi)) break;
+      var d = 0, ok = true, i, c;
+      for (i = 0; i < t.length; i++) {
+        c = t.charAt(i);
+        if (open.indexOf(c) >= 0) d++;
+        else if (close.indexOf(c) >= 0) { d--; if (d === 0 && i < t.length - 1) { ok = false; break; } }
+      }
+      if (!ok || d !== 0) break;
+      var inner = trim(t.slice(1, -1));
+      // 「(×)」「(○)」 는 괄호까지가 답이다 (곱셈 기호·○표 자리) → 벗기지 않는다
+      if (/^[○◯〇◎●×✕✗✓]$/.test(inner)) break;
+      t = inner;
+    }
+    return t;
+  }
+
   function analyze(raw) {
-    var s0 = trim(raw);
+    var raw0 = trim(unlatex(trim(raw)));      // 「(\times)」처럼 수식 글자를 먼저 푼 뒤 괄호를 본다
+    var s0 = stripWrapParen(raw0);
+    // 「(3, 4)」처럼 통째로 괄호에 싸여 여러 칸이면 순서쌍(좌표)이다 → 답 순서를 따진다.
+    //   「(1), (3)」은 조각마다 따로 싸여 있어 여기서 벗겨지지 않으므로 지금처럼 순서를 안 따진다.
+    var wrapped = (s0 !== raw0 && raw0.length > 1);
     var res = { parts: [], gradable: false, shape: 'free', unit: '', labeled: false, essay: false };
     if (!s0 || s0 === '.') { res.essay = true; res.shape = 'essay'; return res; }
     var s = unlatex(s0);
@@ -889,6 +934,7 @@
       if (r.gradable) { prim = r; primIdx = i; break; }
     }
     if (!prim) return first || res;
+    if (wrapped && prim.parts && prim.parts.length >= 2) prim.ordered = true;
     // 보기 답(「(예)…」)은 그대로 채점하되, 기호를 학생이 골라 정하는 문제
     //   (「○×9＝□ 또는 □÷9＝○」처럼 ○△□ 를 학생이 마음대로 쓰는 답)는 자기채점으로 보낸다.
     if (sample) {
@@ -947,7 +993,7 @@
       return { gradable: true, correct: true };
     }
     // ② 순서를 안 따지는 모양(숫자·보기기호·도형)이고 종류가 모두 같으면 묶음끼리 맞춘다
-    if (C.same && SETLIKE[C.same] && !cLab) {
+    if (C.same && SETLIKE[C.same] && !cLab && !C.ordered) {
       for (i = 0; i < cp.length; i++) {
         var f2 = -1;
         for (j = 0; j < sp.length; j++) { if (used[j]) continue; if (samePart(cp[i], sp[j])) { f2 = j; break; } }
