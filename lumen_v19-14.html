@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-13';
+var APP_VER = 'v19-14';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -7906,6 +7906,418 @@ function sortVersionMemo(data){
   });
   return data;
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+ * 📄 학습지 채점 현황 (v19-14 · docs/ws_autoscore_contract.md §3)
+ *
+ * 【원장님께】 매쓰플랫은 «객관식만» 자동으로 채점합니다. 정답이 숫자 하나인
+ * 단답형조차 채점해 주지 않습니다(2026-09-17 실측). 그래서 수학비서로 만든
+ * 108문항짜리 학습지도 매쓰플랫이 봐 주는 것은 29문항뿐입니다.
+ * 나머지는 «루멘 학생앱»이 대신 채점하고, 그 결과를 매쓰플랫에 되돌려 씁니다.
+ * 이 화면은 그 일이 «제대로 되고 있는지» 한눈에 보는 곳입니다. 보기 전용이라
+ * 여기서 누른다고 점수가 바뀌지는 않습니다.
+ *
+ * 【읽어 오는 자료】 모두 서버(lumen_store)에 이미 있는 것을 «읽기만» 합니다.
+ *   mf_wsans_<학습지id>  정답 대장 — 문항마다 답 칸 수·모양·스스로 채점 여부
+ *   mf_wsq_<학생코드>    학생에게 배정된 학습지 목록과 문항 (새벽 수집기가 만듦)
+ *   hw_scores_<학생코드> 채점 결과. 학습지 항목은 키가 "ws_<배정id>_<문항id>"
+ *   hw_sync_<학생코드>   매쓰플랫에 아직 못 보낸 되돌려쓰기 대기열
+ * 주의: SQL 의 LIKE 에서 _ 는 «한 글자» 와일드카드라 hw_sync_% 가
+ *       hw_synced_%(반영 완료 이력)까지 잡는다 → 받아온 뒤 정규식으로 걸러낸다.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+var WSG={ loaded:false, busy:false, err:'', keys:{}, wsq:{}, scores:{}, sync:{},
+          open:null, openStu:{}, _model:null };
+
+function wsgLoad(force){
+  if(WSG.busy) return Promise.resolve();
+  if(WSG.loaded && !force) return Promise.resolve();
+  var sb=null; try{ sb=getSupaClient(); }catch(e){}
+  if(!sb){
+    WSG.loaded=true; WSG.err='오프라인입니다 — 인터넷이 연결되면 「🔄 새로 읽기」를 눌러 주세요.';
+    if(VIEW==='wsgrade') render();
+    return Promise.resolve();
+  }
+  WSG.busy=true; WSG.err='';
+  var like=function(pat){ return sb.from('lumen_store').select('key,value').like('key',pat); };
+  return Promise.all([ like('mf_wsans_%'), like('mf_wsq_%'), like('hw_scores_%'), like('hw_sync_%') ]).then(function(rs){
+    WSG.keys={}; WSG.wsq={}; WSG.scores={}; WSG.sync={}; WSG._model=null;
+    var val=function(v){ if(typeof v==='string'){ try{ return JSON.parse(v); }catch(e){ return null; } } return v; };
+    ((rs[0]&&rs[0].data)||[]).forEach(function(x){
+      var m=String((x&&x.key)||'').match(/^mf_wsans_(.+)$/); if(!m) return;
+      var v=val(x.value); if(v) WSG.keys[m[1]]=v;
+    });
+    ((rs[1]&&rs[1].data)||[]).forEach(function(x){
+      var m=String((x&&x.key)||'').match(/^mf_wsq_(.+)$/); if(!m) return;
+      var v=val(x.value); WSG.wsq[m[1]]=(v&&v.list)||[];
+    });
+    ((rs[2]&&rs[2].data)||[]).forEach(function(x){
+      var m=String((x&&x.key)||'').match(/^hw_scores_([^_]+)$/); if(!m) return;
+      var v=val(x.value); WSG.scores[m[1]]=(v&&v.items)||{};
+    });
+    ((rs[3]&&rs[3].data)||[]).forEach(function(x){
+      var m=String((x&&x.key)||'').match(/^hw_sync_([^_]+)$/); if(!m) return;   // hw_synced_ 는 걸러진다
+      var v=val(x.value); WSG.sync[m[1]]=(v&&v.items)||[];
+    });
+    WSG.loaded=true; WSG.busy=false;
+    if(VIEW==='wsgrade') render();
+  }).catch(function(e){
+    WSG.busy=false; WSG.loaded=true;
+    WSG.err='불러오지 못했습니다: '+((e&&e.message)||e);
+    if(VIEW==='wsgrade') render();
+  });
+}
+
+window.wsgReload=function(){ WSG.loaded=false; WSG._model=null; wsgLoad(true); render(); };
+window.wsgOpen=function(wid){ WSG.open=(wid==null?null:String(wid)); WSG.openStu={}; render(); };
+window.wsgBack=function(){ WSG.open=null; WSG.openStu={}; render(); };
+window.wsgToggleStu=function(code){ WSG.openStu[code]=!WSG.openStu[code]; render(); };
+
+/* 학생 코드 → 재원생. 퇴원생·등록부에 없는 코드는 화면에 올리지 않는다. */
+function wsgActiveByCode(){
+  var by={};
+  try{
+    activeStudents().forEach(function(s){
+      if(s && s.lumen_rec_code!=null && s.lumen_rec_code!=='') by[String(s.lumen_rec_code)]=s;
+    });
+  }catch(e){}
+  return by;
+}
+
+/* 한 학생의 한 학습지 한 줄 (◯ ✗ ? 미채점 · 점수 · 대기열 · 문항별 칸) */
+function wsgRow(stu, code, w, sh){
+  var sc=WSG.scores[code]||{};
+  var pre='ws_'+String(w.swId)+'_';
+  var probs=(w&&w.problems)||[];
+  /* 대장은 «문항 순서»(wpIndex)로 잇는다. 문항 수가 다르면 순서가 어긋난 것이니 쓰지 않는다. */
+  var items=(sh.hasKey && sh.key && sh.key.items && sh.key.items.length===probs.length) ? sh.key.items : null;
+  var o=0,x=0,q=0,un=0,cells=[];
+  probs.forEach(function(p,i){
+    var it=items?items[i]:null;
+    var no=(it&&it.no!=null)?it.no:((p&&p.num!=null&&p.num!=='')?p.num:(i+1));
+    var self=it?(it.self===true):(p&&p.self===true);
+    var rec=sc[pre+String(p&&p.wpId)];
+    var r=rec?String(rec.r||''):'';
+    if(r==='O') o++; else if(r==='X') x++; else if(r==='?') q++; else un++;
+    cells.push({ no:no, r:r, self:self, by:(rec&&rec.by)||'', at:(rec&&rec.at)||'' });
+  });
+  var graded=o+x;
+  var pend=0;
+  ((WSG.sync[code])||[]).forEach(function(t){
+    if(t && String(t.swId==null?'':t.swId)===String(w.swId)) pend++;
+  });
+  return { code:code, name:(stu&&stu.name)||code, grade:(stu&&stu.grade)||'',
+           status:(w&&w.status)||'', date:(w&&w.date)||'', swId:w&&w.swId,
+           n:probs.length, o:o, x:x, q:q, un:un,
+           score:(graded?Math.round(100*o/graded):null), pend:pend, cells:cells };
+}
+
+/* 학습지 목록 만들기 — 대장이 있는 것을 먼저, 그다음 배정만 있는 것 */
+function wsgModel(){
+  if(WSG._model) return WSG._model;
+  var sheets={}, order=[];
+  Object.keys(WSG.keys||{}).forEach(function(wid){
+    var k=WSG.keys[wid]||{};
+    var n=(k.n!=null?k.n:((k.items&&k.items.length)||0));
+    sheets[wid]={ wid:String(wid), title:k.title||('학습지 '+wid), n:n,
+      mfAuto:(k.mfAuto==null?null:k.mfAuto), lumenAuto:(k.lumenAuto==null?null:k.lumenAuto),
+      selfN:(k.selfN==null?null:k.selfN), hasKey:true, key:k,
+      range:k.range||'', updated:k.updated||'', rows:[] };
+    order.push(String(wid));
+  });
+  var byCode=wsgActiveByCode();
+  Object.keys(WSG.wsq||{}).forEach(function(code){
+    var stu=byCode[code]; if(!stu) return;
+    (WSG.wsq[code]||[]).forEach(function(w){
+      if(!w) return;
+      var wid=String(w.wid!=null?w.wid:('sw'+w.swId));
+      var sh=sheets[wid];
+      if(!sh){
+        sh=sheets[wid]={ wid:wid, title:w.title||('학습지 '+wid),
+          n:(w.n!=null?w.n:((w.problems&&w.problems.length)||0)),
+          mfAuto:null, lumenAuto:null, selfN:null, hasKey:false, key:null,
+          range:'', updated:'', rows:[] };
+        order.push(wid);
+      }
+      if(!sh.n) sh.n=(w.n!=null?w.n:((w.problems&&w.problems.length)||0));
+      sh.rows.push(wsgRow(stu, code, w, sh));
+    });
+  });
+  var list=order.map(function(wid){ return sheets[wid]; }).filter(function(s){ return !!s; });
+  list.forEach(function(sh){
+    sh.assigned=sh.rows.length;
+    sh.solved=0; sh.pend=0;
+    var ss=[], last='';
+    sh.rows.forEach(function(r){
+      if((r.o+r.x+r.q)>0) sh.solved++;
+      sh.pend+=r.pend;
+      if(r.score!=null) ss.push(r.score);
+      if(r.date && r.date>last) last=r.date;
+    });
+    sh.avg = ss.length ? Math.round(ss.reduce(function(a,b){ return a+b; },0)/ss.length) : null;
+    sh.last = last;
+    sh.rows.sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'ko'); });
+  });
+  list.sort(function(a,b){
+    if(a.hasKey!==b.hasKey) return a.hasKey?-1:1;
+    if((b.last||'')!==(a.last||'')) return (b.last||'')<(a.last||'')?-1:1;
+    return String(a.title).localeCompare(String(b.title),'ko');
+  });
+  WSG._model=list;
+  return list;
+}
+
+/* 이 학습지의 문항 목록 (대장이 있으면 대장, 없으면 문항이 가장 많은 학생 것) */
+function wsgProblemList(sh){
+  if(sh.hasKey && sh.key && sh.key.items && sh.key.items.length){
+    return sh.key.items.map(function(it,i){
+      return { no:((it&&it.no!=null)?it.no:(i+1)), self:!!(it&&it.self===true),
+               kind:(it&&it.kind)||'', mf:!!(it&&it.mfAuto===true) };
+    });
+  }
+  var best=null;
+  sh.rows.forEach(function(r){ if(!best || r.cells.length>best.cells.length) best=r; });
+  if(!best) return [];
+  return best.cells.map(function(c){ return { no:c.no, self:!!c.self, kind:'', mf:false }; });
+}
+
+/* 스스로 채점으로 넘어간 문항 번호 모음 */
+function wsgSelfNos(sh){
+  var nos=[];
+  wsgProblemList(sh).forEach(function(p){ if(p.self) nos.push(p.no); });
+  if(!nos.length && !sh.hasKey){
+    var seen={};
+    sh.rows.forEach(function(r){ r.cells.forEach(function(c){
+      if(c.self && !seen[String(c.no)]){ seen[String(c.no)]=1; nos.push(c.no); }
+    }); });
+  }
+  return nos;
+}
+
+function wsgChip(txt, bg, fg, bd){
+  return '<span style="display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:999px;'
+    +'background:'+bg+';color:'+fg+';border:1px solid '+bd+';font-size:11px;font-weight:800;white-space:nowrap">'+txt+'</span>';
+}
+function wsgBox(label, val, color){
+  return '<div style="min-width:70px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:7px 10px;text-align:center">'
+    +'<div style="font-size:10.5px;color:#94a3b8;font-weight:700;white-space:nowrap">'+label+'</div>'
+    +'<div style="font-size:16px;font-weight:900;color:'+color+';line-height:1.3">'+val+'</div></div>';
+}
+function wsgNote(txt){
+  return '<div style="background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:26px 20px;'
+    +'text-align:center;color:#94a3b8;font-size:13px;line-height:1.9">'+txt+'</div>';
+}
+/* 대장 칩 세 개 — 「루멘 + 스스로 = 전체 문항」, 「매쓰플랫」은 그중 객관식 몫 */
+function wsgKeyChips(sh){
+  if(!sh.hasKey) return wsgChip('정답 대장 없음','#f1f5f9','#64748b','#e2e8f0');
+  return wsgChip('🤖 매쓰플랫 '+(sh.mfAuto==null?'?':sh.mfAuto),'#eff6ff','#1d4ed8','#bfdbfe')
+    +' '+wsgChip('🔷 루멘 '+(sh.lumenAuto==null?'?':sh.lumenAuto),'#ecfdf5','#047857','#a7f3d0')
+    +' '+wsgChip('✍️ 스스로 '+(sh.selfN==null?'?':sh.selfN),'#fffbeb','#a16207','#fde68a');
+}
+
+function rWsGrade(){
+  var h='<div style="max-width:1180px;margin:0 auto;padding:4px 2px 60px">';
+  h+='<div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px">'
+    +'<div style="flex:1;min-width:240px">'
+    +'<div style="font-size:19px;font-weight:900;color:#0f172a;letter-spacing:-0.4px">📄 학습지 채점</div>'
+    +'<div style="font-size:12px;color:#64748b;margin-top:4px;line-height:1.7">'
+    +'매쓰플랫은 <b>객관식만</b> 자동으로 채점합니다(정답이 숫자 하나인 단답도 안 해 줍니다). '
+    +'나머지는 <b>루멘 학생앱이 대신 채점</b>해 매쓰플랫에 돌려씁니다. 여기서 그 현황을 보십니다.'
+    +'</div></div>'
+    +'<button onclick="wsgReload()" style="padding:8px 14px;border-radius:10px;border:1px solid #cbd5e1;'
+    +'background:#fff;color:#334155;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">🔄 새로 읽기</button>'
+    +'</div>';
+
+  if(!WSG.loaded && !WSG.err){
+    return h+wsgNote('자료를 불러오는 중입니다…')+'</div>';
+  }
+  if(WSG.err){
+    h+='<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:14px 16px;'
+      +'color:#b91c1c;font-size:13px;font-weight:700;line-height:1.7;margin-bottom:12px">'+esc2(WSG.err)+'</div>';
+  }
+  var list=[];
+  try{ list=wsgModel(); }catch(e){
+    return h+wsgNote('현황을 만들지 못했습니다 — '+esc2((e&&e.message)||e))+'</div>';
+  }
+  if(!list.length){
+    return h+wsgNote('아직 보여 드릴 학습지가 없습니다.<br>'
+      +'수학비서로 학습지를 만들어 매쓰플랫에 올리고, 학생에게 배정하면 이 자리에 나타납니다.<br>'
+      +'<span style="font-size:12px">(새벽 수집이 한 번 돌아야 학생별 배정 목록이 들어옵니다)</span>')+'</div>';
+  }
+  if(WSG.open){
+    var pick=null;
+    list.forEach(function(s){ if(s.wid===String(WSG.open)) pick=s; });
+    if(pick) return h+rWsGradeDetail(pick)+'</div>';
+    h+='<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;'
+      +'color:#92400e;font-size:12.5px;font-weight:700;margin-bottom:10px">'
+      +'고르신 학습지를 찾지 못해 전체 목록을 보여 드립니다.</div>';
+  }
+  return h+rWsGradeList(list)+'</div>';
+}
+
+function rWsGradeList(list){
+  var nKey=0, nAsg=0;
+  list.forEach(function(s){ if(s.hasKey) nKey++; nAsg+=s.assigned; });
+  var h='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'
+    +wsgBox('학습지','<span>'+list.length+'</span>장','#0f172a')
+    +wsgBox('정답 대장 있음','<span>'+nKey+'</span>장','#047857')
+    +wsgBox('배정 건수','<span>'+nAsg+'</span>건','#1d4ed8')
+    +'</div>';
+  h+='<div style="display:flex;flex-direction:column;gap:9px">';
+  list.forEach(function(sh){
+    var pct=(sh.assigned?Math.round(100*sh.solved/sh.assigned):0);
+    h+='<button onclick="wsgOpen(\''+esc2(String(sh.wid))+'\')" style="display:block;width:100%;text-align:left;'
+      +'background:#fff;border:1px solid '+(sh.hasKey?'#c7e7d8':'#e2e8f0')+';border-radius:13px;padding:13px 15px;'
+      +'cursor:pointer;font-family:inherit">';
+    h+='<div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">'
+      +'<div style="flex:1;min-width:200px">'
+      +'<div style="font-size:14.5px;font-weight:900;color:#0f172a;line-height:1.45">'+esc2(sh.title)+'</div>'
+      +'<div style="font-size:11.5px;color:#94a3b8;font-weight:700;margin-top:3px">'
+      +'문항 '+sh.n+'개'+(sh.range?(' · '+esc2(sh.range)+'번'):'')+(sh.last?(' · 최근 배정 '+esc2(sh.last)):'')
+      +'</div></div>'
+      +'<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">'+wsgKeyChips(sh)+'</div>'
+      +'</div>';
+    h+='<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center">'
+      +wsgChip('👥 배정 '+sh.assigned+'명','#f8fafc','#334155','#e2e8f0')
+      +' '+wsgChip('✅ 푼 학생 '+sh.solved+'명','#f8fafc',(sh.solved?'#047857':'#94a3b8'),'#e2e8f0')
+      +' '+wsgChip('📊 평균 '+(sh.avg==null?'—':(sh.avg+'점')),'#f8fafc',(sh.avg==null?'#94a3b8':'#1d4ed8'),'#e2e8f0')
+      +(sh.pend?(' '+wsgChip('⏳ 되돌려쓰기 대기 '+sh.pend+'건','#fffbeb','#a16207','#fde68a')):'')
+      +'</div>';
+    h+='<div style="margin-top:9px;height:6px;background:#eef2f7;border-radius:999px;overflow:hidden">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+(pct>=100?'#10b981':(pct>0?'#38bdf8':'#e2e8f0'))+'"></div></div>';
+    h+='</button>';
+  });
+  h+='</div>';
+  h+='<div style="margin-top:14px;font-size:11.5px;color:#94a3b8;line-height:1.85">'
+    +'· 줄을 누르면 학생별 채점 상황과 문항별 ◯ ✗ 를 보실 수 있습니다.<br>'
+    +'· <b>🔷 루멘 + ✍️ 스스로 = 전체 문항</b> 입니다. <b>🤖 매쓰플랫</b> 은 그 안에서 매쓰플랫도 채점해 주는 객관식 문항 수입니다.<br>'
+    +'· 이 화면은 <b>보기 전용</b>입니다 — 점수를 고치실 때는 「숙제체크 › 📗 교재 채점」에서 하십시오.'
+    +'</div>';
+  return h;
+}
+
+function rWsGradeDetail(sh){
+  var h='<button onclick="wsgBack()" style="padding:7px 13px;border-radius:9px;border:1px solid #cbd5e1;'
+    +'background:#fff;color:#334155;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;margin-bottom:11px">← 학습지 목록</button>';
+  h+='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:14px 16px;margin-bottom:12px">'
+    +'<div style="font-size:16px;font-weight:900;color:#0f172a;line-height:1.45">'+esc2(sh.title)+'</div>'
+    +'<div style="font-size:11.5px;color:#94a3b8;font-weight:700;margin-top:4px">'
+    +'문항 '+sh.n+'개'+(sh.range?(' · '+esc2(sh.range)+'번'):'')+(sh.updated?(' · 대장 갱신 '+esc2(String(sh.updated).slice(0,10))):'')
+    +'</div>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:9px">'+wsgKeyChips(sh)+'</div>';
+  if(!sh.hasKey){
+    h+='<div style="margin-top:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:9px 12px;'
+      +'font-size:12px;color:#64748b;line-height:1.75">'
+      +'이 학습지는 <b>정답 대장이 없습니다</b>(수학비서를 거치지 않고 매쓰플랫에서 바로 만든 학습지일 수 있습니다). '
+      +'그래서 매쓰플랫·루멘·스스로 문항 수를 보여 드리지 못하고, 학생이 채점한 결과만 보여 드립니다.</div>';
+  }
+  h+='</div>';
+
+  /* ── 스스로 채점으로 넘어간 문항 번호 ── */
+  var selfNos=wsgSelfNos(sh);
+  h+='<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:13px;padding:13px 15px;margin-bottom:12px">'
+    +'<div style="font-size:13px;font-weight:900;color:#92400e">✍️ 스스로 채점으로 넘어간 문항 '+selfNos.length+'개</div>'
+    +'<div style="font-size:11.5px;color:#a16207;font-weight:700;margin-top:3px;line-height:1.7">'
+    +'루멘도 자동으로 맞출 수 없어 <b>학생이 정답 그림을 보고 ◯ ✗ 를 스스로 고르는</b> 문항입니다. 눈으로 확인해 주십시오.</div>';
+  if(!selfNos.length){
+    h+='<div style="margin-top:8px;font-size:12px;color:#a16207;font-weight:700">없습니다 — 전 문항을 루멘이 자동으로 채점합니다. 👍</div>';
+  }else{
+    h+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:9px">';
+    selfNos.forEach(function(no){
+      h+='<span style="display:inline-block;min-width:30px;text-align:center;padding:3px 7px;border-radius:7px;'
+        +'background:#fff;border:1px solid #fcd34d;color:#92400e;font-size:12px;font-weight:900">'+esc2(String(no))+'</span>';
+    });
+    h+='</div>';
+  }
+  h+='</div>';
+
+  if(!sh.rows.length){
+    return h+wsgNote('아직 <b>이 학습지를 받은 학생이 없습니다</b>.<br>'
+      +'매쓰플랫에서 학생에게 배정하시면(그리고 새벽 수집이 한 번 돌면) 여기에 학생별 현황이 나옵니다.');
+  }
+
+  /* ── 학생별 표 ── */
+  h+='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:13px 15px;margin-bottom:12px">'
+    +'<div style="font-size:13px;font-weight:900;color:#0f172a;margin-bottom:9px">👥 학생별 채점 현황 ('+sh.rows.length+'명)</div>'
+    +'<div style="display:flex;flex-direction:column;gap:7px">';
+  sh.rows.forEach(function(r){
+    var opened=!!WSG.openStu[r.code];
+    var done=(r.o+r.x+r.q)>0;
+    h+='<div style="border:1px solid '+(opened?'#bfdbfe':'#eef2f7')+';border-radius:11px;overflow:hidden">';
+    h+='<button onclick="wsgToggleStu(\''+esc2(String(r.code))+'\')" style="display:block;width:100%;text-align:left;'
+      +'background:'+(opened?'#f8fbff':'#fff')+';border:0;padding:10px 12px;cursor:pointer;font-family:inherit">';
+    h+='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">'
+      +'<div style="min-width:104px;font-size:13.5px;font-weight:900;color:#0f172a">'+esc2(r.name)
+      +(r.grade?(' <span style="font-size:10.5px;color:#94a3b8;font-weight:700">'+esc2(r.grade)+'</span>'):'')+'</div>'
+      +wsgChip(esc2(r.status||'상태 없음'), done?'#ecfdf5':'#f8fafc', done?'#047857':'#94a3b8', done?'#a7f3d0':'#e2e8f0')
+      +' '+wsgChip('점수 '+(r.score==null?'—':(r.score+'점')),'#f8fafc',(r.score==null?'#94a3b8':'#1d4ed8'),'#e2e8f0')
+      +' '+wsgChip('◯ '+r.o,'#f0f9ff','#0369a1','#bae6fd')
+      +' '+wsgChip('✗ '+r.x,'#fef2f7','#be123c','#fbcfe8')
+      +' '+wsgChip('미채점 '+(r.un+r.q),'#f8fafc','#64748b','#e2e8f0')
+      +(r.pend?(' '+wsgChip('⏳ 대기 '+r.pend+'건','#fffbeb','#a16207','#fde68a')):'')
+      +'<span style="margin-left:auto;font-size:11px;color:#94a3b8;font-weight:800">'+(opened?'▲ 접기':'▼ 문항별 보기')+'</span>'
+      +'</div></button>';
+    if(opened){
+      h+='<div style="padding:10px 12px 12px;background:#fbfdff;border-top:1px solid #eef2f7">';
+      if(!r.cells.length){
+        h+='<div style="font-size:12px;color:#94a3b8;font-weight:700">문항 정보가 없습니다.</div>';
+      }else{
+        h+='<div style="display:flex;flex-wrap:wrap;gap:4px">';
+        r.cells.forEach(function(c){
+          var bg='#f8fafc', fg='#94a3b8', bd='#e2e8f0', mk='·';
+          if(c.r==='O'){ bg='#eff6ff'; fg='#0369a1'; bd='#bae6fd'; mk='◯'; }
+          else if(c.r==='X'){ bg='#fff1f5'; fg='#be123c'; bd='#fbcfe8'; mk='✗'; }
+          else if(c.r==='?'){ bg='#fffbeb'; fg='#a16207'; bd='#fde68a'; mk='?'; }
+          h+='<div title="'+esc2(String(c.no))+'번'+(c.self?' · 스스로 채점':'')+'" style="width:40px;padding:4px 0;border-radius:8px;'
+            +'background:'+bg+';border:1px solid '+bd+';text-align:center;line-height:1.25">'
+            +'<div style="font-size:9.5px;color:#94a3b8;font-weight:800">'+esc2(String(c.no))+(c.self?'✍️':'')+'</div>'
+            +'<div style="font-size:13px;font-weight:900;color:'+fg+'">'+mk+'</div></div>';
+        });
+        h+='</div>';
+        h+='<div style="margin-top:8px;font-size:11px;color:#94a3b8;font-weight:700;line-height:1.7">'
+          +'◯ 맞음 · ✗ 틀림 · ? 모르겠다고 표시 · · 아직 채점 안 됨 · ✍️ 는 스스로 채점 문항입니다.</div>';
+      }
+      if(r.pend){
+        h+='<div style="margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:8px 11px;'
+          +'font-size:11.5px;color:#92400e;font-weight:700;line-height:1.7">'
+          +'⏳ <b>'+r.pend+'건</b>이 아직 매쓰플랫에 못 갔습니다. 되돌려쓰기 일꾼이 5분마다 보내므로 잠시 뒤 사라집니다.</div>';
+      }
+      h+='</div>';
+    }
+    h+='</div>';
+  });
+  h+='</div></div>';
+
+  /* ── 문항별 합계 ── */
+  var probs=wsgProblemList(sh);
+  if(probs.length){
+    h+='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:13px 15px">'
+      +'<div style="font-size:13px;font-weight:900;color:#0f172a;margin-bottom:3px">📊 문항별 정답 현황 (학생 전원 합계)</div>'
+      +'<div style="font-size:11.5px;color:#94a3b8;font-weight:700;margin-bottom:9px;line-height:1.7">'
+      +'칸 안 위는 문항 번호, 아래는 <b>◯ 수 / ✗ 수</b> 입니다. 빨갛게 보이는 문항이 많이 틀린 문항입니다.</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:4px">';
+    probs.forEach(function(p,i){
+      var o=0,x=0,u=0;
+      sh.rows.forEach(function(r){
+        var c=r.cells[i]; if(!c){ u++; return; }
+        if(c.r==='O') o++; else if(c.r==='X') x++; else u++;
+      });
+      var g=o+x;
+      var bg='#f8fafc', bd='#e2e8f0', fg='#94a3b8';
+      if(g){
+        var rate=o/g;
+        if(rate>=0.8){ bg='#ecfdf5'; bd='#a7f3d0'; fg='#047857'; }
+        else if(rate>=0.5){ bg='#f0f9ff'; bd='#bae6fd'; fg='#0369a1'; }
+        else { bg='#fff1f5'; bd='#fbcfe8'; fg='#be123c'; }
+      }
+      h+='<div title="'+esc2(String(p.no))+'번 — 맞음 '+o+' · 틀림 '+x+' · 미채점 '+u+'" style="width:46px;padding:4px 0;'
+        +'border-radius:8px;background:'+bg+';border:1px solid '+bd+';text-align:center;line-height:1.25">'
+        +'<div style="font-size:9.5px;color:#94a3b8;font-weight:800">'+esc2(String(p.no))+(p.self?'✍️':'')+'</div>'
+        +'<div style="font-size:11.5px;font-weight:900;color:'+fg+'">'+o+'/'+x+'</div></div>';
+    });
+    h+='</div></div>';
+  }
+  return h;
+}
+
 function getDefaultVersionMemo(){
   return {
     lumen:[
@@ -10580,6 +10992,9 @@ var GROUPS=[
     {v:'pubc', icon:'📤', label:'발행 센터', act:function(){ VIEW='pubc'; }},
     {v:'planner', icon:'📓', label:'플래너', act:function(){ VIEW='planner'; PLANNER_VIEW='input'; }},
     {v:'hwcheck', icon:'📋', label:'숙제체크', act:function(){ VIEW='hwcheck'; }},
+    /* v19-14: 📄 학습지 채점 — 매쓰플랫이 객관식만 채점하므로 나머지를 루멘이 채점한다.
+     * 어느 학습지가 얼마나 자동채점되고 누가 어디까지 풀었는지 보는 화면 (보기 전용). */
+    {v:'wsgrade', icon:'📄', label:'학습지 채점', act:function(){ VIEW='wsgrade'; WSG.open=null; WSG.openStu={}; }},
     {v:'recmgr', icon:'🎙️', label:'녹음관리', act:function(){ VIEW='recmgr'; REC_MGR_VIEW='grid'; }},
     {v:'aha', icon:'💡', label:'아하노트', act:function(){ VIEW='aha'; }},
     {v:'bulk', icon:'✨', label:'일괄피드백', act:function(){ VIEW='bulk'; }}
@@ -17143,8 +17558,8 @@ function render(){
   if(RT){
     const groupLabel=MENU_GROUP==='all'?'전체 학생':MENU_GROUP==='none'?'미배정':MENU_GROUP;
     const selName=SELECTED_STUDENT?SELECTED_STUDENT.split('__')[0]:'';
-    const titles={home:'🏠 홈',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실',tuition:'💳 수강료'};
-    const subtitles={typeach:'AI 판독 · 검토 · 전송',list:'학생 카드',student_detail:STUDENT_TAB,studentdb:'등록부',books:'교재 라이브러리',quick:QUICK_TAB+' 입력',class_overview:'진도 현황 · 지연 감지',typedb:'수학 유형 분류 체계',form:'편집 · 미리보기 · 공유',preview:'편집 · 미리보기 · 공유',share:'편집 · 미리보기 · 공유',settings:'설정',bulk:'일괄 작업',exam:'시험지 분석 · O/X · 리포트',record:'특기사항 · 날짜별',pwa:'풀이 분석 · 검토 · 발송',notice:'작성 · 발행 · 읽음 현황',attend:'출석 · 결석보충 · 리커버리',vod:'강의 등록 · 배정 · 시청 모니터링',tuition:'결제선생 청구 · 수납 · 미납'};
+    const titles={home:'🏠 홈',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실',tuition:'💳 수강료',wsgrade:'📄 학습지 채점'};
+    const subtitles={typeach:'AI 판독 · 검토 · 전송',list:'학생 카드',student_detail:STUDENT_TAB,studentdb:'등록부',books:'교재 라이브러리',quick:QUICK_TAB+' 입력',class_overview:'진도 현황 · 지연 감지',typedb:'수학 유형 분류 체계',form:'편집 · 미리보기 · 공유',preview:'편집 · 미리보기 · 공유',share:'편집 · 미리보기 · 공유',settings:'설정',bulk:'일괄 작업',exam:'시험지 분석 · O/X · 리포트',record:'특기사항 · 날짜별',pwa:'풀이 분석 · 검토 · 발송',notice:'작성 · 발행 · 읽음 현황',attend:'출석 · 결석보충 · 리커버리',vod:'강의 등록 · 배정 · 시청 모니터링',tuition:'결제선생 청구 · 수납 · 미납',wsgrade:'자동채점 현황 · 학생별 진행'};
     RT.textContent=titles[VIEW]||'학생을 선택해주세요';
     const RST=document.getElementById('RIGHT_SUBTITLE');
     if(RST)RST.textContent=subtitles[VIEW]||'';
@@ -17250,6 +17665,7 @@ function render(){
     else if(VIEW==='compass'){try{C.innerHTML=rCompass();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='wktab'){try{C.innerHTML=rWkTab();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='sungong'){try{C.innerHTML=rSungong();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
+    else if(VIEW==='wsgrade'){try{C.innerHTML=rWsGrade(); if(!WSG.loaded) setTimeout(wsgLoad,0);}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='jamock') C.innerHTML=rJaMock();
     else if(VIEW==='schoolscore') C.innerHTML=rSchoolScoreMain();
     else if(VIEW==='vod') C.innerHTML=vodMain();
@@ -17302,6 +17718,7 @@ function render(){
     else if(VIEW==='compass'){try{C.innerHTML=rCompass();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='wktab'){try{C.innerHTML=rWkTab();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='sungong'){try{C.innerHTML=rSungong();}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
+    else if(VIEW==='wsgrade'){try{C.innerHTML=rWsGrade(); if(!WSG.loaded) setTimeout(wsgLoad,0);}catch(e){console.error(e);C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>';}}
     else if(VIEW==='jamock') C.innerHTML=rJaMock();
     else if(VIEW==='schoolscore') C.innerHTML=rSchoolScoreMain();
     else if(VIEW==='vod') C.innerHTML=vodMain();

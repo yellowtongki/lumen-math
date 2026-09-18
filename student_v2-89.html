@@ -1941,6 +1941,16 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .bk-ansbox .cap{font-size:9.5px;font-weight:900;color:#94a3b8;margin-bottom:5px}
 .bk-ansbox img{width:100%;max-height:340px;object-fit:contain;border-radius:8px;display:block;cursor:zoom-in;background:#f8fafc}
 .bk-ansbox .txt{font-size:15.5px;font-weight:900;color:#15803d;word-break:break-all}
+/* v2-89: 정답 대장의 「칸마다의 정답」 — 칸 번호 + 그 칸의 정답 그림 */
+.bk-keyans{display:flex;flex-direction:column;gap:7px}
+.bk-keyans .kcell{border:1px solid var(--border);border-radius:9px;background:#f8fafc;padding:6px}
+.bk-keyans .kn{display:inline-block;font-size:9.5px;font-weight:900;color:#0f766e;background:#e5f5f2;border-radius:50px;padding:2px 8px;margin-bottom:4px}
+.bk-keyans .kt{display:block;font-size:15px;font-weight:900;color:#15803d;word-break:break-all}
+.bk-keyans img{width:100%;max-height:200px;object-fit:contain;border-radius:7px;display:block;cursor:zoom-in;background:#fff}
+/* v2-89: 참거짓(O/X) 칸 단추 — 칸마다 한 줄 */
+.bk-pgrp.ox button{min-width:56px;font-size:16px}
+/* v2-89: 학습지 줄의 「루멘 자동채점 n문항」 */
+.ws-row .lum{font-size:9.5px;font-weight:900;color:#0f766e;background:#e5f5f2;border-radius:50px;padding:2px 8px}
 .bk-myphoto{width:100%;max-height:300px;object-fit:contain;border-radius:9px;display:block;border:1px solid var(--border);cursor:zoom-in;background:#f8fafc}
 .bk-acts{display:flex;gap:7px}
 .bk-acts button{flex:1;border-radius:10px;padding:11px 0;font-family:inherit;font-size:13.5px;font-weight:900;cursor:pointer;border:1.8px solid var(--border);background:var(--surface);color:#334155}
@@ -11805,9 +11815,13 @@ window.sgSubmit = async function(){
  *   bsub = 교재 토글('normal'|'sig'), wsf = 학습지 상태 칩, ws = 지금 연 학습지,
  *   mode = 지금 채점하는 것이 교재인가 학습지인가('book'|'ws')
  *   objPick = 정답이 여럿인 객관식에서 학생이 지금 골라 둔 보기 번호들 (확인 전) */
+/* v2-89 추가 칸: wsans = 학습지 「정답 대장」(mf_wsans_<학습지id>) 을 담아 두는 곳,
+ *   wsansTried = 이미 서버에 물어본 학습지id (없는 것을 또 묻지 않으려고),
+ *   wsansBusy = 지금 대장을 받아오는 중인가 */
 var BK={ loaded:false, swb:null, scores:{}, ans:{}, book:null, page:null, active:null, buf:'', busy:false,
          fields:[], fi:0, tab:'num', sh:null, photos:{}, soft:{}, wordIn:{}, sample:{}, qn:0, upBusy:false, target:null,
-         wsq:null, top:'book', bsub:'normal', wsf:'전체', ws:null, mode:'book', objPick:{} };
+         wsq:null, top:'book', bsub:'normal', wsf:'전체', ws:null, mode:'book', objPick:{},
+         wsans:{}, wsansTried:{}, wsansBusy:false };
 function bkKeyOf(pid,wpId){ return pid+'_'+wpId; }
 
 async function bkFetchStore(keys){
@@ -15205,6 +15219,174 @@ function bkBookRowsHtml(books,idxs){
  * ════════════════════════════════════════════════════════════════════ */
 var BK_WSTAT=['전체','학습가능','풀이 중','학습완료'];
 function bkWsStatCls(s){ return s==='학습완료'?'fin':(s==='풀이 중'?'ing':'can'); }
+
+/* ══════════════════════════════════════════════════════════════════════
+ * ★ v2-89: 학습지 「정답 대장」 (계약 docs/ws_autoscore_contract.md §1·§2)
+ *
+ *   매쓰플랫은 객관식만 자동채점한다. 단답은 답이 숫자 하나여도 채점하지 않는다.
+ *   게다가 매쓰플랫에 들어간 정답은 여러 칸을 쉼표로 이어 붙인 「한 줄」이라
+ *   칸 수·칸마다의 종류(참거짓·정수·단답·수식)·칸마다의 정답 그림이 사라진다.
+ *   그래서 수학비서 원본에서 뽑은 대장을 서버(lumen_store)에 따로 담아 두었다.
+ *
+ *   대장 한 장 = mf_wsans_<학습지id(wid)>
+ *   { wid, title, n, mfAuto, lumenAuto, selfN,
+ *     items:[ { no, wpIndex, pid, cnt, kind, shape, self, gradable, unit,
+ *               parts:[ { seq, t, v, tex, disp, img } ] } ] }
+ *
+ *   잇는 기준은 «순서»(wpIndex) 다. 배정할 때마다 바뀌는 wpId 로는 못 잇는다.
+ *   대장 문항 수와 학습지 문항 수가 다르면 아예 쓰지 않는다(오채점 방지).
+ *   대장이 없으면 v2-88 과 똑같이 동작한다.
+ * ════════════════════════════════════════════════════════════════════ */
+
+/* 이 학습지의 대장 — 문항 수가 딱 맞을 때만 돌려준다 (아니면 null) */
+function bkWsKey(w){
+  if(!w||w.wid==null) return null;
+  var k=BK.wsans&&BK.wsans[String(w.wid)];
+  if(!k||!k.items||!k.items.length) return null;
+  var probs=(w.problems||[]);
+  if(!probs.length||k.items.length!==probs.length) return null;
+  return k;
+}
+/* 대장 문항을 순서(wpIndex)대로 줄 세운다 */
+function bkWsKeyItems(k){
+  var items=(k&&k.items||[]).slice();
+  items.sort(function(a,b){ return (Number(a&&a.wpIndex)||0)-(Number(b&&b.wpIndex)||0); });
+  return items;
+}
+/* 이 학습지에서 루멘이 자동채점할 수 있는 문항 수 */
+function bkWsKeyAutoN(k){
+  var n=Number(k&&k.lumenAuto);
+  if(n>=0) return n;
+  var c=0;
+  (k&&k.items||[]).forEach(function(it){ if(it&&!it.self&&it.gradable!==false) c++; });
+  return c;
+}
+/* 아직 안 물어본 학습지의 대장을 한 번에 받아 온다 (없는 것은 다시 묻지 않는다) */
+async function bkWsKeyLoad(){
+  if(BK.wsansBusy) return false;
+  var list=(BK.wsq&&BK.wsq.list)||[];
+  var keys=[], seen={};
+  list.forEach(function(w){
+    var id=(w&&w.wid!=null)?String(w.wid):'';
+    if(!id||seen[id]||BK.wsansTried[id]) return;
+    seen[id]=1; keys.push('mf_wsans_'+id);
+  });
+  if(!keys.length) return false;
+  BK.wsansBusy=true;
+  try{
+    var st=await bkFetchStore(keys);
+    keys.forEach(function(kk){
+      var id=kk.slice('mf_wsans_'.length);
+      BK.wsansTried[id]=1;
+      var v=st[kk];
+      if(v&&v.items&&v.items.length) BK.wsans[id]=v;
+    });
+  }catch(e){}
+  BK.wsansBusy=false;
+  return true;
+}
+/* 목록 화면에서 한 번만 조용히 받아 오고, 받아 오면 목록을 다시 그린다 */
+function bkWsKeyWarm(){
+  if(BK.wsansBusy) return;
+  bkWsKeyLoad().then(function(did){
+    if(did&&BK.top==='ws'&&document.getElementById('bk-body')) bkPaintHome();
+  });
+}
+/* 대장 한 문항의 정답 — 칸마다의 정답을 쉼표로 이어 붙인 것 (매쓰플랫 정답 대신 쓴다) */
+function bkKeyAns(p){
+  var k=p&&p.key;
+  if(!k||!k.parts||!k.parts.length) return null;
+  var out=[];
+  k.parts.forEach(function(pt){ out.push(String((pt&&pt.v)==null?'':pt.v)); });
+  return out.join(', ');
+}
+/* 채점에 쓸 정답 — 대장이 있으면 대장, 없으면 매쓰플랫 정답 */
+function bkAnsOf(p){
+  var a=bkKeyAns(p);
+  return (a==null)?((p&&p.answer)||''):a;
+}
+/* 대장 문항의 칸 종류를 학생앱 입력칸 종류로 바꾼다 */
+function bkKeyCellKind(shape){
+  shape=String(shape||'');
+  if(shape==='geo'||shape==='alg'||shape==='ineq'||shape==='coord'||shape==='mark') return shape;
+  return 'num';
+}
+/* ★ 대장이 알려 주는 입력 모양 — bkShape 가 엔진보다 먼저 본다 */
+function bkKeyShape(p){
+  var k=p&&p.key;
+  if(!k||typeof k!=='object'||!k.parts||!k.parts.length) return null;
+  var cnt=Number(k.cnt)||k.parts.length||1;
+  if(cnt<1) cnt=1;
+  if(cnt>k.parts.length) cnt=k.parts.length;
+  var kind=String(k.kind||'');
+  var shape=String(k.shape||'')||bkGuessShape(p);
+  var unit=(k.unit!=null&&k.unit!=='')?String(k.unit):'';
+  var self=!!k.self;
+  var gradable=self?false:(k.gradable!=null?!!k.gradable:true);
+  var mk=function(kd){ return { label:'', kind:kd||'num', unit:'' }; };
+  var parts=[], i;
+  if(kind==='ox'){
+    /* 참거짓 — 칸마다 O / X 단추 */
+    shape='ox';
+    for(i=0;i<cnt;i++) parts.push(mk('ox'));
+  } else if(kind==='num'){
+    /* 숫자 단답 — 칸 수만큼 숫자칸 */
+    shape='num';
+    for(i=0;i<cnt;i++) parts.push(mk('num'));
+    if(unit) parts[parts.length-1].unit=unit;
+  } else if(cnt>1){
+    /* 여러 칸 — 칸마다 입력칸 하나씩 (칸별로 견주고 모두 맞아야 ◯) */
+    var ck=bkKeyCellKind(shape);
+    for(i=0;i<cnt;i++) parts.push(mk(ck));
+    if(unit) parts[parts.length-1].unit=unit;
+  } else {
+    /* 한 칸짜리 — 지금까지 쓰던 입력칸(낱말 칩·단위 칩 …)을 그대로 쓴다 */
+    parts=bkFoldPick(bkParts(p, shape, unit));
+  }
+  return { shape:shape, self:self, unit:unit, parts:parts,
+           gradable:gradable, sample:false, key:k, cnt:cnt };
+}
+/* ★ 대장으로 채점 — 엔진(HWGrade.grade)을 «칸마다 따로» 부른다.
+ *   · 한 칸이라도 틀리면 ✗ (부분 점수 없음)
+ *   · 엔진이 못 견주는 칸이 하나라도 있으면 그 문항은 자기채점으로 돌린다
+ *   · 칸 수가 안 맞으면 null 을 돌려 예전 채점 길로 넘긴다 */
+function bkKeyGrade(p, sh, vals){
+  var k=(sh&&sh.key)||(p&&p.key);
+  if(!k||!k.parts||!k.parts.length) return null;
+  var want=k.parts.slice(0, (sh&&sh.parts&&sh.parts.length)||k.parts.length);
+  var got=(vals&&vals.length)?vals:null;
+  if(!got||got.length!==want.length) return null;
+  var allOk=true;
+  for(var i=0;i<want.length;i++){
+    var c=String((want[i]&&want[i].v)==null?'':want[i].v);
+    var s=String(got[i]==null?'':got[i]).trim();
+    var g=null;
+    try{ g=HWGrade.grade(c, s); }catch(e){ g=null; }
+    if(!g||!g.gradable) return { gradable:false, correct:false };   // 못 읽는 칸 → 자기채점
+    if(!g.correct) allOk=false;
+  }
+  return { gradable:true, correct:allOk };
+}
+/* 대장이 있을 때 보여 줄 「칸마다의 정답 그림」 — 칸 번호와 함께 */
+function bkKeyAnsBox(p){
+  var k=p&&p.key;
+  if(!k||!k.parts||!k.parts.length) return '';
+  var imgs=0;
+  k.parts.forEach(function(pt){ if(pt&&pt.img) imgs++; });
+  if(!imgs) return '';
+  var many=(k.parts.length>1);
+  var h='<div class="bk-ansbox"><div class="cap">정답'+(many?' — 칸마다':'')+'</div>';
+  h+='<div class="bk-keyans">';
+  k.parts.forEach(function(pt,ix){
+    h+='<div class="kcell">';
+    if(many) h+='<span class="kn">'+(ix+1)+'번 칸</span>';
+    if(pt&&pt.img) h+='<img src="'+h3Esc(pt.img)+'" alt="정답" onclick="openPvPhoto('+bkQ(pt.img)+')">';
+    else h+='<span class="kt">'+h3Esc(bkCleanAns((pt&&pt.v)||''))+'</span>';
+    h+='</div>';
+  });
+  h+='</div></div>';
+  return h;
+}
 /* 학습지 한 장의 채점 현황 — 매쓰플랫이 준 값 + 내가 앱에서 채점한 것 */
 function bkWsStat(w){
   var probs=(w&&w.problems)||[];
@@ -15224,6 +15406,7 @@ function bkWsStat(w){
 }
 function bkWsListHtml(){
   var list=((BK.wsq&&BK.wsq.list)||[]).slice();
+  bkWsKeyWarm();                    // v2-89: 정답 대장을 조용히 받아 온다 (한 번만)
   var h='<div class="ws-chips">';
   BK_WSTAT.forEach(function(s){
     h+='<button class="'+(BK.wsf===s?'on':'')+'" onclick="bkWsFilter('+bkQ(s)+')">'+h3Esc(s)+'</button>';
@@ -15248,6 +15431,9 @@ function bkWsListHtml(){
       +'<span class="arw">›</span></span>';
     r+='<span class="nm">'+h3Esc(w.title||'학습지')+'</span>';
     r+='<span class="r2"><span class="cnt">'+(st.tot||0)+'문항</span>';
+    /* v2-89: 정답 대장이 있는 학습지 — 루멘이 자동채점할 수 있는 문항 수 */
+    var wk=bkWsKey(w);
+    if(wk) r+='<span class="lum">루멘 자동채점 '+bkWsKeyAutoN(wk)+'문항</span>';
     if(st.done>0){
       /* 점수는 다 채점했을 때만 보여 준다 — 한두 개만 맞았는데 100점처럼 보이면 헷갈린다 */
       if(st.tot>0&&st.done>=st.tot&&st.score!=null) r+='<span class="sc">'+st.score+'점</span>';
@@ -15261,22 +15447,37 @@ function bkWsListHtml(){
     h+=r;
   });
   if(!shown) h+='<div class="sp3-empty"><div class="e1">🔎</div><div class="e2">'+h3Esc(BK.wsf)+' 인 학습지가 없어요</div></div>';
-  h+='<div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:6px;line-height:1.7">문제는 <b>종이 학습지</b>로 풀고, 여기서는 답만 넣어요.<br>채점 결과는 자동으로 선생님(매쓰플랫)께 전달됩니다.</div>';
+  h+='<div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:6px;line-height:1.7">문제는 <b>종이 학습지</b>로 풀고, 여기서는 답만 넣어요.<br>채점 결과는 자동으로 선생님(매쓰플랫)께 전달됩니다.'
+    +'<br>매쓰플랫이 못 채점하는 문항도 <b>루멘이 채점</b>해 선생님께 보냅니다.</div>';   /* v2-89 */
   return h;
 }
 /* 학습지 열기 — 교재 채점 화면을 그대로 쓰려고 「가짜 한 쪽」으로 감싼다.
  * 이렇게 하면 저장 키가 저절로 ws_<swId>_<wpId> 가 된다. */
-window.bkOpenWs=function(swId){
+window.bkOpenWs=async function(swId){
   var list=(BK.wsq&&BK.wsq.list)||[];
   var w=list.find(function(x){ return String(x.swId)===String(swId); });
   if(!w){ alert('학습지를 찾지 못했어요'); return; }
   BK.ws=w; BK.mode='ws';
+  /* ★ v2-89: 이 학습지의 정답 대장(mf_wsans_<wid>)을 먼저 받아 온다.
+   * 없으면(옛 학습지·매쓰플랫 자체 학습지) v2-88 과 똑같이 동작한다. */
+  try{ await bkWsKeyLoad(); }catch(e){}
+  var probs=(w.problems||[]).slice();
+  var wk=bkWsKey(w);
+  if(wk){
+    /* 잇는 기준은 «순서»(wpIndex) — 배정할 때마다 바뀌는 wpId 로는 못 잇는다 */
+    var items=bkWsKeyItems(wk);
+    probs=probs.map(function(p,i){
+      var q={}; for(var kk in p) if(Object.prototype.hasOwnProperty.call(p,kk)) q[kk]=p[kk];
+      q.key=items[i]||null;
+      return q;
+    });
+  }
   var vpid='ws_'+w.swId, vwp='w'+w.swId;
   BK.book={ bid:vpid, title:w.title||'학습지', pages:[{ pid:vpid, wpid:vwp, page:null, title:w.title||'' }], round:1 };
   BK.page=BK.book.pages[0];
   BK.pageIdx=0;
   BK.ans[vpid]={ pages:{} };
-  BK.ans[vpid].pages[vwp]={ v:2, problems:(w.problems||[]).slice() };
+  BK.ans[vpid].pages[vwp]={ v:2, problems:probs };
   BK.active=null; BK.buf='';
   go('screen-bookq');
 };
@@ -15410,7 +15611,8 @@ function bkLabelAfter(lb){
   return !!lb && !/[:=]\s*$/.test(lb);
 }
 /* 이 칸이 「눌러서 고르는 칸」인가 (자판을 열지 않는다) */
-function bkTapKind(k){ k=String(k||''); return k==='pick'||k==='choice'||k==='op'; }
+/* v2-89: 참거짓(ox) 칸도 「눌러서 고르는 칸」이다 — 자판을 열지 않는다 */
+function bkTapKind(k){ k=String(k||''); return k==='pick'||k==='choice'||k==='op'||k==='ox'; }
 function bkHasTapKind(sh){
   var ps=(sh&&sh.parts)||[];
   for(var i=0;i<ps.length;i++){ if(bkTapKind(ps[i]&&ps[i].kind)) return true; }
@@ -15526,9 +15728,12 @@ function bkParts(p, shape, unit){
   if(unit) parts[parts.length-1].unit=unit;
   return parts;
 }
-/* ★ 화면이 부르는 단 하나의 창구 — 엔진 → 정답사전 → 앱 짐작 순서 */
+/* ★ 화면이 부르는 단 하나의 창구 — 정답 대장(v2-89) → 엔진 → 정답사전 → 앱 짐작 순서 */
 function bkShape(p){
   p=p||{};
+  /* ★ v2-89: 정답 대장이 있으면 그것을 가장 먼저 본다 (엔진보다 앞) */
+  var ks=bkKeyShape(p);
+  if(ks) return ks;
   var s=null;
   try{ if(typeof HWGrade!=='undefined'&&typeof HWGrade.shapeOf==='function') s=HWGrade.shapeOf(p); }catch(e){ s=null; }
   if(!s||typeof s!=='object') s={};
@@ -15742,8 +15947,10 @@ function bkCardHtml(p,i,pg,probs){
   h+='</div></div>';
   return h;
 }
-/* 정답 보여주기 — 그림이 있으면 그림, 없으면 글자 */
+/* 정답 보여주기 — 정답 대장(칸마다) → 매쓰플랫 그림 → 글자 순서 (v2-89) */
 function bkAnsBox(p){
+  var kb=bkKeyAnsBox(p);
+  if(kb) return kb;
   if(p.img) return '<div class="bk-ansbox"><div class="cap">정답 (매쓰플랫)</div>'
     +'<img src="'+h3Esc(p.img)+'" alt="정답" onclick="openPvPhoto('+bkQ(p.img)+')"></div>';
   var t=bkCleanAns(p.answer);
@@ -15873,7 +16080,7 @@ function bkInputBody(p,sh,wp,key,probs){
   var h='<div class="qt"><span class="ty">'+ty+'</span>'
     +((sh.unit&&!hasLbl)?'<span class="un">단위 '+h3Esc(sh.unit)+' — 숫자만</span>':'')+'</div>';
   var dunno='<button class="dunno-b" onclick="bkDunno('+bkQ(wp)+')">모름 ?</button>';
-  if(sh.shape==='ox'){
+  if(sh.shape==='ox'&&(sh.parts||[]).length<=1){
     h+='<div class="bk-ox"><button onclick="bkGrade('+bkQ(wp)+',\'O\')">O</button>'
       +'<button onclick="bkGrade('+bkQ(wp)+',\'X\')">X</button></div>';
     h+='<div style="display:flex;justify-content:flex-end">'+dunno+'</div>';
@@ -15928,7 +16135,8 @@ function bkInputBody(p,sh,wp,key,probs){
   });
   h+='</div>';
   h+='<div style="display:flex;align-items:center;gap:6px">';
-  if(sh.parts.length>1) h+='<span class="bk-hint">칸이 '+sh.parts.length+'개예요 — 「다음 칸」으로 옮겨요</span>';
+  if(sh.parts.length>1) h+='<span class="bk-hint">칸이 '+sh.parts.length+'개예요 — 「다음 칸」으로 옮겨요'
+    +(sh.key?' · 모두 맞아야 ◯ 예요':'')+'</span>';   /* v2-89 */
   h+='<span style="margin-left:auto"></span>'+dunno+'</div>';
   return h;
 }
@@ -15952,6 +16160,12 @@ function bkSlotHtml(p,sh,pt,ix,wp){
     h+='<div class="bk-pgrp" id="bkg-'+h3Esc(wp)+'-'+ix+'">';
     opts.forEach(function(w){ h+='<button type="button" onclick="bkChoiceTap('+bkQ(wp)+','+ix+','+bkQ(w)+')">'+h3Esc(w)+'</button>'; });
     h+='</div>';
+  } else if(kind==='ox'){
+    /* v2-89: 참거짓 — 칸마다 O / X 단추 */
+    h+='<div class="cap">'+(many?((ix+1)+'번째 칸'):'맞으면 O, 틀리면 X')+'</div>';
+    h+='<div class="bk-pgrp ox" id="bkg-'+h3Esc(wp)+'-'+ix+'">';
+    ['O','X'].forEach(function(o){ h+='<button type="button" onclick="bkChoiceTap('+bkQ(wp)+','+ix+','+bkQ(o)+')">'+o+'</button>'; });
+    h+='</div>';
   } else if(kind==='op'){
     h+='<div class="cap">'+(many?(ix+1)+'번째 기호':'기호를 골라요')+'</div>';
     h+='<div class="bk-pgrp op" id="bkg-'+h3Esc(wp)+'-'+ix+'">';
@@ -15973,6 +16187,7 @@ function bkSlotHtml(p,sh,pt,ix,wp){
 function bkTapHint(sh){
   var ps=(sh&&sh.parts)||[], k={};
   ps.forEach(function(x){ k[String(x&&x.kind||'')]=1; });
+  if(k.ox) return '칸마다 O 나 X 를 고르고 「제출」을 눌러요. 모두 맞아야 ◯ 예요.';   /* v2-89 */
   if(k.pick) return '○ 를 놓을 칸을 누르고 「제출」을 눌러요.';
   if(k.op) return '왼쪽부터 차례로 기호를 고르고 「제출」을 눌러요.';
   if(k.choice) return '낱말을 고르고 「제출」을 눌러요.';
@@ -16026,7 +16241,7 @@ function bkPaintOne(wp,ix,kind,v,foc,clear){
     }
     return;
   }
-  if(kind==='choice'||kind==='op'){
+  if(kind==='choice'||kind==='op'||kind==='ox'){          /* v2-89: ox 칸도 같은 방식 */
     var g=document.getElementById('bkg-'+wp+'-'+ix); if(!g) return;
     var gb=g.querySelectorAll('button');
     for(var j=0;j<gb.length;j++) gb[j].classList.toggle('on', !clear&&gb[j].textContent===String(v||'')&&String(v||'')!=='');
