@@ -2053,6 +2053,29 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .kpad.cmp2 button{padding:6px 0;font-size:14px}
 .kpad.cmp2 button.fn{font-size:11px}
 .kpad.cmp2 button.go{font-size:13px}
+/* ★ v2-92: 🗂 지난 기록 — 매쓰플랫에서 채점한 기록 다시 보기 (계약 docs/past_records_contract.md §2) */
+.bk-tabs.t3 button{font-size:12px;padding:10px 2px;white-space:nowrap}
+.pr-day{font-size:11.5px;font-weight:900;color:#0f766e;background:#e6f7f4;border-radius:8px;padding:5px 11px;margin:12px 0 8px;display:inline-block}
+.pr-row{width:100%;box-sizing:border-box;background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:11px 13px;margin-bottom:9px;cursor:pointer;font-family:inherit;text-align:left;display:flex;flex-direction:column;gap:7px}
+.pr-row .r1{display:flex;align-items:center;gap:7px;min-width:0}
+.pr-row .kd{font-size:9.5px;font-weight:900;border-radius:6px;padding:3px 7px;flex:none;white-space:nowrap}
+.pr-row .kd.bk{background:#e7f6ec;color:#15803d}
+.pr-row .kd.ws{background:#e9f1fe;color:#1d6fe8}
+.pr-row .nm{font-size:12.5px;font-weight:900;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-row .pg{font-size:10px;font-weight:900;color:#a15c00;background:#fdf3e0;border-radius:50px;padding:2px 8px;flex:none;white-space:nowrap}
+.pr-row .arw{color:#94a3b8;font-weight:900;flex:none;font-size:12px}
+.pr-row .r2{display:flex;align-items:center;gap:8px;min-width:0}
+.pr-row .ox{font-size:11.5px;font-weight:900;white-space:nowrap;flex:none}
+.pr-row .ox .o{color:#1d78c9}
+.pr-row .ox .x{color:#dc3b34}
+.pr-row .bk-bar{flex:1;margin:0;min-width:0}
+.pr-row .pc{font-size:11px;font-weight:900;color:#0d2240;width:40px;text-align:right;flex:none}
+.pr-nums{display:flex;flex-wrap:wrap;gap:5px;border-top:1px dashed var(--border);padding-top:8px}
+.pr-nums .n{font-size:10.5px;font-weight:900;border-radius:8px;padding:4px 8px;background:#eef2f7;color:#475569;white-space:nowrap}
+.pr-nums .n.o{background:#e9f1fe;color:#1d78c9}
+.pr-nums .n.x{background:#fdecec;color:#dc3b34}
+.pr-more{width:100%;box-sizing:border-box;border:1.5px solid #cbd5e1;background:var(--surface);color:#64748b;border-radius:11px;padding:11px 6px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;margin-top:2px}
+.pr-tip{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:9px;line-height:1.7}
 
 .h3-tiles4 .fn3{font-size:19px}
 .h3-tiles4 .fd3{font-size:13px}
@@ -3687,6 +3710,31 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-92 (2026-09-18) 🗂 «지난 기록» — 매쓰플랫에서 채점한 기록을 학생이 다시 봅니다
+ *   · <b>학생 건의</b>: 「이전에 채점한 기록이 학생앱에 없다」. 알아보니 매쓰플랫에서
+ *     채점한 기록 <b>7만 건</b>이 이미 학원 서버에 쌓여 있었는데, 기록에 <b>학생 코드가
+ *     비어 있어</b> 학생앱이 「내 기록」을 골라낼 수가 없었습니다. 코드를 다 채워 넣었고
+ *     (70,066건·31명), 이제 학생앱에서 보여 줍니다.
+ *   · <b>어디에 있나</b> — 「📚 교재 채점」 화면 위쪽 탭에 <b>세 번째 칸 「🗂 지난 기록」</b>이
+ *     생겼습니다. (📚 교재 | 📄 학습지 | 🗂 지난 기록)
+ *   · <b>기간 칩</b> — 최근 2주 · 1개월 · 3개월 · 전체. 처음 열면 <b>1개월</b>입니다.
+ *     칩을 누르면 그 기간을 다시 받아 옵니다.
+ *   · <b>맨 위 요약</b> — 그 기간 동안의 ◯ 개수 · ✗ 개수 · 정답률.
+ *   · <b>날짜별로 묶어</b> 「9월 16일 (수)」 아래에 그날 채점한 것을 한 줄씩 보여 줍니다.
+ *     줄에는 갈래(📚 교재 / 📄 학습지) · 이름 · 쪽(교재만) · ◯ n ✗ n · 정답률 막대가 있습니다.
+ *   · <b>줄을 누르면</b> 문항 번호별로 ◯ ✗ 칩이 펼쳐집니다(틀린 번호는 빨강). 다시 누르면 접힙니다.
+ *   · <b>보기만 하는 화면</b>입니다 — 여기서 다시 채점하거나 고칠 수 없습니다.
+ *     다시 풀고 싶으면 지금처럼 📚 교재 · 📄 학습지 탭의 「🔁 다시 도전」을 씁니다.
+ *   · <b>문제 그림은 띄우지 않습니다</b>(v2-90 규칙 그대로 — 학습지는 시험지입니다).
+ *   · 기록이 없으면 「아직 채점 기록이 없어요 · 기간을 넓혀 보세요」라고 알려 주고,
+ *     한 번에 800건까지만 받은 뒤 「더 보기」로 이어 받습니다.
+ *   · 조회는 <b>자기 코드로만</b> 합니다. 남의 기록은 부르지 않습니다.
+ *   · ⚠️ 원장님께: 이 표(mf_answer_records)는 지금 <b>학생앱 열쇠로 표 전체가 읽힙니다</b>.
+ *     이름은 없고 코드·번호뿐이지만, 마음먹으면 남의 코드로 남의 기록을 볼 수 있습니다.
+ *     막으려면 서버에 「자기 코드만 읽게 하는 규칙(RLS)」을 걸어야 하는데,
+ *     이 표를 읽는 학원앱·수집기·월간보고서를 함께 손봐야 해서 <b>따로 한 번에</b> 처리하는
+ *     편이 안전합니다 (docs/past_records_contract.md §3).
+ *
  * v2-91 (2026-09-18) 🔁 «다시 도전» — 틀린 문항을 2차·3차로 다시 풀어 맞힙니다
  *   · 원장님 결정(계약 docs/retry_contract.md)대로 만들었습니다. 📚 교재와 📄 학습지 둘 다 됩니다.
  *   · <b>1차에 틀린 문항은 정답을 가립니다.</b> 정답 자리에 「🔁 이 문항은 다시 도전에서
@@ -3980,7 +4028,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-91';
+var STU_VER = 'v2-92';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -11912,6 +11960,9 @@ var BK={ loaded:false, swb:null, scores:{}, ans:{}, book:null, page:null, active
          fields:[], fi:0, tab:'num', sh:null, photos:{}, soft:{}, wordIn:{}, sample:{}, qn:0, upBusy:false, target:null,
          wsq:null, top:'book', bsub:'normal', wsf:'전체', ws:null, mode:'book', objPick:{},
          wsans:{}, wsansTried:{}, wsansBusy:false,
+         /* ★ v2-92: 🗂 지난 기록 — per(기간 칩) · rows(받아 온 기록) · open(펼친 줄) ·
+          *   gk(줄 열쇠 목록 — 단추에 번호로 넘긴다) · more(더 받을 것이 남았나) */
+         pr:{ per:'1m', rows:[], open:{}, gk:[], loaded:false, busy:false, more:false, err:'' },
          rt:null };   /* ★ v2-91: 「다시 도전」 중이면 { round:2|3, ids:[wpId…] } */
 function bkKeyOf(pid,wpId){ return pid+'_'+wpId; }
 
@@ -15215,9 +15266,14 @@ window.bkInit=async function(){
   if(!studentInfo||!studentInfo.lumen_rec_code||!sb){ body.innerHTML='<div class="sp3-empty"><div class="e1">🔒</div><div class="e2">로그인이 풀렸어요</div></div>'; return; }
   await bkLoad(true);
   bkPaintHome();
+  bkPrWarm();                          /* ★ v2-92: 🗂 지난 기록 탭에 있으면 조용히 받아 온다 */
 };
-/* 위쪽 탭 누르기 */
-window.bkTop=function(t){ BK.top=(t==='ws')?'ws':'book'; bkPaintHome(); };
+/* 위쪽 탭 누르기 — ★ v2-92: 세 번째 칸 「🗂 지난 기록」이 늘었다 */
+window.bkTop=function(t){
+  BK.top=(t==='ws')?'ws':((t==='past')?'past':'book');
+  bkPaintHome();
+  bkPrWarm();
+};
 /* 교재 토글 (일반교재 / 시그니처교재) */
 window.bkSub=function(s){ BK.bsub=(s==='sig')?'sig':'normal'; bkPaintHome(); };
 /* 학습지 상태 칩 */
@@ -15226,9 +15282,12 @@ window.bkWsFilter=function(f){ BK.wsf=f||'전체'; bkPaintHome(); };
 function bkIsSig(b){ return !!(b&&(b.auto===true||b.type==='CUSTOM_SIGNATURE'||b.type==='SIGNATURE')); }
 function bkPaintHome(){
   var body=document.getElementById('bk-body'); if(!body) return;
-  var h='<div class="bk-tabs">'
+  var h='<div class="bk-tabs t3">'
     +'<button class="'+(BK.top==='book'?'on':'')+'" onclick="bkTop(\'book\')">📚 교재</button>'
-    +'<button class="'+(BK.top==='ws'?'on':'')+'" onclick="bkTop(\'ws\')">📄 학습지</button></div>';
+    +'<button class="'+(BK.top==='ws'?'on':'')+'" onclick="bkTop(\'ws\')">📄 학습지</button>'
+    +'<button class="'+(BK.top==='past'?'on':'')+'" onclick="bkTop(\'past\')">🗂 지난 기록</button></div>';
+  /* ★ v2-92: 🗂 지난 기록은 «매쓰플랫이 채점한 기록»이라 위쪽 요약(루멘 채점)과 따로 센다 */
+  if(BK.top==='past'){ body.innerHTML=h+bkPrHtml(); return; }
   // 요약 — 교재·학습지 채점을 모두 합한 내 기록
   var qn=0,xn=0,on=0; Object.keys(BK.scores).forEach(function(k){ var r=BK.scores[k].r; if(r==='?')qn++; else if(r==='X')xn++; else if(r==='O')on++; });
   h+='<div class="bk-sum">';
@@ -15298,6 +15357,221 @@ function bkBookRowsHtml(books,idxs){
     h+=row(books[i],i);
   });
   h+='<div style="font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:6px;line-height:1.7">문제는 <b>종이 교재</b>로 풀고, 여기서는 답만 입력해요.<br>채점 결과는 자동으로 선생님(매쓰플랫)께 전달됩니다.</div>';
+  return h;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * ★ v2-92: 🗂 지난 기록 — 매쓰플랫에서 채점한 기록을 학생앱에서 다시 본다
+ *   (계약 docs/past_records_contract.md §1·§2 — 학생 건의 2026-09-18
+ *    「이전에 채점한 기록이 학생앱에 없다」)
+ *
+ *   자료는 mf_answer_records 다. 수집기가 매일 새벽에 매쓰플랫에서 받아 쌓는다.
+ *     lumen_rec_code  내 학생 코드          source          '교재' | '학습지'
+ *     worksheet_title 교재 이름/학습지 이름  book_id         교재 번호(mf_swb 의 bid)
+ *     page            쪽                    number          문항 번호
+ *     result          'O' | 'X' (그 밖의 값도 있다)          score_datetime  채점 시각
+ *
+ *   ★ «읽기 전용»이다 — 여기서 다시 채점하거나 고칠 수 없다.
+ *     다시 풀고 싶으면 📚 교재 · 📄 학습지 탭의 「🔁 다시 도전」을 쓴다.
+ *   ★ «문제 그림을 절대 띄우지 않는다» — 학습지는 시험지다 (v2-90 규칙).
+ *   ★ 조회는 «내 코드»로만 한다 (lumen_rec_code = 내 코드). 남의 기록을 부르지 않는다.
+ * ════════════════════════════════════════════════════════════════════ */
+var BK_PR_PAGE=800;                       /* 한 번에 받아 오는 최대 건수 (계약 §2) */
+/* 기간 칩 — [열쇠, 보이는 글자, 며칠] · 0 이면 전체 */
+var BK_PR_PERIODS=[['2w','최근 2주',14],['1m','1개월',30],['3m','3개월',90],['all','전체',0]];
+var BK_PR_WD=['일','월','화','수','목','금','토'];
+function bkPrDays(per){
+  var d=0;
+  BK_PR_PERIODS.forEach(function(p){ if(p[0]===per) d=Number(p[2])||0; });
+  return d;
+}
+/* 이 기간의 시작 시각 — 「전체」면 null (기간을 아예 걸지 않는다) */
+function bkPrFrom(per,now){
+  var d=bkPrDays(per);
+  if(!d) return null;
+  return new Date((now||Date.now())-d*86400000).toISOString();
+}
+/* 채점 시각 → 우리 날짜 열쇠 (YYYY-MM-DD, 학생 기기 시각 기준) */
+function bkPrDayKey(s){
+  var t=new Date(String(s||''));
+  if(isNaN(t.getTime())) return '';
+  return t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);
+}
+/* 날짜 열쇠 → 「9월 16일 (수)」 */
+function bkPrDayLabel(key){
+  var p=String(key||'').split('-');
+  if(p.length!==3) return '날짜를 모르는 기록';
+  var t=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));
+  if(isNaN(t.getTime())) return '날짜를 모르는 기록';
+  return Number(p[1])+'월 '+Number(p[2])+'일 ('+BK_PR_WD[t.getDay()]+')';
+}
+function bkPrIsWs(r){ return String((r&&r.source)||'')==='학습지'; }
+/* 이름 — 비어 있으면 mf_swb_<코드> 의 books[].title 에서 book_id 로 찾는다 (계약 §1) */
+function bkPrTitle(r){
+  var t=String((r&&r.worksheet_title)||'').trim();
+  if(t) return bkShortTitle(t);
+  var bid=(r&&r.book_id);
+  if(bid!=null&&bid!==''){
+    var books=(BK.swb&&BK.swb.books)||[];
+    for(var i=0;i<books.length;i++){
+      if(String(books[i].bid)===String(bid)) return bkShortTitle(books[i].title||'교재');
+    }
+  }
+  return bkPrIsWs(r)?'학습지':'교재';
+}
+/* 받아 온 기록을 «날짜 → 줄»로 묶는다.
+ * 줄 = 같은 날 · 같은 갈래 · 같은 이름 (교재는 쪽까지 같은 것) */
+function bkPrGroup(rows){
+  var days=[], dby={};
+  (rows||[]).forEach(function(r){
+    var at=String((r&&r.score_datetime)||'');
+    var dk=bkPrDayKey(at);
+    if(!dby[dk]){ dby[dk]={ key:dk, rows:[], gby:{} }; days.push(dby[dk]); }
+    var d=dby[dk];
+    var ws=bkPrIsWs(r);
+    var title=bkPrTitle(r);
+    var pg=ws?'':String((r&&r.page)==null?'':r.page);      /* 쪽은 교재만 (계약 §2) */
+    var gk=dk+'|'+(ws?'ws':'bk')+'|'+title+'|'+pg;
+    if(!d.gby[gk]){
+      d.gby[gk]={ k:gk, ws:ws, t:title, pg:pg, o:0, x:0, etc:0, items:[], at:at };
+      d.rows.push(d.gby[gk]);
+    }
+    var g=d.gby[gk];
+    var res=String((r&&r.result)||'');
+    if(res==='O') g.o++; else if(res==='X') g.x++; else g.etc++;
+    g.items.push({ n:String((r&&r.number)==null?'':r.number), r:res });
+    if(at>g.at) g.at=at;
+  });
+  days.forEach(function(d){
+    d.rows.sort(function(a,b){ return a.at<b.at?1:(a.at>b.at?-1:0); });   // 그날 안에서도 늦게 채점한 것부터
+    d.rows.forEach(function(g){
+      g.items.sort(function(a,b){
+        var na=parseInt(a.n,10), nb=parseInt(b.n,10);
+        if(!isNaN(na)&&!isNaN(nb)&&na!==nb) return na-nb;
+        return String(a.n)<String(b.n)?-1:(String(a.n)>String(b.n)?1:0);
+      });
+    });
+  });
+  days.sort(function(a,b){ return a.key<b.key?1:(a.key>b.key?-1:0); });   // 최신 날짜부터
+  return days;
+}
+/* 내 기록을 받아 온다 — «내 코드»로만 (계약 §2) */
+async function bkPrLoad(more){
+  var P=BK.pr;
+  if(P.busy) return;
+  if(isTest||!sb||!studentInfo||!studentInfo.lumen_rec_code){ P.loaded=true; return; }
+  P.busy=true; P.err='';
+  if(!more){ P.rows=[]; P.open={}; P.more=false; }
+  try{
+    var off=more?(P.rows.length||0):0;
+    var q=sb.from('mf_answer_records')
+      .select('source,worksheet_title,book_id,page,number,result,score_datetime,level,chapter')
+      .eq('lumen_rec_code',studentInfo.lumen_rec_code);      /* ★ 내 코드로만 */
+    var from=bkPrFrom(P.per);
+    if(from) q=q.gte('score_datetime',from);
+    var r=await q.order('score_datetime',{ascending:false}).range(off,off+BK_PR_PAGE-1);
+    if(r&&r.error) throw r.error;
+    var got=(r&&r.data)||[];
+    P.rows=P.rows.concat(got);
+    P.more=(got.length>=BK_PR_PAGE);                          /* 800건이 넘으면 「더 보기」 */
+  }catch(e){
+    console.warn('지난 기록 불러오기 실패', e);
+    if(!P.rows.length) P.err='기록을 불러오지 못했어요';
+    P.more=false;
+  }
+  P.busy=false; P.loaded=true;
+}
+/* 지난 기록 탭에 있는데 아직 안 받았으면 조용히 받아 온다 */
+function bkPrWarm(){
+  var P=BK.pr;
+  if(BK.top!=='past'||P.loaded||P.busy) return;
+  bkPrLoad(false).then(function(){ if(BK.top==='past'&&document.getElementById('bk-body')) bkPaintHome(); });
+}
+/* 기간 칩 누르기 — 기간을 바꾸면 처음부터 다시 받아 온다 (계약 §2) */
+window.bkPrSet=function(per){
+  var P=BK.pr;
+  if(P.busy||P.per===per) return;
+  P.per=per||'1m'; P.loaded=false; P.rows=[]; P.open={}; P.more=false; P.err='';
+  bkPaintHome();
+  bkPrLoad(false).then(function(){ if(BK.top==='past'&&document.getElementById('bk-body')) bkPaintHome(); });
+};
+/* 「더 보기」 — 이어서 받아 온다 */
+window.bkPrMore=function(){
+  var P=BK.pr;
+  if(P.busy) return;
+  bkPaintHome();
+  bkPrLoad(true).then(function(){ if(BK.top==='past'&&document.getElementById('bk-body')) bkPaintHome(); });
+};
+/* 줄 펼치기·접기 — 단추에는 줄 번호만 넘긴다 (이름에 따옴표가 있어도 안전하다) */
+window.bkPrToggle=function(i){
+  var P=BK.pr, k=P.gk[Number(i)];
+  if(!k) return;
+  if(P.open[k]) delete P.open[k]; else P.open[k]=1;
+  bkPaintHome();
+};
+/* 🗂 지난 기록 화면 */
+function bkPrHtml(){
+  var P=BK.pr;
+  var h='<div class="ws-chips">';
+  BK_PR_PERIODS.forEach(function(p){
+    h+='<button class="'+(P.per===p[0]?'on':'')+'" onclick="bkPrSet('+bkQ(p[0])+')">'+h3Esc(p[1])+'</button>';
+  });
+  h+='</div>';
+  if(isTest) return h+'<div class="sp3-empty"><div class="e1">🧪</div><div class="e2">테스트 모드에서는 볼 수 없어요</div></div>';
+  if(!P.loaded||(P.busy&&!P.rows.length))
+    return h+'<div class="sp3-empty"><div class="e1">⏳</div><div class="e2">지난 기록을 불러오는 중...</div></div>';
+  if(P.err&&!P.rows.length)
+    return h+'<div class="sp3-empty"><div class="e1">📡</div><div class="e2">'+h3Esc(P.err)+'</div>'
+      +'<div class="e3">인터넷이 끊겼을 수 있어요.<br>잠시 뒤에 다시 들어와 보세요.</div></div>';
+  var rows=P.rows||[];
+  var on=0,xn=0;
+  rows.forEach(function(r){ var v=String((r&&r.result)||''); if(v==='O')on++; else if(v==='X')xn++; });
+  var tot=on+xn, pc=tot?Math.round(on/tot*100):0;
+  h+='<div class="bk-sum">'
+    +'<div class="s1"><div class="v" style="color:#1d78c9">'+on+'</div><div class="l">맞음 ◯</div></div>'
+    +'<div class="s1"><div class="v" style="color:#dc3b34">'+xn+'</div><div class="l">틀림 ✗</div></div>'
+    +'<div class="s1"><div class="v" style="color:#0f766e">'+pc+'%</div><div class="l">정답률</div></div>'
+    +'</div>';
+  if(!rows.length){
+    return h+'<div class="sp3-empty"><div class="e1">🗂</div>'
+      +'<div class="e2">아직 채점 기록이 없어요</div>'
+      +'<div class="e3">위에서 <b>기간</b>을 넓혀 보세요 (1개월 → 3개월 → 전체).<br>'
+      +'매쓰플랫에서 채점한 기록은 다음 날 새벽에 들어와요.</div></div>';
+  }
+  P.gk=[];
+  bkPrGroup(rows).forEach(function(d){
+    h+='<div class="pr-day">'+h3Esc(bkPrDayLabel(d.key))+'</div>';
+    d.rows.forEach(function(g){
+      var t2=g.o+g.x, p2=t2?Math.round(g.o/t2*100):0;
+      var idx=P.gk.length; P.gk.push(g.k);
+      var op=P.open[g.k]?1:0;
+      h+='<button class="pr-row" onclick="bkPrToggle('+idx+')">';
+      h+='<span class="r1">'
+        +'<span class="kd '+(g.ws?'ws':'bk')+'">'+(g.ws?'📄 학습지':'📚 교재')+'</span>'
+        +'<span class="nm">'+h3Esc(g.t)+'</span>'
+        +(g.pg?'<span class="pg">'+h3Esc(g.pg)+'P</span>':'')
+        +'<span class="arw">'+(op?'⌃':'⌄')+'</span></span>';
+      h+='<span class="r2">'
+        +'<span class="ox"><span class="o">◯ '+g.o+'</span> <span class="x">✗ '+g.x+'</span></span>'
+        +'<span class="bk-bar"><i style="width:'+p2+'%"></i></span>'
+        +'<span class="pc">'+p2+'%</span></span>';
+      if(op){
+        h+='<span class="pr-nums">';
+        g.items.forEach(function(it){
+          var cls=(it.r==='O')?'o':((it.r==='X')?'x':'');
+          var mk=(it.r==='O')?'◯':((it.r==='X')?'✗':'·');
+          h+='<span class="n '+cls+'">'+h3Esc(it.n)+'번 '+mk+'</span>';
+        });
+        h+='</span>';
+      }
+      h+='</button>';
+    });
+  });
+  if(P.more)
+    h+='<button class="pr-more" onclick="bkPrMore()">'
+      +(P.busy?'불러오는 중...':('더 보기 · 지금까지 '+rows.length+'건'))+'</button>';
+  h+='<div class="pr-tip">매쓰플랫에서 채점한 기록이에요. <b>보기만 하는 화면</b>이라 여기서 다시 채점할 수는 없어요.<br>'
+    +'다시 풀고 싶으면 📚 교재 · 📄 학습지 탭에서 「🔁 다시 도전」을 쓰세요.</div>';
   return h;
 }
 
