@@ -1554,6 +1554,7 @@ function bookAnsRec(p) {
     objective: !!objective, optionCount: (objective ? (p.optionCount || 5) : 0),
     gradable: !!sh.gradable, unit: sh.unit || '',
     img: p.answerImageUrl || '',                 // 정답 그림 (자기채점 때 보여 준다)
+    concept: p.conceptName || '',                // 2026-09-18: 「다시 도전」 2차 힌트 (개념 이름)
     cnt: Number(p.answerCount || 0),
     units,
     shape: sh.shape, self: !!sh.self,
@@ -1750,6 +1751,8 @@ function wsqProblem(row, idx) {
     img: p.answerImageUrl || '', pimg: p.problemImageUrl || '', solimg: p.solutionImageUrl || '',
     cnt: Number(p.answerCount || 0), units,
     shape: sh.shape, self: !!sh.self, unit: sh.unit || '', parts: sh.parts || [],
+    /* 2026-09-18: 「다시 도전」 2차에서 정답 대신 방향만 짚어 주는 힌트로 쓴다 (개념 이름) */
+    concept: p.conceptName || '',
     result: WSQ_OX[row.result] || '-',
     userAnswer: row.userAnswer != null ? String(row.userAnswer) : '',
   };
