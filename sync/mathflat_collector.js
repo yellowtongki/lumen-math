@@ -120,6 +120,7 @@ async function login() {
 
 async function getActiveStudents() {
   const d = await api('/students?size=500');
+  await recCodeMap();            /* 기록에 학생 코드를 같이 담기 위해 사전을 미리 읽어 둔다 */
   return (d.content || []).filter((s) => s.status === 'ACTIVE');
 }
 
@@ -132,6 +133,25 @@ const REC_COLS = [
   'problem_id','worksheet_problem_id','concept_id','topic_id','sub_topic_id','level','result','score',
   'score_datetime','assign_datetime',
 ];
+/* ── 2026-09-18: 기록마다 «학생 코드»를 함께 담는다 ────────────────
+ * mf_answer_records 는 그동안 mf_student_id 만 담고 lumen_rec_code 는 비워 두었다.
+ * 그 바람에 학생앱이 «내 지난 채점 기록»을 찾지 못했다(학생 건의로 드러남).
+ * 여기서 한 번만 사전을 만들어 두고, 기록을 만들 때 코드도 같이 넣는다.
+ * (이미 쌓인 70,066건은 2026-09-18 에 한 번 채워 넣었다) */
+let _recCode = null;
+async function recCodeMap() {
+  if (_recCode) return _recCode;
+  _recCode = {};
+  try {
+    const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
+    const r = await fetch(`${url}/rest/v1/mf_students?select=mf_student_id,lumen_rec_code&lumen_rec_code=not.is.null`,
+      { headers: { apikey: key, authorization: `Bearer ${key}` } });
+    if (r.ok) (await r.json()).forEach((x) => { _recCode[String(x.mf_student_id)] = String(x.lumen_rec_code); });
+  } catch (e) {}
+  return _recCode;
+}
+function recCode(sid) { return (_recCode && _recCode[String(sid)]) || null; }
+
 function mkRec(partial) {
   const o = {};
   for (const k of REC_COLS) o[k] = (partial[k] !== undefined ? partial[k] : null);
@@ -230,7 +250,7 @@ async function collectAnswerRecords(me, students, cutoff) {
           const natRate = prob.problemSummary && prob.problemSummary.answerRate != null ? prob.problemSummary.answerRate : null;
           records.push(mkRec({
             record_key: `ws:${swId}:${idx + 1}`, source: '학습지',
-            academy_id: me.academyId, mf_student_id: st.id,
+            academy_id: me.academyId, mf_student_id: st.id, lumen_rec_code: recCode(st.id),
             student_worksheet_id: swId, problem_seq: idx + 1,
             worksheet_id: ws.id, worksheet_title: ws.title, worksheet_type: ws.type,
             chapter: ws.chapter || null, school: ws.school || null, grade: ws.grade || null,
@@ -617,7 +637,7 @@ async function collectWorkbookProblems(me, students, cutoff) {
            *   같은 문항을 두 번 세는 셈이 되므로 아래 fixLegacyWbKeys()가 옛 키를 정리한다. */
           records.push(mkRec({
             record_key: `wb:${c.studentWorkbookId}:${c.studentBookId}:${wpId}`, source: '교재',
-            academy_id: me.academyId, mf_student_id: st.id,
+            academy_id: me.academyId, mf_student_id: st.id, lumen_rec_code: recCode(st.id),
             student_workbook_id: c.studentWorkbookId, student_book_id: c.studentBookId,
             book_id: it.bookId, worksheet_title: (it.title || '') + (it.subtitle || ''),
             chapter: v.unit || it.chapter || null, page: c.page || null, workbook_page_id: v.pageId,
