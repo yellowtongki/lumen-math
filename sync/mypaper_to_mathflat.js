@@ -26,9 +26,13 @@
  * ── 함정 (전부 실측으로 얻은 것) ──────────────────────────────────
  *  【10쪽】 document-processing-flow 는 한 job 에 «10쪽»까지만 받는다.
  *     넘으면 작업이 FAILED. 그래서 쪽 수를 세어 보고 넘치면 이미지를 85%로
- *     줄여 다시 맞춰 보고, 그래도 넘치면 150문항 이하로 나눠 학습지 여러 장을
- *     만든다. 나눈 장은 매쓰플랫 번호가 1부터 다시 시작하므로 제목에 원래
- *     번호 범위(「1~150」「151~193」)를 반드시 남긴다.
+ *     줄여 다시 맞춰 보고, 그래도 넘치면 150문항 이하로 «PDF 를» 나눈다.
+ *     ★ 2026-09-17 원장님 지시 — 그래도 «학습지는 한 장»으로 만든다.
+ *     나눠 만들면 두 번째 장의 번호가 1부터 다시 시작해 원본 프린트와 어긋나기 때문이다
+ *     (108문항이 54+54로 갈라져 나온 일). 나눈 장들은 문제은행 복사까지만 하고,
+ *     마지막에 모든 문항을 순서대로 이어 붙여 학습지 한 장을 만든다 —
+ *     두 원본(paper)에서 나온 문항을 한 학습지에 담는 것이 된다(실측 확인).
+ *     옛날처럼 나눠 만들려면 --split-worksheets.
  *
  *  【복사 재요청】 copy-to-problem 은 요청해도 일부가 COPY_IN_PROGRESS 로
  *     남아 영영 끝나지 않는 일이 있다. 2분 넘게 그대로면 «남은 것만» 다시
@@ -540,6 +544,19 @@ function msChoiceType(rec) {
   if (/single_choice/.test(t)) return 'SINGLE_CHOICE';
   return 'SHORT_ANSWER';
 }
+/* «순수 객관식»일 때만 유형을 돌려준다 (2026-09-17).
+ * 매쓰플랫은 객관식만 자동채점하므로 객관식을 놓치면 그만큼 자동채점이 줄어든다.
+ * 그런데 매쓰플랫 OCR 은 보기가 그림에 흐릿하면 객관식을 단답으로 잘못 읽는다
+ * (실측: 108문항 중 33번 — 수학비서는 single_choice, 매쓰플랫은 SHORT_ANSWER).
+ * 원본 프린트를 만든 수학비서의 유형이 가장 정확하므로 그쪽을 따른다.
+ * 다만 「서술 + 보기 고르기」처럼 답이 섞인 문항은 보기 번호만 남기면 나머지 답이
+ * 사라지므로 손대지 않는다 — 답이 «전부» 객관식일 때만 바꾼다. */
+function msPureChoice(rec) {
+  const ts = (rec && rec.answerTypes ? rec.answerTypes : []).filter(Boolean);
+  if (!ts.length) return '';
+  if (!ts.every((t) => /^(single_choice|multiple_choice)$/.test(String(t)))) return '';
+  return ts.some((t) => /multiple_choice/.test(t)) ? 'MULTIPLE_CHOICE' : 'SINGLE_CHOICE';
+}
 
 /* ── 문항 상태(OCR·정답 반영)가 끝날 때까지 ───────────────────── */
 async function fetchDetails(detailIds) {
@@ -707,7 +724,7 @@ async function runPart(part, cur, title, workDir, made) {
    * 이런 문항을 50개 묶음에 섞어 보내면 묶음 전체가 500 INTERNAL_SERVER_ERROR 로 죽는다
    * (2026-09-13 실측). 그래서 «빼고» 보내고, 그래도 묶음이 실패하면 하나씩 다시 보낸다.
    * 못 넣은 문항은 정답만 비어 있을 뿐 학습지에는 그대로 들어간다. */
-  const versions = []; const conv = { ok: 0, raw: 0 }; let skipNoKey = 0;
+  const versions = []; const conv = { ok: 0, raw: 0 }; let skipNoKey = 0; const fixedType = [];
   rows.forEach((d) => {
     const src = part.recs[d.boxIndex - 1];
     if (!src) return;
@@ -717,7 +734,13 @@ async function runPart(part, cur, title, workDir, made) {
     /* 자리 표시 문항은 그림이 «안내 글»이라 매쓰플랫 OCR 이 객관식인 줄 모른다.
      * 그래서 수학비서가 알고 있는 유형(단답/객관식)을 대신 알려 준다 —
      * 객관식이면 학생이 번호를 골라 자동채점까지 된다. */
-    const c = toMfAnswer(src.answer, src.placeholder ? msChoiceType(src) : lv.type);
+    /* 유형: ① 자리 표시 문항은 그림에 보기가 없으니 수학비서 유형을 쓴다
+     *       ② 수학비서가 «순수 객관식»이라고 하면 그 말을 따른다 (매쓰플랫 OCR 이 놓친 것)
+     *       ③ 그 밖에는 매쓰플랫이 읽은 유형 그대로 */
+    const pure = msPureChoice(src);
+    const useType = src.placeholder ? msChoiceType(src) : (pure || lv.type);
+    if (!src.placeholder && pure && pure !== lv.type) fixedType.push(`${src.no}번(${lv.type}→${pure})`);
+    const c = toMfAnswer(src.answer, useType);
     if (c.ok) conv.ok++; else conv.raw++;
     /* no 는 «우리»가 로그에 쓰려고 붙인 것 — 보낼 때는 떼고 보낸다 */
     versions.push({ no: src.no, detailId: d.id, contentDataKey: key, answer: c.answer, problemType: c.problemType,
@@ -738,6 +761,7 @@ async function runPart(part, cur, title, workDir, made) {
     throw err;
   }
   if (skipNoKey) log(`    ⚠ 본문 없음 ${skipNoKey}개`);
+  if (fixedType.length) log(`    ✎ 수학비서 유형대로 객관식으로 바로잡음 ${fixedType.length}개 — ${fixedType.join(', ')} (그만큼 자동채점이 늘어납니다)`);
   let injected = 0; const injectFailed = [], simplified = [];
   const send = (list) => mf(MF_API, 'POST', '/my-db-problems/versions', { versions: list.map(({ no, ...rest }) => rest) });
   for (let i = 0; i < versions.length; i += 50) {
@@ -771,6 +795,23 @@ async function runPart(part, cur, title, workDir, made) {
   const copiedIds = detailIds.filter((d) => cp.copied[d]);
   log(`    복사 완료 ${copiedIds.length}/${detailIds.length} · ${cp.sec}초 · 재요청 ${cp.reRequests}회`);
   if (copiedIds.length !== detailIds.length) throw new Error(`문제은행 복사가 끝나지 않았습니다 (${copiedIds.length}/${detailIds.length})`);
+
+  /* ★ 2026-09-17 원장님 지시 — PDF 가 10쪽을 넘어 여러 장으로 나눠 올릴 때도
+   *   «학습지는 한 장»이어야 한다. 나뉘면 두 번째 장의 번호가 1부터 다시 시작해
+   *   원본 프린트의 번호와 어긋나기 때문이다.
+   *   여기서는 문제은행 복사까지만 하고 돌아간다. 학습지는 모든 장을 마친 뒤
+   *   runPaper 가 «전부 이어 붙여» 한 번에 만든다. (실측: 두 원본(paper)에서 나온
+   *   문항을 한 학습지로 만드는 것이 된다 — 108문항 학습지 82557472) */
+  if (part.defer) {
+    log(`    (이 장은 여기까지 — 학습지는 마지막에 한 장으로 만듭니다)`);
+    return { deferred: true, paperId: paper.id, detailIds, copied: cp.copied,
+      title, n: part.recs.length, recs: part.recs,
+      range: `${part.recs[0].no}~${part.recs[part.recs.length - 1].no}`,
+      pages: part.pdf.pageCount, matched, matchedTotal: nBox,
+      convOk: conv.ok, convRaw: conv.raw, reRequests: cp.reRequests,
+      answerTargets: versions.length, soloNos, placeholders: phNos,
+      sec: ((Date.now() - t0) / 1000) | 0 };
+  }
 
   // ⑨ 학습지 — 번호 순서(boxIndex) 그대로. 학생 배정은 하지 않는다
   /* 복사가 COPIED 로 보인 «직후»에 만들면 아직 LAMBDA_INVOKE_EXCEPTION 이 난다(실측).
@@ -811,11 +852,12 @@ async function runPart(part, cur, title, workDir, made) {
   /* 정답이 문제은행 쪽으로 퍼지는 데 시간이 걸려, 만들자마자 읽으면 아직 덜 채워져 보인다
    * (같은 학습지가 37개 → 54개로 늘어나는 것을 실측). 다 찰 때까지 몇 번 더 읽는다. */
   const expectIds = detailIds.map((d) => cp.copied[d]);
-  let probs = [], orderOk = false, withAnswer = 0, autoScored = 0;
+  let probs = [], orderOk = false, withAnswer = 0, autoScored = 0, autoFlag = false;
   for (let i = 0; i < 6; i++) {
     const { data: got } = await mf(MF_API, 'GET', `/worksheet/${wsId}?ignoredForDeleted=true`);
     const ws = got.worksheet || got;
     probs = got.problems || ws.problems || [];
+    autoFlag = !!ws.autoScorableFlag;
     orderOk = probs.length === expectIds.length && probs.every((p, k) => (p.id || p.problemId) === expectIds[k]);
     withAnswer = 0; autoScored = 0;
     probs.forEach((p) => {
@@ -827,6 +869,7 @@ async function runPart(part, cur, title, workDir, made) {
     await sleep(20000);
   }
   log(`    확인: 문항 ${probs.length}/${part.recs.length} · 번호순서 ${orderOk ? '일치' : '불일치'} · 정답 ${withAnswer} · 자동채점 ${autoScored}`);
+  log(`    자동채점 학습지: ${autoFlag ? '예 ✅' : `아니오 — 객관식이 아닌 문항 ${probs.length - autoScored}개 때문입니다 (매쓰플랫은 객관식만 자동채점합니다)`}`);
   /* 정답이 비어 있는 칸이 있으면 «원 번호»를 알려 준다 — 매쓰플랫이 가끔 몇 개를 흘린다
    * (2026-09-13 실측: 같은 문제지를 두 번 올렸는데 한 번은 54/54, 한 번은 51/54).
    * 원장님이 그 번호만 매쓰플랫에서 직접 채워 넣으시면 된다. */
@@ -844,9 +887,99 @@ async function runPart(part, cur, title, workDir, made) {
     worksheetId: wsId, paperId: paper.id, title, n: part.recs.length,
     range: `${part.recs[0].no}~${part.recs[part.recs.length - 1].no}`,
     pages: part.pdf.pageCount, matched, matchedTotal: nBox,
-    problemCount: probs.length, orderOk, withAnswer, autoScored,
+    problemCount: probs.length, orderOk, withAnswer, autoScored, autoFlag,
     convOk: conv.ok, convRaw: conv.raw, reRequests: cp.reRequests,
     soloNos, placeholders: phNos, placeholderCheck: phCheck, blankNos,
+    sec: ((Date.now() - t0) / 1000) | 0,
+  };
+}
+
+/* ── 여러 장을 이어 붙여 «학습지 한 장» 만들기 ────────────────────
+ * (2026-09-17) PDF 는 10쪽 제한 때문에 나눠 올릴 수밖에 없지만, 학습지는 한 장이어야
+ * 번호가 원본 프린트와 1:1로 맞는다. 문제은행 복사가 끝난 장들의 문항을 순서대로
+ * 이어 붙여 한 번에 만든다. 실패하면 부르는 쪽이 옛 방식(장마다 한 장)으로 돌아간다. */
+async function makeOneWorksheet(preps, cur, title, made) {
+  const t0 = Date.now();
+  const recs = preps.flatMap((p) => p.recs);
+  const detailIds = preps.flatMap((p) => p.detailIds);
+  const problemIds = preps.flatMap((p) => p.detailIds.map((d) => p.copied[d]));
+  const answerTargets = preps.reduce((a, p) => a + p.answerTargets, 0);
+  log(`  ── 학습지 한 장으로 합치기 — ${preps.length}장 · ${recs.length}문항 (${preps.map((p) => p.range).join(' + ')})`);
+  await sleep(20000);   /* 복사 직후에 만들면 LAMBDA_INVOKE_EXCEPTION (실측) */
+  let wsRaw = null, lastErr = null;
+  for (let i = 0; i < 6; i++) {
+    try {
+      const { data: flt } = await mf(MF_API, 'POST', '/v2/worksheet/filter/school-test-paper/original', { myDbProblemDetailIds: detailIds });
+      const { data } = await mf(MF_API, 'POST', '/worksheet', {
+        conceptIdList: [], littleChapterConceptIdList: [],
+        assignStudentIdList: [], shareScope: 'ACADEMY', writer: '루멘수학',
+        layoutType: 0, layoutColor: 'BLUE', partitionType: 0,
+        wrongAnswerNoteFlag: false, conceptNameFlag: true, answerRateFlag: false,
+        relationWorkbookFlag: false, includeProblemFlag: false, conceptSortType: 'CHAPTER',
+        schoolType: cur.schoolType, revision: cur.rev, grade: cur.grade,
+        problemPadding: 60, pdfDateType: 'TODAY', pdfDate: null,
+        designTemplateId: null, qrFlag: false, problemTrendFlag: false,
+        filterId: (flt && flt.filterId) || flt,
+        problemList: problemIds.map((id, k) => ({ id, boxIndex: k + 1 })),
+        myDbProblemDetailIds: detailIds,
+        title, tag: 'MY_DB_ORIGINAL',
+      });
+      wsRaw = data; break;
+    } catch (e) {
+      lastErr = e;
+      if (!/LAMBDA_INVOKE_EXCEPTION|INTERNAL_SERVER_ERROR/.test(e.message)) throw e;
+      log(`    학습지 만들기 재시도 ${i + 1}/6 — ${e.message.slice(0, 120)}`);
+      await sleep(30000);
+    }
+  }
+  if (!wsRaw) throw lastErr;
+  const wsId = (wsRaw && wsRaw.id) || wsRaw;
+  made.worksheetIds.push(wsId);
+  log(`    ✅ 학습지 ${wsId} 「${title}」 — ${recs.length}문항 한 장`);
+
+  /* 확인 — 문항 수·번호 순서·정답 (정답은 퍼지는 데 시간이 걸린다) */
+  let probs = [], orderOk = false, withAnswer = 0, autoScored = 0, autoFlag = false;
+  for (let i = 0; i < 6; i++) {
+    const { data: got } = await mf(MF_API, 'GET', `/worksheet/${wsId}?ignoredForDeleted=true`);
+    const ws = got.worksheet || got;
+    probs = got.problems || ws.problems || [];
+    autoFlag = !!ws.autoScorableFlag;
+    orderOk = probs.length === problemIds.length && probs.every((p, k) => (p.id || p.problemId) === problemIds[k]);
+    withAnswer = 0; autoScored = 0;
+    probs.forEach((p) => {
+      if (p.answer != null && String(p.answer).trim() !== '' && String(p.answer).trim() !== '.') withAnswer++;
+      if (p.autoScored) autoScored++;
+    });
+    if (withAnswer >= answerTargets || i === 5) break;
+    log(`    정답이 아직 ${withAnswer}/${answerTargets} — 20초 뒤 다시 확인`);
+    await sleep(20000);
+  }
+  log(`    확인: 문항 ${probs.length}/${recs.length} · 번호순서 ${orderOk ? '일치' : '불일치'} · 정답 ${withAnswer} · 자동채점 ${autoScored}`);
+  /* 「자동채점 학습지」는 매쓰플랫이 스스로 정한다 — «모든 문항이 객관식»일 때만 참이다
+   * (2026-09-17 실측: 객관식 3개면 참, 객관식 2 + 단답 1이면 거짓. 만들 때 값을 줘도 무시된다).
+   * 매쓰플랫은 단답·서술을 자동채점하지 않는다(숫자 한 개짜리 답도 IMPOSSIBLE). */
+  const notAuto = probs.length - autoScored;
+  log(`    자동채점 학습지: ${autoFlag ? '예 ✅' : `아니오 — 객관식이 아닌 문항 ${notAuto}개 때문입니다 (매쓰플랫은 객관식만 자동채점합니다)`}`);
+  const blankNos = probs.map((p, k) => ((p.answer != null && String(p.answer).trim() !== '' && String(p.answer).trim() !== '.')
+    ? null : (recs[k] ? recs[k].no : k + 1))).filter((x) => x != null);
+  if (blankNos.length) log(`    ⚠ 정답이 비어 있는 문항 (원 번호) ${blankNos.join(', ')} — 매쓰플랫에서 직접 채워 주세요`);
+  const phNos = recs.filter((r) => r.placeholder).map((r) => r.no);
+  const phCheck = phNos.map((no) => {
+    const k = recs.findIndex((r) => r.no === no);
+    const p = probs[k] || {};
+    return { no, mfIndex: k + 1, answer: p.answer == null ? '' : String(p.answer).slice(0, 60), autoScored: !!p.autoScored };
+  });
+  if (phCheck.length) phCheck.forEach((x) => log(`    자리 표시 ${x.no}번(학습지 ${x.mfIndex}번) 정답 「${x.answer}」 자동채점 ${x.autoScored ? '가능' : '불가'}`));
+  return {
+    worksheetId: wsId, paperId: preps.map((p) => p.paperId).join('+'), title, n: recs.length,
+    range: `${recs[0].no}~${recs[recs.length - 1].no}`,
+    pages: preps.reduce((a, p) => a + p.pages, 0),
+    matched: preps.reduce((a, p) => a + p.matched, 0), matchedTotal: preps.reduce((a, p) => a + p.matchedTotal, 0),
+    problemCount: probs.length, orderOk, withAnswer, autoScored, autoFlag,
+    convOk: preps.reduce((a, p) => a + p.convOk, 0), convRaw: preps.reduce((a, p) => a + p.convRaw, 0),
+    reRequests: preps.reduce((a, p) => a + p.reRequests, 0),
+    soloNos: preps.flatMap((p) => p.soloNos), placeholders: phNos, placeholderCheck: phCheck, blankNos,
+    mergedFrom: preps.length,
     sec: ((Date.now() - t0) / 1000) | 0,
   };
 }
@@ -934,9 +1067,13 @@ async function runPaper(paperId, opt) {
     if (!parts) throw new Error('10쪽 안에 들어가게 나누지 못했습니다');
     log(`  ${parts.length}장으로 나눕니다`);
   }
+  /* 제목: «나의 DB 원본»(paper)은 장마다 구분이 필요해 꼬리를 붙이지만,
+   * 학습지는 한 장으로 합치므로 원래 제목 그대로 쓴다 (2026-09-17 원장님 지시) */
   const titles = parts.map((p, i) => (parts.length === 1
     ? title
     : `${title} (${i + 1}/${parts.length}) ${p.recs[0].no}~${p.recs[p.recs.length - 1].no}`));
+  const mergeInto1 = parts.length > 1 && !opt.splitWorksheets;
+  if (mergeInto1) log(`  ※ PDF 는 ${parts.length}장으로 나눠 올리지만 학습지는 «한 장(${recs.length}문항)»으로 만듭니다 — 번호가 원본과 1:1`);
   parts.forEach((p, i) => log(`  · ${titles[i]} — ${p.recs.length}문항 ${p.pdf.pageCount}쪽`));
 
   if (opt.dry) {
@@ -969,6 +1106,7 @@ async function runPaper(paperId, opt) {
       for (let attempt = 1; attempt <= 3; attempt++) {
         const before = made.paperIds.length;
         part.attempt = attempt;
+        part.defer = mergeInto1;   /* 합칠 때는 장마다 학습지를 만들지 않는다 */
         try { r = await runPart(part, cur, titles[i], workDir, made); break; }
         catch (e) {
           if (e.code !== 'OCR_FAILED_ITEMS' || attempt === 3) throw e;
@@ -1001,6 +1139,22 @@ async function runPaper(paperId, opt) {
       }
       results.push(r);
     }
+
+    /* ── 나눠 올린 장들을 «학습지 한 장»으로 (2026-09-17) ──────────────
+     * 합치기가 안 되면 옛 방식(장마다 한 장)으로 물러난다 — 아무것도 없는 것보다 낫다 */
+    let merged = null;
+    if (mergeInto1 && results.every((x) => x && x.deferred)) {
+      try {
+        merged = await makeOneWorksheet(results, cur, title, made);
+      } catch (e) {
+        log(`  ⚠ 한 장으로 합치지 못했습니다 (${e.message.slice(0, 200)}) → 장마다 따로 만듭니다`);
+        /* 올리기·복사는 이미 끝났으므로 다시 올리지 않는다 — 장마다 학습지만 만든다 */
+        const per = [];
+        for (let i = 0; i < results.length; i++) per.push(await makeOneWorksheet([results[i]], cur, titles[i], made));
+        results.length = 0; per.forEach((x) => results.push(x));
+      }
+      if (merged) { results.length = 0; results.push(merged); }
+    }
     const filed = await putInMylist(opt.mylist, made.worksheetIds);
     /* 자리 표시로 대체된 번호 — 기록으로 남겨 원장님이 그 번호만 직접 채점하실 수 있게 */
     const placeholders = [];
@@ -1029,6 +1183,9 @@ async function main() {
     paper: Number(arg('paper', 0)) || 0,
     dry: args.includes('--dry'),
     force: args.includes('--force'),
+    /* 10쪽이 넘어 PDF 를 여러 장으로 올려야 할 때도 학습지는 «한 장»으로 만든다(기본).
+     * 옛날처럼 장마다 학습지를 따로 만들려면 --split-worksheets */
+    splitWorksheets: args.includes('--split-worksheets'),
     /* OCR 이 끝내 못 읽은 문항을 «자리 표시»로 채울지 (기본 켬 — 그래야 번호가 1:1) */
     placeholder: !args.includes('--no-placeholder') && arg('placeholder', 'on') !== 'off',
   };
@@ -1088,7 +1245,8 @@ async function main() {
   done.forEach((r) => {
     if (r.dry) { log(`· ${r.paperId} 「${r.title}」 ${r.n}문항 → ${r.parts.map((x) => `「${x.title}」 ${x.n}문항 ${x.pages}쪽`).join(' + ')}`); return; }
     r.parts.forEach((x) => {
-      log(`· 학습지 ${x.worksheetId} 「${x.title}」 문항 ${x.problemCount}/${x.n} · 번호순서 ${x.orderOk ? '일치' : '불일치'} · 정답 ${x.withAnswer} · 자동채점 ${x.autoScored} · 매칭 ${x.matched}/${x.matchedTotal} · 재요청 ${x.reRequests}회 · ${x.sec}초`);
+      log(`· 학습지 ${x.worksheetId} 「${x.title}」 문항 ${x.problemCount}/${x.n} · 번호순서 ${x.orderOk ? '일치' : '불일치'} · 정답 ${x.withAnswer} · 자동채점 ${x.autoScored}${x.autoFlag ? ' (자동채점 학습지 ✅)' : ''} · 매칭 ${x.matched}/${x.matchedTotal} · 재요청 ${x.reRequests}회 · ${x.sec}초`);
+      if (!x.autoFlag) log(`    ※ 「자동채점 학습지」가 되려면 «모든 문항이 객관식»이어야 합니다 — 지금은 객관식 아닌 문항이 ${x.problemCount - x.autoScored}개입니다 (매쓰플랫은 단답·서술을 자동채점하지 않습니다)`);
       if (x.soloNos && x.soloNos.length) log(`    (${x.soloNos.join(', ')}번은 매쓰플랫이 잘 못 읽어 «한 쪽에 크게» 넣었습니다)`);
       if (x.blankNos && x.blankNos.length) log(`    ⚠ 정답이 빈 문항: ${x.blankNos.join(', ')}번`);
     });
@@ -1099,6 +1257,22 @@ async function main() {
   skipped.forEach((s) => log(`· 건너뜀 ${s.paperId} 「${s.title}」 (이미 ${String(s.at).slice(0, 10)})`));
   failed.forEach((f) => log(`· ❌ ${f.paperId} 「${f.title}」 ${f.error}`));
   log(`성공 ${done.length} · 실패 ${failed.length} · 건너뜀 ${skipped.length}`);
+
+  /* ── 정답 대장 만들기 (2026-09-17) ─────────────────────────────
+   * 매쓰플랫은 객관식만 자동채점한다. 나머지는 루멘 학생앱이 채점하는데,
+   * 그러려면 «칸마다»의 유형·정답·정답 그림이 필요하다 — 매쓰플랫에 들어간 한 줄짜리
+   * 답으로는 알 수 없으므로 수학비서 원본에서 뽑아 lumen_store 에 따로 저장한다.
+   * (sync/mf_answerkey.js · 키 mf_wsans_<학습지id>) */
+  if (!opt.dry && done.length) {
+    try {
+      const { execFileSync } = require('child_process');
+      log('\n── 정답 대장 만들기 (학생앱 자동채점용) ──');
+      const out = execFileSync(process.execPath, [path.join(__dirname, 'mf_answerkey.js')], { encoding: 'utf8', timeout: 600000 });
+      String(out).split('\n').filter(Boolean).slice(-12).forEach((l) => log('  ' + l.replace(/^\[[\d.]+s\]\s*/, '')));
+    } catch (e) {
+      log(`  ⚠ 정답 대장 만들기 실패 — 나중에 «node sync/mf_answerkey.js» 를 돌리면 됩니다 (${String(e.message).slice(0, 160)})`);
+    }
+  }
 
   if (!opt.dry) {
     const lg = (await kvGet(LOG_KEY)) || { runs: [] };
