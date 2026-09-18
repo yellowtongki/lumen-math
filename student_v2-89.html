@@ -3659,6 +3659,34 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-89 (2026-09-18) 📄 학습지 — 매쓰플랫이 못 채점하는 문항을 «루멘»이 채점합니다
+ *   · <b>무엇이 달라졌나</b> — 매쓰플랫은 <b>객관식만</b> 자동채점합니다. 단답은 정답이
+ *     숫자 하나여도 채점하지 않습니다. 그래서 수학비서로 만든 108문항 학습지도
+ *     매쓰플랫이 봐 주는 것은 29문항뿐이었습니다. 이제 <b>나머지를 루멘 학생앱이
+ *     채점</b>해서 그 결과를 매쓰플랫으로 그대로 돌려보냅니다.
+ *   · <b>어떻게 되나</b> — 학습지를 만들 때 수학비서 원본에서 뽑아 둔
+ *     「정답 대장」을 학생앱이 같이 읽습니다. 대장에는 <b>칸이 몇 개인지,
+ *     칸마다 어떤 답인지(참거짓·숫자·수식), 칸마다의 정답 그림</b>이 들어 있습니다.
+ *     매쓰플랫에 들어간 정답은 여러 칸을 쉼표로 이어 붙인 한 줄이라 이 정보가
+ *     사라졌었는데, 대장이 그것을 되살려 줍니다.
+ *   · <b>참거짓 문항</b>(「다음 중 옳은 것에 O, 틀린 것에 X」)은 이제 칸마다
+ *     <b>O / X 단추</b>가 나옵니다. 예전에는 한 칸에 「X,X,O」처럼 쳐 넣어야 했습니다.
+ *   · <b>여러 칸 문항</b>(답이 ②③번처럼 여러 개거나, 변·모서리를 여러 개 적는 문항)은
+ *     <b>칸마다 입력칸</b>이 따로 생깁니다. 칸별로 견주고 <b>모두 맞아야 ◯</b>,
+ *     하나라도 틀리면 ✗ 입니다(부분 점수는 없습니다). 빈 칸이 있으면 채점하지 않고
+ *     「몇 번 칸이 비었어요」라고 알려 줍니다.
+ *   · <b>스스로 채점</b>으로 남는 문항 — 108문항 학습지 기준으로 <b>13문항</b>뿐입니다
+ *     (나머지 95문항은 앱이 자동으로 채점합니다). 스스로 채점하는 문항에서는
+ *     이제 <b>칸마다의 정답 그림</b>이 「1번 칸 / 2번 칸」으로 나뉘어 보여서
+ *     학생이 어디를 틀렸는지 훨씬 쉽게 가릅니다(예전에는 정답 그림 한 장뿐이었습니다).
+ *   · 앱이 학생 답을 <b>못 읽는 칸</b>이 하나라도 있으면 틀렸다고 하지 않고
+ *     그 문항만 「사진 찍고 내가 채점」으로 넘깁니다 — 오채점 방지가 먼저입니다.
+ *   · 학습지 목록 줄에 <b>「루멘 자동채점 n문항」</b>이 작게 붙습니다(대장이 있는
+ *     학습지만). 목록 맨 아래에는 「매쓰플랫이 못 채점하는 문항도 루멘이 채점해
+ *     선생님께 보냅니다」 안내가 한 줄 들어갑니다.
+ *   · <b>대장이 없는 학습지</b>(옛 학습지·매쓰플랫에서 바로 만든 학습지)는
+ *     v2-88 과 <b>똑같이</b> 동작합니다. 채점 결과를 매쓰플랫으로 보내는 길도 그대로입니다.
+ *
  * v2-88 (2026-09-17) ✍️ 아하노트는 「노트에 적고 사진」만 · 🎤 루멘스피치
  *   · 아하노트 확인 화면의 네 칸(L·A·M·P)이 <b>읽기 전용 상자</b>로 바뀌었습니다.
  *     앱을 열자마자 글 쓰는 칸이 열려 있지 않습니다. 상자 오른쪽 위 <b>「✏️ 고치기」</b>를
@@ -3890,7 +3918,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-88';
+var STU_VER = 'v2-89';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -15333,15 +15361,23 @@ function bkKeyShape(p){
     /* 숫자 단답 — 칸 수만큼 숫자칸 */
     shape='num';
     for(i=0;i<cnt;i++) parts.push(mk('num'));
-    if(unit) parts[parts.length-1].unit=unit;
+    if(unit) parts.forEach(function(pt){ pt.unit=unit; });
   } else if(cnt>1){
     /* 여러 칸 — 칸마다 입력칸 하나씩 (칸별로 견주고 모두 맞아야 ◯) */
     var ck=bkKeyCellKind(shape);
     for(i=0;i<cnt;i++) parts.push(mk(ck));
-    if(unit) parts[parts.length-1].unit=unit;
+    if(unit) parts.forEach(function(pt){ pt.unit=unit; });
   } else {
     /* 한 칸짜리 — 지금까지 쓰던 입력칸(낱말 칩·단위 칩 …)을 그대로 쓴다 */
     parts=bkFoldPick(bkParts(p, shape, unit));
+    /* 대장이 「답 칸은 하나」라고 하면 입력칸도 하나로 모은다.
+     * (매쓰플랫 정답 한 줄에 든 쉼표 — 「$6\,$개」의 \, 같은 것 — 때문에
+     *  앱이 칸을 둘로 쪼개던 것을 대장이 바로잡는다) */
+    if(parts.length>1&&!bkHasTapKind({ parts:parts })){
+      var p0=parts[0];
+      if(unit) p0.unit=unit;
+      parts=[p0];
+    }
   }
   return { shape:shape, self:self, unit:unit, parts:parts,
            gradable:gradable, sample:false, key:k, cnt:cnt };
@@ -15353,9 +15389,10 @@ function bkKeyShape(p){
 function bkKeyGrade(p, sh, vals){
   var k=(sh&&sh.key)||(p&&p.key);
   if(!k||!k.parts||!k.parts.length) return null;
-  var want=k.parts.slice(0, (sh&&sh.parts&&sh.parts.length)||k.parts.length);
+  var want=k.parts;
   var got=(vals&&vals.length)?vals:null;
-  if(!got||got.length!==want.length) return null;
+  if(!got||got.length!==want.length) return null;            // 칸 수가 다르면 예전 길로
+  if(sh&&sh.parts&&sh.parts.length!==want.length) return null;
   var allOk=true;
   for(var i=0;i<want.length;i++){
     var c=String((want[i]&&want[i].v)==null?'':want[i].v);
@@ -15909,7 +15946,12 @@ function bkPageStat(pg,probs){
 /* 매쓰플랫이 이미 채점해 둔 학습지 문항인가 (O·X 만. ? 와 - 는 아직 안 한 것) */
 function bkMfDone(p){ return BK.mode==='ws'&&(p&&(p.result==='O'||p.result==='X')); }
 /* 이 문항이 객관식인가 — 학습지는 type 으로 온다 */
-function bkIsObj(p){ return !!(p&&(p.objective===true||p.type==='MULTIPLE_CHOICE'||p.type==='SINGLE_CHOICE')); }
+function bkIsObj(p){
+  /* v2-89: 정답 대장이 「객관식(choice)」이라고 하면 그 말을 먼저 따른다 */
+  if(p&&p.key&&typeof p.key==='object'&&String(p.key.kind||'')==='choice') return true;
+  if(p&&p.key&&typeof p.key==='object') return false;
+  return !!(p&&(p.objective===true||p.type==='MULTIPLE_CHOICE'||p.type==='SINGLE_CHOICE'));
+}
 /* 학습지 머리 — 이름 · 출제일 · 상태 · 점수 */
 function bkWsHeadHtml(probs){
   var w=BK.ws||{}, st=bkWsStat({ swId:w.swId, problems:probs, n:w.n, o:w.o, x:w.x, q:w.q, score:w.score });
@@ -15985,7 +16027,7 @@ function bkMfBody(p){
 /* ★ v2-83: 객관식 — 정답이 하나면 누르는 즉시 채점, 여럿이면 여러 개 고르고 「확인」 */
 function bkObjBody(p,wp){
   var oc=p.optionCount||5, marks=['①','②','③','④','⑤'];
-  var need=bkObjSet(p.answer).length;                 // 정답이 몇 개인가
+  var need=bkObjSet(bkAnsOf(p)).length;               // 정답이 몇 개인가 (v2-89: 대장이 있으면 대장 정답)
   var multi=(need>=2);
   var key=bkKeyOf(BK.page.pid,wp);
   if(!BK.objPick) BK.objPick={};
@@ -16162,7 +16204,7 @@ function bkSlotHtml(p,sh,pt,ix,wp){
     h+='</div>';
   } else if(kind==='ox'){
     /* v2-89: 참거짓 — 칸마다 O / X 단추 */
-    h+='<div class="cap">'+(many?((ix+1)+'번째 칸'):'맞으면 O, 틀리면 X')+'</div>';
+    h+='<div class="cap">'+(many?((ix+1)+'번 칸'):'맞으면 O, 틀리면 X')+'</div>';
     h+='<div class="bk-pgrp ox" id="bkg-'+h3Esc(wp)+'-'+ix+'">';
     ['O','X'].forEach(function(o){ h+='<button type="button" onclick="bkChoiceTap('+bkQ(wp)+','+ix+','+bkQ(o)+')">'+o+'</button>'; });
     h+='</div>';
@@ -16318,6 +16360,12 @@ window.bkSubmit=function(){
   var vals=[], any=false;
   BK.fields.forEach(function(v){ v=String(v==null?'':v).trim(); if(v) any=true; vals.push(v); });
   if(!any){ alert('답을 넣어 주세요. 모르면 「모름 ?」을 눌러요.'); return; }
+  /* v2-89: 대장이 있는 여러 칸 문항은 모든 칸이 채워져야 채점한다 (빈 칸을 오답으로 세지 않으려고) */
+  if(BK.sh&&BK.sh.key&&vals.length>1){
+    var empty=[];
+    vals.forEach(function(v,i){ if(!v) empty.push(i+1); });
+    if(empty.length){ alert(empty.join('번, ')+'번 칸이 비어 있어요.\n모든 칸을 채워야 채점해요. 모르면 「모름 ?」을 눌러요.'); return; }
+  }
   bkGrade(BK.active, vals.join(','), { vals:vals, sh:BK.sh });
 };
 window.bkWordOpen=function(wp){
@@ -16546,10 +16594,13 @@ async function bkGrade(wpId, userAnswer, opt){
     else {
       a=String(userAnswer);
       /* v2-83: 객관식은 고른 보기 번호 묶음끼리 견준다 (정답이 「2,3」처럼 여럿일 수 있다) */
-      if(bkIsObj(p)) r=bkObjSame(bkObjSet(a), bkObjSet(p.answer))?'O':'X';
+      if(bkIsObj(p)) r=bkObjSame(bkObjSet(a), bkObjSet(bkAnsOf(p)))?'O':'X';
       else {
         var sh=opt.sh||bkShape(p);
-        var res=bkAutoGrade(p, sh, a, opt.vals);
+        /* ★ v2-89: 정답 대장이 있으면 칸마다 따로 견준다 (한 칸이라도 틀리면 ✗) */
+        var res=null;
+        if(sh&&sh.key) res=bkKeyGrade(p, sh, (opt.vals&&opt.vals.length)?opt.vals:[a]);
+        if(!res) res=bkAutoGrade(p, sh, a, opt.vals);
         if(!res.gradable){                       // 못 읽으면 틀렸다고 하지 않는다
           BK.soft[key]=true; bkBlur(); bkKpadShow(false); BK.busy=false; bkRenderQ();
           if(typeof toast==='function') toast('앱이 이 답을 읽지 못했어요 — 사진을 찍고 내가 채점해요');
