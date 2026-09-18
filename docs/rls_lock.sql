@@ -40,12 +40,18 @@ $$;
 
 -- ── 표마다: 잠금 켜기 + 네 가지 규칙 ────────────────────────────
 do $$
-declare t text;
+declare t text; p record;
 begin
   foreach t in array array[
     'lumen_store','aha_notes','mf_answer_records','mf_students',
     'announcement_reads','vod_watch_logs','mf_study_sessions'
   ] loop
+    -- ★ 예전 규칙을 먼저 모두 걷어낸다 (하나라도 남으면 잠금이 무의미해진다)
+    for p in select policyname from pg_policies
+             where schemaname = 'public' and tablename = t loop
+      execute format('drop policy %I on public.%I', p.policyname, t);
+    end loop;
+
     execute format('alter table public.%I enable row level security', t);
 
     -- 읽기 · 넣기 · 고치기 — 지금과 똑같이 열어 둔다 (1단계)
@@ -65,6 +71,15 @@ begin
 end $$;
 
 -- ── 확인 ────────────────────────────────────────────────────────
+-- 실제로 잠겼는지는 이 도구로 찔러 보는 편이 확실합니다 (2026-09-18 확인 완료):
+--     LUMEN_TEACHER_KEY=<원장님 열쇠> node sync/check_rls_lock.js
+--   일곱 표 모두 「열쇠 없이 지우기 🔒 막힘 · 원장님 열쇠로는 ✅ 지워짐」이 나와야 하고,
+--   읽기·넣기·고치기는 전부 ✅ 여야 합니다(앱이 멈추지 않는다는 뜻).
+--
+-- ⚠ 2026-09-18에 겪은 일: 이 파일만 실행했는데도 지우기가 그대로 됐습니다.
+--   원인은 «예전에 만들어 둔 다른 허용 규칙»이 남아 있어서였습니다. 잠금은 규칙이
+--   하나라도 통과하면 통과시키므로, 아래 do 블록처럼 예전 규칙을 먼저 모두 걷어내야 합니다.
+--
 -- 아래를 함께 실행하면 표마다 규칙이 네 개씩 붙었는지 볼 수 있습니다.
 select tablename, policyname, cmd
 from pg_policies
