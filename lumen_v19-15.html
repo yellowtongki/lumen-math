@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-14';
+var APP_VER = 'v19-15';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -7933,7 +7933,7 @@ function wsgLoad(force){
   var sb=null; try{ sb=getSupaClient(); }catch(e){}
   if(!sb){
     WSG.loaded=true; WSG.err='오프라인입니다 — 인터넷이 연결되면 「🔄 새로 읽기」를 눌러 주세요.';
-    if(VIEW==='wsgrade') render();
+    if(wsgPainting()) render();
     return Promise.resolve();
   }
   WSG.busy=true; WSG.err='';
@@ -7958,14 +7958,21 @@ function wsgLoad(force){
       var v=val(x.value); WSG.sync[m[1]]=(v&&v.items)||[];
     });
     WSG.loaded=true; WSG.busy=false;
-    if(VIEW==='wsgrade') render();
+    if(wsgPainting()) render();
   }).catch(function(e){
     WSG.busy=false; WSG.loaded=true;
     WSG.err='불러오지 못했습니다: '+((e&&e.message)||e);
-    if(VIEW==='wsgrade') render();
+    if(wsgPainting()) render();
   });
 }
 
+/* v19-15: 자료를 다 읽은 뒤 다시 그려야 할 화면이 열려 있는가.
+ * PC 의 「📄 학습지 채점」 화면과, 폰의 같은 화면(MOB.view==='wsg') 둘 다를 본다. */
+function wsgPainting(){
+  try{ if(VIEW==='wsgrade') return true; }catch(e){}
+  try{ if(typeof mobActive==='function' && mobActive() && MOB && MOB.view==='wsg') return true; }catch(e){}
+  return false;
+}
 window.wsgReload=function(){ WSG.loaded=false; WSG._model=null; wsgLoad(true); render(); };
 window.wsgOpen=function(wid){ WSG.open=(wid==null?null:String(wid)); WSG.openStu={}; render(); };
 window.wsgBack=function(){ WSG.open=null; WSG.openStu={}; render(); };
@@ -8006,7 +8013,8 @@ function wsgRow(stu, code, w, sh){
   });
   /* v19-15: 점수 두 가지를 «나란히» 담는다 (원장 지시 2026-09-18 「비교하게 보여줘」).
    *   score   = 루멘 점수 — 루멘이 채점한 문항까지 넣어 센다 (맞은 수 ÷ 채점된 수)
-   *   mfScore = 매쓰플랫이 준 점수 — 매쓰플랫이 채점한 «객관식만» 센 값이라 대개 더 낮다
+   *   mfScore = 매쓰플랫이 준 점수 — «전체 문항» 기준이라(미채점 문항을 0점으로 센다) 대개 더 낮다
+   *              (2026-09-18 실측: 33문항 중 ◯22 ✗5 → 66점 · 10문항 중 ◯9 → 90점)
    * 아직 한 문항도 채점이 안 된 학생은 둘 다 없음(null)으로 둔다.
    * 매쓰플랫 점수가 아예 없는 학습지(값이 null)면 mfScore 도 null 이다. */
   var mfRaw=(w && w.score!=null && w.score!=='') ? Number(w.score) : null;
@@ -8132,7 +8140,7 @@ function wsgNote(txt){
 }
 /* ───────── v19-15: 두 점수 나란히 보기 (원장 지시 2026-09-18 「비교하게 보여줘」) ─────────
  * 루멘 점수 = 루멘이 채점한 문항까지 넣은 점수 (초록)
- * 매쓰플랫 점수 = 매쓰플랫이 채점한 «객관식만» 센 점수 (파랑) — 그래서 대개 더 낮다
+ * 매쓰플랫 점수 = 맞은 수 ÷ «전체 문항 수» (파랑) — 아직 채점 안 된 문항을 0점으로 세서 대개 더 낮다
  * 아직 채점이 덜 된 학생·학습지는 둘 다 「—」로 둔다. */
 var WSG_C_MF='#1d4ed8';      // 매쓰플랫 — 파랑
 var WSG_C_LU='#047857';      // 루멘 — 초록
@@ -8178,10 +8186,15 @@ function wsgScoreBars(lu, mf, mfHas){
 }
 
 /* 왜 두 점수가 다른지 — 원장님께 드리는 한 줄 설명 */
+/* 두 점수가 왜 다른지 — 2026-09-18 실측으로 확인한 그대로 적는다.
+ * 매쓰플랫 점수 = 맞은 수 ÷ «전체 문항 수» (아직 채점 안 된 문항을 0점으로 센다).
+ *   실측: 33문항 중 ◯22 ✗5 → 66점 · 10문항 중 ◯9 → 90점 · 57문항 중 ◯29 ✗11 → 50점
+ * 루멘 점수 = 맞은 수 ÷ «채점이 끝난 문항 수». 그래서 채점이 덜 끝났을 때 루멘 쪽이 높다. */
 function wsgWhyLine(){
-  return '<b style="color:'+WSG_C_MF+'">매쓰플랫 점수</b>는 매쓰플랫이 채점한 <b>객관식만</b> 센 점수라 낮게 나옵니다. '
-    +'<b style="color:'+WSG_C_LU+'">루멘 점수</b>는 <b>루멘이 채점한 문항까지</b> 넣은 점수입니다. '
-    +'아직 채점이 덜 된 학생은 둘 다 「—」로 둡니다.';
+  return '<b style="color:'+WSG_C_MF+'">매쓰플랫 점수</b>는 <b>전체 문항 기준</b>입니다 — 아직 채점되지 않은 문항을 <b>0점</b>으로 세기 때문에 낮게 나옵니다. '
+    +'<b style="color:'+WSG_C_LU+'">루멘 점수</b>는 <b>채점이 끝난 문항 기준</b>입니다. '
+    +'그래서 <b>차이가 크면 아직 매쓰플랫으로 넘어가지 않은 채점이 많다</b>는 뜻입니다 — 루멘이 채점해 보내면 매쓰플랫 점수도 따라 올라갑니다. '
+    +'아직 한 문항도 채점이 안 된 학생은 둘 다 「—」로 둡니다.';
 }
 
 /* 대장 칩 세 개 — 「루멘 + 스스로 = 전체 문항」, 「매쓰플랫」은 그중 객관식 몫 */
@@ -8425,6 +8438,25 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-15',date:'2026-09-18',stability:'warn',memo:'⚖️ <b>두 점수를 나란히 견주고, 폰에서도 학습지 채점을 봅니다</b> (원장 지시 2026-09-18 — 「1 비교하게 보여줘」 · 「2. 만들어줘」). '
+        +'<b>[① 두 점수가 나란히 보입니다]</b> 지난번에는 「평균 78점」처럼 한 가지만 보였는데, 이제 '
+        +'<b>🔷 루멘 78점 · 🤖 매쓰플랫 41점</b> 처럼 <b>둘을 함께</b> 보여 드리고, 그 옆에 <b>차이(+37)</b>를 작게 붙입니다. '
+        +'눈으로 바로 견주시라고 <b>막대 두 줄</b>도 함께 그렸습니다(초록이 루멘, 파랑이 매쓰플랫). '
+        +'<b>왜 다른가요</b> — 매쓰플랫 점수는 <b>전체 문항 기준</b>이라 아직 채점되지 않은 문항을 0점으로 세서 낮게 나오고, '
+        +'루멘 점수는 <b>채점이 끝난 문항 기준</b>입니다. 그래서 <b>루멘 점수가 아이 실력에 가깝고</b>, '
+        +'<b>두 점수 차이가 크면 아직 매쓰플랫으로 넘어가지 않은 채점이 많다</b>는 뜻입니다 — 루멘이 채점해 보내면 매쓰플랫 점수도 따라 올라갑니다. '
+        +'아직 채점이 덜 된 학생은 둘 다 「—」로 두고, 매쓰플랫 점수가 아예 없는 학습지는 루멘 점수만 보이면서 <b>「매쓰플랫 점수 없음」</b>이라고 작게 적어 둡니다. '
+        +'나란히 보이는 곳은 <b>목록 줄 · 학습지 안 「⚖️ 두 점수 비교」 상자 · 학생별 줄</b> 세 군데입니다. '
+        +'평균은 <b>두 점수가 모두 있는 같은 학생들</b>만 모아 셉니다 — 그래야 공평하게 견줄 수 있습니다. '
+        +'<b>[② 폰에서도 보실 수 있습니다]</b> 폰으로 학원앱에 들어가시면 나오는 모바일 홈에 '
+        +'<b>📄 학습지 채점</b> 타일이 새로 생겼습니다(🏁 진도 레이스 바로 아래). 전에는 「🖥 PC 화면」으로 넘어가야만 보셨습니다. '
+        +'폰 화면은 가로로 긴 표 대신 <b>카드 목록</b>입니다 — 학습지 카드(제목 · 문항 수 · 칩 세 개 · 배정·푼 학생 · <b>두 점수 막대</b>)를 누르면 '
+        +'<b>⚖️ 두 점수 비교 → ✍️ 스스로 채점 문항 번호 → 학생별 카드</b> 가 차례로 나오고, 학생 카드를 한 번 더 누르면 <b>문항별 ◯ ✗</b> 가 펼쳐집니다. '
+        +'대기열(매쓰플랫에 아직 못 간 건수)도 학생별로 같이 나옵니다. '
+        +'<b>폰 화면은 보기 전용입니다</b> — 폰에서 잘못 눌러 점수가 바뀌는 사고를 막으려고 고치는 기능은 일부러 넣지 않았습니다. '
+        +'<b>[안전]</b> 폰 화면은 PC 화면과 <b>똑같은 자료를 똑같은 방법으로</b> 계산합니다(같은 wsgModel 함수를 그대로 씁니다). '
+        +'새로 세는 규칙도, 새 저장소도 없어 <b>두 화면의 숫자가 어긋날 일이 없습니다.</b> 기존 화면은 하나도 건드리지 않았고, 퇴원생은 여전히 빠집니다. '
+        +'[검증] 실브라우저 — 두 점수·차이·막대와 평균 계산, 매쓰플랫 점수 없는 학습지, 폰(390×844) 타일·카드 목록·학생 카드·문항 칸, 폰과 PC 숫자가 같은지, 빈 상황 안내글, v19-14 회귀를 모두 확인했습니다.'},
       {ver:'v19-14',date:'2026-09-18',stability:'warn',memo:'📄 <b>새 화면 「학습지 채점」 — 누가 어디까지 풀었고, 몇 문항을 기계가 채점했는지</b> (원장 결정 2026-09-17 · docs/ws_autoscore_contract.md §3). '
         +'<b>[왜 필요한가]</b> 매쓰플랫은 <b>객관식만</b> 자동으로 채점합니다. 정답이 <b>숫자 하나인 단답형조차</b> 채점해 주지 않습니다(2026-09-17 직접 확인). '
         +'그래서 수학비서로 만든 108문항짜리 학습지도 매쓰플랫이 봐 주는 것은 <b>29문항뿐</b>입니다. '
@@ -70224,7 +70256,9 @@ function cpDataPanel(){
  * 주기능: 이동하면서 울트라 피드백 검토→승인·발행. 녹음·플래너는 제출 여부(숫자)만.
  * 「🖥 PC 화면」으로 언제든 기존 화면 전환(세션 동안 기억), 우하단 「📱」로 복귀. */
 var MOB={ view:'home', pc:false, kicked:false, udKicked:false, sel:null, selStu:null, q:'', detail:false,
-          raceBand:'mid', raceKicked:false, rec:{started:false,done:false,map:{}} };
+          raceBand:'mid', raceKicked:false, rec:{started:false,done:false,map:{}},
+          /* v19-15: 📄 학습지 채점 (폰) — 어떤 학습지를 펼쳤는지·어떤 학생을 펼쳤는지 */
+          wsgKicked:false, wsgOpen:null, wsgStu:null };
 window.mobUdDetail=function(){ MOB.detail=!MOB.detail; render(); };
 try{ MOB.pc=(sessionStorage.getItem('lumen_mob_pc')==='1'); }catch(e){}
 function mobPhone(){ return window.innerWidth<=760; }
@@ -70314,6 +70348,7 @@ function mobSync(){
     else if(MOB.view==='brief') html=mobBrief();
     else if(MOB.view==='stu') html=mobStu();
     else if(MOB.view==='race') html=mobRace();
+    else if(MOB.view==='wsg') html=mobWsg();          // v19-15: 📄 학습지 채점
     else html=mobHome();
   }catch(e){
     console.error('[모바일]',e);
@@ -70334,7 +70369,7 @@ function mobShell(inner){
   h+='<div style="padding:14px 14px 100px">'+inner+'</div>';
   h+='<div style="position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;border-top:1px solid #e6eaf1;display:flex;padding:6px 4px calc(6px + env(safe-area-inset-bottom))">';
   tabs.forEach(function(x){
-    var on=(MOB.view===x[0])||((MOB.view==='brief'||MOB.view==='race')&&x[0]==='home');
+    var on=(MOB.view===x[0])||((MOB.view==='brief'||MOB.view==='race'||MOB.view==='wsg')&&x[0]==='home');
     h+='<div onclick="mobGo(\''+x[0]+'\')" style="flex:1;text-align:center;padding:6px 0;cursor:pointer">'
       +'<div style="font-size:20px;line-height:1.2;'+(on?'':'filter:grayscale(1);opacity:0.5')+'">'+x[1]+'</div>'
       +'<div style="font-size:10px;font-weight:900;color:'+(on?'#1d6fe8':'#94a3b8')+'">'+x[2]+'</div></div>';
@@ -70398,6 +70433,7 @@ function mobHome(){
   h+=mobTile('💡','아하노트','질문 확인 · 해결',"mobGo('aha')",'#fef3c7');
   h+=mobTile('🧑‍🏫','수업 브리핑','오늘 학생 + 위험 신호',"mobGo('brief')",'#dcfce7');
   h+=mobTile('🏁','진도 레이스','순위 · 버프 · 보스',"mobGo('race')",'#ffedd5');
+  h+=mobTile('📄','학습지 채점','자동채점 현황 · 두 점수',"mobGo('wsg')",'#e0e7ff');   // v19-15
   h+=mobTile('🔍','학생 검색','미니 프로필',"mobGo('stu')",'#eef2f7');
   h+=mobTile('🏆','명예의 전당 발표','학생앱에 1등 공개','mobHallPublish()','#fef9c3');
   h+='</div>';
@@ -70409,6 +70445,207 @@ window.mobHallPublish=function(){
   }catch(e){ plToast('주간테스트를 아직 불러오는 중이에요'); return; }
   hallPublish();
 };
+
+
+/* ═══════════════ v19-15: 📄 폰에서 학습지 채점 보기 ═══════════════
+ * 원장님이 폰으로도 「어느 학습지가 얼마나 자동채점되고, 누가 어디까지 풀었는지」를
+ * 보실 수 있게 만든 화면이다 (원장 지시 2026-09-18 「2. 만들어줘」).
+ * v18-144 의 🏁 모바일 진도 레이스와 똑같은 방식이다 — 새로 세는 규칙도, 새 저장소도
+ * 하나 없다. PC 화면이 쓰는 wsgModel() 을 «그대로» 불러, 넓은 표 대신 폰에서 읽기
+ * 좋은 카드로 바꿔 보여줄 뿐이라 PC 화면과 숫자가 어긋날 일이 없다.
+ * (고치는 일은 일부러 넣지 않았다 — 보기 전용이다.) */
+function mobWsgKick(){
+  if(MOB.wsgKicked) return;
+  MOB.wsgKicked=true;
+  setTimeout(function(){ try{ wsgLoad(); }catch(e){} },0);
+}
+window.mobWsgReload=function(){
+  MOB.wsgKicked=false; WSG.loaded=false; WSG._model=null;
+  try{ plToast('새로 불러옵니다…'); }catch(e){}
+  mobWsgKick(); render();
+};
+window.mobWsgOpen=function(wid){
+  MOB.wsgOpen=(wid==null?null:String(wid)); MOB.wsgStu=null;
+  var ov=document.getElementById('MOB_OV'); if(ov) ov.scrollTop=0;
+  render();
+};
+window.mobWsgBack=function(){
+  MOB.wsgOpen=null; MOB.wsgStu=null;
+  var ov=document.getElementById('MOB_OV'); if(ov) ov.scrollTop=0;
+  render();
+};
+window.mobWsgStu=function(code){
+  MOB.wsgStu=(MOB.wsgStu===String(code)?null:String(code));
+  render();
+};
+
+function mobWsgCard(inner, onclick){
+  return '<div'+(onclick?(' onclick="'+onclick+'"'):'')+' style="background:#fff;border:1px solid #e6eaf1;'
+    +'border-radius:16px;padding:14px 15px;margin-bottom:10px'+(onclick?';cursor:pointer':'')+'">'+inner+'</div>';
+}
+function mobWsgEmpty(txt){
+  return '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:32px 18px;'
+    +'text-align:center;color:#94a3b8;font-size:13px;font-weight:700;line-height:1.9">'+txt+'</div>';
+}
+
+function mobWsg(){
+  mobWsgKick();
+  var h='<div style="font-size:17px;font-weight:900;color:#0d2240;margin-bottom:4px">📄 학습지 채점 '
+    +'<span style="font-size:11px;color:#94a3b8;font-weight:700">보기 전용 · 고치는 일은 PC 화면에서</span></div>';
+  h+='<div style="font-size:11.5px;color:#64748b;font-weight:700;line-height:1.7;margin-bottom:11px">'
+    +'매쓰플랫은 <b>객관식만</b> 자동으로 채점합니다. 나머지는 <b>루멘 학생앱이 대신 채점</b>해 매쓰플랫에 돌려씁니다.</div>';
+
+  if(!WSG.loaded && !WSG.err)
+    return h+'<div style="padding:50px 0;text-align:center;color:#94a3b8;font-weight:800">🔄 학습지를 불러오는 중…</div>';
+  if(WSG.err)
+    h+='<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:14px;padding:13px 15px;'
+      +'color:#b91c1c;font-size:12.5px;font-weight:800;line-height:1.7;margin-bottom:10px">'+esc2(WSG.err)
+      +'<div style="margin-top:8px"><button onclick="mobWsgReload()" style="border:1px solid #fecaca;background:#fff;'
+      +'color:#b91c1c;border-radius:10px;padding:7px 13px;font-size:11.5px;font-weight:900;font-family:inherit;cursor:pointer">🔄 다시</button></div></div>';
+
+  var list=[];
+  try{ list=wsgModel(); }catch(e){ return h+mobWsgEmpty('현황을 만들지 못했습니다 — '+esc2((e&&e.message)||e)); }
+  if(!list.length)
+    return h+mobWsgEmpty('아직 보여 드릴 학습지가 없습니다.<br>학생에게 학습지를 배정하시고<br>새벽 수집이 한 번 돌면 여기에 나타납니다.');
+
+  if(MOB.wsgOpen){
+    var pick=null;
+    list.forEach(function(s){ if(s.wid===String(MOB.wsgOpen)) pick=s; });
+    if(pick) return h+mobWsgDetail(pick);
+    h+='<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:10px 13px;'
+      +'color:#92400e;font-size:12px;font-weight:800;margin-bottom:10px">고르신 학습지를 찾지 못해 목록을 보여 드립니다.</div>';
+  }
+  return h+mobWsgList(list);
+}
+
+function mobWsgList(list){
+  var nKey=0; list.forEach(function(s){ if(s.hasKey) nKey++; });
+  var h='<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+    +'<div style="font-size:12px;color:#64748b;font-weight:800">학습지 '+list.length+'장 · 정답 대장 '+nKey+'장</div>'
+    +'<button onclick="mobWsgReload()" style="margin-left:auto;border:1px solid #e6eaf1;background:#fff;color:#334155;'
+    +'border-radius:50px;padding:6px 12px;font-size:11px;font-weight:900;font-family:inherit;cursor:pointer">🔄 새로 읽기</button></div>';
+  list.forEach(function(sh){
+    var pct=(sh.assigned?Math.round(100*sh.solved/sh.assigned):0);
+    var inner='';
+    inner+='<div style="font-size:14.5px;font-weight:900;color:#0d2240;line-height:1.45">'+esc2(sh.title)+'</div>';
+    inner+='<div style="font-size:11px;color:#94a3b8;font-weight:700;margin-top:3px">문항 '+sh.n+'개'
+      +(sh.range?(' · '+esc2(sh.range)+'번'):'')+(sh.last?(' · 최근 배정 '+esc2(sh.last)):'')+'</div>';
+    inner+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">'+wsgKeyChips(sh)+'</div>';
+    inner+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px">'
+      +wsgChip('👥 배정 '+sh.assigned+'명','#f6f8fc','#334155','#e6eaf1')
+      +' '+wsgChip('✅ 푼 학생 '+sh.solved+'명','#f6f8fc',(sh.solved?'#047857':'#94a3b8'),'#e6eaf1')
+      +(sh.pend?(' '+wsgChip('⏳ 대기 '+sh.pend+'건','#fffbeb','#a16207','#fde68a')):'')+'</div>';
+    inner+='<div style="margin-top:9px;background:#f6f8fc;border-radius:12px;padding:9px 11px">'
+      +'<div style="font-size:10px;color:#94a3b8;font-weight:800">평균 점수 (푼 학생 기준)</div>'
+      +wsgScoreDuo(sh.avg, sh.mfAvg, sh.mfHas, false)
+      +wsgScoreBars(sh.avg, sh.mfAvg, sh.mfHas)+'</div>';
+    inner+='<div style="margin-top:8px;display:flex;align-items:center;gap:7px">'
+      +'<div style="flex:1;height:6px;background:#eef2f7;border-radius:999px;overflow:hidden">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+(pct>=100?'#10b981':(pct>0?'#38bdf8':'#e2e8f0'))+'"></div></div>'
+      +'<div style="font-size:10px;color:#94a3b8;font-weight:800">푼 학생 '+pct+'%</div>'
+      +'<div style="font-size:11px;color:#1d6fe8;font-weight:900">자세히 ›</div></div>';
+    h+=mobWsgCard(inner, "mobWsgOpen('"+esc2(String(sh.wid))+"')");
+  });
+  h+='<div style="font-size:11px;color:#94a3b8;font-weight:700;line-height:1.85;margin-top:2px">'
+    +'· <b>🔷 루멘 + ✍️ 스스로 = 전체 문항</b>, <b>🤖 매쓰플랫</b> 은 그중 객관식 몫입니다.<br>'
+    +'· '+wsgWhyLine()+'</div>';
+  return h;
+}
+
+function mobWsgDetail(sh){
+  var h='<button onclick="mobWsgBack()" style="border:1px solid #e6eaf1;background:#fff;color:#334155;'
+    +'border-radius:50px;padding:7px 14px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;margin-bottom:10px">← 학습지 목록</button>';
+
+  var head='<div style="font-size:15px;font-weight:900;color:#0d2240;line-height:1.45">'+esc2(sh.title)+'</div>'
+    +'<div style="font-size:11px;color:#94a3b8;font-weight:700;margin-top:3px">문항 '+sh.n+'개'
+    +(sh.range?(' · '+esc2(sh.range)+'번'):'')+'</div>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">'+wsgKeyChips(sh)+'</div>';
+  if(!sh.hasKey){
+    head+='<div style="margin-top:9px;background:#f6f8fc;border-radius:11px;padding:9px 11px;'
+      +'font-size:11.5px;color:#64748b;font-weight:700;line-height:1.7">'
+      +'이 학습지는 <b>정답 대장이 없습니다</b>. 그래서 문항 수 나눔은 못 보여 드리고, 학생이 채점한 결과만 보여 드립니다.</div>';
+  }
+  h+=mobWsgCard(head);
+
+  /* 두 점수 비교 */
+  if(sh.rows.length){
+    h+=mobWsgCard('<div style="font-size:13px;font-weight:900;color:#0d2240;margin-bottom:5px">⚖️ 두 점수 비교 <span style="font-size:10.5px;color:#94a3b8;font-weight:700">푼 학생 '+sh.solved+'명 평균</span></div>'
+      +wsgScoreDuo(sh.avg, sh.mfAvg, sh.mfHas, true)
+      +wsgScoreBars(sh.avg, sh.mfAvg, sh.mfHas)
+      +'<div style="margin-top:9px;font-size:11px;color:#64748b;font-weight:700;line-height:1.75">'+wsgWhyLine()+'</div>');
+  }
+
+  /* 스스로 채점 문항 번호 */
+  var selfNos=wsgSelfNos(sh);
+  var sb='<div style="font-size:13px;font-weight:900;color:#92400e">✍️ 스스로 채점으로 넘어간 문항 '+selfNos.length+'개</div>'
+    +'<div style="font-size:11px;color:#a16207;font-weight:700;margin-top:3px;line-height:1.7">'
+    +'루멘도 자동으로 맞출 수 없어 <b>학생이 정답 그림을 보고 직접 ◯ ✗ 를 고르는</b> 문항입니다.</div>';
+  if(!selfNos.length){
+    sb+='<div style="margin-top:7px;font-size:11.5px;color:#a16207;font-weight:800">없습니다 — 전 문항을 루멘이 자동으로 채점합니다. 👍</div>';
+  }else{
+    sb+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">';
+    selfNos.forEach(function(no){
+      sb+='<span style="display:inline-block;min-width:28px;text-align:center;padding:3px 7px;border-radius:7px;'
+        +'background:#fff;border:1px solid #fcd34d;color:#92400e;font-size:12px;font-weight:900">'+esc2(String(no))+'</span>';
+    });
+    sb+='</div>';
+  }
+  h+='<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:16px;padding:14px 15px;margin-bottom:10px">'+sb+'</div>';
+
+  if(!sh.rows.length){
+    return h+mobWsgEmpty('아직 <b>이 학습지를 받은 학생이 없습니다</b>.<br>매쓰플랫에서 배정하시면 여기에 나옵니다.');
+  }
+
+  /* 학생별 카드 */
+  h+='<div style="font-size:13px;font-weight:900;color:#0d2240;margin:4px 0 8px">👥 학생별 ('+sh.rows.length+'명)</div>';
+  sh.rows.forEach(function(r){
+    var opened=(MOB.wsgStu===String(r.code));
+    var done=(r.o+r.x+r.q)>0;
+    var inner='';
+    inner+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+      +'<div style="font-size:14px;font-weight:900;color:#0d2240">'+esc2(r.name)
+      +(r.grade?(' <span style="font-size:10px;color:#94a3b8;font-weight:700">'+esc2(r.grade)+'</span>'):'')+'</div>'
+      +wsgChip(esc2(r.status||'상태 없음'), done?'#ecfdf5':'#f6f8fc', done?'#047857':'#94a3b8', done?'#a7f3d0':'#e6eaf1')
+      +'<span style="margin-left:auto;font-size:11px;color:#94a3b8;font-weight:900">'+(opened?'▲ 접기':'▼ 문항별')+'</span>'
+      +'</div>';
+    inner+='<div style="margin-top:7px">'+wsgScoreDuo(r.score, r.mfScore, r.mfHas, false)+'</div>';
+    inner+=wsgScoreBars(r.score, r.mfScore, r.mfHas);
+    inner+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">'
+      +wsgChip('◯ '+r.o,'#f0f9ff','#0369a1','#bae6fd')
+      +' '+wsgChip('✗ '+r.x,'#fff1f5','#be123c','#fbcfe8')
+      +' '+wsgChip('미채점 '+(r.un+r.q),'#f6f8fc','#64748b','#e6eaf1')
+      +(r.pend?(' '+wsgChip('⏳ 대기 '+r.pend+'건','#fffbeb','#a16207','#fde68a')):'')+'</div>';
+    if(opened){
+      inner+='<div style="margin-top:9px;border-top:1px solid #eef2f7;padding-top:9px">';
+      if(!r.cells.length){
+        inner+='<div style="font-size:11.5px;color:#94a3b8;font-weight:700">문항 정보가 없습니다.</div>';
+      }else{
+        inner+='<div style="display:flex;flex-wrap:wrap;gap:4px">';
+        r.cells.forEach(function(c){
+          var bg='#f6f8fc', fg='#94a3b8', bd='#e6eaf1', mk='·';
+          if(c.r==='O'){ bg='#eff6ff'; fg='#0369a1'; bd='#bae6fd'; mk='◯'; }
+          else if(c.r==='X'){ bg='#fff1f5'; fg='#be123c'; bd='#fbcfe8'; mk='✗'; }
+          else if(c.r==='?'){ bg='#fffbeb'; fg='#a16207'; bd='#fde68a'; mk='?'; }
+          inner+='<div title="'+esc2(String(c.no))+'번'+(c.self?' · 스스로 채점':'')+'" style="width:36px;padding:3px 0;'
+            +'border-radius:8px;background:'+bg+';border:1px solid '+bd+';text-align:center;line-height:1.25">'
+            +'<div style="font-size:9px;color:#94a3b8;font-weight:800">'+esc2(String(c.no))+(c.self?'✍️':'')+'</div>'
+            +'<div style="font-size:12.5px;font-weight:900;color:'+fg+'">'+mk+'</div></div>';
+        });
+        inner+='</div>';
+        inner+='<div style="margin-top:7px;font-size:10.5px;color:#94a3b8;font-weight:700;line-height:1.7">'
+          +'◯ 맞음 · ✗ 틀림 · ? 모르겠다고 표시 · · 아직 채점 안 됨 · ✍️ 는 스스로 채점 문항입니다.</div>';
+      }
+      if(r.pend){
+        inner+='<div style="margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 10px;'
+          +'font-size:11px;color:#92400e;font-weight:700;line-height:1.7">'
+          +'⏳ <b>'+r.pend+'건</b>이 아직 매쓰플랫에 못 갔습니다. 일꾼이 5분마다 보내므로 잠시 뒤 사라집니다.</div>';
+      }
+      inner+='</div>';
+    }
+    h+=mobWsgCard(inner, "mobWsgStu('"+esc2(String(r.code))+"')");
+  });
+  return h;
+}
 
 /* ═══════════════ v18-144: 🏁 모바일 진도 레이스 ═══════════════
  * 원장님이 폰으로도 학생들 레이스 결과를 보실 수 있게 만든 화면.
