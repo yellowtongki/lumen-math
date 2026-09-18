@@ -286,7 +286,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-15';
+var APP_VER = 'v19-16';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -7990,6 +7990,49 @@ function wsgActiveByCode(){
 }
 
 /* 한 학생의 한 학습지 한 줄 (◯ ✗ ? 미채점 · 점수 · 대기열 · 문항별 칸) */
+/* ───────── v19-16: 🔁 다시 도전(2차·3차) 읽기 (docs/retry_contract.md §1·§3) ─────────
+ * 학생 채점 기록 한 칸은 이렇게 생겼다 — «1차 값(r·a·at)은 절대 바뀌지 않는다».
+ *   { r:'X', a:'…', at:'…',
+ *     rt:[ {n:2, r:'O', a:'…', at:'…'}, {n:3, r:'X', …} ],   // 다시 도전 기록
+ *     seen:'…' }                                             // 「지금 정답 보기」를 눌러 정답만 본 문항
+ * rt 가 없는 «옛 기록»은 1차만 있는 것으로 읽힌다 — 화면이 예전과 똑같이 보인다. */
+function wsgTries(rec){
+  var t={ r1:(rec?String(rec.r||''):''), t2:null, t3:null, seen:!!(rec&&rec.seen) };
+  var rt=(rec&&rec.rt);
+  if(Array.isArray(rt)){
+    rt.forEach(function(e){
+      if(!e) return;
+      var n=Number(e.n||0);
+      if(n===2) t.t2=e;
+      else if(n>=3) t.t3=e;
+    });
+  }
+  return t;
+}
+/* k차까지 맞혔는가 — 1차에 맞았거나 k차 이하의 다시 도전에서 맞았으면 참 */
+function wsgOkBy(t, k){
+  if(!t) return false;
+  if(t.r1==='O') return true;
+  if(k>=2 && t.t2 && String(t.t2.r||'')==='O') return true;
+  if(k>=3 && t.t3 && String(t.t3.r||'')==='O') return true;
+  return false;
+}
+/* 이 문항이 「끝까지 못 맞힌 문항」 중 어디에 드는가 (1차에 틀렸거나 모른 문항만 본다)
+ *   'seen'  — 다시 풀지 않고 정답만 보고 넘어갔다
+ *   'fail3' — 3차까지 풀었는데도 틀렸다 (수업에서 다뤄야 한다)
+ *   'wait2' — 아직 2차를 안 풀었다
+ *   'wait3' — 2차에 틀렸고 3차를 아직 안 풀었다
+ *   ''      — 다시 도전해서 맞혔거나, 애초에 1차에 맞은 문항 */
+function wsgMissKind(t){
+  if(!t) return '';
+  if(t.r1!=='X' && t.r1!=='?') return '';
+  if(wsgOkBy(t,3)) return '';
+  if(t.seen) return 'seen';
+  if(t.t3) return 'fail3';
+  if(t.t2) return 'wait3';
+  return 'wait2';
+}
+
 function wsgRow(stu, code, w, sh){
   var sc=WSG.scores[code]||{};
   var pre='ws_'+String(w.swId)+'_';
@@ -7997,6 +8040,9 @@ function wsgRow(stu, code, w, sh){
   /* 대장은 «문항 순서»(wpIndex)로 잇는다. 문항 수가 다르면 순서가 어긋난 것이니 쓰지 않는다. */
   var items=(sh.hasKey && sh.key && sh.key.items && sh.key.items.length===probs.length) ? sh.key.items : null;
   var o=0,x=0,q=0,un=0,cells=[];
+  /* v19-16: 다시 도전(2차·3차)도 같이 센다 */
+  var ok2=0, ok3=0, has2=false, has3=false;
+  var fail3=[], wait2=[], wait3=[], seenNos=[], fixed2=0, fixed3=0;
   probs.forEach(function(p,i){
     var it=items?items[i]:null;
     var no=(it&&it.no!=null)?it.no:((p&&p.num!=null&&p.num!=='')?p.num:(i+1));
@@ -8004,7 +8050,26 @@ function wsgRow(stu, code, w, sh){
     var rec=sc[pre+String(p&&p.wpId)];
     var r=rec?String(rec.r||''):'';
     if(r==='O') o++; else if(r==='X') x++; else if(r==='?') q++; else un++;
-    cells.push({ no:no, r:r, self:self, by:(rec&&rec.by)||'', at:(rec&&rec.at)||'' });
+    var t=wsgTries(rec);
+    if(t.t2) has2=true;
+    if(t.t3) has3=true;
+    /* 2차·3차 점수는 «1차와 같은 분모»(1차에 ◯ 또는 ✗ 인 문항)로 센다 — 그래야 나란히 견줄 수 있다 */
+    if(r==='O'||r==='X'){
+      if(wsgOkBy(t,2)) ok2++;
+      if(wsgOkBy(t,3)) ok3++;
+    }
+    if(r!=='O'){
+      if(t.t2 && String(t.t2.r||'')==='O') fixed2++;
+      else if(t.t3 && String(t.t3.r||'')==='O') fixed3++;
+    }
+    var mk=wsgMissKind(t);
+    if(mk==='fail3') fail3.push(no);
+    else if(mk==='wait2') wait2.push(no);
+    else if(mk==='wait3') wait3.push(no);
+    else if(mk==='seen') seenNos.push(no);
+    cells.push({ no:no, r:r, self:self, by:(rec&&rec.by)||'', at:(rec&&rec.at)||'',
+                 r2:(t.t2?String(t.t2.r||''):''), r3:(t.t3?String(t.t3.r||''):''),
+                 seen:t.seen, miss:mk });
   });
   var graded=o+x;
   var pend=0;
@@ -8024,6 +8089,12 @@ function wsgRow(stu, code, w, sh){
            n:probs.length, o:o, x:x, q:q, un:un, graded:graded,
            score:(graded?Math.round(100*o/graded):null),
            mfScore:(graded?mfRaw:null), mfHas:(mfRaw!=null),
+           /* v19-16: 1차 / 2차 / 3차 — 1차(score)가 실력이고, 뒤의 둘은 얼마나 고쳐 냈는지다.
+            * 아직 그 차례를 풀지 않았으면 null («아직»). */
+           score2:(has2&&graded?Math.round(100*ok2/graded):null),
+           score3:(has3&&graded?Math.round(100*ok3/graded):null),
+           has2:has2, has3:has3, fixed2:fixed2, fixed3:fixed3,
+           fail3:fail3, wait2:wait2, wait3:wait3, seenNos:seenNos,
            pend:pend, cells:cells };
 }
 
@@ -8074,6 +8145,8 @@ function wsgModel(){
     sh.assigned=sh.rows.length;
     sh.solved=0; sh.pend=0;
     var ss=[], ms=[], last='', anyMf=false;
+    /* v19-16: 다시 도전 합계 — 2·3차 평균과 「수업에서 다시 다룰 문항」 */
+    var s2=[], s3=[], hard={}, rt2Stu=0, rt3Stu=0, waitN=0, seenN=0, fail3N=0, fixedN=0;
     sh.rows.forEach(function(r){
       if((r.o+r.x+r.q)>0) sh.solved++;
       sh.pend+=r.pend;
@@ -8081,11 +8154,36 @@ function wsgModel(){
       /* v19-15: 매쓰플랫 평균은 «루멘 점수가 나온 같은 학생들»만 모아 센다 — 그래야 나란히 견줄 수 있다 */
       if(r.score!=null && r.mfScore!=null) ms.push(r.mfScore);
       if(r.mfHas) anyMf=true;
+      if(r.score2!=null) s2.push(r.score2);
+      if(r.score3!=null) s3.push(r.score3);
+      if(r.has2) rt2Stu++;
+      if(r.has3) rt3Stu++;
+      waitN+=(r.wait2.length+r.wait3.length);
+      seenN+=r.seenNos.length;
+      fail3N+=r.fail3.length;
+      fixedN+=(r.fixed2+r.fixed3);
+      /* 3차까지 틀린 문항은 «누가» 틀렸는지 이름을 모아 둔다 */
+      r.fail3.forEach(function(no){
+        var k=String(no);
+        if(!hard[k]) hard[k]={ no:no, names:[] };
+        hard[k].names.push(r.name);
+      });
       if(r.date && r.date>last) last=r.date;
     });
     sh.mfAvg = ms.length ? Math.round(ms.reduce(function(a,b){ return a+b; },0)/ms.length) : null;
     sh.mfHas = anyMf;      // 이 학습지에 매쓰플랫 점수가 하나라도 있는가
     sh.avg = ss.length ? Math.round(ss.reduce(function(a,b){ return a+b; },0)/ss.length) : null;
+    /* v19-16 */
+    sh.avg2 = s2.length ? Math.round(s2.reduce(function(a,b){ return a+b; },0)/s2.length) : null;
+    sh.avg3 = s3.length ? Math.round(s3.reduce(function(a,b){ return a+b; },0)/s3.length) : null;
+    sh.rt2Stu=rt2Stu; sh.rt3Stu=rt3Stu;
+    sh.waitN=waitN; sh.seenN=seenN; sh.fail3N=fail3N; sh.fixedN=fixedN;
+    sh.hasRetry=(rt2Stu>0||rt3Stu>0||seenN>0);
+    /* 수업에서 다시 다룰 문항 — 많이 틀린 순, 같은 수면 번호 순 */
+    sh.hard = Object.keys(hard).map(function(k){ return hard[k]; }).sort(function(a,b){
+      if(b.names.length!==a.names.length) return b.names.length-a.names.length;
+      return (parseInt(a.no,10)||0)-(parseInt(b.no,10)||0);
+    });
     sh.last = last;
     sh.rows.sort(function(a,b){ return String(a.name).localeCompare(String(b.name),'ko'); });
   });
@@ -8195,6 +8293,149 @@ function wsgWhyLine(){
     +'<b style="color:'+WSG_C_LU+'">루멘 점수</b>는 <b>채점이 끝난 문항 기준</b>입니다. '
     +'그래서 <b>차이가 크면 아직 매쓰플랫으로 넘어가지 않은 채점이 많다</b>는 뜻입니다 — 루멘이 채점해 보내면 매쓰플랫 점수도 따라 올라갑니다. '
     +'아직 한 문항도 채점이 안 된 학생은 둘 다 「—」로 둡니다.';
+}
+
+/* ───────── v19-16: 🔁 다시 도전 — 1차 / 2차 / 3차 보여 주기 ─────────
+ * 1차는 회색(실력), 2차·3차는 청록. 아직 안 푼 차례는 「아직」으로 둔다. */
+var WSG_C_T1='#94a3b8';   // 1차 — 회색 (실력)
+var WSG_C_T2='#0d9488';   // 2차 — 청록
+var WSG_C_T3='#0f766e';   // 3차 — 진한 청록
+
+function wsgTryBar(label, v, col, none){
+  var w=(v==null)?0:Math.max(0,Math.min(100,v));
+  return '<div style="display:flex;align-items:center;gap:6px;margin-top:3px">'
+    +'<div style="width:62px;font-size:9.5px;font-weight:900;color:'+(v==null?'#cbd5e1':col)+';white-space:nowrap">'+label+'</div>'
+    +'<div style="flex:1;height:8px;background:#eef2f7;border-radius:999px;overflow:hidden">'
+    +'<div style="height:100%;width:'+w+'%;background:'+col+'"></div></div>'
+    +'<div style="width:40px;text-align:right;font-size:10px;font-weight:900;color:'+(v==null?'#cbd5e1':col)+'">'
+    +(v==null?(none||'아직'):(v+'점'))+'</div></div>';
+}
+/* 막대 세 줄 — 1차(실력) · 2차 · 3차 */
+function wsgTryBars(r){
+  var h='<div style="margin-top:2px">';
+  h+=wsgTryBar('1차 (실력)', r.score, WSG_C_T1, '아직');
+  h+=wsgTryBar('2차', r.score2, WSG_C_T2, r.has2?'—':'아직');
+  h+=wsgTryBar('3차', r.score3, WSG_C_T3, r.has3?'—':'아직');
+  h+='</div>';
+  return h;
+}
+/* 「1차가 실력입니다」 한 줄 */
+function wsgTryWhy(){
+  return '<b style="color:#0f172a">1차 점수가 진짜 실력</b>입니다 — 매쓰플랫에도 1차 결과만 보냅니다. '
+    +'<b style="color:'+WSG_C_T2+'">2차·3차</b>는 틀린 문항을 다시 풀어 <b>얼마나 고쳐 냈는지</b>를 봅니다.';
+}
+/* 끝까지 못 맞힌 문항 — 세 갈래를 구분해서 칩으로 (숫자만) */
+function wsgMissChips(r){
+  var wait=r.wait2.length+r.wait3.length;
+  var h='';
+  if(r.fail3.length) h+=wsgChip('❌ 3차까지 틀림 '+r.fail3.length,'#fff1f5','#be123c','#fbcfe8')+' ';
+  if(wait) h+=wsgChip('🔁 다시 도전 대기 '+wait,'#fffbeb','#a16207','#fde68a')+' ';
+  if(r.seenNos.length) h+=wsgChip('👁 정답만 봄 '+r.seenNos.length,'#f5f3ff','#6d28d9','#ddd6fe')+' ';
+  if(!h && (r.fixed2+r.fixed3)) h+=wsgChip('🏅 다시 맞힘 '+(r.fixed2+r.fixed3),'#ecfdf5','#047857','#a7f3d0')+' ';
+  return h;
+}
+/* 번호 칩 한 줄 */
+function wsgNoChips(nos, bg, fg, bd){
+  var h='<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px">';
+  nos.forEach(function(no){
+    h+='<span style="display:inline-block;min-width:26px;text-align:center;padding:2px 6px;border-radius:7px;'
+      +'background:'+bg+';border:1px solid '+bd+';color:'+fg+';font-size:11.5px;font-weight:900">'+esc2(String(no))+'</span>';
+  });
+  return h+'</div>';
+}
+/* 끝까지 못 맞힌 문항 — 번호까지 펼쳐서 (세 갈래 구분) */
+function wsgMissBox(r){
+  var wait=r.wait2.concat(r.wait3);
+  if(!r.fail3.length && !wait.length && !r.seenNos.length){
+    if(r.fixed2+r.fixed3)
+      return '<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:8px 11px;margin-top:8px;'
+        +'font-size:11.5px;color:#047857;font-weight:800;line-height:1.7">🏅 틀렸던 문항을 <b>모두 다시 맞혔습니다</b> ('
+        +(r.fixed2+r.fixed3)+'문항). 👍</div>';
+    return '';
+  }
+  var h='<div style="background:#fff;border:1px solid #eef2f7;border-radius:10px;padding:9px 11px;margin-top:8px">'
+    +'<div style="font-size:11px;color:#94a3b8;font-weight:900;margin-bottom:2px">끝까지 못 맞힌 문항</div>';
+  if(r.fail3.length){
+    h+='<div style="margin-top:6px"><span style="font-size:11.5px;font-weight:900;color:#be123c">❌ 3차까지 틀림 '
+      +r.fail3.length+'문항</span>'
+      +'<span style="font-size:10.5px;color:#94a3b8;font-weight:700"> · 수업에서 다뤄 주십시오</span>'
+      +wsgNoChips(r.fail3,'#fff1f5','#be123c','#fbcfe8')+'</div>';
+  }
+  if(wait.length){
+    h+='<div style="margin-top:7px"><span style="font-size:11.5px;font-weight:900;color:#a16207">🔁 다시 도전 대기 '
+      +wait.length+'문항</span>'
+      +'<span style="font-size:10.5px;color:#94a3b8;font-weight:700"> · 아직 다시 풀지 않았습니다 (2차 대기 '
+      +r.wait2.length+' · 3차 대기 '+r.wait3.length+')</span>'
+      +wsgNoChips(wait,'#fffbeb','#a16207','#fde68a')+'</div>';
+  }
+  if(r.seenNos.length){
+    h+='<div style="margin-top:7px"><span style="font-size:11.5px;font-weight:900;color:#6d28d9">👁 정답만 보고 넘어감 '
+      +r.seenNos.length+'문항</span>'
+      +'<span style="font-size:10.5px;color:#94a3b8;font-weight:700"> · 다시 풀지 않고 정답을 열어 봤습니다</span>'
+      +wsgNoChips(r.seenNos,'#f5f3ff','#6d28d9','#ddd6fe')+'</div>';
+  }
+  return h+'</div>';
+}
+/* 「수업에서 다시 다룰 문항」 — 여러 학생이 3차까지 틀린 문항을 많이 틀린 순으로 */
+function wsgHardBox(sh){
+  if(!sh.hard || !sh.hard.length) return '';
+  var many=sh.hard.filter(function(x){ return x.names.length>=2; });
+  var use=many.length?many:sh.hard;
+  var h='<div style="background:#fff;border:1px solid #fbcfe8;border-radius:13px;padding:13px 15px;margin-bottom:12px">'
+    +'<div style="font-size:13px;font-weight:900;color:#be123c">📌 수업에서 다시 다룰 문항 '+use.length+'개</div>'
+    +'<div style="font-size:11.5px;color:#64748b;font-weight:700;margin-top:3px;line-height:1.7">'
+    +(many.length
+       ? '<b>여러 학생이 3차까지 틀린 문항</b>입니다. 많이 틀린 차례로 늘어놓았습니다.'
+       : '아직 <b>여러 학생이 함께 틀린 문항은 없어</b>, 한 명씩 3차까지 틀린 문항을 보여 드립니다.')
+    +'</div><div style="display:flex;flex-direction:column;gap:5px;margin-top:9px">';
+  use.forEach(function(x){
+    var n=x.names.length;
+    h+='<div style="display:flex;align-items:center;gap:8px;background:'+(n>=2?'#fff1f5':'#fbfcfe')
+      +';border:1px solid '+(n>=2?'#fbcfe8':'#eef2f7')+';border-radius:9px;padding:6px 10px;flex-wrap:wrap">'
+      +'<span style="min-width:44px;font-size:13px;font-weight:900;color:#be123c">'+esc2(String(x.no))+'번</span>'
+      +'<span style="font-size:11.5px;font-weight:900;color:'+(n>=2?'#be123c':'#94a3b8')+'">'+n+'명</span>'
+      +'<span style="font-size:11px;color:#64748b;font-weight:700">'+esc2(x.names.join(' · '))+'</span></div>';
+  });
+  return h+'</div></div>';
+}
+/* 학습지 전체의 다시 도전 현황 상자 */
+function wsgRetryBox(sh){
+  if(!sh.rows.length) return '';
+  var h='<div style="background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:13px 15px;margin-bottom:12px">'
+    +'<div style="font-size:13px;font-weight:900;color:#0f172a;margin-bottom:6px">🔁 다시 도전 (1차 · 2차 · 3차)</div>';
+  if(!sh.hasRetry){
+    h+='<div style="font-size:12px;color:#94a3b8;font-weight:700;line-height:1.75">'
+      +'아직 <b>다시 도전한 학생이 없습니다</b>. 학생앱에서 틀린 문항을 다시 풀면 여기에 2차·3차 점수가 쌓입니다. '
+      +'(그전에는 1차만 보이는 것이 정상입니다.)</div></div>';
+    return h;
+  }
+  h+=wsgTryBar('1차 (실력)', sh.avg, WSG_C_T1, '아직');
+  h+=wsgTryBar('2차', sh.avg2, WSG_C_T2, '아직');
+  h+=wsgTryBar('3차', sh.avg3, WSG_C_T3, '아직');
+  h+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:9px">'
+    +wsgChip('🔁 2차 푼 학생 '+sh.rt2Stu+'명','#f0fdfa','#0f766e','#99f6e4')
+    +' '+wsgChip('🔁 3차 푼 학생 '+sh.rt3Stu+'명','#f0fdfa','#0f766e','#99f6e4')
+    +' '+wsgChip('🏅 다시 맞힌 문항 '+sh.fixedN,'#ecfdf5','#047857','#a7f3d0')
+    +' '+wsgChip('❌ 3차까지 틀림 '+sh.fail3N,'#fff1f5','#be123c','#fbcfe8')
+    +' '+wsgChip('🔁 대기 '+sh.waitN,'#fffbeb','#a16207','#fde68a')
+    +' '+wsgChip('👁 정답만 봄 '+sh.seenN,'#f5f3ff','#6d28d9','#ddd6fe')
+    +'</div>';
+  h+='<div style="margin-top:9px;font-size:11.5px;color:#64748b;font-weight:700;line-height:1.75">💡 '+wsgTryWhy()+'</div>';
+  return h+'</div>';
+}
+
+/* 문항 칸 아래에 붙이는 아주 작은 다시 도전 표시 (1차 ◯✗ 표시는 건드리지 않는다) */
+function wsgCellRetry(c){
+  if(!c) return { html:'', tip:'' };
+  if(c.seen) return { html:'<div style="font-size:8.5px;font-weight:900;color:#6d28d9">👁</div>',
+                      tip:' · 정답만 보고 넘어감' };
+  var last=c.r3||c.r2;
+  if(!last) return { html:'', tip:'' };
+  var n=c.r3?'3차':'2차';
+  if(last==='O') return { html:'<div style="font-size:8.5px;font-weight:900;color:#0f766e">🔁◯</div>',
+                          tip:' · '+n+'에 다시 맞힘' };
+  return { html:'<div style="font-size:8.5px;font-weight:900;color:#be123c">🔁✗</div>',
+           tip:' · '+n+'에도 틀림' };
 }
 
 /* 대장 칩 세 개 — 「루멘 + 스스로 = 전체 문항」, 「매쓰플랫」은 그중 객관식 몫 */
@@ -8322,6 +8563,10 @@ function rWsGradeDetail(sh){
       +'</div>';
   }
 
+  /* ── v19-16: 🔁 다시 도전 현황 + 수업에서 다시 다룰 문항 ── */
+  h+=wsgRetryBox(sh);
+  h+=wsgHardBox(sh);
+
   /* ── 스스로 채점으로 넘어간 문항 번호 ── */
   var selfNos=wsgSelfNos(sh);
   h+='<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:13px;padding:13px 15px;margin-bottom:12px">'
@@ -8365,9 +8610,17 @@ function rWsGradeDetail(sh){
       +' '+wsgChip('미채점 '+(r.un+r.q),'#f8fafc','#64748b','#e2e8f0')
       +(r.pend?(' '+wsgChip('⏳ 대기 '+r.pend+'건','#fffbeb','#a16207','#fde68a')):'')
       +'<span style="margin-left:auto;font-size:11px;color:#94a3b8;font-weight:800">'+(opened?'▲ 접기':'▼ 문항별 보기')+'</span>'
-      +'</div></button>';
+      +'</div>';
+    /* v19-16: 학생 줄에 1차 / 2차 / 3차 막대 세 줄 — 접어 두어도 늘 보인다 */
+    h+='<div style="margin-top:7px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">'
+      +'<div style="flex:1;min-width:230px">'+wsgTryBars(r)+'</div>'
+      +'<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;padding-top:4px">'+wsgMissChips(r)+'</div>'
+      +'</div>';
+    h+='</button>';
     if(opened){
       h+='<div style="padding:10px 12px 12px;background:#fbfdff;border-top:1px solid #eef2f7">';
+      /* v19-16: 끝까지 못 맞힌 문항 — 번호까지 세 갈래로 나눠 보여 준다 */
+      h+=wsgMissBox(r);
       /* v19-15: 펼친 줄 맨 위에 두 점수 막대 — 이 학생이 얼마나 차이 나는지 한눈에 */
       if(r.score!=null || r.mfScore!=null){
         h+='<div style="background:#fff;border:1px solid #eef2f7;border-radius:9px;padding:8px 11px;margin-bottom:9px">'
@@ -8383,14 +8636,19 @@ function rWsGradeDetail(sh){
           if(c.r==='O'){ bg='#eff6ff'; fg='#0369a1'; bd='#bae6fd'; mk='◯'; }
           else if(c.r==='X'){ bg='#fff1f5'; fg='#be123c'; bd='#fbcfe8'; mk='✗'; }
           else if(c.r==='?'){ bg='#fffbeb'; fg='#a16207'; bd='#fde68a'; mk='?'; }
-          h+='<div title="'+esc2(String(c.no))+'번'+(c.self?' · 스스로 채점':'')+'" style="width:40px;padding:4px 0;border-radius:8px;'
+          /* v19-16: 아래에 다시 도전 결과를 아주 작게 덧붙인다 (1차 표시는 그대로 둔다) */
+          var rt=wsgCellRetry(c);
+          h+='<div title="'+esc2(String(c.no))+'번'+(c.self?' · 스스로 채점':'')+esc2(rt.tip)+'" style="width:40px;padding:4px 0;border-radius:8px;'
             +'background:'+bg+';border:1px solid '+bd+';text-align:center;line-height:1.25">'
             +'<div style="font-size:9.5px;color:#94a3b8;font-weight:800">'+esc2(String(c.no))+(c.self?'✍️':'')+'</div>'
-            +'<div style="font-size:13px;font-weight:900;color:'+fg+'">'+mk+'</div></div>';
+            +'<div style="font-size:13px;font-weight:900;color:'+fg+'">'+mk+'</div>'
+            +rt.html+'</div>';
         });
         h+='</div>';
         h+='<div style="margin-top:8px;font-size:11px;color:#94a3b8;font-weight:700;line-height:1.7">'
-          +'◯ 맞음 · ✗ 틀림 · ? 모르겠다고 표시 · · 아직 채점 안 됨 · ✍️ 는 스스로 채점 문항입니다.</div>';
+          +'◯ 맞음 · ✗ 틀림 · ? 모르겠다고 표시 · · 아직 채점 안 됨 · ✍️ 는 스스로 채점 문항입니다.<br>'
+          +'칸 아래 작은 글씨는 <b>다시 도전</b>입니다 — <b style="color:#0f766e">🔁◯ 다시 맞힘</b> · '
+          +'<b style="color:#be123c">🔁✗ 다시 풀어도 틀림</b> · <b style="color:#6d28d9">👁 정답만 봄</b>.</div>';
       }
       if(r.pend){
         h+='<div style="margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:8px 11px;'
@@ -8438,6 +8696,26 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-16',date:'2026-09-18',stability:'warn',memo:'🔁 <b>「다시 도전」 현황 — 1차 · 2차 · 3차를 나란히, 끝까지 못 맞힌 문항은 따로</b> (원장 결정 2026-09-18 「추천안 그대로」 · docs/retry_contract.md §3). '
+        +'<b>[무엇이 달라졌나]</b> 학생앱에서 틀린 문항을 <b>다시 푸는 기능</b>이 생깁니다(2차, 그리고 3일 뒤 3차). '
+        +'그 결과를 원장님이 보시는 자리가 「✅ 오늘의 확인 › 📄 학습지 채점」입니다. <b>PC·폰 두 화면 모두</b>에 들어갔습니다. '
+        +'<b>[① 학생 줄에 막대가 세 줄]</b> <b>1차 (실력)</b> 회색 · <b>2차</b> 청록 · <b>3차</b> 진한 청록입니다. 아직 그 차례를 안 풀었으면 <b>「아직」</b>이라고 나옵니다. '
+        +'<b>⚠️ 1차 점수가 진짜 실력입니다</b> — 매쓰플랫에도 <b>1차 결과만</b> 보냅니다. 2차·3차는 <b>얼마나 고쳐 냈는지</b>를 보는 숫자이고 루멘 앱에만 남습니다. '
+        +'그래서 학부모 리포트나 매쓰플랫 점수가 다시 도전 때문에 부풀 일이 없습니다. '
+        +'<b>[② 끝까지 못 맞힌 문항을 세 갈래로]</b> 뭉뚱그리지 않고 <b>구분해서</b> 보여 드립니다. '
+        +'<b style="color:#be123c">❌ 3차까지 틀림</b> — 세 번 풀고도 틀린 문항이니 <b>수업에서 다뤄 주셔야 합니다</b>. '
+        +'<b style="color:#a16207">🔁 다시 도전 대기</b> — 아직 다시 풀지 않은 문항입니다(2차 대기 · 3차 대기를 따로 세어 드립니다). '
+        +'<b style="color:#6d28d9">👁 정답만 보고 넘어감</b> — 다시 풀지 않고 「지금 정답 보기」를 눌러 답만 열어 본 문항입니다. '
+        +'학생 줄에는 <b>개수만 칩</b>으로 뜨고, 줄을 누르면 <b>문항 번호</b>까지 갈래별로 펼쳐집니다. '
+        +'<b>[③ 수업에서 다시 다룰 문항]</b> <b>여러 학생이 3차까지 틀린 문항</b>을 <b>많이 틀린 차례로</b> 자동으로 뽑아 드립니다 — 번호 · 몇 명 · 누구인지까지. '
+        +'아직 겹치는 문항이 없으면 한 명씩 틀린 문항을 대신 보여 드리니 화면이 비지 않습니다. '
+        +'<b>[④ 문항 칸에도 작게]</b> 문항별 ◯ ✗ 칸 아래에 <b>🔁◯ 다시 맞힘 · 🔁✗ 다시 풀어도 틀림 · 👁 정답만 봄</b>이 작은 글씨로 붙습니다. <b>위의 ◯ ✗ 는 1차 그대로</b>입니다. '
+        +'<b>[⑤ 교재 쪽]</b> 새 화면을 만들지 않았습니다. 「숙제체크 › 📗 교재 채점」의 학생 줄에 <b>「🔁 2차 n · 3차 n」 배지만 작게</b> 더했습니다. '
+        +'<b>[안전]</b> 다시 도전 기록은 학생 기록에 <b>rt 라는 칸 하나를 덧붙일 뿐</b>이고, <b>1차 값(맞음·틀림·학생이 쓴 답)은 절대 바뀌지 않습니다</b>. '
+        +'그래서 정답률·로드맵·아하노트·리포트 같은 <b>기존 숫자가 하나도 흔들리지 않습니다</b>. 다시 도전 결과는 <b>매쓰플랫에 보내지 않습니다</b>(1차 때 이미 보냈습니다). '
+        +'<b>아직 다시 도전을 해 본 학생이 없으면</b> 지금까지와 똑같이 1차만 보입니다 — 그것이 정상입니다. 폰 화면은 PC 와 <b>같은 계산</b>을 쓰므로 숫자가 어긋나지 않고, 퇴원생은 여전히 빠집니다. '
+        +'<b>[주의]</b> 학생앱 v2-91(정답 가리기 · 다시 도전 화면)이 올라간 뒤라야 2차·3차가 실제로 쌓입니다. '
+        +'[검증] 실브라우저 — 세 줄 막대와 2·3차 점수 계산, 세 갈래 구분, 많이 틀린 순 정렬, <b>rt 가 없는 옛 기록이 예전과 똑같이 보이는지</b>, 폰과 PC 숫자가 같은지, 빈 상황, v19-15 회귀를 모두 확인했습니다.'},
       {ver:'v19-15',date:'2026-09-18',stability:'warn',memo:'⚖️ <b>두 점수를 나란히 견주고, 폰에서도 학습지 채점을 봅니다</b> (원장 지시 2026-09-18 — 「1 비교하게 보여줘」 · 「2. 만들어줘」). '
         +'<b>[① 두 점수가 나란히 보입니다]</b> 지난번에는 「평균 78점」처럼 한 가지만 보였는데, 이제 '
         +'<b>🔷 루멘 78점 · 🤖 매쓰플랫 41점</b> 처럼 <b>둘을 함께</b> 보여 드리고, 그 옆에 <b>차이(+37)</b>를 작게 붙입니다. '
@@ -34986,8 +35264,15 @@ function hwbModel(){
     var keys=Object.keys(items);
     var selfRows=[], oldRows=[];
     var mcnt={O:0,X:0,'?':0}, auto7=0, fix7=0, wsSelf=0, bkSelf=0;
+    /* v19-16: 🔁 다시 도전 — 이 학생이 2차·3차를 몇 문항 풀었는지 (배지로만 쓴다) */
+    var rt2=0, rt3=0;
     keys.forEach(function(k){
       var it=items[k]; if(!it) return;
+      if(Array.isArray(it.rt)) it.rt.forEach(function(e){
+        if(!e) return;
+        var n=Number(e.n||0);
+        if(n===2) rt2++; else if(n>=3) rt3++;
+      });
       if(it.r in mcnt && String(it.at||'').slice(0,7)===month) mcnt[it.r]++;
       var pk=hwbParseKey(k);                               // v19-2: 교재 키 / 학습지 키 둘 다 받는다
       var hit=idx[k]||null, p=hit?hit.p:null;
@@ -35038,7 +35323,7 @@ function hwbModel(){
     var st=byCode[code];
     out.push({ code:code, name:st?st.name:('코드 '+code), group:(st&&st.group)||'',
                selfRows:selfRows, oldRows:oldRows, oldMore:oldMore,
-               mcnt:mcnt, auto7:auto7, fix7:fix7, wsSelf:wsSelf, bkSelf:bkSelf,
+               mcnt:mcnt, auto7:auto7, fix7:fix7, wsSelf:wsSelf, bkSelf:bkSelf, rt2:rt2, rt3:rt3,
                pend:pend, wsPend:wsPend, lastSync:lastSync, total:keys.length });
   });
   out.sort(function(a,b){ return (b.selfRows.length-a.selfRows.length)||(b.total-a.total); });
@@ -35266,6 +35551,8 @@ function rHwBook(){
     if(s.selfRows.length) h+='<span style="font-size:10.5px;font-weight:900;color:#fff;background:#7c3aed;border-radius:50px;padding:2px 9px">🙋 자기채점 '+s.selfRows.length+'</span>';
     if(s.wsSelf) h+='<span title="그중 학습지 문항" style="font-size:10.5px;font-weight:900;color:#0369a1;background:#e0f2fe;border-radius:50px;padding:2px 9px">📄 학습지 '+s.wsSelf+'</span>';
     if(s.fix7) h+='<span style="font-size:10.5px;font-weight:900;color:#fff;background:#0d2240;border-radius:50px;padding:2px 9px">✋ 고침 '+s.fix7+'</span>';
+    /* v19-16: 다시 도전(2차·3차)을 얼마나 했는지 — 배지만 작게 (화면 구조는 그대로) */
+    if(s.rt2||s.rt3) h+='<span title="틀린 문항을 다시 푼 횟수입니다. 1차 점수는 바뀌지 않습니다 — 자세한 것은 「📄 학습지 채점」에서 보십시오" style="font-size:10.5px;font-weight:900;color:#0f766e;background:#f0fdfa;border:1px solid #99f6e4;border-radius:50px;padding:2px 9px">🔁 2차 '+s.rt2+' · 3차 '+s.rt3+'</span>';
     h+='<span style="font-size:11px;font-weight:800;color:#64748b">최근 '+HWB_SELF_DAYS+'일 자동채점 '+hwbNum(s.auto7)+' · 이번 달 <b style="color:#1d78c9">◯'+s.mcnt.O+'</b> <b style="color:#dc3b34">✕'+s.mcnt.X+'</b> <b style="color:#a15c00">?'+s.mcnt['?']+'</b> · 전체 '+hwbNum(s.total)+'문항</span>';
     h+='<span style="flex:1"></span>';
     if(s.pend) h+='<span style="font-size:10.5px;font-weight:900;color:#d97706" title="워커가 5분마다 매쓰플랫에 반영합니다">⏳ 반영 대기 '+s.pend+'건</span>';
@@ -70575,6 +70862,10 @@ function mobWsgDetail(sh){
       +'<div style="margin-top:9px;font-size:11px;color:#64748b;font-weight:700;line-height:1.75">'+wsgWhyLine()+'</div>');
   }
 
+  /* v19-16: 🔁 다시 도전 현황 + 수업에서 다시 다룰 문항 (PC 와 같은 함수·같은 숫자) */
+  h+=wsgRetryBox(sh);
+  h+=wsgHardBox(sh);
+
   /* 스스로 채점 문항 번호 */
   var selfNos=wsgSelfNos(sh);
   var sb='<div style="font-size:13px;font-weight:900;color:#92400e">✍️ 스스로 채점으로 넘어간 문항 '+selfNos.length+'개</div>'
@@ -70610,6 +70901,10 @@ function mobWsgDetail(sh){
       +'</div>';
     inner+='<div style="margin-top:7px">'+wsgScoreDuo(r.score, r.mfScore, r.mfHas, false)+'</div>';
     inner+=wsgScoreBars(r.score, r.mfScore, r.mfHas);
+    /* v19-16: 1차 / 2차 / 3차 막대 세 줄 + 못 맞힌 문항 칩 (PC 와 같은 함수) */
+    inner+='<div style="margin-top:9px;border-top:1px dashed #eef2f7;padding-top:7px">'+wsgTryBars(r)+'</div>';
+    var mc=wsgMissChips(r);
+    if(mc) inner+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:7px">'+mc+'</div>';
     inner+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">'
       +wsgChip('◯ '+r.o,'#f0f9ff','#0369a1','#bae6fd')
       +' '+wsgChip('✗ '+r.x,'#fff1f5','#be123c','#fbcfe8')
@@ -70617,6 +70912,7 @@ function mobWsgDetail(sh){
       +(r.pend?(' '+wsgChip('⏳ 대기 '+r.pend+'건','#fffbeb','#a16207','#fde68a')):'')+'</div>';
     if(opened){
       inner+='<div style="margin-top:9px;border-top:1px solid #eef2f7;padding-top:9px">';
+      inner+=wsgMissBox(r);
       if(!r.cells.length){
         inner+='<div style="font-size:11.5px;color:#94a3b8;font-weight:700">문항 정보가 없습니다.</div>';
       }else{
@@ -70626,14 +70922,18 @@ function mobWsgDetail(sh){
           if(c.r==='O'){ bg='#eff6ff'; fg='#0369a1'; bd='#bae6fd'; mk='◯'; }
           else if(c.r==='X'){ bg='#fff1f5'; fg='#be123c'; bd='#fbcfe8'; mk='✗'; }
           else if(c.r==='?'){ bg='#fffbeb'; fg='#a16207'; bd='#fde68a'; mk='?'; }
-          inner+='<div title="'+esc2(String(c.no))+'번'+(c.self?' · 스스로 채점':'')+'" style="width:36px;padding:3px 0;'
+          var rt=wsgCellRetry(c);   // v19-16
+          inner+='<div title="'+esc2(String(c.no))+'번'+(c.self?' · 스스로 채점':'')+esc2(rt.tip)+'" style="width:36px;padding:3px 0;'
             +'border-radius:8px;background:'+bg+';border:1px solid '+bd+';text-align:center;line-height:1.25">'
             +'<div style="font-size:9px;color:#94a3b8;font-weight:800">'+esc2(String(c.no))+(c.self?'✍️':'')+'</div>'
-            +'<div style="font-size:12.5px;font-weight:900;color:'+fg+'">'+mk+'</div></div>';
+            +'<div style="font-size:12.5px;font-weight:900;color:'+fg+'">'+mk+'</div>'
+            +rt.html+'</div>';
         });
         inner+='</div>';
         inner+='<div style="margin-top:7px;font-size:10.5px;color:#94a3b8;font-weight:700;line-height:1.7">'
-          +'◯ 맞음 · ✗ 틀림 · ? 모르겠다고 표시 · · 아직 채점 안 됨 · ✍️ 는 스스로 채점 문항입니다.</div>';
+          +'◯ 맞음 · ✗ 틀림 · ? 모르겠다고 표시 · · 아직 채점 안 됨 · ✍️ 는 스스로 채점 문항입니다.<br>'
+          +'칸 아래 작은 글씨는 <b>다시 도전</b>입니다 — <b style="color:#0f766e">🔁◯ 다시 맞힘</b> · '
+          +'<b style="color:#be123c">🔁✗ 다시 풀어도 틀림</b> · <b style="color:#6d28d9">👁 정답만 봄</b>.</div>';
       }
       if(r.pend){
         inner+='<div style="margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 10px;'

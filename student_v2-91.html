@@ -2021,6 +2021,34 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .bk-pimg{border:1px solid var(--border);border-radius:11px;background:#fff;padding:7px;overflow:hidden}
 .bk-pimg img{width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#f8fafc}
 .bk-mfmark{font-size:11px;font-weight:900;color:#0f766e;background:#e5f5f2;border-radius:9px;padding:8px 10px}
+/* ★ v2-91: 🔁 다시 도전 (2차·3차) — 정답 가림 · 재도전 카드 · 마무리 요약 (계약 docs/retry_contract.md §2) */
+.bk-hideans{border:1.5px dashed #99e2d8;border-radius:11px;background:#f0fbf9;padding:10px}
+.bk-hideans .t{font-size:12px;font-weight:900;color:#0f766e;line-height:1.55}
+.bk-hideans .s{font-size:10.5px;font-weight:700;color:#64748b;margin-top:3px;line-height:1.55}
+.bk-hideans .s2{font-size:9.5px;font-weight:700;color:#94a3b8;margin-top:5px;line-height:1.5}
+.bk-seeans{margin-top:7px;border:1.5px solid #cbd5e1;background:var(--surface);color:#64748b;border-radius:9px;padding:7px 12px;font-family:inherit;font-size:11px;font-weight:900;cursor:pointer}
+.bk-rthd{background:var(--surface);border:1.5px solid #99e2d8;border-radius:13px;padding:11px 13px;margin-bottom:10px}
+.bk-rthd .t{font-size:13.5px;font-weight:900;color:#0d2240}
+.bk-rthd .s{font-size:10.5px;font-weight:700;color:#64748b;margin-top:3px;line-height:1.55}
+.bk-bar{height:9px;border-radius:50px;background:#e8edf5;overflow:hidden;margin-top:7px}
+.bk-bar i{display:block;height:100%;border-radius:50px;background:#0d9488}
+.bk-rtrow{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:900;margin-top:6px}
+.bk-rtrow .lb{width:30px;color:#64748b;flex:none}
+.bk-rtrow .bk-bar{flex:1;margin:0}
+.bk-rtrow .vv{width:34px;text-align:right;color:#0d2240}
+.bk-paper{background:#f1f5f9;border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-size:11.5px;font-weight:800;color:#475569;line-height:1.55}
+.bk-old{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:9px;padding:7px 10px;font-size:11px;font-weight:700;color:#64748b;line-height:1.55;word-break:break-all}
+.bk-old b{color:#dc3b34}
+.bk-cchip{background:#fdf3e0;border:1px solid #f0d9a8;border-radius:9px;padding:8px 10px;font-size:11px;font-weight:800;color:#92400e;line-height:1.55;word-break:break-all}
+.bk-rtmark{font-size:11.5px;font-weight:900;border-radius:9px;padding:8px 10px}
+.bk-rtmark.ok{background:#e7f6ec;color:#15803d}
+.bk-rtmark.no{background:#fdf3e0;color:#a15c00}
+.bk-rtcard{background:var(--surface);border:1.5px solid #99e2d8;border-radius:13px;padding:12px 13px;margin-top:10px}
+.bk-rtcard.warn{border-color:#f0d9a8;background:#fffbeb}
+.bk-rtcard .t1{font-size:13.5px;font-weight:900;color:#0d2240;margin-bottom:5px;line-height:1.5}
+.bk-rtcard .s1{font-size:11px;font-weight:700;color:#64748b;line-height:1.65;word-break:break-all}
+.bk-ghost{width:100%;box-sizing:border-box;border:1.5px solid #99e2d8;background:var(--surface);color:#0f766e;border-radius:11px;padding:11px 6px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;line-height:1.4}
+.bk-rtcard .bk-ghost{margin-top:9px}
 .bk-note{font-size:11.5px;font-weight:800;color:#a15c00;background:#fdf3e0;border:1px solid #f0d9a8;border-radius:9px;padding:8px 10px;line-height:1.6}
 .kpad.cmp2 button{padding:6px 0;font-size:14px}
 .kpad.cmp2 button.fn{font-size:11px}
@@ -3659,6 +3687,31 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-91 (2026-09-18) 🔁 «다시 도전» — 틀린 문항을 2차·3차로 다시 풀어 맞힙니다
+ *   · 원장님 결정(계약 docs/retry_contract.md)대로 만들었습니다. 📚 교재와 📄 학습지 둘 다 됩니다.
+ *   · <b>1차에 틀린 문항은 정답을 가립니다.</b> 정답 자리에 「🔁 이 문항은 다시 도전에서
+ *     풀어요」가 뜹니다. 지금 당장 보고 싶으면 작은 「지금 정답 보기」를 누르면 되는데,
+ *     그러면 그 문항은 다시 도전에서 빠집니다(되돌릴 수 없다고 한 줄 알려 줍니다).
+ *     <b>맞은 문항은 지금처럼 바로 정답이 보입니다.</b>
+ *   · 한 쪽(또는 학습지 한 장)을 <b>다 채점하면</b> 마무리 카드에 「🔁 다시 도전할 문항 n개 ·
+ *     다시 도전 시작하기」가 생깁니다. 누르면 <b>틀린 문항만 번호 순서대로</b> 다시 나옵니다.
+ *   · <b>다시 도전(2차) 화면</b> — 문항 번호와 「1차에 쓴 답 → 틀렸어요」가 회색 상자로 보이고,
+ *     <b>답 넣는 방법은 1차와 똑같습니다</b>(참거짓은 O/X 단추, 여러 칸은 칸마다 입력칸).
+ *     매쓰플랫에서 개념 이름을 받아 온 문항에는 「💡 이 문제는 「…」 개념이에요」 한 줄이
+ *     붙습니다(개념 이름이 없으면 그 줄은 아예 안 보입니다). 「아직 모르겠어요 · 아하노트에
+ *     질문」 단추도 있습니다. <b>학습지는 문제 그림을 띄우지 않습니다</b>(v2-90 그대로).
+ *   · <b>2차를 마치면</b> 1차·2차 막대 두 줄과 「n개 중 n개를 다시 맞혔어요」가 나옵니다.
+ *     그래도 못 맞힌 문항은 「3일 뒤 한 번 더 물어볼게요」로 남고, 원하면 그 자리에서
+ *     「지금 정답과 해설 보기」로 열 수 있습니다. 「🏅 다시 도전으로 맞힌 n문항 · +n XP」도 뜹니다.
+ *   · <b>3일이 지나면</b> 채점 홈과 채점 화면 맨 위에 「🔔 3일 전에 못 맞힌 문항 n개 ·
+ *     3차 도전하기」 카드가 저절로 뜹니다. 3차에도 틀리면 그대로 두고 선생님 화면에 모입니다.
+ *   · <b>1차 점수는 절대 바뀌지 않습니다.</b> 다시 도전 결과는 따로(rt) 쌓이므로
+ *     정답률·로드맵·선생님 화면의 숫자가 흔들리지 않습니다. <b>1차가 실력</b>입니다.
+ *   · <b>매쓰플랫에는 1차 결과만 보냅니다.</b> 2차·3차는 루멘에만 남습니다
+ *     (매쓰플랫 점수·리포트가 학생 실력을 그대로 나타내게 하려는 원장님 결정입니다).
+ *   · 서술형처럼 <b>스스로 채점하는 문항</b>은 1차에서 이미 정답을 보고 채점했으므로
+ *     정답을 가리지 않고, 다시 도전 대상에서도 빠집니다.
+ *
  * v2-90 (2026-09-18) 🔒 학습지에서 «문제 그림»을 없앴습니다 — 학습지는 시험지입니다
  *   · 원장님 지시: 「학습지 자동채점에서는 문제가 보이면 안 된다. 시험지이기 때문이다.」
  *   · v2-83부터 채점 카드 위에 <b>문제 그림</b>이 함께 떴습니다. 학습지는 종이로 나눠 주는
@@ -3927,7 +3980,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-90';
+var STU_VER = 'v2-91';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -11858,7 +11911,8 @@ window.sgSubmit = async function(){
 var BK={ loaded:false, swb:null, scores:{}, ans:{}, book:null, page:null, active:null, buf:'', busy:false,
          fields:[], fi:0, tab:'num', sh:null, photos:{}, soft:{}, wordIn:{}, sample:{}, qn:0, upBusy:false, target:null,
          wsq:null, top:'book', bsub:'normal', wsf:'전체', ws:null, mode:'book', objPick:{},
-         wsans:{}, wsansTried:{}, wsansBusy:false };
+         wsans:{}, wsansTried:{}, wsansBusy:false,
+         rt:null };   /* ★ v2-91: 「다시 도전」 중이면 { round:2|3, ids:[wpId…] } */
 function bkKeyOf(pid,wpId){ return pid+'_'+wpId; }
 
 async function bkFetchStore(keys){
@@ -15182,6 +15236,7 @@ function bkPaintHome(){
   h+='<div class="s1"><div class="v" style="color:#dc3b34">'+xn+'</div><div class="l">틀림 ✕</div></div>';
   h+='<div class="s1"><div class="v" style="color:#a15c00">'+qn+'</div><div class="l">모름 ?</div></div>';
   h+='</div>';
+  h+=bkRt3Home();                    /* ★ v2-91: 「🔔 3일 전에 못 맞힌 문항」 */
   body.innerHTML=h+(BK.top==='ws'?bkWsListHtml():bkBookListHtml());
 }
 /* ── 교재 탭 ── */
@@ -15504,7 +15559,7 @@ window.bkOpenWs=async function(swId){
   var list=(BK.wsq&&BK.wsq.list)||[];
   var w=list.find(function(x){ return String(x.swId)===String(swId); });
   if(!w){ alert('학습지를 찾지 못했어요'); return; }
-  BK.ws=w; BK.mode='ws';
+  BK.ws=w; BK.mode='ws'; BK.rt=null;      /* ★ v2-91: 다른 학습지를 열면 다시 도전은 끝낸다 */
   /* ★ v2-89: 이 학습지의 정답 대장(mf_wsans_<wid>)을 먼저 받아 온다.
    * 없으면(옛 학습지·매쓰플랫 자체 학습지) v2-88 과 똑같이 동작한다. */
   try{ await bkWsKeyLoad(); }catch(e){}
@@ -15529,11 +15584,11 @@ window.bkOpenWs=async function(swId){
   go('screen-bookq');
 };
 /* 문항 화면 ← 단추 — 학습지면 목록으로, 교재면 쪽 목록으로 */
-window.bkBack=function(){ go(BK.mode==='ws'?'screen-bookscore':'screen-bookpages'); };
+window.bkBack=function(){ BK.rt=null; go(BK.mode==='ws'?'screen-bookscore':'screen-bookpages'); };
 window.bkOpenBook=async function(i){
   BK.book=((BK.swb&&BK.swb.books)||[])[i]||null;
   if(!BK.book) return;
-  BK.mode='book'; BK.ws=null;                      // v2-83: 지금은 교재를 채점한다
+  BK.mode='book'; BK.ws=null; BK.rt=null;          // v2-83: 지금은 교재를 채점한다
   await bkLoadAns(BK.book.bid);
   go('screen-bookpages');
 };
@@ -15566,7 +15621,7 @@ window.bkRenderPages=function(){
 window.bkOpenPage=function(idx){
   BK.page=(BK.book&&BK.book.pages||[])[idx]||null;
   if(!BK.page) return;
-  BK.mode='book'; BK.ws=null;
+  BK.mode='book'; BK.ws=null; BK.rt=null;      /* ★ v2-91 */
   BK.pageIdx=idx;
   BK.active=null; BK.buf='';
   go('screen-bookq');
@@ -15597,7 +15652,7 @@ function bkNavHtml(){
 window.bkNavGo=function(idx){
   BK.page=(BK.book&&BK.book.pages||[])[idx]||null;
   if(!BK.page) return;
-  BK.pageIdx=idx; BK.active=null; BK.buf='';
+  BK.pageIdx=idx; BK.active=null; BK.buf=''; BK.rt=null;   /* ★ v2-91 */
   bkKpadShow(false); bkRenderQ();
   var body=document.getElementById('bkq-body'); if(body) body.scrollTop=0;
   try{ window.scrollTo(0,0); }catch(e){}
@@ -15921,8 +15976,17 @@ window.bkRenderQ=function(){
   var body=document.getElementById('bkq-body');
   if(!pageAns){ body.innerHTML=(isWs?'':bkNavHtml())+'<div class="sp3-empty"><div class="e1">⏳</div><div class="e2">정답 준비 중</div></div>'; return; }
   var probs=pageAns.problems||[];
+  /* ★ v2-91: 🔁 다시 도전 중이면 그 문항만 번호 순서대로 보여 준다 */
+  if(bkRtOn()){
+    if(tEl) tEl.textContent='🔁 다시 도전 · '+BK.rt.round+'차';
+    body.innerHTML=bkRtRender(pg,probs);
+    BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
+    bkKpadShow(false);
+    return;
+  }
   var st=bkPageStat(pg,probs);
-  var h=isWs?bkWsHeadHtml(probs):bkNavHtml();
+  var h=bkRt3Card(pg,probs);            /* ★ v2-91: 「🔔 3일 전에 못 맞힌 문항」 */
+  h+=isWs?bkWsHeadHtml(probs):bkNavHtml();
   h+='<div class="bk-strip"><span>'+probs.length+'문항</span><span>채점 '+st.done+'</span>'
     +(st.self?'<span style="background:#e5f5f2;color:#0f766e">자기채점 '+st.self+'</span>':'')+'</div>';
   h+='<div class="bk-hint" style="margin-bottom:9px">'
@@ -15977,13 +16041,347 @@ function bkWsHeadHtml(probs){
     +'</div></div>';
   return h;
 }
+/* ══════════════════════════════════════════════════════════════════════
+ * ★ v2-91: 🔁 다시 도전 (2차 · 3차)  — 계약 docs/retry_contract.md §1·§2
+ *
+ *   원장님 결정: 「1차에 틀린 문항은 정답을 가리고 다시 풀게 한다. 2차에도 못 맞히면
+ *   3일 뒤 3차로 한 번 더 묻는다. 매쓰플랫에는 1차 결과만 보낸다.」
+ *
+ *   ▸ 저장은 기존 기록에 「시도」만 덧붙인다 (계약 §1)
+ *       { r:'X', a:'…', at:'…',              ← 1차. «절대 바뀌지 않는다» (이것이 실력)
+ *         rt:[ {n:2, r:'O', a:'…', at:'…'} ], ← 재도전만 여기에 쌓인다
+ *         seen:'…' }                          ← 「지금 정답 보기」를 누른 시각
+ *     정답률·로드맵·선생님 화면이 모두 r·a·at 을 읽으므로 이 세 값은 손대지 않는다.
+ *   ▸ 재도전 결과는 매쓰플랫 되돌려쓰기 대기열(hw_sync)에 «넣지 않는다» — 1차 때 이미 보냈다.
+ *   ▸ 스스로 채점하는 문항(서술형·보기답·앱이 못 읽은 답)은 1차에서 이미 정답을 보고
+ *     채점했으므로 정답을 가릴 수 없다 → 다시 도전 대상에서 뺀다.
+ * ════════════════════════════════════════════════════════════════════ */
+var BK_RT_DAYS=3;                       /* 3차는 2차를 마친 날로부터 며칠 뒤인가 (원장 결정) */
+function bkRtOn(){ return !!(BK.rt&&BK.rt.ids&&BK.rt.ids.length); }
+/* 이 문항의 재도전 기록 배열 */
+function bkRtArr(m){ return (m&&m.rt&&m.rt.length)?m.rt:[]; }
+/* 마지막 재도전 기록 (없으면 null) */
+function bkRtLast(m){ var a=bkRtArr(m); return a.length?a[a.length-1]:null; }
+/* 이 차수(n)에 낸 답 (없으면 null) */
+function bkRtEntry(m,n){
+  var a=bkRtArr(m);
+  for(var i=0;i<a.length;i++) if(Number(a[i].n)===Number(n)) return a[i];
+  return null;
+}
+/* 문항 번호를 숫자로 (줄 세우기용) */
+function bkRtNum(p){
+  var n=parseFloat(String((p&&p.num)||'').replace(/[^0-9.]/g,''));
+  return isNaN(n)?0:n;
+}
+/* 다시 도전을 시킬 수 있는 문항인가 — 1차에 ✗ 이거나 ? 이고, 스스로 채점이 아닌 것 */
+function bkRtBase(p,m){
+  if(!m||m.self) return false;
+  if(m.r!=='X'&&m.r!=='?') return false;
+  var sh=null; try{ sh=bkShape(p); }catch(e){}
+  if(sh&&sh.self) return false;
+  return true;
+}
+/* 2차 대상 — 재도전 기록이 없고 「지금 정답 보기」도 안 누른 문항 (계약 §2-2) */
+function bkRt2Want(p,m){
+  if(!bkRtBase(p,m)) return false;
+  return !bkRtArr(m).length && !m.seen;
+}
+/* 3차 때가 되었나 — 2차에 못 맞혔고 그 시각으로부터 3일이 지났다 (계약 §2-4)
+ * 계약에는 r==='X' 만 적혀 있으나, 2차에 「모름 ?」을 누른 문항도 못 맞힌 것이므로 함께 부른다. */
+function bkRtDue3(m,now){
+  var l=bkRtLast(m);
+  if(!l||Number(l.n)!==2||l.r==='O') return false;
+  var t=Date.parse(String(l.at||''));
+  if(!t) return false;
+  return ((now||Date.now())-t)>=BK_RT_DAYS*86400000;
+}
+function bkRt3Want(p,m,now){ return bkRtBase(p,m)&&bkRtDue3(m,now); }
+/* 이 문항의 정답을 가려야 하나 (계약 §2-1) */
+function bkRtHideFor(p,m){
+  if(!m||m.seen||m.self) return false;
+  if(m.r==='O') return false;
+  var sh=null; try{ sh=bkShape(p); }catch(e){}
+  if(sh&&sh.self) return false;
+  var l=bkRtLast(m);
+  if(l){
+    if(l.r==='O') return false;                 // 다시 맞혔다 → 정답을 열어 준다
+    if(Number(l.n)>=3) return false;            // 3차까지 했다 → 더 물어볼 곳이 없으니 연다
+  }
+  return true;
+}
+/* 이 쪽(또는 학습지 한 장)의 n차 대상 문항을 번호 순서대로 */
+function bkRtList(pg,probs,round,now){
+  var out=[];
+  (probs||[]).forEach(function(p){
+    var m=BK.scores[bkKeyOf(pg.pid,p.wpId)];
+    if(Number(round)===3?bkRt3Want(p,m,now):bkRt2Want(p,m)) out.push(p);
+  });
+  out.sort(function(a,b){
+    var d=bkRtNum(a)-bkRtNum(b);
+    if(d) return d;
+    return String(a.wpId)<String(b.wpId)?-1:1;
+  });
+  return out;
+}
+/* 1차·2차·3차 점수 — 1차 결과는 그대로 두고 「그 차수까지 맞힌 문항 수」로 센다 */
+function bkRtScores(pg,probs){
+  var tot=0, got=[0,0,0,0];
+  (probs||[]).forEach(function(p){
+    var m=BK.scores[bkKeyOf(pg.pid,p.wpId)];
+    var r1=m?m.r:(bkMfDone(p)?p.result:'');
+    if(!r1) return;
+    tot++;
+    var cur=(r1==='O');
+    if(cur) got[1]++;
+    var a=bkRtArr(m);
+    for(var n=2;n<=3;n++){
+      if(!cur){ for(var i=0;i<a.length;i++) if(Number(a[i].n)===n&&a[i].r==='O') cur=true; }
+      if(cur) got[n]++;
+    }
+  });
+  var pct=function(v){ return tot?Math.round(v/tot*100):0; };
+  return { tot:tot, n1:got[1], n2:got[2], n3:got[3], s1:pct(got[1]), s2:pct(got[2]), s3:pct(got[3]) };
+}
+/* 점수 막대 한 줄 */
+function bkRtBarRow(lb,v,col){
+  var w=Math.max(0,Math.min(100,Number(v)||0));
+  return '<div class="bk-rtrow"><span class="lb">'+h3Esc(lb)+'</span>'
+    +'<span class="bk-bar"><i style="width:'+w+'%;background:'+col+'"></i></span>'
+    +'<span class="vv">'+w+'</span></div>';
+}
+/* 정답 자리 — 가려야 하면 「다시 도전에서 풀어요」 상자로 바꿔 놓는다 (계약 §2-1) */
+function bkAnsSlot(p,m,wp,mode){
+  if(!bkRtHideFor(p,m)) return bkAnsBox(p);
+  var w=String(wp==null?((p&&p.wpId)||''):wp);
+  var h='<div class="bk-hideans">';
+  h+='<div class="t">🔁 이 문항은 <b>다시 도전</b>에서 풀어요</div>';
+  if(mode==='rt'){
+    h+='<div class="s">정답은 이번 도전을 다 마친 뒤에 열어 줄게요.</div>';
+  } else {
+    h+='<div class="s">정답은 그때 보여 줄게요 — 지금 보면 다시 풀 까닭이 없으니까요.</div>';
+    h+='<button class="bk-seeans" onclick="bkSeeAns('+bkQ(w)+')">지금 정답 보기</button>';
+    h+='<div class="s2">누르면 이 문항만 정답이 열리고 「다시 도전」에서는 빠져요 · 되돌릴 수 없어요</div>';
+  }
+  h+='</div>';
+  return h;
+}
+/* 「지금 정답 보기」 — 그 문항만 열고 seen 을 남긴다 (되돌릴 수 없다) */
+window.bkSeeAns=async function(wpId){
+  wpId=String(wpId);
+  if(!BK.page) return;
+  var key=bkKeyOf(BK.page.pid,wpId), m=BK.scores[key];
+  if(!m||m.seen) return;
+  var goOn=true;
+  try{ goOn=window.confirm('지금 정답을 열면 이 문항은 「다시 도전」에서 빠져요.\n되돌릴 수 없어요. 정답을 열까요?'); }catch(e){ goOn=true; }
+  if(!goOn) return;
+  m.seen=new Date().toISOString();
+  BK.scores[key]=m;
+  bkRenderQ();
+  await bkPersist(wpId, m.r, m.a, true);        // 매쓰플랫에는 보내지 않는다
+};
+/* 2차를 마친 뒤 「지금 정답과 해설 보기」 — 아직 못 맞힌 문항을 한꺼번에 연다 */
+window.bkRtShowAll=async function(){
+  if(!bkRtOn()||!BK.page) return;
+  var now=new Date().toISOString(), hit='';
+  BK.rt.ids.forEach(function(w){
+    var key=bkKeyOf(BK.page.pid,w), m=BK.scores[key];
+    if(!m||m.seen) return;
+    var l=bkRtLast(m);
+    if(l&&l.r==='O') return;
+    m.seen=now; BK.scores[key]=m; if(!hit) hit=w;
+  });
+  bkRenderQ();
+  if(hit) await bkPersist(hit, '', '', true);
+};
+/* 「다시 도전 시작하기」 / 「3차 도전하기」 */
+window.bkRtStart=function(round){
+  round=Number(round)||2;
+  var b=BK.book, pg=BK.page;
+  if(!b||!pg) return;
+  var ans=BK.ans[b.bid], pa=ans&&ans.pages&&ans.pages[pg.wpid];
+  var probs=(pa&&pa.problems)||[];
+  var list=bkRtList(pg,probs,round,Date.now());
+  if(!list.length){ if(typeof toast==='function') toast('다시 도전할 문항이 없어요'); return; }
+  BK.rt={ round:round, ids:list.map(function(p){ return String(p.wpId); }) };
+  BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
+  bkKpadShow(false);
+  bkRenderQ();
+  try{ var bd=document.getElementById('bkq-body'); if(bd) bd.scrollTop=0; window.scrollTo(0,0); }catch(e){}
+};
+/* 다시 도전을 끝내고 채점 화면으로 */
+window.bkRtEnd=function(){
+  BK.rt=null; BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
+  bkKpadShow(false);
+  bkRenderQ();
+  try{ var bd=document.getElementById('bkq-body'); if(bd) bd.scrollTop=0; window.scrollTo(0,0); }catch(e){}
+};
+/* 채점 홈에서 「3차 도전하기」를 누르면 그 학습지·교재 쪽을 열고 바로 3차를 시작한다 */
+window.bkRtGo=async function(gid){
+  gid=String(gid||'');
+  if(gid.indexOf('ws:')===0){ await bkOpenWs(gid.slice(3)); bkRtStart(3); return; }
+  var pid=gid.slice(3), books=(BK.swb&&BK.swb.books)||[];
+  for(var i=0;i<books.length;i++){
+    var pgs=books[i].pages||[];
+    for(var j=0;j<pgs.length;j++){
+      if(String(pgs[j].pid)===pid){ await bkOpenBook(i); bkOpenPage(j); bkRtStart(3); return; }
+    }
+  }
+  alert('그 교재를 찾지 못했어요');
+};
+/* 채점 화면 맨 위 「🔔 3일 전에 못 맞힌 문항」 (계약 §2-4) */
+function bkRt3Card(pg,probs){
+  var list=bkRtList(pg,probs,3,Date.now());
+  if(!list.length) return '';
+  var h='<div class="bk-rtcard" style="margin:0 0 10px">';
+  h+='<div class="t1">🔔 3일 전에 못 맞힌 문항 '+list.length+'개</div>';
+  h+='<div class="s1">한 번 더 풀어 맞히면 오래 기억에 남아요.</div>';
+  h+='<button class="bk-next" onclick="bkRtStart(3)">3차 도전하기</button></div>';
+  return h;
+}
+/* 채점 홈(📚 교재 · 📄 학습지 목록) 맨 위 「🔔 3일 전에 못 맞힌 문항」 — 전부 모아서 */
+function bkRt3Home(){
+  var now=Date.now(), groups=[], by={};
+  Object.keys(BK.scores).forEach(function(k){
+    var m=BK.scores[k];
+    if(!m||m.self) return;
+    if(m.r!=='X'&&m.r!=='?') return;
+    if(!bkRtDue3(m,now)) return;
+    var gid='';
+    if(m.kind==='ws'&&m.swId!=null) gid='ws:'+m.swId;
+    else if(m.pid!=null) gid='bk:'+m.pid;
+    else return;
+    if(!by[gid]){ by[gid]={ gid:gid, n:0, t:'' }; groups.push(by[gid]); }
+    by[gid].n++;
+  });
+  if(!groups.length) return '';
+  var wsl=(BK.wsq&&BK.wsq.list)||[], books=(BK.swb&&BK.swb.books)||[];
+  groups.forEach(function(g){
+    if(g.gid.indexOf('ws:')===0){
+      var sid=g.gid.slice(3);
+      var w=wsl.find(function(x){ return String(x.swId)===sid; });
+      g.t=w?bkShortTitle(w.title||'학습지'):'학습지';
+    } else {
+      var pid=g.gid.slice(3);
+      books.forEach(function(b){
+        (b.pages||[]).forEach(function(pg){
+          if(String(pg.pid)===pid) g.t=bkShortTitle(b.title||'교재')+(pg.page!=null?(' '+pg.page+'P'):'');
+        });
+      });
+      if(!g.t) g.t='교재';
+    }
+  });
+  var tot=0; groups.forEach(function(g){ tot+=g.n; });
+  var h='<div class="bk-rtcard" style="margin:0 0 10px">';
+  h+='<div class="t1">🔔 3일 전에 못 맞힌 문항 '+tot+'개</div>';
+  h+='<div class="s1">한 번 더 풀어 맞히면 오래 기억에 남아요.</div>';
+  groups.slice(0,6).forEach(function(g){
+    h+='<button class="bk-ghost" onclick="bkRtGo('+bkQ(g.gid)+')">'+h3Esc(g.t)+' · '+g.n+'문항 · 3차 도전하기</button>';
+  });
+  h+='</div>';
+  return h;
+}
+/* 다시 도전 화면 전체 — 대상 문항만 번호 순서대로 */
+function bkRtRender(pg,probs){
+  var round=BK.rt.round, want={};
+  BK.rt.ids.forEach(function(w){ want[w]=1; });
+  var list=(probs||[]).filter(function(p){ return want[String(p.wpId)]; });
+  list.sort(function(a,b){
+    var d=bkRtNum(a)-bkRtNum(b);
+    if(d) return d;
+    return String(a.wpId)<String(b.wpId)?-1:1;
+  });
+  var done=0;
+  list.forEach(function(p){ if(bkRtEntry(BK.scores[bkKeyOf(pg.pid,p.wpId)],round)) done++; });
+  var h='<div class="bk-rthd"><div class="t">🔁 다시 도전 · '+round+'차</div>';
+  h+='<div class="s">'+(BK.mode==='ws'?'종이 학습지':'종이 교재')+'를 보고 처음부터 다시 풀어요 · '
+    +done+' / '+list.length+' 문항</div>';
+  h+='<div class="bk-bar"><i style="width:'+(list.length?Math.round(done/list.length*100):0)+'%"></i></div></div>';
+  list.forEach(function(p,i){ h+=bkCardHtml(p,i,pg,probs); });
+  h+=bkRtDoneHtml(pg,probs,list,done);
+  return h;
+}
+/* 다시 도전 마무리 — 막대 두(세) 줄 · 아직 못 맞힌 문항 · XP (계약 §2-3) */
+function bkRtDoneHtml(pg,probs,list,done){
+  var round=BK.rt.round;
+  if(done<list.length){
+    return '<div class="bk-rtcard"><div class="t1">남은 문항 '+(list.length-done)+'개</div>'
+      +'<div class="s1">모두 풀면 '+round+'차 결과를 보여 줄게요. 정답은 그때 열려요.</div>'
+      +'<button class="bk-ghost" onclick="bkRtEnd()">그만두고 채점 화면으로</button></div>';
+  }
+  var sc=bkRtScores(pg,probs);
+  var got=0, left=[];
+  list.forEach(function(p){
+    var e=bkRtEntry(BK.scores[bkKeyOf(pg.pid,p.wpId)],round);
+    if(e&&e.r==='O') got++; else left.push(p);
+  });
+  var h='<div class="bk-rtcard"><div class="t1">🔁 '+round+'차를 마쳤어요</div>';
+  h+=bkRtBarRow('1차', sc.s1, '#94a3b8');
+  h+=bkRtBarRow('2차', sc.s2, (round>=3?'#94a3b8':'#0d9488'));
+  if(round>=3) h+=bkRtBarRow('3차', sc.s3, '#0d9488');
+  h+='<div class="s1" style="margin-top:7px">'+list.length+'개 중 <b style="color:#15803d">'+got
+    +'개를 다시 맞혔어요</b>'+(left.length?(' · 아직 '+left.length+'개 남음'):'')+'</div>';
+  h+='<div class="s1" style="margin-top:4px">1차 점수는 그대로 남아요 — <b>1차가 실력</b>이니까요.</div></div>';
+  if(left.length){
+    h+='<div class="bk-rtcard warn"><div class="t1">🎯 아직 못 맞힌 문항 '+left.length+'개</div>';
+    h+='<div class="s1">'+(round>=3
+        ? '세 번 다 어려웠던 문항이에요. 선생님께 꼭 여쭤봐요 — 선생님 화면에도 모여 있어요.'
+        : '이 문항은 <b>3일 뒤</b> 한 번 더 물어볼게요. 그때까지 잊지 않게요.')+'</div>';
+    h+='<div class="bk-strip" style="margin:8px 0 0">';
+    left.forEach(function(p){ h+='<span style="background:#fdecec;color:#dc3b34">'+h3Esc(p.num||'')+'번</span>'; });
+    h+='</div>';
+    h+='<button class="bk-ghost" onclick="bkRtShowAll()">지금 정답과 해설 보기</button>';
+    h+='</div>';
+  }
+  h+='<div class="bk-rtcard"><div class="t1">🏅 오늘 얻은 점수</div>'
+    +'<div class="s1">다시 도전으로 맞힌 '+got+'문항 · <b style="color:#0f766e">+'+got+' XP</b></div></div>';
+  h+='<button class="bk-next" onclick="bkRtEnd()">채점 화면으로 돌아가기 →</button>';
+  return h;
+}
+/* 다시 도전 카드 — 아직 안 푼 문항 (입력 방식은 1차와 똑같은 함수를 그대로 쓴다) */
+function bkRtAskBody(p,sh,wp,key,m,probs){
+  var h='';
+  h+='<div class="bk-paper">'+(BK.mode==='ws'
+      ? ('📄 문제는 <b>종이 학습지 '+h3Esc(p.num||'')+'번</b>을 보세요 — 앱에는 문제를 띄우지 않아요')
+      : ('📖 문제는 <b>종이 교재 '+h3Esc(p.num||'')+'번</b>을 보세요'))+'</div>';
+  h+='<div class="bk-old">1차에 쓴 답 · <b>'+h3Esc((m&&m.r==='?')?'모름':((m&&m.a)||'(빈칸)'))+'</b> → '
+    +((m&&m.r==='?')?'몰랐어요':'틀렸어요')+'</div>';
+  /* 💡 힌트 — 개념 이름이 있을 때만 한 줄 (계약 §2-2). 없으면 이 줄은 아예 안 나온다. */
+  var cc=String((p&&p.concept)||'').trim();
+  if(cc) h+='<div class="bk-cchip">💡 이 문제는 <b>「'+h3Esc(cc)+'」</b> 개념이에요</div>';
+  if(bkIsObj(p)) h+=bkObjBody(p,wp);
+  else if(BK.sample[key]) h+=bkSampleBody(p,sh,wp,key);
+  else if(sh.self||BK.soft[key]) h+=bkSelfBody(p,sh,wp,key);
+  else h+=bkInputBody(p,sh,wp,key,probs);
+  h+='<button class="bk-ghost" onclick="bkToAha('+bkQ(wp)+')">아직 모르겠어요 · 아하노트에 질문</button>';
+  return h;
+}
+/* 다시 도전 카드 — 방금 채점한 문항 (틀려도 정답은 바로 열지 않는다) */
+function bkRtGradedBody(p,sh,m,ent){
+  var col=(ent.r==='O'?'#1d78c9':(ent.r==='X'?'#dc3b34':'#a15c00'));
+  var h='<div class="rev-line"><span class="lb">1차</span><span class="vv" style="color:#94a3b8">'
+    +h3Esc((m&&m.r==='?')?'모름':((m&&m.a)||''))+'</span></div>';
+  h+='<div class="rev-line"><span class="lb">'+Number(ent.n)+'차</span><span class="vv" style="color:'+col+'">'
+    +(ent.r==='?'?'모름':h3Esc(ent.a||''))+'</span></div>';
+  h+='<div class="bk-rtmark '+(ent.r==='O'?'ok':'no')+'">'
+    +(ent.r==='O'?'🎉 다시 맞혔어요!':'아직이에요 — 조금만 더!')+'</div>';
+  h+=bkAnsSlot(p,m,p.wpId,'rt');
+  return h;
+}
+
 function bkCardHtml(p,i,pg,probs){
   var wp=String(p.wpId), key=bkKeyOf(pg.pid,wp);
   var m=BK.scores[key], sh=bkShape(p);
+  /* ★ v2-91: 지금 「다시 도전」 중인 문항인가 */
+  var rtOn=(bkRtOn()&&BK.rt.ids.indexOf(wp)>=0);
+  var ent=rtOn?bkRtEntry(m,BK.rt.round):null;
   var stc=m?(m.r==='O'?'st-o':(m.r==='X'?'st-x':'st-q')):'';
   var icon=m?(m.r==='O'?'◯':(m.r==='X'?'✕':'?')):'✎';
+  if(rtOn){
+    stc=ent?(ent.r==='O'?'st-o':(ent.r==='X'?'st-x':'st-q')):'';
+    icon=ent?(ent.r==='O'?'◯':(ent.r==='X'?'✕':'?')):'🔁';
+  }
   /* v2-83: 매쓰플랫이 이미 채점한 학습지 문항은 결과만 보여 준다 */
-  var mfd=(!m&&bkMfDone(p));
+  var mfd=(!rtOn&&!m&&bkMfDone(p));
   if(mfd){ stc=(p.result==='O'?'st-o':'st-x'); icon=(p.result==='O'?'◯':'✕'); }
   var h='<div class="q-card '+stc+'" id="qc-'+h3Esc(wp)+'">';
   h+='<div class="mk"><span class="ic">'+icon+'</span><span class="nm">'+h3Esc(p.num||String(i+1))+'</span></div>';
@@ -15994,7 +16392,10 @@ function bkCardHtml(p,i,pg,probs){
    *   먼저 푼 학생 화면으로 다른 반 시험 문제가 새어 나간다.
    *   v2-83~v2-89 까지는 카드 위에 문제 그림을 띄웠다 — 여기서 끊는다.
    *   (교재 채점은 원래 문제 그림이 없다. 학생이 책을 들고 있기 때문이다.) */
-  if(mfd) h+=bkMfBody(p);
+  /* ★ v2-91: 다시 도전 중이면 — 아직 안 푼 문항은 1차와 같은 입력칸, 푼 문항은 그 차수 결과 */
+  if(rtOn&&ent) h+=bkRtGradedBody(p,sh,m,ent);
+  else if(rtOn) h+=bkRtAskBody(p,sh,wp,key,m,probs);
+  else if(mfd) h+=bkMfBody(p);
   else if(m) h+=bkGradedBody(p,sh,m);
   else if(bkIsObj(p)) h+=bkObjBody(p,wp);
   else if(BK.sample[key]) h+=bkSampleBody(p,sh,wp,key);
@@ -16020,7 +16421,7 @@ function bkGradedBody(p,sh,m){
     +(m.r==='O'?'◯ 맞았어요':(m.r==='X'?'✗ 틀렸어요':'모름'))+'</span></div>';
   else h+='<div class="rev-line"><span class="lb">내 답</span><span class="vv" style="color:'+col+'">'
     +(m.r==='?'?'모름':h3Esc(m.a||''))+'</span></div>';
-  h+=bkAnsBox(p);
+  h+=bkAnsSlot(p,m,p.wpId);       /* ★ v2-91: 1차에 못 맞힌 문항은 정답을 가린다 */
   if(m.photo){
     var u=bkPhotoUrl(m.photo);
     if(u) h+='<img class="bk-myphoto" src="'+h3Esc(u)+'" alt="내 풀이" onclick="openPvPhoto('+bkQ(u)+')">';
@@ -16260,6 +16661,19 @@ function bkDoneHtml(pg,probs){
   h+='<div class="bk-strip"><span style="color:#1d78c9">◯ '+s.on+'</span>'
     +'<span style="color:#dc3b34">✗ '+s.xn+'</span><span style="color:#a15c00">? '+s.qn+'</span>'
     +'<span style="background:#e5f5f2;color:#0f766e">자동 '+s.auto+' · 자기채점 '+s.self+'</span></div>';
+  /* ★ v2-91: 🔁 다시 도전 — 다 채점하면 「다시 도전 시작하기」 (계약 §2-1) */
+  var rt2=bkRtList(pg,probs,2,Date.now());
+  if(rt2.length){
+    if(s.done>=s.tot){
+      h+='<div class="bk-rtcard"><div class="t1">🔁 다시 도전할 문항 '+rt2.length+'개</div>';
+      h+='<div class="s1">틀린 문항만 모아서 다시 풀어요. 종이에 처음부터 다시 풀고 답을 넣으면 돼요.<br>'
+        +'정답은 <b>다시 도전을 마친 뒤</b>에 보여 줄게요.</div>';
+      h+='<button class="bk-next" onclick="bkRtStart(2)">다시 도전 시작하기</button></div>';
+    } else {
+      h+='<div class="bk-hint" style="margin-top:8px">🔁 다시 도전할 문항 '+rt2.length
+        +'개 — 남은 문항을 마저 채점하면 시작할 수 있어요.</div>';
+    }
+  }
   if(s.wrong.length){
     h+='<div class="bk-hint" style="margin-top:8px">틀린 문제는 여기서 바로 이어가요.</div>';
     s.wrong.forEach(function(p){
@@ -16629,26 +17043,40 @@ async function bkGrade(wpId, userAnswer, opt){
         r=res.correct?'O':'X';
       }
     }
-    var rec={ r:r, a:a, at:new Date().toISOString(), self:!!opt.self, photo:opt.photo||'' };
-    /* v2-83: 학습지는 pid 대신 kind:'ws' 와 swId 를 적는다 (계약 §1) */
-    if(BK.mode==='ws'&&BK.ws){ rec.kind='ws'; rec.swId=BK.ws.swId; }
-    else rec.pid=BK.page.pid;
-    BK.scores[key]=rec;
+    /* ★ v2-91: 지금 「다시 도전」 중인 문항인가 — 1차 기록(r·a·at)은 절대 건드리지 않는다 (계약 §1) */
+    var rtN=0;
+    if(bkRtOn()&&BK.rt.ids.indexOf(wpId)>=0&&BK.scores[key]&&!bkRtEntry(BK.scores[key],BK.rt.round))
+      rtN=BK.rt.round;
+    if(rtN){
+      var m0=BK.scores[key];
+      if(!Array.isArray(m0.rt)) m0.rt=[];
+      m0.rt.push({ n:rtN, r:r, a:a, at:new Date().toISOString(), self:!!opt.self, photo:opt.photo||'' });
+      BK.scores[key]=m0;                         // r·a·at 은 1차 그대로
+    } else {
+      var rec={ r:r, a:a, at:new Date().toISOString(), self:!!opt.self, photo:opt.photo||'' };
+      /* v2-83: 학습지는 pid 대신 kind:'ws' 와 swId 를 적는다 (계약 §1) */
+      if(BK.mode==='ws'&&BK.ws){ rec.kind='ws'; rec.swId=BK.ws.swId; }
+      else rec.pid=BK.page.pid;
+      BK.scores[key]=rec;
+    }
     delete BK.photos[key]; delete BK.soft[key]; delete BK.wordIn[key]; delete BK.sample[key];
     if(BK.objPick) delete BK.objPick[key];   // v2-83: 복수 정답 객관식에서 골라 둔 것 비우기
     bkBlur(); bkKpadShow(false);
-    BK.qn++;
+    if(!rtN) BK.qn++;                        // ★ v2-91: 재도전은 매쓰플랫으로 안 보내므로 대기열도 안 는다
     bkRenderQ();
     if(window.bkHomeUpdate) bkHomeUpdate();      // v2-81: 홈 허브 숫자도 바로 맞춘다
-    await bkPersist(wpId, r, a);
+    await bkPersist(wpId, r, a, rtN>0);
   } finally { BK.busy=false; }
 }
 /* 저장: 내 기록(hw_scores) + 매쓰플랫 반영 대기열(hw_sync) */
-async function bkPersist(wpId, r, userAnswer){
+async function bkPersist(wpId, r, userAnswer, isRetry){
   if(!sb||!studentInfo) return;
   var code=studentInfo.lumen_rec_code;
   try{
     await sb.from('lumen_store').upsert({ key:'hw_scores_'+code, value:{ items:BK.scores, updated:new Date().toISOString() } });
+    /* ★ v2-91: 다시 도전(2·3차)·「지금 정답 보기」 결과는 매쓰플랫으로 «보내지 않는다».
+     * 1차 때 이미 보냈고, 매쓰플랫 점수는 학생 실력 그대로여야 한다 (계약 §1·원장 결정). */
+    if(isRetry) return;
     // 대기열은 최신을 다시 읽어 덧붙인다 (워커와의 충돌 최소화)
     var st=await bkFetchStore(['hw_sync_'+code]);
     var q=(st['hw_sync_'+code]&&st['hw_sync_'+code].items)||[];
