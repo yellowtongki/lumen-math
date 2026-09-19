@@ -100,6 +100,7 @@ async function main() {
   const ids = String(arg('ws', '')).split(',').map((x) => Number(x.trim())).filter(Boolean);
   const dry = args.includes('--dry');
   const delOld = args.includes('--delete-old');
+  const dropDup = args.includes('--drop-dup');
   const mylist = arg('mylist', '수학비서');
   if (ids.length < 2) throw new Error('--ws 82224846,82225520 처럼 합칠 학습지를 두 개 이상 주세요');
   if (!process.env.MATHFLAT_ID || !process.env.MATHFLAT_PASSWORD) throw new Error('MATHFLAT_ID / MATHFLAT_PASSWORD 환경변수가 없습니다');
@@ -114,20 +115,39 @@ async function main() {
     if (!problems.length) throw new Error(`학습지 ${id} 에 문항이 없습니다`);
     /* «나의 DB 원본» 번호는 문항마다가 아니라 학습지의 filter 에 모여 있다 (실측 2026-09-17).
      * 화면에 보이는 순서는 problems 배열이 정한다 — 이 순서를 그대로 이어 붙인다. */
+    const ftype = (ws.filter && ws.filter.type) || '';
     const det = (ws.filter && ws.filter.myDbProblemDetailIds) || [];
-    log(`· ${id} 「${ws.title}」 — ${problems.length}문항 · 원본 ${det.length}개`);
-    if ((ws.filter && ws.filter.type) !== 'MY_DB_ORIGINAL')
-      throw new Error(`학습지 ${id} 은 «나의 DB 원본»으로 만든 학습지가 아닙니다 (${ws.filter && ws.filter.type}) — 합칠 수 없습니다`);
-    if (!det.length) throw new Error(`학습지 ${id} 에서 «나의 DB 원본» 번호를 찾지 못했습니다`);
-    parts.push({ id, ws, problems, det });
+    const cids = (ws.filter && ws.filter.conceptIdList) || [];
+    log(`· ${id} 「${ws.title}」 — ${problems.length}문항 · ${ftype === 'CONCEPT' ? `유형 ${cids.length}개` : `원본 ${det.length}개`}`);
+    if (ftype === 'MY_DB_ORIGINAL') {
+      if (!det.length) throw new Error(`학습지 ${id} 에서 «나의 DB 원본» 번호를 찾지 못했습니다`);
+    } else if (ftype === 'CONCEPT') {
+      /* 매쓰플랫이 만든 학습지(내신대비 SCHOOL_PREPARE·단원평가 등)는 «유형»으로 골라 놓은 것이다.
+       * 문항은 이미 매쓰플랫 문제은행에 있으므로 번호만 순서대로 이어 붙이면 된다 (실측 2026-09-19). */
+      if (!cids.length) throw new Error(`학습지 ${id} 에서 «유형» 번호를 찾지 못했습니다`);
+    } else {
+      throw new Error(`학습지 ${id} 은 합칠 수 없는 종류입니다 (${ftype || '알 수 없음'}) — «나의 DB 원본» 또는 «유형»으로 만든 것만 됩니다`);
+    }
+    parts.push({ id, ws, problems, det, cids, ftype });
   }
+
+  const kinds = [...new Set(parts.map((p) => p.ftype))];
+  if (kinds.length > 1) throw new Error(`종류가 다른 학습지는 섞어 합칠 수 없습니다 (${kinds.join(' + ')})`);
+  const KIND = kinds[0];
 
   const title = arg('title', '') || String(parts[0].ws.title || '')
     .replace(/\s*\(\d+\/\d+\)\s*\d+~\d+\s*$/, '').trim();
-  const all = parts.flatMap((p) => p.problems);
+  let all = parts.flatMap((p) => p.problems);
+  let dup = all.length - new Set(all.map((p) => p.id || p.problemId)).size;
+  if (dup && dropDup) {
+    const seen = new Set();
+    all = all.filter((p) => { const k = p.id || p.problemId; if (seen.has(k)) return false; seen.add(k); return true; });
+    log(`  겹치는 문항 ${dup}개를 뺐습니다 (--drop-dup) → ${all.length}문항`);
+    dup = 0;
+  }
   const problemIds = all.map((p) => p.id || p.problemId);
   const detailIds = parts.flatMap((p) => p.det);
-  const dup = problemIds.length - new Set(problemIds).size;
+  const conceptIds = [...new Set(parts.flatMap((p) => p.cids))];
   const base = parts[0].ws;
   const withAns = all.filter((p) => p.answer != null && String(p.answer).trim() !== '' && String(p.answer).trim() !== '.').length;
   const autoN = all.filter((p) => p.autoScored).length;
@@ -135,29 +155,83 @@ async function main() {
   log(`\n합칠 결과 — 「${title}」 ${all.length}문항 (정답 ${withAns} · 자동채점 ${autoN}${dup ? ` · ⚠ 겹치는 문항 ${dup}개` : ''})`);
   log(`  학년 ${base.school || ''} ${base.grade} · 개정 ${base.revision} · 갈래 ${base.tag}`);
   parts.forEach((p, i) => log(`  ${i + 1}) ${p.id} ${p.problems.length}문항 → 새 번호 ${parts.slice(0, i).reduce((a, x) => a + x.problems.length, 0) + 1}~${parts.slice(0, i + 1).reduce((a, x) => a + x.problems.length, 0)}`));
-  if (dup) throw new Error('같은 문항이 두 번 들어갑니다 — 학습지 번호를 확인해 주세요');
+  if (dup) throw new Error('같은 문항이 두 번 들어갑니다 — 학습지 번호를 확인하시거나, 겹치는 것을 빼고 합치려면 --drop-dup 을 주세요');
   if (dry) { log('\n(미리보기라 만들지 않았습니다)'); return; }
 
-  /* ② 새 학습지 한 장 만들기 — 번호 순서 그대로 */
-  let wsRaw = null, lastErr = null;
-  for (let i = 0; i < 6; i++) {
-    try {
-      const { data: flt } = await mf('POST', '/v2/worksheet/filter/school-test-paper/original', { myDbProblemDetailIds: detailIds });
-      const { data } = await mf('POST', '/worksheet', {
-        conceptIdList: [], littleChapterConceptIdList: [],
-        assignStudentIdList: [], shareScope: 'ACADEMY', writer: base.writer || '루멘수학',
-        layoutType: 0, layoutColor: 'BLUE', partitionType: 0,
-        wrongAnswerNoteFlag: false, conceptNameFlag: true, answerRateFlag: false,
-        relationWorkbookFlag: false, includeProblemFlag: false, conceptSortType: 'CHAPTER',
-        schoolType: base.school || base.schoolType, revision: base.revision, grade: base.grade,
-        problemPadding: 60, pdfDateType: 'TODAY', pdfDate: null,
-        designTemplateId: null, qrFlag: false, problemTrendFlag: false,
-        filterId: (flt && flt.filterId) || flt,
-        problemList: problemIds.map((id, k) => ({ id, boxIndex: k + 1 })),
-        myDbProblemDetailIds: detailIds,
-        title, tag: 'MY_DB_ORIGINAL',
+  /* ② 새 학습지 한 장 만들기 — 번호 순서 그대로
+   *   «나의 DB 원본» : 원본(paper) 번호 목록으로 필터를 만들고 그 번호를 함께 넘긴다
+   *   «유형(CONCEPT)»: 두 학습지의 유형 번호를 합쳐 필터를 만들고, 문항은 번호로 못 박는다
+   *                     (매쓰플랫이 만든 내신대비·단원평가 학습지가 이 방식이다) */
+  const pdfSet = (base.pdf || {});
+  const mkFilter = async () => {
+    if (KIND === 'CONCEPT') {
+      const bf = base.filter || {};
+      const { data } = await mf('POST', '/worksheet/filter/concept', {
+        type: 'CONCEPT', conceptIdList: conceptIds, excludedTopicIds: [], excludedSubTopicIds: [],
+        problemList: null, problemCount: problemIds.length, level: bf.level || base.level || 3,
+        levelWeight: bf.levelWeight || [5, 30, 30, 25, 10],
+        problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: false,
+        excludePrevious: false, previousExclusionScope: null, studentIds: null, excludeOOC: true,
+        equalityLevel: null, minRate: 0, maxRate: 100,
+        selectedConceptIdList: [], selectedLittleChapterIdList: [],
       });
-      wsRaw = data; break;
+      return (data && data.filterId) || data;
+    }
+    const { data } = await mf('POST', '/v2/worksheet/filter/school-test-paper/original', { myDbProblemDetailIds: detailIds });
+    return (data && data.filterId) || data;
+  };
+  const mkBody = (filterId, tag) => {
+    const common = {
+      filterId, title, tag,
+      littleChapterConceptIdList: [], assignStudentIdList: [], shareScope: 'ACADEMY',
+      writer: (base.writer && base.writer !== '매쓰플랫' ? base.writer : '루멘수학'),
+      conceptSortType: 'CHAPTER', includeProblemFlag: false, wrongAnswerNoteFlag: false,
+      schoolType: base.school || base.schoolType, revision: base.revision, grade: base.grade,
+      problemPadding: 60, pdfDateType: 'TODAY', pdfDate: null,
+    };
+    if (KIND === 'CONCEPT') return {
+      ...common,
+      /* conceptIdList 를 채우면 문제 위에 «이론(개념) 박스»가 인쇄된다 — 비워 둔다 (실측 2026-08-17) */
+      conceptIdList: [],
+      problemList: all.map((p) => ({ id: p.id || p.problemId, tagTop: p.tagTop || null })),
+      layoutType: pdfSet.layoutType != null ? pdfSet.layoutType : 1,
+      layoutColor: pdfSet.layoutColor || 'BLUE',
+      partitionType: pdfSet.partitionType != null ? pdfSet.partitionType : 0,
+      conceptNameFlag: pdfSet.conceptNameFlag != null ? pdfSet.conceptNameFlag : true,
+      answerRateFlag: !!pdfSet.answerRateFlag, problemTrendFlag: !!pdfSet.problemTrendFlag,
+      relationWorkbookFlag: !!pdfSet.relationWorkbookFlag, qrFlag: !!pdfSet.qrFlag,
+      designTemplateId: pdfSet.designTemplateId || null,
+    };
+    return {
+      ...common,
+      conceptIdList: [],
+      layoutType: 0, layoutColor: 'BLUE', partitionType: 0,
+      conceptNameFlag: true, answerRateFlag: false, relationWorkbookFlag: false,
+      designTemplateId: null, qrFlag: false, problemTrendFlag: false,
+      problemList: problemIds.map((id, k) => ({ id, boxIndex: k + 1 })),
+      myDbProblemDetailIds: detailIds,
+    };
+  };
+  /* 갈래(tag): 원본 갈래를 먼저 쓰고, 매쓰플랫이 거절하면 «직접 입력(ETC)»으로 물러난다 */
+  const tagTries = KIND === 'CONCEPT'
+    ? [...new Set([base.tag, 'ETC'].filter(Boolean))]
+    : ['MY_DB_ORIGINAL'];
+
+  let wsRaw = null, lastErr = null;
+  for (let i = 0; i < 6 && !wsRaw; i++) {
+    try {
+      const filterId = await mkFilter();
+      for (const tag of tagTries) {
+        try {
+          const { data } = await mf('POST', '/worksheet', mkBody(filterId, tag));
+          wsRaw = data;
+          if (tag !== tagTries[0]) log(`  갈래를 「${tag}」로 바꿔 만들었습니다 (원본 갈래는 거절됨)`);
+          break;
+        } catch (e) {
+          if (e.status !== 400 || tag === tagTries[tagTries.length - 1]) throw e;
+          log(`  갈래 「${tag}」 거절됨 — 다음 갈래로`);
+        }
+      }
     } catch (e) {
       lastErr = e;
       if (!/LAMBDA_INVOKE_EXCEPTION|INTERNAL_SERVER_ERROR/.test(e.message)) throw e;
