@@ -320,9 +320,13 @@ async function runHwSync() {
         result: RES_MAP[it.result] || it.result || 'NONE',
       }));
       try {
-        const res = await mfCall('PATCH', '/student-workbook/scoring?version=v2', body);
-        if (res && res.__ok !== false) { group.forEach((it) => okIds.add(it.id)); }
-        else { group.forEach((it) => { failNote[it.id] = 'PATCH 실패'; }); }
+        /* ★ 2026-09-19: 예전에는 돌려받은 «본문»이 있어야 성공으로 봤다(res && res.__ok!==false).
+         *   그런데 매쓰플랫은 성공(200)일 때 본문을 «비워서» 보낸다 → mfCall 이 null 을 돌려주고
+         *   멀쩡히 반영된 것을 전부 실패로 세었다. (2026-09-19 로그: 400 은 하나도 없는데 259건 실패)
+         *   mfCall 은 2xx 가 아니면 예외를 던지므로, «예외 없이 돌아오면 성공»이다.
+         *   학습지 쪽은 원래 이렇게 되어 있어 문제가 없었다. */
+        await mfCall('PATCH', '/student-workbook/scoring?version=v2', body);
+        group.forEach((it) => okIds.add(it.id));
       } catch (e) {
         // UNKNOWN(모름)을 서버가 거부하면 각 항목별로 한 번 더 — 안전하게 개별 처리
         let recovered = 0;
