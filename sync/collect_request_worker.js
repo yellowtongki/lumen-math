@@ -67,6 +67,39 @@ async function setReq(obj) {
   if (!r.ok) log(`상태 저장 실패 ${r.status}`);
 }
 
+/* ★ 2026-09-19 (원장 제보 「매쓰플랫에서 출제한 학습지가 학생앱으로 확인이 안된다」)
+ *   학습지 목록(mf_wsq_*)은 정기 수집(하루 3번: 04·16·22시)에서만 갱신됐다.
+ *   낮에 출제하시면 학생앱에 보이기까지 «최대 6시간»이 걸렸다.
+ *   이제 이 워커가 돌 때마다 «학습지 목록만» 가볍게 새로 받는다(--wsq-only).
+ *   이미 받아 둔 학습지는 다시 받지 않으므로(캐시) 새로 나온 것만 몇 초면 끝난다.
+ *   너무 자주 매쓰플랫에 붙지 않도록 마지막 갱신이 WSQ_MIN_GAP_MIN 분보다
+ *   최근이면 건너뛴다 (동시 로그인 주의 — 원장님 접속이 끊길 수 있다). */
+const WSQ_MIN_GAP_MIN = Number(process.env.WSQ_MIN_GAP_MIN || 20);
+function runCollectorWsqOnly() {
+  return new Promise((resolve) => {
+    const p = spawn('node', [path.join(__dirname, 'mathflat_collector.js'), '--wsq-only'], {
+      stdio: 'inherit', env: process.env,
+    });
+    p.on('close', (code) => resolve(code));
+    p.on('error', (e) => { console.error('학습지 목록 갱신 실패:', e.message); resolve(1); });
+  });
+}
+async function runWsqRefresh() {
+  /* 마지막 갱신 시각은 mf_wsq_* 의 updated_at 중 가장 최근 것으로 본다 */
+  let ageMin = 9999;
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=like.mf_wsq_*&select=updated_at&order=updated_at.desc&limit=1`, { headers: sbH() });
+    if (r.ok) {
+      const rows = await r.json();
+      const t = rows[0] && rows[0].updated_at;
+      if (t) ageMin = (Date.now() - Date.parse(t)) / 60000;
+    }
+  } catch (e) {}
+  if (ageMin < WSQ_MIN_GAP_MIN) { log(`학습지 목록: ${Math.round(ageMin)}분 전에 받음 — 건너뜀`); return; }
+  log('학습지 목록 새로 받기 (새로 출제된 학습지를 학생앱에 바로 보이게)');
+  await runCollectorWsqOnly();
+}
+
 /* 수집기를 자식 프로세스로 실행하고, 출력은 그대로 흘려보낸다. */
 function runCollector(days) {
   return new Promise((resolve) => {
@@ -232,8 +265,13 @@ async function runHwSync() {
 
   let token = null;
   try { token = await mfLogin(); } catch (e) { log(`교재채점 반영: 매쓰플랫 로그인 실패 — ${e.message}`); return true; }
-  const RES_MAP = { O: 'CORRECT', X: 'INCORRECT', '?': 'UNKNOWN' };      // 교재
-  const RES_MAP_WS = { O: 'CORRECT', X: 'WRONG', '?': 'UNKNOWN' };       // 학습지(오답은 WRONG)
+  /* ★ 2026-09-19 (원장 제보 「학생앱 채점이 매쓰플랫으로 안 넘어온다」)
+   *   매쓰플랫이 «교재» 채점 반영도 오답 값을 WRONG 으로 바꿨다.
+   *   그날 새벽부터 보내는 족족 400 MESSAGE_NOT_READABLE 로 거부당해 259건이 밀렸다.
+   *   실측: INCORRECT → 400 · WRONG/UNKNOWN/CORRECT → 200.
+   *   (학습지는 2026-09-15 에 이미 같은 일을 겪어 WRONG 으로 바꿔 두었었다) */
+  const RES_MAP = { O: 'CORRECT', X: 'WRONG', '?': 'UNKNOWN' };          // 교재 (WRONG 으로 바뀜)
+  const RES_MAP_WS = { O: 'CORRECT', X: 'WRONG', '?': 'UNKNOWN' };       // 학습지
   let totOk = 0, totFail = 0, totWsOk = 0;
 
   for (const q of queues) {
@@ -349,6 +387,8 @@ async function runHwSync() {
   }
   // 교재 채점 되돌려쓰기 — 가볍고 학생이 기다리므로 그다음
   try { await runHwSync(); } catch (e) { log('교재채점 반영 오류:', e.message); }
+  // ★ 2026-09-19: 새로 출제된 학습지를 학생앱에 바로 보이게 (목록만 가볍게)
+  try { await runWsqRefresh(); } catch (e) { log('학습지 목록 갱신 오류:', e.message); }
   // 기출 쌍둥이 요청 (v18-84) — 요청이 없으면 조회 한 번으로 끝난다
   try {
     const { runTwinRequests } = require('./twin_request_worker.js');
