@@ -49,6 +49,17 @@ async function getKv(key) {
   } catch (e) { return null; }
 }
 
+/* ★ 2026-09-19: lumen_store 한 칸 쓰기 (「지금 반영」 요청 표시용) */
+async function setKv(key, value) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/lumen_store?on_conflict=key`, {
+      method: 'POST', headers: { ...sbH(), Prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify([{ key, value }]),
+    });
+    return r.ok;
+  } catch (e) { return false; }
+}
+
 async function getReq() {
   const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.${KEY}&select=value`, { headers: sbH() });
   if (!r.ok) throw new Error(`요청 읽기 실패 ${r.status}`);
@@ -391,6 +402,16 @@ async function runHwSync() {
   }
   // 교재 채점 되돌려쓰기 — 가볍고 학생이 기다리므로 그다음
   try { await runHwSync(); } catch (e) { log('교재채점 반영 오류:', e.message); }
+  /* ★ 2026-09-19: 원장님이 학원앱에서 「⏩ 지금 반영」을 누르면 hw_flush_req 에 쪽지가 남는다.
+   *   되돌려쓰기는 어차피 매번 돌리므로, 여기서는 «처리했다»고 표시만 해 준다
+   *   (앱이 그 표시를 보고 「요청해 두었습니다」를 지운다). */
+  try {
+    const fq = await getKv('hw_flush_req');
+    if (fq && fq.status === 'requested') {
+      await setKv('hw_flush_req', { ...fq, status: 'done', doneAt: new Date().toISOString() });
+      log(`「지금 반영」 요청 처리 완료 (요청 당시 ${fq.pend || 0}건)`);
+    }
+  } catch (e) { log('지금 반영 요청 처리 오류:', e.message); }
   // ★ 2026-09-19: 새로 출제된 학습지를 학생앱에 바로 보이게 (목록만 가볍게)
   try { await runWsqRefresh(); } catch (e) { log('학습지 목록 갱신 오류:', e.message); }
   // 기출 쌍둥이 요청 (v18-84) — 요청이 없으면 조회 한 번으로 끝난다
