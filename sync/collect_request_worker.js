@@ -434,6 +434,18 @@ async function runHwSync() {
     }
   } catch (e) { log('진도 레이스 오류: ' + e.message); }
 
+  // 📗 교재 상황판 집계 (v19-23, docs/book_dashboard_contract.md)
+  // 교재 기록 5만 건을 다시 세는 일이라 자주 할 필요가 없다 — 3시간에 한 번.
+  // 앱에서 「지금 다시 세기」를 누르면 book_dash 를 지우므로 그때는 바로 계산된다.
+  try {
+    const bd = await getKv('book_dash');
+    const ageMin = bd && bd.at ? (Date.now() - Date.parse(bd.at)) / 60000 : 9999;
+    if (ageMin >= 180) {
+      const { runBookDash } = require('./book_dash_engine.js');
+      await runBookDash();
+    }
+  } catch (e) { log('교재 상황판 오류: ' + e.message); }
+
   const req = await getReq();
 
   if (!req || !req.status) { log('대기 중인 요청 없음'); return; }
