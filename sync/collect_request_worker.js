@@ -232,8 +232,13 @@ async function runHwSync() {
 
   let token = null;
   try { token = await mfLogin(); } catch (e) { log(`교재채점 반영: 매쓰플랫 로그인 실패 — ${e.message}`); return true; }
-  const RES_MAP = { O: 'CORRECT', X: 'INCORRECT', '?': 'UNKNOWN' };      // 교재
-  const RES_MAP_WS = { O: 'CORRECT', X: 'WRONG', '?': 'UNKNOWN' };       // 학습지(오답은 WRONG)
+  /* ★ 2026-09-19 (원장 제보 「학생앱 채점이 매쓰플랫으로 안 넘어온다」)
+   *   매쓰플랫이 «교재» 채점 반영도 오답 값을 WRONG 으로 바꿨다.
+   *   그날 새벽부터 보내는 족족 400 MESSAGE_NOT_READABLE 로 거부당해 259건이 밀렸다.
+   *   실측: INCORRECT → 400 · WRONG/UNKNOWN/CORRECT → 200.
+   *   (학습지는 2026-09-15 에 이미 같은 일을 겪어 WRONG 으로 바꿔 두었었다) */
+  const RES_MAP = { O: 'CORRECT', X: 'WRONG', '?': 'UNKNOWN' };          // 교재 (WRONG 으로 바뀜)
+  const RES_MAP_WS = { O: 'CORRECT', X: 'WRONG', '?': 'UNKNOWN' };       // 학습지
   let totOk = 0, totFail = 0, totWsOk = 0;
 
   for (const q of queues) {
