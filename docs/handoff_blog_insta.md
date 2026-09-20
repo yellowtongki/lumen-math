@@ -5,26 +5,29 @@
 
 ---
 
-## ⚠️ 먼저 — 이 문서들은 main 브랜치에 없습니다
+## ⚠️ 먼저 — 컴퓨터가 2대이고, 블로그 도구는 한 대에만 있습니다
 
-블로그 관련 문서 3개는 `claude/hagwon-app-idea-management-upuwf3` 브랜치에만 있습니다.
-저장소를 그냥 클론하면 **보이지 않습니다.** 가져오는 방법:
+| 컴퓨터 | 있는 것 | 할 수 있는 일 |
+|---|---|---|
+| **윈도우 데스크탑** | `classby-blog` 도구, 크롬, `out` 폴더(카드 PNG) | **네이버 블로그 임시저장** — 여기서만 가능 |
+| **맥미니** | (도구 없음) | 저장소 작업, 글감 생성기, 인스타 업로드, 힉스필드 영상 |
 
-```bash
-git fetch origin claude/hagwon-app-idea-management-upuwf3
-git checkout origin/claude/hagwon-app-idea-management-upuwf3 -- docs/ideas.md docs/blog_automation_overview.md docs/blog_insta_automation_plan.md docs/handoff_blog_insta.md
-```
+> **맥미니에서는 네이버 블로그 저장을 할 수 없습니다.** 도구가 윈도우에 깔려 있고,
+> 크롬을 직접 조종하는 방식이라 원격으로도 안 됩니다.
+> 맥미니에 도구를 설치하려면 **설치 키가 2대까지 되는지 클래스바이 확인이 먼저**입니다.
 
-> 주의: 이 브랜치는 학원앱이 **v18-73** 시점이라 main(v19-24)보다 오래됐습니다.
-> **문서 4개만 가져오고 앱 파일은 main 것을 쓰세요.** 브랜치 전체로 갈아타지 마세요.
+### 카드 PNG를 맥미니로 가져오는 법 (인스타 작업용)
+윈도우의 `~/.classby-blog-studio/out` 폴더를 **구글 드라이브나 원드라이브로 동기화**해두면
+맥미니에서 자동으로 보입니다. 그러면 인스타 업로드를 맥미니가 맡을 수 있습니다.
+(수동으로는 USB·카톡·드라이브 업로드도 가능하지만 매번 번거롭습니다)
 
-관련 문서:
+### 관련 문서 (모두 main 브랜치에 있음)
 | 파일 | 내용 |
 |---|---|
 | `docs/blog_insta_automation_plan.md` | **설계 본문** — 역할 분담, 단계별 계획 |
 | `docs/blog_automation_overview.md` | 클래스바이 도구 구조 (39쪽 분석) |
 | `docs/ideas.md` 2번 항목 | 조사 기록 전체 (힉스필드, 인스타 MCP 등) |
-| `docs/blog_writing_context.md` | 블로그 톤·기존 글 2편 (main에도 있음) |
+| `docs/blog_writing_context.md` | 블로그 톤·기존 글 2편 |
 
 ---
 
@@ -59,16 +62,23 @@ git checkout origin/claude/hagwon-app-idea-management-upuwf3 -- docs/ideas.md do
 
 ---
 
-## 4. 오늘 할 일 (원장님과 합의된 순서)
+## 4. 할 일 — 어느 컴퓨터에서 하는지가 정해져 있습니다
 
+### 맥미니에서 (도구 없이 가능)
+| 순서 | 할 일 | 비고 |
+|---|---|---|
+| 1 | `sync/blog_topics.js` — 글감 생성기 | Supabase 집계 → `docs/blog_topics_latest.md` |
+| 2 | `sync/insta_upload.js` — 인스타 업로드 | 카드 PNG를 드라이브 동기화로 받아온 뒤 |
+| 3 | 힉스필드 MCP 연결 | `claude mcp add higgsfield …` (영상 15초) |
+
+### 윈도우 데스크탑에서만
 | 순서 | 할 일 | 비고 |
 |---|---|---|
 | 0 | **카드 6장을 손으로 인스타에 올려 반응 보기** | 설치 불필요. 이것부터 |
-| 1 | 블로그 도구를 Claude Code에도 등록 | 아래 명령 참고 |
-| 2 | 인스타 계정 비즈니스/크리에이터 전환 | 원장님 작업 |
-| 3 | `sync/insta_upload.js` 만들기 | out 폴더 → 인스타 |
+| 1 | 블로그 도구를 Claude Code에도 등록 | 아래 명령 |
+| 2 | `out` 폴더를 구글 드라이브에 동기화 | 맥미니가 카드를 받게 |
 
-### 1번 등록 명령 (윈도우)
+#### 윈도우 등록 명령
 `claude mcp add-from-claude-desktop`은 **맥·WSL에서만** 됩니다. 윈도우는 손으로 등록하세요.
 
 ```
@@ -77,6 +87,10 @@ Classby 블로그 MCP 설정을 읽어 claude mcp add --scope user 로 등록.
 이름은 classby-blog (한글·띄어쓰기 들어가면 거부됨)
 ```
 등록 후 `claude mcp list`로 확인. **설치 키(STUDIOB_KEY)는 화면 공유·캡처 금지.**
+
+### 원장님 작업
+- 인스타 계정을 비즈니스/크리에이터로 전환 (인스타 자동 게시의 필수 조건)
+- 클래스바이에 설치 키 2대 사용 가능 여부 문의
 
 ---
 
