@@ -46,9 +46,9 @@
 | 있는 것 | 없는 것 (만들 것) |
 |---|---|
 | 학원앱 + Supabase 데이터 (글감 원천) | 글감 생성기 |
-| 블로그 톤·기존 글 2편 (`docs/blog_writing_context.md`) | 검사기 |
-| 학원 프로필·말투 원본 (`docs/lumen_blog_profile.md`, 2026-09-20 ✅ — 빈칸은 원장님이 채우는 중) | 카드 생성기·템플릿 |
-| `sync/` 폴더의 스크립트 작성 관례 · GitHub Actions 예약 실행 설정 | 인스타 업로드, 네이버 임시저장기 |
+| 블로그 톤·원장 원문 (`docs/lumen_blog_profile.md` 4번) | 네이버 임시저장기 (6단계) |
+| 학원 프로필·말투 원본 (`docs/lumen_blog_profile.md`) · 글감 생성기 · 카드 생성기 · 검사기 · 시범 글 1편 (`blog/`) — 전부 2026-09-20 완료 | 인스타 업로드 (5단계) |
+| 한 편 만드는 순서: `blog/README.md` | |
 
 ---
 
@@ -57,9 +57,9 @@
 | 단계 | 파일 | 내용 | 맥미니 필요? |
 |---|---|---|---|
 | 1 ✅ | `docs/lumen_blog_profile.md` | 학원 정보·말투 원본 — **완료**(2026-09-20). 교습비·등록번호 등 빈칸(❏)은 원장님이 채움 | ❌ |
-| 2 | `sync/blog_topics.js` | 글감 생성기 — Supabase 집계 → `docs/blog_topics_latest.md` | ❌ |
-| 3 | `sync/card_render.js` + 템플릿 5종 | 카드 HTML → PNG | ❌ |
-| 4 | — | 시범: 블로그 한 편 + 카드 6장 끝까지 | ❌ |
+| 2 ✅ | `sync/blog_topics.js` | 글감 생성기 — Supabase 집계 → `docs/blog_topics_latest.md` (2026-09-20 완료, 실데이터 검증) | ❌ |
+| 3 ✅ | `sync/card_render.js` + `sync/card_templates/` 6종 | 카드 HTML → PNG 1080×1350 (2026-09-20 완료) + `sync/post_check.js` 검사기 | ❌ |
+| 4 ✅ | `blog/2026-09-20-banten/` | 시범: 반텐 글 + 카드 6장 + 검사 통과 (2026-09-20). 네이버 붙여넣기는 원장님 | ❌ |
 | 5 | `sync/insta_upload.js` | 인스타 Graph API 게시 | ✅ |
 | 6 | `sync/naver_draft.js` | 네이버 임시저장 자동화 (사람 타자 속도, 발행은 원장님) | ✅ 맥미니 전용 |
 
