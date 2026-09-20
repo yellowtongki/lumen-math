@@ -44,9 +44,9 @@
 | 있는 것 | 없는 것 (만들 것) |
 |---|---|
 | 학원앱 + Supabase 데이터 (글감 원천) | 글감 생성기 |
-| 블로그 톤·기존 글 2편 (`docs/blog_writing_context.md`) | 학원 프로필·말투 원본 파일 |
-| `sync/` 폴더의 스크립트 작성 관례 | 카드 생성기·템플릿 |
-| GitHub Actions 예약 실행 설정 | 검사기, 인스타 업로드 |
+| 블로그 톤·기존 글 2편 (`docs/blog_writing_context.md`) | 글감 생성기·검사기 |
+| 학원 프로필·말투 원본 (`docs/lumen_blog_profile.md`, 2026-09-20 ✅ — 빈칸은 원장님이 채우는 중) | 카드 생성기·템플릿 |
+| `sync/` 폴더의 스크립트 작성 관례 · GitHub Actions 예약 실행 설정 | 인스타 업로드 |
 
 ---
 
@@ -54,7 +54,7 @@
 
 | 단계 | 파일 | 내용 | 맥미니 필요? |
 |---|---|---|---|
-| 1 | `docs/lumen_blog_profile.md` | 학원 정보·말투 원본 (학원명·주소·강점·교습비·등록번호) | ❌ |
+| 1 ✅ | `docs/lumen_blog_profile.md` | 학원 정보·말투 원본 — **완료**(2026-09-20). 교습비·등록번호 등 빈칸(❏)은 원장님이 채움 | ❌ |
 | 2 | `sync/blog_topics.js` | 글감 생성기 — Supabase 집계 → `docs/blog_topics_latest.md` | ❌ |
 | 3 | `sync/card_render.js` + 템플릿 5종 | 카드 HTML → PNG | ❌ |
 | 4 | — | 시범: 블로그 한 편 + 카드 6장 끝까지 | ❌ |
