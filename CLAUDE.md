@@ -107,3 +107,4 @@
   - 새 채팅 인수인계: `docs/handoff_blog_insta.md` ← **먼저 읽을 것**
   - 설계: `docs/blog_insta_automation_plan.md` · 도구 구조: `docs/blog_automation_overview.md`
   - ⚠️ 네이버 자동 "발행"은 하지 않는다 (저품질 처리 위험). 임시저장까지만, 발행은 원장님이
+  - 🔄 2026-09-20 방향 전환: **자체 도구를 새로 만든다** → `docs/lumen_blog_tool_design.md`
