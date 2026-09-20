@@ -244,6 +244,42 @@ async function loadRaidJobs() {
   return out;
 }
 
+/* ── 🗂 할 일 보드 점수 (v19-26 · docs/todo_board_contract.md §6) ──────────
+ * 카드마다 받음 1 · 하는 중 2 · 제출/확인 끝 3 (누적 아님 — 가장 앞선 상태 하나).
+ * 원장 표시(tst)·학생 표시(todo_st_)·자동(auto) 중 앞선 것을 쓰고, 그 시각이 시즌 안일 때만 센다.
+ * ⚠️ 학원앱 raceTodoPts(lumen_v19-26.html)와 <b>같은 규칙</b>이어야 한다. season.todoPts===false 면 끈다. */
+const TODO_ORD = { todo: 0, got: 1, doing: 2, done: 3, ok: 4 };
+function todoPtsOf(items, stmap, from, to) {
+  let pts = 0;
+  (items || []).forEach((it) => {
+    if (!it || !it.id) return;
+    const s = (stmap || {})[it.id] || null;
+    let best = 'todo', at = '';
+    [[it.tst, (it.tat || {})[it.tst]], [s && s.st, s && s.at], [it.auto && it.auto.st, it.auto && it.auto.at]].forEach((c) => {
+      if (c[0] && TODO_ORD[c[0]] != null && TODO_ORD[c[0]] > TODO_ORD[best]) { best = c[0]; at = c[1] || ''; }
+    });
+    if (best === 'todo' || !at) return;
+    const day = new Date(Date.parse(at) + 9 * 3600000).toISOString().slice(0, 10);
+    if (day < from || day > to) return;
+    pts += (best === 'got' ? 1 : best === 'doing' ? 2 : 3);
+  });
+  return pts;
+}
+async function loadTodo() {
+  const TI = {}, TS = {};
+  try {
+    const rows = await sbAll('lumen_store?key=like.todo*&select=key,value');
+    rows.forEach((row) => {
+      const k = String(row.key || ''); let v = row.value;
+      if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+      if (!v) return;
+      let m = k.match(/^todo_st_(.+)$/); if (m) { TS[m[1]] = v; return; }
+      m = k.match(/^todo_([^_]+)$/); if (m && m[1] !== 'courses') TI[m[1]] = v.items || [];
+    });
+  } catch (e) { log('할 일 보드 읽기 실패(점수 없이 진행):', e.message); }
+  return { TI, TS };
+}
+
 /* ── 리그 판정 ───────────────────────────────────────────────
  * 각 리그를 III → II → I 로 3등분. 마지막(마스터)은 단일 등급.     */
 /* 롤처럼 한 티어 안을 IV·III·II·I 네 칸으로 나눈다 (I 이 가장 높다).
@@ -388,6 +424,19 @@ async function runRace() {
     }
   });
 
+  /* 🗂 할 일 보드 점수 — 기본 켬 (v19-26) */
+  if (season.todoPts !== false) {
+    const { TI, TS } = await loadTodo();
+    let todoTot = 0, todoN = 0;
+    Object.keys(info).forEach((code) => {
+      const p = todoPtsOf(TI[code], TS[code], season.from, season.to);
+      if (!p) return;
+      const a = agg[code] || (agg[code] = { code, pts: 0, base: 0, n: 0, ok: 0, hard: 0, byDay: {} });
+      a.base += p; a.pts += p; a.todo = p; todoTot += p; todoN += 1;
+    });
+    log(`🗂 할 일 보드 점수 ${todoTot}점 · ${todoN}명`);
+  }
+
   /* 기간 안의 날짜 목록 (오늘까지) */
   const days = [];
   for (let t = new Date(season.from + 'T00:00:00Z').getTime();
@@ -418,6 +467,7 @@ async function runRace() {
           code: c, nm: info[c].nm, sch: info[c].sch, gr: info[c].gr,
           pts: Math.round(a.pts), base: basePts, bonus: bonus,
           pdays: pdays, pavg: pdays ? Math.round((psum / pdays) * 10) / 10 : 0,
+          todo: a.todo || 0,   // 🗂 할 일 보드로 번 점수 (v19-26)
           n: a.n, ok: a.ok,
           rate: a.n ? Math.round((a.ok / a.n) * 100) : 0,
           hard: a.hard,
@@ -685,7 +735,7 @@ function dryReport(board) {
   console.log('※ 미리보기입니다 — 순위표에 저장하지 않았습니다.\n');
 }
 
-module.exports = { runRace, ptOf, tierOf, seatTopTiers, DEF_TIERS, TOP_SEATS };
+module.exports = { runRace, ptOf, tierOf, seatTopTiers, DEF_TIERS, TOP_SEATS, todoPtsOf };
 
 if (require.main === module) {
   runRace().catch((e) => { console.error('오류:', e.message); process.exit(1); });
