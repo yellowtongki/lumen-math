@@ -44,7 +44,7 @@
 | 있는 것 | 없는 것 (만들 것) |
 |---|---|
 | 학원앱 + Supabase 데이터 (글감 원천) | 글감 생성기 |
-| 블로그 톤·기존 글 2편 (`docs/blog_writing_context.md`) | 글감 생성기·검사기 |
+| 블로그 톤·기존 글 2편 (`docs/blog_writing_context.md`) | 검사기 |
 | 학원 프로필·말투 원본 (`docs/lumen_blog_profile.md`, 2026-09-20 ✅ — 빈칸은 원장님이 채우는 중) | 카드 생성기·템플릿 |
 | `sync/` 폴더의 스크립트 작성 관례 · GitHub Actions 예약 실행 설정 | 인스타 업로드 |
 
