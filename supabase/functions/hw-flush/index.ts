@@ -96,6 +96,25 @@ async function mfCall(method: string, p: string, body?: unknown, retried = false
 const RES_MAP: Record<string, string> = { O: 'CORRECT', X: 'WRONG', '?': 'UNKNOWN' };
 const nap = (ms: number) => new Promise((z) => setTimeout(z, ms));
 
+/* ★ 겹침 방지 (2026-09-20)
+ * Cron 이 2분마다 부르는데, 한꺼번에 아주 많이 밀리면 한 번이 2분을 넘길 수 있다.
+ * 그러면 앞의 실행이 아직 도는 중에 다음 실행이 시작되어 같은 항목을 두 번 보내게 된다.
+ * (매쓰플랫 값 자체는 같은 값을 덮어쓰는 것이라 망가지지 않지만, 대기열 갱신이 엇갈린다)
+ * 그래서 「지금 누가 돌고 있다」는 표시를 lumen_store 의 hw_flush_lock 에 남긴다.
+ *   · 표시가 LOCK_MIN 분 안에 찍혀 있으면 이번 차례는 그냥 건너뛴다
+ *   · 끝나면(또는 실패해도) 표시를 지운다
+ * 한 번에 처리하는 양도 MAX_ITEMS 로 끊는다 — 남은 것은 2분 뒤에 이어서 한다. */
+const LOCK_MIN = 5;
+const MAX_ITEMS = 400;
+
+async function lockTake(): Promise<boolean> {
+  const cur = await kvGet('hw_flush_lock');
+  if (cur?.at && (Date.now() - Date.parse(cur.at)) < LOCK_MIN * 60000) return false;
+  await kvSet('hw_flush_lock', { at: new Date().toISOString() });
+  return true;
+}
+async function lockFree() { await kvSet('hw_flush_lock', {}); }
+
 async function runFlush() {
   const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=like.hw_sync_*&select=key,value`, { headers: sbH() });
   if (!r.ok) { log(`대기열 조회 실패 ${r.status}`); return { ok: 0, fail: 0, pend: 0 }; }
@@ -111,10 +130,15 @@ async function runFlush() {
   log(`대기 ${pend}건 · 학생 ${queues.length}명`);
 
   await mfLogin();
-  let totOk = 0, totFail = 0, totWs = 0;
+  let totOk = 0, totFail = 0, totWs = 0, budget = MAX_ITEMS, left = 0;
 
   for (const q of queues) {
-    const items = q.v.items as any[];
+    /* 한 번에 너무 오래 끌지 않는다 — 남은 것은 다음 차례(2분 뒤)에 이어서 한다 */
+    if (budget <= 0) { left += q.v.items.length; continue; }
+    const all = q.v.items as any[];
+    const items = all.slice(0, budget);
+    const carry = all.slice(budget);           /* 이번에 손대지 않고 남겨 둘 것 */
+    budget -= items.length; left += carry.length;
     const okIds = new Set<string>(); const failNote: Record<string, string> = {};
 
     /* 학습지 — 배정(swId)별로 묶어 보낸다 */
@@ -172,7 +196,7 @@ async function runFlush() {
     }
 
     /* 성공은 이력으로, 실패는 남겨 다음에 다시 */
-    const remain = items.filter((it) => !okIds.has(it.id));
+    const remain = items.filter((it) => !okIds.has(it.id)).concat(carry);
     const done = items.filter((it) => okIds.has(it.id)).map((it) => ({ ...it, syncedAt: new Date().toISOString() }));
     totOk += done.length; totFail += remain.length;
     const code = q.key.replace(/^hw_sync_/, '');
@@ -189,8 +213,8 @@ async function runFlush() {
       lastFail: Object.keys(failNote).length ? failNote : undefined,
     });
   }
-  log(`성공 ${totOk}건 (그중 학습지 ${totWs}) · 실패 ${totFail}건`);
-  return { ok: totOk, fail: totFail, pend, ws: totWs };
+  log(`성공 ${totOk}건 (그중 학습지 ${totWs}) · 실패 ${totFail}건` + (left ? ` · 다음 차례로 미룸 ${left}건` : ''));
+  return { ok: totOk, fail: totFail, pend, ws: totWs, left };
 }
 
 Deno.serve(async (req) => {
@@ -200,17 +224,23 @@ Deno.serve(async (req) => {
     if (got !== FLUSH_KEY) return new Response('no', { status: 401 });
   }
   const t0 = Date.now();
+  /* 앞의 실행이 아직 도는 중이면 이번 차례는 건너뛴다 */
+  if (!(await lockTake())) {
+    return new Response(JSON.stringify({ ok: true, busy: true }), { headers: { 'content-type': 'application/json' } });
+  }
   try {
     const out = await runFlush();
     /* 언제 무엇을 했는지 앱이 볼 수 있게 남긴다 */
     if (!(out as any).idle) {
       await kvSet('hw_flush_log', { at: new Date().toISOString(), ms: Date.now() - t0, ...out, lines: lines.slice(-12) });
     }
+    await lockFree();
     return new Response(JSON.stringify({ ok: true, ...out }), { headers: { 'content-type': 'application/json' } });
   } catch (e) {
     const msg = String((e as Error).message);
     log('실패: ' + msg);
     await kvSet('hw_flush_log', { at: new Date().toISOString(), error: msg, lines: lines.slice(-12) });
+    await lockFree();
     return new Response(JSON.stringify({ ok: false, error: msg }), { status: 500, headers: { 'content-type': 'application/json' } });
   }
 });
