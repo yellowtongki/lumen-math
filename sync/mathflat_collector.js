@@ -1555,9 +1555,17 @@ async function refreshStudentWorkbooks() {
 // ── v18-74: 교재 정답사전 (mf_bookans_<bookId>) ─────────────────────────
 // 학생앱 교재 채점용. 우리 학생이 실제 도달한 (교재·페이지)의 문항·정답을 매쓰플랫에서
 // 받아 채점엔진으로 정규화·gradable 판정해 저장. 회차와 무관(같은 교재는 문항·정답 동일).
-// 약관: 등록·도달 페이지에 한정. 문제 이미지는 저장하지 않음(번호·정답·유형만).
+// 약관: 등록·도달 페이지에 한정.
+//
+// ★ v3 (2026-09-21, 원장 지시 「교재 문제도 붙이게 수집기에 추가해라」)
+//   전에는 정답 그림(img)만 받고 문제 그림은 일부러 뺐다. 학생앱에 시험지를 띄우지
+//   않기 위해서였다. 이제 <b>학원앱에서 원장님이 종이로 뽑아 주는</b> 「마지막 점검
+//   자료」에 교재 문제를 실어야 해서 pimg(문제)·solimg(풀이) 주소도 함께 받는다.
+//   ⚠️ 저장하는 것은 <b>주소뿐</b>이고 그림 파일은 받지 않는다. 그리고 이 주소는
+//      학생앱에 내보내지 않는다 — 학습지·교재 문제 그림은 학생앱 금지 규칙 그대로다.
+//      (학습지 쪽 wsqProblem 은 이미 pimg 를 받고 있었고, 교재만 빠져 있었다)
 const HWGrade = require('./hw_grade_engine.js');
-const BOOKANS_VER = 2;   // 정답사전 형식 판 수 (pages[wpid].v). v가 없거나 낮으면 다시 받는다
+const BOOKANS_VER = 3;   // 정답사전 형식 판 수 (pages[wpid].v). v가 없거나 낮으면 다시 받는다
 
 // 한 문항을 정답사전 항목으로 (계약 docs/bookscore_v2_contract.md §1)
 function bookAnsRec(p) {
@@ -1574,6 +1582,9 @@ function bookAnsRec(p) {
     objective: !!objective, optionCount: (objective ? (p.optionCount || 5) : 0),
     gradable: !!sh.gradable, unit: sh.unit || '',
     img: p.answerImageUrl || '',                 // 정답 그림 (자기채점 때 보여 준다)
+    /* v3 — 학원앱 인쇄물(마지막 점검 자료)에서만 쓴다. 학생앱에는 내보내지 않는다 */
+    pimg: p.problemImageUrl || '',               // 문제 그림
+    solimg: p.solutionImageUrl || '',            // 풀이 그림
     concept: p.conceptName || '',                // 2026-09-18: 「다시 도전」 2차 힌트 (개념 이름)
     cnt: Number(p.answerCount || 0),
     units,
