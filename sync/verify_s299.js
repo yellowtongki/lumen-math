@@ -1,9 +1,9 @@
-/* 학생앱 v2-98 검증 — ➗ 분수를 빗금(/)으로 쳤을 때 오답이 되던 문제
+/* 학생앱 v2-99 검증 — ➗ 빗금 분수 오채점 + 👀 안 보이던 정답 그림
  * 실브라우저에 학생앱을 띄워 «앱 안에 들어 있는» 채점 엔진으로 직접 견준다.
  * (sync/hw_grade_engine.js 와 인라인 복사본이 같은지도 함께 확인한다)
  * 실행: NODE_PATH=/home/user/lumen-math/node_modules node sync/verify_s298.js [파일] */
 const { chromium } = require('playwright'); const fs=require('fs');
-const FILE=process.argv[2]||'/home/user/lumen-math/student_v2-98.html';
+const FILE=process.argv[2]||'/home/user/lumen-math/student_v2-99.html';
 const SP=process.env.SP||'/tmp/claude-0/-home-user-lumen-math/8137f117-8053-52a0-bbe4-f0c2d44ca15d/scratchpad';
 const src=fs.readFileSync(FILE,'utf8');
 const out=[]; let bad=0;
@@ -13,7 +13,7 @@ const slash=(a)=>a.replace(/(\d+)\\[dt]?frac\{(\d+)\}\{(\d+)\}/g,'$1 $2/$3').rep
 (async()=>{
   /* A. 인라인 복사본이 원본과 같은가 */
   const eng=fs.readFileSync('/home/user/lumen-math/sync/hw_grade_engine.js','utf8').trim();
-  ok('버전이 v2-98 이다', /var STU_VER = 'v2-98';/.test(src));
+  ok('버전이 v2-99 이다', /var STU_VER = 'v2-99';/.test(src));
   ok('앱 안 채점 엔진이 sync/hw_grade_engine.js 와 똑같다 (복사 누락 없음)', src.indexOf(eng)>0);
   ok('빗금→분수 고침이 들어 있다', src.indexOf('function slashToFrac')>0);
   ok('할 일 보드(v2-97)는 그대로 있다', src.indexOf('window.tdHomeUpdate')>0 && src.indexOf('screen-todo')>0);
@@ -70,6 +70,36 @@ const slash=(a)=>a.replace(/(\d+)\\[dt]?frac\{(\d+)\}\{(\d+)\}/g,'$1 $2/$3').rep
     ok('불변식 — 정답 원문 그대로 넣으면 반드시 맞음 (앱 안 엔진, '+res.inv+'개)', res.invBad===0, '어긋남 '+res.invBad);
     ok('빗금으로 친 분수가 대부분 맞는다 ('+res.fixed+'/'+res.cand+')', res.cand>0 && res.fixed/res.cand>0.9, res.fixed+'/'+res.cand);
   } else { ok('정답 표본 파일이 없어 대량 대조는 건너뜀 (선택)', true); }
+
+  /* C-2. 👀 정답 보여주기 — 수학비서 회원전용 그림은 글자로 (v2-99) */
+  const box=await p.evaluate(()=>{
+    var SECR='https://cdn.mathsecr.com/contents/private/Members/x/y.png';
+    var FLAT='https://freewheelin-contents.mathflat.com/problem/2994165/de45d595/answer.png';
+    var r={};
+    r.secrBad = (typeof bkAnsImgOk==='function') && bkAnsImgOk(SECR)===false;
+    r.flatOk  = (typeof bkAnsImgOk==='function') && bkAnsImgOk(FLAT)===true;
+    /* 원장님이 보내 주신 그 문항 그대로 */
+    var p1={ key:{ parts:[{ t:'latex_answer', v:'$y=\\frac{2}{5}x$', img:SECR }] } };
+    var h1=bkKeyAnsBox(p1);
+    r.showsText = h1.indexOf('y=2/5x')>=0;
+    r.noDeadImg = h1.indexOf('cdn.mathsecr.com')<0;
+    /* 여러 칸짜리 */
+    var p2={ key:{ parts:[{v:'$2$',img:SECR},{v:'$3$',img:SECR},{v:'$-6$',img:SECR}] } };
+    var h2=bkKeyAnsBox(p2);
+    r.multi = (h2.indexOf('2')>=0&&h2.indexOf('3')>=0&&h2.indexOf('-6')>=0&&h2.indexOf('칸마다')>=0);
+    /* 매쓰플랫 그림은 그대로 그림으로 */
+    var p3={ answer:'\\frac{1}{2}', img:FLAT };
+    var h3=bkAnsBox(p3);
+    r.flatImg = h3.indexOf('<img')>=0 && h3.indexOf('onerror')>=0;
+    r.dollar = bkCleanAns('$y=\\frac{2}{5}x$')==='y=2/5x';
+    return r;
+  });
+  ok('수학비서 회원전용 주소를 못 쓰는 그림으로 가려낸다', box.secrBad, JSON.stringify(box));
+  ok('매쓰플랫 그림은 그대로 쓴다', box.flatOk);
+  ok('원장님 문항(5번) 정답이 «글자»로 보인다 — y=2/5x', box.showsText && box.noDeadImg, JSON.stringify({글자:box.showsText, 죽은그림없음:box.noDeadImg}));
+  ok('여러 칸짜리 정답(2,3,-6)도 칸마다 글자로 보인다', box.multi);
+  ok('매쓰플랫 정답 그림은 그림 그대로 + 안 열리면 글자로 바뀐다', box.flatImg);
+  ok('$ 로 감싼 정답에서 $ 를 벗긴다', box.dollar);
 
   /* D. 회귀 — 자판·채점 화면이 그대로 뜨는가 */
   const reg=await p.evaluate(()=>({ kb:typeof bkKeyGrade==='function', sh:typeof bkGuessShape==='function',
