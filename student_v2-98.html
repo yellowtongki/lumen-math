@@ -3761,16 +3761,6 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
- * v2-99 (2026-09-21) 👀 학습지에서 «정답이 안 보이던» 것을 고쳤습니다
- *   · 원장님 제보: 「정답이 안 보인다고 한다」 (학습지 「[비상] 중 1-2 중간」 화면).
- *   · <b>[까닭]</b> 그 학습지의 정답 그림 주소가 <b>수학비서 «회원 전용» 주소</b>였습니다.
- *     선생님 계정으로는 열리지만 <b>학생 브라우저에서는 403(권한 없음)</b> 이라 그림이 깨졌습니다.
- *     실측: 정답 그림 77,328개 중 <b>871개(학습지 8장)</b>가 이 주소였습니다.
- *   · <b>[고침]</b> 그 871개는 <b>글자 정답을 모두 갖고 있어서</b>, 이제 그림 대신 <b>글자로</b> 보여 줍니다.
- *     (「y=2/5x」처럼 바로 읽힙니다). 매쓰플랫 정답 그림은 예전처럼 그림으로 나옵니다.
- *     혹시 다른 그림이 안 열려도 <b>글자 정답으로 자동으로 바뀝니다</b>.
- *   · 수학비서 정답은 「$y=\frac{2}{5}x$」처럼 $ 로 감싸여 오는데, 그 $ 도 이제 벗겨서 보여 줍니다.
- *
  * v2-98 (2026-09-21) ➗ 분수를 빗금(/)으로 쳤을 때 «다 틀렸다»고 나오던 것을 고쳤습니다
  *   · 원장님 제보: 「분수를 입력하면 오답이 나온다 — 이 쪽 분수 답이 다 틀렸다고 한다」.
  *   · <b>[까닭]</b> 자판의 「／분수」 키는 빗금을 넣습니다. 그런데 채점 엔진은 빗금을
@@ -4161,7 +4151,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-99';
+var STU_VER = 'v2-98';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -12246,8 +12236,7 @@ function bkDegNorm(s){
   return String(s==null?'':s).replace(/\^\s*\{\s*\\circ\s*\}/g,'°').replace(/\^\s*\\circ/g,'°').replace(/[˚]/g,'°');
 }
 function bkCleanAns(a){
-  /* ★ v2-99: 수학비서에서 온 정답은 "$y=\frac{2}{5}x$" 처럼 $ 로 감싸여 있다 — 벗긴다 */
-  return bkDegNorm(String(a==null?'':a).replace(/\$/g,''))
+  return bkDegNorm(a)
     .replace(/\\d?frac\{(-?[0-9]+)\}\{(-?[0-9]+)\}/g,'$1/$2')
     .replace(/\\text\s*\{([^}]*)\}/g,'$1')
     .replace(/\\;|\\,|\\!/g,' ').replace(/\\pm/g,'±')
@@ -15988,49 +15977,21 @@ function bkKeyGrade(p, sh, vals){
   }
   return { gradable:true, correct:allOk };
 }
-/* ★ v2-99: 학생이 «띄울 수 있는» 정답 그림인가
- *   수학비서(cdn.mathsecr.com)는 «회원 전용» 주소라 학생 브라우저에서 403 이 뜬다.
- *   실측: 정답 그림 77,328개 중 871개(학습지 8장)가 이 주소였고 모두 깨져 보였다.
- *   다행히 그 871개는 «글자 정답»(v·tex)을 모두 갖고 있어 글자로 보여 주면 된다. */
-function bkAnsImgOk(u){
-  u=String(u||'');
-  if(!u) return false;
-  if(u.indexOf('cdn.mathsecr.com')>=0) return false;   // 회원 전용 — 학생은 못 본다
-  return /^https?:\/\//.test(u);
-}
-/* 그림이 그래도 안 열리면 글자 정답으로 바꿔 준다 (다른 주소가 죽었을 때 대비) */
-window.bkAnsImgFail=function(el){
-  try{
-    el.style.display='none';
-    var t=el.getAttribute('data-tx')||'';
-    var sp=document.createElement('span');
-    sp.className='kt';
-    sp.textContent=t||'정답 그림을 불러오지 못했어요 — 선생님께 물어보세요';
-    if(el.parentNode) el.parentNode.appendChild(sp);
-  }catch(e){}
-};
-/* 대장이 있을 때 보여 줄 「칸마다의 정답」 — 글자가 있으면 글자, 없으면 그림 (v2-99) */
+/* 대장이 있을 때 보여 줄 「칸마다의 정답 그림」 — 칸 번호와 함께 */
 function bkKeyAnsBox(p){
   var k=p&&p.key;
   if(!k||!k.parts||!k.parts.length) return '';
-  var cells=[], any=false;
-  k.parts.forEach(function(pt){
-    var tx=bkCleanAns((pt&&(pt.v||pt.tex))||'');
-    var im=(pt&&bkAnsImgOk(pt.img))?String(pt.img):'';
-    if(tx||im) any=true;
-    cells.push({ tx:tx, img:im });
-  });
-  if(!any) return '';
-  var many=(cells.length>1);
+  var imgs=0;
+  k.parts.forEach(function(pt){ if(pt&&pt.img) imgs++; });
+  if(!imgs) return '';
+  var many=(k.parts.length>1);
   var h='<div class="bk-ansbox"><div class="cap">정답'+(many?' — 칸마다':'')+'</div>';
   h+='<div class="bk-keyans">';
-  cells.forEach(function(c,ix){
+  k.parts.forEach(function(pt,ix){
     h+='<div class="kcell">';
     if(many) h+='<span class="kn">'+(ix+1)+'번 칸</span>';
-    /* 글자 정답을 먼저 — 가장 잘 보이고 절대 깨지지 않는다 */
-    if(c.tx) h+='<span class="kt">'+h3Esc(c.tx)+'</span>';
-    else if(c.img) h+='<img src="'+h3Esc(c.img)+'" alt="정답" data-tx="" onerror="bkAnsImgFail(this)" onclick="openPvPhoto('+bkQ(c.img)+')">';
-    else h+='<span class="kt" style="color:#94a3b8">정답을 아직 못 받았어요</span>';
+    if(pt&&pt.img) h+='<img src="'+h3Esc(pt.img)+'" alt="정답" onclick="openPvPhoto('+bkQ(pt.img)+')">';
+    else h+='<span class="kt">'+h3Esc(bkCleanAns((pt&&pt.v)||''))+'</span>';
     h+='</div>';
   });
   h+='</div></div>';
@@ -16988,10 +16949,9 @@ function bkCardHtml(p,i,pg,probs){
 function bkAnsBox(p){
   var kb=bkKeyAnsBox(p);
   if(kb) return kb;
-  var t0=bkCleanAns(p.answer);
-  if(bkAnsImgOk(p.img)) return '<div class="bk-ansbox"><div class="cap">정답 (매쓰플랫)</div>'
-    +'<img src="'+h3Esc(p.img)+'" alt="정답" data-tx="'+h3Esc(t0)+'" onerror="bkAnsImgFail(this)" onclick="openPvPhoto('+bkQ(p.img)+')"></div>';
-  var t=t0;
+  if(p.img) return '<div class="bk-ansbox"><div class="cap">정답 (매쓰플랫)</div>'
+    +'<img src="'+h3Esc(p.img)+'" alt="정답" onclick="openPvPhoto('+bkQ(p.img)+')"></div>';
+  var t=bkCleanAns(p.answer);
   if(t===''||t==='.') t='이 문제는 글자 정답이 없어요 — 풀이 과정을 선생님과 확인해요';
   return '<div class="bk-ansbox"><div class="cap">정답</div><div class="txt">'+h3Esc(t)+'</div></div>';
 }

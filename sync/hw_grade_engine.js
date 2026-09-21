@@ -213,7 +213,12 @@
       if (!m) break;
       head = trim(m[1]);
       if (!head) break;                                         // 값이 없으면 단위가 아니다
-      if (/^[mgLt]$/.test(m[2]) && !/[\d)\s]$/.test(m[1])) break; // 한 글자 단위는 앞이 숫자일 때만
+      // 한 글자 단위(m·g·L·t)는 앞이 숫자일 때만 단위로 본다 (문자식의 변수 m 과 헷갈리지 않게).
+      // ★ v2-98: 「\frac{1}{2}m」 「4\frac{1}{3} L」처럼 <b>숫자만 든 분수</b> 뒤에 오는 것도 단위다.
+      //   (실측: 이 꼴의 정답 91가지가 전부 리터·미터였고 문자식은 하나도 없었다.
+      //    분수 안에 문자가 들어간 \frac{x}{2}m 는 예전처럼 문자식으로 남는다)
+      if (/^[mgLt]$/.test(m[2]) && !/[\d)\s]$/.test(m[1])
+          && !/^\s*\d*\\[dt]?frac\{\d+\}\{\d+\}\s*$/.test(m[1])) break;
       u = m[2] + (u ? ' ' + u : '');
       t = head;
     }
@@ -966,7 +971,56 @@
   }
   function samePart(cp, sp) { return inter(cp.keys, sp.keys) && unitOk(cp.unit, sp.unit); }
 
+  /* ★ v2-98: 학생 자판의 「／분수」 키는 빗금(/)을 넣는다.
+   *   정답 쪽 빗금은 «여러 답 구분선»이다 — 초등 교재가 작은 문제들의 답을
+   *   「3, 5 / 7, 9」처럼 이어 붙이고, 매쓰플랫은 분수를 늘 \frac 로 준다(실측 확인).
+   *   그런데 학생이 <b>한 칸에</b> 친 빗금은 «분수 가로줄»이다.
+   *   그래서 학생 입력에서만 「숫자/숫자」를 \frac 로 바꿔 한 번 더 견준다.
+   *   정답 쪽은 건드리지 않으므로 «정답 원문 그대로 → 정답» 불변식은 그대로다. */
+  function slashToFrac(raw) {
+    var t = String(raw == null ? '' : raw);
+    if (t.indexOf('/') < 0) return t;
+    var chunks = splitTopMulti(t, ',;'), out = [], changed = false, i, c, m, sign, num, tail;
+    for (i = 0; i < chunks.length; i++) {
+      c = trim(chunks[i]);
+      // 대분수 「1 3/5」 · 「1과 3/5」
+      m = c.match(/^([+-]?\d+)\s*(?:과)?\s+(\d+)\s*\/\s*(\d+)(\s*[^\s\d\/].*)?$/);
+      if (m) {
+        sign = (m[1].charAt(0) === '-') ? '-' : ''; num = m[1].replace(/^[+-]/, '');
+        tail = m[4] ? m[4] : '';
+        out.push(sign + num + '\\frac{' + m[2] + '}{' + m[3] + '}' + tail); changed = true; continue;
+      }
+      // 진분수·가분수 「3/5」 (뒤에 단위가 붙어 있어도 된다 — 「3/5 m」)
+      m = c.match(/^([+-]?\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)(\s*[^\s\d\/].*)?$/);
+      if (m) {
+        sign = (m[1].charAt(0) === '-') ? '-' : ''; num = m[1].replace(/^[+-]/, '');
+        tail = m[3] ? m[3] : '';
+        out.push(sign + '\\frac{' + num + '}{' + m[2] + '}' + tail); changed = true; continue;
+      }
+      out.push(chunks[i]);
+    }
+    var r = changed ? out.join(',') : t;
+    /* 좌표 (0,33/10) · 식 x=7/3 · 부등식 a≥-1/2 처럼 «글 속에» 든 분수도 바꾼다.
+       빗금 양옆에 공백이 없을 때만 — 초등 교재의 구분선 「3 / 5」은 건드리지 않는다.
+       (뒷걸음 보기(lookbehind)는 옛 사파리가 못 읽어서 앞 글자를 붙잡는 방식으로 쓴다) */
+    var r2 = r.replace(/([^0-9.\/}]|^)(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)(?![\d.\/])/g,
+      function (_, pre, aa, bb) { return pre + '\\frac{' + aa + '}{' + bb + '}'; });
+    if (r2 !== r) { changed = true; r = r2; }
+    return changed ? r : t;
+  }
+
   function grade(correctRaw, studentRaw) {
+    var r = gradeOnce(correctRaw, studentRaw);
+    if (r.correct || !r.gradable) return r;
+    var alt = slashToFrac(studentRaw);
+    if (alt !== String(studentRaw == null ? '' : studentRaw)) {
+      var r2 = gradeOnce(correctRaw, alt);
+      if (r2.gradable && r2.correct) return r2;
+    }
+    return r;
+  }
+
+  function gradeOnce(correctRaw, studentRaw) {
     var C = analyze(correctRaw);
     if (!C.gradable) return { gradable: false, correct: false };
     if (studentRaw == null || trim(studentRaw) === '') return { gradable: true, correct: false };
@@ -1101,7 +1155,8 @@
   var API = {
     grade: grade, isGradable: isGradable, unitOf: unitOf,
     shapeOf: shapeOf, normalize: normalize,
-    toValue: toValue, valuesOf: valuesOf, analyze: analyze, unlatex: unlatex
+    toValue: toValue, valuesOf: valuesOf, analyze: analyze, unlatex: unlatex,
+    slashToFrac: slashToFrac
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.HWGrade = API;
