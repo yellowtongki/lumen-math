@@ -1,9 +1,9 @@
-/* 학생앱 v2-99 검증 — ➗ 빗금 분수 오채점 + 👀 안 보이던 정답 그림
+/* 학생앱 v2-100 검증 — 🔒 「내 할 일」 잠금(추후 공개) + ➗ 빗금 분수 + 👀 정답 보여주기
  * 실브라우저에 학생앱을 띄워 «앱 안에 들어 있는» 채점 엔진으로 직접 견준다.
  * (sync/hw_grade_engine.js 와 인라인 복사본이 같은지도 함께 확인한다)
  * 실행: NODE_PATH=/home/user/lumen-math/node_modules node sync/verify_s298.js [파일] */
 const { chromium } = require('playwright'); const fs=require('fs');
-const FILE=process.argv[2]||'/home/user/lumen-math/student_v2-99.html';
+const FILE=process.argv[2]||'/home/user/lumen-math/student_v2-100.html';
 const SP=process.env.SP||'/tmp/claude-0/-home-user-lumen-math/8137f117-8053-52a0-bbe4-f0c2d44ca15d/scratchpad';
 const src=fs.readFileSync(FILE,'utf8');
 const out=[]; let bad=0;
@@ -13,7 +13,7 @@ const slash=(a)=>a.replace(/(\d+)\\[dt]?frac\{(\d+)\}\{(\d+)\}/g,'$1 $2/$3').rep
 (async()=>{
   /* A. 인라인 복사본이 원본과 같은가 */
   const eng=fs.readFileSync('/home/user/lumen-math/sync/hw_grade_engine.js','utf8').trim();
-  ok('버전이 v2-99 이다', /var STU_VER = 'v2-99';/.test(src));
+  ok('버전이 v2-100 이다', /var STU_VER = 'v2-100';/.test(src));
   ok('앱 안 채점 엔진이 sync/hw_grade_engine.js 와 똑같다 (복사 누락 없음)', src.indexOf(eng)>0);
   ok('빗금→분수 고침이 들어 있다', src.indexOf('function slashToFrac')>0);
   ok('할 일 보드(v2-97)는 그대로 있다', src.indexOf('window.tdHomeUpdate')>0 && src.indexOf('screen-todo')>0);
@@ -100,6 +100,40 @@ const slash=(a)=>a.replace(/(\d+)\\[dt]?frac\{(\d+)\}\{(\d+)\}/g,'$1 $2/$3').rep
   ok('여러 칸짜리 정답(2,3,-6)도 칸마다 글자로 보인다', box.multi);
   ok('매쓰플랫 정답 그림은 그림 그대로 + 안 열리면 글자로 바뀐다', box.flatImg);
   ok('$ 로 감싼 정답에서 $ 를 벗긴다', box.dollar);
+
+  /* C-3. 🔒 「내 할 일」 잠금 — 추후 공개 (v2-100) */
+  const lock=await p.evaluate(()=>{
+    var r={};
+    r.fnOk = (typeof tdOpen==='function' && typeof tdSoon==='function');
+    /* ① 설정을 아직 못 읽었을 때 — 잠겨 있어야 한다 */
+    SF.cfg=null; SF.loaded=false; r.noCfgLocked = (tdOpen()===false);
+    /* ② 서버 설정대로 꺼져 있을 때 */
+    SF.cfg={todo:{on:false}}; SF.loaded=true; r.offLocked = (tdOpen()===false);
+    tdHomeUpdate();
+    var el=document.getElementById('td-home');
+    r.shown = !!el && el.style.display!=='none';
+    r.soonTxt = !!el && el.innerText.indexOf('추후 공개')>=0 && el.innerText.indexOf('내 할 일')>=0;
+    r.noList = !!el && el.innerText.indexOf('이번 할 일')<0;
+    /* ③ 주소로 들어가도 잠금 안내 */
+    go('screen-todo');
+    r.toLock = document.getElementById('screen-locked').classList.contains('active');
+    r.lockTxt = (document.getElementById('lk-desc')||{}).textContent||'';
+    go('screen-home');
+    /* ④ 원장님이 켜면 열린다 */
+    SF.cfg={todo:{on:true}}; r.onOpen = (tdOpen()===true);
+    /* ⑤ 학년별로 끌 수도 있다 */
+    SF.cfg={todo:{on:true, off:[ (typeof sfMyGrade==='function'?sfMyGrade():'') ]}};
+    r.gradeOff = (tdOpen()===false);
+    SF.cfg={todo:{on:false}}; tdHomeUpdate();
+    return r;
+  });
+  ok('잠금 장치가 들어 있다', lock.fnOk, JSON.stringify(lock));
+  ok('설정을 못 읽었을 때도 잠겨 있다 (덜 된 화면이 새지 않게)', lock.noCfgLocked);
+  ok('서버 설정이 꺼짐이면 잠긴다', lock.offLocked);
+  ok('홈에 「🔒 추후 공개」 한 줄만 보인다 (할 일 목록은 안 보임)', lock.shown && lock.soonTxt && lock.noList, JSON.stringify({보임:lock.shown, 문구:lock.soonTxt, 목록없음:lock.noList}));
+  ok('주소로 들어가도 잠금 안내로 간다', lock.toLock && /곧 열/.test(lock.lockTxt), lock.lockTxt);
+  ok('원장님이 켜면 열린다', lock.onOpen);
+  ok('학년별로 끌 수도 있다', lock.gradeOff);
 
   /* D. 회귀 — 자판·채점 화면이 그대로 뜨는가 */
   const reg=await p.evaluate(()=>({ kb:typeof bkKeyGrade==='function', sh:typeof bkGuessShape==='function',
