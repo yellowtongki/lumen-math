@@ -1,0 +1,58 @@
+name: 학교알리미 고교 공시 수집
+
+# 우리 학생들이 갈 부천 고교(범박고·소사고·정명고·시온고·부천고·부명고·소명여고, 나중에 추가 가능)의
+# 「교과별 학업성취 사항(A~E 비율)」과 「학교 기본 현황」을 학교알리미 공개 API 로 받아
+# Supabase(lumen_store)에 저장한다. 공시는 자주 바뀌지 않으므로 주 1회면 충분하다.
+#
+# 처음에는 mode=probe(살펴보기)로 한 번 돌려 어떤 항목이 오는지 기록만 남기고,
+# Claude 가 그 기록을 보고 항목 번호(school_alrimi_cfg)를 정한 뒤 collect 가 실제로 저장한다.
+#
+# 필요한 비밀값 (Repo Settings → Secrets and variables → Actions):
+#   ALRIMI_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY
+
+on:
+  schedule:
+    - cron: '10 18 * * 6'    # UTC 토 18:10 = 한국시간 일요일 03:10
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'probe(살펴보기) 또는 collect(본수집)'
+        required: true
+        default: 'collect'
+        type: choice
+        options: [collect, probe]
+      year:
+        description: '공시연도 (비우면 전년도)'
+        required: false
+        default: ''
+      types:
+        description: 'probe 때 훑을 항목 번호 (예 0-80)'
+        required: false
+        default: '0-80'
+
+concurrency:
+  group: school-alrimi
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 학교알리미 수집
+        env:
+          ALRIMI_KEY: ${{ secrets.ALRIMI_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MODE: ${{ github.event.inputs.mode || 'collect' }}
+          YEAR: ${{ github.event.inputs.year || '' }}
+          TYPES: ${{ github.event.inputs.types || '0-80' }}
+        run: |
+          ARGS=""
+          if [ "$MODE" = "probe" ]; then ARGS="--probe --types $TYPES"; fi
+          if [ -n "$YEAR" ]; then ARGS="$ARGS --year $YEAR"; fi
+          node sync/school_alrimi.js $ARGS
