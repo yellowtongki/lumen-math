@@ -399,6 +399,13 @@ async function runHwSync() {
       const { runPushWatch } = require('./push_watch.js');
       await runPushWatch();
     } catch (e) { log('제출 알림 오류:', e.message); }
+    /* 🔥 추가 버프 밤 9시 알림 (2026-09-22, docs/race_boost_contract.md §6)
+     * 9시가 아니거나 오늘 이미 보냈으면 작은 조회 한 번으로 끝난다.
+     * 버프가 꺼지거나 시즌이 끝나면 저절로 멈춘다. */
+    try {
+      const { runBoostPush } = require('./push_boost.js');
+      await runBoostPush();
+    } catch (e) { log('버프 알림 오류:', e.message); }
   }
   // 교재 채점 되돌려쓰기 — 가볍고 학생이 기다리므로 그다음
   try { await runHwSync(); } catch (e) { log('교재채점 반영 오류:', e.message); }
