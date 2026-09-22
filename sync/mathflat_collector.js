@@ -76,6 +76,10 @@ const ELEM_ONLY = has('--elem');              // 정답사전을 초등 배정 �
  * 쉼표로 여러 학년도 된다: --grade 중1,중2 . 교재의 grade 는 「중1-2」처럼 학기까지 붙어 있어
  * 앞부분만 견준다. --elem 과 같이 주면 --grade 가 이긴다. */
 const GRADE_ONLY = String(opt('--grade', '')).split(',').map((s) => s.trim()).filter(Boolean);
+/* --codes A,B,C : 정답사전을 «이 학생들에게 배정된 교재»만, 그리고 그 학생들이
+ * «아직 채점하지 않은 쪽부터» 받는다 (2026-09-22 원장 지시 — 시험이 코앞인 반 먼저).
+ * 학년(--grade)과 달리 선행 교재까지 따라가므로 「이 아이들이 내일 풀 쪽」이 정확히 걸린다. */
+const CODES = String(opt('--codes', '')).split(',').map((s) => s.trim()).filter(Boolean);
 
 function log(...a) { const t = new Date().toISOString().replace('T', ' ').slice(0, 19); console.log(`[${t}]`, ...a); }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -1598,16 +1602,23 @@ function bookAnsRec(p) {
 
 // 학생에게 배정된 교재 목록 (mf_swb_* → 교재별 배정 학생 수·학년) + 교재별 전체 페이지(mf_bookpages)
 async function loadAssignedBooks(url, sbHeaders) {
-  const books = {};   // bid → { students, grade, title }
+  const books = {};   // bid → { students, grade, title, need:Set(wpid) }
   try {
     const rs = await fetch(`${url}/rest/v1/lumen_store?key=like.mf_swb_*&select=key,value&limit=500`, { headers: sbHeaders });
     if (rs.ok) {
       for (const row of await rs.json()) {
+        /* --codes : 이 학생들 것만 본다 (2026-09-22 원장 지시 「옥길중1 채점 안 된 것부터」) */
+        if (CODES.length && CODES.indexOf(String(row.key).replace('mf_swb_', '')) < 0) continue;
         const v = (typeof row.value === 'string' ? JSON.parse(row.value) : row.value) || {};
         for (const b of v.books || []) {
           if (!b || !b.bid) continue;
-          const e = books[b.bid] || (books[b.bid] = { students: 0, grade: '', title: '' });
+          const e = books[b.bid] || (books[b.bid] = { students: 0, grade: '', title: '', need: new Set() });
           e.students++; e.grade = e.grade || b.grade || ''; e.title = e.title || b.title || '';
+          /* 아직 채점이 끝나지 않은 쪽(=학생이 곧 풀 쪽)을 모아 둔다. 쪽 맞물림은 wpid 다.
+           * (swb 의 pid 는 학생마다 다른 배정 번호라 교재 쪽 목록과 맞지 않는다) */
+          for (const p of b.pages || []) {
+            if (p && p.wpid && p.st !== 'COMPLETE') e.need.add(String(p.wpid));
+          }
         }
       }
     }
@@ -1643,7 +1654,9 @@ async function refreshBookAnswers() {
     const targets = Object.keys(books).filter((bid) => {
       if (ONE_BOOK && String(bid) !== String(ONE_BOOK)) return false;
       const g = books[bid].grade || '';
-      if (GRADE_ONLY.length) {                                        // --grade 중1 : 그 학년만
+      if (CODES.length) {                                             // --codes : 그 학생들 교재 전부 (선행 교재까지)
+        /* books 자체가 이미 그 학생들 것만 담겨 있으므로 더 거를 것이 없다 */
+      } else if (GRADE_ONLY.length) {                                  // --grade 중1 : 그 학년만
         if (!GRADE_ONLY.some((x) => g.indexOf(x) === 0)) return false;
       } else {
         if (/^고/.test(g)) return false;                              // 고등 교재는 하지 않는다
@@ -1656,6 +1669,10 @@ async function refreshBookAnswers() {
         || (books[b].students - books[a].students)
         || (gradeRank(books[a].grade) - gradeRank(books[b].grade)))));
     if (!targets.length) { log('교재 정답사전: 대상 교재 없음'); return; }
+    if (CODES.length) {
+      const needTot = targets.reduce((s, b) => s + ((books[b].need && books[b].need.size) || 0), 0);
+      log(`  (--codes) 학생 ${CODES.length}명의 교재만 · ${targets.length}권 · 아직 채점 안 한 쪽 ${needTot}쪽을 먼저 받는다`);
+    }
     if (GRADE_ONLY.length) log(`  (--grade ${GRADE_ONLY.join(',')}) 그 학년 교재만 · ${targets.length}권`);
     else if (ELEM_ONLY) log(`  (--elem) 초등 교재만 · ${targets.length}권`);
 
@@ -1666,7 +1683,15 @@ async function refreshBookAnswers() {
     log(`교재 정답사전: 대상 ${targets.length}권 (쪽 상한 ${PAGE_CAP})`);
     for (const bid of targets) {
       if (capLeft <= 0) break;
-      const pageIds = pages[bid] || [];
+      let pageIds = pages[bid] || [];
+      /* --codes : 그 학생들이 아직 채점 안 한 쪽을 앞으로 당긴다. 상한에 걸려 중간에 끊겨도
+       * «곧 풀 쪽»은 확보된다. 나머지 쪽도 뒤에 그대로 붙여 두어 여유가 있으면 마저 받는다. */
+      const need = books[bid] && books[bid].need;
+      if (need && need.size) {
+        const first = pageIds.filter((p) => need.has(String(p)));
+        const rest = pageIds.filter((p) => !need.has(String(p)));
+        pageIds = first.concat(rest);
+      }
       // 이미 저장된 사전 불러와 병합 (같은 판(v)으로 받아 둔 쪽은 건너뛴다 — 정답은 안 바뀐다)
       let store = { book: '', pages: {} };
       try {
