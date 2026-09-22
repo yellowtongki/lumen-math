@@ -22,6 +22,8 @@
  *   --mylist     담을 마이리스트 폴더 이름 (기본 「수학비서」)
  *   --delete-old 확인까지 끝나면 옛 학습지를 지운다 (기본은 그대로 둔다)
  *   --dry        만들지 않고 계획만 보여 준다
+ *   --drop-dup   같은 문항이 겹치면 뒤에 것을 빼고 합친다
+ *   --exclude-concept  시험범위에서 빠진 단원을 문항 단위로 뺀다 (쉼표로 여러 개, 예: 상관관계)
  *
  * ※ 계정은 환경변수 MATHFLAT_ID / MATHFLAT_PASSWORD 만 쓴다 (코드·로그에 남기지 않는다)
  * ※ 매쓰플랫은 동시 로그인하면 쓰던 화면이 끊길 수 있다 — 원장님이 안 쓰실 때 돌린다
@@ -101,6 +103,8 @@ async function main() {
   const dry = args.includes('--dry');
   const delOld = args.includes('--delete-old');
   const dropDup = args.includes('--drop-dup');
+  /* 시험범위에서 빠진 단원을 문항 단위로 빼낸다 (예: --exclude-concept 상관관계) */
+  const exConcept = String(arg('exclude-concept', '')).split(',').map((x) => x.trim()).filter(Boolean);
   const mylist = arg('mylist', '수학비서');
   if (ids.length < 2) throw new Error('--ws 82224846,82225520 처럼 합칠 학습지를 두 개 이상 주세요');
   if (!process.env.MATHFLAT_ID || !process.env.MATHFLAT_PASSWORD) throw new Error('MATHFLAT_ID / MATHFLAT_PASSWORD 환경변수가 없습니다');
@@ -137,7 +141,19 @@ async function main() {
 
   const title = arg('title', '') || String(parts[0].ws.title || '')
     .replace(/\s*\(\d+\/\d+\)\s*\d+~\d+\s*$/, '').trim();
-  let all = parts.flatMap((p) => p.problems);
+  let all = parts.flatMap((p, pi) => p.problems.map((x) => (x._part === undefined ? Object.assign(x, { _part: pi }) : x)));
+  if (exConcept.length) {
+    const hit = (p) => {
+      const c = p.concept || {};
+      const hay = [c.littleChapterName, c.middleChapterName, c.bigChapterName, p.conceptName].filter(Boolean).join(' | ');
+      return exConcept.some((w) => hay.includes(w));
+    };
+    const out = all.filter(hit);
+    all = all.filter((p) => !hit(p));
+    log(`  「${exConcept.join('」·「')}」 단원 ${out.length}문항을 뺐습니다 → ${all.length}문항`);
+    out.forEach((p) => log(`    − ${(p.concept && p.concept.littleChapterName) || ''} > ${p.conceptName || ''}  [${p.tagTop || ''}]`));
+    if (!all.length) throw new Error('뺐더니 남는 문항이 없습니다');
+  }
   let dup = all.length - new Set(all.map((p) => p.id || p.problemId)).size;
   if (dup && dropDup) {
     const seen = new Set();
@@ -154,7 +170,14 @@ async function main() {
 
   log(`\n합칠 결과 — 「${title}」 ${all.length}문항 (정답 ${withAns} · 자동채점 ${autoN}${dup ? ` · ⚠ 겹치는 문항 ${dup}개` : ''})`);
   log(`  학년 ${base.school || ''} ${base.grade} · 개정 ${base.revision} · 갈래 ${base.tag}`);
-  parts.forEach((p, i) => log(`  ${i + 1}) ${p.id} ${p.problems.length}문항 → 새 번호 ${parts.slice(0, i).reduce((a, x) => a + x.problems.length, 0) + 1}~${parts.slice(0, i + 1).reduce((a, x) => a + x.problems.length, 0)}`));
+  /* 뺀 문항·겹친 문항을 반영한 «실제로 들어간» 번호대를 보여 준다 */
+  const kept = parts.map((_, i) => all.filter((x) => x._part === i).length);
+  parts.forEach((p, i) => {
+    const from = kept.slice(0, i).reduce((a, n) => a + n, 0) + 1;
+    const to = kept.slice(0, i + 1).reduce((a, n) => a + n, 0);
+    const lost = p.problems.length - kept[i];
+    log(`  ${i + 1}) ${p.id} ${kept[i]}문항${lost ? ` (${lost}문항 뺌)` : ''} → 새 번호 ${kept[i] ? `${from}~${to}` : '없음'}`);
+  });
   if (dup) throw new Error('같은 문항이 두 번 들어갑니다 — 학습지 번호를 확인하시거나, 겹치는 것을 빼고 합치려면 --drop-dup 을 주세요');
   if (dry) { log('\n(미리보기라 만들지 않았습니다)'); return; }
 
