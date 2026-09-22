@@ -72,6 +72,10 @@ const SKIP_WORKBOOK = has('--skip-workbook'); // 교재 문항단위 수집 건�
 const ONE_BOOK = opt('--book', '');           // 정답사전을 이 교재(bookId) 하나만 갱신
 const SKIP_SWB = has('--skip-swb');           // 학생 교재상태(mf_swb_*) 재수집 건너뛰기 (저장된 것 사용)
 const ELEM_ONLY = has('--elem');              // 정답사전을 초등 배정 교재만 (2판 초등 확장)
+/* --grade 중1 : 정답사전을 그 학년 교재만 (2026-09-22 원장 지시 — 시험이 코앞인 학년을 먼저 채운다)
+ * 쉼표로 여러 학년도 된다: --grade 중1,중2 . 교재의 grade 는 「중1-2」처럼 학기까지 붙어 있어
+ * 앞부분만 견준다. --elem 과 같이 주면 --grade 가 이긴다. */
+const GRADE_ONLY = String(opt('--grade', '')).split(',').map((s) => s.trim()).filter(Boolean);
 
 function log(...a) { const t = new Date().toISOString().replace('T', ' ').slice(0, 19); console.log(`[${t}]`, ...a); }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -1638,8 +1642,13 @@ async function refreshBookAnswers() {
     const midFirst = (g) => (/^중/.test(g || '') ? 0 : 1);
     const targets = Object.keys(books).filter((bid) => {
       if (ONE_BOOK && String(bid) !== String(ONE_BOOK)) return false;
-      if (/^고/.test(books[bid].grade || '')) return false;           // 고등 교재는 하지 않는다
-      if (ELEM_ONLY && !/^초/.test(books[bid].grade || '')) return false;   // --elem: 초등 교재만
+      const g = books[bid].grade || '';
+      if (GRADE_ONLY.length) {                                        // --grade 중1 : 그 학년만
+        if (!GRADE_ONLY.some((x) => g.indexOf(x) === 0)) return false;
+      } else {
+        if (/^고/.test(g)) return false;                              // 고등 교재는 하지 않는다
+        if (ELEM_ONLY && !/^초/.test(g)) return false;                // --elem: 초등 교재만
+      }
       return (pages[bid] || []).length > 0;
     }).sort((a, b) => (ELEM_ONLY
       ? ((books[b].students - books[a].students) || (elemRank(books[a].grade) - elemRank(books[b].grade)))
@@ -1647,7 +1656,8 @@ async function refreshBookAnswers() {
         || (books[b].students - books[a].students)
         || (gradeRank(books[a].grade) - gradeRank(books[b].grade)))));
     if (!targets.length) { log('교재 정답사전: 대상 교재 없음'); return; }
-    if (ELEM_ONLY) log(`  (--elem) 초등 교재만 · ${targets.length}권`);
+    if (GRADE_ONLY.length) log(`  (--grade ${GRADE_ONLY.join(',')}) 그 학년 교재만 · ${targets.length}권`);
+    else if (ELEM_ONLY) log(`  (--elem) 초등 교재만 · ${targets.length}권`);
 
     // 한 번에 받는 새 페이지 상한 — 매쓰플랫 부하·약관 고려해 점진적으로 채운다(매일 새벽 반복)
     const PAGE_CAP = Number(process.env.BOOKANS_PAGE_CAP || 500);
