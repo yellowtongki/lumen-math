@@ -399,6 +399,13 @@ async function runHwSync() {
       const { runPushWatch } = require('./push_watch.js');
       await runPushWatch();
     } catch (e) { log('제출 알림 오류:', e.message); }
+    /* 🔥 추가 버프 밤 9시 알림 (2026-09-22, docs/race_boost_contract.md §6)
+     * 9시가 아니거나 오늘 이미 보냈으면 작은 조회 한 번으로 끝난다.
+     * 버프가 꺼지거나 시즌이 끝나면 저절로 멈춘다. */
+    try {
+      const { runBoostPush } = require('./push_boost.js');
+      await runBoostPush();
+    } catch (e) { log('버프 알림 오류:', e.message); }
   }
   // 교재 채점 되돌려쓰기 — 가볍고 학생이 기다리므로 그다음
   try { await runHwSync(); } catch (e) { log('교재채점 반영 오류:', e.message); }
@@ -433,6 +440,18 @@ async function runHwSync() {
       await runRace();
     }
   } catch (e) { log('진도 레이스 오류: ' + e.message); }
+
+  // 📗 교재 상황판 집계 (v19-23, docs/book_dashboard_contract.md)
+  // 교재 기록 5만 건을 다시 세는 일이라 자주 할 필요가 없다 — 3시간에 한 번.
+  // 앱에서 「지금 다시 세기」를 누르면 book_dash 를 지우므로 그때는 바로 계산된다.
+  try {
+    const bd = await getKv('book_dash');
+    const ageMin = bd && bd.at ? (Date.now() - Date.parse(bd.at)) / 60000 : 9999;
+    if (ageMin >= 180) {
+      const { runBookDash } = require('./book_dash_engine.js');
+      await runBookDash();
+    }
+  } catch (e) { log('교재 상황판 오류: ' + e.message); }
 
   const req = await getReq();
 

@@ -73,10 +73,17 @@ const ptOf = (level, result) => {
  *
  * ⚠️ 이 규칙은 학원앱 안의 계산기(lumen_v18-134.html rcBuffMult)와 <b>똑같아야</b> 한다.
  *    한쪽만 고치면 두 화면의 점수가 어긋난다. */
-const buffMult = (planScore, max) => {
+/* ★ 2026-09-22 추가 버프 (docs/race_boost_contract.md)
+ *   day 가 boost.from 이후면 «고정 배수 × 플래너 배수(최대치 boost.max)» 로 바꾼다.
+ *   그 전 날짜는 옛 규칙 그대로 — 지난 점수를 1점도 건드리지 않는다(원장 지시 2026-09-21).
+ *   ⚠️ 학원앱 rcBuffMult(lumen_v19-29.html)와 «똑같은 계산»이어야 한다. */
+const buffMult = (planScore, max, day, boost) => {
   const v = Number(planScore);
-  if (!(v > 0)) return 1;                       // 미제출·0점은 그대로
-  return 1 + (Math.min(10, v) / 10) * (max > 0 ? max : 0.4);
+  const b = (boost && boost.on && boost.from && day && String(day) >= String(boost.from)) ? boost : null;
+  const m = b ? (Number(b.max) > 0 ? Number(b.max) : 0.4) : (max > 0 ? max : 0.4);
+  const flat = b ? (Number(b.flat) > 0 ? Number(b.flat) : 1) : 1;
+  if (!(v > 0)) return flat;                    // 플래너 미제출·0점 — 고정 배수만
+  return flat * (1 + (Math.min(10, v) / 10) * m);
 };
 /* 플래너 날짜 키를 YYYY-MM-DD 로 통일한다.
  * 실제 저장된 예: "2026.09.02" · "2026.9.2" · "2026.08.31(제출은 9/1)" */
@@ -356,6 +363,11 @@ async function runRace() {
   if (FBUF && !(season.buff && season.buff.on)) log('🔎 --buff : 시즌 스위치는 꺼져 있지만 켠 셈 치고 계산합니다');
   const plan = buffOn ? await loadPlanner() : {};
   if (buffOn) log(`🔥 집중 버프 켜짐 (최대 ×${(1 + buffMax).toFixed(2)}) · 플래너 있는 학생 ${Object.keys(plan).length}명`);
+  /* ★ 추가 버프 — 정해진 날부터만 (docs/race_boost_contract.md). 그 전 날짜는 손대지 않는다. */
+  const bz = (season.buff || {}).boost || null;
+  const boost = (bz && bz.on && bz.from) ? { on: true, from: String(bz.from),
+    flat: Number(bz.flat) > 0 ? Number(bz.flat) : 1, max: Number(bz.max) > 0 ? Number(bz.max) : 0.4 } : null;
+  if (boost) log(`🔥🔥 추가 버프 ${boost.from}부터 · 고정 ×${boost.flat} · 플래너 최대치 ${boost.max} (플래너 10점이면 ×${(boost.flat * (1 + boost.max)).toFixed(2)})`);
 
   /* 학생별 집계 */
   /* ⚔️ 보스 레이드 — 시즌과 따로, 레이드 시작일부터의 점수만 센다.
@@ -403,7 +415,7 @@ async function runRace() {
      * 둘 다 남겨야 학원앱에서 「버프로 얼마나 벌었나」를 보여 줄 수 있다. */
     const raw = ptOf(lv, r.result);
     const day = kstDay(r.score_datetime);
-    const mult = buffOn ? buffMult((plan[code] || {})[day], buffMax) : 1;
+    const mult = buffOn ? buffMult((plan[code] || {})[day], buffMax, day, boost) : 1;
     a.base += raw;
     a.pts += raw * mult;
     a.n += 1;
@@ -509,7 +521,10 @@ async function runRace() {
       note: '틀려도 점수를 받습니다. 맞히면 두 배! (정답률도 함께 봅니다)',
     },
     days: days.length,
-    buff: { on: buffOn, max: buffMax },   // 앱들이 「🔥 버프 켜짐」 표시에 쓴다
+    /* 앱들이 「🔥 버프 켜짐」 표시에 쓴다. boost 는 학생앱 띠(C 희망형)가 그대로 읽는다 */
+    buff: { on: buffOn, max: buffMax,
+      boost: boost ? Object.assign({}, boost, { to: season.to,
+        dday: Math.max(0, Math.round((Date.parse(season.to + 'T00:00:00Z') - Date.parse(todayK + 'T00:00:00Z')) / 86400000)) }) : null },
   };
 
   /* ★ v2: 시즌이 끝났는지 — 끝나도 바로 지우지 않고 「최종 결과」로 며칠 더 보여준다.
@@ -735,7 +750,7 @@ function dryReport(board) {
   console.log('※ 미리보기입니다 — 순위표에 저장하지 않았습니다.\n');
 }
 
-module.exports = { runRace, ptOf, tierOf, seatTopTiers, DEF_TIERS, TOP_SEATS, todoPtsOf };
+module.exports = { runRace, ptOf, tierOf, seatTopTiers, DEF_TIERS, TOP_SEATS, todoPtsOf, buffMult };
 
 if (require.main === module) {
   runRace().catch((e) => { console.error('오류:', e.message); process.exit(1); });
