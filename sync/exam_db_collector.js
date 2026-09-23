@@ -155,7 +155,8 @@ async function msExam(id) {
     };
   }).sort((x, y) => x.no - y.no);
   return Object.assign({ id, title: det.title, questionCount: det.questionCount, difficultyCount: det.difficultyCount,
-    averageDifficulty: det.averageDifficulty, cells: slim }, parseTitle(det.title || ''));
+    averageDifficulty: det.averageDifficulty, sourcePath: det.sourcePath || null,   /* 2026-09-23: 출처 경로(연도 › 내신 시험 › 경기도 › 부천시 › 학교 › 학년 › 시험) — 인쇄물 「출제」 칸 */
+    cells: slim }, parseTitle(det.title || ''));
 }
 async function msImage(url) {
   const r = await fetch(url, { headers: { cookie: MS_CDN_COOKIE || '', origin: MS_ORIGIN, referer: MS_ORIGIN + '/' } });
