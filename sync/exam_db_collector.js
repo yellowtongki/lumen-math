@@ -88,11 +88,13 @@ async function msLogin() {
   MS_TOKEN = j && (j.data ? j.data.accessToken : j.accessToken);
   if (!r.ok || !MS_TOKEN) throw new Error(`수학비서 로그인 실패 ${r.status}`);
 }
-async function msGet(p) {
+async function msGet(p, retried) {
   const r = await fetch(`${MS_API}${p}`, { headers: msH() });
   const sc = r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean);
   const hit = sc.find((c) => c && c.includes('Cloud-CDN-Cookie'));
   if (hit) MS_CDN_COOKIE = hit.split(';')[0];     /* 문항 이미지 열쇠 (약 78분 유효) */
+  /* 토큰이 10분쯤 지나면 401 이 난다(첫 실행에서 13장 놓침) — 다시 로그인하고 한 번 더 */
+  if (r.status === 401 && !retried) { await msLogin(); log('  (토큰 갱신)'); return msGet(p, true); }
   const j = await r.json().catch(() => null);
   if (!r.ok) throw new Error(`${p} → ${r.status}`);
   return j;
