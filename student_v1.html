@@ -3779,6 +3779,13 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-104 (2026-09-23) ⚔️ «보스 체력 숫자»를 학원앱과 똑같이 맞췄습니다
+ *   · 원장님 제보: 「학원앱의 보스체력과 학생앱에서 보이는 것이 다르다」.
+ *   · <b>[까닭]</b> 같은 보스인데 학원앱은 막대 위에 「지금까지 준 피해 / 전체 (몇 %)」를, 학생앱은 「남은 체력 / 전체」를
+ *     적고 있었다. 예: 체력 45,000·피해 29,153이면 학원앱 「29,153 / 45,000 (65%)」, 학생앱 「15,847 / 45,000」.
+ *     숫자는 둘 다 맞지만 다른 것을 적어 두니 다른 보스처럼 보였다.
+ *   · <b>[고침]</b> 학생앱 막대 위 숫자도 「피해 / 전체 (몇 %)」로, 그 아래 줄에 「남은 체력 N」을 따로 적는다.
+ *     계산은 한 줄도 안 바꿨다 — raid_board 의 dealt·hp·pct·left 를 그대로 읽는다.
  * v2-103 (2026-09-23) 🔥 «추가 버프 띠가 한 번도 안 뜨던 것»을 고쳤습니다
  *   · 원장님 제보: 「추석버프 들어간 것이 안보인다」.
  *   · <b>[까닭]</b> 버프 값을 담는 변수(BF)가 어느 함수 «안»에만 있었고, 띠를 그리는 bzRender 는
@@ -4220,7 +4227,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-103';
+var STU_VER = 'v2-104';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -18413,9 +18420,10 @@ window.rdCard = function(){
     +'<div class="rd-top"><span>⚔️</span><span class="nm">'+rcEsc(b.name||'보스 레이드')+'</span>'
     +'<span class="dd">'+(b.dday>=0?('D-'+b.dday):'끝')+'</span></div>'
     /* 어두운 덮개가 「깎인 만큼」이다 — 처음엔 0%라 빨간 체력이 꽉 차 보인다 */
+    /* v2-104: 막대 위 숫자를 학원앱과 똑같이 「지금까지 준 피해 / 전체 (몇 %)」로. 남은 체력은 아래 줄에 따로 (원장 제보 「학원앱의 보스체력과 학생앱에서 보이는 것이 다르다」) */
     +'<div class="rd-hp"><i style="width:'+pct+'%"></i>'
-    +'<b>'+rdN(b.left)+' / '+rdN(b.hp)+'</b></div>'
-    +'<div class="rd-row"><span>남은 체력</span>'
+    +'<b>'+rdN(b.dealt)+' / '+rdN(b.hp)+' ('+Math.round(pct)+'%)</b></div>'
+    +'<div class="rd-row"><span>남은 체력 '+rdN(b.left)+'</span>'
     +'<span class="r">'+(cleared?'🎉 격파했어요!':('어제 우리가 준 피해 '+rdN(b.yesterday)))+'</span></div>'
     +'<div class="rd-stage" id="rd-stage"><canvas id="rd-cv" width="330" height="360"></canvas></div>'
     +'<div class="rd-lab">이번 주 많이 때린 '+((b.front||[]).length||3)+'명</div>'
