@@ -3779,6 +3779,15 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-103 (2026-09-23) 🔥 «추가 버프 띠가 한 번도 안 뜨던 것»을 고쳤습니다
+ *   · 원장님 제보: 「추석버프 들어간 것이 안보인다」.
+ *   · <b>[까닭]</b> 버프 값을 담는 변수(BF)가 어느 함수 «안»에만 있었고, 띠를 그리는 bzRender 는
+ *     그 함수 «밖»에 있어서 값을 못 봤습니다. 그래서 v2-101·102 에서 서버에 버프가 켜져 있어도
+ *     띠는 늘 「없음」으로 그려졌습니다. 앞선 검증이 코드 글자만 보고 실제 동작을 안 본 제 잘못입니다.
+ *   · <b>[고침]</b> ① 변수를 밖에서도 보이게 했습니다. ② 띠를 <b>홈</b>뿐 아니라 <b>🏆 리그 › 🏁 진도 탭 맨 위</b>에도
+ *     그립니다 — 학원앱 옆 미리보기가 바로 그 화면을 보여 주기 때문입니다.
+ *   · 검증: 실제 브라우저에서 버프 값을 넣고 홈·진도 탭 두 곳에 띠가 «실제로» 그려지는지 확인.
+ *
  * v2-102 (2026-09-22) 🔎 «홈화면에 만든 앱에서 글씨가 작던 것»을 고쳤습니다
  *   · 원장님 제보: 「학생앱을 링크로 홈화면에 만들면 글씨가 작게 보인다고 한다」.
  *   · <b>[까닭]</b> 화면 크기를 정하는 <b>한 줄(viewport)</b>이 파일 앞머리에서
@@ -4211,7 +4220,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-102';
+var STU_VER = 'v2-103';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -13631,8 +13640,10 @@ function lgPaint(){
   /* ★ v2-87: 💰 상금 한눈에 카드는 탭 줄 바로 아래 — 어느 탭에서나 같은 자리 */
   var tabs=lgTabsHtml()+lgMoneyHtml();
   if(LG.tab==='race'){
-    body.innerHTML='<div style="padding:14px 13px 0">'+tabs+'</div><div id="lg-race"></div>';
+    /* v2-103: 🔥 추가 버프 띠를 진도 탭 맨 위에도 — 원장님이 학원앱 옆 미리보기(go=race)로 볼 때 안 보이던 자리 */
+    body.innerHTML='<div style="padding:14px 13px 0">'+tabs+'<div class="bz-slot"></div></div><div id="lg-race"></div>';
     if(window.rcInit) rcInit('lg-race');
+    try{ bzRender(); }catch(e){}
     return;
   }
   var h='<div class="rcw">'+tabs;
@@ -18596,6 +18607,9 @@ window.rdPick = async function(key){
  * ══════════════════════════════════════════════════════════════════ */
 (function(){
   var BF = { on:false, max:0.4, loaded:false, plan:{}, guess:{}, sub:{}, me:null, open:false, from:'', to:'' };
+  /* ★ v2-103: 밖에서도 보이게 — 🔥 추가 버프 띠(bzRender)는 이 함수 밖에 있어서
+   * BF 를 못 보고 늘 「버프 없음」으로 그렸다. v2-101·102 에서 띠가 한 번도 안 뜬 원인. */
+  window.BF = BF;
 
   function bfMult(v){ v=Number(v); if(!(v>0)) return 1; return 1+(Math.min(10,v)/10)*(BF.max>0?BF.max:0.4); }
   function bfDay(k){
@@ -19959,9 +19973,12 @@ function bzRaid(){
 }
 
 function bzRender(){
-  var el=document.getElementById('bz-banner');
-  if(!el) return;
-  var bz=(typeof BF!=='undefined' && BF.boost) ? BF.boost : null;
+  /* v2-103: 홈(#bz-banner)뿐 아니라 리그 화면 🏁 진도 탭(.bz-slot)에도 같은 띠를 그린다 */
+  var els=document.querySelectorAll('#bz-banner, .bz-slot');
+  if(!els.length) return;
+  var B=(typeof BF!=='undefined' && BF) ? BF : (window.BF||null);
+  var bz=(B && B.boost) ? B.boost : null;
+  var el={ set innerHTML(v){ Array.prototype.forEach.call(els,function(e){ e.innerHTML=v; }); } };
   if(!bz){ el.innerHTML=''; return; }
 
   var flat=Number(bz.flat)||1, mx=Number(bz.max)||0.4;
