@@ -30,7 +30,11 @@ const argv = process.argv.slice(2);
 const has = (f) => argv.includes(f);
 const val = (f, d) => { const i = argv.indexOf(f); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
 const OPT = { school: val('--school', ''), bids: String(val('--bids', '')).split(',').map((s) => s.trim()).filter(Boolean),
-  twins: has('--twins'), dry: has('--dry-run'), limit: Number(val('--limit', 0)) || 0, pages: val('--pages', '') };
+  twins: has('--twins'), dry: has('--dry-run'), limit: Number(val('--limit', 0)) || 0, pages: val('--pages', ''),
+  assigned: has('--assigned'), skipDone: has('--skip-done') };
+/* --assigned : 활동 학생에게 배정된 «모든» 교재(교과서·시중교재·시그니처·커스텀)를 전부 (2026-09-24 아하노트 ↔ 정오답 연동용:
+ *              아하노트의 교재·쪽·번호를 매쓰플랫 문항 id 로 바꾸려면 시중교재의 쪽·번호 표가 필요하다)
+ * --skip-done: 이미 서버에 있는 교재는 건너뛴다 */
 const sbH = { apikey: SKEY, authorization: `Bearer ${SKEY}`, 'content-type': 'application/json' };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...a) => console.log(`[${new Date().toISOString().slice(11, 19)}]`, ...a);
@@ -39,10 +43,16 @@ let TOKEN = '';
 const mfH = () => ({ 'content-type': 'application/json', 'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com',
   origin: 'https://teacher.mathflat.com', referer: 'https://teacher.mathflat.com/', ...(TOKEN ? { authorization: `Bearer ${TOKEN}` } : {}) });
 async function login() {
-  const res = await fetch(`${API}/v2/login`, { method: 'POST', headers: mfH(), body: JSON.stringify({ id: ID.trim(), password: PW.trim(), userType: 'TEACHER', serviceType: 'MATHFLAT' }) });
-  const j = await res.json().catch(() => null);
-  if (!res.ok || !(j && j.accessToken)) throw new Error('매쓰플랫 로그인 실패: ' + res.status);
-  TOKEN = j.accessToken;
+  /* 토큰이 만료돼 다시 로그인할 때 401 이 한 번씩 난다(2026-09-24 실측) → 5초·20초·60초 쉬고 세 번까지 다시 */
+  const waits = [0, 30000, 120000, 300000, 600000]; let last = '';   /* 2026-09-24: 60초로는 모자랐다(401 세 번) → 30초·2분·5분·10분 */
+  for (let i = 0; i < waits.length; i++) {
+    if (waits[i]) await sleep(waits[i]);
+    const res = await fetch(`${API}/v2/login`, { method: 'POST', headers: mfH(), body: JSON.stringify({ id: ID.trim(), password: PW.trim(), userType: 'TEACHER', serviceType: 'MATHFLAT' }) });
+    const j = await res.json().catch(() => null);
+    if (res.ok && j && j.accessToken) { TOKEN = j.accessToken; return; }
+    last = String(res.status); log(`  로그인 ${last} — 다시 시도 ${i + 1}/${waits.length - 1}`);
+  }
+  throw new Error('매쓰플랫 로그인 실패: ' + last);
 }
 async function api(p, body, _retried) {
   const res = await fetch(`${API}${p}`, body ? { method: 'POST', headers: mfH(), body: JSON.stringify(body) } : { headers: mfH() });
@@ -82,6 +92,16 @@ async function twinsOf(problemId) {
   await login(); log('매쓰플랫 로그인 OK');
   const T = (await sbGet('mf_textbooks')) || { books: {}, byStudent: {}, bySchoolGrade: {} };
   let bids = OPT.bids.slice();
+  const ALLB = {};   // --assigned: bid → { title, type, sid, swId, revId }
+  if (OPT.assigned) {
+    const d = await api('/students?size=500'); const stus = ((d && d.content) || []).filter((s) => s.status === 'ACTIVE');
+    for (const st of stus) { let l = null; try { l = await api(`/student-workbook/student/${st.id}?workbookType=ALL`); } catch (e) { continue; }
+      (Array.isArray(l) ? l : ((l && l.content) || [])).forEach((b) => { const k = String(b.id); if (!ALLB[k] && b.studentWorkbook && b.recentRevisionId) ALLB[k] = { title: (b.fulltitle || b.title || '').trim(), type: b.type || '', sid: st.id, swId: b.studentWorkbook.id, revId: b.recentRevisionId }; });
+      await sleep(50); }
+    Object.keys(ALLB).forEach((k) => { if (bids.indexOf(k) < 0) bids.push(k); });
+    log(`배정된 교재 ${Object.keys(ALLB).length}종 (학생 ${stus.length}명)`);
+    if (OPT.skipDone) { const idx = (await sbGet('mf_bookbank_index')) || {}; bids = bids.filter((b) => !idx[b]); log(`  이미 받은 것 빼고 ${bids.length}종`); }
+  }
   if (OPT.school) Object.keys(T.bySchoolGrade || {}).forEach((k) => { if (k.split('|')[0] === OPT.school) Object.keys(T.bySchoolGrade[k].books).forEach((b) => { if (bids.indexOf(b) < 0) bids.push(b); }); });
   if (!bids.length) { log('교과서가 없습니다 — --school 또는 --bids'); process.exit(1); }
   log(`교과서 ${bids.length}권: ${bids.map((b) => (T.books[b] || {}).fulltitle || b).join(' · ')}`);
@@ -89,12 +109,17 @@ async function twinsOf(problemId) {
 
   for (const bid of bids) {
     const meta = T.books[bid] || {};
-    const sid = Object.keys(T.byStudent).find((s) => (T.byStudent[s].books || []).indexOf(bid) >= 0);
-    if (!sid) { log(`  [${bid}] 배정된 학생이 없어 쪽 목록을 못 엽니다`); continue; }
-    const list = await api(`/student-workbook/student/${sid}?workbookType=SCHOOL`);
-    const b = (Array.isArray(list) ? list : (list.content || [])).find((x) => String(x.id) === String(bid));
-    if (!b || !b.studentWorkbook) { log(`  [${bid}] 학생 교재함에 없음`); continue; }
-    const det = await api(`/student-workbook/student/${sid}/${b.studentWorkbook.id}/${b.recentRevisionId}?size=2000`);
+    let sid, swId, revId, b = null;
+    if (ALLB[bid]) { sid = ALLB[bid].sid; swId = ALLB[bid].swId; revId = ALLB[bid].revId; b = { fulltitle: ALLB[bid].title, type: ALLB[bid].type }; }
+    else {
+      sid = Object.keys(T.byStudent).find((s) => (T.byStudent[s].books || []).indexOf(bid) >= 0);
+      if (!sid) { log(`  [${bid}] 배정된 학생이 없어 쪽 목록을 못 엽니다`); continue; }
+      const list = await api(`/student-workbook/student/${sid}?workbookType=ALL`);
+      b = (Array.isArray(list) ? list : (list.content || [])).find((x) => String(x.id) === String(bid));
+      if (!b || !b.studentWorkbook) { log(`  [${bid}] 학생 교재함에 없음`); continue; }
+      swId = b.studentWorkbook.id; revId = b.recentRevisionId;
+    }
+    const det = await api(`/student-workbook/student/${sid}/${swId}/${revId}?size=2000`);
     let pages = ((det && det.page && det.page.content) || []).map((pg) => ({ pid: pg.workbookPage.id, page: pg.workbookPage.page, title: pg.workbookPage.title || '' })).filter((p) => p.pid && p.page != null);
     pages.sort((x, y) => x.page - y.page);
     if (range) pages = pages.filter((p) => p.page >= range[0] && p.page <= range[1]);
@@ -119,8 +144,9 @@ async function twinsOf(problemId) {
       for (let i = 0; i < problems.length; i++) { problems[i].twins = await twinsOf(problems[i].id); if (problems[i].twins.length) got++; if ((i + 1) % 50 === 0) process.stdout.write(`    쌍둥이 …${i + 1}/${problems.length} (있음 ${got})\r`); await sleep(60); }
       log(`  [${bid}] 쌍둥이 있는 문항 ${got}/${problems.length}`);
     }
-    const ok = await sbSet(`mf_textbook_${bid}`, { bid, title: meta.fulltitle || b.fulltitle || '', updated: new Date().toISOString(), pages, problems });
+    const ok = await sbSet(`mf_textbook_${bid}`, { bid, title: meta.fulltitle || b.fulltitle || '', type: (b && b.type) || meta.type || '', updated: new Date().toISOString(), pages, problems });
     log(ok ? `  저장: mf_textbook_${bid}` : `  저장 실패: mf_textbook_${bid}`);
+    if (ok && !OPT.dry) { try { const idx = (await sbGet('mf_bookbank_index')) || {}; idx[bid] = { title: meta.fulltitle || b.fulltitle || '', type: (b && b.type) || meta.type || '', pages: pages.length, problems: problems.length, updated: new Date().toISOString() }; await sbSet('mf_bookbank_index', idx); } catch (e) {} }
   }
   log('끝');
 })().catch((e) => { console.error('오류:', e.message); process.exit(1); });

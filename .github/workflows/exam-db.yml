@@ -34,7 +34,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -67,4 +67,5 @@ jobs:
           SCHOOLS: ${{ github.event.inputs.schools || '옥길중,범박중,범박고,소사고' }}
         run: |
           node sync/mf_textbook_map.js
-          for s in $(echo "$SCHOOLS" | tr ',' ' '); do node sync/mf_textbook_bank.js --school "$s" || echo "교과서 은행 실패: $s"; done
+          # 2026-09-24: 교과서뿐 아니라 배정된 교재 전부(시중교재·시그니처) — 아하노트 ↔ 정오답 연동에 쪽·번호 표가 필요하다
+          node sync/mf_textbook_bank.js --assigned || echo "교재 은행 실패"
