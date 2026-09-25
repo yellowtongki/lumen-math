@@ -277,6 +277,8 @@ async function bridge(schoolVals) {
     if (!NO_IMG && !DRY) await sbEnsureBucket();
     const all = await msListMydbs(); log(`나만의 DB 전체 ${all.length}장`);
     for (const s of SCHOOLS) vals.push(await collectSchool(s, all));
+    /* 2026-09-25: 문항 그림 주소를 1년짜리 서명 주소로 미리 만들어 넣는다 — 학원앱의 공개 열쇠로는 서명이 안 된다 (sync/exam_image_sign.js) */
+    if (!DRY) { try { const { signSchool } = require('./exam_image_sign.js'); for (const s of SCHOOLS) await signSchool('ms_exams_' + s); } catch (e) { log('그림 주소 서명 실패:', e.message); } }
   } else {
     for (const s of SCHOOLS) vals.push(await sbGet('ms_exams_' + s));
   }
