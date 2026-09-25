@@ -172,8 +172,11 @@ async function mfLogin() {
 /* 토큰이 만료되면(401) 한 번 다시 로그인하고 재시도한다.
  * 시험지 한 장에 몇 분이 걸리고(원본 OCR 대기), 여러 장을 이어서 돌리면
  * 중간에 토큰이 만료된다 — 실제로 2022년 중3 기말에서 원본 필터 단계가 401로 끊겼다. */
+/* 2026-09-25: 응답이 영영 안 오는 요청(범박고 고3 원본 등록에서 96분 멈춤)을 3분에 끊고 한 번 더 시도한다 */
 async function mf(host, method, p, body, _retried) {
-  const r = await fetch(host + p, { method, headers: mfH(), body: body === undefined ? undefined : JSON.stringify(body) });
+  let r;
+  try { r = await fetch(host + p, { method, headers: mfH(), body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(180000) }); }
+  catch (e) { if (!_retried && /abort|timeout/i.test(String(e.name || e.message))) { log(`응답 없음(3분) → 다시 시도: ${method} ${p}`); return mf(host, method, p, body, true); } throw e; }
   const t = await r.text();
   let j = null; try { j = JSON.parse(t); } catch (e) {}
   const data = j && j.data !== undefined ? j.data : j;
