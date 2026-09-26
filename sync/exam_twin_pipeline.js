@@ -31,22 +31,23 @@
  *   옵션: --title "..."      제목 직접 지정 (생략하면 수학비서 시험명에서
  *                            「옥길중학교 1학년 2025년 2학기 중간」 형식으로 자동 생성.
  *                            이 제목이 문항 위 출처 꼬리표가 되므로 학교명이 중요)
- *         --grade "중 1-2"   학년 표기 (생략하면 자동 · 고등은 과목명 「공통수학2」)
+ *         --grade "중 1-2"   학년 표기 (생략하면 자동)
  *         --mylist "기출 쌍둥이"  만든 학습지를 이 마이리스트(폴더)에 넣기 (없으면 만든다)
  *         --similar-x 1      문항당 쌍둥이 수
  *         --skip-worksheet   원본 등록까지만
- *         --mypaper 1997465  「나만의 DB」 대신 「내 문제지」(범위맞춤 묶음)에서 가져오기.
- *                            --mydb 자리에 이걸 쓴다. 제목은 문제지 이름에서 뽑으므로
- *                            「23,24년 옥길중 3-2 중간 범위맞춤」처럼 학교명이 들어 있어야 좋다
- *         --assign "김가희"   기출원본 학습지를 이 학생에게 배정 (이름 또는 매쓰플랫 id, 쉼표로 여러 명)
- *         --assign-twin      쌍둥이 학습지도 같이 배정 (기본은 원본만)
+ *         --original-only    기출 원본 학습지까지만 (쌍둥이 안 만듦)
+ *         --grade-value "고등수학(하)"  고등은 학년이 숫자가 아니라 과목명
+ *         --assign I2103268  만들면서 바로 학생에게 배정 (매쓰플랫 학생 id, 쉼표로 여러 명)
  *
- * trieKey (22개정 중등): 중1-1 1.4.4146.4154.4169 · 중1-2 1.4.4146.4154.4170
+ *   고등 예: node sync/exam_twin_pipeline.js --mydb 707019 --trie 1.2.7.42 \
+ *              --original-only --grade-value "고등수학(하)" --assign I2103268
+ *   고등 trieKey (15개정): 고등수학(상) 1.2.7.41 · 고등수학(하) 1.2.7.42 · 수학I 1.2.7.43
+ *              · 수학II 1.2.7.44 · 확률과통계 1.2.7.45 · 미적분 1.2.7.46 · 기하 1.2.7.47
+ *
+ * trieKey (22개정): 중1-1 1.4.4146.4154.4169 · 중1-2 1.4.4146.4154.4170
  *   중2-1 1.4.4146.4155.4171 · 중2-2 1.4.4146.4155.4172
  *   중3-1 1.4.4146.4156.4173 · 중3-2 1.4.4146.4156.4174
- * trieKey (15개정 중등): 중1 1.2.9.27.62/.80 · 중2 1.2.9.29.64/.82 · 중3 1.2.9.31.66/.84
- * trieKey (22개정 고등 — 학년이 아니라 과목이 단위): 공통수학1 1.4.4147.4175 ·
- *   공통수학2 .4176 · 대수 .4177 · 미적분1 .4178 · 확률과 통계 .4179 · 미적분2 .4180 · 기하 .4181
+ * trieKey (15개정): 중1 1.2.9.27.62/.80 · 중2 1.2.9.29.64/.82 · 중3 1.2.9.31.66/.84
  *
  * 계정: MATHSECR_ID/PASSWORD, MATHFLAT_ID/PASSWORD (환경변수만, 커밋 금지)
  * 주의: 매쓰플랫 동시 로그인 시 기존 접속이 끊길 수 있음 → 새벽 실행 권장.
@@ -69,60 +70,15 @@ const OUT_DIR = path.join(__dirname, '_debug', 'twin_pipeline');
 /* 교육과정 키. 22·15개정 중학교 전 학기 확보 (15개정은 /curriculums/by-key 스캔으로 확인) */
 const TRIE_22 = { '1-1': '1.4.4146.4154.4169', '1-2': '1.4.4146.4154.4170', '2-1': '1.4.4146.4155.4171', '2-2': '1.4.4146.4155.4172', '3-1': '1.4.4146.4156.4173', '3-2': '1.4.4146.4156.4174' };
 const TRIE_15 = { '1-1': '1.2.9.27.62', '1-2': '1.2.9.27.80', '2-1': '1.2.9.29.64', '2-2': '1.2.9.29.82', '3-1': '1.2.9.31.66', '3-2': '1.2.9.31.84' };
-/* 고등 22개정은 「학년」이 아니라 「과목」이 단위다 (매쓰플랫 curriculum의 grade 값이 과목명).
- * /curriculums/by-key?key=1.4.4147 스캔으로 확인 (2026-09-01). */
-const TRIE_22_HIGH = {
-  '공통수학1': '1.4.4147.4175', '공통수학2': '1.4.4147.4176', '대수': '1.4.4147.4177',
-  '미적분1': '1.4.4147.4178', '확률과 통계': '1.4.4147.4179', '미적분2': '1.4.4147.4180', '기하': '1.4.4147.4181',
-};
 /* 2022 개정 적용 연도: 중1은 2025년부터, 중2는 2026년부터, 중3은 2027년부터 */
 function trieForExam(grade, semester, year) {
   const is22 = Number(year) >= 2024 + Number(grade);
   const key = `${grade}-${semester}`;
   return (is22 ? TRIE_22 : TRIE_15)[key] || '';
 }
-/* 수학비서 시험명에서 고등 과목명 뽑기 (예: "…소래고 고1공통 2학기기말 공통수학2" → 공통수학2) */
-function hsSubjectOf(title) {
-  const t = String(title || '').replace(/\s+/g, '');
-  const m = t.match(/(공통수학[12]|확률과통계|미적분[12]|대수|기하)/);
-  if (!m) return '';
-  return m[1] === '확률과통계' ? '확률과 통계' : m[1];
-}
-/* 학교 이름 토큰 (…중 / …고). 제목 어디에 있든 학교명만 집어낸다 */
-function schoolTokenOf(title) {
-  return (String(title || '').match(/([가-힣]+(?:중|고))(?:학교)?\s/) || [])[1] || '';
-}
 
 let log = (...a) => console.log(`[${new Date().toISOString().slice(11, 19)}]`, ...a);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-/* ── 고등 기출 수입 장부 (hs_exam_import) ────────────────────
- * 기출모의 엔진(mockexam_engine --build)은 고등 시험을 이 장부에서 읽어
- * 「수학비서 시험 ↔ 매쓰플랫 원본 학습지」를 잇는다. 중학교는 채점 기록 제목 대조로
- * 백필되지만, 고등은 학교명 꼬리(「소래고등학교」→「소래고등」)가 어긋나 백필이 안 된다.
- * 그래서 고등 시험은 만들자마자 여기에 적어 둔다 — 안 적으면 학생이 풀어도
- * 기출모의 자동 수신함에 뜨지 않는다. */
-async function registerHsExam(examId, entry) {
-  const url = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
-  const key = process.env.SUPABASE_SERVICE_KEY || '';
-  if (!url || !key) { log('⚠ SUPABASE 환경변수가 없어 고등 수입 장부 등록을 건너뜁니다'); return false; }
-  const H = { apikey: key, authorization: 'Bearer ' + key, 'Content-Type': 'application/json' };
-  const r = await fetch(`${url}/rest/v1/lumen_store?select=value&key=eq.hs_exam_import`, { headers: H });
-  const rows = await r.json();
-  let v = (rows && rows[0] && rows[0].value) || {};
-  if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = {}; } }
-  v.done = v.done || {};
-  if (v.done[examId] && v.done[examId].worksheet) { log(`고등 수입 장부: ${examId} 이미 등록됨 (worksheet ${v.done[examId].worksheet}) — 건너뜀`); return false; }
-  v.done[examId] = { ...entry, at: new Date().toISOString(), filed: true };
-  v.updated = new Date().toISOString();
-  const w = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
-    method: 'POST', headers: { ...H, Prefer: 'resolution=merge-duplicates,return=minimal' },
-    body: JSON.stringify({ key: 'hs_exam_import', value: v, updated_at: v.updated }),
-  });
-  if (!w.ok) { log(`⚠ 고등 수입 장부 등록 실패 ${w.status}: ${(await w.text()).slice(0, 140)}`); return false; }
-  log(`고등 수입 장부에 등록: ${examId} → worksheet ${entry.worksheet} (총 ${Object.keys(v.done).length}건)`);
-  return true;
-}
 
 /* ── 수학비서 ─────────────────────────────────────────────── */
 let MS_TOKEN = null, MS_CDN_COOKIE = null;
@@ -151,23 +107,17 @@ function sourceTitleOf(msTitle) {
 }
 
 /* cells 응답의 Set-Cookie(Cloud-CDN-Cookie)가 문항 이미지 열쇠 (약 78분 유효) */
-/* 수학비서에는 문항 묶음이 두 군데 있다 — 생김새가 살짝 다르다.
- *   「나만의 DB」 /mydbs/{id}/cells   → data.pages[].cells[]  (학교 기출 시험지 통째로)
- *   「내 문제지」 /my-papers/{id}/cells → data.cells[]        (원장님이 범위에 맞춰 직접 고른 묶음)
- * 둘 다 문항 한 칸의 생김새(questionNumber·imagePath·answers…)는 같아서 뒤쪽은 그대로 쓴다. */
-async function msCells(id, isPaper) {
-  const base = isPaper ? 'my-papers' : 'mydbs';
+async function msCells(id) {
+  // 응답은 data.pages[].cells[] 꼴이고 cursor 페이지네이션 (?curriculumId=2&limit=48 필수)
   const cells = [];
   let cursor = '';
   for (let i = 0; i < 10; i++) {
-    const r = await fetch(`${MS_API}/bms/api/v1/${base}/${id}/cells?curriculumId=2&limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, { headers: msH() });
+    const r = await fetch(`${MS_API}/bms/api/v1/mydbs/${id}/cells?curriculumId=2&limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, { headers: msH() });
     const sc = r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean);
     const hit = sc.find((c) => c && c.includes('Cloud-CDN-Cookie'));
     if (hit) MS_CDN_COOKIE = hit.split(';')[0];
     const j = await r.json();
-    const d = (j && j.data) || {};
-    (d.pages || []).forEach((pg) => (pg.cells || []).forEach((c) => cells.push(c)));
-    (d.cells || []).forEach((c) => cells.push(c));
+    ((j.data && j.data.pages) || []).forEach((pg) => (pg.cells || []).forEach((c) => cells.push(c)));
     cursor = j.pagination && j.pagination.cursor;
     if (!cursor) break;
   }
@@ -190,26 +140,17 @@ async function buildPdf(images, headTitle) {
   page.drawText(headTitle.replace(/[^\x20-\x7E]/g, '').trim() || 'EXAM', { x: M, y: A4[1] - M - 18, size: 14, font });
   page.drawLine({ start: { x: M, y: A4[1] - M - 30 }, end: { x: A4[0] - M, y: A4[1] - M - 30 }, thickness: 1, color: rgb(0.2, 0.2, 0.2) });
   const colX = () => M + col * (COLW + GAP);
-  /* 여러 문항이 하나의 그림·표(지문)를 함께 쓰는 경우가 있다(예: 산점도 하나로 20·21번).
-   * 지문을 빼고 보내면 학습지에서 그 문항들을 아예 풀 수 없으므로, 문항마다 자기 지문을
-   * 위에 같이 붙여 «한 덩어리»로 싣는다. 같은 지문이 두 번 나와도 각 문항이 혼자 완결된다. */
-  for (const { no, buf, passBuf } of images) {
+  for (const { no, buf } of images) {
     const png = await doc.embedPng(buf);
-    const pas = passBuf ? await doc.embedPng(passBuf) : null;
     const scale = Math.min(1, (COLW - 22) / png.width);
-    const w = png.width * scale, h = png.height * scale;
-    const pScale = pas ? Math.min(1, (COLW - 22) / pas.width) : 0;
-    const pw = pas ? pas.width * pScale : 0, ph = pas ? pas.height * pScale : 0;
-    const blockH = h + ph + (pas ? 8 : 0) + 26;
+    const w = png.width * scale, h = png.height * scale, blockH = h + 26;
     if (y - blockH < M) {
       if (col === 0) { col = 1; y = A4[1] - M - (pageNo === 1 ? 60 : 20); }
       else { page = doc.addPage(A4); pageNo++; col = 0; y = A4[1] - M - 20; }
       if (y - blockH < M) y = A4[1] - M - 20;
     }
     page.drawText(String(no).padStart(2, '0'), { x: colX(), y: y - 12, size: 12, font, color: rgb(0.1, 0.3, 0.7) });
-    let iy = y - 14;
-    if (pas) { page.drawImage(pas, { x: colX() + 22, y: iy - ph, width: pw, height: ph }); iy -= ph + 8; }
-    page.drawImage(png, { x: colX() + 22, y: iy - h, width: w, height: h });
+    page.drawImage(png, { x: colX() + 22, y: y - 14 - h, width: w, height: h });
     y -= blockH + 12;
   }
   return { bytes: await doc.save(), pages: doc.getPageCount() };
@@ -231,8 +172,11 @@ async function mfLogin() {
 /* 토큰이 만료되면(401) 한 번 다시 로그인하고 재시도한다.
  * 시험지 한 장에 몇 분이 걸리고(원본 OCR 대기), 여러 장을 이어서 돌리면
  * 중간에 토큰이 만료된다 — 실제로 2022년 중3 기말에서 원본 필터 단계가 401로 끊겼다. */
+/* 2026-09-25: 응답이 영영 안 오는 요청(범박고 고3 원본 등록에서 96분 멈춤)을 3분에 끊고 한 번 더 시도한다 */
 async function mf(host, method, p, body, _retried) {
-  const r = await fetch(host + p, { method, headers: mfH(), body: body === undefined ? undefined : JSON.stringify(body) });
+  let r;
+  try { r = await fetch(host + p, { method, headers: mfH(), body: body === undefined ? undefined : JSON.stringify(body), signal: AbortSignal.timeout(180000) }); }
+  catch (e) { if (!_retried && /abort|timeout/i.test(String(e.name || e.message))) { log(`응답 없음(3분) → 다시 시도: ${method} ${p}`); return mf(host, method, p, body, true); } throw e; }
   const t = await r.text();
   let j = null; try { j = JSON.parse(t); } catch (e) {}
   const data = j && j.data !== undefined ? j.data : j;
@@ -259,93 +203,59 @@ async function saiPoll(jobId, timeoutMs) {
   }
   throw new Error('AI 작업 시간 초과');
 }
-/* AI 작업 한 판을 «보내고 → 기다리고 → 실패하면 다시» 한다.
- * 매쓰플랫 AI 서버는 문항 상자 이미지를 스스로 못 읽어 통째로 실패하는 일이 잦다
- *   (2026-09-16: 「19/20 boxes failed … unreachable」 → 다시 돌리니 「11/20」 → 매번 다름).
- * 실패하는 상자가 판마다 달라지므로 같은 입력으로 다시 보내는 것만으로 살아날 때가 있다.
- * 같은 jobId에 다시 보내면 결과만 덮어써지므로 업로드·문항 인식을 반복할 필요는 없다. */
-async function saiRun(jobId, functionName, parameters, timeoutMs, tries) {
-  const n = tries || 3;
-  let last = null;
-  for (let i = 1; i <= n; i++) {
-    try {
-      await mf(MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, { functionName, parameters });
-      return await saiPoll(jobId, timeoutMs);
-    } catch (e) {
-      last = e;
-      if (i === n) break;
-      log(`AI 작업 재시도 ${i}/${n - 1} — ${String(e.message).slice(0, 120)}`);
-      await sleep(20000);
-    }
-  }
-  throw last;
-}
 
 async function runTwinPipeline(opts) {
-  const MYPAPER = Number(opts.mypaper || 0);          // 「내 문제지」 id (범위맞춤 묶음)
-  const MYDB = Number(opts.mydb || 0) || MYPAPER;     // 아래 로직은 둘을 같은 「시험지 id」로 다룬다
+  const MYDB = Number(opts.mydb || 0);
   let TRIE = opts.trie || '';
   let GRADE_LABEL = opts.grade || '';
   let TITLE = opts.title || '';
   const MYLIST = opts.mylist || '';
   const SIMILAR_X = Number(opts.similarX || 1);
   const SKIP_WS = !!opts.skipWorksheet;
-  const ASSIGN = String(opts.assign || '').split(',').map((s) => s.trim()).filter(Boolean);   // 학생 이름 또는 매쓰플랫 id
-  const ASSIGN_TWIN = !!opts.assignTwin;   // 쌍둥이까지 배정할지 (기본은 기출원본만)
-  let IS_HIGH = false, HS_SUBJECT = '', WS_GRADE = '1';
-  let assignIds = [], assignNames = [];
+  /* 2026-08-28 원장님 지시로 추가 —
+   * ORIGINAL_ONLY: 기출 원본 학습지까지만 만들고 쌍둥이는 건너뛴다.
+   *   (고1·고2 기출 37장을 먼저 원본으로만 넣어 보고, 쌍둥이는 결과를 보고 결정)
+   * GRADE_VALUE: 학습지의 「학년」 값. 중등은 '1'/'2'/'3'이지만
+   *   고등은 '공통수학1' 같은 <b>과목명</b>이라 밖에서 넣어 준다. */
+  const ORIGINAL_ONLY = !!opts.originalOnly;
+  const GRADE_VALUE = opts.gradeValue || '';
+  /* 2026-09-12 원장님 지시 — ASSIGN: 만든 학습지를 바로 학생에게 배정한다.
+   * 매쓰플랫 학생 id(mf_students.mf_student_id, 예: I2103268)를 쉼표로 여러 명.
+   * 배정은 학습지를 «만들 때» assignStudentIdList 로 넣어야 한다(만든 뒤 배정하는
+   * 엔드포인트는 확인되지 않았다). 비워 두면 예전처럼 배정 없이 만들기만 한다. */
+  const ASSIGN = String(opts.assign || '').split(',').map((s) => s.trim()).filter(Boolean);
   if (opts.log) log = opts.log;
-  if (!MYDB) throw new Error('mydb(나만의 DB) 또는 mypaper(내 문제지) id가 필요합니다');
+  if (!MYDB) throw new Error('mydb(수학비서 시험지 id)가 필요합니다');
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   // ① 수학비서에서 문항 이미지 + 시험명(출처)
   await msLogin();
   let msMeta = {};
   {
-    const dr = await fetch(`${MS_API}/bms/api/v1/${MYPAPER ? 'my-papers' : 'mydbs'}/${MYDB}`, { headers: msH() });
+    const dr = await fetch(`${MS_API}/bms/api/v1/mydbs/${MYDB}`, { headers: msH() });
     const dj = await dr.json();
     const md = (dj && dj.data) || {};
     msMeta = md;
     const t = String(md.title || '');
-    /* 학년·학기는 시험지 이름에서 읽는다. 「…범박중 중2공통 2학기중간」처럼 붙여 쓴 것도,
-     * 「23,24년 옥길중 3-2 중간 범위맞춤」처럼 「학년-학기」로 줄여 쓴 것도 잡아야 한다. */
-    const g = ((t.match(/[중고]\s*(\d)/) || t.match(/(\d)\s*-\s*[12]/) || t.match(/(\d)학년/) || [])[1]) || '1';
-    const sem = ((t.match(/(\d)학기/) || t.match(/\d\s*-\s*([12])/) || [])[1]) || '1';
+    const g = (t.match(/[중고](\d)/) || [])[1] || '1';
+    const sem = (t.match(/(\d)학기/) || [])[1] || '1';
     const yr = (t.match(/(20\d\d)년/) || [])[1] || '';
-    IS_HIGH = /고$/.test(schoolTokenOf(t)) || (!schoolTokenOf(t) && t.includes('고') && !t.includes('중'));
     if (!TITLE) TITLE = sourceTitleOf(t) || ('기출 연습 ' + MYDB);
-    if (IS_HIGH) {
-      // 고등: 학년-학기가 아니라 과목이 단위. 학습지의 grade 칸에도 과목명이 들어간다.
-      HS_SUBJECT = hsSubjectOf(t);
-      // 고등은 제목 끝에 과목명을 붙인다 — 기출모의 엔진이 과목을 제목 끝에서 읽는다
-      // (예: 「소사고등학교 2학년 2024년 2학기 중간 미적분1」). 안 붙이면 과목이 「수학」으로 뭉개진다.
-      if (!opts.title && HS_SUBJECT && !TITLE.includes(HS_SUBJECT)) TITLE = TITLE + ' ' + HS_SUBJECT;
-      if (!GRADE_LABEL) GRADE_LABEL = HS_SUBJECT || ('고 ' + g + '-' + sem);
-      if (!TRIE) {
-        TRIE = TRIE_22_HIGH[HS_SUBJECT] || '';
-        if (!TRIE) throw new Error(`고등 교육과정 키를 정할 수 없습니다 (과목 「${HS_SUBJECT || '알 수 없음'}」) — --trie로 직접 지정해 주세요`);
-      }
-    } else {
-      if (!GRADE_LABEL) GRADE_LABEL = '중 ' + g + '-' + sem;
-      if (!TRIE) {
-        TRIE = trieForExam(g, sem, yr);
-        if (!TRIE) throw new Error(`교육과정 키를 정할 수 없습니다 (중${g} ${sem}학기 ${yr}년 — 15개정 키 미확보). --trie로 직접 지정해 주세요`);
-      }
+    if (!GRADE_LABEL) GRADE_LABEL = (t.includes('고') && !t.includes('중') ? '고 ' : '중 ') + g + '-' + sem;
+    if (!TRIE) {
+      TRIE = trieForExam(g, sem, yr);
+      if (!TRIE) throw new Error(`교육과정 키를 정할 수 없습니다 (중${g} ${sem}학기 ${yr}년 — 15개정 키 미확보). --trie로 직접 지정해 주세요`);
     }
-    WS_GRADE = IS_HIGH ? (HS_SUBJECT || '공통수학1') : g;
   }
   log(`제목(출처): ${TITLE} · 학년 ${GRADE_LABEL}`);
-  const cells = await msCells(MYDB, !!MYPAPER);
+  let cells = await msCells(MYDB);
+  /* 교과서 DB 이식(db_transplant)용 부분 등록 — 대단원별로 잘라 넣을 때
+   * 필터를 받는다. 필터가 없으면 기존과 완전히 동일하게 전체를 등록한다. */
+  if (typeof opts.cellFilter === 'function') cells = cells.filter(opts.cellFilter);
   if (!cells.length) throw new Error('문항이 없습니다 (mydb id 확인)');
   log(`수학비서: ${cells.length}문항`);
   const images = [];
-  let nPass = 0;
-  for (const c of cells) {
-    const passPath = c.passage && c.passage.imagePath;
-    if (passPath) nPass++;
-    images.push({ no: c.questionNumber, buf: await msImage(c.imagePath), passBuf: passPath ? await msImage(passPath) : null });
-  }
-  if (nPass) log(`공용 지문(그림·표) ${nPass}문항에 함께 싣습니다`);
+  for (const c of cells) images.push({ no: c.questionNumber, buf: await msImage(c.imagePath) });
 
   // ② PDF 조립
   const pdf = await buildPdf(images, TITLE);
@@ -362,16 +272,20 @@ async function runTwinPipeline(opts) {
   log(`업로드 완료 · job ${jobId}`);
 
   // ④ 문항 인식 (pageIndexes는 "1~N" 형식의 문자열)
-  const doc = await saiRun(jobId, '/matchers/document-processing-flow',
-    { paperDocumentUrl: pres.url, pageIndexes: `1~${pdf.pages}`, pageImageQuality: 'HIGH' }, 300000, 3);
+  await mf(MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, {
+    functionName: '/matchers/document-processing-flow',
+    parameters: { paperDocumentUrl: pres.url, pageIndexes: `1~${pdf.pages}`, pageImageQuality: 'HIGH' },
+  });
+  const doc = await saiPoll(jobId);
   const nBox = [].concat(...doc.boxesOnEachPage).length;
   log(`문항 인식: ${doc.pageImageUrls.length}쪽 · ${nBox}상자`);
 
   // ⑤ 문제은행 매칭
-  /* 매칭은 한 판에 6~13분까지 걸린다(2026-09-16 실측). 7분에서 끊으면 살아 있는 작업을
-   * 버리고 다시 보내게 되므로, 판당 20분을 기다리고 3판까지 시도한다. */
-  const an = await saiRun(jobId, '/matchers/analysis-flow',
-    { pageImageUrls: doc.pageImageUrls, boxesOnEachPage: doc.boxesOnEachPage, trieKey: TRIE }, 1200000, 3);
+  await mf(MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, {
+    functionName: '/matchers/analysis-flow',
+    parameters: { pageImageUrls: doc.pageImageUrls, boxesOnEachPage: doc.boxesOnEachPage, trieKey: TRIE },
+  });
+  const an = await saiPoll(jobId, 360000);
   const matched = an.sourceData.filter((x) => x && x.sourceProblemId).length;
   log(`문제은행 매칭: ${matched}/${an.sourceData.length}`);
 
@@ -388,34 +302,53 @@ async function runTwinPipeline(opts) {
   fs.writeFileSync(path.join(OUT_DIR, `paper_${MYDB}.json`), JSON.stringify(paper, null, 1));
   if (SKIP_WS) { log('--skip-worksheet: 여기까지'); return { mydb: MYDB, title: TITLE, trie: TRIE, paperId: paper.id, matched, matchedTotal: an.sourceData.length }; }
 
-  // 배정할 학생 찾기 (이름으로 주면 활동학생 명부에서 매쓰플랫 id를 찾는다)
-  if (ASSIGN.length) {
-    const { data: sd } = await mf(MF_API, 'GET', '/students?size=500');
-    const roster = Array.isArray(sd) ? sd : (sd.students || sd.content || []);
-    for (const key of ASSIGN) {
-      const hit = roster.find((s) => String(s.id) === key) || roster.find((s) => String(s.name || '').trim() === key);
-      if (hit) { assignIds.push(hit.id); assignNames.push(hit.name); }
-      else log(`⚠ 배정 대상 「${key}」을(를) 매쓰플랫 활동학생에서 못 찾음 — 건너뜁니다`);
-    }
-    if (assignIds.length) log(`배정 대상: ${assignNames.join(', ')} (${assignIds.join(', ')})`);
-  }
-
   // 학습지 공통 설정 (원본·쌍둥이 둘 다 같은 모양)
   const wsBase = {
     conceptIdList: [], littleChapterConceptIdList: [],
-    assignStudentIdList: [], shareScope: 'ACADEMY', writer: '루멘수학',
+    assignStudentIdList: ASSIGN, shareScope: 'ACADEMY', writer: '루멘수학',
     layoutType: 0, layoutColor: 'BLUE', partitionType: 0,
     wrongAnswerNoteFlag: false, conceptNameFlag: true, answerRateFlag: false,
     relationWorkbookFlag: false, includeProblemFlag: false,
     conceptSortType: 'CHAPTER',
-    schoolType: IS_HIGH ? 'HIGH' : 'MIDDLE',
+    schoolType: GRADE_LABEL.startsWith('고') ? 'HIGH' : 'MIDDLE',
     revision: TRIE.startsWith('1.4.') ? 'CURRICULUM_22' : 'CURRICULUM_15',
-    // 고등 22개정은 학년 칸에 과목명이 들어간다 (중학교는 학년 숫자)
-    grade: String(WS_GRADE),
+    grade: GRADE_VALUE || (GRADE_LABEL.match(/(\d)/) || [, '1'])[1],
     problemPadding: 60, pdfDateType: 'TODAY', pdfDate: null,
     designTemplateId: null, qrFlag: false, problemTrendFlag: false,
   };
   const made = [];   // 만든 학습지 id들 — 마지막에 폴더로
+
+  /* 만든 학습지를 마이리스트(폴더)에 담는다 — 같은 이름이 없으면 폴더를 만든다.
+   * 원본 전용 모드와 쌍둥이 모드 둘 다에서 부르므로 함수로 뺐다. */
+  /* 폴더 담기가 실패해도 학습지는 이미 만들어져 있다. 그래서 여기서 예외를 던지지 않는다 —
+   * 던지면 부르는 쪽이 「실패」로 기록해, 다시 돌릴 때 같은 시험지를 두 번 등록하게 된다.
+   * (2026-08-28 실제로 겪음: 매쓰플랫 폴더는 최대 20개인데 이미 20개가 차 있어
+   *  MY_LIST_LIMIT_EXCEEDED. 학습지는 정상 생성됐는데 전체가 실패로 잡혔다.) */
+  async function putInMylist(ids) {
+    if (!MYLIST || !ids.length) return { ok: false, reason: '폴더 지정 없음' };
+    try {
+      const { data: lists } = await mf(MF_API, 'GET', '/mylist');
+      const all = (lists && lists.myLists) || (Array.isArray(lists) ? lists : []);
+      let target = all.find((l) => l.name === MYLIST);
+      if (!target) {
+        const { data: mk } = await mf(MF_API, 'POST', '/mylist', { name: MYLIST });
+        target = (mk && mk.myList) || mk;
+        log(`마이리스트 「${MYLIST}」 새로 만듦`);
+      }
+      if (target && target.id) {
+        await mf(MF_API, 'POST', `/mylist/${target.id}/element`, { worksheetIds: ids });
+        log(`마이리스트 「${MYLIST}」에 학습지 ${ids.length}장 담음`);
+        return { ok: true, mylistId: target.id };
+      }
+      return { ok: false, reason: '폴더를 찾지도 만들지도 못함' };
+    } catch (e) {
+      const full = /MY_LIST_LIMIT_EXCEEDED/.test(e.message);
+      log(full
+        ? `⚠ 폴더 「${MYLIST}」를 만들지 못했습니다 — 매쓰플랫 폴더가 20개로 꽉 찼습니다. 학습지는 정상 생성됐으니 폴더를 비우신 뒤 --refile로 담을 수 있습니다`
+        : `⚠ 폴더 담기 실패(학습지는 정상): ${e.message.slice(0, 160)}`);
+      return { ok: false, reason: e.message.slice(0, 200), limitFull: full };
+    }
+  }
 
   // ⑦ 기출원본 학습지 — OCR 문제를 문제은행으로 «복사»한 뒤라야 만들 수 있다
   //    복사는 준비가 끝난 뒤에만 받아준다. 「준비됨」을 우리가 판정하려 했더니 틀렸다 —
@@ -451,15 +384,24 @@ async function runTwinPipeline(opts) {
       ...wsBase, filterId: oFlt.filterId || oFlt,
       problemList: origList, myDbProblemDetailIds: detailIds,   // 원본은 이 둘을 함께 보내야 한다
       title: `${TITLE} 원본`, tag: 'MY_DB_ORIGINAL',
-      assignStudentIdList: assignIds,      // 기출 그대로 푸는 것이므로 배정은 원본에 붙인다
     });
     made.push(oWs);
-    log(`✅ 기출원본 학습지: worksheet ${oWs} — 「${TITLE} 원본」${assignIds.length ? ` · 배정 ${assignNames.join(', ')}` : ''}`);
+    log(`✅ 기출원본 학습지: worksheet ${oWs} — 「${TITLE} 원본」`);
   } else {
     log('⚠ 원본 문제 복사가 끝나지 않아 원본 학습지는 건너뜁니다 (나중에 다시 실행)');
   }
 
   // ⑧ 쌍둥이 학습지 (problemList에는 문제 객체 전체를 그대로 넣어야 한다)
+  if (ORIGINAL_ONLY) {
+    log('원본 전용 모드 — 쌍둥이는 만들지 않습니다');
+    const filed = await putInMylist(made);
+    return {
+      mydb: MYDB, title: TITLE, trie: TRIE, gradeLabel: GRADE_LABEL,
+      paperId: paper.id, questionCount: cells.length, boxCount: nBox,
+      matched, matchedTotal: an.sourceData.length,
+      worksheetOriginal: made[0] || null, worksheetTwin: null, mylist: MYLIST, filed,
+    };
+  }
   const { data: flt } = await mf(MF_API, 'POST', '/v2/worksheet/filter/school-test-paper/similar',
     { myDbProblemDetailIds: detailIds, similarX: SIMILAR_X, similarLevel: 'AS_IS' });
   const filterId = flt.filterId || flt;
@@ -468,47 +410,24 @@ async function runTwinPipeline(opts) {
   const { data: wsId } = await mf(MF_API, 'POST', '/worksheet', {
     ...wsBase, filterId, problemList: problems,
     title: `${TITLE} 쌍둥이`, tag: 'CUSTOM_PAPER',
-    assignStudentIdList: ASSIGN_TWIN ? assignIds : [],
   });
   made.push(wsId);
-  log(`✅ 쌍둥이 학습지: worksheet ${wsId} — 「${TITLE} 쌍둥이」${(ASSIGN_TWIN && assignIds.length) ? ` · 배정 ${assignNames.join(', ')}` : ''}`);
+  log(`✅ 쌍둥이 학습지: worksheet ${wsId} — 「${TITLE} 쌍둥이」`);
 
-  // ⑨ 마이리스트(폴더)에 넣기 — 같은 이름이 없으면 만든다
-  if (MYLIST && made.length) {
-    const { data: lists } = await mf(MF_API, 'GET', '/mylist');
-    const all = (lists && lists.myLists) || (Array.isArray(lists) ? lists : []);
-    let target = all.find((l) => l.name === MYLIST);
-    if (!target) {
-      const { data: mk } = await mf(MF_API, 'POST', '/mylist', { name: MYLIST });
-      target = (mk && mk.myList) || mk;
-      log(`마이리스트 「${MYLIST}」 새로 만듦`);
-    }
-    if (target && target.id) {
-      await mf(MF_API, 'POST', `/mylist/${target.id}/element`, { worksheetIds: made });
-      log(`마이리스트 「${MYLIST}」에 학습지 ${made.length}장 담음`);
-    }
-  }
-
-  // ⑩ 고등이면 수입 장부에 적어 둔다 (기출모의 엔진이 이걸 보고 채점을 잇는다)
-  const wsOrig = made.length === 2 ? made[0] : (origList.length ? made[0] : null);
-  if (IS_HIGH && wsOrig) {
-    try { await registerHsExam(String(MYDB), { title: TITLE, paper: paper.id, worksheet: wsOrig, mylist: MYLIST || null }); }
-    catch (e) { log('⚠ 고등 수입 장부 등록 오류:', e.message.slice(0, 120)); }
-  }
+  // ⑨ 마이리스트(폴더)에 넣기
+  const filed = await putInMylist(made);
 
   return {
     mydb: MYDB, title: TITLE, trie: TRIE, gradeLabel: GRADE_LABEL,
-    schoolType: IS_HIGH ? 'HIGH' : 'MIDDLE', subject: HS_SUBJECT || null,
     paperId: paper.id, questionCount: cells.length, boxCount: nBox,
     matched, matchedTotal: an.sourceData.length,
-    worksheetOriginal: wsOrig,
+    worksheetOriginal: made.length === 2 ? made[0] : (origList.length ? made[0] : null),
     worksheetTwin: made[made.length - 1] || null,
-    assigned: assignNames, assignedIds: assignIds, assignedTwin: !!ASSIGN_TWIN,
-    mylist: MYLIST,
+    mylist: MYLIST, filed,
   };
 }
 
-module.exports = { runTwinPipeline, sourceTitleOf, trieForExam, hsSubjectOf, registerHsExam, TRIE_22, TRIE_15, TRIE_22_HIGH };
+module.exports = { runTwinPipeline, sourceTitleOf, trieForExam, TRIE_22, TRIE_15 };
 
 /* ── 명령줄에서 직접 실행할 때 ── */
 if (require.main === module) {
@@ -516,15 +435,15 @@ if (require.main === module) {
   const arg = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 1] : d; };
   runTwinPipeline({
     mydb: Number(arg('mydb', 0)),
-    mypaper: Number(arg('mypaper', 0)),
     trie: arg('trie', ''),
     grade: arg('grade', ''),
     title: arg('title', ''),
     mylist: arg('mylist', ''),
     similarX: Number(arg('similar-x', 1)),
     skipWorksheet: args.includes('--skip-worksheet'),
+    originalOnly: args.includes('--original-only'),
+    gradeValue: arg('grade-value', ''),
     assign: arg('assign', ''),
-    assignTwin: args.includes('--assign-twin'),
   }).then((r) => log('결과:', JSON.stringify(r)))
     .catch((e) => { console.error('오류:', e.message); process.exit(1); });
 }
