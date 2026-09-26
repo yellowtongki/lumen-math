@@ -391,16 +391,31 @@ async function runRace() {
   const raidGrsOf = (r) => (Array.isArray(r.grs) && r.grs.length) ? r.grs
                           : (r.gr ? [String(r.gr)] : []);
   const raidOfCode = {};   // code → [raid, ...]
+  const raidMembers = {};  // raidId → [code, ...]  (순위판도 같은 명단을 쓴다)
+  /* 2026-09-26 원장 제보 「보스 체력이 잘못된 것 같다」 — 학생 등록부에 학교가 비어 있는 학생(9명)이
+   * 「옥길중 중1 레이드」처럼 학교로 가르는 레이드에서 빠져, 옥길중 중1 7명 중 2명의 피해가 보스에 안 들어갔다.
+   * 규칙: 학교가 빈 학생은 «학년이 맞는 레이드가 하나뿐이면» 거기 넣는다. 학교가 적힌 학생은 전과 같다. */
+  const noSchool = [];
   if (raidOn) Object.keys(info).forEach((c) => {
     const t = info[c];
-    raidList.forEach((r) => {
+    const mine = String(t.sch || '').trim();
+    let hits = raidList.filter((r) => {
       const grs = raidGrsOf(r);
-      if (grs.length && grs.indexOf(t.gr) < 0) return;
+      if (grs.length && grs.indexOf(t.gr) < 0) return false;
       const sch = String(r.sch || '').trim();
-      if (sch && String(t.sch || '').indexOf(sch) !== 0) return;
+      return !sch || mine.indexOf(sch) === 0;
+    });
+    if (!mine) {
+      const byGrade = raidList.filter((r) => { const grs = raidGrsOf(r); return !grs.length || grs.indexOf(t.gr) >= 0; });
+      if (byGrade.length === 1 && hits.indexOf(byGrade[0]) < 0) hits = byGrade;
+      if (byGrade.length) noSchool.push(c);
+    }
+    hits.forEach((r) => {
       (raidOfCode[c] = raidOfCode[c] || []).push(r);
+      (raidMembers[r.id] = raidMembers[r.id] || []).push(c);
     });
   });
+  if (noSchool.length) log(`⚠️ 학교가 빈 학생 ${noSchool.length}명은 학년으로 레이드에 넣었습니다 — 등록부에 학교를 적어 주세요`);
 
   const agg = {};   // code → {...}
   // 서버(깃허브)는 UTC로 도니 「오늘」은 +9가 맞다 (이건 진짜 UTC 시계다)
@@ -646,12 +661,7 @@ async function runRace() {
       const grs = raidGrsOf(cfg);
       const sch = String(cfg.sch || '').trim();
       const box = raidHit[cfg.id] || {};
-      const mem = Object.keys(info).filter((c) => {
-        const t = info[c];
-        if (grs.length && grs.indexOf(t.gr) < 0) return false;
-        if (sch && String(t.sch || '').indexOf(sch) !== 0) return false;
-        return true;
-      });
+      const mem = raidMembers[cfg.id] || [];
       const rows = mem.map((c) => {
         const h = box[c] || { sum: 0, byDay: {} };
         let week = 0;
