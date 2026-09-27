@@ -1,0 +1,47 @@
+name: 플래너 새벽 채점 (고정 스크립트)
+
+# 학생들이 밤에 올린 플래너 사진을 원장님이 아침에 앱을 열기 전에 미리 채점한다.
+# 매일 새벽 4시 Routine(Claude 세션)의 2.5단계를 대신하는 «판단 없는» 고정 스크립트다
+# (원장 지시 2026-09-27 — 9/27 새벽 Routine 이 채점을 남기지 않았다).
+# 결과는 lumen_store planner_ai_results 에 쌓이고, 학원앱이 플래너 탭을 열 때 「🌙 새벽자동」으로 가져간다.
+#
+# 필요한 비밀값: SUPABASE_URL, SUPABASE_SERVICE_KEY, ANTHROPIC_API_KEY (원장님이 GitHub Secrets 에 넣는다)
+
+on:
+  schedule:
+    - cron: '25 19 * * *'   # UTC 19:25 = 한국시간 04:25 (Routine 04:12 뒤 — 둘 다 이미 채점한 세트는 건너뛴다)
+  workflow_dispatch:
+    inputs:
+      days:
+        description: '최근 며칠 세트까지 (기본 7)'
+        required: false
+        default: '7'
+      max:
+        description: '한 번에 최대 세트 수 (기본 60)'
+        required: false
+        default: '60'
+      dry:
+        description: 'true 면 채점하지 않고 대상 목록만'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: planner-night
+  cancel-in-progress: false
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 플래너 채점
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          node sync/planner_night_grader.js --days "${{ github.event.inputs.days || '7' }}" --max "${{ github.event.inputs.max || '60' }}" ${{ github.event.inputs.dry == 'true' && '--dry' || '' }}
