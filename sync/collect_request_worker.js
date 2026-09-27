@@ -406,6 +406,13 @@ async function runHwSync() {
       const { runBoostPush } = require('./push_boost.js');
       await runBoostPush();
     } catch (e) { log('버프 알림 오류:', e.message); }
+    /* 💡 선생님 힌트 알림 (2026-09-27, docs/aha_hint_contract.md)
+     * 학원앱이 힌트를 발송하면 push_hint_queue 에 요청이 남고, 여기서 5분 안에 학생 폰으로 보낸다.
+     * 밤 9시엔 「아직 안 본 힌트 n개」 한 줄(버프 알림 뒤에 돌아야 겹치지 않는다). */
+    try {
+      const { runPushHint } = require('./push_hint.js');
+      await runPushHint();
+    } catch (e) { log('힌트 알림 오류:', e.message); }
   }
   // 교재 채점 되돌려쓰기 — 가볍고 학생이 기다리므로 그다음
   try { await runHwSync(); } catch (e) { log('교재채점 반영 오류:', e.message); }
