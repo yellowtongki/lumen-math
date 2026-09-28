@@ -38,15 +38,31 @@ npm -v
 > 2026-09-28: 맥미니에 Node.js가 없어서 `npm`·`npx`·`claude` 가 전부 «command not found» 였다.
 > Node.js가 먼저다.
 
-### ② Claude Code 설치
+### ② npm 설치 위치를 내 폴더로 바꾸기 (권한 오류 예방)
+
+이걸 안 하면 다음 단계에서 **`EACCES: permission denied`** 가 난다.
+npm이 시스템 폴더(`/usr/local/lib`)에 넣으려다 맥에게 막히는 것이다.
+`sudo` 로 밀어붙일 수도 있지만 관리자 권한으로 깔려 나중에 또 권한 문제가 생기므로, **설치 자리를 내 폴더로 옮긴다.**
+
+```bash
+mkdir -p ~/.npm-global
+npm config set prefix ~/.npm-global
+echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+> 2026-09-28 맥미니에서 실제로 겪은 오류다. 한 번만 해두면 앞으로 모든 전역 설치가 편해진다.
+
+### ③ Claude Code 설치
 
 ```bash
 npm install -g @anthropic-ai/claude-code
+claude --version        # 버전이 나오면 성공
 ```
 
 (명령이 바뀌었으면 docs.claude.com 의 설치 안내를 따른다)
 
-### ③ 저장소와 도구
+### ④ 저장소와 도구
 
 ```bash
 git clone https://github.com/yellowtongki/lumen-math.git
@@ -59,7 +75,7 @@ claude                                        # ← 여기서 열면 맥미니�
 
 폰트(Pretendard)와 수식 도구(MathJax)는 **처음 카드를 만들 때 자동으로 받는다.** 따로 할 일 없음.
 
-### ④ 로컬로 열렸는지 확인하는 법
+### ⑤ 로컬로 열렸는지 확인하는 법
 
 ```bash
 node sync/serp_check.js
