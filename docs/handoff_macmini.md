@@ -109,6 +109,7 @@ sync/card_templates/         카드 디자인 8종 + _base.css
 | `node sync/card_render.js blog/<폴더>` | `cards.json` → 카드 PNG. `--only N` 으로 한 장만 | 아무 데나 |
 | `node sync/post_check.js blog/<폴더>` | 17항목 검사 (글자수·카드·사진·지도·해시태그·날짜·주소·개인정보…) | 아무 데나 |
 | `node sync/serp_check.js` | 네이버에 검색어 10개를 쳐 보고 첫 화면에 우리 글이 있는지 → `docs/serp_latest.html` | **맥미니만** |
+| `node sync/image_gen.js blog/<폴더> [--dry]` | 카드 배경 그림 (GPT). `--dry` 는 키 없이 프롬프트만 |
 | `node sync/keyword_volume.js` | 낱말별 월간 검색수 → `docs/keyword_volume.md` | **맥미니만** · 키 필요 |
 
 ### 🎴 카드 8종 (`cards.json` 의 `type`)
@@ -156,7 +157,7 @@ sync/card_templates/         카드 디자인 8종 + _base.css
 |---|---|---|---|
 | **1** | `sync/naver_draft.js` — 네이버 임시저장 자동화 | 2~3일 | **맥미니 전용.** 사람 타자 속도(8~14분), 임시저장까지만. **발행 버튼은 원장님이** |
 | 2 | `sync/insta_upload.js` — 인스타 캐러셀 | 1일 | 인스타 **비즈니스/크리에이터 전환** + 페북 페이지 연결 필요 (원장님 확인 중) |
-| 3 | `sync/image_gen.js` — 배경 그림 (OpenAI) | 반나절 | **글자 없는 배경만.** 글자는 늘 HTML로 얹는다 |
+| ~~3~~ ✅ | `sync/image_gen.js` — 배경 그림 (OpenAI) | 2026-09-28 완성 | **키로 실제 생성은 아직 검증 못 함.** `--dry` 는 확인됨 |
 | 4 | 쓰레드 · 유튜브 | 각 1일 | 둘 다 공식 API 있음 |
 | 5 | 당근 소식 · 플레이스 리뷰 답글 | 높음 | 공식 API 없음 → 브라우저 자동화. 맨 뒤 |
 
