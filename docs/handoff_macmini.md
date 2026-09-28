@@ -25,15 +25,47 @@ Claude Code는 **어디서 돌지**를 고를 수 있다. 클라우드 환경을
 
 ## 1. 처음 한 번만 — 맥미니 준비
 
+### ① Node.js 설치 (안 깔려 있으면 `npm: command not found` 가 난다)
+
+**https://nodejs.org** → **LTS** 버튼 → 받아진 `.pkg` 더블클릭 → 계속 누르면 끝.
+설치 뒤 **터미널을 껐다 켜고** 확인한다:
+
+```bash
+node -v        # 버전 숫자가 나오면 성공
+npm -v
+```
+
+> 2026-09-28: 맥미니에 Node.js가 없어서 `npm`·`npx`·`claude` 가 전부 «command not found» 였다.
+> Node.js가 먼저다.
+
+### ② Claude Code 설치
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+(명령이 바뀌었으면 docs.claude.com 의 설치 안내를 따른다)
+
+### ③ 저장소와 도구
+
 ```bash
 git clone https://github.com/yellowtongki/lumen-math.git
 cd lumen-math
-npm install                 # Playwright 포함
-npx playwright install chromium
 git checkout claude/gallant-ride-nddobc      # 블로그 도구가 있는 가지
+npm install                                   # Playwright 포함
+npx playwright install chromium
+claude                                        # ← 여기서 열면 맥미니에서 돈다
 ```
 
 폰트(Pretendard)와 수식 도구(MathJax)는 **처음 카드를 만들 때 자동으로 받는다.** 따로 할 일 없음.
+
+### ④ 로컬로 열렸는지 확인하는 법
+
+```bash
+node sync/serp_check.js
+```
+
+**클라우드에서는 네이버가 막혀 실패하고, 맥미니에서는 돈다.** 이게 시험대다.
 
 ---
 
