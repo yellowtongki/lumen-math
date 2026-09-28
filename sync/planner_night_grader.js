@@ -286,7 +286,10 @@ async function planLines(code, expectedDate) {
   const day = dateKey(expectedDate); if (!code || !day || day < START) return [];
   if (wpCache[code] === undefined) { try { wpCache[code] = await kvGet('wplan_' + code); } catch (e) { wpCache[code] = null; } }
   const { mon, dow } = monOf(day); const w = wpCache[code] && wpCache[code].weeks && wpCache[code].weeks[mon];
-  const items = ((w && w.items) || []).filter((it) => +it.d === dow && it.title);
+  /* 코디 계획으로 비친 칸(학생앱 v2-112 달력 ↔ codi_plan_)은 코디 대조(codiCheck)가 맡는다 — 두 번 묻지 않는다 */
+  if (planCache[code] === undefined) { try { planCache[code] = await kvGet('codi_plan_' + code); } catch (e) { planCache[code] = null; } }
+  const cp = planCache[code], cpIds = new Set((cp && cp.week === mon) ? (cp.blocks || []).map((b) => b.id) : []);
+  const items = ((w && w.items) || []).filter((it) => +it.d === dow && it.title && !cpIds.has(it.id));
   if (!items.length) return [];
   return ['', '━━━━━━━━━━━━━━━━━━━━━━━━━', '【 주간계획 대조 (추가) 】', '━━━━━━━━━━━━━━━━━━━━━━━━━', '',
     '이 학생이 이 날(' + day + ') 앱의 주간계획에 쓴 할 일은 다음과 같습니다:']
