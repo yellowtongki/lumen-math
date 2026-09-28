@@ -25,6 +25,9 @@ const TPL_DIR = path.join(__dirname, 'card_templates');
 const FONT_DIR = path.join(__dirname, '_fonts');
 const FONT_WEIGHTS = { Regular: 400, Medium: 500, SemiBold: 600, Bold: 700, ExtraBold: 800 };
 const FONT_URL = (w) => `https://raw.githubusercontent.com/orioncactus/pretendard/v1.3.9/packages/pretendard/dist/web/static/woff2/Pretendard-${w}.woff2`;
+const VENDOR_DIR = path.join(__dirname, '_vendor');
+const MATHJAX = path.join(VENDOR_DIR, 'tex-svg.js');
+const MATHJAX_URL = 'https://raw.githubusercontent.com/mathjax/MathJax/3.2.2/es5/tex-svg.js';
 const W = 1080, H = 1350;
 
 const args = process.argv.slice(2);
@@ -33,6 +36,12 @@ const onlyIdx = args.includes('--only') ? parseInt(args[args.indexOf('--only') +
 if (!folder) { console.error('사용법: node sync/card_render.js <글 폴더> [--only N]'); process.exit(1); }
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// 큰 제목의 색 강조:  **주황**  __하늘__  ~~금~~
+const hl = (s) => esc(s)
+  .replace(/\*\*(.+?)\*\*/g, '<span class="o">$1</span>')
+  .replace(/__(.+?)__/g, '<span class="b">$1</span>')
+  .replace(/~~(.+?)~~/g, '<span class="g">$1</span>')
+  .replace(/\n/g, '<br>');
 const CIRCLED = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨'];
 
 async function ensureFonts() {
@@ -47,14 +56,38 @@ async function ensureFonts() {
     process.stderr.write('완료\n');
   }
 }
+async function ensureMathJax() {
+  if (fs.existsSync(MATHJAX) && fs.statSync(MATHJAX).size > 500000) return;
+  fs.mkdirSync(VENDOR_DIR, { recursive: true });
+  process.stderr.write('⬇️  수식 도구(MathJax) 내려받는 중… ');
+  const r = await fetch(MATHJAX_URL);
+  if (!r.ok) throw new Error(`MathJax 다운로드 실패 ${r.status}`);
+  fs.writeFileSync(MATHJAX, Buffer.from(await r.arrayBuffer()));
+  process.stderr.write('완료\n');
+}
 function fontCss() {
   return Object.entries(FONT_WEIGHTS).map(([w, n]) =>
     `@font-face{font-family:'Pretendard';font-weight:${n};font-display:block;src:url('file://${path.join(FONT_DIR, `Pretendard-${w}.woff2`)}') format('woff2')}`).join('\n');
 }
 
 // 배열 필드를 HTML 조각으로 (템플릿의 {{{…Html}}} 자리)
-function derive(card) {
+function derive(card, dir) {
   const d = { ...card };
+  if (card.headline) d.headlineHtml = hl(card.headline);
+  if (card.bg) {
+    const f = path.isAbsolute(card.bg) ? card.bg : path.join(dir, card.bg);
+    if (!fs.existsSync(f)) throw new Error(`배경 사진이 없습니다: ${card.bg}`);
+    d.bgUrl = 'file://' + f;
+  } else d.bgUrl = '';
+  if (card.type === 'solve') {
+    d.panelsHtml = (card.panels || []).map((p, i) => {
+      const lines = (Array.isArray(p.lines) ? p.lines : [p.body || '']).map(t => `<div class="l">${esc(t)}</div>`).join('');
+      return `<div class="pn ${p.highlight ? 'hi' : ''}">
+        <div class="no">${String(i + 1).padStart(2, '0')}</div>
+        <div class="nm">${esc(p.name || '')}</div>
+        <div class="bd fit">${lines}</div></div>`;
+    }).join('');
+  }
   const li = (arr) => (arr || []).map(t => `<li style="display:flex;gap:14px;margin-bottom:14px"><span style="color:var(--gold);font-weight:800">—</span><span>${esc(t)}</span></li>`).join('');
   if (card.type === 'compare') { d.leftItemsHtml = li(card.leftItems); d.rightItemsHtml = li(card.rightItems); }
   if (card.type === 'list') {
@@ -79,6 +112,7 @@ function fill(tpl, data) {
   const cards = spec.cards || [];
   if (!cards.length) throw new Error('cards.json 에 cards 배열이 없습니다');
   await ensureFonts();
+  if (/\$[^$\n]+\$/.test(JSON.stringify(cards))) await ensureMathJax();
   const outDir = path.join(dir, 'cards'), htmlDir = path.join(outDir, 'html');
   fs.mkdirSync(htmlDir, { recursive: true });
   const base = fs.readFileSync(path.join(TPL_DIR, '_base.css'), 'utf8');
@@ -94,20 +128,28 @@ function fill(tpl, data) {
     const card = cards[i];
     const tplPath = path.join(TPL_DIR, `${card.type}.html`);
     if (!fs.existsSync(tplPath)) throw new Error(`${n}번 카드: 모르는 type "${card.type}" (템플릿 없음)`);
-    const body = fill(fs.readFileSync(tplPath, 'utf8'), derive({ ...card, page: `${n} / ${cards.length}` }));
-    const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${fontCss()}\n${base}</style></head><body>${body}</body></html>`;
+    const body = fill(fs.readFileSync(tplPath, 'utf8'), derive({ ...card, page: `${n} / ${cards.length}` }, dir))
+      .replace(/\{\{#bgUrl\}\}([\s\S]*?)\{\{\/bgUrl\}\}/g, card.bg ? '$1' : '');
+    const needMath = /\$[^$\n]+\$/.test(body);
+    const mathHead = needMath
+      ? `<script>window.MathJax={tex:{inlineMath:[['$','$']]},svg:{fontCache:'global'},startup:{typeset:true}}<\/script>
+         <script src="file://${MATHJAX}"><\/script>` : '';
+    const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>${fontCss()}\n${base}</style>${mathHead}</head><body>${body}</body></html>`;
     const htmlFile = path.join(htmlDir, `${String(n).padStart(2, '0')}_${card.type}.html`);
     fs.writeFileSync(htmlFile, html, 'utf8');
     await page.goto('file://' + htmlFile);
     await page.evaluate(() => document.fonts.ready);
+    if (needMath) await page.waitForFunction(() => !!window.MathJax?.startup?.document?.math || !!document.querySelector('mjx-container'), { timeout: 20000 }).catch(() => {});
     // 넘치는 글자 줄이기: .fit 요소마다 scrollHeight가 칸(max-height/높이) 안에 들어올 때까지 2px씩
     const shrunk = await page.evaluate(() => {
       const out = [];
+      const over = (el, limit) => el.scrollHeight > limit + 1 || el.scrollWidth > el.clientWidth + 1;
       for (const el of document.querySelectorAll('.fit')) {
         const limit = parseFloat(getComputedStyle(el).maxHeight) || el.clientHeight;
         let size = parseFloat(getComputedStyle(el).fontSize), steps = 0;
-        while (el.scrollHeight > limit + 1 && size > 18 && steps < 60) { size -= 2; el.style.fontSize = size + 'px'; steps++; }
-        if (steps) out.push(`${el.tagName.toLowerCase()} → ${size}px`);
+        // 높이뿐 아니라 가로도 본다 — 수식(MathJax)은 한 줄이 통째로 넘쳐 잘리기 때문
+        while (over(el, limit) && size > 14 && steps < 80) { size -= 1.5; el.style.fontSize = size + 'px'; steps++; }
+        if (steps) out.push(`${el.tagName.toLowerCase()} → ${Math.round(size)}px`);
       }
       return out;
     });
