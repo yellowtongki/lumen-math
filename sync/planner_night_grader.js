@@ -234,6 +234,77 @@ function buildPrompt(expectedDate, practiceRate) {
   ];
 }
 
+
+/* ── 10월 1일부터 새 점수 (학원앱 v19-54 와 같은 규칙 · docs/planner_score_v2.md) ──
+ *   AI는 타임테이블 칸 수(ttFilled)·생활 수(ttLife)·실천율만 읽고, 점수는 여기서 매긴다.
+ *   studyScore → 타임테이블 0~2 · practiceScore → 실천 0~2 (50%·20%). 9월 30일까지는 그대로(v2.1). */
+const START = '2026-10-01';
+const dateKey = (s) => { const m = String(s || '').match(/(\d{4})[.\-\/]?(\d{2})[.\-\/]?(\d{2})/); return m ? (m[1] + '-' + m[2] + '-' + m[3]) : ''; };
+const isV2 = (s) => { const k = dateKey(s); return !!k && k >= START; };
+function v3PromptEdit(lines, expectedDate) {
+  if (!isV2(expectedDate)) return lines;
+  const out = []; let skip = false;
+  for (const raw of lines) {
+    const L = String(raw);
+    if (L.indexOf('① studyScore') === 0) {
+      skip = true;
+      out.push('① 타임테이블 (TIMETABLE 칸) — 점수는 코드가 매깁니다. 아래 숫자만 정확히 세세요');
+      out.push('  - ttFilled: 아침 6시~밤 23시 사이 한 시간 칸 가운데 «색칠·표시·글씨»가 있는 칸의 개수 (0~18). 빈 칸은 세지 않음');
+      out.push('  - ttLife: 그 칸들에 적힌 «생활» 활동의 종류 수 — 학교·등교·식사(아침/점심/저녁)·수면·낮잠·이동·운동·휴식·가족. 학원·숙제·인강·과목 공부는 생활이 아님');
+      out.push('  - ttLifeItems: 생활 활동 이름 배열 (예: ["학교","저녁","잠"])');
+      out.push('  - 타임테이블 칸이 사진에 없거나 전혀 읽을 수 없으면 ttFilled=0, ttLife=0 이고 unreadableItems 에 "studyScore" 를 넣으세요');
+      out.push('  - studyScore 는 "0" 으로 두세요 (코드가 다시 계산합니다)');
+      out.push('');
+      continue;
+    }
+    if (skip && L.indexOf('② practiceScore') === 0) skip = false;
+    if (skip) continue;
+    if (/^  - \d+% 이상이면 1점$/.test(L)) { out.push('  - practiceRate 를 정확히 적으세요 (코드가 50% 이상 2점 · 20% 이상 1점으로 매깁니다). practiceScore 는 "0" 으로 두세요'); continue; }
+    if (L.indexOf('【 채점 항목 (총 4점') === 0) { out.push('【 채점 항목 】'); continue; }
+    out.push(L);
+    if (L.indexOf('  "unreadableItems":') === 0) { out.push('  "ttFilled": 숫자,'); out.push('  "ttLife": 숫자,'); out.push('  "ttLifeItems": ["학교"],'); }
+  }
+  return out;
+}
+function v3Apply(analysis, expectedDate, cfg) {
+  const dk = dateKey(analysis.date) || dateKey(expectedDate);
+  if (!dk || dk < START) return analysis;
+  const minH = Number(cfg.ttMinHours) || 5, minL = (cfg.ttMinLife === 0) ? 0 : (Number(cfg.ttMinLife) || 1);
+  const ur = Array.isArray(analysis.unreadableItems) ? analysis.unreadableItems : [];
+  const filled = Number(analysis.ttFilled) || 0, life = Number(analysis.ttLife) || 0;
+  const tt = (filled >= minH ? 1 : 0) + (filled > 0 && life >= minL ? 1 : 0);
+  const rate = parseInt(String(analysis.practiceRate || '').replace(/[^\d]/g, ''), 10) || 0;
+  let pr = rate >= 50 ? 2 : (rate >= 20 ? 1 : 0); if (ur.indexOf('practiceScore') >= 0) pr = 0;
+  analysis.studyScore = String(tt); analysis.practiceScore = String(pr);
+  analysis.v3 = { tt, filled, life, rate, minH, minL }; analysis.promptVersion = 'v3.0';
+  return analysis;
+}
+/* 앱 주간계획(wplan_<코드>) 대조 줄 · 결과 저장 (wplan_chk_<코드>) */
+const wpCache = {};
+const monOf = (day) => { const d = new Date(day + 'T00:00:00Z'); const w = (d.getUTCDay() + 6) % 7; d.setUTCDate(d.getUTCDate() - w); return { mon: d.toISOString().slice(0, 10), dow: w }; };
+async function planLines(code, expectedDate) {
+  const day = dateKey(expectedDate); if (!code || !day || day < START) return [];
+  if (wpCache[code] === undefined) { try { wpCache[code] = await kvGet('wplan_' + code); } catch (e) { wpCache[code] = null; } }
+  const { mon, dow } = monOf(day); const w = wpCache[code] && wpCache[code].weeks && wpCache[code].weeks[mon];
+  const items = ((w && w.items) || []).filter((it) => +it.d === dow && it.title);
+  if (!items.length) return [];
+  return ['', '━━━━━━━━━━━━━━━━━━━━━━━━━', '【 주간계획 대조 (추가) 】', '━━━━━━━━━━━━━━━━━━━━━━━━━', '',
+    '이 학생이 이 날(' + day + ') 앱의 주간계획에 쓴 할 일은 다음과 같습니다:']
+    .concat(items.map((it, i) => '  ' + (i + 1) + '. [' + it.id + '] ' + (it.subj ? it.subj + ' ' : '') + it.title))
+    .concat(['', '당일 플래너의 TASKS 전사와 대조해서, 각 할 일이 완료(O 또는 △) 표시된 줄과 «내용이 같거나 비슷하면» done=true, 아니면 false 로 판단하세요.',
+      '(예: "쎈 42~45쪽" ↔ TASKS "[O] 쎈 42-45" 은 같은 것. 쪽수가 조금 달라도 같은 교재면 같은 것으로 봅니다. 플래너에 없으면 false.)',
+      '출력 JSON에 다음 키를 «추가»하세요 (id 는 위 대괄호 안 글자 그대로):',
+      '  "planCheck": [' + items.map((it) => '{"id": "' + it.id + '", "done": true 또는 false}').join(', ') + ']']);
+}
+async function planCheckSave(code, analysis, expectedDate) {
+  if (!Array.isArray(analysis.planCheck) || !analysis.planCheck.length) return;
+  const day = dateKey(analysis.date) || dateKey(expectedDate); if (!day) return;
+  const { mon } = monOf(day), now = new Date().toISOString();
+  const v = (await kvGet('wplan_chk_' + code)) || { weeks: {} }; v.weeks = v.weeks || {}; v.weeks[mon] = v.weeks[mon] || {};
+  analysis.planCheck.forEach((x) => { if (x && x.id) v.weeks[mon][String(x.id)] = { ok: !!x.done, at: now, src: 'planner', day }; });
+  v.upd = now; await kvSet('wplan_chk_' + code, v);
+}
+
 async function fetchImage(code, name) {
   const url = `${SB_URL}/storage/v1/object/public/photos/${encodeURIComponent(code)}/${encodeURIComponent(name)}`;
   const r = await fetch(url);
@@ -311,13 +382,17 @@ async function main() {
       if (!images.length) throw new Error('사진 없음');
       let lines = buildPrompt(expectedDate, cfg.practiceRate);
       try { lines = lines.concat(await codiPromptLines(code, expectedDate)); } catch (e) {}
+      lines = v3PromptEdit(lines, expectedDate);
+      try { lines = lines.concat(await planLines(code, expectedDate)); } catch (e) {}
       const analysis = await askClaude(images, lines.join('\n'));
       analysis.aiProvider = 'routine';
       analysis.analyzedAt = new Date().toISOString();
       analysis.promptVersion = 'v2.1';
+      v3Apply(analysis, expectedDate, cfg);
       if (analysis.dateNext === undefined || analysis.dateNext === null) analysis.dateNext = '';
       analysis.fileCount = set.files.length;
       try { await codiCoachSave(code, analysis, expectedDate); } catch (e) { log(code, set.id, '코디 기록 실패(채점은 유지):', e.message); }
+      try { await planCheckSave(code, analysis, expectedDate); } catch (e) { log(code, set.id, '주간계획 대조 저장 실패(채점은 유지):', e.message); }
       store.results[code + '_' + set.id] = { analysis, at: new Date().toISOString() };
       ok++;
       /* 한 세트마다 저장 — 중간에 끊겨도 한 것은 남는다 */
@@ -337,5 +412,5 @@ async function main() {
   if (fail && !ok) process.exit(1);
 }
 
-module.exports = { main, groupSets, buildPrompt, codiPromptLines, codiCoachSave };
+module.exports = { main, groupSets, buildPrompt, codiPromptLines, codiCoachSave, v3PromptEdit, v3Apply, planLines };
 if (require.main === module) main().catch((e) => { console.error('❌', e.message); process.exit(1); });
