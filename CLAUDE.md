@@ -108,3 +108,10 @@
   - 설계: `docs/blog_insta_automation_plan.md` · 도구 구조: `docs/blog_automation_overview.md`
   - ⚠️ 네이버 자동 "발행"은 하지 않는다 (저품질 처리 위험). 임시저장까지만, 발행은 원장님이
   - 🔄 2026-09-20 방향 전환: **자체 도구를 새로 만든다** → `docs/lumen_blog_tool_design.md`
+
+## 🏛️ 루멘이사회 (2026-09-29 채팅 프로젝트에서 이전)
+
+가상 이사회(박 실장·김 이사·최 팀장·독설가)가 운영 안건을 회의한다. **지침은 `board/CLAUDE.md` — 회의 전에 먼저 읽을 것.**
+- 명령어: `/board 안건`, `/student-review S03`, `/parent-feedback S01 S04`
+- 멤버 정의 `.claude/agents/`, 명령어 `.claude/commands/`, 결정 기록 `board/decisions/`
+- `board/students/`·`board/private/`·`board/reports/`는 git에 안 올라간다 (공개 저장소). 학생 기록 연동은 추후 Supabase로 연결 예정
