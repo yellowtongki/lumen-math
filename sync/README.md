@@ -11,8 +11,7 @@
 | `mathflat_login_test.js` | 로그인 테스트 (브라우저 방식). 클라우드 프록시 환경에서는 브라우저 연결이 차단되어 동작하지 않음 — 로컬 PC 참고용 |
 | `aha_ws_recent.js` | **학생별 「최근 학습지 10장」 발행** (아하리그 2차). 매쓰플랫 로그인 불필요 — 아래 설명 |
 | `mypaper_to_mathflat.js` | **수학비서 내 문제지 → 매쓰플랫 학습지** (번호 1:1 · 정답 주입 · 마이리스트 담기) — 아래 설명 |
-| `mathsecr_exam_collector.js` | **수학비서 「나만의 DB」 기출 수집기.** 문항별 단원 5단계·난이도·배점·답형식을 받아 `_debug/ms_exams_*.json` 으로 저장 (이미지는 받지 않는다) |
-| `exam_vs_gen.js` | **두 학교 기출 비교 리포트 생성기** — 아래 설명 |
+| `exam_*.js` (6개) | **수학비서 기출 분석 묶음** — 수집 · 출제경향 보고서 · 발표 PPT · 해설지 · 요약집 · **두 학교 비교 리포트**. 아래 「수학비서 기출 출제경향 분석」 절에 정리 |
 
 ## 수집기 사용법
 
@@ -201,6 +200,175 @@ MATHFLAT_ID=... MATHFLAT_PASSWORD=... node sync/mathflat_login_http.js
 3. Supabase `mf_answer_records` 테이블 설계·저장
 4. 앱 기능 구현 (복습 스케줄러 등)
 5. 매일 자동 실행 예약
+
+---
+
+# 수학비서 기출 출제경향 분석 (보고서 · 발표 PPT)
+
+수학비서(mathsecr.com) 「나만의 DB」에 담긴 학교별 기출 문항을 읽어
+**학교·학년·학기별 출제경향 보고서(HTML)와 수업 발표용 슬라이드(PPTX)** 를 만든다.
+
+## 스크립트
+
+| 파일 | 역할 |
+|------|------|
+| `mathsecr_exam_collector.js` | 기출 문항 메타데이터 수집 (단원·유형·정답·배점·난이도) |
+| `exam_image_fetch.js` | 문항 이미지 내려받기 (`_debug/exam_images/`) |
+| `exam_report_gen.js` | 출제경향 보고서 HTML 생성 (+ `--analysis` 로 분석 JSON 내보내기) |
+| `exam_ppt_gen.js` | 그 분석 JSON으로 발표용 PPT 생성 |
+| `exam_solution_gen.js` | 해설지(A4) 생성 — 커밋 금지(문항 이미지) |
+| `exam_booklet_gen.js` | 시험대비 요약집(A4) 생성 — 커밋 금지(문항 이미지) |
+| `exam_vs_gen.js` | **두 학교 기출 비교 리포트** — 맨 아래 절 참고. 이미지 없음 → 커밋 가능 |
+
+## 만드는 순서 (예: 옥길중 중1 2학기 중간)
+
+```bash
+export P="NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt"
+
+# 1) 문항 데이터 수집  (계정: MATHSECR_ID / MATHSECR_PASSWORD)
+$P node sync/mathsecr_exam_collector.js --school 옥길중
+
+# 2) 문항 이미지 내려받기 (PPT·전체판 보고서에 넣을 때만 필요)
+$P node sync/exam_image_fetch.js --data sync/_debug/ms_exams_옥길중.json
+
+# 3) 보고서 + 분석 JSON
+node sync/exam_report_gen.js --data sync/_debug/ms_exams_옥길중.json \
+  --school 옥길중 --grade 중1 --semester 2 --term 중간 \
+  --out docs/exam_reports/okgil_m1_2_mid.html \
+  --analysis sync/_debug/an_m1.json
+
+# 4) 발표용 PPT
+node sync/exam_ppt_gen.js --analysis sync/_debug/an_m1.json \
+  --out "옥길중_중1_2학기_중간고사_출제경향.pptx"
+```
+
+- `--embed` 를 붙이면 문항 이미지를 넣은 **전체판 보고서**가 나온다(파일이 커서 커밋하지 않음).
+  저장소에 올리는 것은 이미지 없는 **공개용**뿐이다.
+- PPT 생성에는 `pptxgenjs` 가 필요하다: `npm install pptxgenjs`
+
+### PPT 색상 테마
+
+| 옵션 | 배색 |
+|------|------|
+| `--theme brand` (기본) | 루멘수학 로고 색 — 붉은색(표지·강조) + 네이비(제목) + 골드(보조) |
+| `--theme navy` | 네이비·파랑 계열 |
+
+붉은색은 **표지·섹션·마무리 슬라이드의 바탕**과 **강조 요소**(번호 배지, ★ 우리 학교 출제,
+핵심 숫자)에만 쓰고, 문제를 읽는 본문 슬라이드는 흰 바탕 + 네이비 제목으로 둔다.
+붉은 바탕을 20장 넘게 깔면 눈이 피로하고, 수학 자료에서 빨강은 이미 "오답 · 난이도 상"의
+뜻으로 쓰이기 때문이다.
+
+## 우리 학교 기출이 1회분뿐일 때 ① — 과거 기출에서 같은 범위 문항 끌어오기 (권장)
+
+같은 범위를 어떤 해에는 2학기 중간에, 어떤 해에는 2학기 기말에 내는 학교가 많다.
+그러면 **다른 시험지에서 그 범위 문항만 골라내** 우리 학교 기출만으로 분석할 수 있다.
+
+```bash
+# 범위 문항이 들어 있는 시험지를 모두 모은다 (미처리 시험지도 --ids 로 가져올 수 있다)
+$P node sync/mathsecr_exam_collector.js --ids 493934,312483,387571,493933,566290
+mv sync/_debug/ms_exams_ids.json sync/_debug/ms_exams_okgil_m2_own.json
+$P node sync/exam_image_fetch.js --data sync/_debug/ms_exams_okgil_m2_own.json
+
+node sync/exam_report_gen.js --data sync/_debug/ms_exams_okgil_m2_own.json \
+  --school 옥길중 --grade 중2 --semester 2 --term 중간 \
+  --anchor 493934 --label term --exams 493934,312483,387571,493933,566290 \
+  --units "이등변삼각형과 직각삼각형,삼각형의 외심과 내심,평행사변형,여러가지 사각형,도형의 닮음,닮은 도형의 넓이와 부피" \
+  --scope "중2-2: 01 이등변삼각형과 직각삼각형 ~ 05 도형의 닮음 (삼각형의 닮음까지)" \
+  --out docs/exam_reports/okgil_m2_2_mid.html --analysis sync/_debug/an_m2own.json
+```
+
+| 옵션 | 뜻 |
+|------|-----|
+| `--exams` | 학년/학기/중간·기말이 제각각인 시험지를 id로 직접 고른다 |
+| `--units` | **시험 범위에 해당하는 단원의 문항만** 남긴다 (기말 시험지에서 범위 밖 문항을 걷어냄) |
+| `--label term` | 계열 이름을 "2025년 2학기 중간"처럼 표기 (같은 학교의 여러 시험을 구분) |
+| `--anchor` | 기준이 되는 시험지 (★ 표시) |
+
+비교 대상이 **모두 같은 학교**면 보고서·PPT 문구가 자동으로 "우리 학교 과거 기출" 표현으로 바뀐다.
+
+> ⚠️ **`--units` 는 수학비서의 범위 문구를 그대로 믿지 말고 직접 확인할 것.**
+> 옥길중 2025년 2학기 중간의 경우 DB의 범위 문구에는 "09 피타고라스 정리"가 들어 있었지만
+> 실제 시험지에는 피타고라스 문항이 **한 문제도 없었다**(실제 범위는 삼각형의 닮음까지).
+> 기준 시험지에 **실제로 출제된 단원을 먼저 세어 보고** 범위를 정하는 것이 안전하다.
+
+## 우리 학교 기출이 1회분뿐일 때 ② — 인근 학교 비교 모드
+
+현행 교육과정 기준으로 우리 학교 기출이 한 회분밖에 없으면 "매년 반복되는 유형"을 뽑을 수 없다.
+이때는 **같은 학군 인접 학교의 같은 시험**을 함께 넣고 `--anchor` 로 우리 학교 시험지를 기준(★)으로 지정한다.
+
+```bash
+# 시험지 id 를 직접 지정해 수집 (옥길중 2025 + 범박중 2025·2024 + 옥길새길중 2025)
+$P node sync/mathsecr_exam_collector.js --ids 493934,547267,406211,387594
+mv sync/_debug/ms_exams_ids.json sync/_debug/ms_exams_okgil_m2_2mid.json
+$P node sync/exam_image_fetch.js --data sync/_debug/ms_exams_okgil_m2_2mid.json
+
+node sync/exam_report_gen.js --data sync/_debug/ms_exams_okgil_m2_2mid.json \
+  --school 옥길중 --grade 중2 --semester 2 --term 중간 --anchor 493934 \
+  --scope "중2-2: 01 이등변삼각형과 직각삼각형 - 05 도형의 닮음, 09 피타고라스 정리" \
+  --out docs/exam_reports/okgil_m2_2_mid.html --analysis sync/_debug/an_m2.json
+```
+
+- 이 모드에서는 "2개 이상 시험지에 나온 유형"이 반복 유형이 되고, **★ 우리 학교 출제** 배지가 붙는다.
+- 인근 학교는 시험 범위가 조금씩 다를 수 있어 보고서·PPT에 그 안내 문구가 자동으로 들어간다.
+- `--ids` 로 모은 데이터에는 시험 범위 정보가 없으므로 `--scope` 로 직접 적어 준다.
+
+## 유형별 핵심 개념 (요점정리 ②)
+
+`exam_report_gen.js` 안의 `CONCEPTS` 에 세부유형 이름별 설명을 적어 둔다.
+
+- 문자열로 적으면 **"✎ 교재 확인 대기"**(검수 전 초안) 배지가 붙고,
+- `{ src: '개념 따라쓰기 1-1 · 반비례', text: '...' }` 형태로 바꾸면 **"📖 교재 근거 확인"** 배지가 붙는다.
+
+새 학년·단원을 분석할 때마다 여기에 유형을 추가하면 보고서와 PPT에 동시에 반영된다.
+
+---
+
+# 고난도·서술형 해설지 (exam_solution_gen.js)
+
+**수학비서 기출 DB에는 해설이 없다.** 문항 데이터의 `explanations` 는 `null`, `isExplanation` 은 `false`로
+정답·난이도·배점·예상 풀이시간만 제공한다. 그래서 해설은 다음 3단계로 만든다.
+
+1. **AI가 문항 이미지를 보고 단계별 풀이를 작성**
+2. **수학비서가 가진 공식 정답과 대조해 검증** — 불일치하면 `verify: "MISMATCH"` 로 표시
+3. **선생님 검수** 후 배포
+
+## 만드는 순서
+
+```bash
+# 1) 대상 시험지 수집 + 이미지
+$P node sync/mathsecr_exam_collector.js --ids 387569,493934,387500,387479
+mv sync/_debug/ms_exams_ids.json sync/_debug/ms_exams_solutions.json
+$P node sync/exam_image_fetch.js --data sync/_debug/ms_exams_solutions.json
+
+# 2) 난이도 상 이상 + 서술형 문항만 골라 sol/ 폴더에 이미지와 index.json 생성
+#    (스크립트 안의 TAG 표를 학교에 맞게 고쳐 쓴다)
+
+# 3) 문항별 풀이를 sol/solutions_<태그>.json 에 작성
+#    { "<태그>_<번호2자리>": { given, steps[], answer, trap, verify?, verifyNote? } }
+
+# 4) 인쇄용 해설지 생성
+node sync/exam_solution_gen.js --dir sync/_debug/sol --outdir ./해설지
+```
+
+`verify: "MISMATCH"` 를 넣으면 해설지 맨 위와 해당 문항에 **정답 불일치 경고**가 자동으로 표시된다.
+
+> 💡 **DB 데이터 자체의 오류도 함께 잡힌다.** 소사고 고2 2024 2학기 중간은 11·13번 배점이
+> `48점` 으로 들어와 총점이 186점으로 계산됐다. `4.8점` 의 오기이며, 바로잡으면 총점이 정확히
+> 100점이 된다. index.json 의 score 를 고쳐서 해설지를 만들면 된다.
+
+## 실제 검증 사례 (2026-08-28)
+
+옥길중 중1·중2 2025 2학기 중간, 소사고 고1 2025 · 고2 2024 2학기 중간의
+난이도 상 이상 + 서술형 **22문항** 풀이를 작성해 정답과 대조한 결과 **21문항 일치**.
+소사고 고1 19번(집합의 개수)만 DB 정답이 ④(33)인데 전수 조사 결과 **31(②)** 이 나와 불일치로 표시했다.
+
+이후 전 문항으로 확장한 결과 — **소사고 고1 2025(21문항)**: 20문항 일치, 19번만 불일치.
+**소사고 고2 2024(20문항)**: 20문항 전부 일치. **옥길중 중2 2025(20문항)**: 19문항 일치,
+6번은 주어진 조건(∠BOC=100°)만으로 답이 정해지지 않아 문제 표기 오류로 판단(∠AOC 였다면 정확히 맞음).
+
+## ⚠️ 배포 주의
+
+해설지에는 기출 문항 이미지가 들어간다. **학원 수강생 배포용으로만** 쓰고 저장소에 커밋하지 않는다.
 
 ---
 
