@@ -279,6 +279,42 @@ function v3Apply(analysis, expectedDate, cfg) {
   analysis.v3 = { tt, filled, life, rate, minH, minL }; analysis.promptVersion = 'v3.0';
   return analysis;
 }
+/* ── v19-66 짝: 날짜 필수 · 같은 쪽 다시 내기 = 그날 0점 (학원앱 plzero_teacher.js 와 같은 규칙 · 여기서는 글 비교만, 사진 지문은 학원앱) ──
+ *   10/1~10/3 경고만(zeroWarn) · 10/4부터 네 점수 칸 0(zeroDay). 제출 점수는 학원앱이 승인할 때 plUseManual 이 0으로 만든다. */
+const PLZ = { FROM: '2026-10-01', ZERO_FROM: '2026-10-04', DUP_DAYS: 14, TEXT_SIM: 0.8 };
+const plzSetDay = (id) => (/^\d{8}/.test(String(id || '')) ? (String(id).slice(0, 4) + '-' + String(id).slice(4, 6) + '-' + String(id).slice(6, 8)) : '');
+const plzAdd = (iso, n) => { const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const plzNorm = (arr) => (Array.isArray(arr) ? arr : []).map((l) => String(l || '').replace(/^\s*\[[^\]]*\]\s*/, '').replace(/[\s\[\]()·.,:\-~_\/|]/g, '').toLowerCase()).filter((x) => x.length >= 2);
+const plzGrams = (t) => { const g = {}; for (let i = 0; i < t.length - 1; i++) { const k = t.slice(i, i + 2); g[k] = (g[k] || 0) + 1; } return g; };
+function plzTextSim(a, b) {
+  const A = plzNorm(a).join('|'), B = plzNorm(b).join('|'); if (A.length < 8 || B.length < 8) return 0;
+  const ga = plzGrams(A), gb = plzGrams(B); let inter = 0, na = 0, nb = 0;
+  for (const k in ga) { na += ga[k]; if (gb[k]) inter += Math.min(ga[k], gb[k]); } for (const k in gb) nb += gb[k];
+  return (na + nb) ? (2 * inter / (na + nb)) : 0;
+}
+function plzCheck(st, analysis, setId) {
+  const sd = plzSetDay(setId); if (!sd || sd < PLZ.FROM || !analysis) return analysis;
+  const pd = dateKey(analysis.date);
+  let reason = !pd ? 'noDate' : ((pd === sd || pd === plzAdd(sd, -1)) ? '' : 'wrongDate'), dup = null;
+  if (!reason && analysis.dateGuess) reason = 'noDate';
+  if (!reason) {
+    const from = plzAdd(sd, -PLZ.DUP_DAYS);
+    ((st && st.lumen_planner_photos) || []).forEach((p) => {
+      if (!p || !p.setId || p.setId === setId || !p.analysis) return;
+      const d = plzSetDay(p.setId); if (!d || d < from || d >= sd) return;
+      const sim = plzTextSim(analysis.tasksTranscript, p.analysis.tasksTranscript);
+      if (sim >= PLZ.TEXT_SIM && (!dup || d > dup.day)) dup = { setId: p.setId, day: d, sim: Math.round(sim * 100), hd: 99 };
+    });
+    if (dup) reason = 'dup';
+  }
+  if (reason === 'noDate' && !pd) { analysis.date = sd.replace(/-/g, '.'); analysis.dateGuess = true; }
+  analysis.zeroReason = reason || ''; analysis.zeroDup = dup; analysis.zeroWarn = false; analysis.zeroDay = false;
+  if (reason) {
+    if (sd < PLZ.ZERO_FROM) analysis.zeroWarn = true;
+    else { if (!analysis.zeroBak) analysis.zeroBak = { s: analysis.studyScore, p: analysis.practiceScore, sp: analysis.specificScore, f: analysis.feedbackScore }; analysis.studyScore = '0'; analysis.practiceScore = '0'; analysis.specificScore = '0'; analysis.feedbackScore = '0'; analysis.zeroDay = true; }
+  }
+  return analysis;
+}
 /* 앱 주간계획(wplan_<코드>) 대조 줄 · 결과 저장 (wplan_chk_<코드>) */
 const wpCache = {};
 const monOf = (day) => { const d = new Date(day + 'T00:00:00Z'); const w = (d.getUTCDay() + 6) % 7; d.setUTCDate(d.getUTCDate() - w); return { mon: d.toISOString().slice(0, 10), dow: w }; };
@@ -392,6 +428,7 @@ async function main() {
       analysis.analyzedAt = new Date().toISOString();
       analysis.promptVersion = 'v2.1';
       v3Apply(analysis, expectedDate, cfg);
+      try { plzCheck((db || []).find((x) => x && x.lumen_rec_code === code), analysis, set.id); } catch (e) { log(code, set.id, '날짜·중복 검사 실패(채점은 유지):', e.message); }   /* v19-66 짝 */
       if (analysis.dateNext === undefined || analysis.dateNext === null) analysis.dateNext = '';
       analysis.fileCount = set.files.length;
       try { await codiCoachSave(code, analysis, expectedDate); } catch (e) { log(code, set.id, '코디 기록 실패(채점은 유지):', e.message); }
@@ -415,5 +452,5 @@ async function main() {
   if (fail && !ok) process.exit(1);
 }
 
-module.exports = { main, groupSets, buildPrompt, codiPromptLines, codiCoachSave, v3PromptEdit, v3Apply, planLines };
+module.exports = { main, groupSets, buildPrompt, codiPromptLines, codiCoachSave, v3PromptEdit, v3Apply, planLines, plzCheck, plzTextSim };
 if (require.main === module) main().catch((e) => { console.error('❌', e.message); process.exit(1); });
