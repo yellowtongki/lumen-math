@@ -121,6 +121,16 @@ const TOP_SEATS = [
 ];
 
 /* ── Supabase 도우미 ──────────────────────────────────────────── */
+/* v19-72: nick_<코드> 전부 → { 코드: 별명 } */
+async function nickMap() {
+  const out = {};
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=like.nick_%25&select=key,value`, { headers: sbH() });
+    if (!r.ok) return out;
+    (await r.json()).forEach((row) => { let v = row.value; if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } } if (v && v.nick) out[String(row.key).slice(5)] = String(v.nick).trim(); });
+  } catch (e) {}
+  return out;
+}
 async function kvGet(key) {
   try {
     const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.${key}&select=value`, { headers: sbH() });
@@ -180,6 +190,7 @@ const kstEndUtc = (d) => new Date(new Date(d + 'T00:00:00Z').getTime() + 8640000
 async function loadStudents() {
   let arr = await kvGet('or_studentdb');
   if (!Array.isArray(arr)) arr = [];
+  const nicks = await nickMap();   /* v19-72: 별명 */
   const byName = {}, dup = {};
   const info = {};   // code → {name, nm, school, grade, band}
   arr.forEach((s) => {
@@ -190,7 +201,7 @@ async function loadStudents() {
     const band = /고등/.test(g) ? 'high' : (/중학/.test(g) ? 'mid' : 'elem');
     const num = (g.match(/(\d)\s*학년/) || [])[1] || '';
     info[String(s.lumen_rec_code)] = {
-      nm: nm.slice(0, 1) + '○○',
+      nm: (nicks[String(s.lumen_rec_code)] || String(s.nick || '').trim() || '○○○'),   /* v19-72: 별명 (nick_<코드> → 등록부 st.nick → ○○○) */
       sch: String(s.school || '').replace(/(중|고등)학교$/, '$1').replace(/초등학교$/, '초'),
       gr: (band === 'high' ? '고' : band === 'mid' ? '중' : '초') + num,
       band, gnum: num,
