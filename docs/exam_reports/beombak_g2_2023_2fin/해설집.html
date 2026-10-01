@@ -1,0 +1,833 @@
+<meta charset="utf-8">
+<title>범박고 고2 2학기기말 2023 해설집</title>
+<meta name="haesol-code" content="beombak_g2_2023_2fin">
+<meta name="haesol-title" content="범박고등학교 2학년 2023학년도 2학기 기말 · 수학II">
+<meta name="haesol-school" content="범박고등학교">
+<meta name="haesol-grade" content="고2">
+<meta name="haesol-term" content="2023 · 2학기 기말">
+<meta name="haesol-subject" content="수학II (2015개정)">
+<meta name="haesol-count" content="22">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global', scale: 1.02 },
+  options: { menuOptions: { settings: { inTabOrder: false } } }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
+
+<style>
+:root{
+  --ground:#E7E9EE; --paper:#FFFFFF;
+  --ink:#18222E; --ink-soft:#4A5666; --ink-faint:#8A94A2;
+  --line:#DBE0E9; --line-soft:#EDF0F5;
+  --indigo:#274777; --indigo-ink:#1E3A63; --indigo-soft:#E9EFF8;
+  --amber:#9C6612; --amber-soft:#F6EEDC;
+  --green:#2C7A54; --green-soft:#E1EFE8;
+  --red:#AF413A; --red-soft:#F6E4E1;
+  --shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px rgba(24,34,46,.09);
+  --shadow-sm:0 1px 2px rgba(24,34,46,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C121A; --paper:#141C26;
+    --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+    --line:#28333F; --line-soft:#1D2732;
+    --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+    --amber:#D9A64A; --amber-soft:#2C2515;
+    --green:#66BB8E; --green-soft:#16271E;
+    --red:#E0776D; --red-soft:#2B1A18;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C121A; --paper:#141C26;
+  --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+  --line:#28333F; --line-soft:#1D2732;
+  --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+  --amber:#D9A64A; --amber-soft:#2C2515;
+  --green:#66BB8E; --green-soft:#16271E;
+  --red:#E0776D; --red-soft:#2B1A18;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Noto Sans KR", system-ui, sans-serif;
+  font-size:16px; line-height:1.75; letter-spacing:-.003em;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 18px 96px}
+
+/* ── 상단 헤더 ── */
+.masthead{padding:34px 0 20px}
+.eyebrow{
+  font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--indigo); margin:0 0 10px;
+}
+.masthead h1{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:clamp(28px,6vw,40px);
+  line-height:1.18; margin:0; letter-spacing:-.01em; text-wrap:balance; color:var(--ink);
+}
+.masthead .sub{
+  color:var(--ink-soft); font-size:14.5px; margin-top:12px; font-weight:500;
+  display:flex; flex-wrap:wrap; gap:7px 14px; align-items:center;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--paper); border:1px solid var(--line); border-radius:99px;
+  padding:4px 12px; font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  box-shadow:var(--shadow-sm);
+}
+.chip b{color:var(--ink)}
+.chip.hard{color:var(--red); border-color:color-mix(in srgb, var(--red) 34%, var(--line))}
+
+/* ── 문제 카드 ── */
+.paper{
+  background:var(--paper); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); padding:26px 26px 24px; margin-bottom:22px;
+}
+.q-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px}
+.q-no{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:30px; color:var(--indigo);
+  line-height:1;
+}
+.q-tag{
+  font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--ink-faint);
+  border-left:1px solid var(--line); padding-left:12px;
+}
+.q-body{font-size:17px; line-height:1.85; color:var(--ink)}
+.cond{
+  margin:16px 0 4px; border:1px solid var(--line); border-radius:12px;
+  background:color-mix(in srgb, var(--indigo-soft) 55%, var(--paper));
+  padding:14px 18px;
+}
+.cond .row{display:flex; gap:12px; align-items:baseline}
+.cond .row+.row{margin-top:6px}
+.cond .lab{font-weight:700; color:var(--indigo-ink); flex-shrink:0}
+.choices{
+  margin-top:18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:8px;
+}
+.choice{
+  border:1px solid var(--line); border-radius:10px; padding:9px 14px;
+  font-size:15.5px; color:var(--ink-soft); display:flex; gap:9px; align-items:center;
+}
+.choice .n{font-weight:700; color:var(--ink-faint)}
+.choice.ans{
+  border-color:var(--green); background:var(--green-soft); color:var(--ink);
+  font-weight:700; box-shadow:0 0 0 1px var(--green) inset;
+}
+.choice.ans .n{color:var(--green)}
+.choice.ans::after{content:"정답"; margin-left:auto; font-size:11px; font-weight:800;
+  letter-spacing:.06em; color:var(--green)}
+
+/* ── 급소 배너 ── */
+.insight{
+  display:flex; gap:13px; align-items:flex-start;
+  background:var(--amber-soft); border:1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+  border-radius:14px; padding:16px 18px; margin-bottom:30px;
+}
+.insight .ic{font-size:20px; line-height:1.4; flex-shrink:0}
+.insight p{margin:0; font-size:14.5px; color:var(--ink); line-height:1.7}
+.insight b{color:var(--amber); font-weight:800}
+
+/* ── 풀이 전환 네비 ── */
+.nav{
+  position:sticky; top:0; z-index:20; margin:0 -18px 26px; padding:10px 18px;
+  background:color-mix(in srgb, var(--ground) 86%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+}
+.nav::-webkit-scrollbar{display:none}
+.nav a{
+  flex:0 0 auto; text-decoration:none; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink-soft); border-radius:99px;
+  padding:7px 15px; font-size:13px; font-weight:700; white-space:nowrap;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.nav a .k{color:var(--indigo); font-family:"Hahmlet",serif; font-weight:800; margin-right:5px}
+.nav a:hover{border-color:var(--indigo); color:var(--ink)}
+.nav a:focus-visible{outline:2px solid var(--indigo); outline-offset:2px}
+
+/* ── 풀이 섹션 ── */
+.sol{margin-bottom:40px; scroll-margin-top:64px}
+.sol-head{display:flex; align-items:center; gap:14px; margin-bottom:6px}
+.sol-k{
+  font-family:"Hahmlet",serif; font-weight:800; font-size:26px;
+  width:46px; height:46px; flex-shrink:0; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--indigo); color:#fff;
+}
+:root[data-theme="dark"] .sol-k, :root:not([data-theme="light"]) .sol-k{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .sol-k{color:#fff}}
+.sol-title{font-family:"Hahmlet",serif; font-weight:700; font-size:22px; color:var(--ink); line-height:1.2}
+.sol-kind{font-size:12.5px; font-weight:700; color:var(--ink-faint); margin-top:3px; letter-spacing:.01em}
+.sol-body{
+  background:var(--paper); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); padding:8px 24px 22px; margin-top:14px;
+}
+
+.step{padding:18px 0; border-bottom:1px solid var(--line-soft)}
+.step:last-child{border-bottom:none}
+.step-lab{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:8px;
+  font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--indigo);
+}
+.step-lab .dot{width:6px; height:6px; border-radius:50%; background:var(--indigo)}
+.step-lab.amber{color:var(--amber)} .step-lab.amber .dot{background:var(--amber)}
+.step-lab.green{color:var(--green)} .step-lab.green .dot{background:var(--green)}
+.step h4{margin:0 0 6px; font-size:16px; font-weight:700; color:var(--ink)}
+.step p{margin:8px 0; font-size:15px; color:var(--ink); line-height:1.8}
+.step .aside{color:var(--ink-soft); font-size:14px}
+
+/* 수식 디스플레이 줄 */
+.mathrow{overflow-x:auto; overflow-y:hidden; padding:6px 2px; margin:6px 0; scrollbar-width:thin}
+mjx-container[display="true"]{margin:0 !important}
+
+/* 함정·실수 박스 */
+.warn{
+  border:1px solid color-mix(in srgb, var(--amber) 34%, var(--line));
+  background:var(--amber-soft); border-radius:12px; padding:14px 16px; margin:12px 0;
+}
+.warn .t{font-weight:800; color:var(--amber); font-size:14px; margin-bottom:5px; display:flex; gap:7px; align-items:center}
+.warn p{margin:4px 0; font-size:14px; color:var(--ink)}
+.miss{
+  border-left:3px solid var(--red); background:var(--red-soft); border-radius:0 10px 10px 0;
+  padding:11px 15px; margin:11px 0; font-size:14px; color:var(--ink);
+}
+.miss b{color:var(--red)}
+
+/* 결과 배지 */
+.result{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--green-soft); border:1px solid var(--green); border-radius:13px;
+  padding:15px 20px; margin-top:16px;
+}
+.result .lab{font-size:13px; font-weight:800; letter-spacing:.04em; color:var(--green)}
+.result .val{font-size:20px}
+
+/* 그림풀이 */
+figure{margin:14px 0 6px; text-align:center}
+.fig-frame > svg{max-width:100%; height:auto; display:block; margin:0 auto}
+figcaption mjx-container svg, .fig-tag mjx-container svg{display:inline-block; margin:0}
+.fig-tag mjx-container{vertical-align:-0.1em}
+figcaption{
+  font-size:12.5px; color:var(--ink-faint); font-weight:600; margin-top:10px;
+  letter-spacing:.01em;
+}
+.fig-frame{
+  border:1px dashed var(--line); border-radius:14px; padding:20px 16px 14px;
+  background:color-mix(in srgb, var(--line-soft) 45%, var(--paper));
+}
+.fig-tag{
+  display:inline-block; font-size:11px; font-weight:800; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;
+}
+
+/* 검산 표 */
+.calc{width:100%; border-collapse:collapse; margin:10px 0 2px; font-variant-numeric:tabular-nums}
+.calc td,.calc th{border-bottom:1px solid var(--line-soft); padding:8px 10px; text-align:left; font-size:15px}
+.calc th{color:var(--ink-faint); font-weight:700; font-size:12.5px; letter-spacing:.03em}
+.calc tr:last-child td{border-bottom:none}
+.calc .hi{background:var(--indigo-soft); font-weight:700}
+
+footer{
+  text-align:center; color:var(--ink-faint); font-size:12.5px;
+  border-top:1px solid var(--line); padding-top:22px; margin-top:16px; line-height:1.9;
+}
+
+@media (max-width:520px){
+  .sol-body{padding:6px 16px 18px}
+  .paper{padding:20px 18px}
+  .q-body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+
+/* ── 해설집 추가 ── */
+.idx{display:grid;grid-template-columns:repeat(auto-fit,minmax(46px,1fr));gap:7px;margin:0 0 8px}
+.idx a{text-decoration:none;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);
+  border-radius:10px;padding:9px 0;text-align:center;font-weight:800;font-size:14px;font-family:"Hahmlet",serif;
+  transition:border-color .15s,color .15s}
+.idx a:hover{border-color:var(--indigo);color:var(--indigo)}
+.idx a .kd{display:block;font-size:9px;font-weight:700;letter-spacing:.04em;margin-top:2px;font-family:"Noto Sans KR"}
+.idx a.hard{border-color:color-mix(in srgb,var(--red) 30%,var(--line))}
+.idx a.hard .kd{color:var(--red)}
+.idx a:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+.pnum{font-family:"Hahmlet",serif;font-weight:800;font-size:24px;color:var(--indigo);line-height:1}
+.pstate{font-size:16px;line-height:1.85;color:var(--ink);margin:10px 0 0}
+.pstate .cond{margin:14px 0 2px}
+.dbadge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;border-radius:99px;
+  padding:3px 10px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper)}
+.dbadge.k{color:var(--red);border-color:color-mix(in srgb,var(--red) 34%,var(--line))}
+.dbadge.red{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,var(--line));background:var(--red-soft)}
+/* 킬러 문항 강조 */
+.sol.killer .sol-body{border-color:color-mix(in srgb,var(--red) 34%,var(--line));
+  box-shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px color-mix(in srgb,var(--red) 16%,transparent)}
+.sol-k.red{background:var(--red)}
+.tag-essay{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;vertical-align:middle;
+  color:#fff;background:var(--amber);border-radius:6px;padding:2px 8px;margin-left:8px}
+:root[data-theme="dark"] .tag-essay,:root:not([data-theme="light"]) .tag-essay{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .tag-essay{color:#fff}}
+
+/* ── 좁은 화면 안전장치: 긴 수식·표가 가로로 넘치지 않게 ── */
+.calc{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch}
+.cond .row>span:last-child{min-width:0; overflow-x:auto; padding-bottom:2px}
+.result .val{min-width:0; overflow-x:auto; padding-bottom:2px}
+/* 문단 안에 들어간 긴 인라인 수식도 잘리지 않고 가로로 스크롤되게 (390px 대응) */
+.step p, .miss, .pstate{overflow-x:auto; overflow-y:hidden}
+
+/* 그림 아래 설명 문장 */
+.fig-cap{font-size:13px; line-height:1.65; color:var(--ink-soft); text-align:center; margin-top:10px}
+.fig-cap b{color:var(--ink)}
+.fig-cap mjx-container svg{display:inline-block; margin:0}
+.figs2{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; align-items:end}
+.figs2 > div{text-align:center}
+.figs2 .sub{font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-top:4px}
+</style>
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">루멘수학 · 기출 정밀해설집</p>
+    <h1>범박고 2학년 2학기 기말 · 2023 수학II 해설</h1>
+    <div class="sub">
+      <span class="chip">범박고등학교 2학년</span>
+      <span class="chip">2023 · 2학기 기말</span>
+      <span class="chip"><b>22문항</b></span>
+      <span class="chip">미분의 활용 · 적분</span>
+    </div>
+  </header>
+  <div class="insight">
+    <span class="ic">📘</span>
+    <p>스물두 문항을 <b>왜 그렇게 푸는지</b>까지 짚는 첨삭 해설로 담았습니다. 아래 번호를 누르면 해당 문제로 바로 이동합니다.
+      <b style="color:var(--red)">빨간 번호</b>는 등급을 가르는 문항이에요.</p>
+  </div>
+  <div class="insight" style="margin:0 0 18px">
+    <span class="ic">🗺️</span>
+    <p><b>범위</b> — 미분의 활용(방정식·부등식·속도·변화율), 부정적분, 정적분, 넓이, 정적분으로 정의된 함수.
+      지금 고2가 배우는 <b>미적분1과 내용이 같아</b> 전 문항이 기말 대비에 그대로 쓰입니다.<br>
+      <b>등급을 가르는 곳</b> — 17번(극솟점이 \(x\)축에 닿는 경계), 18번(연결점의 연속·미분가능), 20번(\(x|g(x)|\)의 미분가능성), 22번(서술형).<br>
+      22문항 모두 직접 풀어 기존 정답표와 대조했고, <b>전부 일치</b>했습니다. 14번은 문제 식에 대한 메모를 함께 적었습니다.</p>
+  </div>
+  <nav class="idx" aria-label="문제 바로가기">
+    <a href="#q1">1</a><a href="#q2">2</a><a href="#q3">3</a><a href="#q4">4</a><a href="#q5">5</a><a href="#q6">6</a>
+    <a href="#q7">7</a><a href="#q8">8</a><a href="#q9">9</a><a href="#q10">10</a><a href="#q11">11</a><a href="#q12">12</a>
+    <a href="#q13">13</a><a href="#q14">14</a><a href="#q15">15</a><a href="#q16">16</a>
+    <a href="#q17" class="hard">17<span class="kd">킬러</span></a>
+    <a href="#q18" class="hard">18<span class="kd">킬러</span></a>
+    <a href="#q19">19</a>
+    <a href="#q20" class="hard">20<span class="kd">킬러</span></a>
+    <a href="#q21" class="hard">21<span class="kd">서술형</span></a>
+    <a href="#q22" class="hard">22<span class="kd">서술형</span></a>
+  </nav>
+  <section class="sol" id="q1">
+    <div class="sol-head">
+      <span class="sol-k">1</span>
+      <div>
+        <div class="sol-title">도함수 → 적분 → <b>\(f(1)\)로 상수</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 3 · 3.6점</span> 부정적분 · 도함수에서 원래 함수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">다항함수 \(f(x)\)의 도함수가 \(f'(x)=3x^2+6x+1\)이고, \(f(1)=4\)일 때, \(f(-1)\)의 값은?<br>① \(-1\) ② \(0\) ③ \(1\) ④ \(2\) ⑤ \(3\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(f=x^3+3x^2+x+C\), \(f(1)=5+C=4\Rightarrow C=-1\). \(f(-1)=-1+3-1-1=0\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(0\ \Rightarrow\) ②</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(C\)를 \(f(0)\)으로 착각해 \(4\)로 두는 것 — 주어진 것은 \(f(1)\)이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q2">
+    <div class="sol-head">
+      <span class="sol-k">2</span>
+      <div>
+        <div class="sol-title">서로 다른 두 실근 = 수평선이 <b>극값에 접할 때</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 3.7점</span> 방정식과 미분 · 삼차방정식</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">방정식 \(2x^3-6x-a=0\)이 서로 다른 두 실근만을 갖도록 하는 상수 \(a\)값의 합은?<br>① \(-4\) ② \(-1\) ③ \(0\) ④ \(2\) ⑤ \(4\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(h=2x^3-6x\): 극댓값 \(h(-1)=4\), 극솟값 \(h(1)=-4\). 두 실근 ⟺ \(a=\pm4\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(4+(-4)=0\ \Rightarrow\) ③</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 극댓값 하나만 쓰는 것. 수평선이 <b>위·아래 극값</b> 어느 쪽에 접해도 두 근이 된다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q3">
+    <div class="sol-head">
+      <span class="sol-k">3</span>
+      <div>
+        <div class="sol-title">방향이 바뀐다 = 속도의 <b>부호가 바뀐다</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 3 · 3.8점</span> 속도와 가속도 · 운동 방향</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">수직선 위를 움직이는 점 P의 시각 \(t\)에서 위치가 \(x(t)=t^3-6t^2+9t\)일 때, 점 P의 운동 방향이 처음으로 바뀌는 시각은?<br>① \(1\) ② \(2\) ③ \(3\) ④ \(4\) ⑤ \(5\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(v=3(t-1)(t-3)\): \(t=1\)에서 \(+\to-\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(1\ \Rightarrow\) ①</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 위치가 \(0\)이 되는 \(t=3\)을 고르는 것 — 그것은 원점을 지나는 순간이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q4">
+    <div class="sol-head">
+      <span class="sol-k">4</span>
+      <div>
+        <div class="sol-title">만난다 = <b>위치가 같다</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 3.9점</span> 속도와 가속도 · 위치가 같은 순간</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 점 P, Q의 시각 \(t\)에서의 위치가 \(x_{\mathrm P}=t^3-3t^2+t\), \(x_{\mathrm Q}=2t^2-5t\)이다. 동시에 원점을 출발한 후 처음으로 만나는 순간의 두 점 P, Q의 가속도의 합은?<br>① \(-6\) ② \(-3\) ③ \(4\) ④ \(6\) ⑤ \(10\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(t^3-5t^2+6t=0\Rightarrow t(t-2)(t-3)=0\): 처음 만나는 \(t=2\). 가속도 \(6t-6=6\), \(4\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(10\ \Rightarrow\) ⑤</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(t=0\)(출발 순간)을 「처음 만남」으로 세는 것.</div>
+    </div>
+  </section>
+  <section class="sol" id="q5">
+    <div class="sol-head">
+      <span class="sol-k">5</span>
+      <div>
+        <div class="sol-title">\(\int f+\int f^{-1}\) = <b>직사각형 넓이의 차</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 정적분과 넓이 · 역함수의 정적분</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(f(x)=x^3\)의 역함수를 \(g(x)\)라고 할 때, \(\displaystyle\int_1^2f(x)\,dx+\int_1^8g(x)\,dx\)의 값은?<br>① \(6\) ② \(7\) ③ \(10\) ④ \(15\) ⑤ \(16\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(f(1)=1,\ f(2)=8\). 두 넓이를 합치면 \(2\times8-1\times1=15\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(15\ \Rightarrow\) ④</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(g(x)=\sqrt[3]x\)를 적분하려는 것 — 수학II 범위 밖이다. 그림으로 합친다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q6">
+    <div class="sol-head">
+      <span class="sol-k">6</span>
+      <div>
+        <div class="sol-title">넓이의 변화율 = <b>\(\frac{dA}{ds}\times\frac{ds}{dt}\)</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 5 · 4.1점</span> 변화율 · 넓이</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">한 변의 길이가 \(3\)인 정사각형과 그 정사각형에 내접하는 원으로 이루어진 도형이 있다. 정사각형의 각 변의 길이가 매초 \(3\)씩 늘어남에 따라 원도 정사각형에 내접하면서 반지름의 길이가 늘어난다. 정사각형의 한 변의 길이가 \(15\)가 되는 순간, 내접하는 원의 넓이의 시간에 대한 변화율은?<br>① \(\frac32\pi\) ② \(5\pi\) ③ \(\frac{15}2\pi\) ④ \(15\pi\) ⑤ \(\frac{45}2\pi\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>변 \(s=3+3t\), 원의 넓이 \(A=\pi\frac{s^2}{4}\). \(\frac{dA}{dt}=\frac{\pi s}{2}\cdot3\), \(s=15\)이면 \(\frac{45}{2}\pi\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">⑤</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 반지름을 변의 길이 \(s\)로 두는 것 — 내접원의 반지름은 <b>\(\frac s2\)</b>.</div>
+    </div>
+  </section>
+  <section class="sol" id="q7">
+    <div class="sol-head">
+      <span class="sol-k">7</span>
+      <div>
+        <div class="sol-title">구간별 적분 → <b>\(f(-1)=5\)</b>로 두 상수</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.2점</span> 부정적분 · 구간 함수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">실수 전체에서 미분가능한 함수 \(f(x)\)에 대하여 \(f'(x)=\begin{cases}2x+3 & (x\ge-1)\\ 1 & (x\lt-1)\end{cases}\)이고, \(f(-1)=5\)일 때 \(\displaystyle\int_{-2}^{2}f(x)\,dx\)의 값은?<br>① \(23\) ② \(27\) ③ \(33\) ④ \(37\) ⑤ \(41\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <div class="cond"><div class="row"><span class="lab">\(x\ge-1\)</span><span>\(f=x^2+3x+7\)</span></div><div class="row"><span class="lab">\(x\lt-1\)</span><span>\(f=x+6\)</span></div></div>
+        <p>\(\int_{-2}^{-1}(x+6)=\frac92\), \(\int_{-1}^{2}(x^2+3x+7)=\frac{57}2\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(33\ \Rightarrow\) ③</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 두 조각에 같은 적분상수를 쓰는 것. 각 조각은 <b>\(f(-1)=5\)</b>에 따로 맞춘다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q8">
+    <div class="sol-head">
+      <span class="sol-k">8</span>
+      <div>
+        <div class="sol-title">\(\lim\frac{S(h)}{h}\) = 폭 \(2h\)의 띠 → <b>\(2f(1)\)</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.3점</span> 넓이로 정의된 함수 · 극한</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">곡선 \(y=3x^2+1\)과 \(x\)축 및 두 직선 \(x=1-h\), \(x=1+h\ (h\gt0)\)으로 둘러싸인 도형의 넓이를 \(S(h)\)라고 할 때, \(\displaystyle\lim_{h\to0+}\frac{S(h)}h\)의 값은?<br>① \(4\) ② \(5\) ③ \(8\) ④ \(10\) ⑤ \(13\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(S(h)=F(1+h)-F(1-h)\) → \(\frac{S(h)}h\to2F^{\prime}(1)=2f(1)=8\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(8\ \Rightarrow\) ③</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 폭이 \(2h\)인 것을 놓쳐 \(f(1)=4\)(①)를 답하는 것.</div>
+    </div>
+  </section>
+  <section class="sol" id="q9">
+    <div class="sol-head">
+      <span class="sol-k">9</span>
+      <div>
+        <div class="sol-title">높이 = 속도의 <b>넓이</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.4점</span> 속도와 거리 · 실생활</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">지면에 정지해 있던 열기구가 지면과 수직 방향으로 출발한 지 \(t\)분 후의 속도가 \(v(t)=t\ (0\le t\le20)\), \(60-2t\ (20\le t\le30)\)일 때, 출발한 지 \(30\)분 후의 높이는?<br>① \(150\) ② \(200\) ③ \(250\) ④ \(300\) ⑤ \(350\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(\int_0^{20}t\,dt=200\), \(\int_{20}^{30}(60-2t)\,dt=100\). 속도가 \(30\)분까지 \(0\) 이상이라 그대로 더한다.</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(300\ \Rightarrow\) ④</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(t=20\)에서 속도가 \(20\)인지 확인하지 않는 것 — 두 식이 이어지는지(연속) 보는 습관.</div>
+    </div>
+  </section>
+  <section class="sol" id="q10">
+    <div class="sol-head">
+      <span class="sol-k">10</span>
+      <div>
+        <div class="sol-title">\(f^{\prime}\)의 넓이 = <b>\(f\)의 변화량</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.5점</span> 정적분과 넓이 · 기하적 의미</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(f(x)\)의 도함수 \(f'(x)\)의 그래프와 \(x\)축으로 둘러싸인 두 부분의 넓이를 각각 \(A,\ B\)라고 하면 \(A=4,\ B=9\)이다(\(A\)는 \(-2\)~\(0\)에서 위, \(B\)는 \(0\)~\(3\)에서 아래). \(f(3)=6\)일 때, \(f(-2)\)의 값은?<br>① \(-9\) ② \(-7\) ③ \(11\) ④ \(15\) ⑤ \(17\)</div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 320 286" width="100%" style="max-width:300px" role="img" aria-label="y=f′(x)의 모양"><line x1="26.0" y1="135.9" x2="294.0" y2="135.9" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="300.0,135.9 292.0,131.9 292.0,139.9" fill="var(--ink-soft)"/><line x1="135.9" y1="259.6" x2="135.9" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="135.9,20.0 131.9,28.0 139.9,28.0" fill="var(--ink-soft)"/><text x="298.0" y="151.9" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="144.9" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="125.9" y="150.9" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polygon points="67.2,135.9 68.1,133.4 68.9,131.0 69.8,128.6 70.7,126.4 71.5,124.2 72.4,122.1 73.2,120.1 74.1,118.1 75.0,116.3 75.8,114.5 76.7,112.8 77.5,111.2 78.4,109.7 79.3,108.3 80.1,106.9 81.0,105.6 81.8,104.4 82.7,103.2 83.6,102.2 84.4,101.2 85.3,100.2 86.1,99.4 87.0,98.6 87.8,97.9 88.7,97.2 89.6,96.6 90.4,96.1 91.3,95.6 92.1,95.2 93.0,94.9 93.9,94.6 94.7,94.4 95.6,94.2 96.4,94.1 97.3,94.1 98.2,94.1 99.0,94.2 99.9,94.3 100.7,94.5 101.6,94.7 102.4,95.0 103.3,95.3 104.2,95.7 105.0,96.2 105.9,96.6 106.7,97.2 107.6,97.7 108.5,98.3 109.3,99.0 110.2,99.7 111.0,100.5 111.9,101.2 112.8,102.1 113.6,102.9 114.5,103.8 115.3,104.8 116.2,105.8 117.1,106.8 117.9,107.8 118.8,108.9 119.6,110.0 120.5,111.1 121.3,112.3 122.2,113.5 123.1,114.7 123.9,116.0 124.8,117.3 125.6,118.6 126.5,119.9 127.4,121.3 128.2,122.7 129.1,124.1 129.9,125.5 130.8,126.9 131.7,128.4 132.5,129.9 133.4,131.4 134.2,132.9 135.1,134.4 135.9,135.9 135.9,135.9 135.1,135.9 134.2,135.9 133.4,135.9 132.5,135.9 131.7,135.9 130.8,135.9 129.9,135.9 129.1,135.9 128.2,135.9 127.4,135.9 126.5,135.9 125.6,135.9 124.8,135.9 123.9,135.9 123.1,135.9 122.2,135.9 121.3,135.9 120.5,135.9 119.6,135.9 118.8,135.9 117.9,135.9 117.1,135.9 116.2,135.9 115.3,135.9 114.5,135.9 113.6,135.9 112.8,135.9 111.9,135.9 111.0,135.9 110.2,135.9 109.3,135.9 108.5,135.9 107.6,135.9 106.7,135.9 105.9,135.9 105.0,135.9 104.2,135.9 103.3,135.9 102.4,135.9 101.6,135.9 100.7,135.9 99.9,135.9 99.0,135.9 98.2,135.9 97.3,135.9 96.4,135.9 95.6,135.9 94.7,135.9 93.9,135.9 93.0,135.9 92.1,135.9 91.3,135.9 90.4,135.9 89.6,135.9 88.7,135.9 87.8,135.9 87.0,135.9 86.1,135.9 85.3,135.9 84.4,135.9 83.6,135.9 82.7,135.9 81.8,135.9 81.0,135.9 80.1,135.9 79.3,135.9 78.4,135.9 77.5,135.9 76.7,135.9 75.8,135.9 75.0,135.9 74.1,135.9 73.2,135.9 72.4,135.9 71.5,135.9 70.7,135.9 69.8,135.9 68.9,135.9 68.1,135.9 67.2,135.9" fill="var(--indigo-soft)" fill-opacity="1" stroke="none" stroke-width="0"/><polygon points="135.9,135.9 137.2,135.9 138.5,135.9 139.8,135.9 141.1,135.9 142.4,135.9 143.7,135.9 145.0,135.9 146.3,135.9 147.5,135.9 148.8,135.9 150.1,135.9 151.4,135.9 152.7,135.9 154.0,135.9 155.3,135.9 156.6,135.9 157.9,135.9 159.1,135.9 160.4,135.9 161.7,135.9 163.0,135.9 164.3,135.9 165.6,135.9 166.9,135.9 168.2,135.9 169.4,135.9 170.7,135.9 172.0,135.9 173.3,135.9 174.6,135.9 175.9,135.9 177.2,135.9 178.5,135.9 179.8,135.9 181.0,135.9 182.3,135.9 183.6,135.9 184.9,135.9 186.2,135.9 187.5,135.9 188.8,135.9 190.1,135.9 191.4,135.9 192.6,135.9 193.9,135.9 195.2,135.9 196.5,135.9 197.8,135.9 199.1,135.9 200.4,135.9 201.7,135.9 202.9,135.9 204.2,135.9 205.5,135.9 206.8,135.9 208.1,135.9 209.4,135.9 210.7,135.9 212.0,135.9 213.3,135.9 214.5,135.9 215.8,135.9 217.1,135.9 218.4,135.9 219.7,135.9 221.0,135.9 222.3,135.9 223.6,135.9 224.9,135.9 226.1,135.9 227.4,135.9 228.7,135.9 230.0,135.9 231.3,135.9 232.6,135.9 233.9,135.9 235.2,135.9 236.4,135.9 237.7,135.9 239.0,135.9 239.0,135.9 237.7,141.6 236.4,147.1 235.2,152.3 233.9,157.3 232.6,162.1 231.3,166.7 230.0,171.0 228.7,175.2 227.4,179.1 226.1,182.9 224.9,186.4 223.6,189.8 222.3,192.9 221.0,195.9 219.7,198.7 218.4,201.3 217.1,203.7 215.8,205.9 214.5,208.0 213.3,209.9 212.0,211.6 210.7,213.2 209.4,214.6 208.1,215.8 206.8,216.9 205.5,217.9 204.2,218.7 202.9,219.3 201.7,219.8 200.4,220.2 199.1,220.4 197.8,220.6 196.5,220.5 195.2,220.4 193.9,220.1 192.6,219.8 191.4,219.3 190.1,218.7 188.8,217.9 187.5,217.1 186.2,216.2 184.9,215.2 183.6,214.1 182.3,212.9 181.0,211.6 179.8,210.2 178.5,208.7 177.2,207.2 175.9,205.6 174.6,203.9 173.3,202.1 172.0,200.3 170.7,198.4 169.4,196.5 168.2,194.5 166.9,192.4 165.6,190.3 164.3,188.2 163.0,186.0 161.7,183.8 160.4,181.5 159.1,179.2 157.9,176.9 156.6,174.5 155.3,172.2 154.0,169.8 152.7,167.4 151.4,164.9 150.1,162.5 148.8,160.0 147.5,157.6 146.3,155.2 145.0,152.7 143.7,150.3 142.4,147.8 141.1,145.4 139.8,143.0 138.5,140.6 137.2,138.3 135.9,135.9" fill="var(--red-soft)" fill-opacity="1" stroke="none" stroke-width="0"/><polyline points="39.7,259.6 40.7,259.6 41.7,256.5 42.7,250.0 43.7,243.7 44.7,237.6 45.7,231.6 46.7,225.7 47.6,220.1 48.6,214.5 49.6,209.1 50.6,203.9 51.6,198.8 52.6,193.8 53.6,189.0 54.6,184.3 55.5,179.7 56.5,175.3 57.5,171.1 58.5,166.9 59.5,162.9 60.5,159.0 61.5,155.3 62.5,151.7 63.5,148.2 64.4,144.8 65.4,141.6 66.4,138.4 67.4,135.4 68.4,132.6 69.4,129.8 70.4,127.1 71.4,124.6 72.3,122.2 73.3,119.9 74.3,117.7 75.3,115.6 76.3,113.6 77.3,111.7 78.3,109.9 79.3,108.3 80.2,106.7 81.2,105.2 82.2,103.9 83.2,102.6 84.2,101.4 85.2,100.3 86.2,99.3 87.2,98.4 88.1,97.6 89.1,96.9 90.1,96.3 91.1,95.7 92.1,95.2 93.1,94.8 94.1,94.5 95.1,94.3 96.0,94.2 97.0,94.1 98.0,94.1 99.0,94.2 100.0,94.3 101.0,94.6 102.0,94.8 103.0,95.2 104.0,95.6 104.9,96.1 105.9,96.7 106.9,97.3 107.9,97.9 108.9,98.7 109.9,99.5 110.9,100.3 111.9,101.2 112.8,102.2 113.8,103.2 114.8,104.2 115.8,105.3 116.8,106.5 117.8,107.7 118.8,108.9 119.8,110.2 120.7,111.5 121.7,112.9 122.7,114.3 123.7,115.7 124.7,117.2 125.7,118.7 126.7,120.2 127.7,121.8 128.6,123.4 129.6,125.0 130.6,126.6 131.6,128.3 132.6,130.0 133.6,131.7 134.6,133.5 135.6,135.3 136.6,137.0 137.5,138.8 138.5,140.6 139.5,142.5 140.5,144.3 141.5,146.1 142.5,148.0 143.5,149.9 144.5,151.7 145.4,153.6 146.4,155.5 147.4,157.4 148.4,159.2 149.4,161.1 150.4,163.0 151.4,164.8 152.4,166.7 153.3,168.6 154.3,170.4 155.3,172.2 156.3,174.1 157.3,175.9 158.3,177.7 159.3,179.5 160.3,181.2 161.2,183.0 162.2,184.7 163.2,186.4 164.2,188.1 165.2,189.7 166.2,191.3 167.2,192.9 168.2,194.5 169.1,196.0 170.1,197.5 171.1,199.0 172.1,200.4 173.1,201.8 174.1,203.2 175.1,204.5 176.1,205.8 177.1,207.0 178.0,208.2 179.0,209.4 180.0,210.5 181.0,211.5 182.0,212.5 183.0,213.5 184.0,214.4 185.0,215.2 185.9,216.0 186.9,216.7 187.9,217.4 188.9,218.0 189.9,218.6 190.9,219.1 191.9,219.5 192.9,219.8 193.8,220.1 194.8,220.3 195.8,220.5 196.8,220.6 197.8,220.6 198.8,220.5 199.8,220.3 200.8,220.1 201.7,219.8 202.7,219.4 203.7,218.9 204.7,218.4 205.7,217.7 206.7,217.0 207.7,216.2 208.7,215.3 209.6,214.3 210.6,213.2 211.6,212.0 212.6,210.8 213.6,209.4 214.6,207.9 215.6,206.3 216.6,204.7 217.6,202.9 218.5,201.0 219.5,199.0 220.5,196.9 221.5,194.7 222.5,192.4 223.5,190.0 224.5,187.4 225.5,184.8 226.4,182.0 227.4,179.1 228.4,176.1 229.4,173.0 230.4,169.8 231.4,166.4 232.4,162.9 233.4,159.3 234.3,155.5 235.3,151.6 236.3,147.6 237.3,143.5 238.3,139.2 239.3,134.8 240.3,130.2 241.3,125.5 242.2,120.7 243.2,115.8 244.2,110.6 245.2,105.4 246.2,100.0 247.2,94.4 248.2,88.7 249.2,82.9 250.1,76.9 251.1,70.7 252.1,64.4 253.1,58.0 254.1,51.4 255.1,44.6 256.1,37.7 257.1,30.6 258.1,26.0 259.0,26.0" fill="none" stroke="var(--ink)" stroke-width="2.3" stroke-linejoin="round"/><text x="101.6" y="115.3" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--indigo)">A=4</text><text x="187.5" y="170.3" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--red)">B=9</text><text x="67.2" y="151.9" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-soft)">−2</text><text x="239.0" y="151.9" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-soft)">3</text><text x="276.3" y="-115.4" text-anchor="end" font-size="12" font-weight="700" fill="var(--ink)">y=f′(x)</text></svg>
+        <div class="fig-cap">\(f(3)-f(0)=-B=-9\), \(f(0)-f(-2)=A=4\) — 넓이가 곧 <b>\(f\)의 변화량</b></div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(f(0)=f(3)+9=15\), \(f(-2)=f(0)-4=11\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(11\ \Rightarrow\) ③</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(f(3)-B\)로 부호를 반대로 계산하는 것. \(f(3)-f(0)=\int_0^3f^{\prime}=-9\)이므로 \(f(0)\)은 \(f(3)\)보다 <b>크다</b>.</div>
+    </div>
+  </section>
+  <section class="sol" id="q11">
+    <div class="sol-head">
+      <span class="sol-k">11</span>
+      <div>
+        <div class="sol-title">포물선 넓이 공식 <b>두 번</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.6점</span> 정적분과 넓이 · 포물선 공식</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">곡선 \(y=-x^2+3x\)와 \(x\)축으로 둘러싸인 도형이 직선 \(y=x\)로 나누어진 부분 중 위쪽과 아래쪽의 넓이를 각각 \(S_1,\ S_2\)라고 할 때, \(\dfrac{S_1}{S_2}\)의 값은?<br>① \(\frac7{16}\) ② \(\frac8{17}\) ③ \(\frac7{18}\) ④ \(\frac8{19}\) ⑤ \(\frac{11}{20}\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>전체 \(\frac92\), \(S_1=\frac{2^3}6=\frac43\), \(S_2=\frac{19}6\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(\dfrac{8}{19}\ \Rightarrow\) ④</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 비를 거꾸로 \(\frac{S_2}{S_1}\)로 쓰는 것 — 문제마다 분자가 다르다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q12">
+    <div class="sol-head">
+      <span class="sol-k">12</span>
+      <div>
+        <div class="sol-title">구간을 합치면 <b>\([-1,\ 1]\)</b> → 홀수 차수 지우기</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.7점</span> 정적분 · 우함수와 기함수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(f(x)=x^5+x^4+ax^3+3x^2+x+a\)에 대하여 \(\displaystyle\int_{-1}^3f-\int_0^3f+\int_0^1f=\frac{32}5\)를 만족하는 상수 \(a\)의 값은?<br>① \(2\) ② \(\frac{16}5\) ③ \(4\) ④ \(\frac{24}5\) ⑤ \(5\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(\int_{-1}^3-\int_0^3=\int_{-1}^0\), 더하기 \(\int_0^1\) → \(\int_{-1}^1\). 짝수 차수만: \(2\left(\frac15+1+a\right)=\frac{32}5\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(a=2\ \Rightarrow\) ①</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 상수항 \(a\)를 홀수 차수로 착각해 지우는 것 — 상수는 <b>\(x^0\)</b>, 짝수 차수다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q13">
+    <div class="sol-head">
+      <span class="sol-k">13</span>
+      <div>
+        <div class="sol-title">폭이 일정한 창 \(\int_x^{x+2}f\) — <b>양 끝값이 같을 때</b> 극값</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.8점</span> 정적분으로 정의된 함수 · 최대와 최소</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">이차함수 \(y=f(x)\)의 그래프가 그림과 같을 때(\(x\)절편 \(2,\ 4\), 아래로 볼록), 함수 \(g(x)=\displaystyle\int_x^{x+2}f(t)\,dt\)의 최솟값이 \(-4\)이다. \(g(1)\)의 값은?<br>① \(0\) ② \(\frac23\) ③ \(\frac32\) ④ \(2\) ⑤ \(3\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 최소 위치</span>
+        <p>\(g^{\prime}=f(x+2)-f(x)=0\) → \(x\)와 \(x+2\)가 축 \(x=3\)에 대칭 → \(x=2\). 최소 \(g(2)=\int_2^4f\).</p>
+      </div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 300 463" width="100%" style="max-width:280px" role="img" aria-label="y=f(x)=3(x−2)(x−4)"><line x1="26.0" y1="290.3" x2="274.0" y2="290.3" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="280.0,290.3 272.0,286.3 272.0,294.3" fill="var(--ink-soft)"/><line x1="46.3" y1="436.6" x2="46.3" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="46.3,20.0 42.3,28.0 50.3,28.0" fill="var(--ink-soft)"/><text x="278.0" y="306.3" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="55.3" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="36.3" y="305.3" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polygon points="127.6,290.3 128.7,290.3 129.7,290.3 130.7,290.3 131.7,290.3 132.7,290.3 133.7,290.3 134.8,290.3 135.8,290.3 136.8,290.3 137.8,290.3 138.8,290.3 139.8,290.3 140.9,290.3 141.9,290.3 142.9,290.3 143.9,290.3 144.9,290.3 145.9,290.3 147.0,290.3 148.0,290.3 149.0,290.3 150.0,290.3 151.0,290.3 152.0,290.3 153.0,290.3 154.1,290.3 155.1,290.3 156.1,290.3 157.1,290.3 158.1,290.3 159.1,290.3 160.2,290.3 161.2,290.3 162.2,290.3 163.2,290.3 164.2,290.3 165.2,290.3 166.3,290.3 167.3,290.3 168.3,290.3 169.3,290.3 170.3,290.3 171.3,290.3 172.4,290.3 173.4,290.3 174.4,290.3 175.4,290.3 176.4,290.3 177.4,290.3 178.5,290.3 179.5,290.3 180.5,290.3 181.5,290.3 182.5,290.3 183.5,290.3 184.6,290.3 185.6,290.3 186.6,290.3 187.6,290.3 188.6,290.3 189.6,290.3 190.7,290.3 191.7,290.3 192.7,290.3 193.7,290.3 194.7,290.3 195.7,290.3 196.8,290.3 197.8,290.3 198.8,290.3 199.8,290.3 200.8,290.3 201.8,290.3 202.9,290.3 203.9,290.3 204.9,290.3 205.9,290.3 206.9,290.3 207.9,290.3 209.0,290.3 209.0,290.3 207.9,296.3 206.9,302.2 205.9,307.9 204.9,313.4 203.9,318.8 202.9,324.1 201.8,329.2 200.8,334.2 199.8,339.0 198.8,343.6 197.8,348.1 196.8,352.5 195.7,356.7 194.7,360.7 193.7,364.6 192.7,368.3 191.7,371.9 190.7,375.3 189.6,378.6 188.6,381.7 187.6,384.7 186.6,387.5 185.6,390.2 184.6,392.7 183.5,395.1 182.5,397.3 181.5,399.3 180.5,401.3 179.5,403.0 178.5,404.6 177.4,406.1 176.4,407.4 175.4,408.5 174.4,409.5 173.4,410.3 172.4,411.0 171.3,411.5 170.3,411.9 169.3,412.2 168.3,412.2 167.3,412.2 166.3,411.9 165.2,411.5 164.2,411.0 163.2,410.3 162.2,409.5 161.2,408.5 160.2,407.4 159.1,406.1 158.1,404.6 157.1,403.0 156.1,401.3 155.1,399.3 154.1,397.3 153.0,395.1 152.0,392.7 151.0,390.2 150.0,387.5 149.0,384.7 148.0,381.7 147.0,378.6 145.9,375.3 144.9,371.9 143.9,368.3 142.9,364.6 141.9,360.7 140.9,356.7 139.8,352.5 138.8,348.1 137.8,343.6 136.8,339.0 135.8,334.2 134.8,329.2 133.7,324.1 132.7,318.8 131.7,313.4 130.7,307.9 129.7,302.2 128.7,296.3 127.6,290.3" fill="var(--red-soft)" fill-opacity="1" stroke="none" stroke-width="0"/><polyline points="94.3,26.0 95.1,26.0 95.9,26.0 96.7,34.4 97.6,43.0 98.4,51.4 99.2,59.7 100.0,68.0 100.8,76.1 101.6,84.2 102.4,92.1 103.2,100.0 104.1,107.8 104.9,115.4 105.7,123.0 106.5,130.4 107.3,137.8 108.1,145.1 108.9,152.2 109.8,159.3 110.6,166.3 111.4,173.2 112.2,180.0 113.0,186.6 113.8,193.2 114.6,199.7 115.4,206.1 116.3,212.4 117.1,218.6 117.9,224.7 118.7,230.7 119.5,236.6 120.3,242.4 121.1,248.1 121.9,253.7 122.8,259.2 123.6,264.6 124.4,270.0 125.2,275.2 126.0,280.3 126.8,285.3 127.6,290.3 128.5,295.1 129.3,299.8 130.1,304.5 130.9,309.0 131.7,313.4 132.5,317.8 133.3,322.0 134.1,326.2 135.0,330.2 135.8,334.2 136.6,338.0 137.4,341.8 138.2,345.4 139.0,349.0 139.8,352.5 140.6,355.8 141.5,359.1 142.3,362.3 143.1,365.3 143.9,368.3 144.7,371.2 145.5,374.0 146.3,376.7 147.2,379.2 148.0,381.7 148.8,384.1 149.6,386.4 150.4,388.6 151.2,390.7 152.0,392.7 152.8,394.6 153.7,396.4 154.5,398.1 155.3,399.7 156.1,401.3 156.9,402.7 157.7,404.0 158.5,405.2 159.4,406.3 160.2,407.4 161.0,408.3 161.8,409.1 162.6,409.8 163.4,410.5 164.2,411.0 165.0,411.4 165.9,411.8 166.7,412.0 167.5,412.2 168.3,412.2 169.1,412.2 169.9,412.0 170.7,411.8 171.5,411.4 172.4,411.0 173.2,410.5 174.0,409.8 174.8,409.1 175.6,408.3 176.4,407.4 177.2,406.3 178.1,405.2 178.9,404.0 179.7,402.7 180.5,401.3 181.3,399.7 182.1,398.1 182.9,396.4 183.7,394.6 184.6,392.7 185.4,390.7 186.2,388.6 187.0,386.4 187.8,384.1 188.6,381.7 189.4,379.2 190.2,376.7 191.1,374.0 191.9,371.2 192.7,368.3 193.5,365.3 194.3,362.3 195.1,359.1 195.9,355.8 196.8,352.5 197.6,349.0 198.4,345.4 199.2,341.8 200.0,338.0 200.8,334.2 201.6,330.2 202.4,326.2 203.3,322.0 204.1,317.8 204.9,313.4 205.7,309.0 206.5,304.5 207.3,299.8 208.1,295.1 209.0,290.3 209.8,285.3 210.6,280.3 211.4,275.2 212.2,270.0 213.0,264.6 213.8,259.2 214.6,253.7 215.5,248.1 216.3,242.4 217.1,236.6 217.9,230.7 218.7,224.7 219.5,218.6 220.3,212.4 221.1,206.1 222.0,199.7 222.8,193.2 223.6,186.6 224.4,180.0 225.2,173.2 226.0,166.3 226.8,159.3 227.7,152.2 228.5,145.1 229.3,137.8 230.1,130.4 230.9,123.0 231.7,115.4 232.5,107.8 233.3,100.0 234.2,92.1 235.0,84.2 235.8,76.1 236.6,68.0 237.4,59.7 238.2,51.4 239.0,43.0 239.8,34.4 240.7,26.0 241.5,26.0 242.3,26.0" fill="none" stroke="var(--ink)" stroke-width="2.3" stroke-linejoin="round"/><line x1="168.3" y1="436.6" x2="168.3" y2="34.1" stroke="var(--ink-faint)" stroke-width="1.1" stroke-linecap="round" stroke-dasharray="5 4"/><text x="127.6" y="284.3" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-soft)">2</text><text x="209.0" y="284.3" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-soft)">4</text><text x="168.3" y="351.2" text-anchor="middle" font-size="13" font-weight="700" fill="var(--red)">−4</text><text x="174.3" y="44.1" text-anchor="start" font-size="11.5" font-weight="700" fill="var(--ink-faint)">x=3</text></svg>
+        <div class="fig-cap">폭 \(2\)짜리 창 \([x,\ x+2]\)를 움직일 때 가장 작은 값은 창이 <b>축 \(x=3\)에 딱 가운데</b>일 때, 즉 \([2,\ 4]\)</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 계수</span>
+        <p>\(f=p(x-2)(x-4)\), \(\int_2^4f=-\frac{8p}6=-4\Rightarrow p=3\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계</span>
+        <div class="mathrow">$$\begin{gathered}g(1)=\int_1^3 3(t-2)(t-4)\,dt\\[2pt] =\int_{-2}^{0}3(u^2-1)\,du=2\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(2\ \Rightarrow\) ④</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 최솟값을 \(f\)의 꼭짓점 값으로 착각하는 것 — \(g\)는 <b>넓이</b>다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q14">
+    <div class="sol-head">
+      <span class="sol-k">14</span>
+      <div>
+        <div class="sol-title">\(x=1\)을 대입 — <b>\(\int_0^1f\)가 양쪽에서 지워진다</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 5 · 4.9점</span> 정적분 · 대칭성 판단</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">다항함수 \(f(x)\)에 대하여 \(\displaystyle\int_{-x}^{x}\{f(t)+f(-t)\}dt=x^3-2x^2+2x\int_0^1f(t)\,dt\)일 때, \(\displaystyle\int_{-1}^{0}f(x)\,dx\)의 값은?<br>① \(-1\) ② \(-\frac12\) ③ \(0\) ④ \(\frac12\) ⑤ \(1\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 왼쪽 정리</span>
+        <p>\(\int_{-x}^xf(-t)\,dt=\int_{-x}^xf(t)\,dt\)이므로 좌변 \(=2\int_{-x}^xf\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — \(x=1\)</span>
+        <p>\(c=\int_0^1f\)라 하면</p>
+        <div class="mathrow">$$\begin{gathered}2\int_{-1}^1f=1-2+2c\\[2pt] \Rightarrow\ \int_{-1}^0f+c=-\frac12+c\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(\displaystyle\int_{-1}^0f=-\frac12\ \Rightarrow\) ②</span></div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>알아 둘 것 — 문제 식에 대하여</span>
+        <p>좌변 \(2\int_{-x}^xf\)는 \(x\)에 대한 <b>홀함수</b>라 \(x^2\)항이 생길 수 없다. 그래서 이 등식은 모든 \(x\)에서 성립할 수는 없고, \(x=1\)에서 성립한다고 읽어야 위의 답이 나온다(출제 의도). 시험장에서는 지금처럼 <b>필요한 값만 대입</b>하는 풀이가 정답이다.</p>
+      </div>
+      <div class="miss"><b>가장 잦은 실수</b> 양변을 미분해 \(f\)를 구하려는 것 — 위 이유로 식이 모순되어 막힌다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q15">
+    <div class="sol-head">
+      <span class="sol-k">15</span>
+      <div>
+        <div class="sol-title">\(A=\frac B2\) ⟺ <b>축까지의 정적분이 0</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5점</span> 정적분과 넓이 · 넓이가 같을 조건</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(y=x^2-2ax+6\)의 그래프에서 도형 \(A\)(\(y\)축과 \(x\)축 사이, \(x\)축 위)의 넓이와 도형 \(B\)(\(x\)축 아래)의 넓이의 비가 \(1:2\)일 때, 양수 \(a\)의 값은?<br>① \(\sqrt6\) ② \(3\) ③ \(2\sqrt3\) ④ \(3\sqrt2\) ⑤ \(3\sqrt3\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>축 \(x=a\)에서 \(B\)가 반으로 나뉜다. \(A=\frac B2\)이면</p>
+        <div class="mathrow">$$\begin{gathered}\int_0^a(x^2-2ax+6)\,dx\\[2pt] =-\frac23a^3+6a=0\\[2pt] \Rightarrow\ a^2=9\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(a=3\ \Rightarrow\) ②</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 두 근을 구해 넓이를 따로 적분하는 것 — 근호가 들어가 계산이 길어진다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q16">
+    <div class="sol-head">
+      <span class="sol-k">16</span>
+      <div>
+        <div class="sol-title">위치는 <b>부호 있는 넓이</b>, 거리는 <b>넓이의 크기</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5.1점</span> 속도와 거리 · 그래프</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">좌표 \(1\)인 점에서 출발하여 수직선 위를 \(8\)초 동안 움직이는 점 P의 속도 \(v(t)\)의 그래프가 그림과 같을 때(꺾인 점 \((1,2),(3,-2),(5,2),(6,2),(8,0)\)), 옳은 것만을 &lt;보기&gt;에서 있는 대로 고른 것은?<br>ㄱ. \(t=3\)일 때 P의 위치는 \(4\)이다. ㄴ. \(1\)초일 때와 \(6\)초일 때 P의 위치는 같다. ㄷ. 출발하여 멈출 때까지 운동 방향을 \(2\)번 바꿨다. ㄹ. \(t=0\)에서 \(t=8\)까지 P가 움직인 거리는 \(9\)이다.<br>① ㄷ ② ㄱ, ㄴ ③ ㄷ, ㄹ ④ ㄱ, ㄴ, ㄹ ⑤ ㄴ, ㄷ, ㄹ</div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 340 225" width="100%" style="max-width:320px" role="img" aria-label="속도 v(t)의 그래프"><line x1="26.0" y1="112.7" x2="314.0" y2="112.7" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="320.0,112.7 312.0,108.7 312.0,116.7" fill="var(--ink-soft)"/><line x1="41.5" y1="199.4" x2="41.5" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="41.5,20.0 37.5,28.0 45.5,28.0" fill="var(--ink-soft)"/><text x="318.0" y="128.7" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">t</text><text x="50.5" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">v</text><text x="31.5" y="127.7" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polygon points="41.5,112.7 72.5,50.8 103.4,112.7" fill="var(--indigo-soft)" fill-opacity="1" stroke="none" stroke-width="0"/><polygon points="103.4,112.7 134.4,174.6 165.4,112.7" fill="var(--red-soft)" fill-opacity="1" stroke="none" stroke-width="0"/><polygon points="165.4,112.7 196.3,50.8 227.3,50.8 289.2,112.7" fill="var(--indigo-soft)" fill-opacity="1" stroke="none" stroke-width="0"/><polyline points="41.5,112.7 72.5,50.8 134.4,174.6 196.3,50.8 227.3,50.8 289.2,112.7" fill="none" stroke="var(--indigo)" stroke-width="2.4"/><text x="72.5" y="127.7" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink-soft)">1</text><text x="103.4" y="127.7" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink-soft)">2</text><text x="165.4" y="127.7" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink-soft)">4</text><text x="196.3" y="127.7" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink-soft)">5</text><text x="227.3" y="127.7" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink-soft)">6</text><text x="289.2" y="127.7" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--ink-soft)">8</text><text x="72.5" y="91.0" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--indigo)">+2</text><text x="134.4" y="137.5" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--red)">−2</text><text x="214.9" y="84.8" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--indigo)">+5</text></svg>
+        <div class="fig-cap">위치는 \(1\)에서 출발해 넓이를 더하고 뺀다. 움직인 거리는 넓이의 <b>크기</b>를 모두 더한 \(2+2+5=9\)</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>판정</span>
+        <div class="cond"><div class="row"><span class="lab">ㄱ</span><span>\(1+2-1=2\ne4\) ✗</span></div><div class="row"><span class="lab">ㄴ</span><span>\(t=1\): \(1+1=2\), \(t=6\): \(1+2-2+3=4\) ✗</span></div><div class="row"><span class="lab">ㄷ</span><span>\(t=2,\ 4\)에서 부호 변화 ○</span></div><div class="row"><span class="lab">ㄹ</span><span>\(2+2+5=9\) ○</span></div></div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">ㄷ, ㄹ \(\Rightarrow\) ③</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> ㄱ에서 \(2\sim3\)초의 \(-1\)을 빼지 않는 것.</div>
+    </div>
+  </section>
+  <section class="sol killer" id="q17">
+    <div class="sol-head">
+      <span class="sol-k red">17</span>
+      <div>
+        <div class="sol-title">극솟점이 \(x\)축에 <b>닿을 때</b>가 경계</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 킬러 · 5.2점</span> 부등식과 미분 · 제한 범위</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">양수 \(a\)와 삼차함수 \(f(x)=x^3-\frac32(a+2)x^2+6ax+\frac72a\)에 대하여 구간 \([0,\ \infty)\)에서 부등식 \(f(x)\ge0\)이 항상 성립하도록 하는 \(a\)의 최댓값과 최솟값을 각각 \(M,\ m\)이라 할 때, \(19(M+m)\)의 값은?<br>① \(141\) ② \(142\) ③ \(143\) ④ \(145\) ⑤ \(147\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 극점</span>
+        <p>\(f^{\prime}=3(x-2)(x-a)\). \(f(0)=\frac72a\gt0\)이니 \([0,\infty)\)의 최소는 <b>극솟값</b>.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 경우</span>
+        <div class="cond"><div class="row"><span class="lab">\(0\lt a\lt2\)</span><span>극소 \(x=2\): \(f(2)=\frac{19}2a-4\ge0\Rightarrow a\ge\frac8{19}\)</span></div><div class="row"><span class="lab">\(a\gt2\)</span><span>극소 \(x=a\): \(f(a)=-\frac12a^3+3a^2+\frac72a\ge0\Rightarrow a^2-6a-7\le0\Rightarrow a\le7\)</span></div><div class="row"><span class="lab">\(a=2\)</span><span>증가함수, 가능</span></div></div>
+      </div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 300 240" width="100%" style="max-width:280px" role="img" aria-label="경계가 되는 두 a"><line x1="26.0" y1="199.6" x2="274.0" y2="199.6" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="280.0,199.6 272.0,195.6 272.0,203.6" fill="var(--ink-soft)"/><line x1="35.9" y1="214.5" x2="35.9" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="35.9,20.0 31.9,28.0 39.9,28.0" fill="var(--ink-soft)"/><text x="278.0" y="215.6" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="44.9" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="25.9" y="214.6" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polyline points="35.9,196.6 36.8,196.4 37.7,196.2 38.6,196.1 39.5,196.0 40.4,195.8 41.3,195.8 42.1,195.7 43.0,195.6 43.9,195.6 44.8,195.6 45.7,195.5 46.6,195.5 47.5,195.5 48.4,195.6 49.2,195.6 50.1,195.6 51.0,195.7 51.9,195.8 52.8,195.8 53.7,195.9 54.6,196.0 55.5,196.1 56.4,196.2 57.2,196.3 58.1,196.4 59.0,196.5 59.9,196.7 60.8,196.8 61.7,196.9 62.6,197.0 63.5,197.2 64.4,197.3 65.2,197.5 66.1,197.6 67.0,197.7 67.9,197.9 68.8,198.0 69.7,198.1 70.6,198.3 71.5,198.4 72.4,198.5 73.2,198.7 74.1,198.8 75.0,198.9 75.9,199.0 76.8,199.1 77.7,199.2 78.6,199.3 79.5,199.3 80.4,199.4 81.2,199.5 82.1,199.5 83.0,199.6 83.9,199.6 84.8,199.6 85.7,199.6 86.6,199.6 87.5,199.6 88.4,199.5 89.2,199.5 90.1,199.4 91.0,199.3 91.9,199.2 92.8,199.1 93.7,199.0 94.6,198.8 95.5,198.7 96.3,198.5 97.2,198.3 98.1,198.1 99.0,197.8 99.9,197.6 100.8,197.3 101.7,196.9 102.6,196.6 103.5,196.3 104.3,195.9 105.2,195.5 106.1,195.0 107.0,194.6 107.9,194.1 108.8,193.6 109.7,193.0 110.6,192.5 111.5,191.9 112.3,191.3 113.2,190.6 114.1,189.9 115.0,189.2 115.9,188.5 116.8,187.7 117.7,186.9 118.6,186.0 119.5,185.1 120.3,184.2 121.2,183.3 122.1,182.3 123.0,181.3 123.9,180.2 124.8,179.1 125.7,178.0 126.6,176.8 127.5,175.6 128.3,174.4 129.2,173.1 130.1,171.8 131.0,170.4 131.9,169.0 132.8,167.5 133.7,166.0 134.6,164.5 135.5,162.9 136.3,161.3 137.2,159.6 138.1,157.9 139.0,156.1 139.9,154.3 140.8,152.4 141.7,150.5 142.6,148.6 143.4,146.6 144.3,144.5 145.2,142.4 146.1,140.2 147.0,138.0 147.9,135.8 148.8,133.4 149.7,131.1 150.6,128.7 151.4,126.2 152.3,123.7 153.2,121.1 154.1,118.4 155.0,115.7 155.9,113.0 156.8,110.2 157.7,107.3 158.6,104.4 159.4,101.4 160.3,98.3 161.2,95.2 162.1,92.0 163.0,88.8 163.9,85.5 164.8,82.2 165.7,78.7 166.6,75.2 167.4,71.7 168.3,68.1 169.2,64.4 170.1,60.6 171.0,56.8 171.9,53.0 172.8,49.0 173.7,45.0 174.6,40.9 175.4,36.7 176.3,32.5 177.2,28.2 178.1,26.0 179.0,26.0 179.9,26.0" fill="none" stroke="var(--green)" stroke-width="2.2" stroke-linejoin="round"/><polyline points="35.9,149.0 36.8,145.9 37.7,142.9 38.6,140.0 39.5,137.1 40.4,134.3 41.3,131.6 42.1,128.9 43.0,126.3 43.9,123.8 44.8,121.4 45.7,119.0 46.6,116.6 47.5,114.4 48.4,112.2 49.2,110.1 50.1,108.0 51.0,106.0 51.9,104.0 52.8,102.2 53.7,100.3 54.6,98.6 55.5,96.9 56.4,95.2 57.2,93.6 58.1,92.1 59.0,90.6 59.9,89.2 60.8,87.9 61.7,86.6 62.6,85.3 63.5,84.1 64.4,83.0 65.2,81.9 66.1,80.9 67.0,79.9 67.9,79.0 68.8,78.1 69.7,77.3 70.6,76.5 71.5,75.8 72.4,75.1 73.2,74.5 74.1,73.9 75.0,73.4 75.9,72.9 76.8,72.4 77.7,72.0 78.6,71.7 79.5,71.4 80.4,71.1 81.2,70.9 82.1,70.7 83.0,70.6 83.9,70.5 84.8,70.4 85.7,70.4 86.6,70.5 87.5,70.5 88.4,70.6 89.2,70.8 90.1,71.0 91.0,71.2 91.9,71.4 92.8,71.7 93.7,72.0 94.6,72.4 95.5,72.8 96.3,73.2 97.2,73.7 98.1,74.2 99.0,74.7 99.9,75.2 100.8,75.8 101.7,76.4 102.6,77.1 103.5,77.8 104.3,78.5 105.2,79.2 106.1,79.9 107.0,80.7 107.9,81.5 108.8,82.4 109.7,83.2 110.6,84.1 111.5,85.0 112.3,86.0 113.2,86.9 114.1,87.9 115.0,88.9 115.9,89.9 116.8,90.9 117.7,92.0 118.6,93.1 119.5,94.2 120.3,95.3 121.2,96.4 122.1,97.6 123.0,98.7 123.9,99.9 124.8,101.1 125.7,102.3 126.6,103.5 127.5,104.8 128.3,106.0 129.2,107.3 130.1,108.5 131.0,109.8 131.9,111.1 132.8,112.4 133.7,113.7 134.6,115.1 135.5,116.4 136.3,117.7 137.2,119.1 138.1,120.4 139.0,121.8 139.9,123.2 140.8,124.5 141.7,125.9 142.6,127.3 143.4,128.7 144.3,130.0 145.2,131.4 146.1,132.8 147.0,134.2 147.9,135.6 148.8,137.0 149.7,138.4 150.6,139.8 151.4,141.1 152.3,142.5 153.2,143.9 154.1,145.3 155.0,146.6 155.9,148.0 156.8,149.4 157.7,150.7 158.6,152.1 159.4,153.4 160.3,154.8 161.2,156.1 162.1,157.4 163.0,158.7 163.9,160.0 164.8,161.3 165.7,162.6 166.6,163.8 167.4,165.1 168.3,166.3 169.2,167.5 170.1,168.7 171.0,169.9 171.9,171.1 172.8,172.3 173.7,173.4 174.6,174.6 175.4,175.7 176.3,176.8 177.2,177.9 178.1,178.9 179.0,180.0 179.9,181.0 180.8,182.0 181.7,183.0 182.6,183.9 183.4,184.9 184.3,185.8 185.2,186.7 186.1,187.5 187.0,188.4 187.9,189.2 188.8,190.0 189.7,190.7 190.5,191.5 191.4,192.2 192.3,192.8 193.2,193.5 194.1,194.1 195.0,194.7 195.9,195.3 196.8,195.8 197.7,196.3 198.5,196.7 199.4,197.2 200.3,197.6 201.2,197.9 202.1,198.3 203.0,198.6 203.9,198.8 204.8,199.0 205.7,199.2 206.5,199.4 207.4,199.5 208.3,199.6 209.2,199.6 210.1,199.6 211.0,199.5 211.9,199.5 212.8,199.3 213.7,199.2 214.5,198.9 215.4,198.7 216.3,198.4 217.2,198.0 218.1,197.7 219.0,197.2 219.9,196.7 220.8,196.2 221.7,195.6 222.5,195.0 223.4,194.4 224.3,193.6 225.2,192.9 226.1,192.1 227.0,191.2 227.9,190.3 228.8,189.3 229.6,188.3 230.5,187.2 231.4,186.1 232.3,184.9 233.2,183.7 234.1,182.4 235.0,181.0 235.9,179.6 236.8,178.2 237.6,176.6 238.5,175.1 239.4,173.4 240.3,171.7 241.2,170.0 242.1,168.2 243.0,166.3 243.9,164.4 244.8,162.4 245.6,160.3 246.5,158.2 247.4,156.0 248.3,153.8 249.2,151.5" fill="none" stroke="var(--indigo)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="85.5" cy="199.6" r="3.6" fill="var(--green)"/><text x="91.5" y="191.6" text-anchor="start" font-size="11.5" font-weight="700" fill="var(--green)">x=2에서 0</text><circle cx="209.5" cy="199.6" r="3.6" fill="var(--indigo)"/><text x="215.5" y="189.6" text-anchor="start" font-size="11.5" font-weight="700" fill="var(--indigo)">x=7에서 0</text></svg>
+        <div class="fig-cap">극솟점이 \(x\)축에 <b>닿는 순간</b>이 경계 — \(a\lt2\)이면 극소가 \(x=2\), \(a\gt2\)이면 극소가 \(x=a\) (세로는 줄여 그림)</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(19\left(7+\frac8{19}\right)=133+8=141\ \Rightarrow\) ①</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 극소 위치가 \(a\)와 \(2\) 중 <b>큰 쪽</b>이라는 것을 놓쳐 한 경우만 푸는 것.</div>
+    </div>
+  </section>
+  <section class="sol killer" id="q18">
+    <div class="sol-head">
+      <span class="sol-k red">18</span>
+      <div>
+        <div class="sol-title">\(x\ge0\)에서의 관계식 + <b>연결점 \(x=1\)에서 연속·미분가능</b></div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 킬러 · 5.3점</span> 정적분으로 정의된 함수 · 미분가능 조건</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">실수 전체에서 미분가능한 함수 \(f(x)\)가 상수 \(a,\ b\)에 대하여 구간 \([0,\ \infty)\)에서 \(f(x+1)-xf(x)=2x+1\)이고, 닫힌구간 \([0,\ 1]\)에서 \(f(x)=ax+b\)일 때, \(\displaystyle\int_1^2f(x)\,dx\)의 값은?<br>① \(\frac14\) ② \(\frac12\) ③ \(\frac74\) ④ \(2\) ⑤ \(\frac94\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — \([1,2]\)의 식</span>
+        <p>\(0\le x\le1\)이면 \(f(x+1)=x(ax+b)+2x+1=ax^2+(b+2)x+1\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 이어 붙이기</span>
+        <div class="cond"><div class="row"><span class="lab">연속 (\(x=1\))</span><span>왼쪽 \(a+b\), 오른쪽(\(x=0\) 대입) \(1\) → \(a+b=1\)</span></div><div class="row"><span class="lab">미분가능</span><span>왼쪽 기울기 \(a\), 오른쪽 \(b+2\) → \(a=b+2\)</span></div></div>
+        <p>\(a=\frac32,\ b=-\frac12\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계</span>
+        <div class="mathrow">$$\begin{gathered}\int_1^2f(x)\,dx=\int_0^1\left(\tfrac32x^2+\tfrac32x+1\right)dx\\[2pt] =\frac12+\frac34+1=\frac94\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(\dfrac94\ \Rightarrow\) ⑤</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 「미분가능」 조건을 빼먹어 식이 하나 부족해지는 것. 문제 첫 줄의 <b>미분가능</b>이 두 번째 식이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q19">
+    <div class="sol-head">
+      <span class="sol-k">19</span>
+      <div>
+        <div class="sol-title">\(g^{\prime}=f^{\prime}(x)\times\int f^6\) — 부호 변화가 <b>하나만</b> 남게</div>
+        <div class="sol-kind"><span class="dbadge">난이도 5 · 5.4점</span> 정적분으로 정의된 함수 · 극값의 존재</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">실수 \(a\)와 함수 \(f(x)=x^3+3x^2+bx+c\)에 대하여 함수 \(g(x)=\displaystyle\int_{2a+1}^x\{f(x)-f(t)\}\times\{f(t)\}^6dt\)가 오직 하나의 극값을 갖도록 하는 모든 \(a\)의 값의 합은? (단, \(b\lt3\))<br>① \(-8\) ② \(-2\) ③ \(0\) ④ \(2\) ⑤ \(8\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 미분</span>
+        <p>\(g=f(x)\int_{2a+1}^xf^6-\int_{2a+1}^xf^7\). 미분하면 \(f^7\)끼리 지워져</p>
+        <div class="mathrow">$$g^{\prime}(x)=f^{\prime}(x)\int_{2a+1}^{x}\{f(t)\}^6dt$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 부호</span>
+        <p>\(f^{\prime}=3x^2+6x+b\): \(b\lt3\)이라 서로 다른 두 근 \(p,\ q\ (p+q=-2)\). \(\int_{2a+1}^xf^6\)은 증가하며 \(x=2a+1\)에서만 부호가 바뀐다. 부호 변화 지점이 셋이면 극값 셋 — 하나로 만들려면 \(2a+1\)이 \(p\)나 \(q\)와 <b>겹쳐야</b> 한다.</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계</span>
+        <p>\(a=\frac{p-1}2\) 또는 \(\frac{q-1}2\). 합 \(\frac{p+q-2}{2}=-2\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(-2\ \Rightarrow\) ②</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(f(x)\)를 적분 밖으로 꺼내지 않고 그대로 미분하는 것. 적분 안의 \(f(x)\)는 \(t\)에 대해 <b>상수</b>라 밖으로 뺀 뒤 곱의 미분을 한다.</div>
+    </div>
+  </section>
+  <section class="sol killer" id="q20">
+    <div class="sol-head">
+      <span class="sol-k red">20</span>
+      <div>
+        <div class="sol-title">\(x|g(x)|\)가 미분가능 → <b>\(g\)는 중근만</b></div>
+        <div class="sol-kind"><span class="dbadge red">난이도 7 · 킬러 · 5.5점</span> 정적분으로 정의된 함수 · 추론과 해석</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">실수 전체에서 연속인 함수 \(f(x)\)와 다항함수 \(g(x)=x^3+ax^2+bx\)에 대하여 모든 실수 \(x\)에서 \(x|g(x)|=\displaystyle\int_{2k}^x(k-t)f(t)\,dt\)이고, 방정식 \((g\circ f)(x)=0\)의 서로 다른 실근의 개수가 \(4\)개일 때, \(\displaystyle\int_{-k}^kf(x)\,dx\)의 값은? (단, \(k\gt0\))<br>① \(-2\) ② \(-1\) ③ \(0\) ④ \(1\) ⑤ \(2\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — \(g\) 정하기</span>
+        <p>우변은 미분가능하므로 \(x|g(x)|=x|x|\cdot|x^2+ax+b|\)도 미분가능해야 한다 → \(x^2+ax+b\)는 <b>부호가 바뀌는 근이 없다</b>. 또 \(x=2k\)를 넣으면 \(2k|g(2k)|=0\)이라 \(2k\)가 근 → \(x^2+ax+b=(x-2k)^2\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — \(f\)</span>
+        <p>\(x\ge0\): \(\{x^2(x-2k)^2\}^{\prime}=4x(x-k)(x-2k)=(k-x)f(x)\Rightarrow f=-4x(x-2k)\). \(x\lt0\)은 부호가 반대 → \(f(x)=4|x|(2k-x)\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 근의 개수</span>
+        <p>\(g(y)=y(y-2k)^2=0\) → \(f(x)=0\)(\(x=0,\ 2k\)) 또는 \(f(x)=2k\). \(x\lt0\)에서는 항상 \(1\)개, \(x\gt0\)에서는 봉우리 높이 \(4k^2\)과 \(2k\)를 비교: 같을 때 \(1\)개 → 총 \(4\)개 ⟺ \(4k^2=2k\), \(k=\frac12\).</p>
+      </div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 300 368" width="100%" style="max-width:280px" role="img" aria-label="k=1/2일 때 y=f(x)"><line x1="26.0" y1="206.4" x2="274.0" y2="206.4" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="280.0,206.4 272.0,202.4 272.0,210.4" fill="var(--ink-soft)"/><line x1="116.2" y1="341.6" x2="116.2" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="116.2,20.0 112.2,28.0 120.2,28.0" fill="var(--ink-soft)"/><text x="278.0" y="222.4" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="125.2" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="106.2" y="221.4" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polyline points="74.0,26.0 74.8,26.0 75.7,26.0 76.5,26.0 77.3,26.0 78.1,26.0 79.0,26.0 79.8,26.0 80.6,26.0 81.4,26.0 82.2,29.8 83.1,35.0 83.9,40.2 84.7,45.3 85.5,50.4 86.4,55.5 87.2,60.5 88.0,65.5 88.8,70.4 89.6,75.2 90.5,80.0 91.3,84.8 92.1,89.5 92.9,94.2 93.8,98.8 94.6,103.4 95.4,107.9 96.2,112.4 97.0,116.8 97.9,121.2 98.7,125.5 99.5,129.8 100.3,134.0 101.2,138.2 102.0,142.4 102.8,146.5 103.6,150.5 104.4,154.5 105.3,158.5 106.1,162.4 106.9,166.2 107.7,170.0 108.5,173.8 109.4,177.5 110.2,181.1 111.0,184.7 111.8,188.3 112.7,191.8 113.5,195.3 114.3,198.7 115.1,202.1 115.9,205.4 116.8,204.0 117.6,200.8 118.4,197.6 119.2,194.5 120.1,191.4 120.9,188.4 121.7,185.4 122.5,182.4 123.3,179.5 124.2,176.7 125.0,173.9 125.8,171.1 126.6,168.4 127.5,165.8 128.3,163.2 129.1,160.6 129.9,158.1 130.7,155.6 131.6,153.2 132.4,150.9 133.2,148.5 134.0,146.3 134.9,144.1 135.7,141.9 136.5,139.7 137.3,137.7 138.1,135.6 139.0,133.7 139.8,131.7 140.6,129.8 141.4,128.0 142.2,126.2 143.1,124.5 143.9,122.8 144.7,121.1 145.5,119.5 146.4,118.0 147.2,116.5 148.0,115.0 148.8,113.6 149.6,112.2 150.5,110.9 151.3,109.7 152.1,108.4 152.9,107.3 153.8,106.2 154.6,105.1 155.4,104.1 156.2,103.1 157.0,102.2 157.9,101.3 158.7,100.4 159.5,99.7 160.3,98.9 161.2,98.2 162.0,97.6 162.8,97.0 163.6,96.5 164.4,96.0 165.3,95.5 166.1,95.1 166.9,94.8 167.7,94.5 168.6,94.2 169.4,94.0 170.2,93.8 171.0,93.7 171.8,93.7 172.7,93.6 173.5,93.7 174.3,93.7 175.1,93.9 176.0,94.0 176.8,94.3 177.6,94.5 178.4,94.9 179.2,95.2 180.1,95.6 180.9,96.1 181.7,96.6 182.5,97.2 183.3,97.8 184.2,98.4 185.0,99.1 185.8,99.9 186.6,100.7 187.5,101.5 188.3,102.4 189.1,103.4 189.9,104.4 190.7,105.4 191.6,106.5 192.4,107.6 193.2,108.8 194.0,110.0 194.9,111.3 195.7,112.6 196.5,114.0 197.3,115.4 198.1,116.9 199.0,118.4 199.8,120.0 200.6,121.6 201.4,123.2 202.3,125.0 203.1,126.7 203.9,128.5 204.7,130.4 205.5,132.3 206.4,134.2 207.2,136.2 208.0,138.3 208.8,140.4 209.7,142.5 210.5,144.7 211.3,146.9 212.1,149.2 212.9,151.5 213.8,153.9 214.6,156.3 215.4,158.8 216.2,161.3 217.0,163.9 217.9,166.5 218.7,169.2 219.5,171.9 220.3,174.7 221.2,177.5 222.0,180.4 222.8,183.3 223.6,186.2 224.4,189.2 225.3,192.3 226.1,195.4 226.9,198.5 227.7,201.7 228.6,205.0 229.4,208.3 230.2,211.6 231.0,215.0 231.8,218.4 232.7,221.9 233.5,225.4 234.3,229.0 235.1,232.6 236.0,236.3 236.8,240.0 237.6,243.8 238.4,247.6 239.2,251.5 240.1,255.4 240.9,259.4 241.7,263.4 242.5,267.4 243.4,271.5 244.2,275.7 245.0,279.9 245.8,284.1" fill="none" stroke="var(--indigo)" stroke-width="2.3" stroke-linejoin="round"/><line x1="26.0" y1="93.6" x2="274.0" y2="93.6" stroke="var(--red)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="6 4"/><circle cx="116.2" cy="206.4" r="3.6" fill="var(--green)"/><circle cx="228.9" cy="206.4" r="3.6" fill="var(--green)"/><circle cx="172.5" cy="93.6" r="3.6" fill="var(--red)"/><circle cx="92.8" cy="93.6" r="3.6" fill="var(--red)"/><text x="172.5" y="85.6" text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)">접함</text><text x="272.0" y="87.6" text-anchor="end" font-size="11.5" font-weight="700" fill="var(--red)">y=1</text><text x="234.9" y="222.4" text-anchor="start" font-size="11.5" font-weight="700" fill="var(--green)">2k=1</text></svg>
+        <div class="fig-cap">\(g(f(x))=0\) ⟺ \(f(x)=0\) 또는 \(f(x)=2k\). 근이 정확히 \(4\)개가 되는 것은 \(y=2k\)가 봉우리에 <b>접할 때</b></div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>4단계 — 적분</span>
+        <div class="mathrow">$$\begin{gathered}\int_{-1/2}^{1/2}4|x|(1-x)\,dx\\[2pt] =4\left(\frac1{12}+\frac16\right)=1\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(1\ \Rightarrow\) ④</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(|g|\)를 그냥 \(g\)로 두고 미분하는 것. 절댓값이 붙은 함수가 미분가능하려면 <b>근이 모두 짝수 번</b>이어야 한다는 것이 이 문제의 열쇠다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q21">
+    <div class="sol-head">
+      <span class="sol-k">21</span>
+      <div>
+        <div class="sol-title">세 근의 위치 조건 → \(\frac13\)에서의 <b>함숫값 부호</b> <span class="tag-essay">서술형</span></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 서술형 4점</span> 방정식과 미분 · 실근의 범위</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">삼차방정식 \(5x^3-2=2x^3+9x+k\)가 \(\alpha\lt\frac13\lt\beta\lt\gamma\)를 만족시키는 서로 다른 세 실근 \(\alpha,\ \beta,\ \gamma\)를 갖는다고 할 때, 실수 \(k\)의 값의 범위를 구하는 풀이 과정과 답을 서술하시오.</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 정리</span>
+        <p>\(h(x)=3x^3-9x-2=k\). \(h^{\prime}=9(x+1)(x-1)\): 극댓값 \(h(-1)=4\), 극솟값 \(h(1)=-8\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 세 실근</span>
+        <p>\(-8\lt k\lt4\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — \(\frac13\)의 위치</span>
+        <p>가운데 근 \(\beta\)는 감소 구간 \((-1,\ 1)\)에 있다. \(\beta\gt\frac13\) ⟺ \(h\left(\frac13\right)\gt k\). \(h\left(\frac13\right)=\frac19-3-2=-\frac{44}9\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(-8\lt k\lt-\dfrac{44}{9}\)</span></div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>채점 기준 (예시)</span>
+        <div class="cond"><div class="row"><span class="lab">정리</span><span>\(h(x)=k\)로 바꾸고 극값 \(4,\ -8\)</span></div><div class="row"><span class="lab">세 근</span><span>\(-8\lt k\lt4\)</span></div><div class="row"><span class="lab">위치</span><span>\(h(\frac13)=-\frac{44}9\)과 비교해 범위 완성</span></div></div>
+      </div>
+      <div class="miss"><b>가장 잦은 실수</b> 부등호 방향을 거꾸로 써서 \(k\gt-\frac{44}9\)로 쓰는 것. 감소 구간에서는 <b>\(x\)가 커질수록 값이 작아진다</b>.</div>
+    </div>
+  </section>
+  <section class="sol killer" id="q22">
+    <div class="sol-head">
+      <span class="sol-k red">22</span>
+      <div>
+        <div class="sol-title">두 접선이 <b>수직</b> — 지름 위의 원 조건 <span class="tag-essay">서술형</span></div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 서술형 5점</span> 정적분 · 접선 해석</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(a\lt-\sqrt2\)인 실수 \(a\)에 대하여 함수 \(f(x)=x^3+ax^2-2x\)일 때, 점 \(\mathrm O(0,\ 0)\)에서의 접선이 곡선 \(y=f(x)\)와 만나는 점 중 원점 아닌 점을 P라 하고, 곡선 위의 점 P에서의 접선이 \(x\)축과 만나는 점을 Q라 할 때, 점 P는 선분 OQ를 지름으로 하는 원 위에 있다. \(\displaystyle\int_0^af(x)\,dx\)의 값을 구하는 풀이 과정과 답을 서술하시오.</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 점 P</span>
+        <p>\(f^{\prime}(0)=-2\) → 접선 \(y=-2x\). \(x^3+ax^2-2x=-2x\Rightarrow x^2(x+a)=0\) → \(\mathrm P(-a,\ 2a)\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 수직 조건</span>
+        <p>P가 지름 OQ인 원 위 ⟺ \(\angle\mathrm{OPQ}=90^\circ\). 직선 OP의 기울기 \(-2\), P에서의 접선 기울기 \(f^{\prime}(-a)=a^2-2\).</p>
+        <div class="mathrow">$$-2(a^2-2)=-1\ \Rightarrow\ a^2=\frac52$$</div>
+      </div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 340 244" width="100%" style="max-width:300px" role="img" aria-label="원점의 접선, P에서의 접선, 지름 OQ인 원"><line x1="26.0" y1="80.0" x2="314.0" y2="80.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="320.0,80.0 312.0,76.0 312.0,84.0" fill="var(--ink-soft)"/><line x1="56.0" y1="218.0" x2="56.0" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="56.0,20.0 52.0,28.0 60.0,28.0" fill="var(--ink-soft)"/><text x="318.0" y="96.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="65.0" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="46.0" y="95.0" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polyline points="29.0,86.3 29.4,84.9 29.9,83.5 30.3,82.2 30.8,81.0 31.2,79.8 31.6,78.7 32.1,77.6 32.5,76.5 32.9,75.5 33.4,74.6 33.8,73.7 34.2,72.9 34.7,72.1 35.1,71.3 35.6,70.6 36.0,70.0 36.4,69.4 36.9,68.8 37.3,68.3 37.8,67.8 38.2,67.4 38.6,67.0 39.1,66.6 39.5,66.3 39.9,66.1 40.4,65.9 40.8,65.7 41.2,65.5 41.7,65.4 42.1,65.4 42.6,65.3 43.0,65.3 43.4,65.4 43.9,65.5 44.3,65.6 44.8,65.8 45.2,65.9 45.6,66.2 46.1,66.4 46.5,66.7 46.9,67.0 47.4,67.4 47.8,67.8 48.2,68.2 48.7,68.6 49.1,69.1 49.6,69.6 50.0,70.1 50.4,70.7 50.9,71.3 51.3,71.9 51.8,72.5 52.2,73.2 52.6,73.9 53.1,74.6 53.5,75.3 53.9,76.1 54.4,76.9 54.8,77.7 55.2,78.5 55.7,79.4 56.1,80.3 56.6,81.1 57.0,82.1 57.4,83.0 57.9,83.9 58.3,84.9 58.8,85.9 59.2,86.9 59.6,87.9 60.1,88.9 60.5,90.0 60.9,91.0 61.4,92.1 61.8,93.2 62.3,94.3 62.7,95.4 63.1,96.5 63.6,97.7 64.0,98.8 64.4,100.0 64.9,101.1 65.3,102.3 65.8,103.5 66.2,104.7 66.6,105.9 67.1,107.1 67.5,108.3 67.9,109.5 68.4,110.7 68.8,111.9 69.2,113.2 69.7,114.4 70.1,115.6 70.6,116.9 71.0,118.1 71.4,119.3 71.9,120.6 72.3,121.8 72.8,123.1 73.2,124.3 73.6,125.5 74.1,126.8 74.5,128.0 74.9,129.2 75.4,130.5 75.8,131.7 76.2,132.9 76.7,134.1 77.1,135.3 77.6,136.5 78.0,137.7 78.4,138.9 78.9,140.0 79.3,141.2 79.8,142.3 80.2,143.5 80.6,144.6 81.1,145.7 81.5,146.8 81.9,147.9 82.4,149.0 82.8,150.1 83.2,151.2 83.7,152.2 84.1,153.2 84.6,154.2 85.0,155.2 85.4,156.2 85.9,157.2 86.3,158.1 86.8,159.0 87.2,159.9 87.6,160.8 88.1,161.7 88.5,162.5 88.9,163.3 89.4,164.2 89.8,164.9 90.2,165.7 90.7,166.4 91.1,167.1 91.6,167.8 92.0,168.5 92.4,169.1 92.9,169.7 93.3,170.3 93.8,170.8 94.2,171.4 94.6,171.9 95.1,172.3 95.5,172.8 95.9,173.2 96.4,173.5 96.8,173.9 97.2,174.2 97.7,174.5 98.1,174.7 98.6,174.9 99.0,175.1 99.4,175.3 99.9,175.4 100.3,175.4 100.8,175.5 101.2,175.5 101.6,175.4 102.1,175.4 102.5,175.2 102.9,175.1 103.4,174.9 103.8,174.7 104.2,174.4 104.7,174.1 105.1,173.7 105.6,173.3 106.0,172.9 106.4,172.4 106.9,171.9 107.3,171.3 107.8,170.7 108.2,170.0 108.6,169.3 109.1,168.5 109.5,167.7 109.9,166.9 110.4,165.9 110.8,165.0 111.2,164.0 111.7,162.9 112.1,161.8 112.6,160.7 113.0,159.5 113.4,158.2 113.9,156.9 114.3,155.5 114.8,154.1 115.2,152.6 115.6,151.1 116.1,149.5 116.5,147.9 116.9,146.2 117.4,144.4 117.8,142.6 118.2,140.7 118.7,138.8 119.1,136.8 119.6,134.7 120.0,132.6 120.4,130.4 120.9,128.2 121.3,125.9 121.8,123.5 122.2,121.1 122.6,118.6 123.1,116.0 123.5,113.4 123.9,110.7 124.4,108.0 124.8,105.1 125.2,102.3 125.7,99.3 126.1,96.3 126.6,93.2 127.0,90.0 127.4,86.8 127.9,83.5 128.3,80.1 128.8,76.6 129.2,73.1 129.6,69.5 130.1,65.8 130.5,62.1 130.9,58.3 131.4,54.4 131.8,50.4 132.2,46.3 132.7,42.2 133.1,38.0 133.6,33.7 134.0,29.4" fill="none" stroke="var(--ink)" stroke-width="2.3" stroke-linejoin="round"/><line x1="29.0" y1="26.0" x2="125.0" y2="218.0" stroke="var(--red)" stroke-width="1.6" stroke-linecap="round"/><line x1="103.4" y1="174.9" x2="293.2" y2="80.0" stroke="var(--indigo)" stroke-width="1.8" stroke-linecap="round"/><circle cx="174.6" cy="80.0" r="118.6" fill="none" stroke="var(--ink-faint)" stroke-width="1.2" stroke-dasharray="4 3"/><path d="M 99.9 167.7 L 107.0 164.1 L 110.6 171.3" fill="none" stroke="var(--ink-soft)" stroke-width="1.3"/><circle cx="103.4" cy="174.9" r="3.6" fill="var(--red)"/><circle cx="293.2" cy="80.0" r="3.6" fill="var(--indigo)"/><text x="111.4" y="188.9" text-anchor="start" font-size="12" font-weight="700" fill="var(--red)">P(−a, 2a)</text><text x="297.2" y="72.0" text-anchor="start" font-size="12.5" font-weight="700" fill="var(--indigo)">Q</text></svg>
+        <div class="fig-cap">P가 지름 OQ인 원 위 ⟺ \(\angle\mathrm{OPQ}=90^\circ\) ⟺ 두 접선이 <b>수직</b> (기울기 곱 \(-1\))</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 적분</span>
+        <div class="mathrow">$$\begin{gathered}\int_0^af(x)\,dx=\frac{a^4}4+\frac{a^4}3-a^2\\[2pt] =\frac7{12}a^4-a^2=\frac{175}{48}-\frac{120}{48}\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(\dfrac{55}{48}\)</span></div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>채점 기준 (예시)</span>
+        <div class="cond"><div class="row"><span class="lab">점 P</span><span>원점의 접선과 곡선의 교점 \((-a,\ 2a)\)</span></div><div class="row"><span class="lab">조건</span><span>원의 성질 → 수직 → \(a^2=\frac52\)</span></div><div class="row"><span class="lab">적분</span><span>\(\frac7{12}a^4-a^2=\frac{55}{48}\)</span></div></div>
+      </div>
+      <div class="miss"><b>가장 잦은 실수</b> Q의 좌표를 직접 구해 원의 방정식을 세우는 것 — 가능하지만 길다. 「지름 위의 원주각은 직각」을 쓰면 <b>기울기 곱</b> 한 줄이다. \(a\)는 \(a^2\)만 필요하니 \(-\sqrt{5/2}\)를 직접 넣지 않아도 된다.</div>
+    </div>
+  </section>
+  <footer>
+    루멘수학 · 기출 정밀해설집 · 범박고 2학년 2023학년도 2학기 기말 (수학II)<br>
+    문항 정답 22/22 검증 완료 · 그림풀이 원본 제작 · 첨삭 해설
+  </footer>
+</div>
