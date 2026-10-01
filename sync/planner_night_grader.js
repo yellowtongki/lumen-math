@@ -295,8 +295,22 @@ function plzTextSim(a, b) {
 function plzCheck(st, analysis, setId) {
   const sd = plzSetDay(setId); if (!sd || sd < PLZ.FROM || !analysis) return analysis;
   const pd = dateKey(analysis.date);
-  let reason = !pd ? 'noDate' : ((pd === sd || pd === plzAdd(sd, -1)) ? '' : 'wrongDate'), dup = null;
+  let reason = !pd ? 'noDate' : ((pd === sd || pd === plzAdd(sd, -1)) ? '' : (pd > sd ? 'future' : 'late')), dup = null;
   if (!reason && analysis.dateGuess) reason = 'noDate';
+  /* v19-68 짝: 지각·미래 날짜는 0점 사유가 아니다 — 표시만 */
+  analysis.dateFlag = ''; analysis.lateDays = 0;
+  if (reason === 'late' || reason === 'future') { analysis.dateFlag = reason; if (reason === 'late') analysis.lateDays = Math.round((new Date(sd + 'T00:00:00Z') - new Date(pd + 'T00:00:00Z')) / 86400000); reason = ''; }
+  /* v19-68 짝: 같은 날짜를 «다른 날» 또 냄 = 거짓 제출 (같은 날 다시 올린 것 제외) */
+  if (!reason && pd) {
+    let same = null;
+    ((st && st.lumen_planner_photos) || []).forEach((p) => {
+      if (!p || !p.setId || p.setId === setId) return;
+      const d = plzSetDay(p.setId); if (!d || d >= sd) return;   /* 먼저 낸 세트만 */
+      const a = p.analysis, od = a ? (a.dateGuess ? '' : dateKey(a.date)) : d;
+      if (od === pd && (!same || p.setId < same.setId)) same = { setId: p.setId, day: d };
+    });
+    if (same) { reason = 'sameDate'; dup = same; }
+  }
   if (!reason) {
     const from = plzAdd(sd, -PLZ.DUP_DAYS);
     ((st && st.lumen_planner_photos) || []).forEach((p) => {
