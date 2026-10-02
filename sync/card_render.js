@@ -88,13 +88,14 @@ function derive(card, dir) {
         <div class="bd fit">${lines}</div></div>`;
     }).join('');
   }
-  const li = (arr) => (arr || []).map(t => `<li style="display:flex;gap:14px;margin-bottom:14px"><span style="color:var(--gold);font-weight:800">—</span><span>${esc(t)}</span></li>`).join('');
-  if (card.type === 'compare') { d.leftItemsHtml = li(card.leftItems); d.rightItemsHtml = li(card.rightItems); }
+  const li = (arr, color) => (arr || []).map(t => `<li style="display:flex;gap:14px;margin-bottom:14px"><span style="color:${color};font-weight:800">—</span><span>${esc(t)}</span></li>`).join('');
+  // 왼쪽은 밝은 바탕이라 붉은색, 오른쪽은 붉은 바탕이라 노랑 (노랑은 밝은 바탕에서 안 읽힌다)
+  if (card.type === 'compare') { d.leftItemsHtml = li(card.leftItems, 'var(--red)'); d.rightItemsHtml = li(card.rightItems, 'var(--yellow)'); }
   if (card.type === 'list') {
     d.itemsHtml = (card.items || []).map((it, i) => {
       const h = typeof it === 'string' ? it : it.h, desc = typeof it === 'string' ? '' : (it.d || '');
       return `<div style="display:flex;gap:26px;align-items:flex-start">
-        <div style="font-size:52px;font-weight:800;color:var(--blue);line-height:1.2;flex:none">${CIRCLED[i] || (i + 1)}</div>
+        <div style="font-size:52px;font-weight:800;color:var(--red);line-height:1.2;flex:none">${CIRCLED[i] || (i + 1)}</div>
         <div><div style="font-size:44px;font-weight:800;line-height:1.3">${esc(h)}</div>${desc ? `<div style="font-size:33px;color:var(--muted);margin-top:10px;line-height:1.45">${esc(desc)}</div>` : ''}</div></div>`;
     }).join('');
   }

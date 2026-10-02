@@ -175,13 +175,13 @@ function render(run, history) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>블로그 검색 점검 — 루멘수학</title>
 <style>
-:root{--bg:#eef2f8;--card:#fff;--ink:#0f172a;--ink2:#51607a;--mut:#8896ab;--line:#dde3ec;
-  --navy:#0d2240;--me:#b5893a;--other:#6b7c96;--blue:#1d6fe8}
+:root{--bg:#f8f4ef;--card:#fff;--ink:#1c1414;--ink2:#5c4c4c;--mut:#8b7a76;--line:#e8ded6;
+  --navy:#8d2c2c;--me:#c03f3f;--other:#8e8079;--blue:#c03f3f}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
-  --bg:#0b1220;--card:#131c2b;--ink:#f1f5fb;--ink2:#b7c3d6;--mut:#7f8 da;--mut:#7f8da0;--line:#22304a;
-  --navy:#e8eef8;--me:#d9a84e;--other:#93a3bb}}
-:root[data-theme="dark"]{color-scheme:dark;--bg:#0b1220;--card:#131c2b;--ink:#f1f5fb;--ink2:#b7c3d6;
-  --mut:#7f8da0;--line:#22304a;--navy:#e8eef8;--me:#d9a84e;--other:#93a3bb}
+  --bg:#1a1211;--card:#241a19;--ink:#f7efec;--ink2:#d2bfba;--mut:#9c8781;--line:#3a2a28;
+  --navy:#f7efec;--me:#e8705f;--other:#9c8781}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#1a1211;--card:#241a19;--ink:#f7efec;--ink2:#d2bfba;
+  --mut:#9c8781;--line:#3a2a28;--navy:#f7efec;--me:#e8705f;--other:#9c8781}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);line-height:1.6;padding:0 16px 80px;
   font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;

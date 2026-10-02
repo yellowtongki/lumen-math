@@ -59,7 +59,7 @@ function build(desc) {
     ``,
     `Scene: ${desc}`,
     ``,
-    `Style: cinematic, calm, premium. Deep navy (#0d2240) dominates; warm gold (#b5893a) as a small accent light.`,
+    `Style: cinematic, calm, premium. Warm deep red (#c03f3f) and dark warm tones dominate; golden-yellow (#fdc108) as a small accent light.`,
     `Soft depth of field, gentle contrast, slightly desaturated. Quiet and studious — never flashy or cartoonish.`,
     ``,
     `Composition: keep the UPPER-LEFT third visually simple and uncluttered — large text will be placed there.`,
