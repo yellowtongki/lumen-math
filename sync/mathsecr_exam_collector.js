@@ -97,7 +97,8 @@ async function fetchExam(id) {
   // cells: data.pages[].cells[]
   const cells = [];
   let cursor = '';
-  for (let i = 0; i < 10; i++) {
+  // 한 쪽에 48문항 — 교과서 DB는 600문항이 넘어 10쪽(480문항)으로는 잘린다. 30쪽(1,440문항)까지 읽는다.
+  for (let i = 0; i < 30; i++) {
     const j = await msGet(`/bms/api/v1/mydbs/${id}/cells?curriculumId=2&limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
     ((j.data && j.data.pages) || []).forEach(pg => (pg.cells || []).forEach(c => cells.push({ ...c, _page: pg.pageNumber })));
     cursor = j.pagination && j.pagination.cursor;
