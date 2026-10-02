@@ -48,12 +48,20 @@ hashtags: #옥길동수학학원 #부천수학학원 ... (8개 이상)
 같은 폴더에 6장. 종류는 `cover`/`photo`/`qa`/`stat`/`compare`/`list`/`solve`/`closing`.
 **`qa` 카드에 넣은 질문은 본문에도 똑같은 글자로** 있어야 한다 (카드는 그림이라 검색엔진이 못 읽음).
 
-배경 그림이 필요하면 카드에 `"bgPreset": "desk_night"` + `"bgPrompt": "..."` 를 적고:
+배경 그림을 만드는 길은 셋이다. **상황에 맞는 것을 고른다.**
 
-```bash
-node sync/image_gen.js blog/<폴더> --dry   # 키 없이 — 프롬프트만 뽑아 ChatGPT에 붙여넣기
-node sync/image_gen.js blog/<폴더>         # OPENAI_API_KEY 있으면 바로 (맥미니)
-```
+| 길 | 언제 | 어떻게 |
+|---|---|---|
+| **MCP** (제일 좋음) | 질을 높이고 싶을 때 | `make_card_background` 도구를 부른다. **만든 그림이 바로 보이니 보고 판단해서 다시 부른다.** 맥미니 + 키 필요 |
+| 스크립트 | 여러 장 한 번에 | `node sync/image_gen.js blog/<폴더>` · 카드에 `bgPreset`/`bgPrompt` 를 미리 적어 둔다 |
+| 손으로 | 키가 없을 때 | `node sync/image_gen.js blog/<폴더> --dry` → 프롬프트를 ChatGPT에 붙여넣고 받은 그림을 폴더에 저장 |
+
+**MCP 를 쓸 때의 요령** — 한 번에 끝내려 하지 말 것:
+1. `quality: "low"` 로 시안을 먼저 본다 (싸다)
+2. **그림을 눈으로 본다.** 제목이 놓일 자리(왼쪽 위)가 복잡하면 글자가 안 읽힌다
+3. 장면 설명을 고쳐 다시 부른다
+4. 마음에 들면 `quality: "high"` + `save_to: "blog/<폴더>/bg_01.png"` 로 저장
+5. `cards.json` 의 그 카드에 `"bg": "bg_01.png"` 를 적는다
 
 > AI는 **배경만** 만든다. 글자·수식은 늘 카드 생성기가 HTML로 얹는다 (한글이 깨지므로).
 > 학원 내부·수업 장면·사람 얼굴은 만들지 않는다 (허위 광고).

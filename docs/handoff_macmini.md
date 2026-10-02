@@ -110,6 +110,7 @@ sync/card_templates/         카드 디자인 8종 + _base.css
 | `node sync/post_check.js blog/<폴더>` | 17항목 검사 (글자수·카드·사진·지도·해시태그·날짜·주소·개인정보…) | 아무 데나 |
 | `node sync/serp_check.js` | 네이버에 검색어 10개를 쳐 보고 첫 화면에 우리 글이 있는지 → `docs/serp_latest.html` | **맥미니만** |
 | `node sync/image_gen.js blog/<폴더> [--dry]` | 카드 배경 그림 (GPT). `--dry` 는 키 없이 프롬프트만 |
+| **MCP `lumen-image`** | **Claude가 GPT를 직접 불러 배경을 만들고 «보고» 고친다.** `.mcp.json` 에 등록돼 있어 저장소 폴더에서 Claude Code 를 열면 자동으로 붙는다 |
 | `node sync/keyword_volume.js` | 낱말별 월간 검색수 → `docs/keyword_volume.md` | **맥미니만** · 키 필요 |
 
 ### 🎴 카드 8종 (`cards.json` 의 `type`)
@@ -131,7 +132,7 @@ sync/card_templates/         카드 디자인 8종 + _base.css
 |---|---|---|
 | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | 글감 생성기 | 이미 쓰고 있는 값 |
 | `NAVER_AD_CUSTOMER_ID`<br>`NAVER_AD_API_KEY`<br>`NAVER_AD_SECRET_KEY` | 검색량 조사기 | searchad.naver.com 가입(무료) → 도구 → API 사용 관리 |
-| `OPENAI_API_KEY` | (아직 안 만듦) 배경 그림 생성 | platform.openai.com |
+| `OPENAI_API_KEY` | 배경 그림 (`image_gen.js` · MCP `lumen-image`) | platform.openai.com |
 | 인스타 토큰 | (아직 안 만듦) 인스타 게시 | 메타 개발자 + 비즈니스 계정 |
 
 > ⚠️ **키를 저장소에 넣지 않는다.** `~/.zshrc` 에 `export` 하거나 `.env`(gitignore됨)를 쓴다.
@@ -170,6 +171,7 @@ sync/card_templates/         카드 디자인 8종 + _base.css
 | 도구 | 무엇이 불확실한가 |
 |---|---|
 | `serp_check.js` | 네이버 검색 화면의 링크 구조. 숫자가 이상하면 `sync/_debug/serp/` 의 화면 사진과 맞춰 본다 |
+| `mcp_image.js` · `image_gen.js` | **MCP 규약과 프롬프트는 확인했다.** OpenAI 실제 호출(모델 이름·응답 형식)은 키가 없어 못 해봤다 |
 | `keyword_volume.js` | 검색광고 API의 서명 방식·응답 필드 이름 |
 
 카드 생성기·검사기·글감 생성기는 **실제로 돌려서 확인했다.**
