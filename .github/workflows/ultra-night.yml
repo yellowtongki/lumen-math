@@ -4,9 +4,10 @@ name: 울트라 초안 · 녹음 주제 새벽 작성 (고정 스크립트)
 # 남기지 못했다(원장 결정 2026-10-02 「B로 진행」). 그 일을 «판단 없는» 고정 스크립트로 옮겼다.
 #   ① 울트라 초안 — 최근 7일 중 학습지를 풀었는데 초안이 없는 (날짜, 학생)만 채운다 → ultra_drafts
 #   ② 녹음 주제 — 오늘 수업하는 반의 학년·학생 주제 → rec_topics
+#   (앞에) 수학비서 「매쓰플랫 올리기」 폴더 → 매쓰플랫 학습지 (새 문제지가 있을 때만)
 # 매쓰플랫 수집(04:00)·플래너 채점(04:25) 뒤에 돈다. 로그에는 날짜·인원수만 남는다(이름·글 없음).
 #
-# 필요한 비밀값: SUPABASE_URL, SUPABASE_SERVICE_KEY, ANTHROPIC_API_KEY
+# 필요한 비밀값: SUPABASE_URL, SUPABASE_SERVICE_KEY, ANTHROPIC_API_KEY (+ 수학비서: MATHSECR_ID/PASSWORD, MATHFLAT_ID/PASSWORD)
 
 on:
   schedule:
@@ -37,12 +38,29 @@ concurrency:
 jobs:
   write:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      # 수학비서 「매쓰플랫 올리기」 폴더 → 매쓰플랫 학습지 (예전 Routine 1.5단계 · 원장 지시 2026-09-13)
+      # 이미 처리한 문제지는 건너뛰므로 새 문제지가 없으면 몇 초 만에 끝난다. 실패해도 초안 작성은 계속한다.
+      - name: 의존성 설치 (pdf-lib 등)
+        run: npm install --no-audit --no-fund
+      - name: 수학비서 → 매쓰플랫 학습지
+        if: ${{ github.event.inputs.only == '' || github.event.inputs.only == null }}
+        continue-on-error: true
+        env:
+          MATHSECR_ID: ${{ secrets.MATHSECR_ID }}
+          MATHSECR_PASSWORD: ${{ secrets.MATHSECR_PASSWORD }}
+          MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
+          MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ -z "$MATHSECR_ID" ]; then echo "수학비서 계정(MATHSECR_ID)이 없어 건너뜀"; exit 0; fi
+          node sync/mypaper_to_mathflat.js
       - name: 초안 · 녹음 주제 작성
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
