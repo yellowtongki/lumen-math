@@ -2716,6 +2716,25 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 /* v2-121: 홈 D-day 띠 — 조금 납작하게 */
 .hm-dday{margin:0 0 10px;padding:9px 13px}
 .hm-dday .cal-sd{font-size:17px}
+
+/* ══ v2-123: 🏷 내 별명 고르기 ══ */
+.nk-ov{display:none;position:fixed;inset:0;background:rgba(13,34,64,.55);z-index:130;align-items:center;justify-content:center;padding:20px}
+.nk-box{background:#fff;border-radius:18px;padding:18px 16px;width:100%;max-width:360px;box-shadow:0 10px 30px rgba(13,34,64,.3)}
+.nk-t{font-size:17px;font-weight:900;color:#0d2240}
+.nk-s{font-size:12.5px;font-weight:700;color:#475569;line-height:1.6;margin-top:6px}
+.nk-r{font-size:11px;font-weight:700;color:#94a3b8;margin-top:10px}
+.nk-c{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.nk-cd{width:100%;border:2px solid #cbd5e1;background:#f8fafc;border-radius:12px;padding:13px;font-size:17px;font-weight:900;color:#0d2240;font-family:inherit;cursor:pointer;text-align:left}
+.nk-cd:active{border-color:#1d6fe8;background:#eff6ff}
+.nk-re{width:100%;margin-top:8px;border:none;background:#fef3c7;color:#92400e;border-radius:11px;padding:11px;font-size:14px;font-weight:900;font-family:inherit;cursor:pointer}
+.nk-lock{margin-top:10px;background:#f1f5f9;border-radius:12px;padding:12px;font-size:13px;font-weight:800;color:#475569;line-height:1.6;text-align:center}
+.nk-e{font-size:12px;font-weight:800;color:#dc2626;min-height:16px;margin-top:4px}
+.nk-b{display:flex;gap:8px;margin-top:6px}
+.nk-b button{flex:1;border:none;border-radius:11px;padding:11px;font-size:14px;font-weight:900;font-family:inherit;cursor:pointer}
+.nk-b .c{background:#f1f5f9;color:#475569}
+#bell-nick{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid #fde68a;border-radius:12px;padding:10px 12px;font-size:12.5px;font-weight:800;line-height:1.6;font-family:inherit;cursor:pointer;color:#0d2240}
+#bell-nick small{font-size:11px;font-weight:700;color:#64748b}
+
 </style>
 <style>
 /* ══ v2-116: K안 홈 — 공지 크게 · 오늘 · 리그 4종목 · 큰 칸 4 · 🔔 서랍 · 아래 탭 (원장 결정 2026-09-29) ══ */
@@ -2936,6 +2955,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     <button class="hn-strip" id="hn-strip" onclick="go('screen-aha')"></button>
     <!-- v2-119: 🏆 시즌 결과 · 챔피언 발표 · 다음 시즌 -->
     <button id="bell-season" style="display:none" onclick="go('screen-league')"></button>
+    <!-- v2-123: 🏷 별명 없음 -->
+    <button id="bell-nick" style="display:none" onclick="nkOpen()"></button>
     <!-- v2-22: 리커버리 (rcvHomeLoad) -->
     <div class="h3-rcv" id="h3-rcv" style="display:none">
       <span class="ic">🚑</span>
@@ -3028,6 +3049,8 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
     <div id="blk-home" style="display:none;margin:0 0 9px"></div>
     <div class="mrows">
       <button class="mrow" onclick="go('screen-avatar')"><span class="mi">🎖️</span><span class="mt"><b>내 캐릭터 · 뱃지</b><small>레벨 · XP · 직업 · 뱃지</small></span><span class="mr">›</span></button>
+      <!-- v2-123: 🏷 내 별명 (nkOpen) -->
+      <button class="mrow" onclick="nkOpen()"><span class="mi">🏷</span><span class="mt"><b>내 별명</b><small id="nk-sub">순위표에 이름 대신 보여요</small></span><span class="mr">›</span></button>
       <button class="mrow" onclick="repOpen()"><span class="mi">📊</span><span class="mt"><b>내 리포트</b><small>시험 결과 · 등수</small></span><span class="mr">›</span></button>
       <button class="mrow" onclick="hnPushEnable()"><span class="mi">🔔</span><span class="mt"><b>알림 켜기</b><small>선생님 힌트가 오면 폰으로 알려요</small></span><span class="mr" id="me-push-st">›</span></button>
       <button class="mrow" onclick="fzMeOpen()"><span class="mi">🔠</span><span class="mt"><b>글씨 크기</b><small>홈 오른쪽 위 「가」 단추</small></span><span class="mr">›</span></button>
@@ -4416,6 +4439,10 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-123 (2026-10-01) 🏷 내 별명 — 「꾸밈말 + 수학·동물 낱말」에서 고르기 (원장 결정 · 학부모 요청 「성이 특정됨」)
+ *   · 「나」 탭 「🏷 내 별명」: 앱이 조합 셋을 보여 주고 🎲 다시 뽑기(무제한). 글자를 치는 칸은 없어요. 다른 친구가 쓰는 조합은 안 나와요.
+ *   · 처음 정하는 건 자유, 바꾸기는 한 달에 한 번. 선생님이 순위표를 다시 올릴 때 반영돼요.
+ *   · 별명이 없으면 🔔 알림에 「별명을 골라 주세요」, 순위표엔 「○○○」로 나와요.
  * v2-121 (2026-10-01) 📅 시험 D-day를 홈 첫 화면에 · 끝난 레이드는 안 보임 (원장 지시)
  *   · 홈 공지 바로 아래에 「D-40 · 범박중 2학기 기말 · 3학년」 띠. 날짜가 멀어도 보여요(🔔 서랍에는 30일 안일 때만).
  *   · 진도 레이스가 끝나 레이드 기간이 지나면 ⚔️ 보스 카드와 「다른 학년은 지금」 줄이 사라져요.
@@ -4951,7 +4978,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-121';
+var STU_VER = 'v2-123';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -15207,6 +15234,7 @@ async function rcHomeUpdate(){
   var em=document.getElementById('rcbn-em');
   if(em) em.style.background=(raceOn&&rMe)?rcT(rMe.tier).g:'linear-gradient(135deg,#ffd76a,#e0a219)';
   try{ if(window.seaStripPaint) seaStripPaint(); }catch(e){}   /* v2-119: 축하 띠 · 🔔 */
+  try{ if(window.nkLoad) nkLoad(); }catch(e){}   /* v2-123: 별명 */
 }
 /* 화면 */
 window.rcInit=async function(targetId){
@@ -22315,6 +22343,7 @@ window.bellCount=function(){
   var n=0;
   n+=hintN();
   if(shown($('bell-season'))) n++;   /* v2-119 */
+  if(shown($('bell-nick'))) n++;   /* v2-123 */
   if(shown($('h3-rcv'))) n++;
   if(shown($('bell-wpl'))) n++;
   var rt=$('rtbn'); if(shown(rt)){ var dd=$('rtbn-dd'); if(dd && /틀린/.test(dd.textContent||'')) n++; }
@@ -22595,6 +22624,98 @@ window.seaStripPaint = function(){
   if (bl){ var lines = []; if (S && S.raceBell) lines.push(S.raceBell); if (S && S.plBell) lines.push(S.plBell); if (S && S.next && !S.champ) lines.push(S.next);
     if (lines.length){ bl.innerHTML = lines.map(seaEsc).join('<br>'); bl.style.display = ''; } else bl.style.display = 'none'; }
   if (typeof bellCount === 'function'){ try { bellCount(); } catch(e){} }
+};
+
+/* 🏷 별명 낱말 기본값 (학원앱 lumen_store 'nick_words' 로 바꿀 수 있다) — 두 앱이 같은 목록을 쓴다 */
+var NICK_WORDS_DEF = {
+  adj: ['번개','조용한','날쌘','반짝','씩씩한','똑똑한','느긋한','용감한','재빠른','신나는','커다란','작은','황금','은빛','푸른','붉은','초록','보라','하얀','검은','달리는','웃는','꿈꾸는','튼튼한','포근한','비밀','우주','바람','구름','별빛','새벽','한낮','겨울','여름','수수께끼','무적'],
+  noun: ['소수','삼각형','원주율','파이','제곱','루트','분수','약수','배수','인수','함수','무한','영점','직각','정수','벡터','미지수','상수','공식','좌표','도형','극한','행렬','집합','확률','등식','변수','여우','사자','고래','펭귄','수달','토끼','호랑이','독수리','돌고래','치타','올빼미','판다','늑대','다람쥐','거북이','코알라','햄스터','고슴도치']
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * v2-123: 🏷 내 별명 — 「꾸밈말 + 수학·동물 낱말」에서 고르기만 (원장 결정 2026-10-01)
+ *   · 글자를 치는 칸이 없다. 앱이 조합 셋을 보여 주고 🎲 다시 뽑기(무제한) · 고르면 저장.
+ *   · 처음 정하는 건 자유, 바꾸기는 한 달에 한 번(이번 달에 내가 바꿨으면 다음 달 1일부터). 선생님이 바꾼 건 세지 않는다.
+ *   · 낱말은 학원앱이 올린 nick_words(없으면 기본 목록). 다른 친구가 쓰는 조합은 안 나온다.
+ *   · 저장: 서버 nick_<코드> { nick, at, by:'student' } — 순위표에는 선생님이 다음에 올릴 때 반영.
+ * ══════════════════════════════════════════════════════════════════════════ */
+var NK = { nick: '', at: '', by: '', loaded: false, busy: false, words: null, used: {}, cands: [] };
+window.NK = NK;
+function nkCode(){ return (studentInfo && studentInfo.lumen_rec_code) || ''; }
+function nkEsc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function nkMonth(iso){ return String(iso || '').slice(0, 7); }
+function nkNow(){ return new Date(Date.now() + 9 * 3600000).toISOString(); }
+window.nkCanChange = function(){ if (!NK.nick) return true; if (NK.by !== 'student') return true; return nkMonth(NK.at) !== nkMonth(nkNow()); };
+window.nkWords = function(){ var w = NK.words; if (w && w.adj && w.adj.length && w.noun && w.noun.length) return w; return NICK_WORDS_DEF; };
+window.nkLoad = async function(force){
+  if (NK.loaded && !force) return NK.nick;
+  NK.loaded = true; NK.nick = String((studentInfo && studentInfo.nick) || '').trim(); NK.at = ''; NK.by = ''; NK.used = {};
+  if (sb && !isTest && nkCode()){
+    try {
+      var r = await sb.from('lumen_store').select('key,value').like('key', 'nick_%');
+      ((r && r.data) || []).forEach(function(row){ var v = row.value; if (typeof v === 'string'){ try { v = JSON.parse(v); } catch(e){ v = null; } }
+        if (row.key === 'nick_words'){ NK.words = v || null; return; }
+        if (!v || !v.nick) return; var k = String(v.nick).replace(/ /g, '').toLowerCase();
+        if (row.key === 'nick_' + nkCode()){ NK.nick = String(v.nick).trim(); NK.at = v.at || ''; NK.by = v.by || ''; } else NK.used[k] = 1; });
+    } catch(e){}
+  }
+  nkPaint(); return NK.nick;
+};
+window.nkPick = function(n){
+  var w = nkWords(), out = [], seen = {}, tries = 0, mine = NK.nick.replace(/ /g, '').toLowerCase();
+  while (out.length < (n || 3) && tries++ < 300){
+    var a = w.adj[Math.floor(Math.random() * w.adj.length)], b = w.noun[Math.floor(Math.random() * w.noun.length)], key = (a + b).toLowerCase();
+    if (seen[key] || NK.used[key] || key === mine || (a + b).length > 8) continue;
+    seen[key] = 1; out.push(a + ' ' + b);
+  }
+  return out;
+};
+window.nkPaint = function(){
+  var sub = document.getElementById('nk-sub'); if (sub) sub.textContent = NK.nick ? ('지금 별명: ' + NK.nick + ' · 순위표에 이름 대신 보여요') : '아직 없어요 — 순위표에 「○○○」로 나와요. 눌러서 골라요';
+  var bl = document.getElementById('bell-nick'); if (bl){ if (NK.loaded && !NK.nick){ bl.innerHTML = '🏷 <b>별명을 골라 주세요</b><br><small>순위표·시상에 이름 대신 별명이 나와요 (「나」 탭)</small>'; bl.style.display = ''; } else bl.style.display = 'none'; }
+  if (typeof bellCount === 'function'){ try { bellCount(); } catch(e){} }
+};
+window.nkOpen = function(){
+  var el = document.getElementById('nk-modal');
+  if (!el){ el = document.createElement('div'); el.id = 'nk-modal'; el.className = 'nk-ov'; el.addEventListener('click', function(ev){ if (ev.target === el) nkClose(); }); document.body.appendChild(el); }
+  NK.cands = nkPick(3); nkRender(); el.style.display = 'flex';
+  if (!NK.loaded) nkLoad().then(function(){ NK.cands = nkPick(3); nkRender(); });
+};
+window.nkRender = function(){
+  var el = document.getElementById('nk-modal'); if (!el) return;
+  var can = nkCanChange();
+  var h = '<div class="nk-box"><div class="nk-t">🏷 내 별명</div>'
+    + '<div class="nk-s">순위표·시상·명예의 전당에 <b>이름 대신 별명</b>이 나와요.' + (NK.nick ? ' 지금은 <b>' + nkEsc(NK.nick) + '</b>.' : '') + '</div>';
+  if (!can){
+    var a = String(NK.at).slice(0, 7).split('-'); var ny = Number(a[0]), nm = Number(a[1]) + 1; if (nm > 12){ nm = 1; ny++; }
+    h += '<div class="nk-lock">⏳ 이번 달에 이미 바꿨어요.<br>다음은 <b>' + nm + '월 1일</b>부터 바꿀 수 있어요.</div>';
+  } else {
+    h += '<div class="nk-r">마음에 드는 걸 고르세요 · 🎲 다시 뽑기는 몇 번이든' + (NK.nick ? ' · <b>바꾸기는 한 달에 한 번</b>' : '') + '</div><div class="nk-c">';
+    NK.cands.forEach(function(c, i){ h += '<button type="button" class="nk-cd" onclick="nkChoose(' + i + ')">' + nkEsc(c) + '</button>'; });
+    h += '</div><button type="button" class="nk-re" onclick="nkReroll()">🎲 다시 뽑기</button>';
+  }
+  h += '<div class="nk-e" id="nk-err"></div><div class="nk-b"><button type="button" class="c" onclick="nkClose()">닫기</button></div></div>';
+  el.innerHTML = h;
+};
+window.nkReroll = function(){ NK.cands = nkPick(3); nkRender(); };
+window.nkClose = function(){ var el = document.getElementById('nk-modal'); if (el) el.style.display = 'none'; };
+window.nkChoose = async function(i){
+  if (NK.busy) return; var n = NK.cands[i]; if (!n) return;
+  if (!nkCanChange()){ nkRender(); return; }
+  if (NK.nick && !confirm('별명을 「' + n + '」로 바꿀까요?\n\n바꾸면 이번 달에는 다시 못 바꿔요.')) return;
+  var err = document.getElementById('nk-err');
+  if (isTest || !sb){ if (err) err.textContent = '테스트 모드에서는 저장할 수 없어요'; return; }
+  NK.busy = true; if (err) err.textContent = '저장 중…';
+  try {
+    await nkLoad(true);   /* 방금 누가 같은 걸 골랐을 수도 */
+    if (NK.used[n.replace(/ /g, '').toLowerCase()]){ if (err) err.textContent = '방금 다른 친구가 골랐어요 — 다시 뽑아 주세요'; NK.cands = nkPick(3); nkRender(); NK.busy = false; return; }
+    var val = { nick: n, at: nkNow(), by: 'student' };
+    var w = await sb.from('lumen_store').upsert({ key: 'nick_' + nkCode(), value: val, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    if (w && w.error) throw new Error(w.error.message);
+    NK.nick = n; NK.at = val.at; NK.by = 'student'; nkPaint(); nkClose();
+    if (typeof showToast === 'function') showToast('🏷 별명 「' + n + '」 — 순위표에는 선생님이 다음에 올릴 때 보여요');
+  } catch(ex){ if (err) err.textContent = '저장 실패: ' + (ex.message || ex); }
+  NK.busy = false;
 };
 
 </script>
