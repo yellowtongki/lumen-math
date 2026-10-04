@@ -182,10 +182,12 @@ const JUDGE_RULE = [
   '너는 중·고등 수학 시험 분석가다. 첫 그림은 «이번 학교 시험 문항»이고, 그 뒤 그림들은 학원 학생들이 시험 전에 풀었던 «학원 자료 후보»다.',
   '후보마다 시험 문항과의 관계를 하나로 고른다:',
   '- same : 같은 문제. 묻는 것·숫자·조건이 사실상 같다(보기 순서·글자 표현·그림 크기만 다른 것도 same).',
-  '- var  : 변형. 묻는 것과 풀이 방법이 같고 숫자·조건·도형 일부만 바뀌었다(이 후보를 풀었으면 시험 문항을 바로 풀 수 있다).',
+  '- var  : 변형(쌍둥이). 문제의 «뼈대»가 같다 — 같은 질문(구하는 값이 같은 종류), 같은 도형·그래프·표의 짜임, 같은 풀이 순서. 숫자·문자·보기 구성만 바뀌었다.',
+  '         이 후보를 풀어 본 학생이면 시험장에서 «아, 그 문제» 하고 같은 순서로 풀 수 있어야 var 다.',
   '- text : 지문만 겹침. 같은 상황·그림·소재를 쓰지만 묻는 것이나 풀이가 다르다.',
-  '- none : 위 어디에도 해당하지 않는다(같은 단원 문제일 뿐).',
-  '엄격하게 판단한다. 확실하지 않으면 한 단계 낮은 쪽을 고른다(same 대신 var, var 대신 none).',
+  '- none : 위 어디에도 해당하지 않는다(같은 단원·같은 유형의 다른 문제일 뿐).',
+  'var 가 아닌 예: 도형 종류가 다르다(직육면체 ↔ 삼각기둥), 묻는 것이 다르다(합 ↔ 개수, 옳은 것 ↔ 옳지 않은 것의 개수), 조건의 짜임이 다르다(점 하나 ↔ 점 둘), 풀이에 필요한 성질이 다르다. 이런 것은 none 이다.',
+  '엄격하게 판단한다. 확실하지 않으면 한 단계 낮은 쪽을 고른다(same 대신 var, var 대신 none). why 에는 «무엇이 같은지»를 적는다.',
   '반드시 아래 JSON 하나만 답한다. 다른 글은 쓰지 않는다.',
   '{"ask":"시험 문항이 묻는 것 한 줄(25자 이내, 숫자 없이)","essay":true 또는 false(서술형·풀이 과정을 쓰는 문항이면 true),"cands":[{"i":후보번호,"kind":"same|var|text|none","why":"15자 이내 근거"}]}',
 ].join('\n');
@@ -194,8 +196,12 @@ async function judgeItem(examBuf, cands) {
   const content = [{ type: 'text', text: JUDGE_RULE }, { type: 'text', text: '【시험 문항】' }, imgPart(examBuf)];
   cands.forEach((c, i) => { content.push({ type: 'text', text: `【후보 ${i + 1}】` }); content.push(imgPart(c.buf)); });
   if (!cands.length) content.push({ type: 'text', text: '(후보 없음 — cands 는 빈 배열로)' });
-  const t = await claude(content, 900);
-  return parseJson(t) || { ask: '', essay: false, cands: [] };
+  for (let k = 0; k < 2; k++) {
+    const j = parseJson(await claude(content, 1200));
+    if (j && Array.isArray(j.cands)) return j;
+    log('판정 답을 읽지 못함 — 한 번 더');
+  }
+  return { ask: '', essay: null, cands: [] };
 }
 
 /* ── ③ 우리 자료 ──────────────────────────────────────────── */
@@ -443,8 +449,9 @@ async function runExam(exam, opt) {
   let trend = prev && prev.trend && opt.rejudge ? prev.trend : null;
   if (!NO_AI) {
     try {
-      const brief = items.map((x) => `${x.no}번 | ${x.chapter} > ${x.type} | 난도 ${x.level}${x.killer ? ' ☠' : ''}${x.essay ? ' 서술' : ''} | ${x.ask || ''} | 출처 ${x.source}${(x.repeat || []).length ? ' | 지난 기출 ' + x.repeat.map((r) => r.year).join(',') : ''}`).join('\n');
-      const t = await claude([{ type: 'text', text: `${schoolKey(exam.school)} ${gradeKey(exam.grade)} ${exam.year}년 ${exam.semester}학기 ${exam.term}고사 문항 목록이다.\n${brief}\n\n학부모·원장님이 읽을 분석을 쓴다. 학생 이름·학원 이름은 쓰지 않는다. ~합니다체.\n아래 JSON 하나만 답한다.\n{"trend":"출제 경향 3~4문장(단원 비중·난도 흐름·교과서 비중·눈에 띄는 점)","killer":"킬러(☠) 문항이 무엇을 요구했는지 2~3문장. 킬러가 없으면 가장 어려운 문항 기준"}` }], 900);
+      const SRC = { textbook: '교과서', workbook: '시중 교재', exam: '다른 학교 기출', bank: '문제은행' };
+      const brief = items.map((x) => `${x.no}번 | ${x.chapter} > ${x.type} | 난도 ${x.level}${x.killer ? ' ☠' : ''}${x.essay ? ' 서술' : ''} | ${x.ask || ''} | 가장 닮은 원본 ${SRC[x.source] || ''}${(x.repeat || []).length ? ' | 지난 기출 ' + x.repeat.map((r) => r.year).join(',') : ''}`).join('\n');
+      const t = await claude([{ type: 'text', text: `${schoolKey(exam.school)} ${gradeKey(exam.grade)} ${exam.year}년 ${exam.semester}학기 ${exam.term}고사 문항 목록이다.\n${brief}\n\n학부모·원장님이 읽을 분석을 쓴다. 학생 이름·학원 이름은 쓰지 않는다. 영어 낱말·프로그램 이름·「단원 표기」 같은 자료 내부 사정은 쓰지 않는다. ~합니다체.\n아래 JSON 하나만 답한다.\n{"trend":"출제 경향 3~4문장(단원 비중·난도 흐름·교과서 비중·눈에 띄는 점)","killer":"킬러(☠) 문항이 무엇을 요구했는지 2~3문장. 킬러가 없으면 가장 어려운 문항 기준"}` }], 900);
       const j = parseJson(t); if (j && j.trend) trend = { trend: String(j.trend).slice(0, 600), killer: String(j.killer || '').slice(0, 400) };
     } catch (e) { log('경향 글 실패: ' + e.message.slice(0, 100)); }
   }
