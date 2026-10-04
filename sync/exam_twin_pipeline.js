@@ -427,7 +427,9 @@ async function runTwinPipeline(opts) {
   };
 }
 
-module.exports = { runTwinPipeline, sourceTitleOf, trieForExam, TRIE_22, TRIE_15 };
+module.exports = { runTwinPipeline, sourceTitleOf, trieForExam, TRIE_22, TRIE_15,
+  /* 적중 분석(sync/exam_hit_worker.js)이 같은 매쓰플랫 AI 길을 쓴다 */
+  mfLogin, mf, saiJob, saiPoll, buildPdf, MF_API, MF_SAI, setLog: (fn) => { log = fn; } };
 
 /* ── 명령줄에서 직접 실행할 때 ── */
 if (require.main === module) {
