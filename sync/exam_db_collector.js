@@ -267,8 +267,56 @@ async function bridge(schoolVals) {
   await sbPut('ms_exam_bridge', { updated: new Date().toISOString(), byMydb });
 }
 
+/* ── 2026-10-05: 시험지 한 장만 (적중 분석 「📚 기출 DB에서 찾기」 — sync/exam_hit_worker.js 가 부른다) ──
+ *   ms_exams_<학교> 에 그 시험지가 없으면 받아서(문항 메타 + 그림) 넣고, 있으면 그대로 돌려준다. */
+async function fetchOne(school, id) {
+  const key = 'ms_exams_' + school;
+  const cur = (await sbGet(key)) || { school, exams: [] };
+  const have = (cur.exams || []).find((e) => String(e.id) === String(id));
+  if (have && (have.cells || []).length && have.cells.every((c) => c.img)) return have;
+  if (!MS_TOKEN) await msLogin();
+  if (!NO_IMG && !DRY) await sbEnsureBucket();
+  const all = await msListMydbs(); const t = all.find((m) => String(m.id) === String(id)) || {};
+  const ex = await msExam(Number(id) || id);
+  ex.scopes = t.scopes || null; ex.folder = t.folderName || null;
+  for (const c of ex.cells) {
+    const k = `${ex.id}/${String(c.no).padStart(2, '0')}.png`;
+    const oc = have && (have.cells || []).find((x) => x.no === c.no);
+    if (oc && oc.img) { c.img = oc.img; continue; }
+    if (!c.imgUrl) { c.img = null; continue; }
+    try { if (!DRY) { const im = await msImage(c.imgUrl); await sbUpload(k, im.buf, im.type); } c.img = k; } catch (e) { c.img = null; }
+    await sleep(120);
+  }
+  ex.cells.forEach((c) => { delete c.imgUrl; });
+  cur.exams = (cur.exams || []).filter((e) => String(e.id) !== String(id)).concat([ex]);
+  cur.updated = new Date().toISOString();
+  await sbPut(key, cur);
+  try { const { signSchool } = require('./exam_image_sign.js'); if (!DRY) await signSchool(key); } catch (e) { log('그림 주소 서명 실패: ' + e.message); }
+  log(`한 장 받음: [${ex.id}] ${ex.title} — ${ex.cells.length}문항 → ${key}`);
+  return ex;
+}
+
+/* ── 2026-10-05: 나만의 DB 목록 색인 (학원앱 「📚 기출 DB에서 찾기」 검색용, 작게) ──
+ *   ms_mydb_index = { updated, items:[{ id, t(제목), f(폴더), sc(제목의 학교), y, g, sem, term, n(문항 수), ok(DB화 완료) }] } */
+async function buildIndex() {
+  const { data } = await msGet('/bms/api/v1/folders?folderType=mydb');
+  const roots = Array.isArray(data) ? data : [data];
+  const folderOf = {};   /* 폴더 id → { name } */
+  (function walk(f) { if (!f) return; if (f.id) folderOf[f.id] = { name: f.name || '' }; (f.children || []).forEach(walk); })({ children: roots });
+  const all = await msListMydbs();
+  const items = all.map((m) => {
+    const fo = folderOf[m.folderId] || {}; const p = parseTitle(m.title || '');
+    const sc = ((m.title || '').match(/(\S+[중고])\s+[중고][1-3]/) || [])[1] || '';   /* 「… 부천시 옥길중 중1 …」 → 옥길중 */
+    return { id: m.id, t: m.title || '', f: fo.name || m.folderName || '', sc, y: p.year, g: p.grade, sem: p.semester, term: p.term,
+      n: m.questionCount || null, ok: m.dbStatus === 'dbCompleted' };
+  });
+  return { updated: new Date().toISOString(), items };
+}
+
+module.exports = { msLogin, msListMydbs, msExam, msImage, fetchOne, buildIndex, parseTitle, sbGet, sbPut };
+
 /* ── 실행 ─────────────────────────────────────────────────── */
-(async () => {
+if (require.main === module) (async () => {
   if (!SB || !SK) throw new Error('SUPABASE_URL / SUPABASE_SERVICE_KEY 가 없습니다');
   const vals = [];
   if (!BRIDGE_ONLY) {
