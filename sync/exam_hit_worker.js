@@ -305,7 +305,7 @@ async function runExam(exam, opt) {
   if (!trie) throw new Error(`교육과정 키를 정할 수 없습니다 (${exam.grade} ${exam.semester}학기 ${exam.year})`);
 
   /* ①② 시험지 → 문항 */
-  let items;
+  let items, msLv = (prev && prev.exam && prev.exam.msLv) || null;
   if (opt.rejudge && prev && prev.items && prev.items.length) {
     items = prev.items.map((it) => ({ ...it }));
     for (const it of items) if (it.img && !it.imgUrl) it.imgUrl = await stSign(it.img);   // 옛 문항에 서명 주소 채우기
@@ -318,6 +318,7 @@ async function runExam(exam, opt) {
       let e = ((ms && ms.exams) || []).find((x) => String(x.id) === String(opt.mydb));
       if (!e || !(e.cells || []).some((c) => c.img)) { await step('기출 DB에서 시험지 받는 중', 4); e = await mydbFetch(opt.mydb, exam.school, slug); }   /* v19-80: 아직 안 받은 시험지 */
       meta = (e.cells || []).filter((c) => c.img);
+      msLv = []; (e.cells || []).forEach((c) => { if (c.no) msLv[c.no - 1] = c.difficulty == null ? null : Number(c.difficulty); });   /* v19-81: 카드뉴스 난이도(1~9) */
       if (!meta.length) throw new Error('기출 DB 시험지에 문항 그림이 없습니다');
       const imgs = [];
       for (const c of meta) imgs.push({ no: c.no, buf: await stGet(BUCKET, c.img) });
@@ -469,7 +470,7 @@ async function runExam(exam, opt) {
     } catch (e) { log('경향 글 실패: ' + e.message.slice(0, 100)); }
   }
 
-  const out = { examId, exam: { school: schoolKey(exam.school), grade: gradeKey(exam.grade), year: Number(exam.year), semester: String(exam.semester), term: exam.term, date: exam.date || '', mydb: opt.mydb || null },
+  const out = { examId, exam: { school: schoolKey(exam.school), grade: gradeKey(exam.grade), year: Number(exam.year), semester: String(exam.semester), term: exam.term, date: exam.date || '', mydb: opt.mydb || null, msLv: msLv || null },
     basis: (prev && prev.basis) || 'same+var', from, to, students: codes, items, mats: matOut, stats: st, trend,
     at: new Date().toISOString(), by: 'worker', confirmedAt: (prev && prev.confirmedAt) || null };
   await kvSet('exam_hit_' + examId, out);
