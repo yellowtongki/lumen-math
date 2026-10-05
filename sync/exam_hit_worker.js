@@ -76,6 +76,14 @@ async function stPut(bucket, path, buf, type) {
   if (!r.ok) throw new Error(`그림 올리기 실패 ${r.status} ${(await r.text()).slice(0, 100)}`);
   return path;
 }
+/* 학원앱은 비공개 버킷 서명을 못 하는 경우가 있어(v19-74 「그림 준비 중」), 기출 DB 처럼 1년짜리 서명 주소를 같이 적어 둔다 */
+async function stSign(path, sec) {
+  if (DRY || !path) return '';
+  try {
+    const r = await fetch(`${SB}/storage/v1/object/sign/${BUCKET}/${path}`, { method: 'POST', headers: sbH({ 'content-type': 'application/json' }), body: JSON.stringify({ expiresIn: sec || 31536000 }) });
+    const j = await r.json(); return j && j.signedURL ? SB + '/storage/v1' + j.signedURL : '';
+  } catch (e) { return ''; }
+}
 async function stDel(bucket, paths) {
   if (DRY || !paths.length) return;
   await fetch(`${SB}/storage/v1/object/${bucket}`, { method: 'DELETE', headers: sbH({ 'content-type': 'application/json' }), body: JSON.stringify({ prefixes: paths }) }).catch(() => {});
@@ -300,6 +308,7 @@ async function runExam(exam, opt) {
   let items;
   if (opt.rejudge && prev && prev.items && prev.items.length) {
     items = prev.items.map((it) => ({ ...it }));
+    for (const it of items) if (it.img && !it.imgUrl) it.imgUrl = await stSign(it.img);   // 옛 문항에 서명 주소 채우기
     log(`인식은 그대로 (${items.length}문항) — 자료·판정만 다시`);
   } else {
     await step('시험지 모으는 중', 5);
@@ -344,7 +353,7 @@ async function runExam(exam, opt) {
       const buf = await fetchBuf(b.url);
       const img = buf ? await stPut(BUCKET, `hit/${slug}/q/${String(no).padStart(2, '0')}.png`, buf, mimeOf(buf) || 'image/png') : '';
       const c = meta.length === boxes.length ? meta[i] : null;   // 기출 DB 시험지는 번호·배점·난이도까지
-      items.push({ no, img, cid: b.cid, topic: b.topic, sub: b.sub, level: b.level, src: b.src, srcWb: b.srcWb,
+      items.push({ no, img, imgUrl: await stSign(img), cid: b.cid, topic: b.topic, sub: b.sub, level: b.level, src: b.src, srcWb: b.srcWb,
         score: c ? c.score || null : null, diff: c ? c.difficulty || null : null,
         essay: c ? /essay|descript|서술/i.test(String(c.answerType || '')) : null });
     }
@@ -380,7 +389,7 @@ async function runExam(exam, opt) {
         const b = bx[j]; const ib = await fetchBuf(b.url); if (!ib) continue;
         const p = await stPut(BUCKET, `hit/${slug}/mat/${ui + 1}_${j + 1}.png`, ib, mimeOf(ib) || 'image/png');
         mats.push({ k: `up:${ui + 1}:${j + 1}`, kind: 'upload', title: u.title || `우리 프린트 ${ui + 1}`, no: j + 1, cid: b.cid, level: b.level,
-          pid: /^p\d+$/.test(b.src) ? Number(b.src.slice(1)) : null, wbp: null, store: p, res: {}, at: {} });
+          pid: /^p\d+$/.test(b.src) ? Number(b.src.slice(1)) : null, wbp: null, store: p, storeUrl: await stSign(p), res: {}, at: {} });
       }
       log(`우리 프린트 ${ui + 1}: ${bx.length}문항`);
     } catch (e) { log(`우리 프린트 ${ui + 1} 인식 실패: ${e.message.slice(0, 120)}`); }
@@ -438,7 +447,7 @@ async function runExam(exam, opt) {
 
   /* 저장용 자료(쓰인 것만) */
   const matOut = {};
-  mats.forEach((m) => { if (!used[m.k]) return; matOut[m.k] = { kind: m.kind, title: m.title, where: whereOf(m), cid: m.cid, level: m.level, img: m.img || '', store: m.store || '', res: m.res }; });
+  mats.forEach((m) => { if (!used[m.k]) return; matOut[m.k] = { kind: m.kind, title: m.title, where: whereOf(m), cid: m.cid, level: m.level, img: m.img || '', store: m.store || '', storeUrl: m.storeUrl || '', res: m.res }; });
 
   /* 통계 */
   const st = { total: items.length, same: 0, var: 0, text: 0, type: 0, killers: items.filter((x) => x.killer).length,
