@@ -4978,7 +4978,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-124';
+var STU_VER = 'v2-125';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -22671,8 +22671,8 @@ window.nkPick = function(n){
   return out;
 };
 window.nkPaint = function(){
-  var sub = document.getElementById('nk-sub'); if (sub) sub.textContent = NK.nick ? ('지금 별명: ' + NK.nick + ' · 순위표에 이름 대신 보여요') : '아직 없어요 — 순위표에 「○○○」로 나와요. 눌러서 골라요';
-  var bl = document.getElementById('bell-nick'); if (bl){ if (NK.loaded && !NK.nick){ bl.innerHTML = '🏷 <b>별명을 골라 주세요</b><br><small>순위표·시상에 이름 대신 별명이 나와요 (「나」 탭)</small>'; bl.style.display = ''; } else bl.style.display = 'none'; }
+  var sub = document.getElementById('nk-sub'); if (sub) sub.textContent = NK.nick ? ('지금 별명: ' + NK.nick + (NK.by === 'auto' ? ' (자동으로 붙었어요) · 눌러서 내 별명 고르기' : ' · 순위표에 이름 대신 보여요')) : '아직 없어요 — 순위표에 「○○○」로 나와요. 눌러서 골라요';
+  var bl = document.getElementById('bell-nick'); if (bl){ if (NK.loaded && (!NK.nick || NK.by === 'auto')){ bl.innerHTML = NK.nick ? ('🏷 <b>자동 별명 「' + nkEsc(NK.nick) + '」이 붙었어요</b><br><small>마음에 드는 별명으로 바로 바꿀 수 있어요 (「나」 탭)</small>') : '🏷 <b>별명을 골라 주세요</b><br><small>순위표·시상에 이름 대신 별명이 나와요 (「나」 탭)</small>'; bl.style.display = ''; } else bl.style.display = 'none'; }
   if (typeof bellCount === 'function'){ try { bellCount(); } catch(e){} }
 };
 window.nkOpen = function(){
