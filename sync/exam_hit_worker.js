@@ -456,13 +456,15 @@ async function runExam(exam, opt) {
   st.levelAvg = items.length ? Math.round(st.levelAvg / items.length * 10) / 10 : 0;
 
   /* 출제 경향 · 킬러 문항 한 단락 (학원앱 보고서·블로그 자료에 쓴다) */
-  let trend = prev && prev.trend && opt.rejudge ? prev.trend : null;
+  let trend = prev && prev.trend && (opt.rejudge || prev.trend.edited) ? prev.trend : null;   // v19-79: 고친 글은 늘 남김
   if (!NO_AI) {
     try {
       const SRC = { textbook: '교과서', workbook: '시중 교재', exam: '다른 학교 기출', bank: '문제은행' };
       const brief = items.map((x) => `${x.no}번 | ${x.chapter} > ${x.type} | 난도 ${x.level}${x.killer ? ' ☠' : ''}${x.essay ? ' 서술' : ''} | ${x.ask || ''} | 가장 닮은 원본 ${SRC[x.source] || ''}${(x.repeat || []).length ? ' | 지난 기출 ' + x.repeat.map((r) => r.year).join(',') : ''}`).join('\n');
       const t = await claude([{ type: 'text', text: `${schoolKey(exam.school)} ${gradeKey(exam.grade)} ${exam.year}년 ${exam.semester}학기 ${exam.term}고사 문항 목록이다.\n${brief}\n\n학부모·원장님이 읽을 분석을 쓴다. 학생 이름·학원 이름은 쓰지 않는다. 영어 낱말·프로그램 이름·「단원 표기」 같은 자료 내부 사정은 쓰지 않는다. ~합니다체.\n아래 JSON 하나만 답한다.\n{"trend":"출제 경향 3~4문장(단원 비중·난도 흐름·교과서 비중·눈에 띄는 점)","killer":"킬러(☠) 문항이 무엇을 요구했는지 2~3문장. 킬러가 없으면 가장 어려운 문항 기준"}` }], 900);
       const j = parseJson(t); if (j && j.trend) trend = { trend: String(j.trend).slice(0, 600), killer: String(j.killer || '').slice(0, 400) };
+      /* v19-79: 원장님이 고친 글은 다시 판정해도 그대로 (AI 새 글은 ai 칸에만) */
+      if (prev && prev.trend && prev.trend.edited) trend = { ...prev.trend, ai: trend ? { trend: trend.trend, killer: trend.killer } : (prev.trend.ai || null) };
     } catch (e) { log('경향 글 실패: ' + e.message.slice(0, 100)); }
   }
 
