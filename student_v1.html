@@ -4978,7 +4978,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-123';
+var STU_VER = 'v2-124';
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -9098,7 +9098,7 @@ var KIND_NAME={ exam:'시험', off:'휴원', holi:'공휴일', race:'레이스',
 function kindName(k){ return KIND_NAME[k]||'학원 행사'; }
 function itemsOf(B, day){
   var arr=(B.byDay[day]||[]).slice();
-  var dow=dowOf(day); if(B.classDays.indexOf(dow)>=0 && !isOff(arr)) arr.push({ k:'class', t:(B.classTime?(B.classTime+' '):'')+'루멘 수업' });
+  var dow=dowOf(day); if(B.classDays.indexOf(dow)>=0 && !isOff(arr)) arr.push({ k:'class', t:(B.classTime?(B.classTime+' '):'')+'루멘수학 수업' });
   var order={ exam:0, off:1, holi:1, prep:2, class:3, test:4, race:5, event:6 }; arr.sort(function(a,b){ return (order[a.k]||9)-(order[b.k]||9); });
   return arr;
 }
@@ -9127,7 +9127,7 @@ window.calRender=function(){
   else h+='<div class="cal-dday soft"><div class="cal-dn">-</div><div class="cal-dt"><b>다가오는 시험이 아직 없어요</b><span>'+(me.school?esc(me.school)+' 학사일정이 올라오면 여기 떠요':'등록부에 학교가 비어 있어요 · 선생님께 말해 줘')+'</span></div></div>';
   /* 달 이동 + 범례 */
   h+='<div class="cal-nav"><button onclick="calMove(-1)" aria-label="지난달">‹</button><b>'+CAL.y+'년 '+CAL.m+'월</b><button onclick="calMove(1)" aria-label="다음달">›</button><button class="cal-tb" onclick="calToday()">오늘</button></div>';
-  h+='<div class="cal-leg"><span><i style="background:#e2542c"></i>내 학교 시험</span><span><i style="background:#1b1f27"></i>루멘 수업</span><span><i style="background:#c8102e"></i>휴원·공휴일</span><span><i style="background:#c58a12"></i>레이스</span><span><i style="background:#9aa3b2"></i>학원 일정</span></div>';
+  h+='<div class="cal-leg"><span><i style="background:#e2542c"></i>내 학교 시험</span><span><i style="background:#1b1f27"></i>루멘수학 수업</span><span><i style="background:#c8102e"></i>휴원·공휴일</span><span><i style="background:#c58a12"></i>레이스</span><span><i style="background:#9aa3b2"></i>학원 일정</span></div>';
   /* 월 격자 (월요일 시작) */
   var first=ymd(CAL.y,CAL.m,1), fd=(dowOf(first)+6)%7, start=addDays(first,-fd);
   h+='<div class="cal-grid"><div class="cal-dh">월</div><div class="cal-dh">화</div><div class="cal-dh">수</div><div class="cal-dh">목</div><div class="cal-dh">금</div><div class="cal-dh sat">토</div><div class="cal-dh sun">일</div>';
@@ -9364,12 +9364,12 @@ window.scRenderWeek=function(){
 };
 window.scRenderFixed=function(){
   var body=document.getElementById('sc-fixed-body'); if(!body) return; var f=SC.fixed||fixedDefault(); var rules=f.rules||{}; var lb=lumenBlock();
-  var h='<div class="sc-codi"><div class="sc-face"></div><div class="sc-say">매주 똑같은 시간을 넣어 줘. 루멘 수업은 반 배정에서 자동으로 알아. 비어 있는 시간이 <b>공부할 수 있는 시간</b>이야.</div></div>';
+  var h='<div class="sc-codi"><div class="sc-face"></div><div class="sc-say">매주 똑같은 시간을 넣어 줘. 루멘수학 수업은 반 배정에서 자동으로 알아. 비어 있는 시간이 <b>공부할 수 있는 시간</b>이야.</div></div>';
   h+='<div class="sc-h"><b>고정 시간</b></div>';
   if(lb) h+='<div class="sc-fx"><b style="color:#b3261e">루멘수학</b> '+lb.days.map(function(d){ return DOW[d]; }).join('·')+' '+lb.start+'~'+lb.end+' <small>자동</small></div>';
   (f.blocks||[]).forEach(function(b,i){ h+='<div class="sc-fx"><b>'+esc(b.label)+'</b> '+(b.days||[]).map(function(d){ return DOW[d]; }).join('·')+' '+esc(b.start)+'~'+esc(b.end)+' <button onclick="scFixedDel('+i+')">지우기</button></div>'; });
   var fm=SC.form||{ label:'', type:'academy', days:[], start:'19:00', end:'20:30' };
-  h+='<div class="sc-form"><div class="sc-fl">새 고정 시간</div><input id="scf-label" placeholder="예: 영어학원 · 태권도 · 피아노" value="'+esc(fm.label)+'"><div class="sc-chips">'+DOW.map(function(n,i){ return '<button class="'+(fm.days.indexOf(i)>=0?'on':'')+'" onclick="scFormDay('+i+')">'+n+'</button>'; }).join('')+'</div><div class="sc-grid2"><label>시작<input id="scf-start" type="time" value="'+esc(fm.start)+'"></label><label>끝<input id="scf-end" type="time" value="'+esc(fm.end)+'"></label></div><button class="sc-btn" onclick="scFixedAdd()">＋ 넣기</button></div>';
+  h+='<div class="sc-form"><div class="sc-fl">새 고정 시간</div><input id="scf-label" placeholder="예: 태권도 · 피아노 · 방과후" value="'+esc(fm.label)+'"><div class="sc-chips">'+DOW.map(function(n,i){ return '<button class="'+(fm.days.indexOf(i)>=0?'on':'')+'" onclick="scFormDay('+i+')">'+n+'</button>'; }).join('')+'</div><div class="sc-grid2"><label>시작<input id="scf-start" type="time" value="'+esc(fm.start)+'"></label><label>끝<input id="scf-end" type="time" value="'+esc(fm.end)+'"></label></div><button class="sc-btn" onclick="scFixedAdd()">＋ 넣기</button></div>';
   h+='<div class="sc-h"><b>규칙</b></div><div class="sc-rules">'
     +'<label>밤 <select id="scr-night">'+['21:00','22:00','22:30','23:00','23:30'].map(function(t){ return '<option'+((rules.night||'22:00')===t?' selected':'')+'>'+t+'</option>'; }).join('')+'</select> 이후는 빼기</label>'
     +'<label><input type="checkbox" id="scr-rest"'+(rules.rest!==false?' checked':'')+'> 학원 끝난 뒤 30분은 쉬기</label>'
@@ -10059,7 +10059,7 @@ function lumenBlk(){
   var dg = (g.match(/(\d+)/) || [])[1] || '', h = 17, mi = '00';
   if (dg){ h = Number(dg.length >= 3 ? dg.slice(0, dg.length - 2) : dg); mi = dg.length >= 3 ? dg.slice(-2) : '00'; if (h < 9) h += 12; }
   var st = h * 60 + Number(mi);
-  return { id:'lumen', label:'루멘', type:'lumen', days: gd.map(function(d){ return (d + 6) % 7; }), start: hm(st), end: hm(st + 120), auto: true };
+  return { id:'lumen', label:'루멘수학', type:'lumen', days: gd.map(function(d){ return (d + 6) % 7; }), start: hm(st), end: hm(st + 120), auto: true };
 }
 function fixedList(){ var f = WP.fixed || fixedDef(); var arr = (f.blocks || []).slice(); var lb = lumenBlk(); if (lb) arr.push(lb); return arr; }
 
@@ -10230,7 +10230,7 @@ function calHtml(W, items, chk, today){
   return h + '</div></div>';
 }
 function legendHtml(){
-  return '<div class="wpc-lg"><span><i class="school"></i>학교</span><span><i class="academy"></i>학원·운동</span><span><i class="lumen"></i>루멘</span><span><i style="background:#fde2e1;border-left:3px solid #b3261e"></i>내 계획</span>' + (WP.codi ? '<span>🧭 코디가 넣은 칸</span>' : '') + '<span class="tip">빈칸을 누르면 할 일을 써요</span></div>';
+  return '<div class="wpc-lg"><span><i class="school"></i>학교</span><span><i class="academy"></i>학원·운동</span><span><i class="lumen"></i>루멘수학</span><span><i style="background:#fde2e1;border-left:3px solid #b3261e"></i>내 계획</span>' + (WP.codi ? '<span>🧭 코디가 넣은 칸</span>' : '') + '<span class="tip">빈칸을 누르면 할 일을 써요</span></div>';
 }
 function fixedPanel(){
   var f = WP.fixed || fixedDef(), lb = lumenBlk(), fm = WP.fxForm || { label: '', days: [], start: '17:00', end: '18:00' };
@@ -10244,8 +10244,8 @@ function fixedPanel(){
   h += '<div class="foot"><small>끝나는 시간 · 학교 안 가는 날은 「없음」</small><button type="button" class="pri" onclick="wplSchoolSave()">🏫 학교 시간 저장</button></div></div>';
   if (lb) h += '<div class="wpf-it"><b style="color:#b3261e">루멘수학</b><span>' + lb.days.map(function(x){ return PW.DOW[x]; }).join('·') + ' ' + lb.start + '~' + lb.end + '</span><small>반 요일로 자동</small></div>';
   (f.blocks || []).forEach(function(b, i){ if (b.type === 'school') return; h += '<div class="wpf-it"><b>' + esc(b.label) + '</b><span>' + (b.days || []).map(function(x){ return PW.DOW[x]; }).join('·') + ' ' + esc(b.start) + '~' + esc(b.end) + '</span><button type="button" onclick="wplFxDel(' + i + ')">지우기</button></div>'; });
-  h += '<div class="wpf-add"><div class="wpf-q">' + ['영어학원','태권도','운동','피아노'].map(function(q){ return '<button type="button" onclick="wplFxQuick(\'' + q + '\')">' + q + '</button>'; }).join('') + '</div>';
-  h += '<input id="wpf-label" placeholder="이름 (예: 영어학원 · 태권도 · 방과후)" value="' + esc(fm.label) + '">';
+  h += '<div class="wpf-add"><div class="wpf-q">' + ['영어학원','국어학원','과학학원'].map(function(q){   /* v2-124: 기본은 주과목 학원 */ return '<button type="button" onclick="wplFxQuick(\'' + q + '\')">' + q + '</button>'; }).join('') + '</div>';
+  h += '<input id="wpf-label" placeholder="이름 (예: 태권도 · 피아노 · 방과후)" value="' + esc(fm.label) + '">';
   h += '<div class="wpf-days">' + PW.DOW.map(function(n, i){ return '<button type="button" class="' + (fm.days.indexOf(i) >= 0 ? 'on' : '') + '" onclick="wplFxDay(' + i + ')">' + n + '</button>'; }).join('') + '</div>';
   var opts = function(sel, from){ var o = ''; for (var k = from; k <= SN; k++){ var t = slotT(k); o += '<option' + (t === sel ? ' selected' : '') + '>' + t + '</option>'; } return o; };
   h += '<div class="wpf-t"><label>시작 <select id="wpf-start">' + opts(fm.start, 0) + '</select></label><label>끝 <select id="wpf-end">' + opts(fm.end, 1) + '</select></label><button type="button" class="pri" onclick="wplFxAdd()">＋ 넣기</button></div></div></div>';
@@ -10549,7 +10549,7 @@ function renderLegend(){
     h+='<span><i style="background:'+SUBJ[s].mid+'"></i>'+s+'</span>';
   }
   h+='<span><i style="background:var(--school)"></i>학교</span>';
-  h+='<span class="note">테두리 있는 칸 = 학원 수업 · 연한 칸 = 내 공부 · 점선 = 추천 · 빨강 테두리 = 루멘</span>';
+  h+='<span class="note">테두리 있는 칸 = 학원 수업 · 연한 칸 = 내 공부 · 점선 = 추천 · 빨강 테두리 = 루멘수학</span>';
   document.getElementById('wp-legend').innerHTML=h;
 }
 
@@ -10590,7 +10590,7 @@ function renderDaylist(){
     var tag='';
     if(st.kind==='school') tag='<span class="tag">고정</span>';
     else if(st.kind==='academy') tag='<span class="tag">학원 수업</span>';
-    else if(st.kind==='lumen') tag='<span class="tag">루멘</span>';
+    else if(st.kind==='lumen') tag='<span class="tag">루멘수학</span>';
     else if(st.kind==='study') tag='<span class="tag">내 공부</span>';
     else if(st.kind==='suggest') tag='<span class="tag">추천</span>';
     var style=cellStyle(st);
