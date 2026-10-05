@@ -241,9 +241,22 @@ function buildPrompt(expectedDate, practiceRate) {
 const START = '2026-10-01';
 const dateKey = (s) => { const m = String(s || '').match(/(\d{4})[.\-\/]?(\d{2})[.\-\/]?(\d{2})/); return m ? (m[1] + '-' + m[2] + '-' + m[3]) : ''; };
 const isV2 = (s) => { const k = dateKey(s); return !!k && k >= START; };
+const FB_RULE = [
+  '④ 자기 피드백 (fbLevel 0~2) — 피드백 칸(잘한점·부족한점·개선할점 등)을 feedbackTranscript 로 옮긴 뒤 아래 기준으로 매기세요',
+  '  - fbLevel 2: «왜 그렇게 됐는지(원인)»와 «내일 무엇을 어떻게 바꿀지(구체적 행동 — 시각·분량·방법 중 하나 이상)»가 둘 다 문장으로 있음',
+  '      예) "저녁에 폰을 봐서 수학을 2쪽밖에 못 했다. 내일은 학원 가기 전 4시에 쎈 3쪽부터 푼다"',
+  '  - fbLevel 1: 돌아본 문장이 2개 이상 있지만 원인이나 구체적 행동이 빠짐',
+  '      예) "열심히 했다 / 집중이 잘 안 됐다 / 내일은 더 열심히"',
+  '  - fbLevel 0: 피드백이 없거나, 한 문장뿐이거나, 한 단어·기호뿐 (이때 flagLowEffort=true)',
+  '  - 「잘한점·부족한점·개선할점」 이름표가 없어도 내용이 기준을 채우면 인정합니다',
+  '  - 판독이 안 되면 fbLevel=0 이고 unreadableItems 에 "feedbackScore" 를 넣으세요',
+  ''];
+/* 점수 기준표 (lumen_store planner_rules — 학원앱 「📋 점수 기준」에서 원장님이 고친다). 없으면 A안 */
+const RULE_DEF = { from: '2026-10-01', sub2: 4, sub1: 2, late: 1, ttH: 5, ttL: 1, prHi: 50, prHiPts: 1, prLo: 20, prLoPts: 0, spec: 1, fbMax: 2 };
+function rulesFor(rv, dk) { const list = ((rv && rv.list) || [RULE_DEF]).slice().sort((a, b) => (a.from < b.from ? -1 : 1)); let r = null; for (const x of list) if (x.from <= dk) r = x; return Object.assign({}, RULE_DEF, r || {}); }
 function v3PromptEdit(lines, expectedDate) {
   if (!isV2(expectedDate)) return lines;
-  const out = []; let skip = false;
+  const out = []; let skip = false, fbSkip = false;
   for (const raw of lines) {
     const L = String(raw);
     if (L.indexOf('① studyScore') === 0) {
@@ -259,24 +272,35 @@ function v3PromptEdit(lines, expectedDate) {
     }
     if (skip && L.indexOf('② practiceScore') === 0) skip = false;
     if (skip) continue;
-    if (/^  - \d+% 이상이면 1점$/.test(L)) { out.push('  - practiceRate 를 정확히 적으세요 (코드가 50% 이상 2점 · 20% 이상 1점으로 매깁니다). practiceScore 는 "0" 으로 두세요'); continue; }
+    if (/^  - \d+% 이상이면 1점$/.test(L)) { out.push('  - practiceRate 를 정확히 적으세요 (점수는 코드가 매깁니다). practiceScore 는 "0" 으로 두세요'); continue; }
+    /* 2026-10-05 A안: 자기 피드백 0~2 (학원앱 plrules_teacher.js 와 같은 글) */
+    if (L.indexOf('④ feedbackScore') === 0) { fbSkip = true; FB_RULE.forEach((x) => out.push(x)); continue; }
+    if (fbSkip && L.indexOf('━━━') === 0) fbSkip = false;
+    if (fbSkip) continue;
+    if (L.indexOf('  "feedbackScore":') === 0) { out.push('  "fbLevel": 0 또는 1 또는 2,'); out.push('  "feedbackScore": "fbLevel 과 같은 숫자",'); continue; }
+    if (L.indexOf('- flagLowEffort:') === 0) { out.push('- flagLowEffort: 자기 피드백이 한 단어·기호뿐(예: "ㅇ", "-", "굿")이거나 성의 없는 표시면 true'); continue; }
     if (L.indexOf('【 채점 항목 (총 4점') === 0) { out.push('【 채점 항목 】'); continue; }
     out.push(L);
     if (L.indexOf('  "unreadableItems":') === 0) { out.push('  "ttFilled": 숫자,'); out.push('  "ttLife": 숫자,'); out.push('  "ttLifeItems": ["학교"],'); }
   }
   return out;
 }
-function v3Apply(analysis, expectedDate, cfg) {
+function v3Apply(analysis, expectedDate, cfg, rv) {
   const dk = dateKey(analysis.date) || dateKey(expectedDate);
   if (!dk || dk < START) return analysis;
-  const minH = Number(cfg.ttMinHours) || 5, minL = (cfg.ttMinLife === 0) ? 0 : (Number(cfg.ttMinLife) || 1);
+  const r = rulesFor(rv, dk);
   const ur = Array.isArray(analysis.unreadableItems) ? analysis.unreadableItems : [];
   const filled = Number(analysis.ttFilled) || 0, life = Number(analysis.ttLife) || 0;
-  const tt = (filled >= minH ? 1 : 0) + (filled > 0 && life >= minL ? 1 : 0);
+  const tt = (filled >= +r.ttH ? 1 : 0) + (filled > 0 && life >= +r.ttL ? 1 : 0);
   const rate = parseInt(String(analysis.practiceRate || '').replace(/[^\d]/g, ''), 10) || 0;
-  let pr = rate >= 50 ? 2 : (rate >= 20 ? 1 : 0); if (ur.indexOf('practiceScore') >= 0) pr = 0;
-  analysis.studyScore = String(tt); analysis.practiceScore = String(pr);
-  analysis.v3 = { tt, filled, life, rate, minH, minL }; analysis.promptVersion = 'v3.0';
+  let pr = rate >= +r.prHi ? +r.prHiPts : (rate >= +r.prLo ? +r.prLoPts : 0); if (ur.indexOf('practiceScore') >= 0) pr = 0;
+  analysis.specAi = (+analysis.specificScore >= 1) ? 1 : 0;
+  const spec = analysis.specAi ? +r.spec : 0;
+  let lv = analysis.fbLevel; if (lv === undefined || lv === null || lv === '') lv = analysis.feedbackScore;   /* 새 프롬프트는 fbLevel 을 준다 */
+  lv = Math.max(0, Math.min(2, parseInt(lv, 10) || 0)); analysis.fbLevel = lv;
+  let fb = lv >= 2 ? +r.fbMax : (lv === 1 ? Math.min(1, +r.fbMax) : 0); if (ur.indexOf('feedbackScore') >= 0) fb = 0;
+  analysis.studyScore = String(tt); analysis.practiceScore = String(pr); analysis.specificScore = String(spec); analysis.feedbackScore = String(fb);
+  analysis.v3 = { tt, filled, life, rate, minH: +r.ttH, minL: +r.ttL, rules: r.from }; analysis.promptVersion = 'v3.0';
   return analysis;
 }
 /* ── v19-66 짝: 날짜 필수 · 같은 쪽 다시 내기 = 그날 0점 (학원앱 plzero_teacher.js 와 같은 규칙 · 여기서는 글 비교만, 사진 지문은 학원앱) ──
@@ -399,6 +423,7 @@ async function main() {
 
   const db = (await kvGet('or_studentdb')) || [];
   const cfg = Object.assign({ practiceRate: 20 }, (await kvGet('lumen_planner_config')) || {});
+  const rulesV = (await kvGet('planner_rules')) || null;   /* 2026-10-05: 점수 기준표 */
   const store = (await kvGet('planner_ai_results')) || { results: {} };
   store.results = store.results || {};
   const cut = kstDayKey(new Date(kstNow().getTime() - DAYS * 864e5));
@@ -441,7 +466,7 @@ async function main() {
       analysis.aiProvider = 'routine';
       analysis.analyzedAt = new Date().toISOString();
       analysis.promptVersion = 'v2.1';
-      v3Apply(analysis, expectedDate, cfg);
+      v3Apply(analysis, expectedDate, cfg, rulesV);
       try { plzCheck((db || []).find((x) => x && x.lumen_rec_code === code), analysis, set.id); } catch (e) { log(code, set.id, '날짜·중복 검사 실패(채점은 유지):', e.message); }   /* v19-66 짝 */
       if (analysis.dateNext === undefined || analysis.dateNext === null) analysis.dateNext = '';
       analysis.fileCount = set.files.length;
