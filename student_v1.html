@@ -3541,7 +3541,7 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
           <div class="sg-rank" style="background:#dbeafe;color:#1e40af">①</div>
           <div style="flex:1">
             <div class="sg-title">제출</div>
-            <div class="sg-desc">마감 전 2장 → 4점 · 1장 → 2점 · 지각 → 1점</div>
+            <div class="sg-desc" id="sgSubDesc">마감 전 2장 → 4점 · 1장 → 2점 · 지각 → 1점</div>
           </div>
           <div class="sg-score">최대 4점</div>
         </div>
@@ -3557,9 +3557,9 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
           <div class="sg-rank" style="background:#fef3c7;color:#92400e">③</div>
           <div style="flex:1">
             <div class="sg-title">실천</div>
-            <div class="sg-desc">O·△ 50% 이상 → 2점 · 20% 이상 → 1점</div>
+            <div class="sg-desc" id="sgPrDesc">O·△ 50% 이상 → 1점</div>
           </div>
-          <div class="sg-score">최대 2점</div>
+          <div class="sg-score" id="sgPrMax">최대 1점</div>
         </div>
         <div class="sg-item">
           <div class="sg-rank" style="background:#fce7f3;color:#9d174d">④</div>
@@ -3567,19 +3567,20 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
             <div class="sg-title">구체적으로</div>
             <div class="sg-desc">「수학」 말고 「쎈 42~45쪽」처럼</div>
           </div>
-          <div class="sg-score">+1점</div>
+          <div class="sg-score" id="sgSpMax">+1점</div>
         </div>
         <div class="sg-item">
           <div class="sg-rank" style="background:#ede9fe;color:#5b21b6">⑤</div>
           <div style="flex:1">
             <div class="sg-title">자기 피드백</div>
-            <div class="sg-desc">잘한점 · 부족한점 · 개선할점 3종 모두 문장으로</div>
+            <div class="sg-desc" id="sgFbDesc">「왜 그랬는지」 + 「내일 바꿀 행동(시각·분량·방법)」까지 → 2점 · 돌아보기만 → 1점</div>
           </div>
-          <div class="sg-score">+1점</div>
+          <div class="sg-score" id="sgFbMax">최대 2점</div>
         </div>
         <div style="margin-top:10px;padding:10px 12px;background:#fff7ed;border:1.5px solid #fdba74;border-radius:10px;color:#9a3412;font-size:12px;font-weight:800;line-height:1.6">
           📅 <b>주간 점수 10점</b> — 일요일 밤 12시 마감<br>
           다음 주 계획(앱) 3 · 계획 실천 3 · 순공피드백 사진 2 · 순공피드백 종이(학원) 2<br>
+          <span style="font-size:11px;font-weight:700">수학 할 일은 그날 매쓰플랫 채점이나 아하노트 기록이 있어야 실천으로 인정돼요</span><br>
           <button type="button" onclick="wplOpen()" style="margin-top:6px;border:none;background:#ea580c;color:#fff;border-radius:9px;padding:7px 12px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer">📅 주간계획 쓰러 가기 ›</button>
         </div>
         <div style="margin-top:8px;font-size:10.5px;color:#94a3b8;font-weight:700;text-align:center">9월 30일까지는 예전 점수(인증 6 · 시간 기재 1 · 실천 1 · 구체 1 · 피드백 1)예요</div>
@@ -4978,7 +4979,27 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-125';
+var STU_VER = 'v2-126';
+/* v2-126: 플래너 점수 안내 = 학원앱 「📋 점수 기준」(lumen_store planner_rules) 그대로 (원장 결정 2026-10-05) */
+function sgRulesLoad(tries){
+  tries = tries || 0;
+  if (!window.sb){ if (tries < 20) setTimeout(function(){ sgRulesLoad(tries + 1); }, 1500); return; }
+  window.sb.from('lumen_store').select('value').eq('key', 'planner_rules').then(function(r){
+    var v = r && r.data && r.data[0] ? r.data[0].value : null; if (typeof v === 'string'){ try { v = JSON.parse(v); } catch(e){ v = null; } }
+    var list = (v && v.list) || []; if (!list.length) return;
+    var d = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10), cur = null;
+    list.slice().sort(function(a, b){ return a.from < b.from ? -1 : 1; }).forEach(function(x){ if (x.from <= d) cur = x; });
+    if (!cur) return;
+    var set = function(id, t){ var el = document.getElementById(id); if (el) el.textContent = t; };
+    set('sgSubDesc', '마감 전 2장 → ' + cur.sub2 + '점 · 1장 → ' + cur.sub1 + '점 · 지각 → ' + cur.late + '점');
+    set('sgPrDesc', 'O·△ ' + cur.prHi + '% 이상 → ' + cur.prHiPts + '점' + (+cur.prLoPts > 0 ? (' · ' + cur.prLo + '% 이상 → ' + cur.prLoPts + '점') : ''));
+    set('sgPrMax', '최대 ' + Math.max(+cur.prHiPts || 0, +cur.prLoPts || 0) + '점');
+    set('sgSpMax', '+' + cur.spec + '점');
+    set('sgFbMax', '최대 ' + cur.fbMax + '점');
+    if (+cur.fbMax < 2) set('sgFbDesc', '잘한점 · 부족한점 · 개선할점을 문장으로');
+  }).catch(function(){});
+}
+setTimeout(sgRulesLoad, 2500);
 window.STU_VER = STU_VER;
 try{ document.title = '루멘수학 학생앱 ' + STU_VER; }catch(e){}
 
@@ -9974,12 +9995,14 @@ PW.chkOf = function(wc, cd, wMon){
   if (cd){ for (var i = 0; i < 7; i++){ var day = PW.add(wMon, i), m = cd[day] || {}; for (k in m){ if (m[k]){ out['c_' + k] = { ok: true, at: m[k].at }; if (!out[k]) out[k] = { ok: true, at: m[k].at }; } } } }
   return out;
 };
-PW.practice = function(plan, chk, wMon){
+/* ev = { 할일id: 0 } — 수학 할 일인데 그날 매쓰플랫 채점·아하노트 기록이 없어 실천으로 세지 않는 것 (학원앱이 plweek_ev 에 적는다 · 2026-10-05) */
+PW.practice = function(plan, chk, wMon, ev){
   var items = ((plan && plan.items) || []).filter(function(it){ return it && it.title && PW.add(wMon, +it.d || 0) >= PW.START; });
-  if (!items.length) return { n: 0, ok: 0, rate: 0, pt: 0 };
-  var ok = items.filter(function(it){ return chk && chk[it.id] && chk[it.id].ok; }).length;
+  if (!items.length) return { n: 0, ok: 0, rate: 0, pt: 0, noEv: 0 };
+  var noEv = 0;
+  var ok = items.filter(function(it){ var o = chk && chk[it.id] && chk[it.id].ok; if (o && ev && ev[it.id] === 0){ noEv++; return false; } return o; }).length;
   var rate = Math.round(ok / items.length * 100);
-  return { n: items.length, ok: ok, rate: rate, pt: rate >= 70 ? 3 : (rate >= 40 ? 2 : (ok > 0 ? 1 : 0)) };
+  return { n: items.length, ok: ok, rate: rate, pt: rate >= 70 ? 3 : (rate >= 40 ? 2 : (ok > 0 ? 1 : 0)), noEv: noEv };
 };
 PW.PT = { plan: { ok: 3, late: 1, none: 0 }, photo: { ok: 2, late: 1, none: 0 }, paper: { ok: 2, late: 1, none: 0 } };
 PW.KO = { ok: '제출', late: '지각', none: '미제출' };
@@ -9988,7 +10011,7 @@ PW.week = function(o){
   var W = o.wMon;
   var planJ = PW.judge(o.planNext && o.planNext.submittedAt, W);
   var sgJ = (o.sg && o.sg.photo) ? PW.judge(o.sg.at, W) : 'none';
-  var pr = PW.practice(o.plan, o.chk, W);
+  var pr = PW.practice(o.plan, o.chk, W, o.ev || null);
   var paJ = PW.paperJudge(o.paper, W, o.days);
   var now = Date.now();
   return {
@@ -10067,7 +10090,7 @@ window.wplLoad = async function(force){
   var c = code(); if (!c || !window.sb) return;
   if (WP.loaded && WP.for === c && !force) return;
   try {
-    var keys = ['wplan_' + c, 'wplan_chk_' + c, 'plweek_paper', 'lumen_group_days', 'sungong_' + c, 'codi_plan_' + c, 'codi_done_' + c, 'codi_fixed_' + c];
+    var keys = ['wplan_' + c, 'wplan_chk_' + c, 'plweek_paper', 'lumen_group_days', 'sungong_' + c, 'codi_plan_' + c, 'codi_done_' + c, 'codi_fixed_' + c, 'plweek_ev'];
     var r = await sb.from('lumen_store').select('key,value').in('key', keys);
     var got = {}; ((r && r.data) || []).forEach(function(row){ got[row.key] = val(row.value); });
     WP.data = got['wplan_' + c] || { code: c, weeks: {} }; if (!WP.data.weeks) WP.data.weeks = {};
@@ -10077,6 +10100,7 @@ window.wplLoad = async function(force){
     WP.sg = (got['sungong_' + c] || {}).weeks || {};
     WP.cp = got['codi_plan_' + c] || null; WP.cd = got['codi_done_' + c] || null;
     WP.fixed = got['codi_fixed_' + c] || null;
+    var ev0 = got['plweek_ev'] || {}; WP.ev = (ev0.byCode && ev0.byCode[c]) || {};   /* v2-126 */
     WP.codi = false;
     try { if (window.scSettings && window.scEnabled){ await scSettings(); WP.codi = !!scEnabled(); } } catch(e){}
     WP.loaded = true; WP.for = c;
@@ -10151,7 +10175,7 @@ window.wplScore = function(W){
     chk: PW.chkOf(WP.chk, WP.cd, W),
     sg: WP.sg ? WP.sg[W] : null,
     paper: WP.paper ? WP.paper[W] : null,
-    days: myDays() });
+    days: myDays(), ev: WP.ev ? (WP.ev[W] || null) : null });
 };
 /* 홈 카드는 v2-112에서 뺐다 (원장 지시) — 예전 호출이 남아 있어도 아무것도 안 한다 */
 window.wplHomeUpdate = function(){ var el = document.getElementById('wp-home'); if (el) el.style.display = 'none'; };
