@@ -52,8 +52,10 @@ const checks = [
   // 1,400자 미만은 통과시키되 경고 — 길수록 검색에 유리하다는 건 일반적으로 맞다.
   ['본문 1,000자 이상 (목표 1,500)', plain.length >= 1000, `${plain.length}자`,
     plain.length < 1400 ? '통과하지만 1,500자에 가까울수록 좋습니다' : ''],
-  ['카드 6장 (cards.json)', (spec.cards || []).length === 6, `${(spec.cards || []).length}장`],
-  ['카드 PNG 6장 생성됨', pngs.length === 6, `${pngs.length}장`],
+  // 6장은 하한이다. 학원앱 「적중 분석」 도구가 만든 카드뉴스는 12장이 나온다.
+  ['카드 6장 이상 (cards.json)', (spec.cards || []).length >= 6, `${(spec.cards || []).length}장`],
+  ['카드 PNG 6장 이상', pngs.length >= 6, `${pngs.length}장`],
+  ['cards.json 과 PNG 수 일치', (spec.cards || []).length === pngs.length, `${(spec.cards || []).length} / ${pngs.length}`],
   ['실사진 자리 3곳 이상', (body.match(/\[실사진/g) || []).length >= 3, `${(body.match(/\[실사진/g) || []).length}곳`],
   ['지도 [지도: 루멘수학교습소]', /\[지도:\s*루멘수학교습소\]/.test(body), ''],
   ['톡톡 연락 버튼 1개', /talk\.naver\.com\/w9d7umc/.test(body), ''],
