@@ -6,7 +6,7 @@
  *
  * 흐름
  *   ① 시험지 — 학원앱이 올린 사진·PDF(aha_photos 의 임시 자리 → exam_images/hit/… 비공개로 옮기고 지운다)
- *              또는 --mydb <수학비서 시험지 id> (이미 exam_images/<id>/NN.png 에 있는 기출)
+ *              또는 --mydb <수학비서 시험지 id> (ms_exams 에 있으면 그 그림, 없으면 기출 DB 에서 바로 받는다 — 2026-10-05)
  *   ② 문항 나누기 — 매쓰플랫 AI(document-processing-flow → analysis-flow): 문항 상자 그림 · 유형(cid) · 난도 ·
  *              가장 닮은 원본(sourceProblemId: p=문제은행 · b=교재 · s=기출, sourceWorkbookId)
  *   ③ 우리 자료 — 그 학교·학년 학생들이 이번 학기 매쓰플랫에서 푼 학습지·교재 문항 전부(mf_answer_records)
@@ -23,7 +23,7 @@
  *        [--exam-id 이름]  [--no-ai]  [--dry]
  *   node sync/exam_hit_worker.js --rejudge <examId>   인식은 그대로 두고 자료·판정만 다시
  *
- * 환경변수: SUPABASE_URL · SUPABASE_SERVICE_KEY · MATHFLAT_ID/PASSWORD · ANTHROPIC_API_KEY
+ * 환경변수: SUPABASE_URL · SUPABASE_SERVICE_KEY · MATHFLAT_ID/PASSWORD · ANTHROPIC_API_KEY · MATHSECR_ID/PASSWORD(기출 DB 찾기)
  * 규칙: 로그에 학생 이름·문항 원문을 남기지 않는다(번호·개수만). 시험지 그림은 exam_images(비공개)에만.
  * ═══════════════════════════════════════════════════════════════════ */
 const crypto = require('crypto');
@@ -305,7 +305,7 @@ async function runExam(exam, opt) {
   if (!trie) throw new Error(`교육과정 키를 정할 수 없습니다 (${exam.grade} ${exam.semester}학기 ${exam.year})`);
 
   /* ①② 시험지 → 문항 */
-  let items;
+  let items, msLv = (prev && prev.exam && prev.exam.msLv) || null;
   if (opt.rejudge && prev && prev.items && prev.items.length) {
     items = prev.items.map((it) => ({ ...it }));
     for (const it of items) if (it.img && !it.imgUrl) it.imgUrl = await stSign(it.img);   // 옛 문항에 서명 주소 채우기
@@ -315,9 +315,11 @@ async function runExam(exam, opt) {
     let pdf = null, meta = [];
     if (opt.mydb) {
       const ms = await kvGet('ms_exams_' + schoolKey(exam.school));
-      const e = ((ms && ms.exams) || []).find((x) => String(x.id) === String(opt.mydb));
-      if (!e) throw new Error(`기출 DB 에 ${opt.mydb} 시험지가 없습니다`);
-      meta = e.cells || [];
+      let e = ((ms && ms.exams) || []).find((x) => String(x.id) === String(opt.mydb));
+      if (!e || !(e.cells || []).some((c) => c.img)) { await step('기출 DB에서 시험지 받는 중', 4); e = await mydbFetch(opt.mydb, exam.school, slug); }   /* v19-80: 아직 안 받은 시험지 */
+      meta = (e.cells || []).filter((c) => c.img);
+      msLv = []; (e.cells || []).forEach((c) => { if (c.no) msLv[c.no - 1] = c.difficulty == null ? null : Number(c.difficulty); });   /* v19-81: 카드뉴스 난이도(1~9) */
+      if (!meta.length) throw new Error('기출 DB 시험지에 문항 그림이 없습니다');
       const imgs = [];
       for (const c of meta) imgs.push({ no: c.no, buf: await stGet(BUCKET, c.img) });
       const b = await T.buildPdf(imgs, examId.replace(/[^\x20-\x7E]/g, '') || 'EXAM');
@@ -468,7 +470,7 @@ async function runExam(exam, opt) {
     } catch (e) { log('경향 글 실패: ' + e.message.slice(0, 100)); }
   }
 
-  const out = { examId, exam: { school: schoolKey(exam.school), grade: gradeKey(exam.grade), year: Number(exam.year), semester: String(exam.semester), term: exam.term, date: exam.date || '', mydb: opt.mydb || null },
+  const out = { examId, exam: { school: schoolKey(exam.school), grade: gradeKey(exam.grade), year: Number(exam.year), semester: String(exam.semester), term: exam.term, date: exam.date || '', mydb: opt.mydb || null, msLv: msLv || null },
     basis: (prev && prev.basis) || 'same+var', from, to, students: codes, items, mats: matOut, stats: st, trend,
     at: new Date().toISOString(), by: 'worker', confirmedAt: (prev && prev.confirmedAt) || null };
   await kvSet('exam_hit_' + examId, out);
@@ -479,6 +481,58 @@ async function runExam(exam, opt) {
   await kvSet('exam_hit_index', idx);
   log(`저장: exam_hit_${examId} — ${st.total}문항 · 같은 문제 ${st.same} · 변형 ${st.var} · 유형 ${st.type} · 지문만 ${st.text} · 학생 ${codes.length}명 · 자료 ${Object.keys(matOut).length}`);
   return out;
+}
+
+/* ══ 2026-10-05: 📚 기출 DB(원장님이 구입한 나만의 DB)에서 찾기 ════════════════
+ * 원장 요청 「시험지 올리기와 수학비서에 내가 구매한 db가 있으니 수학비서에서 기출을 찾아서 확인하는 기능도 추가하자」
+ *  · 색인 ms_mydb_index (제목·학교·연도·학기·시험·문항 수, 약 200KB) — 12시간마다 또는 학원앱 「목록 새로 받기」(ms_mydb_index_req)
+ *  · 요청에 mydb 가 있으면 그 시험지를 받아(문항 그림) 바로 문항 나누기로. DB화가 끝난 시험지는 ms_exams_<학교> 에도 넣어
+ *    기출 분석 화면에도 쓰이게 하고, 처리 중인 시험지는 그림만 exam_images/hit/<시험>/src 에 둔다(기출 분석은 건드리지 않는다).
+ *  환경변수 MATHSECR_ID/PASSWORD (없으면 색인·받기를 건너뛴다)
+ */
+let MSC = null;
+function msc() { if (!MSC) MSC = require('./exam_db_collector.js'); return MSC; }
+async function mydbFetch(id, school, slug) {
+  if (!process.env.MATHSECR_ID || !process.env.MATHSECR_PASSWORD) throw new Error('기출 DB 계정(MATHSECR_ID) 이 서버에 없습니다');
+  const C = msc(); await C.msLogin();
+  const all = await C.msListMydbs(); const t = all.find((m) => String(m.id) === String(id));
+  if (!t) throw new Error(`기출 DB 에 ${id} 시험지가 없습니다`);
+  if (t.dbStatus === 'dbCompleted') { log(`기출 DB ${id}: DB화 완료 → ms_exams_${schoolKey(school)} 에도 넣음`); return C.fetchOne(schoolKey(school), id); }
+  const ex = await C.msExam(Number(id) || id);
+  log(`기출 DB ${id}: 아직 처리 중 — 그림만 받음 (${ex.cells.length}문항)`);
+  for (const c of ex.cells) {
+    if (!c.imgUrl) { c.img = null; continue; }
+    try { const im = await C.msImage(c.imgUrl); const p = `hit/${slug}/src/q${String(c.no).padStart(2, '0')}.png`; await stPut(BUCKET, p, im.buf, im.type || 'image/png'); c.img = p; } catch (e) { c.img = null; }
+    delete c.imgUrl; await sleep(120);
+  }
+  return ex;
+}
+async function examDateFromCalendar(exam) {   /* 시험 첫날을 모르면 학원 달력(school_calendar)에서 */
+  try {
+    const v = await kvGet('school_calendar'); const s = ((v && v.schools) || []).find((x) => schoolKey(x.name) === schoolKey(exam.school));
+    const re = new RegExp(`${exam.semester}학기\\s*${exam.term}`);
+    const e = s && (s.exams || []).find((x) => re.test(String(x.label || '')) && String(x.from || '').slice(0, 4) === String(exam.year));
+    return (e && e.from) || '';
+  } catch (e) { return ''; }
+}
+async function maybeIndex() {
+  if (!process.env.MATHSECR_ID || !process.env.MATHSECR_PASSWORD) return;
+  const r = await fetch(`${SB}/rest/v1/lumen_store?key=eq.ms_mydb_index&select=updated_at`, { headers: sbH() });
+  const row = r.ok ? (await r.json())[0] : null;
+  const age = row ? (Date.now() - new Date(row.updated_at).getTime()) / 3600000 : 1e9;
+  const req = await kvGet('ms_mydb_index_req');
+  const asked = req && req.status === 'requested';
+  if (age < 12 && !asked) return;
+  log(`기출 DB 목록 색인 새로 받기 (${asked ? '학원앱 요청' : (row ? (age | 0) + '시간 지남' : '처음')})`);
+  try {
+    const C = msc(); await C.msLogin(); const ix = await C.buildIndex();
+    await kvSet('ms_mydb_index', ix);
+    if (asked) await kvSet('ms_mydb_index_req', { ...req, status: 'done', doneAt: new Date().toISOString(), n: ix.items.length });
+    log(`색인 저장: ${ix.items.length}장`);
+  } catch (e) {
+    log('색인 실패:', e.message);
+    if (asked) await kvSet('ms_mydb_index_req', { ...req, status: 'error', error: String(e.message).slice(0, 120), doneAt: new Date().toISOString() });
+  }
 }
 
 /* ══ 요청 처리 (학원앱 → exam_hit_req) ═══════════════════════ */
@@ -498,6 +552,7 @@ async function handleRequest() {
   await step('시작', 1);
   try {
     const exam = { ...req.exam, examId: req.examId };
+    if (!exam.date) { exam.date = await examDateFromCalendar(exam); if (exam.date) log(`시험 첫날(학원 달력): ${exam.date}`); }
     const out = await runExam(exam, { files: req.files || [], uploads: req.mats || [], mydb: req.mydb || null, rejudge: !!req.rejudge, from: req.from, to: req.to, step });
     await kvSet(REQ_KEY, { ...req, status: 'done', step: '끝', pct: 100, startedAt, doneAt: new Date().toISOString(), examId: out.examId,
       summary: { total: out.stats.total, same: out.stats.same, var: out.stats.var, type: out.stats.type, text: out.stats.text } });
@@ -508,13 +563,13 @@ async function handleRequest() {
   }
 }
 
-module.exports = { schoolKey, gradeKey, examIdOf, whereOf, pidOfUrl, semStart };
+module.exports = { schoolKey, gradeKey, examIdOf, whereOf, pidOfUrl, semStart, mydbFetch, examDateFromCalendar };
 
 if (require.main === module) {
   (async () => {
     if (NO_AI && !has('no-ai')) log('⚠ ANTHROPIC_API_KEY 가 없어 그림 판정 없이 유형 번호로만 후보를 남깁니다');
     const mydb = arg('mydb', null), rej = arg('rejudge', null);
-    if (!mydb && !rej) return handleRequest();
+    if (!mydb && !rej) { try { await maybeIndex(); } catch (e) { log('색인 건너뜀:', e.message); } return handleRequest(); }
     if (!ensurePdfLib()) throw new Error('pdf-lib 설치 실패');
     let exam;
     if (rej) { const p = await kvGet('exam_hit_' + rej); if (!p) throw new Error('exam_hit_' + rej + ' 가 없습니다'); exam = { ...p.exam, examId: rej }; }

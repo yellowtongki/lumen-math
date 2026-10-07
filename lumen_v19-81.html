@@ -429,7 +429,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-83';
+var APP_VER = 'v19-81';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -1103,10 +1103,8 @@ function applyCloudStudentDbMerge(supaStu){
             // ★ v14-5: 플래너 점수(lumen_planner) 보존 — 날짜키 합집합 병합 (다중 기기 점수 손실 방지, classMemo 패턴. 점수 0도 유효값이라 undefined 체크)
             var _pl = Object.assign({}, prev.lumen_planner||{});
             var _sPl = s.lumen_planner||{};
-            var _cAt = prev.lumen_planner_at||{}, _sAt = s.lumen_planner_at||{};   /* ★ v19-82: 날짜마다 더 최근에 매긴 쪽 */
-            Object.keys(_sPl).forEach(function(dk){ if(_sPl[dk]===undefined || _sPl[dk]===null) return; if(_cAt[dk] && String(_cAt[dk]) > String(_sAt[dk]||'') && (prev.lumen_planner||{})[dk]!==undefined) return; _pl[dk] = _sPl[dk]; });
+            Object.keys(_sPl).forEach(function(dk){ if(_sPl[dk]!==undefined && _sPl[dk]!==null) _pl[dk] = _sPl[dk]; });
             if(Object.keys(_pl).length>0) m.lumen_planner = _pl;
-            var _mAt = Object.assign({}, _cAt); Object.keys(_sAt).forEach(function(dk){ if(!_mAt[dk] || String(_sAt[dk]) > String(_mAt[dk])) _mAt[dk] = _sAt[dk]; }); if(Object.keys(_mAt).length>0) m.lumen_planner_at = _mAt;
             // ★ v14-5: 순공시간(lumen_study_time) 보존 — 날짜키 합집합 병합 (기존 무보호였음)
             var _stm = Object.assign({}, prev.lumen_study_time||{});
             var _sStm = s.lumen_study_time||{};
@@ -1123,8 +1121,7 @@ function applyCloudStudentDbMerge(supaStu){
               if(!p || !p.setId) return;
               var ex = _pPhotos[p.setId];
               if(!ex){ _pPhotos[p.setId]=p; return; }
-              var _rx = _pRank(ex), _rp = _pRank(p);   /* ★ v19-82: 같은 순위면 analysis 를 더 최근에 고친 쪽 */
-              _pPhotos[p.setId] = (_rx > _rp) ? ex : ((_rp > _rx) ? p : ((typeof plMergeStamp === 'function' && String(plMergeStamp(ex)) > String(plMergeStamp(p))) ? ex : p));
+              _pPhotos[p.setId] = (_pRank(ex) > _pRank(p)) ? ex : p;
             });
             var _mergedPhotos = Object.values(_pPhotos);
             if(_mergedPhotos.length>0) m.lumen_planner_photos = _mergedPhotos;
@@ -8997,8 +8994,6 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
-      {ver:'v19-83',date:'2026-10-06',stability:'ok',memo:'📝 <b>카드뉴스·블로그 자료의 총평 글 = 카드 숫자로</b> (원장 지적 2026-10-06 「문제를 선택하면 블로그 글도 변경되어야 하는데 안 되는 것 같다」 — 블로그 세션이 총평 카드 안에서 「서술형 5문항(19~23번) · 고난도 5」와 「서술형 2 · 어려움 2」가 어긋난다고 알림). <b>[원인]</b> 총평·요약에 쓰던 「출제 경향」 글은 시험지를 처음 나눌 때(23칸 — 서술형이 둘로 잘리기 전, 매쓰플랫 난도) AI가 쓴 초안이라, 원장님이 합친 문항·고른 킬러·난이도 칸이 반영되지 않았다. <b>[고침]</b> ① 카드 1·12(총평)·블로그자료.md 의 총평은 <b>카드 숫자로 쓴 글</b>이 기본(단원 · 서술형 몇 문항·몇 번 · 난이도 칸 · 어려운 문항 · 적중 · 원장님이 고른 변별 문항). 「출제 경향」 칸에 원장님이 고쳐 쓴 글을 고를 수도 있다. ② 블로그자료.md 맨 위에 «이번 시험 숫자 — 글의 숫자는 이것만» 칸. ③ 출제 경향 글의 숫자가 카드와 다르면 카드뉴스와 적중 분석 요약에 노란 경고 + 「카드 숫자로 글 바꾸기」(학부모 보고서에도 그 글이 들어가므로). ④ 마지막으로 내려받은 뒤 고른 것이 바뀌면 「🔄 다시 내려받아 블로그 세션에 넘겨 주세요」 띠.'},
-      {ver:'v19-82',date:'2026-10-06',stability:'ok',memo:'🛡️ <b>다시 계산한 플래너 점수가 되돌아가던 것 막음 · 카드뉴스 💾 저장 단추</b> (원장 지시 2026-10-06 「다시 계산 눌렀다, 점수 바뀐 거 확인」 · 「문제를 선택하고 저장버튼, 저장되었습니다 표기」). <b>[무슨 일]</b> 10/6 13:16 「🔁 다시 계산」은 45세트·24칸을 바꿨지만, 13:49 서버 등록부를 보니 10/1 세트 8개는 예전 점수(실천 2)로 돌아가 있었고 피드백 0~2 매김도 19세트만 남아 있었다. 등록부 병합이 «승인 순위가 같으면 이 기기 것»이라, 옛 사본을 가진 다른 기기·창이 저장하면서 덮어쓴 것으로 보인다. <b>[고침]</b> ① 플래너 세트: 순위가 같으면 analysis 를 더 최근에 고친 쪽(upd·editedAt·analyzedAt)이 이긴다 ② 날짜별 점수: 점수를 넣을 때마다 그 날짜의 시각(lumen_planner_at)을 남기고, 클라우드 쪽이 더 최근이면 클라우드 값을 둔다 ③ 다시 계산: 피드백 글 AI 매김을 10개씩, 빠진 것은 3개씩 한 번 더 — 그래도 못 매긴 수를 알려 주고, 한 번 더 누르면 그것만 다시 매긴다 · 모든 세트에 «고친 시각». ⚠ 옛 판(v19-81 이하)을 연 다른 기기·창이 있으면 그 기기도 새로 고쳐(새 판) 주세요. <b>[카드뉴스]</b> 「💾 저장」 단추와 「✅ 저장되었습니다 HH:MM:SS」 표시. 고를 때마다 바로 저장되는 것은 그대로이고, 저장 중·실패도 같은 자리에 보인다.'},
       {ver:'v19-81',date:'2026-10-05',stability:'ok',memo:'📋 <b>플래너 점수 기준표가 실제 채점이 됩니다 · 매일 점수 A안(10/1부터) · 주간 실천 증거 · 점수판 주간 칸 · 왼쪽 탭</b> (원장 결정 2026-10-05 「a안 10/1부터, 3번 넣고, 4번 5번 제안대로」). <b>[A안]</b> 매일 10 = 제출 4 · 타임테이블 2 · <b>실천 1</b>(O·△ 50% 이상) · 구체적 1 · <b>자기 피드백 2</b>. 자기 피드백은 AI가 «원인 + 내일 바꿀 구체적 행동»이면 2 · 돌아보기만 1 · 없음·한 단어 0으로 매긴다(프롬프트 바꿈 · 새벽 채점기도 같이). <b>[기준표]</b> 플래너 입력 화면 오른쪽 「📋 점수 기준」은 예전엔 메모였다(9월 기준 그대로, 이 기기에만 저장, 채점과 무관). 이제 서버 «planner_rules» 한 곳에 저장되고 학원앱 채점·새벽 채점·학생앱 안내가 같이 쓴다. 숫자를 고치고 «적용 시작일»을 정해 💾 저장 → 그날부터 그 기준. 지난 점수는 바뀌지 않는다. 「🔁 다시 계산」은 그날 이후 이미 매긴 플래너를 새 기준으로 다시 매긴다 — 실천·타임테이블·구체·제출은 바로, 자기 피드백은 옮겨 적어 둔 피드백 글을 원장님 Claude 열쇠로 0~2 다시 매김. 원장님이 손으로 고친 세트·손 점수는 그대로. 승인된 세트는 점수판·학생앱·랭킹에 다시 올라간다. <b>[주간 실천 증거]</b> 주간 «계획 실천»에서 수학 할 일(코디 칸·과목 수학)은 플래너에 O여도 그날(다음날 새벽 3시 전 포함) 매쓰플랫 채점이나 아하노트 기록이 없으면 실천으로 세지 않는다. 주간 점수판에 «증거 없음 N». 오늘 할 일은 기록이 아직 안 모였을 수 있어 어제까지만 본다. 결과는 plweek_ev 에 저장 — 학생앱(v2-126)도 같은 계산. <b>[점수판 주간 칸]</b> 입력 표에 일요일마다 보라색 «주간» 칸(발표 전은 점선 ·) — 누르면 그 주 주간 점수판. 합계 = 매일 + 주간(아래 작게 나눠 표시) — 랭킹과 같은 합. <b>[왼쪽 탭]</b> 플래너 왼쪽 탭 아래 「📅 주간 점수(주간계획) · 📔 순공피드백 · 🧭 스터디 코디」. 그 화면에서도 플래너 탭이 그대로 보인다. <b>[카드뉴스]</b> (원장 지시 2026-10-05) 난이도 칸 개수(2~5)와 경계를 고른다 · 기준은 기출 DB 난이도 1~9(기본 쉬움 1~2 · 보통 3~4 · <b>어려움 5 이상</b>) 또는 매쓰플랫 1~5 · 난이도 흐름 그래프에 «어려움 5 이상» 선. 자료 이름은 교과서 말고는 «루멘수학 시험대비자료»(또는 나눠서 루멘수학 학습지 · 자체교재 · 대비자료 · 기출자료). 카드 왼쪽 위 «루멘수학»(한글 · 2배) 밑에 «쌤 모르겠어요에서 아하까지». 기출 DB에서 받은 시험은 워커가 문항별 난이도(1~9)를 같이 저장 — 옥길중 중1 2026 2학기 중간은 넣어 두었다. <b>[손대지 않은 것]</b> 9월 점수 · student_v1.html · parent.html.'},
       {ver:'v19-80',date:'2026-10-05',stability:'ok',memo:'📰 <b>적중 분석 — 블로그 카드뉴스 · 📚 기출 DB에서 찾기</b>. <b>[카드뉴스]</b> (원장 결정 2026-10-05 「1번 나안, 2번 루멘 자체교재로만, 3번 색상 12가지, 4번 내가 직접 고른다, 5번 루멘수학만, 모든 카드에 사선으로 흐리게 루멘수학 — 켜기·끄기」 · 「카드뉴스에서 킬러문제는 내가 고를 수 있어야 한다」) 시험을 연 화면의 「📰 카드뉴스」 → 표지 · 난이도 흐름 · 단원 비율 · 난이도 분포 · 적중 결과 · 적중 지도 · 자료별 적중 · <b>원장님이 고른 적중 문항</b>(최대 4장, 시험 그림은 흐리게) · 반복 출제 · 총평(키워드 4 · 전략 5줄 · 마지막 한 줄은 「루멘수학」). <b>색 12가지</b>를 눌러 바꾸고, <b>워터마크</b>(사선 「루멘수학」)를 켜고 끈다. <b>킬러 문항</b>은 칩으로 직접 고른다(처음엔 난도 4·5). 매쓰플랫이 단원을 잘못 붙인 문항은 「단원 고치기」로 바꾼다. 「⬇ 카드 내려받기」 = 1080×1350 PNG 전부 + 블로그 글 자료(.md, 카드마다 들어갈 문단) 한 묶음(.zip). 자료 이름은 종류만(루멘 자체교재 · 교과서 · 수업 학습지 …), 교재명·쪽 번호·학생 이름·전화번호 없음. 고른 값은 시험마다 저장된다. <b>[📚 기출 DB에서 찾기]</b> (원장 요청 2026-10-05 「시험지 올리기와 수학비서에 내가 구매한 db가 있으니 거기서 기출을 찾아서 확인하는 기능도」) 「📤 시험지 올리기」 옆 새 단추. 원장님이 구입한 기출 DB 1,515장(29개 학교)을 학교(★ 우리 학생 학교 먼저) · 학년 · 연도 · 학기 · 시험 · 제목으로 거른다. 이미 받아 둔 기출은 <b>👀 보기</b>로 문항 그림·배점·난이도를 바로 펼친다. <b>🎯 적중 분석</b>을 누르면 사진 없이 서버가 그 시험지를 기출 DB에서 받아 문항 나누기부터 한다(5~15분). 기출 DB 쪽에서 아직 «처리 중»인 최신 시험지도 그림은 받을 수 있어 분석된다. 시험 첫날은 학원 달력(나이스 학사일정)에서 읽는다. 목록은 서버가 12시간마다 새로 받고, 방금 넣은 시험지는 「🔄 목록 새로 받기」(5분 안). 이미 분석한 시험은 「결과 열기」. <b>[서버]</b> sync/exam_hit_worker.js (색인 ms_mydb_index · 시험지 받기) · sync/exam_db_collector.js (한 장 받기 · 색인) · 워크플로에 기출 DB 계정 추가. <b>[손대지 않은 것]</b> 기출 분석 · 시험 대비 화면, student_v1.html · parent.html.'},
       {ver:'v19-79',date:'2026-10-05',stability:'ok',memo:'✏️ <b>적중 분석 — 출제 경향 · 킬러 문항 글을 원장님이 고친다</b> (원장 지시 2026-10-05 「출제경향과 킬러경향 등은 내가 수정할 수 있는 형태로」). 요약 칸 아래 「출제 경향」 글 옆 <b>✏️ 고치기</b> → 출제 경향 · 킬러 문항 두 칸을 직접 고쳐 💾 저장. 고친 글에는 「원장님이 고친 글」 표시, AI 가 쓴 글은 「AI 초안」. 처음 AI 글은 따로 남아 「↺ AI 처음 글로 되돌리기」가 된다. 학부모 보고서 · 블로그 자료(.md) · 요약이 고친 글을 쓰고, 🔄 다시 판정해도 고친 글은 그대로(서버 워커도 지킨다). 글이 없으면 「✏️ 직접 쓰기」. <b>[상의 중]</b> 블로그용 도표 A~J(단원 도넛·난이도 막대·문항별 표·적중 도넛·자료 종류별 적중·적중 지도·반복 출제·킬러 카드·학생 준비도)는 미리보기로 상의 중이라 아직 넣지 않았다. <b>[손대지 않은 것]</b> 판정 방식, 학생앱·학부모앱.'},
@@ -80125,15 +80120,7 @@ function htTrendHtml(d){
   return '<div style="'+box+'"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><div class="ht-h" style="margin:0;flex:1">출제 경향 '+(t.edited?'<span class="ht-pill" style="background:#dcfce7;color:#15803d">원장님이 고친 글</span>':'<span class="ht-pill" style="background:#f1f5f9;color:#64748b">AI 초안</span>')+'</div>'
     +'<button class="ht-btn" style="padding:4px 10px" onclick="HT.trendEdit=true;render()">✏️ 고치기</button></div>'
     +'<div style="font-size:12.5px;line-height:1.7;white-space:pre-wrap">'+htEsc(t.trend||'')+'</div>'
-    +(t.killer?'<div class="ht-h" style="margin:8px 0 4px">킬러 문항</div><div style="font-size:12.5px;line-height:1.7;white-space:pre-wrap">'+htEsc(t.killer)+'</div>':'')
-    +htTrendWarn(d)+'</div>';
-}
-/* v19-83: 출제 경향 글의 숫자가 확정된 문항(합치기·서술형·난이도)과 다르면 알림 — 학부모 보고서·블로그에 그대로 나가지 않게 */
-function htTrendWarn(d){
-  if(typeof cnTrendIssues!=='function') return ''; var iss=[]; try{ iss=cnTrendIssues(d); }catch(e){}
-  if(!iss.length) return '';
-  return '<div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:#fffbeb;border:1px solid #fde68a;font-size:12px;color:#92400e;font-weight:700">⚠ 이 글의 숫자가 지금 문항과 다릅니다 — '+iss.map(htEsc).join(' · ')
-    +' <span style="font-weight:600">(AI 초안은 문항을 합치기 전에 쓴 글입니다)</span> <button class="ht-btn" style="padding:3px 9px;margin-left:4px" onclick="htTrendFromCards()">카드 숫자로 글 바꾸기</button></div>';
+    +(t.killer?'<div class="ht-h" style="margin:8px 0 4px">킬러 문항</div><div style="font-size:12.5px;line-height:1.7;white-space:pre-wrap">'+htEsc(t.killer)+'</div>':'')+'</div>';
 }
 window.htTrendSave = function(){
   var d=HT.data[HT.cur]; if(!d) return;
@@ -80304,40 +80291,6 @@ window.cnDiffSet=function(k, v, i){ var d=HT.data[HT.cur]; if(!d) return; var c=
   if(k==='src'){ df.src=v; df.cuts=CN_CUTS[v][df.n].slice(); } else if(k==='n'){ df.n=+v; df.cuts=CN_CUTS[df.src][df.n].slice(); } else if(k==='cut'){ df.cuts[i]=Math.max(1,Math.min(D.max,parseInt(v,10)||1)); df.cuts.sort(function(a,b){ return a-b; }); }
   c.diff=df; cnSave(d); render(); };
 
-
-/* ═══ v19-83: 총평·요약 글 = 카드 숫자로 (원장 지적 2026-10-06 — 블로그 세션이 「서술형 5문항(19~23번) · 고난도 5」와 카드의 「서술형 2 · 어려움 2」가 어긋난다고 알림) ═══
- *   출제 경향 AI 초안은 시험지를 처음 나눌 때(23칸, 합치기 전 · 매쓰플랫 난도) 쓴 글이라 원장님이 고른 것·합친 것이 반영되지 않는다.
- *   → 카드·블로그 자료의 총평은 «카드 숫자로 쓴 글»이 기본. 원장님이 「출제 경향」 칸을 고쳐 쓴 글을 고를 수도 있다(숫자가 다르면 경고). */
-function cnNums(a){ return a.map(function(r){ return r.n+'번'; }).join('·'); }
-function cnFacts(d){
-  var c=cnCfg(d), R=cnRows(d), T=R.length||1, D=cnDiff(d), bc=D.names.map(function(){ return 0; }); R.forEach(function(r){ bc[r.band]=(bc[r.band]||0)+1; });
-  var hard=R.filter(function(r){ return r.band>=D.hardIdx; }), essay=R.filter(function(r){ return r.essay; }), K=R.filter(function(r){ return r.killer; }), hit=R.filter(function(r){ return r.inB; }).length;
-  var ch={}, chs=[]; R.forEach(function(r){ if(!ch[r.chapter]){ ch[r.chapter]=[]; chs.push(r.chapter); } ch[r.chapter].push(r); }); chs.sort(function(a,b){ return ch[b].length-ch[a].length; });
-  var bandSum=D.names.map(function(nm,i){ return nm+' '+bc[i]; }).join(' · '), basisLbl=HT_BASIS[d.basis||'same+var'].label;
-  var auto='이번 시험은 '+chs.slice(0,3).join('·')+(chs.length>3?(' 등 '+chs.length+'개 단원'):'')+'에서 '+T+'문항이 출제되었습니다. '
-    +(essay.length?('서술형은 '+essay.length+'문항('+cnNums(essay)+')이고, '):'')
-    +'난이도는 '+bandSum+'문항이며, '+(hard.length?('어려운 문항 '+hard.length+'개('+cnNums(hard)+')가 변별을 갈랐습니다. '):'전체적으로 무난했습니다. ')
-    +'루멘 학생들이 시험 전에 푼 자료와 한 문항씩 대조하면 '+T+'문항 중 '+hit+'문항이 «'+basisLbl+'» 기준으로 적중했습니다.';
-  var autoK=K.length?('변별 문항은 '+K.map(function(r){ return r.n+'번('+r.type+')'; }).join(', ')+'입니다.'):'';
-  var ed=!!(d.trend&&d.trend.edited&&d.trend.trend), useEd=c.trendSrc==='edited'&&ed;
-  return { T:T, D:D, bc:bc, hard:hard, essay:essay, K:K, hit:hit, chs:chs, ch:ch, bandSum:bandSum, basisLbl:basisLbl, auto:auto, autoK:autoK, hasEd:ed,
-    src:useEd?'edited':'auto', trend:useEd?d.trend.trend:auto, killer:useEd?(d.trend.killer||autoK):autoK };
-}
-/* 출제 경향 칸 글(AI 초안이든 원장님 글이든)의 숫자가 카드와 다른 곳 */
-window.cnTrendIssues=function(d, F){
-  F=F||cnFacts(d); var t=((d.trend&&d.trend.trend)||'')+' \n '+((d.trend&&d.trend.killer)||''), out=[], seen={};
-  var add=function(x){ if(!seen[x]){ seen[x]=1; out.push(x); } };
-  var m=t.match(/서술형[^0-9.\n]{0,10}(\d+)\s*문항/); if(m&&+m[1]!==F.essay.length) add('서술형 '+m[1]+'문항 → 카드는 '+F.essay.length+'문항'+(F.essay.length?'('+cnNums(F.essay)+')':''));
-  var re=/(\d+)\s*[~∼\-]\s*(\d+)\s*번/g, x; while((x=re.exec(t))){ if(+x[2]>F.T) add('「'+x[0]+'」 → 이 시험은 '+F.T+'번까지'); }
-  var re1=/(\d+)\s*번/g; while((x=re1.exec(t))){ if(+x[1]>F.T) add('「'+x[0]+'」 → 이 시험은 '+F.T+'번까지'); }
-  var m3=t.match(/(고난도|어려운 문항|난도 4~5|킬러|변별)[^0-9.\n]{0,12}(\d+)\s*문항/); if(m3&&+m3[2]!==F.hard.length&&+m3[2]!==F.K.length) add('「'+m3[0]+'」 → 카드는 어려움 '+F.hard.length+' · 변별 '+F.K.length);
-  return out;
-};
-window.htTrendFromCards=function(){ var d=HT.data[HT.cur]; if(!d) return; var F=cnFacts(d), old=d.trend||{};
-  if(!confirm('출제 경향 칸을 카드 숫자로 쓴 글로 바꿉니다 (AI 처음 글은 「되돌리기」로 다시 볼 수 있어요).\n\n'+F.auto+(F.autoK?('\n\n'+F.autoK):''))) return;
-  d.trend={ trend:F.auto, killer:F.autoK, edited:true, by:'teacher', at:new Date().toISOString(), ai:old.ai||(old.edited?null:{ trend:old.trend||'', killer:old.killer||'' }) };
-  cnCfg(d).trendSrc='edited'; cnSave(d); render(); };
-
 /* ── 설정 ── */
 function cnCfg(d){
   if(!d.card) d.card={};
@@ -80351,18 +80304,7 @@ function cnCfg(d){
   if(!c.strategy) c.strategy=['단원별 핵심 개념 다시 정리','틀린 문제 같은 유형으로 다시 풀기','기출 반복 유형 먼저 연습','서술형 풀이 과정 쓰기','시험 시간에 맞춰 실전 연습'];
   return c;
 }
-/* v19-82: 고를 때마다 바로 저장 + 「💾 저장」 단추 · 「✅ 저장되었습니다 HH:MM」 표시 (원장 요청 2026-10-06) */
-function cnSaveMark(){ var el=document.getElementById('cn-saved'); if(!el) return;
-  if(CN.saving){ el.textContent='⏳ 저장 중…'; el.style.color='#b45309'; return; }
-  if(CN.saveErr){ el.textContent='⚠ 저장 실패 — 「💾 저장」을 다시 눌러 주세요'; el.style.color='#b91c1c'; return; }
-  if(CN.savedAt){ var t=CN.savedAt; el.textContent='✅ 저장되었습니다 '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0')+':'+String(t.getSeconds()).padStart(2,'0'); el.style.color='#15803d'; } }
-function cnSave(d, noChange){
-  if(!noChange){ try{ cnCfg(d).changedAt=new Date().toISOString(); }catch(e){} }
-  CN.saving=true; CN.saveErr=''; cnSaveMark(); d.savedAt=new Date().toISOString();
-  return htKvSet('exam_hit_'+d.examId, d).then(function(){ CN.saving=false; CN.savedAt=new Date(); cnSaveMark(); return true; })
-    .catch(function(e){ CN.saving=false; CN.saveErr=String((e&&e.message)||e); cnSaveMark(); htToast('저장 실패: '+CN.saveErr); return false; });
-}
-window.cnSaveNow=function(){ var d=HT.data[HT.cur]; if(!d) return; cnCfg(d); cnSave(d, true).then(function(ok){ if(ok) htToast('💾 저장되었습니다 — 고른 문항·색·난이도 칸이 이 시험에 남았습니다'); }); };
+function cnSave(d){ htSave(d); }
 window.cnToggle=function(){ CN.open=!CN.open; render(); if(CN.open) setTimeout(function(){ var el=document.getElementById('cn-panel'); if(el) el.scrollIntoView({ behavior:'smooth', block:'start' }); },30); };
 window.cnSet=function(k, v){ var d=HT.data[HT.cur]; if(!d) return; var c=cnCfg(d); c[k]=v; cnSave(d); render(); };
 window.cnToggleNo=function(k, no, max){ var d=HT.data[HT.cur]; if(!d) return; var c=cnCfg(d); var a=c[k]||[], i=a.indexOf(no);
@@ -80427,7 +80369,7 @@ function cnCards(d){
   var mk={}, mks=[]; R.forEach(function(r){ if(!r.mk) return; if(!mk[r.mk]){ mk[r.mk]=[]; mks.push(r.mk); } mk[r.mk].push(r); }); mks.sort(function(a,b){ return mk[b].length-mk[a].length; });
   var picks=(c.picks||[]).map(function(no){ return R.filter(function(r){ return r.no===no; })[0]; }).filter(Boolean);
   var N='§N§', out=[], basisLbl=HT_BASIS[d.basis||'same+var'].label;
-  var F=cnFacts(d), trend=F.trend, killerTxt=F.killer;   /* v19-83: 카드 숫자로 쓴 글 (또는 원장님이 고른 글) */
+  var trend=(d.trend&&d.trend.trend)||'', killerTxt=(d.trend&&d.trend.killer)||'';
   var first2=function(t){ var s=String(t||'').replace(/([.다])\s+/g,'$1\u0001').split('\u0001'); return s.slice(0,2).join(' '); };   /* 옛 사파리: 뒤돌아보기 정규식 없이 */
   var kw=(c.keywords||[]).filter(function(x){ return String(x||'').trim(); });
   if(!kw.length) kw=[(chs[0]||'')+' 비중 최다', K.length?('변별 '+K.length+'문항'):'고른 난이도', rep.length?('기출 유형 반복 '+rep.length):'새 유형 출제', '서술형 '+R.filter(function(r){ return r.essay; }).length+'문항'];
@@ -80577,9 +80519,8 @@ function cnPanelHtml(d){
   var c=cnCfg(d), R=cnRows(d), hitR=R.filter(function(r){ return r.inB; });
   var chList=[]; R.forEach(function(r){ if(chList.indexOf(r.it.chapter)<0 && r.it.chapter) chList.push(r.it.chapter); });
   var h='<div class="ht-card" id="cn-panel" style="border:2px solid #0d2240"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"><div style="font-size:16px;font-weight:900;color:#0d2240;flex:1">📰 블로그 카드뉴스</div>'
-    +'<span id="cn-saved" style="font-size:12px;font-weight:800;color:#15803d" aria-live="polite"></span><button class="ht-btn" onclick="cnSaveNow()" style="border-color:#15803d;color:#15803d">💾 저장</button>'
     +'<button class="ht-btn pri" onclick="cnExport()">'+(CN.busy?('⏳ '+htEsc(CN.busy)):'🖼 카드 그림 + 글 자료 내려받기 (.zip)')+'</button><button class="ht-btn" onclick="cnToggle()">닫기</button></div>'
-    +'<div class="ht-sub" style="margin-bottom:10px">문항·색·난이도 칸을 고르면 <b>바로 저장</b>되고 아래 카드가 새로 그려집니다(「💾 저장」으로 한 번 더 저장할 수도 있어요). 내려받기를 누르면 지금 고른 대로 카드를 만듭니다. 블로그 세션에 zip 안의 그림과 「블로그자료.md」를 그대로 «파일 추가»하세요.</div>';
+    +'<div class="ht-sub" style="margin-bottom:10px">블로그 세션에 zip 안의 그림과 「블로그자료.md」를 그대로 «파일 추가»하세요. 시험 문제 그림은 흐리게, 자료 이름은 종류만 나갑니다.</div>';
   h+='<div class="ht-h">🎨 색 (12가지)</div><div class="cn-pal">'+CN_PAL.map(function(p,i){ return '<button class="'+(i===c.pal?'on':'')+'" onclick="cnSet(\'pal\','+i+')"><i style="background:linear-gradient(135deg,'+p.c1+','+p.c3+');box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)"><b style="position:absolute;right:5px;bottom:5px;width:13px;height:13px;border-radius:50%;background:'+p.acc+'"></b></i>'+(i+1)+'. '+p.n+'</button>'; }).join('')+'</div>';
   h+='<div style="margin:10px 0">'+htSwitch(!!c.wm,'사선 워터마크 「루멘수학」 (다른 학원이 그대로 가져다 쓰지 못하게)','cnSet(\'wm\','+(!c.wm)+')','#b91c1c')+'</div>';
   /* v19-81: 난이도 칸 · 자료 이름 (원장 지시 2026-10-05) */
@@ -80591,12 +80532,6 @@ function cnPanelHtml(d){
     +'<div class="ht-sub" style="margin-bottom:10px">'+(D.hasMs?'':'이 시험은 기출 DB 난이도가 없어 매쓰플랫 난도로 나눕니다. ')+'지금: '+htEsc(cnBandTxt(D))+'</div>';
   h+='<div class="ht-h">🏷 자료 이름 (카드에 나가는 이름)</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'
     +segB(c.matMode!=='split','교과서 / 루멘수학 시험대비자료',"cnSet('matMode','one')")+segB(c.matMode==='split','교과서 / 루멘수학 학습지 · 자체교재 · 대비자료 · 기출자료',"cnSet('matMode','split')")+'</div>';
-  var Fp=cnFacts(d), iss=cnTrendIssues(d,Fp);
-  h+='<div class="ht-h">📝 총평 · 요약 글</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">'
-    +segB(Fp.src==='auto','카드 숫자로 자동 (추천)',"cnSet('trendSrc','auto')")+segB(Fp.src==='edited','「출제 경향」 칸의 원장님 글',"cnSet('trendSrc','edited')",!Fp.hasEd)+'</div>'
-    +'<div style="font-size:12px;line-height:1.7;background:#f8fafc;border-radius:8px;padding:8px 10px;margin-bottom:6px">'+htEsc(Fp.trend)+(Fp.killer?('<br><b>'+htEsc(Fp.killer)+'</b>'):'')+'</div>'
-    +(iss.length?('<div style="font-size:11.5px;color:#b45309;font-weight:800;margin-bottom:10px">⚠ 위 「출제 경향」 칸 글의 숫자가 카드와 다릅니다: '+iss.map(htEsc).join(' · ')+(Fp.src==='edited'?'':' — 카드·블로그 자료에는 카드 숫자로 쓴 글이 나갑니다')+'</div>'):'<div style="margin-bottom:10px"></div>');
-  if(c.changedAt&&(!c.exportedAt||c.changedAt>c.exportedAt)) h+='<div class="ht-strip" style="margin-bottom:10px">🔄 '+(c.exportedAt?'마지막으로 내려받은 뒤 고른 것이 바뀌었습니다':'아직 내려받지 않았습니다')+' — 「카드 그림 + 글 자료 내려받기」를 다시 눌러 새 zip 을 블로그 세션에 넘겨 주세요.</div>';
   h+='<div class="ht-h">🔥 킬러(변별) 문항 — 카드 2·4·총평에 나옵니다</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">'+R.map(function(r){ return '<button class="cn-chip'+(r.killer?' on':'')+'" title="'+htEsc(r.type)+' · 난도 '+r.level+'" onclick="cnToggleNo(\'killers\','+r.no+',6)">'+r.n+'<small style="opacity:.7"> ·'+r.level+'</small></button>'; }).join('')+'</div>';
   h+='<div class="ht-h">🎯 문항별 적중 카드 — 고른 문항마다 한 장 (최대 4)</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">'+(hitR.length?hitR.map(function(r){ var on=c.picks.indexOf(r.no)>=0; return '<button class="cn-chip b'+(on?' on':'')+'" title="'+htEsc(r.type)+'" onclick="cnToggleNo(\'picks\','+r.no+',4)">'+r.n+'번 <small style="opacity:.75">'+(CN_KN[r.kind]||'')+'</small></button>'; }).join(''):'<span class="ht-sub">적중 문항이 없습니다</span>')+'</div>';
   h+='<details style="margin-bottom:10px"><summary class="ht-h" style="cursor:pointer">✏️ 단원 이름 고치기 (매쓰플랫이 잘못 붙인 문항)</summary><datalist id="cn-ch">'+chList.map(function(x){ return '<option value="'+htEsc(x)+'">'; }).join('')+'</datalist><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px;margin-top:6px">'
@@ -80606,7 +80541,6 @@ function cnPanelHtml(d){
     +'<div><div class="ht-h">다음 시험 대비 (총평)</div>'+[0,1,2,3,4].map(function(i){ return '<input class="cn-in" style="margin-bottom:4px" value="'+htEsc((c.strategy||[])[i]||'')+'" onchange="cnText(\'strategy\','+i+',this.value)">'; }).join('')+'</div>'
     +'<div><div class="ht-h">메시지 (총평 맨 아래)</div><textarea class="cn-in" rows="3" onchange="cnText(\'message\',null,this.value)">'+htEsc(c.message||'')+'</textarea><div class="ht-sub" style="margin-top:6px">출제 경향 · 킬러 설명은 위 「출제 경향」 칸에서 고칩니다.</div></div></div>';
   h+='<div id="cn-cards">'+cnCardsHtml(d)+'</div>';
-  setTimeout(cnSaveMark,0);
   return h+'</div>';
 }
 
@@ -80637,17 +80571,7 @@ function cnMd(d, cards){
   L.push('- '+e.school+' '+e.term+'고사 수학, 어디서 나왔을까? 문항별 적중 분석');
   L.push('- 기출은 반복된다 — '+e.school+' '+e.year+' '+e.semester+'학기 '+e.term+' 시험 총정리');
   L.push('');
-  var F=cnFacts(d);
-  L.push('## 이번 시험 숫자 — 글의 숫자는 이것만 쓴다 (카드와 같음)');
-  L.push('- 총 '+F.T+'문항 · 서술형 '+F.essay.length+'문항'+(F.essay.length?(' ('+cnNums(F.essay)+')'):''));
-  L.push('- 난이도('+(F.D.src==='ms'?'기출 DB 난이도 1~9':'매쓰플랫 난도 1~5')+' · '+cnBandTxt(F.D)+'): '+F.bandSum+(F.hard.length?(' — 어려움 '+cnNums(F.hard)):''));
-  L.push('- 변별 문항(원장님이 고름): '+(F.K.length?F.K.map(function(r){ return r.n+'번 '+r.type; }).join(' · '):'없음'));
-  L.push('- 적중: '+F.hit+'/'+F.T+' («'+F.basisLbl+'» 기준)');
-  L.push('');
-  L.push('## 출제 경향 '+(F.src==='edited'?'(원장님이 고친 글)':'(카드 숫자로 쓴 글)'));
-  L.push(F.trend); if(F.killer){ L.push(''); L.push('**변별 문항**: '+F.killer); }
-  if(F.src==='edited'&&cnTrendIssues(d,F).length) L.push('', '> ⚠ 이 글의 숫자가 위 «이번 시험 숫자»와 다르면 «이번 시험 숫자»를 따른다.');
-  L.push('');
+  if(d.trend&&(d.trend.trend||d.trend.killer)){ L.push('## 출제 경향 (원장님 확인 글)'); if(d.trend.trend) L.push(d.trend.trend); if(d.trend.killer){ L.push(''); L.push('**변별 문항**: '+d.trend.killer); } L.push(''); }
   cards.forEach(function(x,i){ L.push('## 카드 '+String(i+1).padStart(2,'0')+' (그림: '+x.file+'.png)'); L.push('- 문단 초안: '+x.para); (x.facts||[]).forEach(function(f){ L.push('- 숫자: '+f); }); L.push(''); });
   L.push('---'); L.push('자료 생성: 루멘수학 학원앱 「적중 분석 · 카드뉴스」 · '+new Date().toISOString().slice(0,10));
   return L.join('\n');
@@ -80690,7 +80614,6 @@ window.cnExport = async function(){
     var z=await zip.generateAsync({ type:'blob' }), e=d.exam||{};
     var a=document.createElement('a'); a.href=URL.createObjectURL(z); a.download='카드뉴스_'+e.school+'_'+e.grade+'_'+e.year+'_'+e.semester+'학기'+e.term+'.zip'; document.body.appendChild(a); a.click();
     setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500);
-    c.exportedAt=new Date().toISOString(); cnSave(d, true);
     CN.busy=''; htToast('🖼 카드 '+cards.length+'장 + 블로그자료.md 를 내려받았습니다'); render();
   }catch(err){ CN.busy=''; render(); htToast('카드 만들기 실패: '+(err&&err.message||err)); }
 };
@@ -80909,17 +80832,12 @@ window.plV3Apply=function(a, expectedDate){
 };
 
 /* ── ③ 새 기준으로 다시 계산 (원장님이 누름) ── */
-async function plrFbGrade(items){   /* items=[{i, text}] → {i: level} — 원장 기기의 Claude 열쇠, 글만. v19-82: 10개씩 · 빠진 것은 3개씩 한 번 더 */
-  var out=await plrFbGrade1(items, 10), miss=items.filter(function(x){ return out[x.i]==null; });
-  if(miss.length){ var o2=await plrFbGrade1(miss, 3); Object.keys(o2).forEach(function(k){ out[k]=o2[k]; }); }
-  return out;
-}
-async function plrFbGrade1(items, size){
+async function plrFbGrade(items){   /* items=[{i, text}] → {i: level} — 원장 기기의 Claude 열쇠, 글만 */
   var key=''; try{ key=localStorage.getItem('or_api_key')||''; }catch(e){}
   if(!key) throw new Error('Claude 열쇠가 없어 피드백 글을 다시 매기지 못했습니다 (왼쪽 위 Claude 등록)');
   var out={};
-  for(var s=0;s<items.length;s+=size){
-    var chunk=items.slice(s,s+size);
+  for(var s=0;s<items.length;s+=25){
+    var chunk=items.slice(s,s+25);
     var prompt=['학생 플래너의 «자기 피드백» 글을 아래 기준으로 0·1·2 중 하나로 매기세요.'].concat(PLR_FB_RULE.slice(1,7)).concat(['',
       '글 목록 (번호: 글):']).concat(chunk.map(function(x){ return x.i+': '+String(x.text).replace(/\s+/g,' ').slice(0,600); })).concat(['',
       'JSON 하나만 출력하세요. 예: {"12": 2, "13": 0}']).join('\n');
@@ -80932,10 +80850,10 @@ async function plrFbGrade1(items, size){
         var j=await resp.json(); txt=(j.content||[]).map(function(c){ return c.text||''; }).join('');
       }catch(e){ lastErr=e; }
     }
-    if(!txt){ console.warn('[피드백 다시 매기기]', lastErr); continue; }   /* 이 묶음만 건너뛰고 다음 묶음 — 빠진 것은 다시 시도 */
+    if(!txt) throw lastErr||new Error('AI 응답 없음');
     var mm=txt.match(/\{[\s\S]*\}/); var obj={}; try{ obj=JSON.parse(mm?mm[0]:'{}'); }catch(e){}
-    Object.keys(obj).forEach(function(k){ var kk=String(k).replace(/[^\d]/g,''); if(kk) out[kk]=Math.max(0,Math.min(2,parseInt(obj[k],10)||0)); });
-    PLR.busy='피드백 글 매기는 중 '+Math.min(items.length,s+size)+'/'+items.length; plrPaint();
+    Object.keys(obj).forEach(function(k){ out[k]=Math.max(0,Math.min(2,parseInt(obj[k],10)||0)); });
+    PLR.busy='피드백 글 매기는 중 '+Math.min(items.length,s+25)+'/'+items.length; plrPaint();
   }
   return out;
 }
@@ -80951,27 +80869,25 @@ window.plrRecalc=async function(from){
   if(!confirm(from+' 이후 플래너 '+sets.length+'세트를 지금 기준표로 다시 계산합니다.\n\n· 실천·타임테이블·구체적·제출 점수는 기준표대로 바로 바뀝니다\n· 자기 피드백은 '+gradeQ.length+'세트의 피드백 글을 AI(원장님 Claude 열쇠)가 새 기준(0~2)으로 다시 매깁니다\n· 원장님이 손으로 고친 세트와 손 점수는 그대로 둡니다\n· 승인된 세트는 점수판·학생앱·랭킹에 다시 올라갑니다')) return;
   PLR.busy='시작'; render();
   try{
-    var fbMiss=0; if(gradeQ.length){ var lv=await plrFbGrade(gradeQ); need.forEach(function(x){ if(x.qi==null) return; if(lv[x.qi]!=null) x.a.fbLevel=lv[x.qi]; else fbMiss++; }); }
-    var nowIso=new Date().toISOString();
+    if(gradeQ.length){ var lv=await plrFbGrade(gradeQ); need.forEach(function(x){ if(x.qi!=null&&lv[x.qi]!=null) x.a.fbLevel=lv[x.qi]; }); }
     var changed={}, nSet=0, nKept=0;
     sets.forEach(function(x){
       var a=x.a, p=x.p, st=x.st;
       if(a.editedAt){ var r=plRulesFor(x.dk)||PLR.DEF; var maxP=Math.max(+r.prHiPts||0,+r.prLoPts||0); if(+a.practiceScore>maxP) a.practiceScore=String(maxP); nKept++; }
       else plV3Apply(a, x.dk);
-      a.upd=nowIso;   /* v19-82: 여러 기기가 섞여도 «더 최근에 고친 쪽»이 이긴다 */
       try{ a.plannerScore=String(calcPlannerScoreByPlannerDate(a.date, p.setId, plFileCount(p), a.dateNext)); }catch(e){}
       if(!p.reviewed) return;
       var total=plUseManual(p, (+a.plannerScore||0)+(+a.studyScore||0)+(+a.practiceScore||0)+(+a.specificScore||0)+(+a.feedbackScore||0));
       var key=String(a.date||'').replace(/-/g,'.'); var old=(st.lumen_planner||{})[key];
-      if(plSetScore(st, key, total, '새 기준 다시 계산')){ if(old!==total){ changed[st.id]=st; nSet++; } }
+      if(old!==total){ if(plSetScore(st, key, total, '새 기준 다시 계산')){ changed[st.id]=st; nSet++; } }
     });
     saveStudents();
     var list=Object.keys(changed).map(function(k){ return changed[k]; });
     for(var i=0;i<list.length;i++){ PLR.busy='학생앱에 다시 올리는 중 '+(i+1)+'/'+list.length; plrPaint(); try{ await publishPlannerDataForStudent(list[i]); }catch(e){} }
     try{ await plwRepublish(); }catch(e){}
-    try{ await plrSave(plrList(), { recalc:{ from:from, at:new Date().toISOString(), sets:sets.length, changed:nSet, fbMiss:fbMiss } }); }catch(e){}
+    try{ await plrSave(plrList(), { recalc:{ from:from, at:new Date().toISOString(), sets:sets.length, changed:nSet } }); }catch(e){}
     PLR.busy=''; render();
-    alert('✅ 다시 계산 끝\n'+sets.length+'세트 · 점수가 바뀐 날 '+nSet+'칸 · 학생 '+list.length+'명 학생앱 반영'+(fbMiss?('\n⚠ 피드백 글 '+fbMiss+'세트는 AI 응답이 없어 예전 점수로 두었습니다 — 한 번 더 누르면 그것만 다시 매깁니다'):'')+(nKept?('\n(원장님이 손으로 고친 '+nKept+'세트는 실천만 새 최대점으로 맞추고 나머지는 그대로)'):''));
+    alert('✅ 다시 계산 끝\n'+sets.length+'세트 · 점수가 바뀐 날 '+nSet+'칸 · 학생 '+list.length+'명 학생앱 반영'+(nKept?('\n(원장님이 손으로 고친 '+nKept+'세트는 실천만 새 최대점으로 맞추고 나머지는 그대로)'):''));
   }catch(e){ PLR.busy=''; render(); alert('다시 계산 실패: '+(e.message||e)); }
 };
 
@@ -81102,20 +81018,8 @@ window.plrNavGo=function(v){
 /* 수정 창의 점수 고르기 칸 — 기준표의 최대점까지 */
 window.plrOpts=function(a, k){ var r=plRulesFor(plDateKey(a&&a.date))||PLR.DEF; var mx=k==='p'?Math.max(+r.prHiPts||0,+r.prLoPts||0):(k==='s'?(+r.spec):(+r.fbMax)); var o=[]; for(var i=Math.max(0,mx);i>=0;i--) o.push(String(i)); return o; };
 
-/* ═══ v19-82: 여러 기기 덮어쓰기 막기 (2026-10-06 — 다시 계산한 10월 점수가 다른 기기·창의 옛 사본에 되돌아간 일) ═══
- *   등록부 병합은 «같은 순위면 이 기기 것»이었다 → 옛 사본을 가진 기기가 저장하면 고친 점수가 되돌아갔다.
- *   이제 ① 플래너 세트: 승인 순위가 같으면 analysis 의 가장 늦은 시각(upd·editedAt·analyzedAt)이 이긴다
- *        ② 날짜별 점수: plSetScore 가 날짜마다 시각(lumen_planner_at)을 남기고, 클라우드 쪽이 더 최근이면 클라우드 값을 둔다 */
-window.plMergeStamp=function(x){ var a=(x&&x.analysis)||{}; var t=[a.upd||'',a.editedAt||'',a.analyzedAt||'',x&&x.reviewedAt||''].sort(); return t[t.length-1]; };
-(function(){
-  if(typeof plSetScore!=='function') return;
-  var orig=plSetScore;
-  plSetScore=function(st, dateStr, score, why){ var ok=orig(st, dateStr, score, why); if(ok){ st.lumen_planner_at=st.lumen_planner_at||{}; st.lumen_planner_at[dateStr]=new Date().toISOString(); } return ok; };
-  window.plSetScore=plSetScore;
-})();
-
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~83: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~81: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
