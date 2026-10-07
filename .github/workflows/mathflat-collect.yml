@@ -44,12 +44,19 @@ jobs:
         with:
           node-version: '22'
 
+      # 2026-10-07: 전국 등수·역량(행동영역)은 매쓰플랫 «원클릭 보고서» PDF를 읽어 얻는다 → pdf-parse 가 있어야 한다.
+      #   이 단계가 없어 9/29 이후 «pdf-parse 미설치 → 수집 생략»으로 전국 등수가 비었다(원장 제보 「주간테스트 전국등수가 안 나온다」).
+      #   저장소 package.json 전체(playwright 등)를 깔지 않도록 옆 폴더에 이것만 깔고 NODE_PATH 로 찾게 한다.
+      - name: PDF 읽기 부품 설치 (전국 등수·역량)
+        run: npm install --no-save --no-audit --no-fund --loglevel=error --prefix "$RUNNER_TEMP/pp" pdf-parse@1.1.1
+
       - name: 매쓰플랫 수집 실행
         env:
           MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
           MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          NODE_PATH: ${{ runner.temp }}/pp/node_modules   # 위 단계에서 깐 pdf-parse
           # 교재 정답사전 채우는 속도 — 한 번 돌 때 새로 받을 «쪽» 수의 상한.
           #   이미 받아 둔 쪽은 건너뛰므로, 다 채워지면 이 값이 커도 몇 초 만에 끝난다.
           #   2026-09-14 2판: 1,500쪽 (중2·중3이 이틀이면 끝났다)
