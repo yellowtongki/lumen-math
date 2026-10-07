@@ -3,6 +3,12 @@
 한국 수학학원 "루멘수학"의 학원 운영 시스템. 원장(김정수 선생님)이 Claude와 함께 개발 중.
 개발자가 아닌 원장님이 운영하는 프로젝트이므로 **설명은 한국어로, 비개발자도 이해할 수 있게** 할 것.
 
+## 🔁 새 세션은 여기부터
+- **`docs/handoff.md` 를 먼저 읽는다** — 지금 버전 · 학원앱 조립·배포·검사 방법 · 최근 결정 · 남은 일.
+- 학원앱 새 버전은 **`python3 sync/appbuild/build_app.py v19-NN`** 으로 조립한다(부품 `sync/appbuild/modules/`, 버전 메모 `sync/appbuild/memos/`). 결과 html 을 손으로 고치지 말고 부품을 고친 뒤 다시 조립한다.
+- 배포 뒤 최신본 기록은 `node sync/appbuild/app_latest.js teacher|student <파일>`.
+- 원장님이 「인수인계해줘」라고 하면 `docs/handoff.md` 를 갱신하고(새 부품·도구도 저장소에) 마친다.
+
 ## 구성 요소
 
 | 파일 | 역할 |
