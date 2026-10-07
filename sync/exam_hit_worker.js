@@ -217,14 +217,26 @@ async function judgeItem(examBuf, cands) {
    판정 규칙(JUDGE_RULE)은 그대로. 한 번에 보여 주는 그림 수만 6 → 8. */
 const HIT_MAX_CANDS = Number(process.env.HIT_MAX_CANDS || 60);   // 문항 하나에 판정하는 후보 상한 (같은 그림은 하나로 친 뒤)
 const HIT_BATCH = Number(process.env.HIT_BATCH || 8);            // AI 한 번에 보여 주는 후보 그림 수
-const HIT_PAR = Number(process.env.HIT_PAR || 4);                // 동시에 부르는 AI 수
+const HIT_PAR = Number(process.env.HIT_PAR || 3);                // 동시에 부르는 AI 수 (4 로 돌렸을 때 처음 문항들이 한도에 걸림)
 const HIT_KEEP_TYPE = 6;                                         // 저장하는 「유사유형」 카드 수 (예전과 같이 6)
 async function judgeAll(examBuf, cands) {
   const groups = []; for (let i = 0; i < cands.length; i += HIT_BATCH) groups.push({ off: i, list: cands.slice(i, i + HIT_BATCH) });
   if (!groups.length) groups.push({ off: 0, list: [] });
-  const outs = new Array(groups.length); let next = 0;
-  const worker = async () => { while (next < groups.length) { const gi = next++; outs[gi] = await judgeItem(examBuf, groups[gi].list); } };
+  const outs = new Array(groups.length); let next = 0; const failed = [];
+  /* 한 묶음이 실패해도 문항 전체를 잃지 않게 묶음마다 따로 잡는다 (첫 시험에서 1·6번이 통째로 「판정 없음」이 됐다) */
+  const worker = async () => { while (next < groups.length) { const gi = next++; try { outs[gi] = await judgeItem(examBuf, groups[gi].list); } catch (e) { failed.push(gi); log(`  후보 묶음 ${gi + 1}/${groups.length} 실패 — 나중에 다시: ${e.message.slice(0, 100)}`); } } };
   await Promise.all(Array.from({ length: Math.min(HIT_PAR, groups.length) }, worker));
+  /* 실패한 묶음: 한 번에 하나씩 다시 → 또 실패하면 후보를 하나씩(그림 하나가 깨진 경우를 가려낸다) */
+  for (const gi of failed) {
+    await sleep(5000);
+    try { outs[gi] = await judgeItem(examBuf, groups[gi].list); continue; } catch (e) { log(`  묶음 ${gi + 1} 다시 실패 — 후보 하나씩: ${e.message.slice(0, 100)}`); }
+    const one = { ask: '', essay: null, cands: [] };
+    for (let k = 0; k < groups[gi].list.length; k++) {
+      try { const j = await judgeItem(examBuf, [groups[gi].list[k]]); if (!one.ask && j.ask) one.ask = j.ask; if (one.essay == null && typeof j.essay === 'boolean') one.essay = j.essay; (j.cands || []).forEach((x) => { if (Number(x.i) === 1) one.cands.push({ ...x, i: k + 1 }); }); }
+      catch (e) { judgeAll.miss++; }
+    }
+    outs[gi] = one;
+  }
   const v = { ask: '', essay: null, cands: [] };
   outs.forEach((j, gi) => {
     if (!j) return;
@@ -234,6 +246,7 @@ async function judgeAll(examBuf, cands) {
   });
   return v;
 }
+judgeAll.miss = 0;   // 끝내 판정 못 한 후보 수 (문항마다 0 으로 돌리고 it.judgeMiss 에 남긴다)
 
 /* ── ③ 우리 자료 ──────────────────────────────────────────── */
 async function loadStudents(school, grade) {
@@ -453,7 +466,7 @@ async function runExam(exam, opt) {
     cands.forEach((c) => { c.also = c.pidKey && seenPid[c.pidKey] ? seenPid[c.pidKey].also : []; });
     let verdict = { ask: it.ask || '', essay: it.essay, cands: [] };
     if (!NO_AI && it.img) {
-      try { const eb = await stGet(BUCKET, it.img); verdict = await judgeAll(eb, cands); }
+      try { const eb = await stGet(BUCKET, it.img); judgeAll.miss = 0; verdict = await judgeAll(eb, cands); if (judgeAll.miss) { it.judgeMiss = judgeAll.miss; log(`${it.no}번: 후보 ${judgeAll.miss}개는 끝내 판정 못 함`); } else delete it.judgeMiss; }
       catch (e) { log(`${it.no}번 판정 실패: ${e.message.slice(0, 120)}`); }
     }
     const kindOf = (i, c) => { const v = (verdict.cands || []).find((x) => Number(x.i) === i + 1); const k = v && v.kind; if (k === 'same' || k === 'var' || k === 'text') return { kind: k, why: v.why || '' }; return { kind: c.m.cid === it.cid ? 'type' : 'none', why: v ? (v.why || '') : (c.idSame ? '원본 번호 같음' : '') }; };
