@@ -213,6 +213,28 @@ async function judgeItem(examBuf, cands) {
   return { ask: '', essay: null, cands: [] };
 }
 
+/* 2026-10-07: 후보 전부 판정 — HIT_BATCH 개씩 나눠 judgeItem 을 부르고(동시 HIT_PAR 개), 후보 번호를 전체 순서로 되돌려 합친다.
+   판정 규칙(JUDGE_RULE)은 그대로. 한 번에 보여 주는 그림 수만 6 → 8. */
+const HIT_MAX_CANDS = Number(process.env.HIT_MAX_CANDS || 60);   // 문항 하나에 판정하는 후보 상한 (같은 그림은 하나로 친 뒤)
+const HIT_BATCH = Number(process.env.HIT_BATCH || 8);            // AI 한 번에 보여 주는 후보 그림 수
+const HIT_PAR = Number(process.env.HIT_PAR || 4);                // 동시에 부르는 AI 수
+const HIT_KEEP_TYPE = 6;                                         // 저장하는 「유사유형」 카드 수 (예전과 같이 6)
+async function judgeAll(examBuf, cands) {
+  const groups = []; for (let i = 0; i < cands.length; i += HIT_BATCH) groups.push({ off: i, list: cands.slice(i, i + HIT_BATCH) });
+  if (!groups.length) groups.push({ off: 0, list: [] });
+  const outs = new Array(groups.length); let next = 0;
+  const worker = async () => { while (next < groups.length) { const gi = next++; outs[gi] = await judgeItem(examBuf, groups[gi].list); } };
+  await Promise.all(Array.from({ length: Math.min(HIT_PAR, groups.length) }, worker));
+  const v = { ask: '', essay: null, cands: [] };
+  outs.forEach((j, gi) => {
+    if (!j) return;
+    if (!v.ask && j.ask) v.ask = j.ask;
+    if (v.essay == null && typeof j.essay === 'boolean') v.essay = j.essay;
+    (j.cands || []).forEach((x) => { const i = Number(x.i); if (i >= 1 && i <= groups[gi].list.length) v.cands.push({ ...x, i: i + groups[gi].off }); });
+  });
+  return v;
+}
+
 /* ── ③ 우리 자료 ──────────────────────────────────────────── */
 async function loadStudents(school, grade) {
   let db = await kvGet('or_studentdb'); if (db && !Array.isArray(db)) db = db.students || Object.values(db);
@@ -414,10 +436,13 @@ async function runExam(exam, opt) {
     const wrong = (m) => Object.values(m.res).filter((r) => r === 'X' || r === '?').length;
     const solved = (m) => Object.keys(m.res).length;
     const ranked = Object.values(pool).sort((a, b) => (b.idSame - a.idSame) || (Math.abs((a.m.level || 3) - (it.level || 3)) - Math.abs((b.m.level || 3) - (it.level || 3))) || (wrong(b.m) - wrong(a.m)) || (solved(b.m) - solved(a.m)));
-    /* 그림을 받아 같은 그림(같은 원본 문제)은 하나로 */
+    /* 그림을 받아 같은 그림(같은 원본 문제)은 하나로.
+       2026-10-07 원장 지시 「후보 6개 제한 고쳐서」: 예전엔 순위 앞 6개만 AI 에게 보여 줘서,
+       학생이 맞힌(=순위가 밀린) 가장 닮은 문항을 놓쳤다(옥길중 중2 15·18번). 이제 같은 유형 후보를
+       전부(최대 HIT_MAX_CANDS) 8개씩 나눠 판정한다. */
     const cands = []; const seenPid = {};
     for (const c of ranked) {
-      if (cands.length >= 6) break;
+      if (cands.length >= HIT_MAX_CANDS) break;
       const m = c.m;
       let buf = null;
       if (m.kind === 'upload') buf = await stGet(BUCKET, m.store).catch(() => null);
@@ -428,14 +453,19 @@ async function runExam(exam, opt) {
     cands.forEach((c) => { c.also = c.pidKey && seenPid[c.pidKey] ? seenPid[c.pidKey].also : []; });
     let verdict = { ask: it.ask || '', essay: it.essay, cands: [] };
     if (!NO_AI && it.img) {
-      try { const eb = await stGet(BUCKET, it.img); verdict = await judgeItem(eb, cands); }
+      try { const eb = await stGet(BUCKET, it.img); verdict = await judgeAll(eb, cands); }
       catch (e) { log(`${it.no}번 판정 실패: ${e.message.slice(0, 120)}`); }
     }
     const kindOf = (i, c) => { const v = (verdict.cands || []).find((x) => Number(x.i) === i + 1); const k = v && v.kind; if (k === 'same' || k === 'var' || k === 'text') return { kind: k, why: v.why || '' }; return { kind: c.m.cid === it.cid ? 'type' : 'none', why: v ? (v.why || '') : (c.idSame ? '원본 번호 같음' : '') }; };
-    it.cands = cands.map((c, i) => { const kv = kindOf(i, c); [c.m.k].concat(c.also || []).forEach((k) => { used[k] = 1; }); return { k: c.m.k, also: c.also || [], kind: kv.kind, why: String(kv.why || '').slice(0, 40), idSame: !!c.idSame }; })
-      .filter((c) => c.kind !== 'none');
     const order = { same: 4, var: 3, text: 2, type: 1 };
-    it.cands.sort((a, b) => order[b.kind] - order[a.kind]);
+    /* 같은 문제·숫자변형·지문만 겹침은 전부 남기고, 「유사유형」(AI 가 none 이라 한 같은 유형)은 순위 앞 HIT_KEEP_TYPE 개만 —
+       후보를 수십 개 보게 되면서 화면 카드가 넘치지 않게. sort 는 안정 정렬이라 같은 등급 안에서는 순위가 유지된다. */
+    let nType = 0;
+    it.cands = cands.map((c, i) => { const kv = kindOf(i, c); return { k: c.m.k, also: c.also || [], kind: kv.kind, why: String(kv.why || '').slice(0, 40), idSame: !!c.idSame }; })
+      .filter((c) => c.kind !== 'none')
+      .sort((a, b) => order[b.kind] - order[a.kind])
+      .filter((c) => c.kind !== 'type' || ++nType <= HIT_KEEP_TYPE);
+    it.cands.forEach((c) => { [c.k].concat(c.also || []).forEach((k) => { used[k] = 1; }); });
     if (verdict.ask) it.ask = String(verdict.ask).slice(0, 40);
     if (it.essay == null && typeof verdict.essay === 'boolean') it.essay = verdict.essay;
     /* 원장님 확정은 그대로 둔다 (같은 자료가 아직 후보에 있을 때) */
