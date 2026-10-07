@@ -3582,8 +3582,9 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
           <div class="sg-score" id="sgFbMax">최대 2점</div>
         </div>
         <div style="margin-top:10px;padding:10px 12px;background:#fff7ed;border:1.5px solid #fdba74;border-radius:10px;color:#9a3412;font-size:12px;font-weight:800;line-height:1.6">
-          📅 <b>주간 점수 10점</b> — 일요일 밤 12시 마감<br>
-          다음 주 계획(앱) 3 · 계획 실천 3 · 순공피드백 사진 2 · 순공피드백 종이(학원) 2<br>
+          📅 <b>주간 점수 20점</b> — 일요일 밤 12시 마감<br>
+          <b>주간계획 10</b> = 다음 주 계획(앱) 5 · 계획 실천 5<br>
+          <b>순공피드백 10</b> = 사진 5 · 종이(학원) 5 · 늦으면 2<br>
           <span style="font-size:11px;font-weight:700">수학 할 일은 그날 매쓰플랫 채점이나 아하노트 기록이 있어야 실천으로 인정돼요</span><br>
           <button type="button" onclick="wplOpen()" style="margin-top:6px;border:none;background:#ea580c;color:#fff;border-radius:9px;padding:7px 12px;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer">📅 주간계획 쓰러 가기 ›</button>
         </div>
@@ -4983,7 +4984,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-130';
+var STU_VER = 'v2-131';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -9972,7 +9973,8 @@ window.hnSetSeenTest=function(seen,help){ HN.seen=seen||{}; HN.help=help||{}; HN
 /* ═══════════════════════════════════════════════════════════════
  * 📅 플래너 주간 점수 계산 — 학생앱·학원앱에 «같은 글자»로 들어간다 (원장 결정 2026-09-28)
  *   규칙: docs/planner_score_v2.md
- *   주간 점수(10) = 다음 주 계획 3 + 이번 주 계획 실천 3 + 순공피드백 사진 2 + 순공피드백 종이 2
+ *   주간 점수(20) = 📅 주간계획 10 (다음 주 계획 5 + 실천 5) + 📔 순공피드백 10 (사진 5 + 종이 5) — 원장 결정 2026-10-07 「순공, 주간계획 10점씩」
+ *     (2026-09-28 처음 정한 것은 10점 = 계획 3 + 실천 3 + 사진 2 + 종이 2)
  *   · 계획·사진: 일요일 24시(KST)까지 제출 · 월요일 24시까지 지각 · 그 뒤 미제출
  *   · 종이: 다음 주 첫 수업까지 제출 · 그 주 안 지각 · 안 가져옴 미제출 (원장님 「가져옴 ✓」 날짜로)
  *   · 일요일 밤이 지나면 «발표», 지각·종이는 들어오는 대로 «추가»된다
@@ -10043,9 +10045,10 @@ PW.practice = function(plan, chk, wMon, ev){
   var noEv = 0;
   var ok = items.filter(function(it){ var o = chk && chk[it.id] && chk[it.id].ok; if (o && ev && ev[it.id] === 0){ noEv++; return false; } return o; }).length;
   var rate = Math.round(ok / items.length * 100);
-  return { n: items.length, ok: ok, rate: rate, pt: rate >= 70 ? 3 : (rate >= 40 ? 2 : (ok > 0 ? 1 : 0)), noEv: noEv };
+  return { n: items.length, ok: ok, rate: rate, pt: rate >= 70 ? 5 : (rate >= 40 ? 3 : (ok > 0 ? 1 : 0)), noEv: noEv };
 };
-PW.PT = { plan: { ok: 3, late: 1, none: 0 }, photo: { ok: 2, late: 1, none: 0 }, paper: { ok: 2, late: 1, none: 0 } };
+PW.PT = { plan: { ok: 5, late: 2, none: 0 }, photo: { ok: 5, late: 2, none: 0 }, paper: { ok: 5, late: 2, none: 0 } };
+PW.MAX = { plan: 5, prac: 5, photo: 5, paper: 5, wp: 10, sg: 10, total: 20 };   /* 2026-10-07: 주간계획 10 + 순공피드백 10 */
 PW.KO = { ok: '제출', late: '지각', none: '미제출' };
 /* 한 학생의 주 W 주간 점수.  o = { wMon, planNext, plan, chk, sg, paper, days } */
 PW.week = function(o){
@@ -10251,15 +10254,15 @@ window.wplTab = function(t){ WP.tab = t; wplRender(); };
 function tagOf(j, released){ if (j === 'none' && !released) return '<span class="wp-tag wait">마감 전</span>'; return '<span class="wp-tag ' + j + '">' + PW.KO[j] + '</span>'; }
 function scoreCard(W, title){
   var s = wplScore(W);
-  var h = '<div class="wp-sc"><div class="h"><b>' + title + '</b><small>' + PW.md(W) + ' ~ ' + PW.md(PW.add(W, 6)) + (s.released ? ' · 발표' : ' · 일요일 밤 마감') + '</small><span class="s">' + s.total + '<small>/10</small></span></div>';
+  var h = '<div class="wp-sc"><div class="h"><b>' + title + '</b><small>' + PW.md(W) + ' ~ ' + PW.md(PW.add(W, 6)) + (s.released ? ' · 발표' : ' · 일요일 밤 마감') + '</small><span class="s">' + s.total + '<small>/' + PW.MAX.total + '</small></span></div>';
   /* v2-130: 주간 점수 10 = 📅 주간계획 6 + 📔 순공피드백 4 — 두 묶음으로 나눠 보인다 */
   var g = function(t, v, mx, c){ return '<div style="display:flex;align-items:center;margin:9px 0 2px;font-size:12px;font-weight:900;color:' + c + '">' + t + '<span style="margin-left:auto">' + v + '/' + mx + '</span></div>'; };
-  h += g('📅 주간계획', s.planPt + s.prac.pt, 6, '#1d4ed8');
-  h += '<div class="wp-r">다음 주 계획 ' + tagOf(s.plan, s.released) + '<span class="v">' + s.planPt + '/3</span></div>';
-  h += '<div class="wp-r">계획 실천 <span style="color:#64748b">' + (s.prac.n ? (s.prac.ok + '/' + s.prac.n + '개 · ' + s.prac.rate + '%') : '계획 없음') + '</span><span class="v">' + s.prac.pt + '/3</span></div>';
-  h += g('📔 순공피드백', s.photoPt + s.paperPt, 4, '#7c3aed');
-  h += '<div class="wp-r">순공피드백 사진 ' + tagOf(s.photo, s.released) + '<span class="v">' + s.photoPt + '/2</span></div>';
-  h += '<div class="wp-r">순공피드백 종이 ' + (s.paperAt ? tagOf(s.paper, true) : '<span class="wp-tag wait">다음 주 첫 수업</span>') + '<span class="v">' + s.paperPt + '/2</span></div>';
+  h += g('📅 주간계획', s.planPt + s.prac.pt, PW.MAX.wp, '#1d4ed8');
+  h += '<div class="wp-r">다음 주 계획 ' + tagOf(s.plan, s.released) + '<span class="v">' + s.planPt + '/' + PW.MAX.plan + '</span></div>';
+  h += '<div class="wp-r">계획 실천 <span style="color:#64748b">' + (s.prac.n ? (s.prac.ok + '/' + s.prac.n + '개 · ' + s.prac.rate + '%') : '계획 없음') + '</span><span class="v">' + s.prac.pt + '/' + PW.MAX.prac + '</span></div>';
+  h += g('📔 순공피드백', s.photoPt + s.paperPt, PW.MAX.sg, '#7c3aed');
+  h += '<div class="wp-r">순공피드백 사진 ' + tagOf(s.photo, s.released) + '<span class="v">' + s.photoPt + '/' + PW.MAX.photo + '</span></div>';
+  h += '<div class="wp-r">순공피드백 종이 ' + (s.paperAt ? tagOf(s.paper, true) : '<span class="wp-tag wait">다음 주 첫 수업</span>') + '<span class="v">' + s.paperPt + '/' + PW.MAX.paper + '</span></div>';
   if (s.trial) h += '<div class="wp-note" style="text-align:left;margin-top:6px">🧪 시범 주 — 첫 주간 점수는 <b>10월 5일(월)</b>에 나와요. 실천은 10월 1일(목)부터 세요. 늦게 낸 것은 들어오는 대로 더해져요.</div>';
   return h + '</div>';
 }
@@ -13226,7 +13229,7 @@ async function sgHomeUpdate(){
   var sub=document.getElementById('sg-strip-sub');
   if(sub){
     var lw=window.PW?PW.add(mon,-7):null;   /* v2-129 */
-    if(lw&&lw>=PW.W0&&!SG.weeks[lw]&&Date.now()<PW.lateMs(lw)){ strip.className='sg-strip todo'; sub.textContent='⏰ 지난 주('+sgWeekLabel(lw)+') 순공 아직! 오늘 밤 12시까지 올리면 1점'; }
+    if(lw&&lw>=PW.W0&&!SG.weeks[lw]&&Date.now()<PW.lateMs(lw)){ strip.className='sg-strip todo'; sub.textContent='⏰ 지난 주('+sgWeekLabel(lw)+') 순공 아직! 오늘 밤 12시까지 올리면 '+PW.PT.photo.late+'점'; }
     else if(done){
       var prev=sgTotal(SG.weeks[wks[wks.length-2]]), now=vals[vals.length-1], d=now-prev;
       sub.textContent='이번 주 '+sgFmt(now)+(prev?(' · 지난주보다 '+(d>=0?'+':'−')+sgFmt(Math.abs(d))):'');
@@ -13250,8 +13253,8 @@ window.sgPickWeek = function(W){
 };
 function sgPtHint(W){
   if(!window.PW) return ''; var now=Date.now();
-  if(now<PW.dueMs(W)) return '📸 일요일('+PW.md(PW.add(W,6))+') 밤 12시까지 올리면 2점';
-  if(now<PW.lateMs(W)) return '⏰ 오늘 밤 12시까지 올리면 지각 1점';
+  if(now<PW.dueMs(W)) return '📸 일요일('+PW.md(PW.add(W,6))+') 밤 12시까지 올리면 ' + PW.PT.photo.ok + '점';
+  if(now<PW.lateMs(W)) return '⏰ 오늘 밤 12시까지 올리면 지각 ' + PW.PT.photo.late + '점';
   return '⌛ 점수 기간이 지났어요 — 기록으로만 남아요';
 }
 /* 제출 화면 */
@@ -13299,11 +13302,11 @@ function sgScoreCard(){
     return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #f1f5f9;font-size:12.5px;font-weight:800">'
       + '<span style="min-width:92px;color:var(--text)">' + label + ' <small style="color:#94a3b8;font-weight:700">' + sgWeekLabel(W) + '</small></span>'
       + '<span>📸 ' + tag(s.photo, s.released ? '' : '마감 전') + '</span><span>📔 ' + tag(s.paper, s.paperAt ? '' : '다음 주 첫 수업') + '</span>'
-      + '<b style="margin-left:auto;color:#5b21b6;font-size:14px">' + (s.photoPt + s.paperPt) + '<small style="font-size:11px;color:#94a3b8">/4</small></b></div>';
+      + '<b style="margin-left:auto;color:#5b21b6;font-size:14px">' + (s.photoPt + s.paperPt) + '<small style="font-size:11px;color:#94a3b8">/' + PW.MAX.sg + '</small></b></div>';
   };
   var body = row(last, '지난 주') + row(cur, '이번 주');
   if (!body) return '';
-  return '<div class="sg-card"><div class="ct">📔 내 순공피드백 점수 <small>주간 점수 10점 중 4점 (사진 2 + 종이 2)</small></div>' + body + '</div>';
+  return '<div class="sg-card"><div class="ct">📔 내 순공피드백 점수 <small>한 주 ' + PW.MAX.sg + '점 (사진 ' + PW.MAX.photo + ' + 종이 ' + PW.MAX.paper + ')</small></div>' + body + '</div>';
 }
 function sgRender(){
   var body=document.getElementById('sg-body');
@@ -13330,7 +13333,7 @@ function sgRender(){
 
   /* v2-111: 10월부터 순공피드백 점수 안내 */
   h+=sgScoreCard();   /* v2-130 */
-  h+='<div class="sg-rule">📸 <b>사진 인증</b> — 그 주 종이를 일요일 밤 12시까지 2점 · 월요일 1점<br>📔 <b>종이</b>는 다음 주 첫 수업 때 학원에 꼭 가져와요 — 2점</div>';
+  h+='<div class="sg-rule">📸 <b>사진 인증</b> — 그 주 종이를 일요일 밤 12시까지 '+PW.PT.photo.ok+'점 · 월요일 '+PW.PT.photo.late+'점<br>📔 <b>종이</b>는 다음 주 첫 수업 때 학원에 꼭 가져와요 — '+PW.PT.paper.ok+'점 (그 주 안 '+PW.PT.paper.late+'점)</div>';
   // ① 사진
   h+='<div class="sg-card"><div class="ct">① 종이 사진 <small>순공피드백 종이를 찍어주세요</small></div>';
   h+='<div class="sg-photo" onclick="sgPickOpen()">';
