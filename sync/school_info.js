@@ -149,6 +149,15 @@ function groupExams(events) {
   }));
 }
 
+/* 중학교 2학기 기말이 두 번이면(학년 표기 없이) 앞선 것은 3학년(고입 성적 마감), 뒤의 것은 1·2학년이다.
+ *   (원장 확인 2026-10-01: 옥길중3·범박중3은 다른 학년과 기말 날짜가 다르다) */
+function tagMiddleFinal(exams, kind) {
+  if (String(kind || '') !== '중') return exams;
+  const fin = exams.filter((e) => e.label === '2학기 기말');
+  if (fin.length < 2 || fin.some((e) => e.grades && e.grades.length)) return exams;
+  fin.forEach((e, i) => { e.grades = i === 0 ? [3] : [1, 2]; });
+  return exams;
+}
 /* ── 본체 ─────────────────────────────────────────────────── */
 async function run() {
   if (!KEY) {
@@ -181,6 +190,7 @@ async function run() {
     });
     if (msg) { log(`  ${sc.name} — 학사일정 실패 (${msg})`); schools.push({ ...sc, err: msg }); continue; }
     const exams = groupExams(rows);
+    tagMiddleFinal(exams, sc.kind);   // 중3 기말은 1·2학년보다 앞선다 — 학년 표기가 없으면 규칙으로 붙인다
     // 학교마다 시험 이름이 다르다. 「시험 같아 보이는데 안 잡힌 일정」을 남겨 두면
     // 새 학교가 늘어도 무엇을 놓쳤는지 바로 보인다.
     const missed = [...new Set(rows
@@ -213,7 +223,7 @@ async function run() {
   return value;
 }
 
-module.exports = { run, groupExams, isExam, gradesOf, labelOf };
+module.exports = { run, groupExams, isExam, gradesOf, labelOf, tagMiddleFinal };
 
 if (require.main === module) {
   run().catch((e) => { console.error('오류:', e.message); process.exit(1); });

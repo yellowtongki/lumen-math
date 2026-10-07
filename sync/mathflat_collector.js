@@ -2533,8 +2533,12 @@ async function refreshConceptNames() {
     if (!usedIds.size) { log('유형사전: 대상 concept 없음 → 건너뜀'); return; }
     // 2) 매쓰플랫 유형칩: 전체(key=1) + 교재별 필터 union (커버리지 최대화)
     const dict = {};
+    // 2026-09-23: 매쓰플랫 유형분석의 「추천 유형만 보기」는 유형칩의 recommended 값이다(선생님 웹 번들에서 확인).
+    // 어떤 기준으로 켜지는지는 아직 모르니 일단 켜진 것을 따로 모아 둔다(mf_recommended) — 학원앱 시험 대비에서 우리 판정과 나란히 보여 줄 재료.
+    const recommended = {};
     const addChips = (arr) => (arr || []).forEach((c) => {
       if (c.conceptId && !dict[c.conceptId]) dict[c.conceptId] = { n: String(c.conceptName || '').split(';')[0].trim(), m: c.middleChapterName || '' };
+      if (c.conceptId && c.recommended === true) recommended[c.conceptId] = { n: String(c.conceptName || '').split(';')[0].trim(), m: c.middleChapterName || '', b: c.bigChapterName || '' };
     });
     addChips(await api('/concept/chips?curriculumKey=1'));
     for (const bid of bookIds) {
@@ -2547,7 +2551,8 @@ async function refreshConceptNames() {
     const res = await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
       method: 'POST',
       headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify([{ key: 'mf_concept_names', value: val, updated_at: new Date().toISOString() }]),
+      body: JSON.stringify([{ key: 'mf_concept_names', value: val, updated_at: new Date().toISOString() },
+        { key: 'mf_recommended', value: { updated: new Date().toISOString(), count: Object.keys(recommended).length, cids: recommended }, updated_at: new Date().toISOString() }]),
     });
     log(`유형사전(mf_concept_names): ${Object.keys(val).length}/${usedIds.size}개 매핑 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('유형사전 갱신 실패(치명적 아님):', e.message); }

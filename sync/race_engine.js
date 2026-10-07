@@ -121,6 +121,16 @@ const TOP_SEATS = [
 ];
 
 /* ── Supabase 도우미 ──────────────────────────────────────────── */
+/* v19-72: nick_<코드> 전부 → { 코드: 별명 } */
+async function nickMap() {
+  const out = {};
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=like.nick_%25&select=key,value`, { headers: sbH() });
+    if (!r.ok) return out;
+    (await r.json()).forEach((row) => { let v = row.value; if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } } if (v && v.nick) out[String(row.key).slice(5)] = String(v.nick).trim(); });
+  } catch (e) {}
+  return out;
+}
 async function kvGet(key) {
   try {
     const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=eq.${key}&select=value`, { headers: sbH() });
@@ -180,6 +190,7 @@ const kstEndUtc = (d) => new Date(new Date(d + 'T00:00:00Z').getTime() + 8640000
 async function loadStudents() {
   let arr = await kvGet('or_studentdb');
   if (!Array.isArray(arr)) arr = [];
+  const nicks = await nickMap();   /* v19-72: 별명 */
   const byName = {}, dup = {};
   const info = {};   // code → {name, nm, school, grade, band}
   arr.forEach((s) => {
@@ -190,7 +201,7 @@ async function loadStudents() {
     const band = /고등/.test(g) ? 'high' : (/중학/.test(g) ? 'mid' : 'elem');
     const num = (g.match(/(\d)\s*학년/) || [])[1] || '';
     info[String(s.lumen_rec_code)] = {
-      nm: nm.slice(0, 1) + '○○',
+      nm: (nicks[String(s.lumen_rec_code)] || String(s.nick || '').trim() || '○○○'),   /* v19-72: 별명 (nick_<코드> → 등록부 st.nick → ○○○) */
       sch: String(s.school || '').replace(/(중|고등)학교$/, '$1').replace(/초등학교$/, '초'),
       gr: (band === 'high' ? '고' : band === 'mid' ? '중' : '초') + num,
       band, gnum: num,
@@ -391,16 +402,31 @@ async function runRace() {
   const raidGrsOf = (r) => (Array.isArray(r.grs) && r.grs.length) ? r.grs
                           : (r.gr ? [String(r.gr)] : []);
   const raidOfCode = {};   // code → [raid, ...]
+  const raidMembers = {};  // raidId → [code, ...]  (순위판도 같은 명단을 쓴다)
+  /* 2026-09-26 원장 제보 「보스 체력이 잘못된 것 같다」 — 학생 등록부에 학교가 비어 있는 학생(9명)이
+   * 「옥길중 중1 레이드」처럼 학교로 가르는 레이드에서 빠져, 옥길중 중1 7명 중 2명의 피해가 보스에 안 들어갔다.
+   * 규칙: 학교가 빈 학생은 «학년이 맞는 레이드가 하나뿐이면» 거기 넣는다. 학교가 적힌 학생은 전과 같다. */
+  const noSchool = [];
   if (raidOn) Object.keys(info).forEach((c) => {
     const t = info[c];
-    raidList.forEach((r) => {
+    const mine = String(t.sch || '').trim();
+    let hits = raidList.filter((r) => {
       const grs = raidGrsOf(r);
-      if (grs.length && grs.indexOf(t.gr) < 0) return;
+      if (grs.length && grs.indexOf(t.gr) < 0) return false;
       const sch = String(r.sch || '').trim();
-      if (sch && String(t.sch || '').indexOf(sch) !== 0) return;
+      return !sch || mine.indexOf(sch) === 0;
+    });
+    if (!mine) {
+      const byGrade = raidList.filter((r) => { const grs = raidGrsOf(r); return !grs.length || grs.indexOf(t.gr) >= 0; });
+      if (byGrade.length === 1 && hits.indexOf(byGrade[0]) < 0) hits = byGrade;
+      if (byGrade.length) noSchool.push(c);
+    }
+    hits.forEach((r) => {
       (raidOfCode[c] = raidOfCode[c] || []).push(r);
+      (raidMembers[r.id] = raidMembers[r.id] || []).push(c);
     });
   });
+  if (noSchool.length) log(`⚠️ 학교가 빈 학생 ${noSchool.length}명은 학년으로 레이드에 넣었습니다 — 등록부에 학교를 적어 주세요`);
 
   const agg = {};   // code → {...}
   // 서버(깃허브)는 UTC로 도니 「오늘」은 +9가 맞다 (이건 진짜 UTC 시계다)
@@ -646,12 +672,7 @@ async function runRace() {
       const grs = raidGrsOf(cfg);
       const sch = String(cfg.sch || '').trim();
       const box = raidHit[cfg.id] || {};
-      const mem = Object.keys(info).filter((c) => {
-        const t = info[c];
-        if (grs.length && grs.indexOf(t.gr) < 0) return false;
-        if (sch && String(t.sch || '').indexOf(sch) !== 0) return false;
-        return true;
-      });
+      const mem = raidMembers[cfg.id] || [];
       const rows = mem.map((c) => {
         const h = box[c] || { sum: 0, byDay: {} };
         let week = 0;

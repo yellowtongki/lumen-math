@@ -1,0 +1,71 @@
+name: 기출 DB 수집 (수학비서 + 매쓰플랫 다리)
+
+# 우리 학원이 다루는 학교(옥길중·범박중·범박고·소사고 — 2026-09-23 원장 지시로 네 곳 모두)의 기출 시험지를
+# 수학비서 「나만의 DB」에서 문항 단위로 받아(단원·유형·난이도·배점·서술형·이미지)
+# Supabase(lumen_store ms_exams_<학교> · Storage exam_images)에 넣고,
+# 매쓰플랫이 같은 기출을 원본 학습지로 인식해 둔 것에서 문항별 유형 번호·그림을 잇는다(ms_exam_bridge).
+#
+# ⚠️ 매쓰플랫은 동시 로그인 시 원장님 접속이 끊긴다 → 새벽에만 돈다 (일요일 03:30 KST).
+#    낮에 손으로 돌릴 때는 mode=collect(수학비서만)로.
+#
+# 필요한 비밀값: MATHSECR_ID, MATHSECR_PASSWORD, MATHFLAT_ID, MATHFLAT_PASSWORD, SUPABASE_URL, SUPABASE_SERVICE_KEY
+# 2026-09-24: 매쓰플랫 학생별 배정 교과서(mf_textbooks)와 교과서 문제 은행(mf_textbook_<교재id>)도 같이 받는다
+
+on:
+  schedule:
+    - cron: '30 18 * * 6'    # UTC 토 18:30 = 한국시간 일요일 03:30
+  workflow_dispatch:
+    inputs:
+      schools:
+        description: '학교 (쉼표로 여러 개, 수학비서 폴더 이름 그대로)'
+        required: true
+        default: '옥길중,범박중,범박고,소사고'
+      mode:
+        description: 'collect = 수학비서만 (낮에도 OK) · bridge = 수학비서 + 매쓰플랫 다리 (새벽만) · bridge-only'
+        required: true
+        default: 'collect'
+        type: choice
+        options: [collect, bridge, bridge-only]
+
+concurrency:
+  group: exam-db
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 기출 DB 수집
+        env:
+          MATHSECR_ID: ${{ secrets.MATHSECR_ID }}
+          MATHSECR_PASSWORD: ${{ secrets.MATHSECR_PASSWORD }}
+          MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
+          MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SCHOOLS: ${{ github.event.inputs.schools || '옥길중,범박중,범박고,소사고' }}
+          MODE: ${{ github.event.inputs.mode || 'bridge' }}
+        run: |
+          ARGS="--schools $SCHOOLS"
+          if [ "$MODE" = "bridge" ]; then ARGS="$ARGS --bridge"; fi
+          if [ "$MODE" = "bridge-only" ]; then ARGS="$ARGS --bridge-only"; fi
+          node sync/exam_db_collector.js $ARGS
+      - name: 학생별 배정 교과서 + 교과서 문제 은행 (매쓰플랫)
+        # 2026-09-24 원장 결정: 약점 문제집에 교과서 원문항. 매쓰플랫은 동시 접속이 되므로 시간 제한 없음.
+        # 학교마다 배정 교과서가 다르니 SCHOOLS 의 학교를 하나씩 돈다. 이미 받은 교재도 다시 받아 바뀐 쪽을 반영한다.
+        if: ${{ github.event.inputs.mode != 'bridge-only' }}
+        env:
+          MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
+          MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SCHOOLS: ${{ github.event.inputs.schools || '옥길중,범박중,범박고,소사고' }}
+        run: |
+          node sync/mf_textbook_map.js
+          # 2026-09-24: 교과서뿐 아니라 배정된 교재 전부(시중교재·시그니처) — 아하노트 ↔ 정오답 연동에 쪽·번호 표가 필요하다
+          node sync/mf_textbook_bank.js --assigned || echo "교재 은행 실패"

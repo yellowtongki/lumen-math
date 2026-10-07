@@ -101,6 +101,12 @@ async function runBoostPush() {
     }
   } catch (e) { log('플래너 확인 실패(모두 미제출로 봅니다):', e.message); }
 
+  /* ⑤-2 (2026-09-27) 💡 아직 안 본 선생님 힌트 — 있으면 문구 끝에 한 줄만 더한다.
+   *   같은 밤에 힌트 알림이 따로 한 번 더 울리지 않도록, 여기서 보낸 학생 코드를 push_boost 에 적어 둔다
+   *   (push_hint.js 밤 묶음이 그 학생은 건너뛴다). */
+  let unseen = {};
+  try { unseen = await require('./push_hint.js').unseenHints(); } catch (e) { log('힌트 확인 실패(줄 없이 보냅니다):', e.message); }
+
   /* ⑥ 학생마다 문구를 만들어 보낸다 */
   const hoursLeft = Math.max(1, 24 - now.getUTCHours());   // 자정까지 남은 시간
   let sent = 0, skipped = 0;
@@ -120,13 +126,14 @@ async function runBoostPush() {
         ? `오늘 플래너를 올리면 오늘 푼 문제가 최대 ×${top.toFixed(1)}이 됩니다.`
         : `플래너를 올리면 오늘 푼 문제가 최대 ×${top.toFixed(1)}이 돼요. 보스 체력 ${num(left)} 남음 · 남은 ${dleft}일.`;
     }
+    if (unseen[code]) body += ` · 💡 아직 안 본 힌트 ${unseen[code]}개`;
     if (DRY) { log(`(안 보냄) ${code}: ${title} / ${body}`); skipped++; continue; }
     const res = await push({ title, body, kind: 'boost', url: './student_v1.html', tag: 'boost-' + day },
       (s) => s.role !== 'owner' && String(s.code || '') === code);
     sent += res.sent;
   }
   log(`밤 ${HOUR}시 알림 — ${sent}건 보냄${skipped ? ` (미리보기 ${skipped}건)` : ''} · 대상 학생 ${codes.length}명 · 플래너 올린 학생 ${Object.keys(done).length}명`);
-  if (!DRY) await kvSet('push_boost', { day, at: new Date().toISOString(), sent, students: codes.length });
+  if (!DRY) await kvSet('push_boost', { day, at: new Date().toISOString(), sent, students: codes.length, codes });
 }
 
 module.exports = { runBoostPush };
