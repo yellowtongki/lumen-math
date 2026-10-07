@@ -4983,7 +4983,44 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-127';
+var STU_VER = 'v2-128';
+/* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
+ *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
+ *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
+ *   전국 등수는 나에게만 보인다. 1등 발표 카드의 전국 등수도 그 학생이 신청했을 때만. */
+function natCode(){ return (typeof studentInfo !== 'undefined' && studentInfo) ? String(studentInfo.lumen_rec_code || '') : ''; }
+var NATO = { loaded:false, pub:null, on:false, others:{}, busy:false };
+function natMode(){ var p = NATO.pub || (typeof HS !== 'undefined' && HS.pub) || null; if (p && p.nat === false) return 'off'; return (p && p.natMode) || 'all'; }
+function natVisible(){ var m = natMode(); return m === 'all' || (m === 'optin' && NATO.on); }
+function natOtherOn(codes){ if (natMode() === 'all') return true; if (natMode() !== 'optin') return false; var a = codes || []; if (!Array.isArray(a)) a = [a]; for (var i = 0; i < a.length; i++){ var v = NATO.others[String(a[i])]; if (v && v.on) return true; } return false; }
+function natoLoad(){
+  if (!window.sb || !natCode()){ setTimeout(natoLoad, 1500); return; }
+  window.sb.from('lumen_store').select('key,value').or('key.eq.wk_pub,key.like.natopt_%').then(function(r){
+    ((r && r.data) || []).forEach(function(row){ var v = row.value; if (typeof v === 'string'){ try { v = JSON.parse(v); } catch(e){ v = null; } }
+      if (row.key === 'wk_pub') NATO.pub = v || null; else NATO.others[row.key.slice(7)] = v || {}; });
+    var me = NATO.others[natCode()]; NATO.on = !!(me && me.on); NATO.loaded = true;
+    natoRepaint();
+  }).catch(function(){ NATO.loaded = true; });
+}
+function natoRepaint(){ try { if (typeof hallRender === 'function') hallRender(); } catch(e){} try { if (typeof repRenderList === 'function') repRenderList(); } catch(e){} try { if (typeof REP !== 'undefined' && REP.sel != null && document.getElementById('rep-d-title') && typeof repOpenDetail === 'function') repOpenDetail(REP.sel); } catch(e){} }
+window.natoSet = function(on){
+  if (NATO.busy || !window.sb || !natCode()) return; NATO.busy = true;
+  var v = { on: !!on, at: new Date().toISOString(), by: 'student' };
+  window.sb.from('lumen_store').upsert({ key: 'natopt_' + natCode(), value: v, updated_at: v.at }, { onConflict: 'key' }).then(function(r){
+    NATO.busy = false; if (r && r.error){ alert('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); return; }
+    NATO.on = !!on; NATO.others[natCode()] = v; natoRepaint();
+  }).catch(function(){ NATO.busy = false; alert('저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.'); });
+};
+/* 신청 카드 (내 기록 · 리포트에 같이 쓴다) */
+function natoCardHtml(compact){
+  if (natMode() !== 'optin') return '';
+  if (NATO.on) return '<div style="margin-top:8px;text-align:right"><button type="button" onclick="natoSet(false)" style="border:none;background:none;color:#94a3b8;font-size:10.5px;font-weight:800;text-decoration:underline;cursor:pointer;font-family:inherit">🌐 전국 등수 숨기기</button></div>';
+  return '<div style="margin-top:' + (compact ? '0' : '10px') + ';background:linear-gradient(135deg,#eff6ff,#e0f2fe);border:1.5px dashed #7dd3fc;border-radius:13px;padding:12px 13px;display:flex;gap:10px;align-items:center' + (compact ? ';margin-bottom:10px' : '') + '">'
+    + '<div style="font-size:26px;line-height:1">🌐</div><div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:900;color:#0c4a6e">전국 등수, 보고 싶은 사람만 볼 수 있어요</div>'
+    + '<div style="font-size:10.5px;color:#0369a1;font-weight:700;line-height:1.5;margin-top:2px">같은 주간테스트를 본 전국 학생 중 내 위치예요. <b>나에게만</b> 보이고, 언제든 다시 숨길 수 있어요.</div></div>'
+    + '<button type="button" onclick="natoSet(true)" style="flex-shrink:0;border:none;background:#0ea5e9;color:#fff;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit">보기 신청</button></div>';
+}
+setTimeout(natoLoad, 2000);
 /* v2-126: 플래너 점수 안내 = 학원앱 「📋 점수 기준」(lumen_store planner_rules) 그대로 (원장 결정 2026-10-05) */
 function sgRulesLoad(tries){
   tries = tries || 0;
@@ -12505,6 +12542,7 @@ async function hallStuLoad(force){
 }
 // v2-30: 내 전국 등수 — 학원앱 hallNatOf와 같은 규칙 (전국 응시자>학원 응시자일 때만 진짜 전국)
 function hsMyNat(wid){
+  if(!natVisible()) return null;   /* v2-128: 신청한 학생만 */
   try{
     var sw=(HS.natmap||{})[String(wid)]; if(!sw) return null;
     var b=(HS.behav||{})[String(sw)]; if(!b||!b.nat) return null;
@@ -12800,7 +12838,7 @@ function hallRender(){
     /* v2-50: 1등이 블랙반이면 엠블럼을 함께 — 축하하는 자리라 엠블럼이 가장 빛난다 */
     h+='<div style="font-size:23px;font-weight:900;margin-top:6px">'+h3Esc(at.first&&at.first.masked||'')
       +blkChipsOf(at.first&&at.first.codes)+' ('+(at.first?at.first.score:'')+'점)</div>';
-    if(at.first&&at.first.natRank) h+='<div style="font-size:12px;font-weight:800;margin-top:8px;background:rgba(255,255,255,0.22);display:inline-block;border-radius:50px;padding:4px 14px">🌐 전국 '+at.first.natRank+'등 / '+at.first.natN+'명 · 상위 '+Math.max(1,Math.round(at.first.natRank/at.first.natN*100))+'%</div>';
+    if(at.first&&at.first.natRank&&natOtherOn(at.first.codes)) h+='<div style="font-size:12px;font-weight:800;margin-top:8px;background:rgba(255,255,255,0.22);display:inline-block;border-radius:50px;padding:4px 14px">🌐 전국 '+at.first.natRank+'등 / '+at.first.natN+'명 · 상위 '+Math.max(1,Math.round(at.first.natRank/at.first.natN*100))+'%</div>';
     h+='<div style="font-size:10px;font-weight:700;opacity:0.8;margin-top:8px">응시 '+(at.acadN||'-')+'명'+(at.acadAvg!=null?' · 평균 '+at.acadAvg+'점':'')+'</div>';
     h+='</div>';
     // 다른 시험지 발표 (한 줄씩)
@@ -12825,6 +12863,7 @@ function hallRender(){
     var delta=(prev&&prev.me.acadRank!=null&&cur.me.acadRank!=null)?(Number(prev.me.acadRank)-Number(cur.me.acadRank)):null;
     // v2-30: 원장님 표시 설정 (기본: 둘 다 켜짐)
     var pubNat=!(HS.pub&&HS.pub.nat===false), pubAcad=!(HS.pub&&HS.pub.acad===false);
+    if(HS.pub&&!NATO.pub) NATO.pub=HS.pub;   /* v2-128 */
     // 전국 등수: ① 발행된 내 리포트 → ② 수집 데이터(mf_ws_behaviors)에서 직접 (발행 없이도 표시)
     var nat=null;
     var items=(REP.data&&REP.data.items)||[];
@@ -12843,7 +12882,7 @@ function hallRender(){
     h+='<div style="flex:1;background:#f8fafc;border-radius:12px;padding:10px 5px;text-align:center"><div style="font-size:10px;color:#64748b;font-weight:700">점수</div><div style="font-size:19px;font-weight:900;color:#0d2240;margin-top:2px">'+cur.me.score+'</div></div>';
     if(showAcad) h+='<div style="flex:1;background:#ecfdf5;border-radius:12px;padding:10px 5px;text-align:center"><div style="font-size:10px;color:#065f46;font-weight:800">🏫 학원 등수</div><div style="font-size:19px;font-weight:900;color:#059669;margin-top:2px">'+cur.me.acadRank+'<small style="font-size:10px;color:#94a3b8">등/'+cur.me.acadN+'명</small></div>'+(delta!=null&&delta!==0?'<div style="font-size:9.5px;font-weight:900;margin-top:2px;color:'+(delta>0?'#059669':'#dc2626')+'">'+(delta>0?'▲':'▼')+' 지난주 '+prev.me.acadRank+'등</div>':'')+'</div>';
     if(nat) h+='<div style="flex:1;background:#eff6ff;border-radius:12px;padding:10px 5px;text-align:center"><div style="font-size:10px;color:#1e40af;font-weight:800">🌐 전국 등수</div><div style="font-size:19px;font-weight:900;color:#1d6fe8;margin-top:2px">'+nat.rank+'<small style="font-size:10px;color:#94a3b8">등/'+nat.total+'명</small></div><div style="font-size:9.5px;font-weight:900;color:#1d6fe8;margin-top:2px">상위 '+Math.max(1,Math.round(nat.rank/nat.total*100))+'%</div></div>';
-    h+='</div></div>';
+    h+='</div>'+natoCardHtml(false)+'</div>';   /* v2-128: 전국 등수 신청 */
     // ── 내 학원 등수 흐름 (최근 4회) — v2-30: 함께 응시 2명 이상인 시험만 ──
     var flow=pubAcad?my.filter(function(m){ return m.me.acadRank!=null&&Number(m.me.acadN)>=2; }).slice(0,4).reverse():[];
     if(flow.length>=2){
@@ -12959,12 +12998,12 @@ function repLowHide(it){
   var r=Number(it.acadRank), n=Number(it.acadN);
   return !!(r && n && r/n > 2/3);
 }
-function repHasNat(it){ return it.rank && it.total && it.showRank!==false && !repLowHide(it); }
+function repHasNat(it){ return it.rank && it.total && it.showRank!==false && !repLowHide(it) && natVisible(); }   /* v2-128: 신청한 학생만 */
 function repHasAcad(it){ return it.acadRank && it.acadN && it.showAcadRank!==false && !repLowHide(it); }
 // 직전 주간테스트와 전국 등수 비교 (계단)
 function repRankDelta(idx){
   var items=REP.data.items; var cur=items[idx];
-  if(!repIsWeekly(cur)||!cur.rank) return null;
+  if(!repIsWeekly(cur)||!cur.rank||!natVisible()) return null;   /* v2-128 */
   for(var i=idx+1;i<items.length;i++){
     var p=items[i];
     if(repIsWeekly(p)&&p.rank) return Number(p.rank)-Number(cur.rank); // +면 상승
@@ -13030,6 +13069,7 @@ window.repOpenDetail=function(i){
     +((dt!=null&&dt>0)?'<div style="margin-left:auto;text-align:right;background:rgba(255,213,74,0.16);border:1px solid rgba(255,213,74,0.4);border-radius:11px;padding:7px 11px"><b style="display:block;font-size:13px;color:#ffd54a">↑ '+dt+'계단</b><span style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:700">지난 주간 대비</span></div>':'')
     +'</div></div>';
   // 전국 게이지
+  if(repIsWeekly(it)&&it.rank&&it.total&&natMode()==='optin'&&!NATO.on) h+=natoCardHtml(true);   /* v2-128 */
   if(repHasNat(it)){
     var top=Math.max(1,Math.round(Number(it.rank)/Number(it.total)*100));
     var fill=100-top;
