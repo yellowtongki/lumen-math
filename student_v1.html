@@ -4983,7 +4983,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-129';
+var STU_VER = 'v2-130';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -10252,8 +10252,12 @@ function tagOf(j, released){ if (j === 'none' && !released) return '<span class=
 function scoreCard(W, title){
   var s = wplScore(W);
   var h = '<div class="wp-sc"><div class="h"><b>' + title + '</b><small>' + PW.md(W) + ' ~ ' + PW.md(PW.add(W, 6)) + (s.released ? ' · 발표' : ' · 일요일 밤 마감') + '</small><span class="s">' + s.total + '<small>/10</small></span></div>';
+  /* v2-130: 주간 점수 10 = 📅 주간계획 6 + 📔 순공피드백 4 — 두 묶음으로 나눠 보인다 */
+  var g = function(t, v, mx, c){ return '<div style="display:flex;align-items:center;margin:9px 0 2px;font-size:12px;font-weight:900;color:' + c + '">' + t + '<span style="margin-left:auto">' + v + '/' + mx + '</span></div>'; };
+  h += g('📅 주간계획', s.planPt + s.prac.pt, 6, '#1d4ed8');
   h += '<div class="wp-r">다음 주 계획 ' + tagOf(s.plan, s.released) + '<span class="v">' + s.planPt + '/3</span></div>';
   h += '<div class="wp-r">계획 실천 <span style="color:#64748b">' + (s.prac.n ? (s.prac.ok + '/' + s.prac.n + '개 · ' + s.prac.rate + '%') : '계획 없음') + '</span><span class="v">' + s.prac.pt + '/3</span></div>';
+  h += g('📔 순공피드백', s.photoPt + s.paperPt, 4, '#7c3aed');
   h += '<div class="wp-r">순공피드백 사진 ' + tagOf(s.photo, s.released) + '<span class="v">' + s.photoPt + '/2</span></div>';
   h += '<div class="wp-r">순공피드백 종이 ' + (s.paperAt ? tagOf(s.paper, true) : '<span class="wp-tag wait">다음 주 첫 수업</span>') + '<span class="v">' + s.paperPt + '/2</span></div>';
   if (s.trial) h += '<div class="wp-note" style="text-align:left;margin-top:6px">🧪 시범 주 — 첫 주간 점수는 <b>10월 5일(월)</b>에 나와요. 실천은 10월 1일(목)부터 세요. 늦게 낸 것은 들어오는 대로 더해져요.</div>';
@@ -13259,6 +13263,7 @@ window.sgInit = async function(){
     return;
   }
   await sgLoad(true);
+  try { if (window.wplLoad) await wplLoad(); } catch(e) {}   /* v2-130: 종이 가져옴·원장 손 고침 */
   SG.target=null;   /* v2-129 */
   var mon=sgTargetMon(), me=SG.weeks[mon];
   SG.cur = { subj:{}, note:(me&&me.note)||'', photo:(me&&me.photo)||null };
@@ -13283,6 +13288,23 @@ window.sgPick = async function(input){
   sgRender();
 };
 
+/* v2-130: 📔 내 순공피드백 점수 — 지난 주 · 이번 주 (사진 2 + 종이 2) */
+function sgScoreCard(){
+  if (!window.PW || !PW.week) return '';
+  var cur = sgMonday(), last = PW.add(cur, -7), days = ((window.WP && WP.days) || {})[(studentInfo && studentInfo.group) || ''] || null;
+  var row = function(W, label){
+    if (W < PW.W0) return '';
+    var s = PW.week({ wMon: W, sg: SG.weeks[W] || null, paper: (window.WP && WP.paper) ? (WP.paper[W] || null) : null, days: days });
+    var tag = function(j, wait){ if (j === 'none' && wait) return '<span style="color:#94a3b8">' + wait + '</span>'; return '<span style="color:' + (j === 'ok' ? '#15803d' : (j === 'late' ? '#b45309' : '#b91c1c')) + '">' + ({ ok:'제출', late:'지각', none:'미제출' })[j] + '</span>'; };
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #f1f5f9;font-size:12.5px;font-weight:800">'
+      + '<span style="min-width:92px;color:var(--text)">' + label + ' <small style="color:#94a3b8;font-weight:700">' + sgWeekLabel(W) + '</small></span>'
+      + '<span>📸 ' + tag(s.photo, s.released ? '' : '마감 전') + '</span><span>📔 ' + tag(s.paper, s.paperAt ? '' : '다음 주 첫 수업') + '</span>'
+      + '<b style="margin-left:auto;color:#5b21b6;font-size:14px">' + (s.photoPt + s.paperPt) + '<small style="font-size:11px;color:#94a3b8">/4</small></b></div>';
+  };
+  var body = row(last, '지난 주') + row(cur, '이번 주');
+  if (!body) return '';
+  return '<div class="sg-card"><div class="ct">📔 내 순공피드백 점수 <small>주간 점수 10점 중 4점 (사진 2 + 종이 2)</small></div>' + body + '</div>';
+}
 function sgRender(){
   var body=document.getElementById('sg-body');
   var mon=sgTargetMon(), done=!!SG.weeks[mon];
@@ -13307,6 +13329,7 @@ function sgRender(){
   h+='</div>';
 
   /* v2-111: 10월부터 순공피드백 점수 안내 */
+  h+=sgScoreCard();   /* v2-130 */
   h+='<div class="sg-rule">📸 <b>사진 인증</b> — 그 주 종이를 일요일 밤 12시까지 2점 · 월요일 1점<br>📔 <b>종이</b>는 다음 주 첫 수업 때 학원에 꼭 가져와요 — 2점</div>';
   // ① 사진
   h+='<div class="sg-card"><div class="ct">① 종이 사진 <small>순공피드백 종이를 찍어주세요</small></div>';
