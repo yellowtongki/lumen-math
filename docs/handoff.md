@@ -6,8 +6,8 @@
 ## 1. 지금 버전 (서버 `lumen_store.app_latest` 와 같다)
 | 앱 | 최신 파일 | 고정 주소(사용자가 여는 곳) |
 |---|---|---|
-| 학원앱 | `lumen_v19-91.html` | `lumen_v1.html` = v19-91 (Claude가 배포 때 같이 바꾼다) |
-| 학생앱 | `student_v2-132.html` (main 에 올림, 원장 확인 대기) | `student_v1.html` = v2-131 (**「학생앱배포」 지시가 있을 때만** 바꾼다) |
+| 학원앱 | `lumen_v19-92.html` | `lumen_v1.html` = v19-92 (Claude가 배포 때 같이 바꾼다) |
+| 학생앱 | `student_v2-132.html` | `student_v1.html` = v2-132 (**「학생앱배포」 지시가 있을 때만** 바꾼다 · 10/9 배포) |
 | 학부모앱 | `parent_v1-35.html` | `parent.html` = v1-35 (**원장님 명령 때만**) |
 
 ## 2. 학원앱 만드는 법 — 조립 도구 `sync/appbuild/`
@@ -41,6 +41,7 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 - 커밋 전: 학생 실명·점수·전화·열쇠가 새로 들어가지 않았는지 검사(등록부 이름 목록으로 grep). 메모·문서·테스트에도 실명 금지 — 2026-10-07 memo_1988 에 두 학생 이름이 들어갔다가 지웠다.
 
 ## 5. 최근 결정 (2026-10-05 ~ 10-09)
+- **리커버리 학습지 «설계 → 매쓰플랫 즉시 생성» (10/9, 학원앱 v19-92, `docs/recovery_ws_contract.md`)**: 원장 결정 「시험 오답은 쌍둥이 2문제씩 + 틀린 문제만큼 교과서 같은 유형 + 범위 안 교재 오답은 쌍둥이 + 보강 · 문항 제한 없음 · 바로 만들어지게」. 매쓰플랫 API 가 CORS 를 열어 두어 학원앱이 원장 PC 에서 직접 로그인해 만든다(계정은 localStorage `or_mf_id`/`or_mf_pw` 뿐). 부품 `modules/rcws_teacher.js` 가 `rcWsBtn`·`rcMakeWs`·`rcMakeWsAll` 을 덮어쓴다. 쌍둥이 = `POST /derivation/problem/{번호}` 의 pair → 유사. 교과서 = `mf_textbook_<교재>` 은행의 같은 cid. 기록 `rc_ws_made`·규칙 `rc_ws_rule`. 5분 워커 `ws_make_req` 는 쓰지 않는다(남겨 둠). 고등부 제외.
 - **분수 입력 = 안 B 「분수 틀」 + 엔진 보강 (10/9, 학생앱 v2-132)**: 자판 「분수」 키 → 칸 안에 위(분자)·아래(분모) 두 칸, 「대분수」 키 → 정수 칸, 「다음 칸」은 틀 안에서 이동, 칸 밑에 「5분의 2」 우리말 읽기. 모델 `BK.fx`(글 조각·분수 조각 목록), 채점은 `bkFxText` 로 편 글자. 엔진: 수학비서 `{60/7}`·`2{1/5}`·`[cm]`, 분모의 문자 `28/x`, 분자의 곱 `(2x)/3`, 유리수 계수(0.5x=½x), 통째 `1/4` 정답은 분수(`4/1` ✗). 분석·시안 `docs/mockup_fraction_input.html`.
 - **옛 ✗ 기록 다시 채점 (10/9 원장 지시)**: `sync/regrade_hw_scores.js` — 새 엔진이 ◯ 로 읽는 ✗ 52건을 ◯ 로(r0·regraded 남김), 매쓰플랫 대기열에도 넣음. 멱등이라 다시 돌려도 된다(학생이 켜 둔 앱이 옛 기록을 되올릴 수 있어 새벽에 한 번 더).
 - 리커버리 「📣 학생앱에 알리기」는 이미 동작한다: 학원앱 `rc_calls_pub` 발행 → 학생앱 홈 빨간 🚑 카드(v2-22, `rcvHomeLoad`), 보충일 이틀 뒤 자동 숨김. 원장 질문 10/9.
@@ -54,7 +55,8 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 - 카드뉴스·기출 DB(화면엔 「기출 DB」, 「수학비서」라는 말 금지), 적중 분석: docs/exam_hit_contract.md §9.
 
 ## 6. 남은 일
-- (원장) 학생앱 v2-132 를 `student_v2-132.html` 로 써 보고 괜찮으면 「학생앱배포」 → `student_v1.html` 교체 + `app_latest student`.
+- (원장) 리커버리 우측 패널 「🔐 매쓰플랫 계정」에 아이디·비밀번호를 한 번 넣어야 즉시 생성이 된다(원장 PC 마다). 첫 실전 학습지가 만들어지면 매쓰플랫 내학습지에서 구성(쌍둥이·교과서 문항)이 기대와 맞는지 확인.
+- 리커버리 학습지 다음 단계: 고등부(학년=과목명) · 학생앱 카드에 구성 요약 한 줄(`rc_calls_pub.items[코드].ws`) · 종이 인쇄에 구성 요약.
 - 분수 ✗ 기록 중 «여러 칸 긴 정답»(반비례 학습지, 28건)은 문항 설계 문제 — 따로 볼 것. 초등용 «세 칸»(안 C)은 2~3주 뒤 반응 보고.
 - `sync/appbuild/syntax.js` 는 acorn 이 없으면 못 돈다 — 대신 `<script>` 블록을 `node --check` 로 검사(test_v2132 참고). Playwright 는 `NODE_PATH=/opt/node22/lib/node_modules`.
 - (원장 확인 대기) 주간 점수 세부 배분 5/2 · 5/3/1 이 괜찮은지.
