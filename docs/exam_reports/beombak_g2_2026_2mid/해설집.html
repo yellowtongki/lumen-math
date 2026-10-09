@@ -1,0 +1,883 @@
+<meta charset="utf-8">
+<title>범박고 고2 2학기중간 2026 해설집</title>
+<meta name="haesol-code" content="beombak_g2_2026_2mid">
+<meta name="haesol-title" content="범박고등학교 2학년 2026학년도 2학기 중간 · 미적분Ⅰ">
+<meta name="haesol-school" content="범박고등학교">
+<meta name="haesol-grade" content="고2">
+<meta name="haesol-term" content="2026 · 2학기 중간">
+<meta name="haesol-subject" content="미적분Ⅰ (2022개정)">
+<meta name="haesol-count" content="23">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;600;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['$$','$$'],['\\[','\\]']] },
+  svg: { fontCache: 'global', scale: 1.02 },
+  options: { menuOptions: { settings: { inTabOrder: false } } }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.js" async></script>
+
+<style>
+:root{
+  --ground:#E7E9EE; --paper:#FFFFFF;
+  --ink:#18222E; --ink-soft:#4A5666; --ink-faint:#8A94A2;
+  --line:#DBE0E9; --line-soft:#EDF0F5;
+  --indigo:#274777; --indigo-ink:#1E3A63; --indigo-soft:#E9EFF8;
+  --amber:#9C6612; --amber-soft:#F6EEDC;
+  --green:#2C7A54; --green-soft:#E1EFE8;
+  --red:#AF413A; --red-soft:#F6E4E1;
+  --shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px rgba(24,34,46,.09);
+  --shadow-sm:0 1px 2px rgba(24,34,46,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0C121A; --paper:#141C26;
+    --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+    --line:#28333F; --line-soft:#1D2732;
+    --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+    --amber:#D9A64A; --amber-soft:#2C2515;
+    --green:#66BB8E; --green-soft:#16271E;
+    --red:#E0776D; --red-soft:#2B1A18;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0C121A; --paper:#141C26;
+  --ink:#E8EDF4; --ink-soft:#A9B4C2; --ink-faint:#6D7889;
+  --line:#28333F; --line-soft:#1D2732;
+  --indigo:#84A9DB; --indigo-ink:#A9C4E8; --indigo-soft:#1A2941;
+  --amber:#D9A64A; --amber-soft:#2C2515;
+  --green:#66BB8E; --green-soft:#16271E;
+  --red:#E0776D; --red-soft:#2B1A18;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.5);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"Noto Sans KR", system-ui, sans-serif;
+  font-size:16px; line-height:1.75; letter-spacing:-.003em;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 18px 96px}
+
+/* ── 상단 헤더 ── */
+.masthead{padding:34px 0 20px}
+.eyebrow{
+  font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--indigo); margin:0 0 10px;
+}
+.masthead h1{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:clamp(28px,6vw,40px);
+  line-height:1.18; margin:0; letter-spacing:-.01em; text-wrap:balance; color:var(--ink);
+}
+.masthead .sub{
+  color:var(--ink-soft); font-size:14.5px; margin-top:12px; font-weight:500;
+  display:flex; flex-wrap:wrap; gap:7px 14px; align-items:center;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--paper); border:1px solid var(--line); border-radius:99px;
+  padding:4px 12px; font-size:12.5px; font-weight:700; color:var(--ink-soft);
+  box-shadow:var(--shadow-sm);
+}
+.chip b{color:var(--ink)}
+.chip.hard{color:var(--red); border-color:color-mix(in srgb, var(--red) 34%, var(--line))}
+
+/* ── 문제 카드 ── */
+.paper{
+  background:var(--paper); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); padding:26px 26px 24px; margin-bottom:22px;
+}
+.q-head{display:flex; align-items:baseline; gap:12px; margin-bottom:14px}
+.q-no{
+  font-family:"Hahmlet", serif; font-weight:800; font-size:30px; color:var(--indigo);
+  line-height:1;
+}
+.q-tag{
+  font-size:12px; font-weight:700; letter-spacing:.04em; color:var(--ink-faint);
+  border-left:1px solid var(--line); padding-left:12px;
+}
+.q-body{font-size:17px; line-height:1.85; color:var(--ink)}
+.cond{
+  margin:16px 0 4px; border:1px solid var(--line); border-radius:12px;
+  background:color-mix(in srgb, var(--indigo-soft) 55%, var(--paper));
+  padding:14px 18px;
+}
+.cond .row{display:flex; gap:12px; align-items:baseline}
+.cond .row+.row{margin-top:6px}
+.cond .lab{font-weight:700; color:var(--indigo-ink); flex-shrink:0}
+.choices{
+  margin-top:18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:8px;
+}
+.choice{
+  border:1px solid var(--line); border-radius:10px; padding:9px 14px;
+  font-size:15.5px; color:var(--ink-soft); display:flex; gap:9px; align-items:center;
+}
+.choice .n{font-weight:700; color:var(--ink-faint)}
+.choice.ans{
+  border-color:var(--green); background:var(--green-soft); color:var(--ink);
+  font-weight:700; box-shadow:0 0 0 1px var(--green) inset;
+}
+.choice.ans .n{color:var(--green)}
+.choice.ans::after{content:"정답"; margin-left:auto; font-size:11px; font-weight:800;
+  letter-spacing:.06em; color:var(--green)}
+
+/* ── 급소 배너 ── */
+.insight{
+  display:flex; gap:13px; align-items:flex-start;
+  background:var(--amber-soft); border:1px solid color-mix(in srgb, var(--amber) 30%, var(--line));
+  border-radius:14px; padding:16px 18px; margin-bottom:30px;
+}
+.insight .ic{font-size:20px; line-height:1.4; flex-shrink:0}
+.insight p{margin:0; font-size:14.5px; color:var(--ink); line-height:1.7}
+.insight b{color:var(--amber); font-weight:800}
+
+/* ── 풀이 전환 네비 ── */
+.nav{
+  position:sticky; top:0; z-index:20; margin:0 -18px 26px; padding:10px 18px;
+  background:color-mix(in srgb, var(--ground) 86%, transparent);
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+  display:flex; gap:8px; overflow-x:auto; scrollbar-width:none;
+}
+.nav::-webkit-scrollbar{display:none}
+.nav a{
+  flex:0 0 auto; text-decoration:none; border:1px solid var(--line);
+  background:var(--paper); color:var(--ink-soft); border-radius:99px;
+  padding:7px 15px; font-size:13px; font-weight:700; white-space:nowrap;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.nav a .k{color:var(--indigo); font-family:"Hahmlet",serif; font-weight:800; margin-right:5px}
+.nav a:hover{border-color:var(--indigo); color:var(--ink)}
+.nav a:focus-visible{outline:2px solid var(--indigo); outline-offset:2px}
+
+/* ── 풀이 섹션 ── */
+.sol{margin-bottom:40px; scroll-margin-top:64px}
+.sol-head{display:flex; align-items:center; gap:14px; margin-bottom:6px}
+.sol-k{
+  font-family:"Hahmlet",serif; font-weight:800; font-size:26px;
+  width:46px; height:46px; flex-shrink:0; border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--indigo); color:#fff;
+}
+:root[data-theme="dark"] .sol-k, :root:not([data-theme="light"]) .sol-k{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .sol-k{color:#fff}}
+.sol-title{font-family:"Hahmlet",serif; font-weight:700; font-size:22px; color:var(--ink); line-height:1.2}
+.sol-kind{font-size:12.5px; font-weight:700; color:var(--ink-faint); margin-top:3px; letter-spacing:.01em}
+.sol-body{
+  background:var(--paper); border:1px solid var(--line); border-radius:16px;
+  box-shadow:var(--shadow); padding:8px 24px 22px; margin-top:14px;
+}
+
+.step{padding:18px 0; border-bottom:1px solid var(--line-soft)}
+.step:last-child{border-bottom:none}
+.step-lab{
+  display:inline-flex; align-items:center; gap:8px; margin-bottom:8px;
+  font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--indigo);
+}
+.step-lab .dot{width:6px; height:6px; border-radius:50%; background:var(--indigo)}
+.step-lab.amber{color:var(--amber)} .step-lab.amber .dot{background:var(--amber)}
+.step-lab.green{color:var(--green)} .step-lab.green .dot{background:var(--green)}
+.step h4{margin:0 0 6px; font-size:16px; font-weight:700; color:var(--ink)}
+.step p{margin:8px 0; font-size:15px; color:var(--ink); line-height:1.8}
+.step .aside{color:var(--ink-soft); font-size:14px}
+
+/* 수식 디스플레이 줄 */
+.mathrow{overflow-x:auto; overflow-y:hidden; padding:6px 2px; margin:6px 0; scrollbar-width:thin}
+mjx-container[display="true"]{margin:0 !important}
+
+/* 함정·실수 박스 */
+.warn{
+  border:1px solid color-mix(in srgb, var(--amber) 34%, var(--line));
+  background:var(--amber-soft); border-radius:12px; padding:14px 16px; margin:12px 0;
+}
+.warn .t{font-weight:800; color:var(--amber); font-size:14px; margin-bottom:5px; display:flex; gap:7px; align-items:center}
+.warn p{margin:4px 0; font-size:14px; color:var(--ink)}
+.miss{
+  border-left:3px solid var(--red); background:var(--red-soft); border-radius:0 10px 10px 0;
+  padding:11px 15px; margin:11px 0; font-size:14px; color:var(--ink);
+}
+.miss b{color:var(--red)}
+
+/* 결과 배지 */
+.result{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  background:var(--green-soft); border:1px solid var(--green); border-radius:13px;
+  padding:15px 20px; margin-top:16px;
+}
+.result .lab{font-size:13px; font-weight:800; letter-spacing:.04em; color:var(--green)}
+.result .val{font-size:20px}
+
+/* 그림풀이 */
+figure{margin:14px 0 6px; text-align:center}
+.fig-frame > svg{max-width:100%; height:auto; display:block; margin:0 auto}
+figcaption mjx-container svg, .fig-tag mjx-container svg{display:inline-block; margin:0}
+.fig-tag mjx-container{vertical-align:-0.1em}
+figcaption{
+  font-size:12.5px; color:var(--ink-faint); font-weight:600; margin-top:10px;
+  letter-spacing:.01em;
+}
+.fig-frame{
+  border:1px dashed var(--line); border-radius:14px; padding:20px 16px 14px;
+  background:color-mix(in srgb, var(--line-soft) 45%, var(--paper));
+}
+.fig-tag{
+  display:inline-block; font-size:11px; font-weight:800; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;
+}
+
+/* 검산 표 */
+.calc{width:100%; border-collapse:collapse; margin:10px 0 2px; font-variant-numeric:tabular-nums}
+.calc td,.calc th{border-bottom:1px solid var(--line-soft); padding:8px 10px; text-align:left; font-size:15px}
+.calc th{color:var(--ink-faint); font-weight:700; font-size:12.5px; letter-spacing:.03em}
+.calc tr:last-child td{border-bottom:none}
+.calc .hi{background:var(--indigo-soft); font-weight:700}
+
+footer{
+  text-align:center; color:var(--ink-faint); font-size:12.5px;
+  border-top:1px solid var(--line); padding-top:22px; margin-top:16px; line-height:1.9;
+}
+
+@media (max-width:520px){
+  .sol-body{padding:6px 16px 18px}
+  .paper{padding:20px 18px}
+  .q-body{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+
+/* ── 해설집 추가 ── */
+.idx{display:grid;grid-template-columns:repeat(auto-fit,minmax(46px,1fr));gap:7px;margin:0 0 8px}
+.idx a{text-decoration:none;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);
+  border-radius:10px;padding:9px 0;text-align:center;font-weight:800;font-size:14px;font-family:"Hahmlet",serif;
+  transition:border-color .15s,color .15s}
+.idx a:hover{border-color:var(--indigo);color:var(--indigo)}
+.idx a .kd{display:block;font-size:9px;font-weight:700;letter-spacing:.04em;margin-top:2px;font-family:"Noto Sans KR"}
+.idx a.hard{border-color:color-mix(in srgb,var(--red) 30%,var(--line))}
+.idx a.hard .kd{color:var(--red)}
+.idx a:focus-visible{outline:2px solid var(--indigo);outline-offset:2px}
+.pnum{font-family:"Hahmlet",serif;font-weight:800;font-size:24px;color:var(--indigo);line-height:1}
+.pstate{font-size:16px;line-height:1.85;color:var(--ink);margin:10px 0 0}
+.pstate .cond{margin:14px 0 2px}
+.dbadge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;border-radius:99px;
+  padding:3px 10px;border:1px solid var(--line);color:var(--ink-soft);background:var(--paper)}
+.dbadge.k{color:var(--red);border-color:color-mix(in srgb,var(--red) 34%,var(--line))}
+.dbadge.red{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,var(--line));background:var(--red-soft)}
+/* 킬러 문항 강조 */
+.sol.killer .sol-body{border-color:color-mix(in srgb,var(--red) 34%,var(--line));
+  box-shadow:0 1px 2px rgba(24,34,46,.05), 0 12px 34px color-mix(in srgb,var(--red) 16%,transparent)}
+.sol-k.red{background:var(--red)}
+.tag-essay{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;vertical-align:middle;
+  color:#fff;background:var(--amber);border-radius:6px;padding:2px 8px;margin-left:8px}
+:root[data-theme="dark"] .tag-essay,:root:not([data-theme="light"]) .tag-essay{color:#0C121A}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .tag-essay{color:#fff}}
+
+/* ── 좁은 화면 안전장치: 긴 수식·표가 가로로 넘치지 않게 ── */
+.calc{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch}
+.cond .row>span:last-child{min-width:0; overflow-x:auto; padding-bottom:2px}
+.result .val{min-width:0; overflow-x:auto; padding-bottom:2px}
+/* 문단 안에 들어간 긴 인라인 수식도 잘리지 않고 가로로 스크롤되게 (390px 대응) */
+.step p, .miss, .pstate{overflow-x:auto; overflow-y:hidden}
+
+/* 그림 아래 설명 문장 */
+.fig-cap{font-size:13px; line-height:1.65; color:var(--ink-soft); text-align:center; margin-top:10px}
+.fig-cap b{color:var(--ink)}
+.fig-cap mjx-container svg{display:inline-block; margin:0}
+.figs2{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; align-items:end}
+.figs2 > div{text-align:center}
+.figs2 .sub{font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-top:4px}
+</style>
+<div class="wrap">
+  <header class="masthead">
+    <p class="eyebrow">루멘수학 · 기출 정밀해설집</p>
+    <h1>범박고 2학년 2학기 중간 · 미적분Ⅰ 해설</h1>
+    <div class="sub">
+      <span class="chip">범박고등학교 2학년</span>
+      <span class="chip">2026 · 2학기 중간</span>
+      <span class="chip"><b>23문항</b></span>
+      <span class="chip">함수의 극한 · 연속 · 미분</span>
+    </div>
+  </header>
+  <div class="insight">
+    <span class="ic">📘</span>
+    <p>스물세 문항을 <b>왜 그렇게 푸는지</b>까지 짚는 첨삭 해설로 담았습니다. 아래 번호를 누르면 해당 문제로 바로 이동합니다.
+      <b style="color:var(--red)">빨간 번호</b>는 등급을 가르는 문항이에요.</p>
+  </div>
+  <div class="insight" style="margin:0 0 18px">
+    <span class="ic">🗺️</span>
+    <p><b>범위</b> — 함수의 극한(좌·우극한, 계산, 대소 관계), 함수의 연속(최대·최소 정리, 사잇값 정리), 미분계수와 도함수, 미분가능성, 평균값 정리, 극대·극소, 최대·최소의 활용.<br>
+      <b>함정 세 개</b> — 9번 「\(h\) 앞의 마이너스와 분모의 2」, 15번 「<b>반드시</b> 실근 = 양 끝 부호가 반대」, 17번 「\(a=0\)이면 극댓값이 사라진다」.<br>
+      <b>등급을 가르는 곳</b> — 18번(교점의 \(x\)좌표의 합이 일정), 22번(연속 조건으로 삼차함수 결정), 23번(극한식이 미분계수에 대한 이차방정식).</p>
+  </div>
+  <div class="warn" style="margin:0 0 18px">
+    <div class="t">⚠️ 정답 안내</div>
+    <p>이 시험은 아직 학교 정답표가 공개되지 않아, 23문항 모두 <b>직접 풀고 수치로 다시 검산한 답</b>을 적었습니다.
+      학교에서 받은 정답과 다른 문항이 있으면 알려 주세요. 바로 확인해 고치겠습니다.</p>
+  </div>
+  <nav class="idx" aria-label="문제 바로가기">
+    <a href="#q1">1</a><a href="#q2">2</a><a href="#q3">3</a><a href="#q4">4</a><a href="#q5">5</a><a href="#q6">6</a>
+    <a href="#q7">7</a><a href="#q8">8</a><a href="#q9">9</a><a href="#q10">10</a><a href="#q11">11</a><a href="#q12">12</a>
+    <a href="#q13">13</a><a href="#q14">14</a><a href="#q15">15</a><a href="#q16">16</a><a href="#q17">17</a>
+    <a href="#q18" class="hard">18<span class="kd">킬러</span></a>
+    <a href="#q19">19</a><a href="#q20">20</a><a href="#q21">21</a>
+    <a href="#q22" class="hard">22<span class="kd">킬러</span></a>
+    <a href="#q23" class="hard">23<span class="kd">킬러</span></a>
+  </nav>
+  <section class="sol" id="q1">
+    <div class="sol-head">
+      <span class="sol-k">1</span>
+      <div>
+        <div class="sol-title">다항함수의 극한은 <b>그냥 대입</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 2 · 3.3점</span> 함수의 극한 · 극한값 계산</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(\displaystyle\lim_{x\to1}(2x+1)\)의 값은?<br>① \(1\) ② \(2\) ③ \(3\) ④ \(4\) ⑤ \(5\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <div class="mathrow">$$\lim_{x\to1}(2x+1)=2\cdot1+1=3$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(3\ \Rightarrow\) ③</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 「극한은 그 값에 가까워질 뿐」이라며 대입을 망설이는 것. 다항함수는 어디서나 연속이라 <b>대입한 값이 곧 극한값</b>이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q2">
+    <div class="sol-head">
+      <span class="sol-k">2</span>
+      <div>
+        <div class="sol-title">극한의 성질 — <b>수렴하면</b> 나눠서 계산</div>
+        <div class="sol-kind"><span class="dbadge">난이도 2 · 3.4점</span> 함수의 극한 · 극한의 성질</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 함수 \(f(x),\ g(x)\)가 \(\displaystyle\lim_{x\to1}f(x)=2\), \(\displaystyle\lim_{x\to1}g(x)=-3\)을 만족시킬 때, \(\displaystyle\lim_{x\to1}\{2f(x)-g(x)\}\)의 값은?<br>① \(1\) ② \(3\) ③ \(5\) ④ \(7\) ⑤ \(9\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <div class="mathrow">$$2\lim_{x\to1}f(x)-\lim_{x\to1}g(x)=4-(-3)=7$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(7\ \Rightarrow\) ④</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(-g(x)\)에 \(-3\)을 넣을 때 부호를 놓쳐 \(4-3=1\)(①)을 고르는 것.</div>
+    </div>
+  </section>
+  <section class="sol" id="q3">
+    <div class="sol-head">
+      <span class="sol-k">3</span>
+      <div>
+        <div class="sol-title">양쪽에서 <b>같은 값</b>으로 조이면 가운데도 그 값</div>
+        <div class="sol-kind"><span class="dbadge">난이도 3 · 3.5점</span> 함수의 극한 · 대소 관계</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(f(x)\)가 모든 실수 \(x\)에 대하여 \(2x^2-1\lt(x^2+1)f(x)\lt2x^2+3\)을 만족시킬 때, \(\displaystyle\lim_{x\to\infty}f(x)\)의 값은?<br>① \(1\) ② \(2\) ③ \(3\) ④ \(4\) ⑤ \(5\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — \(f(x)\)만 남기기</span>
+        <p>\(x^2+1\gt0\)이므로 부등호 방향 그대로 나눈다.</p>
+        <div class="mathrow">$$\frac{2x^2-1}{x^2+1}\lt f(x)\lt\frac{2x^2+3}{x^2+1}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 양쪽 극한</span>
+        <p>\(x\to\infty\)일 때 양쪽 모두 최고차항의 계수의 비 \(\dfrac21=2\)로 간다. 따라서 \(\displaystyle\lim_{x\to\infty}f(x)=2\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(2\ \Rightarrow\) ②</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 나누기 전에 바로 \((x^2+1)f(x)\to\infty\)라며 멈추는 것. <b>\(f(x)\)만 가운데 남도록</b> 먼저 나눠야 한다. 나누는 수가 양수인지도 꼭 확인한다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q4">
+    <div class="sol-head">
+      <span class="sol-k">4</span>
+      <div>
+        <div class="sol-title">좌극한·우극한 — 그 점의 <b>값이 아니라 다가가는 높이</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 3 · 3.6점</span> 함수의 극한 · 좌극한과 우극한</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(y=f(x)\)의 그래프가 그림과 같을 때, \(\displaystyle\lim_{x\to-1+}f(x)+\lim_{x\to2-}f(x)\)의 값은?<br>① \(2\) ② \(3\) ③ \(4\) ④ \(5\) ⑤ \(6\)</div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 300 254" width="100%" style="max-width:280px" role="img" aria-label="좌극한과 우극한"><line x1="26.0" y1="196.5" x2="274.0" y2="196.5" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="280.0,196.5 272.0,192.5 272.0,200.5" fill="var(--ink-soft)"/><line x1="134.5" y1="227.5" x2="134.5" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="134.5,20.0 130.5,28.0 138.5,28.0" fill="var(--ink-soft)"/><text x="278.0" y="212.5" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="143.5" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="124.5" y="211.5" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><line x1="41.5" y1="103.5" x2="95.8" y2="157.8" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/><line x1="95.8" y1="119.0" x2="134.5" y2="119.0" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/><polyline points="134.5,157.8 135.0,158.7 135.5,159.7 136.0,160.6 136.4,161.5 136.9,162.4 137.4,163.3 137.9,164.2 138.4,165.1 138.9,166.0 139.3,166.8 139.8,167.7 140.3,168.5 140.8,169.3 141.3,170.1 141.8,170.9 142.2,171.7 142.7,172.5 143.2,173.2 143.7,174.0 144.2,174.7 144.7,175.4 145.2,176.1 145.6,176.8 146.1,177.5 146.6,178.2 147.1,178.8 147.6,179.5 148.1,180.1 148.5,180.8 149.0,181.4 149.5,182.0 150.0,182.6 150.5,183.1 151.0,183.7 151.5,184.2 151.9,184.8 152.4,185.3 152.9,185.8 153.4,186.3 153.9,186.8 154.4,187.3 154.8,187.8 155.3,188.2 155.8,188.7 156.3,189.1 156.8,189.5 157.3,189.9 157.8,190.3 158.2,190.7 158.7,191.1 159.2,191.4 159.7,191.8 160.2,192.1 160.7,192.4 161.1,192.7 161.6,193.0 162.1,193.3 162.6,193.6 163.1,193.8 163.6,194.1 164.0,194.3 164.5,194.5 165.0,194.8 165.5,195.0 166.0,195.1 166.5,195.3 167.0,195.5 167.4,195.6 167.9,195.8 168.4,195.9 168.9,196.0 169.4,196.1 169.9,196.2 170.3,196.3 170.8,196.3 171.3,196.4 171.8,196.4 172.3,196.5 172.8,196.5 173.2,196.5 173.7,196.5 174.2,196.5 174.7,196.4 175.2,196.4 175.7,196.3 176.2,196.3 176.6,196.2 177.1,196.1 177.6,196.0 178.1,195.9 178.6,195.8 179.1,195.6 179.5,195.5 180.0,195.3 180.5,195.1 181.0,195.0 181.5,194.8 182.0,194.5 182.5,194.3 182.9,194.1 183.4,193.8 183.9,193.6 184.4,193.3 184.9,193.0 185.4,192.7 185.8,192.4 186.3,192.1 186.8,191.8 187.3,191.4 187.8,191.1 188.3,190.7 188.7,190.3 189.2,189.9 189.7,189.5 190.2,189.1 190.7,188.7 191.2,188.2 191.7,187.8 192.1,187.3 192.6,186.8 193.1,186.3 193.6,185.8 194.1,185.3 194.6,184.8 195.0,184.2 195.5,183.7 196.0,183.1 196.5,182.6 197.0,182.0 197.5,181.4 198.0,180.8 198.4,180.1 198.9,179.5 199.4,178.8 199.9,178.2 200.4,177.5 200.9,176.8 201.3,176.1 201.8,175.4 202.3,174.7 202.8,174.0 203.3,173.2 203.8,172.5 204.2,171.7 204.7,170.9 205.2,170.1 205.7,169.3 206.2,168.5 206.7,167.7 207.2,166.8 207.6,166.0 208.1,165.1 208.6,164.2 209.1,163.3 209.6,162.4 210.1,161.5 210.5,160.6 211.0,159.7 211.5,158.7 212.0,157.8" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><line x1="212.0" y1="80.3" x2="250.8" y2="41.5" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/><line x1="95.8" y1="196.5" x2="95.8" y2="119.0" stroke="var(--ink-faint)" stroke-width="1" stroke-linecap="round" stroke-dasharray="3 3"/><line x1="212.0" y1="196.5" x2="212.0" y2="80.3" stroke="var(--ink-faint)" stroke-width="1" stroke-linecap="round" stroke-dasharray="3 3"/><line x1="134.5" y1="80.3" x2="212.0" y2="80.3" stroke="var(--ink-faint)" stroke-width="1" stroke-linecap="round" stroke-dasharray="3 3"/><circle cx="95.8" cy="157.8" r="3.8" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="134.5" cy="119.0" r="3.8" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="212.0" cy="157.8" r="3.8" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="95.8" cy="119.0" r="3.6" fill="var(--ink)"/><circle cx="134.5" cy="157.8" r="3.6" fill="var(--ink)"/><circle cx="212.0" cy="80.3" r="3.6" fill="var(--ink)"/><circle cx="95.8" cy="119.0" r="8.5" fill="none" stroke="var(--red)" stroke-width="2"/><circle cx="212.0" cy="157.8" r="8.5" fill="none" stroke="var(--red)" stroke-width="2"/><text x="87.8" y="107.0" text-anchor="end" font-size="11.5" font-weight="700" fill="var(--red)">오른쪽에서 → 2</text><text x="224.0" y="161.8" text-anchor="start" font-size="11.5" font-weight="700" fill="var(--red)">왼쪽에서 → 1</text><text x="95.8" y="212.5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-soft)">−1</text><text x="212.0" y="212.5" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-soft)">2</text></svg>
+        <div class="fig-cap">\(x=-1\)의 <b>오른쪽</b>은 \(y=2\)의 수평선, \(x=2\)의 <b>왼쪽</b>은 포물선 끝 — 빈 점이어도 극한값은 그 높이</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <div class="cond"><div class="row"><span class="lab">\(x\to-1+\)</span><span>\(-1\)보다 <b>오른쪽</b>에서 다가가면 수평선 \(y=2\) 위를 따라간다 → \(2\)</span></div><div class="row"><span class="lab">\(x\to2-\)</span><span>\(2\)보다 <b>왼쪽</b>에서 다가가면 포물선이 빈 점 \((2,\ 1)\)로 간다 → \(1\)</span></div></div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(2+1=3\ \Rightarrow\) ②</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(x=2\)에서 채워진 점 \((2,\ 3)\)을 보고 \(3\)을 쓰는 것. 그건 함숫값 \(f(2)\)이고, <b>왼쪽에서 다가갈 때</b>의 높이는 \(1\)이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q5">
+    <div class="sol-head">
+      <span class="sol-k">5</span>
+      <div>
+        <div class="sol-title">평균변화율 \(=\dfrac{\text{\(y\)의 변화량}}{\text{\(x\)의 변화량}}\)</div>
+        <div class="sol-kind"><span class="dbadge">난이도 3 · 3.7점</span> 미분계수 · 평균변화율</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(f(x)=x^2+ax-4\)에서 \(x\)의 값이 \(-1\)에서 \(2\)까지 변할 때, 평균변화율이 \(5\)가 되도록 하는 상수 \(a\)의 값은?<br>① \(1\) ② \(2\) ③ \(3\) ④ \(4\) ⑤ \(5\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>\(f(2)=2a\), \(f(-1)=-a-3\).</p>
+        <div class="mathrow">$$\begin{gathered}\frac{f(2)-f(-1)}{2-(-1)}=\frac{3a+3}{3}\\[2pt] =a+1\\[2pt] =5\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(a=4\ \Rightarrow\) ④</span></div>
+        <p class="aside">빠른 길 — 이차함수 \(x^2+ax+\cdots\)의 평균변화율은 \((\text{두 끝의 합})+a=(-1+2)+a\). 바로 \(1+a=5\).</p>
+      <div class="miss"><b>가장 잦은 실수</b> 분모를 \(2-1=1\)로 쓰는 것. \(x\)의 변화량은 \(2-(-1)=3\)이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q6">
+    <div class="sol-head">
+      <span class="sol-k">6</span>
+      <div>
+        <div class="sol-title">분모 \(\to0\)이면 <b>분자도 \(\to0\)</b> — 그 다음 유리화</div>
+        <div class="sol-kind"><span class="dbadge">난이도 3 · 3.8점</span> 극한식의 해석 · 미정계수 결정</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">\(\displaystyle\lim_{x\to-2}\frac{ax+b}{\sqrt{x+3}-1}=2\)일 때, 상수 \(a,\ b\)에 대하여 \(a-b\)의 값은?<br>① \(-3\) ② \(-2\) ③ \(-1\) ④ \(0\) ⑤ \(1\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 분자도 0</span>
+        <p>\(x\to-2\)일 때 분모 \(\sqrt1-1=0\). 극한값이 있으려면 분자도 \(0\)으로 가야 한다: \(-2a+b=0\), \(b=2a\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 유리화</span>
+        <div class="mathrow">$$\begin{gathered}\lim_{x\to-2}\frac{a(x+2)(\sqrt{x+3}+1)}{(x+3)-1}\\[2pt]=\lim_{x\to-2}a(\sqrt{x+3}+1)=2a=2\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(a=1,\ b=2\) → \(a-b=-1\ \Rightarrow\) ③</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 유리화할 때 분모만 바꾸고 분자에 \(\sqrt{x+3}+1\)을 곱하지 않는 것. 그러면 극한값이 \(a\)로 나와 \(a=2\)가 된다. 분자·분모에 <b>똑같이</b> 곱해야 한다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q7">
+    <div class="sol-head">
+      <span class="sol-k">7</span>
+      <div>
+        <div class="sol-title">닫힌구간에서 연속 → 최댓값·최솟값이 <b>반드시</b> 있다</div>
+        <div class="sol-kind"><span class="dbadge">난이도 3 · 3.9점</span> 함수의 연속 · 최대·최소 정리</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">닫힌구간 \([-2,\ 1]\)에서 함수 \(f(x)=\dfrac{3}{|x-2|}\)의 최댓값을 \(a\), 최솟값을 \(b\)라고 할 때, \(4ab\)의 값은?<br>① \(1\) ② \(3\) ③ \(5\) ④ \(7\) ⑤ \(9\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <p>구간 안에서 \(x\lt2\)이므로 \(|x-2|=2-x\), 그 값은 \(1\)부터 \(4\)까지. 분모가 클수록 값이 작다.</p>
+        <div class="cond"><div class="row"><span class="lab">최대</span><span>\(x=1\): \(a=\dfrac31=3\)</span></div><div class="row"><span class="lab">최소</span><span>\(x=-2\): \(b=\dfrac34\)</span></div></div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(4\times3\times\dfrac34=9\ \Rightarrow\) ⑤</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(x=2\)에서 분모가 \(0\)이라 「최댓값이 없다」고 생각하는 것. \(x=2\)는 구간 \([-2,\ 1]\) <b>밖</b>이다. 구간 안에서는 연속이니 양 끝 값만 비교하면 된다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q8">
+    <div class="sol-head">
+      <span class="sol-k">8</span>
+      <div>
+        <div class="sol-title">극값 \(\Rightarrow\) <b>\(f^{\prime}=0\)</b> + 함숫값, 식 두 개</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4점</span> 극대와 극소 · 삼차함수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(f(x)=x^3+ax+b\)가 \(x=-1\)에서 극댓값 \(7\)을 가질 때, \(a+b\)의 값은? (단, \(a,\ b\)는 상수이다.)<br>① \(-2\) ② \(-1\) ③ \(0\) ④ \(1\) ⑤ \(2\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>풀이</span>
+        <div class="cond"><div class="row"><span class="lab">\(f^{\prime}(-1)=0\)</span><span>\(3+a=0\Rightarrow a=-3\)</span></div><div class="row"><span class="lab">\(f(-1)=7\)</span><span>\(-1+3+b=7\Rightarrow b=5\)</span></div></div>
+        <p>확인: \(f^{\prime}(x)=3(x+1)(x-1)\), \(x=-1\)의 앞뒤로 \(+\to-\) — 극대 ✓</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(a+b=2\ \Rightarrow\) ⑤</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(f^{\prime}(-1)=0\)만 쓰고 \(f(-1)=7\)을 잊는 것. 미지수가 둘이면 식도 둘 — 「\(x=-1\)에서」와 「극댓값 \(7\)」이 <b>각각 하나씩</b>이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q9">
+    <div class="sol-head">
+      <span class="sol-k">9</span>
+      <div>
+        <div class="sol-title">\(\dfrac{f(a-h)-f(a)}{2h}\) = <b>\(-\dfrac12f^{\prime}(a)\)</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.1점</span> 미분계수 · 극한식의 해석</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">삼차함수 \(f(x)=ax^3-4x+5\)에 대하여 \(\displaystyle\lim_{h\to0}\frac{f(a-h)-f(a)}{2h}=-10\)일 때, \(f^{\prime}(1)\)의 값은? (단, \(a\)는 실수이다.)<br>① \(-2\) ② \(-1\) ③ \(0\) ④ \(1\) ⑤ \(2\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 극한식 읽기</span>
+        <div class="mathrow">$$\begin{gathered}\lim_{h\to0}\frac{f(a-h)-f(a)}{-h}\times\left(-\frac12\right)\\[2pt]=-\frac12f^{\prime}(a)=-10\end{gathered}$$</div>
+        <p>따라서 \(f^{\prime}(a)=20\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — \(a\) 구하기</span>
+        <p>\(f^{\prime}(x)=3ax^2-4\)이므로 \(f^{\prime}(a)=3a^3-4=20\), \(a^3=8\), \(a=2\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(f^{\prime}(1)=6-4=2\ \Rightarrow\) ⑤</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 부호를 놓쳐 \(f^{\prime}(a)=-20\)으로 두면 \(a^3=-\frac{16}{3}\)이 되어 막힌다. 증가량이 \(-h\)이니 분모를 \(-h\)로 <b>맞춰 주고</b> 남는 수 \(-\frac12\)을 곱한다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q10">
+    <div class="sol-head">
+      <span class="sol-k">10</span>
+      <div>
+        <div class="sol-title">구간별 함수의 미분가능 = <b>이어지고</b> + <b>기울기도 같고</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.2점</span> 미분가능성과 연속성</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(f(x)=\begin{cases}ax^2+4 & (x\lt2)\\ x^3-bx & (x\ge2)\end{cases}\)가 모든 실수 \(x\)에서 미분가능할 때, \(a+b\)의 값은? (단, \(a,\ b\)는 상수이다.)<br>① \(-3\) ② \(-1\) ③ \(0\) ④ \(1\) ⑤ \(3\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 연속</span>
+        <div class="mathrow">$$4a+4=8-2b\ \Rightarrow\ 2a+b=2$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 미분계수</span>
+        <div class="mathrow">$$2a\cdot2=3\cdot2^2-b\ \Rightarrow\ 4a=12-b$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 연립</span>
+        <p>\(b=2-2a\)를 넣으면 \(4a=10+2a\), \(a=5\), \(b=-8\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(a+b=-3\ \Rightarrow\) ①</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 미분계수 조건만 쓰고 연속 조건을 빼먹는 것. <b>미분가능하면 연속</b>이므로 두 조건이 모두 필요하다(미지수도 둘).</div>
+    </div>
+  </section>
+  <section class="sol" id="q11">
+    <div class="sol-head">
+      <span class="sol-k">11</span>
+      <div>
+        <div class="sol-title">그래프 읽기 — <b>끊김</b>은 불연속, <b>뾰족</b>은 미분 불가능</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.3점</span> 함수의 연속 · 연속성 판단</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(y=f(x)\)의 그래프가 그림과 같다. 옳은 것만을 &lt;보기&gt;에서 있는 대로 고른 것은?<br>ㄱ. \(\displaystyle\lim_{x\to-1}f(x)=3\) ㄴ. \(\displaystyle\lim_{x\to0}f(x)=f(0)\) ㄷ. \(f(x)\)는 \(x=1\)에서 미분가능하지 않다. ㄹ. 열린구간 \((-3,\ 5)\)에서 \(f(x)\)가 불연속인 \(x\)의 값은 \(3\)개이다.<br>① ㄱ ② ㄱ, ㄹ ③ ㄴ, ㄷ ④ ㄷ, ㄹ ⑤ ㄴ, ㄷ, ㄹ</div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 320 226" width="100%" style="max-width:300px" role="img" aria-label="함수의 그래프"><line x1="26.0" y1="175.2" x2="294.0" y2="175.2" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="300.0,175.2 292.0,171.2 292.0,179.2" fill="var(--ink-soft)"/><line x1="129.5" y1="199.6" x2="129.5" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="129.5,20.0 125.5,28.0 133.5,28.0" fill="var(--ink-soft)"/><text x="298.0" y="191.2" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="138.5" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="119.5" y="190.2" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polyline points="38.2,38.2 38.4,39.1 38.6,40.1 38.8,41.0 38.9,41.9 39.1,42.9 39.3,43.8 39.5,44.7 39.7,45.6 39.9,46.5 40.1,47.4 40.3,48.3 40.5,49.2 40.7,50.1 40.8,50.9 41.0,51.8 41.2,52.6 41.4,53.5 41.6,54.3 41.8,55.2 42.0,56.0 42.2,56.9 42.4,57.7 42.6,58.5 42.7,59.3 42.9,60.1 43.1,60.9 43.3,61.7 43.5,62.5 43.7,63.3 43.9,64.1 44.1,64.8 44.3,65.6 44.5,66.3 44.7,67.1 44.8,67.8 45.0,68.6 45.2,69.3 45.4,70.1 45.6,70.8 45.8,71.5 46.0,72.2 46.2,72.9 46.4,73.6 46.6,74.3 46.7,75.0 46.9,75.7 47.1,76.3 47.3,77.0 47.5,77.7 47.7,78.3 47.9,79.0 48.1,79.6 48.3,80.3 48.5,80.9 48.7,81.5 48.8,82.2 49.0,82.8 49.2,83.4 49.4,84.0 49.6,84.6 49.8,85.2 50.0,85.8 50.2,86.3 50.4,86.9 50.6,87.5 50.7,88.0 50.9,88.6 51.1,89.1 51.3,89.7 51.5,90.2 51.7,90.8 51.9,91.3 52.1,91.8 52.3,92.3 52.5,92.8 52.6,93.3 52.8,93.8 53.0,94.3 53.2,94.8 53.4,95.3 53.6,95.8 53.8,96.2 54.0,96.7 54.2,97.1 54.4,97.6 54.6,98.0 54.7,98.5 54.9,98.9 55.1,99.3 55.3,99.7 55.5,100.2 55.7,100.6 55.9,101.0 56.1,101.4 56.3,101.8 56.5,102.1 56.6,102.5 56.8,102.9 57.0,103.3 57.2,103.6 57.4,104.0 57.6,104.3 57.8,104.7 58.0,105.0 58.2,105.3 58.4,105.6 58.5,106.0 58.7,106.3 58.9,106.6 59.1,106.9 59.3,107.2 59.5,107.5 59.7,107.7 59.9,108.0 60.1,108.3 60.3,108.6 60.5,108.8 60.6,109.1 60.8,109.3 61.0,109.6 61.2,109.8 61.4,110.0 61.6,110.2 61.8,110.5 62.0,110.7 62.2,110.9 62.4,111.1 62.5,111.3 62.7,111.5 62.9,111.6 63.1,111.8 63.3,112.0 63.5,112.2 63.7,112.3 63.9,112.5 64.1,112.6 64.3,112.7 64.4,112.9 64.6,113.0 64.8,113.1 65.0,113.2 65.2,113.4 65.4,113.5 65.6,113.6 65.8,113.6 66.0,113.7 66.2,113.8 66.4,113.9 66.5,114.0 66.7,114.0 66.9,114.1 67.1,114.1 67.3,114.2 67.5,114.2 67.7,114.2 67.9,114.3 68.1,114.3 68.3,114.3 68.4,114.3 68.6,114.3" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><line x1="68.6" y1="175.2" x2="160.0" y2="83.9" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/><line x1="160.0" y1="83.9" x2="220.9" y2="144.8" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/><line x1="220.9" y1="175.2" x2="281.8" y2="175.2" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round"/><circle cx="68.6" cy="114.3" r="3.8" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="99.1" cy="144.8" r="3.8" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="220.9" cy="144.8" r="3.8" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="220.9" cy="175.2" r="3.8" fill="var(--paper)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="68.6" cy="175.2" r="3.6" fill="var(--ink)"/><circle cx="99.1" cy="83.9" r="3.6" fill="var(--ink)"/><circle cx="220.9" cy="114.3" r="3.6" fill="var(--ink)"/><line x1="68.6" y1="188.9" x2="68.6" y2="44.3" stroke="var(--red)" stroke-width="1.1" stroke-linecap="round" stroke-dasharray="2 4"/><line x1="99.1" y1="188.9" x2="99.1" y2="44.3" stroke="var(--red)" stroke-width="1.1" stroke-linecap="round" stroke-dasharray="2 4"/><line x1="220.9" y1="188.9" x2="220.9" y2="44.3" stroke="var(--red)" stroke-width="1.1" stroke-linecap="round" stroke-dasharray="2 4"/><text x="68.6" y="40.3" text-anchor="middle" font-size="11" font-weight="700" fill="var(--red)">불연속</text><text x="99.1" y="28.3" text-anchor="middle" font-size="11" font-weight="700" fill="var(--red)">불연속</text><text x="220.9" y="40.3" text-anchor="middle" font-size="11" font-weight="700" fill="var(--red)">불연속</text><text x="160.0" y="73.9" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--amber)">뾰족</text><text x="38.2" y="191.2" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink-soft)">−3</text><text x="68.6" y="191.2" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink-soft)">−2</text><text x="99.1" y="191.2" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink-soft)">−1</text><text x="160.0" y="191.2" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink-soft)">1</text><text x="220.9" y="191.2" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink-soft)">3</text><text x="281.8" y="191.2" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink-soft)">5</text></svg>
+        <div class="fig-cap">끊어진 곳 세 군데(\(x=-2,\ -1,\ 3\)), 뾰족한 곳 한 군데(\(x=1\) — 연속이지만 미분 불가능)</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>판정</span>
+        <div class="cond"><div class="row"><span class="lab">ㄱ</span><span>\(x=-1\)로 다가가면 직선 위의 빈 점 높이 \(1\). \(3\)은 함숫값 \(f(-1)\) ✗</span></div><div class="row"><span class="lab">ㄴ</span><span>\(x=0\)에서는 직선이 이어져 있어 극한값 \(=f(0)=2\) ○</span></div><div class="row"><span class="lab">ㄷ</span><span>\(x=1\)에서 기울기가 \(1\)에서 \(-1\)로 꺾인다 ○</span></div><div class="row"><span class="lab">ㄹ</span><span>\(x=-2\) (좌극한 \(2\), 우극한 \(0\)), \(x=-1\) (극한 \(1\ne f(-1)\)), \(x=3\) (좌극한 \(1\), 우극한 \(0\)) — \(3\)개 ○</span></div></div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">ㄴ, ㄷ, ㄹ \(\Rightarrow\) ⑤</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> ㄱ에서 채워진 점 \((-1,\ 3)\)을 극한값으로 읽는 것. 또 ㄹ에서 \(x=1\)(뾰족)을 불연속으로 세어 \(4\)개라고 하기 쉽다 — 뾰족해도 <b>이어져 있으면 연속</b>이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q12">
+    <div class="sol-head">
+      <span class="sol-k">12</span>
+      <div>
+        <div class="sol-title">롤의 정리·평균값 정리 — <b>항상</b> 성립하는 것만</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.3점</span> 평균값 정리 · 활용</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">모든 실수 \(x\)에서 미분가능하고 세 점 \((0,\ 1)\), \((3,\ 4)\), \((6,\ 1)\)을 지나는 함수 \(f(x)\)에 대하여 항상 옳은 것만을 &lt;보기&gt;에서 있는 대로 고른 것은?<br>ㄱ. 열린구간 \((0,\ 6)\)에서 \(x\)축에 평행한 접선이 존재한다. ㄴ. \(f^{\prime}(c)=1\)인 \(c\)가 열린구간 \((0,\ 3)\)에 존재한다. ㄷ. \(f(x)\)는 \(x=3\)에서 극값을 갖는다.<br>① ㄱ ② ㄷ ③ ㄱ, ㄴ ④ ㄴ, ㄷ ⑤ ㄱ, ㄴ, ㄷ</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>판정</span>
+        <div class="cond"><div class="row"><span class="lab">ㄱ</span><span>\(f(0)=f(6)=1\) → 롤의 정리로 \(f^{\prime}(c)=0\)인 \(c\)가 \((0,\ 6)\)에 있다 ○</span></div><div class="row"><span class="lab">ㄴ</span><span>평균값 정리: \(\dfrac{f(3)-f(0)}{3-0}=1\) ○</span></div><div class="row"><span class="lab">ㄷ</span><span>세 점만 지날 뿐 — 예를 들어 \(x=4\)까지 더 올라갔다 내려오는 함수도 된다 ✗</span></div></div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">ㄱ, ㄴ \(\Rightarrow\) ③</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 세 점을 이으면 \((3,\ 4)\)가 꼭대기처럼 보여 ㄷ을 고르는 것. 문제는 「<b>항상</b> 옳은 것」 — 세 점 사이에서 그래프가 어떻게 움직이는지는 정해져 있지 않다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q13">
+    <div class="sol-head">
+      <span class="sol-k">13</span>
+      <div>
+        <div class="sol-title">극한식 → \(f(2),\ f^{\prime}(2)\) <b>두 개씩</b> 읽고 곱의 미분법</div>
+        <div class="sol-kind"><span class="dbadge">난이도 5 · 4.4점</span> 도함수 · 곱의 미분법</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">미분가능한 두 함수 \(f(x),\ g(x)\)가 \(\displaystyle\lim_{x\to2}\frac{f(x)+3}{x-2}=-2\), \(\displaystyle\lim_{x\to2}\frac{g(x)-1}{x-2}=3\)을 만족시킬 때, 함수 \(f(x)g(x)\)의 \(x=2\)에서의 미분계수는?<br>① \(-11\) ② \(-9\) ③ \(-7\) ④ \(-5\) ⑤ \(-3\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 극한식 읽기</span>
+        <div class="cond"><div class="row"><span class="lab">\(f\)</span><span>분모 \(\to0\)이므로 \(f(2)=-3\), 그러면 식이 곧 \(f^{\prime}(2)=-2\)</span></div><div class="row"><span class="lab">\(g\)</span><span>\(g(2)=1\), \(g^{\prime}(2)=3\)</span></div></div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 곱의 미분법</span>
+        <div class="mathrow">$$\begin{gathered}\{f(x)g(x)\}^{\prime}=f^{\prime}(2)g(2)+f(2)g^{\prime}(2)\\[2pt] =-2\cdot1+(-3)\cdot3\\[2pt] =-11\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(-11\ \Rightarrow\) ①</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 곱의 미분을 \(f^{\prime}(2)g^{\prime}(2)=-6\)으로 하는 것(선택지에 없으니 다시 보게 되지만 시간이 든다). <b>하나씩 번갈아</b> 미분해서 더한다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q14">
+    <div class="sol-head">
+      <span class="sol-k">14</span>
+      <div>
+        <div class="sol-title">감소 구간의 양 끝 = <b>\(f^{\prime}(x)=0\)의 두 근</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 4.5점</span> 함수의 증가와 감소 · 삼차함수</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">삼차함수 \(f(x)=x^3+ax^2+bx+5\)가 \(x=-1\)에서 극소이고, 닫힌구간 \([\alpha,\ \beta]\)에서 함수 \(f(x)\)가 감소한다. \(\beta-\alpha=4\)일 때, \(a+b\)의 값은? (단, \(a,\ b,\ \alpha,\ \beta\)는 상수이다.)<br>① \(12\) ② \(16\) ③ \(20\) ④ \(24\) ⑤ \(26\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 감소 구간</span>
+        <p>최고차항의 계수가 양수인 삼차함수는 극대 → 감소 → 극소. 감소하는 구간 \([\alpha,\ \beta]\)의 오른쪽 끝이 극소점이므로 \(\beta=-1\), \(\alpha=-5\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — \(f^{\prime}\) 결정</span>
+        <div class="mathrow">$$\begin{gathered}f^{\prime}(x)=3(x+5)(x+1)\\[2pt] =3x^2+18x+15\end{gathered}$$</div>
+        <p>\(2a=18\), \(b=15\) → \(a=9\).</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(a+b=24\ \Rightarrow\) ④</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 극소점을 감소 구간의 <b>왼쪽 끝</b>으로 두어 \(\alpha=-1,\ \beta=3\)으로 계산하는 것. 극소는 「내려오다 올라가는 곳」이니 감소 구간이 <b>끝나는</b> 곳이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q15">
+    <div class="sol-head">
+      <span class="sol-k">15</span>
+      <div>
+        <div class="sol-title">「<b>반드시</b> 실근」 = 양 끝의 부호가 반대 (사잇값 정리)</div>
+        <div class="sol-kind"><span class="dbadge">난이도 3 · 4.6점</span> 함수의 연속 · 사잇값 정리</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">모든 실수 \(x\)에서 연속인 함수 \(f(x)\)가 \(f(-2)=a+2\), \(f(1)=2a-2\)를 만족시킨다. 방정식 \(f(x)=x^3-x+2\)가 열린구간 \((-2,\ 1)\)에서 반드시 실근을 갖도록 하는 정수 \(a\)의 개수는?<br>① \(6\) ② \(7\) ③ \(8\) ④ \(9\) ⑤ \(10\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 한 함수로</span>
+        <p>\(g(x)=f(x)-x^3+x-2\)라 하면 \(g\)도 연속이고, 방정식은 \(g(x)=0\).</p>
+        <div class="cond"><div class="row"><span class="lab">\(g(-2)\)</span><span>\(a+2-(-8+2+2)=a+6\)</span></div><div class="row"><span class="lab">\(g(1)\)</span><span>\(2a-2-2=2a-4\)</span></div></div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 부호가 반대</span>
+        <div class="mathrow">$$(a+6)(2a-4)\lt0\ \Rightarrow\ -6\lt a\lt2$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">정수 \(-5,\ -4,\ \ldots,\ 1\) → \(7\)개 \(\Rightarrow\) ②</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(\le0\)으로 두어 \(-6\)과 \(2\)까지 세는 것. 그때는 근이 구간 <b>끝</b>(\(x=-2\) 또는 \(1\))에 생겨 열린구간 안이 아니다. 또 \(x^3-x+2\)를 옮기지 않고 \(f\)의 값만으로 부호를 따지는 실수도 잦다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q16">
+    <div class="sol-head">
+      <span class="sol-k">16</span>
+      <div>
+        <div class="sol-title">밑변 고정 → 높이 최대 = <b>평행한 접선</b>의 접점</div>
+        <div class="sol-kind"><span class="dbadge">난이도 6 · 4.7점</span> 접선의 방정식 · 넓이의 최대</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">곡선 \(y=x^3\) 위의 두 점 \(\mathrm{A}(-1,\ -1)\), \(\mathrm{B}(2,\ 8)\)이 있다. 점 P가 이 곡선 위를 A에서 B까지 움직일 때, \(\triangle\mathrm{PAB}\)의 넓이의 최댓값은?<br>① \(6\) ② \(7\) ③ \(8\) ④ \(9\) ⑤ \(10\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 접점 찾기</span>
+        <p>직선 AB의 기울기 \(\dfrac{8+1}{2+1}=3\), 식은 \(y=3x+2\). 넓이가 최대인 P에서 접선의 기울기가 \(3\): \(3x^2=3\), \(x=\pm1\). A와 B 사이의 점은 \(x=1\) → \(\mathrm{P}(1,\ 1)\).</p>
+      </div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 280 259" width="100%" style="max-width:260px" role="img" aria-label="곡선 위의 점과 삼각형"><line x1="26.0" y1="186.6" x2="254.0" y2="186.6" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="260.0,186.6 252.0,182.6 252.0,190.6" fill="var(--ink-soft)"/><line x1="119.3" y1="233.3" x2="119.3" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="119.3,20.0 115.3,28.0 123.3,28.0" fill="var(--ink-soft)"/><text x="258.0" y="202.6" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="128.3" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="109.3" y="201.6" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polygon points="67.5,203.9 222.9,48.5 171.1,169.4" fill="var(--indigo-soft)" fill-opacity="1" stroke="var(--indigo)" stroke-width="1.4"/><polyline points="54.5,220.4 55.6,218.7 56.7,217.1 57.8,215.5 58.8,214.0 59.9,212.6 61.0,211.2 62.1,209.8 63.2,208.5 64.3,207.3 65.3,206.1 66.4,204.9 67.5,203.8 68.6,202.8 69.7,201.8 70.8,200.8 71.9,199.9 72.9,199.0 74.0,198.1 75.1,197.3 76.2,196.6 77.3,195.8 78.4,195.1 79.5,194.5 80.5,193.9 81.6,193.3 82.7,192.7 83.8,192.2 84.9,191.7 86.0,191.2 87.0,190.8 88.1,190.4 89.2,190.0 90.3,189.7 91.4,189.3 92.5,189.0 93.6,188.7 94.6,188.5 95.7,188.3 96.8,188.0 97.9,187.8 99.0,187.7 100.1,187.5 101.2,187.4 102.2,187.3 103.3,187.1 104.4,187.0 105.5,187.0 106.6,186.9 107.7,186.8 108.7,186.8 109.8,186.7 110.9,186.7 112.0,186.7 113.1,186.7 114.2,186.7 115.3,186.6 116.3,186.6 117.4,186.6 118.5,186.6 119.6,186.6 120.7,186.6 121.8,186.6 122.9,186.6 123.9,186.6 125.0,186.6 126.1,186.6 127.2,186.6 128.3,186.5 129.4,186.5 130.4,186.5 131.5,186.4 132.6,186.3 133.7,186.3 134.8,186.2 135.9,186.1 137.0,185.9 138.0,185.8 139.1,185.7 140.2,185.5 141.3,185.3 142.4,185.1 143.5,184.9 144.6,184.6 145.6,184.4 146.7,184.1 147.8,183.8 148.9,183.4 150.0,183.0 151.1,182.6 152.1,182.2 153.2,181.8 154.3,181.3 155.4,180.8 156.5,180.2 157.6,179.7 158.7,179.1 159.7,178.4 160.8,177.7 161.9,177.0 163.0,176.3 164.1,175.5 165.2,174.6 166.2,173.8 167.3,172.9 168.4,171.9 169.5,170.9 170.6,169.9 171.7,168.8 172.8,167.6 173.8,166.5 174.9,165.2 176.0,164.0 177.1,162.6 178.2,161.3 179.3,159.8 180.4,158.3 181.4,156.8 182.5,155.2 183.6,153.6 184.7,151.9 185.8,150.1 186.9,148.3 187.9,146.4 189.0,144.5 190.1,142.5 191.2,140.4 192.3,138.3 193.4,136.1 194.5,133.9 195.5,131.6 196.6,129.2 197.7,126.7 198.8,124.2 199.9,121.6 201.0,119.0 202.1,116.2 203.1,113.4 204.2,110.5 205.3,107.6 206.4,104.6 207.5,101.4 208.6,98.3 209.6,95.0 210.7,91.7 211.8,88.2 212.9,84.7 214.0,81.2 215.1,77.5 216.2,73.7 217.2,69.9 218.3,66.0 219.4,62.0 220.5,57.9 221.6,53.7 222.7,49.4 223.8,45.1 224.8,40.6 225.9,36.1 227.0,31.4 228.1,26.7" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><line x1="67.5" y1="203.9" x2="222.9" y2="48.5" stroke="var(--indigo)" stroke-width="1.8" stroke-linecap="round"/><line x1="107.2" y1="233.3" x2="254.0" y2="86.5" stroke="var(--red)" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="6 4"/><circle cx="67.5" cy="203.9" r="3.6" fill="var(--ink)"/><text x="75.5" y="219.9" text-anchor="start" font-size="12" font-weight="700" fill="var(--ink)">A(−1, −1)</text><circle cx="222.9" cy="48.5" r="3.6" fill="var(--ink)"/><text x="214.9" y="48.5" text-anchor="end" font-size="12" font-weight="700" fill="var(--ink)">B(2, 8)</text><circle cx="171.1" cy="169.4" r="3.6" fill="var(--red)"/><text x="181.1" y="183.4" text-anchor="start" font-size="12" font-weight="700" fill="var(--red)">P(1, 1)</text></svg>
+        <div class="fig-cap">밑변 AB는 고정 — 높이가 가장 큰 P는 접선의 기울기가 \(\overline{\mathrm{AB}}\)의 기울기 \(3\)과 같은 점 (그림은 세로를 줄여 그림)</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 넓이</span>
+        <p>P에서 직선 \(3x-y+2=0\)까지 거리 \(\dfrac{|3-1+2|}{\sqrt{10}}=\dfrac{4}{\sqrt{10}}\), \(\overline{\mathrm{AB}}=\sqrt{9+81}=3\sqrt{10}\).</p>
+        <div class="mathrow">$$\frac12\times3\sqrt{10}\times\frac{4}{\sqrt{10}}=6$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(6\ \Rightarrow\) ①</span></div>
+        <p class="aside">다른 풀이 — 세 꼭짓점의 좌표로 넓이를 직접 쓰면 \(\frac12\left|3(x^3+1)-9(x+1)\right|\) \(=\frac32(x+1)^2|x-2|\). \(-1\le x\le2\)에서 \(\frac32(x+1)^2(2-x)\)의 최댓값은 \(x=1\)일 때 \(6\).</p>
+      <div class="miss"><b>가장 잦은 실수</b> \(x=-1\)도 접점 후보로 남겨 두는 것. \(x=-1\)은 A 자신이라 넓이가 \(0\)이다. 또 거리 공식의 분모 \(\sqrt{10}\)이 \(\overline{\mathrm{AB}}\)의 \(\sqrt{10}\)과 약분된다는 점을 이용하면 계산이 짧다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q17">
+    <div class="sol-head">
+      <span class="sol-k">17</span>
+      <div>
+        <div class="sol-title">사차함수가 극댓값을 가짐 ⟺ \(f^{\prime}=0\)이 <b>서로 다른 세 실근</b></div>
+        <div class="sol-kind"><span class="dbadge">난이도 5 · 4.8점</span> 극대와 극소 · 사차함수의 극값</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">함수 \(f(x)=2x^4+8x^3+a^2x^2\)이 극댓값을 갖도록 하는 정수 \(a\)의 개수는?<br>① \(4\) ② \(5\) ③ \(6\) ④ \(7\) ⑤ \(8\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 도함수</span>
+        <div class="mathrow">$$\begin{gathered}f^{\prime}(x)=8x^3+24x^2+2a^2x\\[2pt] =2x(4x^2+12x+a^2)\end{gathered}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 조건</span>
+        <p>최고차항이 양수인 사차함수는 \(f^{\prime}\)의 부호가 \(-,+,-,+\)로 세 번 바뀔 때만 극대가 생긴다. 즉 \(4x^2+12x+a^2=0\)이 \(0\)이 아닌 서로 다른 두 실근을 가져야 한다.</p>
+        <div class="cond"><div class="row"><span class="lab">판별식</span><span>\(\frac D4=36-4a^2\gt0\), 즉 \(-3\lt a\lt3\)</span></div><div class="row"><span class="lab">근이 \(0\)이 아님</span><span>\(a^2\ne0\Rightarrow a\ne0\)</span></div></div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(a=\pm1,\ \pm2\) → \(4\)개 \(\Rightarrow\) ①</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(a=0\)을 포함해 \(5\)개(②)로 세는 것. \(a=0\)이면 \(f^{\prime}(x)=8x^2(x+3)\) — \(x=0\)은 중근이라 부호가 안 바뀌고, 극솟값만 하나 남는다.</div>
+    </div>
+  </section>
+  <section class="sol killer" id="q18">
+    <div class="sol-head">
+      <span class="sol-k red">18</span>
+      <div>
+        <div class="sol-title">두 교점의 \(x\)좌표의 합은 <b>항상 2</b> — \(\overline{\mathrm{CH}}=2\)</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 킬러 · 4.9점</span> 함수의 극한 · 좌표와 길이</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">곡선 \(y=x^2\)과 \(y=2x+t\ (t\gt0)\)이 서로 다른 두 점 A, B에서 만난다. 점 A의 \(x\)좌표가 양수이고, 점 B의 \(x\)좌표가 음수일 때, 점 A를 지나고 \(x\)축에 평행한 직선이 곡선 \(y=x^2\)과 다시 만나는 점을 C라 하자. 점 B에서 선분 AC에 내린 수선의 발을 H라 하자. \(\overline{\mathrm{AH}}=p(t)\), \(\overline{\mathrm{CH}}=q(t)\)라 할 때, \(\displaystyle\lim_{t\to0+}\frac{p(t)-q(t)}{t}\)의 값은?<br>① \(-2\) ② \(-1\) ③ \(0\) ④ \(1\) ⑤ \(2\)</div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 280 335" width="100%" style="max-width:260px" role="img" aria-label="포물선과 직선"><line x1="26.0" y1="281.6" x2="254.0" y2="281.6" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="260.0,281.6 252.0,277.6 252.0,285.6" fill="var(--ink-soft)"/><line x1="136.5" y1="309.3" x2="136.5" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="136.5,20.0 132.5,28.0 140.5,28.0" fill="var(--ink-soft)"/><text x="258.0" y="297.6" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="145.5" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="126.5" y="296.6" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polyline points="43.3,29.8 44.4,36.1 45.6,42.2 46.8,48.3 47.9,54.4 49.1,60.3 50.3,66.2 51.4,71.9 52.6,77.6 53.8,83.3 54.9,88.8 56.1,94.3 57.3,99.7 58.4,105.0 59.6,110.2 60.8,115.4 61.9,120.5 63.1,125.5 64.3,130.4 65.4,135.2 66.6,140.0 67.8,144.7 68.9,149.3 70.1,153.8 71.3,158.2 72.4,162.6 73.6,166.9 74.8,171.1 75.9,175.2 77.1,179.3 78.2,183.3 79.4,187.2 80.6,191.0 81.7,194.7 82.9,198.4 84.1,202.0 85.2,205.5 86.4,208.9 87.6,212.2 88.7,215.5 89.9,218.7 91.1,221.8 92.2,224.8 93.4,227.8 94.6,230.6 95.7,233.4 96.9,236.1 98.1,238.8 99.2,241.3 100.4,243.8 101.6,246.2 102.7,248.5 103.9,250.8 105.1,253.0 106.2,255.0 107.4,257.0 108.6,259.0 109.7,260.8 110.9,262.6 112.1,264.3 113.2,265.9 114.4,267.4 115.6,268.9 116.7,270.3 117.9,271.6 119.1,272.8 120.2,273.9 121.4,275.0 122.6,276.0 123.7,276.9 124.9,277.7 126.1,278.4 127.2,279.1 128.4,279.7 129.6,280.2 130.7,280.7 131.9,281.0 133.0,281.3 134.2,281.5 135.4,281.6 136.5,281.6 137.7,281.6 138.9,281.5 140.0,281.3 141.2,281.0 142.4,280.7 143.5,280.2 144.7,279.7 145.9,279.1 147.0,278.4 148.2,277.7 149.4,276.9 150.5,276.0 151.7,275.0 152.9,273.9 154.0,272.8 155.2,271.6 156.4,270.3 157.5,268.9 158.7,267.4 159.9,265.9 161.0,264.3 162.2,262.6 163.4,260.8 164.5,259.0 165.7,257.0 166.9,255.0 168.0,253.0 169.2,250.8 170.4,248.5 171.5,246.2 172.7,243.8 173.9,241.3 175.0,238.8 176.2,236.1 177.4,233.4 178.5,230.6 179.7,227.8 180.8,224.8 182.0,221.8 183.2,218.7 184.3,215.5 185.5,212.2 186.7,208.9 187.8,205.5 189.0,202.0 190.2,198.4 191.3,194.7 192.5,191.0 193.7,187.2 194.8,183.3 196.0,179.3 197.2,175.2 198.3,171.1 199.5,166.9 200.7,162.6 201.8,158.2 203.0,153.8 204.2,149.3 205.3,144.7 206.5,140.0 207.7,135.2 208.8,130.4 210.0,125.5 211.2,120.5 212.3,115.4 213.5,110.2 214.7,105.0 215.8,99.7 217.0,94.3 218.2,88.8 219.3,83.3 220.5,77.6 221.7,71.9 222.8,66.2 224.0,60.3 225.2,54.4 226.3,48.3 227.5,42.2 228.7,36.1 229.8,29.8" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><line x1="102.0" y1="309.3" x2="243.6" y2="26.0" stroke="var(--indigo)" stroke-width="1.8" stroke-linecap="round"/><line x1="50.8" y1="68.6" x2="222.3" y2="68.6" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/><line x1="119.9" y1="273.6" x2="119.9" y2="68.6" stroke="var(--ink-soft)" stroke-width="1.3" stroke-linecap="round" stroke-dasharray="4 3"/><path d="M 126.9 68.6 L 126.9 75.6 L 119.9 75.6" fill="none" stroke="var(--ink-soft)" stroke-width="1.3"/><circle cx="222.3" cy="68.6" r="3.4" fill="var(--ink)"/><text x="232.3" y="64.6" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">A</text><circle cx="119.9" cy="273.6" r="3.4" fill="var(--ink)"/><text x="109.9" y="277.6" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">B</text><circle cx="50.8" cy="68.6" r="3.4" fill="var(--ink)"/><text x="40.8" y="62.6" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">C</text><circle cx="119.9" cy="68.6" r="3.4" fill="var(--ink)"/><text x="119.9" y="58.6" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">H</text><text x="85.3" y="86.6" text-anchor="middle" font-size="12" font-weight="700" fill="var(--green)">q(t)</text><text x="171.1" y="86.6" text-anchor="middle" font-size="12" font-weight="700" fill="var(--red)">p(t)</text></svg>
+        <div class="fig-cap">두 교점의 \(x\)좌표의 합은 \(2\) — 그래서 \(\overline{\mathrm{CH}}\)는 \(t\)와 상관없이 언제나 \(2\)</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 좌표</span>
+        <p>\(x^2-2x-t=0\)의 두 근 \(\alpha=1+\sqrt{1+t}\) (A), \(\beta=1-\sqrt{1+t}\) (B). C는 A와 \(y\)축 대칭이라 \(x\)좌표 \(-\alpha\), H의 \(x\)좌표는 \(\beta\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 길이</span>
+        <div class="cond"><div class="row"><span class="lab">\(p(t)\)</span><span>\(\alpha-\beta=2\sqrt{1+t}\)</span></div><div class="row"><span class="lab">\(q(t)\)</span><span>\(\beta-(-\alpha)=\alpha+\beta=2\)</span></div></div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 극한</span>
+        <div class="mathrow">$$\begin{gathered}\lim_{t\to0+}\frac{2\sqrt{1+t}-2}{t}\\[2pt]=\lim_{t\to0+}\frac{2t}{t(\sqrt{1+t}+1)}=1\end{gathered}$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(1\ \Rightarrow\) ④</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> A, B의 좌표를 근의 공식으로 각각 쓰고 \(q(t)\)도 복잡한 식으로 두는 것. <b>근과 계수의 관계</b>로 \(\alpha+\beta=2\)를 먼저 보면 \(q(t)=2\)가 상수라는 것이 바로 보인다. 마지막 \(\frac00\)꼴은 분자 유리화.</div>
+    </div>
+  </section>
+  <section class="sol" id="q19">
+    <div class="sol-head">
+      <span class="sol-k">19</span>
+      <div>
+        <div class="sol-title">부피를 <b>높이 하나의 식</b>으로 → 미분해서 최대</div>
+        <div class="sol-kind"><span class="dbadge">난이도 5 · 5점</span> 함수의 최대와 최소 · 활용</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">한 변의 길이가 \(12\)인 정사각형을 밑면으로 하고 높이가 \(9\)인 정사각뿔에 내접하는 직육면체의 부피가 최대일 때, 직육면체의 높이는?<br>① \(2\) ② \(3\) ③ \(4\) ④ \(5\) ⑤ \(6\)</div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 280 231" width="100%" style="max-width:260px" role="img" aria-label="정사각뿔의 단면"><polygon points="42.3,188.9 237.7,188.9 140.0,42.3" fill="none" fill-opacity="1" stroke="var(--ink)" stroke-width="1.9"/><polygon points="74.9,188.9 205.1,188.9 205.1,140.0 74.9,140.0" fill="var(--indigo-soft)" fill-opacity="1" stroke="var(--indigo)" stroke-width="1.8"/><line x1="140.0" y1="188.9" x2="140.0" y2="42.3" stroke="var(--ink-soft)" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="3 3"/><text x="140.0" y="206.9" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-soft)">12</text><text x="148.0" y="83.0" text-anchor="start" font-size="12" font-weight="700" fill="var(--ink-soft)">9</text><text x="215.1" y="164.4" text-anchor="start" font-size="13" font-weight="700" fill="var(--indigo)">h</text><text x="144.0" y="132.0" text-anchor="start" font-size="12" font-weight="700" fill="var(--indigo)">12(1 − h/9)</text></svg>
+        <div class="fig-cap">꼭짓점과 밑면의 두 변의 중점을 지나는 단면 — 높이 \(h\)에서 단면의 폭은 \(12\left(1-\frac h9\right)\)</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 부피 식</span>
+        <p>직육면체의 높이를 \(h\)라 하면, 높이 \(h\)에서 뿔의 단면은 한 변이 \(12\left(1-\frac h9\right)\)인 정사각형이다(꼭대기로 갈수록 일정하게 줄어든다).</p>
+        <div class="mathrow">$$\begin{gathered}V(h)=144\left(1-\frac h9\right)^2h\\[2pt] (0\lt h\lt9)\end{gathered}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 미분</span>
+        <div class="mathrow">$$V^{\prime}(h)=144\left(1-\frac h9\right)\left(1-\frac{3h}{9}\right)$$</div>
+        <p>\(0\lt h\lt9\)에서 \(V^{\prime}=0\)은 \(h=3\), 그 앞뒤로 \(+\to-\) → 최대.</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(h=3\ \Rightarrow\) ②</span></div>
+        <p class="aside">이때 부피는 \(144\times\frac49\times3=192\). 단면의 폭은 \(8\).</p>
+      <div class="miss"><b>가장 잦은 실수</b> 밑면의 한 변 \(x\)와 높이 \(h\)를 둘 다 미지수로 남겨 두는 것. 단면(삼각형) 그림에서 \(x=12-\frac{4}{3}h\)라는 <b>관계식</b>을 먼저 세워 변수를 하나로 줄인다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q20">
+    <div class="sol-head">
+      <span class="sol-k">20</span>
+      <div>
+        <div class="sol-title">\(f(x+y)=f(x)+f(y)+axy\) → <b>도함수의 정의</b>로 \(f^{\prime}(x)\)</div>
+        <div class="sol-kind"><span class="dbadge">난이도 6 · 5.1점</span> 도함수 · 함수방정식</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">실수 전체의 집합에서 미분가능한 함수 \(f(x)\)가 (가) 임의의 실수 \(x,\ y\)에 대하여 \(f(x+y)=f(x)+f(y)+axy\), (나) \(f^{\prime}(0)=6\)을 만족한다. 함수 \(f(x)\)가 \(x=2\)에서 극값을 가질 때, \(|a|\)의 값은?<br>① \(1\) ② \(2\) ③ \(3\) ④ \(4\) ⑤ \(5\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — \(f(0)\)</span>
+        <p>\(x=y=0\)을 넣으면 \(f(0)=2f(0)\), \(f(0)=0\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — \(f^{\prime}(x)\)</span>
+        <div class="mathrow">$$\begin{gathered}f^{\prime}(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}\\[2pt]=\lim_{h\to0}\frac{f(h)+axh}{h}\\[2pt]=\lim_{h\to0}\frac{f(h)-f(0)}{h}+ax=6+ax\end{gathered}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 극값</span>
+        <p>\(f^{\prime}(2)=6+2a=0\), \(a=-3\). (\(f^{\prime}\)이 일차식이라 \(x=2\)의 앞뒤로 부호가 바뀐다 ✓)</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(|a|=3\ \Rightarrow\) ③</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(\frac{f(h)}{h}\)를 어떻게 처리할지 몰라 멈추는 것. \(f(0)=0\)이므로 \(\frac{f(h)}{h}=\frac{f(h)-f(0)}{h}\to f^{\prime}(0)\). 함수방정식 문제는 <b>\(f(0)\)부터</b> 구하는 것이 정석이다.</div>
+    </div>
+  </section>
+  <section class="sol" id="q21">
+    <div class="sol-head">
+      <span class="sol-k">21</span>
+      <div>
+        <div class="sol-title">우함수인 사차함수 = <b>\(px^4+qx^2+r\)</b>, 남은 조건은 부등식 하나</div>
+        <div class="sol-kind"><span class="dbadge">난이도 4 · 5.2점</span> 극대와 극소의 활용 · 함수 구하기</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">모든 계수가 정수인 사차함수 \(y=f(x)\)가 (가) 모든 실수 \(x\)에 대하여 \(f(-x)=f(x)\)이다. (나) \(f(x)\)는 극댓값 \(5\)를 가지며, \(x=1\)에서 극솟값을 갖는다. (다) \(-5\le f^{\prime}\left(\frac12\right)\le-4\)를 만족한다. 이때, 함수 \(f(x)\)의 극솟값은?<br>① \(-4\) ② \(-2\) ③ \(0\) ④ \(2\) ⑤ \(4\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 꼴 정하기</span>
+        <p>(가)에서 홀수 차수 항이 없다: \(f(x)=px^4+qx^2+r\). \(x=1\)에서 극소면 대칭으로 \(x=-1\)에서도 극소, 그 사이 \(x=0\)에서 극대 → \(f(0)=r=5\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — \(f^{\prime}(1)=0\)</span>
+        <div class="mathrow">$$\begin{gathered}f^{\prime}(x)=4px^3+2qx\\[2pt] 4p+2q=0\ \Rightarrow\ q=-2p\end{gathered}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — (다)</span>
+        <div class="mathrow">$$\begin{gathered}f^{\prime}\left(\frac12\right)=\frac p2+q\\[2pt] =-\frac{3p}{2}\end{gathered}$$</div>
+        <p>\(-5\le-\frac{3p}2\le-4\)에서 \(\frac83\le p\le\frac{10}3\), 정수 \(p=3\), \(q=-6\).</p>
+      </div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 260 266" width="100%" style="max-width:240px" role="img" aria-label="사차함수"><line x1="26.0" y1="216.7" x2="234.0" y2="216.7" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="240.0,216.7 232.0,212.7 232.0,220.7" fill="var(--ink-soft)"/><line x1="130.0" y1="239.8" x2="130.0" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="130.0,20.0 126.0,28.0 134.0,28.0" fill="var(--ink-soft)"/><text x="238.0" y="232.7" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="139.0" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="120.0" y="231.7" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polyline points="36.4,-69.8 37.6,-51.8 38.7,-34.8 39.9,-18.6 41.1,-3.4 42.2,10.9 43.4,24.4 44.6,37.1 45.8,49.1 46.9,60.2 48.1,70.6 49.3,80.3 50.4,89.3 51.6,97.6 52.8,105.3 53.9,112.4 55.1,118.9 56.3,124.8 57.5,130.1 58.6,134.9 59.8,139.2 61.0,143.1 62.1,146.4 63.3,149.3 64.5,151.8 65.7,153.9 66.8,155.6 68.0,156.9 69.2,157.9 70.3,158.5 71.5,158.8 72.7,158.9 73.8,158.6 75.0,158.1 76.2,157.4 77.3,156.4 78.5,155.2 79.7,153.8 80.9,152.3 82.0,150.5 83.2,148.6 84.4,146.6 85.5,144.5 86.7,142.2 87.9,139.9 89.1,137.4 90.2,134.9 91.4,132.3 92.6,129.7 93.7,127.1 94.9,124.4 96.1,121.7 97.2,119.0 98.4,116.3 99.6,113.6 100.8,111.0 101.9,108.3 103.1,105.7 104.3,103.2 105.4,100.7 106.6,98.3 107.8,96.0 108.9,93.7 110.1,91.5 111.3,89.5 112.5,87.5 113.6,85.6 114.8,83.8 116.0,82.2 117.1,80.6 118.3,79.2 119.5,77.9 120.6,76.7 121.8,75.7 123.0,74.8 124.2,74.0 125.3,73.4 126.5,72.9 127.7,72.5 128.8,72.3 130.0,72.2 131.2,72.3 132.3,72.5 133.5,72.9 134.7,73.4 135.9,74.0 137.0,74.8 138.2,75.7 139.4,76.7 140.5,77.9 141.7,79.2 142.9,80.6 144.0,82.2 145.2,83.8 146.4,85.6 147.5,87.5 148.7,89.5 149.9,91.5 151.1,93.7 152.2,96.0 153.4,98.3 154.6,100.7 155.7,103.2 156.9,105.7 158.1,108.3 159.3,111.0 160.4,113.6 161.6,116.3 162.8,119.0 163.9,121.7 165.1,124.4 166.3,127.1 167.4,129.7 168.6,132.3 169.8,134.9 171.0,137.4 172.1,139.9 173.3,142.2 174.5,144.5 175.6,146.6 176.8,148.6 178.0,150.5 179.1,152.3 180.3,153.8 181.5,155.2 182.6,156.4 183.8,157.4 185.0,158.1 186.2,158.6 187.3,158.9 188.5,158.8 189.7,158.5 190.8,157.9 192.0,156.9 193.2,155.6 194.4,153.9 195.5,151.8 196.7,149.3 197.9,146.4 199.0,143.1 200.2,139.2 201.4,134.9 202.5,130.1 203.7,124.8 204.9,118.9 206.1,112.4 207.2,105.3 208.4,97.6 209.6,89.3 210.7,80.3 211.9,70.6 213.1,60.2 214.2,49.1 215.4,37.1 216.6,24.4 217.8,10.9 218.9,-3.4 220.1,-18.6 221.3,-34.8 222.4,-51.8 223.6,-69.8" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><circle cx="130.0" cy="72.2" r="3.6" fill="var(--red)"/><text x="138.0" y="66.2" text-anchor="start" font-size="12" font-weight="700" fill="var(--red)">극대 5</text><circle cx="187.8" cy="158.9" r="3.6" fill="var(--red)"/><text x="195.8" y="174.9" text-anchor="start" font-size="12" font-weight="700" fill="var(--red)">극소 2</text><circle cx="72.2" cy="158.9" r="3.6" fill="var(--red)"/><text x="80.2" y="174.9" text-anchor="start" font-size="12" font-weight="700" fill="var(--red)"></text></svg>
+        <div class="fig-cap">우함수 + \(x=1\)에서 극소 → \(x=-1\)에서도 극소, \(x=0\)에서 극대: \(f(x)=3x^4-6x^2+5\) (세로를 줄여 그림)</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(f(1)=3-6+5=2\ \Rightarrow\) ④</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> 극댓값 \(5\)가 어디서 나오는지 몰라 미지수를 셋 다 남겨 두는 것. 우함수의 그래프는 \(y\)축 대칭 — 양쪽 극소 사이의 <b>극대는 반드시 \(x=0\)</b>이다. 그리고 「모든 계수가 정수」가 (다)의 범위에서 \(p\)를 하나로 정해 준다.</div>
+    </div>
+  </section>
+  <section class="sol killer" id="q22">
+    <div class="sol-head">
+      <span class="sol-k red">22</span>
+      <div>
+        <div class="sol-title">\(x=1\)에서 연속 → 분모가 <b>\((x-1)^2\)을 품어야</b> 한다</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 킬러 · 5.3점</span> 함수의 연속 · 추론과 해석</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">최고차항의 계수가 \(1\)인 삼차함수 \(f(x)\)에 대하여 함수 \(g(x)=\begin{cases}\frac13x & (x\le1)\\ \dfrac{(x-1)^2}{f(x)-1} & (x\gt1)\end{cases}\)이 모든 실수 \(x\)에서 연속일 때, 닫힌구간 \([-2,\ -1]\)에서 함수 \(f(x)\)의 최댓값은?<br>① \(5\) ② \(6\) ③ \(7\) ④ \(8\) ⑤ \(9\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — \(x=1\)에서의 조건</span>
+        <p>\(g(1)=\frac13\)이므로 \(\displaystyle\lim_{x\to1+}\frac{(x-1)^2}{f(x)-1}=\frac13\)이어야 한다. 분자 \(\to0\)인데 극한값이 \(0\)이 아니므로 분모도 \(0\)으로, 그것도 <b>같은 빠르기</b>로 가야 한다 → \(f(x)-1\)이 \((x-1)^2\)을 인수로 가진다.</p>
+        <div class="mathrow">$$f(x)-1=(x-1)^2(x-c)$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — \(c\) 결정</span>
+        <div class="mathrow">$$\begin{gathered}\lim_{x\to1+}\frac{1}{x-c}=\frac{1}{1-c}\\[2pt] =\frac13\\[2pt] \Rightarrow\ c=-2\end{gathered}$$</div>
+        <p>\(f(x)=(x-1)^2(x+2)+1\). \(x\gt1\)에서 \(f(x)-1\gt0\)이라 \(g\)는 잘 정의되고 연속 ✓</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 최댓값</span>
+        <div class="mathrow">$$\begin{gathered}f^{\prime}(x)=2(x-1)(x+2)+(x-1)^2\\[2pt] =3(x-1)(x+1)\end{gathered}$$</div>
+        <p>\([-2,\ -1]\)에서 \(f^{\prime}(x)\ge0\) — 계속 증가하므로 최댓값은 \(f(-1)=4\cdot1+1=5\).</p>
+      </div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 280 228" width="100%" style="max-width:260px" role="img" aria-label="삼차함수"><line x1="26.0" y1="178.0" x2="254.0" y2="178.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="260.0,178.0 252.0,174.0 252.0,182.0" fill="var(--ink-soft)"/><line x1="149.5" y1="201.7" x2="149.5" y2="26.0" stroke="var(--ink-soft)" stroke-width="1.2"/><polygon points="149.5,20.0 145.5,28.0 153.5,28.0" fill="var(--ink-soft)"/><text x="258.0" y="194.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">x</text><text x="158.5" y="30.0" text-anchor="start" font-size="13" font-weight="600" fill="var(--ink-soft)">y</text><text x="139.5" y="193.0" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink-soft)">O</text><polygon points="54.5,201.7 102.0,201.7 102.0,26.0 54.5,26.0" fill="var(--green-soft)" fill-opacity="1" stroke="none" stroke-width="0"/><polyline points="42.6,217.0 43.9,209.3 45.2,201.9 46.5,194.7 47.7,187.7 49.0,180.9 50.3,174.4 51.6,168.0 52.8,161.9 54.1,156.0 55.4,150.3 56.7,144.8 57.9,139.5 59.2,134.4 60.5,129.5 61.8,124.8 63.0,120.3 64.3,115.9 65.6,111.8 66.9,107.8 68.2,104.0 69.4,100.4 70.7,97.0 72.0,93.7 73.3,90.6 74.5,87.7 75.8,84.9 77.1,82.3 78.4,79.8 79.6,77.5 80.9,75.4 82.2,73.4 83.5,71.5 84.8,69.8 86.0,68.2 87.3,66.8 88.6,65.5 89.9,64.3 91.1,63.3 92.4,62.3 93.7,61.6 95.0,60.9 96.2,60.3 97.5,59.9 98.8,59.6 100.1,59.4 101.3,59.3 102.6,59.3 103.9,59.4 105.2,59.6 106.5,59.9 107.7,60.2 109.0,60.7 110.3,61.3 111.6,61.9 112.8,62.7 114.1,63.5 115.4,64.4 116.7,65.3 117.9,66.4 119.2,67.5 120.5,68.7 121.8,69.9 123.0,71.2 124.3,72.5 125.6,73.9 126.9,75.4 128.2,76.9 129.4,78.4 130.7,80.0 132.0,81.7 133.3,83.3 134.5,85.0 135.8,86.8 137.1,88.6 138.4,90.4 139.6,92.2 140.9,94.0 142.2,95.9 143.5,97.8 144.8,99.6 146.0,101.5 147.3,103.5 148.6,105.4 149.9,107.3 151.1,109.2 152.4,111.1 153.7,113.0 155.0,114.9 156.2,116.8 157.5,118.7 158.8,120.5 160.1,122.3 161.3,124.1 162.6,125.9 163.9,127.7 165.2,129.4 166.5,131.1 167.7,132.8 169.0,134.4 170.3,135.9 171.6,137.5 172.8,138.9 174.1,140.4 175.4,141.7 176.7,143.1 177.9,144.3 179.2,145.5 180.5,146.6 181.8,147.7 183.0,148.7 184.3,149.6 185.6,150.5 186.9,151.2 188.2,151.9 189.4,152.5 190.7,153.1 192.0,153.5 193.3,153.8 194.5,154.1 195.8,154.2 197.1,154.2 198.4,154.2 199.6,154.0 200.9,153.8 202.2,153.4 203.5,152.9 204.7,152.3 206.0,151.5 207.3,150.7 208.6,149.7 209.9,148.6 211.1,147.3 212.4,145.9 213.7,144.4 215.0,142.8 216.2,141.0 217.5,139.0 218.8,137.0 220.1,134.7 221.3,132.3 222.6,129.8 223.9,127.1 225.2,124.2 226.4,121.2 227.7,118.0 229.0,114.6 230.3,111.1 231.6,107.4 232.8,103.5 234.1,99.4 235.4,95.2 236.7,90.7 237.9,86.1 239.2,81.3 240.5,76.3 241.8,71.1 243.0,65.7 244.3,60.0 245.6,54.2 246.9,48.2" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round"/><line x1="26.0" y1="154.2" x2="254.0" y2="154.2" stroke="var(--ink-faint)" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="5 4"/><circle cx="102.0" cy="59.2" r="3.8" fill="var(--red)"/><text x="110.0" y="53.2" text-anchor="start" font-size="12" font-weight="700" fill="var(--red)">(−1, 5)</text><circle cx="197.0" cy="154.2" r="3.4" fill="var(--indigo)"/><text x="203.0" y="144.2" text-anchor="start" font-size="11" font-weight="700" fill="var(--indigo)">y=1에 접함</text><text x="46.5" y="194.0" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-soft)">−2</text><text x="94.0" y="194.0" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink-soft)">−1</text></svg>
+        <div class="fig-cap">\(f(x)=(x-1)^2(x+2)+1\) — \([-2,\ -1]\)에서는 계속 증가하므로 오른쪽 끝에서 최대 (세로를 줄여 그림)</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(5\ \Rightarrow\) ①</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(f(1)=1\)만 쓰고 \(f(x)-1=(x-1)(x^2+px+q)\)로 두면 미지수가 남아 막힌다. 극한값이 <b>\(0\)이 아닌 수</b>라는 것은 분모가 분자와 같은 차수로 \(0\)이 된다는 뜻 — 즉 <b>중근</b>이다. (\(f(x)-1\)이 \((x-1)\)만 가지면 극한값이 \(0\)이 된다.)</div>
+    </div>
+  </section>
+  <section class="sol killer" id="q23">
+    <div class="sol-head">
+      <span class="sol-k red">23</span>
+      <div>
+        <div class="sol-title">극한식이 미분계수에 대한 <b>이차방정식</b> — 두 근의 곱 \(=-1\)</div>
+        <div class="sol-kind"><span class="dbadge red">난이도 6 · 킬러 · 5.4점</span> 미분계수 · 극한식의 해석</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">두 다항함수 \(f_1(x),\ f_2(x)\)가 다음 조건을 만족한다. (가) \(f_1(0)=0,\ f_2(0)=0\) (나) \(f_i^{\prime}(0)=\displaystyle\lim_{x\to0}\frac{kf_i(x)+2x}{kf_i(x)+3x}\ (i=1,\ 2)\) (다) \(y=f_1(x)\)와 \(y=f_2(x)\)의 원점에서의 접선이 서로 수직이다. 이때, 상수 \(k\)의 값은?<br>① \(1\) ② \(2\) ③ \(3\) ④ \(4\) ⑤ \(5\)</div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 극한식 계산</span>
+        <p>분자·분모를 \(x\)로 나누면 \(\dfrac{f_i(x)}{x}=\dfrac{f_i(x)-f_i(0)}{x-0}\to f_i^{\prime}(0)\). \(f_i^{\prime}(0)=m\)이라 하면</p>
+        <div class="mathrow">$$\begin{gathered}m=\frac{km+2}{km+3}\\[2pt] \Rightarrow\ km^2+(3-k)m-2=0\end{gathered}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 두 기울기</span>
+        <p>두 접선의 기울기 \(m_1,\ m_2\)는 모두 이 이차방정식의 근이고, 수직이므로 서로 다르며 \(m_1m_2=-1\).</p>
+        <div class="mathrow">$$\begin{gathered}m_1m_2=\frac{-2}{k}\\[2pt] =-1\\[2pt] \Rightarrow\ k=2\end{gathered}$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>검산</span>
+        <p>\(k=2\): \(2m^2+m-2=0\)의 판별식 \(1+16\gt0\) — 서로 다른 두 실근 ✓, 두 근에서 \(km+3\ne0\)이라 극한식도 성립 ✓</p>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(k=2\ \Rightarrow\) ②</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> \(f_1,\ f_2\)를 구체적으로 정하려다 헤매는 것. 필요한 것은 원점에서의 <b>기울기</b>뿐이다. 극한식을 \(m\)으로 바꾸면 두 함수가 같은 방정식을 풀고 있다는 것 → 근과 계수의 관계로 끝난다.</div>
+    </div>
+  </section>
+  <footer>
+    루멘수학 · 기출 정밀해설집 · 범박고 2학년 2026학년도 2학기 중간 (미적분Ⅰ)<br>
+    23문항 직접 풀이·수치 검산 · 학교 정답표 공개 전 제작 · 그림풀이 원본 제작 · 첨삭 해설
+  </footer>
+</div>
