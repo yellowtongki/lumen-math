@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
- * v19-92: 🧩 리커버리 학습지 «설계 → 매쓰플랫 즉시 생성» (원장 결정 2026-10-09)
+ * v19-92·93: 🧩 리커버리 학습지 «설계 → 매쓰플랫 즉시 생성» (원장 결정 2026-10-09 · 10-10 「자동채점으로」)
  *   「주간테스트 오답은 쌍둥이 2문제씩 + 틀린 문제만큼 같은 유형을 교과서에서 + 범위 안 교재 오답은 쌍둥이 + 보강.
  *    최대 문항 제한 없음. 학원앱에서 출제하면 5분 안에, 빠르면 즉시 매쓰플랫에 만들어지면 좋겠다.」
  *
@@ -24,7 +24,10 @@ var RCWS_MF = 'https://api.mathflat.com';
 var RCWS_DESIGN = { layoutType:11, layoutColor:'GREEN', partitionType:4, wrongAnswerNoteFlag:false, conceptNameFlag:false, problemTrendFlag:false,
   answerRateFlag:false, qrFlag:true, relationWorkbookFlag:true, includeProblemFlag:false, pdfDateType:'TODAY', pdfDate:null,
   designTemplateId:41988, problemPadding:60, conceptSortType:'CHAPTER' };
-var RCWS_RULE_DEFAULT = { twinPer:2, tbPer:1, bookTwin:1, boost:true, theory:false, days:28 };
+var RCWS_RULE_DEFAULT = { twinPer:2, tbPer:1, bookTwin:1, boost:true, theory:false, days:28, auto:true };
+/* ★ v19-93: 「자동채점 문항만」 = 서술형(ESSAY)이 아니고 정답 글자가 있는 문항 (원장 지시 2026-10-10 「자동채점으로」).
+ *   단답은 학생앱 루멘 엔진이 채점하므로 매쓰플랫 자체 기준(객관식만)보다 넓다. sync/rcws_make.js 와 같은 기준. */
+function rcwsIsAuto(p, rule){ if(!rule||!rule.auto) return true; if(!p) return false; var a=String(p.answer==null?'':p.answer).trim(); return p.type!=='ESSAY'&&a!==''&&a!=='.'; }
 var RCWS_LV = { 1:'최하', 2:'하', 3:'중', 4:'상', 5:'최상' };
 
 /* ── 계정 (이 PC 에만) ── */
@@ -124,7 +127,7 @@ async function rcwsGather(row){
   Object.keys(bids).forEach(function(b){ var bank=st['mf_textbook_'+b]; if(!bank||!bank.problems) return; var byWp={}; bank.problems.forEach(function(p){ byWp[String(p.id)]=p; });
     model.bookWrong.forEach(function(w){ if(w.bid===b&&byWp[String(w.wpId)]){ w.pid=rcwsBankId(byWp[String(w.wpId)]); w.book=bank.title||''; } }); });
   if(tbid&&st['mf_textbook_'+tbid]){ model.tb.bid=tbid; model.tb.title=tbTitle||st['mf_textbook_'+tbid].title||'';
-    (st['mf_textbook_'+tbid].problems||[]).forEach(function(p){ var id=rcwsBankId(p); if(!id||p.cid==null) return; (model.tb.byCid[p.cid]=model.tb.byCid[p.cid]||[]).push({ id:id, lv:Number(p.level)||2, page:p.page, no:p.no }); }); }
+    (st['mf_textbook_'+tbid].problems||[]).forEach(function(p){ var id=rcwsBankId(p); if(!id||p.cid==null) return; (model.tb.byCid[p.cid]=model.tb.byCid[p.cid]||[]).push({ id:id, lv:Number(p.level)||2, page:p.page, no:p.no, type:p.type, answer:p.answer }); }); }
   else model.warn.push('이 학생에게 배정된 교과서가 매쓰플랫에 없어 교과서 문항 대신 같은 유형 문제를 넣습니다');
   // ④ 이미 푼 문제(학습지) — 쌍둥이에서 뺀다
   var r3=await sb.from('mf_answer_records').select('problem_id').eq('mf_student_id',sid).eq('source','학습지').in('concept_id',model.range).not('problem_id','is',null).limit(2000);
@@ -153,8 +156,8 @@ function rcwsPlanTotals(plan){
 }
 
 /* ── 만들기(build): 매쓰플랫에서 문항을 모아 학습지 한 장 ── */
-function rcwsPickFrom(list, lv, n, excl, chosen){
-  var out=[]; var pool=list.filter(function(p){ return !excl[String(p.id)]&&!chosen[String(p.id)]; });
+function rcwsPickFrom(list, lv, n, excl, chosen, rule){
+  var out=[]; var pool=list.filter(function(p){ return rcwsIsAuto(p, rule)&&!excl[String(p.id)]&&!chosen[String(p.id)]; });
   pool.sort(function(a,b){ return Math.abs((a.lv||3)-lv)-Math.abs((b.lv||3)-lv); });
   pool.slice(0,n).forEach(function(p){ chosen[String(p.id)]=1; out.push(p.id); });
   return out;
@@ -166,25 +169,34 @@ async function rcwsBuild(model, plan, api, onLog){
   if(!cidList.length) throw new Error('넣을 문항이 없습니다');
   log('① 유형 필터 만드는 중 ('+cidList.length+'개 유형)');
   var f=await api.call('POST','/worksheet/filter/concept',{ type:'CONCEPT', conceptIdList:cidList, excludedTopicIds:[], excludedSubTopicIds:[], problemList:null,
-    problemCount:30, level:3, levelWeight:[10,30,30,20,10], problemFilterType:'ALL', practiceTest:'INCLUDE', onlyAutoScorable:false, excludePrevious:false, previousExclusionScope:null,
+    problemCount:100, level:3, levelWeight:[10,30,30,20,10], problemFilterType:'ALL', practiceTest:'INCLUDE', onlyAutoScorable:false, excludePrevious:false, previousExclusionScope:null,
     studentIds:null, excludeOOC:true, equalityLevel:null, minRate:0, maxRate:100, selectedConceptIdList:[], selectedLittleChapterIdList:[] });
-  var fid=f&&(f.filterId||f);
+  var fid=f&&(f.filterId||f); var rule=plan.rule;
   var chosen={}; var items=[]; var parts={ twin:0, tb:0, book:0, boost:0, fallback:0 };
   var poolByCid=null;
-  async function pool(){ if(poolByCid) return poolByCid; poolByCid={}; try{ var ps=await api.call('POST','/worksheet/problem',{ filterId:fid }); (Array.isArray(ps)?ps:(ps.problemList||[])).forEach(function(p){ var c=p.conceptId||(p.problem&&p.problem.conceptId); var id=p.id||(p.problem&&p.problem.id); var lv=p.level||(p.problem&&p.problem.level)||3; if(c&&id) (poolByCid[c]=poolByCid[c]||[]).push({ id:id, lv:lv }); }); }catch(e){} return poolByCid; }
+  function addPool(ps){ (Array.isArray(ps)?ps:(ps.problemList||[])).forEach(function(p){ var pr=p.problem||p; if(pr.conceptId&&pr.id) (poolByCid[pr.conceptId]=poolByCid[pr.conceptId]||[]).push({ id:pr.id, lv:pr.level||3, type:pr.type, answer:pr.answer }); }); }
+  /* 유형 풀 — 처음 한 번 100문항, 그 유형이 비면 그 유형만의 필터를 따로 만든다 (v19-93) */
+  async function pool(cid){
+    if(!poolByCid){ poolByCid={}; try{ addPool(await api.call('POST','/worksheet/problem',{ filterId:fid })); }catch(e){} }
+    var has=(poolByCid[cid]||[]).some(function(p){ return rcwsIsAuto(p, rule)&&!model.solved[String(p.id)]&&!chosen[String(p.id)]; });
+    if(cid&&!has&&!poolByCid['_t'+cid]){ poolByCid['_t'+cid]=1;
+      try{ var f2=await api.call('POST','/worksheet/filter/concept',{ type:'CONCEPT', conceptIdList:[cid], excludedTopicIds:[], excludedSubTopicIds:[], problemList:null, problemCount:40, level:3, levelWeight:[10,30,30,20,10], problemFilterType:'ALL', practiceTest:'INCLUDE', onlyAutoScorable:false, excludePrevious:false, previousExclusionScope:null, studentIds:null, excludeOOC:true, equalityLevel:null, minRate:0, maxRate:100, selectedConceptIdList:[], selectedLittleChapterIdList:[] });
+        addPool(await api.call('POST','/worksheet/problem',{ filterId:(f2&&(f2.filterId||f2)) })); }catch(e){} }
+    return poolByCid;
+  }
   async function twinsOf(pid, lv, n, label){
     if(!n) return [];
     var d=await api.call('POST','/derivation/problem/'+pid,{ excludedProblemIds:Object.keys(chosen).map(Number), filterId:fid, bookType:'WORKSHEET', tagTop:null });
-    var pair=((d&&d.pairProblemList)||[]).map(function(x){ return { id:x.problem.id, lv:x.problem.level, pair:true }; });
-    var sim=((d&&d.similarProblemList)||[]).map(function(x){ return { id:x.problem.id, lv:x.problem.level }; });
-    var got=rcwsPickFrom(pair, lv, n, model.solved, chosen);
-    if(got.length<n) got=got.concat(rcwsPickFrom(sim, lv, n-got.length, model.solved, chosen));
+    var pk=function(x){ return { id:x.problem.id, lv:x.problem.level, type:x.problem.type, answer:x.problem.answer }; };
+    var pair=((d&&d.pairProblemList)||[]).map(pk), sim=((d&&d.similarProblemList)||[]).map(pk);
+    var got=rcwsPickFrom(pair, lv, n, model.solved, chosen, rule);
+    if(got.length<n) got=got.concat(rcwsPickFrom(sim, lv, n-got.length, model.solved, chosen, rule));
     log('  '+label+' → 쌍둥이 '+pair.length+'·유사 '+sim.length+' 중 '+got.length+'개');
     return got;
   }
   async function sameType(cid, lv, n, label){
     if(!n) return [];
-    var P=await pool(); var got=rcwsPickFrom(P[cid]||[], lv, n, model.solved, chosen);
+    var P=await pool(cid); var got=rcwsPickFrom(P[cid]||[], lv, n, model.solved, chosen, rule);
     if(got.length) log('  '+label+' → 같은 유형 '+got.length+'개'); else log('  '+label+' → 같은 유형 문제를 더 찾지 못함');
     return got;
   }
@@ -197,7 +209,7 @@ async function rcwsBuild(model, plan, api, onLog){
   // ③ 교과서 같은 유형
   log('③ 교과서 같은 유형 ('+(model.tb.title||'교과서 없음')+')');
   for(var j=0;j<plan.tb.length;j++){ var y=plan.tb[j]; if(!y.n) continue;
-    var tbl=model.tb.byCid[y.w.cid]||[]; var got3=rcwsPickFrom(tbl, y.w.lv, y.n, model.solved, chosen);
+    var tbl=model.tb.byCid[y.w.cid]||[]; var got3=rcwsPickFrom(tbl, y.w.lv, y.n, model.solved, chosen, rule);
     if(got3.length<y.n){ var g3=await sameType(y.w.cid, y.w.lv, y.n-got3.length, y.w.no+'번 교과서 대체'); parts.fallback+=g3.length; got3=got3.concat(g3); }
     got3.forEach(function(id){ items.push({ id:id, kind:'tb', from:y.w.no }); }); parts.tb+=got3.length; }
   // ④ 교재 오답 쌍둥이
@@ -263,7 +275,7 @@ function rcwsSeg(kind, i, n, max){
 }
 window.rcwsSet=function(kind,i,n){ var C=RCWS_CUR; if(!C||C.busy) return; var L=C.plan[kind]; if(L&&L[i]){ L[i].n=n; rcwsPaint(); } };
 window.rcwsRuleChange=function(){ var C=RCWS_CUR; if(!C||C.busy) return; var g=function(id){ var el=document.getElementById(id); return el?el.value:''; };
-  var rule={ twinPer:Number(g('rcws-twin'))||0, tbPer:Number(g('rcws-tb'))||0, bookTwin:Number(g('rcws-bk'))||0, boost:!!(document.getElementById('rcws-boost')||{}).checked, theory:!!(document.getElementById('rcws-theory')||{}).checked, days:Number(g('rcws-days'))||28 };
+  var rule={ twinPer:Number(g('rcws-twin'))||0, tbPer:Number(g('rcws-tb'))||0, bookTwin:Number(g('rcws-bk'))||0, boost:!!(document.getElementById('rcws-boost')||{}).checked, theory:!!(document.getElementById('rcws-theory')||{}).checked, days:Number(g('rcws-days'))||28, auto:!!(document.getElementById('rcws-auto')||{}).checked };
   C.plan=rcwsPlan(C.model, rule); rcwsPaint(); };
 function rcwsPaint(){
   var C=RCWS_CUR; if(!C||!document.getElementById('rc-pop')) return;
@@ -301,6 +313,7 @@ function rcwsPaint(){
     +'<label>시험 오답 쌍둥이 '+sel('rcws-twin',rule.twinPer,3)+'</label><label>교과서 '+sel('rcws-tb',rule.tbPer,2)+'</label><label>교재 오답 쌍둥이 '+sel('rcws-bk',rule.bookTwin,2)+'</label>'
     +'<label><input type="checkbox" id="rcws-boost" onchange="rcwsRuleChange()"'+(rule.boost?' checked':'')+'> 보강</label>'
     +'<label><input type="checkbox" id="rcws-theory" onchange="rcwsRuleChange()"'+(rule.theory?' checked':'')+'> 이론 박스</label>'
+    +'<label title="서술형을 빼고 정답 글자가 있는 문항만 — 단답은 학생앱이 채점"><input type="checkbox" id="rcws-auto" onchange="rcwsRuleChange()"'+(rule.auto?' checked':'')+'> 자동채점 문항만</label>'
     +'<label>교재 오답 최근 <input id="rcws-days" type="number" value="'+rule.days+'" min="7" max="120" onchange="rcwsRuleChange()" style="width:48px;font-family:inherit;font-size:11.5px;font-weight:800;border:1.5px solid #e2e8f0;border-radius:7px;padding:3px 5px">일</label>'
     +'<label><input type="checkbox" id="rcws-save" checked> 이 규칙을 「확정 전원」 기본으로</label></div>';
   // 진행·결과
@@ -333,7 +346,7 @@ window.rcMakeWsAll=async function(){
     .filter(function(x){ return x&&x.testHit&&rcWsSchool(x.st)&&!rcwsMadeOf(x.stKey); });
   if(!targets.length){ alert('확정 명단 중 만들 수 있는 학생이 없습니다.\n(호출 확정 + 주간테스트 기록이 있는 초·중등 학생, 이번 주에 아직 안 만든 학생)'); return; }
   var rule=rcwsRule();
-  if(!confirm('🧩 확정 명단 '+targets.length+'명의 학습지를 저장된 규칙으로 바로 만들까요?\n(시험 오답 쌍둥이 '+rule.twinPer+' · 교과서 '+rule.tbPer+' · 교재 오답 쌍둥이 '+rule.bookTwin+' · 보강 '+(rule.boost?'넣음':'안 넣음')+')\n매쓰플랫에 즉시 만들어 배정됩니다.')) return;
+  if(!confirm('🧩 확정 명단 '+targets.length+'명의 학습지를 저장된 규칙으로 바로 만들까요?\n(시험 오답 쌍둥이 '+rule.twinPer+' · 교과서 '+rule.tbPer+' · 교재 오답 쌍둥이 '+rule.bookTwin+' · 보강 '+(rule.boost?'넣음':'안 넣음')+' · '+(rule.auto?'자동채점 문항만':'서술형 포함')+')\n매쓰플랫에 즉시 만들어 배정됩니다.')) return;
   RCWS.busy=true; var ok=0, bad=[];
   for(var i=0;i<targets.length;i++){ var x=targets[i];
     plToast('🧩 '+(i+1)+'/'+targets.length+' '+x.st.name+' 만드는 중…');

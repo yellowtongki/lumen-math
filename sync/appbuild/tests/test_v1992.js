@@ -21,8 +21,8 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
     const store = {
       mf_textbooks: { books: { '2110004': { type: 'SCHOOL', title: '교과서_비상', fulltitle: '교과서_비상 - 중등수학1' } }, byStudent: { I1: { books: ['2110004'] } } },
       mf_textbook_2110004: { title: '교과서_비상 - 중등수학1', problems: [
-        { id: 900001, cid: 101, level: 2, page: 80, no: '1', pimg: pimg(70001) }, { id: 900002, cid: 101, level: 3, page: 81, no: '3', pimg: pimg(70002) },
-        { id: 900003, cid: 102, level: 3, page: 90, no: '2', pimg: pimg(70003) }, { id: 900004, cid: 103, level: 1, page: 95, no: '5', pimg: pimg(70004) } ] },
+        { id: 900001, cid: 101, level: 2, page: 80, no: '1', pimg: pimg(70001), type: 'SHORT_ANSWER', answer: '4' }, { id: 900002, cid: 101, level: 3, page: 81, no: '3', pimg: pimg(70002), type: 'SHORT_ANSWER', answer: '6' },
+        { id: 900003, cid: 102, level: 3, page: 90, no: '2', pimg: pimg(70003), type: 'ESSAY', answer: '' }, { id: 900004, cid: 103, level: 1, page: 95, no: '5', pimg: pimg(70004), type: 'SHORT_ANSWER', answer: '1' } ] },
       mf_textbook_5550: { title: '라이트 중1-2', problems: [{ id: 800001, cid: 101, level: 3, page: 84, no: '7', pimg: pimg(60001) }] },
     };
     const recs = [
@@ -49,11 +49,11 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
     const fakeApi = { call: async (m, p, body) => { calls.push({ m, p, body });
       if (p === '/worksheet/filter/concept') return { filterId: 'F1' };
       if (p.indexOf('/derivation/problem/') === 0) { const pid = Number(p.split('/').pop()); const ex = (body.excludedProblemIds || []).map(Number);
-        const mk = (id, lv) => ({ problem: { id, level: lv, conceptId: 101 }, tagTop: null });
+        const mk = (id, lv) => ({ problem: { id, level: lv, conceptId: 101, type: 'SHORT_ANSWER', answer: '3' }, tagTop: null });
         const pair = pid === 50007 ? [mk(61001, 3), mk(61002, 3)] : [];
         const sim = [mk(pid + 100, 2), mk(pid + 101, 3), mk(pid + 102, 3), mk(pid + 103, 4), mk(50011, 3)];   // 50011 = 이미 틀린(푼) 문제 → 빠져야 함
         return { pairProblemList: pair.filter((x) => ex.indexOf(x.problem.id) < 0), similarProblemList: sim.filter((x) => ex.indexOf(x.problem.id) < 0) }; }
-      if (p === '/worksheet/problem') return [{ id: 71001, conceptId: 101, level: 3 }, { id: 71002, conceptId: 102, level: 2 }, { id: 71003, conceptId: 103, level: 3 }];
+      if (p === '/worksheet/problem') return [{ id: 71001, conceptId: 101, level: 3, type: 'SINGLE_CHOICE', answer: '2' }, { id: 71002, conceptId: 102, level: 2, type: 'SHORT_ANSWER', answer: '5' }, { id: 71003, conceptId: 103, level: 3, type: 'SHORT_ANSWER', answer: '7' }];
       if (p === '/worksheet') return 83800001;
       throw new Error('unexpected ' + p); } };
     /* ── 재료 → 설계 → 만들기 ── */
@@ -63,7 +63,7 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
     window.RC = window.RC || {}; RC.state = { calls: { '2026-10-11': { S1: { on: true } } }, dates: {}, periods: {} }; window.rcSaveState = async () => {}; window.VIEW = 'x'; window.render = () => {};
     const model = await rcwsGather(row);
     out.model = { wrong: model.wrong.map((w) => w.no + ':' + w.cid + ':' + w.pid), range: model.range, bookWrong: model.bookWrong.map((w) => w.page + '/' + w.no + ':' + w.pid), tb: Object.keys(model.tb.byCid), solved: Object.keys(model.solved), warn: model.warn };
-    const plan = rcwsPlan(model, { twinPer: 2, tbPer: 1, bookTwin: 1, boost: true, theory: false, days: 28 });
+    const plan = rcwsPlan(model, { twinPer: 2, tbPer: 1, bookTwin: 1, boost: true, theory: false, days: 28, auto: true });
     out.plan = { test: plan.test.map((x) => x.n), tb: plan.tb.map((x) => x.n), book: plan.book.map((x) => x.n), boost: plan.boost.map((b) => b.cid + ':' + b.n + ':' + b.times), totals: rcwsPlanTotals(plan) };
     const logs = [];
     const res = await rcwsBuild(model, plan, fakeApi, (s) => logs.push(s));
@@ -80,7 +80,7 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
     return out;
   });
   console.log(JSON.stringify(o, null, 1).slice(0, 4000));
-  t('버전 v19-92', o.ver === 'v19-92');
+  t('버전 ' + (FILE.match(/v19-\d+/) || [''])[0], o.ver === (FILE.match(/v19-\d+/) || [''])[0]);
   t('시험 오답 3문항 (범위 유형 101·102·103)', o.model.wrong.length === 3 && o.model.range.join(',') === '101,102,103', JSON.stringify(o.model));
   t('교재 오답: 범위 안 1문항만 · 은행으로 문제 번호 60001', o.model.bookWrong.length === 1 && o.model.bookWrong[0] === '84/7:60001', JSON.stringify(o.model.bookWrong));
   t('교과서 유형 3가지 읽음', o.model.tb.length === 3, JSON.stringify(o.model.tb));
@@ -88,7 +88,7 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
   t('만들기: 11문항 · 학습지 #83800001', o.res.n === 11 && o.res.wsId === 83800001, JSON.stringify(o.res));
   t('7번은 쌍둥이(pair) 61001·61002 우선', o.res.ids.indexOf('twin:61001') >= 0 && o.res.ids.indexOf('twin:61002') >= 0, JSON.stringify(o.res.ids));
   t('이미 푼 50011 은 쌍둥이에 안 들어감 · 중복 없음', o.res.ids.indexOf('twin:50011') < 0 && o.wsBody.dup === 11, JSON.stringify(o.res.ids));
-  t('교과서 문항(70001·70002·70003) 들어감', ['tb:70001', 'tb:70002', 'tb:70003'].every((x) => o.res.ids.indexOf(x) >= 0), JSON.stringify(o.res.ids));
+  t('교과서 문항 70001·70002 들어가고 서술형 70003 은 빠짐(같은 유형 71002 로 대체)', ['tb:70001', 'tb:70002', 'tb:71002'].every((x) => o.res.ids.indexOf(x) >= 0) && o.res.ids.indexOf('tb:70003') < 0, JSON.stringify(o.res.ids));
   t('교재 오답 쌍둥이 1 · 보강 1', o.res.parts.book === 1 && o.res.parts.boost === 1, JSON.stringify(o.res.parts));
   t('학습지 요청: 배정 I1 · 녹색 서식 41988 · 이론 없음 · 중1 · 제목 「리커버리 10/11 ○○○」', o.wsBody.assign.join('') === 'I1' && o.wsBody.design === 41988 && o.wsBody.concept === 0 && o.wsBody.school === 'MIDDLE1' && o.wsBody.title === '리커버리 10/11 ○○○', JSON.stringify(o.wsBody));
   t('팝업에 결과·합계 표시', /✅ 매쓰플랫에 만들어 배정/.test(o.popup) && /총 문항/.test(o.popup), o.popup.slice(0, 200));
