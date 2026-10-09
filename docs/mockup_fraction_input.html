@@ -1,0 +1,383 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>분수 입력 시안</title></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=IBM+Plex+Mono:wght@500;700&display=swap">
+<style>
+/* 레이아웃: 한 줄 세로 흐름. 시안마다 «학생앱 카드 + 자판» 한 벌을 그대로 넣어 직접 눌러 본다. */
+:root{
+  --bg:#f5f8f7; --card:#ffffff; --fg:#17262b; --muted:#5b6b70; --line:#d6e1de;
+  --accent:#0f766e; --accent-soft:#e3f4f0; --accent-strong:#14b8a6;
+  --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c; --bad-soft:#fee2e2; --warn:#a16207; --warn-soft:#fef3c7;
+  --key:#ffffff; --key-fn:#eef4f2; --field:#ffffff;
+  --font-body:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1716; --card:#172220; --fg:#e6efed; --muted:#9db3ae; --line:#2b3b38;
+  --accent:#5eead4; --accent-soft:#163b36; --accent-strong:#2dd4bf;
+  --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --warn:#fcd34d; --warn-soft:#3a2d0c;
+  --key:#1f2d2a; --key-fn:#263835; --field:#0f1716; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f1716; --card:#172220; --fg:#e6efed; --muted:#9db3ae; --line:#2b3b38;
+  --accent:#5eead4; --accent-soft:#163b36; --accent-strong:#2dd4bf;
+  --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --warn:#fcd34d; --warn-soft:#3a2d0c;
+  --key:#1f2d2a; --key-fn:#263835; --field:#0f1716; color-scheme:dark }
+
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);line-height:1.55;margin:0}
+.wrap{max-width:720px;margin:0 auto;padding-block:20px 56px;padding-inline:16px;display:flex;flex-direction:column;gap:22px}
+h1{font-size:24px;font-weight:900;margin:0 0 4px;letter-spacing:-0.01em;text-wrap:balance}
+h2{font-size:17px;font-weight:900;margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 .tag{font-size:11px;font-weight:700;letter-spacing:0.04em;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+h2 .tag.rec{background:var(--ok-soft);color:var(--ok)}
+p{margin:0}
+.lead{color:var(--muted);font-size:13.5px}
+.sec{display:flex;flex-direction:column;gap:12px}
+.note{font-size:13px;color:var(--muted)}
+.note b{color:var(--fg)}
+
+/* 숫자 요약 */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}
+.stat .n{font-family:var(--font-mono);font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .l{font-size:11.5px;color:var(--muted);margin-top:3px}
+.stat.bad .n{color:var(--bad)} .stat.ok .n{color:var(--ok)}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;border:1px solid var(--line)}
+.bar span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* 시안 카드 (학생앱 흉내) */
+.demo{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.q{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.q .num{font-weight:900;font-size:14px}
+.q .ans{font-size:12px;color:var(--muted)}
+.q .ans b{font-family:var(--font-mono)}
+.fields{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.fld{flex:1 1 90px;min-width:90px;min-height:44px;border:1.8px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--field);font-family:var(--font-mono);font-size:17px;font-weight:700;display:flex;align-items:center;gap:4px;cursor:text;overflow-x:auto;white-space:nowrap}
+.fld.foc{border-color:var(--accent-strong);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent-strong) 22%,transparent)}
+.fld .ph{color:var(--line);font-size:13px}
+.read{font-size:12.5px;color:var(--accent);font-weight:700;min-height:18px}
+.read.warn{color:var(--warn)}
+/* 쌓인 분수 */
+.fr{display:inline-flex;flex-direction:column;align-items:center;line-height:1.05;vertical-align:middle;margin:0 2px}
+.fr .nu,.fr .de{padding:0 3px;min-width:14px;text-align:center}
+.fr .nu{border-bottom:2px solid currentColor}
+.fr .de{padding-top:1px}
+.fr .nu:empty::before,.fr .de:empty::before{content:"\00a0"}
+.box{display:inline-flex;min-width:26px;height:26px;align-items:center;justify-content:center;border:1.5px dashed var(--line);border-radius:6px;padding:0 4px}
+.box.on{border:2px solid var(--accent-strong);background:var(--accent-soft)}
+.box.filled{border-style:solid}
+.fr .box{height:22px}
+.whole{display:inline-flex;align-items:center;margin-right:2px}
+/* 자판 */
+.kpad{border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:8px}
+.kpad .cap{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:0.03em}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.keys button{border:1px solid var(--line);background:var(--key);color:var(--fg);border-radius:10px;padding:11px 0;font-family:var(--font-mono);font-size:16px;font-weight:700;cursor:pointer;min-width:0}
+.keys button.fn{background:var(--key-fn);font-family:var(--font-body);font-size:13px;font-weight:900}
+.keys button.new{outline:2px solid var(--accent-strong);outline-offset:-2px}
+.keys button.go{grid-column:span 2;background:var(--accent);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:900;border-color:var(--accent)}
+.keys button:focus-visible{outline:3px solid var(--accent-strong);outline-offset:1px}
+.res{border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;display:none}
+.res.show{display:block}
+.res.ok{background:var(--ok-soft);color:var(--ok)} .res.bad{background:var(--bad-soft);color:var(--bad)} .res.ask{background:var(--warn-soft);color:var(--warn)}
+.res .btns{display:flex;gap:6px;margin-top:8px}
+.res .btns button{border:1px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:6px 12px;font-family:var(--font-body);font-weight:900;font-size:12.5px;cursor:pointer}
+.try{font-size:12px;color:var(--muted);background:var(--accent-soft);border-radius:8px;padding:6px 10px}
+.try b{color:var(--accent)}
+/* 장단점 */
+.pm{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12.5px}
+.pm div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.pm b{display:block;font-size:11px;letter-spacing:0.04em;margin-bottom:3px}
+.pm .plus b{color:var(--ok)} .pm .minus b{color:var(--bad)}
+.pm ul{margin:0;padding-left:16px} .pm li{margin:2px 0}
+@media (max-width:460px){ .pm{grid-template-columns:1fr} .stats{grid-template-columns:1fr 1fr} }
+/* 표 */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:420px}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:0.04em;color:var(--muted);font-weight:700;background:var(--key-fn)}
+tr:last-child td{border-bottom:0}
+td.m{font-family:var(--font-mono);white-space:nowrap}
+.o{color:var(--ok);font-weight:900} .x{color:var(--bad);font-weight:900}
+.rec{background:var(--card);border:2px solid var(--accent-strong);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.rec ol{margin:0;padding-left:20px;font-size:13.5px} .rec li{margin:4px 0}
+.ex{font-family:var(--font-mono);font-size:12px;background:var(--key-fn);padding:1px 5px;border-radius:5px;white-space:nowrap}
+</style>
+
+<div class="wrap">
+  <div>
+    <h1>학생앱 분수 입력, 어떻게 바꿀까</h1>
+    <p class="lead">2026-10-07 · 학생 17명의 교재·학습지 채점 기록 3,544건을 전부 살펴본 결과와 고치는 방법 시안 3가지. 시안은 직접 눌러 볼 수 있어요.</p>
+  </div>
+
+  <section class="sec">
+    <h2>지금 무슨 일이 일어나고 있나</h2>
+    <div class="stats">
+      <div class="stat"><div class="n">180</div><div class="l">분수가 들어간 채점 기록</div></div>
+      <div class="stat bad"><div class="n">150</div><div class="l">그중 ✗ (83%). 전체 평균 ✗는 27%</div></div>
+      <div class="stat ok"><div class="n">48</div><div class="l">정말로 값이 틀린 것</div></div>
+    </div>
+    <div class="bar" aria-label="✗ 150건의 원인 비율">
+      <span style="width:32%;background:var(--bad)" title="진짜 오답 48"></span>
+      <span style="width:15%;background:#c084fc" title="엔진 구멍 22"></span>
+      <span style="width:15%;background:#fb923c" title="고치기 전 기록 22"></span>
+      <span style="width:12%;background:#f59e0b" title="거꾸로 침 17"></span>
+      <span style="width:19%;background:#94a3b8" title="여러 칸 답 28"></span>
+      <span style="width:7%;background:#cbd5e1" title="오타 등 11"></span>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--bad)"></i>진짜 오답 48</span>
+      <span><i style="background:#c084fc"></i>답은 맞는데 앱이 못 읽음 22</span>
+      <span><i style="background:#fb923c"></i>9/21 고침 전 기록 22</span>
+      <span><i style="background:#f59e0b"></i>분모·분자 거꾸로 침 17</span>
+      <span><i style="background:#94a3b8"></i>여러 칸 긴 정답 28</span>
+      <span><i style="background:#cbd5e1"></i>오타·못 읽음 11</span>
+    </div>
+    <p class="note">✗ 150건 중 <b>값이 정말 틀린 것은 48건(32%)</b>뿐입니다. 나머지 셋 중 둘은 입력 방법이나 채점 엔진 때문에 생긴 ✗입니다. 학생들이 「분수 채점이 어렵다」고 하는 말이 기록으로 그대로 보입니다.</p>
+    <div class="tbl"><table>
+      <tr><th>원인</th><th>학생이 친 것</th><th>정답</th><th>무슨 일인가</th></tr>
+      <tr><td>거꾸로 침</td><td class="m">6/1</td><td class="m">1/6</td><td>우리말은 「6분의 1」이라 <b>분모를 먼저</b> 누릅니다. 자판 「／분수」는 순서를 알려 주지 않고, 칸에는 6/1 로만 보입니다.</td></tr>
+      <tr><td>거꾸로 침</td><td class="m">5/42</td><td class="m">8⅖</td><td>42/5 를 「5분의 42」로 쳤습니다. 가분수로 바꾼 것까지 맞았는데 ✗.</td></tr>
+      <tr><td>대분수 못 침</td><td class="m">652 · 28/21 · 1/1/2</td><td class="m">6⅖ · 2⁸⁄₂₁ · 1½</td><td>자판에 <b>띄어쓰기가 없어</b> 대분수를 칠 길이 없습니다. 학생들이 붙여 쓰거나 빗금을 두 번 넣었습니다.</td></tr>
+      <tr><td>엔진 구멍</td><td class="m">43/12 · 7/6 · -10/3</td><td class="m">{43/12} · {7/6} · -{10/3}</td><td>오답 학습지(수학비서) 정답은 <b>중괄호 꼴</b>인데 엔진이 이 꼴을 분수로 안 읽습니다. 맞게 친 13건이 전부 ✗.</td></tr>
+      <tr><td>엔진 구멍</td><td class="m">28/x · -15/x · y=-15/x</td><td class="m">y=28/x 등</td><td>분모에 <b>문자</b>가 있는 분수(반비례)는 엔진이 못 읽습니다. 9건 ✗.</td></tr>
+      <tr><td>엔진 구멍</td><td class="m">(a+5)h/2 · 15/2x</td><td class="m">(a+5)h 분의 2 · 15x/2</td><td>분자에 곱이 든 분수를 다른 꼴로 치면 ✗.</td></tr>
+      <tr><td>거꾸로 ◯</td><td class="m">4/1 · 3/20</td><td class="m">1/4 · 20/3</td><td>반대로 <b>틀린 답이 ◯</b>가 된 것도 2건. 정답이 빗금 꼴이면 엔진이 「두 답」으로 갈라 순서를 안 따집니다.</td></tr>
+    </table></div>
+  </section>
+
+  <!-- ───────── 지금 ───────── -->
+  <section class="sec">
+    <h2>지금 모습 <span class="tag">v2-131</span></h2>
+    <p class="note">정답이 <b>1/6</b>인 문제. 「6」「／분수」「1」 순서로 눌러 보세요. 많은 학생이 이렇게 칩니다.</p>
+    <div class="demo" id="d0"></div>
+  </section>
+
+  <!-- ───────── 안 A ───────── -->
+  <section class="sec">
+    <h2>안 A · 보이는 분수 <span class="tag">자판 그대로, 칸만 똑똑하게</span></h2>
+    <p class="note">자판은 지금과 같되 ① 빗금을 누르는 순간 칸이 <b>위아래로 쌓인 분수</b>로 바뀌고 ② 칸 밑에 <b>「6분의 1」</b>처럼 우리말로 읽어 주고 ③ 「대분수」 키로 정수를 앞에 둘 수 있고 ④ 제출 전에 한 번 물어봅니다. 같은 문제를 다시 쳐 보세요.</p>
+    <div class="demo" id="dA"></div>
+    <div class="pm">
+      <div class="plus"><b>좋은 점</b><ul><li>고칠 곳이 적어 이번 주 안에 배포 가능</li><li>「6분의 1」 읽기로 거꾸로 치는 실수가 바로 보임</li><li>문자식(x/2)에도 그대로 적용</li></ul></div>
+      <div class="minus"><b>아쉬운 점</b><ul><li>여전히 분자를 먼저 쳐야 한다는 것을 배워야 함</li><li>초등 저학년은 「대분수」 키를 찾는 데 시간이 걸릴 수 있음</li></ul></div>
+    </div>
+  </section>
+
+  <!-- ───────── 안 B ───────── -->
+  <section class="sec">
+    <h2>안 B · 분수 틀 <span class="tag">계산기·매쓰플랫 방식</span></h2>
+    <p class="note">「분수」 키를 누르면 <b>빈 칸 두 개가 위아래로</b> 생기고 위 칸(분자)부터 채웁니다. 「다음 칸」으로 아래(분모)로 내려가고, 「대분수」를 누르면 앞에 정수 칸이 붙습니다. 정답이 <b>2⅕</b>인 문제로 해 보세요.</p>
+    <div class="demo" id="dB"></div>
+    <div class="pm">
+      <div class="plus"><b>좋은 점</b><ul><li>종이에 쓰는 모양 그대로라 순서를 생각할 필요가 없음</li><li>대분수·가분수·음수 모두 한 틀로 해결</li></ul></div>
+      <div class="minus"><b>아쉬운 점</b><ul><li>칸 속 커서 이동까지 새로 만들어야 해서 손이 가장 많이 감(한 주 이상)</li><li>식 속 분수(2/3x+1)는 틀 안팎 이동이 번거로움</li></ul></div>
+    </div>
+  </section>
+
+  <!-- ───────── 안 C ───────── -->
+  <section class="sec">
+    <h2>안 C · 분수 전용 세 칸 <span class="tag">정답이 분수인 문항만</span></h2>
+    <p class="note">앱은 정답 모양을 이미 압니다. 정답이 숫자 분수이면 처음부터 <b>[정수] [분자]/[분모]</b> 세 칸을 그려 두고, 자판에는 빗금 키가 아예 없습니다. 정수 답이면 분자 칸에만 쓰면 됩니다.</p>
+    <div class="demo" id="dC"></div>
+    <div class="pm">
+      <div class="plus"><b>좋은 점</b><ul><li>초등 분수 단원에 가장 쉬움(칸 모양이 곧 설명)</li><li>지금 앱의 「칸 여러 개」 구조를 그대로 써서 손이 적게 감</li></ul></div>
+      <div class="minus"><b>아쉬운 점</b><ul><li><b>정답이 분수라는 힌트가 새어 나감</b>. 중등 문항에는 알맞지 않음</li><li>문자식 분수에는 못 씀 → 안 A가 어차피 필요</li></ul></div>
+    </div>
+  </section>
+
+  <!-- ───────── 공통: 엔진 ───────── -->
+  <section class="sec">
+    <h2>어느 안을 골라도 함께 고칠 것 · 채점 엔진</h2>
+    <p class="note">입력칸을 어떻게 바꾸든 아래는 엔진에서 받아 줘야 합니다. 「지금」은 실제 엔진으로 돌려 본 결과입니다.</p>
+    <div class="tbl"><table>
+      <tr><th>정답</th><th>학생 입력</th><th>지금</th><th>고친 뒤</th><th>설명</th></tr>
+      <tr><td class="m">{60/7}</td><td class="m">60/7</td><td class="x">✗</td><td class="o">◯</td><td>수학비서 중괄호 분수 (학습지 227문항)</td></tr>
+      <tr><td class="m">2{1/5}</td><td class="m">2 1/5 · 11/5</td><td class="x">✗</td><td class="o">◯</td><td>중괄호 대분수</td></tr>
+      <tr><td class="m">y=28/x</td><td class="m">28/x · y=28/x</td><td class="x">✗</td><td class="o">◯</td><td>분모에 문자</td></tr>
+      <tr><td class="m">\frac{2x}{3}</td><td class="m">2/3x · 2x/3</td><td class="x">✗ / ◯</td><td class="o">◯</td><td>분자에 곱이 든 분수</td></tr>
+      <tr><td class="m">\frac{2x+1}{3}</td><td class="m">(2x+1)/3</td><td class="x">✗</td><td class="o">◯</td><td>괄호로 묶은 분자</td></tr>
+      <tr><td class="m">\frac{1}{2}x</td><td class="m">0.5x · x/2</td><td class="x">✗</td><td class="o">◯</td><td>같은 값의 다른 꼴</td></tr>
+      <tr><td class="m">1/4 (학습지 정답)</td><td class="m">4/1</td><td class="o">◯ (잘못)</td><td class="x">✗</td><td>빗금 양쪽이 숫자면 분수로 읽어 순서를 따짐</td></tr>
+      <tr><td class="m">\frac{3}{2}π</td><td class="m">3π/2</td><td class="x">✗</td><td class="o">◯</td><td>π 위치</td></tr>
+    </table></div>
+    <p class="note">「정답 원문을 그대로 넣으면 반드시 ◯」 규칙은 그대로 지키고, 고친 뒤에 정답 11만 개로 다시 전수 검사합니다(v2-98 때와 같은 방법).</p>
+  </section>
+
+  <!-- ───────── 추천 ───────── -->
+  <section class="rec">
+    <h2>추천 <span class="tag rec">A + 엔진 먼저, C는 초등에 나중에</span></h2>
+    <ol>
+      <li><b>이번 주 (학생앱 v2-132)</b> · 안 A(쌓인 분수 미리보기 + 「6분의 1」 읽기 + 「대분수」 키 + 제출 전 확인) 와 엔진 보강을 한 번에. ✗ 150건 기준으로 <b>약 60건이 ◯로, 2건이 ✗로</b> 바로잡힙니다. 거꾸로 치는 17건은 읽기 덕에 학생이 스스로 고칠 기회가 생깁니다.</li>
+      <li><b>2~3주 뒤</b> · 초등 분수 단원(초4-2·초6-1) 학생 반응을 본 뒤, 초등 교재에만 안 C 세 칸을 켭니다. 중등은 힌트가 새어 A 그대로.</li>
+      <li><b>안 B는 보류</b> · 가장 예쁘지만 손이 제일 많이 가고, A로 거의 같은 효과가 납니다.</li>
+      <li><b>따로 상의할 것</b> · 9/21 고침 전에 ✗로 남은 22건과 이번에 되살아날 기록을 다시 채점해 ◯로 바꿀지(학생 XP·진도에 영향). · 「여러 칸 긴 정답」 28건은 분수 문제가 아니라 <b>반비례 학습지</b> 문항 설계 문제라 다음에.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function(){
+  /* 공용 */
+  function el(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function readKo(txt){                       // "2 1/5" → 「2와 5분의 1」
+    var t=String(txt).trim(); if(!t) return '';
+    var m=t.match(/^(-?)(\d+)\s+(\d+)\/(\d+)$/);
+    if(m) return (m[1]?'마이너스 ':'')+m[2]+'와 '+m[4]+'분의 '+m[3];
+    m=t.match(/^(-?)(\d+)\/(\d+)$/);
+    if(m) return (m[1]?'마이너스 ':'')+m[3]+'분의 '+m[2];
+    m=t.match(/^(-?)(\d+)\/$/);
+    if(m) return (m[1]?'마이너스 ':'')+'?분의 '+m[2]+' … 이제 분모(아래)를 쳐요';
+    if(/^-?\d+(\.\d+)?$/.test(t)) return t;
+    return '';
+  }
+  function stackHtml(txt,foc){                // "2 1/5" → 쌓인 분수 HTML
+    var t=String(txt);
+    var m=t.match(/^(-?)(\d*)\s*(\d*)\/(\d*)$/);
+    if(!m||t.indexOf('/')<0) return esc(t);
+    var whole=m[2], nu=m[3], de=m[4];
+    if(t.indexOf(' ')<0){ nu=whole+nu; whole=''; }
+    return (m[1]||'')+(whole?'<span class="whole">'+esc(whole)+'</span>':'')
+      +'<span class="fr"><span class="nu">'+esc(nu)+'</span><span class="de'+(foc&&!de?' cur':'')+'">'+esc(de)+'</span></span>';
+  }
+  function valueOf(txt){                      // 비교용 값
+    var t=String(txt).trim(), m=t.match(/^(-?)(\d+)\s+(\d+)\/(\d+)$/);
+    if(m) return (m[1]?-1:1)*(Number(m[2])+Number(m[3])/Number(m[4]));
+    m=t.match(/^(-?)(\d+)\/(\d+)$/); if(m) return (m[1]?-1:1)*Number(m[2])/Number(m[3]);
+    if(/^-?\d+(\.\d+)?$/.test(t)) return Number(t);
+    return NaN;
+  }
+  function keysHtml(list){
+    var h='';
+    list.forEach(function(k){ var lab=k[0], val=(k.length>1?k[1]:k[0]), cls=k[2]||''; h+='<button type="button" class="'+cls+'" data-k="'+esc(val)+'">'+esc(lab)+'</button>'; });
+    return h;
+  }
+  function wire(root,fn){ root.querySelectorAll('button[data-k]').forEach(function(b){ b.addEventListener('click',function(){ fn(b.getAttribute('data-k')); }); }); }
+
+  /* ── 지금 ── */
+  (function(){
+    var box=el('d0'), v='';
+    box.innerHTML='<div class="q"><span class="num">3번</span><span class="ans">정답 <b>1/6</b> (6분의 1)</span></div>'
+      +'<div class="fields"><div class="fld foc" id="f0"><span class="ph">?</span></div></div>'
+      +'<div class="res" id="r0"></div>'
+      +'<div class="kpad"><div class="cap">자판 · 숫자</div><div class="keys" id="k0"></div></div>';
+    el('k0').innerHTML=keysHtml([['7'],['8'],['9'],['⌫','BS','fn'],['4'],['5'],['6'],['−','-','fn'],['1'],['2'],['3'],['.','.','fn'],['0'],[',',',','fn'],['／분수','/','fn'],['π','π','fn'],['다음 칸','NEXT','fn'],['제출','GO','go']]);
+    function paint(){ el('f0').innerHTML=v?esc(v):'<span class="ph">?</span>'; }
+    wire(el('k0'),function(k){
+      var r=el('r0'); r.className='res';
+      if(k==='GO'){ var ok=Math.abs(valueOf(v)-1/6)<1e-9; r.className='res show '+(ok?'ok':'bad'); r.textContent=ok?'◯ 정답':'✗ 틀렸어요 — 정답 1/6'; return; }
+      if(k==='NEXT') return;
+      if(k==='BS') v=v.slice(0,-1); else v+=k;
+      paint();
+    });
+  })();
+
+  /* ── 안 A ── */
+  (function(){
+    var box=el('dA'), v='', pending=false;
+    box.innerHTML='<div class="q"><span class="num">3번</span><span class="ans">정답 <b>1/6</b> (6분의 1)</span></div>'
+      +'<div class="fields"><div class="fld foc" id="fA"><span class="ph">?</span></div></div>'
+      +'<div class="read" id="rdA">분자(위)를 먼저, 「분수 ─」를 누른 뒤 분모(아래)를 쳐요</div>'
+      +'<div class="res" id="rA"></div>'
+      +'<div class="kpad"><div class="cap">자판 · 숫자 (테두리 있는 키가 새 것)</div><div class="keys" id="kA"></div></div>';
+    el('kA').innerHTML=keysHtml([['7'],['8'],['9'],['⌫','BS','fn'],['4'],['5'],['6'],['−','-','fn'],['1'],['2'],['3'],['.','.','fn'],['0'],[',',',','fn'],['분수 ─','/','fn new'],['π','π','fn'],['대분수 ␣',' ','fn new'],['다음 칸','NEXT','fn'],['제출','GO','go']]);
+    function paint(){
+      el('fA').innerHTML=v?stackHtml(v,true):'<span class="ph">?</span>';
+      var rd=el('rdA'), k=readKo(v);
+      rd.className='read'; rd.textContent=v?(k||'읽을 수 없는 꼴이에요'):'분자(위)를 먼저, 「분수 ─」를 누른 뒤 분모(아래)를 쳐요';
+      if(v&&!k) rd.className='read warn';
+    }
+    function submit(){
+      var r=el('rA'); var ok=Math.abs(valueOf(v)-1/6)<1e-9;
+      r.className='res show '+(ok?'ok':'bad'); r.textContent=ok?'◯ 정답':'✗ 틀렸어요 — 정답 1/6'; pending=false;
+    }
+    wire(el('kA'),function(k){
+      var r=el('rA');
+      if(k==='GO'){
+        if(!v) return;
+        if(v.indexOf('/')>=0&&!pending){
+          pending=true; r.className='res show ask';
+          r.innerHTML='<b>'+esc(readKo(v))+'</b> 으로 낼까요?<div class="btns"><button type="button" id="yA">네, 제출</button><button type="button" id="nA">고칠래요</button></div>';
+          el('yA').onclick=submit; el('nA').onclick=function(){ pending=false; r.className='res'; };
+          return;
+        }
+        submit(); return;
+      }
+      pending=false; r.className='res';
+      if(k==='NEXT') return;
+      if(k==='BS') v=v.slice(0,-1);
+      else if(k===' '){ if(/^-?\d+$/.test(v)) v+=' '; }
+      else if(k==='/'){ if(v&&v.indexOf('/')<0&&/\d$/.test(v)) v+='/'; }
+      else v+=k;
+      paint();
+    });
+  })();
+
+  /* ── 안 B ── 틀: {whole, nu, de, cur:'nu'|'de'|'whole'|null} */
+  (function(){
+    var box=el('dB'), s={neg:false,whole:'',nu:'',de:'',frac:false,mixed:false,cur:'nu'};
+    box.innerHTML='<div class="q"><span class="num">7번</span><span class="ans">정답 <b>2⅕</b> (2와 5분의 1 · 11/5 도 ◯)</span></div>'
+      +'<div class="fields"><div class="fld foc" id="fB"></div></div>'
+      +'<div class="read" id="rdB"></div>'
+      +'<div class="res" id="rB"></div>'
+      +'<div class="kpad"><div class="cap">자판 · 숫자 (테두리 있는 키가 새 것)</div><div class="keys" id="kB"></div></div>';
+    el('kB').innerHTML=keysHtml([['7'],['8'],['9'],['⌫','BS','fn'],['4'],['5'],['6'],['−','-','fn'],['1'],['2'],['3'],['.','.','fn'],['0'],[',',',','fn'],['분수 ▭/▭','FRAC','fn new'],['π','π','fn'],['대분수 ▭▭/▭','MIX','fn new'],['다음 칸','NEXT','fn'],['제출','GO','go']]);
+    function boxH(name,val){ var on=(s.cur===name); return '<span class="box'+(on?' on':'')+(val?' filled':'')+'" data-b="'+name+'">'+(val?esc(val):'')+'</span>'; }
+    function paint(){
+      var h=(s.neg?'−':'');
+      if(!s.frac){ h+=boxH('nu',s.nu); }
+      else {
+        if(s.mixed) h+='<span class="whole">'+boxH('whole',s.whole)+'</span>';
+        h+='<span class="fr"><span class="nu">'+boxH('nu',s.nu)+'</span><span class="de">'+boxH('de',s.de)+'</span></span>';
+      }
+      el('fB').innerHTML=h;
+      el('fB').querySelectorAll('[data-b]').forEach(function(b){ b.onclick=function(ev){ ev.stopPropagation(); s.cur=b.getAttribute('data-b'); paint(); }; });
+      var rd=el('rdB');
+      if(!s.frac) rd.textContent=s.nu?('정수 '+(s.neg?'−':'')+s.nu):'숫자를 치거나 「분수」를 눌러요';
+      else { var name={nu:'분자(위)',de:'분모(아래)',whole:'정수'}[s.cur]; rd.textContent=(s.cur?name+' 칸을 채우는 중 · ':'')+(readKo(text())||'…'); }
+    }
+    function text(){ if(!s.frac) return (s.neg?'-':'')+s.nu; return (s.neg?'-':'')+(s.mixed&&s.whole?s.whole+' ':'')+s.nu+'/'+s.de; }
+    function next(){ var order=s.frac?(s.mixed?['whole','nu','de']:['nu','de']):['nu']; var i=order.indexOf(s.cur); s.cur=order[(i+1)%order.length]; }
+    wire(el('kB'),function(k){
+      var r=el('rB'); r.className='res';
+      if(k==='GO'){ var t=text(), ok=Math.abs(valueOf(t)-11/5)<1e-9; if(!s.nu||(s.frac&&!s.de)){ r.className='res show ask'; r.textContent='빈 칸이 있어요 — '+(s.frac&&!s.de?'분모(아래)':'분자')+' 칸을 채워요'; return; } r.className='res show '+(ok?'ok':'bad'); r.textContent=(ok?'◯ 정답':'✗ 틀렸어요 — 정답 2⅕')+' · 보낸 값 '+t; return; }
+      if(k==='FRAC'){ if(!s.frac){ s.frac=true; s.cur=s.nu?'de':'nu'; } paint(); return; }
+      if(k==='MIX'){ if(!s.frac){ s.frac=true; } if(!s.mixed){ s.mixed=true; if(s.nu&&!s.whole&&!s.de){ s.whole=s.nu; s.nu=''; } s.cur=s.whole?'nu':'whole'; } paint(); return; }
+      if(k==='NEXT'){ next(); paint(); return; }
+      if(k==='-'){ s.neg=!s.neg; paint(); return; }
+      if(k==='BS'){ if(s[s.cur]) s[s.cur]=s[s.cur].slice(0,-1); else if(s.frac&&s.cur==='de'){ s.cur='nu'; } else if(s.frac&&s.cur==='nu'&&s.mixed){ s.cur='whole'; } else if(s.frac&&!s.nu&&!s.de&&!s.whole){ s.frac=false; s.mixed=false; s.cur='nu'; } paint(); return; }
+      if(/^[0-9.]$/.test(k)){ s[s.cur]=(s[s.cur]||'')+k; paint(); }
+    });
+    paint();
+  })();
+
+  /* ── 안 C ── 세 칸 고정 */
+  (function(){
+    var box=el('dC'), f={whole:'',nu:'',de:''}, cur='nu';
+    box.innerHTML='<div class="q"><span class="num">7번</span><span class="ans">정답 <b>2⅕</b> · 초등 교재 「분수의 나눗셈」</span></div>'
+      +'<div class="fields" id="fC"></div>'
+      +'<div class="read" id="rdC"></div>'
+      +'<div class="res" id="rC"></div>'
+      +'<div class="kpad"><div class="cap">자판 · 숫자 (빗금 키 없음)</div><div class="keys" id="kC"></div></div>';
+    el('kC').innerHTML=keysHtml([['7'],['8'],['9'],['⌫','BS','fn'],['4'],['5'],['6'],['−','-','fn'],['1'],['2'],['3'],['.','.','fn'],['0'],[',',',','fn'],['π','π','fn'],['다음 칸','NEXT','fn'],['제출','GO','go']]);
+    function cell(name,lab){ return '<div style="display:flex;flex-direction:column;align-items:center;gap:2px"><div class="fld'+(cur===name?' foc':'')+'" data-c="'+name+'" style="flex:0 0 auto;min-width:58px;justify-content:center">'+(f[name]?esc(f[name]):'<span class="ph">?</span>')+'</div><span style="font-size:10.5px;color:var(--muted);font-weight:700">'+lab+'</span></div>'; }
+    function paint(){
+      el('fC').innerHTML=cell('whole','정수 (없으면 비움)')
+        +'<div style="display:flex;flex-direction:column;align-items:center;gap:4px">'+cell('nu','분자')+'<div style="width:70px;border-top:2px solid var(--fg)"></div>'+cell('de','분모')+'</div>';
+      el('fC').querySelectorAll('[data-c]').forEach(function(b){ b.onclick=function(){ cur=b.getAttribute('data-c'); paint(); }; });
+      el('rdC').textContent=readKo(text())||'분자부터 채워요 · 정수 답이면 분자 칸에만';
+    }
+    function text(){ if(!f.de) return f.nu; return (f.whole?f.whole+' ':'')+f.nu+'/'+f.de; }
+    wire(el('kC'),function(k){
+      var r=el('rC'); r.className='res';
+      if(k==='GO'){ var t=text(); if(!f.nu||(f.de&&!f.nu)){ r.className='res show ask'; r.textContent='분자 칸이 비었어요'; return; } var ok=Math.abs(valueOf(t)-11/5)<1e-9; r.className='res show '+(ok?'ok':'bad'); r.textContent=(ok?'◯ 정답':'✗ 틀렸어요 — 정답 2⅕')+' · 보낸 값 '+t; return; }
+      if(k==='NEXT'){ cur={whole:'nu',nu:'de',de:'whole'}[cur]; paint(); return; }
+      if(k==='BS'){ f[cur]=f[cur].slice(0,-1); paint(); return; }
+      if(/^[0-9.\-]$/.test(k)){ f[cur]+=k; paint(); }
+    });
+    paint();
+  })();
+})();
+</script>
+</body></html>

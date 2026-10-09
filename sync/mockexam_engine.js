@@ -306,7 +306,8 @@ async function score() {
 
   items.sort((a, b) => (b.solvedAt || '').localeCompare(a.solvedAt || ''));
   log(`자동 채점 항목 ${items.length}건 — ready ${items.filter(i => i.status === 'ready').length} · partial ${items.filter(i => i.status === 'partial').length} · 문항수불일치 ${items.filter(i => i.status === 'mismatch').length}`);
-  items.slice(0, 10).forEach(i => log(`  ${i.student_name} · ${i.examTitle} — 자동 ${i.autoScore}/${i.autoMax}점, 서술형 ${i.essay.length}문항(${i.essayMax}점) 대기, 미채점 ${i.ungraded}`));
+  /* 2026-10-07: 공개 저장소의 Actions 로그 — 이름·점수 개별 값은 남기지 않는다(시험 제목·건수만) */
+  items.slice(0, 10).forEach(i => log(`  ${String(i.student_name || '').slice(0, 1)}○○ · ${i.examTitle} — 서술형 ${i.essay.length}문항 대기, 미채점 ${i.ungraded}`));
 
   if (DRY) { fs.writeFileSync('/tmp/mockexam_auto.json', JSON.stringify({ items }, null, 1)); log('[dry-run] /tmp/mockexam_auto.json 저장'); return; }
   await sbPutKey('mockexam_auto', { items, updated: new Date().toISOString() });

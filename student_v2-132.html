@@ -2226,6 +2226,18 @@ audio { width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
 .bk-fld:empty::before{content:"?";color:#cbd5e1;font-family:inherit;font-size:13px;font-weight:700}
 .bk-fld.foc{border-color:#14b8a6;box-shadow:0 0 0 3px rgba(20,184,166,0.18)}
 .bk-fld.sm{flex:0 1 84px;max-width:110px}   /* v2-82: 「3 시 20 분」처럼 이름표가 뒤에 붙는 칸 */
+/* ★ v2-132: 분수 틀 — 「분수」 키를 누르면 위(분자)·아래(분모) 두 칸, 「대분수」 는 앞에 정수 칸 */
+.bk-fld{display:flex;align-items:center;gap:2px}
+.bk-fr{display:inline-flex;align-items:center;gap:3px;vertical-align:middle}
+.bk-fs{display:inline-flex;flex-direction:column;align-items:center;line-height:1.05}
+.bk-fb{display:inline-flex;min-width:24px;height:22px;padding:0 4px;align-items:center;justify-content:center;border:1.5px dashed #cbd5e1;border-radius:5px;font-size:14px;cursor:pointer}
+.bk-fb.has{border-style:solid}
+.bk-fb.on{border:2px solid #14b8a6;background:#e6fffa}
+.bk-fs .bk-bar{width:100%;border-top:2px solid #334155;margin:2px 0}
+.bk-caret{display:inline-block;width:2px;height:18px;background:#14b8a6;margin-left:1px;animation:bkblink 1s steps(2) infinite}
+@keyframes bkblink{to{opacity:0}}
+@media (prefers-reduced-motion:reduce){.bk-caret{animation:none}}
+.bk-read{font-size:12px;font-weight:800;color:#0f766e;min-height:16px}
 .bk-ox{display:flex;gap:7px}
 .bk-ox button{flex:1;border:1.8px solid #cbd5e1;background:#fff;border-radius:10px;padding:10px 0;font-family:inherit;font-size:19px;font-weight:900;color:#334155;cursor:pointer}
 .bk-chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -4445,6 +4457,22 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-132 (2026-10-09) ➗ 분수는 «틀»로 칩니다 — 위 칸(분자)·아래 칸(분모) · 「대분수」 키 · 우리말 읽기
+ *   · <b>학생 건의</b>: 「분수 채점이 어렵다」. 채점 기록 3,544건을 모두 살펴보니 분수가 든 기록 180건 중
+ *     ✗ 가 150건(83%)인데 <b>값이 정말 틀린 것은 48건뿐</b>이었습니다. 나머지는 입력 방법·엔진 탓이었습니다.
+ *     ① 우리말 「6분의 1」 순서로 <b>6/1</b> 을 친 것 17건 ② 띄어쓰기 키가 없어 대분수를 <b>652·1/1/2</b> 처럼 친 것
+ *     ③ 오답 학습지(수학비서) 정답 <b>{43/12}</b> 꼴과 분모에 문자가 있는 <b>28/x</b> 를 엔진이 못 읽어 맞는 답이 ✗ 가 된 것 22건.
+ *   · <b>[입력]</b> 자판의 「／분수」 가 <b>「분수」</b> 로 바뀌었습니다. 누르면 칸 안에 <b>위·아래 두 칸 틀</b>이 생기고
+ *     위(분자)부터 채웁니다. 「다음 칸」으로 아래(분모)로 내려가고, 칸을 손으로 눌러도 옮겨집니다.
+ *     「2」를 친 뒤 「분수」를 누르면 2가 분자로 올라갑니다. <b>「대분수」</b> 키는 앞에 정수 칸을 붙입니다.
+ *     칸 밑에 <b>「5분의 2」</b> 처럼 우리말로 읽어 줘서 거꾸로 쳤는지 바로 보입니다.
+ *   · <b>[엔진]</b> 수학비서 꼴 분수 <b>{60/7} · 2{1/5} · {55/8}[cm]</b>, 분모에 문자가 있는 <b>28/x · y=-15/x</b>,
+ *     분자에 곱이 든 <b>2x/3 · (a+5)h/2 · 3π/2</b>, 같은 값의 다른 꼴 <b>0.5x = ½x = x/2</b> 를 모두 맞게 읽습니다.
+ *     학습지 정답이 「1/4」 처럼 빗금 꼴이면 분수로 읽어 <b>「4/1」 은 이제 ✗</b> 입니다(순서를 안 따지던 오채점 2건 수정).
+ *   · <b>[확인]</b> 실제 정답 112,815개 전수: 「정답 원문 그대로 → ◯」 불변식 그대로(103,813개), 못 읽게 된 답 0개,
+ *     대괄호 단위 「4[개]」「75[˚]」 1,191개가 새로 자동채점. 분수 답 4,834개에 거꾸로·+1 을 넣은 오채점 0건.
+ *   · 옛 ✗ 기록 가운데 새 엔진이 ◯ 로 읽는 것은 원장님 지시로 다시 채점해 ◯ 로 바꿨습니다(sync/regrade_hw_scores.js).
+ *
  * v2-123 (2026-10-01) 🏷 내 별명 — 「꾸밈말 + 수학·동물 낱말」에서 고르기 (원장 결정 · 학부모 요청 「성이 특정됨」)
  *   · 「나」 탭 「🏷 내 별명」: 앱이 조합 셋을 보여 주고 🎲 다시 뽑기(무제한). 글자를 치는 칸은 없어요. 다른 친구가 쓰는 조합은 안 나와요.
  *   · 처음 정하는 건 자유, 바꾸기는 한 달에 한 번. 선생님이 순위표를 다시 올릴 때 반영돼요.
@@ -4984,7 +5012,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-131';
+var STU_VER = 'v2-132';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -13543,6 +13571,18 @@ window.sgSubmit = async function(){
     t = t.replace(/\\ /g, ' ');                        // 역슬래시+공백
     t = t.replace(/\\hspace\s*\{[^{}]*\}/g, ' ');
     t = t.replace(/\\%/g, '%').replace(/\\\$/g, '$').replace(/\$/g, '');
+    // ★ 2026-10-09 (원장 제보 「분수 채점이 어렵다」): 수학비서(오답 학습지) 정답은 분수를
+    //   「{60/7}」 「2{1/5}」(대분수) 로, 단위를 「[cm]」 「[시간]」 로 준다 — 학습지 정답 227개 실측.
+    //   \frac 와 뒤에 붙는 단위 글자로 바꿔 두면 아래 규칙이 그대로 읽는다.
+    t = t.replace(/(\d+)\s*\{\s*(\d+)\s*\/\s*(\d+)\s*\}/g, '$1\\frac{$2}{$3}');
+    t = t.replace(/\{\s*(-?\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*\}/g, '\\frac{$1}{$2}');
+    //   대괄호는 «단위 목록에 있는 글자»일 때만 단위로 본다 — \sqrt[3]{2}(세제곱근)·[방법1]·[요일] 은 그대로 둔다.
+    t = t.replace(/\[\s*([A-Za-z가-힣㎠㎟㎡㎢㎤㎥㎣㎝㎜㎞㎖㎘㎏㎎°˚%²³^0-9.]{1,6})\s*\]/g,
+      function (m0, u, off, whole) {
+        if (/\\sqrt\s*$/.test(whole.substring(0, off))) return m0;
+        var uu = u.replace(/[˚º∘]/g, '°');
+        return (UNIT_LIST.indexOf(uu) >= 0 || /^[A-Za-z0-9.^²³%°]+$/.test(uu)) ? ' ' + uu + ' ' : m0;
+      });
     var MAP = [
       [/\\pm(?![a-zA-Z])/g, '±'], [/\\mp(?![a-zA-Z])/g, '±'],
       [/\\times(?![a-zA-Z])/g, '×'], [/\\cdot(?![a-zA-Z])/g, '×'], [/\\div(?![a-zA-Z])/g, '÷'],
@@ -13795,21 +13835,69 @@ window.sgSubmit = async function(){
     }
     return { tok: tok, i: i };
   }
-  function normTerm(body) {
-    var s = body, i = 0, out = [], f;
+  /* 한 항을 인자 목록으로 읽는다 — [{tok, div}] (div = 나누는 인자). null 이면 못 읽은 것 */
+  function termFactors(body) {
+    var s = body, i = 0, out = [], f, div;
     if (!s) return null;
     while (i < s.length) {
       var c = s.charAt(i);
       if (c === '*') { i++; continue; }
-      if (c === '/') { i++; f = readFactor(s, i); if (!f) return null; out.push('÷' + f.tok); i = f.i; continue; }
-      f = readFactor(s, i); if (!f) return null; out.push(f.tok); i = f.i;
+      div = false;
+      if (c === '/') { i++; div = true; }
+      f = readFactor(s, i); if (!f) return null;
+      out.push({ tok: peelTok(f.tok), div: div }); i = f.i;
     }
-    if (!out.length) return null;
-    for (var q = 0; q < out.length; q++) out[q] = peelTok(out[q]);
-    out = out.filter(function (x) { return x !== '1'; });   // 계수 1은 없는 셈
-    if (!out.length) out = ['1'];
-    out.sort();
-    return out.join('*');
+    return out.length ? out : null;
+  }
+  /* normExpr 결과(「+2*x*÷3」「-3+2*x」)가 항 하나뿐인가 — 괄호 밖 +·- 로 센다 */
+  function singleTermKey(k) {
+    var d = 0, i, c;
+    for (i = 1; i < k.length; i++) {
+      c = k.charAt(i);
+      if (c === '(') d++; else if (c === ')') d--;
+      else if (d === 0 && (c === '+' || c === '-')) return false;
+    }
+    return /^[+-]/.test(k);
+  }
+  /* ★ 2026-10-09: 한 항을 「부호 · 유리수 계수 · 나머지 인자(정렬)」 로 정리한다.
+   *   · 괄호 속이 항 하나뿐이면 괄호를 풀어 인자를 꺼낸다 — (2x)/3 = 2/3·x,  ÷(2x) = ÷2·÷x,  (a+5)h/2 = ½(a+5)h
+   *   · 숫자 인자는 모두 계수 하나로 모은다 — 0.5x = 1/2x = x/2 = x÷2,  3π/2 = 3/2π
+   *   같은 규칙을 정답·학생 답 양쪽에 똑같이 쓰므로 「정답 원문 → 정답」 불변식은 그대로다. */
+  function normTermObj(body) {
+    var fs = termFactors(body); if (!fs) return null;
+    var sign = 1, coef = { n: 1, d: 1 }, rest = [], i, k, t, r, inner, sub, dv, st, m;
+    for (i = 0; i < fs.length; i++) {
+      t = fs[i].tok;
+      if (t.charAt(0) === '(' && t.charAt(t.length - 1) === ')') {
+        inner = t.substring(1, t.length - 1);
+        if (singleTermKey(inner)) {
+          if (inner.charAt(0) === '-') sign = -sign;
+          sub = splitTopMulti(inner.substring(1), '*');
+          for (k = 0; k < sub.length; k++) {
+            dv = fs[i].div; st = sub[k];
+            if (!st) continue;
+            if (st.charAt(0) === '÷') { st = st.substring(1); dv = !dv; }
+            fs.push({ tok: st, div: dv });                 // 뒤에 덧붙여 같은 규칙으로 다시 읽는다
+          }
+          continue;
+        }
+      }
+      r = null;
+      if (/^\d+(\.\d+)?$/.test(t)) r = decRat(t);
+      else if ((m = t.match(/^(\d+)\/(\d+)$/))) r = ratOf(Number(m[1]), Number(m[2]));
+      if (r) {
+        if (r.n === 0) { coef = { n: 0, d: 1 }; continue; }
+        coef = fs[i].div ? ratOf(coef.n * r.d, coef.d * r.n) : ratOf(coef.n * r.n, coef.d * r.d);
+        if (!coef) return null;
+        continue;
+      }
+      rest.push((fs[i].div ? '÷' : '') + t);
+    }
+    if (coef.n < 0) { sign = -sign; coef.n = -coef.n; }
+    rest.sort();
+    var key = (rest.length && coef.n === 1 && coef.d === 1) ? rest.join('*')
+      : ratKey(coef) + (rest.length ? '*' + rest.join('*') : '');
+    return { s: (sign < 0 ? '-' : '+'), t: key };
   }
   function normExpr(s0) {
     var s = String(s0), terms = [], sign = '+', buf = '', d = 0, i, c, prev;
@@ -13827,9 +13915,9 @@ window.sgSubmit = async function(){
     terms.push({ s: sign, b: buf });
     var out = [];
     for (i = 0; i < terms.length; i++) {
-      var t = normTerm(terms[i].b);
-      if (t == null) return null;
-      out.push(terms[i].s + t);
+      var o = normTermObj(terms[i].b);
+      if (!o) return null;
+      out.push((((terms[i].s === '-') !== (o.s === '-')) ? '-' : '+') + o.t);
     }
     out.sort();
     return out.join('');
@@ -14366,6 +14454,10 @@ window.sgSubmit = async function(){
     var res = { parts: [], gradable: false, shape: 'free', unit: '', labeled: false, essay: false };
     if (!s0 || s0 === '.') { res.essay = true; res.shape = 'essay'; return res; }
     var s = unlatex(s0);
+    // ★ 2026-10-09: 답이 통째로 「-9/2」 「1/4」 꼴이면 구분선이 아니라 분수다 (학습지 정답 35개 실측).
+    //   그래야 「4/1」 이 「1/4」 의 정답으로 받아들여지던 오채점(순서 무시)이 사라진다.
+    var mSl = s.match(/^\s*([+-]?)\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*$/);
+    if (mSl) s = mSl[1] + '\\frac{' + mSl[2] + '}{' + mSl[3] + '}';
     if (mixedMarks(s)) { res.shape = 'free'; return res; }   // ○표·△표가 섞였다 → 자기채점
     var sample = isSample(s);
     if (sample) s = stripSample(s);
@@ -14448,7 +14540,10 @@ window.sgSubmit = async function(){
     /* 좌표 (0,33/10) · 식 x=7/3 · 부등식 a≥-1/2 처럼 «글 속에» 든 분수도 바꾼다.
        빗금 양옆에 공백이 없을 때만 — 초등 교재의 구분선 「3 / 5」은 건드리지 않는다.
        (뒷걸음 보기(lookbehind)는 옛 사파리가 못 읽어서 앞 글자를 붙잡는 방식으로 쓴다) */
-    var r2 = r.replace(/([^0-9.\/}]|^)(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)(?![\d.\/])/g,
+    /* ★ 2026-10-09 (분수 틀 입력): 「28/x」 「y=-15/x」 「2x/3」 「(2x+1)/3」 「√3/2」 「3π/2」 「1/(x+1)」 도 분수다.
+       빗금 앞은 «인자 하나»(숫자·문자 묶음·근호·괄호 묶음), 뒤는 숫자 하나·문자 묶음·괄호 묶음.
+       「15/2x」 는 예전처럼 (15/2)x — 분모는 숫자면 숫자까지만 잡는다. */
+    var r2 = r.replace(/([^0-9A-Za-zπ√∛.\/]|^)((?:\([^()]*\))|[0-9A-Za-zπ√∛.^]+)\/((?:\([^()]*\))|\d+(?:\.\d+)?|[A-Za-zπ][A-Za-z0-9π^]*)(?![\d.\/])/g,
       function (_, pre, aa, bb) { return pre + '\\frac{' + aa + '}{' + bb + '}'; });
     if (r2 !== r) { changed = true; r = r2; }
     return changed ? r : t;
@@ -18855,7 +18950,7 @@ var BK_KPAD={
     ['7'],['8'],['9'],['⌫','BS','fn'],
     ['4'],['5'],['6'],['−','-','fn'],
     ['1'],['2'],['3'],['.','.','fn'],
-    ['0'],[',',',','fn'],['／분수','/','fn'],['π','π','fn'],
+    ['0'],[',',',','fn'],['분수','FRAC','fn'],['π','π','fn'],
     /* ★ v2-93: 실제 정답에 쓰이는데 칠 수 없던 기호들 (원장 제보 2026-09-18)
      *   : 비(3:4) 162문항 · √ 제곱근 · | 절댓값 · ^ 지수 */
     [':',':','fn'],['√','√','fn'],['^','^','fn'],['|','|','fn'],
@@ -18863,7 +18958,7 @@ var BK_KPAD={
      *   정답이 「(3,6), (-4,-3)」처럼 괄호까지가 답인 좌표 문항에서 쓴다.
      *   「(3, 4)」「(2)」「(가)」처럼 괄호가 껍데기인 답은 채점 엔진이 알아서 벗기므로 안 쳐도 된다. */
     ['('],[')'],['·','·','fn'],['°','°','fn'],
-    ['다음 칸','NEXT','fn'],['제출','GO','go',3]
+    ['대분수','MIX','fn'],['다음 칸','NEXT','fn'],['제출','GO','go',2]
   ]},
   /* 도형 자판은 학년에 따라 줄 차례가 바뀐다 — bkGeoKeys() 를 보라 */
   geo:{ cols:5, keys:null },
@@ -18878,12 +18973,12 @@ var BK_KPAD={
     ['u'],['v'],['w'],['x'],['y'],
     ['z'],['π'],['√'],['|'],[':'],
     ['+'],['−','-'],['×'],['÷'],['^'],
-    ['('],[')'],['／분수','/','fn'],['='],['_'],
+    ['('],[')'],['분수','FRAC','fn'],['='],['_'],
     ['<'],['>'],['≤'],['≥'],['≠'],
     ['1'],['2'],['3'],['4'],['5'],
     ['6'],['7'],['8'],['9'],['0'],
     [',',',','fn'],['.'],["'"],['⌫','BS','fn'],['다음 칸','NEXT','fn'],
-    ['제출','GO','go',5]
+    ['대분수','MIX','fn'],['제출','GO','go',4]
   ]},
   mark:{ cols:5, keys:null }
 };
@@ -18985,7 +19080,7 @@ window.bkRenderQ=function(){
   if(bkRtOn()){
     if(tEl) tEl.textContent='🔁 다시 도전 · '+BK.rt.round+'차';
     body.innerHTML=bkRtRender(pg,probs);
-    BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
+    BK.active=null; BK.fields=[]; BK.fx=[]; BK.fi=0; BK.sh=null;
     bkKpadShow(false);
     return;
   }
@@ -19000,7 +19095,7 @@ window.bkRenderQ=function(){
   probs.forEach(function(p,i){ h+=bkCardHtml(p,i,pg,probs); });
   h+=bkDoneHtml(pg,probs);
   body.innerHTML=h;
-  BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
+  BK.active=null; BK.fields=[]; BK.fx=[]; BK.fi=0; BK.sh=null;
   bkKpadShow(false);
 };
 /* 이 쪽의 채점 현황 */
@@ -19208,14 +19303,14 @@ window.bkRtStart=function(round){
   var list=bkRtList(pg,probs,round,Date.now());
   if(!list.length){ if(typeof toast==='function') toast('다시 도전할 문항이 없어요'); return; }
   BK.rt={ round:round, ids:list.map(function(p){ return String(p.wpId); }) };
-  BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
+  BK.active=null; BK.fields=[]; BK.fx=[]; BK.fi=0; BK.sh=null;
   bkKpadShow(false);
   bkRenderQ();
   try{ var bd=document.getElementById('bkq-body'); if(bd) bd.scrollTop=0; window.scrollTo(0,0); }catch(e){}
 };
 /* 다시 도전을 끝내고 채점 화면으로 */
 window.bkRtEnd=function(){
-  BK.rt=null; BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
+  BK.rt=null; BK.active=null; BK.fields=[]; BK.fx=[]; BK.fi=0; BK.sh=null;
   bkKpadShow(false);
   bkRenderQ();
   try{ var bd=document.getElementById('bkq-body'); if(bd) bd.scrollTop=0; window.scrollTo(0,0); }catch(e){}
@@ -19583,6 +19678,7 @@ function bkInputBody(p,sh,wp,key,probs){
     h+='<div class="bk-slots">';
     sh.parts.forEach(function(pt,ix){ h+=bkSlotHtml(p,sh,pt,ix,wp); });
     h+='</div>';
+    h+='<div class="bk-read" id="bkrd-'+h3Esc(wp)+'"></div>';     /* ★ v2-132: 우리말 읽기 */
     h+='<div class="bk-hint">'+h3Esc(bkTapHint(sh))+'</div>';
     h+='<div class="bk-taprow">'
       +'<button class="bk-go" onclick="bkSubmitFor('+bkQ(wp)+')">제출</button>'+dunno+'</div>';
@@ -19597,6 +19693,7 @@ function bkInputBody(p,sh,wp,key,probs){
     if(pt.unit) h+='<span class="bk-unit">'+h3Esc(pt.unit)+'</span>';
   });
   h+='</div>';
+  h+='<div class="bk-read" id="bkrd-'+h3Esc(wp)+'"></div>';     /* ★ v2-132: 우리말 읽기 */
   h+='<div style="display:flex;align-items:center;gap:6px">';
   if(sh.parts.length>1) h+='<span class="bk-hint">칸이 '+sh.parts.length+'개예요 — 「다음 칸」으로 옮겨요'
     +(sh.key?' · 모두 맞아야 ◯ 예요':'')+'</span>';   /* v2-89 */
@@ -19724,7 +19821,8 @@ function bkPaintOne(wp,ix,kind,v,foc,clear){
     return;
   }
   var el=document.getElementById('bkf-'+wp+'-'+ix); if(!el) return;
-  el.textContent=clear?'':(v||'');
+  var fx=(!clear&&BK.fx&&BK.fx[ix])?BK.fx[ix]:null;          /* ★ v2-132: 분수 틀 모델이 있으면 그것을 그린다 */
+  if(fx) el.innerHTML=bkFxHtml(fx,ix,foc); else el.textContent=clear?'':(v||'');
   el.classList.toggle('foc', !clear&&foc);
 }
 function bkKindAt(ix){
@@ -19734,11 +19832,12 @@ function bkKindAt(ix){
 function bkPaintFields(){
   if(BK.active==null) return;
   for(var i=0;i<BK.fields.length;i++) bkPaintOne(BK.active,i,bkKindAt(i),BK.fields[i]||'',i===BK.fi,false);
+  bkReadPaint();                                               /* ★ v2-132: 「5분의 2」 우리말 읽기 */
 }
 function bkBlur(){
   if(BK.active==null) return;
   for(var i=0;i<BK.fields.length;i++) bkPaintOne(BK.active,i,bkKindAt(i),'',false,true);
-  BK.active=null; BK.fields=[]; BK.fi=0; BK.sh=null;
+  BK.active=null; BK.fields=[]; BK.fx=[]; BK.fi=0; BK.sh=null;
 }
 /* 자판을 열지 않고 이 문항을 「고르는 중」으로 잡아 둔다 */
 function bkArm(wpId, idx){
@@ -19747,7 +19846,7 @@ function bkArm(wpId, idx){
   if(String(BK.active)!==wpId){
     bkBlur();
     BK.active=wpId; BK.sh=bkShape(p);
-    BK.fields=[]; for(var i=0;i<BK.sh.parts.length;i++) BK.fields.push('');
+    BK.fields=[]; BK.fx=[]; for(var i=0;i<BK.sh.parts.length;i++){ BK.fields.push(''); BK.fx.push(bkFxNew()); }
   }
   if(idx!=null) BK.fi=Math.max(0,Math.min(Number(idx)||0,BK.fields.length-1));
   return true;
@@ -19780,13 +19879,126 @@ window.bkSubmitFor=function(wpId){
   if(!bkArm(wpId, null)) return;
   bkSubmit();
 };
+/* ═══ ★ v2-132: 분수 틀 입력 (원장 결정 2026-10-09 「B안 + 엔진」 · 시안 docs/mockup_fraction_input.html) ═══
+ * [왜] 학생들이 「분수 채점이 어렵다」 — 기록 3,544건을 보니 분수 ✗ 150건 중 값이 정말 틀린 것은 48건뿐.
+ *   우리말 「6분의 1」 순서로 6/1 을 치거나(17건), 띄어쓰기 키가 없어 대분수를 못 치거나(652·1/1/2),
+ *   엔진이 「{43/12}」(수학비서 꼴)·「28/x」 를 못 읽어 맞는 답이 ✗ 가 됐다(22건).
+ * [무엇] 「분수」 키를 누르면 칸 안에 «위(분자)·아래(분모) 두 칸» 틀이 생기고 위부터 채운다.
+ *   「대분수」 는 앞에 정수 칸을 붙인다. 「다음 칸」은 틀 안에서 정수→분자→분모→틀 뒤로, 틀 밖이면 다음 입력칸.
+ *   칸을 손으로 눌러도 옮겨진다. 칸 밑에 「5분의 2」 처럼 우리말로 읽어 준다.
+ * [모델] 한 입력칸 = 글 조각(x)과 분수 조각(f)이 번갈아 늘어선 목록. 늘 글 조각으로 시작·끝난다.
+ *   {t:'x',s:'2'} {t:'f',w:'',n:'3',d:'4',mixed:false} {t:'x',s:'x+1'}   커서 cur={i:조각, p:'s'|'w'|'n'|'d'}
+ *   채점에는 bkFxText 로 편 글자(「2 3/4」「(2x+1)/3」「-15/x」)를 쓴다 — 엔진이 빗금을 분수로 읽는다(같은 날 보강). */
+function bkFxNew(){ return { segs:[{t:'x',s:''}], cur:{i:0,p:'s'} }; }
+function bkFxFrom(txt){ var f=bkFxNew(); f.segs[0].s=String(txt||''); return f; }
+function bkFxAt(i){ if(!BK.fx) BK.fx=[]; if(!BK.fx[i]) BK.fx[i]=bkFxFrom(BK.fields[i]); return BK.fx[i]; }
+function bkFxWrap(x){ x=String(x||''); if(/^\([^()]*\)$/.test(x)) return x; return /[+\-×÷*]/.test(x.slice(1))?'('+x+')':x; }   // 이미 괄호로 묶인 것은 그대로
+function bkFxText(fx){
+  var out='';
+  fx.segs.forEach(function(sg){
+    if(sg.t==='x'){ out+=sg.s; return; }
+    out+=(sg.mixed&&sg.w?sg.w+' ':'')+bkFxWrap(sg.n)+'/'+bkFxWrap(sg.d);
+  });
+  return out;
+}
+function bkFxBox(ix,si,p,val,on,cls){
+  return '<span class="bk-fb '+cls+(val?' has':'')+(on?' on':'')+'" onclick="event.stopPropagation();bkFxTap('+ix+','+si+',\''+p+'\')">'+h3Esc(val)+'</span>';
+}
+function bkFxHtml(fx,ix,foc){
+  var h='', c=fx.cur;
+  fx.segs.forEach(function(sg,si){
+    if(sg.t==='x'){ h+=h3Esc(sg.s); if(foc&&c.i===si&&c.p==='s') h+='<span class="bk-caret"></span>'; return; }
+    var on=foc&&c.i===si;
+    h+='<span class="bk-fr">';
+    if(sg.mixed) h+=bkFxBox(ix,si,'w',sg.w,on&&c.p==='w','w');
+    h+='<span class="bk-fs">'+bkFxBox(ix,si,'n',sg.n,on&&c.p==='n','n')+'<span class="bk-bar"></span>'+bkFxBox(ix,si,'d',sg.d,on&&c.p==='d','d')+'</span></span>';
+  });
+  return h;
+}
+window.bkFxTap=function(ix,si,p){
+  if(BK.active==null) return;
+  BK.fi=ix; var fx=bkFxAt(ix); if(!fx.segs[si]) return;
+  fx.cur={i:si,p:p}; bkPaintFields(); bkKpadShow(true);
+};
+/* 「분수」(mixed=false)·「대분수」(mixed=true) 키 */
+function bkFxFrac(fx,mixed){
+  var c=fx.cur, sg=fx.segs[c.i];
+  if(sg.t==='f'){                                   // 이미 틀 안 — 대분수로 바꾸거나 칸만 옮긴다
+    if(mixed&&!sg.mixed){ sg.mixed=true; if(sg.n&&!sg.d&&!sg.w){ sg.w=sg.n; sg.n=''; } c.p=sg.w?'n':'w'; }
+    else if(c.p==='n'&&sg.n) c.p='d';
+    return;
+  }
+  // 글 조각 끝의 한 덩어리(「2」「2x」「√3」「(2x+1)」)를 분자(대분수면 정수)로 끌어온다
+  var m=sg.s.match(/((?:\d+\.?\d*|[A-Za-zπ√])+|\([^()]*\))$/), tok='';
+  if(m){ tok=m[1]; sg.s=sg.s.slice(0,-tok.length); }
+  var f={t:'f',w:'',n:'',d:'',mixed:!!mixed};
+  if(mixed){ if(/^\d+$/.test(tok)) f.w=tok; else sg.s+=tok; }
+  else f.n=tok;
+  fx.segs.splice(c.i+1,0,f,{t:'x',s:''});
+  fx.cur={i:c.i+1,p:(mixed?(f.w?'n':'w'):(f.n?'d':'n'))};
+}
+/* 「다음 칸」 — 틀 안이면 정수→분자→분모→틀 뒤 글. 틀 밖이면 false (다음 입력칸으로) */
+function bkFxNext(fx){
+  var c=fx.cur, sg=fx.segs[c.i];
+  if(sg.t!=='f') return false;
+  if(c.p==='w') c.p='n';
+  else if(c.p==='n') c.p='d';
+  else fx.cur={i:c.i+1,p:'s'};
+  return true;
+}
+function bkFxBack(fx){
+  var c=fx.cur, sg=fx.segs[c.i];
+  if(sg.t==='x'){
+    if(sg.s){ sg.s=sg.s.slice(0,-1); return; }
+    if(c.i>0) fx.cur={i:c.i-1,p:'d'};              // 앞 분수 틀의 분모로
+    return;
+  }
+  if(sg[c.p]) sg[c.p]=sg[c.p].slice(0,-1);
+  else if(c.p==='d') c.p='n'; else if(c.p==='n'&&sg.mixed) c.p='w';   // 빈 칸이면 한 칸 앞으로
+  if(!sg.w&&!sg.n&&!sg.d){                          // 다 비면 틀을 없애고 앞뒤 글을 잇는다
+    var pre=fx.segs[c.i-1], post=fx.segs[c.i+1];
+    pre.s+=post.s; fx.segs.splice(c.i,2); fx.cur={i:c.i-1,p:'s'};
+  }
+}
+function bkFxType(fx,k){
+  var c=fx.cur, sg=fx.segs[c.i];
+  if(sg.t==='x'){ sg.s+=k; return; }
+  if(k===','){ fx.cur={i:c.i+1,p:'s'}; fx.segs[c.i+1].s+=k; return; }   // 쉼표는 틀 밖으로
+  sg[c.p]=(sg[c.p]||'')+k;
+}
+/* 우리말 읽기 — 「2와 5분의 1」 「x분의 15」. 분수가 없으면 빈 글 */
+function bkReadKo(txt){
+  var t=String(txt||'').trim(), m;
+  if(t.indexOf('/')<0) return '';
+  m=t.match(/(-?)(\d+) ([A-Za-z0-9.π√^]+|\([^()]*\))\/([A-Za-z0-9.π√^]+|\([^()]*\))/);
+  if(m) return (m[1]?'마이너스 ':'')+m[2]+'와 '+m[4]+'분의 '+m[3];
+  m=t.match(/(-?)([A-Za-z0-9.π√^]+|\([^()]*\))\/([A-Za-z0-9.π√^]+|\([^()]*\))/);
+  if(m) return (m[1]?'마이너스 ':'')+m[3]+'분의 '+m[2];
+  return '';
+}
+function bkReadPaint(){
+  var el=(BK.active!=null)?document.getElementById('bkrd-'+BK.active):null; if(!el) return;
+  var fx=BK.fx&&BK.fx[BK.fi], sg=fx&&fx.segs[fx.cur.i], t='';
+  if(sg&&sg.t==='f'){
+    if(!sg.n&&!sg.w) t='위 칸(분자)부터 채워요';
+    else if(!sg.d) t='아래 칸(분모)을 채워요 — 「다음 칸」으로 내려가요';
+    else t=((sg.mixed&&sg.w)?sg.w+'와 ':'')+sg.d+'분의 '+sg.n;
+  } else t=bkReadKo(BK.fields[BK.fi]||'');
+  el.textContent=t;
+}
 window.bkKey=function(k){
   if(BK.active==null) return;
   if(k==='GO'){ bkSubmit(); return; }
-  if(k==='NEXT'){ BK.fi=(BK.fi+1)%Math.max(1,BK.fields.length); bkPaintFields(); return; }
-  var i=BK.fi;
-  if(k==='BS') BK.fields[i]=String(BK.fields[i]||'').slice(0,-1);
-  else BK.fields[i]=String(BK.fields[i]||'')+k;
+  var i=BK.fi, fx=bkFxAt(i);
+  if(k==='NEXT'){
+    if(!bkFxNext(fx)) BK.fi=(BK.fi+1)%Math.max(1,BK.fields.length);   // 틀 안이면 틀 안에서, 아니면 다음 입력칸
+    bkPaintFields(); return;
+  }
+  if(k==='FRAC') bkFxFrac(fx,false);
+  else if(k==='MIX') bkFxFrac(fx,true);
+  else if(k==='BS') bkFxBack(fx);
+  else bkFxType(fx,k);
+  BK.fields[i]=bkFxText(fx);
   bkPaintFields();
 };
 window.bkSubmit=function(){

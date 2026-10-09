@@ -30,8 +30,13 @@ jobs:
         with:
           node-version: '22'
 
+      # 2026-10-07: 「지금 가져오기」도 같은 수집기를 부른다 — 전국 등수·역량 PDF 를 읽으려면 pdf-parse (매일 수집과 같은 방식)
+      - name: PDF 읽기 부품 설치 (전국 등수·역량)
+        run: npm install --no-save --no-audit --no-fund --loglevel=error --prefix "$RUNNER_TEMP/pp" pdf-parse@1.1.1
+
       - name: 요청 확인 후 수집
         env:
+          NODE_PATH: ${{ runner.temp }}/pp/node_modules   # 위 단계에서 깐 pdf-parse
           MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
           MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
