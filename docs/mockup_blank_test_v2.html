@@ -1,0 +1,238 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>백지테스트 편집기 시안</title></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Nanum+Myeongjo:wght@400;700&display=swap">
+<style>
+/* 레이아웃: 위 = 지금 vs 추가, 가운데 = 학원앱 백지테스트 화면 시안(왼쪽 편집 · 오른쪽 인쇄 미리보기, 직접 눌러 보기), 아래 = 순서·여쭐 것 */
+:root{
+  --bg:#eef2f8; --card:#ffffff; --fg:#0d2240; --muted:#64748b; --line:#e6eaf1; --navy:#0d2240; --navy-soft:#e8eef8; --blue:#1d6fe8; --blue-soft:#e8f1ff;
+  --amber:#b45309; --amber-soft:#fff7e6; --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c; --bad-soft:#fee2e2; --paper:#ffffff; --paper-line:#cbd5e1;
+  --font:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; --serif:"Nanum Myeongjo","Noto Serif KR",serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --paper:#f7f7f2; --paper-line:#9aa3ad; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --paper:#f7f7f2; --paper-line:#9aa3ad; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5;margin:0}
+.wrap{max-width:1100px;margin:0 auto;padding-block:20px 60px;padding-inline:16px;display:flex;flex-direction:column;gap:22px}
+h1{font-size:23px;font-weight:900;margin:0 0 4px;letter-spacing:-0.01em;text-wrap:balance}
+h2{font-size:16.5px;font-weight:900;margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 .tag{font-size:11px;font-weight:700;letter-spacing:0.04em;padding:2px 8px;border-radius:999px;background:var(--navy-soft);color:var(--blue)}
+p{margin:0}.lead,.note{color:var(--muted);font-size:13px}.note b{color:var(--fg)}
+.sec{display:flex;flex-direction:column;gap:10px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:560px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:0.04em;color:var(--muted);font-weight:700;background:var(--navy-soft)} tr:last-child td{border-bottom:0}
+td.k{font-weight:900;white-space:nowrap} td.now{color:var(--muted)} td.new b{color:var(--blue)}
+/* 앱 화면 시안 */
+.app{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.chips{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.chip{border:1.5px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:5px 11px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+:root[data-theme="dark"] .chip.on,:root:not([data-theme="light"]) .chip.on{color:var(--bg)}
+.chip.sub{font-size:11.5px;padding:4px 10px}
+.chip.sub.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.lbl{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:0.03em;margin-right:4px}
+.cfg{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12px;font-weight:800;color:var(--muted)}
+.cfg input,.cfg select{font-family:inherit;font-size:12px;font-weight:800;border:1.5px solid var(--line);border-radius:8px;padding:5px 7px;background:var(--card);color:var(--fg)}
+.cfg input[type=number]{width:52px}
+.btn{border:none;border-radius:9px;padding:8px 13px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer;background:var(--navy-soft);color:var(--blue)}
+.btn.main{background:var(--blue);color:#fff}.btn.pri{background:var(--navy);color:#fff}
+:root[data-theme="dark"] .btn.pri,:root:not([data-theme="light"]) .btn.pri{color:var(--bg)}
+.btn.sm{padding:5px 8px;font-size:11px;border-radius:7px}.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+.btn.warn{background:var(--amber-soft);color:var(--amber)} .btn.bad{background:var(--bad-soft);color:var(--bad)}
+.btn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:760px){ .two{grid-template-columns:1fr} }
+.ed{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ed h3{font-size:12.5px;font-weight:900;margin:6px 0 0;padding-bottom:3px;border-bottom:1.5px solid var(--navy);display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.ed h3 small{font-size:10.5px;color:var(--muted);font-weight:700}
+.item{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;background:var(--card)}
+.item.busy{opacity:0.55}
+.item .no{font-size:12px;font-weight:900;color:var(--muted);padding-top:6px}
+.item textarea,.item input{width:100%;box-sizing:border-box;font-family:inherit;font-size:12.5px;line-height:1.5;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--card);color:var(--fg);resize:vertical}
+.item input{margin-top:4px;font-size:11.5px;border-style:dashed;color:var(--muted)}
+.item .ty{display:inline-block;font-size:10px;font-weight:900;padding:1px 6px;border-radius:5px;margin-bottom:4px;background:var(--navy-soft);color:var(--blue)}
+.item .ty.w{background:var(--amber-soft);color:var(--amber)}
+.item .ops{display:flex;flex-direction:column;gap:3px}
+.tbitem{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;grid-template-columns:22px 70px minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--card);font-size:12px}
+.tbitem .img{height:46px;border:1px dashed var(--paper-line);border-radius:6px;background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(100,116,139,0.12) 6px 7px);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);font-weight:800}
+.tbitem b{display:block}.tbitem small{color:var(--muted);font-weight:700;font-size:11px}
+/* 인쇄 미리보기 */
+.pv{min-width:0}
+.pv .cap{font-size:11px;font-weight:800;color:var(--muted);display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px}
+.paper{background:var(--paper);color:#111;border:1px solid var(--paper-line);border-radius:4px;padding:24px 26px;font-family:var(--serif);box-shadow:0 8px 24px rgba(13,34,64,0.12);min-height:520px;font-size:12.5px;line-height:1.7}
+.paper .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.paper .hd b{font-size:17px;font-weight:700}.paper .hd span{font-size:11px}
+.paper .pt{font-weight:700;font-size:13px;margin:12px 0 4px;border-bottom:1px solid #999;padding-bottom:2px}
+.paper .q{display:flex;gap:8px;margin:6px 0}.paper .q .n{font-weight:700;min-width:18px}
+.paper .blank{display:inline-block;min-width:64px;border-bottom:1.5px solid #111;height:1.1em;vertical-align:-3px;margin:0 3px}
+.paper .ans{height:52px;border:1px dashed #9aa3ad;border-radius:4px;margin:4px 0 2px 26px}
+.paper .tb{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.paper .tb .pb{border:1px solid #cfd6de;border-radius:4px;padding:6px 8px;min-height:92px}
+.paper .tb .pb small{display:block;font-size:10px;color:#555;font-family:var(--font);font-weight:700;margin-bottom:3px}
+.paper .tb .pb .ph{height:56px;background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(0,0,0,0.06) 6px 7px);border-radius:3px}
+.paper .ft{margin-top:14px;font-size:11px;color:#333;border-top:1px solid #999;padding-top:6px}
+.toast{border-radius:9px;padding:8px 11px;font-size:12px;font-weight:800;background:var(--ok-soft);color:var(--ok);display:none}.toast.show{display:block}
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px}
+:root[data-theme="dark"] .step .n,:root:not([data-theme="light"]) .step .n{color:var(--bg)}
+.step b{display:block}.step small{color:var(--muted);font-weight:700}
+.ask{background:var(--card);border:2px solid var(--blue);border-radius:14px;padding:14px;font-size:13.5px}
+.ask ol{margin:6px 0 0;padding-left:20px}.ask li{margin:4px 0}
+</style>
+<div class="wrap">
+  <div>
+    <h1>백지테스트 — 고1 단원으로, 보면서 고치기</h1>
+    <p class="lead">2026-10-10 · 중3 학생이 공통수학(상)을 나갈 차례인데 백지테스트가 중3 단원만 보여 줍니다. 단원을 학년에 매이지 않게 고르고, 만든 시험지를 인쇄 모양 그대로 보면서 문항을 다시 쓰거나 더하거나 빼는 화면 시안입니다. 아직 코드는 없습니다.</p>
+  </div>
+
+  <section class="sec">
+    <h2>지금 vs 추가 <span class="tag">비교</span></h2>
+    <div class="tbl"><table>
+      <tr><th style="width:110px">항목</th><th>지금 (v19-93)</th><th>추가</th></tr>
+      <tr><td class="k">단원 고르기</td><td class="now">「교과 단원에서…」 목록이 <b>학생 학년(중3)</b>으로만 걸러짐. 고1 단원은 글자로 직접 쳐야 하고, 그러면 AI 가 유형 목록 없이 씀</td><td class="new"><b>과정을 따로 고름</b>(중3-1 · 중3-2 · 공통수학1 · 공통수학2 · 대수 …) → 대단원 → 중단원 칩. 유형DB 에 공통수학1(다항식 · 방정식과 부등식 · 경우의 수 · 행렬)이 이미 있어 AI 에 <b>그 단원의 유형 이름</b>을 그대로 줍니다. 학생 학년은 기본값일 뿐</td></tr>
+      <tr><td class="k">미리보기</td><td class="now">편집 글상자 목록만. 인쇄 모양은 「🖨️ 인쇄」를 눌러 새 창에서</td><td class="new">오른쪽에 <b>A4 미리보기</b>가 늘 떠 있고, 글을 고치면 바로 따라 바뀜. 인쇄는 그 모양 그대로</td></tr>
+      <tr><td class="k">문항 다시 쓰기</td><td class="now">없음 — 전체 「AI 초안 만들기」를 다시 눌러야 하고 그러면 손본 것이 다 사라짐</td><td class="new">문항마다 <b>🔄 이 문항만 다시</b>(AI 가 같은 유형으로 새로 씀, 나머지는 그대로) · <b>+ AI 로 2개 더</b> · <b>+ 직접 쓰기</b> · 위/아래 순서 · ✕ 삭제</td></tr>
+      <tr><td class="k">2부 다시 풀기</td><td class="now">최근 틀린 문항(매쓰플랫·아하노트)에서 — 새 단원은 틀린 기록이 없어 <b>비게 됨</b></td><td class="new">새 단원이면 자동으로 0 으로 접고, 대신 아래 3부가 열림</td></tr>
+      <tr><td class="k">3부 연습문제</td><td class="now">AI 창작(기본 꺼짐 · 답이 틀릴 수 있음)</td><td class="new"><b>교과서 문항</b>을 그림 그대로 — 비상교육 공통수학1 교과서 600문항이 은행에 있고 쪽 제목이 중단원과 같음(「다항식의 사칙연산」「항등식과 나머지 정리」…). 유형별로 고르고 바꿀 수 있음. AI 창작은 선택으로 남김</td></tr>
+      <tr><td class="k">저장</td><td class="now">보관함 200장</td><td class="new">같음 + 「같은 구성으로 다른 학생에게」(반 전체)</td></tr>
+    </table></div>
+  </section>
+
+  <section class="sec">
+    <h2>학원앱 화면 시안 <span class="tag">눌러 보세요</span></h2>
+    <p class="note">학생 ○○○(중3) · 과정 공통수학1 · 대단원 「다항식」. 왼쪽에서 고치면 오른쪽 시험지가 바로 바뀝니다. 「🔄 이 문항만 다시」는 시안이라 준비된 다른 문장으로 바뀝니다.</p>
+    <div class="app">
+      <div class="chips"><span class="lbl">학생</span><button class="chip on">○○○ <span style="opacity:.7">중3 · T630</span></button><button class="chip">○○○</button><button class="chip">○○○</button><button class="chip">○○○</button></div>
+      <div class="chips" id="courses"><span class="lbl">과정</span></div>
+      <div class="chips" id="units"><span class="lbl">대단원</span></div>
+      <div class="chips" id="subs"><span class="lbl">중단원</span></div>
+      <div class="cfg">
+        <label>1부 개념 백지 <input type="number" id="n1" value="5" min="3" max="10"></label>
+        <label>2부 다시 풀기 <input type="number" id="n2" value="0" min="0" max="8"> <span style="font-weight:700">새 단원 — 틀린 기록 없음</span></label>
+        <label>3부 <select id="m3"><option>교과서 문항 (비상교육 공통수학1)</option><option>AI 창작</option><option>없음</option></select> <input type="number" id="n3" value="4" min="0" max="8"></label>
+        <button class="btn main" id="gen">⚡ AI 초안 만들기</button>
+        <button class="btn pri" id="print">🖨️ 인쇄 · PDF</button>
+        <button class="btn">💾 보관</button>
+        <button class="btn">👥 같은 구성으로 반 전체</button>
+      </div>
+      <div class="toast" id="toast"></div>
+      <div class="two">
+        <div class="ed" id="ed"></div>
+        <div class="pv"><div class="cap"><span>인쇄 미리보기 (A4 · 고치면 바로 바뀝니다)</span><span>1쪽 / 1</span></div><div class="paper" id="paper"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>만드는 순서 <span class="tag">상의 후</span></h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><b>과정 고르기 (학원앱 부품 bt2_teacher.js, 학원앱 v19-94)</b><small>btUnitOpts 가 학생 학년으로 거르던 것을 「과정 칩」으로 바꿉니다. 기본값은 학생 학년, 중3은 공통수학1 도 한 번에 보이게. AI 에 그 단원의 중단원·유형 이름(유형DB)을 넣어 줍니다 — 손이 적게 가는 부분이라 하루.</small></div></div>
+      <div class="step"><span class="n">2</span><div><b>미리보기 + 문항 편집</b><small>오른쪽 A4 미리보기(지금 인쇄 함수와 같은 모양)를 화면에 늘 띄우고, 문항마다 🔄 다시 쓰기(AI 1문항) · + AI 로 더 · + 직접 · 순서 · 삭제. 이틀.</small></div></div>
+      <div class="step"><span class="n">3</span><div><b>3부 교과서 문항</b><small>교과서 은행(mf_textbook_&lt;교재&gt;)에서 중단원·유형으로 문항 그림을 골라 2단으로 싣고, 「교과서 정답」을 맨 뒤에 따로. 시험 대비 인쇄물(v19-41)이 이미 같은 방식으로 교과서 문항을 붙이므로 그 코드를 그대로 씁니다. 하루.</small></div></div>
+      <div class="step"><span class="n">4</span><div><b>반 전체 · 보드 카드</b><small>지금 있는 「반 전체로」「보드에 카드 올리기」를 새 구성에 맞춤. 반나절.</small></div></div>
+    </div>
+  </section>
+
+  <section class="ask">
+    <b>원장님께 여쭐 것</b>
+    <ol>
+      <li>3부를 <b>교과서 문항(그림)</b>으로 가는 것이 맞나요? 아니면 지금처럼 AI 창작을 기본으로 둘까요? (시안은 교과서 문항)</li>
+      <li>1부 개념 백지는 <b>중단원 하나</b> 단위로 만들까요, 대단원(다항식 전체)로 만들까요? 시안은 중단원 칩을 여러 개 고를 수 있게 했습니다.</li>
+      <li>중3 학생의 기본 과정을 「공통수학1」로 둘까요, 「중3-2」로 둘까요?</li>
+      <li>순서대로 1→2→3→4 로 가면 됩니까? (1·2 를 먼저 한 버전으로 내고, 3 은 그 다음 버전)</li>
+    </ol>
+  </section>
+</div>
+<script>
+(function(){
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  var COURSES=['중3-1','중3-2','공통수학1','공통수학2','대수'];
+  var UNITS={ '공통수학1':['다항식','방정식과 부등식','경우의 수','행렬'], '공통수학2':['도형의 방정식','집합과 명제','함수와 그래프'], '중3-2':['삼각비','원의 성질','통계'], '중3-1':['다항식의 곱셈과 인수분해','실수와 그 계산','이차방정식','이차함수'], '대수':['지수함수와 로그함수','삼각함수','수열'] };
+  var SUBS={ '다항식':['다항식의 사칙연산','항등식과 나머지 정리','다항식의 인수분해'], '방정식과 부등식':['복소수의 뜻과 성질','이차방정식의 풀이','이차방정식의 근과 계수와의 관계','이차함수의 최대·최소','연립일차부등식','이차부등식'], '경우의 수':['합의 법칙과 곱의 법칙','순열','조합'], '행렬':['행렬','행렬의 연산'] };
+  var POOL={
+    '다항식의 사칙연산':[
+      {t:'blank',q:'다항식의 덧셈과 뺄셈은 [[  ]] 끼리 모아서 계산하고, 곱셈은 [[  ]] 를 이용해 전개한 뒤 동류항끼리 정리한다.',a:'동류항 / 분배법칙'},
+      {t:'blank',q:'다항식 A 를 B(≠0)로 나눈 몫을 Q, 나머지를 R 라 하면 A = [[  ]] 이고, R 의 차수는 [[  ]] 의 차수보다 낮다.',a:'BQ+R / B'},
+      {t:'write',q:'다항식을 한 문자에 대해 「내림차순으로 정리한다」는 것이 무엇인지 쓰고, 나눗셈을 할 때 왜 먼저 내림차순으로 정리해야 하는지 설명하시오.',a:'차수가 높은 항부터 차례로 — 나누는 과정에서 같은 차수끼리 맞추어 소거하려고'},
+      {t:'blank',q:'(a+b)³ = a³ + [[  ]] + [[  ]] + b³, (a+b)(a²−ab+b²) = [[  ]]',a:'3a²b / 3ab² / a³+b³'},
+      {t:'write',q:'조립제법을 쓸 수 있는 나눗셈은 어떤 경우인지 조건을 쓰고, 조립제법의 맨 아래 줄 마지막 수가 무엇을 뜻하는지 쓰시오.',a:'나누는 식이 x−α 꼴(일차식)일 때 · 나머지'}
+    ],
+    '항등식과 나머지 정리':[
+      {t:'blank',q:'항등식이란 문자에 [[  ]] 을 대입해도 항상 성립하는 등식이다. ax²+bx+c=0 이 x 에 대한 항등식이면 [[  ]] 이다.',a:'어떤 값 / a=b=c=0'},
+      {t:'write',q:'미정계수법의 두 가지 방법(계수비교법·수치대입법)을 각각 한 줄로 설명하고, 어느 때 어느 방법이 편한지 쓰시오.',a:'양변을 전개해 계수 비교 / 적당한 값을 대입 — 식이 (x−1)(x−2) 꼴처럼 0이 되는 값이 있으면 수치대입이 편함'},
+      {t:'blank',q:'나머지 정리: 다항식 f(x) 를 x−α 로 나눈 나머지는 [[  ]] 이다. 인수 정리: f(α)=0 이면 f(x) 는 [[  ]] 를 인수로 가진다.',a:'f(α) / x−α'},
+      {t:'write',q:'f(x) 를 (x−1)(x−2) 로 나눈 나머지를 ax+b 로 놓는 까닭을 쓰시오.',a:'나누는 식이 2차이므로 나머지는 1차 이하'}
+    ],
+    '다항식의 인수분해':[
+      {t:'blank',q:'a³+b³ = (a+b)([[  ]]),  a³−b³ = (a−b)([[  ]]),  a²+b²+c²+2ab+2bc+2ca = [[  ]]',a:'a²−ab+b² / a²+ab+b² / (a+b+c)²'},
+      {t:'write',q:'인수분해를 할 때 가장 먼저 해야 할 일(공통인수)과, 치환으로 인수분해하는 경우의 예를 하나 쓰시오.',a:'공통인수 묶기 · (x²+x)²−… 처럼 반복되는 식을 t 로 치환'},
+      {t:'write',q:'인수 정리를 이용해 삼차식을 인수분해하는 순서를 단계별로 쓰시오.',a:'f(α)=0 인 α 찾기(상수항의 약수) → 조립제법으로 (x−α)로 나누기 → 몫을 다시 인수분해'}
+    ]
+  };
+  var ALT={ // 「이 문항만 다시」 때 바꿔 넣을 문장
+    blank:[{t:'blank',q:'다항식의 곱셈에서 (x+a)(x+b) = x² + [[  ]]x + [[  ]] 이다.',a:'(a+b) / ab'},{t:'blank',q:'다항식을 다른 다항식으로 나눌 때 나머지의 [[  ]] 는 나누는 식의 [[  ]] 보다 작아야 나눗셈이 끝난 것이다.',a:'차수 / 차수'}],
+    write:[{t:'write',q:'다항식의 나눗셈 A ÷ B 를 하고 나서 「검산」은 어떻게 하는지 식으로 쓰시오.',a:'A = BQ + R 이 성립하는지 전개해 확인'},{t:'write',q:'곱셈 공식을 외우는 것과 전개해서 쓰는 것의 차이를 쓰고, 공식을 쓰면 좋은 경우를 하나 드시오.',a:'빠르고 실수가 적다 · (a+b)³ 같은 세제곱 전개'}]
+  };
+  var TB={ '다항식의 사칙연산':[['p.12 3번','다항식의 덧셈과 뺄셈'],['p.15 7번','다항식의 곱셈'],['p.19 5번','다항식의 나눗셈'],['p.20 9번','조립제법']], '항등식과 나머지 정리':[['p.24 2번','항등식'],['p.26 6번','미정계수법'],['p.29 4번','나머지 정리'],['p.30 8번','인수 정리']], '다항식의 인수분해':[['p.34 3번','인수분해 공식'],['p.36 5번','치환'],['p.38 7번','인수 정리를 이용'],['p.39 10번','복잡한 식']] };
+  var S={ course:'공통수학1', unit:'다항식', subs:{'다항식의 사칙연산':1,'항등식과 나머지 정리':1}, p1:[], p3:[], made:false, altI:0 };
+  function chips(id,list,on,cls,fn){ var el=document.getElementById(id); var h=el.firstElementChild.outerHTML; list.forEach(function(x){ h+='<button class="chip '+cls+(on(x)?' on':'')+'" data-v="'+esc(x)+'" data-k="'+id+'">'+esc(x)+'</button>'; }); el.innerHTML=h; }
+  function paintChips(){
+    chips('courses',COURSES,function(x){ return x===S.course; },'',null);
+    chips('units',UNITS[S.course]||[],function(x){ return x===S.unit; },'',null);
+    chips('subs',SUBS[S.unit]||[],function(x){ return !!S.subs[x]; },'sub',null);
+  }
+  function gen(){
+    var n1=Number(document.getElementById('n1').value)||5, n3=Number(document.getElementById('n3').value)||0, mode=document.getElementById('m3').value;
+    var subs=Object.keys(S.subs).filter(function(k){ return S.subs[k]&&(SUBS[S.unit]||[]).indexOf(k)>=0; }); if(!subs.length) subs=(SUBS[S.unit]||[]).slice(0,1);
+    var p1=[]; var k=0; while(p1.length<n1&&k<40){ var sub=subs[k%subs.length]; var pool=POOL[sub]||[]; var it=pool[Math.floor(k/subs.length)%Math.max(1,pool.length)]; if(it&&!p1.some(function(x){ return x.q===it.q; })) p1.push({t:it.t,q:it.q,a:it.a,sub:sub}); k++; }
+    S.p1=p1;
+    S.p3=[]; if(mode.indexOf('교과서')===0){ var j=0; while(S.p3.length<n3&&j<40){ var sb=subs[j%subs.length]; var l=TB[sb]||[]; var e=l[Math.floor(j/subs.length)%Math.max(1,l.length)]; if(e&&!S.p3.some(function(x){ return x.ref===e[0]; })) S.p3.push({ref:e[0],ty:e[1],sub:sb}); j++; } }
+    else if(mode.indexOf('AI')===0){ for(var q=0;q<n3;q++) S.p3.push({ref:'AI 창작 '+(q+1),ty:'답을 꼭 풀어 보세요',ai:true}); }
+    S.made=true; paint(); toast('시안: 1부 '+p1.length+'문항을 유형DB 「'+S.unit+' › '+subs.join(' · ')+'」 로 썼습니다. 실제로는 AI 가 10~20초 걸립니다.');
+  }
+  function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.className='toast show'; }
+  function paintEd(){
+    var ed=document.getElementById('ed'); if(!S.made){ ed.innerHTML='<div style="border:1px dashed var(--line);border-radius:12px;padding:30px 14px;text-align:center;color:var(--muted);font-weight:700;font-size:12.5px">과정·단원·중단원을 고르고 「⚡ AI 초안 만들기」를 누르면 여기에 편집 칸이, 오른쪽에 시험지가 나옵니다.</div>'; return; }
+    var h='<h3>1부. 개념 백지 <small>문항마다 다시 쓰기 · 순서 · 삭제</small><span><button class="btn sm" data-act="aimore">+ AI 로 2개 더</button> <button class="btn sm ghost" data-act="manual">+ 직접 쓰기</button></span></h3>';
+    S.p1.forEach(function(x,i){ h+='<div class="item'+(x.busy?' busy':'')+'"><span class="no">'+(i+1)+'</span><span><span class="ty'+(x.t==='write'?' w':'')+'">'+(x.t==='write'?'서술':'빈칸')+' · '+esc(x.sub||'')+'</span><textarea rows="2" data-q="'+i+'">'+esc(x.q)+'</textarea><input value="'+esc(x.a||'')+'" data-a="'+i+'" placeholder="모범답 (원장님만 봅니다)"></span><span class="ops"><button class="btn sm" data-act="re" data-i="'+i+'" title="AI 가 이 문항만 같은 유형으로 새로 씁니다">🔄 이 문항만 다시</button><span style="display:flex;gap:3px"><button class="btn sm ghost" data-act="up" data-i="'+i+'">▲</button><button class="btn sm ghost" data-act="dn" data-i="'+i+'">▼</button><button class="btn sm bad" data-act="del" data-i="'+i+'">✕</button></span></span></div>'; });
+    h+='<h3 style="margin-top:12px">2부. 틀린 문제 다시 풀기 <small>새 단원이라 틀린 기록이 없어 접힘 — 2부 수를 올리면 최근 기록에서 찾습니다</small></h3>';
+    if(S.p3.length){ h+='<h3 style="margin-top:12px">3부. '+(S.p3[0].ai?'연습문제 (AI 창작)':'교과서 문항 (비상교육 공통수학1)')+' <small>'+(S.p3[0].ai?'답이 틀릴 수 있습니다':'그림 그대로 싣고 정답은 맨 뒤에')+'</small><span><button class="btn sm" data-act="tbmore">+ 1문항</button></span></h3>';
+      S.p3.forEach(function(x,i){ h+='<div class="tbitem"><span class="no">'+(i+1)+'</span><span class="img">'+(x.ai?'AI':'문항 그림')+'</span><span><b>'+esc(x.ref)+'</b><small>'+esc(x.ty)+(x.sub?' · '+esc(x.sub):'')+'</small></span><span style="display:flex;gap:3px"><button class="btn sm" data-act="tbre" data-i="'+i+'" title="같은 유형의 다른 교과서 문항으로">🔄 다른 문항</button><button class="btn sm bad" data-act="tbdel" data-i="'+i+'">✕</button></span></div>'; }); }
+    ed.innerHTML=h;
+  }
+  function paintPaper(){
+    var p=document.getElementById('paper'); if(!S.made){ p.innerHTML='<div style="color:#777;text-align:center;padding:120px 0;font-family:var(--font);font-size:12px;font-weight:700">시험지가 여기에 보입니다</div>'; return; }
+    var subs=Object.keys(S.subs).filter(function(k){ return S.subs[k]; });
+    var h='<div class="hd"><b>백지테스트 — '+esc(S.course)+' · '+esc(S.unit)+'</b><span>○○○ · 중3 · 2026.10.10</span></div>';
+    h+='<div style="font-size:11px;color:#333">범위: '+esc(subs.join(' · '))+' &nbsp;|&nbsp; 교재와 노트를 덮고 씁니다</div>';
+    h+='<div class="pt">1부. 개념 백지 ('+S.p1.length+'문항)</div>';
+    S.p1.forEach(function(x,i){ var q=esc(x.q).replace(/\[\[\s*\]\]/g,'<span class="blank"></span>'); h+='<div class="q"><span class="n">'+(i+1)+'.</span><span>'+q+'</span></div>'+(x.t==='write'?'<div class="ans"></div>':''); });
+    if(S.p3.length){ h+='<div class="pt">'+(S.p3[0].ai?'3부. 연습문제':'3부. 교과서 문항 — 비상교육 공통수학1')+' ('+S.p3.length+'문항)</div><div class="tb">'; S.p3.forEach(function(x,i){ h+='<div class="pb"><small>'+(i+1)+' · ['+(x.ai?'AI':'교과서')+'] '+esc(x.ref)+' · '+esc(x.ty)+'</small><div class="ph"></div></div>'; }); h+='</div>'; }
+    h+='<div class="ft">다 쓰고 나서 교과서로 확인해 보세요. '+(S.p3.length&&!S.p3[0].ai?'3부 정답은 뒷장에 있습니다.':'')+'</div>';
+    p.innerHTML=h;
+  }
+  function paint(){ paintChips(); paintEd(); paintPaper(); }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.k==='courses'){ S.course=b.dataset.v; S.unit=(UNITS[S.course]||[])[0]; S.subs={}; (SUBS[S.unit]||[]).slice(0,1).forEach(function(x){ S.subs[x]=1; }); S.made=false; paint(); return; }
+    if(b.dataset.k==='units'){ S.unit=b.dataset.v; S.subs={}; (SUBS[S.unit]||[]).slice(0,1).forEach(function(x){ S.subs[x]=1; }); S.made=false; paint(); return; }
+    if(b.dataset.k==='subs'){ S.subs[b.dataset.v]=!S.subs[b.dataset.v]; paintChips(); return; }
+    if(b.id==='gen'){ gen(); return; }
+    if(b.id==='print'){ toast('시안입니다 — 실제로는 오른쪽 미리보기 그대로 A4 로 인쇄됩니다 (3부 교과서 정답은 뒷장).'); return; }
+    var i=Number(b.dataset.i), act=b.dataset.act; if(!act) return;
+    if(act==='re'){ var x=S.p1[i]; x.busy=true; paintEd(); setTimeout(function(){ var alt=ALT[x.t][S.altI++%ALT[x.t].length]; S.p1[i]={t:alt.t,q:alt.q,a:alt.a,sub:x.sub}; paint(); toast('시안: '+(i+1)+'번만 같은 유형으로 다시 썼습니다 (실제는 AI, 5~10초). 나머지 문항은 그대로입니다.'); },700); }
+    else if(act==='up'&&i>0){ var t=S.p1[i-1]; S.p1[i-1]=S.p1[i]; S.p1[i]=t; paint(); }
+    else if(act==='dn'&&i<S.p1.length-1){ var t2=S.p1[i+1]; S.p1[i+1]=S.p1[i]; S.p1[i]=t2; paint(); }
+    else if(act==='del'){ S.p1.splice(i,1); paint(); }
+    else if(act==='aimore'){ var a1=ALT.blank[S.altI++%2], a2=ALT.write[S.altI++%2]; S.p1.push({t:a1.t,q:a1.q,a:a1.a,sub:Object.keys(S.subs)[0]||''}); S.p1.push({t:a2.t,q:a2.q,a:a2.a,sub:Object.keys(S.subs)[0]||''}); paint(); toast('시안: AI 가 같은 단원으로 2문항을 더 썼습니다.'); }
+    else if(act==='manual'){ S.p1.push({t:'write',q:'',a:'',sub:'직접'}); paint(); var tas=document.querySelectorAll('#ed textarea'); if(tas.length) tas[tas.length-1].focus(); }
+    else if(act==='tbdel'){ S.p3.splice(i,1); paint(); }
+    else if(act==='tbre'){ var x3=S.p3[i]; var l=TB[x3.sub]||[]; var cur=l.findIndex(function(e2){ return e2[0]===x3.ref; }); var nx=l[(cur+1)%l.length]; S.p3[i]={ref:nx[0],ty:nx[1],sub:x3.sub}; paint(); }
+    else if(act==='tbmore'){ var sb=Object.keys(S.subs)[0]; var l2=TB[sb]||[]; var cand=l2.filter(function(e2){ return !S.p3.some(function(y){ return y.ref===e2[0]; }); })[0]; if(cand){ S.p3.push({ref:cand[0],ty:cand[1],sub:sb}); paint(); } }
+  });
+  document.addEventListener('input',function(e){ var t=e.target; if(t.dataset.q!=null){ S.p1[Number(t.dataset.q)].q=t.value; paintPaper(); } if(t.dataset.a!=null){ S.p1[Number(t.dataset.a)].a=t.value; } });
+  paint();
+})();
+</script>
+</body></html>

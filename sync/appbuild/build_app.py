@@ -32,7 +32,8 @@ sgs=open(SP+'/sgscore_teacher.js').read() if int(ver.replace('v19-',''))>=86 els
 sds=open(SP+'/studb_sync.js').read() if int(ver.replace('v19-',''))>=87 else ''
 wks=open(SP+'/wksplit_teacher.js').read() if int(ver.replace('v19-',''))>=88 else ''
 sgv=open(SP+'/sgview_teacher.js').read() if int(ver.replace('v19-',''))>=89 else ''
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+new.lstrip('\n')+'\n\n'+s[end:]
+rcw=open(SP+'/rcws_teacher.js').read() if int(ver.replace('v19-',''))>=92 else ''   # v19-92: 리커버리 학습지 설계 → 매쓰플랫 즉시 생성
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -441,6 +442,10 @@ if int(ver.replace('v19-',''))>=91:
     rep("""async function supaFullPull(onlyKeys) {""", """var PULL_SKIP_PREFIX = ['mf_bookans_', 'mf_wsq_', 'mf_textbook_', 'mf_swb_', 'mf_ws_recent_', 'mf_wsans_', 'ms_exam', 'haesol_body_', 'hw_synced_', 'hw_scores_', 'typeach_stu_', 'stu_reports_', 'pub_reports_', 'submissions_', 'or_students_archive_'];
 var PULL_SKIP_KEYS = ['mf_type_ach', 'mf_sol_fix', 'mf_bookpages', 'ms_mydb_index', 'mf_ws_behaviors', 'mf_weekly', 'mf_progress', 'mf_books', 'mf_stuck'];
 async function supaFullPull(onlyKeys) {""")
+if int(ver.replace('v19-',''))>=92:
+    # 리커버리 우측 패널: 「확정 전원」 단추 위에 매쓰플랫 계정 칸 (rcws_teacher.js 가 rcMakeWsAll·rcWsBtn 을 새 길로 덮어쓴다)
+    rep("""  h+='<button onclick="rcMakeWsAll()" style="border:1.5px solid #bfdbfe;""", """  h+=rcwsAcctBox();   /* ★ v19-92: 매쓰플랫 계정 (이 PC 에만) */
+  h+='<button onclick="rcMakeWsAll()" style="border:1.5px solid #bfdbfe;""")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
