@@ -152,3 +152,67 @@ exam_hit_index          // { items:[{ examId, school, grade, year, semester, ter
 - (v19-81) 난이도 칸: 원장님이 개수(2~5)·경계를 고른다(`card.diff = { src:'ms'|'mf', n, cuts }`). 기준은 기출 DB 난이도 1~9(기본 쉬움 1~2 · 보통 3~4 · 어려움 5 이상) — `exam.msLv`(워커가 기출 DB 시험지에서 저장, 문항 번호 순) 또는 받아 둔 `ms_exams` 에서 같은 시험. 없으면 매쓰플랫 1~5.
 - (v19-81) 자료 이름: 교과서 말고는 «루멘수학 시험대비자료»(`card.matMode='one'`) 또는 나눠서 루멘수학 자체교재 · 학습지 · 대비자료 · 기출자료(`'split'`).
 - (v19-81) 카드 왼쪽 위 «루멘수학»(한글, 2배) · 밑에 «쌤 모르겠어요에서 아하까지».
+
+## 10. 자료 3종 (10/10 원장 결정) — 교과서 · 수학비서 학습지 · PDF 자료함 (학원앱 v19-99)
+
+원장 결정 2026-10-10 (시안 `docs/mockup_exam_hit_sources.html` 승인): **학년 폴더 기본 · 교과서 전체 포함(기본) · PDF 자료함 둠 · 다른 학교 기출 시험지는 기본 꺼 둠 · 교과서 은행 없는 책은 새벽 자동 생성**.
+까닭: 범박고 고1 분석이 «우리 자료 0개» — `loadMaterials` 가 `mf_answer_records`(매쓰플랫 채점 기록)만 읽는데 고등부는 기록이 없다.
+
+### 10-1. 흐름
+```
+학원앱 「📤 시험지 올리기」 / 「📚 기출 DB → 🎯 적중 분석」
+  → (confirm 대신) 요청 화면: 📘 교과서 · 📂 수학비서 학습지 · 📄 PDF 자료함 · 🧮 매쓰플랫(자동) · 합계 띠
+  → 「🎯 적중 분석 시작」 = exam_hit_req.src 와 함께 요청      「💾 이 구성 기억」 = exam_hit_src_<학교>_<학년>
+워커(exam_hit_worker.js, 5분 워크플로) runExam ③ 우리 자료 = (a) 교과서 은행 + (b) ms_paper_<id> + (c) exam_lib + (d) mf_answer_records
+  · 아직 인식 안 된 수학비서 학습지·자료함 PDF 는 «분석 때 바로 인식»(같은 매쓰플랫 AI 길, 장당 2~5분) — 요청에서 조용히 빠지지 않는다
+  · 띠 글: 「자료 모으는 중 — 교과서 783 · 수학비서 3장 · 프린트 1장 · 매쓰플랫 N」
+새벽 준비 node sync/exam_hit_worker.js --prep (mathflat-collect.yml 04시 회차, PREP_ROUND=dawn 또는 한국 3~6시)
+  · 수학비서 학년 폴더(고1·고2·고3·중1·중2·중3, 아래 폴더 포함) 최근 150일 학습지 → ms_paper_<id> (오래된 것부터 한 번에 12장)
+  · 기억한 구성(exam_hit_src_*)의 msOn 학습지도 미리 인식 · ms_papers_index 갱신
+  · PDF 자료함 대기 파일 인식(한 번에 6개) · 지정 교과서(type SCHOOL) 은행이 없으면 mf_textbook_bank.js --bids 로 만들기
+  · --dry = 읽기만 하고 할 일 목록만 · --force = 새벽 아니어도 · --cap N
+```
+
+### 10-2. 요청 — `exam_hit_req.src`
+```js
+src: { tb:{ on:true, mode:'all'|'scope', bids:['3219971', …] },   // 교과서 — 체크한 지정 교과서
+       ms:['711431', …],                                         // 수학비서 학습지 id
+       lib:['L…', …],                                            // 자료함 id
+       mf:true }                                                 // 매쓰플랫 채점 기록
+```
+- `src` 가 없으면 예전과 같다 + **고등부만** 지정 교과서 전체(`mode:'all'`)를 기본으로 넣는다. `tb.bids` 가 비면 `mf_textbooks.bySchoolGrade['학교|학년']` 의 SCHOOL 책 전부.
+- `mode:'scope'` = 시험 문항의 유형(cid)이 나오는 쪽의 소단원 제목 + 시험 문항 중단원 이름과 같은 쪽 제목 → 그 소단원 쪽만. 맞는 쪽이 없으면 전체.
+- 같은 문항이 매쓰플랫 교재 기록(`wb:<id>`)에도 있으면 정오가 있는 기록 쪽을 남기고 교과서 쪽은 뺀다.
+- 분석하는 시험지 자체(`req.mydb`)가 ms 에 있으면 뺀다. 결과 `exam_hit_<시험>.src` 에 요청한 src 를 남겨 「🔄 다시 판정」이 같은 구성으로 돈다.
+
+### 10-3. 저장 키
+| 키 | 모양 | 쓰는 쪽 |
+|---|---|---|
+| `ms_paper_<id>` | `{ id, title, folder, grade, uploadedAt, n, status:'ready'\|'pending'\|'error', err, updated, items:[{ no, img, cid, level, src, srcWb, pid }] }` — `img` = exam_images `ms/<id>/<번호>.png` | 워커 |
+| `ms_papers_index` | `{ updated, items:[{ id, title, folder, sub?, grade, uploadedAt, n, status, exam }] }` — 학년 폴더 전부(기출은 `exam:true`) + 다른 폴더의 1년 안 학습지. 학년 폴더 아래 폴더는 `folder`=학년 폴더, `sub`=아래 폴더 (약 160KB) | 워커 → 앱 |
+| `exam_lib` | `{ updated, items:[{ id, title, school, grade, sem, year, uploadedAt, src, path, n, status, err, items:[…], moved, deleted }] }` — 앱이 `status:'pending'`·`src:'aha_photos/_exam_hit/lib_<id>/1.pdf'` 로 넣고, 워커가 `exam_images/lib/<id>.pdf` 로 옮겨 인식(`lib/<id>/<번호>.png`). 앱에서 지우면 `deleted:true` 만(워커는 건너뜀). 둘 다 쓰므로 쓰기 직전에 다시 읽어 그 항목만 바꾼다 | 앱 + 워커 |
+| `exam_hit_src_<학교>_<학년>` | `{ folders:[…], tbMode, tbOff:{bid:1}, msOff:{id:1}, msOn:{id:1}, libOn:[…], mf, updated }` — 앱만 쓴다. 워커는 `req.src` 만 읽는다(새벽 준비가 msOn 을 미리 인식하는 것만 예외) | 앱 |
+
+- 결과 `exam_hit_<시험>.mats[k].kind` = `textbook` · `ms` · `upload`(자료함이면 `lib:true`) · `ws` · `book`. 키 이름: `tb:<문항id>` · `ms:<학습지id>:<번호>` · `lib:<자료id>:<번호>` · `up:…` · `ws:…` · `wb:…`.
+- `stats.byKind = { textbook:{mats, hit}, ms:{…}, upload:{…}, ws:{…}, book:{…} }` — `mats` = 대조한 자료 문항 수(워커), `hit` = 자동 1순위 후보가 그 종류인 기준 안 적중 수(워커, 확정 전). **화면의 «우리 자료별 적중» 숫자는 학원앱이 원장님 ✓/✗ 를 반영해 다시 센다**(`htEff` 와 같은 방식, 한 문항은 맨 앞 적중 자료 하나로). `mats` 는 워커 값을 그대로 쓴다.
+- 판정 규칙은 그대로: 원본 번호 같음(문제은행 `p`·교재 `b`) → 후보 맨 앞, 같은 유형 번호 → 후보, 그림 판정. 수학비서·자료함 문항은 매쓰플랫 인식의 `src`(가장 닮은 원본)를 `pid`/`wbp` 로 써서 같은 길을 탄다. 교과서 은행 문항은 `wbp`=은행 문항 id, `pid`=그림 주소의 문제 번호.
+- 학생별 「시험 전에 맞혔나」는 매쓰플랫 자료(`ws`·`book`)만. 교과서·수학비서·프린트로 적중한 문항은 «나눠 줌».
+- 학부모 보고서·블로그 .md 의 자료 이름은 종류만: 교과서 · 학원 학습지 · 학원 프린트 · 매쓰플랫 학습지·교재 (「수학비서」 낱말은 밖으로 안 나간다, §6).
+
+### 10-4. ⚡ 즉시 처리
+- 학원앱 설정 「⚡ GitHub 토큰 (선택)」 — localStorage `or_gh_token` (이 PC 에만, `scheduleSync` 에서 빼서 서버로 안 올라간다. 같은 자리에 `or_mf_id`·`or_mf_pw` 도 뺐다).
+- `exam_hit_req` · `ms_mydb_index_req` · `mf_collect_req` 를 `status:'requested'` 로 쓰면 `POST https://api.github.com/repos/yellowtongki/lumen-math/actions/workflows/mathflat-ondemand.yml/dispatches` `{"ref":"main"}` (머리 `Authorization: Bearer …`, `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`). 204 → 「⚡ 서버 작업을 깨웠습니다 (1분 안 시작)」.
+- 토큰이 없으면 요청 띠에 「🐙 GitHub에서 바로 실행」(Actions 페이지, 새 창) + 「Run workflow 를 누르면 1분 안에 시작됩니다」. 토큰이 있으면 띠에 「⚡ 다시 깨우기」.
+- 토큰 = GitHub fine-grained, 저장소 lumen-math 하나, 권한 **Actions: Read and write** 만.
+
+### 10-4-1. 고등부 교육과정 키 (같은 날 고침)
+- 매쓰플랫 AI 인식(analysis-flow)에 넘기는 `trieKey` 가 고등부도 중학교 키였다(`trieForExam('2', …)` = 중2). 범박고 고2 미적분1 시험이 「일차함수와 그래프」 유형으로 읽혔고, 교과서 은행(고등 유형 번호)과 유형이 하나도 안 맞았다.
+- 이제 고등부는 과목별 키: 22개정 `1.4.4147.<과정>`(공통수학1 4175 · 공통수학2 4176 · 대수 4177 · 미적분1 4178 · 확률과 통계 4179 · 미적분2 4180 · 기하 4181), 15개정 `1.2.7.<과정>`(수학(상) 41 · (하) 42 · 수학Ⅰ 43 · 수학Ⅱ 44 · 확통 45 · 미적분 46 · 기하 47) — `/curriculums/by-key` 로 확인. 22개정 적용은 고1 2025 · 고2 2026 · 고3 2027 부터.
+- 과목은 `exam.subject`(요청 화면의 「과목」 — 기출 DB 제목 또는 지정 교과서가 한 권이면 그 과목이 기본) → 없으면 `ms_mydb_index` 의 시험지 제목에서 읽는다. 수학비서 학습지·자료함은 제목·폴더 이름에서. 그래도 모르면 예전 키(로그에 ⚠).
+- 실제 매쓰플랫 AI 작업으로는 아직 돌려 보지 않았다(검사 중 매쓰플랫에 작업을 만들지 않음) — 첫 고등부 요청 로그의 「교육과정 키 …」 줄과 문항 유형 이름을 확인할 것.
+
+### 10-5. 2026-10-10 실제 확인 (`--prep --dry`)
+- 수학비서 학년 폴더(고1 219 · 고2 300 · 고3 461 · 중1 11 · 중2 52 · 중3 62장)는 **전부 기출**(학교 시험지·전국 모의고사)이라 새벽에 미리 인식할 학습지가 0장이다.
+  실제 학습지는 과목 폴더(공수2 16 · 미적분1 13 · 공수1 12 · 중등1 10 · 봉쌤모의고사 9 · EBS 9 …)에 있다 → 요청 화면에서 폴더 칩으로 골라 체크하면 «분석 때 바로 인식», 「💾 이 구성 기억」 해 두면 다음 새벽부터 미리 인식.
+- 산 자료(PURCHASE)는 `uploadedAt`·`pdfPath` 가 없다 → 날짜는 `purchasedAt`, 그림은 기출 DB 받기(`msExam`+`msImage`)로 받아 PDF 를 만든 뒤 인식. 150문항·60쪽 넘는 자료는 건너뜀(`error`).
+- 지정 교과서 8권 은행은 모두 있다(범박고 고2 대수 3219971 · 미적분1 3227375 포함).

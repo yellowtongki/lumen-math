@@ -22,12 +22,18 @@
  *        [--from 2026-07-01 --to 2026-10-01]   우리 자료 기간 (기본: 그 학기 시작 ~ 시험일)
  *        [--exam-id 이름]  [--no-ai]  [--dry]
  *   node sync/exam_hit_worker.js --rejudge <examId>   인식은 그대로 두고 자료·판정만 다시
+ *   node sync/exam_hit_worker.js --prep [--dry] [--force] [--cap 12]
+ *        2026-10-10 «우리 자료 3종» 새벽 준비 (mathflat-collect.yml 04시 회차):
+ *        수학비서 학년 폴더(고1·고2·고3·중1·중2·중3) 학습지 미리 인식 → ms_paper_<id> · 목록 ms_papers_index
+ *        · PDF 자료함(exam_lib) 대기 파일 인식 · 지정 교과서 은행(mf_textbook_<bid>)이 없으면 만들기.
+ *        --dry = 읽기만 하고 할 일 목록만 보여 준다. 새벽(한국 3~6시)이 아니면 --force 없이는 건너뛴다.
  *
  * 환경변수: SUPABASE_URL · SUPABASE_SERVICE_KEY · MATHFLAT_ID/PASSWORD · ANTHROPIC_API_KEY · MATHSECR_ID/PASSWORD(기출 DB 찾기)
  * 규칙: 로그에 학생 이름·문항 원문을 남기지 않는다(번호·개수만). 시험지 그림은 exam_images(비공개)에만.
  * ═══════════════════════════════════════════════════════════════════ */
 const crypto = require('crypto');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
+const pathMod = require('path');
 
 const SB = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const SK = process.env.SUPABASE_SERVICE_KEY;
@@ -241,7 +247,8 @@ async function loadMaterials(codes, from, to, excludeRe) {
 }
 function whereOf(m) {
   if (m.kind === 'book') { const pg = String(m.page || '').replace(/~.*/, ''); return `${m.title}${pg ? ' ' + pg + '쪽' : ''}${m.number ? ' ' + String(m.number).replace(/\s*번$/, '') + '번' : ''}`; }
-  if (m.kind === 'upload') return `${m.title} ${m.no}번`;
+  if (m.kind === 'upload' || m.kind === 'ms') return `${m.title} ${m.no}번`;
+  if (m.kind === 'textbook') return `${m.title} ${m.page}쪽 ${String(m.number || '').replace(/\s*번$/, '')}번`;   /* 2026-10-10 */
   return `${m.title}${m.seq ? ' ' + m.seq + '번' : ''}`;
 }
 /* 후보 그림 주소 — 학습지는 /worksheet/{id}/problem, 교재는 /workbook/{bid}/page/{pid} (한 번 받은 것은 기억) */
@@ -301,7 +308,11 @@ async function runExam(exam, opt) {
   const slug = slugOf(examId);
   const T = tw();
   const prev = (await kvGet('exam_hit_' + examId)) || null;
-  const trie = T.trieForExam(String(gradeKey(exam.grade)).replace(/\D/g, ''), exam.semester, exam.year);
+  /* 2026-10-10: 고등부는 과목별 교육과정 키 (예전엔 중학교 키로 인식돼 미적분1 시험이 「일차함수」로 읽혔다) — courseTrie 참고 */
+  let subjText = exam.subject || '';
+  if (!subjText && opt.mydb && /^고/.test(gradeKey(exam.grade))) { try { const ix = await kvGet('ms_mydb_index'); const it = ((ix && ix.items) || []).find((x) => String(x.id) === String(opt.mydb)); subjText = (it && it.t) || ''; } catch (e) {} }
+  const trie = courseTrie(exam.grade, exam.year, subjText) || T.trieForExam(String(gradeKey(exam.grade)).replace(/\D/g, ''), exam.semester, exam.year);
+  if (/^고/.test(gradeKey(exam.grade))) log(courseTrie(exam.grade, exam.year, subjText) ? `교육과정 키 ${trie} (과목: ${subjText.slice(0, 40)})` : `⚠ 고등부 과목을 몰라 예전 키(${trie})로 인식 — 요청 화면에서 과목을 고르면 정확해집니다`);
   if (!trie) throw new Error(`교육과정 키를 정할 수 없습니다 (${exam.grade} ${exam.semester}학기 ${exam.year})`);
 
   /* ①② 시험지 → 문항 */
@@ -372,13 +383,20 @@ async function runExam(exam, opt) {
     it.killer = it.diff != null ? Number(it.diff) >= 6 : Number(it.level || 0) >= 4;
   });
 
-  /* ③ 우리 자료 */
-  await step('우리 자료 모으는 중', 40);
+  /* ③ 우리 자료 — 2026-10-10 원장 결정: 교과서 · 수학비서 학습지 · PDF 자료함 · 매쓰플랫 기록 (docs/exam_hit_contract.md §10) */
+  await step('자료 모으는 중', 40);
   const codes = await loadStudents(exam.school, exam.grade);
   const from = opt.from || semStart(exam.year, exam.semester);
   const to = opt.to || exam.date || new Date().toISOString().slice(0, 10);
   const own = new RegExp(`${schoolKey(exam.school)}[^\\n]*${exam.year}[^\\n]*${exam.semester}학기[^\\n]*${exam.term}`);
-  const mats = await loadMaterials(codes, from, to, own);
+  const src = normSrc(opt.src || (opt.rejudge && prev && prev.src) || null, exam);
+  const mats = src.mf ? await loadMaterials(codes, from, to, own) : [];
+  if (!src.mf) log('매쓰플랫 기록은 빼고 모음 (요청에서 끔)');
+  const ctx = { step, trie, mydb: opt.mydb ? String(opt.mydb) : '' };
+  const tbMats = src.tb.on ? await loadTextbookMats(src.tb, exam, items, mats, names) : [];
+  tbMats.forEach((m) => mats.push(m));
+  const msR = await loadMsMats(src.ms, ctx); msR.mats.forEach((m) => mats.push(m));
+  const libR = await loadLibMats(src.lib, ctx); libR.mats.forEach((m) => mats.push(m));
   /* 학원앱에서 올린 우리 프린트 */
   for (const [ui, u] of (opt.uploads || []).entries()) {
     try {
@@ -396,13 +414,16 @@ async function runExam(exam, opt) {
       log(`우리 프린트 ${ui + 1}: ${bx.length}문항`);
     } catch (e) { log(`우리 프린트 ${ui + 1} 인식 실패: ${e.message.slice(0, 120)}`); }
   }
+  /* 띠에 보이는 글 — 「자료 모으는 중 — 교과서 783 · 수학비서 3장 · 프린트 1장」 */
+  const nPrint = libR.n + (opt.uploads || []).length;
+  await step(`자료 모으는 중 — 교과서 ${tbMats.length} · 수학비서 ${msR.n}장 · 프린트 ${nPrint}장${src.mf ? ' · 매쓰플랫 ' + mats.filter((m) => m.kind === 'ws' || m.kind === 'book').length : ''}`, 44);
   const byCid = {}; mats.forEach((m) => { if (m.cid) (byCid[m.cid] = byCid[m.cid] || []).push(m); });
 
   /* ④ 후보 + 판정 */
   const past = await pastTypes(exam);
   const used = {};
   let n = 0;
-  if (mats.some((m) => m.kind !== 'upload')) { try { await T.mfLogin(); } catch (e) { log('매쓰플랫 로그인 실패 — 후보 그림 없이 진행'); } }
+  if (mats.some((m) => m.kind === 'ws' || m.kind === 'book')) { try { await T.mfLogin(); } catch (e) { log('매쓰플랫 로그인 실패 — 후보 그림 없이 진행'); } }
   for (const it of items) {
     n++; await step(`판정 중 ${n}/${items.length}`, 45 + Math.round(50 * n / items.length));
     it.repeat = past.of(it).slice(0, 6);
@@ -420,7 +441,7 @@ async function runExam(exam, opt) {
       if (cands.length >= 6) break;
       const m = c.m;
       let buf = null;
-      if (m.kind === 'upload') buf = await stGet(BUCKET, m.store).catch(() => null);
+      if (m.store) buf = await stGet(BUCKET, m.store).catch(() => null);   /* 우리 프린트 · 자료함 · 수학비서 학습지 (exam_images) */
       else { const u = await matImage(m); if (!u) continue; const pid = pidOfUrl(u); if (pid && seenPid[pid]) { seenPid[pid].also.push(m.k); continue; } buf = await fetchBuf(u); if (pid) seenPid[pid] = { also: [] }; c.pidKey = pid; }
       if (!buf) continue;
       c.buf = buf; cands.push(c);
@@ -449,13 +470,25 @@ async function runExam(exam, opt) {
 
   /* 저장용 자료(쓰인 것만) */
   const matOut = {};
-  mats.forEach((m) => { if (!used[m.k]) return; matOut[m.k] = { kind: m.kind, title: m.title, where: whereOf(m), cid: m.cid, level: m.level, img: m.img || '', store: m.store || '', storeUrl: m.storeUrl || '', res: m.res }; });
+  for (const m of mats) {
+    if (!used[m.k]) continue;
+    if (m.store && !m.storeUrl) m.storeUrl = await stSign(m.store);   /* 학원앱이 서명 없이 그림을 열게 (1년) */
+    matOut[m.k] = { kind: m.kind, title: m.title, where: whereOf(m), cid: m.cid, level: m.level, img: m.img || '', store: m.store || '', storeUrl: m.storeUrl || '', res: m.res };
+    if (m.lib) matOut[m.k].lib = true;
+  }
 
   /* 통계 */
   const st = { total: items.length, same: 0, var: 0, text: 0, type: 0, killers: items.filter((x) => x.killer).length,
     essay: items.filter((x) => x.essay).length, levelAvg: 0, source: { textbook: 0, workbook: 0, exam: 0, bank: 0 }, repeat: items.filter((x) => (x.repeat || []).length).length };
   items.forEach((x) => { const t = x.cands && x.cands[0]; if (t) st[t.kind]++; st.source[x.source] = (st.source[x.source] || 0) + 1; st.levelAvg += Number(x.level || 0); });
   st.levelAvg = items.length ? Math.round(st.levelAvg / items.length * 10) / 10 : 0;
+  /* 2026-10-10: 자료 종류별 — mats = 대조한 문항 수, hit = 자동 1순위 후보가 그 종류인 적중 문항 수(기준 안).
+   *   원장님 ✓/✗ 확정을 반영한 숫자는 학원앱이 화면에서 다시 센다(htStats 와 같은 방식). */
+  const basis = (prev && prev.basis) || 'same+var';
+  const inB = { same: ['same'], 'same+var': ['same', 'var'], type: ['same', 'var', 'type'] }[basis] || ['same', 'var'];
+  st.byKind = {}; ['textbook', 'ms', 'upload', 'ws', 'book'].forEach((k) => { st.byKind[k] = { mats: 0, hit: 0 }; });
+  mats.forEach((m) => { if (st.byKind[m.kind]) st.byKind[m.kind].mats++; });
+  items.forEach((x) => { const t = x.cands && x.cands[0]; const m = t && matOut[t.k]; if (m && inB.includes(t.kind) && st.byKind[m.kind]) st.byKind[m.kind].hit++; });
 
   /* 출제 경향 · 킬러 문항 한 단락 (학원앱 보고서·블로그 자료에 쓴다) */
   let trend = prev && prev.trend && (opt.rejudge || prev.trend.edited) ? prev.trend : null;   // v19-79: 고친 글은 늘 남김
@@ -470,8 +503,8 @@ async function runExam(exam, opt) {
     } catch (e) { log('경향 글 실패: ' + e.message.slice(0, 100)); }
   }
 
-  const out = { examId, exam: { school: schoolKey(exam.school), grade: gradeKey(exam.grade), year: Number(exam.year), semester: String(exam.semester), term: exam.term, date: exam.date || '', mydb: opt.mydb || null, msLv: msLv || null },
-    basis: (prev && prev.basis) || 'same+var', from, to, students: codes, items, mats: matOut, stats: st, trend,
+  const out = { examId, exam: { school: schoolKey(exam.school), grade: gradeKey(exam.grade), year: Number(exam.year), semester: String(exam.semester), term: exam.term, date: exam.date || '', mydb: opt.mydb || null, msLv: msLv || null, subject: exam.subject || (prev && prev.exam && prev.exam.subject) || '' },
+    basis: (prev && prev.basis) || 'same+var', from, to, students: codes, items, mats: matOut, stats: st, trend, src: opt.src || (prev && prev.src) || null,
     at: new Date().toISOString(), by: 'worker', confirmedAt: (prev && prev.confirmedAt) || null };
   await kvSet('exam_hit_' + examId, out);
   const idx = (await kvGet('exam_hit_index')) || { items: [] };
@@ -480,6 +513,7 @@ async function runExam(exam, opt) {
   idx.items.sort((a, b) => String(b.at).localeCompare(String(a.at)));
   await kvSet('exam_hit_index', idx);
   log(`저장: exam_hit_${examId} — ${st.total}문항 · 같은 문제 ${st.same} · 변형 ${st.var} · 유형 ${st.type} · 지문만 ${st.text} · 학생 ${codes.length}명 · 자료 ${Object.keys(matOut).length}`);
+  log(`자료 종류별 (대조 문항 / 적중): ${Object.keys(st.byKind).map((k) => k + ' ' + st.byKind[k].mats + '/' + st.byKind[k].hit).join(' · ')}`);
   return out;
 }
 
@@ -535,6 +569,334 @@ async function maybeIndex() {
   }
 }
 
+/* ══ 2026-10-10: 🎯 우리 자료 3종 — 교과서 · 수학비서 학습지 · PDF 자료함 (docs/exam_hit_contract.md §10) ════════
+ * 원장 결정 2026-10-10: 「학년 폴더 기본 · 교과서 전체 포함 · 자료함 두자 · 다른 학교 기출 시험지는 기본 꺼 둠 ·
+ *   교과서 은행 없는 책은 새벽 자동 생성」. 범박고 고1 분석이 «우리 자료 0개»였던 것(고등부는 매쓰플랫 기록이 없음)을 메운다.
+ *
+ *   요청 exam_hit_req.src = { tb:{ on, mode:'all'|'scope', bids:[…] }, ms:[수학비서 학습지 id…], lib:[자료함 id…], mf:true }
+ *     src 가 없으면 예전과 같고, 고등부만 교과서 전체를 기본으로 넣는다.
+ *   ms_paper_<id>   = { id, title, folder, grade, uploadedAt, n, status:'ready'|'pending'|'error', err, updated, items:[{ no, img, cid, level, src, srcWb, pid }] }
+ *   ms_papers_index = { updated, items:[{ id, title, folder, grade, uploadedAt, n, status, exam }] }   (학원앱 목록용)
+ *   exam_lib        = { updated, items:[{ id, title, school, grade, sem, year, uploadedAt, src, path, n, status, items:[…], deleted }] }
+ *   그림은 모두 exam_images(비공개): ms/<id>/<번호>.png · lib/<id>.pdf · lib/<id>/<번호>.png
+ */
+const GRADE_FOLDERS = ['고1', '고2', '고3', '중1', '중2', '중3'];
+const PREP_DAYS = 150;                       // 학년 폴더: 최근 150일 안에 올린(산) 학습지만 새벽에 인식
+const LIST_DAYS = 365;                       // 다른 폴더: 1년 안 학습지만 목록에
+const PREP_CAP = Number(arg('cap', 12)) || 12, LIB_CAP = 6;
+const PAPER_MAX_Q = 150, PAPER_MAX_PAGES = 60;
+const RETRY_H = 20;                          // 실패한 것은 20시간 뒤 다시
+/* 기출 = 학교 시험지(school_exams)·「내신 …」 제목 · 전국 모의고사(public_mock_exams) — 다른 학교·지난 시험이라 기본으로 끈다 */
+function isExamPaper(m) { return m.paperType === 'school_exams' || /public_mock/.test(m.paperType || '') || /^\s*내신/.test(m.title || ''); }
+function paperDate(m) { return m.uploadedAt || m.purchasedAt || ''; }
+function kstHour() { return (new Date().getUTCHours() + 9) % 24; }
+/* 학기·연도 (교육과정 키를 고르는 데만 쓴다) — 3~6월 1학기, 그 밖 2학기(1·2월은 지난해) */
+function semOf(iso) {
+  const d = iso ? new Date(iso) : new Date(); const k = new Date(d.getTime() + 9 * 3600e3);
+  const y = k.getUTCFullYear(), mo = k.getUTCMonth() + 1;
+  if (mo >= 3 && mo <= 6) return { year: y, semester: '1' };
+  return { year: mo <= 2 ? y - 1 : y, semester: '2' };
+}
+/* 고등부 과목 → 매쓰플랫 교육과정 키 (/curriculums/by-key 로 2026-10-10 확인: 22개정 고등 1.4.4147.<과정>, 15개정 고등 1.2.7.<과정>)
+ *   중학교는 exam_twin_pipeline.trieForExam 그대로. 22개정 적용: 고1 2025 · 고2 2026 · 고3 2027 부터 (중학교와 같은 식) */
+const HS_COURSE = {
+  22: [[/공통\s*수학\s*(1|Ⅰ)|공수\s*1/, 4175], [/공통\s*수학\s*(2|Ⅱ)|공수\s*2/, 4176], [/대수/, 4177], [/미적분\s*(Ⅱ|II|2)/, 4180], [/미적분/, 4178], [/확률\s*과\s*통계|확통/, 4179], [/기하/, 4181]],
+  15: [[/수학\s*\(?\s*상/, 41], [/수학\s*\(?\s*하/, 42], [/미적분/, 46], [/확률\s*과\s*통계|확통/, 45], [/기하/, 47], [/수학\s*(Ⅱ|II|2)/, 44], [/수학\s*(Ⅰ|I|1)/, 43]] };
+function courseTrie(grade, year, text) {
+  const gk = gradeKey(grade); if (!/^고\d/.test(gk)) return '';
+  const is22 = Number(year) >= 2024 + Number(gk.slice(1));
+  for (const [re, id] of HS_COURSE[is22 ? 22 : 15]) if (re.test(String(text || ''))) return (is22 ? '1.4.4147.' : '1.2.7.') + id;
+  return '';
+}
+/* 적중 분석 시험과 같은 방식으로 교육과정 키 — 고등부는 제목·폴더에서 과목을 읽고, 모르면 예전 trieForExam */
+function trieOf(grade, year, semester, text) { const c = courseTrie(grade, year, text); if (c) return c; const g = String(gradeKey(grade)).replace(/\D/g, ''); return g ? tw().trieForExam(g, semester, year) : ''; }
+function tbTitle(t) { return String(t || '교과서').replace(/^교과서_/, '교과서 ').replace(/\s*-\s*/, ' ').trim(); }
+function normSrc(raw, exam) {
+  const hs = /^고/.test(gradeKey(exam.grade));
+  if (!raw || typeof raw !== 'object') return { tb: { on: hs, mode: 'all', bids: [] }, ms: [], lib: [], mf: true };
+  const tb = raw.tb || {};
+  return { tb: { on: tb.on === true || (tb.on === undefined && hs), mode: tb.mode === 'scope' ? 'scope' : 'all', bids: (tb.bids || []).map(String) },
+    ms: (raw.ms || []).map(String), lib: (raw.lib || []).map(String), mf: raw.mf !== false };
+}
+function matFromItem(kind, k, title, it, extra) {
+  const s = String(it.src || ''), n = /^[pbs]\d+$/.test(s) ? Number(s.slice(1)) : null;
+  return Object.assign({ k, kind, title, no: it.no, cid: it.cid || null, level: it.level || null, pid: it.pid || (s[0] === 'p' ? n : null),
+    wbp: s[0] === 'b' ? n : null, store: it.img || '', res: {}, at: {} }, extra || {});
+}
+async function keysLike(prefix) {
+  const out = new Set();
+  for (let off = 0; off < 20000; off += 1000) {
+    const r = await fetch(`${SB}/rest/v1/lumen_store?key=like.${encodeURIComponent(prefix)}*&select=key&order=key.asc&limit=1000&offset=${off}`, { headers: sbH() });
+    if (!r.ok) break; const j = await r.json(); j.forEach((x) => out.add(x.key)); if (j.length < 1000) break;
+  }
+  return out;
+}
+
+/* ── (a) 교과서 — 그 학교·학년 지정 교과서 은행 전체(또는 시험 범위 단원 쪽만) ── */
+async function textbookBids(exam) {
+  const map = (await kvGet('mf_textbooks')) || {};
+  const sg = (map.bySchoolGrade || {})[schoolKey(exam.school) + '|' + gradeKey(exam.grade)];
+  return Object.keys((sg && sg.books) || {}).filter((b) => { const bk = (map.books || {})[b]; return !bk || !bk.type || bk.type === 'SCHOOL'; });
+}
+async function loadTextbookMats(tb, exam, items, have, names) {
+  const bids = tb.bids.length ? tb.bids : await textbookBids(exam);
+  const out = []; const haveWb = new Set(have.filter((m) => m.wbp).map((m) => String(m.wbp)));
+  let scope = null;
+  if (tb.mode === 'scope') {
+    scope = { cids: new Set(items.map((i) => String(i.cid || '')).filter(Boolean)), chs: new Set(items.map((i) => (names[i.cid] || {}).m).filter(Boolean)) };
+  }
+  for (const bid of bids) {
+    const bank = await kvGet('mf_textbook_' + bid);
+    if (!bank || !(bank.problems || []).length) { log(`교과서 ${bid}: 은행 없음 — 새벽에 만든다 (--prep)`); continue; }
+    const title = tbTitle(bank.title);
+    const pageTitle = {}; (bank.pages || []).forEach((pg) => { pageTitle[pg.page] = pg.title || ''; });
+    let probs = bank.problems, scoped = false;
+    if (scope) {   /* 시험 문항의 유형이 나오는 쪽의 소단원 + 시험 문항 중단원 이름과 같은 쪽 → 그 소단원 쪽 전부 */
+      const titles = new Set();
+      bank.problems.forEach((p) => { if (p.cid && scope.cids.has(String(p.cid))) titles.add(pageTitle[p.page] || ''); });
+      (bank.pages || []).forEach((pg) => { if (scope.chs.has(pg.title)) titles.add(pg.title); });
+      titles.delete('');
+      const kept = bank.problems.filter((p) => titles.has(pageTitle[p.page] || ''));
+      if (kept.length) { probs = kept; scoped = true; } else log(`${title}: 시험 범위 단원과 맞는 쪽이 없어 전체를 씀`);
+    }
+    let dup = 0;
+    probs.forEach((p) => {
+      if (haveWb.has(String(p.id))) { dup++; return; }   /* 학생이 매쓰플랫에서 푼 같은 문항(교재 기록)이 이미 있다 — 정오가 있는 쪽을 남긴다 */
+      out.push({ k: 'tb:' + p.id, kind: 'textbook', title, bid: String(bid), page: p.page, number: p.no, cid: p.cid || null, level: p.level || null,
+        pid: pidOfUrl(p.pimg), wbp: p.id, img: p.pimg || '', res: {}, at: {} });
+    });
+    log(`${title}: ${probs.length}문항${scoped ? ' (시험 범위 단원만)' : ''}${dup ? ` · 매쓰플랫 기록과 겹친 ${dup}개는 기록 쪽으로` : ''}`);
+  }
+  return out;
+}
+
+/* ── 매쓰플랫 AI 인식 → exam_images 에 문항 그림 (시험지와 같은 길) ── */
+let MF_IN = false;
+async function recognizeToStore(pdf, trie, prefix) {
+  if (!MF_IN) { await tw().mfLogin(); MF_IN = true; }
+  const boxes = await recognize(pdf.bytes, pdf.pages, trie);
+  const items = [];
+  for (let i = 0; i < boxes.length; i++) {
+    const b = boxes[i], no = i + 1; const buf = await fetchBuf(b.url); if (!buf) continue;
+    const img = await stPut(BUCKET, `${prefix}/${no}.png`, buf, mimeOf(buf) || 'image/png');
+    const s = String(b.src || '');
+    items.push({ no, img, cid: b.cid, level: b.level, src: s, srcWb: b.srcWb, pid: /^p\d+$/.test(s) ? Number(s.slice(1)) : null });
+  }
+  return items;
+}
+
+/* ── (b) 수학비서 학습지 ── */
+let MS_LIST = null, MS_LIST_AT = 0, MS_FOLD = null;
+async function msPapers() {
+  if (!process.env.MATHSECR_ID || !process.env.MATHSECR_PASSWORD) throw new Error('기출 DB 계정(MATHSECR_ID) 이 서버에 없습니다');
+  /* PDF 주소(pdfPath)는 1시간짜리 서명이라 40분이 지나면 목록을 새로 받는다 */
+  if (!MS_LIST || Date.now() - MS_LIST_AT > 40 * 60000) { const C = msc(); await C.msLogin(); MS_LIST = await C.msListMydbs(); MS_LIST_AT = Date.now(); }
+  return MS_LIST;
+}
+async function msFolders() {
+  if (MS_FOLD) return MS_FOLD;
+  const C = msc(); const j = await C.msGet('/bms/api/v1/folders?folderType=mydb');
+  const roots = Array.isArray(j.data) ? j.data : [j.data];
+  const nameOf = {}, gradeOfId = {};
+  (function walk(f, g) {
+    if (!f) return; const nm = String(f.name || '').replace(/\s/g, '');
+    const now = GRADE_FOLDERS.includes(nm) ? nm : g;   /* 학년 폴더 = 이름이 고1·고2 … 와 같은 폴더 (그 아래 폴더 포함) */
+    if (f.id) { nameOf[f.id] = f.name || ''; if (now) gradeOfId[f.id] = now; }
+    (f.children || []).forEach((c) => walk(c, now));
+  })({ name: '', children: roots }, '');
+  MS_FOLD = { nameOf, gradeOf: (id) => gradeOfId[id] || '' };
+  return MS_FOLD;
+}
+async function buildMsPaper(m, folder, grade, opt) {
+  const out = { id: m.id, title: m.title || '', folder, grade, uploadedAt: paperDate(m), n: m.questionCount || null, status: 'pending', err: '', updated: '', items: [] };
+  try {
+    if (!ensurePdfLib()) throw new Error('pdf-lib 설치 실패');
+    if ((m.questionCount || 0) > PAPER_MAX_Q) throw new Error(`문항이 너무 많아 건너뜀 (${m.questionCount}문항 — 나눠서 올려 주세요)`);
+    const so = semOf(out.uploadedAt);
+    const trie = (opt && opt.trie) || trieOf(grade || parseGrade(m.title), so.year, so.semester, (m.title || '') + ' ' + folder);
+    if (!trie) throw new Error(`교육과정을 정할 수 없음 (${grade || '학년 모름'})`);
+    let pdf = null;
+    if (m.pdfPath) { const buf = await fetchBuf(m.pdfPath); if (buf && mimeOf(buf) === 'application/pdf') pdf = { bytes: buf, pages: await pdfPages(buf) }; }
+    if (!pdf) {   /* 산 자료는 PDF 가 없다 → 기출 DB 받기와 같은 길로 문항 그림을 받아 PDF 로 */
+      const C = msc(); const ex = await C.msExam(Number(m.id) || m.id); const imgs = [];
+      for (const c of ex.cells) { if (!c.imgUrl) continue; try { const im = await C.msImage(c.imgUrl); if (mimeOf(im.buf) === 'image/png') imgs.push({ no: c.no, buf: im.buf }); } catch (e) {} await sleep(100); }
+      if (!imgs.length) throw new Error('PDF 도 문항 그림도 없음');
+      const b = await tw().buildPdf(imgs, 'MS ' + m.id); pdf = { bytes: Buffer.from(b.bytes), pages: b.pages };
+    }
+    if (pdf.pages > PAPER_MAX_PAGES) throw new Error(`쪽이 너무 많아 건너뜀 (${pdf.pages}쪽)`);
+    out.items = await recognizeToStore(pdf, trie, `ms/${m.id}`);
+    out.n = out.items.length; out.status = out.items.length ? 'ready' : 'error'; if (!out.items.length) out.err = '문항을 하나도 못 나눔';
+  } catch (e) { out.status = 'error'; out.err = String(e.message || e).slice(0, 160); }
+  out.updated = new Date().toISOString();
+  try { await kvSet('ms_paper_' + m.id, out); } catch (e) { log(`ms_paper_${m.id} 저장 실패: ${e.message}`); }
+  log(`  [${m.id}] ${out.status} · ${out.items.length}문항${out.err ? ' · ' + out.err : ''}`);
+  return out;
+}
+function parseGrade(t) { return (String(t || '').match(/(중[1-3]|고[1-3])/) || [])[1] || ''; }
+async function prepPaper(id, opt) {
+  const all = await msPapers(); const m = all.find((x) => String(x.id) === String(id));
+  if (!m) return { id, status: 'error', err: '기출 DB 에 그 학습지가 없음', items: [] };
+  const F = await msFolders();
+  const g = F.gradeOf(m.folderId);
+  return buildMsPaper(m, g || F.nameOf[m.folderId] || '', g || parseGrade(m.title), opt);
+}
+async function loadMsMats(ids, ctx) {
+  const out = []; let n = 0;
+  for (const id of ids) {
+    if (ctx.mydb && String(id) === ctx.mydb) { log(`수학비서 ${id}: 분석하는 시험지 자체라 자료에서 뺌`); continue; }
+    let p = await kvGet('ms_paper_' + id);
+    if (!p || p.status !== 'ready') {
+      log(`수학비서 학습지 ${id}: ${p ? p.status : '아직 인식 안 됨'} → 분석 때 바로 인식`);
+      await ctx.step(`수학비서 학습지 분석 때 바로 인식 중 (${n + 1}/${ids.length} · 장당 2~5분)`, 41);
+      try { p = await prepPaper(id, { trie: ctx.trie }); } catch (e) { log(`수학비서 ${id} 인식 실패: ${e.message.slice(0, 120)}`); p = null; }
+    }
+    if (!p || p.status !== 'ready') { log(`수학비서 학습지 ${id}: 못 씀 (${(p && p.err) || ''}) — 빼고 진행`); continue; }
+    n++; (p.items || []).forEach((it) => out.push(matFromItem('ms', `ms:${id}:${it.no}`, p.title, it)));
+  }
+  if (ids.length) log(`수학비서 학습지: ${n}장 · ${out.length}문항`);
+  return { mats: out, n };
+}
+
+/* ── (c) PDF 자료함 ── */
+async function libMerge(id, upd) {   /* 학원앱도 같은 키에 쓰므로 쓰기 직전에 다시 읽어 그 항목만 바꾼다 */
+  const lib = (await kvGet('exam_lib')) || { items: [] }; lib.items = lib.items || [];
+  const i = lib.items.findIndex((x) => String(x.id) === String(id)); if (i < 0) return null;
+  lib.items[i] = Object.assign({}, lib.items[i], upd); lib.updated = new Date().toISOString();
+  await kvSet('exam_lib', lib);
+  return lib.items[i];
+}
+function splitPath(p) { const s = String(p || ''); if (s.startsWith(BUCKET + '/')) return { bucket: BUCKET, path: s.slice(BUCKET.length + 1) }; if (s.startsWith(STAGE_BUCKET + '/')) return { bucket: STAGE_BUCKET, path: s.slice(STAGE_BUCKET.length + 1) }; return { bucket: STAGE_BUCKET, path: s }; }
+async function prepLib(x, opt) {
+  let upd;
+  try {
+    if (!ensurePdfLib()) throw new Error('pdf-lib 설치 실패');
+    const dst = `lib/${x.id}.pdf`;
+    const from = x.moved ? { bucket: BUCKET, path: dst } : splitPath(x.src);
+    const buf = await stGet(from.bucket, from.path);
+    if (!x.moved) {   /* 임시 자리(aha_photos) → exam_images/lib 로 옮기고 임시 파일은 지운다 */
+      await stPut(BUCKET, dst, buf, mimeOf(buf) || 'application/pdf');
+      if (from.bucket === STAGE_BUCKET) await stDel(STAGE_BUCKET, [from.path]);
+      if (!DRY) await libMerge(x.id, { moved: true, src: BUCKET + '/' + dst, path: BUCKET + '/' + dst });
+    }
+    const pdf = mimeOf(buf) === 'application/pdf' ? { bytes: buf, pages: await pdfPages(buf) } : await imagesToPdf([buf]);
+    if (pdf.pages > PAPER_MAX_PAGES) throw new Error(`쪽이 너무 많아 건너뜀 (${pdf.pages}쪽)`);
+    const so = semOf(x.uploadedAt);
+    const trie = (opt && opt.trie) || trieOf(x.grade, Number(x.year) || so.year, String(x.sem || so.semester), (x.subject || '') + ' ' + (x.title || ''));
+    if (!trie) throw new Error(`교육과정을 정할 수 없음 (${x.grade || '학년 모름'})`);
+    const items = await recognizeToStore(pdf, trie, `lib/${x.id}`);
+    upd = { status: items.length ? 'ready' : 'error', err: items.length ? '' : '문항을 하나도 못 나눔', items, n: items.length, moved: true, src: BUCKET + '/' + dst, path: BUCKET + '/' + dst, done: new Date().toISOString() };
+  } catch (e) { upd = { status: 'error', err: String(e.message || e).slice(0, 160), done: new Date().toISOString() }; }
+  log(`  자료함 [${x.id}] ${upd.status}${upd.n != null ? ' · ' + upd.n + '문항' : ''}${upd.err ? ' · ' + upd.err : ''}`);
+  const merged = await libMerge(x.id, upd);
+  return Object.assign({}, x, upd, merged || {});
+}
+async function loadLibMats(ids, ctx) {
+  const out = []; let n = 0; if (!ids.length) return { mats: out, n };
+  const lib = (await kvGet('exam_lib')) || { items: [] };
+  for (const id of ids) {
+    let x = (lib.items || []).find((i) => String(i.id) === String(id) && !i.deleted);
+    if (!x) { log(`자료함 ${id}: 없음(지웠거나 아직 안 올라옴)`); continue; }
+    if (x.status !== 'ready') {
+      log(`자료함 ${id}: ${x.status} → 분석 때 바로 인식`);
+      await ctx.step(`자료함 PDF 분석 때 바로 인식 중 (${n + 1}/${ids.length} · 장당 2~5분)`, 42);
+      x = await prepLib(x, { trie: ctx.trie });
+    }
+    if (x.status !== 'ready') { log(`자료함 ${id}: 못 씀 (${x.err || ''}) — 빼고 진행`); continue; }
+    n++; (x.items || []).forEach((it) => out.push(matFromItem('upload', `lib:${id}:${it.no}`, x.title || '자료함 프린트', it, { lib: true })));
+  }
+  log(`자료함: ${n}장 · ${out.length}문항`);
+  return { mats: out, n };
+}
+
+/* ══ --prep : 새벽 준비 (mathflat-collect.yml 04시 회차) ══ */
+async function paperStatuses() {
+  const out = {};
+  for (let off = 0; off < 20000; off += 1000) {
+    const r = await fetch(`${SB}/rest/v1/lumen_store?key=like.ms_paper_*&select=key,st:value->>status,up:value->>updated&order=key.asc&limit=1000&offset=${off}`, { headers: sbH() });
+    if (!r.ok) break; const j = await r.json();
+    j.forEach((x) => { out[String(x.key).replace(/^ms_paper_/, '')] = { status: x.st || '', updated: x.up || '' }; });
+    if (j.length < 1000) break;
+  }
+  return out;
+}
+const stale = (s) => !s.updated || (Date.now() - new Date(s.updated).getTime()) > RETRY_H * 3600e3;
+async function prepPapers() {
+  if (!process.env.MATHSECR_ID || !process.env.MATHSECR_PASSWORD) { log('수학비서 계정(MATHSECR_ID) 없음 — 수학비서 학습지 건너뜀'); return; }
+  const all = await msPapers(); const F = await msFolders(); const st = await paperStatuses();
+  const since = Date.now() - PREP_DAYS * 864e5, listSince = Date.now() - LIST_DAYS * 864e5;
+  const idx = [], per = {}, other = {}, want = [];
+  GRADE_FOLDERS.forEach((g) => { per[g] = { all: 0, exam: 0, recent: 0, ready: 0, todo: 0 }; });
+  all.forEach((m) => {
+    const g = F.gradeOf(m.folderId), folder = F.nameOf[m.folderId] || '', exam = isExamPaper(m), at = paperDate(m), t = at ? new Date(at).getTime() : 0;
+    const s = st[String(m.id)] || {};
+    if (!g) {   /* 학년 폴더 밖: 1년 안에 올린(산) 학습지만 목록에 (학원앱에서 폴더를 바꿔 고를 수 있게) — 인식은 고를 때 */
+      if (exam || !t || t < listSince) return;
+      other[folder] = (other[folder] || 0) + 1;
+    } else {
+      const p = per[g]; p.all++; if (exam) p.exam++; if (!exam && t >= since) p.recent++; if (s.status === 'ready') p.ready++;
+      if (!exam && t >= since && s.status !== 'ready' && (s.status !== 'error' || stale(s))) { p.todo++; want.push({ m, folder: g, g }); }
+    }
+    /* 학년 폴더 아래 폴더(예: 고1 › 09월)는 folder=학년 폴더, sub=아래 폴더 이름 — 학원앱 폴더 칩은 folder 로 묶는다 */
+    const row = { id: m.id, title: m.title || '', folder: g || folder, grade: g || parseGrade(m.title), uploadedAt: at || '', n: m.questionCount || null, status: s.status || '', exam };
+    if (g && folder && folder.replace(/\s/g, '') !== g) row.sub = folder;
+    idx.push(row);
+  });
+  log('수학비서 학년 폴더 (전체 · 기출 · 최근 ' + PREP_DAYS + '일 학습지 · 인식 완료 · 할 일):');
+  GRADE_FOLDERS.forEach((g) => { const p = per[g]; log(`  ${g}: ${p.all}장 · 기출 ${p.exam} · 최근 학습지 ${p.recent} · 인식 완료 ${p.ready} · 할 일 ${p.todo}`); });
+  const oth = Object.keys(other).sort((a, b) => other[b] - other[a]);
+  log(`  다른 폴더(1년 안 학습지, 목록만): ${oth.length ? oth.map((f) => f + ' ' + other[f]).join(' · ') : '없음'}`);
+  /* 학원앱 「💾 이 구성 기억」(exam_hit_src_<학교>_<학년>)에서 원장님이 켜 둔 다른 폴더 학습지도 미리 인식 */
+  const keep = new Set(), keepGrade = {}; const ws = new Set(want.map((w) => String(w.m.id)));
+  for (const k of await keysLike('exam_hit_src_')) { const c = await kvGet(k); const kg = k.split('_').pop();   /* exam_hit_src_<학교>_<학년> */
+    Object.keys((c && c.msOn) || {}).forEach((id) => { keep.add(String(id)); if (!keepGrade[id]) keepGrade[id] = kg; }); }
+  all.forEach((m) => { const s = st[String(m.id)] || {}; if (!keep.has(String(m.id)) || ws.has(String(m.id)) || s.status === 'ready' || (s.status === 'error' && !stale(s))) return;
+    const g = F.gradeOf(m.folderId); want.push({ m, folder: g || F.nameOf[m.folderId] || '', g: g || keepGrade[String(m.id)] || parseGrade(m.title) }); });
+  if (keep.size) log(`  기억한 구성에서 켠 학습지 ${keep.size}장 (아직 인식 안 된 것은 할 일에 넣음)`);
+  want.sort((a, b) => String(paperDate(a.m)).localeCompare(String(paperDate(b.m))));   /* 오래된 것부터 */
+  const now = want.slice(0, PREP_CAP);
+  log(`이번에 인식할 학습지 ${now.length}장 (할 일 ${want.length}장 · 한 번에 최대 ${PREP_CAP})`);
+  now.forEach((w) => log(`  · [${w.m.id}] ${w.g} · ${String(paperDate(w.m)).slice(0, 10)} · ${w.m.questionCount || '?'}문항 · ${w.m.pdfPath ? 'PDF' : '문항 그림'} · ${String(w.m.title || '').slice(0, 40)}`));
+  const save = async () => { idx.sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt))); await kvSet('ms_papers_index', { updated: new Date().toISOString(), items: idx }); };
+  await save();
+  if (DRY) return;
+  for (const w of now) {
+    const out = await buildMsPaper(w.m, w.folder, w.g, null);
+    const it = idx.find((x) => String(x.id) === String(w.m.id)); if (it) { it.status = out.status; if (out.n) it.n = out.n; }
+  }
+  if (now.length) await save();
+}
+async function prepLibAll() {
+  const lib = (await kvGet('exam_lib')) || { items: [] };
+  const todo = (lib.items || []).filter((x) => !x.deleted && x.status !== 'ready' && (x.status !== 'error' || stale({ updated: x.done })));
+  log(`PDF 자료함: ${(lib.items || []).filter((x) => !x.deleted).length}장 · 인식 대기 ${todo.length}장`);
+  todo.slice(0, LIB_CAP).forEach((x) => log(`  · [${x.id}] ${x.school || ''} ${x.grade || ''} · ${String(x.title || '').slice(0, 40)} (${x.status || 'pending'})`));
+  if (DRY) return;
+  for (const x of todo.slice(0, LIB_CAP)) await prepLib(x, null);
+}
+async function prepBanks() {
+  const map = (await kvGet('mf_textbooks')) || {};
+  const want = new Set();
+  Object.keys(map.bySchoolGrade || {}).forEach((k) => Object.keys((map.bySchoolGrade[k] && map.bySchoolGrade[k].books) || {}).forEach((b) => {
+    const bk = (map.books || {})[b]; if (bk && bk.type === 'SCHOOL') want.add(String(b)); }));
+  const have = await keysLike('mf_textbook_');
+  const miss = [...want].filter((b) => !have.has('mf_textbook_' + b));
+  log(`교과서 은행: 학교·학년 지정 교과서 ${want.size}권 · 은행 있음 ${want.size - miss.length} · 없음 ${miss.length}${miss.length ? ' (' + miss.map((b) => ((map.books || {})[b] || {}).fulltitle || b).join(', ') + ')' : ''}`);
+  if (!miss.length || DRY) return;
+  if (!process.env.MATHFLAT_ID || !process.env.MATHFLAT_PASSWORD) { log('매쓰플랫 계정 없음 — 교과서 은행 건너뜀'); return; }
+  log(`교과서 은행 만들기: node sync/mf_textbook_bank.js --bids ${miss.join(',')}`);
+  const r = spawnSync(process.execPath, [pathMod.join(__dirname, 'mf_textbook_bank.js'), '--bids', miss.join(',')], { stdio: 'inherit', env: process.env, timeout: 90 * 60000 });
+  log(`교과서 은행 만들기 끝 (종료 코드 ${r.status}${r.error ? ' · ' + r.error.message : ''})`);
+}
+async function prep() {
+  const hr = kstHour(), dawn = process.env.PREP_ROUND === 'dawn' || (hr >= 3 && hr <= 6);
+  if (!DRY && !has('force') && !dawn) { log(`--prep: 새벽 회차가 아님 (한국 ${hr}시) — 건너뜀 (--force 로 강제)`); return; }
+  log(`🌙 적중 분석 «우리 자료» 새벽 준비${DRY ? ' — dry (읽기만, 할 일 목록만)' : ''}`);
+  for (const [name, fn] of [['수학비서 학습지', prepPapers], ['PDF 자료함', prepLibAll], ['교과서 은행', prepBanks]]) {
+    try { await fn(); } catch (e) { log(`${name} 실패: ${String(e.message || e).slice(0, 200)}`); process.exitCode = 1; }
+  }
+  log('새벽 준비 끝');
+}
+
 /* ══ 요청 처리 (학원앱 → exam_hit_req) ═══════════════════════ */
 async function handleRequest() {
   const req = await kvGet(REQ_KEY);
@@ -553,9 +915,9 @@ async function handleRequest() {
   try {
     const exam = { ...req.exam, examId: req.examId };
     if (!exam.date) { exam.date = await examDateFromCalendar(exam); if (exam.date) log(`시험 첫날(학원 달력): ${exam.date}`); }
-    const out = await runExam(exam, { files: req.files || [], uploads: req.mats || [], mydb: req.mydb || null, rejudge: !!req.rejudge, from: req.from, to: req.to, step });
+    const out = await runExam(exam, { files: req.files || [], uploads: req.mats || [], mydb: req.mydb || null, rejudge: !!req.rejudge, from: req.from, to: req.to, src: req.src || null, step });
     await kvSet(REQ_KEY, { ...req, status: 'done', step: '끝', pct: 100, startedAt, doneAt: new Date().toISOString(), examId: out.examId,
-      summary: { total: out.stats.total, same: out.stats.same, var: out.stats.var, type: out.stats.type, text: out.stats.text } });
+      summary: { total: out.stats.total, same: out.stats.same, var: out.stats.var, type: out.stats.type, text: out.stats.text, byKind: out.stats.byKind } });
   } catch (e) {
     log('실패:', e.message);
     await kvSet(REQ_KEY, { ...req, status: 'error', error: String(e.message || e).slice(0, 200), startedAt, doneAt: new Date().toISOString() });
@@ -563,10 +925,12 @@ async function handleRequest() {
   }
 }
 
-module.exports = { schoolKey, gradeKey, examIdOf, whereOf, pidOfUrl, semStart, mydbFetch, examDateFromCalendar };
+module.exports = { schoolKey, gradeKey, examIdOf, whereOf, pidOfUrl, semStart, mydbFetch, examDateFromCalendar,
+  normSrc, textbookBids, loadTextbookMats, matFromItem, isExamPaper, semOf, tbTitle, courseTrie };   /* 2026-10-10 우리 자료 3종 */
 
 if (require.main === module) {
   (async () => {
+    if (has('prep')) return prep();   /* 2026-10-10: 우리 자료 새벽 준비 */
     if (NO_AI && !has('no-ai')) log('⚠ ANTHROPIC_API_KEY 가 없어 그림 판정 없이 유형 번호로만 후보를 남깁니다');
     const mydb = arg('mydb', null), rej = arg('rejudge', null);
     if (!mydb && !rej) { try { await maybeIndex(); } catch (e) { log('색인 건너뜀:', e.message); } return handleRequest(); }
@@ -581,6 +945,7 @@ if (require.main === module) {
       exam = { school, grade: arg('grade', e.grade), year: arg('year', e.year), semester: String(arg('semester', e.semester)), term: arg('term', e.term), date: arg('date', '') };
       if (arg('exam-id', '')) exam.examId = arg('exam-id', '');
     }
-    await runExam(exam, { mydb: rej ? exam.mydb : mydb, rejudge: !!rej, from: arg('from', ''), to: arg('to', '') });
+    let src = null; if (rej) { const p = await kvGet('exam_hit_' + rej); src = (p && p.src) || null; }
+    await runExam(exam, { mydb: rej ? exam.mydb : mydb, rejudge: !!rej, from: arg('from', ''), to: arg('to', ''), src });
   })().catch((e) => { console.error('❌', e.message); process.exit(1); });
 }

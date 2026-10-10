@@ -34,7 +34,8 @@ wks=open(SP+'/wksplit_teacher.js').read() if int(ver.replace('v19-',''))>=88 els
 sgv=open(SP+'/sgview_teacher.js').read() if int(ver.replace('v19-',''))>=89 else ''
 rcw=open(SP+'/rcws_teacher.js').read() if int(ver.replace('v19-',''))>=92 else ''   # v19-92: 리커버리 학습지 설계 → 매쓰플랫 즉시 생성
 bt2=open(SP+'/bt2_teacher.js').read() if int(ver.replace('v19-',''))>=94 else ''   # v19-98: 매쓰플랫 단원 트리   # v19-97: 채팅으로 고치기   # v19-95: 중3 기본 과정 공통수학1   # v19-94: 백지테스트 2판 (과정·소단원 · 미리보기·편집 · 교과서 문항 · 답지)
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+new.lstrip('\n')+'\n\n'+s[end:]
+hsr=open(SP+'/hitsrc_teacher.js').read() if int(ver.replace('v19-',''))>=99 else ''   # v19-99: 적중 분석 «우리 자료 3종»(교과서·수학비서 학습지·PDF 자료함) + ⚡ 즉시 처리
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -447,6 +448,10 @@ if int(ver.replace('v19-',''))>=92:
     # 리커버리 우측 패널: 「확정 전원」 단추 위에 매쓰플랫 계정 칸 (rcws_teacher.js 가 rcMakeWsAll·rcWsBtn 을 새 길로 덮어쓴다)
     rep("""  h+='<button onclick="rcMakeWsAll()" style="border:1.5px solid #bfdbfe;""", """  h+=rcwsAcctBox();   /* ★ v19-92: 매쓰플랫 계정 (이 PC 에만) */
   h+='<button onclick="rcMakeWsAll()" style="border:1.5px solid #bfdbfe;""")
+if int(ver.replace('v19-',''))>=99:
+    # v19-99: 적중 분석 우리 자료 — 앱이 서버에서 바로 읽는 새 키(수학비서 학습지 인식 ms_paper_<id>·목록 ms_papers_index 160KB · PDF 자료함 exam_lib)는 시작 때 받지 않는다
+    rep("'submissions_', 'or_students_archive_'];", "'submissions_', 'or_students_archive_', 'ms_paper'];")
+    rep("'mf_books', 'mf_stuck'];", "'mf_books', 'mf_stuck', 'exam_lib'];")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
