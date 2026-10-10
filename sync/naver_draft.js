@@ -29,7 +29,7 @@ const opt = {
   login: args.includes('--login'),
   dry: args.includes('--dry'),
   noImg: args.includes('--no-img'),
-  slow: args.includes('--slow'),
+  fast: args.includes('--fast'),      // 기본은 사람 타자 속도. 급하면 --fast
 };
 const folder = args.find(a => !a.startsWith('--'));
 const log = (...a) => console.log(...a);
@@ -161,8 +161,35 @@ async function insertPlace(page, frame, keyword) {
   await input.click();
   await page.keyboard.type(keyword, { delay: rnd(60, 120) });
   await page.keyboard.press('Enter');
-  await sleep(2200);
-  return true;   // 결과 고르기와 「확인」은 눈으로 보고 누르는 게 안전하다
+  await sleep(2500);
+
+  // 검색 결과 첫 줄 고르기
+  const itemSel = ['li[class*="place"]', '.se-place-search-result-item', '[class*="searchResult"] li',
+                   '[class*="result"] li', 'ul[class*="list"] li'];
+  let picked = false;
+  for (const sel of itemSel) {
+    for (const scope of [frame, page]) {
+      try {
+        const el = scope.locator(sel).first();
+        if (await el.isVisible({ timeout: 600 })) { await el.click(); picked = true; break; }
+      } catch {}
+    }
+    if (picked) break;
+  }
+  if (!picked) throw new Error('검색 결과를 못 찾았습니다');
+  await sleep(1200);
+
+  // 「확인」 누르기
+  for (const sel of ['button:has-text("확인")', 'button:has-text("추가")', '[class*="confirm"] button',
+                     'button[class*="confirm"]']) {
+    for (const scope of [frame, page]) {
+      try {
+        const el = scope.locator(sel).first();
+        if (await el.isVisible({ timeout: 600 })) { await el.click(); await sleep(1800); return true; }
+      } catch {}
+    }
+  }
+  throw new Error('「확인」 단추를 못 찾았습니다 (장소는 골라졌습니다)');
 }
 
 (async () => {
@@ -249,9 +276,10 @@ async function insertPlace(page, frame, keyword) {
     if (s.kind === 'text') {
       log(`  ${n}/${steps.length} 글 ${s.text.length}자…`);
       for (const para of s.text.split('\n')) {
-        if (para.trim()) await page.keyboard.type(para, { delay: opt.slow ? rnd(25, 70) : rnd(4, 14) });
+        // 기본은 사람 타자 속도(한 글자 25~70ms). 모니터에 띄워 두고 보기 좋은 속도다
+        if (para.trim()) await page.keyboard.type(para, { delay: opt.fast ? rnd(4, 14) : rnd(25, 70) });
         await page.keyboard.press('Enter');
-        await sleep(rnd(120, 320));
+        await sleep(opt.fast ? rnd(120, 320) : rnd(350, 800));
       }
     } else if (s.kind === 'image') {
       if (opt.noImg || !s.exists) {
@@ -271,8 +299,7 @@ async function insertPlace(page, frame, keyword) {
         log(`  ${n}/${steps.length} 장소 「루멘수학교습소」 검색…`);
         try {
           await insertPlace(page, f, '루멘수학교습소');
-          await pause('장소를 검색했습니다.',
-            '목록에서 「루멘수학교습소」를 고르고 「확인」을 눌러주세요.\n      (본문 끝의 주소와 맞는지 비교해 보세요)');
+          log('     ✅ 장소를 넣었습니다 (본문 끝 주소와 맞는지 나중에 확인해 주세요)');
         } catch (e) {
           await pause(`장소 넣기가 막혔습니다 (${e.message})`,
             '위쪽 「장소」 단추를 눌러 「루멘수학교습소」를 찾아 넣어주세요.');
