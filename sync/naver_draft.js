@@ -88,7 +88,11 @@ function plan(dir) {
 const SEL = {
   title: ['.se-documentTitle .se-text-paragraph', '.se-documentTitle', 'span.se-placeholder.__se_placeholder', '.se-title-text'],
   body:  ['.se-component.se-text .se-text-paragraph', '.se-main-container .se-text-paragraph', '.se-content'],
-  save:  ['button.save_btn__bzc5B', 'button[class*="save_btn"]', '.header button:has-text("저장")'],
+  save:  ['button:has-text("저장")', 'a:has-text("저장")', '[class*="save_btn"]',
+          'button.save_btn__bzc5B', '[class*="publish"] button:has-text("저장")'],
+  // 장소(지도) 넣기
+  placeBtn:   ['button:has-text("장소")', '[data-name="place"]', '[data-log="pst.place"]', 'button[title*="장소"]'],
+  placeInput: ['input[placeholder*="장소"]', '.se-place-search-input', 'input[type="text"][class*="search"]'],
   // 네이버는 숨은 input 이 아니라 「사진」 단추를 눌러 파일 선택창을 띄운다
   photoBtn: ['button:has-text("사진")', '[data-name="image"]', '.se-toolbar-item-image button',
              'button[data-log="pst.photo"]', '.se-toolbar-item-image', 'button[title*="사진"]'],
@@ -131,6 +135,34 @@ async function insertImage(page, frame, file) {
   await page.keyboard.press('ArrowDown').catch(() => {});
   await page.keyboard.press('End').catch(() => {});
   await sleep(400);
+}
+
+// 장소(루멘수학교습소) 넣기 — 되면 좋고, 안 되면 손으로 안내한다
+async function insertPlace(page, frame, keyword) {
+  let btn = null;
+  for (const sel of SEL.placeBtn) {
+    for (const scope of [frame, page]) {
+      try { const el = scope.locator(sel).first(); if (await el.isVisible({ timeout: 400 })) { btn = el; break; } } catch {}
+    }
+    if (btn) break;
+  }
+  if (!btn) throw new Error('「장소」 단추를 못 찾았습니다');
+  await btn.click();
+  await sleep(1800);
+
+  let input = null;
+  for (const sel of SEL.placeInput) {
+    for (const scope of [frame, page]) {
+      try { const el = scope.locator(sel).first(); if (await el.isVisible({ timeout: 500 })) { input = el; break; } } catch {}
+    }
+    if (input) break;
+  }
+  if (!input) throw new Error('장소 검색칸을 못 찾았습니다');
+  await input.click();
+  await page.keyboard.type(keyword, { delay: rnd(60, 120) });
+  await page.keyboard.press('Enter');
+  await sleep(2200);
+  return true;   // 결과 고르기와 「확인」은 눈으로 보고 누르는 게 안전하다
 }
 
 (async () => {
@@ -235,7 +267,19 @@ async function insertImage(page, frame, file) {
           `위쪽 「사진」 단추를 눌러 ${path.basename(s.file)} 을 직접 넣어주세요.\n      파일 위치: ${s.file}`);
       }
     } else if (s.kind === 'manual') {
-      await pause(`${s.label}은 직접 넣으셔야 합니다.`, s.what);
+      if (s.label === '지도') {
+        log(`  ${n}/${steps.length} 장소 「루멘수학교습소」 검색…`);
+        try {
+          await insertPlace(page, f, '루멘수학교습소');
+          await pause('장소를 검색했습니다.',
+            '목록에서 「루멘수학교습소」를 고르고 「확인」을 눌러주세요.\n      (본문 끝의 주소와 맞는지 비교해 보세요)');
+        } catch (e) {
+          await pause(`장소 넣기가 막혔습니다 (${e.message})`,
+            '위쪽 「장소」 단추를 눌러 「루멘수학교습소」를 찾아 넣어주세요.');
+        }
+      } else {
+        await pause(`${s.label}은 직접 넣으셔야 합니다.`, s.what);
+      }
     }
   }
 
@@ -248,13 +292,22 @@ async function insertImage(page, frame, file) {
 
   // 임시저장 — 발행은 절대 안 누른다
   await sleep(1500);
-  const save = await firstVisible(page, SEL.save, 5000) || await firstVisible(f, SEL.save, 3000);
+  let save = await firstVisible(f, SEL.save, 4000) || await firstVisible(page, SEL.save, 4000);
   if (save) {
-    await save.click();
-    await sleep(2500);
-    log('\n✅ 임시저장했습니다.');
-  } else {
-    await pause('임시저장 버튼을 못 찾았습니다.', '화면 위쪽 「저장」을 눌러주세요.');
+    const label = ((await save.innerText().catch(() => '')) || '').replace(/\s+/g, ' ').trim();
+    if (/발행/.test(label)) {            // 혹시라도 발행 단추를 잡았으면 누르지 않는다
+      log(`   ⚠️ 「${label}」 단추를 잡았습니다 — 발행일 수 있어 누르지 않습니다.`);
+      save = null;
+    } else {
+      log(`   「${label || '저장'}」 누릅니다…`);
+      await save.click();
+      await sleep(3000);
+      log('\n✅ 임시저장했습니다.');
+    }
+  }
+  if (!save) {
+    await pause('임시저장 단추를 못 찾았습니다.',
+      '화면 오른쪽 위 「저장」을 눌러주세요. (「발행」 말고 「저장」입니다)');
   }
 
   log('\n🚫 발행은 하지 않았습니다. 임시저장함에서 확인하고 직접 발행해주세요.');
