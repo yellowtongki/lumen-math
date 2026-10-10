@@ -31,7 +31,7 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
       { id: 3, page: 24, no: '2', cid: 502, level: 2, pimg: pimg(70003), answer: '5', type: 'SHORT_ANSWER', aimg: pimg(70013).replace('problem.png', 'answer.png') }, { id: 4, page: 25, no: '6', cid: 502, level: 3, pimg: pimg(70004), answer: '-3', type: 'SHORT_ANSWER', aimg: pimg(70014).replace('problem.png', 'answer.png') },
       { id: 5, page: 34, no: '1', cid: 503, level: 1, pimg: pimg(70005), answer: '(x+1)(x+2)', type: 'SHORT_ANSWER' }, { id: 6, page: 12, no: '탐구 1', cid: 501, level: 2, pimg: pimg(70006), answer: '', type: 'ESSAY' } ] } };
     window.eaTbLoad = () => Promise.resolve(); window.eaTbBank = (bid) => Promise.resolve(EA.tb[bid] || null);
-    window.getSortedStudents = () => [{ id: 'S1', name: '○○○', grade: '중학교 3학년', group: 'T630', lumen_rec_code: 'AAA111' }];
+    window.getSortedStudents = () => [{ id: 'S1', name: '○○○', grade: '중학교 3학년', group: 'T630', lumen_rec_code: 'AAA111' }, { id: 'S2', name: '△△△', grade: '중학교 3학년', group: 'T630', lumen_rec_code: 'BBB222' }, { id: 'S3', name: '□□□', grade: '중학교 1학년', group: 'T5', lumen_rec_code: 'CCC333' }];
     window.getSupaClient = () => null; window.HWC = { loaded: true, stuck: {} }; window.ahaNotes = []; window.HWB = { loaded: true, swb: {} };
     window.tqSummary = () => ({ weak: [{ cid: 502, name: '나머지 정리', unit: '다항식의 연산', cur: 40, n: 5 }], newweak: [], worse: [] });
     window.MF_TYPE_ACH = Object.assign(window.MF_TYPE_ACH, {});
@@ -65,7 +65,12 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
     bt2TbRe(0); out.tbRe = d.p3[0].id; bt2TbMore(); out.tbMore = d.p3.length;
     const key = bt2KeyHtml(d).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
     out.key = { title: /채점용 답지/.test(key), p1: /1부\. 개념 백지 모범답/.test(key) && /계수비교법·수치대입법/.test(key), p3: /3부\. 교과서 정답/.test(key) && /2x\+1|x\^2|-3|5/.test(key), aimg: /answer\.png/.test(bt2KeyHtml(d)) };
+    /* 여러 명 고르기 → 같은 시험지 */
+    BT.sel = {}; bt2SelGrade('중3'); out.sel = bt2SelCodes().sort(); window.confirm = () => true; BT.saved = [];
+    await bt2MakeMany(); out.many = { n: (BT.many || []).length, saved: BT.saved.length, codes: BT.saved.map((x) => x.code).sort(), sameP1: BT.saved.every((x) => x.p1.length === d.p1.length), p2: BT.saved.map((x) => x.p2.length) };
+    const mk = rBtMake(); out.manyBtn = /2명 한꺼번에 인쇄/.test(mk) && /고른 2명에게 같은 시험지/.test(mk);
     let opened = []; window.open = () => ({ document: { open() {}, write(s) { opened.push(s); }, close() {} } });
+    bt2PrintMany(true); out.manyPrint = opened[0] ? (opened[0].split('class="pg"').length - 1) : 0; opened = [];
     btPrint(); btAnswers(); bt2PrintBoth(); out.prints = opened.map((s) => s.length + ':' + (/채점용 답지/.test(s) ? 'key' : 'sheet') + (s.split('class="pg"').length - 1));
     } catch (e) { out.err = String(e && e.stack || e); out.draftNow = BT.draft && { p1: BT.draft.p1.length, p3: (BT.draft.p3 || []).length }; out.pool = bt2Picked().map((x) => x.s + ':' + bt2TbPool(x).length); }
     /* 화면 그림 */
@@ -88,6 +93,10 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
   t('3부: 다른 문항으로 바꾸기 · 1문항 더', o.tbRe !== 1 && o.tbMore === 3, JSON.stringify([o.tbRe, o.tbMore]));
   t('답지: 1부 모범답 · 3부 교과서 정답(글·그림)', o.key.title && o.key.p1 && o.key.p3 && o.key.aimg, JSON.stringify(o.key));
   t('인쇄 창 3번: 시험지 1쪽 · 답지 1쪽 · 둘 다 2쪽', o.prints.length === 3 && /sheet1$/.test(o.prints[0]) && /key1$/.test(o.prints[1]) && /2$/.test(o.prints[2]), o.prints.join(' | '));
+  t('중3 전부 고르기 → 2명', o.sel.join(',') === 'AAA111,BBB222', JSON.stringify(o.sel));
+  t('고른 2명에게 같은 시험지 → 보관함 2장 · 1부 같음 · 2부 없음', o.many.n === 2 && o.many.saved === 2 && o.many.codes.join(',') === 'AAA111,BBB222' && o.many.sameP1 && o.many.p2.join('') === '00', JSON.stringify(o.many));
+  t('단추: 「고른 2명에게 같은 시험지」 · 「2명 한꺼번에 인쇄」', o.manyBtn === true);
+  t('한꺼번에 인쇄: 2쪽 + 답지 1쪽 = 3쪽', o.manyPrint === 3, String(o.manyPrint));
   t('페이지 오류 없음', errs.length === 0, errs.slice(0, 2).join(' | '));
   await pg.evaluate(() => { document.querySelectorAll('body > div').forEach((d) => { if (d.id !== 'tdemo' && getComputedStyle(d).position === 'fixed') d.style.display = 'none'; }); });
   await pg.locator('#tdemo').screenshot({ path: SP + '/v1994_bt.png' });
