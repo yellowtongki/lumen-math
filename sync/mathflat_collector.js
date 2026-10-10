@@ -42,6 +42,7 @@
  *   --wsq-only      학습지 채점목록(mf_wsq_*)만 갱신 — 학생앱 「📄 학습지」 탭용 (고등 포함)
  *   --tree-only     매쓰플랫 7단계 단원 트리(mf_tree_*)만 갱신 — 학원앱 백지테스트 범위 (평소엔 일요일 새벽 4시 회차에만)
  *   --tree-dry      공통수학1(22개정) 트리 하나만 받아 크기·개수만 출력 (저장 안 함)
+ *   --tree-skip-fresh  (--tree-only 과 함께) 24시간 안에 받아 둔 과정은 건너뛰고 이어서 받기
  *
  * 출력 (개인정보 포함 → 커밋 금지, .gitignore 처리):
  *   {out-dir}/mf_answer_records.json   [A] 문항 단위 학습지 정오답
@@ -979,7 +980,7 @@ async function main() {
     if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
     const meT = await login();
     log(`로그인 성공 · 학원 ${meT.academyId}`);
-    await refreshCurriculumTree();
+    await refreshCurriculumTree({ skipFresh: has('--tree-skip-fresh') });   // --tree-skip-fresh: 24시간 안에 받은 과정은 건너뜀(이어서 받기)
     return;
   }
   // --kmm-only: KMM 경시 성적만 수집
@@ -2138,8 +2139,13 @@ async function buildCurriculumTree(cur) {
 function treeHasConcepts(cur) {
   return (cur.bigChapters || []).some((B) => (B.middleChapters || []).some((M) => (M.littleChapters || []).some((L) => (L.concepts || []).length)));
 }
+function treeCounts(v) {
+  const c = { concepts: 0, topics: 0, subs: 0 };
+  ((v && v.b) || []).forEach((B) => (B.m || []).forEach((M) => (M.s || []).forEach((L) => (L.c || []).forEach((C) => { c.concepts++; (C.t || []).forEach((T) => { c.topics++; c.subs += (T.u || []).length; }); }))));
+  return c;
+}
 async function refreshCurriculumTree(opts) {
-  const dry = !!(opts && opts.dry);
+  const dry = !!(opts && opts.dry); const skipFresh = !!(opts && opts.skipFresh);
   try {
     const core = await api('/curriculums/core');
     const keys = ((core && core.schoolTypes) || []).filter((x) => x && x.trieKey).map((x) => x.trieKey);
@@ -2154,6 +2160,16 @@ async function refreshCurriculumTree(opts) {
       for (const cur of Array.isArray(curs) ? curs : []) {
         if (!cur || !(cur.bigChapters || []).length || !treeHasConcepts(cur)) continue;   // 대단원·개념 없는 과정(예: 「(구) 교육과정」)은 건너뜀
         if (dry && !(treeRev(cur) === '22' && treeLabel(cur) === '공통수학1')) continue;
+        // --tree-skip-fresh: 24시간 안에 받아 둔 과정은 건너뛴다 (중간에 끊긴 수집을 이어서 돌릴 때)
+        if (skipFresh) {
+          const kOld = `mf_tree_${treeRev(cur)}_${treeLabel(cur)}`;
+          let old = null; try { old = await storeGet(kOld); } catch (e) {}
+          if (old && old.updated && Date.now() - Date.parse(old.updated) < 24 * 3600 * 1000) {
+            const cc = treeCounts(old);
+            items.push({ key: kOld, rev: old.rev, label: old.label, schoolType: old.schoolType, concepts: cc.concepts, topics: cc.topics, subs: cc.subs });
+            log(`  단원 트리 ${kOld}: 24시간 안에 받아 둔 것 → 건너뜀`); continue;
+          }
+        }
         const t0 = Date.now();
         const { key, value, cnt } = await buildCurriculumTree(cur);
         const json = JSON.stringify(value);
@@ -2172,7 +2188,12 @@ async function refreshCurriculumTree(opts) {
       }
     }
     if (dry) { log('단원 트리 미리보기: 공통수학1(22개정)을 찾지 못했습니다'); return; }
-    if (items.length) await storeSet('mf_tree_index', { updated: new Date().toISOString(), items });
+    if (items.length) {
+      // 이미 있는 목록과 합친다(과정 키 기준) — 일부만 다시 받은 날에도 목록이 줄지 않게
+      let prev = null; try { prev = await storeGet('mf_tree_index'); } catch (e) {}
+      const byKey = {}; ((prev && prev.items) || []).forEach((x) => { if (x && x.key) byKey[x.key] = x; }); items.forEach((x) => { byKey[x.key] = x; });
+      await storeSet('mf_tree_index', { updated: new Date().toISOString(), items: Object.values(byKey) });
+    }
     const tot = items.reduce((a, x) => ({ c: a.c + x.concepts, t: a.t + x.topics, s: a.s + x.subs }), { c: 0, t: 0, s: 0 });
     log(`단원 트리(mf_tree_*): 과정 ${items.length}개 · 개념 ${tot.c} · 주제유형 ${tot.t} · 세부유형 ${tot.s} · 저장 ${saved}${failSave ? ' · 저장 실패 ' + failSave : ''}`);
   } catch (e) { log('단원 트리 갱신 실패(치명적 아님):', e.message); }
