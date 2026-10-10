@@ -412,3 +412,272 @@ window.bt2PrintMany=function(withKey){
   bt2PrintWin(body, L[0].title+' — '+L.length+'명');
 };
 window.btPick=function(code){ BT.stu=String(code); BT.draft=null; BT.many=null; render(); };
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-97: 💬 백지테스트 — «채팅으로 고치기» (편집 칸 맨 아래 대화 상자)
+ *   원장 지시 2026-10-10: 「학원앱에서 지금 채팅처럼, 곱셈공식 변형 더 추가해줘」 (시안 docs/mockup_bt_chat.html — 원장 승인)
+ *
+ *  [왜] 🔄·＋ 단추만으로는 「곱셈공식 변형 2문제 더」「3번 더 쉽게」 같은 말을 바로 시킬 수 없었다.
+ *  [무엇]
+ *   · 왼쪽 편집 칸 맨 아래(한마디 칸 밑)에 대화 상자. 말 한 줄 → AI 는 «고칠 목록»(추가·바꾸기·삭제·순서·제목·힌트)만 돌려주고 앱이 적용.
+ *     시험지 전체를 다시 쓰지 않으니 손본 문항은 그대로 남는다. 새로 들어온 문항은 3초간 노란 바탕.
+ *   · 범위: 고른 소단원 밖이어도 «같은 대단원» 안의 소단원·유형이면 써도 된다(원장 결정) — AI 에 대단원 전체 소단원·유형 이름을 준다.
+ *   · 「교과서에서 ○○ n개」는 AI 없이 교과서 은행에서 쪽 제목·유형 이름으로 바로 찾아 3부에 넣는다(3부가 교과서일 때).
+ *   · 고칠 때마다 전 상태를 쌓아 두고 「↩ 되돌리기」(또는 「취소」라고 말하기)로 돌린다.
+ *   · 보관할 때 대화 기록(최근 20줄)도 시험지와 함께 저장한다(chat). 보관함에서 다시 열면 대화가 보인다.
+ *  이 부품은 rBtDraft · btGen · btPick · btOpen · btSave · bt2MakeMany 를 감싼다(앞 것을 부르고 덧붙인다).
+ *  ※ 문자열 연결로만 쓴다(중첩 템플릿 리터럴 금지). 학생 실명은 화면에만.
+ * ═══════════════════════════════════════════════════════════════════ */
+BT.chat=BT.chat||{ log:[], busy:false, undo:[], text:'', fresh:null };
+function bt2ChatReset(log){ BT.chat={ log:log||[], busy:false, undo:[], text:'', fresh:null }; }
+(function(){ try{ if(!document.getElementById('bt2-chat-css')){ var s=document.createElement('style'); s.id='bt2-chat-css'; s.textContent='.bt2-fresh{background:#fff3c4;border-radius:8px;transition:background .6s}'; document.head.appendChild(s); } }catch(e){} })();
+function bt2ChatSay(r,t,sn){ var C=BT.chat; var m={ r:r, t:String(t||'') }; if(r==='ai'&&sn!=null&&sn>=0){ m.undo=true; m.sn=sn; } C.log.push(m); if(C.log.length>60) C.log=C.log.slice(-60); return m; }
+function bt2ChatLogSave(){ return (BT.chat.log||[]).slice(-20).map(function(x){ return { r:x.r, t:x.t }; }); }
+
+/* ── 되돌리기 칸: 고치기 전 상태를 쌓아 둔다 (최대 20) ── */
+function bt2ChatSnap(){
+  var d=BT.draft, C=BT.chat; if(!d) return -1;
+  C.undo.push(JSON.stringify({ id:d.id, p1:d.p1, p3:d.p3||[], title:d.title, note:d.note||'' }));
+  if(C.undo.length>20){ C.undo.shift(); C.log.forEach(function(x){ if(x.sn!=null){ x.sn--; if(x.sn<0){ x.undo=false; delete x.sn; } } }); }
+  return C.undo.length-1;
+}
+/* idx = 「↩ 되돌리기」를 누른 말풍선 번호 (없으면 마지막 고침) — 그 고침과 그 뒤 고침까지 함께 되돌린다 */
+window.bt2ChatUndo=function(idx){
+  var C=BT.chat, d=BT.draft; if(!d||C.busy) return false;
+  var k=C.undo.length-1;
+  if(idx!=null){ var m=C.log[idx]; if(!m||!m.undo||m.sn==null) return false; k=m.sn; }
+  var u=(k>=0)?C.undo[k]:null; var o=null; try{ o=u?JSON.parse(u):null; }catch(e){}
+  if(!o||o.id!==d.id){ bt2ChatSay('ai','되돌릴 것이 없습니다.'); render(); bt2ChatAfterRender(); return false; }
+  var later=C.undo.length-1-k;
+  C.undo=C.undo.slice(0,k);
+  d.p1=o.p1; d.p3=o.p3; d.title=o.title; d.note=o.note;
+  C.log.forEach(function(x){ if(x.sn!=null&&x.sn>=k){ x.undo=false; delete x.sn; } });
+  C.fresh=null;
+  bt2ChatSay('ai','↩ 되돌렸습니다'+(later>0?(' (그 뒤에 고친 '+later+'번도 함께)'):''));
+  render(); bt2ChatAfterRender(); return true;
+};
+
+/* ── 새로 들어온 문항 노란 표시 (3초) ── */
+function bt2ChatFresh(f){
+  var C=BT.chat; f.id=BT.draft&&BT.draft.id; C.fresh=f;
+  clearTimeout(window._bt2ChatT);
+  window._bt2ChatT=setTimeout(function(){ if(BT.chat.fresh!==f) return; BT.chat.fresh=null; if(btPainting()&&BT.draft&&BT.draft.id===f.id) render(); bt2ChatAfterRender(); },3000);
+}
+function bt2ChatAfterRender(){
+  try{
+    var lg=document.getElementById('bt2-chat-log'); if(lg) lg.scrollTop=lg.scrollHeight;
+    var ed=document.getElementById('bt2-ed'); var d=BT.draft; if(!ed||!d) return;
+    var rows=[].slice.call(ed.children).filter(function(el){ return /grid-template-columns:\s*18px/.test(el.getAttribute('style')||''); });
+    var f=BT.chat.fresh; var ok=!!(f&&f.id===d.id); var n1=d.p1.length;
+    rows.forEach(function(el,i){ var on=ok&&(i<n1?(f.p1&&f.p1[i]):(f.p3&&f.p3[i-n1])); if(on) el.classList.add('bt2-fresh'); else el.classList.remove('bt2-fresh'); });
+  }catch(e){}
+}
+
+/* ── 교과서 요청: AI 없이 은행에서 찾는다 ── */
+function bt2ChatCount(t){ var m=t.match(/(\d+)\s*(문제|문항|개)/); if(m) return Math.max(1,Math.min(6,Number(m[1]))); if(/한\s*(문제|문항|개)|하나/.test(t)) return 1; if(/두\s*(문제|문항|개)|둘/.test(t)) return 2; if(/세\s*(문제|문항|개)|셋/.test(t)) return 3; return 2; }
+function bt2ChatNo(t){ var m=t.match(/(\d+)\s*번/); return m?Number(m[1]):0; }
+function bt2Nsp(t){ return String(t==null?'':t).replace(/\s+/g,''); }
+function bt2ChatTokens(t){
+  var stop=/^(교과서|에서|문제|문항|개|더|추가|해줘|바꿔|다른|걸로|같은|유형|좀|넣어|줘|주세요|해|으로|로|만|것|거|하나|둘|셋|한|두|세|번|으로|대신)$/;
+  var out=[];
+  String(t||'').replace(/[「」『』"'.,!?~()\[\]·:]/g,' ').split(/\s+/).forEach(function(w){
+    w=w.replace(/^교과서(에서|의|에)?/,'').replace(/\d+\s*(번|문제|문항|개)?/g,'');
+    w=w.replace(/(추가해\s*주세요|추가해줘|추가해|바꿔\s*주세요|바꿔줘|바꿔|넣어\s*주세요|넣어줘|넣어|해\s*주세요|해줘)$/,'');
+    var w2=w.replace(/(으로|에서|을|를|은|는|이|가|의|로|와|과|도)$/,''); if(w2.length>=2) w=w2;
+    if(w.length>=2&&!stop.test(w)) out.push(w);
+  });
+  return out;
+}
+/* 찾은 문항 목록 (점수 = 낱말마다 «얼마나 잘 맞나»의 합: 유형 이름 3 · 쪽 제목 2 · 비슷한 쪽 1) · 「같은 유형」이거나 낱말이 없으면 null → 고른 소단원에서 */
+function bt2ChatTbFind(t, used){
+  var bank=BT.tb.bank; if(!bank||!bank.problems) return [];
+  var toks=bt2ChatTokens(t);
+  if(/같은\s*유형/.test(t)||!toks.length) return null;
+  var d=BT.draft||{}; var B=bt2Big(d.course||BT.cfg.course, d.big||BT.cfg.big);
+  var subs=[]; (B&&B.m||[]).forEach(function(m){ (m.s||[]).forEach(function(s){ subs.push({ m:String(m.n), s:String(s.n), t:(s.t||[]).map(String) }); }); });
+  var pageTitle={}; (bank.pages||[]).forEach(function(pg){ pageTitle[String(pg.page)]=String(pg.title||''); });
+  var byId={};
+  toks.forEach(function(tk){
+    var best={};   // 이 낱말에서 문항마다 가장 높은 점수
+    var put=function(p,sc){ var id=String(p.id); if(!best[id]||best[id].sc<sc) best[id]={ p:p, sc:sc }; };
+    subs.forEach(function(sb){
+      if(bt2Nsp(sb.s).indexOf(tk)<0&&!sb.t.some(function(x){ return bt2Nsp(x).indexOf(tk)>=0; })) return;
+      bt2TbPool(sb).forEach(function(p){ put(p, Number(p.score)||1); });
+    });
+    bank.problems.forEach(function(p){
+      if(!p||!p.pimg||/탐구|생각|활동/.test(String(p.no||''))) return;
+      var pt=bt2Nsp(pageTitle[String(p.page)]), ti=bt2Nsp(p.title);
+      if(!((pt&&pt.indexOf(tk)>=0)||(ti&&ti.indexOf(tk)>=0))) return;
+      var cur=best[String(p.id)]; if(cur&&cur.sc>=2) return;
+      put({ id:p.id, page:p.page, no:String(p.no||''), pimg:p.pimg, aimg:p.aimg||'', answer:String(p.answer||''), cid:p.cid, lv:Number(p.level)||2, type:p.type, s:(pageTitle[String(p.page)]||String(p.title||'')), m:'' }, 2);
+    });
+    Object.keys(best).forEach(function(id){ var e=byId[id]; if(!e) e=byId[id]={ p:best[id].p, sc:0 }; else if(!e.p.m&&best[id].p.m) e.p=best[id].p; e.sc+=best[id].sc; });
+  });
+  return Object.keys(byId).map(function(k){ return byId[k]; }).filter(function(e){ return !used[String(e.p.id)]; })
+    .sort(function(a,b){ return b.sc-a.sc||a.p.lv-b.p.lv||a.p.page-b.p.page; }).map(function(e){ return e.p; });
+}
+function bt2ChatTb(t){
+  var d=BT.draft; d.p3=d.p3||[];
+  if(!BT.tb.bank) return { t:'교과서 은행이 아직 준비되지 않았습니다. 잠시 뒤 다시 말해 주세요.' };
+  var used={}; d.p3.forEach(function(x){ used[String(x.id)]=1; });
+  var no=bt2ChatNo(t); var n=no?1:bt2ChatCount(t);
+  var found=bt2ChatTbFind(t, used); var label;
+  if(found===null){ var u2={}; Object.keys(used).forEach(function(k){ u2[k]=1; }); found=bt2TbPick(n, u2); label='고른 소단원'; }
+  else label=bt2ChatTokens(t).join(' ');
+  found=found.slice(0,n);
+  if(!found.length) return { t:'교과서 은행에서 「'+label+'」 문항을 찾지 못했습니다. 소단원 이름이나 유형 이름으로 말해 주세요.' };
+  if(no&&!d.p3[no-1]) return { t:'3부에 '+no+'번이 없습니다 (지금 '+d.p3.length+'문항).' };
+  var sn=bt2ChatSnap(); var fresh={ p1:{}, p3:{} };
+  if(no){ d.p3[no-1]=found[0]; fresh.p3[no-1]=1; return { t:'3부 '+no+'번을 '+bt2TbRef(found[0])+' 으로 바꿨습니다. (AI 없이 교과서 은행에서 바로)', sn:sn, fresh:fresh }; }
+  found.forEach(function(p){ d.p3.push(p); fresh.p3[d.p3.length-1]=1; });
+  return { t:'교과서 은행에서 「'+label+'」 '+found.length+'문항을 3부 끝에 넣었습니다: '+found.map(bt2TbRef).join(', ')+' (AI 없이 바로)', sn:sn, fresh:fresh };
+}
+
+/* ── AI 요청: 지금 시험지 + 대단원 전체 범위 + 원장님 말 → «고칠 목록»만 ── */
+function bt2ChatPrompt(text){
+  var d=BT.draft; var stu=btStuByCode(d.code); var mat=btMat(d.code);
+  var B=bt2Big(d.course||BT.cfg.course, d.big||BT.cfg.big);
+  var all=[]; (B&&B.m||[]).forEach(function(m){ (m.s||[]).forEach(function(s){ var ts=(s.t||[]).map(String).slice(0,10); all.push('· ['+m.n+'] '+s.n+(ts.length?(' — 유형: '+ts.join(', ')):'')); }); });
+  var p1=d.p1.map(function(x,i){ return (i+1)+'. ('+x.type+') ['+(x.s||'')+'] '+x.q+'  ‖ 모범답: '+(x.a||''); }).join('\n')||'(없음)';
+  var p3=(d.p3||[]).map(function(x,i){ return (i+1)+'. '+(x.pimg?(bt2TbRef(x)+(x.s?(' ['+x.s+']'):'')):(String(x.q||'')+(x.a?('  ‖ 답: '+x.a):''))); }).join('\n')||'(없음)';
+  var isAi=(d.p3mode==='ai');
+  return bt2PromptHead(mat, stu)
+   +'\n[이 대단원 전체의 소단원·유형 — 이 범위 안이면 어느 유형이든 써도 됩니다]\n'+(all.join('\n')||'· (유형DB 없음)')+'\n'
+   +'\n[지금 시험지 — 1부]\n'+p1+'\n'
+   +'\n[3부 — '+(d.p3mode==='tb'?'교과서 문항(그림 · 앱이 고름)':(isAi?'연습문제':'없음'))+']\n'+p3+'\n'
+   +'\n[제목] '+d.title+(d.note?('\n[한마디] '+d.note):'')+'\n'
+   +'\n[원장님 지시] '+text+'\n\n'
+   +'[할 일] 원장님 지시대로 시험지에서 «고칠 것만» 알려 줍니다. 시험지 전체를 다시 쓰지 않고, 지시에 없는 문항은 건드리지 않습니다.\n'
+   +'새로 쓰거나 바꾸는 문항은 아래 규칙을 따릅니다. 범위는 위 «대단원 전체» 안이면 됩니다(고른 소단원 밖이어도 됨).\n'
+   +bt2Rules(1,true).replace(/^1\.[^\n]*\n/m,'')
+   +'\n[형식] 다른 말 없이 JSON 만 출력합니다. reply 말고는 모두 필요할 때만 씁니다.\n'
+   +'{"reply":"한 줄로 무엇을 어떻게 고쳤는지","add":[{"type":"blank","q":"…","a":"…","s":"소단원"}],"replace":[{"n":3,"type":"blank","q":"…","a":"…","s":"…"}],"remove":[4],"order":[1,2,3],"title":"(바꿀 때만)","note":"(바꿀 때만)","hint":false,"hints":[{"n":1,"h":"…"}]'+(isAi?',"p3add":[{"q":"…","a":"…"}]':'')+'}\n'
+   +'- add: 1부 끝에 붙일 새 문항. replace: 바꿀 문항(n 은 «지금» 1부 번호, 1부터). remove: 뺄 «지금» 1부 번호들.\n'
+   +'- order: 순서를 바꾸라는 지시일 때만. 추가·삭제를 반영한 «고친 뒤» 1부 번호를 새 순서대로 «모두» 씁니다.\n'
+   +'- hint: 모범답에 힌트를 붙이라는 지시일 때만 true 로 하고, hints 에 «지금» 1부 번호(n)마다 힌트 한 줄(h)을 씁니다.\n'
+   +(isAi?'- p3add: 3부 연습문제를 더 넣으라는 지시일 때만. 답이 떨어지는 쉬운 수로.\n':'- 3부는 앱이 고르는 교과서 문항이라 여기서 고치지 않습니다.\n')
+   +'- 1부는 모두 20문항을 넘지 않게 합니다.\n';
+}
+/* AI 의 «고칠 목록» 적용 — 번호는 «지금» 문항(객체)에 묶어 두고 바꾼다 */
+function bt2ChatApply(o){
+  var d=BT.draft; var orig=d.p1.slice(); var newObjs=[]; var ch=0; var fresh={ p1:{}, p3:{} };
+  var mk=function(x,old){ return { type:(x.type==='write'?'write':'blank'), q:String(x.q), a:String(x.a||''), s:String(x.s||(old&&old.s)||'') }; };
+  (Array.isArray(o.replace)?o.replace:[]).forEach(function(x){
+    var n=Number(x&&x.n); if(!x||!x.q||!(n>=1&&n<=orig.length)) return;
+    var old=orig[n-1]; var k=d.p1.indexOf(old); if(k<0) return;
+    var nw=mk(x,old); d.p1[k]=nw; orig[n-1]=nw; newObjs.push(nw); ch++;
+  });
+  (Array.isArray(o.remove)?o.remove:[]).map(Number).filter(function(n,i,a){ return n>=1&&n<=orig.length&&a.indexOf(n)===i; })
+    .sort(function(a,b){ return b-a; }).forEach(function(n){ var k=d.p1.indexOf(orig[n-1]); if(k>=0){ d.p1.splice(k,1); ch++; } });
+  (Array.isArray(o.add)?o.add:[]).forEach(function(x){ if(!x||!x.q||d.p1.length>=20) return; var nw=mk(x,null); d.p1.push(nw); newObjs.push(nw); ch++; });
+  if(Array.isArray(o.order)&&o.order.length===d.p1.length){
+    var ord=o.order.map(Number); var ok=ord.slice().sort(function(a,b){ return a-b; }).every(function(v,i){ return v===i+1; });
+    if(ok&&ord.some(function(v,i){ return v!==i+1; })){ var cur=d.p1.slice(); d.p1=ord.map(function(v){ return cur[v-1]; }); ch++; }
+  }
+  if(typeof o.title==='string'){ var ti=o.title.trim(); if(ti&&!/바꿀 때만/.test(ti)&&ti!==d.title){ d.title=ti; ch++; } }
+  if(typeof o.note==='string'){ var nt=o.note.trim(); if(nt&&!/바꿀 때만/.test(nt)&&nt!==(d.note||'')){ d.note=nt; ch++; } }
+  if(o.hint!==false&&Array.isArray(o.hints)){
+    o.hints.forEach(function(x){ var n=Number(x&&x.n); var h=String((x&&x.h)||'').trim(); if(!h||h==='…'||!(n>=1&&n<=orig.length)) return;
+      var it=orig[n-1]; if(d.p1.indexOf(it)<0||/힌트:/.test(it.a||'')) return; it.a=(it.a||'')+'  · 힌트: '+h; ch++; });
+  }
+  if(d.p3mode==='ai'&&Array.isArray(o.p3add)){ d.p3=d.p3||[];
+    o.p3add.forEach(function(x){ if(!x||!x.q||d.p3.length>=6) return; d.p3.push({ q:String(x.q), a:String(x.a||'') }); fresh.p3[d.p3.length-1]=1; ch++; }); }
+  newObjs.forEach(function(x){ var k=d.p1.indexOf(x); if(k>=0) fresh.p1[k]=1; });
+  return { ch:ch, fresh:fresh };
+}
+
+/* ── 보내기 ── */
+window.bt2ChatQuick=function(t){ return bt2ChatSend(t); };
+window.bt2ChatSend=async function(textOpt){
+  var C=BT.chat, d=BT.draft;
+  var fromBox=!(textOpt!=null&&String(textOpt).trim());
+  if(fromBox){ var el=document.getElementById('bt2-chat-in'); if(el&&el.value!=null) C.text=el.value; }
+  var text=String(fromBox?(C.text||''):textOpt).trim();
+  if(!text||C.busy||!d) return;
+  if(fromBox) C.text='';
+  bt2ChatSay('me',text);
+  /* 1) 되돌리기 */
+  if(/취소|되돌/.test(text)){ bt2ChatUndo(); return; }
+  /* 2) 교과서 — AI 없이 */
+  if(/교과서/.test(text)&&d.p3mode==='tb'){
+    var r=bt2ChatTb(text); bt2ChatSay('ai',r.t,r.sn); if(r.fresh) bt2ChatFresh(r.fresh);
+    render(); bt2ChatAfterRender(); return;
+  }
+  /* 3) AI — 고칠 목록 */
+  var did=d.id; var sn=bt2ChatSnap(); var applying=false;
+  C.busy=true; render(); bt2ChatAfterRender();
+  try{
+    var txt=await callAI(bt2ChatPrompt(text));
+    if(BT.chat!==C||!BT.draft||BT.draft.id!==did){ C.busy=false; return; }   // 그 사이 다른 학생·다른 시험지로 바뀜
+    var t=String(txt||''); var i=t.indexOf('{'), j=t.lastIndexOf('}');
+    if(i<0||j<i) throw new Error('AI 답에서 JSON 을 찾지 못했습니다');
+    var o=JSON.parse(t.slice(i,j+1)); if(!o||typeof o!=='object') throw new Error('AI 답을 읽지 못했습니다');
+    applying=true; var res=bt2ChatApply(o); applying=false;
+    var rep=String(o.reply||'고쳤습니다').trim();
+    if(!res.ch){ C.undo=C.undo.slice(0,sn); bt2ChatSay('ai',rep+' (바뀐 것은 없습니다)'); }
+    else { bt2ChatSay('ai',rep,sn); bt2ChatFresh(res.fresh); }
+  }catch(e){
+    if(BT.chat===C){
+      var u=C.undo[sn]; C.undo=C.undo.slice(0,Math.max(0,sn));
+      if(applying&&u&&BT.draft&&BT.draft.id===did){ try{ var b=JSON.parse(u); BT.draft.p1=b.p1; BT.draft.p3=b.p3; BT.draft.title=b.title; BT.draft.note=b.note; }catch(e2){} }
+      bt2ChatSay('ai','고치지 못했습니다: '+((e&&e.message)||e));
+    }
+  }
+  C.busy=false; render(); bt2ChatAfterRender();
+  setTimeout(function(){ var el=document.getElementById('bt2-chat-in'); if(el&&!BT.chat.busy) try{ el.focus(); }catch(e){} },30);
+};
+
+/* ── 화면: 편집 칸 맨 아래 대화 상자 ── */
+var BT2_CHAT_QUICK=['곱셈공식 변형 2문제 더','3번 더 쉽게','5번을 서술형으로','교과서에서 같은 유형 2개 더','1부를 8문항으로','답지에 힌트 한 줄씩'];
+function bt2ChatBubble(r,inner){
+  return r==='me'
+    ?'<div style="align-self:flex-end;max-width:85%;background:#0d2240;color:#fff;border-radius:12px 12px 3px 12px;padding:6px 10px;font-size:12px;font-weight:700;line-height:1.5;word-break:break-word">'+inner+'</div>'
+    :'<div style="align-self:flex-start;max-width:90%;background:#f1f5fb;color:#0d2240;border:1px solid #e6eaf1;border-radius:12px 12px 12px 3px;padding:6px 10px;font-size:12px;font-weight:700;line-height:1.5;word-break:break-word">'+inner+'</div>';
+}
+function bt2ChatHtml(){
+  var C=BT.chat;
+  var h='<div id="bt2-chat" style="margin-top:14px;border:1.5px solid #e6eaf1;border-radius:14px;background:#fff;overflow:hidden">';
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;background:#0d2240;color:#fff;padding:8px 12px"><b style="font-size:12.5px;font-weight:900">💬 AI 에게 말로 고치기</b>'
+    +'<span style="font-size:10.5px;font-weight:700;opacity:.75">같은 대단원 안이면 어느 유형이든 · 교과서는 AI 없이 바로 · 「취소」로 되돌리기</span></div>';
+  h+='<div id="bt2-chat-log" style="max-height:190px;overflow-y:auto;padding:9px 10px;display:flex;flex-direction:column;gap:6px;background:#fff">';
+  if(!C.log.length) h+=bt2ChatBubble('ai','고치고 싶은 것을 말해 주세요. 예: <b>곱셈공식 변형 2문제 더 추가해줘</b> · <b>3번 더 쉽게</b> · <b>4번 삭제</b> · <b>교과서에서 인수분해 2개 더</b>');
+  C.log.forEach(function(m,i){
+    var inner=esc2(m.t).replace(/\n/g,'<br>');
+    if(m.r==='ai'&&m.undo) inner+='<button onclick="bt2ChatUndo('+i+')"'+(C.busy?' disabled':'')+' style="display:block;margin-top:4px;font-family:inherit;font-size:10.5px;font-weight:900;border-radius:7px;padding:3px 8px;cursor:pointer;background:#fff;color:#1d6fe8;border:1px solid #cfe0fb">↩ 되돌리기</button>';
+    h+=bt2ChatBubble(m.r==='me'?'me':'ai',inner);
+  });
+  if(C.busy) h+=bt2ChatBubble('ai','<span style="color:#64748b">⏳ AI 가 시험지를 보고 고치는 중… (10~20초)</span>');
+  h+='</div>';
+  h+='<div style="display:flex;gap:4px;flex-wrap:wrap;padding:7px 10px 0;border-top:1px solid #e6eaf1">';
+  BT2_CHAT_QUICK.forEach(function(q){ h+='<button onclick="bt2ChatQuick('+bkQ2(q)+')"'+(C.busy?' disabled':'')+' style="font-family:inherit;font-size:10.5px;font-weight:800;border-radius:50px;padding:3px 9px;cursor:pointer;background:#fff;color:#1d6fe8;border:1px solid #cfe0fb;white-space:nowrap">'+esc2(q)+'</button>'; });
+  h+='</div>';
+  h+='<div style="display:flex;gap:6px;padding:8px 10px 10px">'
+    +'<input id="bt2-chat-in" value="'+esc2(C.text||'')+'" oninput="BT.chat.text=this.value" onkeydown="if(event.key===\'Enter\'&&!event.isComposing&&event.keyCode!==229){event.preventDefault();bt2ChatSend();}" placeholder="예: 곱셈공식 변형 2문제 더 추가해줘" style="flex:1;min-width:0;font-family:inherit;font-size:12.5px;padding:8px 10px;border:1.5px solid #e6eaf1;border-radius:9px">'
+    +'<button onclick="bt2ChatSend()"'+(C.busy?' disabled':'')+' style="font-family:inherit;font-size:12px;font-weight:900;border-radius:9px;padding:7px 14px;cursor:'+(C.busy?'default':'pointer')+';background:'+(C.busy?'#94a3b8':'#1d6fe8')+';color:#fff;border:none;white-space:nowrap">'+(C.busy?'⏳':'보내기')+'</button></div>';
+  h+='</div>';
+  return h;
+}
+/* rBtDraft 를 감싼다 — 편집 칸(#bt2-ed)을 닫는 </div> 바로 앞(= 미리보기 칸 시작 바로 앞)에 대화 상자를 끼운다 */
+var _rBtDraft96=rBtDraft;
+rBtDraft=function(){
+  var h=_rBtDraft96.apply(this,arguments);
+  if(!BT.draft) return h;
+  var k=h.indexOf('<div style="min-width:0"><div style="display:flex;justify-content:space-between;align-items:center;font-size:11px'); if(k<0) return h;
+  var e=h.lastIndexOf('</div>',k); if(e<0) return h;
+  setTimeout(bt2ChatAfterRender,0);
+  return h.slice(0,e)+bt2ChatHtml()+h.slice(e);
+};
+/* 새 초안 · 다른 학생 · 보관함에서 열기 → 대화 새로 (열 때는 저장된 대화를 보여 준다) */
+var _btGen96=window.btGen;
+window.btGen=async function(){ var before=BT.draft; var r=await _btGen96.apply(this,arguments); if(BT.draft&&BT.draft!==before){ bt2ChatReset(); render(); } return r; };
+var _btPick96=window.btPick;
+window.btPick=function(){ bt2ChatReset(); return _btPick96.apply(this,arguments); };
+var _btOpen96=window.btOpen;
+window.btOpen=function(id){ var d=(BT.saved||[]).filter(function(x){ return x.id===id; })[0];
+  bt2ChatReset(d&&Array.isArray(d.chat)?d.chat.map(function(x){ return { r:(x&&x.r==='me')?'me':'ai', t:String((x&&x.t)||'') }; }):[]);
+  return _btOpen96.apply(this,arguments); };
+/* 보관할 때 대화 기록(최근 20줄)도 함께 */
+var _btSave96=window.btSave;
+window.btSave=function(){ if(BT.draft) BT.draft.chat=bt2ChatLogSave(); return _btSave96.apply(this,arguments); };
+var _bt2MakeMany96=window.bt2MakeMany;
+window.bt2MakeMany=function(){ if(BT.draft) BT.draft.chat=bt2ChatLogSave(); return _bt2MakeMany96.apply(this,arguments); };
