@@ -119,7 +119,8 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
     return out;
   });
   console.log(JSON.stringify(o, null, 1).slice(0, 5000));
-  t('버전 v19-97', o.ver === 'v19-97', o.ver);
+  const WANT = (FILE.match(/v19-\d+/) || ['v19-97'])[0];   // 뒤 버전 파일로 돌려도 되게 (v19-98 부터)
+  t('버전 ' + WANT, o.ver === WANT, o.ver);
   t('초안: 1부 5문항 · 3부 2문항 · 대화 새로', o.gen && o.gen.p1 === 5 && o.gen.p3.length === 2 && o.gen.logReset, JSON.stringify(o.gen));
   t('대화 상자: 편집 칸 안 · 한마디 밑 · 미리보기 앞 · 입력칸 · 보내기 · 빠른 말 6개', o.ui && o.ui.inEd && o.ui.input && o.ui.send && o.ui.chips === 6 && o.ui.title, JSON.stringify(o.ui));
   t('(a) 「곱셈공식 변형 2문제 더」 → 7문항 · 말풍선 나·AI · 되돌리기 · 노란 표시 6,7번', o.a && o.a.n === 7 && o.a.log === 'me,ai' && o.a.undo && o.a.fresh === '5,6', JSON.stringify(o.a));
