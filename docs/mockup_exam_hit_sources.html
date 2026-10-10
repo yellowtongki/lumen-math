@@ -1,0 +1,259 @@
+<title>적중 분석 자료함</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<style>
+/* 레이아웃: 위 = 왜·지금 vs 추가, 가운데 = 학원앱 「적중 분석 요청」 화면 시안(자료 3종 패널 + 요약), 아래 = 결과 화면 변화 · 속 구조 · 만드는 순서 · 여쭐 것 */
+:root{
+  --bg:#eef2f8; --card:#ffffff; --fg:#0d2240; --muted:#64748b; --line:#e6eaf1; --navy:#0d2240; --navy-soft:#e8eef8; --blue:#1d6fe8; --blue-soft:#e8f1ff;
+  --amber:#b45309; --amber-soft:#fff7e6; --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c; --bad-soft:#fee2e2; --teal:#0e7490; --teal-soft:#e0f2fe; --violet:#6d28d9; --violet-soft:#ede9fe;
+  --font:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --teal:#67e8f9; --teal-soft:#0c2a33; --violet:#c4b5fd; --violet-soft:#2a2144; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --teal:#67e8f9; --teal-soft:#0c2a33; --violet:#c4b5fd; --violet-soft:#2a2144; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-block:20px 60px;padding-inline:16px;display:flex;flex-direction:column;gap:22px}
+h1{font-size:23px;font-weight:900;margin:0 0 4px;letter-spacing:-0.01em;text-wrap:balance}
+h2{font-size:16.5px;font-weight:900;margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 .tag{font-size:11px;font-weight:700;letter-spacing:0.04em;padding:2px 8px;border-radius:999px;background:var(--navy-soft);color:var(--blue)}
+p{margin:0}.lead,.note{color:var(--muted);font-size:13px}.note b{color:var(--fg)}
+.sec{display:flex;flex-direction:column;gap:10px}
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.why div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px}
+.why b{display:block;font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.2}.why small{color:var(--muted);font-weight:700}
+.why .bad b{color:var(--bad)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:560px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:0.04em;color:var(--muted);font-weight:700;background:var(--navy-soft)} tr:last-child td{border-bottom:0}
+td.k{font-weight:900;white-space:nowrap} td.now{color:var(--muted)} td.new b{color:var(--blue)}
+/* 앱 화면 */
+.app{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.head b{font-size:15px;font-weight:900}.head small{color:var(--muted);font-weight:700;font-size:11.5px}
+.chips{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.chip{border:1.5px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:4px 10px;font-family:inherit;font-size:11.5px;font-weight:900;cursor:pointer}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+:root[data-theme="dark"] .chip.on,:root:not([data-theme="light"]) .chip.on{color:var(--bg)}
+.lbl{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:0.03em;margin-right:4px}
+.btn{border:none;border-radius:9px;padding:8px 13px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer;background:var(--navy-soft);color:var(--blue)}
+.btn.main{background:var(--blue);color:#fff}.btn.sm{padding:5px 8px;font-size:11px;border-radius:7px}.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+.btn:focus-visible,.row:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+.pn{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:7px;min-width:0;background:var(--card)}
+.pn h3{font-size:13px;font-weight:900;margin:0;display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.pn h3 .src{display:inline-flex;align-items:center;gap:5px}
+.pn h3 .cnt{font-size:11px;color:var(--muted);font-weight:700}
+.pn .sub{font-size:11.5px;color:var(--muted);font-weight:700}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px}
+.dot.tb{background:var(--teal)}.dot.ms{background:var(--violet)}.dot.pdf{background:var(--amber)}.dot.mf{background:var(--blue)}
+.row{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:7px;align-items:center;padding:6px 6px;border-radius:8px;border:1px solid var(--line);font-size:12px;cursor:pointer}
+.row:hover{background:var(--blue-soft)}
+.row .cb{width:16px;height:16px;border:1.5px solid var(--muted);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;box-sizing:border-box}
+.row .cb.on{background:var(--blue);border-color:var(--blue)}
+.row .t{min-width:0;overflow-wrap:anywhere}.row .t b{display:block;font-weight:800}.row .t small{color:var(--muted);font-weight:700;font-size:11px}
+.row .st{font-size:10px;font-weight:900;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.st.ok{background:var(--ok-soft);color:var(--ok)}.st.wait{background:var(--amber-soft);color:var(--amber)}.st.no{background:var(--bad-soft);color:var(--bad)}.st.auto{background:var(--teal-soft);color:var(--teal)}
+.row.dim{opacity:.6}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:900;padding:4px 9px;cursor:pointer}
+.seg button.on{background:var(--navy);color:#fff}
+:root[data-theme="dark"] .seg button.on,:root:not([data-theme="light"]) .seg button.on{color:var(--bg)}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:10px;text-align:center;font-size:11.5px;color:var(--muted);font-weight:800}
+.sum{border:2px solid var(--blue);border-radius:12px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--blue-soft)}
+.sum .bar{display:flex;height:12px;border-radius:6px;overflow:hidden;width:100%;max-width:420px;background:var(--line)}
+.sum .bar i{display:block;height:100%}
+.sum .nums{font-size:12px;font-weight:800;display:flex;gap:10px;flex-wrap:wrap}
+.sum .nums b{font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;font-weight:800;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.res div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px}
+.res b{display:block;margin-bottom:3px}.res small{color:var(--muted);font-weight:700}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.fl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px}
+.fl b{display:block;margin-bottom:3px}.fl small{color:var(--muted);font-weight:700}
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px}
+:root[data-theme="dark"] .step .n,:root:not([data-theme="light"]) .step .n{color:var(--bg)}
+.step b{display:block}.step small{color:var(--muted);font-weight:700}
+.ask{background:var(--card);border:2px solid var(--blue);border-radius:14px;padding:14px;font-size:13.5px}
+.ask ol{margin:6px 0 0;padding-left:20px}.ask li{margin:4px 0}
+</style>
+
+<div class="wrap">
+  <div>
+    <h1>적중 분석 — 고등부 자료 3종</h1>
+    <p class="lead">2026-10-10 · 원장님 결정: 「학년 폴더 기본, 교과서 전체 포함, 자료함 두자」. 적중 분석을 요청할 때 «우리 자료»를 교과서 · 수학비서 학습지 · PDF 자료함 세 곳에서 모아 대조하는 화면 시안입니다. 폴더·교과서·시험지 이름은 오늘 서버에 있는 실제 값이고, 아직 코드는 없습니다.</p>
+  </div>
+
+  <section class="sec">
+    <h2>왜 필요한가 <span class="tag">범박고 고1 결과를 뜯어보니</span></h2>
+    <div class="why">
+      <div class="bad"><b>0개</b><small>대조한 우리 자료 — 고등부는 매쓰플랫 채점 기록이 없음</small></div>
+      <div class="bad"><b>0 / 23</b><small>후보가 붙은 문항 — 자료가 없으니 적중이 나올 수 없음</small></div>
+      <div><b>2권</b><small>범박고 고1·고2 지정 교과서(비상교육) — 은행이 있는데도 «푼 기록»이 없어 빠짐</small></div>
+      <div><b>126 · 146장</b><small>수학비서 나만의 DB 「고1」「고2」 폴더의 자료 — 지금은 전혀 안 봄</small></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>지금 vs 추가 <span class="tag">비교</span></h2>
+    <div class="tbl"><table>
+      <tr><th style="width:120px">자료</th><th>지금 (v19-98)</th><th>추가</th></tr>
+      <tr><td class="k">📘 교과서</td><td class="now">그 학기에 학생이 매쓰플랫에서 «푼 쪽»만 (고등부는 0)</td><td class="new"><b>그 학교·학년 지정 교과서 전체 문항</b>을 기본 포함 (원장 결정). 은행이 없는 교과서는 새벽에 자동으로 만든다</td></tr>
+      <tr><td class="k">📂 수학비서 학습지</td><td class="now">없음</td><td class="new"><b>학년 폴더(고1·고2 …)가 기본</b> · «학기 시작 ~ 시험일» 사이에 올린 것이 자동 체크 · 다른 폴더도 열어 고를 수 있음. 문항 단위로 받아(기출 DB 받기와 같은 방식) 매쓰플랫 AI 인식으로 유형·원본 번호를 붙임. <b>새벽에 미리 인식</b>해 두어 분석은 바로</td></tr>
+      <tr><td class="k">📄 PDF</td><td class="now">「우리 프린트 올리기」 — 매번 올리고, 그 분석에만 쓰고 버림</td><td class="new"><b>자료함</b>: 올린 PDF 를 학교·학년·기간 꼬리표와 함께 보관, 다음 시험에도 체크만 하면 다시 씀</td></tr>
+      <tr><td class="k">🧮 매쓰플랫 학습지·교재</td><td class="now">그 학기 채점 기록 (중등부의 주 재료)</td><td class="new">그대로. 네 출처가 <b>한 자료 목록</b>으로 합쳐져 같은 판정(같은 문제 · 변형 · 유형)을 받음</td></tr>
+      <tr><td class="k">결과 화면</td><td class="now">출처 막대: 교과서·시중 교재·다른 학교 기출·문제은행(근사치)</td><td class="new">«우리 자료별 적중» 막대 추가: 교과서 · 수학비서 학습지 · 프린트 · 매쓰플랫 — 블로그 자료 .md 와 학부모 보고서에도</td></tr>
+    </table></div>
+  </section>
+
+  <section class="sec">
+    <h2>학원앱 화면 시안 <span class="tag">눌러 보세요</span></h2>
+    <p class="note">「📚 기출 DB에서 찾기」에서 <b>2026년 범박고 고2 공통 2학기 중간 미적분1</b> 의 「🎯 적중 분석」을 누른 다음 뜨는 화면입니다. 체크를 바꾸면 아래 요약이 바뀝니다.</p>
+    <div class="app">
+      <div class="head"><div><b>🎯 적중 분석 요청 — 범박고 고2 · 2026년 2학기 중간고사 (미적분1)</b><br><small>시험 첫날 10/7 (학원 달력) · 우리 자료 기간 <b>2026-08-18 ~ 10-07</b> (2학기 시작 ~ 시험 전날) · 이 학교·학년 학생 2명</small></div><button class="btn ghost sm">기간 바꾸기</button></div>
+
+      <div class="panels">
+        <div class="pn" id="pnTb">
+          <h3><span class="src"><i class="dot tb"></i>📘 교과서</span><span class="cnt">기본 포함 · 자동</span></h3>
+          <div class="sub">범박고 고2 지정 교과서 (학생별 교과서 지정에서) · <span class="seg"><button class="on" data-tb="all">전체 문항</button><button data-tb="scope">시험 범위 단원만</button></span></div>
+          <div class="row" data-k="tb1" data-n="403"><span class="cb on">✓</span><span class="t"><b>교과서_비상교육 미적분Ⅰ</b><small>은행 있음 · 403문항 · 유형 번호 100%</small></span><span class="st ok">준비됨</span></div>
+          <div class="row" data-k="tb2" data-n="380"><span class="cb on">✓</span><span class="t"><b>교과서_비상교육 대수</b><small>은행 없음 → 오늘 새벽 자동으로 만듦 (매쓰플랫 교과서 은행, 10분)</small></span><span class="st auto">새벽 자동</span></div>
+          <div class="sub">「시험 범위 단원만」을 고르면 시험지에서 읽은 단원(함수의 극한 ~ 함수의 증가와 감소)에 드는 쪽만 씁니다.</div>
+        </div>
+
+        <div class="pn" id="pnMs">
+          <h3><span class="src"><i class="dot ms"></i>📂 수학비서 학습지</span><span class="cnt" id="msCnt"></span></h3>
+          <div class="chips"><span class="lbl">폴더</span><button class="chip on" data-f="고2">고2 (기본)</button><button class="chip" data-f="미적분1">미적분1</button><button class="chip" data-f="교과서 변형">교과서 변형</button><button class="chip" data-f="주간테스트">주간테스트</button><button class="chip" data-f="작업공간">작업공간</button></div>
+          <div class="sub">기간 안(8/18~10/7)에 올린 것은 자동 체크 · 그 전 것과 다른 학교 기출 시험지는 꺼 둠 (학생에게 나눠 준 것이면 켜세요)</div>
+          <div id="msList"></div>
+        </div>
+
+        <div class="pn" id="pnPdf">
+          <h3><span class="src"><i class="dot pdf"></i>📄 PDF 자료함</span><span class="cnt" id="pdfCnt"></span></h3>
+          <div class="sub">한 번 올리면 남아서 다음 시험에도 씁니다 · 꼬리표: 학교 · 학년 · 학기</div>
+          <div id="pdfList"></div>
+          <div class="drop">＋ PDF 올리기 (한글·워드는 PDF 로) — 올리면 「인식 대기」로 자료함에 들어가고, 새벽 또는 분석 때 매쓰플랫 AI 가 문항을 나눕니다</div>
+        </div>
+
+        <div class="pn">
+          <h3><span class="src"><i class="dot mf"></i>🧮 매쓰플랫 학습지·교재</span><span class="cnt">자동</span></h3>
+          <div class="sub">이 학교·학년 학생 2명이 기간 안에 매쓰플랫에서 채점한 문항</div>
+          <div class="row dim" data-k="mf" data-n="0"><span class="cb on">✓</span><span class="t"><b>채점 기록 0건</b><small>고등부는 매쓰플랫 과제가 없어 비어 있음 — 중등부에서는 여기가 주 재료</small></span><span class="st no">없음</span></div>
+        </div>
+      </div>
+
+      <div class="sum">
+        <div style="min-width:0;flex:1">
+          <div class="nums"><span>자료 <b id="nSrc">0</b>종</span><span>문항 <b id="nAll">0</b>개</span><span>인식 완료 <b id="nOk">0</b></span><span>새벽 처리 <b id="nWait">0</b></span></div>
+          <div class="bar" id="bar"></div>
+          <div class="legend"><span><i class="dot tb"></i>교과서</span><span><i class="dot ms"></i>수학비서 학습지</span><span><i class="dot pdf"></i>프린트</span><span><i class="dot mf"></i>매쓰플랫</span></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn main">🎯 적중 분석 시작</button><button class="btn">💾 이 구성 기억</button></div>
+      </div>
+      <p class="note" id="waitNote"></p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>결과 화면에 달라지는 것</h2>
+    <div class="res">
+      <div><b>우리 자료별 적중 막대</b><small>교과서 7 · 수학비서 학습지 9 · 프린트 2 · 매쓰플랫 0 처럼 «어느 자료가 맞혔나». 학부모 보고서와 블로그 .md 에도 같은 줄 (자료 이름은 종류만, 교재명·쪽 없음)</small></div>
+      <div><b>후보 카드에 출처 표시</b><small>「수학비서 학습지 · 9/12 교과서 변형 8번」 「교과서 미적분Ⅰ 84쪽 5번」 처럼 어디서 온 문항인지. ✓/✗ 확정은 지금과 같음</small></div>
+      <div><b>학생별 「시험 전에 맞혔나」</b><small>교과서·수학비서·프린트는 채점 기록이 없으니 «나눠 줌»으로만 표시. 매쓰플랫 자료만 맞힘·틀림이 붙음</small></div>
+      <div><b>요청 띠</b><small>「자료 모으는 중 — 교과서 783 · 수학비서 3장 · 프린트 1장」 처럼 어느 단계인지 보임. 새벽 처리가 남은 자료는 「내일 새벽 뒤 다시 판정」 단추</small></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>속에서 일어나는 일 <span class="tag">만들 때 이렇게</span></h2>
+    <div class="flow">
+      <div class="fl"><b>교과서 은행 자동 만들기</b><small>학생별 교과서 지정(mf_textbooks)에서 그 학교·학년 책을 찾고, 은행(mf_textbook_&lt;책&gt;)이 없으면 새벽 수집에서 만듭니다(지금 교과서 은행 만드는 도구 그대로). 문항마다 유형 번호가 있어 판정에 바로 씁니다.</small></div>
+      <div class="fl"><b>수학비서 학습지 → 문항 단위</b><small>폴더 목록(올린 날짜 · 문항 수 · PDF 있음)은 수학비서가 줍니다. 문항 그림은 기출 DB 받기와 같은 길로 받고, 매쓰플랫 AI 인식(기출 쌍둥이 파이프라인)으로 유형·원본 번호를 붙여 ms_paper_&lt;id&gt; 에 저장합니다. 한 장 2~5분이라 <b>새벽에 학년 폴더를 미리</b> 돌려 둡니다.</small></div>
+      <div class="fl"><b>PDF 자료함</b><small>올린 파일은 비공개 자리(exam_images/lib)에, 목록은 exam_lib 키에 (제목 · 학교 · 학년 · 학기 · 올린 날 · 인식 상태). 인식은 수학비서 학습지와 같은 길. 학생앱·학부모앱에는 아무것도 안 갑니다.</small></div>
+      <div class="fl"><b>판정은 그대로</b><small>네 출처가 한 자료 목록(kind: textbook · ms · upload · ws/book)으로 합쳐져 지금 엔진(원본 번호 같음 → 같은 문제, 쌍둥이 → 변형, 유형 번호 → 유형)을 탑니다. 결과에 kind 별 집계만 더합니다.</small></div>
+      <div class="fl"><b>즉시 처리</b><small>GitHub 토큰을 학원앱 설정에 넣으면 요청을 남길 때 서버 작업을 바로 깨워 1분 안에 시작합니다(지금은 예약 실행이 몇 시간씩 늦음). 토큰은 원장님 브라우저에만.</small></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>만드는 순서 <span class="tag">상의 후</span></h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><b>서버 — 수학비서 학년 폴더 새벽 인식 + 교과서 은행 자동 (sync/exam_hit_worker.js · mathflat_collector.js)</b><small>학년 폴더(고1·고2·중1~3)에서 기간 안에 올린 학습지를 찾아 문항을 받고 매쓰플랫 AI 로 인식 → ms_paper_&lt;id&gt;. 지정 교과서 은행이 없으면 만들기. 둘 다 새벽 4시 회차.</small></div></div>
+      <div class="step"><span class="n">2</span><div><b>워커 — 우리 자료 모으기를 4출처로 (loadMaterials)</b><small>교과서 전체(또는 범위 단원) + 체크한 수학비서 학습지 + 자료함 PDF + 매쓰플랫 기록. 결과에 자료별 집계.</small></div></div>
+      <div class="step"><span class="n">3</span><div><b>학원앱 — 요청 화면·자료함·결과 막대 (v19-99)</b><small>위 시안 화면. 「이 구성 기억」으로 학교·학년마다 폴더·체크를 저장. 결과 화면과 보고서·블로그 .md 에 자료별 적중.</small></div></div>
+      <div class="step"><span class="n">4</span><div><b>즉시 처리 (토큰 받으면 같이)</b><small>학원앱 설정에 GitHub 토큰 칸. 적중 분석 · 지금 가져오기 · 기출 DB 목록 새로 받기가 요청 즉시 시작.</small></div></div>
+    </div>
+  </section>
+
+  <section class="ask">
+    <b>여쭐 것</b>
+    <ol>
+      <li><b>다른 학교 기출 시험지</b>(학년 폴더에 많이 들어 있음)는 기본으로 꺼 두고, 학생에게 나눠 준 것만 원장님이 켜는 방식으로 하려 합니다. 괜찮으신가요?</li>
+      <li><b>교과서 은행이 없는 책</b>(범박고 고2 대수 등)은 새벽에 자동으로 만들어도 될까요? 매쓰플랫 교과서 한 권에 10분쯤 걸립니다.</li>
+      <li>괜찮으면 1 → 2 → 3 순서로 만들고, 코딩은 오퍼스로 하겠습니다. GitHub 토큰은 주시는 대로 4를 붙입니다.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function(){
+  /* 수학비서 폴더별 자료 — 제목은 서버 색인(ms_mydb_index)에 있는 실제 제목, 날짜·인식 상태는 시안용 */
+  var MS={
+    '고2':[
+      {t:'교과서 변형 미적분1 1단원 함수의 극한 (고2)',d:'9/12',n:24,st:'ok',on:true},
+      {t:'미적분1 함수의 연속 · 미분계수 복습 학습지',d:'9/26',n:20,st:'ok',on:true},
+      {t:'미적분1 도함수의 활용 주간 점검',d:'10/3',n:18,st:'wait',on:true},
+      {t:'내신 2025년 경기 부천시 범박고 고2 공통 2학기 중간 미적분1',d:'2025',n:23,st:'ok',on:false,exam:true},
+      {t:'내신 2024년 경기 시흥시 소래고 고2 공통 2학기 중간 미적분1',d:'2024',n:22,st:'ok',on:false,exam:true}
+    ],
+    '미적분1':[
+      {t:'수비프레스 B2베이직 교과서 대비 미적분1 (미래엔 황) 교사용2 (중단원 평가)',d:'8/30',n:210,st:'ok',on:true},
+      {t:'수비프레스 B2베이직 교과서 대비 미적분1 (미래엔 황) 교사용1 (소단원 수준별)',d:'8/30',n:144,st:'ok',on:true},
+      {t:'2025년 동아출판 고호경 미적분1 - 교사용자료5 (실전 모의고사)',d:'7/2',n:160,st:'ok',on:false}
+    ],
+    '교과서 변형':[ {t:'교과서 변형 미적분1 함수의 극한과 연속',d:'9/5',n:30,st:'ok',on:true} ],
+    '주간테스트':[ {t:'주간테스트 고2 9/19',d:'9/19',n:20,st:'ok',on:true},{t:'주간테스트 고2 9/26',d:'9/26',n:20,st:'ok',on:true},{t:'주간테스트 고2 10/3',d:'10/3',n:20,st:'wait',on:true} ],
+    '작업공간':[ {t:'내신 2026년 경기 부천시 범박고 고2 공통 2학기 중간 미적분1 (이 시험지)',d:'10/7',n:23,st:'ok',on:false,self:true} ]
+  };
+  var PDF=[
+    {t:'미적분1 극한 보충 프린트 (학원 자체)',tag:'범박고 · 고2 · 2026-2',d:'9/20',n:16,st:'ok',on:true},
+    {t:'고2 2학기 중간 대비 모의 1회 (한글 → PDF)',tag:'범박고 · 고2 · 2026-2',d:'10/2',n:20,st:'wait',on:true},
+    {t:'고1 공통수학1 다항식 프린트',tag:'범박고 · 고1 · 2026-2',d:'9/8',n:14,st:'ok',on:false,other:true}
+  ];
+  var folder='고2'; var tbMode='all'; var tbOn={tb1:true,tb2:true};
+  function esc(t){ return String(t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function stHtml(st){ return st==='ok'?'<span class="st ok">인식됨</span>':(st==='wait'?'<span class="st wait">새벽 인식</span>':'<span class="st no">없음</span>'); }
+  function paintMs(){
+    var h=''; (MS[folder]||[]).forEach(function(x,i){ h+='<div class="row'+(x.on?'':' dim')+'" data-ms="'+i+'" tabindex="0"><span class="cb'+(x.on?' on':'')+'">'+(x.on?'✓':'')+'</span><span class="t"><b>'+esc(x.t)+'</b><small>'+(x.exam?'다른 학교·지난 기출 · ':'')+(x.self?'분석 대상 시험지 자체 — 자료로는 안 씀 · ':'')+'올린 날 '+x.d+' · '+x.n+'문항</small></span>'+stHtml(x.st)+'</div>'; });
+    document.getElementById('msList').innerHTML=h;
+    var all=[]; Object.keys(MS).forEach(function(k){ MS[k].forEach(function(x){ if(x.on) all.push(x); }); });
+    document.getElementById('msCnt').textContent='체크 '+all.length+'장 · '+all.reduce(function(a,x){ return a+x.n; },0)+'문항';
+  }
+  function paintPdf(){
+    var h=''; PDF.forEach(function(x,i){ h+='<div class="row'+(x.on?'':' dim')+'" data-pdf="'+i+'" tabindex="0"><span class="cb'+(x.on?' on':'')+'">'+(x.on?'✓':'')+'</span><span class="t"><b>'+esc(x.t)+'</b><small>'+x.tag+' · 올린 날 '+x.d+' · '+x.n+'문항'+(x.other?' · 다른 학년':'')+'</small></span>'+stHtml(x.st)+'</div>'; });
+    document.getElementById('pdfList').innerHTML=h;
+    var on=PDF.filter(function(x){ return x.on; }); document.getElementById('pdfCnt').textContent='체크 '+on.length+'장 · '+on.reduce(function(a,x){ return a+x.n; },0)+'문항';
+  }
+  function paintSum(){
+    var tb=0; if(tbOn.tb1) tb+=tbMode==='all'?403:96; if(tbOn.tb2) tb+=tbMode==='all'?380:0;
+    var ms=0,msW=0,msWn=0; Object.keys(MS).forEach(function(k){ MS[k].forEach(function(x){ if(!x.on) return; ms+=x.n; if(x.st==='wait'){ msW+=x.n; msWn++; } }); });
+    var pdf=0,pdfW=0,pdfWn=0; PDF.forEach(function(x){ if(!x.on) return; pdf+=x.n; if(x.st==='wait'){ pdfW+=x.n; pdfWn++; } });
+    var tbW=(tbOn.tb2&&tbMode==='all')?380:0;
+    var all=tb+ms+pdf; var wait=msW+pdfW+tbW;
+    var n=0; if(tb) n++; if(ms) n++; if(pdf) n++;
+    document.getElementById('nSrc').textContent=n; document.getElementById('nAll').textContent=all.toLocaleString(); document.getElementById('nOk').textContent=(all-wait).toLocaleString(); document.getElementById('nWait').textContent=wait.toLocaleString();
+    var bar=document.getElementById('bar'); bar.innerHTML=''; [['tb',tb],['ms',ms],['pdf',pdf],['mf',0]].forEach(function(p){ var i=document.createElement('i'); i.className='dot '+p[0]; i.style.width=(all?(p[1]/all*100):0)+'%'; i.style.borderRadius='0'; i.style.height='100%'; i.style.display='block'; bar.appendChild(i); });
+    var wn=msWn+pdfWn+(tbW?1:0);
+    document.getElementById('waitNote').innerHTML=wn?('⏳ 아직 인식 안 된 자료 <b>'+wn+'건</b>('+wait.toLocaleString()+'문항)은 오늘 새벽에 처리됩니다. 지금 시작하면 인식된 자료로 먼저 판정하고, 새벽 뒤 「🔄 다시 판정」을 누르면 나머지가 들어갑니다. (급하면 분석 때 바로 인식 — 장당 2~5분 더)'):'모든 자료가 인식되어 있어 바로 판정합니다 (5~10분).';
+  }
+  function paint(){ paintMs(); paintPdf(); paintSum(); }
+  document.getElementById('msList').addEventListener('click',function(e){ var r=e.target.closest('[data-ms]'); if(!r) return; var x=MS[folder][Number(r.getAttribute('data-ms'))]; x.on=!x.on; paint(); });
+  document.getElementById('pdfList').addEventListener('click',function(e){ var r=e.target.closest('[data-pdf]'); if(!r) return; var x=PDF[Number(r.getAttribute('data-pdf'))]; x.on=!x.on; paint(); });
+  document.querySelectorAll('#pnMs .chip').forEach(function(b){ b.addEventListener('click',function(){ folder=b.getAttribute('data-f'); document.querySelectorAll('#pnMs .chip').forEach(function(c){ c.classList.toggle('on',c===b); }); paint(); }); });
+  document.querySelectorAll('#pnTb .row').forEach(function(r){ r.addEventListener('click',function(){ var k=r.getAttribute('data-k'); tbOn[k]=!tbOn[k]; var cb=r.querySelector('.cb'); cb.classList.toggle('on',tbOn[k]); cb.textContent=tbOn[k]?'✓':''; r.classList.toggle('dim',!tbOn[k]); paintSum(); }); });
+  document.querySelectorAll('#pnTb .seg button').forEach(function(b){ b.addEventListener('click',function(){ tbMode=b.getAttribute('data-tb'); document.querySelectorAll('#pnTb .seg button').forEach(function(c){ c.classList.toggle('on',c===b); }); paintSum(); }); });
+  paint();
+})();
+</script>
