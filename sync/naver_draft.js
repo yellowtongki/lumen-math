@@ -89,7 +89,9 @@ const SEL = {
   title: ['.se-documentTitle .se-text-paragraph', '.se-documentTitle', 'span.se-placeholder.__se_placeholder', '.se-title-text'],
   body:  ['.se-component.se-text .se-text-paragraph', '.se-main-container .se-text-paragraph', '.se-content'],
   save:  ['button.save_btn__bzc5B', 'button[class*="save_btn"]', '.header button:has-text("저장")'],
-  file:  ['input[type="file"]'],
+  // 네이버는 숨은 input 이 아니라 「사진」 단추를 눌러 파일 선택창을 띄운다
+  photoBtn: ['button:has-text("사진")', '[data-name="image"]', '.se-toolbar-item-image button',
+             'button[data-log="pst.photo"]', '.se-toolbar-item-image', 'button[title*="사진"]'],
   popupCancel: ['button.se-popup-button-cancel', '.se-popup-button-cancel', 'button:has-text("취소")'],
 };
 async function firstVisible(frame, list, timeout = 8000) {
@@ -101,6 +103,34 @@ async function firstVisible(frame, list, timeout = 8000) {
     await sleep(300);
   }
   return null;
+}
+
+// 그림 한 장 넣기 — 「사진」 단추를 눌러 뜨는 파일 선택창에 파일을 건넨다
+async function insertImage(page, frame, file) {
+  let btn = null;
+  for (const sel of SEL.photoBtn) {
+    for (const scope of [frame, page]) {
+      try {
+        const el = scope.locator(sel).first();
+        if (await el.isVisible({ timeout: 500 })) { btn = el; break; }
+      } catch {}
+    }
+    if (btn) break;
+  }
+  if (!btn) throw new Error('「사진」 단추를 못 찾았습니다');
+
+  const [chooser] = await Promise.all([
+    page.waitForEvent('filechooser', { timeout: 20000 }),
+    btn.click(),
+  ]);
+  await chooser.setFiles(file);
+
+  // 올라갈 때까지 기다린다 (그림 수가 늘어나는 것으로 확인)
+  await sleep(rnd(2500, 4000));
+  // 커서를 그림 아래로 보내고 줄을 하나 띄운다
+  await page.keyboard.press('ArrowDown').catch(() => {});
+  await page.keyboard.press('End').catch(() => {});
+  await sleep(400);
 }
 
 (async () => {
@@ -198,14 +228,11 @@ async function firstVisible(frame, list, timeout = 8000) {
         continue;
       }
       log(`  ${n}/${steps.length} 그림 ${s.label}…`);
-      const input = await firstVisible(f, SEL.file, 3000)
-        || f.locator('input[type="file"]').first();
       try {
-        await input.setInputFiles(s.file, { timeout: 8000 });
-        await sleep(rnd(2500, 4000));              // 업로드 기다림
+        await insertImage(page, f, s.file);
       } catch (e) {
-        await pause(`그림 올리기가 막혔습니다: ${s.label}\n   (${e.message.slice(0, 80)})`,
-          `이 자리에 ${path.basename(s.file)} 을 직접 넣어주세요.`);
+        await pause(`그림 올리기가 막혔습니다: ${s.label}\n   (${e.message.slice(0, 90)})`,
+          `위쪽 「사진」 단추를 눌러 ${path.basename(s.file)} 을 직접 넣어주세요.\n      파일 위치: ${s.file}`);
       }
     } else if (s.kind === 'manual') {
       await pause(`${s.label}은 직접 넣으셔야 합니다.`, s.what);
