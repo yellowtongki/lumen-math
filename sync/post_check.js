@@ -45,6 +45,8 @@ const hasDate = /\d{1,2}월\s?\d{1,2}일|\d{4}[.\-]\d{1,2}[.\-]\d{1,2}/.test(bod
 const hasAddr = /옥길로\s?116/.test(body);
 const sq = (body.match(/^■/gm) || []).length;
 const vague = body.match(/오늘 오전|오늘 오후(?!에는 그 앞)|며칠 전|얼마 전/g) || [];
+// 학교 기출은 외부 공개 금지 규정이 있다 (2026-10-10 원장 지시) — 본문에 드러내지 않는다
+const kichul = body.match(/기출|지난 시험지|작년 시험지|전년도 문제/g) || [];
 
 const checks = [
   ['제목 있음', !!meta.title, meta.title || '(없음)'],
@@ -69,6 +71,8 @@ const checks = [
   ['도입에 날짜가 있음', hasDate, hasDate ? '' : '「9월 20일 일요일」처럼 날짜·요일을 적으세요'],
   ['맨 끝에 주소 한 줄', hasAddr, hasAddr ? '' : '경기도 부천시 소사구 옥길로 116 6층 618호'],
   ['■ 기호는 첫 소제목 하나만', sq <= 1, `${sq}개`],
+  ['학교 기출을 드러내지 않음', kichul.length === 0,
+    kichul.length ? `「${[...new Set(kichul)].join('」 「')}」 — 학교 기출은 외부 공개 금지. 「시험대비자료」 같은 말로 바꾸세요` : ''],
 ];
 let fail = 0, warn = 0;
 console.log(`\n📋 ${path.relative(ROOT, dir)} 검사\n`);
