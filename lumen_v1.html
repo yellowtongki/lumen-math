@@ -429,7 +429,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-97';
+var APP_VER = 'v19-98';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9015,6 +9015,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-98',date:'2026-10-10',stability:'ok',memo:'🌳 백지테스트 — <b>범위를 매쓰플랫 단원 트리 그대로</b> (원장 지시 2026-10-10 「매쓰플랫에서 학습지 만들 때 DB 선택을 이렇게 자세히 할 수 있다. 이것을 그대로 가져와서 만들 수 있게 하자. 백지테스트 내용이 더 풍부해야 한다.」, 시안 docs/mockup_bt_tree.html 승인). 소단원 칩 자리에 매쓰플랫과 같은 <b>7단계 트리</b>(과정 → 대단원 → 중단원 → 소단원 → 개념 → 주제유형 → 세부유형)가 들어간다. 체크도 매쓰플랫과 같다 — 위를 체크하면 아래가 전부 들어가고, 아래 하나를 끄면 그것만 빠지고 위 칸은 「–」로 보인다. 「다항식 전부」「이 소단원만」「모두 해제」로 빠르게 고를 수도 있다. AI 는 이제 고른 <b>주제유형·세부유형 이름</b>까지 받아 문항을 쓰고, 문항마다 어느 세부유형에서 나왔는지 적는다. 💬 채팅에서 「내림차순 정리 1문제 더」처럼 세부유형 이름을 말하면 트리에서 찾아 범위에 넣는다. 3부는 <b>교과서 문항 + 세부유형 대표 문항(매쓰플랫 그림) 섞기</b>가 기본(대표 문항만 · 교과서만도 고를 수 있음). 대표 문항은 🔄 로 같은 유형의 다른 문항으로 바꾸고, 답지에는 매쓰플랫 문제 ID 를 적는다. 채팅 빠른 말 「세부유형 대표 문항 2개 더」는 AI 없이 바로 넣는다. 고른 트리는 시험지와 함께 보관함에 저장된다. 트리 자료는 수집기가 <b>일요일 새벽 4시</b>에 받는다(따로 받기: 수집기 --tree-only). 아직 트리를 받지 않은 과정은 안내 한 줄과 함께 예전 소단원 칩이 그대로 나온다. 부품 modules/bt2_teacher.js · sync/mathflat_collector.js.'},
       {ver:'v19-97',date:'2026-10-10',stability:'ok',memo:'📝 백지테스트 — <b>💬 채팅으로 고치기</b> (원장 지시 2026-10-10 「학원앱에서 지금 채팅처럼, 곱셈공식 변형 더 추가해줘」, 시안 docs/mockup_bt_chat.html 승인). 초안을 만들면 왼쪽 편집 칸 맨 아래(한마디 칸 밑)에 대화 상자가 생긴다. 「곱셈공식 변형 2문제 더」「3번 더 쉽게」「5번을 서술형으로」「4번 삭제」「1부를 8문항으로」「서술형을 뒤로」「제목을 ○○로」「답지에 힌트 한 줄씩」처럼 말하면 AI 가 시험지 전체를 다시 쓰지 않고 «고칠 것만» 골라 고친다(손본 문항은 그대로, 새 문항은 3초간 노란 바탕). 범위는 고른 소단원 밖이어도 <b>같은 대단원 안</b>이면 된다. 「교과서에서 인수분해 2개 더」「교과서 3번 다른 걸로」는 AI 없이 교과서 은행에서 바로 찾아 3부에 넣는다. 고칠 때마다 말풍선의 「↩ 되돌리기」(또는 「취소」라고 말하기)로 돌릴 수 있고, 💾 보관하면 대화 기록(최근 20줄)도 시험지와 함께 저장된다. 부품 modules/bt2_teacher.js.'},
       {ver:'v19-96',date:'2026-10-10',stability:'ok',memo:'📝 백지테스트 — <b>여러 명 고르기 → 같은 시험지 한꺼번에</b> (원장 지시 2026-10-10 「학생을 선택해서 여러 명을 한꺼번에 만드는 기능. 오늘 중3은 같은 시험지」). 학생 칩 앞의 ○ 를 누르면 여러 명이 고르고, 「중3 전부 n」「반 전부」 단추로 한 번에 고른다. 한 학생으로 초안을 만들어 손본 뒤 「👥 고른 n명에게 같은 시험지 만들기」를 누르면 1부·3부는 똑같이, 2부(틀린 문제)는 2부 수가 0 보다 크면 학생마다 채워 보관함에 n장을 넣고, 「🖨️ n명 한꺼번에 인쇄」(학생마다 한 쪽)·「🖨️+🔑 답지까지」(맨 뒤 답지 한 장)로 뽑는다. 아무도 안 골랐으면 예전 「반 전체로」 그대로. 부품 modules/bt2_teacher.js.'},
       {ver:'v19-95',date:'2026-10-10',stability:'ok',memo:'📝 백지테스트 — <b>중3 학생의 기본 과정을 「공통수학1」</b>로 (원장 지시 2026-10-10 「중3 기본 과정을 공통수학1로, 만들 때 중3과 고1 선택 가능하게」). 중3 학생을 고르면 공통수학1(다항식 · 방정식과 부등식 · 경우의 수 · 행렬)이 먼저 열리고, 과정 칩의 중3-1 · 중3-2 를 누르면 중3 단원으로 바뀐다. 다른 학년은 그대로(10월 이후 2학기). 부품 modules/bt2_teacher.js.'},
@@ -82697,7 +82698,551 @@ var _bt2MakeMany96=window.bt2MakeMany;
 window.bt2MakeMany=function(){ if(BT.draft) BT.draft.chat=bt2ChatLogSave(); return _bt2MakeMany96.apply(this,arguments); };
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~97: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-98: 🌳 백지테스트 범위 — «매쓰플랫 7단계 단원 트리 그대로»
+ *   원장 지시 2026-10-10: 「매쓰플랫에서 학습지 만들 때 DB 선택을 이렇게 자세히 할 수 있다. 이것을 그대로 가져와서 만들 수 있게 하자.
+ *   백지테스트 내용이 더 풍부해야 한다.」 (시안 docs/mockup_bt_tree.html — 원장 승인: 소단원 칩을 트리로 · 3부 기본 = 교과서+대표 문항 섞기)
+ *
+ *  [왜] 소단원 칩까지만 고를 수 있어 AI 가 받는 재료가 «소단원 + 개념 이름 몇 개»뿐이었다. 매쓰플랫은 개념 아래
+ *       주제유형 → 세부유형(공통수학1 하나에 5천 개 넘게)까지 있고, 세부유형마다 대표 문항 그림이 있다.
+ *  [무엇]
+ *   · 수집기(sync/mathflat_collector.js --tree-only · 일요일 새벽 4시 회차)가 과정마다 트리를 lumen_store 'mf_tree_22_<과정>' 에 둔다.
+ *     학원앱은 고른 과정 것만 받는다(없으면 'mf_tree_15_<과정>'). 아직 없으면 안내 한 줄 + 예전 소단원 칩 그대로.
+ *   · 소단원 칩 자리에 트리: 대단원 → 중단원 → 소단원 → 개념 → 주제유형 → 세부유형. 체크는 매쓰플랫과 같다
+ *     (위를 체크하면 아래 전부, 아래 하나를 끄면 그것만 빠지고 위는 「–」). 빠르게: 「<대단원> 전부」「이 소단원만」「모두 해제」.
+ *   · 고른 것 = BT.cfg.sel = { big, cids:[개념ID…], exT:[뺀 주제유형ID…], exU:[뺀 세부유형ID…] } — 매쓰플랫 학습지 만들기가 받는 값과 같은 모양.
+ *     시험지(초안·보관함)에 sel 로 함께 저장되고, 보관함에서 열면 돌아온다. bt2Picked() 는 여기서 소단원 목록을 만들어 예전 코드가 그대로 돈다.
+ *   · AI 지시: [이번 시험 범위 — 개념 › 주제유형 › 세부유형] 줄을 준다. 문항마다 "s" 에 어느 세부유형에서 왔는지 쓴다.
+ *     채팅으로 고치기에서 세부유형·주제유형 이름을 말하면(「내림차순 정리 1문제 더」) 트리에서 찾아 범위에 넣고 AI 에 준다.
+ *   · 3부 출처: 「교과서+대표 문항 섞기(기본) · 대표 문항만 · 교과서만」. 대표 문항 = 고른 세부유형의 매쓰플랫 대표 문항 그림.
+ *     한 문항만 정답을 받는 주소가 매쓰플랫에 없어 답지에는 「정답은 매쓰플랫 문제 ID ○○」로 적는다.
+ *   · 채팅 빠른 말 「세부유형 대표 문항 2개 더」 — AI 없이 바로 넣는다.
+ *  이 부품은 bt2Picked · bt2EnsureCfg · bt2Course · rBtMake · bt2PromptHead · bt2Rules · btPrompt · bt2ChatPrompt · bt2TbRef · bt2TbRe ·
+ *  bt2SheetHtml · bt2KeyHtml · btCfg · btGen · btOpen · btSave · bt2ChatSay · bt2ChatHtml · bt2ChatSend 를 감싸거나 다시 쓰고,
+ *  v19-97 이 감싼 편집 칸 바탕(_rBtDraft96)을 대표 문항 줄이 들어간 것으로 바꾼다.
+ *  ※ 문자열 연결로만 쓴다(중첩 템플릿 리터럴 금지). 학생 실명은 화면에만.
+ * ═══════════════════════════════════════════════════════════════════ */
+BT.cfg.p3src=BT.cfg.p3src||'mix';
+if(BT.cfg.sel===undefined) BT.cfg.sel=null;
+BT.tree=BT.tree||{ course:'', data:null, loading:false, done:false, err:'', open:{}, scroll:0, focus:'', ix:null };
+var BT2_TREE_TOK=0;
+var BT2_TREE_CACHE={}, BT2_TREE_CACHE_ORD=[];   // 과정을 오갈 때 다시 받지 않게 — 최근 4과정
+(function(){ try{ if(!document.getElementById('bt2-tree-css')){ var s=document.createElement('style'); s.id='bt2-tree-css'; s.textContent=''
+  +'#bt2-tree{max-height:420px;overflow:auto;background:#fff}'
+  +'.bt2-tn{display:grid;grid-template-columns:16px 18px minmax(0,1fr) auto;gap:5px;align-items:center;padding:4px 8px;border-bottom:1px solid #f1f4f9;font-size:12.5px;cursor:pointer;min-width:0;color:#0d2240}'
+  +'.bt2-tn:hover{background:#f3f7ff}.bt2-tn .ar{font-size:9.5px;color:#94a3b8;text-align:center}'
+  +'.bt2-tn .cb{width:15px;height:15px;border:1.5px solid #94a3b8;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;color:#fff;background:#fff;box-sizing:border-box}'
+  +'.bt2-tn .cb.on{background:#1d6fe8;border-color:#1d6fe8}.bt2-tn .cb.half{border-color:#1d6fe8;color:#1d6fe8}'
+  +'.bt2-tn .nm{min-width:0;overflow-wrap:anywhere;line-height:1.45}.bt2-tn .d0,.bt2-tn .d1{font-weight:900}.bt2-tn .d2,.bt2-tn .d3{font-weight:800}.bt2-tn .d4{font-weight:700}.bt2-tn .d5{font-weight:500;font-size:12px;color:#334155}'
+  +'.bt2-tn .bd{display:inline-block;font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;background:#eef2f8;color:#64748b;margin-left:4px;white-space:nowrap}'
+  +'.bt2-tn .bd.img{background:#e0f2fe;color:#0e7490;cursor:zoom-in}.bt2-tn .lv{display:inline-block;font-size:10px;font-weight:900;padding:1px 6px;border-radius:5px;margin-right:4px}'
+  +'.bt2-tn .lv.l4{background:#fff7e6;color:#b45309}.bt2-tn .lv.l5{background:#e0f2fe;color:#0e7490}';
+  document.head.appendChild(s); } }catch(e){} })();
+
+/* ── 트리 받기: lumen_store 'mf_tree_22_<과정>' (없으면 15개정) ── */
+function bt2TrOn(){ return !!(BT.tree&&BT.tree.data&&BT.tree.course===BT.cfg.course); }
+function bt2TreeLoad(course){
+  course=String(course||'');
+  var T=BT.tree;
+  if(T&&T.course===course&&(T.loading||T.done)) return Promise.resolve(T.data);
+  var tok=++BT2_TREE_TOK;                         // 과정을 바꾸는 사이 늦게 끝난 옛 요청이 덮어쓰지 않게
+  BT.tree={ course:course, data:null, loading:true, done:false, err:'', open:{}, scroll:0, focus:'', ix:null };
+  if(BT2_TREE_CACHE[course]){ BT.tree.loading=false; BT.tree.done=true; BT.tree.data=BT2_TREE_CACHE[course]; bt2TrIndex(); return Promise.resolve(BT.tree.data); }
+  var fin=function(v,err){ if(tok!==BT2_TREE_TOK) return null; BT.tree.loading=false; BT.tree.done=true; BT.tree.data=v||null; BT.tree.err=err||'';
+    if(v){ bt2TrIndex(); BT2_TREE_CACHE[course]=v; BT2_TREE_CACHE_ORD=BT2_TREE_CACHE_ORD.filter(function(c){ return c!==course; }).concat([course]); while(BT2_TREE_CACHE_ORD.length>4) delete BT2_TREE_CACHE[BT2_TREE_CACHE_ORD.shift()]; }
+    if(btPainting()) render(); return v||null; };
+  var sb=null; try{ sb=(typeof getSupaClient==='function')?getSupaClient():null; }catch(e){}
+  if(!sb||!course) return Promise.resolve(fin(null,''));
+  var get=function(k){
+    try{ return Promise.resolve(sb.from('lumen_store').select('value').eq('key',k)).then(function(r){
+      var d=r&&r.data; var row=Array.isArray(d)?d[0]:d; var v=row&&row.value;
+      if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+      return (v&&Array.isArray(v.b)&&v.b.length)?v:null; }); }
+    catch(e){ return Promise.reject(e); }
+  };
+  return get('mf_tree_22_'+course).then(function(v){ return v||get('mf_tree_15_'+course); })
+    .then(function(v){ return fin(v,''); })
+    .catch(function(e){ return fin(null,(e&&e.message)||String(e)); });
+}
+window.bt2TreeReload=function(){ delete BT2_TREE_CACHE[BT.cfg.course]; BT.tree.done=false; BT.tree.loading=false; BT.tree.course=''; bt2TreeLoad(BT.cfg.course); render(); };
+/* 찾기 표: 열쇠(b:/m:/s:/c:/t:/u: + ID) → 마디 · 깊이 · 부모 열쇠 · 아이들 열쇠 */
+function bt2TrIndex(){
+  var D=BT.tree.data; var ix={ N:{}, C:{}, T:{}, U:{}, cons:[] };
+  var put=function(k,n,d,p,kids){ ix.N[k]={ k:k, n:n, d:d, p:p, kids:kids }; };
+  (D.b||[]).forEach(function(B){ var bk='b:'+B.id; var mk=[];
+    (B.m||[]).forEach(function(M){ var mkk='m:'+M.id; mk.push(mkk); var sk=[];
+      (M.s||[]).forEach(function(L){ var skk='s:'+L.id; sk.push(skk); var ck=[];
+        (L.c||[]).forEach(function(C){ C.t=Array.isArray(C.t)?C.t:[]; var ckk='c:'+C.id; ck.push(ckk); var tk=[];
+          ix.C[C.id]={ C:C, L:L, M:M, B:B }; ix.cons.push(C);
+          C.t.forEach(function(T){ T.u=Array.isArray(T.u)?T.u:[]; var tkk='t:'+T.id; tk.push(tkk); var uk=[];
+            ix.T[T.id]={ T:T, C:C };
+            T.u.forEach(function(U){ var ukk='u:'+U.id; uk.push(ukk); ix.U[U.id]={ U:U, T:T, C:C }; put(ukk,U,5,tkk,[]); });
+            put(tkk,T,4,ckk,uk); });
+          put(ckk,C,3,skk,tk); });
+        put(skk,L,2,mkk,ck); });
+      put(mkk,M,1,bk,sk); });
+    put(bk,B,0,'',mk); });
+  BT.tree.ix=ix;
+}
+/* 이 마디 아래 개념들 */
+function bt2TrConsUnder(k){ var ix=BT.tree.ix; var N=ix&&ix.N[k]; if(!N) return []; if(N.d===3) return [N.n]; if(N.d>3) return []; var out=[]; N.kids.forEach(function(c){ out=out.concat(bt2TrConsUnder(c)); }); return out; }
+function bt2TrConOf(k){ var ix=BT.tree.ix; var N=ix&&ix.N[k]; while(N&&N.d>3) N=ix.N[N.p]; return (N&&N.d===3)?N.n:null; }
+function bt2TrSubOf(k){ var ix=BT.tree.ix; var N=ix&&ix.N[k]; while(N&&N.d>2) N=ix.N[N.p]; return (N&&N.d===2)?N.k:''; }
+
+/* ── 고른 것: 개념 체크 + 뺀 주제유형·세부유형 ── */
+function bt2SelEmpty(){ return { big:'', cids:[], exT:[], exU:[] }; }
+function bt2SelCopy(){ var s=BT.cfg.sel||bt2SelEmpty(); return { big:String(s.big||''), cids:(s.cids||[]).slice(), exT:(s.exT||[]).slice(), exU:(s.exU||[]).slice() }; }
+function bt2SelSets(){ var s=BT.cfg.sel||bt2SelEmpty(); var o={ c:{}, t:{}, u:{} }; (s.cids||[]).forEach(function(x){ o.c[x]=1; }); (s.exT||[]).forEach(function(x){ o.t[x]=1; }); (s.exU||[]).forEach(function(x){ o.u[x]=1; }); return o; }
+/* 상태: 0 = 꺼짐 · 1 = 일부(–) · 2 = 전부(✓) */
+function bt2StAgg(a){ if(!a.length) return 0; var all=true, any=false; a.forEach(function(v){ if(v!==2) all=false; if(v) any=true; }); return all?2:(any?1:0); }
+function bt2StT(C,T,S){ if(!S.c[C.id]||S.t[T.id]) return 0; if(!T.u.length) return 2; var on=0; T.u.forEach(function(U){ if(!S.u[U.id]) on++; }); return on===T.u.length?2:(on?1:0); }
+function bt2StC(C,S){ if(!S.c[C.id]) return 0; if(!C.t.length) return 2; return bt2StAgg(C.t.map(function(T){ return bt2StT(C,T,S); })); }
+/* 마디 하나의 상태 (세부유형까지) */
+function bt2TrState(k,S){
+  var ix=BT.tree.ix; var N=ix&&ix.N[k]; if(!N) return 0; S=S||bt2SelSets();
+  if(N.d===5){ var e=ix.U[N.n.id]; return (S.c[e.C.id]&&!S.t[e.T.id]&&!S.u[N.n.id])?2:0; }
+  if(N.d===4){ var e2=ix.T[N.n.id]; return bt2StT(e2.C,N.n,S); }
+  if(N.d===3) return bt2StC(N.n,S);
+  return bt2StAgg(N.kids.map(function(c){ return bt2TrState(c,S); }));
+}
+/* 개념 하나를 «잎마다 켜짐/꺼짐»(f) 으로 다시 적는다 */
+function bt2TrEncode(C,f){
+  var s=BT.cfg.sel||bt2SelEmpty(); var tids={}, uids={};
+  C.t.forEach(function(T){ tids[T.id]=1; T.u.forEach(function(U){ uids[U.id]=1; }); });
+  var cids=(s.cids||[]).filter(function(x){ return String(x)!==String(C.id); });
+  var exT=(s.exT||[]).filter(function(x){ return !tids[x]; }), exU=(s.exU||[]).filter(function(x){ return !uids[x]; });
+  var any=false;
+  if(!C.t.length) any=!!f(null,null);
+  C.t.forEach(function(T){
+    if(!T.u.length){ if(f(T,null)) any=true; else exT.push(T.id); return; }
+    var on=T.u.filter(function(U){ return f(T,U); });
+    if(!on.length){ exT.push(T.id); return; }
+    any=true; T.u.forEach(function(U){ if(!f(T,U)) exU.push(U.id); });
+  });
+  if(any) cids.push(C.id);
+  else { exT=exT.filter(function(x){ return !tids[x]; }); exU=exU.filter(function(x){ return !uids[x]; }); }
+  BT.cfg.sel={ big:String(s.big||''), cids:cids, exT:exT, exU:exU };
+}
+/* 마디 켜기/끄기 — 위는 아래 전부, 아래 하나는 그것만 */
+function bt2TrSet(k,on){
+  var ix=BT.tree.ix; var N=ix&&ix.N[k]; if(!N) return;
+  if(!BT.cfg.sel) BT.cfg.sel=bt2SelEmpty();
+  if(N.d<=3){ bt2TrConsUnder(k).forEach(function(C){ bt2TrEncode(C,function(){ return on; }); }); return; }
+  var S=bt2SelSets(); var C=bt2TrConOf(k);
+  var cur=function(T,U){ return !!(S.c[C.id]&&T&&!S.t[T.id]&&!(U&&S.u[U.id])); };
+  if(N.d===4) bt2TrEncode(C,function(T,U){ return (T&&T.id===N.n.id)?on:cur(T,U); });
+  else bt2TrEncode(C,function(T,U){ return (U&&U.id===N.n.id)?on:cur(T,U); });
+}
+/* 고른 것 → BT.cfg.big(첫 개념의 대단원) · BT.cfg.subs(소단원 열쇠) 맞추기 */
+function bt2TrSync(){
+  var ix=BT.tree.ix; if(!ix||!BT.cfg.sel) return;
+  var S=bt2SelSets(); var first=null; var subs=[];
+  ix.cons.forEach(function(C){ if(bt2StC(C,S)){ var e=ix.C[C.id]; if(!first) first=e; var k=bt2SubKey(e.M.n,e.L.n); if(subs.indexOf(k)<0) subs.push(k); } });
+  if(first){ BT.cfg.big=String(first.B.n); BT.cfg.sel.big=BT.cfg.big; }
+  BT.cfg.subs=subs;
+}
+/* 대단원 하나를 열고 그 아래 중단원·소단원도 연다 (개념은 닫힌 채) */
+function bt2TrOpenBig(bk){ var ix=BT.tree.ix; var N=ix&&ix.N[bk]; if(!N) return; BT.tree.open[bk]=true; N.kids.forEach(function(mk){ BT.tree.open[mk]=true; ix.N[mk].kids.forEach(function(sk){ BT.tree.open[sk]=true; }); }); }
+/* 트리가 처음 보일 때: 고른 것이 없으면 만든다 (보관함 옛 시험지의 소단원이 있으면 그것으로, 아니면 첫 대단원의 첫 중단원) */
+function bt2TrEnsureSel(){
+  var ix=BT.tree.ix; if(!ix) return;
+  var D=BT.tree.data;
+  if(!BT.cfg.sel||!Array.isArray(BT.cfg.sel.cids)){
+    var sel=bt2SelEmpty(); var subs=BT.cfg.subs||[];
+    if(BT.cfg.selFromSubs&&subs.length){
+      var snames=subs.map(function(x){ return String(x).split('|').pop(); });   // 열쇠(중단원|소단원)도 이름도 — 유형DB 와 트리의 중단원 이름이 달라도 소단원 이름으로 맞춘다
+      ix.cons.forEach(function(C){ var e=ix.C[C.id]; if(subs.indexOf(bt2SubKey(e.M.n,e.L.n))>=0||snames.indexOf(String(e.L.n))>=0) sel.cids.push(C.id); });
+    }
+    if(!sel.cids.length){ var B0=(D.b||[])[0]; var M0=B0&&(B0.m||[])[0]; if(M0) (M0.s||[]).forEach(function(L){ (L.c||[]).forEach(function(C){ sel.cids.push(C.id); }); }); }
+    BT.cfg.sel=sel; BT.cfg.selFromSubs=false; bt2TrSync();
+  }
+  if(!Object.keys(BT.tree.open).length){
+    var S=bt2SelSets(); var fb=null;
+    ix.cons.some(function(C){ if(bt2StC(C,S)){ fb=ix.C[C.id].B; return true; } return false; });
+    fb=fb||(D.b||[])[0]; if(fb) bt2TrOpenBig('b:'+fb.id);
+  }
+}
+/* 고른 소단원 [{m, s, t:[체크된 개념 이름…]}] — 교과서 문항 고르기 · 이름표 · 예전 지시문이 이걸 쓴다 */
+function bt2TrPicked(){
+  var D=BT.tree.data; var S=bt2SelSets(); var out=[];
+  (D.b||[]).forEach(function(B){ (B.m||[]).forEach(function(M){ (M.s||[]).forEach(function(L){
+    var ts=(L.c||[]).filter(function(C){ return bt2StC(C,S); }).map(function(C){ return String(C.n); });
+    if(ts.length) out.push({ m:String(M.n), s:String(L.n), t:ts }); }); }); });
+  return out;
+}
+var _bt2Picked97=bt2Picked;
+bt2Picked=function(){ if(bt2TrOn()&&BT.cfg.sel&&Array.isArray(BT.cfg.sel.cids)) return bt2TrPicked(); return _bt2Picked97.apply(this,arguments); };
+var _bt2EnsureCfg97=bt2EnsureCfg;
+bt2EnsureCfg=function(stu){ var r=_bt2EnsureCfg97.apply(this,arguments); if(r&&bt2TrOn()&&BT.cfg.sel){ var big=BT.cfg.big; bt2TrSync(); if(!BT.cfg.big) BT.cfg.big=big; } return r; };
+var _bt2Course97=window.bt2Course;
+window.bt2Course=function(c){ BT.cfg.sel=null; BT.cfg.selFromSubs=false; return _bt2Course97.apply(this,arguments); };
+
+/* ── 트리 화면 ── */
+window.bt2TreeClick=function(e){
+  var t=e&&e.target; if(!t||!t.closest) return;
+  var row=t.closest('[data-k]'); if(!row) return;
+  var k=row.getAttribute('data-k'); var ix=BT.tree.ix; var N=ix&&ix.N[k]; if(!N) return;
+  var im=t.closest('[data-img]');
+  if(im){ var u=im.getAttribute('data-img'); try{ if(u&&typeof openPhotoFull==='function') openPhotoFull(u); }catch(e2){} return; }
+  var sk=bt2TrSubOf(k); if(sk) BT.tree.focus=sk;
+  if(t.closest('[data-cb]')||!N.kids.length){ var st=bt2TrState(k); bt2TrSet(k,st!==2); bt2TrSync(); render(); return; }
+  BT.tree.open[k]=!BT.tree.open[k]; render();
+};
+window.bt2TrQuickBig=function(bid){ var ix=BT.tree.ix; if(!ix) return; BT.cfg.sel=bt2SelEmpty(); bt2TrSet('b:'+bid,true); bt2TrSync(); bt2TrOpenBig('b:'+bid); BT.tree.focus=''; render(); };
+window.bt2TrQuickSub=function(){ var ix=BT.tree.ix; var k=BT.tree.focus; if(!ix||!ix.N[k]) return; BT.cfg.sel=bt2SelEmpty(); bt2TrSet(k,true); bt2TrSync(); BT.tree.open[k]=true; var p=ix.N[k].p; if(p){ BT.tree.open[p]=true; if(ix.N[p].p) BT.tree.open[ix.N[p].p]=true; } render(); };
+window.bt2TrClear=function(){ BT.cfg.sel=bt2SelEmpty(); bt2TrSync(); render(); };
+/* 고른 수 — 개념 · 주제유형 · 세부유형 */
+function bt2TrCounts(){
+  var ix=BT.tree.ix; var S=bt2SelSets(); var n={ c:0, t:0, u:0 };
+  if(ix) ix.cons.forEach(function(C){ var st=bt2StC(C,S); if(!st) return; n.c++;
+    if(!C.t.length){ n.t+=Number(C.tc)||0; n.u+=Number(C.sc)||0; return; }
+    C.t.forEach(function(T){ if(!bt2StT(C,T,S)) return; n.t++; T.u.forEach(function(U){ if(!S.u[U.id]) n.u++; }); }); });
+  return n;
+}
+function bt2TreeRows(){
+  var ix=BT.tree.ix, D=BT.tree.data; var S=bt2SelSets(); var h='';
+  var walk=function(k){
+    var N=ix.N[k]; var n=N.n; var st=bt2TrState(k,S); var cnt='';
+    if(N.d===2) cnt='<span class="bd">개념 '+(n.c||[]).length+'</span>';
+    else if(N.d===3){ var tc=n.t.length?n.t.length:(Number(n.tc)||0); var sc=n.t.length?n.t.reduce(function(a,T){ return a+T.u.length; },0):(Number(n.sc)||0);
+      cnt='<span class="bd">주제유형 '+tc+'</span><span class="bd">세부유형 '+sc+'</span>'+(n.t.length?'':'<span class="bd">유형 정보 없음</span>'); }
+    else if(N.d===5&&n.pid&&n.img) cnt='<span class="bd img" data-img="'+esc2(n.img)+'" title="대표 문항 그림 보기">그림</span>';
+    var ar=N.kids.length?(BT.tree.open[k]?'▼':'▶'):'';
+    h+='<div class="bt2-tn" data-k="'+k+'" style="padding-left:'+(8+N.d*15)+'px"><span class="ar">'+(ar||'·')+'</span>'
+      +'<span class="cb'+(st===2?' on':(st===1?' half':''))+'" data-cb="1">'+(st===2?'✓':(st===1?'–':''))+'</span>'
+      +'<span class="nm d'+N.d+'">'+(N.d===4?'<span class="lv l4">주제유형</span>':(N.d===5?'<span class="lv l5">세부유형</span>':''))+esc2(n.n)+'</span><span>'+cnt+'</span></div>';
+    if(N.kids.length&&BT.tree.open[k]) N.kids.forEach(walk);
+  };
+  (D.b||[]).forEach(function(B){ walk('b:'+B.id); });
+  return h;
+}
+function bt2TreeHtml(){
+  var D=BT.tree.data, ix=BT.tree.ix; var S=bt2SelSets();
+  var qb=function(l,on,fn,ttl){ return '<button onclick="'+fn+'" title="'+(ttl||'')+'" style="font-family:inherit;font-size:11px;font-weight:900;border-radius:50px;padding:4px 10px;cursor:pointer;white-space:nowrap;'+(on?'background:#0d2240;color:#fff;border:1.5px solid #0d2240':'background:#fff;color:#475569;border:1.5px solid #e6eaf1')+'">'+l+'</button>'; };
+  var h='<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:7px"><span style="font-size:10.5px;font-weight:900;color:#94a3b8;letter-spacing:.03em;margin-right:4px;white-space:nowrap">빠르게</span>';
+  var bst=(D.b||[]).map(function(B){ return bt2TrState('b:'+B.id,S); });
+  (D.b||[]).forEach(function(B,i){ var only=bst[i]===2&&bst.every(function(v,j){ return j===i||!v; }); h+=qb(esc2(B.n)+' 전부',only,'bt2TrQuickBig('+Number(B.id)+')','이 대단원만 전부 고르기'); });
+  var fk=BT.tree.focus; if(fk&&ix.N[fk]) h+=qb('이 소단원만 <span style="opacity:.7">('+esc2(ix.N[fk].n.n)+')</span>',false,'bt2TrQuickSub()','마지막으로 누른 소단원만 고르기');
+  h+=qb('모두 해제',false,'bt2TrClear()')+'</div>';
+  var n=bt2TrCounts();
+  h+='<div style="border:1px solid #e6eaf1;border-radius:12px;overflow:hidden;margin-bottom:8px">'
+    +'<div style="background:#f1f5fb;padding:7px 10px;font-size:11px;font-weight:800;color:#64748b;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap"><span>🌳 범위 고르기 — 매쓰플랫 단원 트리 ('+esc2(String(D.rev||'22'))+'개정 · '+esc2(D.label||BT.cfg.course)+') · 위를 체크하면 아래 전부, 아래 하나를 끄면 그것만 빠집니다</span>'
+    +'<span><span style="display:inline-block;font-size:10px;font-weight:900;padding:1px 6px;border-radius:5px;background:#fff7e6;color:#b45309;margin-right:4px">주제유형</span><span style="display:inline-block;font-size:10px;font-weight:900;padding:1px 6px;border-radius:5px;background:#e0f2fe;color:#0e7490">세부유형 · 그림 = 대표 문항</span></span></div>'
+    +'<div id="bt2-tree" onclick="bt2TreeClick(event)" onscroll="BT.tree.scroll=this.scrollTop">'+bt2TreeRows()+'</div></div>';
+  var picked=bt2Picked();
+  h+='<div style="font-size:11.5px;font-weight:800;color:#64748b;margin-bottom:9px">고른 범위 <b style="color:#0d2240">개념 '+n.c+' · 주제유형 '+n.t+' · 세부유형 '+n.u.toLocaleString()+'</b>'
+    +(picked.length?' — 소단원 '+esc2(picked.map(function(x){ return x.s; }).join(' · ')):' (하나 이상 고르세요)')+'</div>';
+  setTimeout(function(){ var el=document.getElementById('bt2-tree'); if(el&&BT.tree.scroll) el.scrollTop=BT.tree.scroll; },0);
+  return h;
+}
+/* rBtMake 를 감싼다 — 대단원 칩 줄 ~ 「고른 소단원」 줄을 트리로 바꾸고, 3부 출처 고르기를 붙인다 */
+var BT2_MK_BIG='<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:7px"><span style="font-size:10.5px;font-weight:900;color:#94a3b8;letter-spacing:.03em;margin-right:4px;white-space:nowrap">대단원</span>';
+var BT2_MK_PICK='<div style="font-size:11.5px;font-weight:800;color:#64748b;margin-bottom:9px">고른 소단원';
+var _rBtMake97=rBtMake;
+rBtMake=function(){
+  if(bt2TrOn()) bt2TrEnsureSel();
+  var h=_rBtMake97.apply(this,arguments);
+  if(!BT.stu||!BT.cfg.course) return h;
+  if(BT.tree.course!==BT.cfg.course||(!BT.tree.loading&&!BT.tree.done)) bt2TreeLoad(BT.cfg.course);
+  var a=h.indexOf(BT2_MK_BIG); if(a<0) return h;
+  if(!bt2TrOn()){
+    var msg=BT.tree.loading?'🌳 매쓰플랫 단원 트리를 불러오는 중…'
+      :(BT.tree.err?('🌳 매쓰플랫 단원 트리를 불러오지 못했습니다 — 아래 소단원 칩으로 고르세요 <button onclick="bt2TreeReload()" style="font-family:inherit;font-size:10.5px;font-weight:900;border-radius:7px;padding:2px 7px;cursor:pointer;background:#fff;color:#1d6fe8;border:1px solid #cfe0fb">다시</button>')
+      :'🌳 매쓰플랫 단원 트리를 아직 받지 않았습니다 (새벽 수집 뒤 생깁니다) — 지금은 아래 소단원 칩으로 고르세요');
+    return h.slice(0,a)+'<div style="font-size:11px;font-weight:800;color:#94a3b8;margin-bottom:6px">'+msg+'</div>'+h.slice(a);
+  }
+  var p=h.indexOf(BT2_MK_PICK,a); var e=(p>=0)?h.indexOf('</div>',p):-1; if(e<0) return h;
+  h=h.slice(0,a)+bt2TreeHtml()+h.slice(e+6);
+  /* 3부 출처 */
+  if(BT.cfg.p3mode==='tb'){
+    var src=BT.cfg.p3src||'mix';
+    var sel='<label style="font-size:11px;font-weight:800;color:#64748b;display:flex;align-items:center;gap:5px">출처 <select onchange="btCfg(\'p3src\',this.value)" style="font-family:inherit;font-size:12px;font-weight:800;padding:6px;border:1.5px solid #e6eaf1;border-radius:9px;background:#fff">'
+      +'<option value="mix"'+(src==='mix'?' selected':'')+'>교과서+대표 문항 섞기 (기본)</option><option value="rep"'+(src==='rep'?' selected':'')+'>세부유형 대표 문항만</option><option value="tb"'+(src==='tb'?' selected':'')+'>교과서만</option></select></label>';
+    var m='>없음</option></select></label>'; var q=h.indexOf(m); if(q>=0) h=h.slice(0,q+m.length)+sel+h.slice(q+m.length);
+    if(src!=='tb') h=h.replace('⚠ 이 과정의 교과서 은행이 없어 3부를 못 넣습니다 (AI 창작이나 없음으로)','⚠ 이 과정의 교과서 은행이 없어 3부는 세부유형 대표 문항으로만 채웁니다');
+  }
+  return h;
+};
+
+/* ── AI 지시: 개념 › 주제유형 › 세부유형 ── */
+function bt2TrPromptLines(){
+  var ix=BT.tree.ix; var S=bt2SelSets(); var L=[];
+  if(!ix) return L;
+  ix.cons.forEach(function(C){ var st=bt2StC(C,S); if(!st) return; var e=ix.C[C.id];
+    if(!C.t.length){ L.push('· ['+e.L.n+'] '+C.n); return; }
+    C.t.forEach(function(T){ var ts=bt2StT(C,T,S); if(!ts) return;
+      var head='· ['+e.L.n+' › '+C.n+'] '+T.n;
+      if(!T.u.length) L.push(head);
+      else if(ts===2) L.push(head+' (세부유형 '+T.u.length+'개 전부)');
+      else L.push(head+' — 세부유형: '+T.u.filter(function(U){ return !S.u[U.id]; }).map(function(U){ return U.n; }).join(' / ')); });
+  });
+  return L;
+}
+var BT2_PROMPT_CAP=160;
+var _bt2PromptHead97=bt2PromptHead;
+bt2PromptHead=function(mat, stu){
+  var h=_bt2PromptHead97.apply(this,arguments);
+  if(!bt2TrOn()||!BT.cfg.sel) return h;
+  var a=h.indexOf('[이번 시험 범위 — 소단원과 그 유형]\n'); var b=h.indexOf('\n\n[이 학생이 약한 유형',a); if(a<0||b<0) return h;
+  var L=bt2TrPromptLines(); var more=L.length>BT2_PROMPT_CAP?('\n… 외 '+(L.length-BT2_PROMPT_CAP)+'줄'):'';
+  return h.slice(0,a)+'[이번 시험 범위 — 개념 › 주제유형 › 세부유형]\n'+(L.slice(0,BT2_PROMPT_CAP).join('\n')||'· (고른 것이 없습니다)')+more+h.slice(b);
+};
+var _bt2Rules97=bt2Rules;
+bt2Rules=function(n, withS){
+  var r=_bt2Rules97.apply(this,arguments);
+  if(!bt2TrOn()||!BT.cfg.sel) return r;
+  return r.replace('6. "s" 에는 그 문항이 속한 소단원 이름을 위 목록에 적힌 그대로 씁니다.\n','6. "s" 에는 그 문항이 나온 세부유형(세부유형 이름이 없으면 주제유형, 그것도 없으면 개념) 이름을 위 범위 목록에 적힌 그대로 씁니다.\n');
+};
+var _btPrompt97=btPrompt;
+btPrompt=function(){ var p=_btPrompt97.apply(this,arguments); return (bt2TrOn()&&BT.cfg.sel)?p.replace('"s":"소단원"}','"s":"세부유형"}'):p; };
+var _bt2ChatPrompt97=bt2ChatPrompt;
+bt2ChatPrompt=function(){ var p=_bt2ChatPrompt97.apply(this,arguments); return (bt2TrOn()&&BT.cfg.sel)?p.split('"s":"소단원"}').join('"s":"세부유형"}'):p; };
+
+/* ── 3부: 세부유형 대표 문항 ── */
+function bt2RepItem(U,T,C){ return { id:'rep:'+U.pid, pid:U.pid, pimg:String(U.img||''), page:'', no:'', s:String(U.n), topic:String(T.n), answer:'', rep:true, uid:U.id, cid:C.id }; }
+/* 고른 세부유형 중 그림이 있는 것 — 개념별 (주제유형을 번갈아 섞어 한 개념 안에서도 고르게) */
+function bt2RepGroups(){
+  var ix=BT.tree.ix; var S=bt2SelSets(); var groups=[]; if(!ix) return groups;
+  ix.cons.forEach(function(C){ if(!S.c[C.id]) return;
+    var lists=C.t.filter(function(T){ return !S.t[T.id]; }).map(function(T){ return T.u.filter(function(U){ return !S.u[U.id]&&U.pid&&U.img; }).map(function(U){ return bt2RepItem(U,T,C); }); });
+    var q=[]; var mx=0; lists.forEach(function(l){ mx=Math.max(mx,l.length); });
+    for(var i=0;i<mx;i++) lists.forEach(function(l){ if(l[i]) q.push(l[i]); });
+    if(q.length) groups.push(q); });
+  return groups;
+}
+/* n개 고르기 — 고른 개념들에 고르게 퍼지게(처음엔 띄엄띄엄, 모자라면 돌아가며) · usedPid 에 있는 문제는 빼고 */
+function bt2RepPick(n, usedPid){
+  usedPid=usedPid||{}; var out=[]; n=Number(n)||0; if(n<=0) return out;
+  var G=bt2RepGroups().map(function(q){ return q.filter(function(x){ return !usedPid[String(x.pid)]; }); }).filter(function(q){ return q.length; });
+  if(!G.length) return out;
+  var take=function(q){ while(q.length){ var x=q.shift(); if(!usedPid[String(x.pid)]){ usedPid[String(x.pid)]=1; out.push(x); return true; } } return false; };
+  var k=Math.min(n,G.length);
+  for(var i=0;i<k&&out.length<n;i++) take(G[Math.floor(i*G.length/k)]);
+  var guard=0; while(out.length<n&&guard++<500){ var any=false; for(var j=0;j<G.length&&out.length<n;j++) if(take(G[j])) any=true; if(!any) break; }
+  return out;
+}
+function bt2P3Used(d){ var u={}; ((d&&d.p3)||[]).forEach(function(x){ if(x&&x.pid) u[String(x.pid)]=1; }); return u; }
+/* 3부 다시 짜기 (출처에 따라) */
+function bt2P3Build(n){
+  var src=BT.cfg.p3src||'mix'; n=Number(n)||0;
+  if(!bt2TrOn()||src==='tb') return bt2TbPick(n,{});
+  if(src==='rep') return bt2RepPick(n,{});
+  var tb=bt2TbPick(n,{}); return tb.concat(bt2RepPick(n-tb.length, bt2P3Used({ p3:tb })));
+}
+var _bt2TbRef97=bt2TbRef;
+bt2TbRef=function(x){ if(x&&x.rep) return '매쓰플랫 대표 문항 (문제 ID '+x.pid+')'; return _bt2TbRef97.apply(this,arguments); };
+/* 🔄 대표 문항 바꾸기 — 같은 주제유형의 다른 세부유형 → 같은 개념의 다른 주제유형 (고른 것 먼저, 한 번 본 것은 다시 안 나오게) */
+window.bt2RepRe=function(i){
+  var d=BT.draft; if(!d||!d.p3||!d.p3[i]) return; var x=d.p3[i];
+  var ix=BT.tree.ix; if(!bt2TrOn()||!ix){ plToast('매쓰플랫 단원 트리를 불러온 뒤 다시 눌러 주세요'); return; }
+  var e=ix.U[x.uid]; var C=(e&&e.C)||(ix.C[x.cid]&&ix.C[x.cid].C); if(!C){ plToast('이 대표 문항의 개념을 트리에서 찾지 못했습니다'); return; }
+  var used=bt2P3Used(d); var seen={}; (x.seen||[]).concat([x.pid]).forEach(function(p){ seen[String(p)]=1; });
+  var S=bt2SelSets(); var cands=[];
+  var add=function(T){ T.u.forEach(function(U){ if(U.pid&&U.img&&!used[String(U.pid)]&&!seen[String(U.pid)]) cands.push({ it:bt2RepItem(U,T,C), on:!S.t[T.id]&&!S.u[U.id]&&!!S.c[C.id] }); }); };
+  if(e) add(e.T); C.t.forEach(function(T){ if(!e||T.id!==e.T.id) add(T); });
+  var pick=cands.filter(function(c){ return c.on; })[0]||cands[0];
+  if(!pick){ if((x.seen||[]).length){ x.seen=[]; return window.bt2RepRe(i); } plToast('이 개념에 더 넣을 대표 문항이 없습니다'); return; }
+  var nw=pick.it; nw.seen=(x.seen||[]).concat([x.pid]).slice(-40); d.p3[i]=nw; render();
+};
+window.bt2RepMore=function(n){ var d=BT.draft; if(!d) return; if(!bt2TrOn()){ plToast('매쓰플랫 단원 트리가 있어야 대표 문항을 넣을 수 있습니다'); return; }
+  var got=bt2RepPick(Number(n)||1, bt2P3Used(d)); if(!got.length){ plToast('고른 세부유형에 더 넣을 대표 문항이 없습니다'); return; } d.p3=(d.p3||[]).concat(got); render(); };
+var _bt2TbRe97=window.bt2TbRe;
+window.bt2TbRe=function(i){ var d=BT.draft; if(d&&d.p3&&d.p3[i]&&d.p3[i].rep) return window.bt2RepRe(i); return _bt2TbRe97.apply(this,arguments); };
+var _btCfg97=window.btCfg;
+window.btCfg=function(k,v){
+  if(k==='p3src'){ BT.cfg.p3src=String(v||'mix'); var d=BT.draft; if(d&&d.p3mode==='tb'){ d.p3=bt2P3Build(Number(BT.cfg.p3)||(d.p3||[]).length||0); d.p3src=BT.cfg.p3src; } render(); return; }
+  return _btCfg97.apply(this,arguments);
+};
+
+/* ── 시험지 · 답지: 대표 문항 줄 ── */
+function bt2P3Head(d){
+  var nRep=(d.p3||[]).filter(function(x){ return x&&x.rep; }).length, nTb=(d.p3||[]).filter(function(x){ return x&&x.pimg&&!x.rep; }).length;
+  return nRep&&nTb?'교과서 · 유형 대표 문항':(nRep?'유형 대표 문항':'교과서 문항');
+}
+bt2SheetHtml=function(d, forPrint){
+  var stu=btStuByCode(d.code); var dt=new Date(d.at||Date.now());
+  var ds=dt.getFullYear()+'.'+String(dt.getMonth()+1).padStart(2,'0')+'.'+String(dt.getDate()).padStart(2,'0');
+  var h='<div class="bt2-sheet">';
+  h+='<div class="hd"><div><b>'+esc2(d.title)+'</b><div class="sub">교재와 노트를 덮고 풀어 보세요</div></div><div class="nm">'+(stu?esc2(stu.name):'')+' · '+(stu?esc2(String(stu.grade||'').replace('학교','')):'')+' · '+ds+'</div></div>';
+  if(d.subs&&d.subs.length) h+='<div class="rg">범위 · '+esc2((d.course||'')+' › '+(d.big||'')+' › '+d.subs.join(' · '))+'</div>';
+  if(d.p1.length){ h+='<div class="pt">1부. 개념 백지 <i>보지 않고 쓰기 · '+d.p1.length+'문항</i></div>';
+    d.p1.forEach(function(x,i){ h+='<div class="q"><span class="n">'+(i+1)+'.</span><span class="t">'+bt2Blank(x.q)+(x.s?'<em class="s">'+esc2(x.s)+'</em>':'')+'</span></div>'+(x.type==='write'?'<div class="box"></div>':''); }); }
+  if(d.p2.length){ h+='<div class="pt">2부. 내가 틀린 문제 다시 풀기 <i>교재를 보고 문제를 옮겨 적은 뒤 푸세요</i></div>';
+    d.p2.forEach(function(x,i){ h+='<div class="q"><span class="n">'+(i+1)+'.</span><span class="t"><b>'+esc2(x.book)+'</b> '+esc2(x.no)+' <em class="s">'+esc2(x.why||'')+'</em></span></div><div class="box"></div>'; }); }
+  if((d.p3||[]).length){
+    var anyImg=d.p3.some(function(x){ return x&&x.pimg; }); var anyTb=d.p3.some(function(x){ return x&&x.pimg&&!x.rep; });
+    if(d.p3mode==='tb'||anyImg){ h+='<div class="pt">3부. '+bt2P3Head(d)+' <i>'+(anyTb?esc2(d.tb&&d.tb.title?eaTbShort(d.tb.title):'교과서')+' · ':'')+'정답은 뒷장(답지)에</i></div><div class="tbg">';
+      d.p3.forEach(function(x,i){ var cap=x.rep?((i+1)+' · ['+esc2(x.s||'')+']'):((i+1)+' · ['+esc2(x.s||'')+'] '+esc2(bt2TbRef(x)));
+        h+='<div class="pb"><div class="cap">'+cap+'</div>'+(x.pimg?'<img src="'+esc2(x.pimg)+'" alt="">':'')+'<div class="ws"></div></div>'; }); h+='</div>'; }
+    else { h+='<div class="pt">3부. 연습문제 <i>AI 가 만든 문제</i></div>'; d.p3.forEach(function(x,i){ h+='<div class="q"><span class="n">'+(i+1)+'.</span><span class="t">'+esc2(x.q)+'</span></div><div class="box"></div>'; }); }
+  }
+  if(d.note) h+='<div class="note">'+esc2(d.note)+'</div>';
+  h+='<div class="ft">루멘수학 · 백지테스트</div></div>';
+  return h;
+};
+bt2KeyHtml=function(d){
+  var h='<div class="bt2-sheet bt2-key"><div class="hd"><div><b>'+esc2(d.title)+' — 채점용 답지</b><div class="sub">원장님만 보는 쪽</div></div></div>';
+  if(d.p1.length){ h+='<div class="pt">1부. 개념 백지 모범답</div><table class="kt"><tr><th style="width:28px">번호</th><th>문항</th><th style="width:38%">모범답</th></tr>';
+    d.p1.forEach(function(x,i){ h+='<tr><td>'+(i+1)+'</td><td>'+bt2Blank(x.q)+(x.s?'<div class="s">'+esc2(x.s)+'</div>':'')+'</td><td><b>'+esc2(x.a||'')+'</b></td></tr>'; }); h+='</table>'; }
+  if(d.p2.length){ h+='<div class="pt">2부. 다시 풀기 — 교재 정답으로 채점</div>'; d.p2.forEach(function(x,i){ h+='<div class="q"><span class="n">'+(i+1)+'.</span><span class="t">'+esc2(x.book)+' '+esc2(x.no)+' <em class="s">'+esc2(x.why||'')+'</em></span></div>'; }); }
+  if((d.p3||[]).length){ var img=(d.p3mode==='tb'||d.p3.some(function(x){ return x&&x.pimg; }));
+    h+='<div class="pt">3부. '+(img?(d.p3.some(function(x){ return x&&x.rep; })?'정답 (대표 문항은 매쓰플랫에서 확인)':'교과서 정답'):'연습문제 답')+'</div><table class="kt"><tr><th style="width:28px">번호</th><th>문항</th><th style="width:44%">정답</th></tr>';
+    d.p3.forEach(function(x,i){
+      if(x.rep){ h+='<tr><td>'+(i+1)+'</td><td>매쓰플랫 대표 문항 — '+esc2(x.s||'')+(x.topic?'<div class="s">'+esc2(x.topic)+'</div>':'')+(x.pimg?'<img src="'+esc2(x.pimg)+'" alt="" style="max-width:100%;display:block;margin-top:3px">':'')+'</td><td>(정답은 매쓰플랫 문제 ID <b>'+esc2(String(x.pid))+'</b>)</td></tr>'; return; }
+      h+='<tr><td>'+(i+1)+'</td><td>'+(x.pimg?esc2(bt2TbRef(x))+(x.s?'<div class="s">'+esc2(x.s)+'</div>':''):esc2(x.q||''))+'</td><td>'+(x.answer?'<b>'+esc2(bkCleanAnsSafe(x.answer))+'</b>':'')+(x.aimg?'<img src="'+esc2(x.aimg)+'" alt="" style="max-width:100%;display:block;margin-top:3px">':'')+(!x.answer&&!x.aimg&&x.a?'<b>'+esc2(x.a)+'</b>':'')+'</td></tr>'; });
+    h+='</table>'; }
+  h+='<div class="ft">루멘수학 · 채점용 답지</div></div>';
+  return h;
+};
+/* 편집 칸 바탕 — v19-97 대화 상자가 감싸는 _rBtDraft96 을 대표 문항 줄이 들어간 것으로 바꾼다 */
+_rBtDraft96=function(){
+  var d=BT.draft;
+  var h='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:12px;align-items:start">';
+  h+='<div id="bt2-ed" style="background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:14px 16px;min-width:0">';
+  h+='<input value="'+esc2(d.title)+'" onchange="bt2Title(this.value)" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:15px;font-weight:900;color:#0d2240;border:none;border-bottom:2px solid #eef2f7;padding:4px 0 7px;margin-bottom:8px">';
+  var sm=function(l,on,p){ return '<button onclick="'+on+'" title="'+(p||'')+'" style="font-family:inherit;font-size:10.5px;font-weight:900;border-radius:7px;padding:4px 7px;cursor:pointer;background:#fff;color:#0d2240;border:1px solid #e6eaf1;white-space:nowrap">'+l+'</button>'; };
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;font-weight:900;color:#0d2240;border-bottom:1.5px solid #0d2240;padding-bottom:3px;margin-bottom:6px">1부. 개념 백지 <span style="font-size:10.5px;color:#64748b;font-weight:700">'+d.p1.length+'문항 · 빈칸은 [[  ]]</span><span style="display:flex;gap:4px">'+sm(BT.gen?'⏳':'+ AI 로 2개 더','bt2More(2)')+sm('+ 직접 쓰기',"btAdd('p1')")+'</span></div>';
+  d.p1.forEach(function(x,i){ var busy=!!BT.reBusy[i];
+    h+='<div style="display:grid;grid-template-columns:18px minmax(0,1fr) max-content;gap:6px;align-items:start;padding:6px 0;border-bottom:1px solid #f6f8fc;'+(busy?'opacity:.5':'')+'">'
+      +'<span style="font-size:12px;font-weight:900;color:#94a3b8;padding-top:6px">'+(i+1)+'</span><span>'
+      +'<div style="display:flex;gap:5px;align-items:center;margin-bottom:3px"><select onchange="bt2Edit(\'p1\','+i+',\'type\',this.value)" style="font-family:inherit;font-size:11px;padding:3px 5px;border:1.5px solid #e6eaf1;border-radius:7px"><option value="blank"'+(x.type==='blank'?' selected':'')+'>빈칸</option><option value="write"'+(x.type==='write'?' selected':'')+'>서술</option></select>'
+      +'<span style="font-size:10px;font-weight:900;color:#1d6fe8;background:#e8f1ff;border-radius:5px;padding:1px 6px">'+esc2(x.s||'')+'</span></div>'
+      +'<textarea oninput="bt2Edit(\'p1\','+i+',\'q\',this.value)" rows="2" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:12.5px;line-height:1.5;padding:6px 8px;border:1.5px solid #e6eaf1;border-radius:8px;resize:vertical">'+esc2(x.q)+'</textarea>'
+      +'<input value="'+esc2(x.a||'')+'" oninput="bt2Edit(\'p1\','+i+',\'a\',this.value)" placeholder="모범답 (답지에만)" style="width:100%;box-sizing:border-box;margin-top:3px;font-family:inherit;font-size:11.5px;padding:5px 8px;border:1.5px dashed #cbd5e1;border-radius:8px;color:#475569"></span>'
+      +'<span style="display:flex;flex-direction:column;gap:3px">'+sm(busy?'⏳':'🔄 이 문항만 다시','bt2Re('+i+')','AI 가 같은 범위·같은 종류로 새로 씁니다')+'<span style="display:flex;gap:3px">'+sm('▲',"bt2Move('p1',"+i+",-1)")+sm('▼',"bt2Move('p1',"+i+",1)")+sm('✕',"btDel('p1',"+i+")")+'</span></span></div>';
+  });
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;font-weight:900;color:#0d2240;border-bottom:1.5px solid #0d2240;padding-bottom:3px;margin:14px 0 6px">2부. 틀린 문제 다시 풀기 <span style="font-size:10.5px;color:#64748b;font-weight:700">실제 채점 기록에서</span><span>'+sm('🔄 다시 고르기','btRe2()')+'</span></div>';
+  if(!d.p2.length) h+='<div style="font-size:11.5px;color:#94a3b8;font-weight:700;padding:4px 0">틀린 기록이 없거나 2부를 0으로 두었습니다.</div>';
+  d.p2.forEach(function(x,i){ h+='<div style="display:flex;gap:7px;align-items:center;padding:5px 9px;background:#f6f8fc;border-radius:8px;margin-bottom:4px;font-size:12px"><span style="font-weight:900;color:#94a3b8;width:16px">'+(i+1)+'</span><span style="flex:1;min-width:0;font-weight:800;color:#0d2240">'+esc2(x.label||(x.book+' '+x.no))+'</span><span style="font-size:10.5px;color:#64748b;font-weight:700">'+esc2(x.why||'')+'</span>'+sm('✕',"btDel('p2',"+i+")")+'</div>'; });
+  var isTb=(d.p3mode==='tb'); var src=d.p3src||'tb'; var canRep=isTb&&src!=='tb';
+  var p3t=isTb?(src==='rep'?'세부유형 대표 문항':(src==='mix'?'교과서 + 대표 문항':'교과서 문항')):(d.p3mode==='ai'?'연습문제 (AI)':'없음');
+  h+='<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;font-size:12.5px;font-weight:900;color:#0d2240;border-bottom:1.5px solid #0d2240;padding-bottom:3px;margin:14px 0 6px">3부. '+p3t+' <span style="font-size:10.5px;color:#64748b;font-weight:700">'+(isTb&&src!=='rep'?esc2(d.tb&&d.tb.title?d.tb.title:''):'')+'</span><span style="display:flex;gap:4px">'
+    +(isTb&&src!=='rep'?sm('+ 교과서 1문항','bt2TbMore()'):'')+(canRep?sm('+ 대표 문항','bt2RepMore(1)','고른 세부유형의 매쓰플랫 대표 문항을 하나 더'):'')+(d.p3mode==='ai'?sm('+ 직접 쓰기',"btAdd('p3')"):'')+'</span></div>';
+  (d.p3||[]).forEach(function(x,i){
+    var ops='<span style="display:flex;flex-direction:column;gap:3px">'+sm('🔄 다른 문항',(x.rep?'bt2RepRe(':'bt2TbRe(')+i+')',x.rep?'같은 주제유형·같은 개념의 다른 세부유형 대표 문항으로':'')+'<span style="display:flex;gap:3px">'+sm('▲',"bt2Move('p3',"+i+",-1)")+sm('▼',"bt2Move('p3',"+i+",1)")+sm('✕',"btDel('p3',"+i+")")+'</span></span>';
+    if(x.pimg){
+      var title=x.rep?('매쓰플랫 대표 문항 · '+(x.s||'')):bt2TbRef(x);
+      var sub=x.rep?((x.topic?('주제유형 '+x.topic+' · '):'')+'문제 ID '+x.pid):(esc2(x.s||'')+(x.answer?' · 정답 '+esc2(bkCleanAnsSafe(x.answer)).slice(0,24):''));
+      h+='<div style="display:grid;grid-template-columns:18px 70px minmax(0,1fr) max-content;gap:7px;align-items:center;padding:5px 0;border-bottom:1px solid #f6f8fc;font-size:12px"><span style="font-weight:900;color:#94a3b8">'+(i+1)+'</span><img src="'+esc2(x.pimg)+'" alt="" style="width:70px;height:46px;object-fit:cover;object-position:left top;border:1px solid '+(x.rep?'#a5f3fc':'#e6eaf1')+';border-radius:5px;cursor:zoom-in" onclick="openPhotoFull('+bkQ2(x.pimg)+')"><span style="min-width:0;overflow:hidden"><b style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'+(x.rep?';color:#0e7490':'')+'" title="'+esc2(title)+'">'+esc2(title)+'</b><div style="font-size:10.5px;color:#64748b;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(x.rep?esc2(sub):sub)+'</div></span>'+ops+'</div>'; }
+    else { h+='<div style="display:grid;grid-template-columns:18px minmax(0,1fr) max-content;gap:6px;align-items:start;padding:6px 0;border-bottom:1px solid #f6f8fc"><span style="font-size:12px;font-weight:900;color:#94a3b8;padding-top:6px">'+(i+1)+'</span><span><textarea oninput="bt2Edit(\'p3\','+i+',\'q\',this.value)" rows="2" style="width:100%;box-sizing:border-box;font-family:inherit;font-size:12.5px;padding:6px 8px;border:1.5px solid #e6eaf1;border-radius:8px;resize:vertical">'+esc2(x.q||'')+'</textarea><input value="'+esc2(x.a||'')+'" oninput="bt2Edit(\'p3\','+i+',\'a\',this.value)" placeholder="답" style="width:100%;box-sizing:border-box;margin-top:3px;font-family:inherit;font-size:11.5px;padding:5px 8px;border:1.5px dashed #cbd5e1;border-radius:8px"></span>'+sm('✕',"btDel('p3',"+i+")")+'</div>'; }
+  });
+  h+='<div style="margin-top:10px"><label style="font-size:11px;font-weight:800;color:#64748b">아래에 붙일 한마디 (선택)<input value="'+esc2(d.note||'')+'" oninput="bt2Note(this.value)" placeholder="예: 다 쓰고 나서 교과서로 확인해 보세요" style="display:block;width:100%;box-sizing:border-box;margin-top:3px;font-family:inherit;font-size:12.5px;padding:7px 9px;border:1.5px solid #e6eaf1;border-radius:9px"></label></div>';
+  h+='</div>';
+  h+='<div style="min-width:0"><div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:800;color:#64748b;margin-bottom:5px"><span>🖨 인쇄 미리보기 (A4) — 고치면 바로 바뀝니다</span>'+sm('🔑 답지 보기','bt2KeyPeek()')+'</div>';
+  h+='<div id="bt2-pv" style="border:1px solid #cbd5e1;border-radius:6px;box-shadow:0 8px 24px rgba(13,34,64,.12);overflow:auto;max-height:84vh">'+bt2SheetHtml(d,false)+'</div></div>';
+  h+='</div>';
+  return h;
+};
+
+/* ── 초안 만들기 · 보관 · 열기: 고른 트리(sel)·3부 출처를 함께 ── */
+var _btGen97=window.btGen;
+window.btGen=async function(){
+  var before=BT.draft; var r=await _btGen97.apply(this,arguments); var d=BT.draft;
+  if(d&&d!==before){
+    d.p3src=BT.cfg.p3src||'mix';
+    if(bt2TrOn()&&BT.cfg.sel){ d.sel=bt2SelCopy();
+      if(d.p3mode==='tb'&&d.p3src!=='tb'){ var n=Number(BT.cfg.p3)||0;
+        if(d.p3src==='rep') d.p3=bt2RepPick(n,{});
+        else d.p3=(d.p3||[]).slice(0,n).concat(bt2RepPick(n-Math.min(n,(d.p3||[]).length), bt2P3Used(d)));
+        render(); } }
+  }
+  return r;
+};
+var _btSave97=window.btSave;
+window.btSave=function(){ var d=BT.draft; if(d&&bt2TrOn()&&BT.cfg.sel&&(!d.course||d.course===BT.cfg.course)) d.sel=bt2SelCopy(); return _btSave97.apply(this,arguments); };
+var _bt2MakeMany97=window.bt2MakeMany;
+window.bt2MakeMany=function(){ var d=BT.draft; if(d&&bt2TrOn()&&BT.cfg.sel&&(!d.course||d.course===BT.cfg.course)) d.sel=bt2SelCopy(); return _bt2MakeMany97.apply(this,arguments); };
+var _btOpen97=window.btOpen;
+window.btOpen=function(id){
+  var d=(BT.saved||[]).filter(function(x){ return x.id===id; })[0];
+  if(d){
+    if(d.course&&d.course!==BT.cfg.course){ BT.cfg.course=String(d.course); BT.cfg.subs=[]; }
+    if(d.big) BT.cfg.big=String(d.big);
+    if(d.p3src) BT.cfg.p3src=String(d.p3src);
+    if(d.sel&&Array.isArray(d.sel.cids)){ BT.cfg.sel={ big:String(d.sel.big||''), cids:d.sel.cids.slice(), exT:(d.sel.exT||[]).slice(), exU:(d.sel.exU||[]).slice() }; BT.cfg.selFromSubs=false; }
+    else if(d.subs&&d.subs.length){   // 트리 전에 만든 시험지 — 소단원 이름으로 (트리가 있으면 그 소단원의 개념 전부)
+      var B=bt2Big(BT.cfg.course,BT.cfg.big); var keys=[];
+      (B&&B.m||[]).forEach(function(m){ (m.s||[]).forEach(function(s){ if(d.subs.indexOf(String(s.n))>=0) keys.push(bt2SubKey(m.n,s.n)); }); });
+      BT.cfg.subs=keys.length?keys:d.subs.slice(); BT.cfg.sel=null; BT.cfg.selFromSubs=true;
+    }
+    if(BT.tree&&BT.tree.course===BT.cfg.course){ BT.tree.open={}; BT.tree.scroll=0; }
+  }
+  return _btOpen97.apply(this,arguments);
+};
+
+/* ── 채팅: 「세부유형 대표 문항 n개 더」(AI 없이) · 세부유형 이름을 말하면 범위에 넣기 ── */
+var BT2_CHAT_PRE='';
+var _bt2ChatSay97=bt2ChatSay;
+bt2ChatSay=function(r,t,sn){ if(r==='ai'&&BT2_CHAT_PRE){ t=BT2_CHAT_PRE+String(t||''); BT2_CHAT_PRE=''; } return _bt2ChatSay97.apply(this,[r,t,sn]); };
+var BT2_CHAT_REP='세부유형 대표 문항 2개 더';
+var _bt2ChatHtml97=bt2ChatHtml;
+bt2ChatHtml=function(){ var q=BT2_CHAT_QUICK; var d=BT.draft;
+  if(bt2TrOn()&&d&&d.p3mode==='tb'&&q.indexOf(BT2_CHAT_REP)<0) BT2_CHAT_QUICK=q.concat([BT2_CHAT_REP]);
+  try{ return _bt2ChatHtml97.apply(this,arguments); } finally{ BT2_CHAT_QUICK=q; } };
+var BT2_CHAT_STOP=/^(서술형|서술|빈칸|쉽게|어렵게|쉬운|어려운|삭제|순서|제목|힌트|답지|대표|세부유형|주제유형|개념|그림|매쓰플랫|다시|한마디|뒤로|앞으로|모범답|한줄씩|줄씩|1부|2부|3부|문항으로|넣고|바꾸고|빼|빼줘|빼고)$/;
+function bt2ChatTreeToks(t){ return bt2ChatTokens(t).filter(function(w){ return !BT2_CHAT_STOP.test(w)&&!/^\d/.test(w); }); }
+/* 말 속 낱말이 «모두» 들어간 주제유형(먼저) · 세부유형을 트리에서 찾는다 — 지금 대단원 먼저 */
+function bt2ChatTreeFind(t){
+  var ix=BT.tree.ix; var toks=bt2ChatTreeToks(t); var res={ T:[], U:[] }; if(!ix||!toks.length) return res;
+  var hit=function(n){ var s=bt2Nsp(n); return toks.every(function(w){ return s.indexOf(w)>=0; }); };
+  var cons=ix.cons.slice(); var big=BT.cfg.big;
+  cons.sort(function(a,b){ return (String(ix.C[a.id].B.n)===big?0:1)-(String(ix.C[b.id].B.n)===big?0:1); });
+  cons.forEach(function(C){ C.t.forEach(function(T){ if(hit(T.n)) res.T.push({ T:T, C:C }); T.u.forEach(function(U){ if(hit(U.n)) res.U.push({ U:U, T:T, C:C }); }); }); });
+  return res;
+}
+/* 찾은 것을 범위에 넣는다 → 넣은 이름들 (이미 들어 있으면 넣지 않는다 · 너무 넓으면 넣지 않는다) */
+function bt2ChatTreeScope(t){
+  if(!bt2TrOn()||!BT.cfg.sel) return [];
+  var f=bt2ChatTreeFind(t); var names=[]; var S=bt2SelSets();
+  if(f.T.length&&f.T.length<=10){
+    f.T.slice(0,3).forEach(function(e){ if(bt2StT(e.C,e.T,S)===2) return; bt2TrSet('t:'+e.T.id,true); S=bt2SelSets(); names.push(String(e.T.n)); });
+  } else if(!f.T.length&&f.U.length&&f.U.length<=30){
+    f.U.slice(0,6).forEach(function(e){ if(S.c[e.C.id]&&!S.t[e.T.id]&&!S.u[e.U.id]) return; bt2TrSet('u:'+e.U.id,true); S=bt2SelSets(); names.push(String(e.U.n)); });
+  }
+  if(names.length){ bt2TrSync(); if(BT.draft) BT.draft.sel=bt2SelCopy(); }
+  return names;
+}
+/* 대표 문항 n개 — 말에 세부유형 이름이 있으면 그것에서, 없으면 고른 범위에서 */
+function bt2ChatRep(t){
+  var d=BT.draft; d.p3=d.p3||[];
+  if(!bt2TrOn()) return { t:'매쓰플랫 단원 트리가 아직 없어 대표 문항을 넣을 수 없습니다. 교과서에서 고르려면 「교과서에서 ○○ 2개 더」라고 말해 주세요.' };
+  var n=bt2ChatCount(t); var used=bt2P3Used(d); var got=[]; var label='고른 세부유형';
+  var f=bt2ChatTreeFind(t);
+  if(f.U.length||f.T.length){
+    var pool=[]; f.U.forEach(function(e){ pool.push(e); }); f.T.forEach(function(e){ e.T.u.forEach(function(U){ pool.push({ U:U, T:e.T, C:e.C }); }); });
+    pool.forEach(function(e){ if(got.length>=n||!e.U.pid||!e.U.img||used[String(e.U.pid)]) return; used[String(e.U.pid)]=1; got.push(bt2RepItem(e.U,e.T,e.C)); });
+    label=bt2ChatTreeToks(t).join(' ');
+  }
+  if(!got.length) got=bt2RepPick(n,used);
+  if(!got.length) return { t:'「'+label+'」에서 더 넣을 대표 문항을 찾지 못했습니다. 트리에서 세부유형을 더 골라 주세요.' };
+  var sn=bt2ChatSnap(); var fresh={ p1:{}, p3:{} };
+  got.forEach(function(x){ d.p3.push(x); fresh.p3[d.p3.length-1]=1; });
+  return { t:'매쓰플랫 대표 문항 '+got.length+'개를 3부 끝에 넣었습니다: '+got.map(function(x){ return x.s; }).join(' / ')+' (AI 없이 바로)', sn:sn, fresh:fresh };
+}
+var _bt2ChatSend97=window.bt2ChatSend;
+window.bt2ChatSend=async function(textOpt){
+  var C=BT.chat, d=BT.draft;
+  var fromBox=!(textOpt!=null&&String(textOpt).trim());
+  var text=fromBox?String((function(){ var el=document.getElementById('bt2-chat-in'); return (el&&el.value!=null)?el.value:(C.text||''); })()):String(textOpt);
+  text=text.trim();
+  if(!text||C.busy||!d||/취소|되돌/.test(text)) return _bt2ChatSend97.apply(this,arguments);
+  /* 대표 문항 — AI 없이 */
+  if(/대표\s*문항/.test(text)&&d.p3mode==='tb'){
+    if(fromBox) C.text='';
+    bt2ChatSay('me',text);
+    var r=bt2ChatRep(text); bt2ChatSay('ai',r.t,r.sn); if(r.fresh) bt2ChatFresh(r.fresh);
+    render(); bt2ChatAfterRender(); return;
+  }
+  /* AI 로 가는 말이면 — 말 속 세부유형·주제유형을 범위에 넣고 첫 답 앞에 알린다 */
+  BT2_CHAT_PRE='';
+  if(!(/교과서/.test(text)&&d.p3mode==='tb')){
+    var added=bt2ChatTreeScope(text);
+    if(added.length) BT2_CHAT_PRE='범위에 '+added.map(function(x){ return '‹'+x+'›'; }).join(', ')+' 을 넣었습니다. ';
+  }
+  try{ return await _bt2ChatSend97.apply(this,arguments); } finally{ BT2_CHAT_PRE=''; }
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~98: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
