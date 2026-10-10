@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
- * v19-94·95: 📝 백지테스트 2판 — «과정·소단원 고르기 · A4 미리보기 · 문항 편집 · 3부 교과서 문항 · 채점용 답지»
+ * v19-94·95·96: 📝 백지테스트 2판 — «과정·소단원 고르기 · A4 미리보기 · 문항 편집 · 3부 교과서 문항 · 채점용 답지»
  *   원장 결정 2026-10-10: 「1·2단계 추천대로, 3부는 교과서 문항으로. 개념 백지가 중요하다 — 소단원까지로 다시 만들자.
  *   내가 채점할 수 있는 답지도 만들자.」 (시안 docs/mockup_blank_test_v2.html)
  *
@@ -274,11 +274,28 @@ window.btAnswers=function(){ var d=BT.draft; if(!d) return; bt2PrintWin('<div cl
 window.bt2PrintBoth=function(){ var d=BT.draft; if(!d) return; bt2PrintWin('<div class="pg">'+bt2SheetHtml(d,true)+'</div><div class="pg">'+bt2KeyHtml(d)+'</div>', d.title); };
 
 /* ── 화면: 만들기 탭 ── */
+/* ★ v19-96: 여러 명 고르기 — 같은 시험지를 한꺼번에 (원장 지시 2026-10-10 「오늘 중3은 같은 시험지」) */
+function bt2GradeKey(st){ var m=String((st&&st.grade)||'').match(/(초|중|고)[^0-9]*(\d)/); return m?(m[1]+m[2]):''; }
+function bt2SelCodes(){ return Object.keys(BT.sel||{}).filter(function(c){ return BT.sel[c]; }); }
+window.bt2SelTog=function(c){ BT.sel=BT.sel||{}; c=String(c); if(BT.sel[c]) delete BT.sel[c]; else BT.sel[c]=1; if(!BT.stu) BT.stu=c; render(); };
+window.bt2SelGrade=function(g){ BT.sel=BT.sel||{}; btActive().forEach(function(st){ if(bt2GradeKey(st)===g) BT.sel[String(st.lumen_rec_code)]=1; }); if(!BT.stu){ var f=bt2SelCodes()[0]; if(f) BT.stu=f; } render(); };
+window.bt2SelCls=function(){ BT.sel=BT.sel||{}; btActive().forEach(function(st){ if(!BT.cls||(st.group||'')===BT.cls) BT.sel[String(st.lumen_rec_code)]=1; }); render(); };
+window.bt2SelClear=function(){ BT.sel={}; render(); };
 function rBtMake(){
   var h=btClsChips();
   var list=btActive().filter(function(s){ return !BT.cls || (s.group||'')===BT.cls; });
-  h+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px">';
-  list.forEach(function(s){ var c=String(s.lumen_rec_code); h+=btChip(esc2(s.name), BT.stu===c, "btPick('"+esc2(c)+"')"); });
+  var sel=bt2SelCodes();
+  h+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;align-items:center">';
+  list.forEach(function(s){ var c=String(s.lumen_rec_code); var on=!!(BT.sel&&BT.sel[c]);
+    h+='<span style="display:inline-flex;align-items:center;border-radius:50px;border:1.5px solid '+(BT.stu===c?'#0d2240':'#e6eaf1')+';background:'+(BT.stu===c?'#0d2240':'#fff')+';overflow:hidden">'
+      +'<button onclick="bt2SelTog(\''+esc2(c)+'\')" title="여러 명 고르기" style="border:none;background:'+(on?'#1d6fe8':'transparent')+';color:'+(on?'#fff':(BT.stu===c?'#94a3b8':'#cbd5e1'))+';font-family:inherit;font-size:11px;font-weight:900;padding:6px 7px 6px 10px;cursor:pointer">'+(on?'✓':'○')+'</button>'
+      +'<button onclick="btPick(\''+esc2(c)+'\')" style="border:none;background:transparent;color:'+(BT.stu===c?'#fff':'#475569')+';font-family:inherit;font-size:12px;font-weight:800;padding:6px 12px 6px 4px;cursor:pointer;white-space:nowrap">'+esc2(s.name)+'</button></span>'; });
+  h+='</div>';
+  var grades={}; btActive().forEach(function(st){ var g=bt2GradeKey(st); if(g) grades[g]=(grades[g]||0)+1; });
+  h+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;align-items:center;font-size:11px;font-weight:800;color:#64748b"><span>○ 를 눌러 여러 명 고르기 · 빠르게:</span>';
+  Object.keys(grades).sort().forEach(function(g){ h+='<button onclick="bt2SelGrade(\''+esc2(g)+'\')" style="font-family:inherit;font-size:11px;font-weight:900;border-radius:7px;padding:4px 9px;cursor:pointer;background:#eef2ff;color:#3730a3;border:none">'+esc2(g)+' 전부 '+grades[g]+'</button>'; });
+  h+='<button onclick="bt2SelCls()" style="font-family:inherit;font-size:11px;font-weight:900;border-radius:7px;padding:4px 9px;cursor:pointer;background:#f1f5f9;color:#475569;border:none">'+(BT.cls?esc2(BT.cls)+' 반 전부':'보이는 학생 전부')+'</button>';
+  if(sel.length) h+='<button onclick="bt2SelClear()" style="font-family:inherit;font-size:11px;font-weight:900;border-radius:7px;padding:4px 9px;cursor:pointer;background:#fff;color:#94a3b8;border:1px solid #e6eaf1">모두 해제</button><span style="color:#1d6fe8">✓ '+sel.length+'명 고름</span>';
   h+='</div>';
   if(!BT.stu) return h+'<div style="background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:40px 20px;text-align:center;color:#64748b;font-weight:700;line-height:1.8">학생을 고르면 <b style="color:#0d2240">과정·소단원</b>을 고르고 백지테스트를 만들 수 있습니다.<br>틀린 문항·아하노트·약한 유형은 자동으로 재료가 됩니다.</div>';
   var code=BT.stu, stu=btStuByCode(code), mat=btMat(code);
@@ -319,9 +336,12 @@ function rBtMake(){
   if(BT.cfg.p3mode==='ai'&&BT.cfg.p3>0) h+='<div style="margin-top:8px;background:#fffbeb;border:1px solid #fbbf24;border-radius:9px;padding:8px 11px;font-size:11.5px;color:#92400e;font-weight:800">⚠️ 3부 AI 창작 문제는 답이 틀릴 수 있으니 인쇄 전에 원장님이 꼭 풀어 보세요.</div>';
   h+='<div style="display:flex;gap:8px;align-items:center;margin-top:11px;flex-wrap:wrap">';
   h+=btBtn(BT.gen?'⏳ 만드는 중…':'⚡ AI 초안 만들기','btGen()','blue');
-  if(BT.draft){ h+=btBtn('🖨️ 시험지 인쇄','btPrint()','pri')+btBtn('🔑 채점용 답지','btAnswers()')+btBtn('🖨️+🔑 둘 다','bt2PrintBoth()')+btBtn('📋 보드에 카드','btToBoard()','gold')+btBtn('💾 보관','btSave()')+btBtn('👥 반 전체로','btBulk()'); }
+  if(BT.draft){ h+=btBtn('🖨️ 시험지 인쇄','btPrint()','pri')+btBtn('🔑 채점용 답지','btAnswers()')+btBtn('🖨️+🔑 둘 다','bt2PrintBoth()')+btBtn('📋 보드에 카드','btToBoard()','gold')+btBtn('💾 보관','btSave()');
+    var selN=bt2SelCodes().length;
+    h+=selN?btBtn('👥 고른 '+selN+'명에게 같은 시험지 만들기','bt2MakeMany()','blue'):btBtn('👥 반 전체로','btBulk()'); }
   if(BT.genMsg) h+='<span style="font-size:11.5px;color:#64748b;font-weight:800">'+esc2(BT.genMsg)+'</span>';
-  if(BT.bulk) h+='<span style="font-size:11.5px;color:#1d6fe8;font-weight:900">반 전체 '+BT.bulk.n+'/'+BT.bulk.tot+'명…</span>';
+  if(BT.bulk) h+='<span style="font-size:11.5px;color:#1d6fe8;font-weight:900">만드는 중 '+BT.bulk.n+'/'+BT.bulk.tot+'명…</span>';
+  if(BT.many&&BT.many.length) h+='<span style="display:inline-flex;gap:6px;align-items:center;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:5px 8px;font-size:11.5px;font-weight:900;color:#166534">✅ '+BT.many.length+'명 보관함에 저장됨 '+btBtn('🖨️ '+BT.many.length+'명 한꺼번에 인쇄','bt2PrintMany(false)','pri')+btBtn('🖨️+🔑 답지까지','bt2PrintMany(true)')+'</span>';
   h+='</div></div>';
   if(!BT.draft) return h+'<div style="background:#fff;border:1px dashed #cbd5e1;border-radius:16px;padding:34px 20px;text-align:center;color:#94a3b8;font-weight:700;line-height:1.8">「⚡ AI 초안 만들기」를 누르면 왼쪽에 편집 칸, 오른쪽에 시험지 미리보기가 나옵니다.<br>AI 는 <b style="color:#64748b">1부 개념 문항</b>만 씁니다 — 2부는 실제 틀린 문항, 3부는 교과서 문항을 앱이 고릅니다.</div>';
   return h+rBtDraft();
@@ -362,3 +382,33 @@ function rBtDraft(){
 }
 function bkQ2(v){ return "'"+String(v==null?'':v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;')+"'"; }
 window.bt2KeyPeek=function(){ var d=BT.draft; if(!d) return; var el=document.getElementById('bt2-pv'); if(!el) return; if(el.getAttribute('data-key')==='1'){ el.removeAttribute('data-key'); el.innerHTML=bt2SheetHtml(d,false); } else { el.setAttribute('data-key','1'); el.innerHTML='<style>'+BT2_KEY_CSS+'</style>'+bt2KeyHtml(d); } };
+
+/* ★ v19-96: 고른 학생 전원에게 같은 시험지 — 1부·3부는 같고, 2부(틀린 문제)는 2부 수가 0 보다 크면 학생마다 */
+window.bt2MakeMany=async function(){
+  var d=BT.draft; if(!d){ plToast('먼저 한 학생으로 초안을 만든 뒤 눌러 주세요'); return; }
+  var codes=bt2SelCodes(); if(!codes.length){ plToast('학생을 ○ 로 골라 주세요'); return; }
+  if(codes.length>40){ plToast('한 번에 40명까지입니다'); return; }
+  var p2n=Number(BT.cfg.p2)||0;
+  if(!confirm(codes.length+'명에게 이 백지테스트를 만듭니다.\n1부(개념 백지)·3부(교과서 문항)는 같고'+(p2n>0?', 2부(틀린 문제)는 학생마다 다르게 채웁니다.':', 2부는 없습니다.')+'\n보관함에 저장하고 한꺼번에 인쇄할 수 있습니다. 계속할까요?')) return;
+  BT.bulk={ n:0, tot:codes.length, fail:[] }; render();
+  var made=[];
+  for(var i=0;i<codes.length;i++){ var c=codes[i];
+    try{ var mat=btMat(c);
+      var x=JSON.parse(JSON.stringify(d)); x.id='bt:'+Date.now().toString(36)+i; x.code=c; x.at=new Date().toISOString(); x.savedAt=x.at;
+      x.p2=p2n>0?btPart2(mat,p2n):[];
+      BT.saved=BT.saved.filter(function(y){ return y.id!==x.id; }); BT.saved.unshift(x); made.push(x);
+    }catch(e){ BT.bulk.fail.push(c); }
+    BT.bulk.n=i+1; render(); await new Promise(function(r){ setTimeout(r,10); });
+  }
+  await btSaveAll();
+  BT.bulk=null; BT.many=made; render();
+  plToast('👥 '+made.length+'장을 보관함에 넣었습니다 — 「🖨️ '+made.length+'명 한꺼번에 인쇄」로 뽑으세요');
+};
+/* 방금 만든 여러 장을 한 창에 — 학생마다 한 쪽, 맨 뒤에 답지 한 장 */
+window.bt2PrintMany=function(withKey){
+  var L=BT.many||[]; if(!L.length){ plToast('먼저 「같은 시험지 만들기」를 눌러 주세요'); return; }
+  var body=L.map(function(x){ return '<div class="pg">'+bt2SheetHtml(x,true)+'</div>'; }).join('');
+  if(withKey) body+='<div class="pg">'+bt2KeyHtml(L[0])+'</div>';
+  bt2PrintWin(body, L[0].title+' — '+L.length+'명');
+};
+window.btPick=function(code){ BT.stu=String(code); BT.draft=null; BT.many=null; render(); };
