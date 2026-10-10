@@ -35,7 +35,8 @@ sgv=open(SP+'/sgview_teacher.js').read() if int(ver.replace('v19-',''))>=89 else
 rcw=open(SP+'/rcws_teacher.js').read() if int(ver.replace('v19-',''))>=92 else ''   # v19-92: 리커버리 학습지 설계 → 매쓰플랫 즉시 생성
 bt2=open(SP+'/bt2_teacher.js').read() if int(ver.replace('v19-',''))>=94 else ''   # v19-98: 매쓰플랫 단원 트리   # v19-97: 채팅으로 고치기   # v19-95: 중3 기본 과정 공통수학1   # v19-94: 백지테스트 2판 (과정·소단원 · 미리보기·편집 · 교과서 문항 · 답지)
 hsr=open(SP+'/hitsrc_teacher.js').read() if int(ver.replace('v19-',''))>=99 else ''   # v19-99: 적중 분석 «우리 자료 3종»(교과서·수학비서 학습지·PDF 자료함) + ⚡ 즉시 처리
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+new.lstrip('\n')+'\n\n'+s[end:]
+cn2=open(SP+'/cn2_teacher.js').read() if int(ver.replace('v19-',''))>=100 else ''   # v19-100: 카드뉴스 디자인 2판(새 스타일 · 글꼴 · 1:1) + 🖼 배경함(올리기 · Gemini)
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -456,8 +457,8 @@ rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
 for f in sorted(os.listdir(MEMO)):
-    if re.match(r'memo_19(4[3-9]|[5-9]\d)\.txt$', f): pass
-for n in range(99,42,-1):
+    if re.match(r'memo_19(4[3-9]|[5-9]\d|[1-9]\d\d)\.txt$', f): pass   # v19-100 부터 세 자리 (memo_19100)
+for n in range(max(99,int(ver.replace('v19-',''))),42,-1):   # 숫자 순서(새 버전이 위)
     f=MEMO+'/memo_19%d.txt'%n
     if os.path.exists(f) and n<=int(ver.replace('v19-','')): memos+=open(f).read()
 s=s[:i]+memos+s[i:]; open(out,'w').write(s); print(out,'조립 · 메모', memos.count("{ver:'"))

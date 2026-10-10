@@ -1,0 +1,233 @@
+<title>카드뉴스 디자인 2판</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Noto+Sans+KR:wght@400;700;900&family=Nanum+Pen+Script&display=swap">
+<style>
+/* 레이아웃: 위 = 왜 안 보이는가(숫자), 가운데 = 같은 내용 카드 3장(지금 · 새 스타일 A 코드만 · 새 스타일 B AI 배경+글자) 폰 크기로 나란히, 아래 = 규칙 · GPT 연계 판단 · 만드는 순서 · 여쭐 것 */
+:root{
+  --bg:#eef2f8; --card:#ffffff; --fg:#0d2240; --muted:#64748b; --line:#e6eaf1; --navy:#0d2240; --navy-soft:#e8eef8; --blue:#1d6fe8; --blue-soft:#e8f1ff;
+  --amber:#b45309; --amber-soft:#fff7e6; --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c; --bad-soft:#fee2e2;
+  --font:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; --disp:"Black Han Sans","Do Hyeon","Noto Sans KR",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5;margin:0}
+.wrap{max-width:1140px;margin:0 auto;padding-block:20px 60px;padding-inline:16px;display:flex;flex-direction:column;gap:22px}
+h1{font-size:23px;font-weight:900;margin:0 0 4px;letter-spacing:-0.01em;text-wrap:balance}
+h2{font-size:16.5px;font-weight:900;margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 .tag{font-size:11px;font-weight:700;letter-spacing:0.04em;padding:2px 8px;border-radius:999px;background:var(--navy-soft);color:var(--blue)}
+p{margin:0}.lead,.note{color:var(--muted);font-size:13px}.note b{color:var(--fg)}
+.sec{display:flex;flex-direction:column;gap:10px}
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.why div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px}
+.why b{display:block;font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.2}.why small{color:var(--muted);font-weight:700}
+.why .bad b{color:var(--bad)}.why .ok b{color:var(--ok)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:560px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:0.04em;color:var(--muted);font-weight:700;background:var(--navy-soft)} tr:last-child td{border-bottom:0}
+td.k{font-weight:900;white-space:nowrap} td b{color:var(--blue)}
+/* 카드 3장 */
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:start}
+.col{display:flex;flex-direction:column;gap:6px;min-width:0}
+.col h3{font-size:13.5px;font-weight:900;margin:0;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.col h3 small{color:var(--muted);font-weight:700;font-size:11px}
+.col .cap{font-size:12px;color:var(--muted)}
+.ph{width:360px;max-width:100%;margin:0 auto}
+.cn{position:relative;width:100%;aspect-ratio:4/5;border-radius:6px;overflow:hidden;container-type:inline-size;word-break:keep-all;box-sizing:border-box;box-shadow:0 10px 26px rgba(13,34,64,.18)}
+/* ── 지금 (v19-80) 재현 ── */
+.old{background:radial-gradient(120% 80% at 80% 0%,#f7f9fd 0%,#e9eef7 38%,#dfe6f1 100%);color:#1b2433;padding:5.5% 6% 4.5%;display:flex;flex-direction:column;font-family:var(--font)}
+.old .brand{font-weight:900;font-size:5.2cqw;line-height:1.05}.old .brand small{display:block;font-size:2cqw;font-weight:700;color:#64748b}
+.old .eyebrow{margin-top:4.5cqw;font-size:2.6cqw;font-weight:700;color:#5d6b80}
+.old .ttl{font-size:7.2cqw;font-weight:900;line-height:1.18;margin-top:1cqw;letter-spacing:-.02em}
+.old .sub{font-size:2.4cqw;color:#5d6b80;line-height:1.6;margin-top:1.6cqw;max-width:70%}
+.old .hand{position:absolute;right:6%;top:9%;font-family:"Nanum Pen Script",cursive;font-size:4cqw;color:#d33a3a;transform:rotate(-6deg)}
+.old .body{flex:1;margin-top:3.5cqw;display:flex;flex-direction:column;gap:2cqw;font-size:2.3cqw;line-height:1.55}
+.old .body .box{background:#fff;border:1px solid #d6dee9;border-radius:1.5cqw;padding:2.2cqw 2.6cqw}
+.old .quote{margin-top:auto;text-align:center;font-size:2.7cqw;font-weight:900}
+.old .foot{display:flex;justify-content:space-between;margin-top:2.2cqw;font-size:1.6cqw;color:#8b98ab;letter-spacing:.08em}
+.old .wm{position:absolute;inset:0;pointer-events:none;opacity:.06;font-size:5cqw;font-weight:900;transform:rotate(-20deg);display:flex;flex-wrap:wrap;gap:8cqw;align-content:center;justify-content:center}
+/* ── 새 스타일 A: 코드만 (표시용 글꼴 · 외곽선 · 장식) ── */
+.na{background:
+   radial-gradient(60% 40% at 85% 8%,rgba(255,255,255,.28),transparent 60%),
+   linear-gradient(165deg,#0b1f3f 0%,#122c57 45%,#0b1f3f 100%);
+   color:#fff;padding:6% 6.5% 5%;display:flex;flex-direction:column;font-family:var(--font)}
+.na .dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.14) 1.1px,transparent 1.3px);background-size:5cqw 5cqw;opacity:.5}
+.na .ribbon{position:absolute;left:-10%;right:-10%;top:52%;height:9cqw;background:#e23b3b;transform:rotate(-7deg);opacity:.95}
+.na .ribbon2{position:absolute;left:-10%;right:-10%;top:58%;height:3cqw;background:#f5c542;transform:rotate(-7deg)}
+.na .star{position:absolute;font-size:16cqw;color:#f5c542;line-height:1;text-shadow:0 2cqw 0 rgba(0,0,0,.25)}
+.na .math{position:absolute;font-family:"Times New Roman",serif;font-style:italic;color:rgba(255,255,255,.35);font-size:5cqw}
+.na .top{display:flex;justify-content:space-between;align-items:flex-start;position:relative}
+.na .brand{font-family:var(--disp);font-size:6.5cqw;letter-spacing:.02em;line-height:1}.na .brand small{display:block;font-family:var(--font);font-size:2.4cqw;font-weight:700;color:#f5c542;letter-spacing:.12em;margin-top:.6cqw}
+.na .card-no{font-size:2.6cqw;font-weight:900;letter-spacing:.2em;color:#f5c542;border:.4cqw solid #f5c542;padding:.8cqw 1.6cqw;border-radius:1cqw}
+.na .eyebrow{position:relative;margin-top:7cqw;font-size:3.4cqw;font-weight:900;color:#f5c542;letter-spacing:.06em}
+.na .ttl{position:relative;font-family:var(--disp);font-size:12.5cqw;line-height:1.05;margin-top:1.2cqw;letter-spacing:-.01em;
+   -webkit-text-stroke:.5cqw #0b1f3f;paint-order:stroke fill;text-shadow:0 1.2cqw 0 #0b1f3f,0 1.6cqw 2cqw rgba(0,0,0,.35)}
+.na .ttl .red{color:#ff5a5a}.na .ttl .gold{color:#f5c542}
+.na .list{position:relative;margin-top:auto;background:rgba(255,255,255,.96);color:#0b1f3f;border-radius:2cqw;padding:3.2cqw 3.6cqw;display:flex;flex-direction:column;gap:2cqw;transform:rotate(-1.5deg);box-shadow:0 2cqw 4cqw rgba(0,0,0,.3)}
+.na .list div{display:grid;grid-template-columns:5cqw 1fr;gap:2cqw;align-items:start;font-size:3.6cqw;font-weight:800;line-height:1.3}
+.na .list i{display:inline-block;width:4.4cqw;height:4.4cqw;border-radius:1cqw;background:#e23b3b;color:#fff;font-style:normal;font-size:3.2cqw;text-align:center;line-height:4.4cqw;font-weight:900}
+.na .list b{color:#e23b3b}
+.na .slogan{position:relative;margin-top:3.5cqw;text-align:center;font-size:3.1cqw;font-weight:900;color:#0b1f3f;background:#f5c542;padding:1.6cqw;border-radius:1cqw;letter-spacing:.02em}
+.na .foot{position:relative;display:flex;justify-content:space-between;margin-top:2.4cqw;font-size:2cqw;color:rgba(255,255,255,.6);letter-spacing:.14em}
+/* ── 새 스타일 B: AI 배경 그림 + 우리가 올리는 글자 ── */
+.nb{background:
+   radial-gradient(45% 35% at 20% 25%,rgba(245,197,66,.55),transparent 70%),
+   radial-gradient(40% 30% at 80% 70%,rgba(226,59,59,.45),transparent 70%),
+   radial-gradient(60% 50% at 70% 20%,rgba(255,255,255,.25),transparent 60%),
+   linear-gradient(160deg,#b8973f 0%,#0b1f3f 55%,#07152b 100%);
+   color:#fff;padding:6% 6.5% 5%;display:flex;flex-direction:column;font-family:var(--font)}
+.nb .art{position:absolute;inset:0;overflow:hidden}
+.nb .art span{position:absolute;border-radius:50%;filter:blur(1.2cqw);opacity:.55}
+.nb .art .tag{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);border:.4cqw dashed rgba(255,255,255,.6);border-radius:1.5cqw;padding:1.4cqw 2.4cqw;font-size:2.6cqw;font-weight:800;color:rgba(255,255,255,.85);text-align:center;line-height:1.35;filter:none;opacity:1;background:rgba(0,0,0,.25)}
+.nb .top,.nb .eyebrow,.nb .ttl,.nb .list,.nb .slogan,.nb .foot{position:relative}
+.nb .brand{font-family:var(--disp);font-size:6.5cqw;line-height:1;text-shadow:0 .6cqw 0 rgba(0,0,0,.4)}.nb .brand small{display:block;font-family:var(--font);font-size:2.4cqw;font-weight:700;color:#f5c542;letter-spacing:.12em;margin-top:.6cqw}
+.nb .top{display:flex;justify-content:space-between;align-items:flex-start}
+.nb .card-no{font-size:2.6cqw;font-weight:900;letter-spacing:.2em;color:#f5c542;border:.4cqw solid #f5c542;padding:.8cqw 1.6cqw;border-radius:1cqw}
+.nb .eyebrow{margin-top:34cqw;font-size:3.4cqw;font-weight:900;color:#f5c542;letter-spacing:.06em;text-shadow:0 .5cqw 0 rgba(0,0,0,.5)}
+.nb .ttl{font-family:var(--disp);font-size:12.5cqw;line-height:1.05;margin-top:1.2cqw;-webkit-text-stroke:.5cqw #0b1f3f;paint-order:stroke fill;text-shadow:0 1.2cqw 0 #0b1f3f,0 1.6cqw 2cqw rgba(0,0,0,.45)}
+.nb .ttl .red{color:#ff5a5a}.nb .ttl .gold{color:#f5c542}
+.nb .list{margin-top:auto;background:rgba(255,255,255,.96);color:#0b1f3f;border-radius:2cqw;padding:3.2cqw 3.6cqw;display:flex;flex-direction:column;gap:2cqw;box-shadow:0 2cqw 4cqw rgba(0,0,0,.3)}
+.nb .list div{display:grid;grid-template-columns:5cqw 1fr;gap:2cqw;align-items:start;font-size:3.6cqw;font-weight:800;line-height:1.3}
+.nb .list i{display:inline-block;width:4.4cqw;height:4.4cqw;border-radius:1cqw;background:#e23b3b;color:#fff;font-style:normal;font-size:3.2cqw;text-align:center;line-height:4.4cqw;font-weight:900}
+.nb .list b{color:#e23b3b}
+.nb .slogan{margin-top:3.5cqw;text-align:center;font-size:3.1cqw;font-weight:900;color:#0b1f3f;background:#f5c542;padding:1.6cqw;border-radius:1cqw}
+.nb .foot{display:flex;justify-content:space-between;margin-top:2.4cqw;font-size:2cqw;color:rgba(255,255,255,.7);letter-spacing:.14em}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:8px}
+.vd{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px}
+.vd b{display:block;margin-bottom:3px}.vd small{color:var(--muted);font-weight:700}
+.vd.rec{border:2px solid var(--blue)}
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px}
+:root[data-theme="dark"] .step .n,:root:not([data-theme="light"]) .step .n{color:var(--bg)}
+.step b{display:block}.step small{color:var(--muted);font-weight:700}
+.ask{background:var(--card);border:2px solid var(--blue);border-radius:14px;padding:14px;font-size:13.5px}
+.ask ol{margin:6px 0 0;padding-left:20px}.ask li{margin:4px 0}
+</style>
+
+<div class="wrap">
+  <div>
+    <h1>카드뉴스 — 폰에서 읽히는 디자인으로</h1>
+    <p class="lead">2026-10-10 · 원장님 말씀: 「다른 학원 카드뉴스는 글씨가 카드뉴스에 쓰기 좋아 보인다. 우리 것은 모바일에서 잘 안 보인다. 디자인 업그레이드에 GPT 연계가 필요한 것 같다. 상의하자.」 같은 내용을 세 가지 방식으로 그려 폰 너비(360px)로 나란히 놓았습니다. 숫자·문구는 예시입니다.</p>
+  </div>
+
+  <section class="sec">
+    <h2>왜 안 보이는가 <span class="tag">폰 화면에서 잰 글자 크기</span></h2>
+    <div class="why">
+      <div class="bad"><b>8~9px</b><small>지금 카드의 본문·부제 (카드 폭의 2.3~2.6%) — 폰에서 카드가 360px 로 줄면 이 크기. 읽을 수 없는 크기</small></div>
+      <div class="bad"><b>26px</b><small>지금 카드의 제목 (7.2%) — 읽히지만 「한 장에 한 메시지」 느낌이 안 남</small></div>
+      <div class="ok"><b>13px 이상</b><small>다른 학원 카드의 가장 작은 글자 (3.5%) · 제목은 한 줄 45px (12%)</small></div>
+      <div class="ok"><b>60자</b><small>그 카드 전체 글자 수 — 우리 카드는 표·그래프까지 150~300자</small></div>
+    </div>
+    <p class="note">결론: 문제의 8할은 <b>글자 크기와 글자 수</b>입니다. 그림 생성 AI 가 아니라 «표시용 글꼴 · 큰 글자 · 글 줄이기 · 외곽선»으로 해결되는 부분입니다. AI 그림은 그 위에 얹는 «분위기»입니다.</p>
+  </section>
+
+  <section class="sec">
+    <h2>같은 내용, 세 가지 방식 <span class="tag">폰 너비 그대로</span></h2>
+    <div class="three">
+      <div class="col">
+        <h3>① 지금 (v19-80) <small>Noto Sans · 연한 배경 · 표</small></h3>
+        <div class="ph"><div class="cn old">
+          <div class="wm"><span>루멘수학</span><span>루멘수학</span><span>루멘수학</span><span>루멘수학</span><span>루멘수학</span><span>루멘수학</span></div>
+          <div class="brand">루멘수학<small>쌤 모르겠어요에서 아하까지</small></div>
+          <div class="hand">조건을 끝까지!</div>
+          <div class="eyebrow">범박고 1학년 · 2026년 2학기 중간고사 · 카드 4</div>
+          <div class="ttl">14번을 가른 것은 계산이 아니라 조건이었습니다</div>
+          <div class="sub">공통수학2 평면좌표 단원 · 5점 · 정답률이 가장 낮았던 문항. 좌표 조건을 끝까지 읽지 않으면 가능한 값의 범위를 놓칩니다.</div>
+          <div class="body">
+            <div class="box">· 묻는 것: 두 점 사이 거리가 정수가 되는 조건<br>· 함정: 「자연수 n」 조건을 놓치면 답이 2개로 보임<br>· 우리 자료: 교과서 유사 문항 2개 · 수업 학습지 변형 1개</div>
+            <div class="box">· 기말에도 같은 유형이 반복될 가능성이 높습니다<br>· 조건 해석 → 범위 점검 → 계산 순서로 푸는 연습</div>
+          </div>
+          <div class="quote">조건을 먼저 읽는 힘이 점수를 가릅니다 — 루멘수학</div>
+          <div class="foot"><span>옥길동 관리형 수학학원</span><span>LUMEN MATH · FOR A CLEARER MIND</span></div>
+        </div></div>
+        <div class="cap">정보는 많지만 폰에서 본문이 8~9px. 썸네일에서는 제목만 겨우 보입니다.</div>
+      </div>
+
+      <div class="col">
+        <h3>② 새 스타일 A — 코드만 <small>표시용 글꼴 · 외곽선 · 장식</small></h3>
+        <div class="ph"><div class="cn na">
+          <div class="dots"></div>
+          <div class="star" style="left:-4%;top:14%">★</div><div class="star" style="right:-3%;top:31%;font-size:9cqw">✦</div>
+          <div class="math" style="right:8%;top:16%">n ∈ ℕ</div><div class="math" style="left:8%;top:40%;font-size:4cqw">y = f(x)</div>
+          <div class="ribbon"></div><div class="ribbon2"></div>
+          <div class="top"><div class="brand">루멘수학<small>옥길동 관리형 수학학원</small></div><div class="card-no">CARD 04</div></div>
+          <div class="eyebrow">범박고 1학년 · 2학기 중간고사 분석</div>
+          <div class="ttl">범박고 수학 <span class="gold">14번</span><br>5점짜리 문제를 가른<br><span class="red">조건의 함정</span></div>
+          <div class="list">
+            <div><i>✓</i><span>계산보다 먼저 <b>조건을 끝까지 읽는 힘</b>이 중요했습니다</span></div>
+            <div><i>✓</i><span><b>가능한 값의 범위</b>를 점검하지 않으면 실수하기 쉽습니다</span></div>
+            <div><i>✓</i><span>기말고사도 <b>조건 해석력</b>이 승부를 가릅니다</span></div>
+          </div>
+          <div class="slogan">— 근거로 푸는 수학, 루멘수학 —</div>
+          <div class="foot"><span>LUMEN MATH</span><span>AHA NOTE · ULTRA FEEDBACK</span></div>
+        </div></div>
+        <div class="cap">그림 AI 없이 글꼴(Black Han Sans)·외곽선·그림자·장식만으로. 숫자는 100% 정확, 즉시, 무료, 12색 그대로.</div>
+      </div>
+
+      <div class="col">
+        <h3>③ 새 스타일 B — AI 배경 + 글자 <small>GPT/Gemini 그림 · 글자는 우리가</small></h3>
+        <div class="ph"><div class="cn nb">
+          <div class="art">
+            <span style="width:60cqw;height:60cqw;left:-20cqw;top:-10cqw;background:#f5c542"></span>
+            <span style="width:40cqw;height:40cqw;right:-10cqw;top:30cqw;background:#e23b3b"></span>
+            <span style="width:50cqw;height:30cqw;left:20cqw;top:20cqw;background:#fff;opacity:.25"></span>
+            <div class="tag">AI 가 만든 배경 그림 자리<br>(별·리본·펼친 책·수식 같은 장식, 글자 없음)<br>12색마다 2~3장씩 미리 만들어 둠</div>
+          </div>
+          <div class="top"><div class="brand">루멘수학<small>옥길동 관리형 수학학원</small></div><div class="card-no">CARD 04</div></div>
+          <div class="eyebrow">범박고 1학년 · 2학기 중간고사 분석</div>
+          <div class="ttl">범박고 수학 <span class="gold">14번</span><br>5점짜리 문제를 가른<br><span class="red">조건의 함정</span></div>
+          <div class="list">
+            <div><i>✓</i><span>계산보다 먼저 <b>조건을 끝까지 읽는 힘</b>이 중요했습니다</span></div>
+            <div><i>✓</i><span><b>가능한 값의 범위</b>를 점검하지 않으면 실수하기 쉽습니다</span></div>
+            <div><i>✓</i><span>기말고사도 <b>조건 해석력</b>이 승부를 가릅니다</span></div>
+          </div>
+          <div class="slogan">— 근거로 푸는 수학, 루멘수학 —</div>
+          <div class="foot"><span>LUMEN MATH</span><span>AHA NOTE · ULTRA FEEDBACK</span></div>
+        </div></div>
+        <div class="cap">배경만 AI, 글자는 ②와 같은 방식으로 얹음. 다른 학원 카드와 같은 «그림 느낌»이 나면서 숫자 오타·한글 깨짐이 없습니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>GPT 연계, 어디까지 <span class="tag">판단</span></h2>
+    <div class="verdict">
+      <div class="vd"><b>글자까지 통째로 AI 그림에 맡기기 — 권하지 않음</b><small>다른 학원 카드가 이 방식입니다. 한글·숫자 오타(적중률 73%가 78%로), 장당 20~60초, 장당 60~200원, 고치려면 다시 생성, 12장 색이 서로 안 맞음. 적중률·문항 번호가 핵심인 우리 카드에는 위험합니다.</small></div>
+      <div class="vd rec"><b>배경만 AI, 글자는 앱이 — 권함 (③)</b><small>배경은 글자가 없으니 오타 위험이 없고, 12색마다 2~3장을 <b>한 번만</b> 만들어 두면 비용이 사실상 0입니다. 글자·숫자·그래프는 지금처럼 앱이 정확히 올립니다.</small></div>
+      <div class="vd"><b>GPT 계정이 꼭 필요한가 — 아닙니다</b><small>이미 학원앱에 등록된 Gemini 키로 그림 생성(Gemini 이미지 모델)이 됩니다. 또는 원장님이 ChatGPT 에서 배경 그림을 뽑아 「배경함」에 올려 두는 방법이 가장 단순하고 결과를 직접 고를 수 있습니다. 두 길 다 열어 둡니다.</small></div>
+      <div class="vd"><b>먼저 ②를 하면 ③은 덤</b><small>②(글꼴·크기·구성)만으로 폰 가독성 문제는 끝납니다. ③은 ② 위에 배경 한 장을 끼우는 것이라 추가 작업이 작습니다.</small></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>새 카드 규칙 <span class="tag">②·③ 공통</span></h2>
+    <div class="tbl"><table>
+      <tr><th style="width:130px">항목</th><th>지금</th><th>새 규칙</th></tr>
+      <tr><td class="k">제목</td><td>Noto Sans 900 · 폭의 7.2% · 2~3줄 문장</td><td><b>표시용 글꼴</b>(Black Han Sans) · 폭의 <b>12%</b> · 3줄 이내 · 핵심 낱말은 금색/빨강 · 외곽선+그림자로 어떤 배경에서도 읽힘</td></tr>
+      <tr><td class="k">본문</td><td>표·설명 150~300자 · 폭의 2.3%</td><td><b>체크 3줄, 60자 안</b> · 폭의 3.6% · 흰 패널 위 진한 글자</td></tr>
+      <tr><td class="k">가장 작은 글자</td><td>1.6% (꼬리말)</td><td><b>2.0% 이상</b> (폰에서 7px 이상) — 그보다 작으면 넣지 않음</td></tr>
+      <tr><td class="k">그래프 카드</td><td>도넛·흐름·막대 그래프 + 설명</td><td>그래프는 유지하되 <b>숫자 하나를 크게</b>(적중 78%) · 설명은 한 줄 · 범례 글자도 2.5% 이상</td></tr>
+      <tr><td class="k">색</td><td>12가지 연한 파스텔</td><td>12가지 유지하되 <b>진한 바탕 + 금색·빨강 강조</b>로 다시 맞춤. 블로그 썸네일(작게 보임)에서도 제목이 보이게</td></tr>
+      <tr><td class="k">워터마크</td><td>사선 「루멘수학」 켜기·끄기</td><td>같음</td></tr>
+      <tr><td class="k">출력</td><td>1080×1350 PNG · .zip · 블로그 .md</td><td>같음 + 1080×1080(정사각) 선택</td></tr>
+    </table></div>
+  </section>
+
+  <section class="sec">
+    <h2>만드는 순서 <span class="tag">상의 후</span></h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><b>② 코드 스타일 (학원앱 v19-100)</b><small>카드 12장 틀을 새 규칙으로 다시 그립니다. 글꼴은 Google Fonts(Black Han Sans)라 설치 없이 됩니다. 「지금 스타일 / 새 스타일」 전환 칩을 두어 비교할 수 있게.</small></div></div>
+      <div class="step"><span class="n">2</span><div><b>③ 배경함</b><small>카드뉴스 화면에 「🖼 배경함」: 색마다 배경 그림 올리기(원장님이 ChatGPT 등에서 뽑은 그림) 또는 「Gemini 로 만들기」(등록된 Gemini 키, 한 색에 3장, 글자 없는 장식만 만들라는 지시문 내장). 카드마다 배경 고르기·끄기.</small></div></div>
+      <div class="step"><span class="n">3</span><div><b>시험 한 번으로 확인</b><small>범박고 고1 2학기 중간 카드 12장을 새 스타일로 뽑아 폰에서 보고 다듬습니다.</small></div></div>
+    </div>
+  </section>
+
+  <section class="ask">
+    <b>여쭐 것</b>
+    <ol>
+      <li>②를 먼저 만들고 ③(배경함)을 붙이는 순서로 가도 될까요? ②만으로도 폰 가독성 문제는 해결됩니다.</li>
+      <li>배경 그림은 <b>원장님이 ChatGPT 에서 뽑아 올리기</b>와 <b>앱에서 Gemini 로 만들기</b> 중 어느 쪽을 기본으로 할까요? 둘 다 넣을 수도 있습니다.</li>
+      <li>제목 글꼴은 Black Han Sans(굵고 각진 느낌, 위 ②·③)로 했는데, 더 부드러운 Do Hyeon 같은 것도 고를 수 있게 할까요?</li>
+    </ol>
+  </section>
+</div>
