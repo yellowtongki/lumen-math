@@ -73,8 +73,8 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
     return out;
   });
   console.log(JSON.stringify(o, null, 1).slice(0, 3500));
-  t('버전 v19-94', o.ver === 'v19-94');
-  t('과정 칩에 공통수학1 있음 · 중3 기본값 중3-2', o.courses.indexOf('공통수학1') >= 0 && o.defaultCourse === '중3-2', JSON.stringify([o.courses, o.defaultCourse]));
+  t('버전 ' + (FILE.match(/v19-\d+/) || [''])[0], o.ver === (FILE.match(/v19-\d+/) || [''])[0]);
+  t('과정 칩에 중3-1·중3-2·공통수학1 있음 · 중3 기본값 공통수학1', o.courses.indexOf('공통수학1') >= 0 && o.courses.indexOf('중3-2') >= 0 && o.defaultCourse === '공통수학1', JSON.stringify([o.courses, o.defaultCourse]));
   t('공통수학1 고르면 대단원 다항식 · 첫 중단원 소단원 자동 선택', o.after.course === '공통수학1' && o.after.big === '다항식' && o.after.subs.length === 2, JSON.stringify(o.after));
   t('소단원 끄고 켜기 — 고른 소단원 1개(유형 4)', o.picked.join(',') === '다항식의 사칙연산(4)', JSON.stringify(o.picked));
   t('교과서 은행: 비상교육 공통수학1 6문항', o.tb.bid === '3119965' && o.tb.n === 6, JSON.stringify(o.tb));

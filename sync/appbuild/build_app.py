@@ -33,7 +33,7 @@ sds=open(SP+'/studb_sync.js').read() if int(ver.replace('v19-',''))>=87 else ''
 wks=open(SP+'/wksplit_teacher.js').read() if int(ver.replace('v19-',''))>=88 else ''
 sgv=open(SP+'/sgview_teacher.js').read() if int(ver.replace('v19-',''))>=89 else ''
 rcw=open(SP+'/rcws_teacher.js').read() if int(ver.replace('v19-',''))>=92 else ''   # v19-92: 리커버리 학습지 설계 → 매쓰플랫 즉시 생성
-bt2=open(SP+'/bt2_teacher.js').read() if int(ver.replace('v19-',''))>=94 else ''   # v19-94: 백지테스트 2판 (과정·소단원 · 미리보기·편집 · 교과서 문항 · 답지)
+bt2=open(SP+'/bt2_teacher.js').read() if int(ver.replace('v19-',''))>=94 else ''   # v19-95: 중3 기본 과정 공통수학1   # v19-94: 백지테스트 2판 (과정·소단원 · 미리보기·편집 · 교과서 문항 · 답지)
 s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
