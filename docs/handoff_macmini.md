@@ -108,6 +108,7 @@ sync/card_templates/         카드 디자인 8종 + _base.css
 | `node sync/blog_topics.js --days 7` | 학원 데이터(매쓰플랫 오답·아하노트) 집계 → `docs/blog_topics_latest.md` | 아무 데나 |
 | `node sync/card_render.js blog/<폴더>` | `cards.json` → 카드 PNG. `--only N` 으로 한 장만 | 아무 데나 |
 | `node sync/post_check.js blog/<폴더>` | 17항목 검사 (글자수·카드·사진·지도·해시태그·날짜·주소·개인정보…) | 아무 데나 |
+| `node sync/naver_draft.js blog/<폴더>` | 네이버 글쓰기 화면에 넣고 **임시저장** (발행 안 함). 처음엔 `--login` | **맥미니만** |
 | `node sync/serp_check.js` | 네이버에 검색어 10개를 쳐 보고 첫 화면에 우리 글이 있는지 → `docs/serp_latest.html` | **맥미니만** |
 | `node sync/image_gen.js blog/<폴더> [--dry]` | 카드 배경 그림 (GPT). `--dry` 는 키 없이 프롬프트만 |
 | **MCP `lumen-image`** | **Claude가 GPT를 직접 불러 배경을 만들고 «보고» 고친다.** `.mcp.json` 에 등록돼 있어 저장소 폴더에서 Claude Code 를 열면 자동으로 붙는다 |
@@ -156,7 +157,7 @@ sync/card_templates/         카드 디자인 8종 + _base.css
 
 | 순서 | 만들 것 | 규모 | 비고 |
 |---|---|---|---|
-| **1** | `sync/naver_draft.js` — 네이버 임시저장 자동화 | 2~3일 | **맥미니 전용.** 사람 타자 속도(8~14분), 임시저장까지만. **발행 버튼은 원장님이** |
+| ~~1~~ ✅ | `sync/naver_draft.js` — 네이버 임시저장 자동화 | 2026-10-10 완성 | **맥미니 전용. 실제 네이버로는 미검증** — 첫 실행 때 오류가 나면 메시지를 Claude 에게. 사용법 `docs/naver_draft_사용법.md` |
 | 2 | `sync/insta_upload.js` — 인스타 캐러셀 | 1일 | 인스타 **비즈니스/크리에이터 전환** + 페북 페이지 연결 필요 (원장님 확인 중) |
 | ~~3~~ ✅ | `sync/image_gen.js` — 배경 그림 (OpenAI) | 2026-09-28 완성 | **키로 실제 생성은 아직 검증 못 함.** `--dry` 는 확인됨 |
 | 4 | 쓰레드 · 유튜브 | 각 1일 | 둘 다 공식 API 있음 |

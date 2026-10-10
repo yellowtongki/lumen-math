@@ -14,6 +14,7 @@
 | `mcp_image.js` | **MCP 서버** — Claude가 GPT를 도구처럼 불러 배경을 만들고 **결과를 보고 고친다**. 루멘 규칙(색·구도·글자금지)이 서버에 박혀 있다. `.mcp.json` 으로 자동 등록 |
 | `image_gen.js` | **카드 배경 그림 생성기** — GPT 이미지로 «글자 없는» 배경만 만든다. `--dry` 는 키 없이 프롬프트만 뽑아 ChatGPT에 쓸 수 있다 |
 | `keyword_volume.js` | **검색량 조사기** — 네이버 검색광고 API(공식·무료)로 낱말별 월간 검색수 → `docs/keyword_volume.md`. 해시태그·제목·글감을 감이 아니라 숫자로 고르기 위한 것 |
+| `naver_draft.js` | **네이버 블로그 임시저장 자동화** — post.md + 카드를 글쓰기 화면에 넣고 임시저장. **발행은 안 함.** 맥미니 전용. 사용법 `docs/naver_draft_사용법.md` |
 | `serp_check.js` + `serp_keywords.json` | **검색 점검기** — 네이버에 검색어를 쳐 보고 첫 화면에 우리 글이 있는지 확인 → `docs/serp_latest.html`. **맥미니·학원 컴퓨터에서만** 실행 |
 | `mypaper_to_mathflat.js` | **수학비서 내 문제지 → 매쓰플랫 학습지** (번호 1:1 · 정답 주입 · 마이리스트 담기) — 아래 설명 |
 
