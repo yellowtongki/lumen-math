@@ -90,9 +90,9 @@ function plan(dir) {
       const f = photos[Number(mm[1]) - 1] ? path.join(dir, photos[Number(mm[1]) - 1]) : null;
       steps.push({ kind: 'image', file: f, label: `실사진 ${mm[1]} (${mm[2]})`, exists: !!f && fs.existsSync(f), optional: true });
     } else if (/^\[지도:/.test(line)) {
-      flush(); steps.push({ kind: 'manual', label: '지도', what: '네이버 지도에서 「루멘수학교습소」를 찾아 넣어주세요' });
+      flush(); steps.push({ kind: 'manual', label: '지도', auto: true, what: '네이버 지도에서 「루멘수학교습소」를 찾아 넣어주세요' });
     } else if (/^\[톡톡:/.test(line)) {
-      flush(); steps.push({ kind: 'manual', label: '톡톡', what: '톡톡 버튼을 넣어주세요 (https://talk.naver.com/w9d7umc)' });
+      flush(); steps.push({ kind: 'manual', label: '톡톡', auto: true, what: '톡톡 버튼을 넣어주세요 (https://talk.naver.com/w9d7umc)' });
     } else {
       buf.push(line);
     }
@@ -114,6 +114,10 @@ const SEL = {
   // 네이버는 숨은 input 이 아니라 「사진」 단추를 눌러 파일 선택창을 띄운다
   photoBtn: ['button:has-text("사진")', '[data-name="image"]', '.se-toolbar-item-image button',
              'button[data-log="pst.photo"]', '.se-toolbar-item-image', 'button[title*="사진"]'],
+  // 톡톡 버튼 넣기 — 글쓰기 도구줄의 「톡톡」
+  talkBtn: ['button:has-text("톡톡")', '[data-name="talktalk"]', '[data-name="talk"]',
+            '.se-toolbar-item-talktalk button', '.se-toolbar-item-talktalk',
+            'button[data-log="pst.talk"]', 'button[title*="톡톡"]'],
   popupCancel: ['button.se-popup-button-cancel', '.se-popup-button-cancel', 'button:has-text("취소")'],
 };
 async function firstVisible(frame, list, timeout = 8000) {
@@ -244,6 +248,36 @@ async function savedOk(page, frame) {
   return false;
 }
 
+// 톡톡 버튼 넣기 — 도구줄 「톡톡」을 누르면 내 톡톡이 뜬다. 확인만 누르면 본문에 버튼이 들어간다
+async function insertTalk(page, frame) {
+  let btn = null;
+  for (const sel of SEL.talkBtn) {
+    for (const scope of [frame, page]) {
+      try { const el = scope.locator(sel).first(); if (await el.isVisible({ timeout: 400 })) { btn = el; break; } } catch {}
+    }
+    if (btn) break;
+  }
+  if (!btn) throw new Error('「톡톡」 단추를 못 찾았습니다');
+  await btn.click();
+  await sleep(2000);
+
+  // 창이 떴으면 확인/등록/삽입 중 하나를 누른다. 창 없이 바로 들어가는 경우도 있다
+  for (const sel of ['button:has-text("확인")', 'button:has-text("등록")', 'button:has-text("삽입")',
+                     'button:has-text("적용")', '.se-popup-button-confirm', 'button[class*="confirm"]']) {
+    for (const scope of [frame, page]) {
+      try {
+        const el = scope.locator(sel).first();
+        if (await el.isVisible({ timeout: 600 })) { await el.click(); await sleep(1800); return true; }
+      } catch {}
+    }
+  }
+  // 확인 단추가 없다 — 버튼이 이미 들어갔는지 본문에서 확인한다
+  for (const sel of ['[class*="talktalk"]', '[class*="se-oglink"]', 'a[href*="talk.naver.com"]']) {
+    try { if (await frame.locator(sel).first().isVisible({ timeout: 800 })) { await sleep(800); return true; } } catch {}
+  }
+  throw new Error('톡톡 창에서 확인 단추를 못 찾았습니다');
+}
+
 // 장소(루멘수학교습소) 넣기 — 되면 좋고, 안 되면 손으로 안내한다
 async function insertPlace(page, frame, keyword) {
   let btn = null;
@@ -311,7 +345,7 @@ async function insertPlace(page, frame, keyword) {
       const n = String(i + 1).padStart(2);
       if (s.kind === 'text') log(`  ${n}. 글  ${s.text.length}자  「${s.text.slice(0, 28).replace(/\n/g, ' ')}…」`);
       if (s.kind === 'image') log(`  ${n}. 그림 ${s.exists ? '✅' : '❌ 파일 없음 — 손으로'}  ${s.label}`);
-      if (s.kind === 'manual') log(`  ${n}. 손으로 ⏸  ${s.label}`);
+      if (s.kind === 'manual') log(`  ${n}. ${s.label === '지도' || s.auto ? '자동 🔁' : '손으로 ⏸'}  ${s.label}`);
     });
     log(`\n해시태그: ${meta.hashtags}\n`);
     return;
@@ -414,6 +448,15 @@ async function insertPlace(page, frame, keyword) {
             '위쪽 「장소」 단추를 눌러 「루멘수학교습소」를 찾아 넣어주세요.');
           await focusBodyEnd(page, f);
         }
+      } else if (s.label === '톡톡') {
+        log(`  ${n}/${steps.length} 톡톡 버튼 넣기…`);
+        try {
+          await insertTalk(page, f);
+          log('     ✅ 톡톡 버튼을 넣었습니다');
+        } catch (e) {
+          await pause(`톡톡 넣기가 막혔습니다 (${e.message})`, s.what);
+        }
+        await focusBodyEnd(page, f);
       } else {
         await pause(`${s.label}은 직접 넣으셔야 합니다.`, s.what);
         await focusBodyEnd(page, f);   // 원장님이 손으로 만진 뒤에는 커서가 어디 있을지 모른다
