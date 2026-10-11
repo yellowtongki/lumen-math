@@ -448,6 +448,10 @@ async function runExam(exam, opt) {
     /* 원본 번호가 같은 자료 (유형이 달라도) */
     mats.forEach((m) => { if (srcN && ((srcP === 'p' && m.pid === srcN) || (srcP === 'b' && m.wbp === srcN))) pool[m.k] = { m, idSame: true }; });
     (byCid[it.cid] || []).forEach((m) => { if (!pool[m.k]) pool[m.k] = { m, idSame: false }; });
+    /* 다시 판정 때 원장님이 ✓/✗ 로 확정했던 후보는 순위와 상관없이 늘 맨 앞에 남긴다 (2026-10-11 — 순위가 바뀌어 확정이 풀리던 문제) */
+    const oldIt = prev && (prev.items || []).find((x) => x.no === it.no);
+    const pinK = oldIt && oldIt.hit && oldIt.hit.ok != null && oldIt.hit.k ? oldIt.hit.k : null;
+    if (pinK && !pool[pinK]) { const pm = mats.find((m) => m.k === pinK); if (pm) pool[pinK] = { m: pm, idSame: false }; }
     const wrong = (m) => Object.values(m.res).filter((r) => r === 'X' || r === '?').length;
     const solved = (m) => Object.keys(m.res).length;
     const ranked = Object.values(pool).sort((a, b) => (b.idSame - a.idSame) || (Math.abs((a.m.level || 3) - (it.level || 3)) - Math.abs((b.m.level || 3) - (it.level || 3))) || (wrong(b.m) - wrong(a.m)) || (solved(b.m) - solved(a.m)));
@@ -457,7 +461,8 @@ async function runExam(exam, opt) {
     const head = ranked.filter((c) => c.idSame), rest = ranked.filter((c) => !c.idSame), pick = [];
     const take = (pred, n) => { for (const c of rest) { if (n <= 0) break; if (pick.indexOf(c) < 0 && pred(c.m)) { pick.push(c); n--; } } };
     take((m) => m.mp, 2); take((m) => m.kind === 'textbook', 1); take((m) => m.kind === 'ms' && !m.mp, 1);
-    const ordered = head.concat(pick, rest.filter((c) => pick.indexOf(c) < 0));
+    let ordered = head.concat(pick, rest.filter((c) => pick.indexOf(c) < 0));
+    if (pinK && pool[pinK]) ordered = [pool[pinK]].concat(ordered.filter((c) => c !== pool[pinK]));
     const cands = []; const seenPid = {};
     for (const c of ordered) {
       if (cands.length >= 6) break;
