@@ -1,0 +1,310 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>블로그 검색 점검 — 루멘수학</title>
+<style>
+:root{--bg:#eef2f8;--card:#fff;--ink:#0f172a;--ink2:#51607a;--mut:#8896ab;--line:#dde3ec;
+  --navy:#0d2240;--me:#b5893a;--other:#6b7c96;--blue:#1d6fe8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#0b1220;--card:#131c2b;--ink:#f1f5fb;--ink2:#b7c3d6;--mut:#7f8 da;--mut:#7f8da0;--line:#22304a;
+  --navy:#e8eef8;--me:#d9a84e;--other:#93a3bb}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0b1220;--card:#131c2b;--ink:#f1f5fb;--ink2:#b7c3d6;
+  --mut:#7f8da0;--line:#22304a;--navy:#e8eef8;--me:#d9a84e;--other:#93a3bb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);line-height:1.6;padding:0 16px 80px;
+  font-family:'Pretendard',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  word-break:keep-all;-webkit-font-smoothing:antialiased}
+.wrap{max-width:820px;margin:0 auto}
+header{padding:44px 0 26px}
+h1{font-size:15px;font-weight:700;color:var(--blue);letter-spacing:.04em}
+.hero{font-size:64px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin:12px 0 6px;color:var(--navy)}
+.hero small{font-size:26px;font-weight:700;color:var(--mut)}
+.sub{font-size:14px;color:var(--ink2)}
+.kpis{display:flex;gap:12px;flex-wrap:wrap;margin:22px 0 30px}
+.kpi{flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kpi .l{font-size:13px;color:var(--ink2)}
+.kpi .v{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+.kpi .d{font-size:13px;font-weight:700;margin-top:2px}
+.up{color:#0f9d58}.down{color:#d9534f}.flat{color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 22px 24px;margin-bottom:18px}
+h2{font-size:17px;font-weight:800;margin-bottom:4px}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--ink2);margin:14px 0 18px;font-weight:600}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+.kw{padding:15px 0;border-top:1px solid var(--line)}
+.kw:first-of-type{border-top:0}
+.kwh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.kwq{font-size:16px;font-weight:700}
+.kwm{font-size:13px;color:var(--mut);font-variant-numeric:tabular-nums}
+.why{font-size:12.5px;color:var(--mut);margin-top:1px}
+.blocks{display:flex;gap:4px;flex-wrap:wrap;margin-top:10px}
+.b{width:26px;height:30px;border-radius:5px;background:var(--other);position:relative;cursor:default}
+.b.me{background:var(--me);outline:2px solid var(--me);outline-offset:2px}
+.b:hover::after,.b:focus::after{content:attr(data-tip);white-space:pre-line;position:absolute;left:0;top:36px;z-index:9;
+  background:var(--navy);color:var(--bg);font-size:12.5px;line-height:1.45;padding:9px 12px;border-radius:9px;width:280px;
+  box-shadow:0 6px 22px rgba(0,0,0,.28)}
+.err{font-size:13.5px;color:var(--mut);margin-top:8px}
+.riv li{list-style:none;padding:11px 0;border-top:1px solid var(--line);font-size:14px}
+.riv li:first-child{border-top:0}
+.riv b{font-weight:700}.riv em{font-style:normal;color:var(--mut);font-size:12.5px}
+.riv p{font-size:13px;color:var(--ink2);margin-top:4px}
+.pub li{list-style:none;display:grid;grid-template-columns:10px 1fr;gap:6px 10px;align-items:start;
+  padding:12px 0;border-top:1px solid var(--line);font-size:14px}
+.pub li:first-child{border-top:0}
+.pub em{grid-column:2;font-style:normal;font-size:12.5px;color:var(--mut)}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:7px}
+.dot.ok{background:#0f9d58}.dot.no{background:#d9534f}.dot.unk{background:var(--other)}
+.trend{width:100%;height:auto}
+.ax{stroke:var(--line);stroke-width:2}
+.ln{fill:none;stroke:var(--me);stroke-width:2;stroke-linejoin:round}
+.dt{fill:var(--me);stroke:var(--card);stroke-width:2}
+.vl{fill:var(--ink2);font-size:13px;font-weight:700;text-anchor:middle}
+.xlab{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mut);padding:0 18px;font-variant-numeric:tabular-nums}
+.note{font-size:13px;color:var(--ink2)}
+.note li{margin:6px 0 6px 18px}
+footer{font-size:12.5px;color:var(--mut);text-align:center;padding-top:26px}
+</style></head><body><div class="wrap">
+<header>
+  <h1>블로그 검색 점검 · 루멘수학</h1>
+  <div class="hero">3 <small>/ 10</small></div>
+  <p class="sub">검색어 10개를 휴대폰 네이버에 하나씩 쳐 보고, 첫 화면에 우리 글이 있는지 셌습니다. 2026-09-28 기준.</p>
+  <div class="kpis">
+    <div class="kpi"><div class="l">첫 화면에 우리 글이 뜬 검색어</div><div class="v">3 / 10</div>
+      <div class="d up">지난번보다 +1</div></div>
+    <div class="kpi"><div class="l">첫 화면에 뜬 우리 글 (중복 포함)</div><div class="v">3건</div></div>
+    <div class="kpi"><div class="l">점검한 날</div><div class="v" style="font-size:22px">2026-09-28</div>
+      <div class="d flat">4번째 점검</div></div>
+  </div>
+</header>
+
+<section class="card">
+  <h2>검색어별로 첫 화면에 무엇이 떴나</h2>
+  <p class="sub">칸 하나가 첫 화면에 뜬 블로그 글 하나입니다(나온 차례대로). 칸에 손을 올리면 어느 블로그의 어떤 글인지 나옵니다.</p>
+  <div class="legend"><span><i style="background:var(--me)"></i>우리 글</span><span><i style="background:var(--other)"></i>남의 글</span></div>
+  <div class="kw">
+    <div class="kwh"><div><div class="kwq">옥길동 수학학원</div><div class="why">가장 핵심. 동네 + 업종</div></div>
+      <div class="kwm">블로그 글 10건 중 <b>내 글 0편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · nolboo_math
+부천 옥길동 중등 수학 내신 대비 후기"></span><span class="b " tabindex="0"
+        data-tip="2번째 · sky_hakwon
+부천 옥길동 중등 수학 내신 대비 후기"></span><span class="b " tabindex="0"
+        data-tip="3번째 · okgil_edu
+옥길동 수학학원 고르는 법 3가지"></span><span class="b " tabindex="0"
+        data-tip="4번째 · okgil_edu
+옥길동 학원가 정리 (2026년판)"></span><span class="b " tabindex="0"
+        data-tip="5번째 · mathmom_bc
+부천 옥길동 중등 수학 내신 대비 후기"></span><span class="b " tabindex="0"
+        data-tip="6번째 · bucheon_math
+옥길동 학원가 정리 (2026년판)"></span><span class="b " tabindex="0"
+        data-tip="7번째 · sosa_study
+옥길동 학원가 정리 (2026년판)"></span><span class="b " tabindex="0"
+        data-tip="8번째 · nolboo_math
+옥길동 수학학원 고르는 법 3가지"></span><span class="b " tabindex="0"
+        data-tip="9번째 · bucheon_math
+옥길동 수학학원 고르는 법 3가지"></span><span class="b " tabindex="0"
+        data-tip="10번째 · sosa_study
+옥길동 학원가 정리 (2026년판)"></span></div></div><div class="kw">
+    <div class="kwh"><div><div class="kwq">부천 옥길동 수학학원</div><div class="why">지역을 넓힌 형태</div></div>
+      <div class="kwm">블로그 글 10건 중 <b>내 글 0편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · nolboo_math
+부천 옥길동 수학학원 상담 다녀온 후기"></span><span class="b " tabindex="0"
+        data-tip="2번째 · bucheon_math
+부천 옥길동 수학학원 상담 다녀온 후기"></span><span class="b " tabindex="0"
+        data-tip="3번째 · mathmom_bc
+부천 옥길동 수학학원 상담 다녀온 후기"></span><span class="b " tabindex="0"
+        data-tip="4번째 · nolboo_math
+옥길동 수학 과외 vs 학원 비교"></span><span class="b " tabindex="0"
+        data-tip="5번째 · sosa_study
+옥길동 수학 과외 vs 학원 비교"></span><span class="b " tabindex="0"
+        data-tip="6번째 · mathmom_bc
+옥길동 수학 과외 vs 학원 비교"></span><span class="b " tabindex="0"
+        data-tip="7번째 · sky_hakwon
+부천 옥길동 수학학원 상담 다녀온 후기"></span><span class="b " tabindex="0"
+        data-tip="8번째 · sosa_study
+옥길동 수학 과외 vs 학원 비교"></span><span class="b " tabindex="0"
+        data-tip="9번째 · bucheon_math
+옥길동 수학 과외 vs 학원 비교"></span><span class="b " tabindex="0"
+        data-tip="10번째 · bucheon_math
+옥길동 수학 과외 vs 학원 비교"></span></div></div><div class="kw">
+    <div class="kwh"><div><div class="kwq">루멘수학 ⭐</div><div class="why">학원 이름. 이건 떠야 정상</div></div>
+      <div class="kwm">블로그 글 8건 중 <b>내 글 1편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · mathmom_bc
+루멘수학 다녀온 학부모 후기"></span><span class="b me" tabindex="0"
+        data-tip="2번째 · ⭐ 우리 글
+세미나에 다녀온 날 오후, 시험을 앞둔 아이들과 반텐을 했습니다 — 부천 옥길동 루멘수학"></span><span class="b " tabindex="0"
+        data-tip="3번째 · bucheon_math
+루멘수학 다녀온 학부모 후기"></span><span class="b " tabindex="0"
+        data-tip="4번째 · okgil_edu
+루멘수학 다녀온 학부모 후기"></span><span class="b " tabindex="0"
+        data-tip="5번째 · sosa_study
+루멘수학 다녀온 학부모 후기"></span><span class="b " tabindex="0"
+        data-tip="6번째 · bucheon_math
+루멘수학 다녀온 학부모 후기"></span><span class="b " tabindex="0"
+        data-tip="7번째 · okgil_edu
+루멘수학 다녀온 학부모 후기"></span><span class="b " tabindex="0"
+        data-tip="8번째 · mathmom_bc
+루멘수학 다녀온 학부모 후기"></span></div></div><div class="kw">
+    <div class="kwh"><div><div class="kwq">소사구 수학학원</div><div class="why">행정구 단위</div></div>
+      <div class="kwm">블로그 글 8건 중 <b>내 글 0편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · nolboo_math
+부천 소사구 중3 수학 학원 추천"></span><span class="b " tabindex="0"
+        data-tip="2번째 · sosa_study
+소사구 수학학원 총정리"></span><span class="b " tabindex="0"
+        data-tip="3번째 · mathmom_bc
+부천 소사구 중3 수학 학원 추천"></span><span class="b " tabindex="0"
+        data-tip="4번째 · sosa_study
+부천 소사구 중3 수학 학원 추천"></span><span class="b " tabindex="0"
+        data-tip="5번째 · bucheon_math
+부천 소사구 중3 수학 학원 추천"></span><span class="b " tabindex="0"
+        data-tip="6번째 · sky_hakwon
+소사구 수학학원 총정리"></span><span class="b " tabindex="0"
+        data-tip="7번째 · okgil_edu
+소사구 수학학원 총정리"></span><span class="b " tabindex="0"
+        data-tip="8번째 · nolboo_math
+부천 소사구 중3 수학 학원 추천"></span></div></div><div class="kw">
+    <div class="kwh"><div><div class="kwq">옥길중 수학 ⭐</div><div class="why">학교 + 과목. 학부모가 실제로 치는 말</div></div>
+      <div class="kwm">블로그 글 8건 중 <b>내 글 1편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · bucheon_math
+옥길중 1학년 수학 내신 준비 이렇게"></span><span class="b " tabindex="0"
+        data-tip="2번째 · sky_hakwon
+옥길중 2학기 중간고사 수학 시험범위"></span><span class="b " tabindex="0"
+        data-tip="3번째 · sosa_study
+옥길중 1학년 수학 내신 준비 이렇게"></span><span class="b me" tabindex="0"
+        data-tip="4번째 · ⭐ 우리 글
+세미나에 다녀온 날 오후, 시험을 앞둔 아이들과 반텐을 했습니다 — 부천 옥길동 루멘수학"></span><span class="b " tabindex="0"
+        data-tip="5번째 · sky_hakwon
+옥길중 1학년 수학 내신 준비 이렇게"></span><span class="b " tabindex="0"
+        data-tip="6번째 · bucheon_math
+옥길중 기출 분석 (수학)"></span><span class="b " tabindex="0"
+        data-tip="7번째 · sosa_study
+옥길중 2학기 중간고사 수학 시험범위"></span><span class="b " tabindex="0"
+        data-tip="8번째 · okgil_edu
+옥길중 1학년 수학 내신 준비 이렇게"></span></div></div><div class="kw">
+    <div class="kwh"><div><div class="kwq">범박중 수학</div><div class="why">위와 같음</div></div>
+      <div class="kwm">블로그 글 7건 중 <b>내 글 0편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · okgil_edu
+범박중 시험범위 정리"></span><span class="b " tabindex="0"
+        data-tip="2번째 · bucheon_math
+범박중 시험범위 정리"></span><span class="b " tabindex="0"
+        data-tip="3번째 · edu_bumbak
+범박중 수학 내신 대비 후기"></span><span class="b " tabindex="0"
+        data-tip="4번째 · nolboo_math
+범박중 수학 내신 대비 후기"></span><span class="b " tabindex="0"
+        data-tip="5번째 · nolboo_math
+범박중 시험범위 정리"></span><span class="b " tabindex="0"
+        data-tip="6번째 · edu_bumbak
+범박중 수학 내신 대비 후기"></span><span class="b " tabindex="0"
+        data-tip="7번째 · nolboo_math
+범박중 시험범위 정리"></span></div></div><div class="kw">
+    <div class="kwh"><div><div class="kwq">소사고 수학</div><div class="why">고등 유입</div></div>
+      <div class="kwm">블로그 글 5건 중 <b>내 글 0편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · edu_bumbak
+소사고 1학년 수학 내신 등급컷"></span><span class="b " tabindex="0"
+        data-tip="2번째 · mathmom_bc
+소사고 수학 선행 어디까지"></span><span class="b " tabindex="0"
+        data-tip="3번째 · sosa_study
+소사고 수학 선행 어디까지"></span><span class="b " tabindex="0"
+        data-tip="4번째 · nolboo_math
+소사고 수학 선행 어디까지"></span><span class="b " tabindex="0"
+        data-tip="5번째 · mathmom_bc
+소사고 1학년 수학 내신 등급컷"></span></div></div><div class="kw">
+    <div class="kwh"><div><div class="kwq">범박고 수학</div><div class="why">고등 유입</div></div>
+      <div class="kwm">블로그 글 7건 중 <b>내 글 0편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · mathmom_bc
+범박고 1학년 모의고사 후기"></span><span class="b " tabindex="0"
+        data-tip="2번째 · bucheon_math
+범박고 수학 내신 준비"></span><span class="b " tabindex="0"
+        data-tip="3번째 · bucheon_math
+범박고 1학년 모의고사 후기"></span><span class="b " tabindex="0"
+        data-tip="4번째 · edu_bumbak
+범박고 1학년 모의고사 후기"></span><span class="b " tabindex="0"
+        data-tip="5번째 · sosa_study
+범박고 1학년 모의고사 후기"></span><span class="b " tabindex="0"
+        data-tip="6번째 · mathmom_bc
+범박고 수학 내신 준비"></span><span class="b " tabindex="0"
+        data-tip="7번째 · okgil_edu
+범박고 수학 내신 준비"></span></div></div><div class="kw">
+    <div class="kwh"><div><div class="kwq">옥길중 시험범위 수학 ⭐</div><div class="why">시험 기간 검색</div></div>
+      <div class="kwm">블로그 글 8건 중 <b>내 글 1편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · edu_bumbak
+옥길중 수학 범위 어디까지"></span><span class="b " tabindex="0"
+        data-tip="2번째 · okgil_edu
+옥길중 수학 범위 어디까지"></span><span class="b me" tabindex="0"
+        data-tip="3번째 · ⭐ 우리 글
+세미나에 다녀온 날 오후, 시험을 앞둔 아이들과 반텐을 했습니다 — 부천 옥길동 루멘수학"></span><span class="b " tabindex="0"
+        data-tip="4번째 · sky_hakwon
+옥길중 시험범위 총정리 (2학기 중간)"></span><span class="b " tabindex="0"
+        data-tip="5번째 · bucheon_math
+옥길중 수학 범위 어디까지"></span><span class="b " tabindex="0"
+        data-tip="6번째 · mathmom_bc
+옥길중 시험범위 총정리 (2학기 중간)"></span><span class="b " tabindex="0"
+        data-tip="7번째 · mathmom_bc
+옥길중 수학 범위 어디까지"></span><span class="b " tabindex="0"
+        data-tip="8번째 · sky_hakwon
+옥길중 수학 범위 어디까지"></span></div></div><div class="kw">
+    <div class="kwh"><div><div class="kwq">부천 관리형 수학학원</div><div class="why">우리 포지셔닝</div></div>
+      <div class="kwm">블로그 글 9건 중 <b>내 글 0편</b></div></div>
+    <div class="blocks"><span class="b " tabindex="0"
+        data-tip="1번째 · sosa_study
+부천 관리형 수학학원 비교"></span><span class="b " tabindex="0"
+        data-tip="2번째 · bucheon_math
+부천 관리형 수학학원 비교"></span><span class="b " tabindex="0"
+        data-tip="3번째 · mathmom_bc
+관리형 학원 정말 효과 있나"></span><span class="b " tabindex="0"
+        data-tip="4번째 · mathmom_bc
+부천 관리형 수학학원 비교"></span><span class="b " tabindex="0"
+        data-tip="5번째 · okgil_edu
+관리형 학원 정말 효과 있나"></span><span class="b " tabindex="0"
+        data-tip="6번째 · nolboo_math
+관리형 학원 정말 효과 있나"></span><span class="b " tabindex="0"
+        data-tip="7번째 · bucheon_math
+관리형 학원 정말 효과 있나"></span><span class="b " tabindex="0"
+        data-tip="8번째 · sky_hakwon
+관리형 학원 정말 효과 있나"></span><span class="b " tabindex="0"
+        data-tip="9번째 · mathmom_bc
+부천 관리형 수학학원 비교"></span></div></div>
+</section>
+
+<section class="card"><h2>추이</h2><p class="sub">점검할 때마다 쌓입니다. 검색어 10개 중 몇 개에 우리 글이 떴는지.</p>
+      <svg viewBox="0 0 640 120" class="trend" role="img" aria-label="점검 추이">
+        <line x1="24" y1="96" x2="616" y2="96" class="ax"/>
+        <path d="M24.0,96.0 L221.3,88.8 L418.7,81.6 L616.0,74.4" class="ln"/>
+        <circle cx="24" cy="96" r="5" class="dt"><title>2026-09-07 — 0/10</title></circle><circle cx="221.33333333333331" cy="88.8" r="5" class="dt"><title>2026-09-14 — 1/10</title></circle><circle cx="418.66666666666663" cy="81.6" r="5" class="dt"><title>2026-09-21 — 2/10</title></circle><circle cx="616" cy="74.4" r="5" class="dt"><title>2026-09-28 — 3/10</title></circle>
+        <text x="24" y="82" class="vl">0</text><text x="221.33333333333331" y="74.8" class="vl">1</text><text x="418.66666666666663" y="67.6" class="vl">2</text><text x="616" y="60.400000000000006" class="vl">3</text>
+      </svg>
+      <div class="xlab"><span>09-07</span><span>09-14</span><span>09-21</span><span>09-28</span></div></section>
+
+<section class="card"><h2>이 동네에서 이기고 있는 블로그</h2>
+  <p class="sub">첫 화면에 자주 뜬 남의 블로그입니다. <b>제목을 보면 어떤 글이 먹히는지</b> 보입니다 — 글감으로 쓰세요.</p>
+  <ul class="riv"><li><b>bucheon_math</b> <em>16번 등장</em>
+    <p>· 옥길동 학원가 정리 (2026년판)</p><p>· 옥길동 수학학원 고르는 법 3가지</p><p>· 부천 옥길동 수학학원 상담 다녀온 후기</p></li><li><b>mathmom_bc</b> <em>15번 등장</em>
+    <p>· 부천 옥길동 중등 수학 내신 대비 후기</p><p>· 부천 옥길동 수학학원 상담 다녀온 후기</p><p>· 옥길동 수학 과외 vs 학원 비교</p></li><li><b>sosa_study</b> <em>12번 등장</em>
+    <p>· 옥길동 학원가 정리 (2026년판)</p><p>· 옥길동 학원가 정리 (2026년판)</p><p>· 옥길동 수학 과외 vs 학원 비교</p></li><li><b>nolboo_math</b> <em>11번 등장</em>
+    <p>· 부천 옥길동 중등 수학 내신 대비 후기</p><p>· 옥길동 수학학원 고르는 법 3가지</p><p>· 부천 옥길동 수학학원 상담 다녀온 후기</p></li><li><b>okgil_edu</b> <em>10번 등장</em>
+    <p>· 옥길동 수학학원 고르는 법 3가지</p><p>· 옥길동 학원가 정리 (2026년판)</p><p>· 루멘수학 다녀온 학부모 후기</p></li><li><b>sky_hakwon</b> <em>8번 등장</em>
+    <p>· 부천 옥길동 중등 수학 내신 대비 후기</p><p>· 부천 옥길동 수학학원 상담 다녀온 후기</p><p>· 소사구 수학학원 총정리</p></li></ul></section>
+
+<section class="card"><h2>블로그에 올라가 있나</h2>
+    <p class="sub">저장소 <code>blog/</code> 폴더의 글이 실제 네이버 블로그에서 보이는지 확인했습니다.</p>
+    <ul class="pub"><li><span class="dot ok"></span>
+      <span>세미나에 다녀온 날 오후, 시험을 앞둔 아이들과 반텐을 했습니다 — 부천 옥길동 루멘수학</span><em>올라감</em></li><li><span class="dot no"></span>
+      <span>「모르겠어요」 한 줄로는 늘지 않습니다 — 부천 옥길동 수학학원이 아하노트를 서술형 대비로 바꾼 이유</span><em>못 찾음 — 발행 안 했거나 제목이 바뀜</em></li></ul></section>
+
+<section class="card"><h2>읽을 때 주의할 것</h2>
+  <ul class="note">
+    <li>네이버가 매기는 «순위»가 아니라 <b>화면에 나온 차례</b>입니다. 검색 결과는 사람·기기·시간마다 다릅니다.</li>
+    <li>«첫 화면»은 스크롤하지 않고 보이는 만큼입니다. 더 내리면 우리 글이 있을 수도 있습니다.</li>
+    <li>휴대폰 화면 기준입니다. 학부모는 대부분 휴대폰으로 찾습니다.</li>
+    <li>로그인하지 않고 검색 화면만 읽습니다. 글을 쓰거나 고치지 않습니다.</li>
+    <li>네이버 화면 구조가 바뀌면 숫자가 어긋날 수 있습니다. <code>sync/_debug/serp/</code> 에 검색할 때 찍은 화면이 저장되니, 이상하면 그 사진과 맞춰 보세요.</li>
+  </ul></section>
+
+<footer>node sync/serp_check.js · 기록은 docs/serp_history/ 에 쌓입니다</footer>
+</div></body></html>
