@@ -422,6 +422,86 @@ async function pastCompare(exam, items, prev, src, mydb, step) {
   return st;
 }
 
+/* ══ 출판사 교과서 출처 찾기 (2026-10-11 원장: 「매쓰플랫 교과서 출판사별 자료와 범박고 기출을 비교해서 숫자변형 문제가
+ *    어느 출판사에서 나왔는지 … 비상교육인데 다른 출판사에서 출제한 것 같다. 비상교육도 포함해서 모든 출판사의 교과서」)
+ *   시험 과목(공통수학2·미적분1 …)의 매쓰플랫 «모든 출판사» 교과서 은행(mf_textbook_<bid>, sync/mf_textbook_bank.js --subject)에서
+ *   시험 문항과 유형 번호(cid)가 같은 문항을 출판사마다 전부(최대 PUB_PER 개 · 난도 가까운 순) → 그림 판정(same/var/text) → 출판사별로 센다.
+ *   우리 자료 적중·지난 기출 비교와 따로. src.pub = { on } — 고등부 기본 켬.
+ *   저장 it.pub = [{ k:'pub:<문항id>', bid, pub, page, no, kind, why, imgUrl }] · it.pubTop = { k, kind, pub }
+ *        stats.pub = { subject, books:[{ bid, pub, n }], by:{ <출판사>: { same, var, text, type, nos:[시험 번호] } }, items, missing:[과목 은행 없는 출판사] } */
+const PUB_PER = 15, PUB_BATCH = 8;   /* 같은 유형 문항은 사실상 전부(고1 범박고 기준 580개 · 판정 약 80번) */
+function pubCfg(src) { const p = (src && src.pub) || {}; return { on: p.on !== false }; }
+function pubName(title) { const m = String(title || '').match(/^교과서_(.+?)\s*-\s*/); return m ? m[1] : String(title || '').replace(/^교과서_?/, '').split(' - ')[0]; }
+function pubCands(it, banks) {
+  const out = [];
+  banks.forEach((b) => {
+    const same = b.problems.filter((p) => it.cid && p.cid && String(p.cid) === String(it.cid) && p.pimg);
+    const dl = (p) => (p.level != null && it.level != null ? Math.abs(Number(p.level) - Number(it.level)) : 9);
+    same.sort((a, c) => dl(a) - dl(c) || a.page - c.page).slice(0, PUB_PER).forEach((p) => out.push({ b, p }));
+  });
+  return out;
+}
+const PUB_RULE = JUDGE_RULE.replace('그 뒤 그림들은 학원 학생들이 시험 전에 풀었던 «학원 자료 후보»다.', '그 뒤 그림들은 «여러 출판사 교과서의 문항 후보»다.');
+async function pubBanks(subject) {
+  const subj = String(subject || '').replace(/\s/g, '');
+  if (!subj) return { banks: [], missing: [] };
+  const idx = (await kvGet('mf_bookbank_index')) || {};
+  const bids = Object.keys(idx).filter((b) => { const t = String(idx[b].title || ''); return /^교과서_/.test(t) && t.replace(/\s/g, '').split('-').pop() === subj; });
+  const banks = [];
+  for (const bid of bids) { const v = await kvGet('mf_textbook_' + bid); if (v && (v.problems || []).length) banks.push({ bid, pub: v.publisher || pubName(v.title), title: v.title, problems: v.problems }); }
+  banks.sort((a, c) => a.pub.localeCompare(c.pub, 'ko'));
+  return { banks, missing: [] };
+}
+async function pubCompare(exam, items, prev, src, step) {
+  const cfg = pubCfg(src);
+  if (!cfg.on || !/^고/.test(gradeKey(exam.grade))) { if (!cfg.on) items.forEach((it) => { delete it.pub; delete it.pubTop; }); return null; }
+  const subject = exam.subject || (prev && prev.exam && prev.exam.subject) || '';
+  const { banks } = await pubBanks(subject);
+  if (!banks.length) { log(`출판사 교과서 비교: ${subject || '과목 모름'} 교과서 은행이 없어 건너뜀 (node sync/mf_textbook_bank.js --subject ${subject || '과목'})`); return null; }
+  log(`출판사 교과서 비교: ${subject} ${banks.length}종 — ${banks.map((b) => b.pub + ' ' + b.problems.length).join(' · ')}`);
+  const st = { subject, books: banks.map((b) => ({ bid: b.bid, pub: b.pub, n: b.problems.length })), by: {}, items: 0 };
+  banks.forEach((b) => { st.by[b.pub] = { same: 0, var: 0, text: 0, type: 0, nos: [] }; });
+  const ORD = { same: 4, var: 3, text: 2, type: 1 };
+  let n = 0;
+  for (const it of items) {
+    n++; if (step && (n === 1 || n % 3 === 0)) await step(`출판사 교과서와 비교 중 ${n}/${items.length}`, 97);
+    const old = prev && (prev.items || []).find((x) => x.no === it.no);
+    const oldPub = (old && old.pub) || [];
+    const picks = pubCands(it, banks); const cands = [];
+    for (const c of picks) {
+      if (!NO_AI && it.img) { let buf = null; try { buf = await fetchBuf(c.p.pimg); } catch (e) {} if (!buf) continue; c.buf = buf; }
+      cands.push(c);
+    }
+    const kinds = {};
+    if (!NO_AI && it.img && cands.length) {
+      let eb = null; try { eb = await stGet(BUCKET, it.img); } catch (e) {}
+      if (eb) {
+        const groups = []; for (let i = 0; i < cands.length; i += PUB_BATCH) groups.push(cands.slice(i, i + PUB_BATCH));
+        const res = await Promise.all(groups.map((g) => judgeItem(eb, g, PUB_RULE).catch((e) => { log(`${it.no}번 출판사 판정 실패: ${String(e.message).slice(0, 100)}`); return { cands: [] }; })));
+        res.forEach((r, gi) => (r.cands || []).forEach((v) => { const c = groups[gi][Number(v.i) - 1]; if (c) kinds['pub:' + c.p.id] = v; }));
+      }
+    }
+    it.pub = cands.map((c) => {
+      const k = 'pub:' + c.p.id, v = kinds[k]; const kind = v && ['same', 'var', 'text'].indexOf(v.kind) >= 0 ? v.kind : 'type';
+      const o = oldPub.find((x) => x.k === k);
+      const out = { k, bid: c.b.bid, pub: c.b.pub, page: c.p.page, no: c.p.no, kind, why: String((v && v.why) || '같은 유형 번호').slice(0, 40), imgUrl: c.p.pimg };
+      if (o && o.rejected) out.rejected = true;
+      return out;
+    }).filter((x) => x.kind !== 'type' || NO_AI || !it.img);
+    it.pub.sort((a, c) => ORD[c.kind] - ORD[a.kind] || a.pub.localeCompare(c.pub, 'ko'));
+    const live = it.pub.filter((x) => !x.rejected);
+    const top = live[0] || null; it.pubTop = top ? { k: top.k, kind: top.kind, pub: top.pub } : null;
+    /* 출판사별: 그 출판사에서 가장 닮은 것 하나로 센다 */
+    const best = {}; live.forEach((x) => { if (!best[x.pub] || ORD[x.kind] > ORD[best[x.pub]]) best[x.pub] = x.kind; });
+    Object.keys(best).forEach((pb) => { if (!st.by[pb]) return; st.by[pb][best[pb]]++; if (best[pb] === 'same' || best[pb] === 'var') st.by[pb].nos.push(it.no); });
+    if (top && (top.kind === 'same' || top.kind === 'var')) st.items++;
+    const sv = live.filter((x) => x.kind === 'same' || x.kind === 'var');
+    log(`${it.no}번 출판사: 후보 ${cands.length} → ${sv.length ? sv.map((x) => x.pub + ' ' + x.page + '쪽 ' + x.no + ' ' + x.kind).join(' · ') : '같은/숫자변형 없음'}`);
+  }
+  log(`출판사 교과서 비교 끝: 같은 문제·숫자변형이 있는 문항 ${st.items}개 — ` + Object.keys(st.by).map((pb) => `${pb} ${st.by[pb].same + st.by[pb].var}`).join(' · '));
+  return st;
+}
+
 /* ══ 한 시험 처리 ═════════════════════════════════════════════ */
 async function runExam(exam, opt) {
   const step = opt.step || (async () => {});
@@ -613,6 +693,8 @@ async function runExam(exam, opt) {
 
   /* ⑤-2 지난 기출 비교 — 우리 자료와 따로 (2026-10-11) */
   const pastSt = await pastCompare({ ...exam, subject: exam.subject || subjText }, items, prev, src, opt.mydb || (prev && prev.exam && prev.exam.mydb) || null, step);
+  /* ⑤-3 출판사 교과서 출처 — 모든 출판사 교과서와 (2026-10-11) */
+  const pubSt = await pubCompare({ ...exam, subject: exam.subject || subjText }, items, prev, src, step);
 
   /* 저장용 자료(쓰인 것만) */
   const matOut = {};
@@ -643,6 +725,7 @@ async function runExam(exam, opt) {
   Object.keys(dropped).forEach((k) => { if (k === 'mp') st.byKind.ms.mp.scopeDropped = dropped.mp; const kk = k === 'mp' ? 'ms' : k; if (st.byKind[kk]) st.byKind[kk].scopeDropped = (st.byKind[kk].scopeDropped || 0) + dropped[k]; });
   st.scope = src.scope === 'exam' ? 'exam' : 'all';
   if (pastSt) st.past = pastSt;   /* 2026-10-11: 학교 기출에서 다시 나온 문항 — 우리 자료 적중률과 따로 */
+  if (pubSt) st.pub = pubSt;   /* 2026-10-11: 출판사 교과서 출처 */
 
   /* 출제 경향 · 킬러 문항 한 단락 (학원앱 보고서·블로그 자료에 쓴다) */
   let trend = prev && prev.trend && (opt.rejudge || prev.trend.edited) ? prev.trend : null;   // v19-79: 고친 글은 늘 남김
@@ -798,7 +881,7 @@ function normSrc(raw, exam) {
   return { tb: { on: tb.on === true || (tb.on === undefined && hs), mode: tb.mode === 'scope' || raw.scope === 'exam' ? 'scope' : 'all', bids: (tb.bids || []).map(String) },
     ms: (raw.ms || []).map(String), mp: (raw.mp || []).map(String), lib: (raw.lib || []).map(String), mf: raw.mf !== false,
     scope: raw.scope === 'exam' ? 'exam' : 'all',   /* 2026-10-11: mp = 내 문제지 · scope = 시험 범위 단원만 */
-    past: pastCfg(raw) };   /* 2026-10-11: 지난 기출 비교 { on, years, sameTerm } — 없으면 켬 · 최근 4년 · 중간/기말 모두 */
+    past: pastCfg(raw), pub: pubCfg(raw) };   /* 2026-10-11: 지난 기출 비교 { on, years, sameTerm } — 없으면 켬 · 최근 4년 · 중간/기말 모두 */
 }
 function matFromItem(kind, k, title, it, extra) {
   const s = String(it.src || ''), n = /^[pbs]\d+$/.test(s) ? Number(s.slice(1)) : null;
@@ -1390,6 +1473,16 @@ async function prep() {
 }
 
 /* ══ 요청 처리 (학원앱 → exam_hit_req) ═══════════════════════ */
+/* 출판사 교과서 비교만 — 이미 분석한 시험에 (우리 자료·지난 기출 판정은 그대로). 요청 { only:'pub' } 또는 --pub-only <시험> */
+async function pubOnly(id, step) {
+  const p = await kvGet('exam_hit_' + id); if (!p) throw new Error('exam_hit_' + id + ' 가 없습니다');
+  const items = p.items.map((it) => ({ ...it }));
+  for (const it of items) if (it.img && !it.imgUrl) it.imgUrl = await stSign(it.img);
+  const pst = await pubCompare({ ...p.exam }, items, p, normSrc(p.src || null, p.exam), step || null);
+  const out = { ...p, items, stats: { ...p.stats } }; if (pst) out.stats.pub = pst; else delete out.stats.pub;
+  if (!DRY) await kvSet('exam_hit_' + id, out); else log('[dry] 저장 안 함');
+  return { ...out, examId: id };
+}
 async function handleRequest() {
   const req = await kvGet(REQ_KEY);
   if (!req || !req.status) { log('대기 중인 적중 분석 요청 없음'); return; }
@@ -1407,10 +1500,11 @@ async function handleRequest() {
   try {
     const exam = { ...req.exam, examId: req.examId };
     if (!exam.date) { exam.date = await examDateFromCalendar(exam); if (exam.date) log(`시험 첫날(학원 달력): ${exam.date}`); }
-    const out = await runExam(exam, { files: req.files || [], uploads: req.mats || [], mydb: req.mydb || null, rejudge: !!req.rejudge, from: req.from, to: req.to, src: req.src || null, step });
+    const out = req.only === 'pub' ? await pubOnly(req.examId, step) : await runExam(exam, { files: req.files || [], uploads: req.mats || [], mydb: req.mydb || null, rejudge: !!req.rejudge, from: req.from, to: req.to, src: req.src || null, step });
     await kvSet(REQ_KEY, { ...req, status: 'done', step: '끝', pct: 100, startedAt, doneAt: new Date().toISOString(), examId: out.examId,
       summary: { total: out.stats.total, same: out.stats.same, var: out.stats.var, type: out.stats.type, text: out.stats.text, byKind: out.stats.byKind,
-        past: out.stats.past ? { same: out.stats.past.same, var: out.stats.past.var, type: out.stats.past.type, items: out.stats.past.items, exams: out.stats.past.exams } : null } });
+        past: out.stats.past ? { same: out.stats.past.same, var: out.stats.past.var, type: out.stats.past.type, items: out.stats.past.items, exams: out.stats.past.exams } : null,
+        pub: out.stats.pub ? { items: out.stats.pub.items, by: Object.fromEntries(Object.entries(out.stats.pub.by).map(([k, v]) => [k, v.same + v.var])) } : null } });
   } catch (e) {
     log('실패:', e.message);
     await kvSet(REQ_KEY, { ...req, status: 'error', error: String(e.message || e).slice(0, 200), startedAt, doneAt: new Date().toISOString() });
@@ -1421,7 +1515,8 @@ async function handleRequest() {
 module.exports = { schoolKey, gradeKey, examIdOf, whereOf, pidOfUrl, semStart, mydbFetch, examDateFromCalendar,
   normSrc, textbookBids, loadTextbookMats, matFromItem, isExamPaper, semOf, tbTitle, courseTrie,   /* 2026-10-10 우리 자료 3종 */
   examUnits, inScope, pngDecode, pngEncode, stackPng, packCells, compactTree, mpCurriculum,   /* 2026-10-11 내 문제지 · 시험 범위 */
-  pastCfg, pastSelect, pastCands, termOrd };   /* 2026-10-11 지난 기출 비교 */
+  pastCfg, pastSelect, pastCands, termOrd,   /* 2026-10-11 지난 기출 비교 */
+  pubCfg, pubName, pubCands, pubBanks };   /* 2026-10-11 출판사 교과서 출처 */
 
 if (require.main === module) {
   (async () => {
@@ -1431,6 +1526,7 @@ if (require.main === module) {
     if (arg('mp-build', '')) { if (!ensurePdfLib()) throw new Error('pdf-lib 설치 실패'); for (const id of String(arg('mp-build', '')).split(',').filter(Boolean)) await buildMsMyPaper(id.trim(), null); return mypapersIndex(); }
     if (NO_AI && !has('no-ai')) log('⚠ ANTHROPIC_API_KEY 가 없어 그림 판정 없이 유형 번호로만 후보를 남깁니다');
     /* 2026-10-11: 지난 기출 비교만 — 이미 분석한 시험에 «학교 기출과 비교»만 다시 (우리 자료·판정은 그대로). --dry 면 숫자만 보여 준다 */
+    if (arg('pub-only', '')) { await pubOnly(arg('pub-only', ''), null); return; }
     if (arg('past-only', '')) {
       const id = arg('past-only', ''); const p = await kvGet('exam_hit_' + id); if (!p) throw new Error('exam_hit_' + id + ' 가 없습니다');
       let src = p.src || null; if (arg('src-file', '')) src = JSON.parse(require('fs').readFileSync(arg('src-file', ''), 'utf8'));
