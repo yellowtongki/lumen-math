@@ -146,11 +146,14 @@ async function insertImage(page, frame, file) {
   }
   if (!btn) throw new Error('「사진」 단추를 못 찾았습니다');
 
-  const [chooser] = await Promise.all([
-    page.waitForEvent('filechooser', { timeout: 20000 }),
-    btn.click(),
-  ]);
-  await chooser.setFiles(file);
+  global.__expectFile = true;
+  try {
+    const [chooser] = await Promise.all([
+      page.waitForEvent('filechooser', { timeout: 20000 }),
+      btn.click(),
+    ]);
+    await chooser.setFiles(file);
+  } finally { global.__expectFile = false; }
 
   // 올라갈 때까지 기다린다 (그림 수가 늘어나는 것으로 확인)
   await sleep(rnd(2500, 4000));
@@ -298,6 +301,21 @@ async function focusBodyEnd(page, frame) {
   } catch { return false; }
 }
 
+// 「저장 13」의 숫자를 읽는다. 이 수가 늘면 진짜로 임시저장된 것이다 (알림 띄우는 것보다 확실하다)
+async function saveCount(page, frame) {
+  const sels = ['[class*="save_count_btn"]', '[aria-label*="임시저장된"]', '[title*="임시저장된"]'];
+  for (const sel of sels) {
+    for (const scope of [page, frame]) {
+      try {
+        const t = await scope.locator(sel).first().innerText({ timeout: 400 });
+        const m = String(t).match(/\d+/);
+        if (m) return parseInt(m[0], 10);
+      } catch {}
+    }
+  }
+  return null;
+}
+
 // 정말 저장됐는지 확인한다 — 「저장되었습니다」 알림이 뜨는지 본다. 확인 못 하면 성공이라고 말하지 않는다
 async function savedOk(page, frame) {
   const marks = ['text=저장되었습니다', 'text=임시저장되었습니다', 'text=저장했습니다', '.se-toast', '[class*="toast"]'];
@@ -430,6 +448,9 @@ async function insertPlace(page, frame, keyword) {
     args: ['--disable-blink-features=AutomationControlled'],
   });
   const page = ctx.pages()[0] || await ctx.newPage();
+  // 그림 넣을 때가 아닌데 파일 선택창이 뜨면 맥 창이 떠서 작업이 멈춘다 — 조용히 닫는다
+  global.__expectFile = false;
+  page.on('filechooser', (fc) => { if (!global.__expectFile) fc.setFiles([]).catch(() => {}); });
 
   // ── ① 로그인 ──
   if (opt.login) {
@@ -549,7 +570,7 @@ async function insertPlace(page, frame, keyword) {
     await sleep(900);
     const firstTag = meta.hashtags.split(/\s+/).find(t => t.startsWith('#')) || '';
     let inBody = false;
-    try { inBody = (await f.locator('.se-main-container').first().innerText()).includes(firstTag); } catch {}
+    try { inBody = (await f.evaluate(() => document.body.innerText || '')).includes(firstTag); } catch {}
     if (inBody) log('     ✅ 본문 끝에 넣었습니다 (발행할 때 태그로 잡힙니다)');
     else {
       try { require('child_process').execSync('pbcopy', { input: meta.hashtags }); log('     📋 클립보드에 복사해 뒀습니다'); } catch {}
@@ -567,10 +588,22 @@ async function insertPlace(page, frame, keyword) {
       log(`   ⚠️ 「${label}」 단추를 잡았습니다 — 발행일 수 있어 누르지 않습니다.`);
       save = null;
     } else {
-      log(`   「${label || '저장'}」 누릅니다…`);
+      const before = await saveCount(page, f);
+      log(`   「${label || '저장'}」 누릅니다…${before === null ? '' : ` (지금 저장함 ${before}개)`}`);
       await save.click();
-      if (await savedOk(page, f)) {
-        log('\n✅ 임시저장했습니다. (「저장되었습니다」 알림을 확인했습니다)');
+      // 저장함 숫자가 늘었는지로 본다. 숫자를 못 읽으면 알림으로 본다
+      let ok = false;
+      if (before !== null) {
+        const t0 = Date.now();
+        while (Date.now() - t0 < 9000) {
+          const now = await saveCount(page, f);
+          if (now !== null && now > before) { ok = true; break; }
+          await sleep(600);
+        }
+      }
+      if (!ok) ok = await savedOk(page, f);
+      if (ok) {
+        log(`\n✅ 임시저장했습니다.${before === null ? '' : ` (저장함 ${before} → ${await saveCount(page, f)})`}`);
       } else {
         await pause('「저장」을 눌렀는데 저장됐다는 알림이 안 보입니다.',
           '화면 오른쪽 위 「저장」을 직접 눌러주세요. (「발행」 말고 「저장」입니다)');
