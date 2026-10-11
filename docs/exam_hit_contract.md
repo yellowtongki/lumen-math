@@ -216,3 +216,23 @@ src: { tb:{ on:true, mode:'all'|'scope', bids:['3219971', …] },   // 교과서
   실제 학습지는 과목 폴더(공수2 16 · 미적분1 13 · 공수1 12 · 중등1 10 · 봉쌤모의고사 9 · EBS 9 …)에 있다 → 요청 화면에서 폴더 칩으로 골라 체크하면 «분석 때 바로 인식», 「💾 이 구성 기억」 해 두면 다음 새벽부터 미리 인식.
 - 산 자료(PURCHASE)는 `uploadedAt`·`pdfPath` 가 없다 → 날짜는 `purchasedAt`, 그림은 기출 DB 받기(`msExam`+`msImage`)로 받아 PDF 를 만든 뒤 인식. 150문항·60쪽 넘는 자료는 건너뜀(`error`).
 - 지정 교과서 8권 은행은 모두 있다(범박고 고2 대수 3219971 · 미적분1 3227375 포함).
+
+### 10-6. 2026-10-11 «내 문제지» · 수학비서와 같은 폴더 나무 · 시험 범위 단원만 (학원앱 v19-107)
+원장: 「수학비서는 DB 와 내 문제지가 다르다. 내 문제지가 내가 만든 것이다. 그리고 수학비서 폴더 형태와 똑같아야 헷갈리지 않는다.」 · 「시험 범위 단원만」은 교과서만이 아니라 모든 자료에.
+- 수학비서 API(같은 로그인): 나무 `GET /bms/api/v1/folders?folderType=mypaper` · 목록 `/my-papers?limit=100&folderId=<id>[&cursor=]` · 상세 `/my-papers/<id>`(folders 경로) · 문항 `/my-papers/<id>/cells?limit=100[&cursor=]` (imagePath · passage.imagePath · chapters · adaptiveTags · answers · sources, 그림은 CDN 쿠키).
+- 저장 키 (앱은 시작 때 안 받는다 — PULL_SKIP_PREFIX `ms_mypaper`)
+
+| 키 | 모양 |
+|---|---|
+| `ms_mypapers_index` | `{ updated, tree:[{ id, n, fc, tc, c:[…] }], items:[{ id, title, folderId, folderPath:'작업공간 › 교과서 변형', n, progress, createdAt, avgDiff, status }] }` — 나무·목록 순서는 수학비서 그대로 (약 35KB) |
+| `ms_mypaper_<id>` | `ms_paper_<id>` 와 같은 모양 + `kind:'mp'`, `folderId`, `folderPath`, `subject`, `grade`, `createdAt`, `trie`, `typed` · items 에 `msChapter`(단원 경로) · `msTags` · `answer`(latex) · `msSource` · `msDiff`. 그림 `exam_images/msmp/<id>/<번호>.png` (지문은 위에 붙여 한 장) |
+| `ms_papers_index` | 위 10-3 + `tree`(나만의 DB 폴더 나무, 같은 줄임 모양) · items 에 `fid`(폴더 id) |
+| `exam_hit_src_<학교>_<학년>` | 위 10-3 + `mpOn`/`mpOff`(내 문제지 · 자동 체크와 다른 것만) · `scope:'all'\|'exam'` |
+
+- 인식: 문항 그림을 A4 2단 PDF 로 붙이고 **우리 상자 좌표**로 매쓰플랫 analysis-flow (sync/mypaper_to_mathflat.js 와 같은 방식) → 수학비서 번호와 1:1, 유형·원본 번호. 과목·교육과정 키는 문항 단원 맨 앞(「08 공통수학2」, `decideCurriculum`).
+- **10쪽 제한**: 매쓰플랫 문서 인식은 한 번에 10쪽까지(넘으면 「pageIndexes: must be valid」 — 711432 가 12쪽이었다). 이제 모든 인식(나만의 DB · 내 문제지 · 자료함 PDF)을 10쪽씩 나눠 돌리고 이어 붙인다. 150문항 제한을 600문항·200쪽으로 올렸고, 예전 크기 제한으로 건너뛴 것은 다음 `--prep` 에서 바로 다시 한다.
+- 요청 `src.mp = [id…]` → 자료 키 `mp:<id>:<번호>`, `kind:'ms'` + `mp:true` (보고서 이름 «학원 학습지», 화면 «학원 문제지»). 아직 인식 안 된 것은 분석 때 바로 인식.
+- `src.scope = 'exam'` → 모든 자료에서 시험 문항의 소단원(유형 → `mf_concept_names` 중단원·유형 이름 → `mf_typedb` 소단원)에 없는 문항을 뺀다. 유형이 없거나 단원을 모르는 문항은 남긴다. 소단원을 모르면 중단원으로. 교과서는 예전 `tb.mode='scope'`(쪽 단위)도 같이.
+- 결과: `exam_hit_<시험>.units = [{ mid, lit }]`(시험 단원) · `stats.byKind.ms.mp = { mats, hit, papers, cands, scopeDropped }` · `stats.byKind.ms.papers` · `stats.byKind[k].scopeDropped` · `stats.scope`.
+- 실행: `--mypapers-index` (색인만) · `--mp-build 2061686,2032273` (인식 + 색인) · `--rejudge <시험> --dry --src-file src.json` (저장 없이 자료 구성 바꿔 보기). `--prep` 은 내 문제지 색인 + 기억한 구성의 `mpOn` 미리 인식도 한다.
+- 단위 검사 `sync/appbuild/tests/test_hit_scope.js` (서버 접속 없음) · 앱 검사 `tests/test_v19107.js`.

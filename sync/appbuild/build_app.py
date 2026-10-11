@@ -73,7 +73,8 @@ hs2=open(SP+'/hitsrc2_teacher.js').read() if int(ver.replace('v19-',''))>=103 el
 l3=open(SP+'/layout3_teacher.js').read() if int(ver.replace('v19-',''))>=104 else ''   # v19-104: 3분할 틀 — 오른쪽 도구 칸(RIGHT_TOOLS) · 홈 아닌 화면은 공용 메뉴 접기 · 1024~1279 「🛠 도구」 서랍
 l3h=open(SP+'/layout3_hit_teacher.js').read() if int(ver.replace('v19-',''))>=105 else ''   # v19-105: 적중 분석을 3분할로 — 왼쪽 시험 목록·새로 · 오른쪽 우리 자료·기준·내보내기·서버 상태
 l3b=open(SP+'/layout3_bt_rc_teacher.js').read() if int(ver.replace('v19-',''))>=106 else ''   # v19-106: 백지테스트·리커버리를 3분할로 — 왼쪽 학생 고르기·보관함 / 이번 주 호출·장부 · 오른쪽 구성·만들기·채팅 / 규칙·만들기·계정
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+new.lstrip('\n')+'\n\n'+s[end:]
+mst=open(SP+'/mstree_teacher.js').read() if int(ver.replace('v19-',''))>=107 else ''   # v19-107: 적중 분석 요청 — 수학비서 «📄 내 문제지»·«🗄 나만의 DB» 두 탭(수학비서와 같은 폴더 나무) + 「범위: 전체 / 시험 범위 단원만」(모든 자료)
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -493,6 +494,9 @@ if int(ver.replace('v19-',''))>=99:
 if int(ver.replace('v19-',''))>=102:
     # v19-102: 카드뉴스 브랜드 글꼴 Pretendard (블로그 카드와 같은 글꼴)
     rep('<link rel="icon" type="image/png" href="lumen_icon_teacher.png">', '<link rel="icon" type="image/png" href="lumen_icon_teacher.png">\n<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"><!-- v19-102: 카드뉴스 브랜드 글꼴 -->')
+if int(ver.replace('v19-',''))>=107:
+    # v19-107: 수학비서 «내 문제지» 인식(ms_mypaper_<id>)·목록(ms_mypapers_index)은 앱이 필요할 때 서버에서 바로 읽는다 — 시작 때 받지 않는다
+    rep("'or_students_archive_', 'ms_paper'];", "'or_students_archive_', 'ms_paper', 'ms_mypaper'];")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''

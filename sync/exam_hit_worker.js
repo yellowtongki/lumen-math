@@ -27,6 +27,11 @@
  *        수학비서 학년 폴더(고1·고2·고3·중1·중2·중3) 학습지 미리 인식 → ms_paper_<id> · 목록 ms_papers_index
  *        · PDF 자료함(exam_lib) 대기 파일 인식 · 지정 교과서 은행(mf_textbook_<bid>)이 없으면 만들기.
  *        --dry = 읽기만 하고 할 일 목록만 보여 준다. 새벽(한국 3~6시)이 아니면 --force 없이는 건너뛴다.
+ *        2026-10-11: 수학비서 «내 문제지»(원장님이 만든 프린트) 색인 ms_mypapers_index + 기억한 구성의 mpOn 미리 인식
+ *   node sync/exam_hit_worker.js --mypapers-index            내 문제지 폴더 나무·목록만 새로 받기
+ *   node sync/exam_hit_worker.js --mp-build 2061686,2032273  내 문제지 인식 → ms_mypaper_<id> (+ 색인)
+ *   node sync/exam_hit_worker.js --rejudge <examId> --dry --src-file src.json   자료 구성을 바꿔 저장 없이 돌려 보기
+ *   큰 자료는 10쪽씩 나눠 인식한다(매쓰플랫 문서 인식은 한 번에 10쪽까지 — 넘으면 「pageIndexes: must be valid」).
  *
  * 환경변수: SUPABASE_URL · SUPABASE_SERVICE_KEY · MATHFLAT_ID/PASSWORD · ANTHROPIC_API_KEY · MATHSECR_ID/PASSWORD(기출 DB 찾기)
  * 규칙: 로그에 학생 이름·문항 원문을 남기지 않는다(번호·개수만). 시험지 그림은 exam_images(비공개)에만.
@@ -396,6 +401,7 @@ async function runExam(exam, opt) {
   const tbMats = src.tb.on ? await loadTextbookMats(src.tb, exam, items, mats, names) : [];
   tbMats.forEach((m) => mats.push(m));
   const msR = await loadMsMats(src.ms, ctx); msR.mats.forEach((m) => mats.push(m));
+  const mpR = await loadMpMats(src.mp, ctx); mpR.mats.forEach((m) => mats.push(m));   /* 2026-10-11 내 문제지(학원 문제지) */
   const libR = await loadLibMats(src.lib, ctx); libR.mats.forEach((m) => mats.push(m));
   /* 학원앱에서 올린 우리 프린트 */
   for (const [ui, u] of (opt.uploads || []).entries()) {
@@ -416,7 +422,17 @@ async function runExam(exam, opt) {
   }
   /* 띠에 보이는 글 — 「자료 모으는 중 — 교과서 783 · 수학비서 3장 · 프린트 1장」 */
   const nPrint = libR.n + (opt.uploads || []).length;
-  await step(`자료 모으는 중 — 교과서 ${tbMats.length} · 수학비서 ${msR.n}장 · 프린트 ${nPrint}장${src.mf ? ' · 매쓰플랫 ' + mats.filter((m) => m.kind === 'ws' || m.kind === 'book').length : ''}`, 44);
+  await step(`자료 모으는 중 — 교과서 ${tbMats.length} · 학원 문제지 ${mpR.n}장 · 수학비서 ${msR.n}장 · 프린트 ${nPrint}장${src.mf ? ' · 매쓰플랫 ' + mats.filter((m) => m.kind === 'ws' || m.kind === 'book').length : ''}`, 44);
+  /* 2026-10-11 원장: 「시험 범위 단원만」 — 모든 자료에서 시험 문항의 소단원(mf_typedb)에 없는 문항을 뺀다. 유형이 없는 문항은 남긴다 */
+  const U = await unitIndex();
+  const units = examUnits(items, U);
+  const dropped = {}; const kindKey = (m) => (m.mp ? 'mp' : m.kind);
+  if (src.scope === 'exam' && units.lits.size + units.mids.size) {
+    const before = {}; mats.forEach((m) => { before[kindKey(m)] = (before[kindKey(m)] || 0) + 1; });
+    const kept = mats.filter((m) => { const ok = inScope(m.cid, U, units); if (!ok) dropped[kindKey(m)] = (dropped[kindKey(m)] || 0) + 1; return ok; });
+    mats.length = 0; kept.forEach((m) => mats.push(m));
+    log(`시험 범위 단원만 (소단원 ${units.lits.size}개): ` + Object.keys(before).map((k) => `${k} ${before[k]}→${before[k] - (dropped[k] || 0)}`).join(' · '));
+  } else if (src.scope === 'exam') log('시험 범위 단원만 — 시험 문항 단원을 몰라 전체를 씀');
   const byCid = {}; mats.forEach((m) => { if (m.cid) (byCid[m.cid] = byCid[m.cid] || []).push(m); });
 
   /* ④ 후보 + 판정 */
@@ -436,8 +452,14 @@ async function runExam(exam, opt) {
     const solved = (m) => Object.keys(m.res).length;
     const ranked = Object.values(pool).sort((a, b) => (b.idSame - a.idSame) || (Math.abs((a.m.level || 3) - (it.level || 3)) - Math.abs((b.m.level || 3) - (it.level || 3))) || (wrong(b.m) - wrong(a.m)) || (solved(b.m) - solved(a.m)));
     /* 그림을 받아 같은 그림(같은 원본 문제)은 하나로 */
+    /* 자리 나눠 주기 (2026-10-11): 학생 기록이 없는 자료(내 문제지 · 교과서 · 나만의 DB)는 «푼 학생·틀린 수» 순위에서 늘 밀린다.
+       원본 번호가 같은 것은 맨 앞 그대로 두고, 그다음 6자리 안에 내 문제지 2 · 교과서 1 · 나만의 DB 1 자리를 먼저 준다. */
+    const head = ranked.filter((c) => c.idSame), rest = ranked.filter((c) => !c.idSame), pick = [];
+    const take = (pred, n) => { for (const c of rest) { if (n <= 0) break; if (pick.indexOf(c) < 0 && pred(c.m)) { pick.push(c); n--; } } };
+    take((m) => m.mp, 2); take((m) => m.kind === 'textbook', 1); take((m) => m.kind === 'ms' && !m.mp, 1);
+    const ordered = head.concat(pick, rest.filter((c) => pick.indexOf(c) < 0));
     const cands = []; const seenPid = {};
-    for (const c of ranked) {
+    for (const c of ordered) {
       if (cands.length >= 6) break;
       const m = c.m;
       let buf = null;
@@ -475,6 +497,7 @@ async function runExam(exam, opt) {
     if (m.store && !m.storeUrl) m.storeUrl = await stSign(m.store);   /* 학원앱이 서명 없이 그림을 열게 (1년) */
     matOut[m.k] = { kind: m.kind, title: m.title, where: whereOf(m), cid: m.cid, level: m.level, img: m.img || '', store: m.store || '', storeUrl: m.storeUrl || '', res: m.res };
     if (m.lib) matOut[m.k].lib = true;
+    if (m.mp) { matOut[m.k].mp = true; if (m.msChapter) matOut[m.k].msChapter = m.msChapter; }   /* 2026-10-11 내 문제지 */
   }
 
   /* 통계 */
@@ -489,6 +512,12 @@ async function runExam(exam, opt) {
   st.byKind = {}; ['textbook', 'ms', 'upload', 'ws', 'book'].forEach((k) => { st.byKind[k] = { mats: 0, hit: 0 }; });
   mats.forEach((m) => { if (st.byKind[m.kind]) st.byKind[m.kind].mats++; });
   items.forEach((x) => { const t = x.cands && x.cands[0]; const m = t && matOut[t.k]; if (m && inB.includes(t.kind) && st.byKind[m.kind]) st.byKind[m.kind].hit++; });
+  /* 2026-10-11: 내 문제지(학원 문제지)는 ms 에 들어가고, 따로도 센다 — ms.mp = { mats, hit, papers } · 시험 범위로 뺀 수 scopeDropped */
+  st.byKind.ms.mp = { mats: mats.filter((m) => m.mp).length, hit: 0, papers: mpR.n, cands: 0 };
+  items.forEach((x) => { const t = x.cands && x.cands[0]; if (t && /^mp:/.test(t.k) && inB.includes(t.kind)) st.byKind.ms.mp.hit++; (x.cands || []).forEach((c) => { if (/^mp:/.test(c.k)) st.byKind.ms.mp.cands++; }); });
+  st.byKind.ms.papers = msR.n;
+  Object.keys(dropped).forEach((k) => { if (k === 'mp') st.byKind.ms.mp.scopeDropped = dropped.mp; const kk = k === 'mp' ? 'ms' : k; if (st.byKind[kk]) st.byKind[kk].scopeDropped = (st.byKind[kk].scopeDropped || 0) + dropped[k]; });
+  st.scope = src.scope === 'exam' ? 'exam' : 'all';
 
   /* 출제 경향 · 킬러 문항 한 단락 (학원앱 보고서·블로그 자료에 쓴다) */
   let trend = prev && prev.trend && (opt.rejudge || prev.trend.edited) ? prev.trend : null;   // v19-79: 고친 글은 늘 남김
@@ -505,6 +534,7 @@ async function runExam(exam, opt) {
 
   const out = { examId, exam: { school: schoolKey(exam.school), grade: gradeKey(exam.grade), year: Number(exam.year), semester: String(exam.semester), term: exam.term, date: exam.date || '', mydb: opt.mydb || null, msLv: msLv || null, subject: exam.subject || (prev && prev.exam && prev.exam.subject) || '' },
     basis: (prev && prev.basis) || 'same+var', from, to, students: codes, items, mats: matOut, stats: st, trend, src: opt.src || (prev && prev.src) || null,
+    units: units.list,   /* 2026-10-11: 시험 범위 단원(소단원) — 학원앱 「범위」 칩 */
     at: new Date().toISOString(), by: 'worker', confirmedAt: (prev && prev.confirmedAt) || null };
   await kvSet('exam_hit_' + examId, out);
   const idx = (await kvGet('exam_hit_index')) || { items: [] };
@@ -514,6 +544,8 @@ async function runExam(exam, opt) {
   await kvSet('exam_hit_index', idx);
   log(`저장: exam_hit_${examId} — ${st.total}문항 · 같은 문제 ${st.same} · 변형 ${st.var} · 유형 ${st.type} · 지문만 ${st.text} · 학생 ${codes.length}명 · 자료 ${Object.keys(matOut).length}`);
   log(`자료 종류별 (대조 문항 / 적중): ${Object.keys(st.byKind).map((k) => k + ' ' + st.byKind[k].mats + '/' + st.byKind[k].hit).join(' · ')}`);
+  if (st.byKind.ms.mp.papers) log(`  그중 학원 문제지(내 문제지) ${st.byKind.ms.mp.papers}장: 대조 ${st.byKind.ms.mp.mats} · 1순위 적중 ${st.byKind.ms.mp.hit} · 후보에 오른 것 ${st.byKind.ms.mp.cands}`);
+  if (st.scope === 'exam') log(`  시험 범위로 뺀 문항: ${Object.keys(st.byKind).map((k) => k + ' ' + (st.byKind[k].scopeDropped || 0)).join(' · ')}`);
   return out;
 }
 
@@ -584,7 +616,7 @@ const GRADE_FOLDERS = ['고1', '고2', '고3', '중1', '중2', '중3'];
 const PREP_DAYS = 150;                       // 학년 폴더: 최근 150일 안에 올린(산) 학습지만 새벽에 인식
 const LIST_DAYS = 365;                       // 다른 폴더: 1년 안 학습지만 목록에
 const PREP_CAP = Number(arg('cap', 12)) || 12, LIB_CAP = 6;
-const PAPER_MAX_Q = 150, PAPER_MAX_PAGES = 60;
+const PAPER_MAX_Q = 600, PAPER_MAX_PAGES = 200;   /* 2026-10-11: 10쪽씩 나눠 인식하므로 150문항·60쪽 제한을 풀었다 */
 const RETRY_H = 20;                          // 실패한 것은 20시간 뒤 다시
 /* 기출 = 학교 시험지(school_exams)·「내신 …」 제목 · 전국 모의고사(public_mock_exams) — 다른 학교·지난 시험이라 기본으로 끈다 */
 function isExamPaper(m) { return m.paperType === 'school_exams' || /public_mock/.test(m.paperType || '') || /^\s*내신/.test(m.title || ''); }
@@ -611,12 +643,36 @@ function courseTrie(grade, year, text) {
 /* 적중 분석 시험과 같은 방식으로 교육과정 키 — 고등부는 제목·폴더에서 과목을 읽고, 모르면 예전 trieForExam */
 function trieOf(grade, year, semester, text) { const c = courseTrie(grade, year, text); if (c) return c; const g = String(gradeKey(grade)).replace(/\D/g, ''); return g ? tw().trieForExam(g, semester, year) : ''; }
 function tbTitle(t) { return String(t || '교과서').replace(/^교과서_/, '교과서 ').replace(/\s*-\s*/, ' ').trim(); }
+/* 2026-10-11: 유형(cid) → 중단원·소단원 — mf_concept_names(유형 이름·중단원) + mf_typedb(중단원 › 소단원 › 유형 이름) */
+const nz = (t) => String(t || '').replace(/\s/g, '');
+async function unitIndex() {
+  const names = (await kvGet('mf_concept_names')) || {}; const tdb = (await kvGet('mf_typedb')) || {};
+  const litOf = {};
+  (tdb.grades || []).forEach((g) => (g.b || []).forEach((b) => (b.m || []).forEach((m) => (m.s || []).forEach((l) => (l.t || []).forEach((t) => {
+    const k = nz(m.n) + '|' + nz(t); if (!litOf[k]) litOf[k] = l.n; })))));
+  const of = (cid) => { const n = cid && names[cid]; if (!n) return null; return { mid: n.m || '', lit: litOf[nz(n.m) + '|' + nz(n.n)] || '' }; };
+  return { of };
+}
+function examUnits(items, U) {
+  const lits = new Set(), mids = new Set(), list = [], seen = {};
+  (items || []).forEach((it) => { const u = U.of(it.cid); if (!u) return; if (u.lit) lits.add(u.lit); if (u.mid) mids.add(u.mid);
+    const k = u.mid + '|' + u.lit; if (!seen[k]) { seen[k] = 1; list.push({ mid: u.mid, lit: u.lit }); } });
+  return { lits, mids, list };
+}
+/* 유형이 없거나 단원을 모르면 남긴다 · 소단원을 알면 소단원으로, 모르면 중단원으로 */
+function inScope(cid, U, units) {
+  if (!cid) return true; const u = U.of(cid); if (!u) return true;
+  if (u.lit && units.lits.size) return units.lits.has(u.lit);
+  if (u.mid && units.mids.size) return units.mids.has(u.mid);
+  return true;
+}
 function normSrc(raw, exam) {
   const hs = /^고/.test(gradeKey(exam.grade));
-  if (!raw || typeof raw !== 'object') return { tb: { on: hs, mode: 'all', bids: [] }, ms: [], lib: [], mf: true };
+  if (!raw || typeof raw !== 'object') return { tb: { on: hs, mode: 'all', bids: [] }, ms: [], mp: [], lib: [], mf: true, scope: 'all' };
   const tb = raw.tb || {};
-  return { tb: { on: tb.on === true || (tb.on === undefined && hs), mode: tb.mode === 'scope' ? 'scope' : 'all', bids: (tb.bids || []).map(String) },
-    ms: (raw.ms || []).map(String), lib: (raw.lib || []).map(String), mf: raw.mf !== false };
+  return { tb: { on: tb.on === true || (tb.on === undefined && hs), mode: tb.mode === 'scope' || raw.scope === 'exam' ? 'scope' : 'all', bids: (tb.bids || []).map(String) },
+    ms: (raw.ms || []).map(String), mp: (raw.mp || []).map(String), lib: (raw.lib || []).map(String), mf: raw.mf !== false,
+    scope: raw.scope === 'exam' ? 'exam' : 'all' };   /* 2026-10-11: mp = 내 문제지 · scope = 시험 범위 단원만 */
 }
 function matFromItem(kind, k, title, it, extra) {
   const s = String(it.src || ''), n = /^[pbs]\d+$/.test(s) ? Number(s.slice(1)) : null;
@@ -672,15 +728,169 @@ async function loadTextbookMats(tb, exam, items, have, names) {
 
 /* ── 매쓰플랫 AI 인식 → exam_images 에 문항 그림 (시험지와 같은 길) ── */
 let MF_IN = false;
+/* 2026-10-11: 매쓰플랫 문서 인식(document-processing-flow)은 «한 번에 10쪽까지만» 받는다 — 넘으면
+ *   「pageIndexes: must be valid」로 실패한다(711432 12쪽 · 703496, docs/mathflat_one_worksheet.md 와 같은 제한).
+ *   그래서 10쪽씩 잘라 여러 번 인식하고 이어 붙인다. */
+const CHUNK_PAGES = 10;
+async function pdfSlice(bytes, from, to) {
+  const { PDFDocument } = require('pdf-lib');
+  const src = await PDFDocument.load(bytes, { ignoreEncryption: true }); const out = await PDFDocument.create();
+  const idx = []; for (let i = from; i < to; i++) idx.push(i);
+  (await out.copyPages(src, idx)).forEach((pg) => out.addPage(pg));
+  return { bytes: Buffer.from(await out.save()), pages: out.getPageCount() };
+}
+async function recognizeChunked(pdf, trie) {
+  if (pdf.pages <= CHUNK_PAGES) return recognize(pdf.bytes, pdf.pages, trie);
+  const out = [];
+  for (let s = 0; s < pdf.pages; s += CHUNK_PAGES) {
+    const part = await pdfSlice(pdf.bytes, s, Math.min(pdf.pages, s + CHUNK_PAGES));
+    log(`  나눠 인식 ${s + 1}~${s + part.pages}쪽 / ${pdf.pages}쪽`);
+    const bx = await recognize(part.bytes, part.pages, trie);
+    bx.forEach((b) => { b.page += s; out.push(b); });
+  }
+  return out;
+}
 async function recognizeToStore(pdf, trie, prefix) {
   if (!MF_IN) { await tw().mfLogin(); MF_IN = true; }
-  const boxes = await recognize(pdf.bytes, pdf.pages, trie);
+  const boxes = await recognizeChunked(pdf, trie);
   const items = [];
   for (let i = 0; i < boxes.length; i++) {
     const b = boxes[i], no = i + 1; const buf = await fetchBuf(b.url); if (!buf) continue;
     const img = await stPut(BUCKET, `${prefix}/${no}.png`, buf, mimeOf(buf) || 'image/png');
     const s = String(b.src || '');
     items.push({ no, img, cid: b.cid, level: b.level, src: s, srcWb: b.srcWb, pid: /^p\d+$/.test(s) ? Number(s.slice(1)) : null });
+  }
+  return items;
+}
+
+/* ── 2026-10-11: 수학비서 문항 그림(한 칸 = 한 문항) → «우리 상자 좌표»로 인식 ──
+ *   매쓰플랫 AI 가 상자를 다시 찾게 두면 문항이 붙거나 갈라져 번호가 어긋난다(sync/mypaper_to_mathflat.js 와 같은 까닭).
+ *   우리가 만든 PDF 라 칸마다 자리를 알고 있으니, 쪽 그림만 만들게 하고(document-processing-flow)
+ *   유형 찾기(analysis-flow)는 우리 상자로 돌린다 → 수학비서 번호와 1:1. 10쪽씩 나눠 인식(문항 수 제한 없음). */
+const zlib = require('zlib');
+function pngDecode(buf) {   /* 8비트 · 비월(non-interlace) PNG → RGBA (수학비서 그림은 모두 8비트 RGBA) */
+  if (!buf || buf.readUInt32BE(0) !== 0x89504e47) throw new Error('PNG 아님');
+  let o = 8, w = 0, h = 0, depth = 0, ct = 0, il = 0; const idat = []; let pal = null, trns = null;
+  while (o < buf.length) {
+    const len = buf.readUInt32BE(o), type = buf.toString('ascii', o + 4, o + 8), d = buf.slice(o + 8, o + 8 + len);
+    if (type === 'IHDR') { w = d.readUInt32BE(0); h = d.readUInt32BE(4); depth = d[8]; ct = d[9]; il = d[12]; }
+    else if (type === 'PLTE') pal = d; else if (type === 'tRNS') trns = d; else if (type === 'IDAT') idat.push(d); else if (type === 'IEND') break;
+    o += 12 + len;
+  }
+  if (depth !== 8 || il) throw new Error('지원하지 않는 PNG');
+  const ch = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[ct]; if (!ch) throw new Error('지원하지 않는 PNG 색');
+  const raw = zlib.inflateSync(Buffer.concat(idat)); const stride = w * ch; const px = Buffer.alloc(stride * h); let prev = Buffer.alloc(stride);
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (stride + 1)], line = raw.slice(y * (stride + 1) + 1, (y + 1) * (stride + 1)), cur = px.slice(y * stride, (y + 1) * stride);
+    for (let i = 0; i < stride; i++) {
+      const a = i >= ch ? cur[i - ch] : 0, b = prev[i], c = i >= ch ? prev[i - ch] : 0; let v = line[i];
+      if (f === 1) v += a; else if (f === 2) v += b; else if (f === 3) v += (a + b) >> 1;
+      else if (f === 4) { const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c); v += pa <= pb && pa <= pc ? a : (pb <= pc ? b : c); }
+      cur[i] = v & 255;
+    }
+    prev = cur;
+  }
+  const rgba = Buffer.alloc(w * h * 4);
+  for (let i = 0; i < w * h; i++) {
+    let r, g, b, al = 255;
+    if (ct === 6) { r = px[i * 4]; g = px[i * 4 + 1]; b = px[i * 4 + 2]; al = px[i * 4 + 3]; }
+    else if (ct === 2) { r = px[i * 3]; g = px[i * 3 + 1]; b = px[i * 3 + 2]; }
+    else if (ct === 0) { r = g = b = px[i]; }
+    else if (ct === 4) { r = g = b = px[i * 2]; al = px[i * 2 + 1]; }
+    else { const k = px[i]; r = pal[k * 3]; g = pal[k * 3 + 1]; b = pal[k * 3 + 2]; al = trns && k < trns.length ? trns[k] : 255; }
+    rgba[i * 4] = r; rgba[i * 4 + 1] = g; rgba[i * 4 + 2] = b; rgba[i * 4 + 3] = al;
+  }
+  return { w, h, rgba };
+}
+const CRC_T = (() => { const t = new Int32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c; } return t; })();
+function crc32(b) { let c = -1; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ -1) >>> 0; }
+function pngEncode(w, h, rgba) {
+  const raw = Buffer.alloc((w * 4 + 1) * h);
+  for (let y = 0; y < h; y++) { raw[y * (w * 4 + 1)] = 0; rgba.copy(raw, y * (w * 4 + 1) + 1, y * w * 4, (y + 1) * w * 4); }
+  const chunk = (type, data) => { const l = Buffer.alloc(4); l.writeUInt32BE(data.length); const td = Buffer.concat([Buffer.from(type, 'ascii'), data]); const c = Buffer.alloc(4); c.writeUInt32BE(crc32(td)); return Buffer.concat([l, td, c]); };
+  const ih = Buffer.alloc(13); ih.writeUInt32BE(w, 0); ih.writeUInt32BE(h, 4); ih[8] = 8; ih[9] = 6;
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ih), chunk('IDAT', zlib.deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]);
+}
+/* 지문(passage) 그림을 문항 그림 위에 붙여 한 장으로 — 판정(Claude)이 지문까지 보게. 못 읽으면 문항 그림만 */
+function stackPng(top, bottom) {
+  try {
+    const a = pngDecode(top), b = pngDecode(bottom), GAP = 12, w = Math.max(a.w, b.w), h = a.h + GAP + b.h;
+    const out = Buffer.alloc(w * h * 4, 255);
+    const put = (im, y0) => { for (let y = 0; y < im.h; y++) for (let x = 0; x < im.w; x++) { const s = (y * im.w + x) * 4, d = ((y0 + y) * w + x) * 4, al = im.rgba[s + 3] / 255;
+      for (let k = 0; k < 3; k++) out[d + k] = Math.round(im.rgba[s + k] * al + 255 * (1 - al)); out[d + 3] = 255; } };
+    put(a, 0); put(b, a.h + GAP);
+    return pngEncode(w, h, out);
+  } catch (e) { return bottom; }
+}
+/* A4 2단 + 칸마다 상자 좌표 (sync/mypaper_to_mathflat.js buildPdf 와 같은 치수) · 10쪽이 차면 새 PDF */
+async function packCells(cells) {
+  const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+  const A4W = 595.28, A4H = 841.89, M = 24, GAP = 12, COLW = (A4W - M * 2 - GAP) / 2, NUMW = 22, PAD = 4, LEAD = 14;
+  const parts = []; let P = null, page = null, col = 0, y = 0, font = null;
+  const newDoc = async () => { if (P) P.done = true; const doc = await PDFDocument.create(); font = await doc.embedFont(StandardFonts.HelveticaBold); P = { doc, pageCount: 0, boxes: [], cells: [] }; parts.push(P); };
+  const newPage = async () => { if (!P || P.pageCount >= CHUNK_PAGES) await newDoc(); page = P.doc.addPage([A4W, A4H]); P.pageCount++; col = 0; y = A4H - M; };
+  await newPage();
+  for (const c of cells) {
+    const wh = pngWH(c.buf); if (!wh) continue;   /* 수학비서 그림은 PNG */
+    const scale = Math.min(1, (COLW - NUMW - PAD) / wh.w, (A4H - 2 * M - LEAD - 4) / wh.h);
+    const w = wh.w * scale, h = wh.h * scale, blockH = Math.max(h, 18) + LEAD;
+    if (y - blockH < M) { if (col === 0) { col = 1; y = A4H - M; } else await newPage(); }
+    let img; try { img = await P.doc.embedPng(c.buf); } catch (e) { continue; }
+    const x0 = M + col * (COLW + GAP), yTop = y, yBot = y - blockH + 6;
+    page.drawText(String(c.no), { x: x0 + 2, y: yTop - 13, size: 12, font, color: rgb(0.05, 0.25, 0.7) });
+    page.drawImage(img, { x: x0 + NUMW, y: yTop - 2 - h, width: w, height: h });
+    P.boxes.push({ pageNo: P.pageCount, x0, y0: yBot, x1: x0 + COLW, y1: yTop }); P.cells.push(c);
+    y -= blockH;
+  }
+  const out = [];
+  for (const p of parts) { if (!p.cells.length) continue; out.push({ bytes: Buffer.from(await p.doc.save()), pageCount: p.doc.getPageCount(), boxes: p.boxes, cells: p.cells, A4W, A4H }); }
+  return out;
+}
+function pngWH(buf) { return buf && buf.length > 24 && buf.readUInt32BE(0) === 0x89504e47 ? { w: buf.readUInt32BE(16), h: buf.readUInt32BE(20) } : null; }
+function imgWH(buf) {   /* 쪽 그림은 PNG 또는 JPEG */
+  const p = pngWH(buf); if (p) return p;
+  if (buf && buf[0] === 0xff && buf[1] === 0xd8) { let o = 2; while (o < buf.length - 8) { if (buf[o] !== 0xff) { o++; continue; } const m = buf[o + 1];
+    if (m >= 0xc0 && m <= 0xcf && m !== 0xc4 && m !== 0xc8 && m !== 0xcc) return { h: buf.readUInt16BE(o + 5), w: buf.readUInt16BE(o + 7) }; o += 2 + buf.readUInt16BE(o + 2); } }
+  return null;
+}
+async function recognizeOwnBoxes(part, trie) {
+  const T = tw();
+  const jobId = await T.saiJob();
+  const { data: pres } = await T.mf(T.MF_SAI, 'POST', `/matchers/presigned/paper-pdf?jobId=${encodeURIComponent(jobId)}`);
+  const up = await fetch(pres.presignedUrl, { method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: part.bytes });
+  if (!up.ok) throw new Error(`PDF 업로드 실패 ${up.status}`);
+  await T.mf(T.MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, {
+    functionName: '/matchers/document-processing-flow',
+    parameters: { paperDocumentUrl: pres.url, pageIndexes: `1~${part.pageCount}`, pageImageQuality: 'HIGH' } });
+  const doc = await T.saiPoll(jobId, 600000);
+  if (!doc.pageImageUrls || doc.pageImageUrls.length !== part.pageCount) throw new Error(`쪽 그림 수가 다름 (${(doc.pageImageUrls || []).length}/${part.pageCount})`);
+  const sz = imgWH(await fetchBuf(doc.pageImageUrls[0])); if (!sz) throw new Error('쪽 그림 크기를 못 읽음');
+  const sx = sz.w / part.A4W, sy = sz.h / part.A4H;
+  const boxesOnEachPage = Array.from({ length: part.pageCount }, () => []);
+  part.boxes.forEach((b) => boxesOnEachPage[b.pageNo - 1].push([Math.round(b.x0 * sx), Math.round((part.A4H - b.y1) * sy), Math.round((b.x1 - b.x0) * sx), Math.round((b.y1 - b.y0) * sy)]));
+  await T.mf(T.MF_SAI, 'POST', `/async-jobs?jobId=${encodeURIComponent(jobId)}`, {
+    functionName: '/matchers/analysis-flow', parameters: { pageImageUrls: doc.pageImageUrls, boxesOnEachPage, trieKey: trie } });
+  const an = await T.saiPoll(jobId, 600000);
+  const nBox = (an.boxesOnEachPage || []).reduce((a, b) => a + b.length, 0);
+  if (nBox !== part.boxes.length) throw new Error(`분석 상자 수가 다름 (${nBox}/${part.boxes.length})`);
+  return (an.sourceData || []).map((s) => s || {});
+}
+/* cells = [{ no, buf(png), meta? }] → exam_images/<prefix>/<no>.png + 매쓰플랫 유형 · 원본 번호 */
+async function recognizeCellsToStore(cells, trie, prefix) {
+  if (!MF_IN) { await tw().mfLogin(); MF_IN = true; }
+  const parts = await packCells(cells);
+  const items = [];
+  for (const [pi, part] of parts.entries()) {
+    if (parts.length > 1) log(`  나눠 인식 ${pi + 1}/${parts.length} · ${part.cells.length}문항 · ${part.pageCount}쪽`);
+    let sd = null;
+    try { sd = await recognizeOwnBoxes(part, trie); }
+    catch (e) { log(`  인식 실패 (${pi + 1}/${parts.length}) — 유형 없이 그림만 둠: ${String(e.message).slice(0, 120)}`); sd = []; }
+    for (const [k, c] of part.cells.entries()) {
+      const s = sd[k] || {}; const src = String(s.sourceProblemId || '');
+      const img = await stPut(BUCKET, `${prefix}/${c.no}.png`, c.buf, mimeOf(c.buf) || 'image/png');
+      items.push(Object.assign({ no: c.no, img, cid: s.conceptId || null, level: s.level || null, src, srcWb: s.sourceWorkbookId || null,
+        pid: /^p\d+$/.test(src) ? Number(src.slice(1)) : null }, c.meta || {}));
+    }
   }
   return items;
 }
@@ -704,27 +914,29 @@ async function msFolders() {
     if (f.id) { nameOf[f.id] = f.name || ''; if (now) gradeOfId[f.id] = now; }
     (f.children || []).forEach((c) => walk(c, now));
   })({ name: '', children: roots }, '');
-  MS_FOLD = { nameOf, gradeOf: (id) => gradeOfId[id] || '' };
+  MS_FOLD = { nameOf, gradeOf: (id) => gradeOfId[id] || '', tree: roots.map(compactTree) };   /* 2026-10-11: 학원앱이 수학비서와 똑같은 폴더 나무를 그린다 */
   return MS_FOLD;
 }
 async function buildMsPaper(m, folder, grade, opt) {
   const out = { id: m.id, title: m.title || '', folder, grade, uploadedAt: paperDate(m), n: m.questionCount || null, status: 'pending', err: '', updated: '', items: [] };
   try {
     if (!ensurePdfLib()) throw new Error('pdf-lib 설치 실패');
-    if ((m.questionCount || 0) > PAPER_MAX_Q) throw new Error(`문항이 너무 많아 건너뜀 (${m.questionCount}문항 — 나눠서 올려 주세요)`);
+    /* 2026-10-11: 150문항 넘는 것도 10쪽씩 나눠 인식한다 (너무 큰 것만 건너뜀) */
+    if ((m.questionCount || 0) > PAPER_MAX_Q) throw new Error(`문항 수 초과 (${m.questionCount}문항 · 한 장 ${PAPER_MAX_Q}문항까지 — 나눠서 올려 주세요)`);
     const so = semOf(out.uploadedAt);
     const trie = (opt && opt.trie) || trieOf(grade || parseGrade(m.title), so.year, so.semester, (m.title || '') + ' ' + folder);
     if (!trie) throw new Error(`교육과정을 정할 수 없음 (${grade || '학년 모름'})`);
     let pdf = null;
     if (m.pdfPath) { const buf = await fetchBuf(m.pdfPath); if (buf && mimeOf(buf) === 'application/pdf') pdf = { bytes: buf, pages: await pdfPages(buf) }; }
-    if (!pdf) {   /* 산 자료는 PDF 가 없다 → 기출 DB 받기와 같은 길로 문항 그림을 받아 PDF 로 */
-      const C = msc(); const ex = await C.msExam(Number(m.id) || m.id); const imgs = [];
-      for (const c of ex.cells) { if (!c.imgUrl) continue; try { const im = await C.msImage(c.imgUrl); if (mimeOf(im.buf) === 'image/png') imgs.push({ no: c.no, buf: im.buf }); } catch (e) {} await sleep(100); }
-      if (!imgs.length) throw new Error('PDF 도 문항 그림도 없음');
-      const b = await tw().buildPdf(imgs, 'MS ' + m.id); pdf = { bytes: Buffer.from(b.bytes), pages: b.pages };
+    if (pdf) {
+      if (pdf.pages > PAPER_MAX_PAGES) throw new Error(`쪽 수 초과 (${pdf.pages}쪽 · ${PAPER_MAX_PAGES}쪽까지)`);
+      out.items = await recognizeToStore(pdf, trie, `ms/${m.id}`);
+    } else {   /* 산 자료는 PDF 가 없다 → 문항 그림을 받아 «우리 상자»로 인식 (수학비서 번호 그대로) */
+      const C = msc(); const ex = await C.msExam(Number(m.id) || m.id); const cells = [];
+      for (const c of ex.cells) { if (!c.imgUrl) continue; try { const im = await C.msImage(c.imgUrl); if (mimeOf(im.buf) === 'image/png') cells.push({ no: c.no, buf: im.buf }); } catch (e) {} await sleep(60); }
+      if (!cells.length) throw new Error('PDF 도 문항 그림도 없음');
+      out.items = await recognizeCellsToStore(cells, trie, `ms/${m.id}`);
     }
-    if (pdf.pages > PAPER_MAX_PAGES) throw new Error(`쪽이 너무 많아 건너뜀 (${pdf.pages}쪽)`);
-    out.items = await recognizeToStore(pdf, trie, `ms/${m.id}`);
     out.n = out.items.length; out.status = out.items.length ? 'ready' : 'error'; if (!out.items.length) out.err = '문항을 하나도 못 나눔';
   } catch (e) { out.status = 'error'; out.err = String(e.message || e).slice(0, 160); }
   out.updated = new Date().toISOString();
@@ -757,6 +969,145 @@ async function loadMsMats(ids, ctx) {
   return { mats: out, n };
 }
 
+/* ── (b-2) 2026-10-11 수학비서 «내 문제지» — 원장님이 직접 만들어 나눠 준 프린트 ──
+ * 원장 「수학비서는 DB 와 내 문제지가 다르다. 내 문제지가 내가 만든 것이다. 그리고 수학비서 폴더 형태와 똑같아야 헷갈리지 않는다.」
+ *   폴더 나무 GET /bms/api/v1/folders?folderType=mypaper · 목록 /my-papers?folderId= · 문항 /my-papers/<id>/cells
+ *   ms_mypapers_index = { updated, tree:[{ id, n, fc, tc, c:[…] }], items:[{ id, title, folderId, folderPath, n, progress, createdAt, status }] }
+ *   ms_mypaper_<id>   = ms_paper_<id> 와 같은 모양(판정이 그대로 쓴다) + 수학비서 정보 msChapter · msTags · answer · msSource
+ *   그림 exam_images/msmp/<id>/<번호>.png (지문이 있으면 위에 붙여 한 장) · 요청 src.mp = [id…] · 결과 자료 키 mp:<id>:<번호> (kind 'ms', mp:true) */
+function compactTree(f) { return { id: f.id, n: f.name || '', fc: f.fileCount || 0, tc: f.totalFileCount || 0, c: (f.children || []).map(compactTree) }; }
+async function msLoginOnce() {
+  if (!process.env.MATHSECR_ID || !process.env.MATHSECR_PASSWORD) throw new Error('수학비서 계정(MATHSECR_ID) 이 서버에 없습니다');
+  if (!msLoginOnce.at || Date.now() - msLoginOnce.at > 30 * 60000) { await msc().msLogin(); msLoginOnce.at = Date.now(); }
+  return msc();
+}
+async function msMyTree() {
+  const C = await msLoginOnce(); const j = await C.msGet('/bms/api/v1/folders?folderType=mypaper');
+  const roots = Array.isArray(j.data) ? j.data : [j.data];
+  const pathOf = {}; (function walk(f, pre) { if (!f) return; const p = pre ? pre + ' › ' + (f.name || '') : (f.name || ''); if (f.id) pathOf[f.id] = p; (f.children || []).forEach((c) => walk(c, p)); })({ children: roots }, '');
+  /* 맨 위 이름 없는 묶음은 빼고 다시 */
+  Object.keys(pathOf).forEach((k) => { pathOf[k] = pathOf[k].replace(/^ › /, ''); });
+  return { roots, tree: roots.map(compactTree), pathOf };
+}
+async function msMyList(folderId) {
+  const C = await msLoginOnce(); const out = []; let cursor = '';
+  for (let i = 0; i < 30; i++) {
+    const j = await C.msGet(`/bms/api/v1/my-papers?limit=100&folderId=${folderId}${cursor ? '&cursor=' + encodeURIComponent(cursor) : ''}`);
+    const d = j.data || []; out.push(...d);
+    cursor = j.pagination && j.pagination.cursor; if (!cursor || !d.length || (j.pagination.totalItems && out.length >= j.pagination.totalItems)) break;
+  }
+  return out;
+}
+async function msMyCells(id) {
+  const C = await msLoginOnce(); const out = []; let cursor = '';
+  for (let i = 0; i < 30; i++) {
+    const j = await C.msGet(`/bms/api/v1/my-papers/${id}/cells?limit=100${cursor ? '&cursor=' + encodeURIComponent(cursor) : ''}`);
+    const d = j.data || {}; const cells = d.cells || []; out.push(...cells);
+    (d.pages || []).forEach((pg) => (pg.cells || []).forEach((c) => out.push(c)));
+    cursor = j.pagination && j.pagination.cursor; if (!cursor || !cells.length || (j.pagination.totalItems && out.length >= j.pagination.totalItems)) break;
+  }
+  return out.sort((a, b) => a.questionNumber - b.questionNumber);
+}
+async function mpStatuses() {
+  const out = {};
+  for (let off = 0; off < 20000; off += 1000) {
+    const r = await fetch(`${SB}/rest/v1/lumen_store?key=like.ms_mypaper_*&select=key,st:value->>status,up:value->>updated,n:value->>n&order=key.asc&limit=1000&offset=${off}`, { headers: sbH() });
+    if (!r.ok) break; const j = await r.json();
+    j.forEach((x) => { out[String(x.key).replace(/^ms_mypaper_/, '')] = { status: x.st || '', updated: x.up || '', n: Number(x.n) || null }; });
+    if (j.length < 1000) break;
+  }
+  return out;
+}
+/* 목록 색인 — 폴더 나무 + 폴더마다 문제지 (수학비서 화면과 같은 순서) */
+async function mypapersIndex() {
+  const T = await msMyTree(); const st = await mpStatuses(); const items = [];
+  const folders = []; (function walk(fs) { (fs || []).forEach((f) => { folders.push(f); walk(f.children); }); })(T.roots);
+  for (const f of folders) {
+    if (!f.fileCount) continue;
+    const list = await msMyList(f.id);
+    list.forEach((p) => { const s = st[String(p.id)] || {};
+      items.push({ id: p.id, title: p.title || '', folderId: f.id, folderPath: T.pathOf[f.id] || f.name || '', n: p.questionCount || 0, progress: p.progress || '',
+        createdAt: p.createdAt || '', avgDiff: p.averageDifficulty != null ? p.averageDifficulty : null, status: s.status || '' }); });
+    await sleep(80);
+  }
+  const ix = { updated: new Date().toISOString(), tree: T.tree, items };
+  await kvSet('ms_mypapers_index', ix);
+  log(`내 문제지 색인: 폴더 ${folders.length}개 · 문제지 ${items.length}장 · 인식 완료 ${items.filter((x) => x.status === 'ready').length}`);
+  return ix;
+}
+/* 과목 · 학년 — 문항 단원 맨 앞(예 「08 공통수학2」)이 가장 정확하고, 없으면 제목 */
+const HS_GRADE = { 공통수학1: '고1', 공통수학2: '고1', 대수: '고2', 미적분1: '고2', 미적분I: '고2', 확률과통계: '고2', 미적분2: '고3', 미적분II: '고3', 기하: '고3',
+  '고등수학(상)': '고1', '고등수학(하)': '고1', 수학I: '고2', 수학II: '고2', 미적분: '고3' };
+function mpCurriculum(cells, title, createdAt) {
+  let d = null; try { d = require('./mypaper_to_mathflat.js').decideCurriculum(cells); } catch (e) { d = null; }
+  if (d && d.ok) {
+    const subj = String(d.top || '').replace(/^\d+\s*/, '').trim();
+    const grade = d.schoolType === 'MIDDLE' ? '중' + d.grade : (HS_GRADE[subj.replace(/\s/g, '').replace(/Ⅰ/g, 'I').replace(/Ⅱ/g, 'II')] || parseGrade(title));
+    return { trie: d.trie, subject: subj, grade };
+  }
+  const so = semOf(createdAt); const g = parseGrade(title) || (/공통\s*수학|공수/.test(title) ? '고1' : '');
+  return { trie: g ? trieOf(g, so.year, so.semester, title) : '', subject: '', grade: g };
+}
+async function buildMsMyPaper(id, opt) {
+  const out = { id: Number(id) || id, kind: 'mp', title: '', folderId: null, folderPath: '', subject: '', grade: '', createdAt: '', n: null, status: 'pending', err: '', updated: '', trie: '', items: [] };
+  try {
+    if (!ensurePdfLib()) throw new Error('pdf-lib 설치 실패');
+    const C = await msLoginOnce();
+    const det = (await C.msGet(`/bms/api/v1/my-papers/${id}`)).data || {};
+    const fs = det.folders || []; out.title = det.title || ''; out.n = det.questionCount || null; out.createdAt = det.createdAt || '';
+    out.folderId = fs.length ? fs[fs.length - 1].id : null; out.folderPath = fs.map((f) => f.name).join(' › ');
+    if ((det.questionCount || 0) > PAPER_MAX_Q) throw new Error(`문항 수 초과 (${det.questionCount}문항 · ${PAPER_MAX_Q}문항까지)`);
+    const cells = await msMyCells(id);
+    if (!cells.length) throw new Error('문항이 없음 (만드는 중인 문제지?)');
+    const cur = mpCurriculum(cells, out.title, out.createdAt);
+    out.subject = cur.subject; out.grade = cur.grade; out.trie = cur.trie || (opt && opt.trie) || '';
+    if (!out.trie) throw new Error('교육과정을 정할 수 없음');
+    log(`내 문제지 [${id}] ${cells.length}문항 · ${out.subject || '과목 모름'} · 교육과정 키 ${out.trie}`);
+    const pass = {}; const list = [];
+    for (const c of cells) {
+      if (!c.imagePath) continue;
+      let buf = null; try { buf = (await C.msImage(c.imagePath)).buf; } catch (e) { buf = null; }
+      if (!buf || mimeOf(buf) !== 'image/png') continue;
+      if (c.passage && c.passage.imagePath) {   /* 지문 — 여러 문항이 같이 쓰므로 한 번만 받는다 */
+        const pk = String(c.passage.id || c.passage.imagePath);
+        if (pass[pk] === undefined) { try { pass[pk] = (await C.msImage(c.passage.imagePath)).buf; } catch (e) { pass[pk] = null; } }
+        if (pass[pk]) buf = stackPng(pass[pk], buf);
+      }
+      const a = (c.answers || [])[0] || {}; const ch = ((c.chapters || [])[0] || {}).chapter || [];
+      list.push({ no: c.questionNumber, buf, meta: {
+        msChapter: ch.map((x) => String(x).replace(/^\d+\s*/, '')).filter(Boolean).slice(1).join(' › ').slice(0, 200),
+        msTags: (c.adaptiveTags || []).map((t) => t.name).filter(Boolean).slice(0, 8),
+        answer: String(a.latex || (Array.isArray(a.answer) ? a.answer.join(', ') : '') || '').slice(0, 200),
+        msSource: (((c.sources || [])[0] || {}).combinedTitle || '').slice(0, 120),
+        msDiff: a.difficulty && a.difficulty.mathSecr != null ? a.difficulty.mathSecr : null } });
+      await sleep(40);
+    }
+    if (!list.length) throw new Error('문항 그림을 받지 못함');
+    out.items = await recognizeCellsToStore(list, out.trie, `msmp/${id}`);
+    out.n = out.items.length; out.status = out.items.length ? 'ready' : 'error'; if (!out.items.length) out.err = '문항을 하나도 못 나눔';
+    out.typed = out.items.filter((x) => x.cid).length;
+  } catch (e) { out.status = 'error'; out.err = String(e.message || e).slice(0, 160); }
+  out.updated = new Date().toISOString();
+  try { await kvSet('ms_mypaper_' + id, out); } catch (e) { log(`ms_mypaper_${id} 저장 실패: ${e.message}`); }
+  log(`  내 문제지 [${id}] ${out.status} · ${out.items.length}문항${out.typed != null ? ' · 유형 붙은 것 ' + out.typed : ''}${out.err ? ' · ' + out.err : ''}`);
+  return out;
+}
+async function loadMpMats(ids, ctx) {
+  const out = []; let n = 0;
+  for (const id of ids) {
+    let p = await kvGet('ms_mypaper_' + id);
+    if (!p || p.status !== 'ready') {
+      log(`내 문제지 ${id}: ${p ? p.status : '아직 인식 안 됨'} → 분석 때 바로 인식`);
+      await ctx.step(`학원 문제지 분석 때 바로 인식 중 (${n + 1}/${ids.length} · 장당 2~5분)`, 41);
+      try { p = DRY ? null : await buildMsMyPaper(id, { trie: ctx.trie }); } catch (e) { log(`내 문제지 ${id} 인식 실패: ${e.message.slice(0, 120)}`); p = null; }
+    }
+    if (!p || p.status !== 'ready') { log(`내 문제지 ${id}: 못 씀 (${(p && p.err) || ''}) — 빼고 진행`); continue; }
+    n++; (p.items || []).forEach((it) => out.push(matFromItem('ms', `mp:${id}:${it.no}`, p.title, it, { mp: true, msChapter: it.msChapter || '', msSource: it.msSource || '' })));
+  }
+  if (ids.length) log(`내 문제지(학원 문제지): ${n}장 · ${out.length}문항`);
+  return { mats: out, n };
+}
+
 /* ── (c) PDF 자료함 ── */
 async function libMerge(id, upd) {   /* 학원앱도 같은 키에 쓰므로 쓰기 직전에 다시 읽어 그 항목만 바꾼다 */
   const lib = (await kvGet('exam_lib')) || { items: [] }; lib.items = lib.items || [];
@@ -779,7 +1130,7 @@ async function prepLib(x, opt) {
       if (!DRY) await libMerge(x.id, { moved: true, src: BUCKET + '/' + dst, path: BUCKET + '/' + dst });
     }
     const pdf = mimeOf(buf) === 'application/pdf' ? { bytes: buf, pages: await pdfPages(buf) } : await imagesToPdf([buf]);
-    if (pdf.pages > PAPER_MAX_PAGES) throw new Error(`쪽이 너무 많아 건너뜀 (${pdf.pages}쪽)`);
+    if (pdf.pages > PAPER_MAX_PAGES) throw new Error(`쪽 수 초과 (${pdf.pages}쪽 · ${PAPER_MAX_PAGES}쪽까지)`);
     const so = semOf(x.uploadedAt);
     const trie = (opt && opt.trie) || trieOf(x.grade, Number(x.year) || so.year, String(x.sem || so.semester), (x.subject || '') + ' ' + (x.title || ''));
     if (!trie) throw new Error(`교육과정을 정할 수 없음 (${x.grade || '학년 모름'})`);
@@ -812,14 +1163,15 @@ async function loadLibMats(ids, ctx) {
 async function paperStatuses() {
   const out = {};
   for (let off = 0; off < 20000; off += 1000) {
-    const r = await fetch(`${SB}/rest/v1/lumen_store?key=like.ms_paper_*&select=key,st:value->>status,up:value->>updated&order=key.asc&limit=1000&offset=${off}`, { headers: sbH() });
+    const r = await fetch(`${SB}/rest/v1/lumen_store?key=like.ms_paper_*&select=key,st:value->>status,up:value->>updated,er:value->>err&order=key.asc&limit=1000&offset=${off}`, { headers: sbH() });
     if (!r.ok) break; const j = await r.json();
-    j.forEach((x) => { out[String(x.key).replace(/^ms_paper_/, '')] = { status: x.st || '', updated: x.up || '' }; });
+    j.forEach((x) => { out[String(x.key).replace(/^ms_paper_/, '')] = { status: x.st || '', updated: x.up || '', err: x.er || '' }; });
     if (j.length < 1000) break;
   }
   return out;
 }
-const stale = (s) => !s.updated || (Date.now() - new Date(s.updated).getTime()) > RETRY_H * 3600e3;
+/* 2026-10-11: 예전 크기 제한(150문항 · 10쪽 넘는 「pageIndexes」 실패)으로 건너뛴 것은 이제 나눠 인식하므로 바로 다시 */
+const stale = (s) => !s.updated || /너무 많아 건너뜀|pageIndexes/.test(s.err || '') || (Date.now() - new Date(s.updated).getTime()) > RETRY_H * 3600e3;
 async function prepPapers() {
   if (!process.env.MATHSECR_ID || !process.env.MATHSECR_PASSWORD) { log('수학비서 계정(MATHSECR_ID) 없음 — 수학비서 학습지 건너뜀'); return; }
   const all = await msPapers(); const F = await msFolders(); const st = await paperStatuses();
@@ -837,7 +1189,7 @@ async function prepPapers() {
       if (!exam && t >= since && s.status !== 'ready' && (s.status !== 'error' || stale(s))) { p.todo++; want.push({ m, folder: g, g }); }
     }
     /* 학년 폴더 아래 폴더(예: 고1 › 09월)는 folder=학년 폴더, sub=아래 폴더 이름 — 학원앱 폴더 칩은 folder 로 묶는다 */
-    const row = { id: m.id, title: m.title || '', folder: g || folder, grade: g || parseGrade(m.title), uploadedAt: at || '', n: m.questionCount || null, status: s.status || '', exam };
+    const row = { id: m.id, title: m.title || '', folder: g || folder, grade: g || parseGrade(m.title), uploadedAt: at || '', n: m.questionCount || null, status: s.status || '', exam, fid: m.folderId || null };
     if (g && folder && folder.replace(/\s/g, '') !== g) row.sub = folder;
     idx.push(row);
   });
@@ -856,7 +1208,8 @@ async function prepPapers() {
   const now = want.slice(0, PREP_CAP);
   log(`이번에 인식할 학습지 ${now.length}장 (할 일 ${want.length}장 · 한 번에 최대 ${PREP_CAP})`);
   now.forEach((w) => log(`  · [${w.m.id}] ${w.g} · ${String(paperDate(w.m)).slice(0, 10)} · ${w.m.questionCount || '?'}문항 · ${w.m.pdfPath ? 'PDF' : '문항 그림'} · ${String(w.m.title || '').slice(0, 40)}`));
-  const save = async () => { idx.sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt))); await kvSet('ms_papers_index', { updated: new Date().toISOString(), items: idx }); };
+  /* 2026-10-11: tree = 나만의 DB 폴더 나무(수학비서와 같은 이름·순서) — 학원앱 「🗄 나만의 DB」 탭이 그대로 그린다. fid = 폴더 id */
+  const save = async () => { idx.sort((a, b) => String(b.uploadedAt).localeCompare(String(a.uploadedAt))); await kvSet('ms_papers_index', { updated: new Date().toISOString(), tree: F.tree || [], items: idx }); };
   await save();
   if (DRY) return;
   for (const w of now) {
@@ -864,6 +1217,19 @@ async function prepPapers() {
     const it = idx.find((x) => String(x.id) === String(w.m.id)); if (it) { it.status = out.status; if (out.n) it.n = out.n; }
   }
   if (now.length) await save();
+}
+/* 2026-10-11: 내 문제지 — 색인 갱신 + 기억한 구성(exam_hit_src_*)의 mpOn 문제지 미리 인식 */
+async function prepMyPapers() {
+  if (!process.env.MATHSECR_ID || !process.env.MATHSECR_PASSWORD) { log('수학비서 계정(MATHSECR_ID) 없음 — 내 문제지 건너뜀'); return; }
+  const ix = await mypapersIndex();
+  const st = await mpStatuses(); const want = [];
+  for (const k of await keysLike('exam_hit_src_')) { const c = await kvGet(k); Object.keys((c && c.mpOn) || {}).forEach((id) => {
+    const s = st[String(id)] || {}; if (s.status === 'ready' || (s.status === 'error' && !stale(s)) || want.includes(String(id))) return; want.push(String(id)); }); }
+  const now = want.slice(0, PREP_CAP);
+  log(`내 문제지 미리 인식: 할 일 ${want.length}장 · 이번 ${now.length}장`);
+  if (DRY || !now.length) return;
+  for (const id of now) await buildMsMyPaper(id, null);
+  await mypapersIndex();
 }
 async function prepLibAll() {
   const lib = (await kvGet('exam_lib')) || { items: [] };
@@ -891,7 +1257,7 @@ async function prep() {
   const hr = kstHour(), dawn = process.env.PREP_ROUND === 'dawn' || (hr >= 3 && hr <= 6);
   if (!DRY && !has('force') && !dawn) { log(`--prep: 새벽 회차가 아님 (한국 ${hr}시) — 건너뜀 (--force 로 강제)`); return; }
   log(`🌙 적중 분석 «우리 자료» 새벽 준비${DRY ? ' — dry (읽기만, 할 일 목록만)' : ''}`);
-  for (const [name, fn] of [['수학비서 학습지', prepPapers], ['PDF 자료함', prepLibAll], ['교과서 은행', prepBanks]]) {
+  for (const [name, fn] of [['수학비서 학습지', prepPapers], ['내 문제지', prepMyPapers], ['PDF 자료함', prepLibAll], ['교과서 은행', prepBanks]]) {
     try { await fn(); } catch (e) { log(`${name} 실패: ${String(e.message || e).slice(0, 200)}`); process.exitCode = 1; }
   }
   log('새벽 준비 끝');
@@ -926,11 +1292,15 @@ async function handleRequest() {
 }
 
 module.exports = { schoolKey, gradeKey, examIdOf, whereOf, pidOfUrl, semStart, mydbFetch, examDateFromCalendar,
-  normSrc, textbookBids, loadTextbookMats, matFromItem, isExamPaper, semOf, tbTitle, courseTrie };   /* 2026-10-10 우리 자료 3종 */
+  normSrc, textbookBids, loadTextbookMats, matFromItem, isExamPaper, semOf, tbTitle, courseTrie,   /* 2026-10-10 우리 자료 3종 */
+  examUnits, inScope, pngDecode, pngEncode, stackPng, packCells, compactTree, mpCurriculum };   /* 2026-10-11 내 문제지 · 시험 범위 */
 
 if (require.main === module) {
   (async () => {
     if (has('prep')) return prep();   /* 2026-10-10: 우리 자료 새벽 준비 */
+    /* 2026-10-11: 내 문제지 — 색인만 · 지정한 문제지 인식 (--mp-build 2061686,2032273) */
+    if (has('mypapers-index')) return mypapersIndex();
+    if (arg('mp-build', '')) { if (!ensurePdfLib()) throw new Error('pdf-lib 설치 실패'); for (const id of String(arg('mp-build', '')).split(',').filter(Boolean)) await buildMsMyPaper(id.trim(), null); return mypapersIndex(); }
     if (NO_AI && !has('no-ai')) log('⚠ ANTHROPIC_API_KEY 가 없어 그림 판정 없이 유형 번호로만 후보를 남깁니다');
     const mydb = arg('mydb', null), rej = arg('rejudge', null);
     if (!mydb && !rej) { try { await maybeIndex(); } catch (e) { log('색인 건너뜀:', e.message); } return handleRequest(); }
@@ -946,6 +1316,7 @@ if (require.main === module) {
       if (arg('exam-id', '')) exam.examId = arg('exam-id', '');
     }
     let src = null; if (rej) { const p = await kvGet('exam_hit_' + rej); src = (p && p.src) || null; }
+    if (arg('src-file', '')) src = JSON.parse(require('fs').readFileSync(arg('src-file', ''), 'utf8'));   /* 2026-10-11: 손으로 자료 구성 바꿔 보기 (--dry 와 함께) */
     await runExam(exam, { mydb: rej ? exam.mydb : mydb, rejudge: !!rej, from: arg('from', ''), to: arg('to', ''), src });
   })().catch((e) => { console.error('❌', e.message); process.exit(1); });
 }
