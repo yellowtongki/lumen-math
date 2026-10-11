@@ -36,7 +36,8 @@ rcw=open(SP+'/rcws_teacher.js').read() if int(ver.replace('v19-',''))>=92 else '
 bt2=open(SP+'/bt2_teacher.js').read() if int(ver.replace('v19-',''))>=94 else ''   # v19-98: 매쓰플랫 단원 트리   # v19-97: 채팅으로 고치기   # v19-95: 중3 기본 과정 공통수학1   # v19-94: 백지테스트 2판 (과정·소단원 · 미리보기·편집 · 교과서 문항 · 답지)
 hsr=open(SP+'/hitsrc_teacher.js').read() if int(ver.replace('v19-',''))>=99 else ''   # v19-99: 적중 분석 «우리 자료 3종»(교과서·수학비서 학습지·PDF 자료함) + ⚡ 즉시 처리
 cn2=open(SP+'/cn2_teacher.js').read() if int(ver.replace('v19-',''))>=100 else ''   # v19-100: 카드뉴스 디자인 2판(새 스타일 · 글꼴 · 1:1) + 🖼 배경함(올리기 · Gemini)
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+cn3=open(SP+'/cn3_teacher.js').read() if int(ver.replace('v19-',''))>=101 else ''   # v19-101: 카드뉴스 「매쓰플랫」 낱말 빼기(학원 자료 이름) · 문항 카드 두 그림(시험+우리 자료) · 선명/흐리게 · 🧩 모자이크
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)

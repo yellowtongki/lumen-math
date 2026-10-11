@@ -9,6 +9,7 @@ const path = require('path');
 const FILE = path.resolve(process.argv[2] || 'lumen_v19-100.html');
 const SP = process.env.SP || '/tmp';
 const WANT = (FILE.match(/v19-\d+/) || ['v19-100'])[0];
+const NEW101 = Number(WANT.replace('v19-', '')) >= 101;   /* v19-101: 「매쓰플랫」 낱말 없음 · 문항 카드 두 그림 */
 let pass = 0, fail = 0;
 const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : '❌') + ' ' + name + (ok ? '' : ('  ← ' + (info || '')))); };
 const EXAM_ID = '범박고_고2_2026_2_중간';
@@ -117,9 +118,10 @@ STORE['exam_hit_' + EXAM_ID] = { examId: EXAM_ID, exam: { school: '범박고', g
   t('모든 카드의 모든 글자 ≥ 2.0% (그래프 SVG 제외)', m1.minF >= 1.99, m1.minF + ' @ ' + m1.minAt);
   t('체크 줄 3줄 이하 · 합쳐 60자 이하 · 제목 3줄 이하', m1.bl.every((b) => b.n >= 1 && b.n <= 3 && b.len <= 60) && m1.ttlLines.every((x) => x <= 3), JSON.stringify([m1.bl, m1.ttlLines]));
   t('4:5 — 꼬리말이 카드 안 · 그래프/키워드와 흰 패널이 겹치지 않음', m1.over.length === 0 && m1.overlap.length === 0 && Math.abs(m1.hw - 1.25) < 0.01, JSON.stringify([m1.over, m1.overlap, m1.hw]));
-  t('카드 글에 「수학비서」·학생 이름 없음 · 자료는 종류만 · 마지막 카드 「루멘수학」', o1.text.indexOf('수학비서') < 0 && o1.text.indexOf('○○○') < 0 && /교과서/.test(o1.text) && /학원 학습지/.test(o1.text) && /학원 프린트/.test(o1.text) && /매쓰플랫 학습지·교재/.test(o1.text) && /— 루멘수학/.test(o1.text), '');
+  t('카드 글에 「수학비서」·학생 이름 없음 · 자료는 종류만 · 마지막 카드 「루멘수학」', o1.text.indexOf('수학비서') < 0 && o1.text.indexOf('○○○') < 0 && /교과서/.test(o1.text) && (NEW101 ? (/학원 대비 학습지/.test(o1.text) && /루멘수학 학습지/.test(o1.text) && o1.text.indexOf('매쓰플랫') < 0) : (/학원 학습지/.test(o1.text) && /매쓰플랫 학습지·교재/.test(o1.text))) && /학원 프린트/.test(o1.text) && /— 루멘수학/.test(o1.text), '');
   t('그래프 카드에 큰 숫자 하나 (적중 %)', /적중 <\/small>67%|적중 67%/.test(o1.html.replace(/<small>/g, '')) || /67%/.test(o1.text), '');
-  t('문항 카드: 흰 패널 안에 흐린 시험 그림 + 큰 번호', await pg.evaluate(() => { const c = [...document.querySelectorAll('#cn-cards .cn2.pick')]; return c.length === 4 && !!c[0].querySelector('.list .pk img.blur[data-blur]') && c[0].querySelector('.pk .no b').textContent === '1'; }), '');
+  /* v19-101 부터: 시험 문항 + 우리 자료 두 그림, 기본은 선명 (흐리게는 칩으로) */
+  t(NEW101 ? '문항 카드: 흰 패널 안에 시험 그림(선명) + 우리 자료 그림 + 큰 번호' : '문항 카드: 흰 패널 안에 흐린 시험 그림 + 큰 번호', await pg.evaluate((NEW101) => { const c = [...document.querySelectorAll('#cn-cards .cn2.pick')]; return c.length === 4 && (NEW101 ? (!!c[0].querySelector('.list .pk figure.exam img') && !c[0].querySelector('.list .pk img.blur')) : !!c[0].querySelector('.list .pk img.blur[data-blur]')) && c[0].querySelector('.pk .no b').textContent === '1'; }, NEW101), '');
   await pg.screenshot({ path: SP + '/v19100_cards.png', fullPage: true, clip: await pg.evaluate(() => { const r = document.getElementById('cn-panel').getBoundingClientRect(); return { x: r.left + scrollX, y: r.top + scrollY, width: r.width, height: Math.min(2600, r.height) }; }) }).catch((e) => console.log('그림 실패', e.message));
 
   /* 2) 지금 스타일로 → 옛 그림 그대로 · 다시 새 스타일 */

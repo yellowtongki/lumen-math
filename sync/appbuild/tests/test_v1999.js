@@ -163,7 +163,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   t('기출 DB 목록 새로 받기 · 「지금 가져오기」 요청도 깨움(2번) · 취소·다른 키는 안 깨움', o4b === 2, o4b);
 
   /* 5) 결과 화면 — 우리 자료별 적중 · 후보 카드 종류 · 학생 «나눠 줌» · 보고서·.md */
-  const o5 = await pg.evaluate(async () => {
+  const o5 = await pg.evaluate(async (NEW101) => {
     T99.store.exam_hit_req.status = 'done'; HT.req = T99.store.exam_hit_req; HTS.open = false; HT.data = {}; HT.cur = '범박고_고2_2026_2_중간'; HT.stuOpen = true; HT.view = 'sheet';
     htLoad(HT.cur, true); await new Promise((r) => setTimeout(r, 120)); render();
     const box = document.getElementById('tdemo'); const bk = box.querySelector('#hts-bykind');
@@ -174,9 +174,11 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     return { bk: !!bk, vals: ['tb', 'ms', 'pdf', 'mf'].map(val), matsLine: bk ? /교과서 7 · 수학비서 학습지 24 · 프린트 16 · 매쓰플랫 2/.test(bk.textContent) : false,
       labels: ['📘 교과서', '📂 수학비서 학습지', '📄 자료함 프린트', '🧮 매쓰플랫 학습지'].map((x) => box.innerHTML.indexOf(x) >= 0),
       given: /나눠 줌 \(채점 기록 없음\)/.test(box.innerHTML), stuCol: /<th>나눠 줌<\/th>/.test(box.innerHTML), row: htStudentRow(d, 'AAA111'),
-      md: { line: /- 우리 자료별 적중 \(같은 문제 \+ 숫자변형\): 교과서 1 · 학원 학습지 1 · 학원 프린트 1 · 매쓰플랫 학습지·교재 1/.test(md), noMs: md.indexOf('수학비서') < 0, tbl: /\| 1 \| 함수의 극한 \| 극한값 계산 \| 2 \| 같은 문제 \(확인 중\) \| 교과서 \|/.test(md), src: /- 대조한 우리 자료: .*교과서 7문항 \+ 학원 학습지 24문항 \+ 학원 프린트 16문항/.test(md) },
+      /* v19-101 부터 자료 이름 다섯 종류(「매쓰플랫」 낱말 없음 — 원장 지시 2026-10-11) */
+      md: NEW101 ? { line: /- 우리 자료별 적중 \(같은 문제 \+ 숫자변형\): 교과서 1 · 루멘수학 학습지 1 · 루멘수학 시험대비 교재 0 · 학원 대비 학습지 1 · 학원 프린트 1/.test(md), noMs: md.indexOf('수학비서') < 0 && md.indexOf('매쓰플랫') < 0, tbl: /\| 1 \| 함수의 극한 \| 극한값 계산 \| 2 \| 같은 문제 \(확인 중\) \| 교과서 \|/.test(md), src: /- 대조한 우리 자료: .*학원에서 푼 루멘수학 학습지·교재 문항 \+ 교과서 7문항 \+ 학원 대비 학습지 24문항 \+ 학원 프린트 16문항/.test(md) }
+        : { line: /- 우리 자료별 적중 \(같은 문제 \+ 숫자변형\): 교과서 1 · 학원 학습지 1 · 학원 프린트 1 · 매쓰플랫 학습지·교재 1/.test(md), noMs: md.indexOf('수학비서') < 0, tbl: /\| 1 \| 함수의 극한 \| 극한값 계산 \| 2 \| 같은 문제 \(확인 중\) \| 교과서 \|/.test(md), src: /- 대조한 우리 자료: .*교과서 7문항 \+ 학원 학습지 24문항 \+ 학원 프린트 16문항/.test(md) },
       pr: { blk: /<h2>우리 자료별 적중<\/h2>/.test(printed), noMs: printed.indexOf('수학비서') < 0, tb: /<td>교과서<\/td><\/tr>/.test(printed) } };
-  });
+   }, Number((path.basename(FILE).match(/v19-(\d+)/) || [0, 0])[1]) >= 101);
   t('결과: 「📚 우리 자료별 적중」 막대 — 교과서 1 · 수학비서 1 · 프린트 1(✓1) · 매쓰플랫 1 · 대조 문항 수(stats.byKind)', o5.bk && o5.vals[0] === '1' && o5.vals[1] === '1' && /^1/.test(o5.vals[2]) && /✓1/.test(o5.vals[2]) && o5.vals[3] === '1' && o5.matsLine, JSON.stringify([o5.vals, o5.matsLine]));
   t('후보 카드에 자료 종류 (교과서 · 수학비서 학습지 · 자료함 프린트 · 매쓰플랫 학습지) · 채점 없는 자료는 「나눠 줌」', o5.labels.every(Boolean) && o5.given, JSON.stringify(o5.labels));
   t('학생별: 「나눠 줌」 칸 · ○○○ = 적중 4 · 맞힘 0 · 틀림 1 · 나눠 줌 3', o5.stuCol && o5.row.hit === 4 && o5.row.X === 1 && o5.row.given === 3 && o5.row.none === 0, JSON.stringify(o5.row));
