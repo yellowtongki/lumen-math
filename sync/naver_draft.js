@@ -194,6 +194,41 @@ async function setFontSize(page, frame, size) {
   return false;
 }
 
+// 글자 서식(굵게·기울임·밑줄·취소선)이 켜져 있으면 끈다.
+// 어디선가 한 번 켜지면 뒤 문단까지 줄이 번진다. 원인을 몰라도 「켜져 있으면 끈다」로 막는다.
+// 무엇이 켜져 있었는지 로그에 남기므로, 다음에 이 줄을 보면 언제 켜지는지 알 수 있다
+const FMT = [
+  ['굵게',   ['button[data-name="bold"]', '.se-toolbar-option-bold-button', '.se-toolbar-item-bold button', 'button[title*="굵게"]', 'button[aria-label*="굵게"]']],
+  ['기울임', ['button[data-name="italic"]', '.se-toolbar-option-italic-button', '.se-toolbar-item-italic button', 'button[title*="기울"]', 'button[aria-label*="기울"]']],
+  ['밑줄',   ['button[data-name="underline"]', '.se-toolbar-option-underline-button', '.se-toolbar-item-underline button', 'button[title*="밑줄"]', 'button[aria-label*="밑줄"]']],
+  ['취소선', ['button[data-name="strikethrough"]', '.se-toolbar-option-strikethrough-button', '.se-toolbar-item-strikethrough button', 'button[title*="취소선"]', 'button[aria-label*="취소선"]']],
+];
+async function clearFormatting(page, frame) {
+  const turned = [];
+  for (const [name, sels] of FMT) {
+    let done = false;
+    for (const sel of sels) {
+      if (done) break;
+      for (const scope of [frame, page]) {
+        try {
+          const el = scope.locator(sel).first();
+          if (!(await el.isVisible({ timeout: 200 }))) continue;
+          const cls = (await el.getAttribute('class')) || '';
+          const pressed = (await el.getAttribute('aria-pressed')) || '';
+          if (/se-is-on|se-is-selected|is-active|active|selected|on\b/i.test(cls) || pressed === 'true') {
+            await el.click();           // 켜져 있으면 눌러서 끈다
+            await sleep(200);
+            turned.push(name);
+          }
+          done = true; break;           // 이 서식의 단추는 찾았다 — 다음 서식으로
+        } catch {}
+      }
+    }
+  }
+  if (turned.length) log(`   ⚠️ 켜져 있던 서식을 껐습니다: ${turned.join(', ')}`);
+  return turned;
+}
+
 // 커서를 본문 맨 끝으로 돌려놓는다.
 // 지도를 넣거나 원장님이 손으로 뭔가 한 뒤에는 커서가 본문 밖에 있다 — 그 상태로 글자를 치면 아무 데도 안 들어간다
 async function focusBodyEnd(page, frame) {
@@ -410,6 +445,7 @@ async function insertPlace(page, frame, keyword) {
   if (body) { await body.click(); } else { await page.keyboard.press('Tab'); }
   await sleep(800);
   await setFontSize(page, f, opt.size);
+  await clearFormatting(page, f);
 
   // 순서대로 넣기
   let n = 0;
@@ -417,6 +453,7 @@ async function insertPlace(page, frame, keyword) {
     n++;
     if (s.kind === 'text') {
       log(`  ${n}/${steps.length} 글 ${s.text.length}자…`);
+      await clearFormatting(page, f);   // 앞 단계에서 서식이 켜졌을 수 있다
       for (const para of s.text.split('\n')) {
         // 기본은 사람 타자 속도(한 글자 25~70ms). 모니터에 띄워 두고 보기 좋은 속도다
         if (para.trim()) await page.keyboard.type(para, { delay: opt.fast ? rnd(4, 14) : rnd(25, 70) });
