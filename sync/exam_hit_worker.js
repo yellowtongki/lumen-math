@@ -14,6 +14,7 @@
  *   ④ 후보 — 문항마다 «원본 번호가 같은 것»과 «유형 번호가 같은 것»만 추려(최대 6) Claude 가 그림을 보고
  *              같은 문제 / 변형 / 지문만 겹침 / 아님 을 가른다. 유형 번호만 같으면 「유형」.
  *   ⑤ 반복 출제 — 같은 학교·학년·학기·중간/기말 지난 기출(ms_exam_bridge 의 유형 번호)과 겹치는 것
+ *   ⑤-2 지난 기출 비교 — 같은 학교·학년 지난 시험(기본 최근 4년, 중간·기말 모두) 문항과 그림 판정 → it.past · stats.past (우리 자료 적중률과 따로, 2026-10-11)
  *   ⑥ 저장 — lumen_store exam_hit_<examId> + exam_hit_index. 확정(✓/✗)은 원장님이 학원앱에서.
  *
  * 실행
@@ -22,6 +23,7 @@
  *        [--from 2026-07-01 --to 2026-10-01]   우리 자료 기간 (기본: 그 학기 시작 ~ 시험일)
  *        [--exam-id 이름]  [--no-ai]  [--dry]
  *   node sync/exam_hit_worker.js --rejudge <examId>   인식은 그대로 두고 자료·판정만 다시
+ *   node sync/exam_hit_worker.js --past-only <examId> [--dry] [--years 4] [--same-term]   2026-10-11 «학교 기출과 비교»만 다시 (우리 자료·판정은 그대로)
  *   node sync/exam_hit_worker.js --prep [--dry] [--force] [--cap 12]
  *        2026-10-10 «우리 자료 3종» 새벽 준비 (mathflat-collect.yml 04시 회차):
  *        수학비서 학년 폴더(고1·고2·고3·중1·중2·중3) 학습지 미리 인식 → ms_paper_<id> · 목록 ms_papers_index
@@ -212,8 +214,8 @@ const JUDGE_RULE = [
   '{"ask":"시험 문항이 묻는 것 한 줄(25자 이내, 숫자 없이)","essay":true 또는 false(서술형·풀이 과정을 쓰는 문항이면 true),"cands":[{"i":후보번호,"kind":"same|var|text|none","why":"15자 이내 근거"}]}',
 ].join('\n');
 
-async function judgeItem(examBuf, cands) {
-  const content = [{ type: 'text', text: JUDGE_RULE }, { type: 'text', text: '【시험 문항】' }, imgPart(examBuf)];
+async function judgeItem(examBuf, cands, rule) {
+  const content = [{ type: 'text', text: rule || JUDGE_RULE }, { type: 'text', text: '【시험 문항】' }, imgPart(examBuf)];
   cands.forEach((c, i) => { content.push({ type: 'text', text: `【후보 ${i + 1}】` }); content.push(imgPart(c.buf)); });
   if (!cands.length) content.push({ type: 'text', text: '(후보 없음 — cands 는 빈 배열로)' });
   for (let k = 0; k < 2; k++) {
@@ -304,6 +306,120 @@ async function pastTypes(exam) {
   });
   out.of = (it) => { const a = (out.cid[it.cid] || []).concat(out.name[nm(it.type)] || []); const seen = {}; return a.filter((h) => { const k = h.year + ':' + h.no; if (seen[k]) return false; seen[k] = 1; return true; }).sort((x, y) => y.year - x.year); };
   return out;
+}
+
+/* ── ⑤-2 지난 기출 비교 (2026-10-11 원장 「범박고 분석 시 범박고 기출에서 나온 것도 확인할 수 있나? 소사고 분석 시는 소사고 기출과 비교」) ──
+ *   우리 자료와 따로 센다(우리 자료 적중률에 들어가지 않는다).
+ *   비교 대상 = ms_exams_<학교> 의 같은 학교·같은 학년 지난 시험지(분석하는 시험보다 앞선 것만, 같은 시험지 id 는 뺌)
+ *             · 기본 최근 4년 · 중간/기말 · 1/2학기 모두 (src.past = { on, years, sameTerm })
+ *             · 고등부는 같은 교육과정 안에서 과목이 다르면 뺀다(공통수학1 ↔ 공통수학2). 교육과정이 다르면(수학(하) ↔ 공통수학2) 유형으로 맞춘다.
+ *   후보 = 문항마다 지난 시험 문항 중 «원본 번호 같음»(다리 problemId = 시험 문항의 가장 닮은 원본) → 같은 유형 번호 → 같은 유형 이름, 최근 시험부터 3개
+ *          → 우리 자료와 같은 그림 판정(같은 문제 / 숫자변형 / 지문만), 유형만 같으면 유사유형.
+ *   저장 it.past = [{ k:'past:<mydb>:<번호>', mydb, exam:'2025 2학기 중간', year, sem, term, no, kind, why, img, imgUrl, idSame, approx }]
+ *        it.pastTop = { k, kind } · 원장 확정 it.pastHit = { k, kind, ok } (다시 판정해도 남고, 그 후보는 맨 앞에 고정)
+ *        stats.past = { same, var, type, text, items(같은 문제+숫자변형 문항 수), exams, years, sameTerm, list:[…] } */
+const PAST_RULE = JUDGE_RULE.replace('그 뒤 그림들은 학원 학생들이 시험 전에 풀었던 «학원 자료 후보»다.', '그 뒤 그림들은 «같은 학교의 지난 시험 문항 후보»다.');
+const PAST_MAX = 3;
+function pastCfg(src) {
+  const p = (src && src.past) || {};
+  const y = Number(p.years); return { on: p.on !== false, years: y >= 1 && y <= 10 ? Math.round(y) : 4, sameTerm: !!p.sameTerm };
+}
+function termOrd(y, s, t) { return Number(y) * 10 + Number(s) * 2 + (t === '기말' ? 1 : 0); }
+function pastSelect(exam, ms, br, cfg, mydb) {
+  const gk = gradeKey(exam.grade), me = termOrd(exam.year, exam.semester, exam.term);
+  const myC = /^고/.test(gk) ? courseTrie(exam.grade, exam.year, exam.subject || '') : '';
+  const cur = (c) => String(c).split('.').slice(0, 3).join('.');
+  const exams = [], probs = [], skip = { course: 0, noBridge: 0 };
+  ((ms && ms.exams) || []).forEach((e) => {
+    if (gradeKey(e.grade) !== gk) return;
+    if (mydb && String(e.id) === String(mydb)) return;
+    if (!(termOrd(e.year, e.semester, e.term) < me)) return;   /* 같은 시험·뒤 시험은 뺀다 */
+    if (Number(e.year) < Number(exam.year) - cfg.years) return;
+    if (cfg.sameTerm && e.term !== exam.term) return;
+    if (myC) { const c = courseTrie(e.grade, e.year, e.title || ''); if (c && cur(c) === cur(myC) && c !== myC) { skip.course++; return; } }
+    const b = (br.byMydb || {})[String(e.id)];
+    if (!b || !(b.problems || []).length) { skip.noBridge++; return; }
+    const cells = (e.cells || []).slice().sort((x, y) => x.no - y.no), aligned = b.problems.length === cells.length;
+    const label = `${e.year} ${e.semester}학기 ${e.term}`;
+    exams.push({ mydb: String(e.id), exam: label, year: Number(e.year), sem: String(e.semester), term: e.term, n: cells.length, approx: !aligned });
+    b.problems.forEach((p, i) => {
+      const c = aligned ? cells[i] : null;
+      probs.push({ k: `past:${e.id}:${c ? c.no : (p.no || i + 1)}`, mydb: String(e.id), exam: label, year: Number(e.year), sem: String(e.semester), term: e.term,
+        no: c ? c.no : (p.no || i + 1), ord: termOrd(e.year, e.semester, e.term), cid: p.conceptId || p.cid || null, concept: p.concept || '', pid: p.problemId || null,
+        store: c && c.img ? c.img : '', url: (c && c.imgUrl) || p.pimg || '', diff: c && c.difficulty != null ? Number(c.difficulty) : null, approx: !aligned });
+    });
+  });
+  exams.sort((a, b) => termOrd(b.year, b.sem, b.term) - termOrd(a.year, a.sem, a.term));
+  return { exams, probs, skip };
+}
+/* 문항 하나의 후보 (판정 전) — 원본 번호 같음 → 같은 유형 번호 → 같은 유형 이름 · 최근 시험 · 난이도 가까운 것 */
+function pastCands(it, probs, pinK) {
+  const nm = (s) => String(s || '').replace(/\s/g, '');
+  const srcN = /^p\d+$/.test(it.src || '') ? Number(it.src.slice(1)) : null;
+  const pool = [];
+  probs.forEach((p) => {
+    const idSame = !!(srcN && p.pid === srcN), cidSame = !!(it.cid && p.cid && String(p.cid) === String(it.cid)), nameSame = !!(it.type && nm(p.concept) && nm(p.concept) === nm(it.type));
+    if (idSame || cidSame || nameSame || p.k === pinK) pool.push({ p, idSame, cidSame, nameSame });
+  });
+  const dd = (p) => (p.diff != null && it.diff != null ? Math.abs(p.diff - Number(it.diff)) : 9);
+  pool.sort((a, b) => (b.p.k === pinK) - (a.p.k === pinK) || (b.idSame - a.idSame) || (b.cidSame - a.cidSame) || (b.p.ord - a.p.ord) || (dd(a.p) - dd(b.p)) || (a.p.no - b.p.no));
+  return pool.slice(0, PAST_MAX);
+}
+const PAST_ORDER = { same: 4, var: 3, type: 2, text: 1 };
+async function pastCompare(exam, items, prev, src, mydb, step) {
+  const cfg = pastCfg(src);
+  if (!cfg.on) { items.forEach((it) => { delete it.past; delete it.pastTop; delete it.pastHit; }); log('지난 기출 비교: 꺼 둠 (요청에서 끔)'); return null; }
+  const ms = await kvGet('ms_exams_' + schoolKey(exam.school));
+  const br = (await kvGet('ms_exam_bridge')) || { byMydb: {} };
+  const S = pastSelect(exam, ms, br, cfg, mydb);
+  log(`지난 기출 비교: ${schoolKey(exam.school)} ${gradeKey(exam.grade)} 지난 시험 ${S.exams.length}장 · 문항 ${S.probs.length}개 (최근 ${cfg.years}년${cfg.sameTerm ? ' · 같은 ' + exam.term + '만' : ''}${S.skip.course ? ' · 다른 과목 ' + S.skip.course + '장 뺌' : ''}${S.skip.noBridge ? ' · 유형 번호 없는 ' + S.skip.noBridge + '장 뺌' : ''})`);
+  const st = { same: 0, var: 0, type: 0, text: 0, items: 0, cands: 0, idSame: 0, exams: S.exams.length, years: cfg.years, sameTerm: cfg.sameTerm,
+    list: S.exams.map((x) => ({ mydb: x.mydb, exam: x.exam, year: x.year, sem: x.sem, term: x.term, n: x.n })) };
+  let n = 0;
+  for (const it of items) {
+    n++; if (step && (n === 1 || n % 5 === 0)) await step(`지난 기출과 비교 중 ${n}/${items.length}`, 96);
+    const old = prev && (prev.items || []).find((x) => x.no === it.no);
+    const oldPast = (old && old.past) || [], oldHit = old && old.pastHit;
+    const pinK = oldHit && oldHit.ok != null && oldHit.k ? oldHit.k : null;
+    const picks = pastCands(it, S.probs, pinK);
+    const cands = [];
+    for (const c of picks) {
+      let buf = null;
+      if (!NO_AI && it.img) {
+        try { buf = c.p.store ? await stGet(BUCKET, c.p.store) : (c.p.url ? await fetchBuf(c.p.url) : null); } catch (e) { buf = null; }
+        if (!buf) continue;
+      }
+      c.buf = buf; cands.push(c);
+    }
+    let verdict = { cands: [] };
+    if (!NO_AI && it.img && cands.length) {
+      try { const eb = await stGet(BUCKET, it.img); verdict = await judgeItem(eb, cands, PAST_RULE); }
+      catch (e) { log(`${it.no}번 지난 기출 판정 실패: ${e.message.slice(0, 120)}`); }
+    }
+    it.past = cands.map((c, i) => {
+      const v = (verdict.cands || []).find((x) => Number(x.i) === i + 1); const k = v && v.kind;
+      let kind = (k === 'same' || k === 'var' || k === 'text') ? k : ((c.cidSame || c.nameSame || c.idSame) ? 'type' : 'none');
+      const o = oldPast.find((x) => x.k === c.p.k);
+      const out = { k: c.p.k, mydb: c.p.mydb, exam: c.p.exam, year: c.p.year, sem: c.p.sem, term: c.p.term, no: c.p.no, kind,
+        why: String((v && v.why) || (c.idSame ? '원본 번호 같음' : (c.cidSame ? '같은 유형 번호' : '같은 유형 이름'))).slice(0, 40),
+        img: c.p.store || '', imgUrl: c.p.url || '', idSame: c.idSame };
+      if (c.p.approx) out.approx = true;
+      if (o && o.rejected) out.rejected = true;
+      if (o && o.ai) out.ai = o.ai;
+      return out;
+    }).filter((x) => x.kind !== 'none');
+    it.past.sort((a, b) => (b.k === pinK) - (a.k === pinK) || PAST_ORDER[b.kind] - PAST_ORDER[a.kind]);
+    /* 원장님 확정은 그 후보가 아직 있을 때 그대로 (「겹침 없음」 확정은 늘 그대로) */
+    if (oldHit && oldHit.ok != null && (!oldHit.k || it.past.some((x) => x.k === oldHit.k))) it.pastHit = oldHit; else delete it.pastHit;
+    const top = it.past.filter((x) => !x.rejected).sort((a, b) => PAST_ORDER[b.kind] - PAST_ORDER[a.kind])[0] || null;
+    it.pastTop = top ? { k: top.k, kind: top.kind } : null;
+    if (top) st[top.kind]++;
+    if (top && (top.kind === 'same' || top.kind === 'var')) st.items++;
+    st.cands += it.past.length; if (it.past.some((x) => x.idSame)) st.idSame++;
+    if (it.past.length) log(`${it.no}번 지난 기출: ${it.past.map((x) => x.exam.replace(/학기 /, '-') + ' ' + x.no + '번 ' + x.kind).join(' · ')}`);
+  }
+  log(`지난 기출 비교 끝: 같은 문제 ${st.same} · 숫자변형 ${st.var} · 유사유형 ${st.type} · 지문만 ${st.text} → 학교 기출에서 다시 나온 문항 ${st.items}개 (후보 ${st.cands}개 · 원본 번호 같음 ${st.idSame}문항)`);
+  return st;
 }
 
 /* ══ 한 시험 처리 ═════════════════════════════════════════════ */
@@ -495,6 +611,9 @@ async function runExam(exam, opt) {
     log(`${it.no}번: 후보 ${cands.length} → ${top ? top.kind : '없음'}${it.repeat.length ? ' · 반복' : ''}`);
   }
 
+  /* ⑤-2 지난 기출 비교 — 우리 자료와 따로 (2026-10-11) */
+  const pastSt = await pastCompare({ ...exam, subject: exam.subject || subjText }, items, prev, src, opt.mydb || (prev && prev.exam && prev.exam.mydb) || null, step);
+
   /* 저장용 자료(쓰인 것만) */
   const matOut = {};
   for (const m of mats) {
@@ -523,6 +642,7 @@ async function runExam(exam, opt) {
   st.byKind.ms.papers = msR.n;
   Object.keys(dropped).forEach((k) => { if (k === 'mp') st.byKind.ms.mp.scopeDropped = dropped.mp; const kk = k === 'mp' ? 'ms' : k; if (st.byKind[kk]) st.byKind[kk].scopeDropped = (st.byKind[kk].scopeDropped || 0) + dropped[k]; });
   st.scope = src.scope === 'exam' ? 'exam' : 'all';
+  if (pastSt) st.past = pastSt;   /* 2026-10-11: 학교 기출에서 다시 나온 문항 — 우리 자료 적중률과 따로 */
 
   /* 출제 경향 · 킬러 문항 한 단락 (학원앱 보고서·블로그 자료에 쓴다) */
   let trend = prev && prev.trend && (opt.rejudge || prev.trend.edited) ? prev.trend : null;   // v19-79: 고친 글은 늘 남김
@@ -673,11 +793,12 @@ function inScope(cid, U, units) {
 }
 function normSrc(raw, exam) {
   const hs = /^고/.test(gradeKey(exam.grade));
-  if (!raw || typeof raw !== 'object') return { tb: { on: hs, mode: 'all', bids: [] }, ms: [], mp: [], lib: [], mf: true, scope: 'all' };
+  if (!raw || typeof raw !== 'object') return { tb: { on: hs, mode: 'all', bids: [] }, ms: [], mp: [], lib: [], mf: true, scope: 'all', past: pastCfg(null) };
   const tb = raw.tb || {};
   return { tb: { on: tb.on === true || (tb.on === undefined && hs), mode: tb.mode === 'scope' || raw.scope === 'exam' ? 'scope' : 'all', bids: (tb.bids || []).map(String) },
     ms: (raw.ms || []).map(String), mp: (raw.mp || []).map(String), lib: (raw.lib || []).map(String), mf: raw.mf !== false,
-    scope: raw.scope === 'exam' ? 'exam' : 'all' };   /* 2026-10-11: mp = 내 문제지 · scope = 시험 범위 단원만 */
+    scope: raw.scope === 'exam' ? 'exam' : 'all',   /* 2026-10-11: mp = 내 문제지 · scope = 시험 범위 단원만 */
+    past: pastCfg(raw) };   /* 2026-10-11: 지난 기출 비교 { on, years, sameTerm } — 없으면 켬 · 최근 4년 · 중간/기말 모두 */
 }
 function matFromItem(kind, k, title, it, extra) {
   const s = String(it.src || ''), n = /^[pbs]\d+$/.test(s) ? Number(s.slice(1)) : null;
@@ -1288,7 +1409,8 @@ async function handleRequest() {
     if (!exam.date) { exam.date = await examDateFromCalendar(exam); if (exam.date) log(`시험 첫날(학원 달력): ${exam.date}`); }
     const out = await runExam(exam, { files: req.files || [], uploads: req.mats || [], mydb: req.mydb || null, rejudge: !!req.rejudge, from: req.from, to: req.to, src: req.src || null, step });
     await kvSet(REQ_KEY, { ...req, status: 'done', step: '끝', pct: 100, startedAt, doneAt: new Date().toISOString(), examId: out.examId,
-      summary: { total: out.stats.total, same: out.stats.same, var: out.stats.var, type: out.stats.type, text: out.stats.text, byKind: out.stats.byKind } });
+      summary: { total: out.stats.total, same: out.stats.same, var: out.stats.var, type: out.stats.type, text: out.stats.text, byKind: out.stats.byKind,
+        past: out.stats.past ? { same: out.stats.past.same, var: out.stats.past.var, type: out.stats.past.type, items: out.stats.past.items, exams: out.stats.past.exams } : null } });
   } catch (e) {
     log('실패:', e.message);
     await kvSet(REQ_KEY, { ...req, status: 'error', error: String(e.message || e).slice(0, 200), startedAt, doneAt: new Date().toISOString() });
@@ -1298,7 +1420,8 @@ async function handleRequest() {
 
 module.exports = { schoolKey, gradeKey, examIdOf, whereOf, pidOfUrl, semStart, mydbFetch, examDateFromCalendar,
   normSrc, textbookBids, loadTextbookMats, matFromItem, isExamPaper, semOf, tbTitle, courseTrie,   /* 2026-10-10 우리 자료 3종 */
-  examUnits, inScope, pngDecode, pngEncode, stackPng, packCells, compactTree, mpCurriculum };   /* 2026-10-11 내 문제지 · 시험 범위 */
+  examUnits, inScope, pngDecode, pngEncode, stackPng, packCells, compactTree, mpCurriculum,   /* 2026-10-11 내 문제지 · 시험 범위 */
+  pastCfg, pastSelect, pastCands, termOrd };   /* 2026-10-11 지난 기출 비교 */
 
 if (require.main === module) {
   (async () => {
@@ -1307,6 +1430,18 @@ if (require.main === module) {
     if (has('mypapers-index')) return mypapersIndex();
     if (arg('mp-build', '')) { if (!ensurePdfLib()) throw new Error('pdf-lib 설치 실패'); for (const id of String(arg('mp-build', '')).split(',').filter(Boolean)) await buildMsMyPaper(id.trim(), null); return mypapersIndex(); }
     if (NO_AI && !has('no-ai')) log('⚠ ANTHROPIC_API_KEY 가 없어 그림 판정 없이 유형 번호로만 후보를 남깁니다');
+    /* 2026-10-11: 지난 기출 비교만 — 이미 분석한 시험에 «학교 기출과 비교»만 다시 (우리 자료·판정은 그대로). --dry 면 숫자만 보여 준다 */
+    if (arg('past-only', '')) {
+      const id = arg('past-only', ''); const p = await kvGet('exam_hit_' + id); if (!p) throw new Error('exam_hit_' + id + ' 가 없습니다');
+      let src = p.src || null; if (arg('src-file', '')) src = JSON.parse(require('fs').readFileSync(arg('src-file', ''), 'utf8'));
+      if (arg('years', '') || has('same-term')) src = { ...(src || {}), past: { on: true, years: Number(arg('years', '')) || pastCfg(src).years, sameTerm: has('same-term') } };
+      const items = p.items.map((it) => ({ ...it }));
+      const pst = await pastCompare({ ...p.exam }, items, p, normSrc(src, p.exam), p.exam.mydb || null, null);
+      const out = { ...p, items, stats: { ...p.stats } }; if (pst) out.stats.past = pst; else delete out.stats.past;
+      if (src && src.past) out.src = { ...(p.src || {}), past: src.past };
+      await kvSet('exam_hit_' + id, out);
+      return;
+    }
     const mydb = arg('mydb', null), rej = arg('rejudge', null);
     if (!mydb && !rej) { try { await maybeIndex(); } catch (e) { log('색인 건너뜀:', e.message); } return handleRequest(); }
     if (!ensurePdfLib()) throw new Error('pdf-lib 설치 실패');
