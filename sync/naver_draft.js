@@ -298,30 +298,6 @@ async function focusBodyEnd(page, frame) {
   } catch { return false; }
 }
 
-// 해시태그 — 네이버는 본문이 아니라 아래쪽 「태그 입력」 칸에 넣는다. 한 개씩 Enter 로 끊는다
-async function addHashtags(page, frame, raw) {
-  const tags = String(raw).split(/\s+/).filter(t => t.startsWith('#')).map(t => t.slice(1)).filter(Boolean);
-  if (!tags.length) return false;
-  const sels = ['.se-tag-input input', 'input.se-tag-input', 'input[placeholder*="태그"]',
-                'input.tag_input', '#tag-input', '[class*="tag"] input[type="text"]'];
-  let box = null;
-  for (const sel of sels) {
-    for (const scope of [frame, page]) {
-      try { const el = scope.locator(sel).first(); if (await el.isVisible({ timeout: 500 })) { box = el; break; } } catch {}
-    }
-    if (box) break;
-  }
-  if (!box) { await dumpButtons(frame, '태그 칸을 못 찾음'); return false; }
-  await box.click();
-  await sleep(400);
-  for (const t of tags) {
-    await page.keyboard.type(t, { delay: rnd(20, 50) });
-    await page.keyboard.press('Enter');
-    await sleep(rnd(250, 500));
-  }
-  return true;
-}
-
 // 정말 저장됐는지 확인한다 — 「저장되었습니다」 알림이 뜨는지 본다. 확인 못 하면 성공이라고 말하지 않는다
 async function savedOk(page, frame) {
   const marks = ['text=저장되었습니다', 'text=임시저장되었습니다', 'text=저장했습니다', '.se-toast', '[class*="toast"]'];
@@ -561,22 +537,24 @@ async function insertPlace(page, frame, keyword) {
     }
   }
 
-  // 해시태그 — 아래쪽 「태그 입력」 칸에 한 개씩
-  let tagOk = false;
+  // 해시태그 — 본문 맨 끝에 #낱말 로 적으면 네이버가 발행할 때 태그로 잡는다.
+  // (2026-10-11: 「발행 창의 태그 칸」으로 바꿨다가 되돌렸다. 원장님이 쭉 쓰시던 방식이 맞다.
+  //  지난번에 안 들어간 것은 자리가 틀려서가 아니라 커서가 본문 밖에 있었기 때문이다)
   if (meta.hashtags) {
     log('  해시태그…');
-    try { tagOk = await addHashtags(page, f, meta.hashtags); } catch {}
-    if (tagOk) log('     ✅ 태그를 넣었습니다');
+    await focusBodyEnd(page, f);
+    await clearFormatting(page, f);
+    await page.keyboard.press('Enter');
+    await page.keyboard.type(meta.hashtags, { delay: rnd(20, 50) });
+    await sleep(900);
+    const firstTag = meta.hashtags.split(/\s+/).find(t => t.startsWith('#')) || '';
+    let inBody = false;
+    try { inBody = (await f.locator('.se-main-container').first().innerText()).includes(firstTag); } catch {}
+    if (inBody) log('     ✅ 본문 끝에 넣었습니다 (발행할 때 태그로 잡힙니다)');
     else {
-      // 네이버 태그 칸은 「발행」을 눌러야 나오는 설정 창 안에 있다. 발행은 우리가 누르지 않는다.
-      // 그래서 태그를 클립보드에 넣어 드린다 — 발행 창에서 붙여넣기(Cmd+V) 한 번이면 끝난다
-      let copied = false;
-      try { require('child_process').execSync('pbcopy', { input: meta.hashtags }); copied = true; } catch {}
-      log(`     📋 태그를 클립보드에 ${copied ? '복사했습니다' : '복사하지 못했습니다'}`);
-      await pause('태그는 「발행」 창 안에 있어서 제가 못 넣습니다.',
-        copied
-          ? '임시저장 뒤 「발행」을 누르면 나오는 태그 칸에 붙여넣기(⌘V) 하세요.\n      (발행 창을 열어도 발행되지 않습니다. 안의 「발행」을 눌러야 올라갑니다)'
-          : `발행 창의 태그 칸에 직접 넣어주세요:\n      ${meta.hashtags}`);
+      try { require('child_process').execSync('pbcopy', { input: meta.hashtags }); log('     📋 클립보드에 복사해 뒀습니다'); } catch {}
+      await pause('해시태그가 본문에 안 들어간 것 같습니다.',
+        `본문 맨 끝을 클릭하고 붙여넣기(⌘V) 하세요:\n      ${meta.hashtags}`);
     }
   }
 
