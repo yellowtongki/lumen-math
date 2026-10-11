@@ -49,6 +49,26 @@ node sync/blog_topics.js --days 7
 
 > `.env` 는 `.gitignore` 에 걸려 있어 커밋되지 않습니다. **값을 `.env.example` 에 적지 마세요.**
 
+## 1-3. 열쇠는 어디에 두나 (깃허브가 아니다) ⚠️
+
+**저장소는 공개(public)다.** 키를 코드나 파일에 적으면 누구나 본다. 절대 커밋하지 않는다.
+
+| 두는 곳 | 누가 읽나 | 무엇이 들어 있나 |
+|---|---|---|
+| **클라우드 환경 설정**(세션 제목 줄 → 환경 메뉴 → Edit) | 클라우드 세션 | `SUPABASE_*` · `MATHFLAT_*` · `MATHSECR_*` · `PAYSSAM_*` |
+| **맥미니 `.env`** (gitignore됨) | 로컬 세션 · 터미널 | 위의 것 + `NAVER_AD_*` · `OPENAI_API_KEY` · `IG_*` |
+
+같은 키를 양쪽에 넣어도 된다. 한쪽에 넣으면 **다른 쪽은 모른다**.
+
+### 클라우드에서도 검색량을 뽑고 싶다면
+`api.searchad.naver.com` 이 네트워크 정책에 막혀 있다. 환경 설정 → Edit → Network access 의
+Allowed domains 에 그 호스트를 더하고(Allow package managers 는 켠 채로), 환경변수로
+`NAVER_AD_CUSTOMER_ID` · `NAVER_AD_API_KEY` · `NAVER_AD_SECRET_KEY` 를 등록하면
+**클라우드 세션이 직접 `node sync/keyword_volume.js` 를 돌릴 수 있다.** (새 세션부터 반영)
+
+> 검색광고 **API** 는 공식이라 데이터센터 IP도 괜찮다. 그러나 네이버 **블로그 글쓰기·검색 순위 점검**은
+> 여전히 로컬이라야 한다(캡차).
+
 ## 2. 다음 할 일 — 인스타 업로더 (`sync/insta_upload.js`)
 
 ### 먼저 확인해야 하는 것
