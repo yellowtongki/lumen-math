@@ -430,7 +430,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-103';
+var APP_VER = 'v19-105';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9016,6 +9016,8 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-105',date:'2026-10-11',stability:'ok',memo:'🎯 <b>적중 분석을 3분할로</b> (원장 결정 2026-10-11 「순서 그대로 — 적중 분석부터」, 시안 docs/mockup_layout3.html). PC 에서 적중 분석 화면을 열면 ① <b>왼쪽</b>: 「시험」 목록(학교 학년 · 연도 학기 시험 — 지금 연 시험은 파란색, 불러온 시험은 «적중 n% · 확정 끝» 또는 «후보 n · 확정 n») — 누르면 그 시험 결과. 그 아래 「새로」: 📚 기출 DB에서 찾기 · 📤 시험지 올리기 · 📄 PDF 자료함(장수). 맨 아래 접힌 「▸ 공용 메뉴」. ② <b>오른쪽 도구 칸</b>: 📂 <b>우리 자료(대조 범위)</b> — 교과서 n권 · 학원 대비 학습지 n장 · PDF n장 · 루멘수학 학습지·교재 자동(대조한 문항 수) + 「🔄 이 구성으로 다시 판정」(v19-103 의 자료 고르기 화면) · 「💾 구성 기억」(이 학교·학년 다음 분석 때 이 구성으로 열림). 「적중 기준」(가운데 고르기와 같은 값 — 어느 쪽을 바꿔도 둘 다 바뀜). 「내보내기」 📰 카드뉴스 · 🖨 학부모 보고서 · ⬇ 블로그 폴더로 내려받기 · 📝 블로그 자료 .md. 「서버 상태」 요청 진행 · ⚡ 즉시 처리 켜짐 또는 「🐙 GitHub에서 바로 실행」. 결과가 없으면 「시험을 고르세요」 + 새로 단추. ③ 창 폭 1024~1279 PC 는 오른쪽 아래 「🛠 도구」 단추로 같은 도구가 서랍처럼 열린다. <b>가운데 화면은 그대로</b> — 같은 단추가 양쪽에 있어 어느 쪽을 눌러도 된다. <b>[손대지 않은 것]</b> 폰 화면 · 서버(워커)·판정 방식 · 학생앱 · 학부모앱. 부품 modules/layout3_hit_teacher.js.'},
+      {ver:'v19-104',date:'2026-10-11',stability:'ok',memo:'🧱 <b>학원앱 3분할 틀</b> (원장 결정 2026-10-11 「공용 메뉴 접기 좋다 · 순서 그대로(적중 분석 → 백지테스트·리커버리 → 나머지)」, 시안 docs/mockup_layout3.html). 이번 판은 <b>틀만</b> 만들었다 — 아직 아무 화면도 옮기지 않았다. ① PC(창 폭 1280 이상) 오른쪽에 <b>도구 칸</b>(280px) 자리를 만들었다. 화면마다 도구를 끼우면 나타나고, 도구가 없는 화면은 칸이 접혀 지금처럼 두 칸이다(다음 판부터 적중 분석 → 백지테스트·리커버리 순서로 채운다). ② <b>공용 메뉴 접기</b> — 홈이 아닌 화면에서 왼쪽에 공용 메뉴(진도 현황 · 리커버리 · 명예의 전당 · 수학풀이분석 · 월간/주간 리포트 · 울트라일일 · 발행 현황판 · 상담 준비 · 숙제 현황 · 학생 목록)만 있던 곳은, 맨 위에 지금 화면 이름 + 「▸ 공용 메뉴 (진도 현황 · 리커버리 · 명예의 전당 …)」 한 줄로 접힌다. 누르면 펼쳐지고, 펼침/접힘은 이 PC 가 기억한다. 홈 · 학생 목록 · 학생 상세 · 리포트 편집은 지금처럼 다 보인다. 자기 왼쪽 메뉴가 있는 화면(울트라 · 플래너 · 공지 · 아하노트 · 기록 · 강의실 · 학생관리 · 교재 · 녹음 · 출결 · 유형성취도)은 그대로. ③ 창 폭 1024~1279 PC 에서는 도구 칸 대신 오른쪽 아래 <b>「🛠 도구」</b> 단추(도구가 있는 화면만) → 서랍처럼 열린다. ④ 폰·태블릿 세로는 바뀐 것이 없다. <b>[손대지 않은 것]</b> 가운데 화면 · 서버 · 학생앱 · 학부모앱. 부품 modules/layout3_teacher.js.'},
       {ver:'v19-103',date:'2026-10-11',stability:'ok',memo:'📂 <b>적중 분석 — 결과 화면에서 「우리 자료 고르기 → 다시 판정」</b> (원장 지시 2026-10-11 「요청화면 수학비서가 어디에 있나? 잘 안 보인다」). 교과서 · 수학비서 학습지 · PDF 자료함 · 매쓰플랫 네 칸을 고르는 요청 화면은 <b>새 분석을 시작할 때만</b> 떴고(시험지 올리기 · 기출 DB → 🎯), 이미 분석한 시험에서는 갈 길이 없었다. 「🔄 다시 판정」은 지난번 자료를 말없이 그대로 썼다. ① 결과 화면 맨 위(적중 기준 옆)에 보라색 <b>「📂 우리 자료 고르기 → 다시 판정」</b> — 누르면 같은 요청 화면이 <b>「🔄 다시 판정 — 시험 이름」</b>으로 열린다. 지난 판정에 쓴 자료가 체크된 채로 열리고(기록이 없는 옛 시험은 「💾 이 구성 기억」으로 기억한 구성), 기간도 지난 판정 그대로. 켜고 끈 뒤 <b>「🔄 이 자료로 다시 판정」</b>을 누르면 문항 나누기는 그대로 두고 판정만 다시 한다(확정한 ✓/✗ 는 남음) — 결과 화면으로 돌아가 위 띠에 진행 상황. 「← 결과로 돌아가기」는 요청 없이 닫기. ② 예전 「🔄 다시 판정」 단추도 바로 요청하지 않고 같은 화면을 연다(무엇으로 판정할지 늘 보고 누르도록). ③ 수학비서 학습지 칸: 다른 폴더(예 공수2 · 미적분1)에서 체크한 학습지가 있으면 그 폴더 칩이 앞쪽에 <b>✓n</b> 과 함께 보이고(예전엔 폴더가 많으면 칩이 잘릴 수 있었다), 「다른 폴더에서 체크한 것」 줄에 폴더 단추. ④ 결과의 「📚 우리 자료별 적중」 칸에 한 줄 — <b>「이번 판정에 쓴 자료: 교과서 n권 · 학원 대비 학습지 n장 · 프린트 n장 · 루멘수학 학습지·교재 자동」</b> + 「바꾸기」(같은 화면). <b>[손대지 않은 것]</b> 서버(워커)·판정 방식, 학생앱·학부모앱. 부품 modules/hitsrc2_teacher.js.'},
       {ver:'v19-102',date:'2026-10-11',stability:'ok',memo:'📰 카드뉴스를 <b>블로그 브랜드와 통일</b> + <b>⬇ 블로그 폴더로 내려받기</b> (원장 지시 2026-10-11 「v19-102 먼저 만들어 배포, 12색은 사용해보고 결정」). ① <b>브랜드 한 곳</b>: 카드 색·로고는 블로그 카드와 같은 파일(sync/card_templates/_base.css)에서 조립할 때 읽어 온다 — 그 파일을 고치고 다시 조립하면 학원앱 카드도 같이 바뀐다. 색 칩 맨 앞에 <b>「★ 브랜드 · 붉은 바탕」(새 시험의 기본)</b> · 「★ 브랜드 · 아이보리」(밝은 바탕이라 노랑은 안 쓰고 붉은색·남색으로 강조)를 더했고, <b>12색은 그대로</b> 뒤에서 고를 수 있다(이미 색을 고른 시험은 그 색 그대로). 모든 새 스타일 카드 맨 아래가 블로그 카드처럼 <b>로고 + 「루멘수학」 + 쪽수(3 / 13)</b>. 제목 글꼴 칩에 <b>「브랜드 글꼴(Pretendard)」</b>을 기본으로 더함(굵은 · 부드러운 글꼴도 그대로 · 이 버전을 처음 열 때 한 번 브랜드 글꼴로 바뀜). 학교 시험지는 밖에 낼 수 없어서 새 스타일 카드에서 「기출」 낱말을 「시험」·「지난 시험」으로 바꾸고, 반복 출제 카드는 <b>유형 이름만</b>(연도 없음). ② 「⬇ 카드 내려받기」 옆에 <b>「⬇ 블로그 폴더로 내려받기」</b> — zip 을 풀면 바로 blog/날짜-학교학년-exam/ 폴더(예: 2026-10-11-okgil-m1-exam): 카드 그림 cards/01_cover.png … 12_summary.png(문항 카드는 08_q07 처럼) · cards.json(그림은 이미 완성본이라 다시 그리지 않음) · source.md(글에 쓸 숫자 모음 = 블로그자료.md) · post_draft.md(설정의 AI 키가 있으면 블로그 말투 규칙대로 쓴 초안, 없으면 빠짐) · README.txt(쓰는 법 3줄). 블로그 세션은 이 폴더를 저장소 blog/ 에 넣고 초안을 post.md 로 다듬은 뒤 검사기(post_check) → 네이버 붙여넣기(naver_draft). 「매쓰플랫」「수학비서」 낱말은 어디에도 나가지 않는다. 부품 modules/cn4_teacher.js.'},
       {ver:'v19-101',date:'2026-10-11',stability:'ok',memo:'📰 카드뉴스 2판 고침 (원장 지시 2026-10-11 「매쓰플랫 용어 대신 학원 교재 · 기출문제도 보이게 · 모자이크는 내가 직접」). ① 카드 · 블로그자료.md · 적중 분석 .md · 학부모 보고서에서 <b>「매쓰플랫」 낱말을 뺐다</b> — 자료 종류는 교과서 · <b>루멘수학 학습지</b> · <b>루멘수학 시험대비 교재</b> · <b>학원 대비 학습지</b> · <b>학원 프린트</b>, 난이도 기준은 「문항 난도」. 「어떤 자료가 맞혔을까?」 카드와 보고서의 «우리 자료별 적중»도 다섯 종류로. ② 원장님이 고른 <b>문항 카드에 두 그림을 나란히</b> — 왼쪽 시험 문항(기출) · 오른쪽 우리 자료 문항, 그림마다 작은 이름표(「시험 문항 n번」 / 「루멘수학 학습지 문항」 등), 큰 번호는 그대로. 기본은 <b>선명하게</b>, 카드마다 「선명 / 흐리게」 칩(시험마다 기억). ③ 카드마다 「<b>🧩 모자이크</b>」 — 창에서 «시험 문항 / 우리 자료» 그림 위를 끌어 상자를 그리면 그 부분이 네모 칸으로 가려진다(숫자·이름 등 원장님이 직접). 「되돌리기(마지막 상자)」「모두 지우기」「저장」「닫기». 저장하면 화면 카드와 내려받은 PNG 모두 모자이크된 그림으로 나간다. 그림 서버가 막으면 «이 그림은 모자이크를 적용할 수 없습니다» 경고. 부품 modules/cn3_teacher.js.'},
@@ -85024,7 +85026,378 @@ htSummaryHtml=(function(o){ return function(d){
   return h.slice(0,i)+btn+h.slice(i); }; })(htSummaryHtml);
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~103: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-104: 🧱 학원앱 3분할 틀 — 왼쪽은 기능 따라 · 가운데는 그대로 · 오른쪽은 «지금 화면의 도구»
+ * 원장 결정 2026-10-11 (시안 docs/mockup_layout3.html 승인):
+ *   「공용 메뉴 접기 좋다 · 순서 그대로(적중 분석 → 백지테스트·리커버리 → 나머지)」
+ *
+ *  ① 세 번째 칸 .tool-panel (#TOOL_PANEL, 폭 280px) — PC 1280px 이상에서만 보인다.
+ *     화면마다 도구를 끼우는 자리: RIGHT_TOOLS[VIEW] = function(VIEW){ return html 또는 null }
+ *     (window.perViewRightTools(VIEW) 가 이것을 부른다). 도구가 없는 화면은 칸이 0 으로 접혀 지금 두 칸 그대로.
+ *  ② 공용 메뉴 접기 — 홈이 아닌 화면에서 왼쪽이 공용 메뉴(rList)뿐이면,
+ *     「화면 이름」 머리 + 「▸ 공용 메뉴 (진도 현황 · 리커버리 · 명예의 전당 …)」 접힘 상자로 바꾼다.
+ *     펼침/접힘은 이 PC 에만 기억(l3_common_open — 서버로 안 올림).
+ *     홈 · 학생 목록 · 학생 상세 · 리포트 편집 화면은 학생 목록이 필요하므로 지금 그대로 다 보인다.
+ *     자기 왼쪽 메뉴가 있는 화면(울트라 · 플래너 · 공지 · 아하노트 · 기록 · 강의실 · 학생관리 · 교재 · 녹음 · 출결 · 유형성취도 …)은 손대지 않는다.
+ *  ③ PC 1024~1279px — 도구 칸은 숨기고, 도구가 있는 화면에서만 오른쪽 아래 「🛠 도구」 단추 → 서랍처럼 열림.
+ *     폰·태블릿 세로(900px 미만)는 바뀌는 것이 없다.
+ *  ※ 바탕 코드는 고치지 않고 render · perViewLeftNav 를 감싼다. 문자열 연결로만 쓴다(템플릿 리터럴 금지).
+ * ═══════════════════════════════════════════════════════════════════ */
+var L3 = { pvNull:false, drawer:false, has:false, bucket:-1 };
+window.RIGHT_TOOLS = window.RIGHT_TOOLS || {};
+/* 홈처럼 공용 메뉴(학생 목록 포함)를 다 펼쳐 두는 화면 */
+var L3_FULL_LEFT = { home:1, list:1, student_detail:1, form:1, preview:1, share:1 };
+
+/* 화면별 도구 — 없으면 null */
+window.perViewRightTools = function(v){
+  var f=RIGHT_TOOLS[v]; if(typeof f!=='function') return null;
+  try{ var h=f(v); return (h==null||h==='')?null:String(h); }
+  catch(e){ try{ console.error('[도구 칸]', e); }catch(_){} return '<div class="l3-tool" style="color:#b91c1c">도구 칸 오류: '+String((e&&e.message)||e).replace(/</g,'&lt;')+'</div>'; }
+};
+
+/* ── 이 PC 에만 두는 설정 (서버 동기화 안 함) ── */
+function l3Get(k){ try{ return (typeof _origGetItem==='function'?_origGetItem(k):localStorage.getItem(k)); }catch(e){ return null; } }
+function l3Set(k, v){ try{ if(typeof _origSetItem==='function') _origSetItem(k, v); else localStorage.setItem(k, v); }catch(e){} }
+function l3CommonOpen(){ return l3Get('l3_common_open')==='1'; }
+window.l3CommonToggle = function(el){ if(!el) return; l3Set('l3_common_open', el.open?'1':'0'); };
+
+/* 폭 구간: 0 폰·태블릿 세로 · 1 좁은 PC(왼쪽 칸만) · 2 PC 1024~1279(도구 서랍) · 3 PC 1280 이상(도구 칸) */
+function l3Bucket(){ var w=window.innerWidth||0; return w<900?0:(w<1024?1:(w<1280?2:3)); }
+
+/* 지금 화면 이름 — 위 기능 탭(GROUPS)에서 찾는다 */
+function l3ViewTitle(v){
+  var g0=null, s0=null;
+  try{ (GROUPS||[]).forEach(function(g){ (g.subs||[]).forEach(function(s){ if(!s0 && s.v===v){ g0=g; s0=s; } }); }); }catch(e){}
+  if(s0) return { grp:g0.icon+' '+g0.label, name:s0.icon+' '+s0.label };
+  var gk=''; try{ gk=groupOfView(v); }catch(e){}
+  var g=null; try{ g=(GROUPS||[]).filter(function(x){ return x.key===gk; })[0]||null; }catch(e){}
+  return { grp:g?(g.icon+' '+g.label):'', name:g?(g.icon+' '+g.label):'🏫 루멘수학' };
+}
+function l3Esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+/* 왼쪽 머리 — 화면 이름 (뒤 부품도 쓴다) */
+window.l3LeftHead = function(v){
+  var t=l3ViewTitle(v==null?VIEW:v);
+  return '<div class="l3-vhead">'+(t.grp&&t.grp!==t.name?'<small>'+l3Esc(t.grp)+'</small>':'')+'<b>'+l3Esc(t.name)+'</b></div>';
+};
+/* 접힌 공용 메뉴 상자 — inner 를 주면 그것을, 안 주면 rList() 를 넣는다 (뒤 부품의 왼쪽 메뉴 맨 아래에 쓴다) */
+function l3CommonSummary(){ return '<summary><span class="l3-c">▸ 공용 메뉴 (진도 현황 · 리커버리 · 명예의 전당 …)</span><span class="l3-o">▾ 공용 메뉴 접기</span></summary>'; }
+window.l3CommonFold = function(inner){
+  var body=inner; if(body==null){ try{ body=rList(); }catch(e){ body='<div style="padding:10px;color:#fca5a5">공용 메뉴 오류: '+l3Esc(e&&e.message||e)+'</div>'; } }
+  return '<details class="common-menu" id="L3_COMMON"'+(l3CommonOpen()?' open':'')+' ontoggle="l3CommonToggle(this)">'+l3CommonSummary()+'<div class="l3-cm-body">'+body+'</div></details>';
+};
+
+/* ── 왼쪽: 바탕이 공용 메뉴(rList)를 그렸는지 알아 두기 ── */
+perViewLeftNav=(function(o){ return function(v){ var r=o.apply(this, arguments); L3.pvNull=(r==null); return r; }; })(perViewLeftNav);
+
+/* 공용 메뉴를 접는다 — 이미 그려진 rList 의 칸들을 그대로 옮긴다(단추에 붙은 동작이 살아 있게) */
+function l3FoldLeft(){
+  var LC=document.getElementById('LIST_CONTENT'); if(!LC) return;
+  var det=document.createElement('details'); det.className='common-menu'; det.id='L3_COMMON';
+  if(l3CommonOpen()) det.open=true;
+  det.setAttribute('ontoggle', 'l3CommonToggle(this)');
+  det.innerHTML=l3CommonSummary();
+  var body=document.createElement('div'); body.className='l3-cm-body';
+  while(LC.firstChild) body.appendChild(LC.firstChild);
+  det.appendChild(body);
+  var head=document.createElement('div'); head.innerHTML=l3LeftHead(VIEW);
+  LC.appendChild(head.firstChild); LC.appendChild(det);
+}
+
+/* ── 오른쪽: 도구 칸 만들기 (처음 그릴 때 한 번, .right-panel 바로 뒤) ── */
+function l3Panel(){
+  var tp=document.getElementById('TOOL_PANEL'); if(tp) return tp;
+  var rp=document.querySelector('.app > .right-panel'); if(!rp||!rp.parentNode) return null;
+  tp=document.createElement('div'); tp.className='tool-panel l3-empty'; tp.id='TOOL_PANEL'; tp.setAttribute('aria-label', '도구');
+  rp.parentNode.insertBefore(tp, rp.nextSibling);
+  return tp;
+}
+function l3Fab(){
+  var b=document.getElementById('L3_FAB'); if(b) return b;
+  b=document.createElement('button'); b.id='L3_FAB'; b.className='l3-fab'; b.type='button'; b.textContent='🛠 도구';
+  b.onclick=function(){ l3Drawer(!L3.drawer); };
+  document.body.appendChild(b);
+  var bk=document.createElement('div'); bk.id='L3_BACK'; bk.className='l3-back'; bk.onclick=function(){ l3Drawer(false); };
+  document.body.appendChild(bk);
+  return b;
+}
+window.l3Drawer = function(on){
+  L3.drawer=!!on && L3.has;
+  var tp=document.getElementById('TOOL_PANEL'), bk=document.getElementById('L3_BACK'), fb=document.getElementById('L3_FAB');
+  if(tp) tp.classList.toggle('l3-drawer', L3.drawer);
+  if(bk) bk.classList.toggle('on', L3.drawer);
+  if(fb) fb.classList.toggle('open', L3.drawer);
+};
+function l3Tools(){
+  var tp=l3Panel(); if(!tp) return;
+  var bk=l3Bucket(), h=bk>=2?perViewRightTools(VIEW):null;   /* 1024px 아래에서는 도구를 그리지 않는다 */
+  L3.has=!!h;
+  if(h){
+    var keep=tp.scrollTop;
+    tp.innerHTML='<div class="l3-dclose"><b>🛠 도구</b><button type="button" onclick="l3Drawer(false)">닫기 ✕</button></div>'+h;
+    tp.classList.remove('l3-empty'); tp.scrollTop=keep;
+  } else { if(tp.innerHTML) tp.innerHTML=''; tp.classList.add('l3-empty'); }
+  var app=document.querySelector('.app'); if(app) app.classList.toggle('l3-tools', L3.has && bk===3);   /* 가운데가 좁아지면 위 기능 탭 글씨를 줄인다 */
+  var fb=document.getElementById('L3_FAB')||(L3.has?l3Fab():null);
+  if(fb) fb.classList.toggle('on', L3.has && bk===2);
+  if(!L3.has || bk!==2) l3Drawer(false); else l3Drawer(L3.drawer);
+}
+
+/* ── render 감싸기: 바탕 그리기 → 왼쪽 공용 메뉴 접기 → 도구 칸 ── */
+render = window.render = (function(o){ return function(){
+  L3.pvNull=false;
+  var r=o.apply(this, arguments);
+  try{
+    L3.bucket=l3Bucket();
+    if(L3.pvNull && L3.bucket>=1 && !L3_FULL_LEFT[VIEW]) l3FoldLeft();
+    l3Tools();
+  }catch(e){ try{ console.error('[3분할]', e); }catch(_){} }
+  return r; }; })(render);
+
+/* 창 폭이 구간을 넘으면 한 번 다시 그린다 (예: PC 창을 줄였다 늘렸을 때) */
+window.addEventListener('resize', function(){
+  clearTimeout(L3.rt); L3.rt=setTimeout(function(){ if(l3Bucket()!==L3.bucket){ try{ render(); }catch(e){} } }, 200);
+});
+
+/* ── 모양 ── */
+(function(){
+  if(document.getElementById('l3-css')) return;
+  var st=document.createElement('style'); st.id='l3-css';
+  st.textContent=''
+    /* 도구 칸: 기본은 숨김(폰·좁은 PC) */
+    +'.tool-panel{display:none}'
+    +'.l3-fab,.l3-back{display:none}'
+    +'@media(min-width:1280px){'
+    +'.tool-panel{display:flex;flex-direction:column;gap:10px;flex:none;width:280px;min-width:280px;height:100%;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;padding:14px 12px 24px;background:#f6f8fc;border-left:1px solid var(--border,#e2e8f0)}'
+    +'.tool-panel.l3-empty{width:0;min-width:0;padding:0;border-left:0;overflow:hidden}'
+    /* 도구 칸이 열리면 가운데가 280px 좁아진다 — 위 기능 탭 7개 글씨가 서로 붙지 않게 줄인다 */
+    +'.app.l3-tools .ftb{font-size:14px;letter-spacing:-0.5px}.app.l3-tools .ftb span:first-child{font-size:22px}'
+    +'.app.l3-tools .ftb span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis}'
+    +'}'
+    /* PC 1024~1279: 「🛠 도구」 단추 + 서랍 */
+    +'@media(min-width:1024px) and (max-width:1279px){'
+    +'.l3-fab.on{display:flex;align-items:center;gap:6px;position:fixed;right:22px;bottom:22px;z-index:9001;border:none;border-radius:999px;padding:12px 18px;background:#1d6fe8;color:#fff;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 6px 18px rgba(13,34,64,.28)}'
+    +'.l3-fab.on.open{background:#0d2240}'
+    +'.l3-back.on{display:block;position:fixed;inset:0;z-index:8999;background:rgba(15,23,42,.35)}'
+    +'.tool-panel.l3-drawer{display:flex;flex-direction:column;gap:10px;position:fixed;top:0;right:0;bottom:0;width:320px;z-index:9000;box-sizing:border-box;overflow-y:auto;padding:12px 12px 80px;background:#f6f8fc;border-left:1px solid #e2e8f0;box-shadow:-8px 0 24px rgba(13,34,64,.18)}'
+    +'.tool-panel.l3-drawer .l3-dclose{display:flex}'
+    +'}'
+    +'.l3-dclose{display:none;align-items:center;justify-content:space-between;font-size:14px;color:#0d2240}'
+    +'.l3-dclose button{border:1px solid #cbd5e1;background:#fff;border-radius:8px;padding:5px 10px;font-family:inherit;font-weight:800;cursor:pointer}'
+    /* 도구 칸 안 공통 모양 (뒤 부품이 쓴다) */
+    +'.l3-ttl{font-size:11px;font-weight:900;color:#64748b;letter-spacing:.06em;margin:4px 2px -2px}'
+    +'.l3-tool{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px 11px;font-size:12.5px;display:flex;flex-direction:column;gap:6px;min-width:0;color:#0f172a}'
+    +'.l3-tool>b{font-size:13px;color:#0d2240}'
+    +'.l3-tool .l3-sub{font-size:11.5px;color:#64748b;font-weight:600;line-height:1.5}'
+    +'.l3-ck{display:flex;gap:7px;align-items:flex-start;font-weight:700;line-height:1.45}'
+    +'.l3-ck i{flex:none;width:14px;height:14px;margin-top:2px;border-radius:4px;background:#1d6fe8;color:#fff;font-size:10px;font-style:normal;text-align:center;line-height:14px}'
+    +'.l3-ck i.off{background:transparent;border:1.5px solid #94a3b8;width:11px;height:11px}'
+    +'.l3-btn{border:none;border-radius:9px;padding:8px 10px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;background:#e8f1ff;color:#1d4ed8;text-align:left;text-decoration:none;display:block}'
+    +'.l3-btn:hover{filter:brightness(.97)}.l3-btn:focus-visible{outline:2px solid #1d6fe8;outline-offset:2px}'
+    +'.l3-btn.main{background:#6d28d9;color:#fff}.l3-btn.pri{background:#0d2240;color:#fff}'
+    +'.l3-sel{font-family:inherit;font-size:12.5px;font-weight:800;border:1.5px solid #0d2240;border-radius:8px;padding:6px 8px;background:#fff;color:#0f172a;width:100%}'
+    /* 왼쪽 머리 · 목록 (뒤 부품이 쓴다) */
+    +'.l3-vhead{padding:14px 16px 8px;color:#fff;display:flex;flex-direction:column;gap:2px}'
+    +'.l3-vhead small{font-size:11.5px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.04em}'
+    +'.l3-vhead b{font-size:19px;font-weight:900}'
+    +'.l3-sec{font-size:11.5px;font-weight:800;color:rgba(255,255,255,.45);letter-spacing:.06em;padding:10px 16px 4px}'
+    +'.l3-lb{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:3px 10px;padding:10px 12px;border-radius:11px;background:rgba(255,255,255,.07);color:#e8eef6;font-size:14px;font-weight:800;cursor:pointer;border:none;font-family:inherit;text-align:left;width:calc(100% - 20px);box-sizing:border-box}'
+    +'.l3-lb:hover{background:rgba(255,255,255,.13)}.l3-lb.on{background:#1d6fe8;color:#fff}'
+    +'.l3-lb small{display:block;font-size:11.5px;font-weight:700;color:rgba(232,238,246,.6);margin-top:2px}.l3-lb.on small{color:#dbe8ff}'
+    +'.l3-lb .n{flex:none;background:rgba(255,255,255,.14);border-radius:999px;padding:1px 8px;font-size:11.5px}'
+    /* 접힌 공용 메뉴 */
+    +'details.common-menu{margin:12px 10px 0;border-top:1px dashed rgba(255,255,255,.2);padding-top:8px}'
+    +'details.common-menu>summary{list-style:none;cursor:pointer;padding:10px 12px;border-radius:11px;border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.78);font-size:13.5px;font-weight:800}'
+    +'details.common-menu>summary::-webkit-details-marker{display:none}'
+    +'details.common-menu>summary:hover{background:rgba(255,255,255,.08);color:#fff}'
+    +'details.common-menu .l3-o{display:none}details.common-menu[open] .l3-o{display:inline}details.common-menu[open] .l3-c{display:none}'
+    +'details.common-menu .l3-cm-body{margin:4px -10px 0}';
+  (document.head||document.documentElement).appendChild(st);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-105: 🎯 적중 분석을 3분할로 — 왼쪽 «시험 목록 · 새로», 오른쪽 «이 시험의 도구» (시안 docs/mockup_layout3.html 적중 분석 화면)
+ * 원장 결정 2026-10-11 「공용 메뉴 접기 좋다 · 순서 그대로(적중 분석 → 백지테스트·리커버리 → 나머지)」
+ *
+ *  왼쪽 (PC 900px 이상 — perViewLeftNav('examhit'))
+ *    「시험」 exam_hit_index 목록(학교 학년 · 연도 학기 시험) — 지금 연 시험은 파란색, 누르면 그 결과
+ *            (불러온 시험은 «적중 n% · 확정 끝» 또는 «후보 n · 확정 n»)
+ *    「새로」 📚 기출 DB에서 찾기 · 📤 시험지 올리기 · 📄 PDF 자료함 → 지금 있는 입구 그대로
+ *    맨 아래 접힌 「▸ 공용 메뉴」 (v19-104)
+ *  오른쪽 도구 칸 (RIGHT_TOOLS.examhit — 1280px 이상은 칸, 1024~1279 는 「🛠 도구」 서랍)
+ *    결과를 열었을 때: 📂 우리 자료(대조 범위) 요약 + 「🔄 이 구성으로 다시 판정」(v19-103 화면) · 「💾 구성 기억」
+ *                      · 적중 기준(가운데 고르기와 같은 값 — 어느 쪽을 바꿔도 둘 다 바뀜)
+ *                      · 내보내기 📰 카드뉴스 · 🖨 학부모 보고서 · ⬇ 블로그 폴더 · 📝 블로그 자료 .md
+ *                      · 서버 상태(요청 띠 + ⚡ 즉시 처리 / 🐙 GitHub에서 바로 실행)
+ *    결과가 없을 때: 「시험을 고르세요」 + 새로 단추
+ *  가운데 화면은 그대로 둔다(같은 단추가 양쪽에 있어도 된다 — 원장 결정). 폰(900px 미만)은 바뀌는 것이 없다.
+ *  ※ 앞 부품의 함수를 부르기만 한다. 문자열 연결로만 쓴다(템플릿 리터럴 금지).
+ * ═══════════════════════════════════════════════════════════════════ */
+var L3H = { libN:null, libKick:false, saveCfg:false };
+
+/* ── 왼쪽 ── */
+function l3hLive(){ return !!(HT.req && (HT.req.status==='requested'||HT.req.status==='running')); }
+function l3hExamLabel(x){ return htEsc(x.school||'')+' '+htEsc(x.grade||'')+' · '+htEsc(x.year||'')+' '+htEsc(x.semester||'')+'학기 '+htEsc(x.term||''); }
+function l3hExamSub(x){
+  if(l3hLive() && HT.req.examId===x.examId) return '⏳ 분석 중';
+  var d=HT.data[x.examId];
+  if(d){ var s=htStats(d); if(!s.total) return '문항 없음';
+    if(s.open===0) return '적중 '+s.pctSure+'% · 확정 끝';
+    return '후보 '+s.open+' · 확정 '+(s.total-s.open); }
+  if(x.hitPct!=null) return '적중 '+x.hitPct+'%'+(x.confirmedAt?' · 확정 끝':'');
+  return x.total?(x.total+'문항'):'';
+}
+/* PDF 자료함 장수 — 요청 화면이 받아 둔 것이 있으면 그것, 없으면 한 번만 가볍게 받아 둔다 */
+function l3hLibCount(){
+  try{ if(HTS.lib) return htsLibItems().length; }catch(e){}
+  return L3H.libN;
+}
+function l3hLibKick(){
+  if(L3H.libKick || HTS.lib) return; L3H.libKick=true;
+  htKv('exam_lib').then(function(v){ L3H.libN=(((v&&v.items)||[]).filter(function(x){ return x && !x.deleted; })).length; if(VIEW==='examhit') render(); }).catch(function(){});
+}
+function l3hNewBtns(cls){
+  var dbN=(typeof HTDB!=='undefined' && HTDB.idx && HTDB.idx.items)?HTDB.idx.items.length:null, libN=l3hLibCount();
+  var b=function(k, t, sm){ return '<button type="button" class="'+cls+'" data-l3h-new="'+k+'" onclick="l3hNew(\''+k+'\')"><span>'+t+'</span>'+(sm!=null&&sm!==''?'<span class="n">'+htEsc(sm)+'</span>':'')+'</button>'; };
+  return (typeof htdbToggle==='function'?b('db', '📚 기출 DB에서 찾기', dbN!=null?dbN.toLocaleString()+'장':''):'')
+    +b('up', '📤 시험지 올리기', '사진·PDF')
+    +b('lib', '📄 PDF 자료함', libN!=null?libN+'장':'');
+}
+function l3hLeft(){
+  try{ htKick(); }catch(e){}
+  l3hLibKick();
+  var items=(HT.idx&&HT.idx.items)||[];
+  var h=l3LeftHead('examhit')+'<div class="l3-sec">시험</div>';
+  if(!HT.idx) h+='<div class="l3-sec" style="font-weight:700">불러오는 중…</div>';
+  else if(!items.length) h+='<div class="l3-sec" style="font-weight:700;letter-spacing:0">아직 분석한 시험이 없습니다 — 아래 「새로」에서 시작하세요</div>';
+  items.forEach(function(x){
+    var id=String(x.examId||''), on=id===HT.cur, sub=l3hExamSub(x);
+    h+='<button type="button" class="l3-lb'+(on?' on':'')+'" data-l3h-exam="'+htEsc(id)+'" aria-current="'+(on?'true':'false')+'" onclick="l3hPick(this.getAttribute(\'data-l3h-exam\'))"><span>'+l3hExamLabel(x)+(/시범/.test(id)?' · 시범':'')+(sub?'<small>'+htEsc(sub)+'</small>':'')+'</span></button>';
+  });
+  h+='<div class="l3-sec">새로</div>'+l3hNewBtns('l3-lb');
+  return h+l3CommonFold();
+}
+perViewLeftNav=(function(o){ return function(v){
+  if(v==='examhit' && isDesktop()) return l3hLeft();   /* 폰은 지금 그대로 */
+  return o.apply(this, arguments); }; })(perViewLeftNav);
+
+/* 시험 고르기 — 요청 화면이 열려 있으면 닫고 그 시험 결과로 */
+window.l3hPick = function(id){
+  if(!id) return;
+  if(HTS.open){ HTS.open=false; HTS.rejudge=null; }
+  htPick(id);
+};
+/* 화면 안 어느 칸으로 스크롤 (그려질 때까지 잠깐 기다림) */
+function l3hScroll(sel){
+  var n=0; (function tick(){ var el=document.querySelector(sel); if(el && el.scrollIntoView){ try{ el.scrollIntoView({ block:'start', behavior:'smooth' }); }catch(e){ el.scrollIntoView(); } return; }
+    if(++n<20) setTimeout(tick, 100); })();
+}
+/* 새로 — 지금 있는 입구를 그대로 부른다 */
+window.l3hNew = function(k){
+  if(HTS.open){ HTS.open=false; HTS.rejudge=null; }
+  if(k==='db'){
+    if(typeof htdbToggle!=='function') return;
+    if(!HTDB.open) htdbToggle(); else render();
+    l3hScroll('#htdb');
+  } else if(k==='up'){
+    if(!HT.showForm) htShowForm(); else render();
+    l3hScroll('#ht-files');
+  } else if(k==='lib'){
+    var d=HT.cur?HT.data[HT.cur]:null;
+    if(d && d.exam && typeof htsRejOpen==='function'){ htsRejOpen(); l3hScroll('#hts-lib'); }
+    else { if(!HT.showForm) htShowForm(); else render(); l3hScroll('#ht-files');
+      htToast('📄 PDF 자료함은 시험을 고른 뒤 「우리 자료」 화면에서 고르고 올립니다 — 먼저 시험을 고르거나 시험지를 올려 주세요'); }
+  }
+};
+
+/* ── 오른쪽 도구 ── */
+function l3hCk(on, txt, k){ return '<span class="l3-ck" data-l3h-src="'+k+'"><i class="'+(on?'':'off')+'">'+(on?'✓':'')+'</i><span>'+txt+'</span></span>'; }
+function l3hSrcBox(d){
+  var s=d.src, bk=(d.stats&&d.stats.byKind)||{}, n=function(k){ return (bk[k]||{}).mats||0; }, mfN=n('ws')+n('book');
+  var q=function(c){ return c?(' <small style="color:#64748b;font-weight:700">('+c.toLocaleString()+'문항)</small>'):''; };
+  var h='<div class="l3-tool" id="l3h-src"><b>📂 우리 자료 (대조 범위)</b>';
+  if(!s){
+    h+=l3hCk(n('textbook')>0, '교과서'+q(n('textbook')), 'tb')+l3hCk(n('ms')>0, '학원 대비 학습지'+q(n('ms')), 'ms')+l3hCk(n('upload')>0, 'PDF'+q(n('upload')), 'pdf')
+      +l3hCk(true, '루멘수학 학습지·교재 자동'+q(mfN), 'mf')
+      +'<span class="l3-sub">자료를 고르기 전 방식으로 판정한 시험입니다 — 아래에서 골라 다시 판정할 수 있습니다.</span>';
+  } else {
+    var tb=s.tb||{}, nb=(tb.bids||[]).length, ms=(s.ms||[]).length, lib=(s.lib||[]).length;
+    h+=l3hCk(tb.on!==false, '교과서 '+(tb.on===false?'0권':(nb?(nb+'권'):'지정 전체'))+(tb.mode==='scope'?' · 시험 범위 단원만':'')+q(n('textbook')), 'tb')
+      +l3hCk(ms>0, '학원 대비 학습지 '+ms+'장'+q(n('ms')), 'ms')
+      +l3hCk(lib>0, 'PDF '+lib+'장'+q(n('upload')), 'pdf')
+      +l3hCk(s.mf!==false, '루멘수학 학습지·교재 '+(s.mf===false?'끔':'자동')+q(mfN), 'mf');
+  }
+  return h+'<button type="button" class="l3-btn main" id="l3h-rej" onclick="htsRejOpen()">🔄 이 구성으로 다시 판정</button>'
+    +'<button type="button" class="l3-btn" id="l3h-cfg" onclick="l3hSaveCfg()" title="이 학교·학년의 다음 분석 때 이 자료 구성으로 열립니다">💾 구성 기억</button></div>';
+}
+function l3hBasisBox(d){
+  var b=d.basis||'same+var', s=htStats(d);
+  var h='<div class="l3-tool" id="l3h-basis-box"><b>적중 기준</b><select class="l3-sel" id="l3h-basis" onchange="htBasis(this.value)" aria-label="적중 기준">';
+  Object.keys(HT_BASIS).forEach(function(k){ h+='<option value="'+k+'"'+(k===b?' selected':'')+'>'+HT_BASIS[k].label+'</option>'; });
+  return h+'</select><span class="l3-sub">적중 <b style="color:#b91c1c">'+s.pctAll+'%</b> ('+(s.hitSure+s.hitCand)+'/'+s.total+'문항) · '+(s.open?('확정 안 한 문항 '+s.open):'✓ 모두 확정')+'</span></div>';
+}
+function l3hExportBox(){
+  return '<div class="l3-tool" id="l3h-export"><b>내보내기</b>'
+    +(typeof cnToggle==='function'?'<button type="button" class="l3-btn pri" data-l3h-x="card" onclick="l3hCard()">📰 카드뉴스</button>':'')
+    +'<button type="button" class="l3-btn" data-l3h-x="print" onclick="htPrint(\'\')">🖨 학부모 보고서</button>'
+    +(typeof cn4BlogExport==='function'?'<button type="button" class="l3-btn" data-l3h-x="blog" onclick="cn4BlogExport()">⬇ 블로그 폴더로 내려받기</button>':'')
+    +'<button type="button" class="l3-btn" data-l3h-x="md" onclick="htExportMd()">📝 블로그 자료 .md</button></div>';
+}
+function l3hServerBox(){
+  var r=HT.req, live=l3hLive(), line;
+  if(HT.busy) line='⏳ '+htEsc(HT.busy)+'…';
+  else if(live) line='⏳ <b>'+htEsc(htExamName(r.exam))+'</b> — '+(r.status==='requested'?'서버가 받기를 기다리는 중':htEsc(r.step||'진행 중'))+' · '+(Number(r.pct)||0)+'%';
+  else if(r && r.status==='error' && (Date.now()-new Date(r.doneAt||0).getTime())<86400000) line='<span style="color:#b91c1c">⚠ 지난 요청이 멈췄습니다: '+htEsc(r.error||'')+'</span>';
+  else line='✓ 요청 대기 없음';
+  var tok=false; try{ tok=!!htsGhToken(); }catch(e){}
+  var h='<div class="l3-tool" id="l3h-server"><b>서버 상태</b><span class="l3-sub" id="l3h-req">'+line+'</span>';
+  if(tok) h+='<span class="l3-sub" id="l3h-tok">⚡ 즉시 처리 켜짐 (이 PC 에 GitHub 토큰)</span>'+(live?'<button type="button" class="l3-btn" onclick="htsWake(\'manual\')">⚡ 다시 깨우기</button>':'');
+  else h+='<span class="l3-sub" id="l3h-tok">⚡ 즉시 처리 꺼짐 — 설정 탭에서 GitHub 토큰을 넣으면 1분 안에 시작합니다</span>'
+    +'<a class="l3-btn" id="l3h-gh" href="'+HTS_GH_PAGE+'" target="_blank" rel="noopener">🐙 GitHub에서 바로 실행</a>';
+  return h+'</div>';
+}
+RIGHT_TOOLS.examhit = function(){
+  var d=HT.cur?HT.data[HT.cur]:null;
+  if(!d){
+    return '<div class="l3-ttl">이 화면의 도구</div><div class="l3-tool" id="l3h-none"><b>시험을 고르세요</b><span class="l3-sub">'+(HT.loading?'불러오는 중…':'왼쪽 「시험」에서 고르거나 새로 시작하세요.')+'</span>'
+      +l3hNewBtns('l3-btn')+'</div>'+l3hServerBox();
+  }
+  return '<div class="l3-ttl">이 시험의 도구</div>'
+    +'<div class="l3-sub" style="font-size:12px;font-weight:800;color:#0d2240;margin:0 2px">'+htEsc(htExamName(d.exam||{}))+'</div>'
+    +l3hSrcBox(d)+l3hBasisBox(d)+l3hExportBox()+l3hServerBox();
+};
+
+/* 📰 카드뉴스 — 닫혀 있으면 열고, 이미 열려 있으면 그 칸으로 */
+window.l3hCard = function(){
+  if(typeof CN!=='undefined' && CN.open){ l3hScroll('#cn-panel'); return; }
+  cnToggle();
+};
+/* 💾 구성 기억 — 지난 판정에 쓴 자료(d.src)를 «다시 판정» 화면 상태로 읽은 뒤 그대로 기억하고 결과로 돌아온다 */
+window.l3hSaveCfg = function(){
+  var d=HT.cur?HT.data[HT.cur]:null; if(!d||!d.exam){ htToast('먼저 분석한 시험을 골라 주세요'); return; }
+  if(HTS.open && HTS.rejudge && !HTS.loading) return htsSaveCfg();
+  L3H.saveCfg=true; htsRejOpen();
+};
+htsLoad=(function(o){ return function(){
+  var p=o.apply(this, arguments);
+  if(L3H.saveCfg){ L3H.saveCfg=false; var R=HTS.rejudge;
+    Promise.resolve(p).then(function(){
+      if(!HTS.open || !R || HTS.rejudge!==R || HTS.err) return;
+      return Promise.resolve(htsSaveCfg()).then(function(){ if(HTS.open && HTS.rejudge===R) window.htsClose(); });
+    }).catch(function(){});
+  }
+  return p; }; })(htsLoad);
+
+/* ── 모양 (v19-104 의 도구 칸 모양에 더함) ── */
+(function(){
+  if(document.getElementById('l3h-css')) return;
+  var st=document.createElement('style'); st.id='l3h-css';
+  st.textContent='.l3-btn{display:flex;justify-content:space-between;align-items:center;gap:6px}.l3-btn .n{flex:none;font-size:11px;font-weight:700;opacity:.75}'
+    +'.l3-lb>span:first-child{min-width:0}'
+    +'#l3h-src .l3-ck small{white-space:nowrap}';
+  (document.head||document.documentElement).appendChild(st);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~105: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
