@@ -37,7 +37,39 @@ bt2=open(SP+'/bt2_teacher.js').read() if int(ver.replace('v19-',''))>=94 else ''
 hsr=open(SP+'/hitsrc_teacher.js').read() if int(ver.replace('v19-',''))>=99 else ''   # v19-99: 적중 분석 «우리 자료 3종»(교과서·수학비서 학습지·PDF 자료함) + ⚡ 즉시 처리
 cn2=open(SP+'/cn2_teacher.js').read() if int(ver.replace('v19-',''))>=100 else ''   # v19-100: 카드뉴스 디자인 2판(새 스타일 · 글꼴 · 1:1) + 🖼 배경함(올리기 · Gemini)
 cn3=open(SP+'/cn3_teacher.js').read() if int(ver.replace('v19-',''))>=101 else ''   # v19-101: 카드뉴스 「매쓰플랫」 낱말 빼기(학원 자료 이름) · 문항 카드 두 그림(시험+우리 자료) · 선명/흐리게 · 🧩 모자이크
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+# v19-102: 카드뉴스를 블로그 브랜드와 통일 + 「⬇ 블로그 폴더로 내려받기」
+#   브랜드 색·로고는 sync/card_templates/_base.css 한 곳에서 읽어 앱에 심는다(그 파일을 고치고 다시 조립하면 앱도 바뀐다).
+#   블로그 초안 규칙은 docs/lumen_blog_profile.md 의 말투·금지·형식 칸을 그대로 옮겨 심는다.
+def brand_js():
+    import json
+    root=os.path.normpath(os.path.join(HERE,'..','..'))
+    cp=os.path.join(root,'sync','card_templates','_base.css'); pp=os.path.join(root,'docs','lumen_blog_profile.md')
+    def die(msg): sys.exit('❌ v19-102 조립 멈춤: '+msg)
+    try: bcss=open(cp,encoding='utf-8').read()
+    except Exception as e: die('브랜드 CSS 를 열 수 없습니다 ('+cp+'): '+str(e))
+    m=re.search(r':root\s*\{([^}]*)\}', bcss)
+    if not m: die('_base.css 에서 :root{…} 색 묶음을 찾지 못했습니다')
+    toks=dict(re.findall(r'--([a-z\-]+)\s*:\s*(#[0-9a-fA-F]{3,8})', m.group(1)))
+    names={'red':'red','red-deep':'redDeep','yellow':'yellow','navy':'navy','bg':'bg','white':'white','text':'text','muted':'muted','line':'line'}
+    miss=[k for k in names if k not in toks]
+    if miss: die('_base.css :root 에 색이 빠졌습니다: '+', '.join('--'+k for k in miss))
+    lm=re.search(r"\.footer \.dot\{[^}]*?url\(['\"]?(data:image/png;base64,[A-Za-z0-9+/=]+)['\"]?\)", bcss)
+    if not lm: die('_base.css 의 .footer .dot 에서 로고 그림(data:image/png;base64,…)을 찾지 못했습니다')
+    brand={'tokens':{names[k]:toks[k].lower() for k in names},'logo':lm.group(1),'font':'Pretendard'}
+    try: prof=open(pp,encoding='utf-8').read()
+    except Exception as e: die('블로그 프로필을 열 수 없습니다 ('+pp+'): '+str(e))
+    def cut(a,b):
+        i=prof.find(a); j=prof.find(b,i+1) if i>=0 else -1
+        if i<0 or j<0: die('lumen_blog_profile.md 에서 「'+a+'」~「'+b+'」 칸을 찾지 못했습니다')
+        return prof[i:j].strip()
+    rules='\n\n'.join([cut('### 4-2.','### 4-4.'), cut('## 5. 쓰지 않는 말','### 브랜드 색'), cut('## 7. 해시태그','## 8.')])
+    js=lambda v: json.dumps(v,ensure_ascii=False).replace('</','<\\/')
+    return ('/* ★ v19-102: 조립할 때 sync/card_templates/_base.css 에서 읽은 브랜드 색·로고 (손으로 고치지 말 것 — _base.css 를 고치고 다시 조립) */\n'
+        +'window.CN_BRAND = '+js(brand)+';\n'
+        +'/* ★ v19-102: 조립할 때 docs/lumen_blog_profile.md 에서 옮긴 블로그 규칙(4-2 말투 · 4-3 뼈대 · 4-5 원장님 고침 · 5 쓰지 않는 말 · 6 규격 · 7 해시태그) */\n'
+        +'window.CN_BLOG_RULES = '+js(rules)+';\n')
+cn4=(brand_js()+open(SP+'/cn4_teacher.js').read()) if int(ver.replace('v19-',''))>=102 else ''   # v19-102: 카드뉴스 브랜드 통일(_base.css 한 곳) · 「⬇ 블로그 폴더로 내려받기」
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -454,6 +486,9 @@ if int(ver.replace('v19-',''))>=99:
     # v19-99: 적중 분석 우리 자료 — 앱이 서버에서 바로 읽는 새 키(수학비서 학습지 인식 ms_paper_<id>·목록 ms_papers_index 160KB · PDF 자료함 exam_lib)는 시작 때 받지 않는다
     rep("'submissions_', 'or_students_archive_'];", "'submissions_', 'or_students_archive_', 'ms_paper'];")
     rep("'mf_books', 'mf_stuck'];", "'mf_books', 'mf_stuck', 'exam_lib'];")
+if int(ver.replace('v19-',''))>=102:
+    # v19-102: 카드뉴스 브랜드 글꼴 Pretendard (블로그 카드와 같은 글꼴)
+    rep('<link rel="icon" type="image/png" href="lumen_icon_teacher.png">', '<link rel="icon" type="image/png" href="lumen_icon_teacher.png">\n<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"><!-- v19-102: 카드뉴스 브랜드 글꼴 -->')
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
