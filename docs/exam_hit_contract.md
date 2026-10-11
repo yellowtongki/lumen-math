@@ -50,6 +50,7 @@ exam_hit_<examId>       // examId = 옥길중_중1_2026_2_중간 처럼
   basis: 'same' | 'same+var' | 'type',            // 원장님이 고른 적중 기준 (기본 'same+var')
   items: [{ no, img, type:{cid, name, chapter}, level, killer, answerType, source:'textbook'|'ours'|'outside'|'',
             repeat:[{year, no}],                   // 같은 학교 지난 기출의 같은 세부유형
+            past:[…], pastTop, pastHit,            // (v19-109) 같은 학교 지난 시험 문항과 그림 비교 — §11 (우리 자료 적중률과 따로)
             cands:[{ matId, kind:'same'|'var'|'type'|'text', score, why }],  // 자동 후보
             hit:  { kind, matId, ok:true|false|null, by:'teacher', at } }],  // ok=null 이면 미확정
   mats:  [{ matId, kind:'ws'|'book'|'twin'|'upload', title, where:'학습지 이름 3번' | '교재 87쪽 5번', img, problemId, cid }],
@@ -236,3 +237,38 @@ src: { tb:{ on:true, mode:'all'|'scope', bids:['3219971', …] },   // 교과서
 - 결과: `exam_hit_<시험>.units = [{ mid, lit }]`(시험 단원) · `stats.byKind.ms.mp = { mats, hit, papers, cands, scopeDropped }` · `stats.byKind.ms.papers` · `stats.byKind[k].scopeDropped` · `stats.scope`.
 - 실행: `--mypapers-index` (색인만) · `--mp-build 2061686,2032273` (인식 + 색인) · `--rejudge <시험> --dry --src-file src.json` (저장 없이 자료 구성 바꿔 보기). `--prep` 은 내 문제지 색인 + 기억한 구성의 `mpOn` 미리 인식도 한다.
 - 단위 검사 `sync/appbuild/tests/test_hit_scope.js` (서버 접속 없음) · 앱 검사 `tests/test_v19107.js`.
+
+## 11. 🔁 지난 기출과 비교 (10/11 원장 요청 · 학원앱 v19-109)
+원장: 「범박고 분석 시 범박고 기출에서 나온 것도 확인할 수 있나? 기능을 추가하자. 소사고 분석 시는 소사고 기출과 비교.」
+예전 «반복 출제»(`it.repeat`)는 같은 학교·학년·학기·중간/기말 지난 시험에 **같은 유형 번호**가 있었는지만 셌다(그림 비교 없음). 이제 «우리 자료»와 **따로** 지난 시험 문항과 그림을 비교한다. `it.repeat` 는 예전 화면·옛 결과를 위해 그대로 둔다.
+
+### 11-1. 워커 (`sync/exam_hit_worker.js` — `pastCompare` · `pastSelect` · `pastCands`)
+- **비교 대상** = `ms_exams_<학교>` 의 같은 학교·같은 학년 시험지 중
+  · 분석하는 시험보다 **앞선** 시험만(연도·학기·중간/기말 순서) · 같은 시험지 id(`mydb`) 뺌
+  · 기본 **최근 4년**(2026 시험이면 2022~2025 + 2026 앞 시험) · **중간/기말 · 1/2학기 모두** (`src.past.sameTerm` 이면 같은 시험만)
+  · 고등부: 같은 교육과정 안에서 과목이 다르면 뺀다(공통수학1 ↔ 공통수학2, 대수 ↔ 미적분1 — `courseTrie`). 교육과정이 다르면(수학(하) ↔ 공통수학2) 넣고 유형으로 맞춘다
+  · `ms_exam_bridge.byMydb[id].problems`(매쓰플랫 유형 번호)가 없는 시험지는 뺀다(로그 「유형 번호 없는 n장 뺌」)
+- **후보**(문항마다 최대 3개) = 다리 `problemId` 가 시험 문항의 «가장 닮은 원본»(`it.src` p번호)과 같은 것(원본 번호 같음) → 같은 유형 번호(cid) → 같은 유형 이름 · 최근 시험 · 난이도(수학비서 1~9) 가까운 순. 원장님이 확정한 후보는 맨 앞에 고정.
+- **판정** = 우리 자료와 같은 그림 판정(`judgeItem`, 규칙 글만 «같은 학교의 지난 시험 문항 후보»로) → 같은 문제 / 숫자변형 / 지문만, 아니면 유형이 같을 때 유사유형. 문항당 Claude 한 번 더(23문항 ≈ 23회).
+- 그림: 기출 DB 문항 수와 다리 문항 수가 같으면 `exam_images/<시험지id>/<번호>.png`(1년 서명 `imgUrl`), 다르면 매쓰플랫 문항 그림 + `approx:true`(번호 추정). 새 그림 복사본은 만들지 않는다.
+- **저장**
+```js
+it.past    = [{ k:'past:<시험지id>:<번호>', mydb, exam:'2025 2학기 중간', year, sem, term, no, kind:'same'|'var'|'type'|'text', why, img, imgUrl, idSame, approx?, rejected?, ai? }]
+it.pastTop = { k, kind } | null                       // 자동 1순위 (같은 문제 > 숫자변형 > 유사유형 > 지문만)
+it.pastHit = { k, kind, ok:true, by:'teacher', at }   // 원장 확정 · { k:null, kind:'none', ok:false } = 「겹침 없음」 확정
+stats.past = { same, var, type, text, items /* 같은 문제+숫자변형 문항 수 */, cands, idSame, exams, years, sameTerm, list:[{ mydb, exam, year, sem, term, n }] }
+exam_hit_req.summary.past = { same, var, type, items, exams }
+```
+- 다시 판정: 그 후보가 아직 있으면 `pastHit` 를 남긴다(「겹침 없음」 확정은 늘 남김). `rejected`·`ai` 표시도 같은 후보에 옮긴다.
+- **우리 자료 적중률·`stats.byKind` 에는 들어가지 않는다.**
+- 요청 `exam_hit_req.src.past = { on:true, years:4, sameTerm:false }` (없으면 이 기본값). `on:false` 면 `it.past` 를 지우고 `stats.past` 를 두지 않는다(앱은 예전 «반복 출제» 칸).
+- 실행: `--past-only <시험> [--dry] [--years 4] [--same-term]` = 우리 자료·판정은 그대로 두고 «지난 기출 비교»만 다시(저장 시 결과 키 전체를 다시 쓰므로 원장님이 화면에서 확정하는 중에는 돌리지 않는다).
+- 2026-10-11 `--past-only --dry`(그림 판정 없이, 열쇠 없는 세션): 범박고 고1 2026-2 중간 = 지난 시험 13장(공통수학1 4장 뺌) → 23문항 중 13문항에 후보(17개), 원본 번호 같음 0 · 범박고 고2 = 12장 → 17문항 · 옥길중 중1(시범) = 2장 → 3문항. 같은 문제·숫자변형 수는 그림 판정 뒤에 나온다.
+
+### 11-2. 학원앱 (`modules/pastcmp_teacher.js`, v19-109)
+- 요약 칸: `stats.past` 가 있으면 「반복 출제 (지난 기출)」 → 「🔁 <학교> 기출에서 n문항」(같은 문제 + 숫자변형, 원장 확정 반영) + 작은 글씨 「유사유형 m」. 없으면 예전 칸.
+- 「📚 우리 자료별 적중」 아래 「🔁 <학교> 지난 기출과 비교」: 비교한 지난 시험 수·연도 · 등급별 수 · 문항 목록(번호 · 유형 · 연도·학기·시험·번호 · 등급 알약) → 누르면 그 문항 카드(접힌 것도 펼침) · 「비교 범위 바꾸기」 = 다시 판정 화면.
+- 문항 카드(분석지·표 보기 모두) 아래 「🔁 지난 기출」 줄: 후보 3개 그림 + 등급 단추(✓ 확정) · ✗ 아님 · 「✗ 겹침 없음」 · 「↺ 풀기」 → `it.pastHit` 저장(우리 자료 확정과 같은 방식). 접힌 줄·카드 머리 알약도 «🔁 2025 2학기 중간 3번 · 숫자변형».
+- 요청 화면·다시 판정 화면: 「🔁 지난 기출 비교 켜기/끄기 · 최근 2/3/4/5년 · 같은 시험만(중간/기말)」 → `src.past`. 「💾 이 구성 기억」에도 `past`. 다시 판정은 지난 판정의 `src.past` 로 연다.
+- 밖으로 나가는 글: 블로그 자료 .md 「- 범박고 기출에서 다시 나온 문항: n문항 (똑같은 문제 · 숫자만 바뀐 문제) · 같은 유형 m문항」 + 「## 범박고 기출과 비교」 문항별(연도·학기·번호·등급) · 학부모 보고서 「범박고 기출과 비교」 칸 + 표의 「범박고 기출」 칸. 카드뉴스(새·옛 스타일) 반복 출제 카드 = «지난 시험에서 다시 나온 문항 n문항»(「기출」 낱말·연도 없음, 블로그 규칙). 어디에도 문제 원문·그림·「수학비서」 낱말은 없다.
+- 검사 `tests/test_v19109.js`(20) · 워커 단위 `tests/test_hit_past.js`(9).
