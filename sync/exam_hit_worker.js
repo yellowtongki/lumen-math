@@ -48,7 +48,7 @@ const AI_KEY = process.env.ANTHROPIC_API_KEY || '';
 const REQ_KEY = 'exam_hit_req';
 const BUCKET = 'exam_images';
 const STAGE_BUCKET = 'aha_photos';      // 학원앱이 쓸 수 있는 자리(임시). 옮긴 뒤 바로 지운다.
-const MODELS = ['claude-sonnet-5-5', 'claude-sonnet-4-6'];
+const MODELS = ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-sonnet-4-6'];   /* 2026-10-12 원장 「품질 좋은 것으로」 — 이번 달 크레딧 기간(~11/6) 최상위 모델, 안 되면 다음 것 */
 const STALE_MIN = 60;
 
 const args = process.argv.slice(2);

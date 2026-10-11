@@ -31,7 +31,7 @@
 const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const SB_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 const AI_KEY = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY || '';
-const MODEL = process.env.ULTRA_MODEL || 'claude-sonnet-4-6';
+const MODEL = process.env.ULTRA_MODEL || 'claude-opus-5-5';   // 2026-10-12 원장 「품질 좋은 것으로」 — 학부모에게 가는 글
 
 const argv = process.argv.slice(2);
 const arg = (k, d) => { const i = argv.indexOf(k); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
