@@ -43,6 +43,8 @@ const pii = body.match(/\b[A-Z0-9]{6}\b|\d{2,3}점(?!\s*미만|\s*이상)/g) || 
 // 2026-09-20 발행본에서 배운 것 (docs/lumen_blog_profile.md 4-5)
 const hasDate = /\d{1,2}월\s?\d{1,2}일|\d{4}[.\-]\d{1,2}[.\-]\d{1,2}/.test(body.slice(0, 400));
 const hasAddr = /옥길로\s?116/.test(body);
+// 지도(장소) 카드 안에 주소가 글자로 들어간다 → 본문에 또 적을 필요가 없다 (2026-10-11 원장 지시)
+const hasMap = /\[지도:\s*루멘수학교습소\]/.test(body);
 const sq = (body.match(/^■/gm) || []).length;
 // 실사진 몇 곳이 필요한가 — 기본 3곳. 카드만 쓰는 홍보·안내 글은 머리말에 photos: 1 처럼 적는다
 const photoSlots = (body.match(/\[실사진/g) || []).length;
@@ -92,7 +94,8 @@ const checks = [
   ['모집 글이면 교습비·등록번호 표기', meta.recruit !== 'true' || /교습비 등 표시/.test(body), meta.recruit === 'true' ? '' : '모집 글 아님 → 생략'],
   ['미확정 빈칸(❏) 없음', !/❏/.test(body), ''],
   ['도입에 날짜가 있음', hasDate, hasDate ? '' : '「9월 20일 일요일」처럼 날짜·요일을 적으세요'],
-  ['맨 끝에 주소 한 줄', hasAddr, hasAddr ? '' : '경기도 부천시 소사구 옥길로 116 6층 618호'],
+  ['주소 — 지도나 주소 한 줄 중 하나', hasMap || hasAddr,
+    hasMap ? '지도 카드에 주소가 들어감' : (hasAddr ? '본문 끝 주소 한 줄' : '지도를 넣거나 맨 끝에 주소를 적으세요')],
   ['■ 기호는 첫 소제목 하나만', sq <= 1, `${sq}개`],
   ['외부 서비스 이름 없음', vendors.length === 0,
     vendors.length ? `「${vendors.join('」 「')}」 — 외부 서비스 이름은 쓰지 않습니다. 「루멘수학 시험대비자료」·「학원 학습 기록」 처럼 바꾸세요` : ''],
