@@ -1,0 +1,58 @@
+name: 검색량 조사
+
+# 네이버 검색광고 API(공식·무료)로 docs/keyword_candidates.txt 의 낱말들
+# 월간 검색수를 받아와 docs/keyword_volume.md 로 저장하고 커밋한다.
+# 검색량은 빠르게 변하지 않으므로 한 달에 한 번이면 충분하다.
+#
+# 필요한 비밀값 (Repo Settings → Secrets and variables → Actions):
+#   NAVER_AD_CUSTOMER_ID, NAVER_AD_API_KEY, NAVER_AD_SECRET_KEY
+#   → ads.naver.com → 도구 → API 사용 관리 에서 무료로 발급
+#
+# ⚠️ 여기서 도는 것은 검색광고 **API** 뿐이다. 네이버 블로그 글쓰기나
+#    검색 순위 점검은 절대 Actions 에서 돌리지 않는다 (데이터센터 IP → 캡차)
+
+on:
+  schedule:
+    - cron: '0 20 1 * *'     # UTC 20:00 1일 = 한국시간 매월 2일 05:00
+  workflow_dispatch:
+
+concurrency:
+  group: keyword-volume
+  cancel-in-progress: false
+
+jobs:
+  volume:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 열쇠가 등록돼 있는지 확인
+        env:
+          CUSTOMER: ${{ secrets.NAVER_AD_CUSTOMER_ID }}
+        run: |
+          if [ -z "$CUSTOMER" ]; then
+            echo "::error::NAVER_AD_CUSTOMER_ID 가 없습니다. Settings → Secrets 에 세 개를 넣어주세요."
+            exit 1
+          fi
+
+      - name: 검색량 조사
+        env:
+          NAVER_AD_CUSTOMER_ID: ${{ secrets.NAVER_AD_CUSTOMER_ID }}
+          NAVER_AD_API_KEY: ${{ secrets.NAVER_AD_API_KEY }}
+          NAVER_AD_SECRET_KEY: ${{ secrets.NAVER_AD_SECRET_KEY }}
+        run: node sync/keyword_volume.js
+
+      - name: 달라졌으면 커밋
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/keyword_volume.md
+          git diff --staged --quiet && echo "달라진 것 없음" && exit 0
+          git commit -m "검색량 조사 $(date -u +%Y-%m-%d)"
+          git push
