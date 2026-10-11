@@ -227,6 +227,15 @@ const FMT = [
   ['밑줄',   ['button[data-name="underline"]', '.se-toolbar-option-underline-button', '.se-toolbar-item-underline button', 'button[title*="밑줄"]', 'button[aria-label*="밑줄"]']],
   ['취소선', ['button[data-name="strikethrough"]', '.se-toolbar-option-strikethrough-button', '.se-toolbar-item-strikethrough button', 'button[title*="취소선"]', 'button[aria-label*="취소선"]']],
 ];
+// 켜짐 판정 — 클래스 「낱말 전체」로만 본다.
+// 네이버 단추 클래스가 se-text-icon-toolbar-button 이라서, 그냥 「on 이 들어가면」으로 보면
+// 모든 단추가 켜진 것처럼 보여 오히려 전부 눌러 켜게 된다 (2026-10-11에 실제로 그랬다)
+const ON_WORD = /^(se-is-on|se-is-selected|se-is-active|is-active|active|selected|on)$/i;
+async function isOn(el) {
+  const cls = ((await el.getAttribute('class').catch(() => '')) || '').split(/\s+/);
+  const pressed = (await el.getAttribute('aria-pressed').catch(() => '')) || '';
+  return pressed === 'true' || cls.some(t => ON_WORD.test(t));
+}
 async function clearFormatting(page, frame) {
   const turned = [], found = [];
   for (const [name, sels] of FMT) {
@@ -237,14 +246,17 @@ async function clearFormatting(page, frame) {
         try {
           const el = scope.locator(sel).first();
           if (!(await el.isVisible({ timeout: 200 }))) continue;
-          const cls = (await el.getAttribute('class')) || '';
-          const pressed = (await el.getAttribute('aria-pressed')) || '';
-          if (/se-is-on|se-is-selected|is-active|active|selected|on\b/i.test(cls) || pressed === 'true') {
+          found.push(name);
+          done = true;
+          if (await isOn(el)) {
             await el.click();           // 켜져 있으면 눌러서 끈다
-            await sleep(200);
-            turned.push(name);
+            await sleep(250);
+            if (await isOn(el)) {       // 그래도 켜져 있으면 내가 잘못 본 것 — 되돌린다
+              await el.click(); await sleep(200);
+              log(`   ⚠️ ${name} 을 못 껐습니다 (원래대로 되돌렸습니다)`);
+            } else turned.push(name);
           }
-          found.push(name); done = true; break;   // 이 서식의 단추는 찾았다 — 다음 서식으로
+          break;                        // 이 서식의 단추는 찾았다 — 다음 서식으로
         } catch {}
       }
     }
