@@ -44,6 +44,9 @@ const pii = body.match(/\b[A-Z0-9]{6}\b|\d{2,3}점(?!\s*미만|\s*이상)/g) || 
 const hasDate = /\d{1,2}월\s?\d{1,2}일|\d{4}[.\-]\d{1,2}[.\-]\d{1,2}/.test(body.slice(0, 400));
 const hasAddr = /옥길로\s?116/.test(body);
 const sq = (body.match(/^■/gm) || []).length;
+// 실사진 몇 곳이 필요한가 — 기본 3곳. 카드만 쓰는 홍보·안내 글은 머리말에 photos: 1 처럼 적는다
+const photoSlots = (body.match(/\[실사진/g) || []).length;
+const needPhotos = meta.photos === undefined ? 3 : (parseInt(meta.photos, 10) || 0);
 const vague = body.match(/오늘 오전|오늘 오후(?!에는 그 앞)|며칠 전|얼마 전/g) || [];
 // 카드에서 「밖으로 나가는 글자」만 모은다 (_메모·파일 이름은 내부용이라 검사에서 뺀다)
 // note 는 카드에 찍히는 글자다. 단 external(밖에서 받은 PNG)에서는 내부 메모라 뺀다
@@ -70,7 +73,8 @@ const checks = [
   ['카드 6장 이상 (cards.json)', (spec.cards || []).length >= 6, `${(spec.cards || []).length}장`],
   ['카드 PNG 6장 이상', pngs.length >= 6, `${pngs.length}장`],
   ['cards.json 과 PNG 수 일치', (spec.cards || []).length === pngs.length, `${(spec.cards || []).length} / ${pngs.length}`],
-  ['실사진 자리 3곳 이상', (body.match(/\[실사진/g) || []).length >= 3, `${(body.match(/\[실사진/g) || []).length}곳`],
+  [`실사진 자리 ${needPhotos}곳 이상`, photoSlots >= needPhotos,
+    `${photoSlots}곳${meta.photos !== undefined ? ` (머리말 photos: ${meta.photos})` : ''}`],
   ['지도 [지도: 루멘수학교습소]', /\[지도:\s*루멘수학교습소\]/.test(body), ''],
   ['톡톡 연락 버튼 1개', /talk\.naver\.com\/w9d7umc/.test(body), ''],
   ['해시태그 8개 이상', hashtags.length >= 8, `${hashtags.length}개`],
