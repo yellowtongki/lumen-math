@@ -218,6 +218,23 @@ async function peekToolbar(frame) {
   log('── 여기까지 ──\n');
 }
 
+// 뭔가 못 찾았을 때, 그 순간 화면에 보이는 단추를 찍는다 — 다음 판에 선택자를 정확히 맞추려고
+async function dumpButtons(frame, why) {
+  const rows = await frame.evaluate(() => {
+    const out = [];
+    for (const b of document.querySelectorAll('button, [role="button"], input')) {
+      const r = b.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      out.push(`「${(b.innerText || b.value || b.placeholder || '').replace(/\s+/g, ' ').trim().slice(0, 16)}」 `
+        + `${b.tagName.toLowerCase()} class=${(b.className || '').toString().slice(0, 60)}`);
+    }
+    return out.slice(0, 40);
+  }).catch(() => []);
+  log(`\n   ── ${why}: 지금 보이는 단추 ${rows.length}개 ──`);
+  rows.forEach((r, i) => log(`   ${String(i).padStart(2)} ${r}`));
+  log('   ── 여기까지 (이 목록을 보내주시면 다음엔 자동으로 됩니다) ──\n');
+}
+
 // 글자 서식(굵게·기울임·밑줄·취소선)이 켜져 있으면 끈다.
 // 어디선가 한 번 켜지면 뒤 문단까지 줄이 번진다. 원인을 몰라도 「켜져 있으면 끈다」로 막는다.
 // 무엇이 켜져 있었는지 로그에 남기므로, 다음에 이 줄을 보면 언제 켜지는지 알 수 있다
@@ -294,7 +311,7 @@ async function addHashtags(page, frame, raw) {
     }
     if (box) break;
   }
-  if (!box) return false;
+  if (!box) { await dumpButtons(frame, '태그 칸을 못 찾음'); return false; }
   await box.click();
   await sleep(400);
   for (const t of tags) {
@@ -393,15 +410,20 @@ async function insertPlace(page, frame, keyword) {
   await sleep(1200);
 
   // 「확인」 누르기
-  for (const sel of ['button:has-text("확인")', 'button:has-text("추가")', '[class*="confirm"] button',
-                     'button[class*="confirm"]']) {
+  const okSel = ['button.se-popup-button-confirm', '.se-popup-button-confirm',
+                 'button.se-place-confirm', '[class*="popup"] button[class*="confirm"]',
+                 'button[class*="confirm"]', '[class*="confirm"] button',
+                 'button:has-text("확인")', 'button:has-text("추가")', 'button:has-text("완료")',
+                 'button:has-text("적용")', 'button:has-text("삽입")'];
+  for (const sel of okSel) {
     for (const scope of [frame, page]) {
       try {
         const el = scope.locator(sel).first();
-        if (await el.isVisible({ timeout: 600 })) { await el.click(); await sleep(1800); return true; }
+        if (await el.isVisible({ timeout: 500 })) { await el.click(); await sleep(1800); return true; }
       } catch {}
     }
   }
+  await dumpButtons(frame, '장소 확인 단추를 못 찾음');
   throw new Error('「확인」 단추를 못 찾았습니다 (장소는 골라졌습니다)');
 }
 
@@ -545,8 +567,17 @@ async function insertPlace(page, frame, keyword) {
     log('  해시태그…');
     try { tagOk = await addHashtags(page, f, meta.hashtags); } catch {}
     if (tagOk) log('     ✅ 태그를 넣었습니다');
-    else await pause('태그 칸을 못 찾았습니다.',
-      `본문 아래 「태그 입력」 칸에 직접 넣어주세요:\n      ${meta.hashtags}`);
+    else {
+      // 네이버 태그 칸은 「발행」을 눌러야 나오는 설정 창 안에 있다. 발행은 우리가 누르지 않는다.
+      // 그래서 태그를 클립보드에 넣어 드린다 — 발행 창에서 붙여넣기(Cmd+V) 한 번이면 끝난다
+      let copied = false;
+      try { require('child_process').execSync('pbcopy', { input: meta.hashtags }); copied = true; } catch {}
+      log(`     📋 태그를 클립보드에 ${copied ? '복사했습니다' : '복사하지 못했습니다'}`);
+      await pause('태그는 「발행」 창 안에 있어서 제가 못 넣습니다.',
+        copied
+          ? '임시저장 뒤 「발행」을 누르면 나오는 태그 칸에 붙여넣기(⌘V) 하세요.\n      (발행 창을 열어도 발행되지 않습니다. 안의 「발행」을 눌러야 올라갑니다)'
+          : `발행 창의 태그 칸에 직접 넣어주세요:\n      ${meta.hashtags}`);
+    }
   }
 
   // 임시저장 — 발행은 절대 안 누른다
