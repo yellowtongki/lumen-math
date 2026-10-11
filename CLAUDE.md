@@ -107,3 +107,17 @@
 - **서버(Supabase) 구조를 바꾸는 SQL(잠금·색인·표 변경)과 수만 건 일괄 갱신은 새벽에만** 한다. 학생들이 앱을 쓰는 저녁(19~23시)에는 절대 하지 않는다 (2026-09-18 저녁 서버 멈춤 — `docs/incident_2026-09-18_supabase.md`)
 - 새 화면이 큰 표(`mf_answer_records` 등)를 새 조건으로 읽게 되면 **색인을 먼저** 만든다 (`docs/index_speedup.sql`)
 - 서버 잠금(RLS) 확인은 `LUMEN_TEACHER_KEY=… node sync/check_rls_lock.js`. 원장 열쇠는 **저장소·문서에 절대 적지 않는다** (공개 저장소)
+
+## 📌 다른 채팅과 이어지는 작업
+
+- **아이디어 보관함**: `docs/ideas.md` — 원장님이 던진 아이디어를 모아두는 곳. 바로 개발하지 않아도 됨
+- **블로그·인스타 자동화**: 컴퓨터가 2대로 나뉘어 있다.
+  - **윈도우 데스크탑** — `classby-blog` 도구 설치됨. **네이버 블로그 임시저장은 여기서만** 가능
+  - **맥미니** — 도구 없음. 저장소 작업·글감 생성기·인스타 업로드·힉스필드 영상 담당
+  - 새 채팅 인수인계: **`docs/handoff_macmini.md`** ← **먼저 읽을 것** (2026-09-28, 도구 현황·키·다음 할 일)
+  - 이전 인수인계: `docs/handoff_blog_insta.md` (배경·결정 사항)
+  - 🛠 도구: `sync/blog_topics.js`(글감) · `sync/card_render.js`(카드 8종, 사진배경·수식) · `sync/post_check.js`(검사) · `sync/serp_check.js`(검색 점검) · `sync/keyword_volume.js`(검색량). 사용법은 `blog/README.md`
+  - 설계: `docs/blog_insta_automation_plan.md` · 도구 구조: `docs/blog_automation_overview.md`
+  - ⚠️ 네이버 자동 "발행"은 하지 않는다 (저품질 처리 위험). 임시저장까지만, 발행은 원장님이
+  - 🔄 2026-09-20 방향 전환: **자체 도구를 새로 만든다** → `docs/lumen_blog_tool_design.md`
+  - (2026-10-11 학원앱 세션) 블로그 도구·글 폴더(`blog/`, `sync/card_render.js` 등)를 블로그 브랜치에서 main 으로 가져왔다. 학원앱 카드뉴스는 `sync/card_templates/_base.css` 의 브랜드 색·글꼴에 맞춘다(통일 결정 진행 중).
