@@ -31,7 +31,8 @@
 const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const SB_KEY = process.env.SUPABASE_SERVICE_KEY || '';
 const AI_KEY = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY || '';
-const MODEL = process.env.ULTRA_MODEL || 'claude-opus-5-5';   // 2026-10-12 원장 「품질 좋은 것으로」 — 학부모에게 가는 글
+let MODEL = process.env.ULTRA_MODEL || 'claude-opus-5-5';   // 2026-10-12 원장 「품질 좋은 것으로」 — 학부모에게 가는 글
+const MODEL_FALLBACK = 'claude-sonnet-4-6';   // 그 모델이 안 되면(404·모델 오류) 예전 모델로
 
 const argv = process.argv.slice(2);
 const arg = (k, d) => { const i = argv.indexOf(k); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
@@ -96,6 +97,7 @@ async function askClaude(prompt, maxTokens) {
     const data = await r.json().catch(() => null);
     if (r.ok && data && !data.error) return ((data.content || [])[0] || {}).text || '';
     lastErr = new Error('Claude ' + r.status + ': ' + ((data && data.error && data.error.message) || r.statusText));
+    if ((r.status === 404 || /model/i.test(String(lastErr.message))) && MODEL !== MODEL_FALLBACK) { console.log('[새벽작성] 모델 바꿈 → ' + MODEL_FALLBACK); MODEL = MODEL_FALLBACK; continue; }
     if ([429, 500, 503, 529].includes(r.status) && attempt < 3) { await sleep(8000 * Math.pow(2, attempt)); continue; }
     break;
   }
