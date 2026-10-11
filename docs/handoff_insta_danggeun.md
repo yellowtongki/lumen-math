@@ -29,6 +29,26 @@ git checkout -B blog-latest FETCH_HEAD
 쓰는 법: `blog/README.md` · `docs/naver_draft_사용법.md`
 말투·규격 규칙: `docs/lumen_blog_profile.md` ← **글 쓰기 전 반드시 읽을 것**
 
+## 1-2. 열쇠(환경변수) 먼저 — 이게 없으면 학원 데이터를 못 읽는다 ⚠️
+
+클라우드 세션에는 `SUPABASE_URL` · `SUPABASE_SERVICE_KEY` 가 등록돼 있지만
+**맥미니에는 없습니다.** 그래서 「클라우드라야 학원 데이터를 쓸 수 있다」고 보이지만,
+사실은 열쇠만 옮기면 맥미니에서도 똑같이 됩니다.
+
+```
+cd ~/lumen-math
+cp .env.example .env        # 값을 채운다 (Supabase 대시보드 → Settings → API)
+set -a; source .env; set +a # 터미널마다. ~/.zshrc 에 넣어두면 자동
+```
+
+확인:
+```
+node sync/blog_topics.js --days 7
+```
+→ `docs/blog_topics_latest.md` 가 생기면 성공입니다.
+
+> `.env` 는 `.gitignore` 에 걸려 있어 커밋되지 않습니다. **값을 `.env.example` 에 적지 마세요.**
+
 ## 2. 다음 할 일 — 인스타 업로더 (`sync/insta_upload.js`)
 
 ### 먼저 확인해야 하는 것
