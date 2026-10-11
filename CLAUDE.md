@@ -104,7 +104,9 @@
 - **블로그·인스타 자동화**: 컴퓨터가 2대로 나뉘어 있다.
   - **윈도우 데스크탑** — `classby-blog` 도구 설치됨. **네이버 블로그 임시저장은 여기서만** 가능
   - **맥미니** — 도구 없음. 저장소 작업·글감 생성기·인스타 업로드·힉스필드 영상 담당
-  - 새 채팅 인수인계: **`docs/handoff_macmini.md`** ← **먼저 읽을 것** (2026-09-28, 도구 현황·키·다음 할 일)
+  - 새 채팅 인수인계: **`docs/handoff_insta_danggeun.md`** ← **먼저 읽을 것** (2026-10-11, 최신)
+    - ⚠️ 블로그 자동화 작업은 `main` 이 아니라 **`claude/gallant-ride-nddobc`** 가지에 있다
+  - 그 전: `docs/handoff_macmini.md` (2026-09-28, 맥미니 설치)
   - 이전 인수인계: `docs/handoff_blog_insta.md` (배경·결정 사항)
   - 🛠 도구: `sync/blog_topics.js`(글감) · `sync/card_render.js`(카드 8종, 사진배경·수식) · `sync/post_check.js`(검사) · `sync/serp_check.js`(검색 점검) · `sync/keyword_volume.js`(검색량). 사용법은 `blog/README.md`
   - 설계: `docs/blog_insta_automation_plan.md` · 도구 구조: `docs/blog_automation_overview.md`
