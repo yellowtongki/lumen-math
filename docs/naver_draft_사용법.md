@@ -130,3 +130,29 @@ node sync/naver_draft.js blog/<폴더> --fast     # 빠르게 (약 1분)
 
 글 폴더에 `photo_1.jpg`, `photo_2.jpg`, `photo_3.jpg` 처럼 **`photo_` 로 시작하는 이름**으로
 넣어 두면 `[실사진 N]` 자리에 순서대로 들어갑니다. 없으면 그 자리에서 멈추고 물어봅니다.
+
+---
+
+## 한 줄로 끝내기 (2026-10-11 추가)
+
+터미널을 새로 열면 항상 **홈 폴더(`~`)** 에서 시작한다. 거기서 `node sync/naver_draft.js` 를 치면
+`Cannot find module` 이 난다. 파일이 없는 게 아니라 **위치가 다를 뿐**이다.
+
+매번 `cd` 하지 않도록 **딱 한 번** 아래를 터미널에 넣어둔다.
+
+```
+echo "alias 블로그='cd ~/lumen-math && git pull -q origin claude/gallant-ride-nddobc && node sync/naver_draft.js'" >> ~/.zshrc
+source ~/.zshrc
+```
+
+다음부터는 터미널 어디서든 이것만 치면 된다.
+
+```
+블로그
+```
+
+- 저장소로 이동 → 최신 글 내려받기 → **가장 최근 글**로 네이버 임시저장까지 한 번에 간다
+- 다른 글을 올리고 싶으면 뒤에 폴더를 붙인다: `블로그 blog/2026-09-20-banten`
+- 미리 보기만: `블로그 --dry`
+
+> 글 폴더를 안 적으면 `blog/` 에서 **날짜가 가장 최근인 글**을 자동으로 고른다.

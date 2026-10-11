@@ -47,6 +47,9 @@ const sq = (body.match(/^■/gm) || []).length;
 // 실사진 몇 곳이 필요한가 — 기본 3곳. 카드만 쓰는 홍보·안내 글은 머리말에 photos: 1 처럼 적는다
 const photoSlots = (body.match(/\[실사진/g) || []).length;
 const needPhotos = meta.photos === undefined ? 3 : (parseInt(meta.photos, 10) || 0);
+// 본문의 카드 자리 — naver_draft.js 는 [카드 N: 파일.png] 줄을 보고 그림을 넣는다. 빠지면 카드 없이 올라간다
+const slotFiles = [...body.matchAll(/^\[카드 \d+:\s*([^\]]+?)\s*\]$/gm)].map(m => m[1]);
+const slotMissing = slotFiles.filter(f => !pngs.includes(f));
 const vague = body.match(/오늘 오전|오늘 오후(?!에는 그 앞)|며칠 전|얼마 전/g) || [];
 // 카드에서 「밖으로 나가는 글자」만 모은다 (_메모·파일 이름은 내부용이라 검사에서 뺀다)
 // note 는 카드에 찍히는 글자다. 단 external(밖에서 받은 PNG)에서는 내부 메모라 뺀다
@@ -72,6 +75,10 @@ const checks = [
   // 6장은 하한이다. 학원앱 「적중 분석」 도구가 만든 카드뉴스는 12장이 나온다.
   ['카드 6장 이상 (cards.json)', (spec.cards || []).length >= 6, `${(spec.cards || []).length}장`],
   ['카드 PNG 6장 이상', pngs.length >= 6, `${pngs.length}장`],
+  ['본문에 카드 자리가 카드 수만큼 있음', slotFiles.length === pngs.length,
+    slotFiles.length === pngs.length ? `${slotFiles.length}곳`
+      : `본문 ${slotFiles.length}곳 / 카드 ${pngs.length}장 — 「[카드 1: 01_cover.png]」 처럼 본문에 적어야 올라갑니다`],
+  ['카드 자리의 파일이 모두 있음', slotMissing.length === 0, slotMissing.join(', ')],
   ['cards.json 과 PNG 수 일치', (spec.cards || []).length === pngs.length, `${(spec.cards || []).length} / ${pngs.length}`],
   [`실사진 자리 ${needPhotos}곳 이상`, photoSlots >= needPhotos,
     `${photoSlots}곳${meta.photos !== undefined ? ` (머리말 photos: ${meta.photos})` : ''}`],

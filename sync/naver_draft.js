@@ -31,7 +31,18 @@ const opt = {
   noImg: args.includes('--no-img'),
   fast: args.includes('--fast'),      // 기본은 사람 타자 속도. 급하면 --fast
 };
-const folder = args.find(a => !a.startsWith('--'));
+// 글 폴더를 안 적으면 blog/ 에서 가장 최근 글을 고른다 (폴더 이름이 날짜로 시작하므로 정렬하면 끝이 최신)
+function newestPost() {
+  const base = path.join(ROOT, 'blog');
+  if (!fs.existsSync(base)) return null;
+  const found = fs.readdirSync(base)
+    .filter(n => /^\d{4}-\d{2}-\d{2}-/.test(n) && fs.existsSync(path.join(base, n, 'post.md')))
+    .sort();
+  return found.length ? path.join('blog', found[found.length - 1]) : null;
+}
+const given = args.find(a => !a.startsWith('--'));
+const folder = given || newestPost();
+if (!given && folder) console.log(`📂 글 폴더를 안 적으셔서 가장 최근 글로 합니다 → ${folder}\n`);
 const log = (...a) => console.log(...a);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -193,7 +204,7 @@ async function insertPlace(page, frame, keyword) {
 }
 
 (async () => {
-  if (!opt.login && !folder) { log('사용법: node sync/naver_draft.js <글 폴더>   (처음이면 --login 먼저)'); process.exit(1); }
+  if (!opt.login && !folder) { log('blog/ 에 글이 없습니다. 사용법: node sync/naver_draft.js [글 폴더]   (처음이면 --login 먼저)'); process.exit(1); }
 
   // ── 미리보기 ──
   if (opt.dry) {
