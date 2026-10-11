@@ -190,6 +190,60 @@ async function setFontSize(page, frame, size) {
   return false;
 }
 
+// 커서를 본문 맨 끝으로 돌려놓는다.
+// 지도를 넣거나 원장님이 손으로 뭔가 한 뒤에는 커서가 본문 밖에 있다 — 그 상태로 글자를 치면 아무 데도 안 들어간다
+async function focusBodyEnd(page, frame) {
+  try {
+    const paras = frame.locator('.se-main-container .se-text-paragraph');
+    const n = await paras.count();
+    if (!n) return false;
+    await paras.nth(n - 1).click();
+    await sleep(400);
+    await page.keyboard.press('End').catch(() => {});
+    await sleep(250);
+    return true;
+  } catch { return false; }
+}
+
+// 해시태그 — 네이버는 본문이 아니라 아래쪽 「태그 입력」 칸에 넣는다. 한 개씩 Enter 로 끊는다
+async function addHashtags(page, frame, raw) {
+  const tags = String(raw).split(/\s+/).filter(t => t.startsWith('#')).map(t => t.slice(1)).filter(Boolean);
+  if (!tags.length) return false;
+  const sels = ['.se-tag-input input', 'input.se-tag-input', 'input[placeholder*="태그"]',
+                'input.tag_input', '#tag-input', '[class*="tag"] input[type="text"]'];
+  let box = null;
+  for (const sel of sels) {
+    for (const scope of [frame, page]) {
+      try { const el = scope.locator(sel).first(); if (await el.isVisible({ timeout: 500 })) { box = el; break; } } catch {}
+    }
+    if (box) break;
+  }
+  if (!box) return false;
+  await box.click();
+  await sleep(400);
+  for (const t of tags) {
+    await page.keyboard.type(t, { delay: rnd(20, 50) });
+    await page.keyboard.press('Enter');
+    await sleep(rnd(250, 500));
+  }
+  return true;
+}
+
+// 정말 저장됐는지 확인한다 — 「저장되었습니다」 알림이 뜨는지 본다. 확인 못 하면 성공이라고 말하지 않는다
+async function savedOk(page, frame) {
+  const marks = ['text=저장되었습니다', 'text=임시저장되었습니다', 'text=저장했습니다', '.se-toast', '[class*="toast"]'];
+  const t0 = Date.now();
+  while (Date.now() - t0 < 9000) {
+    for (const sel of marks) {
+      for (const scope of [frame, page]) {
+        try { if (await scope.locator(sel).first().isVisible({ timeout: 250 })) return true; } catch {}
+      }
+    }
+    await sleep(400);
+  }
+  return false;
+}
+
 // 장소(루멘수학교습소) 넣기 — 되면 좋고, 안 되면 손으로 안내한다
 async function insertPlace(page, frame, keyword) {
   let btn = null;
@@ -354,21 +408,27 @@ async function insertPlace(page, frame, keyword) {
         try {
           await insertPlace(page, f, '루멘수학교습소');
           log('     ✅ 장소를 넣었습니다 (본문 끝 주소와 맞는지 나중에 확인해 주세요)');
+          await focusBodyEnd(page, f);   // 지도를 넣으면 커서가 본문 밖으로 나간다
         } catch (e) {
           await pause(`장소 넣기가 막혔습니다 (${e.message})`,
             '위쪽 「장소」 단추를 눌러 「루멘수학교습소」를 찾아 넣어주세요.');
+          await focusBodyEnd(page, f);
         }
       } else {
         await pause(`${s.label}은 직접 넣으셔야 합니다.`, s.what);
+        await focusBodyEnd(page, f);   // 원장님이 손으로 만진 뒤에는 커서가 어디 있을지 모른다
       }
     }
   }
 
-  // 해시태그
+  // 해시태그 — 아래쪽 「태그 입력」 칸에 한 개씩
+  let tagOk = false;
   if (meta.hashtags) {
     log('  해시태그…');
-    await page.keyboard.press('Enter');
-    await page.keyboard.type(meta.hashtags, { delay: rnd(20, 50) });
+    try { tagOk = await addHashtags(page, f, meta.hashtags); } catch {}
+    if (tagOk) log('     ✅ 태그를 넣었습니다');
+    else await pause('태그 칸을 못 찾았습니다.',
+      `본문 아래 「태그 입력」 칸에 직접 넣어주세요:\n      ${meta.hashtags}`);
   }
 
   // 임시저장 — 발행은 절대 안 누른다
@@ -382,8 +442,12 @@ async function insertPlace(page, frame, keyword) {
     } else {
       log(`   「${label || '저장'}」 누릅니다…`);
       await save.click();
-      await sleep(3000);
-      log('\n✅ 임시저장했습니다.');
+      if (await savedOk(page, f)) {
+        log('\n✅ 임시저장했습니다. (「저장되었습니다」 알림을 확인했습니다)');
+      } else {
+        await pause('「저장」을 눌렀는데 저장됐다는 알림이 안 보입니다.',
+          '화면 오른쪽 위 「저장」을 직접 눌러주세요. (「발행」 말고 「저장」입니다)');
+      }
     }
   }
   if (!save) {
