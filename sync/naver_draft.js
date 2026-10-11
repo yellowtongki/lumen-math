@@ -31,6 +31,7 @@ const opt = {
   noImg: args.includes('--no-img'),
   fast: args.includes('--fast'),      // 기본은 사람 타자 속도. 급하면 --fast
   size: args.includes('--size') ? String(args[args.indexOf('--size') + 1] || '') : '24',  // --size 0 이면 건드리지 않음
+  peek: args.includes('--peek'),     // 도구줄 단추들을 찍어 본다 (문제 찾을 때만)
 };
 // 글 폴더를 안 적으면 blog/ 에서 가장 최근 글을 고른다 (폴더 이름이 날짜로 시작하므로 정렬하면 끝이 최신)
 function newestPost() {
@@ -194,6 +195,29 @@ async function setFontSize(page, frame, size) {
   return false;
 }
 
+// 도구줄에 어떤 단추가 있는지 그대로 찍는다 — 선택자가 안 맞을 때 원인을 찾으려고
+async function peekToolbar(frame) {
+  const rows = await frame.evaluate(() => {
+    const out = [];
+    for (const b of document.querySelectorAll('button, [role="button"]')) {
+      const r = b.getBoundingClientRect();
+      if (r.top > 400 || r.width === 0) continue;      // 위쪽 도구줄만
+      out.push({
+        글자: (b.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 14),
+        title: b.getAttribute('title') || '',
+        aria: b.getAttribute('aria-label') || '',
+        data: b.getAttribute('data-name') || b.getAttribute('data-log') || '',
+        pressed: b.getAttribute('aria-pressed') || '',
+        class: (b.className || '').toString().slice(0, 70),
+      });
+    }
+    return out;
+  }).catch(() => []);
+  log(`\n── 도구줄 단추 ${rows.length}개 ──`);
+  rows.forEach((r, i) => log(`${String(i).padStart(2)} 「${r.글자}」 title=${r.title} aria=${r.aria} data=${r.data} pressed=${r.pressed}\n     class=${r.class}`));
+  log('── 여기까지 ──\n');
+}
+
 // 글자 서식(굵게·기울임·밑줄·취소선)이 켜져 있으면 끈다.
 // 어디선가 한 번 켜지면 뒤 문단까지 줄이 번진다. 원인을 몰라도 「켜져 있으면 끈다」로 막는다.
 // 무엇이 켜져 있었는지 로그에 남기므로, 다음에 이 줄을 보면 언제 켜지는지 알 수 있다
@@ -204,7 +228,7 @@ const FMT = [
   ['취소선', ['button[data-name="strikethrough"]', '.se-toolbar-option-strikethrough-button', '.se-toolbar-item-strikethrough button', 'button[title*="취소선"]', 'button[aria-label*="취소선"]']],
 ];
 async function clearFormatting(page, frame) {
-  const turned = [];
+  const turned = [], found = [];
   for (const [name, sels] of FMT) {
     let done = false;
     for (const sel of sels) {
@@ -220,12 +244,13 @@ async function clearFormatting(page, frame) {
             await sleep(200);
             turned.push(name);
           }
-          done = true; break;           // 이 서식의 단추는 찾았다 — 다음 서식으로
+          found.push(name); done = true; break;   // 이 서식의 단추는 찾았다 — 다음 서식으로
         } catch {}
       }
     }
   }
   if (turned.length) log(`   ⚠️ 켜져 있던 서식을 껐습니다: ${turned.join(', ')}`);
+  if (found.length < FMT.length) log(`   ⚠️ 서식 단추를 못 찾았습니다: ${FMT.map(f => f[0]).filter(n => !found.includes(n)).join(', ')} (--peek 로 도구줄을 찍어 보세요)`);
   return turned;
 }
 
@@ -444,6 +469,7 @@ async function insertPlace(page, frame, keyword) {
   const body = await firstVisible(f, SEL.body, 6000);
   if (body) { await body.click(); } else { await page.keyboard.press('Tab'); }
   await sleep(800);
+  if (opt.peek) await peekToolbar(f);
   await setFontSize(page, f, opt.size);
   await clearFormatting(page, f);
 
