@@ -45,8 +45,18 @@ const hasDate = /\d{1,2}월\s?\d{1,2}일|\d{4}[.\-]\d{1,2}[.\-]\d{1,2}/.test(bod
 const hasAddr = /옥길로\s?116/.test(body);
 const sq = (body.match(/^■/gm) || []).length;
 const vague = body.match(/오늘 오전|오늘 오후(?!에는 그 앞)|며칠 전|얼마 전/g) || [];
-// 학교 기출은 외부 공개 금지 규정이 있다 (2026-10-10 원장 지시) — 본문에 드러내지 않는다
-const kichul = body.match(/기출|지난 시험지|작년 시험지|전년도 문제/g) || [];
+// 카드에서 「밖으로 나가는 글자」만 모은다 (note·_메모·파일명은 내부용이라 검사에서 뺀다)
+const INTERNAL = ['type', 'file', 'note', 'bg'];
+const cardText = (spec.cards || []).flatMap(c => Object.entries(c)
+  .filter(([k]) => !k.startsWith('_') && !INTERNAL.includes(k))
+  .map(([, v]) => JSON.stringify(v))).join('\n');
+// 학교 기출은 외부 공개 금지 규정이 있다 (2026-10-10 원장 지시) — 본문·카드에 드러내지 않는다
+const KICHUL = /기출|지난 시험지|작년 시험지|전년도 문제/g;
+const kichul = [...(body.match(KICHUL) || []), ...(cardText.match(KICHUL) || [])];
+// 외부 서비스 이름은 글·카드·해시태그에 쓰지 않는다 (2026-10-11 원장 지시)
+const VENDORS = ['매쓰플랫', '매스플랫', 'mathflat', '수학비서', '클래스바이', 'classby', '프리윌린'];
+const vendorHay = `${body}\n${meta.hashtags || ''}\n${cardText}`;
+const vendors = VENDORS.filter(v => new RegExp(v, 'i').test(vendorHay));
 
 const checks = [
   ['제목 있음', !!meta.title, meta.title || '(없음)'],
@@ -71,8 +81,10 @@ const checks = [
   ['도입에 날짜가 있음', hasDate, hasDate ? '' : '「9월 20일 일요일」처럼 날짜·요일을 적으세요'],
   ['맨 끝에 주소 한 줄', hasAddr, hasAddr ? '' : '경기도 부천시 소사구 옥길로 116 6층 618호'],
   ['■ 기호는 첫 소제목 하나만', sq <= 1, `${sq}개`],
+  ['외부 서비스 이름 없음', vendors.length === 0,
+    vendors.length ? `「${vendors.join('」 「')}」 — 외부 서비스 이름은 쓰지 않습니다. 「루멘수학 시험대비자료」·「학원 학습 기록」 처럼 바꾸세요` : ''],
   ['학교 기출을 드러내지 않음', kichul.length === 0,
-    kichul.length ? `「${[...new Set(kichul)].join('」 「')}」 — 학교 기출은 외부 공개 금지. 「시험대비자료」 같은 말로 바꾸세요` : ''],
+    kichul.length ? `「${[...new Set(kichul)].join('」 「')}」 — 학교 기출은 외부 공개 금지. 「시험대비자료」 같은 말로 바꾸세요 (본문·카드 문구 둘 다 봅니다)` : ''],
 ];
 let fail = 0, warn = 0;
 console.log(`\n📋 ${path.relative(ROOT, dir)} 검사\n`);

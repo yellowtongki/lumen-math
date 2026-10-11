@@ -11,6 +11,9 @@
  * cards.json 형식:
  *   { "cards": [ { "type": "cover", "kicker": "...", "title": "...", "sub": "..." }, … ] }
  *   type: cover | qa | stat | compare | list | closing   (템플릿은 sync/card_templates/<type>.html)
+ *   type: "external"  — 학원앱 등 밖에서 만든 PNG. 그리지 않고 넘긴다
+ *                        { "type": "external", "file": "01_cover.png", "note": "표지" }
+ *                        파일은 <글 폴더>/cards/ 안(또는 글 폴더 안)에 미리 넣어둔다
  *
  * 글자가 칸을 넘치면 .fit 요소의 글자 크기를 조금씩 줄여서 맞춘다 (로그에 "글자 줄임" 표시).
  * 폰트(Pretendard)는 sync/_fonts/ 에 없으면 GitHub에서 자동으로 받는다.
@@ -122,11 +125,24 @@ function fill(tpl, data) {
   const exe = process.env.CHROMIUM_PATH || (fs.existsSync('/opt/pw-browsers/chromium') ? '/opt/pw-browsers/chromium' : undefined);
   const browser = await chromium.launch(exe ? { executablePath: exe } : {});
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
-  const made = [];
+  const made = [], kept = [], missing = [];
   for (let i = 0; i < cards.length; i++) {
     const n = i + 1;
     if (onlyIdx && onlyIdx !== n) continue;
     const card = cards[i];
+    // 밖에서 받은 카드(학원앱 적중 분석 등)는 PNG를 그대로 쓴다 — 그리지 않고 넘긴다
+    if (card.type === 'external') {
+      const cand = [path.join(outDir, card.file || ''), path.join(dir, card.file || '')];
+      const found = card.file ? cand.find(f => fs.existsSync(f)) : null;
+      if (found) {
+        kept.push(found);
+        console.log(`⏭️  ${n}번 — 밖에서 받은 카드 ${card.file} (그대로 씀)`);
+      } else {
+        missing.push(`${n}번 카드 "${card.file || '(file 칸이 비었음)'}"`);
+        console.log(`❌ ${n}번 — ${card.file || '(file 칸이 비었음)'} 를 cards/ 에서 못 찾았습니다`);
+      }
+      continue;
+    }
     const tplPath = path.join(TPL_DIR, `${card.type}.html`);
     if (!fs.existsSync(tplPath)) throw new Error(`${n}번 카드: 모르는 type "${card.type}" (템플릿 없음)`);
     const body = fill(fs.readFileSync(tplPath, 'utf8'), derive({ ...card, page: `${n} / ${cards.length}` }, dir))
@@ -160,5 +176,12 @@ function fill(tpl, data) {
     console.log(`✅ ${path.relative(ROOT, png)}${shrunk.length ? `   (글자 줄임: ${shrunk.join(', ')})` : ''}`);
   }
   await browser.close();
-  console.log(`\n${made.length}장 완료 → ${path.relative(ROOT, outDir)}/`);
+  const parts = [`${made.length}장 그림`];
+  if (kept.length) parts.push(`${kept.length}장 그대로 씀`);
+  console.log(`\n${parts.join(' · ')} → ${path.relative(ROOT, outDir)}/`);
+  if (missing.length) {
+    console.error(`\n❌ 밖에서 받은 카드 ${missing.length}장을 못 찾았습니다:\n   ${missing.join('\n   ')}`);
+    console.error(`   → PNG 를 ${path.relative(ROOT, outDir)}/ 안에 넣고 다시 돌려주세요`);
+    process.exit(1);
+  }
 })().catch(e => { console.error('❌', e.message); process.exit(1); });
