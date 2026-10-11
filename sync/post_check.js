@@ -45,10 +45,12 @@ const hasDate = /\d{1,2}월\s?\d{1,2}일|\d{4}[.\-]\d{1,2}[.\-]\d{1,2}/.test(bod
 const hasAddr = /옥길로\s?116/.test(body);
 const sq = (body.match(/^■/gm) || []).length;
 const vague = body.match(/오늘 오전|오늘 오후(?!에는 그 앞)|며칠 전|얼마 전/g) || [];
-// 카드에서 「밖으로 나가는 글자」만 모은다 (note·_메모·파일명은 내부용이라 검사에서 뺀다)
-const INTERNAL = ['type', 'file', 'note', 'bg'];
+// 카드에서 「밖으로 나가는 글자」만 모은다 (_메모·파일 이름은 내부용이라 검사에서 뺀다)
+// note 는 카드에 찍히는 글자다. 단 external(밖에서 받은 PNG)에서는 내부 메모라 뺀다
+const skipKey = (card, k) => k.startsWith('_') || ['type', 'file', 'bg'].includes(k)
+  || (card.type === 'external' && k === 'note');
 const cardText = (spec.cards || []).flatMap(c => Object.entries(c)
-  .filter(([k]) => !k.startsWith('_') && !INTERNAL.includes(k))
+  .filter(([k]) => !skipKey(c, k))
   .map(([, v]) => JSON.stringify(v))).join('\n');
 // 학교 기출은 외부 공개 금지 규정이 있다 (2026-10-10 원장 지시) — 본문·카드에 드러내지 않는다
 const KICHUL = /기출|지난 시험지|작년 시험지|전년도 문제/g;
@@ -74,7 +76,7 @@ const checks = [
   ['해시태그 8개 이상', hashtags.length >= 8, `${hashtags.length}개`],
   ['"옥길동 … 루멘수학" 2회 이상', region >= 2, `${region}회`],
   ['카드 질문이 본문에 그대로 있음', questions.every(q => body.includes(q)), questions.filter(q => !body.includes(q)).map(q => `빠짐: "${q}"`).join(' / ') || `${questions.length}개 확인`],
-  ['본문에 이모지 없음', !emojiRe.test(body), ''],
+  ['본문에 이모지 없음', !emojiRe.test(body.replace(/❏/g, '')), ''],   // ❏ 는 전용 항목이 따로 본다
   ['학생 코드·개별 점수 없음', pii.length === 0, pii.join(', ')],
   ['모집 글이면 교습비·등록번호 표기', meta.recruit !== 'true' || /교습비 등 표시/.test(body), meta.recruit === 'true' ? '' : '모집 글 아님 → 생략'],
   ['미확정 빈칸(❏) 없음', !/❏/.test(body), ''],
