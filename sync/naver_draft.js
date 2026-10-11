@@ -30,6 +30,7 @@ const opt = {
   dry: args.includes('--dry'),
   noImg: args.includes('--no-img'),
   fast: args.includes('--fast'),      // 기본은 사람 타자 속도. 급하면 --fast
+  size: args.includes('--size') ? String(args[args.indexOf('--size') + 1] || '') : '24',  // --size 0 이면 건드리지 않음
 };
 // 글 폴더를 안 적으면 blog/ 에서 가장 최근 글을 고른다 (폴더 이름이 날짜로 시작하므로 정렬하면 끝이 최신)
 function newestPost() {
@@ -68,7 +69,13 @@ function plan(dir) {
 
   const steps = [];
   let buf = [];
-  const flush = () => { const t = buf.join('\n').replace(/\n{3,}/g, '\n\n').trim(); if (t) steps.push({ kind: 'text', text: t }); buf = []; };
+  // 네이버 에디터는 ** __ ~~ 를 서식 명령으로 먹는다(굵게·밑줄·취소선). 한 번 켜지면 뒤 문단까지 번진다.
+  // 그래서 기호만 떼고 글자는 그대로 넣는다. 굵게는 올린 뒤 원장님이 직접 (문단당 한 곳)
+  const stripMd = (t) => t
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1');
+  const flush = () => { const t = stripMd(buf.join('\n').replace(/\n{3,}/g, '\n\n').trim()); if (t) steps.push({ kind: 'text', text: t }); buf = []; };
 
   for (const line of m[2].split('\n')) {
     let mm;
@@ -146,6 +153,41 @@ async function insertImage(page, frame, file) {
   await page.keyboard.press('ArrowDown').catch(() => {});
   await page.keyboard.press('End').catch(() => {});
   await sleep(400);
+}
+
+// 본문 글씨 크기 맞추기 — 되면 좋고, 안 되면 지금 크기로 그냥 간다 (막지 않는다)
+async function setFontSize(page, frame, size) {
+  if (!size || size === '0') return false;
+  const openers = [
+    'button.se-toolbar-option-font-size-code-toolbar-button',
+    '.se-toolbar-option-font-size-code button',
+    'button[data-name="font-size-code"]',
+    'button[class*="font-size"]',
+  ];
+  let btn = null;
+  for (const sel of openers) {
+    for (const scope of [frame, page]) {
+      try { const el = scope.locator(sel).first(); if (await el.isVisible({ timeout: 500 })) { btn = el; break; } } catch {}
+    }
+    if (btn) break;
+  }
+  if (!btn) { log(`   (글씨 크기 단추를 못 찾았습니다 — 지금 크기 그대로 갑니다)`); return false; }
+  await btn.click();
+  await sleep(700);
+  const exact = new RegExp(`^\\s*${size}\\s*$`);
+  for (const tag of ['button', 'li', 'a', 'span']) {
+    try {
+      const el = frame.locator(tag).filter({ hasText: exact }).first();
+      if (await el.isVisible({ timeout: 500 })) {
+        await el.click(); await sleep(500);
+        log(`   글씨 크기 ${size} 로 맞췄습니다`);
+        return true;
+      }
+    } catch {}
+  }
+  await page.keyboard.press('Escape').catch(() => {});
+  log(`   (글씨 크기 ${size} 를 못 골랐습니다 — 지금 크기 그대로 갑니다)`);
+  return false;
 }
 
 // 장소(루멘수학교습소) 넣기 — 되면 좋고, 안 되면 손으로 안내한다
@@ -279,6 +321,7 @@ async function insertPlace(page, frame, keyword) {
   const body = await firstVisible(f, SEL.body, 6000);
   if (body) { await body.click(); } else { await page.keyboard.press('Tab'); }
   await sleep(800);
+  await setFontSize(page, f, opt.size);
 
   // 순서대로 넣기
   let n = 0;
