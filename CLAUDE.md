@@ -135,3 +135,10 @@
   - ⚠️ 네이버 자동 "발행"은 하지 않는다 (저품질 처리 위험). 임시저장까지만, 발행은 원장님이
   - 🔄 2026-09-20 방향 전환: **자체 도구를 새로 만든다** → `docs/lumen_blog_tool_design.md`
   - (2026-10-11 학원앱 세션) 블로그 도구·글 폴더(`blog/`, `sync/card_render.js` 등)를 블로그 브랜치에서 main 으로 가져왔다. 학원앱 카드뉴스는 `sync/card_templates/_base.css` 의 브랜드 색·글꼴에 맞춘다(통일 결정 진행 중).
+
+## 🏛️ 루멘이사회 (2026-09-29 채팅 프로젝트에서 이전)
+
+가상 이사회(박 실장·김 이사·최 팀장·독설가)가 운영 안건을 회의한다. **지침은 `board/CLAUDE.md` — 회의 전에 먼저 읽을 것.**
+- 명령어: `/board 안건`, `/student-review S03`, `/parent-feedback S01 S04`
+- 멤버 정의 `.claude/agents/`, 명령어 `.claude/commands/`, 결정 기록 `board/decisions/`
+- `board/students/`·`board/private/`·`board/reports/`는 git에 안 올라간다 (공개 저장소). 학생 기록 연동은 추후 Supabase로 연결 예정
