@@ -93,10 +93,13 @@ STORE['exam_hit_' + OLD] = { examId: OLD, exam: { school: '옥길중', grade: '�
   const o1 = await pg.evaluate(() => {
     const box = document.getElementById('tdemo'), blk = box.querySelector('#pb-block'), pc = box.querySelector('#pc-block');
     const rows = [...box.querySelectorAll('#pb-block tr[data-pbpub]')].map((r) => r.getAttribute('data-pbpub') + ':' + [...r.children].map((c) => c.textContent).join('|'));
-    return { blk: blk ? blk.textContent : '', after: !!(pc && blk && (pc.compareDocumentPosition(blk) & Node.DOCUMENT_POSITION_FOLLOWING) && !pc.contains(blk)), rows };
+    return { blk: blk ? blk.textContent : '', after: !!(pc && blk && (pc.compareDocumentPosition(blk) & Node.DOCUMENT_POSITION_FOLLOWING) && !pc.contains(blk)),
+      before: !!(pc && blk && (blk.compareDocumentPosition(pc) & Node.DOCUMENT_POSITION_FOLLOWING) && !blk.contains(pc)), rows };
   });
-  t('지난 기출 칸 뒤에 「📚 출판사 교과서 출처」 — 공통수학2 교과서 4종 · 가장 많은 교과서 동아 2문항',
-    o1.after && /📚 출판사 교과서 출처/.test(o1.blk) && /공통수학2 교과서 4종/.test(o1.blk) && /가장 많은 교과서: 동아 2문항/.test(o1.blk), o1.blk.slice(0, 300));
+  /* v19-112 부터: 칸 이름 「📚 교과서 일치 (같은 문제 + 숫자변형)」 · 도넛 바로 아래(지난 기출 칸보다 앞)로 옮김 (원장 2026-10-12) */
+  const V112 = Number(WANT.replace('v19-', '')) >= 112;
+  t(V112 ? '지난 기출 칸 앞(도넛 바로 아래)에 「📚 교과서 일치 (같은 문제 + 숫자변형)」 — 공통수학2 교과서 4종 · 가장 많은 교과서 동아 2문항' : '지난 기출 칸 뒤에 「📚 출판사 교과서 출처」 — 공통수학2 교과서 4종 · 가장 많은 교과서 동아 2문항',
+    (V112 ? (o1.before && /📚 교과서 일치 \(같은 문제 \+ 숫자변형\)/.test(o1.blk)) : (o1.after && /📚 출판사 교과서 출처/.test(o1.blk))) && /공통수학2 교과서 4종/.test(o1.blk) && /가장 많은 교과서: 동아 2문항/.test(o1.blk), o1.blk.slice(0, 300));
   t('표: 동아(같은 1·숫자변형 1 · 1번 2번) → 미래엔·지학사(숫자변형 1) → 비상교육(지문 겹침 1)',
     o1.rows.length === 4 && /^동아:동아\|1\|1\|·\|1번2번/.test(o1.rows[0]) && /^비상교육:비상교육\|·\|·\|1\|—/.test(o1.rows[3]) && /^(미래엔|지학사)/.test(o1.rows[1]), JSON.stringify(o1.rows));
   const s1 = await pg.evaluate(() => { const a = document.getElementById('pb-block').getBoundingClientRect(); return { x: a.left + scrollX, y: a.top + scrollY, w: a.width, h: a.height }; });
