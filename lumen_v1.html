@@ -430,7 +430,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-111';
+var APP_VER = 'v19-112';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9016,6 +9016,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-112',date:'2026-10-12',stability:'ok',memo:'🎯📚 <b>교과서 일치를 적중 분석 안으로</b> (원장 2026-10-12 「교과서 일치는 적중분석 내부에 있어야 한다. 잘 보이게 표시하고, 난이도를 수학비서 난이도 9로 하라고 했는데 왜 5인가? 그리고 옥길중에 교과서 일치 여부는 표시가 안 되었다.」). ① 난이도: 문항마다 수학비서 난이도가 없는 시험(옥길중 중1·중3 — 매쓰플랫이 서술형을 나눠 문항 수가 수학비서와 다름)도 <b>시험 전체 수학비서 난이도</b>로 평균 «/9» · 킬러(6 이상) · 어려움(5 이상). 수학비서에 아직 없는 시험(PDF 로 올린 시험)은 「평균 난도 (매쓰플랫 1~5 · 수학비서 DB화 전)」로 까닭을 적음. ② 요약 숫자 칸에 초록 굵은 테두리 「📚 교과서 일치」(같은 문제+숫자변형 문항 수 · 학교 교과서 a · 다른 출판사만 b) — 누르면 아래 칸으로. ③ 「📚 교과서 일치 (같은 문제 + 숫자변형)」 칸을 도넛 바로 아래로 올림(우리 자료별 적중 · 지난 기출보다 위) · 학교 교과서 줄에 「학교 교과서」 표 · 「🟧 학교 교과서엔 없음」 줄(다른 출판사에서만 나온 번호, 누르면 그 문항). 옥길중이 안 보였던 까닭: 지난 기출 칸이 없는 시험은 이 칸이 요약 맨 아래(출제 경향 뒤)에 붙어 있었음. ④ 메뉴의 「교과서일치도」 칸은 빼고 적중 분석 머리 「📚 교과서일치도 · 학교 전체 비교」 단추로 · 그 화면 맨 위 「← 적중 분석」. ⑤ 출판사 비교를 마친 시험은 시험 칩·왼쪽 목록에 「📚」. 새로 저장하는 자료 없음. 부품 modules/hitfix112_teacher.js. · 🏫 <b>학원 달력에 학교 일정</b>(원장 「학교알리미에서 학교 일정을 읽고 학원 달력에 넣자」): 매일 새벽 나이스 학사일정에서 시험 말고 방학·재량휴업·체험학습·수학여행·체육대회·모의고사·입학·졸업도 받아(sync/school_info.js) 달력 칸에 연한 띠로(🏖🚌📝🎓🏫, 학년 행사는 «2학년») · 학교 칩으로 거르기 · 「학원 일정만」이면 숨김 · 학교 휴업은 학원 휴원이 아니라 빨간 날로 안 칠함. 부품 modules/schoolev_teacher.js.'},
       {ver:'v19-111',date:'2026-10-12',stability:'ok',memo:'📚 <b>교과서일치도</b> (원장 2026-10-12 「교과서일치도 · 대비 학습지는 나중에 · 일치도는 숫자변형인가」). 「📝 시험·기출」 메뉴 「🎯 적중 분석」 바로 뒤에 새 화면. 일치도 = <b>같은 문제 + 숫자변형</b>(지문 겹침·유사유형은 세지 않음). 왼쪽 「전체 한눈에」 + 출판사 비교를 마친 시험(연도·학기·시험별) · 가운데 «전체 한눈에»: 분석한 시험 수 · 학교 교과서와 일치한 문항 · 학교 교과서엔 없고 다른 출판사에서만 · 자주 나온 다른 출판사 + 「시험 × 출판사 지도」(과목마다 표, 진할수록 많이 나옴, 파란 테두리 = 그 학교 교과서, 「다른 곳에서만」 칸) · «한 시험»: 출판사별 일치 표(번호 누르면 그 문항 그림) + 「학교 교과서에 없던 문항」 시험 그림 ↔ 교과서 그림 나란히 · ✓ 맞음 · ✗ 아님(적중 분석과 같은 자료에 저장) · 🎯 적중 분석에서 보기. 오른쪽 도구 칸: 🎯 다음 시험 대비 추천(학교 교과서 + 자주 나온 다른 출판사 1~2곳) · 출판사 비교 요청은 채팅에서(API 절약) · 📝 블로그 자료(.md) 복사. 「추천 교과서 문항으로 대비 학습지」는 준비 중. 새로 저장하는 자료 없음(exam_hit_* · mf_textbooks 읽기). 부품 modules/tbmatch_teacher.js.'},
       {ver:'v19-110',date:'2026-10-11',stability:'ok',memo:'📚🎯 <b>적중 분석 — 출판사 교과서 출처</b> (원장 2026-10-11 「매쓰플랫 교과서 출판사별 자료와 이번 범박고 1·2학년 기출을 비교해서 숫자변형 문제가 어느 출판사에서 나왔는지 … 비상교육도 포함해서 모든 출판사의 교과서」). 서버가 시험 과목(공통수학2 7종 · 미적분1 6종 · 대수 · 공통수학1)의 <b>모든 출판사 교과서</b>에서 시험 문항과 같은 유형 문항을 출판사마다 전부(최대 15개) 골라 그림으로 비교한다(같은 문제 / 숫자변형 / 지문 겹침). 결과 요약에 「📚 출판사 교과서 출처」 표(출판사별 같은 문제 · 숫자변형 · 지문 겹침 수와 시험 문항 번호, 가장 많은 출판사 강조) · 「📚 출판사 비교만 다시」 단추(우리 자료·지난 기출 판정은 그대로) · 문항 카드마다 「📚 출판사 교과서」 줄(출판사 · 쪽 · 번호 그림, ✗ 아님) · 접힌 줄에 출판사 이름 · 블로그 자료(.md)에 출판사 단락. <b>우리 자료 적중률과 따로</b> 센다. 고등부만. 부품 modules/pubsrc_teacher.js · 워커 sync/exam_hit_worker.js(pubCompare · --pub-only · 요청 only:pub) · 교과서 은행 sync/mf_textbook_bank.js --subject(학생 배정 없이 교재 쪽 목록으로).'},
       {ver:'v19-109',date:'2026-10-11',stability:'ok',memo:'🔁🎯 <b>적중 분석 — 같은 학교 지난 기출과 비교</b> (원장 2026-10-11 「범박고 분석 시 범박고 기출에서 나온 것도 확인할 수 있나? 기능을 추가하자. 소사고 분석 시는 소사고 기출과 비교.」). 예전 «반복 출제»는 지난 같은 시험에 같은 유형 번호가 있었는지만 셌다. 이제 서버가 문항마다 <b>같은 학교·같은 학년 지난 시험(기본 최근 4년 · 중간/기말 · 1/2학기 모두)</b> 문항 후보 3개를 골라 우리 자료와 같은 방식으로 그림을 비교한다(같은 문제 / 숫자변형 / 유사유형 / 지문만). <b>우리 자료 적중률과는 따로</b> 센다. 결과 요약 칸 「🔁 범박고 기출에서 n문항」(같은 문제 + 숫자변형, 작은 글씨로 유사유형) · 「우리 자료별 적중」 아래 「🔁 범박고 지난 기출과 비교」 목록(연도 · 학기 · 시험 · 번호 · 등급, 누르면 그 문항 카드로) · 문항 카드마다 「🔁 지난 기출」 줄(그림 3개 + ✓ 등급 / ✗ 아님 — 다시 판정해도 남는다) · 요청·다시 판정 화면 「지난 기출 비교: 켜기/끄기 · 최근 2/3/4/5년 · 같은 시험만」. 학부모 보고서·블로그 자료(.md)는 «범박고 기출에서 숫자만 바뀌어 다시 나온 문항 n개», 카드뉴스는 «지난 시험에서 다시 나온 문항»(연도·「기출」 낱말 없음). 서버 결과가 새로 나오기 전 시험은 예전 화면 그대로. 부품 modules/pastcmp_teacher.js · 워커 sync/exam_hit_worker.js(pastCompare · --past-only).'},
@@ -86936,7 +86937,237 @@ function rTbMatch(){
 })();
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~111: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-112: 🎯 적중 분석 안에 «📚 교과서 일치» · 난이도 = 수학비서 1~9 (시험 전체 난이도 exam.msLv 로도)
+ * 원장 지적 2026-10-12: 「교과서 일치는 적중분석 내부에 있어야 한다. 잘 보이게 표시하고, 난이도를 수학비서 난이도 9로 하라고 했는데
+ *   왜 5인가? 그리고 옥길중에 교과서 일치 여부는 표시가 안 되었다.」
+ *  [까닭 1] v19-108 은 문항마다 수학비서 난이도(it.diff)가 절반 이상 있어야 «/9» 로 바꿨다. 옥길중 중1·중3 은 문항에 diff 가 비어 있고
+ *           (매쓰플랫이 서술형을 (1)(2) 로 나눠 문항 수 23·22 ≠ 수학비서 20) 시험 전체 난이도 exam.msLv(20개)만 있어 «/5» 로 남았다.
+ *  [까닭 2] 「📚 출판사 교과서 출처」 칸이 요약 카드 맨 아래(출제 경향 뒤, 단추 줄 바로 위)에 붙어 있었다 — 지난 기출 칸이 없는
+ *           옥길중은 «우리 자료별 적중» · 출제 경향 아래로 밀려 눈에 띄지 않았다. 교과서일치도는 메뉴의 다른 화면이었다.
+ *  [고침]
+ *   ① 난이도: 문항 diff 가 없으면 exam.msLv(수학비서 시험 전체) 로 평균·킬러(6↑)·어려움(5↑) «/9».
+ *      둘 다 없으면(수학비서 DB화 전 — PDF 로 올린 시험) «/5» 그대로 두되 「평균 난도 (매쓰플랫 1~5 · 수학비서 DB화 전)」 로 까닭을 적는다.
+ *   ② 요약 숫자 칸 줄에 「📚 교과서 일치」 칸(초록 굵은 테두리) — 같은 문제·숫자변형 문항 수 · 「학교 교과서 a · 다른 출판사만 b」 · 누르면 아래 칸으로
+ *   ③ 「📚 교과서 일치 (같은 문제 + 숫자변형)」 칸을 도넛·숫자 칸 바로 아래로(「우리 자료별 적중」·지난 기출보다 위) · 학교 교과서 줄에 「학교 교과서」 표 ·
+ *      「학교 교과서엔 없음」 줄(다른 출판사에서만 나온 문항 번호)
+ *   ④ 메뉴의 「교과서일치도」 칸을 빼고 적중 분석 머리 단추 「📚 교과서일치도 · 학교 전체 비교」 로 · 교과서일치도 화면 맨 위 「← 적중 분석」
+ *   ⑤ 시험 칩(가운데)·왼쪽 시험 목록에 출판사 비교를 마친 시험은 「📚」
+ *  ※ 문자열 연결로만 쓴다(템플릿 리터럴 금지). 앞 부품(hit · msdiff · pubsrc · tbmatch · layout3)의 함수를 감싸기만 한다.
+ * ═══════════════════════════════════════════════════════════════════ */
+var H112 = { booksKick:false, booksDone:false, pubKick:false, pubIdx:null };
+var H112_NOMS = '매쓰플랫 1~5 · 수학비서 DB화 전';
+
+/* ── ① 난이도: 문항 diff 가 모자라면 시험 전체 수학비서 난이도(exam.msLv) ── */
+function h112MsLv(d){
+  var L=d && d.exam && d.exam.msLv; if(!Array.isArray(L)) return null;
+  var xs=L.map(function(x){ return (x==null || x==='') ? null : Number(x); }).filter(function(x){ return x!=null && !isNaN(x) && x>0; });
+  if(!xs.length) return null;
+  var sum=xs.reduce(function(a, b){ return a+b; }, 0);
+  return { avg:Math.round(sum/xs.length*10)/10, kill:xs.filter(function(x){ return x>=MSD_KILL; }).length, hard:xs.filter(function(x){ return x>=MSD_HARD; }).length, n:xs.length, src:'msLv' };
+}
+msdInfo=(function(o){ return function(d){ var m=o(d); return m ? m : h112MsLv(d); }; })(msdInfo);
+
+/* ── 학교 교과서 · 교과서 일치 세기 (교과서일치도 화면과 같은 셈: tbmOwn · tbmCalc) ── */
+function h112BooksKick(){
+  if(H112.booksKick) return; H112.booksKick=true;
+  if(typeof TBM!=='undefined' && TBM.books){ H112.booksDone=true; return; }
+  htKv('mf_textbooks').then(function(v){ if(typeof TBM!=='undefined' && !TBM.books) TBM.books=v||{}; H112.booksDone=true; if(VIEW==='examhit') render(); })
+    .catch(function(){ H112.booksDone=true; if(VIEW==='examhit') render(); });
+}
+function h112Calc(d){
+  var e=d.exam||{}, P=d.stats.pub||{};
+  var x={ id:d.examId, d:d, school:String(e.school||''), grade:String(e.grade||''), subject:String(P.subject||e.subject||'') };
+  var c=null; try{ c=tbmCalc(x); }catch(err){ c=null; }
+  return c;
+}
+function h112Info(d){
+  var S=pbStats(d), c=h112Calc(d), ready=H112.booksDone || (typeof TBM!=='undefined' && !!TBM.books);
+  return { items:S.items, total:htVisible(d).length, c:c, ready:ready, own:(c&&ready)?c.own:[] };
+}
+
+/* 시험마다 출판사 비교를 마쳤나 (칩 📚) — 가벼운 한 번 읽기(stats.pub.subject 만), 안 되면 불러온 시험만 */
+function h112PubKick(){
+  if(H112.pubKick) return; H112.pubKick=true;
+  try{
+    var sb=htSb(); if(!sb) return;
+    var q=sb.from('lumen_store').select('key,subj:value->stats->pub->>subject'); if(!q || typeof q.like!=='function') return;
+    Promise.resolve(q.like('key', 'exam_hit_%')).then(function(r){
+      if(!r || r.error || !Array.isArray(r.data)) return;
+      var m={}; r.data.forEach(function(x){ if(x && x.key && x.subj) m[String(x.key).replace(/^exam_hit_/, '')]=String(x.subj); });
+      H112.pubIdx=m; if(VIEW==='examhit') render();
+    }).catch(function(){});
+  }catch(e){}
+}
+function h112HasPub(id){
+  var d=HT.data[id]; if(d) return pbHas(d);
+  return !!(H112.pubIdx && H112.pubIdx[id]);
+}
+
+/* ── ②③ 요약 칸 ── */
+function h112Tile(d){
+  var I=h112Info(d), c=I.c, sm;
+  if(!I.ready) sm='학교 교과서 확인 중…';
+  else if(!I.own.length) sm='학교 교과서 모름 · 어느 교과서든 '+I.items;
+  else sm='학교 교과서 <strong data-tb112-own="1" style="font-size:12px;font-weight:900">'+c.ownHit+'</strong> · <span style="font-size:inherit;color:#c2410c;font-weight:800">다른 출판사만 <strong data-tb112-only="1" style="font-size:12px;font-weight:900">'+c.only.length+'</strong></span>';   /* .ht-tile b 는 큰 글씨라 strong */
+  return '<div class="ht-tile" id="tb112-tile" role="button" tabindex="0" onclick="h112GoPb()" onkeydown="if(event.key===\'Enter\')h112GoPb()" title="아래 「📚 교과서 일치」 칸으로 — 같은 문제 + 숫자변형만 셉니다"'
+    +' style="border:2px solid #16a34a;background:#f0fdf4;cursor:pointer;box-shadow:0 1px 0 #bbf7d0">'
+    +'<b style="color:#166534" data-tb112-n="1">'+I.items+'<small style="font-size:12px;color:#64748b">/'+I.total+'</small></b><span style="color:#14532d;font-weight:900">📚 교과서 일치</span>'
+    +'<small style="display:block;font-size:10.5px;color:#166534;font-weight:700;line-height:1.35">'+sm+'</small></div>';
+}
+/* 문자열 h 안에서 idAttr 가 붙은 <div …> 의 시작·끝 */
+function h112DivRange(h, idAttr){
+  var i=h.indexOf(idAttr); if(i<0) return null;
+  var j=h.lastIndexOf('<div', i), depth=0, re=/<div\b|<\/div>/g, m; re.lastIndex=j;
+  while((m=re.exec(h))){ depth+=m[0]==='</div>'?-1:1; if(depth===0) return [j, m.index+6]; }
+  return null;
+}
+function h112PbDress(blk, d){
+  var I=h112Info(d), c=I.c, own=I.own;
+  blk=blk.replace('<div id="pb-block" style="margin-top:12px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px">',
+    '<div id="pb-block" style="margin-top:12px;padding:12px 14px;background:#f0fdf4;border:2px solid #22c55e;border-radius:12px">');
+  blk=blk.replace('<div class="ht-h" style="margin:0;flex:1;min-width:220px">📚 출판사 교과서 출처 <span class="ht-sub" style="font-weight:700">— ',
+    '<div class="ht-h" id="pb-head" style="margin:0;flex:1;min-width:220px;font-size:15.5px;color:#14532d">📚 교과서 일치 (같은 문제 + 숫자변형) <span class="ht-sub" style="font-weight:700;font-size:11.5px">— ');
+  /* 한 줄 요약 — 머리 바로 아래 */
+  var line='<div id="pb-sum" style="display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;margin:2px 0 8px;font-size:13px;font-weight:800;color:#14532d">';
+  if(!I.ready) line+='<span>학교 교과서 확인 중…</span>';
+  else if(own.length) line+='<span>학교 교과서(<b style="color:#1d4ed8">'+htEsc(own.join('·'))+'</b>)와 일치 <b style="font-size:16px">'+c.ownHit+'</b>문항</span>'
+    +'<span style="color:#c2410c">학교 교과서엔 없고 다른 출판사에서만 <b style="font-size:16px">'+c.only.length+'</b>문항</span>';
+  else line+='<span>학교 교과서 <b>모름</b> <small class="ht-sub">(그 학교·학년 학생에게 배정된 교과서가 없습니다)</small></span>';
+  line+='<span class="ht-sub">어느 교과서든 '+I.items+' / '+I.total+'문항</span></div>';
+  var hi=blk.indexOf('<table'), hk=blk.lastIndexOf('</div>', hi);
+  var topEnd=blk.indexOf('</button></div>');   /* 머리 줄(제목 + 「출판사 비교만 다시」) 끝 */
+  if(topEnd>=0 && (hi<0 || topEnd<hi)){ topEnd+='</button></div>'.length; blk=blk.slice(0, topEnd)+line+blk.slice(topEnd); }
+  else if(hk>=0) blk=blk.slice(0, hk+6)+line+blk.slice(hk+6);
+  /* 학교 교과서 줄 표시 */
+  own.forEach(function(pb){
+    var a='<tr data-pbpub="'+htEsc(pb)+'" style="', i=blk.indexOf(a); if(i<0) return;
+    blk=blk.slice(0, i)+'<tr data-pbpub="'+htEsc(pb)+'" data-pbown="1" style="box-shadow:inset 3px 0 0 #2563eb;'+blk.slice(i+a.length);
+    var j=blk.indexOf('</td>', i); if(j<0) return;
+    blk=blk.slice(0, j)+' <small class="pb-owntag" style="display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:6px;padding:1px 5px;font-size:10.5px;font-weight:800">학교 교과서</small>'+blk.slice(j);
+  });
+  /* 학교 교과서엔 없음 */
+  var only='<div id="pb-only" style="margin-top:8px;padding:7px 10px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-size:12px;color:#9a3412;font-weight:700;line-height:1.7">'
+    +'<b style="color:#c2410c">🟧 학교 교과서엔 없음</b> ';
+  if(!I.ready) only+='<span class="ht-sub">학교 교과서 확인 중…</span>';
+  else if(!own.length) only+='<span class="ht-sub">학교 교과서를 몰라 셀 수 없습니다</span>';
+  else if(!c.only.length) only+='— 없음 (일치한 문항이 모두 학교 교과서 '+htEsc(own.join('·'))+'에도 있습니다)';
+  else only+='— '+c.only.length+'문항: '+c.only.map(function(o){ return '<a href="javascript:void(0)" data-pbonly="'+o.n+'" onclick="pbGo('+o.n+')" style="color:#c2410c;font-weight:900">'+o.n+'번</a>('+htEsc(o.pubs.join('·'))+')'; }).join(' · ');
+  only+='</div>';
+  var fn=blk.indexOf('<div class="ht-sub" style="font-size:11px;margin-top:6px">한 문항이 여러 출판사');
+  if(fn>=0) blk=blk.slice(0, fn)+only+blk.slice(fn);
+  else { var e=blk.lastIndexOf('</div>'); blk=blk.slice(0, e)+only+blk.slice(e); }
+  return blk;
+}
+htSummaryHtml=(function(o){ return function(d){
+  var h=o(d);
+  /* ① 수학비서 난이도가 전혀 없을 때 — 까닭을 적는다 */
+  if(!msdInfo(d)){
+    h=h.split('<small style="font-size:12px;color:#94a3b8">/5</small></b><span>평균 난도</span>').join('<small style="font-size:12px;color:#94a3b8">/5</small></b><span>평균 난도 ('+H112_NOMS+')</span>')
+      .split('☠ 킬러 (난도 4·5)').join('☠ 킬러 (매쓰플랫 난도 4·5 · 수학비서 DB화 전)');
+  }
+  if(!pbHas(d)) return h;
+  h112BooksKick();
+  /* ② 숫자 칸 — 총 문항 바로 뒤 */
+  var tk='<span>총 문항</span></div>', ti=h.indexOf(tk);
+  if(ti>=0){ ti+=tk.length; h=h.slice(0, ti)+h112Tile(d)+h.slice(ti); }
+  /* ③ 교과서 일치 칸을 도넛·숫자 칸 바로 아래로 */
+  var R=h112DivRange(h, 'id="pb-block"'); if(!R) return h;
+  var blk=h112PbDress(h.slice(R[0], R[1]), d); h=h.slice(0, R[0])+h.slice(R[1]);
+  var at=h.indexOf('<div id="hts-bykind"');
+  if(at<0){ var mk='출처 = 매쓰플랫이 찾은 «가장 닮은 원본»의 종류 (근사치)</div></div></div></div>', mi=h.indexOf(mk); if(mi>=0) at=mi+mk.length; }
+  if(at<0){ var pc=h112DivRange(h, 'id="pc-block"'); if(pc) at=pc[0]; }
+  if(at<0) at=R[0];
+  return h.slice(0, at)+blk+h.slice(at);
+}; })(htSummaryHtml);
+window.h112GoPb = function(){
+  var el=document.getElementById('pb-block'); if(!el || !el.scrollIntoView) return;
+  try{ el.scrollIntoView({ behavior:'smooth', block:'start' }); }catch(e){ el.scrollIntoView(); }
+  try{ el.style.transition='box-shadow .3s'; el.style.boxShadow='0 0 0 4px #86efac'; setTimeout(function(){ el.style.boxShadow=''; }, 1200); }catch(e){}
+};
+
+/* ── ④ 메뉴에서 「교과서일치도」 빼기 → 적중 분석 머리 단추 · 교과서일치도 화면 「← 적중 분석」 ── */
+(function(){
+  try{
+    var g=(GROUPS||[]).filter(function(x){ return x.key==='exams'; })[0]; if(!g) return;
+    for(var i=g.subs.length-1; i>=0; i--){ if(g.subs[i] && g.subs[i].v==='tbmatch') g.subs.splice(i, 1); }
+  }catch(e){ try{ console.error('[v19-112 메뉴]', e); }catch(_){} }
+})();
+/* 메뉴에 없어도 왼쪽 머리·제목은 「📝 시험·기출 › 📚 교과서일치도」 */
+l3ViewTitle=(function(o){ return function(v){
+  if(v==='tbmatch'){ var g=null; try{ g=(GROUPS||[]).filter(function(x){ return x.key==='exams'; })[0]||null; }catch(e){}
+    return { grp:g?(g.icon+' '+g.label):'', name:'📚 교과서일치도' }; }
+  return o.apply(this, arguments); }; })(l3ViewTitle);
+window.h112OpenTbm = function(){
+  GRP='exams'; try{ GRP_LAST.exams='examhit'; }catch(e){}
+  try{ TBM.cur=''; TBM.hl=''; TBM.focus=null; }catch(e){}
+  VIEW='tbmatch';
+  try{ renderFuncTab(); }catch(e){ render(); }
+  try{ var C=document.getElementById('CONTENT'); if(C) C.scrollTop=0; window.scrollTo(0, 0); }catch(e){}
+};
+window.h112BackToHit = function(){
+  var g=(GROUPS||[]).filter(function(x){ return x.key==='exams'; })[0], gi=-1;
+  if(g) g.subs.forEach(function(s, j){ if(s.v==='examhit') gi=j; });
+  if(gi>=0) subGo('exams', gi); else { VIEW='examhit'; render(); }
+  try{ if(HT.cur) htLoad(HT.cur); }catch(e){}
+};
+rTbMatch=(function(o){ return function(){
+  var h=o.apply(this, arguments), mk='<div class="tbm-wrap">', i=h.indexOf(mk); if(i<0) return h;
+  i+=mk.length;
+  return h.slice(0, i)+'<div style="margin-bottom:10px"><button class="tbm-btn" id="tbm-tohit" onclick="h112BackToHit()">← 적중 분석</button></div>'+h.slice(i);
+}; })(rTbMatch);
+
+/* ── ⑤ 적중 분석 머리 단추 · 시험 칩 📚 ── */
+rExamHit=(function(o){ return function(){
+  var h=o.apply(this, arguments);
+  h112PubKick();
+  var rb='<button class="ht-btn" onclick="htReload()">🔄 새로고침</button>', i=h.indexOf(rb);
+  if(i>=0){ i+=rb.length;
+    h=h.slice(0, i)+'<button class="ht-btn" id="tb112-open" onclick="h112OpenTbm()" title="출판사 비교를 마친 모든 시험 — 시험 × 출판사 지도 · 학교 교과서에 없던 문항 · 다음 시험 대비 추천" style="background:#f0fdf4;border-color:#86efac;color:#166534;font-weight:900">📚 교과서일치도 · 학교 전체 비교</button>'+h.slice(i); }
+  return h.replace(/(<button class="ht-chip[^"]*" onclick="htPick\('([^']*)'\)">)([\s\S]*?)(<\/button>)/g, function(all, a, id, txt, z){
+    return h112HasPub(id) ? (a+txt+' <span class="tb112-mk" title="교과서 일치(출판사 비교) 있음" style="font-size:11px">📚</span>'+z) : all;
+  });
+}; })(rExamHit);
+l3hExamLabel=(function(o){ return function(x){
+  var h=o.apply(this, arguments), id=String((x&&x.examId)||'');
+  return (id && h112HasPub(id)) ? h+' <span class="tb112-mk" title="교과서 일치(출판사 비교) 있음">📚</span>' : h;
+}; })(l3hExamLabel);
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-112: 🏫 학원 달력에 «학교 일정» (학교알리미·나이스 학사일정)
+ * 원장 요청 2026-10-12: 「학교알리미에서 학교 일정을 읽고 학원 달력에 넣자.」
+ *  [서버] sync/school_info.js(매일 03:30 school-info.yml)가 school_calendar.schools[].events 에
+ *         시험 말고 학교 일정도 담는다 — { from, to, days, name, kind:'vac'|'trip'|'mock'|'ceremony'|'event', off, grades }
+ *         (토요휴업일·공휴일은 뺀다 — 공휴일은 달력에 이미 있다)
+ *  [화면] 학원 달력 칸마다 우리 학생이 있는 학교의 일정을 연한 색 띠로 («옥길중 체육한마당», 학년 행사는 «2학년»).
+ *         학교 칩으로 거르면 그 학교 것만 · 「학원 일정만」이면 숨김 · 누르면 그 날 상세(학교 일정은 고치지 않는다 — 원본은 나이스)
+ *         학교 휴업·방학은 학원 휴원이 아니므로 날짜를 빨갛게 하지 않는다.
+ *  ※ 문자열 연결만. 바탕 함수(ctEventsOn · ctTargetText · rCal)는 감싸기만 한다.
+ * ═══════════════════════════════════════════════════════════════════ */
+CT_KIND.sch = ['학교 일정', '#f1f5f9', '#475569'];
+var SE_ICON = { vac:'🏖', trip:'🚌', mock:'📝', ceremony:'🎓', event:'🏫' };
+function seList(day){
+  if(!CT.sc || !CT.sc.schools || CT.filter==='_ev') return [];
+  var mine=ctMySchools(), out=[];
+  CT.sc.schools.forEach(function(s){
+    var sh=ctShort(s.name); if(!mine[sh]) return; if(CT.filter && CT.filter!==sh) return;
+    (s.events||[]).forEach(function(e, i){
+      if(!e || !e.from || day<e.from || day>(e.to||e.from)) return;
+      var g=(e.grades&&e.grades.length)?(' ('+e.grades.join('·')+'학년)'):'';
+      out.push({ id:'', kind:'sch', school:sh, title:(SE_ICON[e.kind]||'🏫')+' '+sh+' '+e.name+g, from:e.from, to:e.to||e.from, pub:true, target:{ schools:[sh], grades:[], groups:[] }, _sch:true });
+    });
+  });
+  return out;
+}
+ctEventsOn = (function(o){ return function(day){ return o(day).concat(seList(day)); }; })(ctEventsOn);
+/* 학교 일정 띠는 «고치기»가 없다 — ctEdit('') 는 아무것도 하지 않는다(찾는 일정이 없음). 범례 한 줄 추가 */
+rCal = (function(o){ return function(){
+  var h=o(); var mk='행사·주간테스트 · 점선 = 학생앱 비공개</span>';
+  var have=CT.sc&&(CT.sc.schools||[]).some(function(s){ return (s.events||[]).length; });
+  return have ? h.split(mk).join(mk+'<span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:#f1f5f9;border:1px solid #cbd5e1;vertical-align:-1px;margin-right:3px"></i>학교 일정(학교알리미 · 매일 새벽) 🏖방학·휴업 🚌체험·여행 📝모의 🎓식 🏫행사</span>') : h;
+}; })(rCal);
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~112: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
