@@ -39,7 +39,13 @@ const hashtags = (meta.hashtags || '').split(/\s+/).filter(t => t.startsWith('#'
 const emojiRe = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}\u{2705}\u{274C}\u{1F1E6}-\u{1F1FF}]/u;
 const questions = (spec.cards || []).filter(c => c.type === 'qa').map(c => c.q);
 const region = (body.match(/옥길동[^\n]{0,20}루멘수학/g) || []).length;
-const pii = body.match(/\b[A-Z0-9]{6}\b|\d{2,3}점(?!\s*미만|\s*이상)/g) || [];
+// 학생 코드는 무조건 막는다
+const pii = body.match(/\b[A-Z0-9]{6}\b/g) || [];
+// 점수는 「누구의 점수인지」가 붙어 있을 때만 막는다.
+// 「200점 이상이면」 같은 제도 기준까지 막으면 쓸 수가 없다 (2026-10-12)
+const scorePii = body.match(/(○○|아무개|[가-힣]{2,3}\s?(학생|군|양))[^\n]{0,15}?\d{1,3}점/g) || [];
+// 사람이 눈으로 볼 수 있게 점수는 세어만 둔다
+const scores = [...new Set(body.match(/\d{1,3}점/g) || [])];
 // 2026-09-20 발행본에서 배운 것 (docs/lumen_blog_profile.md 4-5)
 const hasDate = /\d{1,2}월\s?\d{1,2}일|\d{4}[.\-]\d{1,2}[.\-]\d{1,2}/.test(body.slice(0, 400));
 const hasAddr = /옥길로\s?116/.test(body);
@@ -90,7 +96,9 @@ const checks = [
   ['"옥길동 … 루멘수학" 2회 이상', region >= 2, `${region}회`],
   ['카드 질문이 본문에 그대로 있음', questions.every(q => body.includes(q)), questions.filter(q => !body.includes(q)).map(q => `빠짐: "${q}"`).join(' / ') || `${questions.length}개 확인`],
   ['본문에 이모지 없음', !emojiRe.test(body.replace(/❏/g, '')), ''],   // ❏ 는 전용 항목이 따로 본다
-  ['학생 코드·개별 점수 없음', pii.length === 0, pii.join(', ')],
+  ['학생 코드 없음', pii.length === 0, pii.join(', ')],
+  ['개별 학생 점수 없음', scorePii.length === 0, scorePii.join(', '),
+    scores.length ? `점수 ${scores.join(' ')} — 제도 기준이면 괜찮습니다. 특정 아이 점수가 아닌지 눈으로 보세요` : ''],
   ['모집 글이면 교습비·등록번호 표기', meta.recruit !== 'true' || /교습비 등 표시/.test(body), meta.recruit === 'true' ? '' : '모집 글 아님 → 생략'],
   ['미확정 빈칸(❏) 없음', !/❏/.test(body), ''],
   ['도입에 날짜가 있음', hasDate, hasDate ? '' : '「9월 20일 일요일」처럼 날짜·요일을 적으세요'],
