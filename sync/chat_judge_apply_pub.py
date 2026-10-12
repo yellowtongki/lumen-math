@@ -15,14 +15,17 @@ for it in d['items']:
   C=it.get('pub') or []; jj={int(x['i']):x for x in J.get(str(it['no']),[])}
   new=[]
   for i,c in enumerate(C,1):
+    if c.get('by')=='teacher': new.append(c); continue   # 2026-10-12 학원앱 v19-116: 원장님이 고른 등급은 그대로
     v=jj.get(i)
     if v and v['kind'] in ORD: c=dict(c,kind=v['kind'],why=str(v.get('why',''))[:40]); new.append(c)
-  new.sort(key=lambda x:(-ORD[x['kind']],x['pub']))
+  SORT=dict(ORD,type=1)
+  new.sort(key=lambda x:(-SORT.get(x['kind'],0),x['pub']))
   it['pub']=new; top=new[0] if new else None
   it['pubTop']={'k':top['k'],'kind':top['kind'],'pub':top['pub']} if top else None
   best={}
   for x in new:
-    if x['pub'] not in best or ORD[x['kind']]>ORD[best[x['pub']]]: best[x['pub']]=x['kind']
+    if x.get('rejected'): continue
+    if x['pub'] not in best or SORT.get(x['kind'],0)>SORT.get(best[x['pub']],0): best[x['pub']]=x['kind']
   for pb,k in best.items():
     by.setdefault(pb,{'same':0,'var':0,'text':0,'type':0,'nos':[]}); by[pb][k]+=1
     if k in('same','var'): by[pb]['nos'].append(it['no'])

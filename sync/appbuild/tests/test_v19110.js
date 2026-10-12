@@ -46,7 +46,10 @@ STORE['exam_hit_' + EID] = { examId: EID, exam: { school: '범박고', grade: '�
     past: { same: 1, var: 1, type: 1, text: 0, items: 2, exams: 9, years: 4, sameTerm: false,
       list: [{ mydb: '387519', exam: '2025 2학기 중간', year: 2025, sem: '2', term: '중간', n: 23 }, { mydb: '304646', exam: '2022 2학기 중간', year: 2022, sem: '2', term: '중간', n: 20 }] } } };
 (function(){ const D = STORE['exam_hit_' + EID];
-  const PB = (pub, id, page, no, kind, why) => ({ k: 'pub:' + id, bid: '1', pub, page, no, kind, why: why || '', imgUrl: GIF });
+  /* v19-116 부터 한 문항 안에서 그림 주소(imgUrl)가 같은 교과서 후보는 «같은 문항»으로 합치고 「공통」으로 한 번만 센다.
+   * 이 검사의 가짜 그림은 모두 같은 GIF 라서 그대로 두면 출판사마다 다른 문항이라는 이 검사의 뜻이 사라진다 → 116 부터는 출판사 문항마다 주소를 다르게(#pub<id>). */
+  const V116 = Number(WANT.replace('v19-', '')) >= 116;
+  const PB = (pub, id, page, no, kind, why) => ({ k: 'pub:' + id, bid: '1', pub, page, no, kind, why: why || '', imgUrl: V116 ? (GIF + '#pub' + id) : GIF });
   D.items[0].pub = [PB('동아', 11, 45, '3', 'var', '숫자만 다름'), PB('비상교육', 12, 20, '1', 'text', '같은 그림')];
   D.items[1].pub = [PB('동아', 21, 50, '2', 'same', '같은 문제'), PB('미래엔', 22, 33, '4', 'var', '숫자만 다름')];
   D.items[2].pub = [];
