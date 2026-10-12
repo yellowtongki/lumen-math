@@ -82,7 +82,8 @@ h12=open(SP+'/hitfix112_teacher.js').read() if int(ver.replace('v19-',''))>=112 
 sev=open(SP+'/schoolev_teacher.js').read() if int(ver.replace('v19-',''))>=112 else ''   # v19-112: 학원 달력에 «학교 일정»(학교알리미·나이스 — school_calendar.schools[].events)
 rkf=open(SP+'/rankfix113_teacher.js').read() if int(ver.replace('v19-',''))>=113 else ''   # v19-113: 🏆 플래너 랭킹 화면 합계 = 매일 + 계획 + 순공 (입력 표·학생앱 랭킹과 같게) · plwRepublish() 때 학생 전원 student_planner_.weekly 도 새로 · 발표 뒤 플래너 화면 열면 자동 한 번
 wpp=open(SP+'/wplanpanel_teacher.js').read() if int(ver.replace('v19-',''))>=114 else ''   # v19-114: 📅 주간 점수 오른쪽 칸 = 학생 주간계획표(요일별 할 일·실천 ✓·순공 사진·💬 원장님 한마디 → 학생앱 플래너 「선생님 한마디」) · 줄 고르기 ↑/↓ · 좁은 화면은 표 아래 (시안 docs/mockup_weekly_plan_panel.html)
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+new.lstrip('\n')+'\n\n'+s[end:]
+pwl=(open(SP+'/plwall_teacher.js').read()+'\n'+open(SP+'/wkcheck_teacher.js').read()) if int(ver.replace('v19-',''))>=115 else ''   # v19-115: 🗓 주간계획 모아보기(6명 3×2 미니 달력 · 코디/직접/고정 구분 · 💬 모아서 알림 · 🖨 한 장) + 📅 주간 점수 «✅ 체크하기 | 📊 점수 보기» (시안 docs/mockup_plan_wall.html · docs/mockup_week_check_score.html)
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -511,6 +512,14 @@ if int(ver.replace('v19-',''))>=111:
     assert s.count(a3)==2
     s=s.replace(a3, "    else if(VIEW==='tbmatch'){ try{ C.innerHTML=rTbMatch(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">교과서일치도 오류: '+esc2(e.message)+'</div>'; } }\n"+a3)
     rep("examhit:'🎯 적중 분석'","examhit:'🎯 적중 분석',tbmatch:'📚 교과서일치도'")
+if int(ver.replace('v19-',''))>=115:
+    # v19-115: 🗓 주간계획 모아보기 (메뉴 칸 = 위 기능 탭은 plwall_teacher.js 가 GROUPS 에 · 왼쪽 플래너 묶음은 여기서) — 가운데 그리기 · 제목
+    rep("    {id:'@plweek',   icon:'📅', label:'주간 점수(계획·순공)', red:false},\n",
+        "    {id:'@plweek',   icon:'📅', label:'주간 점수(계획·순공)', red:false},\n    {id:'@plwall',   icon:'🗓', label:'주간계획 모아보기', red:false},   /* ★ v19-115 */\n")
+    a4="    else if(VIEW==='plweek'){ try{ C.innerHTML=rPlWeek(); }"
+    assert s.count(a4)==2
+    s=s.replace(a4, "    else if(VIEW==='plwall'){ try{ C.innerHTML=rPlWall(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">주간계획 모아보기 오류: '+esc2(e.message)+'</div>'; } }\n"+a4)
+    rep("plweek:'📅 주간 점수',", "plweek:'📅 주간 점수',plwall:'🗓 주간계획 모아보기',")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
