@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>주간 체크·점수 분리 시안</title>
+<style>
+:root{--navy:#0d2240;--line:#e2e8f0;--muted:#64748b;--bg:#eef2f8;--g:#15803d;--gbg:#dcfce7;--o:#b45309;--obg:#fef3c7;--r:#dc2626;--rbg:#fee2e2}
+*{box-sizing:border-box}body{margin:0;font-family:Pretendard,'Apple SD Gothic Neo',sans-serif;background:var(--bg);color:#0f172a;font-size:13px}
+.page{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:14px;max-width:1700px;margin:0 auto}
+.lab{font-size:15px;font-weight:900;color:#334155;margin:0 0 6px}
+.hd{background:var(--navy);color:#fff;border-radius:14px 14px 0 0;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.hd b{font-size:16px}
+.seg{display:inline-flex;background:rgba(255,255,255,.12);border-radius:12px;padding:3px;gap:3px}.seg span{padding:8px 14px;border-radius:9px;font-weight:900;color:#cbd5e1}.seg span.on{background:#fff;color:var(--navy)}
+.seg .cnt{background:#f97316;color:#fff;border-radius:999px;padding:1px 7px;font-size:11px;margin-left:4px}
+.body{background:#fff;border:1px solid var(--line);border-top:0;border-radius:0 0 14px 14px;padding:12px}
+/* 체크 */
+.task{border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.task h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px}.task h3 .n{margin-left:auto;font-size:12px;color:var(--muted)}
+.task .why{color:var(--muted);font-size:12px;margin-bottom:8px}
+.trow{display:grid;grid-template-columns:110px minmax(0,1fr);gap:8px;align-items:center;padding:6px 0;border-top:1px solid #f1f5f9}
+.nm{font-weight:900;font-size:14px}.nm small{color:var(--muted);font-weight:700;font-size:11px;margin-left:3px}
+.btns{display:flex;gap:6px;flex-wrap:wrap}.tb{min-width:96px;min-height:40px;border-radius:10px;border:2px solid var(--line);background:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 10px}
+.tb.on{background:var(--gbg);border-color:#86efac;color:var(--g)}.tb.no{background:#f8fafc;color:#64748b}.tb.x{border-color:#fecaca;color:var(--r)}
+.done{color:var(--g);font-weight:900;font-size:12px}
+.t1{border-color:#fdba74;background:#fffaf5}.t2{border-color:#93c5fd;background:#f8fbff}.t3{border-color:#d8b4fe;background:#fcfaff}
+/* 점수 */
+table{border-collapse:collapse;width:100%}th{font-size:11.5px;color:#475569;text-align:center;padding:7px 4px;background:#f8fafc;border-bottom:1px solid var(--line)}th.l,td.l{text-align:left}
+td{padding:8px 4px;text-align:center;border-bottom:1px solid #f1f5f9}
+.sc{display:inline-block;min-width:30px;padding:3px 0;border-radius:7px;font-weight:900}
+.s5{background:var(--gbg);color:var(--g)}.s2{background:var(--obg);color:var(--o)}.s0{background:#f1f5f9;color:#94a3b8}.s3{background:#e0f2fe;color:#0369a1}.s1{background:#fef9c3;color:#a16207}
+.sum{font-size:17px;font-weight:900}.bar{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:#2563eb}
+.grp{font-size:10px;color:#94a3b8;font-weight:800}
+.lock{font-size:11.5px;color:var(--muted);margin-top:8px}
+.anno{grid-column:1/-1;background:#fefce8;border:1px dashed #facc15;border-radius:12px;padding:10px 12px;color:#713f12;line-height:1.7}
+</style></head><body>
+<div class="page">
+<!-- ① 체크하기 -->
+<div><p class="lab">① ✅ 체크하기 — 원장님이 «할 일»만 (점수 숫자 없음)</p>
+<div class="hd"><b>📅 주간 점수</b><span class="seg"><span class="on">✅ 체크하기<span class="cnt">7</span></span><span>📊 점수 보기</span></span><span style="margin-left:auto;color:#cbd5e1">10/5~10/11 주 · 일요일 밤 발표됨</span></div>
+<div class="body">
+ <div class="task t1"><h3>📔 순공 종이 — 가져왔나요? <span class="n">오늘 수업 반 T5 · 남은 4명</span></h3><div class="why">누르면 바로 저장 · 안 가져온 학생은 다음 주 첫 수업까지 기다림</div>
+  <div class="trow"><span class="nm">학생A<small>중1</small></span><span class="btns"><span class="tb on">📔 가져옴 ✓</span><span class="tb no">안 가져옴</span></span></div>
+  <div class="trow"><span class="nm">학생B<small>중1</small></span><span class="btns"><span class="tb">📔 가져옴</span><span class="tb no">안 가져옴</span></span></div>
+  <div class="trow"><span class="nm">학생C<small>중3</small></span><span class="btns"><span class="tb">📔 가져옴</span><span class="tb no">안 가져옴</span></span></div>
+  <div class="trow"><span class="nm">학생D<small>중1</small></span><span class="btns"><span class="tb">📔 가져옴</span><span class="tb no">안 가져옴</span></span></div></div>
+ <div class="task t2"><h3>📸 순공 사진 — 확인 필요 <span class="n">2명</span></h3><div class="why">사진이 흐리거나 늦게 낸 것만 여기에 · 나머지는 자동</div>
+  <div class="trow"><span class="nm">학생E<small>초6</small></span><span class="btns"><span class="tb on">✓ 인정</span><span class="tb x">✕ 다시 내기</span><span class="tb no">🔍 사진 보기</span></span></div>
+  <div class="trow"><span class="nm">학생F<small>초6</small></span><span class="btns"><span class="tb">✓ 인정</span><span class="tb x">✕ 다시 내기</span><span class="tb no">🔍 사진 보기</span></span></div></div>
+ <div class="task t3"><h3>📅 다음 주 계획 — 안 낸 학생 <span class="n">26명</span></h3><div class="why">일요일 밤 12시 마감 · 월요일까지 내면 2점</div>
+  <div class="trow"><span class="nm">한꺼번에</span><span class="btns"><span class="tb">💬 26명에게 알림</span><span class="tb no">명단 인쇄</span></span></div></div>
+ <div class="done">✓ 끝난 체크는 접혀서 아래로 · 모두 끝나면 「이번 주 체크 끝 🎉」</div>
+</div></div>
+
+<!-- ② 점수 보기 -->
+<div><p class="lab">② 📊 점수 보기 — 보기만 (단추 없음 · 고치기는 체크하기에서)</p>
+<div class="hd"><b>📅 주간 점수</b><span class="seg"><span>✅ 체크하기<span class="cnt">7</span></span><span class="on">📊 점수 보기</span></span><span style="margin-left:auto;color:#cbd5e1">‹ 10/5~10/11 주 ›</span></div>
+<div class="body">
+ <table><thead>
+  <tr><th class="l"></th><th colspan="2" class="grp">📅 주간계획 10점</th><th colspan="2" class="grp">📔 순공 10점</th><th></th><th></th></tr>
+  <tr><th class="l">학생</th><th>계획<br>5</th><th>실천<br>5</th><th>사진<br>5</th><th>종이<br>5</th><th>주간 합<br>/20</th><th>이달 매일</th></tr></thead><tbody>
+  <tr><td class="l nm">학생A<small>중1</small></td><td><span class="sc s5">5</span></td><td><span class="sc s0">0</span></td><td><span class="sc s0">0</span></td><td><span class="sc s5">5</span></td><td><span class="sum">10</span><div class="bar"><i style="width:50%"></i></div></td><td>41<span style="color:#94a3b8">/50</span></td></tr>
+  <tr><td class="l nm">학생B<small>초6</small></td><td><span class="sc s0">0</span></td><td><span class="sc s0">0</span></td><td><span class="sc s5">5</span></td><td><span class="sc s5">5</span></td><td><span class="sum">10</span><div class="bar"><i style="width:50%"></i></div></td><td>40<span style="color:#94a3b8">/50</span></td></tr>
+  <tr><td class="l nm">학생C<small>초6</small></td><td><span class="sc s0">0</span></td><td><span class="sc s0">0</span></td><td><span class="sc s2">2</span></td><td><span class="sc s5">5</span></td><td><span class="sum">7</span><div class="bar"><i style="width:35%"></i></div></td><td>8<span style="color:#94a3b8">/40</span></td></tr>
+  <tr><td class="l nm">학생D<small>중3</small></td><td><span class="sc s5">5</span></td><td><span class="sc s0">0</span></td><td><span class="sc s0">0</span></td><td><span class="sc s0">0</span></td><td><span class="sum">5</span><div class="bar"><i style="width:25%"></i></div></td><td>53<span style="color:#94a3b8">/70</span></td></tr>
+  <tr><td class="l nm">학생E<small>중1</small></td><td><span class="sc s0">0</span></td><td><span class="sc s1">1</span></td><td><span class="sc s0">0</span></td><td><span class="sc s0">0</span></td><td><span class="sum">1</span><div class="bar"><i style="width:5%"></i></div></td><td>8<span style="color:#94a3b8">/10</span></td></tr>
+ </tbody></table>
+ <div class="lock">🔒 이 표는 보기만 합니다 · 색: <span class="sc s5">5</span> 제때 <span class="sc s2">2</span> 지각 <span class="sc s0">0</span> 없음 · 학생 이름을 누르면 오른쪽에 주간계획표 · 정렬: 주간 합 높은 순</div>
+</div></div>
+
+<div class="anno">💡 지금 헷갈리는 이유: 한 표 안에 <b>단추(가져옴 ✓ · 자동▾)</b>와 <b>점수 숫자</b>와 <b>날짜·시각</b>이 섞여 있음.<br>
+ → 화면 위 두 칸으로 나눔. <b>✅ 체크하기</b>: 원장님이 손댈 일만 «할 일 카드»로(종이 · 사진 확인 · 계획 안 낸 학생), 숫자 없이 큰 단추. 끝나면 접힘. <b>📊 점수 보기</b>: 단추 없이 점수만, 칸마다 5/2/0 색 · 계획 10 + 순공 10 묶음 머리 · 주간 합 막대.<br>
+ · 제출 시각(10/9 22:20 등)은 점수 칸에 마우스를 올리거나 누르면 작게 · 「자동▾」(손으로 점수 바꾸기)는 체크하기의 해당 학생 «…» 메뉴로.<br>
+ · 기본 화면: 월요일·수업 날은 ✅ 체크하기, 그 밖엔 📊 점수 보기.</div>
+</div>
+</body></html>
