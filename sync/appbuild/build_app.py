@@ -77,7 +77,8 @@ mst=open(SP+'/mstree_teacher.js').read() if int(ver.replace('v19-',''))>=107 els
 msd=open(SP+'/msdiff_teacher.js').read() if int(ver.replace('v19-',''))>=108 else ''   # v19-108: 적중 분석 난이도 = 수학비서 1~9 (평균·킬러·보고서·블로그 자료)
 pcm=open(SP+'/pastcmp_teacher.js').read() if int(ver.replace('v19-',''))>=109 else ''   # v19-109: 적중 분석 «🔁 지난 기출과 비교» — 같은 학교 지난 시험 문항과 그림 비교(우리 자료 적중률과 따로) · 요청 칩 src.past
 pbs=open(SP+'/pubsrc_teacher.js').read() if int(ver.replace('v19-',''))>=110 else ''   # v19-110: 적중 분석 «📚 출판사 교과서 출처» — 모든 출판사 교과서와 그림 비교(stats.pub) · 출판사 비교만 다시
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+new.lstrip('\n')+'\n\n'+s[end:]
+tbm=open(SP+'/tbmatch_teacher.js').read() if int(ver.replace('v19-',''))>=111 else ''   # v19-111: 📚 교과서일치도 — 시험 × 출판사 지도 · 학교 교과서에 없던 문항 · 다음 시험 대비 추천 (시안 docs/mockup_textbook_match.html)
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -500,6 +501,12 @@ if int(ver.replace('v19-',''))>=102:
 if int(ver.replace('v19-',''))>=107:
     # v19-107: 수학비서 «내 문제지» 인식(ms_mypaper_<id>)·목록(ms_mypapers_index)은 앱이 필요할 때 서버에서 바로 읽는다 — 시작 때 받지 않는다
     rep("'or_students_archive_', 'ms_paper'];", "'or_students_archive_', 'ms_paper', 'ms_mypaper'];")
+if int(ver.replace('v19-',''))>=111:
+    # v19-111: 📚 교과서일치도 화면 (메뉴 칸은 tbmatch_teacher.js 가 GROUPS 에 끼운다) — 가운데 그리기 · 오른쪽 제목
+    a3="    else if(VIEW==='examhit'){ try{ C.innerHTML=rExamHit(); }"
+    assert s.count(a3)==2
+    s=s.replace(a3, "    else if(VIEW==='tbmatch'){ try{ C.innerHTML=rTbMatch(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">교과서일치도 오류: '+esc2(e.message)+'</div>'; } }\n"+a3)
+    rep("examhit:'🎯 적중 분석'","examhit:'🎯 적중 분석',tbmatch:'📚 교과서일치도'")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
