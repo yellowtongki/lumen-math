@@ -85,16 +85,26 @@ STORE['exam_hit_' + D] = { examId: D, exam: { school: '옥길중', grade: '중2'
   const settle = (ms) => pg.evaluate((ms) => new Promise((r) => setTimeout(r, ms || 150)), ms);
 
   /* ① 메뉴 */
-  const M = await pg.evaluate(async () => {
+  /* v19-112 부터: 메뉴 칸 대신 적중 분석 머리 단추 「📚 교과서일치도 · 학교 전체 비교」로 연다 (원장 2026-10-12 「교과서 일치는 적중분석 내부에 있어야 한다」) */
+  const V112 = Number(WANT.replace('v19-', '')) >= 112;
+  const M = await pg.evaluate(async (V112) => {
     const g = GROUPS.filter((x) => x.key === 'exams')[0], vs = g.subs.map((s) => s.v);
     const i = vs.indexOf('tbmatch'), sub = g.subs[i];
-    subGo('exams', i); await new Promise((r) => setTimeout(r, 400));
+    let btn = '';
+    if (V112) { subGo('exams', vs.indexOf('examhit')); await new Promise((r) => setTimeout(r, 300)); const b = document.getElementById('tb112-open'); btn = b ? b.textContent : ''; if (b) b.click(); }
+    else subGo('exams', i);
+    await new Promise((r) => setTimeout(r, 400));
     const bar = [...document.querySelectorAll('#SUBTAB_BAR .stab')].map((b) => b.textContent);
-    return { ver: APP_VER, i, hit: vs.indexOf('examhit'), label: sub && (sub.icon + ' ' + sub.label), view: VIEW, bar, title: (document.getElementById('RIGHT_TITLE') || {}).textContent };
-  });
+    return { ver: APP_VER, i, hit: vs.indexOf('examhit'), label: sub && (sub.icon + ' ' + sub.label), view: VIEW, bar, btn, title: (document.getElementById('RIGHT_TITLE') || {}).textContent };
+  }, V112);
   t('버전 ' + WANT, M.ver === WANT, M.ver);
-  t('메뉴 「📚 교과서일치도」 — 「🎯 적중 분석」 바로 뒤 · 누르면 VIEW tbmatch', M.i === M.hit + 1 && M.label === '📚 교과서일치도' && M.view === 'tbmatch', JSON.stringify(M));
-  t('위 가로 탭에도 적중 분석 다음 (오른쪽 제목 칸이 있으면 그 이름)', M.bar.indexOf('📚교과서일치도') === M.bar.indexOf('🎯적중 분석') + 1 && (M.title == null || M.title === '📚 교과서일치도'), JSON.stringify([M.bar, M.title]));
+  if (V112) {
+    t('(v19-112) 메뉴엔 「교과서일치도」 칸 없음 · 적중 분석 머리 단추 「📚 교과서일치도 · 학교 전체 비교」 → VIEW tbmatch', M.i < 0 && M.btn === '📚 교과서일치도 · 학교 전체 비교' && M.view === 'tbmatch', JSON.stringify(M));
+    t('(v19-112) 위 가로 탭엔 없음 (오른쪽 제목 칸이 있으면 그 이름)', !M.bar.some((b) => /교과서일치도/.test(b)) && (M.title == null || M.title === '📚 교과서일치도'), JSON.stringify([M.bar, M.title]));
+  } else {
+    t('메뉴 「📚 교과서일치도」 — 「🎯 적중 분석」 바로 뒤 · 누르면 VIEW tbmatch', M.i === M.hit + 1 && M.label === '📚 교과서일치도' && M.view === 'tbmatch', JSON.stringify(M));
+    t('위 가로 탭에도 적중 분석 다음 (오른쪽 제목 칸이 있으면 그 이름)', M.bar.indexOf('📚교과서일치도') === M.bar.indexOf('🎯적중 분석') + 1 && (M.title == null || M.title === '📚 교과서일치도'), JSON.stringify([M.bar, M.title]));
+  }
   await pg.evaluate(() => render()); await settle(100);
 
   /* ② 전체 한눈에 */
