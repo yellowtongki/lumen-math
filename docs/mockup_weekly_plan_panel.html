@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>주간계획표 패널 시안</title>
+<style>
+:root{--navy:#0d2240;--line:#e2e8f0;--muted:#64748b;--bg:#eef2f8;--g:#15803d;--r:#dc2626;--o:#b45309;--b:#1d4ed8;--p:#7c3aed}
+*{box-sizing:border-box}body{margin:0;font-family:Pretendard,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:var(--bg);color:#0f172a;font-size:13px}
+.top{background:var(--navy);color:#fff;padding:10px 16px;display:flex;gap:14px;align-items:center}.top b{font-size:15px}.tab{opacity:.7;padding:5px 10px;border-radius:8px}.tab.on{background:#fff;color:var(--navy);opacity:1;font-weight:800}
+.sub{background:#fff;border-bottom:1px solid var(--line);padding:6px 16px;display:flex;gap:6px}.sub span{padding:5px 10px;border-radius:8px;color:#475569}.sub span.on{background:var(--navy);color:#fff;font-weight:900}
+.wrap{display:grid;grid-template-columns:190px minmax(0,1fr) 380px;gap:12px;padding:12px;max-width:1600px;margin:0 auto}
+.left{background:var(--navy);border-radius:14px;color:#cbd5e1;padding:12px}.left .li{padding:8px 10px;border-radius:8px;margin:2px 0}.left .li.on{background:#fff;color:var(--navy);font-weight:900}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.hd{background:var(--navy);color:#fff;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.hd b{font-size:15px}.hd small{color:#cbd5e1}.hd .y{color:#fde047;font-weight:900}
+table{border-collapse:collapse;width:100%;font-size:12.5px}th{background:#f8fafc;color:#475569;text-align:left;padding:8px;font-weight:800;border-bottom:1px solid var(--line)}td{padding:9px 8px;border-bottom:1px solid #f1f5f9}
+tr.sel td{background:#eff6ff}tr.sel td:first-child{box-shadow:inset 4px 0 0 #2563eb}tr{cursor:pointer}
+.tag{display:inline-block;font-size:10.5px;font-weight:900;border-radius:5px;padding:2px 6px}.ok{background:#dcfce7;color:var(--g)}.no{background:#fee2e2;color:var(--r)}.late{background:#fef3c7;color:var(--o)}
+.name{font-weight:900}.g{color:var(--muted);font-size:11px;margin-left:4px}.tot{font-weight:900;font-size:15px}
+.cal{font-size:12px;margin-left:6px;color:#2563eb;font-weight:900}
+/* 오른쪽 */
+.rp{display:flex;flex-direction:column;gap:10px}
+.rp .card{padding:12px}.rp h3{margin:0;font-size:15px}.muted{color:var(--muted);font-size:11.5px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}.seg span{padding:5px 10px;font-size:12px;font-weight:800;color:#475569}.seg span.on{background:var(--navy);color:#fff}
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.kpi div{border:1px solid var(--line);border-radius:10px;padding:7px;text-align:center}.kpi b{display:block;font-size:17px}.kpi span{font-size:10.5px;color:var(--muted)}
+.day{border-top:1px solid #f1f5f9;padding:7px 0}.day h4{margin:0 0 4px;font-size:12px;color:#334155;display:flex;justify-content:space-between}
+.it{display:grid;grid-template-columns:42px 18px minmax(0,1fr) auto;gap:6px;align-items:center;font-size:12px;padding:3px 0}
+.it .t{color:var(--muted);font-variant-numeric:tabular-nums}.it .ti{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chk{width:16px;height:16px;border-radius:4px;border:1.5px solid #cbd5e1;display:inline-block}.chk.on{background:var(--g);border-color:var(--g)}
+.sj{font-size:10px;font-weight:900;border-radius:4px;padding:1px 5px;background:#eef2ff;color:#3730a3}.sj.e{background:#fce7f3;color:#9d174d}.sj.k{background:#ecfccb;color:#3f6212}
+.btns{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-weight:800;font-size:12px}.btn.pri{background:var(--navy);color:#fff;border-color:var(--navy)}
+.ph{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.ph div{background:#f1f5f9;border-radius:8px;height:86px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:11px}
+.anno{background:#fefce8;border:1px dashed #facc15;border-radius:10px;padding:8px 10px;font-size:12px;color:#713f12}
+textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px;font-family:inherit;font-size:12px;height:52px}
+</style></head><body>
+<div class="top"><b>루멘수학 학원앱</b><span class="tab">🏠 홈</span><span class="tab">✅ 오늘의 확인</span><span class="tab on">🗓️ 수업·출결</span><span class="tab">📝 시험·기출</span></div>
+<div class="sub"><span>🔁 복습·브리핑</span><span>📅 출결·보충</span><span>🗓 학원 달력</span><span>🧭 스터디 코디</span><span class="on">📅 주간 점수</span><span>📔 순공피드백</span></div>
+<div class="wrap">
+ <div class="left"><div style="font-size:11px;margin-bottom:6px">주간 · 순공 · 코디</div><div class="li on">📅 주간 점수(계획·순공)</div><div class="li">📔 순공피드백</div><div class="li">🧭 스터디 코디</div></div>
+
+ <div class="card">
+  <div class="hd"><b>📅 주간 점수</b><small>10/5 ~ 10/11 주 · 발표됨</small><span>다음 주 계획 <span class="y">2/28</span> · 순공 사진 <span class="y">2</span> · 종이 <span class="y">3</span></span></div>
+  <table><thead><tr><th>학생</th><th>다음 주 계획 (일 24시)</th><th>계획 실천</th><th>순공 사진</th><th>순공 종이</th><th>주간 합</th></tr></thead><tbody>
+   <tr class="sel"><td><span class="name">학생A</span><span class="g">중 1학년</span><span class="cal">📅▸</span></td><td><span class="tag ok">제출</span> 10/9 22:20 · 16개 <b>5</b></td><td class="muted">계획 없음 · 0</td><td><span class="tag no">미제출</span> 0</td><td><span class="tag ok">제출</span> 10/12 5</td><td class="tot">10</td></tr>
+   <tr><td><span class="name">학생B</span><span class="g">초 6학년</span><span class="cal">📅</span></td><td><span class="tag no">미제출</span> 0</td><td class="muted">계획 없음 · 0</td><td><span class="tag ok">제출</span> 10/11 23:04 5</td><td><span class="tag ok">제출</span> 5</td><td class="tot">10</td></tr>
+   <tr><td><span class="name">학생C</span><span class="g">중 3학년</span><span class="cal">📅</span></td><td><span class="tag ok">제출</span> 10/8 10:51 · 30개 <b>5</b></td><td>0/15 · 0% · 0</td><td><span class="tag no">미제출</span> 0</td><td>가져옴 ✓</td><td class="tot">5</td></tr>
+   <tr><td><span class="name">학생D</span><span class="g">중 1학년</span><span class="cal">📅</span></td><td><span class="tag no">미제출</span> 0</td><td>1/22 · 5% · 1</td><td><span class="tag no">미제출</span> 0</td><td>가져옴 ✓</td><td class="tot">1</td></tr>
+   <tr><td><span class="name">학생E</span><span class="g">중 1학년</span><span class="cal">📅</span></td><td><span class="tag no">미제출</span> 0</td><td>1/14 · 7% · 1</td><td><span class="tag late">지각</span> 2</td><td>가져옴 ✓</td><td class="tot">3</td></tr>
+  </tbody></table>
+  <div class="anno" style="margin:10px">💡 시안: 학생 줄(또는 📅)을 누르면 오른쪽 칸에 그 학생의 주간계획표가 열립니다. ↑/↓ 키로 다음 학생. 가운데 표는 지금 그대로.</div>
+ </div>
+
+ <!-- 오른쪽: 주간계획표 -->
+ <div class="rp">
+  <div class="card">
+   <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h3>📅 학생A 주간계획표</h3><span class="muted">중 1학년</span>
+    <span class="seg" style="margin-left:auto"><span>지난 주</span><span>이번 주</span><span class="on">다음 주</span></span></div>
+   <div class="muted" style="margin-top:4px">10/12(월) ~ 10/18(일) · 제출 10/9 22:20 (제때 · 5점) · 스터디 코디에서 가져온 16개</div>
+   <div class="kpi"><div><b>16</b><span>계획</span></div><div><b style="color:var(--g)">0</b><span>실천 체크</span></div><div><b>9h</b><span>계획 시간</span></div></div>
+   <div class="day"><h4>월 10/12 <span class="muted">3개</span></h4>
+    <div class="it"><span class="t">17:00</span><span class="chk"></span><span class="ti"><span class="sj">수학</span> 중1-2 (Ⅴ. 기본 도형)</span><span class="muted">학습지</span></div>
+    <div class="it"><span class="t">18:00</span><span class="chk"></span><span class="ti"><span class="sj">수학</span> 옥길중 1 111~114쪽</span><span class="muted">교재</span></div>
+    <div class="it"><span class="t">21:00</span><span class="chk"></span><span class="ti"><span class="sj e">영어</span> 단어 50개</span><span class="muted">직접</span></div></div>
+   <div class="day"><h4>화 10/13 <span class="muted">2개</span></h4>
+    <div class="it"><span class="t">17:00</span><span class="chk"></span><span class="ti"><span class="sj">수학</span> [비상] 중1 2학기 교과서변형</span><span class="muted">학습지</span></div>
+    <div class="it"><span class="t">19:00</span><span class="chk"></span><span class="ti"><span class="sj k">국어</span> 수행평가 준비</span><span class="muted">직접</span></div></div>
+   <div class="day"><h4>수 10/14 <span class="muted">3개</span></h4><div class="muted">… (접힘 · 누르면 펼침)</div></div>
+   <div class="day"><h4>목~일 <span class="muted">8개</span></h4><div class="muted">…</div></div>
+   <div class="btns"><span class="btn">⤢ 크게 보기 (학생앱 모양)</span><span class="btn">🖨 인쇄</span><span class="btn">🧭 스터디 코디에서 고치기</span></div>
+  </div>
+  <div class="card"><h3 style="font-size:13px">📔 이번 주 순공</h3>
+   <div class="muted">사진 미제출 · 종이 10/12 제출 (5점)</div>
+   <div class="ph"><div>순공 사진 없음</div><div>종이 사진(있으면)</div></div></div>
+  <div class="card"><h3 style="font-size:13px">💬 원장님 한마디 → 학생앱</h3>
+   <textarea placeholder="예) 월요일 영어 단어는 학원 오기 전에! 수요일 계획이 비었어요."></textarea>
+   <div class="btns"><span class="btn pri">보내기</span><span class="btn">👍 좋아요만</span></div></div>
+ </div>
+</div>
+</body></html>
