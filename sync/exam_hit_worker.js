@@ -442,21 +442,32 @@ function pubCands(it, banks) {
   return out;
 }
 const PUB_RULE = JUDGE_RULE.replace('그 뒤 그림들은 학원 학생들이 시험 전에 풀었던 «학원 자료 후보»다.', '그 뒤 그림들은 «여러 출판사 교과서의 문항 후보»다.');
-async function pubBanks(subject) {
+/* 2026-10-12 중학교: 옛(15)·새(22) 과정 교과서 이름이 같다 → 시험 학년·해로 과정을 정한다 (22개정은 2025 중1·고1 입학부터) */
+function pubRev(exam) {
+  const n = Number(String(gradeKey(exam.grade)).replace(/\D/g, '')) || 1;
+  return (Number(exam.year) - (n - 1)) >= 2025 ? 'CURRICULUM_22' : 'CURRICULUM_15';
+}
+function pubSubject(exam) {
+  if (exam.subject) return exam.subject;
+  const g = gradeKey(exam.grade); return /^중/.test(g) ? '중등수학' + String(g).replace(/\D/g, '') : '';
+}
+async function pubBanks(subject, rev) {
   const subj = String(subject || '').replace(/\s/g, '');
   if (!subj) return { banks: [], missing: [] };
   const idx = (await kvGet('mf_bookbank_index')) || {};
-  const bids = Object.keys(idx).filter((b) => { const t = String(idx[b].title || ''); return /^교과서_/.test(t) && t.replace(/\s/g, '').split('-').pop() === subj; });
+  const mid = /^중등/.test(subj);
+  const bids = Object.keys(idx).filter((b) => { const t = String(idx[b].title || ''); if (!(/^교과서_/.test(t) && t.replace(/\s/g, '').split('-').pop() === subj)) return false;
+    const r = idx[b].revision || ''; return rev ? (r ? r === rev : !mid && rev === 'CURRICULUM_22') : true; });
   const banks = [];
-  for (const bid of bids) { const v = await kvGet('mf_textbook_' + bid); if (v && (v.problems || []).length) banks.push({ bid, pub: v.publisher || pubName(v.title), title: v.title, problems: v.problems }); }
+  for (const bid of bids) { const v = await kvGet('mf_textbook_' + bid); if (v && (v.problems || []).length) banks.push({ bid, pub: pubName(v.title) || v.publisher, title: v.title, problems: v.problems }); }
   banks.sort((a, c) => a.pub.localeCompare(c.pub, 'ko'));
   return { banks, missing: [] };
 }
 async function pubCompare(exam, items, prev, src, step) {
   const cfg = pubCfg(src);
-  if (!cfg.on || !/^고/.test(gradeKey(exam.grade))) { if (!cfg.on) items.forEach((it) => { delete it.pub; delete it.pubTop; }); return null; }
-  const subject = exam.subject || (prev && prev.exam && prev.exam.subject) || '';
-  const { banks } = await pubBanks(subject);
+  if (!cfg.on || !/^[고중]/.test(gradeKey(exam.grade))) { if (!cfg.on) items.forEach((it) => { delete it.pub; delete it.pubTop; }); return null; }   /* 2026-10-12 중학교도 */
+  const subject = pubSubject({ ...exam, subject: exam.subject || (prev && prev.exam && prev.exam.subject) || '' });
+  const { banks } = await pubBanks(subject, pubRev(exam));
   if (!banks.length) { log(`출판사 교과서 비교: ${subject || '과목 모름'} 교과서 은행이 없어 건너뜀 (node sync/mf_textbook_bank.js --subject ${subject || '과목'})`); return null; }
   log(`출판사 교과서 비교: ${subject} ${banks.length}종 — ${banks.map((b) => b.pub + ' ' + b.problems.length).join(' · ')}`);
   const st = { subject, books: banks.map((b) => ({ bid: b.bid, pub: b.pub, n: b.problems.length })), by: {}, items: 0 };
@@ -1516,7 +1527,7 @@ module.exports = { schoolKey, gradeKey, examIdOf, whereOf, pidOfUrl, semStart, m
   normSrc, textbookBids, loadTextbookMats, matFromItem, isExamPaper, semOf, tbTitle, courseTrie,   /* 2026-10-10 우리 자료 3종 */
   examUnits, inScope, pngDecode, pngEncode, stackPng, packCells, compactTree, mpCurriculum,   /* 2026-10-11 내 문제지 · 시험 범위 */
   pastCfg, pastSelect, pastCands, termOrd,   /* 2026-10-11 지난 기출 비교 */
-  pubCfg, pubName, pubCands, pubBanks };   /* 2026-10-11 출판사 교과서 출처 */
+  pubCfg, pubName, pubCands, pubBanks, pubRev, pubSubject };   /* 2026-10-11 출판사 교과서 출처 */
 
 if (require.main === module) {
   (async () => {
