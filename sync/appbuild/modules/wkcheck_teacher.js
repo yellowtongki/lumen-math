@@ -35,7 +35,8 @@ window.wkcMode = function(){
   if (v && (v.m === 'check' || v.m === 'score') && v.d === PW.day()) return v.m;
   return wkcDefaultMode();
 };
-window.wkcGo = function(m){ wkcSet('wkc_mode', JSON.stringify({ m: m, d: PW.day() })); render(); };
+window.wkcGo = function(m){ wkcSet('wkc_mode', JSON.stringify({ m: m, d: PW.day() })); if (m === 'check') PWB.only = '';   /* 체크하기엔 거르기 칩이 없다 — ↑/↓ 순서가 숨은 거르기에 묶이지 않게 */
+  render(); };
 window.wkcToday = function(){ WKC.todayOnly = !WKC.todayOnly; render(); };
 
 /* ── 「가져옴」 — 같은 저장 길 · 사진 손 고침(pov)은 남기고 «안 가져옴» 표시는 지운다 ── */
@@ -235,7 +236,7 @@ window.wksRow = function(e, c){
 window.wksTip = function(e, el){
   if (e) e.stopPropagation();
   var tip = document.getElementById('wks-tip');
-  if (!tip){ tip = document.createElement('div'); tip.id = 'wks-tip'; tip.setAttribute('role', 'status'); document.body.appendChild(tip); }
+  if (!tip){ tip = document.createElement('div'); tip.id = 'wks-tip'; tip.setAttribute('role', 'status'); document.documentElement.appendChild(tip); }   /* body 는 zoom 이 걸려 있어 화면 좌표가 어긋난다 — html 바로 아래에 */
   tip.textContent = el.getAttribute('title') || '';
   var r = el.getBoundingClientRect();
   tip.style.display = 'block';
