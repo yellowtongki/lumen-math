@@ -497,8 +497,9 @@ async function pubCompare(exam, items, prev, src, step) {
       const o = oldPub.find((x) => x.k === k);
       const out = { k, bid: c.b.bid, pub: c.b.pub, page: c.p.page, no: c.p.no, kind, why: String((v && v.why) || '같은 유형 번호').slice(0, 40), imgUrl: c.p.pimg };
       if (o && o.rejected) out.rejected = true;
+      if (o && o.by === 'teacher') { out.kind = o.kind; out.by = 'teacher'; out.ai = o.ai || kind; if (o.at) out.at = o.at; }   // 2026-10-12 학원앱 v19-116: 원장님이 고른 등급은 다시 비교해도 그대로
       return out;
-    }).filter((x) => x.kind !== 'type' || NO_AI || !it.img);
+    }).filter((x) => x.kind !== 'type' || x.by === 'teacher' || NO_AI || !it.img);
     it.pub.sort((a, c) => ORD[c.kind] - ORD[a.kind] || a.pub.localeCompare(c.pub, 'ko'));
     const live = it.pub.filter((x) => !x.rejected);
     const top = live[0] || null; it.pubTop = top ? { k: top.k, kind: top.kind, pub: top.pub } : null;
@@ -697,6 +698,7 @@ async function runExam(exam, opt) {
     const old = prev && (prev.items || []).find((x) => x.no === it.no);
     if (old && old.hit && old.hit.ok != null && it.cands.some((c) => c.k === old.hit.k)) it.hit = old.hit;
     else if (old && old.hit && old.hit.ok === false && !old.hit.k) it.hit = old.hit;   // 「적중 없음」 확정
+    else if (old && old.hit && old.hit.ok === true && /^pub:/.test(old.hit.k || '')) it.hit = old.hit;   // 2026-10-12 학원앱 v19-116: 출판사 교과서 문항으로 확정한 적중 (mats 칸은 아래에서 옮김)
     else it.hit = null;
     const top = it.cands[0];
     log(`${it.no}번: 후보 ${cands.length} → ${top ? top.kind : '없음'}${it.repeat.length ? ' · 반복' : ''}`);
@@ -716,6 +718,8 @@ async function runExam(exam, opt) {
     if (m.lib) matOut[m.k].lib = true;
     if (m.mp) { matOut[m.k].mp = true; if (m.msChapter) matOut[m.k].msChapter = m.msChapter; }   /* 2026-10-11 내 문제지 */
   }
+  /* 2026-10-12 학원앱 v19-116: 원장님이 출판사 교과서 문항으로 확정한 적중의 자료 칸(pub:…)은 앞 결과에서 그대로 옮긴다 */
+  items.forEach((it) => { const k = it.hit && it.hit.ok === true && it.hit.k; if (k && /^pub:/.test(k) && !matOut[k] && prev && prev.mats && prev.mats[k]) matOut[k] = prev.mats[k]; });
 
   /* 통계 */
   const st = { total: items.length, same: 0, var: 0, text: 0, type: 0, killers: items.filter((x) => x.killer).length,
