@@ -4457,6 +4457,13 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-134 (2026-10-12) 📒 플래너 점수 글·숫자 맞추기 (원장 「1,2,3 다 고쳐줘」)
+ *   · 주간계획 「계획 내기」 글이 옛 점수(제때 3점 · 월요일 1점)로 남아 있던 것을 지금 점수(제때 <b>5점</b> · 월요일 <b>2점</b>)로.
+ *     글자를 직접 적지 않고 점수 표(PW.PT)에서 읽어서, 점수 표가 바뀌면 글도 함께 바뀝니다.
+ *     (주간계획표 마감 줄 · 이번 주 지각 줄 · 「계획을 냈어요」 알림 · 🔔 서랍 「다음 주 계획 쓰기」)
+ *   · 홈 「📊 플래너 점수」의 주간 점수가 랭킹과 1점 어긋날 수 있던 것: 랭킹 줄에 적힌 내 주간 점수를 그대로 씁니다
+ *     → 홈 숫자 = 랭킹 숫자. (학원앱 v19-113 이 주간 점수를 다시 올릴 때 학생 전원의 주간 점수도 새로 씁니다)
+ *
  * v2-133 (2026-10-10) 🔁 매쓰플랫에서 채점된 ✗ 문항도 «다시 도전»이 됩니다 (리커버리 학습지)
  *   · 원장님 질문: 「리커버리 학습지를 학생앱에서 채점할 때 틀린 문제를 다시 입력해 2차 채점이 되는가?」
  *   · <b>[까닭]</b> 다시 도전(v2-91)은 <b>학생앱에서 1차 채점한 문항</b>만 대상이었습니다. 선생님이 매쓰플랫에서
@@ -5022,7 +5029,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-133';
+var STU_VER = 'v2-134';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -10128,7 +10135,7 @@ PW.left = function(ms){
  *       - 코디 대상 학생은 「🧭 코디가 채워 주기」로 수학 할 일이 빈칸에 들어오고, 학생이 옮기고·지우고·더한다
  *       - 이번 주 달력은 codi_plan_<코드>로 그대로 비춘다 (학원앱 코디 현황판·플래너 코칭·코디 화면이 그대로 돈다)
  *         코디 화면에서 짜거나 옮기거나 뺀 것도 달력으로 돌아온다 (wplFromCodi)
- *   · 점수: 다음 주 계획을 일요일 24시까지 「계획 내기」 3점 (월요일 1점) — 계산은 PW
+ *   · 점수: 다음 주 계획을 일요일 24시까지 「계획 내기」 PW.PT.plan.ok(5점) · 월요일 PW.PT.plan.late(2점) — 계산·글 모두 PW 점수 표 (v2-134)
  *   · 홈 카드는 없다 — 플래너 › 📅 주간계획표 탭(또는 코디 화면)에서 연다
  *   저장: wplan_<코드>.weeks['<월요일>'] = { items:[{ id, d(월0~일6), t:'19:00', n(30분 칸 수), subj, title, src:'me'|'codi', kind, ref, part, mv, at }], submittedAt, upd }
  *   읽기만: wplan_chk_ · plweek_paper · lumen_group_days · sungong_ · codi_done_ */
@@ -10373,9 +10380,9 @@ window.wplRender = function(){
   /* 마감 한 줄 */
   if (WP.tab === 'next'){
     var sub = !!w.submittedAt;
-    h += '<div class="wp-due' + (sub ? ' ok' : '') + '"><span style="font-size:20px">' + (sub ? '✅' : '⏰') + '</span><div><b>' + (sub ? '다음 주 계획을 냈어요 — 3점' : '일요일 밤 12시까지 「계획 내기」 3점') + '</b><small>' + (sub ? ('낸 시각 ' + new Date(w.submittedAt).toLocaleString('ko-KR', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }) + ' · 고쳐도 점수는 그대로') : '월요일에 내면 1점 · 안 내면 0점') + '</small></div>' + (sub ? '' : '<span class="t">' + PW.left(PW.dueMs(thisW)) + ' 남음</span>') + '</div>';
+    h += '<div class="wp-due' + (sub ? ' ok' : '') + '"><span style="font-size:20px">' + (sub ? '✅' : '⏰') + '</span><div><b>' + (sub ? '다음 주 계획을 냈어요 — ' + PW.PT.plan.ok + '점' : '일요일 밤 12시까지 「계획 내기」 ' + PW.PT.plan.ok + '점') + '</b><small>' + (sub ? ('낸 시각 ' + new Date(w.submittedAt).toLocaleString('ko-KR', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }) + ' · 고쳐도 점수는 그대로') : '월요일에 내면 ' + PW.PT.plan.late + '점 · 안 내면 0점') + '</small></div>' + (sub ? '' : '<span class="t">' + PW.left(PW.dueMs(thisW)) + ' 남음</span>') + '</div>';
   } else if (!w.submittedAt && W !== PW.W0 && Date.now() < PW.lateMs(PW.add(W, -7))){
-    h += '<div class="wp-due"><span style="font-size:20px">⏰</span><div><b>이번 주 계획 — 오늘 밤 12시까지 내면 1점</b><small>어젯밤 마감이 지났어요. 늦게라도 내요</small></div><span class="t">' + PW.left(PW.lateMs(PW.add(W, -7))) + '</span></div>';
+    h += '<div class="wp-due"><span style="font-size:20px">⏰</span><div><b>이번 주 계획 — 오늘 밤 12시까지 내면 ' + PW.PT.plan.late + '점</b><small>어젯밤 마감이 지났어요. 늦게라도 내요</small></div><span class="t">' + PW.left(PW.lateMs(PW.add(W, -7))) + '</span></div>';
   } else if (W === PW.W0){
     h += '<div class="wp-codi" style="background:#fff7ed;border-color:#fdba74;color:#9a3412">🧪 이번 주는 시범 주 — 할 일을 써 두면 10월 1일(목)부터 「계획 실천」이 세어져요.</div>';
   }
@@ -10547,7 +10554,7 @@ window.wplSubmit = async function(){
   if (!ok){ if (first) delete w.submittedAt; return; }
   if (first){
     var j = PW.judge(w.submittedAt, PW.add(W, -7));
-    say(j === 'ok' ? '📅 계획을 냈어요 — 3점!' : (j === 'late' ? '📅 늦게 냈어요 — 1점' : '📅 계획을 냈어요 (마감이 지나 점수는 없어요)'));
+    say(j === 'ok' ? '📅 계획을 냈어요 — ' + PW.PT.plan.ok + '점!' : (j === 'late' ? '📅 늦게 냈어요 — ' + PW.PT.plan.late + '점' : '📅 계획을 냈어요 (마감이 지나 점수는 없어요)'));   /* ★ v2-134: 점수 표에서 */
   } else say('✅ 고친 계획을 저장했어요');
   wplRender(); await mirror(W);
 };
@@ -22660,7 +22667,7 @@ window.plscPaint=async function(){
     var rank=null;
     if(typeof loadPlannerRanking==='function'){
       var rk=await loadPlannerRanking(ym); var rows=(rk&&rk.ranking)||[]; var c=myCode(), myId=(plannerData&&plannerData.studentId)!=null?plannerData.studentId:(studentInfo.id!=null?studentInfo.id:null);
-      for(var i=0;i<rows.length;i++){ var r=rows[i]; if((r.code&&String(r.code)===c)||(myId!=null&&r.id===myId)){ rank=r.rank; break; } }
+      for(var i=0;i<rows.length;i++){ var r=rows[i]; if((r.code&&String(r.code)===c)||(myId!=null&&r.id===myId)){ rank=r.rank; if(typeof r.weekly==='number'&&isFinite(r.weekly)) weekly=r.weekly; break; } }   /* ★ v2-134: 주간 점수는 랭킹 줄 값 — 홈 숫자 = 랭킹 숫자 */
     }
     var t=daily+weekly;
     if(!t && rank==null){ el.textContent='이번 달 점수 · 랭킹'; return; }
@@ -22747,7 +22754,7 @@ window.bellRefresh=async function(){
   var now=Date.now(), due=PW.dueMs(w.tW), late=PW.lateMs(w.tW);
   var sub;
   if(now<due) sub='일요일 밤 12시까지 · '+PW.left(due)+' 남음';
-  else if(now<late) sub='지각 · 월요일 밤 12시까지 (1점)';
+  else if(now<late) sub='지각 · 월요일 밤 12시까지 ('+PW.PT.plan.late+'점)';   /* ★ v2-134: 점수 표에서 */
   else { row.style.display='none'; if(badge) badge.style.display='none'; bellCount(); return; }
   row.innerHTML='<span class="bi">📅</span><span class="bt"><b>다음 주 계획 쓰기</b><small>'+esc(sub)+'</small></span><span class="br">쓰기 ›</span>';
   row.style.display='flex';
