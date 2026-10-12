@@ -158,6 +158,39 @@ function tagMiddleFinal(exams, kind) {
   fin.forEach((e, i) => { e.grades = i === 0 ? [3] : [1, 2]; });
   return exams;
 }
+/* ── 학교 행사(시험 말고 전부) — 학원 달력에 «학교 일정»으로 (2026-10-12 원장 「학교알리미에서 학교 일정을 읽고 학원 달력에 넣자」) ──
+ *   나이스 학사일정의 토요휴업일·공휴일(달력에 이미 있음)은 뺀다. 같은 이름이 연달아(주말 낀 4일 이내) 이어지면 한 기간으로.
+ *   kind: vac(방학·휴업·개교기념) · trip(수학여행·체험·수련) · mock(모의·학력평가·수능) · ceremony(입학·졸업·개학·방학식) · event(그 밖) */
+function evKind(nm) {
+  const t = String(nm || '');
+  if (/모의|학력평가|연합|수능|대학수학능력/.test(t)) return 'mock';
+  if (/방학식|개학|입학|졸업|종업|시업/.test(t)) return 'ceremony';
+  if (/방학|휴업|재량|개교기념|대체/.test(t)) return 'vac';
+  if (/수학여행|체험|수련|여행|캠프|야영/.test(t)) return 'trip';
+  return 'event';
+}
+function gradesYN(e) {
+  const k = ['ONE', 'TW', 'THREE', 'FR', 'FIV', 'SIX'], g = [];
+  k.forEach((x, i) => { if (String(e[x + '_GRADE_EVENT_YN'] || '') === 'Y') g.push(i + 1); });
+  return g;
+}
+function groupEvents(rows, kind) {
+  const days = rows
+    .filter((e) => !isExam(e.EVENT_NM))
+    .filter((e) => { const nm = String(e.EVENT_NM || '').trim(), sb = String(e.SBTR_DD_SC_NM || ''); return nm && !/토요휴업/.test(nm) && sb !== '공휴일'; })
+    .map((e) => ({ d: String(e.AA_YMD || ''), nm: String(e.EVENT_NM || '').trim(), g: gradesYN(e), off: String(e.SBTR_DD_SC_NM || '') === '휴업일' }))
+    .filter((x) => /^\d{8}$/.test(x.d))
+    .sort((a, b) => a.nm.localeCompare(b.nm) || a.d.localeCompare(b.d));
+  const out = [];
+  days.forEach((x) => {
+    const last = out[out.length - 1];
+    if (last && last.name === x.nm && (dnum(x.d) - dnum(last.toRaw)) <= 4 * 86400000) { last.to = ymd(x.d); last.toRaw = x.d; last.days += 1; return; }
+    const all = kind === '초' ? 6 : 3;
+    out.push({ from: ymd(x.d), to: ymd(x.d), toRaw: x.d, days: 1, name: x.nm, kind: evKind(x.nm), off: x.off,
+      grades: x.g.length && x.g.length < all ? x.g : null });
+  });
+  return out.map((e) => { delete e.toRaw; return e; }).sort((a, b) => a.from.localeCompare(b.from));
+}
 /* ── 본체 ─────────────────────────────────────────────────── */
 async function run() {
   if (!KEY) {
@@ -171,7 +204,7 @@ async function run() {
     stu.forEach((s) => {
       if (!s || s.withdrawn) return;
       const sc = String(s.school || '').trim();
-      if (!sc || /초등학교$/.test(sc)) return;   // 초등학교는 지필평가가 없어 제외
+      if (!sc) return;   /* 2026-10-12: 초등학교도 «학교 일정»(방학·행사)을 받는다 — 시험은 없다 */
       counts[sc] = (counts[sc] || 0) + 1;
       if (names.indexOf(sc) < 0) names.push(sc);
     });
@@ -189,7 +222,8 @@ async function run() {
       AA_FROM_YMD: `${year}0101`, AA_TO_YMD: `${year}1231`,
     });
     if (msg) { log(`  ${sc.name} — 학사일정 실패 (${msg})`); schools.push({ ...sc, err: msg }); continue; }
-    const exams = groupExams(rows);
+    const exams = sc.kind === '초' ? [] : groupExams(rows);
+    const events = groupEvents(rows, sc.kind);
     tagMiddleFinal(exams, sc.kind);   // 중3 기말은 1·2학년보다 앞선다 — 학년 표기가 없으면 규칙으로 붙인다
     // 학교마다 시험 이름이 다르다. 「시험 같아 보이는데 안 잡힌 일정」을 남겨 두면
     // 새 학교가 늘어도 무엇을 놓쳤는지 바로 보인다.
@@ -204,14 +238,15 @@ async function run() {
     schools.push({
       name: sc.name, short: sc.name.replace(/(중|고등)학교$/, '$1'), atpt: sc.atpt, code: sc.code,
       addr: sc.addr, kind: sc.kind, eventN: rows.length, eventTotal: total || rows.length,
-      exams, next, missed,
+      exams, next, missed, events,
     });
     log(`  ${sc.name} — 일정 ${rows.length}건${total && total > rows.length ? `/${total}` : ''} · 시험 ${exams.length}회`
       + (next ? ` · 다음 ${next.label} ${next.from}${next.days > 1 ? `~${next.to}` : ''} (D-${next.dday})` : ' · 남은 시험 없음'));
     exams.forEach((e) => log(`      ${e.label.padEnd(8)} ${e.from}${e.days > 1 ? '~' + e.to : '        '} ${e.days}일`
       + (e.grades ? ` · ${e.grades.join(',')}학년` : ' · 전 학년') + ` · ${e.name}`));
     if (missed.length) log(`      ↪ 시험으로 세지 않은 일정: ${missed.join(' / ')}`);
-    if (!exams.length) log(`      ⚠️ 시험을 하나도 못 찾았습니다 — 이 학교는 일정 이름이 다를 수 있습니다.`);
+    if (!exams.length && sc.kind !== '초') log(`      ⚠️ 시험을 하나도 못 찾았습니다 — 이 학교는 일정 이름이 다를 수 있습니다.`);
+    log(`      학교 일정 ${events.length}개 (방학·휴업 ${events.filter((e) => e.kind === 'vac').length} · 행사 ${events.filter((e) => e.kind === 'event' || e.kind === 'trip').length} · 모의 ${events.filter((e) => e.kind === 'mock').length})`);
     await sleep(300);
   }
 
@@ -223,7 +258,7 @@ async function run() {
   return value;
 }
 
-module.exports = { run, groupExams, isExam, gradesOf, labelOf, tagMiddleFinal };
+module.exports = { run, groupExams, isExam, gradesOf, labelOf, tagMiddleFinal, groupEvents, evKind };
 
 if (require.main === module) {
   run().catch((e) => { console.error('오류:', e.message); process.exit(1); });
