@@ -12,6 +12,8 @@
     "pdf": "교재.pdf",              # 설계 파일 기준 상대 경로 또는 절대 경로
     "out": "풀이노트.pdf",
     "start_page_no": 1,             # 노트 쪽 번호 시작값
+    "style": "grid",                # grid = 학원노트(방안지 2×3, 로고) · mint = 민트 칸 노트(2×2)
+    "corner": "중1-2",              # grid: 쪽 오른쪽 위 학년 표시
     "sections": [
       { "title": "05. 다각형",       # 쪽 맨 위 제목 — 새 소단원은 새 쪽에서 시작한다
         "cells": [
@@ -52,6 +54,14 @@ LABEL_W = 44                   # 머리줄 «p. 91» 칸 너비
 FIG_SCALE = 1.5                # 교재 원래 크기 대비 그림 배율
 FIG_MAX_W, FIG_MAX_H = 235, 150
 
+# ── grid 스타일 (학원노트 디자인 2026-10-12: 방안지 바탕, 2열×3줄, 왼쪽 열 먼저, 오른쪽 아래 로고)
+G_L, G_R, G_T, G_B = 16, PW - 36, 43, PH - 72   # 바깥 테두리
+G_SQ = 10.5                                     # 방안 한 칸 (약 3.7mm)
+G_GRID = (0.92, 0.92, 0.92)
+G_RED = (0xDC / 255, 0x2A / 255, 0x29 / 255)
+G_FIG_MAX_W, G_FIG_MAX_H = 150, 115
+BULB = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'logo_bulb.png')
+
 
 def load_fonts(font_dir):
     cands = [font_dir] if font_dir else []
@@ -62,6 +72,8 @@ def load_fonts(font_dir):
             pdfmetrics.registerFont(TTFont('PR', os.path.join(d, 'Pretendard-Regular.ttf')))
             b = os.path.join(d, 'Pretendard-SemiBold.ttf')
             pdfmetrics.registerFont(TTFont('PB', b if os.path.exists(b) else os.path.join(d, 'Pretendard-Regular.ttf')))
+            x = os.path.join(d, 'Pretendard-ExtraBold.ttf')
+            pdfmetrics.registerFont(TTFont('PX', x if os.path.exists(x) else (b if os.path.exists(b) else os.path.join(d, 'Pretendard-Regular.ttf'))))
             return
     sys.exit('Pretendard-Regular.ttf 를 찾지 못했습니다 — --font-dir 로 글꼴 폴더를 알려 주세요')
 
@@ -91,6 +103,9 @@ def crop_figures(spec, base, tmp):
             x0, y0, x1, y1 = cell['box']
             fig = im.crop((round(x0 * im.width), round(y0 * im.height), round(x1 * im.width), round(y1 * im.height)))
             fig = whiten(fig)
+            if spec.get('style', 'grid') == 'grid':   # 흰 바탕을 투명하게 → 방안 무늬가 그림 뒤로 보인다
+                fig = fig.convert('RGBA')
+                fig.putalpha(fig.convert('L').point(lambda v: 0 if v >= 250 else 255))
             path = os.path.join(tmp, f'fig_{si}_{ci}.png')
             fig.save(path)
             out[(si, ci)] = path
@@ -183,6 +198,79 @@ def build(spec, base, figs, out):
     c.save()
 
 
+def fig_size(path, max_w, max_h):
+    im = Image.open(path)
+    w = im.width * 72 / DPI * FIG_SCALE
+    h = im.height * 72 / DPI * FIG_SCALE
+    k = min(1, max_w / w, max_h / h)
+    return w * k, h * k
+
+
+def draw_logo(c, right, bottom):
+    """오른쪽 아래 로고: 흰 바탕 상자(테두리를 가린다) + 전구 + 루멘수학 / Lumen Math"""
+    bh = 44
+    tw = max(pdfmetrics.stringWidth('루멘수학', 'PX', 26), pdfmetrics.stringWidth('Lumen Math', 'PB', 15.5))
+    bw = bh + 4 + tw
+    x0 = right - bw - 4
+    c.setFillColorRGB(1, 1, 1)
+    c.rect(x0 - 6, PH - bottom - bh - 6, bw + 12, bh + 18, stroke=0, fill=1)
+    if os.path.exists(BULB):
+        c.drawImage(ImageReader(BULB), x0, PH - bottom - bh - 2, bh, bh, mask='auto')
+    c.setFillColorRGB(*G_RED)
+    c.setFont('PX', 26)
+    c.drawString(x0 + bh + 4, PH - bottom - 22, '루멘수학')
+    c.setFont('PB', 15.5)
+    c.drawString(x0 + bh + 4, PH - bottom - 41, 'Lumen Math')
+
+
+def build_grid(spec, figs, out):
+    c = canvas.Canvas(out, pagesize=A4)
+    c.setTitle(spec.get('name', '풀이노트'))
+    cells = [(si, ci, cell) for si, sec in enumerate(spec['sections']) for ci, cell in enumerate(sec['cells'])]
+    mid = (G_L + G_R) / 2
+    row_h = (G_B - G_T) / 3
+    for p0 in range(0, max(len(cells), 1), 6):
+        # 방안 무늬 — 테두리 안쪽만
+        c.setStrokeColorRGB(*G_GRID)
+        c.setLineWidth(0.4)
+        x = G_L + G_SQ
+        while x < G_R - 0.5:
+            c.line(x, PH - G_T, x, PH - G_B)
+            x += G_SQ
+        y = G_T + G_SQ
+        while y < G_B - 0.5:
+            c.line(G_L, PH - y, G_R, PH - y)
+            y += G_SQ
+        c.setStrokeColorRGB(0.1, 0.1, 0.1)
+        c.setLineWidth(0.8)
+        c.rect(G_L, PH - G_B, G_R - G_L, G_B - G_T, stroke=1, fill=0)
+        c.line(mid, PH - G_T, mid, PH - G_B)
+        if spec.get('corner'):
+            c.setFillColorRGB(0.07, 0.07, 0.07)
+            c.setFont('PX', 16)
+            c.drawRightString(G_R - 16, PH - 31, spec['corner'])
+        for k, (si, ci, cell) in enumerate(cells[p0:p0 + 6]):
+            col, row = divmod(k, 3)          # 왼쪽 열 위→아래, 그다음 오른쪽 열
+            x0 = G_L if col == 0 else mid
+            x1 = mid if col == 0 else G_R
+            top = G_T + row * row_h
+            c.setFillColorRGB(0.1, 0.1, 0.1)
+            c.setFont('PR', 9.5)
+            c.drawString(x0 + 14.5, PH - top - 22, cell.get('title', ''))
+            fp = figs.get((si, ci))
+            if fp:
+                w, h = fig_size(fp, G_FIG_MAX_W, G_FIG_MAX_H)
+                label_end = x0 + 14.5 + pdfmetrics.stringWidth(cell.get('title', ''), 'PR', 9.5) + 10
+                if x1 - 12 - w >= label_end:     # 보통: 오른쪽 위 (왼쪽은 풀이 자리)
+                    c.drawImage(ImageReader(fp), x1 - 12 - w, PH - top - 12 - h, w, h, mask='auto')
+                else:                            # 넓은 그림: 번호 아래로 내린다
+                    w, h = fig_size(fp, x1 - x0 - 30, G_FIG_MAX_H)
+                    c.drawImage(ImageReader(fp), x1 - 12 - w, PH - top - 32 - h, w, h, mask='auto')
+        draw_logo(c, G_R + 4, G_B - 6)
+        c.showPage()
+    c.save()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('spec')
@@ -198,7 +286,10 @@ def main():
     if a.sheet:
         contact_sheet(figs, spec, a.sheet)
     out = os.path.join(base, spec.get('out', 'solution_note.pdf'))
-    build(spec, base, figs, out)
+    if spec.get('style', 'grid') == 'grid':
+        build_grid(spec, figs, out)
+    else:
+        build(spec, base, figs, out)
     print('만들었습니다:', out, f'(그림 {len(figs)}개)')
 
 
