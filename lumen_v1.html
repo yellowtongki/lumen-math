@@ -430,7 +430,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-114';
+var APP_VER = 'v19-115';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9016,6 +9016,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-115',date:'2026-10-12',stability:'ok',memo:'🗓 <b>주간계획 모아보기</b> + 📅 <b>주간 점수 «✅ 체크하기 | 📊 점수 보기»</b> (원장 2026-10-12 「고정 스케줄과 학생들이 세운 계획, 학습 코디가 짠 계획이 구분이 되나?」 → 두 시안 승인 「v19-115 만들어 배포해줘」). 모아보기: 왼쪽 「📅 주간 점수」 바로 아래 · 한 화면 6명(3×2) 작은 주간 달력(월~일 9~24시 — ⤢ 크게 보기 달력과 같은 자료) · 학교·학원 회색 · 루멘 수업 빨강 · 🧭 코디가 짠 계획 실선 · ✏️ 학생이 직접 점선 · 실천 ✓ 초록 테두리 · 고정 일정 안 넣은 학생 📌 표시 · 주 고르기 · 반 칩 · 6명씩 넘기기 · 안 낸 학생 먼저 · 💬 모아서 알림(학생앱 「💬 선생님 한마디」) · 🖨 6명 한 장(A4 가로) · 카드를 누르면 큰 달력. 주간 점수: ✅ 체크하기 = 점수 숫자 없이 할 일 카드(📔 순공 종이 가져옴/안 가져옴 · 📸 늦게 낸 사진 인정/다시 내기 · 📅 계획 안 낸 학생 알림·명단 인쇄 · «…» 손으로 고치기 = 예전 「자동▾」) — 끝난 카드는 접히고 다 끝나면 「이번 주 체크 끝 🎉」 · 📊 점수 보기 = 보기만 하는 표(계획·실천·사진·종이 점수 알약 · 주간 합 /20 막대 · 칸에 마우스 = 낸 시각). 월요일·수업 날은 체크하기가 먼저. 부품 modules/plwall_teacher.js · wkcheck_teacher.js.'},
       {ver:'v19-114',date:'2026-10-12',stability:'ok',memo:'📅 <b>주간 점수 화면 오른쪽에 학생 주간계획표</b> (원장 2026-10-12 「학생들 주간계획표가 학원앱에 보여야 한다. 우측 탭을 만들고 3분할 화면으로 사용하는 것이 좋을 것 같다」 → 시안 승인 「시안대로 v19-114 만들어 배포해줘」). 학생 줄(또는 이름·📅)을 누르면 파란 띠로 고르고 ↑/↓ 키로 다음 학생 · 주를 넘겨도 그대로. 오른쪽 칸: 지난 주 / 이번 주 / 다음 주 · 낸 시각과 제때·지각 점수 · 스터디 코디에서 가져온 개수 · 계획 개수·실천 체크·계획 시간 · 요일별 할 일(실천 ✓ · 과목 · 학습지/교재/직접, 하루 3개 넘으면 펼치기) · ⤢ 크게 보기 · 🖨 인쇄 · 🧭 코디에서 고치기 · 📔 이번 주 순공 사진 · <b>💬 원장님 한마디 → 학생앱</b>(학생앱 플래너 화면 「💬 선생님 한마디」 칸에 이 학생에게만 2주, 👍 좋아요만도). PC 1280 이상은 세 번째 칸, 1024~1279 는 「🛠 도구」 서랍, 그보다 좁으면 표 아래. 부품 modules/wplanpanel_teacher.js.'},
       {ver:'v19-113',date:'2026-10-12',stability:'ok',memo:'🏆📒 <b>플래너 점수 세 군데 맞추기</b> (원장 2026-10-12 「1,2,3 다 고쳐줘」). ① <b>플래너 › 🏆 랭킹 화면</b>만 매일 점수만 더해 10월 1·2위가 뒤바뀌어 보였음 → 합계 = 매일 + 📅 계획 + 📔 순공(입력 표 합계 · 학생앱 랭킹 · 플래너 리그와 같은 계산). 줄마다 「매일 n · 계획 n · 순공 n」, 시상대에도. 이번달 = 그 주 일요일이 든 달 · 주간/기간 지정 = 그 기간 안에 일요일이 든 발표된 주(머리에 「주간 점수 넣은 주」 표시). 10월 전 기간은 예전 그대로. 월간 화면(주차 누적)과 레이스는 «매일 점수만»이라고 표시. ② 학생앱 v2-134: 주간계획 「계획 내기」 글이 옛 점수(3점 · 지각 1점) → 지금 점수(5점 · 지각 2점)를 점수 표에서 읽음. ③ 학생앱 홈 주간 점수가 랭킹과 1점 어긋나던 것: 주간 점수를 다시 올릴 때(주간 점수판 열기 · 🔄 · 새 기준 다시 계산) 랭킹만이 아니라 <b>학생 전원의 학생앱 주간 점수</b>도 새로 씀(바뀐 학생만 묶어서) · 일요일 밤 발표 뒤(그리고 월요일 지각 마감 뒤) 플래너 화면을 처음 열면 자동으로 한 번. 학생앱 홈은 랭킹 줄의 주간 점수를 그대로 씀. 부품 modules/rankfix113_teacher.js.'},
       {ver:'v19-112',date:'2026-10-12',stability:'ok',memo:'🎯📚 <b>교과서 일치를 적중 분석 안으로</b> (원장 2026-10-12 「교과서 일치는 적중분석 내부에 있어야 한다. 잘 보이게 표시하고, 난이도를 수학비서 난이도 9로 하라고 했는데 왜 5인가? 그리고 옥길중에 교과서 일치 여부는 표시가 안 되었다.」). ① 난이도: 문항마다 수학비서 난이도가 없는 시험(옥길중 중1·중3 — 매쓰플랫이 서술형을 나눠 문항 수가 수학비서와 다름)도 <b>시험 전체 수학비서 난이도</b>로 평균 «/9» · 킬러(6 이상) · 어려움(5 이상). 수학비서에 아직 없는 시험(PDF 로 올린 시험)은 「평균 난도 (매쓰플랫 1~5 · 수학비서 DB화 전)」로 까닭을 적음. ② 요약 숫자 칸에 초록 굵은 테두리 「📚 교과서 일치」(같은 문제+숫자변형 문항 수 · 학교 교과서 a · 다른 출판사만 b) — 누르면 아래 칸으로. ③ 「📚 교과서 일치 (같은 문제 + 숫자변형)」 칸을 도넛 바로 아래로 올림(우리 자료별 적중 · 지난 기출보다 위) · 학교 교과서 줄에 「학교 교과서」 표 · 「🟧 학교 교과서엔 없음」 줄(다른 출판사에서만 나온 번호, 누르면 그 문항). 옥길중이 안 보였던 까닭: 지난 기출 칸이 없는 시험은 이 칸이 요약 맨 아래(출제 경향 뒤)에 붙어 있었음. ④ 메뉴의 「교과서일치도」 칸은 빼고 적중 분석 머리 「📚 교과서일치도 · 학교 전체 비교」 단추로 · 그 화면 맨 위 「← 적중 분석」. ⑤ 출판사 비교를 마친 시험은 시험 칩·왼쪽 목록에 「📚」. 새로 저장하는 자료 없음. 부품 modules/hitfix112_teacher.js. · 🏫 <b>학원 달력에 학교 일정</b>(원장 「학교알리미에서 학교 일정을 읽고 학원 달력에 넣자」): 매일 새벽 나이스 학사일정에서 시험 말고 방학·재량휴업·체험학습·수학여행·체육대회·모의고사·입학·졸업도 받아(sync/school_info.js) 달력 칸에 연한 띠로(🏖🚌📝🎓🏫, 학년 행사는 «2학년») · 학교 칩으로 거르기 · 「학원 일정만」이면 숨김 · 학교 휴업은 학원 휴원이 아니라 빨간 날로 안 칠함. 부품 modules/schoolev_teacher.js.'},
@@ -18454,7 +18455,7 @@ function render(){
   if(RT){
     const groupLabel=MENU_GROUP==='all'?'전체 학생':MENU_GROUP==='none'?'미배정':MENU_GROUP;
     const selName=SELECTED_STUDENT?SELECTED_STUDENT.split('__')[0]:'';
-    const titles={home:'🏠 홈',risk:'🚨 위험 신호',cal:'📅 학원 달력',codi:'🧭 스터디 코디',plweek:'📅 주간 점수',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실',tuition:'💳 수강료',wsgrade:'📄 학습지 채점',todo:'🗂 할 일 보드',blank:'📝 백지테스트',lastcheck:'🎯 시험 대비',examanal:'📚 기출 분석',examhit:'🎯 적중 분석',tbmatch:'📚 교과서일치도'};
+    const titles={home:'🏠 홈',risk:'🚨 위험 신호',cal:'📅 학원 달력',codi:'🧭 스터디 코디',plweek:'📅 주간 점수',plwall:'🗓 주간계획 모아보기',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실',tuition:'💳 수강료',wsgrade:'📄 학습지 채점',todo:'🗂 할 일 보드',blank:'📝 백지테스트',lastcheck:'🎯 시험 대비',examanal:'📚 기출 분석',examhit:'🎯 적중 분석',tbmatch:'📚 교과서일치도'};
     const subtitles={typeach:'AI 판독 · 검토 · 전송',list:'학생 카드',student_detail:STUDENT_TAB,studentdb:'등록부',books:'교재 라이브러리',quick:QUICK_TAB+' 입력',class_overview:'진도 현황 · 지연 감지',typedb:'수학 유형 분류 체계',form:'편집 · 미리보기 · 공유',preview:'편집 · 미리보기 · 공유',share:'편집 · 미리보기 · 공유',settings:'설정',bulk:'일괄 작업',exam:'시험지 분석 · O/X · 리포트',record:'특기사항 · 날짜별',pwa:'풀이 분석 · 검토 · 발송',notice:'작성 · 발행 · 읽음 현황',attend:'출석 · 결석보충 · 리커버리',vod:'강의 등록 · 배정 · 시청 모니터링',tuition:'결제선생 청구 · 수납 · 미납',wsgrade:'자동채점 현황 · 학생별 진행',todo:'코스 짜기 · 배정 · 나눠 주기 · 학생별',blank:'틀린 문항 · 아하노트 · 약한 유형 → 한 장'};
     RT.textContent=titles[VIEW]||'학생을 선택해주세요';
     const RST=document.getElementById('RIGHT_SUBTITLE');
@@ -18567,6 +18568,7 @@ function render(){
     else if(VIEW==='tbmatch'){ try{ C.innerHTML=rTbMatch(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">교과서일치도 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='examhit'){ try{ C.innerHTML=rExamHit(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">적중 분석 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='examanal'){ try{ C.innerHTML=rExamAnal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">기출 분석 오류: '+esc2(e.message)+'</div>'; } }   /* ★ v19-33 */
+    else if(VIEW==='plwall'){ try{ C.innerHTML=rPlWall(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간계획 모아보기 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='plweek'){ try{ C.innerHTML=rPlWeek(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간 점수 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='codi'){ try{ C.innerHTML=rCodi(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">스터디 코디 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='cal'){ try{ C.innerHTML=rCal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">학원 달력 오류: '+esc2(e.message)+'</div>'; } }
@@ -18633,6 +18635,7 @@ function render(){
     else if(VIEW==='tbmatch'){ try{ C.innerHTML=rTbMatch(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">교과서일치도 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='examhit'){ try{ C.innerHTML=rExamHit(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">적중 분석 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='examanal'){ try{ C.innerHTML=rExamAnal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">기출 분석 오류: '+esc2(e.message)+'</div>'; } }   /* ★ v19-33 */
+    else if(VIEW==='plwall'){ try{ C.innerHTML=rPlWall(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간계획 모아보기 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='plweek'){ try{ C.innerHTML=rPlWeek(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간 점수 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='codi'){ try{ C.innerHTML=rCodi(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">스터디 코디 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='cal'){ try{ C.innerHTML=rCal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">학원 달력 오류: '+esc2(e.message)+'</div>'; } }
@@ -37592,6 +37595,7 @@ function rPlannerLeftNav() {
     /* ★ v19-81: 플래너와 이어진 화면 (원장 지시 2026-10-05) */
     {sep:'📅 주간 · 순공 · 코디'},
     {id:'@plweek',   icon:'📅', label:'주간 점수(계획·순공)', red:false},
+    {id:'@plwall',   icon:'🗓', label:'주간계획 모아보기', red:false},   /* ★ v19-115 */
     {id:'@sungong',  icon:'📔', label:'순공피드백', red:false},
     {id:'@codi',     icon:'🧭', label:'스터디 코디', red:false},
   ];
@@ -88018,7 +88022,704 @@ window.wppCodi = function(){
 })();
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~114: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-115: 🗓 주간계획 모아보기 (VIEW='plwall') — 시안 docs/mockup_plan_wall.html (6명 3×2 · 하루 시간표 보기 뺌)
+ * 원장 2026-10-12 「v19-115 만들어 배포해줘」 · 「고정 스케줄과 학생들이 세운 계획, 학습 코디가 짠 계획이 구분이 되나?」
+ *
+ *  ① 왼쪽 「📅 주간 · 순공 · 코디」 묶음의 「📅 주간 점수(계획·순공)」 바로 아래 · 위 기능 탭(수업·출결)에서도 주간 점수 바로 뒤
+ *  ② 머리: 주 고르기(‹ 이번 주 ›) · 반 칩(전체 + 학생 등록부의 반) · 6명씩 넘기기(‹ 앞 6명 · n/m · 다음 6명 ›)
+ *  ③ 요약 줄: n/m명 계획 냄 · 할 일 k개 · 실천 ✓ j개 · 안 낸 x명 → 💬 모아서 알림 · 정렬(안 낸 학생 먼저 · 이름 · 반) · 🖨 6명 한 장
+ *  ④ 카드 = 작은 주간 달력(월~일 · 9~24시) — «⤢ 크게 보기» 달력 창(plwCal · pwcShow)과 같은 자료·같은 고정 일정(pwcFixed)
+ *     · 고정 일정: 학교·학원 등 회색 · 루멘 수업 빨강 (codi_fixed_<코드>, 없으면 학년별 학교 기본 시간 + 반 수업 요일)
+ *     · 할 일 = 과목 색 · 🧭 코디가 짠 것(src 'codi') = 실선 테두리 · ✏️ 학생이 직접 쓴 것(src 'me' 등) = 점선 테두리
+ *     · 실천 ✓(PW.chkOf = wplan_chk_ + codi_done_ — 주간 점수 «계획 실천»과 같은 자료) = 초록 테두리
+ *     · 아래 줄: 실천 a/b · 코디 c · 직접 d · 시간 h · 고정 일정을 안 넣은 학생은 「📌 고정 일정 안 넣음(학교 기본)」
+ *     · 안 낸 학생: 「안 냄」 + 「💬 알림」 · 카드를 누르면 지금의 큰 달력 창
+ *  ⑤ 💬 모아서 알림 = v19-114 «원장님 한마디» 길 그대로(wppSaveMsg → wpmsg_<코드> · wppPushComment → student_planner_<코드>.teacherComment)
+ *     확인 창에서 인원·글을 보고 고친 뒤 보낸다. 주간 점수 «✅ 체크하기»의 계획 알림도 이 창을 쓴다(plwRemindDlg).
+ *  자료: 주간 점수와 같은 PWB(plwLoad — lumen_store 한 번의 or 질의: wplan_ · codi_plan_ · codi_done_ · codi_fixed_ · sungong_ · plweek_paper · lumen_group_days)
+ *        + 알림 기록 wpmsg_% 한 번(60초 캐시). 학생마다 따로 읽지 않는다.
+ *  ※ 바탕 코드는 고치지 않는다(GROUPS · perViewLeftNav · plrNavGo 감싸기). 문자열 연결로만 쓴다(템플릿 리터럴 금지).
+ * ═══════════════════════════════════════════════════════════════════ */
+var PLWALL = { W: null, grp: '', page: 0, sort: 'nosub', order: [], poll: 0, msgAt: 0, msgBusy: false, msgs: {}, sending: false };
+var PLWALL_N = 6, PLWALL_M0 = 9 * 60, PLWALL_M1 = 24 * 60;
+
+/* ── 메뉴: 위 기능 탭 「수업·출결」의 주간 점수 바로 뒤 ── */
+(function(){
+  try {
+    var g = (GROUPS || []).filter(function(x){ return x.key === 'class'; })[0]; if (!g) return;
+    if (g.subs.some(function(s){ return s.v === 'plwall'; })) return;
+    var at = g.subs.length; g.subs.forEach(function(s, j){ if (s.v === 'plweek') at = j + 1; });
+    g.subs.splice(at, 0, { v: 'plwall', icon: '🗓', label: '주간계획 모아보기', act: function(){ VIEW = 'plwall'; pwlKick(true); } });
+  } catch(e){ try { console.error('[주간계획 모아보기 메뉴]', e); } catch(_){} }
+})();
+/* 왼쪽: 플래너 묶음 메뉴(rPlannerLeftNav — 칸은 조립 때 「주간 점수」 바로 아래에 넣는다) */
+perViewLeftNav = (function(o){ return function(v){
+  if (v === 'plwall' && typeof rPlannerLeftNav === 'function') return rPlannerLeftNav();
+  return o.apply(this, arguments); }; })(perViewLeftNav);
+if (typeof window.plrNavGo === 'function'){
+  window.plrNavGo = (function(o){ return function(v){
+    if (v === 'plwall'){ VIEW = 'plwall'; pwlKick(true); render(); return; }
+    return o.apply(this, arguments); }; })(window.plrNavGo);
+}
+
+/* ── 불러오기 — 주간 점수와 같은 plwLoad(새로 읽되 «다시 올리기»는 안 한다) + 알림 기록 ── */
+function pwlKick(fresh){
+  if (fresh && !PWB.loading) PWB.at = 0;   /* 60초 캐시를 비워 새로 읽는다 (plwLoad(true) 는 랭킹 다시 올리기까지 해서 쓰지 않는다) */
+  try { var p = plwLoad(); if (p && p.then) p.then(function(){ if (VIEW === 'plwall') render(); }); } catch(e){}
+  pwlMsgLoad(!!fresh);
+}
+async function pwlMsgLoad(force){
+  if (PLWALL.msgBusy) return; if (!force && PLWALL.msgAt && Date.now() - PLWALL.msgAt < 60000) return;
+  var sb = wppSb(); if (!sb) return;
+  PLWALL.msgBusy = true;
+  try {
+    var r = await sb.from('lumen_store').select('key,value').like('key', 'wpmsg_%');
+    if (r && r.error) throw r.error;
+    var m = {}; ((r && r.data) || []).forEach(function(row){ var k = String(row.key || ''); if (k.indexOf('wpmsg_') === 0) m[k.slice(6)] = wppVal(row.value); });
+    PLWALL.msgs = m; PLWALL.msgAt = Date.now();
+    Object.keys(m).forEach(function(c){ if (!WPP.mAt[c] || Date.now() - WPP.mAt[c] > 60000){ WPP.msg[c] = m[c]; WPP.mAt[c] = Date.now(); } });
+  } catch(e){ try { console.warn('[주간계획 모아보기] 알림 기록 읽기 실패', e); } catch(_){} PLWALL.msgAt = Date.now(); }
+  PLWALL.msgBusy = false;
+  if (VIEW === 'plwall' || VIEW === 'plweek') render();
+}
+/* 이 학생에게 그 주 계획 알림을 보낸 기록 (보낸 직후는 WPP.msg 가 더 새것) */
+window.plwRemindOf = function(c, P){
+  var a = WPP.msg[c], b = PLWALL.msgs[c], v = (a && b) ? ((String(a.upd || '') >= String(b.upd || '')) ? a : b) : (a || b);
+  var e = v && v.weeks && v.weeks[P];
+  return (e && e.remind && !e.off) ? e : null;
+};
+
+/* ── 학생 · 반 · 정렬 ── */
+function pwlAll(){ return (typeof students !== 'undefined' ? students : []).filter(function(s){ return s && s.lumen_rec_code && !s.withdrawn; }); }
+function pwlGroups(list){
+  var cnt = {}; list.forEach(function(s){ var g = String(s.group || ''); cnt[g] = (cnt[g] || 0) + 1; });
+  return Object.keys(cnt).sort(function(a, b){ if (!a) return 1; if (!b) return -1; return a.localeCompare(b, 'ko'); }).map(function(g){ return { g: g, n: cnt[g] }; });
+}
+function pwlP(){ return PLWALL.W || PW.thisMon(); }
+/* 한 학생 · 한 주 — 계획 냄 = 학생이 「계획 내기」를 눌렀거나 코디 계획이 있음(점수 계산 PW.planOf 와 같은 규칙) */
+window.plwWallInfo = function(st, P){
+  var c = st.lumen_rec_code, pl = wppPlan(c, P), S = wppSummary(c, P), fx = pwcFixed(st);
+  return { st: st, c: c, pl: pl, S: S, fx: fx, sub: !!pl.sub, n: S.n, ok: S.ok, codi: S.codi, me: S.n - S.codi, mins: S.mins };
+};
+function pwlRows(){
+  var P = pwlP(), all = pwlAll(), g = PLWALL.grp;
+  if (g === '~none~') g = '';
+  var list = (PLWALL.grp === '') ? all : all.filter(function(s){ return String(s.group || '') === g; });
+  var rows = list.map(function(st){ return plwWallInfo(st, P); });
+  var nm = function(a, b){ return String(a.st.name || '').localeCompare(String(b.st.name || ''), 'ko'); };
+  var gp = function(a, b){ return String(a.st.group || '').localeCompare(String(b.st.group || ''), 'ko'); };
+  if (PLWALL.sort === 'name') rows.sort(nm);
+  else if (PLWALL.sort === 'group') rows.sort(function(a, b){ return gp(a, b) || nm(a, b); });
+  else rows.sort(function(a, b){ return ((a.sub ? 1 : 0) - (b.sub ? 1 : 0)) || gp(a, b) || nm(a, b); });
+  return rows;
+}
+
+/* ── 조작 ── */
+window.pwlWeek = function(d){ PLWALL.W = d ? PW.add(pwlP(), 7 * d) : PW.thisMon(); PLWALL.page = 0; render(); };
+window.pwlGrp = function(el){ PLWALL.grp = el ? String(el.getAttribute('data-g') || '') : ''; PLWALL.page = 0; render(); };
+window.pwlSort = function(k){ PLWALL.sort = k; PLWALL.page = 0; render(); };
+window.pwlPage = function(d){ PLWALL.page = Math.max(0, PLWALL.page + d); render(); };
+window.pwlOpen = function(c){
+  if (!c) return;
+  PWB.order = PLWALL.order.slice();   /* 큰 달력 창의 ‹ › = 이 화면 순서 */
+  plwCal(c, pwlP());
+};
+window.pwlKey = function(e, c){ if (e && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); pwlOpen(c); } };
+
+/* ── 💬 알림 (확인 창 → v19-114 한마디 길) ── */
+window.plwRemindText = function(P){
+  var w = PW.add(P, -7), now = Date.now();
+  if (now < PW.dueMs(w)) return '다음 주 계획을 아직 안 냈어요. 일요일 밤 12시까지 내면 ' + PW.PT.plan.ok + '점!';
+  if (now < PW.lateMs(w)) return '이번 주 계획을 아직 안 냈어요. 오늘 밤 12시까지 내면 ' + PW.PT.plan.late + '점!';
+  return '다음 주 계획을 아직 안 냈어요. 일요일 밤 12시까지 내면 ' + PW.PT.plan.ok + '점!';
+};
+window.plwRemindDlg = function(codes, P, title){
+  codes = (codes || []).filter(function(c){ return !!wppStu(c); });
+  if (!codes.length){ wppToast('알림 보낼 학생이 없어요'); return; }
+  var old = document.getElementById('plw-rem-ov'); if (old) old.remove();
+  var ov = document.createElement('div'); ov.id = 'plw-rem-ov'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', '계획 알림 보내기');
+  ov.setAttribute('data-codes', codes.join(',')); ov.setAttribute('data-week', P);
+  var names = codes.map(function(c){ var s = wppStu(c); return '<span class="plw-rem-nm">' + wppEsc(s.name) + (plwRemindOf(c, P) ? ' <small>(보냄)</small>' : '') + '</span>'; }).join('');
+  ov.innerHTML = '<div class="plw-rem-box"><h3>💬 ' + wppEsc(title || (codes.length + '명에게 알림')) + '</h3>'
+    + '<div class="plw-rem-sub">' + PW.md(P) + '~' + PW.md(PW.add(P, 6)) + ' 주 계획 · <b id="plw-rem-n">' + codes.length + '명</b></div>'
+    + '<div class="plw-rem-names">' + names + '</div>'
+    + '<label class="plw-rem-lb" for="plw-rem-txt">보낼 글 (고칠 수 있어요)</label>'
+    + '<textarea id="plw-rem-txt" maxlength="300">' + wppEsc(plwRemindText(P)) + '</textarea>'
+    + '<div class="plw-rem-sub">학생앱 «플래너» 화면 「💬 선생님 한마디」 칸에 학생마다 2주 동안 보여요 (v19-114 «원장님 한마디»와 같은 칸 — 그 학생의 지난 한마디는 이 글로 바뀝니다).</div>'
+    + '<div class="plw-rem-btns"><button type="button" class="wpp-btn" id="plw-rem-no" onclick="plwRemindClose()">취소</button><button type="button" class="wpp-btn pri" id="plw-rem-go" onclick="plwRemindGo()">💬 ' + codes.length + '명에게 보내기</button></div>'
+    + '<div id="plw-rem-st" class="plw-rem-sub" aria-live="polite"></div></div>';
+  ov.onclick = function(e){ if (e.target === ov && !PLWALL.sending) plwRemindClose(); };
+  document.body.appendChild(ov);
+  setTimeout(function(){ var t = document.getElementById('plw-rem-txt'); if (t) t.focus(); }, 30);
+};
+window.plwRemindClose = function(){ if (PLWALL.sending) return; var ov = document.getElementById('plw-rem-ov'); if (ov) ov.remove(); };
+window.plwRemindGo = async function(){
+  var ov = document.getElementById('plw-rem-ov'); if (!ov || PLWALL.sending) return;
+  var codes = String(ov.getAttribute('data-codes') || '').split(',').filter(Boolean), P = ov.getAttribute('data-week');
+  var ta = document.getElementById('plw-rem-txt'), text = String((ta && ta.value) || '').trim().slice(0, 300);
+  if (!text){ wppToast('보낼 글을 써 주세요'); if (ta) ta.focus(); return; }
+  PLWALL.sending = true;
+  var go = document.getElementById('plw-rem-go'), no = document.getElementById('plw-rem-no'), stEl = document.getElementById('plw-rem-st');
+  if (go) go.disabled = true; if (no) no.disabled = true;
+  var res = await plwRemindSend(codes, P, text, function(k, n){ if (stEl) stEl.textContent = '보내는 중 ' + k + '/' + n + '…'; });
+  PLWALL.sending = false;
+  ov.remove();
+  var msg = '💬 ' + res.ok + '명에게 보냈어요 — 학생앱 플래너 「💬 선생님 한마디」' + (res.norow ? ' · 학생앱 플래너 점수 줄이 아직 없는 ' + res.norow + '명은 첫 승인 때 함께 나가요' : '');
+  wppToast(msg);
+  if (res.fail.length) alert('보내지 못한 학생 ' + res.fail.length + '명: ' + res.fail.join(', '));
+  render();
+};
+/* 실제 보내기 — 학생마다 wpmsg_<코드> 저장 → student_planner_<코드>.teacherComment (4명씩 나눠서) */
+window.plwRemindSend = async function(codes, P, text, prog){
+  var out = { ok: 0, norow: 0, fail: [] }, i = 0, done = 0;
+  async function one(c){
+    try {
+      await wppSaveMsg(c, function(v, now){
+        v.weeks[P] = { text: text, like: false, at: now, remind: true };
+        v.last = P; v.log.push({ W: P, text: text, like: false, remind: true, at: now });
+      });
+      PLWALL.msgs[c] = WPP.msg[c];
+      var r = await wppPushComment(c);
+      out.ok++; if (r === 'norow') out.norow++;
+    } catch(e){ var s = wppStu(c); out.fail.push((s && s.name) || c); try { console.warn('[계획 알림]', c, e); } catch(_){} }
+    done++; if (prog) try { prog(done, codes.length); } catch(_){}
+  }
+  async function lane(){ while (i < codes.length){ var c = codes[i++]; await one(c); } }
+  var lanes = []; for (var k = 0; k < Math.min(4, codes.length); k++) lanes.push(lane());
+  await Promise.all(lanes);
+  return out;
+};
+window.pwlRemindAll = function(){
+  var P = pwlP(), codes = pwlRows().filter(function(r){ return !r.sub; }).map(function(r){ return r.c; });
+  plwRemindDlg(codes, P, '계획 안 낸 ' + codes.length + '명에게 알림' + (PLWALL.grp ? ' (' + (PLWALL.grp === '~none~' ? '반 없음' : PLWALL.grp) + ')' : ''));
+};
+window.pwlRemindOne = function(e, c){ if (e) e.stopPropagation(); var s = wppStu(c); plwRemindDlg([c], pwlP(), (s ? s.name : '') + ' 학생에게 알림'); };
+
+/* ── 카드 ── */
+function pwlMin(t){ var p = String(t || '').split(':'); if (p.length < 2) return -1; return Number(p[0]) * 60 + Number(p[1]); }
+function pwlPct(m){ return Math.max(0, Math.min(100, (m - PLWALL_M0) / (PLWALL_M1 - PLWALL_M0) * 100)); }
+/* 같은 날 겹치는 할 일은 나란히(칸 나누기) */
+function pwlLanes(arr){
+  arr.sort(function(a, b){ return a.a - b.a || b.e - a.e; });
+  var cl = [], cur = null;
+  arr.forEach(function(x){
+    if (!cur || x.a >= cur.end){ cur = { end: x.e, items: [], lanes: [] }; cl.push(cur); }
+    var l = 0; while (cur.lanes[l] != null && cur.lanes[l] > x.a) l++;
+    cur.lanes[l] = x.e; x.lane = l; cur.items.push(x); if (x.e > cur.end) cur.end = x.e;
+  });
+  cl.forEach(function(c){ var n = c.lanes.length; c.items.forEach(function(x){ x.nl = n; }); });
+  return arr;
+}
+window.plwWallCard = function(R, P, opt){
+  opt = opt || {};
+  var st = R.st, c = R.c, today = PW.day(), chk = wppChk(c, P), h = '';
+  var grade = wppGrade(st), tag;
+  if (R.sub) tag = '<span class="pwl-tag ok">' + (R.pl.codiOnly ? '🧭 코디 계획 ' : '제출 ') + R.n + '개</span>';
+  else tag = '<span class="pwl-tag no">안 냄</span>';
+  h += '<div class="pwl-card' + (R.sub ? '' : ' nosub') + '" data-code="' + wppEsc(c) + '"' + (opt.print ? '' : ' role="button" tabindex="0" aria-label="' + wppEsc(st.name) + ' 주간계획 크게 보기" onclick="pwlOpen(\'' + wppJs(c) + '\')" onkeydown="pwlKey(event,\'' + wppJs(c) + '\')"') + '>';
+  h += '<div class="pwl-ch"><b>' + wppEsc(st.name) + '</b><span class="pwl-g">' + wppEsc(grade) + (st.group ? ' · ' + wppEsc(st.group) : '') + '</span>' + tag + '</div>';
+  h += '<div class="pwl-mini"><div class="pwl-dh"></div>';
+  for (var d = 0; d < 7; d++){ var dt = PW.add(P, d); h += '<div class="pwl-dh' + (dt === today ? ' t' : '') + (d === 5 ? ' sat' : (d === 6 ? ' sun' : '')) + '">' + PW.DOW[d] + '</div>'; }
+  h += '<div class="pwl-hr">';
+  for (var hh = 9; hh < 24; hh += 3) h += '<span style="top:' + pwlPct(hh * 60).toFixed(2) + '%">' + hh + '</span>';
+  h += '</div>';
+  var untimed = 0;
+  for (d = 0; d < 7; d++){
+    var date = PW.add(P, d);
+    h += '<div class="pwl-col' + (date === today ? ' t' : '') + '" data-d="' + d + '">';
+    R.fx.list.forEach(function(b){
+      if ((b.days || []).indexOf(d) < 0) return;
+      var a = Math.max(PLWALL_M0, pwlMin(b.start)), e = Math.min(PLWALL_M1, pwlMin(b.end)); if (!(e > a)) return;
+      var cls = b.type === 'lumen' ? 'lum' : (b.type === 'school' ? 'sch' : 'oth');
+      h += '<div class="pwl-fx ' + cls + '" data-type="' + wppEsc(b.type || '') + '" style="top:' + pwlPct(a).toFixed(2) + '%;height:' + (pwlPct(e) - pwlPct(a)).toFixed(2) + '%" title="' + wppEsc((b.label || '') + ' ' + (b.start || '') + '~' + (b.end || '')) + '">' + wppEsc(b.type === 'lumen' ? '루멘 수업' : (b.label || '')) + '</div>';
+    });
+    var its = [];
+    (R.S.days[d] || []).forEach(function(x){
+      var it = x.it, a = pwlMin(it.t); if (a < 0){ untimed++; return; }
+      var e = a + (+it.n || 2) * 30; if (e <= PLWALL_M0){ a = PLWALL_M0; e = PLWALL_M0 + 30; } else if (a < PLWALL_M0) a = PLWALL_M0;
+      if (a >= PLWALL_M1){ a = PLWALL_M1 - 30; e = PLWALL_M1; } if (e > PLWALL_M1) e = PLWALL_M1;
+      its.push({ a: a, e: e, x: x });
+    });
+    pwlLanes(its).forEach(function(o){
+      var it = o.x.it, cc = PWC_COL[it.subj] || PWC_COL['기타'], codi = it.src === 'codi', done = !!(chk[it.id] && chk[it.id].ok);
+      var w = 100 / (o.nl || 1);
+      h += '<div class="pwl-it ' + (codi ? 'codi' : 'me') + (done ? ' done' : '') + '" data-src="' + (codi ? 'codi' : 'me') + '" data-id="' + wppEsc(it.id) + '"'
+        + ' style="top:' + pwlPct(o.a).toFixed(2) + '%;height:' + (pwlPct(o.e) - pwlPct(o.a)).toFixed(2) + '%;left:calc(' + (o.lane * w).toFixed(2) + '% + 1px);width:calc(' + w.toFixed(2) + '% - 2px);background:' + cc[0] + ';color:' + cc[1] + ';border-color:' + cc[1] + '"'
+        + ' title="' + wppEsc((codi ? '🧭 코디가 짠 계획' : '✏️ 학생이 직접') + ' · ' + (it.subj || '') + ' · ' + it.title + (it.part ? ' ' + it.part : '') + ' · ' + it.t + ' ' + ((+it.n || 2) * 30) + '분' + (done ? ' · 실천 ✓' : '')) + '">'
+        + (codi ? '🧭' : '✏️') + wppEsc(it.title) + '</div>';
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+  /* 아래 줄 */
+  var ft = '실천 ' + R.ok + '/' + R.n + ' · 코디 ' + R.codi + ' · 직접 ' + R.me + ' · 시간 ' + wppHm(R.mins);
+  var rm = R.sub ? null : plwRemindOf(c, P);
+  h += '<div class="pwl-foot"><span class="pwl-ft">' + ft + '</span>' + (untimed ? '<span class="pwl-ut" title="시간을 안 정한 할 일">⏱ ' + untimed + '</span>' : '')
+    + ((!R.sub && !opt.print) ? '<button type="button" class="pwl-rm" onclick="pwlRemindOne(event,\'' + wppJs(c) + '\')">💬 ' + (rm ? '다시 알림' : '알림') + '</button>' : '') + '</div>';
+  var tags = '';
+  if (!R.fx.mine) tags += '<span class="pwl-fxtag">📌 고정 일정 안 넣음(학교 기본)</span>';
+  if (!R.sub){
+    if (R.n) tags += '<span class="pwl-wip" title="할 일은 썼지만 학생앱에서 「계획 내기」를 안 눌렀어요">✏️ 쓰는 중 ' + R.n + '개</span>';
+    if (rm) tags += '<span class="pwl-sent" title="계획 알림을 보낸 시각">💬 보냄 ' + plwTime(rm.at) + '</span>';
+  }
+  if (tags) h += '<div class="pwl-tags">' + tags + '</div>';
+  return h + '</div>';
+};
+
+/* ── 화면 ── */
+window.rPlWall = function(){
+  if (!PWB.loaded){
+    pwlKick(false);
+    clearTimeout(PLWALL.poll); PLWALL.poll = setTimeout(function(){ if (VIEW === 'plwall') render(); }, 400);
+    return '<div style="padding:40px;text-align:center;color:#94a3b8">⏳ 주간계획 불러오는 중…</div>';
+  }
+  if (!PLWALL.msgAt) pwlMsgLoad(false);
+  var P = pwlP(), thisMon = PW.thisMon(), all = pwlAll(), groups = pwlGroups(all), rows = pwlRows();
+  PLWALL.order = rows.map(function(r){ return r.c; });
+  var pages = Math.max(1, Math.ceil(rows.length / PLWALL_N)); if (PLWALL.page >= pages) PLWALL.page = pages - 1; if (PLWALL.page < 0) PLWALL.page = 0;
+  var vis = rows.slice(PLWALL.page * PLWALL_N, PLWALL.page * PLWALL_N + PLWALL_N);
+  PLWALL.vis = vis.map(function(r){ return r.c; });
+  var nSub = rows.filter(function(r){ return r.sub; }).length, nIt = 0, nOk = 0;
+  rows.forEach(function(r){ nIt += r.n; nOk += r.ok; });
+  var nNo = rows.length - nSub;
+  var rel = P === thisMon ? '이번 주' : (P === PW.add(thisMon, -7) ? '지난 주' : (P === PW.add(thisMon, 7) ? '다음 주' : ''));
+  var chip = function(on, label, js, extra){ return '<button type="button" class="pwl-c' + (on ? ' on' : '') + '" aria-pressed="' + (!!on) + '" onclick="' + js + '"' + (extra || '') + '>' + label + '</button>'; };
+  var h = '<div class="pwl-wrap">';
+  h += '<div class="pwl-hd"><b class="pwl-ttl">🗓 주간계획 모아보기</b>'
+    + '<span class="pwl-gp" role="group" aria-label="주 고르기">' + chip(false, '‹', 'pwlWeek(-1)', ' aria-label="앞 주"') + chip(true, PW.md(P) + '~' + PW.md(PW.add(P, 6)) + (rel ? ' ' + rel : ''), 'pwlWeek(0)', ' title="이번 주로"') + chip(false, '›', 'pwlWeek(1)', ' aria-label="다음 주"') + '</span>'
+    + '<span class="pwl-gp pwl-grps" role="group" aria-label="반">' + chip(PLWALL.grp === '', '전체 <small>' + all.length + '</small>', 'pwlGrp(null)', ' data-g=""')
+    + groups.map(function(g){ var key = g.g || '~none~'; return chip(PLWALL.grp === key, wppEsc(g.g || '반 없음') + ' <small>' + g.n + '</small>', 'pwlGrp(this)', ' data-g="' + wppEsc(key) + '"'); }).join('') + '</span>'
+    + '<span class="pwl-gp pwl-pg" role="group" aria-label="6명씩 넘기기">' + chip(false, '‹ 앞 6명', 'pwlPage(-1)', PLWALL.page <= 0 ? ' disabled' : '')
+    + '<span class="pwl-c on pwl-pgn" aria-live="polite">' + (PLWALL.page + 1) + ' / ' + pages + '</span>'
+    + chip(false, '다음 6명 ›', 'pwlPage(1)', PLWALL.page >= pages - 1 ? ' disabled' : '') + '</span></div>';
+  h += '<div class="pwl-sum">'
+    + '<div><b>' + nSub + '/' + rows.length + '</b>명 계획 냄</div>'
+    + '<div>할 일 <b>' + nIt + '</b>개</div>'
+    + '<div>실천 ✓ <b style="color:#15803d">' + nOk + '</b>개</div>'
+    + '<div class="pwl-no">안 낸 <b style="color:#dc2626">' + nNo + '</b>명' + (nNo ? ' → <button type="button" class="pwl-link" id="pwl-remind-all" onclick="pwlRemindAll()">💬 모아서 알림</button>' : '') + '</div>'
+    + '<div class="pwl-sort">정렬: ' + chip(PLWALL.sort === 'nosub', '안 낸 학생 먼저', "pwlSort('nosub')") + chip(PLWALL.sort === 'name', '이름', "pwlSort('name')") + chip(PLWALL.sort === 'group', '반', "pwlSort('group')")
+    + ' <button type="button" class="pwl-link" id="pwl-print" onclick="pwlPrint()">🖨 ' + vis.length + '명 한 장 인쇄</button></div></div>';
+  if (!rows.length) h += '<div class="pwl-empty">이 반에 학생이 없어요.</div>';
+  else {
+    h += '<div class="pwl-grid">';
+    vis.forEach(function(R){ h += plwWallCard(R, P); });
+    h += '</div>';
+  }
+  h += '<div class="pwl-legend"><span class="pwl-lg sch">학교·학원</span><span class="pwl-lg lum">루멘 수업</span><span class="pwl-lg codi">🧭 코디가 짠 계획</span><span class="pwl-lg me">✏️ 학생이 직접</span><span class="pwl-lg done">실천 ✓</span>'
+    + '<span>· 9시~24시 · 카드를 누르면 큰 달력 · 계획 냄 = 학생이 「계획 내기」를 눌렀거나 코디 계획이 있음 (주간 점수와 같은 기준)</span></div>';
+  return h + '</div>';
+};
+
+/* 🖨 지금 보이는 6명 한 장 (A4 가로) */
+window.pwlPrint = function(){
+  var P = pwlP(), rows = pwlRows(), vis = rows.filter(function(r){ return (PLWALL.vis || []).indexOf(r.c) >= 0; });
+  vis.sort(function(a, b){ return PLWALL.vis.indexOf(a.c) - PLWALL.vis.indexOf(b.c); });
+  if (!vis.length){ wppToast('인쇄할 학생이 없어요'); return; }
+  var css = (document.getElementById('pwl-css') || {}).textContent || '';
+  var h = '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>주간계획 ' + PW.md(P) + '~' + PW.md(PW.add(P, 6)) + '</title><style>' + css
+    + '@page{size:A4 landscape;margin:7mm}html,body{margin:0;background:#fff;font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#0f172a;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+    + '.pp{width:283mm;height:194mm;overflow:hidden;display:flex;flex-direction:column;gap:2mm;page-break-after:avoid}'
+    + '.pp h1{font-size:14px;margin:0;color:#0d2240}.pp .pwl-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:3mm;flex:1}'
+    + '.pp .pwl-card{padding:6px;border-radius:8px;break-inside:avoid}.pp .pwl-mini{--pwl-h:236px}.bar{padding:6px}.bar button{font:inherit;padding:5px 12px;border-radius:8px;border:1px solid #0d2240;background:#0d2240;color:#fff;font-weight:800}@media print{.bar{display:none}}'
+    + '</style></head><body><div class="bar"><button onclick="window.print()">🖨 인쇄</button></div><div class="pp"><h1>🗓 주간계획 ' + PW.md(P) + '(월) ~ ' + PW.md(PW.add(P, 6)) + '(일)' + (PLWALL.grp ? ' · ' + wppEsc(PLWALL.grp === '~none~' ? '반 없음' : PLWALL.grp) : '') + '</h1><div class="pwl-grid">';
+  vis.forEach(function(R){ h += plwWallCard(R, P, { print: true }); });
+  h += '</div></div><script>setTimeout(function(){window.print()},300)<\/script></body></html>';
+  var w = window.open('', '_blank'); if (!w){ alert('팝업이 막혔습니다 — 허용해 주세요'); return; }
+  w.document.open(); w.document.write(h); w.document.close();
+};
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape' && document.getElementById('plw-rem-ov')) plwRemindClose();
+});
+
+/* ── 모양 ── */
+(function(){
+  if (document.getElementById('pwl-css')) return;
+  var st = document.createElement('style'); st.id = 'pwl-css';
+  st.textContent = ''
+    + '.pwl-wrap{padding:14px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}'
+    + '.pwl-hd{background:linear-gradient(135deg,#0d2240,#164a7a);color:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;min-width:0}'
+    + '.pwl-ttl{font-size:15px;font-weight:900;white-space:nowrap}.pwl-gp{display:inline-flex;gap:4px;flex-wrap:wrap;min-width:0}.pwl-pg{margin-left:auto}'
+    + '.pwl-c{border-radius:999px;padding:5px 11px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;background:rgba(255,255,255,.13);color:#fff;border:1px solid rgba(255,255,255,.28);white-space:nowrap}'
+    + '.pwl-c small{opacity:.7;font-size:10.5px}.pwl-c.on{background:#fff;color:#0d2240;border-color:#fff}.pwl-c[disabled]{opacity:.4;cursor:default}.pwl-pgn{cursor:default}'
+    + '.pwl-c:focus-visible,.pwl-link:focus-visible,.pwl-rm:focus-visible,.pwl-card:focus-visible{outline:2px solid #1d6fe8;outline-offset:2px}'
+    + '.pwl-sum{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.pwl-sum>div{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:7px 12px;font-size:12.5px;color:#334155;font-weight:700}'
+    + '.pwl-sum b{font-size:17px;margin-right:2px;color:#0d2240}.pwl-sort{display:flex;align-items:center;gap:5px;flex-wrap:wrap}'
+    + '.pwl-sort .pwl-c{background:#f1f5f9;color:#475569;border-color:#e2e8f0;padding:3px 9px}.pwl-sort .pwl-c.on{background:#0d2240;color:#fff;border-color:#0d2240}'
+    + '.pwl-link{border:none;background:none;padding:0;font:inherit;font-weight:900;color:#1d4ed8;cursor:pointer;text-decoration:underline;text-underline-offset:3px}'
+    + '.pwl-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}'
+    + '@media(max-width:1023px){.pwl-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}'
+    + '@media(max-width:640px){.pwl-grid{grid-template-columns:minmax(0,1fr)}.pwl-pg{margin-left:0}.pwl-wrap{padding:10px}}'
+    + '.pwl-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:8px 9px;min-width:0;cursor:pointer;display:flex;flex-direction:column;gap:4px}'
+    + '.pwl-card:hover{border-color:#93c5fd;box-shadow:0 2px 10px rgba(29,111,232,.12)}.pwl-card.nosub{border-color:#fecaca}'
+    + '.pwl-ch{display:flex;align-items:baseline;gap:6px;min-width:0}.pwl-ch b{font-size:14px;color:#0d2240;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+    + '.pwl-g{color:#64748b;font-size:11px;font-weight:700;white-space:nowrap}'
+    + '.pwl-tag{margin-left:auto;font-size:10.5px;font-weight:900;border-radius:6px;padding:2px 7px;white-space:nowrap}.pwl-tag.ok{background:#dcfce7;color:#15803d}.pwl-tag.no{background:#fee2e2;color:#dc2626}'
+    + '.pwl-mini{--pwl-h:clamp(140px,calc(50vh - 330px),240px);display:grid;grid-template-columns:20px repeat(7,minmax(0,1fr));gap:1px;background:#e2e8f0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden}'
+    + '.pwl-dh{background:#0d2240;color:#fff;text-align:center;font-size:10.5px;font-weight:800;padding:2px 0}.pwl-dh.t{background:#ea580c}.pwl-dh.sat{color:#93c5fd}.pwl-dh.sun{color:#fca5a5}.pwl-dh.t.sat,.pwl-dh.t.sun{color:#fff}'
+    + '.pwl-hr{position:relative;height:var(--pwl-h);background:#f8fafc;font-size:9px;color:#94a3b8;font-weight:700}.pwl-hr span{position:absolute;left:0;right:0;text-align:center;line-height:1}'
+    + '.pwl-col{position:relative;height:var(--pwl-h);background-color:#fff;background-image:linear-gradient(#eef2f6 1px,transparent 1px);background-size:100% 20%;overflow:hidden}.pwl-col.t{background-color:#fff8f1}'
+    + '.pwl-fx{position:absolute;left:1px;right:1px;border-radius:3px;font-size:9px;font-weight:800;display:flex;align-items:flex-start;justify-content:center;text-align:center;overflow:hidden;line-height:1.15;padding-top:1px;box-sizing:border-box;z-index:0;word-break:keep-all}'
+    + '.pwl-fx.sch{background:#e5e7eb;color:#6b7280}.pwl-fx.oth{background:#eef0f3;color:#64748b;border:1px solid #cbd5e1}.pwl-fx.lum{background:#fee2e2;color:#b91c1c;border:1px solid #f87171}'
+    + '.pwl-it{position:absolute;border-radius:3px;font-size:9px;font-weight:800;line-height:1.15;padding:0 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-sizing:border-box;min-height:9px;z-index:1}'
+    + '.pwl-it.codi{border-width:1.5px;border-style:solid}.pwl-it.me{border-width:1.5px;border-style:dashed}.pwl-it.done{outline:2px solid #16a34a;outline-offset:-1px;z-index:2}'
+    + '.pwl-foot{display:flex;justify-content:space-between;gap:6px;color:#475569;font-size:11px;font-weight:700;min-width:0}.pwl-ft{overflow-wrap:anywhere}.pwl-ut{color:#64748b;white-space:nowrap}'
+    + '.pwl-tags{display:flex;gap:5px;flex-wrap:wrap;align-items:center}.pwl-tags>*{font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;white-space:nowrap}'
+    + '.pwl-fxtag{background:#fff7ed;color:#9a3412}.pwl-wip{background:#f1f5f9;color:#475569}.pwl-sent{background:#f0fdf4;color:#166534}'
+    + '.pwl-rm{border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;cursor:pointer;font:inherit;font-size:10.5px;font-weight:900;border-radius:6px;padding:1px 7px;white-space:nowrap;margin-left:auto}'
+    + '.pwl-empty{background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:24px;text-align:center;color:#64748b;font-weight:700}'
+    + '.pwl-legend{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;color:#64748b;font-weight:700}.pwl-lg{border-radius:4px;padding:1px 6px;font-size:10.5px;font-weight:800}'
+    + '.pwl-lg.sch{background:#e5e7eb;color:#6b7280}.pwl-lg.lum{background:#fee2e2;color:#b91c1c;border:1px solid #f87171}.pwl-lg.codi{background:#fde2e1;color:#b3261e;border:1.5px solid #b3261e}'
+    + '.pwl-lg.me{background:#dbeafe;color:#1d4ed8;border:1.5px dashed #1d4ed8}.pwl-lg.done{background:#fff;color:#15803d;outline:2px solid #16a34a;outline-offset:-2px}'
+    /* 알림 확인 창 */
+    + '#plw-rem-ov{position:fixed;inset:0;z-index:10001;background:rgba(13,34,64,.45);display:flex;align-items:center;justify-content:center;padding:16px}'
+    + '.plw-rem-box{background:#fff;border-radius:16px;width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;padding:16px;display:flex;flex-direction:column;gap:9px;box-shadow:0 20px 50px rgba(13,34,64,.35)}'
+    + '.plw-rem-box h3{margin:0;font-size:16px;color:#0d2240}.plw-rem-sub{font-size:12px;color:#64748b;font-weight:700;line-height:1.55}.plw-rem-sub b{color:#dc2626}'
+    + '.plw-rem-names{display:flex;flex-wrap:wrap;gap:4px;max-height:120px;overflow:auto}.plw-rem-nm{font-size:11.5px;font-weight:800;background:#f1f5f9;color:#334155;border-radius:6px;padding:2px 7px}.plw-rem-nm small{color:#15803d}'
+    + '.plw-rem-lb{font-size:12px;font-weight:900;color:#0d2240}.plw-rem-box textarea{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:8px;font:inherit;font-size:13px;min-height:64px;resize:vertical}'
+    + '.plw-rem-btns{display:flex;gap:8px;justify-content:flex-end}';
+  (document.head || document.documentElement).appendChild(st);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-115: 📅 주간 점수 화면을 «✅ 체크하기 | 📊 점수 보기» 두 칸으로 — 시안 docs/mockup_week_check_score.html
+ * 원장 2026-10-12 「v19-115 만들어 배포해줘」 (한 표 안에 단추·점수·시각이 섞여 헷갈리던 것)
+ *
+ *  ① 머리에 두 칸 단추: 「✅ 체크하기 (n)」 | 「📊 점수 보기」 — n = 남은 할 일 수
+ *     · 기본: 월요일과 수업 있는 날(lumen_group_days)은 체크하기, 그 밖엔 점수 보기
+ *     · 오늘 고른 칸은 이 기기에만 기억(wkc_mode — _origSetItem, 서버로 안 올림). 다음 날은 다시 위 기본
+ *  ② ✅ 체크하기 — 점수 숫자 없이 «할 일 카드» + 큰 단추. 끝난 카드는 접히고, 셋 다 끝나면 「이번 주 체크 끝 🎉」
+ *     a. 📔 순공 종이 — 가져왔나요? (오늘 수업 반만 / 전체) 「📔 가져옴」 = 예전 표의 「📔 가져옴 ✓」(plwPaper → plweek_paper)
+ *        「안 가져옴」 = 오늘 확인했다는 표시(plweek_paper.byCode[코드][주].miss = 오늘 날짜) — 점수는 안 바뀐다(다음 수업에 다시 묻는다)
+ *     b. 📸 순공 사진 — 확인 필요 (늦게 낸 것 · 마감 뒤 · 사진 없이 낸 것 · 다시 내기 뒤 새로 낸 것)
+ *        「✓ 인정」 = 사진 점수 손 고침 pov(v19-86 sgsPov 와 같은 칸) — 지각이면 지각(2점) 그대로 굳히기, 마감 뒤·사진 없음이면 지각(2점)으로 인정
+ *        「✕ 다시 내기」 = pov 'none'(0점) + povWhy '다시 내기 요청' — 학생이 새로 내면 이 카드에 다시 뜬다 · 「🔍 사진 보기」
+ *     c. 📅 다음 주 계획 — 안 낸 학생: 「💬 n명에게 알림」(🗓 모아보기와 같은 확인 창 → v19-114 한마디 길) · 명단 인쇄
+ *     d. 「✋ 손으로 고치기 — 전체 학생」: 학생마다 «…» = 예전 표의 「자동▾」(종이 판정 자동/제출/지각/미제출 → plwPaperOv) + 사진 점수(sgsPov)
+ *  ③ 📊 점수 보기 — 보기만(단추·고르기 칸 없음): 「📅 주간계획 10점」(계획 5 · 실천 5) · 「📔 순공 10점」(사진 5 · 종이 5) 묶음 머리,
+ *     칸 = 점수 알약(5 초록 · 3 파랑 · 2 주황 · 1 노랑 · 0 회색) — 마우스를 올리거나 누르면 낸 시각 · 주간 합 /20 + 막대 · 매일 합
+ *     숫자는 모두 plwScore(예전 표와 같은 계산) · 이름(또는 줄)을 누르면 v19-114 오른쪽 주간계획표 · ↑/↓ 그대로
+ *  ※ 바탕 코드는 고치지 않고 rPlWeek · render 를 감싼다(v19-114 감싸기 바깥). 문자열 연결로만 쓴다(템플릿 리터럴 금지).
+ *  ※ plwPaper 는 같은 저장 길(plwSavePaper)로 다시 정의 — 「가져옴」이 사진 손 고침(pov)을 지우던 것을 막고 «안 가져옴» 표시를 지운다.
+ * ═══════════════════════════════════════════════════════════════════ */
+var WKC = { todayOnly: true, tipT: 0 };
+
+/* ── 이 기기에만 두는 설정 ── */
+function wkcGet(k){ try { return (typeof _origGetItem === 'function' ? _origGetItem(k) : localStorage.getItem(k)); } catch(e){ return null; } }
+function wkcSet(k, v){ try { if (typeof _origSetItem === 'function') _origSetItem(k, v); else localStorage.setItem(k, v); } catch(e){} }
+/* 오늘 수업 있는 반 (lumen_group_days: 반 → JS 요일 0=일) */
+window.wkcClassGroups = function(){
+  var jd = (PW.dow(PW.day()) + 1) % 7, days = PWB.days || {};
+  return Object.keys(days).filter(function(g){ return Array.isArray(days[g]) && days[g].indexOf(jd) >= 0; });
+};
+window.wkcDefaultMode = function(){ return (PW.dow(PW.day()) === 0 || wkcClassGroups().length) ? 'check' : 'score'; };
+window.wkcMode = function(){
+  var raw = wkcGet('wkc_mode'), v = null; try { v = raw ? JSON.parse(raw) : null; } catch(e){ v = null; }
+  if (v && (v.m === 'check' || v.m === 'score') && v.d === PW.day()) return v.m;
+  return wkcDefaultMode();
+};
+window.wkcGo = function(m){ wkcSet('wkc_mode', JSON.stringify({ m: m, d: PW.day() })); if (m === 'check') PWB.only = '';   /* 체크하기엔 거르기 칩이 없다 — ↑/↓ 순서가 숨은 거르기에 묶이지 않게 */
+  render(); };
+window.wkcToday = function(){ WKC.todayOnly = !WKC.todayOnly; render(); };
+
+/* ── 「가져옴」 — 같은 저장 길 · 사진 손 고침(pov)은 남기고 «안 가져옴» 표시는 지운다 ── */
+window.plwPaper = function(code){
+  var W = PWB.W || plwDefaultW(); PWB._lastPaperCode = code;
+  return plwSavePaper(function(v){
+    v.byCode[code] = v.byCode[code] || {};
+    var k = v.byCode[code][W] || {}, rec = { at: new Date().toISOString() };
+    if (k.pov){ rec.pov = k.pov; if (k.povWhy) rec.povWhy = k.povWhy; if (k.povAt) rec.povAt = k.povAt; }
+    v.byCode[code][W] = rec;
+  });
+};
+/* 「안 가져옴」 — 오늘 확인함(점수 그대로 0 · 판정 손 고침도 지움) */
+window.wkcPaperMiss = function(code){
+  var W = PWB.W || plwDefaultW(), today = PW.day(); PWB._lastPaperCode = code;
+  return plwSavePaper(function(v){
+    v.byCode[code] = v.byCode[code] || {};
+    var rec = v.byCode[code][W] || {};
+    delete rec.at; delete rec.ov; rec.miss = today;
+    v.byCode[code][W] = rec;
+  });
+};
+
+/* ── 할 일 계산 ── */
+function wkcPlanWeek(W){ var P = PW.add(W, 7); if (Date.now() >= PW.lateMs(W)) P = PW.add(PW.thisMon(), 7); return P; }
+window.wkcTasks = function(){
+  var W = PWB.W || plwDefaultW(), today = PW.day(), all = pwlAll(), cg = wkcClassGroups();
+  var scoped = (WKC.todayOnly && cg.length) ? all.filter(function(s){ return cg.indexOf(String(s.group || '')) >= 0; }) : all;
+  var rec = function(c){ return ((PWB.paper.byCode || {})[c] || {})[W] || {}; };
+  /* a. 종이 */
+  var paper = { rows: [], left: 0, nAt: 0, nMiss: 0, scope: (WKC.todayOnly && cg.length) ? cg : null };
+  scoped.forEach(function(st){
+    var c = st.lumen_rec_code, r = rec(c), brought = !!r.at, missT = r.miss === today;
+    var doneT = (brought && PW.dayOfIso(r.at) === today) || missT;
+    if (!brought && !missT){ paper.rows.push({ st: st, c: c, state: 'left' }); paper.left++; }
+    else if (doneT){ paper.rows.push({ st: st, c: c, state: brought ? 'at' : 'miss' }); if (brought) paper.nAt++; else paper.nMiss++; }
+  });
+  paper.rows.sort(function(a, b){ return ((a.state === 'left' ? 0 : 1) - (b.state === 'left' ? 0 : 1)) || String(a.st.name || '').localeCompare(String(b.st.name || ''), 'ko'); });
+  /* b. 사진 */
+  var photo = { rows: [], left: 0 };
+  all.forEach(function(st){
+    var c = st.lumen_rec_code, sg = (PWB.sg[c] || {})[W] || null, r = rec(c);
+    if (!sg) return;
+    var auto = sg.photo ? PW.judge(sg.at, W) : 'none', why = '';
+    if (!sg.photo) why = '사진 없이 냄';
+    else if (auto === 'late') why = '월요일에 냄(지각)';
+    else if (auto === 'none') why = '마감 뒤에 냄';
+    var redo = r.pov === 'none' && r.povWhy === '다시 내기 요청' && sg.at && r.povAt && String(sg.at) > String(r.povAt);
+    var need = (!r.pov && !!why) || redo;
+    var doneT = !!r.pov && PW.dayOfIso(r.povAt) === today && !redo;
+    if (need){ photo.rows.push({ st: st, c: c, sg: sg, auto: auto, why: redo ? '다시 냄' : why, state: 'left' }); photo.left++; }
+    else if (doneT) photo.rows.push({ st: st, c: c, sg: sg, auto: auto, why: why, state: r.pov, povWhy: r.povWhy || '' });
+  });
+  /* c. 계획 */
+  var P = wkcPlanWeek(W), plan = { P: P, no: [], left: [] };
+  all.forEach(function(st){
+    var c = st.lumen_rec_code; if (wppPlan(c, P).sub) return;
+    plan.no.push(st); if (!plwRemindOf(c, P)) plan.left.push(c);
+  });
+  var n = paper.left + photo.left + (plan.left.length ? 1 : 0);
+  return { W: W, paper: paper, photo: photo, plan: plan, n: n, cg: cg };
+};
+
+/* ── 단추 동작 ── */
+window.wkcPhoto = function(code, act){
+  var W = PWB.W || plwDefaultW(), sg = (PWB.sg[code] || {})[W] || null; if (!sg) return;
+  var auto = sg.photo ? PW.judge(sg.at, W) : 'none';
+  return sgsPaperMut(code, W, function(rec){
+    var now = new Date().toISOString();
+    if (act === 'ok'){ rec.pov = (auto === 'ok' || auto === 'late') ? auto : 'late'; rec.povWhy = '원장님 확인 — 인정'; rec.povAt = now; }
+    else { rec.pov = 'none'; rec.povWhy = '다시 내기 요청'; rec.povAt = now; }
+  });
+};
+window.wkcPhotoView = function(code){
+  var W = PWB.W || plwDefaultW(), sg = (PWB.sg[code] || {})[W] || null;
+  var url = (sg && sg.photo && typeof sgPhotoUrl === 'function') ? sgPhotoUrl(sg.photo) : '';
+  if (!url){ wppToast('사진이 없어요'); return; }
+  WPP.zoomUrl = url; wppZoom();
+};
+window.wkcRemind = function(){ var T = wkcTasks(); plwRemindDlg(T.plan.left.length ? T.plan.left : T.plan.no.map(function(s){ return s.lumen_rec_code; }), T.plan.P, '계획 안 낸 학생에게 알림'); };
+window.wkcPrintPlan = function(){
+  var T = wkcTasks(), P = T.plan.P, rows = T.plan.no.slice().sort(function(a, b){ return String(a.group || '').localeCompare(String(b.group || ''), 'ko') || String(a.name || '').localeCompare(String(b.name || ''), 'ko'); });
+  var h = '<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>계획 안 낸 학생 ' + PW.md(P) + '</title><style>'
+    + '@page{size:A4 portrait;margin:12mm}body{font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;color:#0f172a;margin:0;font-size:13px}'
+    + 'h1{font-size:18px;margin:0 0 4px;color:#0d2240}.sub{color:#475569;margin-bottom:10px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5e1;padding:6px 8px;text-align:left}th{background:#f1f5f9;font-size:12px}'
+    + '.bar{padding:8px 0}button{font:inherit;padding:6px 12px;border-radius:8px;border:1px solid #0d2240;background:#0d2240;color:#fff;font-weight:800}@media print{.bar{display:none}}</style></head><body>'
+    + '<div class="bar"><button onclick="window.print()">🖨 인쇄</button></div><h1>📅 주간계획 안 낸 학생 (' + PW.md(P) + '~' + PW.md(PW.add(P, 6)) + ' 주)</h1>'
+    + '<div class="sub">' + rows.length + '명 · ' + PW.md(PW.day()) + ' 현재 · 일요일 밤 12시 마감 ' + PW.PT.plan.ok + '점 · 월요일 ' + PW.PT.plan.late + '점</div>'
+    + '<table><tr><th>#</th><th>이름</th><th>학년</th><th>반</th><th>알림</th><th>확인</th></tr>';
+  rows.forEach(function(st, i){ var rm = plwRemindOf(st.lumen_rec_code, P); h += '<tr><td>' + (i + 1) + '</td><td>' + wppEsc(st.name) + '</td><td>' + wppEsc(wppGrade(st)) + '</td><td>' + wppEsc(st.group || '') + '</td><td>' + (rm ? '💬 ' + plwTime(rm.at) : '') + '</td><td style="width:60px"></td></tr>'; });
+  h += '</table><script>setTimeout(function(){window.print()},300)<\/script></body></html>';
+  var w = window.open('', '_blank'); if (!w){ alert('팝업이 막혔습니다 — 허용해 주세요'); return; }
+  w.document.open(); w.document.write(h); w.document.close();
+};
+
+/* ── 그리기: 체크하기 ── */
+function wkcName(st){
+  return '<button type="button" class="wkc-nm" onclick="plwCal(\'' + wppJs(st.lumen_rec_code) + '\')" title="주간계획표 열기">' + wppEsc(st.name) + '<small>' + wppEsc(wppGrade(st)) + (st.group ? ' · ' + wppEsc(st.group) : '') + '</small></button>';
+}
+/* «…» = 예전 표의 「자동▾」(종이 판정) + 사진 점수 손 고침 */
+function wkcMore(st, W){
+  var c = st.lumen_rec_code, r = ((PWB.paper.byCode || {})[c] || {})[W] || {}, j = wppJs(c);
+  var ob = function(on, label, js){ return '<button type="button" class="wkc-ob' + (on ? ' on' : '') + '" onclick="' + js + '">' + label + '</button>'; };
+  return '<details class="wkc-more"><summary aria-label="' + wppEsc(st.name) + ' 손으로 고치기" title="손으로 고치기">…</summary><div class="wkc-pop">'
+    + '<div><b>📔 종이 판정</b>' + ob(!r.ov, '자동', "plwPaperOv('" + j + "','')") + ob(r.ov === 'ok', '제출', "plwPaperOv('" + j + "','ok')") + ob(r.ov === 'late', '지각', "plwPaperOv('" + j + "','late')") + ob(r.ov === 'none', '미제출', "plwPaperOv('" + j + "','none')") + '</div>'
+    + '<div><b>📸 사진 점수</b>' + ob(!r.pov, '규칙대로', "sgsPov('" + j + "','" + W + "','')") + ob(r.pov === 'ok', PW.PT.photo.ok + '점', "sgsPov('" + j + "','" + W + "','ok')") + ob(r.pov === 'late', PW.PT.photo.late + '점', "sgsPov('" + j + "','" + W + "','late')") + ob(r.pov === 'none', '0점', "sgsPov('" + j + "','" + W + "','none')") + '</div>'
+    + '</div></details>';
+}
+function wkcCard(cls, key, open, title, cnt, why, body){
+  return '<details class="wkc-task ' + cls + (open ? '' : ' done') + '" data-task="' + key + '"' + (open ? ' open' : '') + '><summary><span class="wkc-h">' + title + '</span><span class="wkc-n">' + cnt + '</span></summary>'
+    + (why ? '<div class="wkc-why">' + why + '</div>' : '') + body + '</details>';
+}
+function wkcCheckHtml(){
+  var T = wkcTasks(), W = T.W, h = '<div class="wkc-body">';
+  var allDone = !T.n;
+  if (allDone) h += '<div class="wkc-fin" role="status">이번 주 체크 끝 🎉 <small>' + PW.md(W) + '~' + PW.md(PW.add(W, 6)) + ' 주 · 고칠 것은 아래 «✋ 손으로 고치기»</small></div>';
+  /* a. 종이 */
+  var p = T.paper, pb = '';
+  if (T.cg.length) pb += '<div class="wkc-opt"><label><input type="checkbox" ' + (WKC.todayOnly ? 'checked ' : '') + 'onchange="wkcToday()"> 오늘 수업 반만 (' + wppEsc(T.cg.join(' · ')) + ')</label></div>';
+  p.rows.forEach(function(x){
+    var c = wppJs(x.c);
+    pb += '<div class="wkc-row" data-code="' + wppEsc(x.c) + '" data-state="' + x.state + '">' + wkcName(x.st) + '<span class="wkc-btns">'
+      + '<button type="button" class="wkc-tb' + (x.state === 'at' ? ' on' : '') + '" data-act="at" onclick="' + (x.state === 'at' ? '' : "plwPaper('" + c + "')") + '"' + (x.state === 'at' ? ' aria-pressed="true"' : '') + '>📔 가져옴' + (x.state === 'at' ? ' ✓' : '') + '</button>'
+      + '<button type="button" class="wkc-tb no' + (x.state === 'miss' ? ' on2' : '') + '" data-act="miss" onclick="' + (x.state === 'miss' ? '' : "wkcPaperMiss('" + c + "')") + '"' + (x.state === 'miss' ? ' aria-pressed="true"' : '') + '>안 가져옴' + (x.state === 'miss' ? ' ✓' : '') + '</button>'
+      + wkcMore(x.st, W) + '</span></div>';
+  });
+  if (!p.rows.length) pb += '<div class="wkc-none">' + (p.scope ? '오늘 수업 반 학생은 모두 가져왔어요' : '모두 가져왔어요') + '</div>';
+  h += wkcCard('t1', 'paper', p.left > 0, '📔 순공 종이 — 가져왔나요?', p.left ? (p.scope ? '오늘 수업 반 ' + wppEsc(p.scope.join('·')) + ' · ' : '') + '남은 ' + p.left + '명' : '✓ 끝' + (p.nAt || p.nMiss ? ' · 오늘 가져옴 ' + p.nAt + ' · 안 가져옴 ' + p.nMiss : ''),
+    PW.md(W) + '~' + PW.md(PW.add(W, 6)) + ' 주 종이 · 누르면 바로 저장 · 안 가져온 학생은 다음 수업에 다시 물어요(다음 주 첫 수업까지 ' + PW.PT.paper.ok + '점 · 그 주 안 ' + PW.PT.paper.late + '점)', pb);
+  /* b. 사진 */
+  var ph = T.photo, sb = '';
+  ph.rows.forEach(function(x){
+    var c = wppJs(x.c), okLabel = '✓ 인정' + (x.auto === 'ok' ? '' : ' (지각 ' + PW.PT.photo.late + '점)');
+    sb += '<div class="wkc-row" data-code="' + wppEsc(x.c) + '" data-state="' + x.state + '">' + wkcName(x.st) + '<span class="wkc-why2">' + wppEsc(x.why) + (x.sg && x.sg.at ? ' · ' + plwTime(x.sg.at) : '') + '</span><span class="wkc-btns">'
+      + '<button type="button" class="wkc-tb' + (x.state === 'ok' || x.state === 'late' ? ' on' : '') + '" data-act="ok" onclick="wkcPhoto(\'' + c + '\',\'ok\')">' + okLabel + '</button>'
+      + '<button type="button" class="wkc-tb x' + (x.state === 'none' ? ' on3' : '') + '" data-act="redo" onclick="wkcPhoto(\'' + c + '\',\'redo\')">✕ 다시 내기</button>'
+      + (x.sg && x.sg.photo ? '<button type="button" class="wkc-tb no" data-act="view" onclick="wkcPhotoView(\'' + c + '\')">🔍 사진 보기</button>' : '')
+      + wkcMore(x.st, W) + '</span></div>';
+  });
+  if (!ph.rows.length) sb += '<div class="wkc-none">확인할 사진이 없어요 — 나머지는 자동</div>';
+  h += wkcCard('t2', 'photo', ph.left > 0, '📸 순공 사진 — 확인 필요', ph.left ? ph.left + '명' : '✓ 끝', '늦게 냈거나 사진 없이 낸 것만 여기에 · 나머지는 자동 · 「다시 내기」는 0점으로 두고 새로 내면 다시 여기에', sb);
+  /* c. 계획 */
+  var pl = T.plan, P = pl.P, cb = '';
+  if (pl.no.length){
+    cb += '<div class="wkc-row"><span class="wkc-nm2">한꺼번에</span><span class="wkc-btns">'
+      + '<button type="button" class="wkc-tb' + (pl.left.length ? '' : ' on') + '" id="wkc-remind" onclick="wkcRemind()">💬 ' + (pl.left.length || pl.no.length) + '명에게 ' + (pl.left.length ? '알림' : '다시 알림') + '</button>'
+      + '<button type="button" class="wkc-tb no" id="wkc-plan-print" onclick="wkcPrintPlan()">명단 인쇄</button></span></div>'
+      + '<div class="wkc-chips">' + pl.no.map(function(st){ var rm = plwRemindOf(st.lumen_rec_code, P); return '<span class="wkc-chip' + (rm ? ' sent' : '') + '">' + wppEsc(st.name) + (rm ? ' 💬' : '') + '</span>'; }).join('') + '</div>';
+  } else cb += '<div class="wkc-none">모두 냈어요</div>';
+  var dueTxt = Date.now() < PW.dueMs(PW.add(P, -7)) ? '일요일 밤 12시 마감 · 월요일까지 내면 ' + PW.PT.plan.late + '점' : '오늘(월) 밤 12시까지 내면 ' + PW.PT.plan.late + '점';
+  h += wkcCard('t3', 'plan', pl.left.length > 0, '📅 다음 주 계획 — 안 낸 학생 ' + pl.no.length + '명', pl.left.length ? PW.md(P) + '~ 주 · 알림 안 보낸 ' + pl.left.length + '명' : (pl.no.length ? '✓ 모두 알림 보냄' : '✓ 끝'), PW.md(P) + '~' + PW.md(PW.add(P, 6)) + ' 주 계획 · ' + dueTxt, cb);
+  /* d. 전체 손 고침 */
+  var mb = '<div class="wkc-all">';
+  pwlAll().slice().sort(function(a, b){ return String(a.name || '').localeCompare(String(b.name || ''), 'ko'); }).forEach(function(st){
+    var s = plwScore(st, W), pov0 = ((PWB.paper.byCode || {})[st.lumen_rec_code] || {})[W] || {};
+    mb += '<div class="wkc-row" data-code="' + wppEsc(st.lumen_rec_code) + '">' + wkcName(st) + '<span class="wkc-why2">종이 ' + (s.paperAt ? PW.KO[s.paper] + (pov0.ov ? ' (손 고침)' : '') : '안 가져옴') + ' · 사진 ' + (s.photoOv ? PW.KO[s.photo] + ' (손 고침)' : PW.KO[s.photo]) + '</span><span class="wkc-btns">' + wkcMore(st, W) + '</span></div>';
+  });
+  mb += '</div>';
+  h += '<details class="wkc-task t4" data-task="manual"><summary><span class="wkc-h">✋ 손으로 고치기 — 전체 학생 (예전 「자동▾」)</span><span class="wkc-n">' + pwlAll().length + '명</span></summary><div class="wkc-why">결석·전학 등 — 학생마다 «…»에서 종이 판정(자동·제출·지각·미제출)과 사진 점수를 고쳐요</div>' + mb + '</details>';
+  return h + '</div>';
+}
+
+/* ── 그리기: 점수 보기 ── */
+function wksPill(pt, tip, key){
+  var cl = pt >= 5 ? 's5' : (pt >= 3 ? 's3' : (pt >= 2 ? 's2' : (pt >= 1 ? 's1' : 's0')));
+  return '<span class="wks-pill ' + cl + '" data-k="' + key + '" title="' + wppEsc(tip) + '" onclick="wksTip(event,this)">' + pt + '</span>';
+}
+function wksScoreHtml(){
+  var W = PWB.W || plwDefaultW(), order = PWB.order || [], h = '<div class="wks-body"><div class="wks-scroll"><table class="wks-t"><thead>'
+    + '<tr><th class="l"></th><th colspan="2" class="grp">📅 주간계획 ' + PW.MAX.wp + '점</th><th colspan="2" class="grp">📔 순공 ' + PW.MAX.sg + '점</th><th></th><th></th></tr>'
+    + '<tr><th class="l">학생</th><th>계획<br>' + PW.MAX.plan + '</th><th>실천<br>' + PW.MAX.prac + '</th><th>사진<br>' + PW.MAX.photo + '</th><th>종이<br>' + PW.MAX.paper + '</th><th>주간 합<br>/' + PW.MAX.total + '</th><th>매일 합<br><small>이 주</small></th></tr></thead><tbody>';
+  order.forEach(function(c){
+    var st = wppStu(c); if (!st) return;
+    var s = plwScore(st, W), d = plwDaySum(st, W), pn = PW.planOf(PWB.wp[c], PWB.cp[c], PW.add(W, 7)), sg = (PWB.sg[c] || {})[W] || null, pr = ((PWB.paper.byCode || {})[c] || {})[W] || null;
+    var jk = function(j, rel){ return (j === 'none' && !rel) ? '마감 전' : PW.KO[j]; };
+    var tPlan = '다음 주 계획 · ' + jk(s.plan, s.released) + (pn && pn.submittedAt ? ' · 낸 시각 ' + plwTime(pn.submittedAt) + ' · ' + (pn.items || []).length + '개' + (pn.src === 'codi' ? ' 🧭 코디' : '') : '');
+    var tPrac = s.prac.n ? ('계획 실천 ' + s.prac.ok + '/' + s.prac.n + ' · ' + s.prac.rate + '%' + (s.prac.noEv ? ' · 증거 없음 ' + s.prac.noEv : '')) : '계획 없음';
+    var tPhoto = '순공 사진 · ' + jk(s.photo, s.released) + (sg && sg.at ? ' · 낸 시각 ' + plwTime(sg.at) + (sg.photo ? '' : ' · 사진 없음') : '') + (s.photoOv ? ' · 손 고침' : '');
+    var tPaper = '순공 종이 · ' + (s.paperAt ? jk(s.paper, true) + ' · 가져온 시각 ' + plwTime(s.paperAt) + (pr && pr.ov ? ' · 손 고침' : '') : '아직 안 가져옴');
+    var pct = Math.max(0, Math.min(100, Math.round(s.total / PW.MAX.total * 100)));
+    h += '<tr data-wks="' + wppEsc(c) + '" data-wpp="' + wppEsc(c) + '" class="wpp-row" onclick="wksRow(event,\'' + wppJs(c) + '\')">'
+      + '<td class="l nm"><span class="wks-nm" role="link" tabindex="0" onkeydown="if(event.key===\'Enter\')wppPick(\'' + wppJs(c) + '\')">' + wppEsc(st.name) + '</span><small>' + wppEsc(wppGrade(st)) + '</small></td>'
+      + '<td>' + wksPill(s.planPt, tPlan, 'plan') + '</td><td>' + wksPill(s.prac.pt, tPrac, 'prac') + '</td><td>' + wksPill(s.photoPt, tPhoto, 'photo') + '</td><td>' + wksPill(s.paperPt, tPaper, 'paper') + '</td>'
+      + '<td class="sum"><b class="wks-sum">' + s.total + '</b><div class="wks-bar"><i style="width:' + pct + '%"></i></div></td>'
+      + '<td class="day">' + d.sum + '<small>/' + (d.n * 10) + '</small></td></tr>';
+  });
+  if (!order.length) h += '<tr><td colspan="7" class="wks-empty">학생이 없어요</td></tr>';
+  h += '</tbody></table></div>'
+    + '<div class="wks-lock">🔒 이 표는 보기만 합니다 · 색: <span class="wks-pill s5">5</span> 제때 <span class="wks-pill s3">3</span> <span class="wks-pill s2">2</span> 지각·중간 <span class="wks-pill s1">1</span> <span class="wks-pill s0">0</span> 없음 · 칸에 마우스를 올리거나 누르면 낸 시각 · 학생 이름(또는 줄)을 누르면 오른쪽에 주간계획표 · 정렬: 주간 합 높은 순 · 고치기는 <button type="button" class="pwl-link" onclick="wkcGo(\'check\')">✅ 체크하기</button>의 «…»</div></div>';
+  return h;
+}
+window.wksRow = function(e, c){
+  var t = e && e.target;
+  if (t && t.classList && t.classList.contains('wks-pill')) return;
+  wppPick(c);
+};
+window.wksTip = function(e, el){
+  if (e) e.stopPropagation();
+  var tip = document.getElementById('wks-tip');
+  if (!tip){ tip = document.createElement('div'); tip.id = 'wks-tip'; tip.setAttribute('role', 'status'); document.documentElement.appendChild(tip); }   /* body 는 zoom 이 걸려 있어 화면 좌표가 어긋난다 — html 바로 아래에 */
+  tip.textContent = el.getAttribute('title') || '';
+  var r = el.getBoundingClientRect();
+  tip.style.display = 'block';
+  var x = Math.max(8, Math.min(window.innerWidth - 268, r.left + r.width / 2 - 130)), y = r.bottom + 6;
+  if (y + 60 > window.innerHeight) y = Math.max(8, r.top - 58);
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  clearTimeout(WKC.tipT); WKC.tipT = setTimeout(function(){ tip.style.display = 'none'; }, 3500);
+};
+
+/* ── rPlWeek 감싸기 (v19-114 감싸기 바깥) ── */
+(function(){
+  var o = window.rPlWeek; if (typeof o !== 'function') return;
+  window.rPlWeek = function(){
+    var h = o.apply(this, arguments);
+    if (!PWB.loaded) return h;
+    if (!PLWALL.msgAt) pwlMsgLoad(false);
+    var mode = wkcMode(), T = null;
+    try { T = wkcTasks(); } catch(e){ try { console.error('[주간 체크]', e); } catch(_){} }
+    var n = T ? T.n : 0;
+    var seg = '<span class="wkc-seg" role="tablist" aria-label="주간 점수 보기 방법">'
+      + '<button type="button" role="tab" id="wkc-tab-check" aria-selected="' + (mode === 'check') + '" class="' + (mode === 'check' ? 'on' : '') + '" onclick="wkcGo(\'check\')">✅ 체크하기' + (n ? ' <span class="cnt">' + n + '</span>' : ' <span class="cnt ok">✓</span>') + '</button>'
+      + '<button type="button" role="tab" id="wkc-tab-score" aria-selected="' + (mode === 'score') + '" class="' + (mode === 'score' ? 'on' : '') + '" onclick="wkcGo(\'score\')">📊 점수 보기</button></span>';
+    var hd = '<span style="font-size:15px;font-weight:900">📅 주간 점수</span>';
+    if (h.indexOf(hd) >= 0) h = h.replace(hd, hd + seg);
+    var a = h.indexOf('<div style="overflow-x:auto;background:#fff;border:1px solid #e3e7ee;border-top:none;border-radius:0 0 12px 12px">');
+    var b = a >= 0 ? h.indexOf('</table></div>', a) : -1;
+    if (a < 0 || b < 0) return h;
+    b += '</table></div>'.length;
+    var body;
+    try { body = mode === 'check' ? wkcCheckHtml() : wksScoreHtml(); }
+    catch(e){ try { console.error('[주간 체크/점수]', e); } catch(_){} body = '<div class="wks-body" style="color:#b91c1c;font-weight:800">주간 점수 오류: ' + wppEsc(e.message) + '</div>'; }
+    h = h.slice(0, a) + '<div class="wkc-mode" data-mode="' + mode + '">' + body + '</div>' + h.slice(b);
+    if (mode === 'check') h = h.replace(/<button type="button" onclick="plwOnly\('(paper|plan)'\)"[^>]*>[^<]*<\/button>/g, '');
+    h = h.replace('결석 등은 옆 칸에서 손으로 고친다. ', '결석 등은 ✅ 체크하기의 «…»(또는 ✋ 손으로 고치기)에서 손으로 고친다. ');
+    return h;
+  };
+})();
+
+/* 점수 표의 고른 줄 파란 띠 (v19-114 와 같은 모양) */
+render = window.render = (function(o){ return function(){
+  var r = o.apply(this, arguments);
+  try {
+    if (VIEW === 'plweek'){
+      var rows = document.querySelectorAll('#CONTENT tr[data-wks]');
+      for (var i = 0; i < rows.length; i++){ var on = rows[i].getAttribute('data-wks') === WPP.sel; rows[i].classList.toggle('wpp-sel', on); rows[i].setAttribute('aria-selected', on ? 'true' : 'false'); }
+    }
+    var tip = document.getElementById('wks-tip'); if (tip) tip.style.display = 'none';
+  } catch(e){}
+  return r; }; })(render);
+
+/* ── 모양 ── */
+(function(){
+  if (document.getElementById('wkc-css')) return;
+  var st = document.createElement('style'); st.id = 'wkc-css';
+  st.textContent = ''
+    + '.wkc-seg{display:inline-flex;background:rgba(255,255,255,.13);border-radius:12px;padding:3px;gap:3px}'
+    + '.wkc-seg button{border:none;background:none;padding:7px 13px;border-radius:9px;font:inherit;font-size:13px;font-weight:900;color:#cbd5e1;cursor:pointer;white-space:nowrap}'
+    + '.wkc-seg button.on{background:#fff;color:#0d2240}.wkc-seg button:focus-visible{outline:2px solid #fbbf24;outline-offset:1px}'
+    + '.wkc-seg .cnt{background:#f97316;color:#fff;border-radius:999px;padding:1px 7px;font-size:11px;margin-left:3px}.wkc-seg .cnt.ok{background:#16a34a}'
+    + '.wkc-mode{background:#fff;border:1px solid #e3e7ee;border-top:none;border-radius:0 0 12px 12px;min-width:0}'
+    + '.wkc-body,.wks-body{padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}'
+    + '.wkc-fin{background:#f0fdf4;border:2px solid #86efac;color:#15803d;border-radius:14px;padding:12px 14px;font-size:16px;font-weight:900}.wkc-fin small{display:block;font-size:11.5px;color:#166534;font-weight:700;margin-top:2px}'
+    + '.wkc-task{border:2px solid #e2e8f0;border-radius:14px;padding:9px 12px;min-width:0}.wkc-task>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;flex-wrap:wrap}'
+    + '.wkc-task>summary::-webkit-details-marker{display:none}.wkc-h{font-size:15px;font-weight:900;color:#0f172a}.wkc-n{margin-left:auto;font-size:12px;color:#64748b;font-weight:800}'
+    + '.wkc-task.t1{border-color:#fdba74;background:#fffaf5}.wkc-task.t2{border-color:#93c5fd;background:#f8fbff}.wkc-task.t3{border-color:#d8b4fe;background:#fcfaff}.wkc-task.t4{border-color:#e2e8f0;background:#fff}'
+    + '.wkc-task.done{border-color:#bbf7d0;background:#f7fef9;padding:6px 12px}.wkc-task.done .wkc-h{color:#15803d;font-size:13.5px}.wkc-task.done .wkc-n{color:#15803d}'
+    + '.wkc-why{color:#64748b;font-size:12px;font-weight:600;margin:4px 0 6px}.wkc-opt{font-size:12.5px;font-weight:800;color:#9a3412;margin-bottom:4px}.wkc-opt input{width:16px;height:16px;vertical-align:-3px}'
+    + '.wkc-row{display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr);gap:4px 8px;align-items:center;padding:6px 0;border-top:1px solid #f1f5f9;min-width:0}'
+    + '.wkc-row .wkc-why2{grid-column:2;font-size:11.5px;color:#b45309;font-weight:800}.wkc-row .wkc-why2+.wkc-btns{grid-column:2}'
+    + '.wkc-nm{border:none;background:none;padding:0;font:inherit;font-weight:900;font-size:14px;color:#0d2240;cursor:pointer;text-align:left;overflow-wrap:anywhere}.wkc-nm small{color:#64748b;font-weight:700;font-size:11px;margin-left:4px}'
+    + '.wkc-nm2{font-weight:900;font-size:14px;color:#0d2240}'
+    + '.wkc-btns{display:flex;gap:6px;flex-wrap:wrap;align-items:center;min-width:0}'
+    + '.wkc-tb{min-width:96px;min-height:42px;border-radius:10px;border:2px solid #e2e8f0;background:#fff;font:inherit;font-size:13.5px;font-weight:900;color:#0f172a;cursor:pointer;padding:0 12px}'
+    + '.wkc-tb:hover{background:#f8fafc}.wkc-tb.on{background:#dcfce7;border-color:#86efac;color:#15803d}.wkc-tb.no{background:#f8fafc;color:#64748b}.wkc-tb.no.on2{background:#f1f5f9;border-color:#94a3b8;color:#334155}'
+    + '.wkc-tb.x{border-color:#fecaca;color:#dc2626}.wkc-tb.x.on3{background:#fee2e2}.wkc-tb:focus-visible,.wkc-nm:focus-visible,.wkc-ob:focus-visible{outline:2px solid #1d6fe8;outline-offset:2px}'
+    + '.wkc-more{position:relative}.wkc-more>summary{list-style:none;cursor:pointer;min-width:42px;min-height:42px;display:flex;align-items:center;justify-content:center;border:2px solid #e2e8f0;border-radius:10px;font-weight:900;color:#475569;background:#fff}'
+    + '.wkc-more>summary::-webkit-details-marker{display:none}.wkc-more[open]>summary{background:#0d2240;color:#fff;border-color:#0d2240}'
+    + '.wkc-pop{position:absolute;right:0;top:calc(100% + 4px);z-index:30;background:#fff;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 10px 30px rgba(13,34,64,.2);padding:8px 10px;display:flex;flex-direction:column;gap:6px;width:max-content;max-width:min(330px,calc(100vw - 32px))}'
+    + '.wkc-pop>div{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:12px}.wkc-pop b{min-width:74px;color:#0d2240}'
+    + '.wkc-ob{border:1px solid #e2e8f0;background:#fff;border-radius:8px;padding:6px 9px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;color:#334155}.wkc-ob.on{background:#0d2240;color:#fff;border-color:#0d2240}'
+    + '.wkc-none{font-size:12.5px;color:#15803d;font-weight:800;padding:4px 0}'
+    + '.wkc-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}.wkc-chip{font-size:11.5px;font-weight:800;background:#f5f3ff;color:#5b21b6;border-radius:6px;padding:2px 7px}.wkc-chip.sent{background:#f0fdf4;color:#166534}'
+    + '@media(max-width:640px){.wkc-row{grid-template-columns:minmax(0,1fr)}.wkc-row .wkc-why2,.wkc-row .wkc-why2+.wkc-btns{grid-column:1}.wkc-tb{min-width:0;flex:1 1 auto}}'
+    /* 점수 보기 */
+    + '.wks-scroll{overflow-x:auto;min-width:0}.wks-t{border-collapse:collapse;width:100%;min-width:560px;font-size:12.5px}'
+    + '.wks-t th{font-size:11.5px;color:#475569;text-align:center;padding:7px 4px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-weight:800}.wks-t th.grp{font-size:11px;color:#64748b;border-bottom:2px solid #e2e8f0}'
+    + '.wks-t th.l,.wks-t td.l{text-align:left;padding-left:10px}.wks-t td{padding:8px 4px;text-align:center;border-bottom:1px solid #f1f5f9}'
+    + '.wks-t td.nm{font-weight:900;color:#0d2240;white-space:nowrap}.wks-t td.nm small{color:#94a3b8;font-weight:700;font-size:10.5px;margin-left:4px}'
+    + '.wks-nm{cursor:pointer;text-decoration:underline;text-decoration-color:#cbd5e1;text-underline-offset:3px}.wks-nm:focus-visible{outline:2px solid #1d6fe8;outline-offset:2px}'
+    + '.wks-pill{display:inline-block;min-width:30px;padding:3px 0;border-radius:7px;font-weight:900;text-align:center;cursor:help}'
+    + '.wks-pill.s5{background:#dcfce7;color:#15803d}.wks-pill.s3{background:#e0f2fe;color:#0369a1}.wks-pill.s2{background:#fef3c7;color:#b45309}.wks-pill.s1{background:#fef9c3;color:#a16207}.wks-pill.s0{background:#f1f5f9;color:#94a3b8}'
+    + '.wks-sum{font-size:16px;font-weight:900;color:#0d2240}.wks-bar{height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;margin:3px auto 0;max-width:70px}.wks-bar i{display:block;height:100%;background:#2563eb}'
+    + '.wks-t td.day{color:#475569}.wks-t td.day small{color:#94a3b8}.wks-empty{color:#94a3b8;padding:20px}'
+    + '.wks-lock{font-size:11.5px;color:#64748b;font-weight:600;line-height:1.9}.wks-lock .wks-pill{min-width:20px;padding:0 4px;cursor:default}'
+    + '#wks-tip{position:fixed;z-index:10002;display:none;max-width:260px;background:#0d2240;color:#fff;font-size:12px;font-weight:700;border-radius:8px;padding:7px 10px;box-shadow:0 8px 20px rgba(13,34,64,.3);line-height:1.5;pointer-events:none}';
+  (document.head || document.documentElement).appendChild(st);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~115: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
