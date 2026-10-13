@@ -9,12 +9,16 @@
 쓰는 법
   python3 sync/note_logo_swap.py 입력.pdf 출력.pdf [--font-dir 글꼴폴더] [--pages 3-6] [--scale 1.0]
     --pages : 그 쪽만 바꾼다 (미리보기용, 결과 PDF 도 그 쪽들만 담는다)
+    --covers 1,117 : 표지 쪽 번호. 표지는 쪽 전체가 한 장의 그림이라 로고가 그림 속에 있다 →
+                     오른쪽 아래 로고 자리를 배경색으로 메우고(주변 색 이어붙임) 위아래로 쌓은 루멘 로고를 얹는다
   글꼴: Pretendard TTF (sync/solution_note_build.py 와 같음)
 로고 찾는 규칙: 쪽 오른쪽 아래(왼쪽 x>440, 아래 y<30, 높이 40 이하)에 그려지는 그림. 그 그림 명령만 지우고 나머지 내용은 그대로 둔다.
 """
 import argparse, io, os, sys
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import ContentStream
+import numpy as np
+from PIL import Image, ImageFilter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfbase import pdfmetrics
@@ -89,6 +93,52 @@ def overlay_page(size, box, scale):
     return PdfReader(buf).pages[0]
 
 
+def swap_cover(w, idx):
+    """표지(쪽 전체가 한 장의 그림) 오른쪽 아래의 로고 그림을 지우고, 그 중심 위치를 돌려준다 (pt, 쪽 아래 기준)"""
+    pg = w.pages[idx]
+    img = pg.images[0]
+    im = img.image.convert('RGB')
+    a = np.array(im).astype(int)
+    H, W, _ = a.shape
+    bg = a[H - 8, W - 8]
+    y0, x0 = int(H * 0.885), int(W * 0.62)           # 쪽 위 장식(고리 모양)보다 아래, 오른쪽 40%
+    mask = (np.abs(a[y0:, x0:] - bg).sum(axis=2) > 40)
+    ys, xs = np.where(mask)
+    if len(ys) == 0:
+        return None
+    ys += y0; xs += x0
+    top, bot, lef, rig = ys.min() - 8, ys.max() + 8, xs.min() - 8, xs.max() + 8
+    for y in range(top, bot + 1):                    # 한 줄씩 왼쪽·오른쪽 바깥 색을 이어 붙인다
+        lc = a[y, lef - 6:lef - 2].mean(axis=0)
+        rc = a[y, min(W - 1, rig + 2):min(W, rig + 6)].mean(axis=0)
+        t = np.linspace(0, 1, rig - lef + 1)[:, None]
+        a[y, lef:rig + 1] = (lc * (1 - t) + rc * t)
+    img.replace(Image.fromarray(a.astype('uint8')), quality=92)
+    k = float(pg.mediabox.width) / W
+    return ((lef + rig) / 2 * k, float(pg.mediabox.height) - (top + bot) / 2 * k, (bot - top) * k)
+
+
+def cover_overlay(size, center, scale):
+    """표지 로고: 전구 위, 루멘수학, Lumen Math 순으로 쌓는다 (배경 없음)"""
+    cx, cy, h = center
+    h = max(h, 50) * scale
+    bulb = h * 0.50
+    f1, f2 = h * 0.28, h * 0.14
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=size)
+    y_top = cy + h / 2
+    if os.path.exists(BULB):
+        c.drawImage(ImageReader(BULB), cx - bulb / 2, y_top - bulb, bulb, bulb, mask='auto')
+    c.setFillColorRGB(*RED)
+    c.setFont('PX', f1)
+    c.drawCentredString(cx, y_top - bulb - f1 * 0.95, '루멘수학')
+    c.setFont('PB', f2)
+    c.drawCentredString(cx, y_top - bulb - f1 * 0.95 - f2 * 1.35, 'Lumen Math')
+    c.save()
+    buf.seek(0)
+    return PdfReader(buf).pages[0]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('src')
@@ -96,6 +146,7 @@ def main():
     ap.add_argument('--font-dir')
     ap.add_argument('--pages')
     ap.add_argument('--scale', type=float, default=1.0)
+    ap.add_argument('--covers', default='')
     a = ap.parse_args()
     load_fonts(a.font_dir)
     n = len(PdfReader(a.src).pages)
@@ -105,13 +156,31 @@ def main():
     else:
         pages = list(range(n))
     rd, found = remove_old_logos(a.src, pages)
+    ovs = {}                              # 같은 자리의 로고는 한 번만 만들어 모든 쪽이 같이 쓴다 (글꼴·그림이 쪽마다 들어가면 파일이 10배 커진다)
     for i in pages:
         pg = rd.pages[i]
         if i in found:
-            pg.merge_page(overlay_page((float(pg.mediabox.width), float(pg.mediabox.height)), found[i], a.scale))
+            key = tuple(round(v, 1) for v in found[i])
+            if key not in ovs:
+                ovs[key] = overlay_page((float(pg.mediabox.width), float(pg.mediabox.height)), found[i], a.scale)
+            pg.merge_page(ovs[key])
+    ctr = None
+    for c1 in [int(x) for x in a.covers.split(',') if x.strip()]:
+        i = c1 - 1
+        if i in pages:
+            ctr = swap_cover(rd, i) or ctr    # 표지들이 같은 그림을 같이 쓰면 첫 표지에서 이미 지워져 있다 → 앞에서 잰 자리를 쓴다
+            if ctr:
+                pg = rd.pages[i]
+                key = ('cover',) + tuple(round(v, 1) for v in ctr)
+                if key not in ovs:
+                    ovs[key] = cover_overlay((float(pg.mediabox.width), float(pg.mediabox.height)), ctr, a.scale)
+                pg.merge_page(ovs[key])
+                print(f'표지 {c1}쪽 로고 교체')
     for i in reversed(range(n)):          # --pages 로 고른 쪽만 남긴다
         if i not in pages:
             rd.remove_page(i)
+    for pg in rd.pages:                   # 고친 쪽의 내용 줄이기 (안 하면 파일이 10배 커진다)
+        pg.compress_content_streams()
     with open(a.out, 'wb') as f:
         rd.write(f)
     print(f'바꾼 쪽 {len(found)}/{len(pages)} → {a.out}')
