@@ -85,7 +85,8 @@ wpp=open(SP+'/wplanpanel_teacher.js').read() if int(ver.replace('v19-',''))>=114
 pwl=(open(SP+'/plwall_teacher.js').read()+'\n'+open(SP+'/wkcheck_teacher.js').read()) if int(ver.replace('v19-',''))>=115 else ''   # v19-115: 🗓 주간계획 모아보기(6명 3×2 미니 달력 · 코디/직접/고정 구분 · 💬 모아서 알림 · 🖨 한 장) + 📅 주간 점수 «✅ 체크하기 | 📊 점수 보기» (시안 docs/mockup_plan_wall.html · docs/mockup_week_check_score.html)
 pg6=open(SP+'/pubgrade116_teacher.js').read() if int(ver.replace('v19-',''))>=116 else ''   # v19-116: 📚 교과서 문항도 등급 단추로 적중 확정(it.hit · mats kind textbook) · 같은 그림(imgUrl) 카드 합치기 · 교과서 일치 「공통」 한 번만 · 쪽·번호 안내 (원장 「6번 교과서 숫자변형 체크를 못하게 되었다」)
 wkg=open(SP+'/wkgroup118_teacher.js').read() if int(ver.replace('v19-',''))>=118 else ''   # v19-118: 📅 주간 점수 «체크하기» 반별로 묶고 한 줄에 두 명 (원장 「반별로 잘 보게 묶고, 가운데 화면에 체크를 2명씩」)
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+new.lstrip('\n')+'\n\n'+s[end:]
+g19=open(SP+'/grptime119_teacher.js').read() if int(ver.replace('v19-',''))>=119 else ''   # v19-119: ⏰ 반 수업 시간(lumen_group_times · 요일별 시작·길이) — 주간계획 모아보기·큰 달력의 «루멘 수업» 칸 · 학생이 고친 학원 시간(codi_fixed_ 안 type 'lumen') 먼저 · 「✏️ 학생이 고친 학원 시간」
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -532,6 +533,26 @@ if int(ver.replace('v19-',''))>=117:
     rep("localStorage.setItem = function(key, value) {", "var _lsHookSet = function(key, value) {")
     rep("    scheduleSync(key);\n  }\n};\nfunction _quotaWarn(){",
         "    scheduleSync(key);\n  }\n};\n" + open(SP+'/lshook117_teacher.js').read() + "\nfunction _quotaWarn(){")
+if int(ver.replace('v19-',''))>=119:
+    # v19-119: ⏰ 반 수업 시간 (grptime119_teacher.js) — 기기 ↔ 서버 동기화 · 주간 점수판 자료에 lumen_group_times · 모아보기 머리 단추 · 카드 꼬리표 · 설정 칸
+    rep("'lumen_exams', 'lumen_group_days', 'lumen_rec_submit',", "'lumen_exams', 'lumen_group_days', 'lumen_group_times', 'lumen_rec_submit',")
+    rep("key.eq.plweek_paper,key.eq.lumen_group_days,key.like.codi_plan_%", "key.eq.plweek_paper,key.eq.lumen_group_days,key.eq.lumen_group_times,key.like.codi_plan_%")
+    rep("var wp = {}, chk = {}, sg = {}, cp = {}, cd = {}, fx = {}, paper = { byCode: {} }, days = {};", "var wp = {}, chk = {}, sg = {}, cp = {}, cd = {}, fx = {}, paper = { byCode: {} }, days = {}, gt = {};")
+    rep("      else if (k === 'lumen_group_days') days = v || {};\n", "      else if (k === 'lumen_group_days') days = v || {};\n      else if (k === 'lumen_group_times') gt = (v && typeof v === 'object') ? v : {};   /* v19-119: ⏰ 반 수업 시간 */\n")
+    rep("PWB.paper = paper; PWB.days = days; PWB.loaded = true;", "PWB.paper = paper; PWB.days = days; PWB.gt = gt; PWB.loaded = true;")
+    rep("<b class=\"pwl-ttl\">🗓 주간계획 모아보기</b>'", "<b class=\"pwl-ttl\">🗓 주간계획 모아보기</b><button type=\"button\" class=\"pwl-c pwl-lgt\" onclick=\"lgtOpen()\">⏰ 반 수업 시간</button>'")
+    rep("  if (!R.fx.mine) tags += '<span class=\"pwl-fxtag\">📌 고정 일정 안 넣음(학교 기본)</span>';\n",
+        "  if (!R.fx.mine) tags += '<span class=\"pwl-fxtag\">📌 고정 일정 안 넣음(학교 기본)</span>';\n  if (R.fx.lumen === 'own') tags += '<span class=\"pwl-owntag\" title=\"학생이 학생앱에서 자기 학원 시간을 고쳤어요 — 반 시간 대신 이 시간으로 그렸어요\">✏️ 학생이 고친 학원 시간</span>';   /* v19-119 */\n")
+    rep("    + (fx.mine ? '' : tag('고정 일정 안 넣음 — 학교 기본값', '#fff7ed', '#9a3412')) + '</div>';",
+        "    + (fx.mine ? '' : tag('고정 일정 안 넣음 — 학교 기본값', '#fff7ed', '#9a3412')) + (fx.lumen === 'own' ? tag('✏️ 학생이 고친 학원 시간', '#fef3c7', '#92400e') : '') + '</div>';   /* v19-119 */")
+    rep("""            <div style="display:flex;gap:4px">${btns}</div>
+          </div>`;
+        }).join('')}
+      </div>""", """            <div style="display:flex;gap:4px">${btns}</div>${lgtSummary(g)}
+          </div>`;
+        }).join('')}
+        <button type="button" class="lgt-open" onclick="lgtOpen()">⏰ 반 수업 시간 (요일별 시작·길이)</button>
+      </div>""")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
