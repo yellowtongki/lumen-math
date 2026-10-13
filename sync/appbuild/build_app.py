@@ -521,6 +521,16 @@ if int(ver.replace('v19-',''))>=115:
     assert s.count(a4)==2
     s=s.replace(a4, "    else if(VIEW==='plwall'){ try{ C.innerHTML=rPlWall(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">주간계획 모아보기 오류: '+esc2(e.message)+'</div>'; } }\n"+a4)
     rep("plweek:'📅 주간 점수',", "plweek:'📅 주간 점수',plwall:'🗓 주간계획 모아보기',")
+if int(ver.replace('v19-',''))>=117:
+    # v19-117: 아이패드·아이폰(사파리) 저장 보호 장치 — localStorage.setItem = function 은 크롬에선 걸리지만
+    #   사파리에선 «setItem 이라는 이름의 값»을 저장할 뿐 진짜 저장 함수는 그대로였다(오류 줄 setItem@[native code]).
+    #   그래서 등록부 슬림본·서버 전용 키 메모리 보관·한도 초과 대비가 아이패드에서 하나도 작동하지 않았다.
+    #   → 세 함수를 Storage.prototype 에서 감싼다(localStorage 일 때만). 켜질 때 서버 전용 키의 디스크 사본은 메모리로 옮기고 비운다.
+    rep("localStorage.getItem = function(key) {", "var _lsHookGet = function(key) {")
+    rep("localStorage.removeItem = function(key) {", "var _lsHookRemove = function(key) {")
+    rep("localStorage.setItem = function(key, value) {", "var _lsHookSet = function(key, value) {")
+    rep("    scheduleSync(key);\n  }\n};\nfunction _quotaWarn(){",
+        "    scheduleSync(key);\n  }\n};\n" + open(SP+'/lshook117_teacher.js').read() + "\nfunction _quotaWarn(){")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
