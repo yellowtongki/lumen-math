@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>📖 읽기 훈련 시안</title>
+<style>
+:root{--navy:#0d2240;--blue:#1d6fe8;--line:#e2e8f0;--muted:#64748b;--g:#15803d;--gbg:#dcfce7;--r:#dc2626;--rbg:#fee2e2;--o:#b45309;--obg:#fef3c7;--teal:#0f766e}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;font-family:Pretendard,'Apple SD Gothic Neo',sans-serif;background:#eef2f8;color:#0f172a}
+.top{background:var(--navy);color:#fff;padding:10px 14px;display:flex;gap:8px;align-items:center;position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.top b{font-size:17px;margin-right:6px}.tab{padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.12);font-weight:800;font-size:14px;cursor:pointer}.tab.on{background:#fff;color:var(--navy)}
+.sec{display:none;padding:14px;max-width:1240px;margin:0 auto}.sec.on{display:block}
+.anno{background:#fefce8;border:2px dashed #facc15;border-radius:12px;padding:10px 12px;font-size:13px;color:#713f12;line-height:1.6;margin:10px 0}
+h3.t{margin:14px 0 6px;font-size:15px;color:var(--muted)}
+/* ── 학생 태블릿 틀 ── */
+.flow{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+.tab-dev{width:360px;min-height:620px;background:#fff;border:10px solid #1e293b;border-radius:28px;padding:14px;position:relative;display:flex;flex-direction:column;gap:10px}
+.tab-dev .lbl{position:absolute;top:-30px;left:0;font-size:13px;font-weight:900;color:var(--muted)}
+.hd{display:flex;align-items:center;gap:8px}.hd b{font-size:17px}.timer{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:900;font-size:18px;background:#0f172a;color:#fff;border-radius:10px;padding:4px 10px}
+.timer.warn{background:var(--r)}
+.dots{display:flex;gap:5px}.dots i{width:22px;height:6px;border-radius:3px;background:#e2e8f0}.dots i.ok{background:var(--g)}.dots i.no{background:var(--r)}.dots i.cur{background:var(--blue)}
+.card{border:2px solid var(--line);border-radius:16px;padding:14px}
+.card.pass{background:#f8fafc;font-size:16.5px;line-height:1.75;letter-spacing:-.01em}
+.card.pass .src{font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-size:17px;font-weight:900;background:var(--navy);color:#fff;text-align:center}
+.btn.ghost{background:#fff;color:var(--navy);border:2px solid var(--line)}.btn.sm{padding:9px;font-size:14px;border-radius:10px}
+.q{font-size:16px;font-weight:900;line-height:1.5}.q .ty{display:inline-block;font-size:11.5px;background:#e0e7ff;color:#3730a3;border-radius:6px;padding:2px 7px;margin-right:6px;vertical-align:2px}
+.opts{display:flex;flex-direction:column;gap:8px}.opt{border:2px solid var(--line);border-radius:12px;padding:11px 12px;font-size:15px;font-weight:700;display:flex;gap:10px;align-items:flex-start}
+.opt .n{width:24px;height:24px;border-radius:50%;border:2px solid #94a3b8;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.opt b{margin-left:auto;white-space:nowrap}.opt.sel{border-color:var(--blue);background:#eff6ff}.opt.ok{border-color:#86efac;background:var(--gbg)}.opt.no{border-color:#fca5a5;background:var(--rbg)}
+.fold{border:2px dashed #cbd5e1;border-radius:12px;padding:9px 12px;font-size:13.5px;color:var(--muted);font-weight:800;display:flex;justify-content:space-between}
+.why{background:var(--rbg);border:2px solid #fca5a5;border-radius:14px;padding:12px}.why b{display:block;font-size:15px;margin-bottom:8px;color:#991b1b}
+.why .opt{background:#fff;font-size:14px;padding:9px 11px}
+.exp{background:var(--gbg);border:2px solid #86efac;border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.5}
+.res{display:grid;grid-template-columns:1fr 1fr;gap:8px}.res div{border:2px solid var(--line);border-radius:14px;padding:10px;text-align:center}.res b{display:block;font-size:26px}.res small{font-size:12px;color:var(--muted);font-weight:700}
+.radar{display:flex;flex-direction:column;gap:5px;font-size:13px}.radar div{display:grid;grid-template-columns:86px 1fr 34px;gap:8px;align-items:center}.bar{height:10px;background:#e2e8f0;border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--blue)}.bar i.low{background:var(--r)}
+.xp{background:linear-gradient(135deg,#1d6fe8,#0f766e);color:#fff;border-radius:14px;padding:12px;font-weight:900;font-size:15px;text-align:center}
+/* ── 학원앱 ── */
+.pane{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px}
+.ph{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.ph h2{margin:0;font-size:20px}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:12px;overflow:hidden}.seg span{padding:7px 14px;font-weight:900;font-size:14px;color:#475569}.seg span.on{background:var(--navy);color:#fff}
+table{border-collapse:collapse;width:100%;font-size:13.5px}th{font-size:12px;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:2px solid var(--line)}td{padding:8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.pill{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:900}.pill.g{background:var(--gbg);color:var(--g)}.pill.r{background:var(--rbg);color:var(--r)}.pill.o{background:var(--obg);color:var(--o)}.pill.b{background:#dbeafe;color:#1e40af}.pill.gr{background:#f1f5f9;color:#475569}
+.hurry{color:var(--r);font-weight:900}
+.bank{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px}
+.bank .orig{border:2px solid var(--line);border-radius:12px;padding:10px;background:#f8fafc;font-size:13px}.bank .orig .im{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:13.5px;line-height:1.6;margin:6px 0}
+.item{border:2px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.item .qq{font-size:14px;font-weight:800;line-height:1.5}.item .oo{font-size:13px;color:#334155;margin-top:4px;line-height:1.6}
+.item .act{display:flex;flex-direction:column;gap:5px}.item .act span{border:2px solid var(--line);border-radius:8px;padding:5px 9px;font-weight:900;font-size:13px;text-align:center}.item .act .ok{background:var(--gbg);border-color:#86efac;color:var(--g)}
+.ta{width:100%;border:2px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:14.5px;line-height:1.6;min-height:96px}
+/* ── 학부모 보고서 ── */
+.a4{background:#fff;width:794px;max-width:100%;margin:0 auto;padding:40px 44px;border:1px solid var(--line);font-size:14px;line-height:1.65}
+.a4 h1{font-size:22px;margin:0 0 4px}.a4 .sub{color:var(--muted);font-weight:700;margin-bottom:18px}
+.a4 h2{font-size:16px;margin:18px 0 6px;border-left:4px solid var(--navy);padding-left:8px}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.kpi div{border:2px solid var(--line);border-radius:12px;padding:10px;text-align:center}.kpi b{display:block;font-size:22px}.kpi small{color:var(--muted);font-weight:700;font-size:12px}
+.kpi em{display:block;font-style:normal;font-size:12px;font-weight:800;color:var(--g)}
+.case{background:#f8fafc;border:2px solid var(--line);border-radius:12px;padding:12px 14px}.case mark{background:#fde68a;padding:0 2px}
+.home{background:#eff6ff;border:2px solid #bfdbfe;border-radius:12px;padding:12px 14px;font-weight:700}
+@media print{.top,.anno{display:none}.sec{display:none}.sec#p{display:block}}
+</style></head><body>
+<div class="top"><b>📖 읽기 훈련 (문해력) 시안</b>
+ <span class="tab on" data-t="s">① 학생앱 · 수업 중 10분</span><span class="tab" data-t="t">② 학원앱 · 결과·문항 은행</span><span class="tab" data-t="p">③ 학부모 보고서 1쪽</span>
+ <span style="margin-left:auto;font-size:12px;opacity:.8">2026-10-14 · 결정: 수업 중 10분·5문항·월 12회 / 사유 고르기 / 모든 교과서</span></div>
+
+<!-- ═════════ ① 학생앱 ═════════ -->
+<div class="sec on" id="s">
+<div class="anno">흐름: <b>시작 → 지문 읽기(시간 잼) → 문항 5개(지문은 접힘, 다시 펼치면 횟수 셈) → 틀리면 사유 고르기 → 결과</b>. 태블릿 세로 화면 기준. 아래 화면은 왼쪽에서 오른쪽 순서. 화면 안 단추를 눌러도 넘어간다.</div>
+<div class="flow">
+
+ <div class="tab-dev" id="s1"><span class="lbl">1. 시작</span>
+  <div class="hd"><b>📖 오늘의 읽기 훈련</b><span class="timer">10:00</span></div>
+  <div class="card" style="text-align:center;padding:26px 14px">
+   <div style="font-size:44px">📖</div>
+   <div style="font-size:19px;font-weight:900;margin:8px 0 4px">지문 1개 · 문제 5개</div>
+   <div style="color:var(--muted);font-weight:700">10분 안에 · 중2 연립방정식 활용</div>
+   <div style="margin-top:14px;display:flex;justify-content:center;gap:6px"><span class="pill b">🔥 7회 연속</span><span class="pill gr">이번 달 4/12</span></div>
+  </div>
+  <div class="card" style="font-size:13.5px;line-height:1.6;color:#334155"><b>읽는 법</b><br>① 지문을 끝까지 읽고 「다 읽었어요」<br>② 문제 풀 때 지문은 접혀 있어요 — 필요하면 「지문 다시 보기」<br>③ 틀리면 왜 틀렸는지 한 줄 골라요</div>
+  <div style="flex:1"></div>
+  <button class="btn" onclick="go('s2')">시작 ▶</button>
+ </div>
+
+ <div class="tab-dev" id="s2"><span class="lbl">2. 지문 읽기 (읽기 시간 측정)</span>
+  <div class="hd"><b>지문</b><span class="dots"><i class="cur"></i><i></i><i></i><i></i><i></i></span><span class="timer">09:52</span></div>
+  <div class="card pass"><div class="src">비상 중2 · 연립방정식의 활용 · 쌍둥이 문제</div>
+   희영이는 할머니 댁에 갔다 오는데 갈 때는 시속 4 km로 걷고, 돌아올 때는 갈 때보다 2 km 더 가까운 길을 시속 3 km로 걸어서 모두 4시간이 걸렸다. 희영이가 돌아올 때 걸은 거리를 구하시오.</div>
+  <div class="anno" style="margin:0">읽기 시간 = 이 화면이 열린 때 ~ 「다 읽었어요」. 지문 글자 수 ÷ 분 = 읽기 속도. 3분 넘으면 자동으로 넘어감(딴짓 방지).</div>
+  <div style="flex:1"></div>
+  <button class="btn" onclick="go('s3')">다 읽었어요 ✓</button>
+ </div>
+
+ <div class="tab-dev" id="s3"><span class="lbl">3. 문항 (지문 접힘)</span>
+  <div class="hd"><b>문제 1 / 5</b><span class="dots"><i class="cur"></i><i></i><i></i><i></i><i></i></span><span class="timer">09:05</span></div>
+  <div class="fold"><span>📄 지문 다시 보기</span><span>펼친 횟수 0</span></div>
+  <div class="q"><span class="ty">묻는 것</span>이 문제가 구하라는 것은?</div>
+  <div class="opts">
+   <div class="opt"><span class="n">1</span>갈 때 걸은 거리</div>
+   <div class="opt sel"><span class="n">2</span>돌아올 때 걸은 거리</div>
+   <div class="opt"><span class="n">3</span>갈 때와 돌아올 때 거리의 합</div>
+   <div class="opt"><span class="n">4</span>돌아올 때 걸린 시간</div>
+  </div>
+  <div style="flex:1"></div>
+  <button class="btn" onclick="go('s4')">답 내기</button>
+ </div>
+
+ <div class="tab-dev" id="s4"><span class="lbl">4. 틀렸을 때 → 사유 고르기</span>
+  <div class="hd"><b>문제 2 / 5</b><span class="dots"><i class="ok"></i><i class="no"></i><i></i><i></i><i></i></span><span class="timer">07:40</span></div>
+  <div class="q"><span class="ty">어휘</span>"갈 때보다 2 km 더 가까운 길"의 뜻은?</div>
+  <div class="opts">
+   <div class="opt ok"><span class="n">1</span>돌아올 때 거리 = 갈 때 거리 − 2</div>
+   <div class="opt no"><span class="n">4</span>갈 때 거리 = 돌아올 때 거리 − 2 <b style="margin-left:auto">✗ 내 답</b></div>
+  </div>
+  <div class="why"><b>왜 틀렸을까? 하나만 골라요</b>
+   <div class="opts">
+    <div class="opt"><span class="n">A</span>조건(숫자·단서)을 못 봤다</div>
+    <div class="opt"><span class="n">B</span>단어·표현 뜻을 몰랐다</div>
+    <div class="opt sel"><span class="n">C</span>급하게 읽었다</div>
+    <div class="opt"><span class="n">D</span>식을 반대로 세웠다</div>
+    <div class="opt"><span class="n">E</span>잘 모르겠다</div>
+   </div></div>
+  <div class="exp">💡 "A보다 더 가까운"은 A에서 빼는 것. ④는 갈 때가 더 짧다는 뜻이 돼요.</div>
+  <button class="btn sm" onclick="go('s5')">다음 문제 ▶</button>
+ </div>
+
+ <div class="tab-dev" id="s5"><span class="lbl">5. 결과</span>
+  <div class="hd"><b>오늘 결과</b><span class="timer" style="background:var(--g)">7:12 사용</span></div>
+  <div class="res">
+   <div><b style="color:var(--g)">4<small style="font-size:14px">/5</small></b><small>정답</small></div>
+   <div><b>48<small style="font-size:14px">초</small></b><small>읽기 시간 (반 평균 62초)</small></div>
+   <div><b>1</b><small>지문 다시 본 횟수</small></div>
+   <div><b class="hurry">⚡</b><small>서두름 1번 (빨리 읽고 틀림)</small></div>
+  </div>
+  <div class="card"><div style="font-weight:900;margin-bottom:8px">이번 달 유형별 (20문항)</div>
+   <div class="radar">
+    <div><span>조건 찾기</span><span class="bar"><i style="width:80%"></i></span><span>80%</span></div>
+    <div><span>묻는 것</span><span class="bar"><i style="width:100%"></i></span><span>100%</span></div>
+    <div><span>어휘</span><span class="bar"><i class="low" style="width:50%"></i></span><span>50%</span></div>
+    <div><span>식 변환</span><span class="bar"><i style="width:75%"></i></span><span>75%</span></div>
+    <div><span>단서·검산</span><span class="bar"><i style="width:67%"></i></span><span>67%</span></div>
+   </div>
+   <div style="margin-top:8px;font-size:13.5px;color:#334155">📌 <b>"~보다 더 가까운/먼"</b> 같은 비교 표현에서 자주 틀려요. 다음 시간엔 어휘 문항이 한 개 더 나와요.</div>
+  </div>
+  <div class="xp">+10 XP 읽기 훈련 · 🔥 8회 연속</div>
+  <button class="btn ghost sm" onclick="go('s1')">처음으로</button>
+ </div>
+</div>
+
+<h3 class="t">학생앱 설계 메모</h3>
+<div class="anno" style="margin-top:0">
+• <b>10분 = 지문 1개 + 문항 5개</b>가 기본. 읽기 1분 + 문항당 1.5분 = 8.5분. 남는 시간은 결과 화면 읽기. (지문 2개 3+2 문항은 2차 옵션)<br>
+• <b>문항 순서</b>: 묻는 것 → 어휘 → 조건 → 식 변환 → 검산/바꿔 말하기. 문제를 푸는 순서와 같아서 「읽는 절차」가 몸에 밴다.<br>
+• <b>즉시 채점</b>: 답 내면 바로 ◯/✗. ✗면 사유 A~E 하나 고른 뒤 정답+한 줄 해설. 숙제 4단계(풀이→채점→오답→아하노트)와 같은 리듬.<br>
+• <b>재는 것</b>: 읽기 시간(초) · 문항별 답 시간 · 지문 펼친 횟수 · 사유 · 탭 이탈(이탈하면 그 문항 시간 무효). 전부 객관식·앱 안 계산 → AI 비용 0.<br>
+• <b>서두름</b> = 읽기 시간이 반 평균의 70% 미만이면서 틀린 문항이 있을 때. 결과 화면에 ⚡ 하나로만 보여주고 잔소리는 안 한다.<br>
+• <b>XP</b>: 완료 +10, 5/5 보너스 +5, 연속 출석 🔥. 기존 레벨 체계에 「읽기」 항목 추가.<br>
+• <b>어느 지문이 나오나</b>: 그 학생의 학교 교과서 출판사 + 지금 배우는 단원 우선, 없으면 다른 출판사 같은 단원. 약한 유형은 다음 세트에 비중↑.
+</div>
+</div>
+
+<!-- ═════════ ② 학원앱 ═════════ -->
+<div class="sec" id="t">
+<div class="pane">
+ <div class="ph"><h2>📖 문해력</h2><span class="seg"><span class="on">오늘 결과</span><span>문항 은행</span><span>학생별</span><span>보고서</span></span><span style="margin-left:auto;color:var(--muted);font-weight:700">10/14 (화) · T5 반 5명</span></div>
+ <table><tr><th>학생</th><th>지문</th><th>정답</th><th>읽기</th><th>다시 봄</th><th>사유</th><th>신호</th><th>이번 달</th></tr>
+  <tr><td><b>학생A</b> <small>중2</small></td><td>비상 연립 활용 (희영)</td><td><span class="pill g">4/5</span></td><td>48초</td><td>1</td><td>C 급하게</td><td class="hurry">⚡ 서두름</td><td>4회 · 17/20</td></tr>
+  <tr><td><b>학생B</b> <small>중2</small></td><td>비상 연립 활용 (희영)</td><td><span class="pill r">2/5</span></td><td>95초</td><td>4</td><td>B 어휘 · A 조건 · E</td><td><span class="pill o">어휘 약함</span></td><td>4회 · 10/20</td></tr>
+  <tr><td><b>학생C</b> <small>중1</small></td><td>지학사 방정식 활용 (나이)</td><td><span class="pill g">5/5</span></td><td>40초</td><td>0</td><td>—</td><td></td><td>4회 · 19/20</td></tr>
+  <tr><td><b>학생D</b> <small>중3</small></td><td>미래엔 이차방정식 활용</td><td><span class="pill o">3/5</span></td><td>71초</td><td>2</td><td>D 식 반대 ×2</td><td><span class="pill o">식 변환</span></td><td>3회 · 11/15</td></tr>
+  <tr><td><b>학생E</b> <small>중1</small></td><td>— 아직 안 함</td><td colspan="5" style="color:var(--muted)">수업 시작 후 10분 안에 안 열면 여기 빨간 표시</td><td>2회</td></tr>
+ </table>
+ <div class="anno">반 전체 한 화면. 원장님이 수업 시작 10분 뒤 이 표를 보고 「B는 어휘, D는 식 변환」 — 그날 수업에서 바로 짚는다. 📱 수업 모드(시안 `mockup_class_mode.html`)에 이 줄을 넣을 수도 있다.</div>
+</div>
+
+<div class="pane">
+ <div class="ph"><h2>문항 은행 · 검수</h2><span class="seg"><span class="on">검수 대기 23</span><span>승인 61</span><span>반려 7</span></span>
+  <span class="pill b">중1 116 · 중2 364 · 중3 375 후보 (출판사 전체 활용 단원)</span><button class="btn sm" style="width:auto;margin-left:auto">+ 쌍둥이 5개 더 만들기 (AI)</button></div>
+ <div class="bank">
+  <div class="orig"><b>원본</b> · 비상 중2 84쪽 8번 · level 4 · 매쓰플랫 id 224250693
+   <div class="im">희영이는 할머니 댁에 갔다 오는데 갈 때는 시속 5 km로 걷고, 돌아올 때는 갈 때보다 5 km 더 가까운 길을 시속 4 km로 걸어서 모두 5시간 30분이 걸렸다. 희영이가 돌아올 때 걸은 거리를 구하시오.<br><small style="color:var(--muted)">(실제 화면엔 매쓰플랫 문항 그림)</small></div>
+   정답 10 km · 단원 연립방정식의 활용(1)<br><br>
+   <b>같은 유형 다른 출판사</b><br><small>동아 중2 91쪽 7번 · 지학사 중2 88쪽 11번 · 천재(김동재) 93쪽 9번</small><br><br>
+   <b>쌍둥이 지문 (학생이 보는 글)</b>
+   <textarea class="ta">희영이는 할머니 댁에 갔다 오는데 갈 때는 시속 4 km로 걷고, 돌아올 때는 갈 때보다 2 km 더 가까운 길을 시속 3 km로 걸어서 모두 4시간이 걸렸다. 희영이가 돌아올 때 걸은 거리를 구하시오.</textarea>
+   <small style="color:var(--muted)">답 6 km (갈 때 8) · 난이도 상 · 글자 92</small>
+  </div>
+  <div>
+   <div class="item"><div><div class="qq"><span class="pill b">묻는 것</span> 이 문제가 구하라는 것은?</div><div class="oo">① 갈 때 걸은 거리 · <b>② 돌아올 때 걸은 거리 ✓</b> · ③ 두 거리의 합 · ④ 돌아올 때 걸린 시간</div></div><div class="act"><span class="ok">✓ 승인</span><span>✏️ 고침</span><span>✗ 반려</span></div></div>
+   <div class="item"><div><div class="qq"><span class="pill b">어휘</span> "갈 때보다 2 km 더 가까운 길"의 뜻은?</div><div class="oo"><b>① 올 때 = 갈 때 − 2 ✓</b> · ② 올 때 = 갈 때 + 2 · ③ 올 때 = 2 · ④ 갈 때 = 올 때 − 2</div></div><div class="act"><span class="ok">✓ 승인</span><span>✏️ 고침</span><span>✗ 반려</span></div></div>
+   <div class="item"><div><div class="qq"><span class="pill b">식 변환</span> 갈 때 x km, 돌아올 때 y km라 할 때 옳은 연립방정식은?</div><div class="oo"><b>① y = x − 2, x/4 + y/3 = 4 ✓</b> · ② y = x + 2 … · ③ y = x − 2, x/3 + y/4 = 4 · ④ y = x − 2, 4x + 3y = 4</div></div><div class="act"><span>✓ 승인</span><span>✏️ 고침</span><span>✗ 반려</span></div></div>
+   <div class="item"><div><div class="qq"><span class="pill b">묻는 것</span> x = 8, y = 6이 나왔다. 답으로 써야 하는 것은?</div><div class="oo">① 8 km · <b>② 6 km ✓</b> · ③ 14 km · ④ 2 km</div></div><div class="act"><span>✓ 승인</span><span>✏️ 고침</span><span>✗ 반려</span></div></div>
+   <div class="item"><div><div class="qq"><span class="pill b">바꿔 말하기</span> "모두 4시간이 걸렸다"와 같은 뜻은?</div><div class="oo">① 갈 때 4시간, 올 때 4시간 · <b>② 갈 때 + 올 때 = 4시간 ✓</b> · ③ 각 2시간 · ④ 할머니 댁에 4시간</div></div><div class="act"><span>✓ 승인</span><span>✏️ 고침</span><span>✗ 반려</span></div></div>
+   <div style="display:flex;gap:8px"><button class="btn sm" style="flex:1">지문 승인 → 은행에 넣기</button><button class="btn ghost sm" style="flex:1">다음 검수 대기 ▶</button></div>
+   <div class="anno">학생 정답률 95% 넘는 문항은 자동으로 「너무 쉬움」, 30% 아래면 「애매함?」 표시 → 원장님이 다시 본다. 승인 전엔 학생에게 절대 안 나간다.</div>
+  </div>
+ </div>
+</div>
+
+<div class="pane">
+ <div class="ph"><h2>학생별 · 학생B</h2><span style="color:var(--muted);font-weight:700">중2 · 10월 4회 · 10/20</span></div>
+ <table><tr><th>날짜</th><th>지문</th><th>정답</th><th>읽기</th><th>다시 봄</th><th>틀린 유형 → 사유</th></tr>
+  <tr><td>10/14</td><td>비상 연립 활용 (희영)</td><td>2/5</td><td>95초</td><td>4</td><td>어휘→B · 조건→A · 식→E</td></tr>
+  <tr><td>10/09</td><td>비상 부등식 활용 (엘리베이터)</td><td>3/5</td><td>80초</td><td>3</td><td>어휘(단위)→B · 묻는 것→A</td></tr>
+  <tr><td>10/07</td><td>비상 방정식 활용 (유람선)</td><td>2/5</td><td>110초</td><td>5</td><td>어휘(단위)→B · 식→D · 단서→E</td></tr>
+  <tr><td>10/02</td><td>비상 방정식 활용 (나이)</td><td>3/5</td><td>70초</td><td>2</td><td>어휘→B · 식→D</td></tr>
+ </table>
+ <div class="anno" style="margin-bottom:0">4회 중 4회 어휘(단위 환산·비교 표현)에서 틀림 + 지문을 평균 3.5번 다시 봄 → 「한 번에 기억 못 하고 급하지도 않다 = 단어 뜻 자체가 약함」. 다음 세트는 어휘 문항 2개로. 학부모 보고서의 «실제 사례» 칸에 10/14 어휘 문항이 들어간다.</div>
+</div>
+</div>
+
+<!-- ═════════ ③ 학부모 보고서 ═════════ -->
+<div class="sec" id="p">
+<div class="anno">월 1회 · A4 1쪽 인쇄 + 학부모앱 카드. 진학 나침반 리포트 인쇄 틀 재사용. 문장은 새벽 Ultra Feedback 작업에 얹어 AI가 쓰고, 숫자는 앱이 계산.</div>
+<div class="a4">
+ <h1>📖 읽기 훈련 월간 보고 — 학생B</h1>
+ <div class="sub">루멘수학 · 2026년 10월 · 수업 중 10분 읽기 훈련 12회 중 11회 참여</div>
+ <p>이번 달 B는 수업마다 10분씩, 교과서 문장제를 「읽는 훈련」을 했습니다. 계산이 아니라 <b>문제를 읽고 조건과 묻는 것을 찾는 힘</b>을 따로 재는 훈련입니다. B가 문장제에서 막히는 지점은 계산보다 <b>단어와 표현을 읽는 단계</b>에 있었습니다.</p>
+ <h2>이번 달 숫자</h2>
+ <div class="kpi">
+  <div><b>58%</b><small>정답률 (55문항)</small><em>9월 46% → ▲12</em></div>
+  <div><b>84초</b><small>지문 읽기 시간</small><em>반 평균 62초</em></div>
+  <div><b>3.1회</b><small>지문 다시 본 횟수</small><em>9월 4.2 → 줄었음</em></div>
+  <div><b>0회</b><small>서두름 ⚡</small><em>급하게 읽는 편은 아님</em></div>
+ </div>
+ <h2>유형별로 보면</h2>
+ <div class="radar" style="font-size:13.5px">
+  <div><span>묻는 것 찾기</span><span class="bar"><i style="width:82%"></i></span><span>82%</span></div>
+  <div><span>조건 찾기</span><span class="bar"><i style="width:64%"></i></span><span>64%</span></div>
+  <div><span>식으로 옮기기</span><span class="bar"><i style="width:55%"></i></span><span>55%</span></div>
+  <div><span>수학 어휘</span><span class="bar"><i class="low" style="width:36%"></i></span><span>36%</span></div>
+  <div><span>단서·검산</span><span class="bar"><i style="width:60%"></i></span><span>60%</span></div>
+ </div>
+ <h2>실제로 이런 문제였습니다</h2>
+ <div class="case">「갈 때는 시속 4 km로 걷고, 돌아올 때는 <mark>갈 때보다 2 km 더 가까운 길</mark>을 시속 3 km로 걸어서…」<br>
+ B는 「갈 때보다 더 가까운」을 <b>갈 때 거리가 더 짧다</b>로 읽었습니다. 틀린 뒤 스스로 고른 이유는 「단어·표현 뜻을 몰랐다」였습니다. 계산은 다 맞는 문제였습니다. 이런 비교 표현(~보다 더, ~만큼 적은, 이상/초과)이 이번 달 틀린 문항 23개 중 11개입니다.</div>
+ <h2>집에서 딱 하나만</h2>
+ <div class="home">숙제 문장제를 풀기 전에 <b>"이 문제가 구하라는 게 뭐야?"</b> 한 번만 물어봐 주세요. 답은 안 봐주셔도 됩니다. 말로 한 번 꺼내는 것만으로 다시 읽기가 시작됩니다.</div>
+ <p style="margin-top:14px;color:var(--muted);font-size:12.5px">※ 비교 기준은 루멘수학 같은 학년 학생 평균입니다(전국 기준 아님). 11월에는 어휘 문항 비중을 늘려 같은 표현을 반복해서 만나게 합니다.</p>
+</div>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(function(t){t.onclick=function(){document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('on')});t.classList.add('on');document.querySelectorAll('.sec').forEach(function(s){s.classList.toggle('on',s.id===t.dataset.t)});window.scrollTo(0,0)}});
+function go(id){var el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});el.style.boxShadow='0 0 0 4px #bfdbfe';setTimeout(function(){el.style.boxShadow=''},900)}
+</script>
+</body></html>
