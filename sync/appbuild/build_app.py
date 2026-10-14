@@ -553,6 +553,10 @@ if int(ver.replace('v19-',''))>=119:
         }).join('')}
         <button type="button" class="lgt-open" onclick="lgtOpen()">⏰ 반 수업 시간 (요일별 시작·길이)</button>
       </div>""")
+if int(ver.replace('v19-',''))>=120:
+    # v19-120: 학생앱 v2-136 코디가 영어·국어·과학·사회 칸도 넣는다 — 실천 증거 검사(plrIsMath)는 과목을 먼저 본다(예전엔 코디 칸 = 무조건 수학)
+    rep("if(it.src==='codi') return true; if(s) return /수학|math/i.test(s);", "if(s) return /수학|math/i.test(s); if(it.src==='codi') return true;")
+    rep("  if (k === 'goal') return '목표';\n", "  if (k === 'goal') return '목표';\n  if (k === 'fill') return '코디';   /* v19-120: 학생앱 v2-136 다른 과목 채우기 */\n  if (k === 'exam') return '시험대비';\n")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
