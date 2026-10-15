@@ -86,7 +86,12 @@ pwl=(open(SP+'/plwall_teacher.js').read()+'\n'+open(SP+'/wkcheck_teacher.js').re
 pg6=open(SP+'/pubgrade116_teacher.js').read() if int(ver.replace('v19-',''))>=116 else ''   # v19-116: 📚 교과서 문항도 등급 단추로 적중 확정(it.hit · mats kind textbook) · 같은 그림(imgUrl) 카드 합치기 · 교과서 일치 「공통」 한 번만 · 쪽·번호 안내 (원장 「6번 교과서 숫자변형 체크를 못하게 되었다」)
 wkg=open(SP+'/wkgroup118_teacher.js').read() if int(ver.replace('v19-',''))>=118 else ''   # v19-118: 📅 주간 점수 «체크하기» 반별로 묶고 한 줄에 두 명 (원장 「반별로 잘 보게 묶고, 가운데 화면에 체크를 2명씩」)
 g19=open(SP+'/grptime119_teacher.js').read() if int(ver.replace('v19-',''))>=119 else ''   # v19-119: ⏰ 반 수업 시간(lumen_group_times · 요일별 시작·길이) — 주간계획 모아보기·큰 달력의 «루멘 수업» 칸 · 학생이 고친 학원 시간(codi_fixed_ 안 type 'lumen') 먼저 · 「✏️ 학생이 고친 학원 시간」
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+# v19-121: 🧠 루멘 수학퀴즈 — 캐릭터 도트(docs/char_px2) + 학생앱과 같은 그리기(mathquiz_render.js) + 만들기·현황·낱말·캐릭터 (시안 docs/mockup_char_lesson_teacher.html)
+if int(ver.replace('v19-',''))>=121:
+    sys.dont_write_bytecode=True; sys.path.insert(0, HERE); from mq_assets import mq_bundle
+    mqz=mq_bundle(os.path.normpath(os.path.join(HERE,'..','..')), SP)+open(SP+'/mathquiz121_teacher.js').read()
+else: mqz=''
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -557,6 +562,14 @@ if int(ver.replace('v19-',''))>=120:
     # v19-120: 학생앱 v2-136 코디가 영어·국어·과학·사회 칸도 넣는다 — 실천 증거 검사(plrIsMath)는 과목을 먼저 본다(예전엔 코디 칸 = 무조건 수학)
     rep("if(it.src==='codi') return true; if(s) return /수학|math/i.test(s);", "if(s) return /수학|math/i.test(s); if(it.src==='codi') return true;")
     rep("  if (k === 'goal') return '목표';\n", "  if (k === 'goal') return '목표';\n  if (k === 'fill') return '코디';   /* v19-120: 학생앱 v2-136 다른 과목 채우기 */\n  if (k === 'exam') return '시험대비';\n")
+if int(ver.replace('v19-',''))>=121:
+    # v19-121: 🧠 루멘 수학퀴즈 (메뉴 칸은 mathquiz121_teacher.js 가 GROUPS 「학생앱」에 끼운다) — 가운데 그리기 · 제목 · 큰 키는 시작 때 받지 않음
+    a5="    else if(VIEW==='plwall'){ try{ C.innerHTML=rPlWall(); }"
+    assert s.count(a5)==2
+    s=s.replace(a5, "    else if(VIEW==='mathquiz'){ try{ C.innerHTML=rMathQuiz(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">루멘 수학퀴즈 오류: '+esc2(e.message)+'</div>'; } }\n"+a5)
+    rep("tbmatch:'📚 교과서일치도'", "tbmatch:'📚 교과서일치도',mathquiz:'🧠 루멘 수학퀴즈'")
+    #   quiz_index · quiz_<id> · quiz_words_<학년> · quizlog_<코드> · wordlog_<코드> — 화면이 서버에서 바로 읽는다(이 기기 사본 없음)
+    rep("'or_students_archive_', 'ms_paper', 'ms_mypaper'];", "'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_'];")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''

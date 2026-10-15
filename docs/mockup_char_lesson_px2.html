@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>캐릭터 수업 도트 시안</title>
+<style>
+:root{--navy:#0d2240;--red:#e8192c;--line:#e2e8f0;--muted:#64748b;--cream:#fffaf2;--org:#c2410c;--mint:#ecfdf5}
+*{box-sizing:border-box}body{margin:0;font-family:Pretendard,'Apple SD Gothic Neo',sans-serif;background:#eef2f8;color:#0f172a;font-size:13.5px}
+.page{display:flex;gap:20px;padding:18px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.lab{font-weight:900;font-size:14px;color:#334155;margin:0 0 8px}
+.phone{width:380px;background:var(--cream);border-radius:28px;border:8px solid #0f172a;overflow:hidden}
+.top{background:var(--navy);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px}.top b{font-size:15px}.top small{margin-left:auto;color:#cbd5e1;font-size:11px;font-weight:700}
+.prog{height:5px;background:#1e3a5f}.prog i{display:block;height:100%;width:38%;background:#fbbf24}
+.body{padding:12px 12px 16px}
+svg.ch3{flex:0 0 auto;overflow:visible}
+.msg{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}
+.av{width:62px;height:56px;border-radius:14px;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.av.lumi{background:#fff7d6;border-color:#fde68a}.av.aha{background:#ffedd5;border-color:#fed7aa}.av.ssam{background:#e0e7ff;border-color:#c7d2fe}
+.bub{background:#fff;border:1.5px solid var(--line);border-radius:4px 16px 16px 16px;padding:9px 11px;line-height:1.6;position:relative;flex:1}
+.bub .nm{display:block;font-size:11px;font-weight:900;color:var(--muted);margin-bottom:1px}
+.bub .tts{position:absolute;right:8px;top:7px;font-size:12px;opacity:.6}
+.hl{color:var(--org);font-weight:900}
+.card{background:var(--mint);border:1.5px solid #a7f3d0;border-radius:16px;padding:11px 12px;margin:0 0 10px 54px}
+.card h4{margin:0 0 8px;font-size:13px;color:#047857}
+.eq{display:flex;align-items:flex-end;gap:5px;flex-wrap:wrap;margin-bottom:4px}
+.ch{display:flex;flex-direction:column;align-items:center;gap:2px}
+.ch small{font-size:10px;color:var(--muted);font-weight:700}
+.chip{background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:6px 9px;font-weight:900;font-size:15px;font-family:'Times New Roman',serif}
+.chip.mv{background:#f97316;border-color:#f97316;color:#fff}
+.chip.eqs{border:none;background:none;padding:6px 2px}
+.arrow{font-size:11px;font-weight:800;color:var(--org);margin:2px 0 8px}
+.quiz{background:#fff;border:2px solid #fde68a;border-radius:16px;padding:11px 12px;margin:0 0 10px}
+.quiz h4{margin:0 0 6px;font-size:13.5px}.quiz .q{font-family:'Times New Roman',serif;font-size:17px;font-weight:900;text-align:center;margin:6px 0 9px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}.opt{border:2px solid var(--line);border-radius:11px;padding:9px;text-align:center;font-weight:900;font-family:'Times New Roman',serif;font-size:15px;background:#fff}
+.opt.ok{border-color:#22c55e;background:#dcfce7;color:#15803d}.opt.no{border-color:#fecaca;color:#94a3b8;text-decoration:line-through}
+.point{background:var(--navy);color:#fff;border-radius:16px;padding:11px 13px;margin-top:4px}
+.point b{color:#fbbf24}.point .btns{display:flex;gap:6px;margin-top:9px}
+.point .btns span{flex:1;text-align:center;border-radius:10px;padding:8px;font-weight:900;font-size:12.5px;background:#fff;color:var(--navy)}.point .btns span.r{background:var(--red);color:#fff}
+/* 소개 */
+.who{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:12px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
+.who .big{width:84px;height:84px;border-radius:18px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.who h3{margin:0 0 3px;font-size:16px}.who h3 small{font-size:11.5px;color:var(--muted);font-weight:700;margin-left:4px}
+.who p{margin:0;font-size:12.5px;line-height:1.55;color:#334155}
+.who .say{display:inline-block;margin-top:5px;background:#f8fafc;border-radius:8px;padding:3px 8px;font-size:12px;font-weight:800;color:var(--org)}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}.menu div{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px;font-weight:900;font-size:13px}.menu div small{display:block;font-weight:700;color:var(--muted);font-size:11px;margin-top:2px}
+/* 낱말 */
+.tabs{display:flex;gap:5px;margin-bottom:8px}.tabs span{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font-weight:900;font-size:12px}.tabs span.on{background:#0f766e;border-color:#0f766e;color:#fff}
+.days{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}.days span{font-size:11px;font-weight:800;color:#475569;padding:3px 7px;border-radius:6px}.days span.on{background:#ccfbf1;color:#0f766e}.days span.done{color:#94a3b8;text-decoration:line-through}
+.word{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.word .t{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.word .t b{font-size:17px}.word .t .hj{font-size:14px;color:#334155;font-weight:700}.word .t .hjs{font-size:11px;color:var(--muted)}
+.word .tag{font-size:10.5px;font-weight:900;background:#f1f5f9;border-radius:5px;padding:1px 6px;color:#475569;margin-left:auto}
+.word .m{font-weight:800;margin:3px 0}.word .c{display:flex;gap:6px;align-items:flex-start;font-size:12.5px;color:#0f766e;font-weight:700}
+.word .ex{font-size:12px;color:var(--muted);margin-top:3px}
+.word .chk{display:flex;gap:6px;margin-top:7px}.word .chk span{border:1.5px solid var(--line);border-radius:8px;padding:4px 9px;font-size:11.5px;font-weight:900}.word .chk span.y{border-color:#86efac;color:#15803d;background:#f0fdf4}
+.note{max-width:1180px;background:#fefce8;border:1.5px dashed #facc15;border-radius:14px;padding:12px 16px;color:#713f12;line-height:1.8;font-size:13px}
+.note b{color:#422006}
+.av{overflow:hidden;padding-top:0;align-items:flex-end}
+.unit{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px;font-weight:800;font-size:12.5px}
+.unit .st{margin-left:auto;font-size:11px;font-weight:900;border-radius:999px;padding:2px 8px;background:#f1f5f9;color:#64748b}
+.unit .st.ok{background:#dcfce7;color:#15803d}.unit .st.now{background:#fef3c7;color:#b45309}
+.unit.cur{border-color:#fbbf24;background:#fffbeb}
+.cast{display:flex;justify-content:space-around;align-items:flex-end;background:linear-gradient(180deg,#fff7e6,#ffe9cc);border-radius:18px;padding:10px 4px 4px;margin-bottom:10px}
+.cast div{display:flex;flex-direction:column;align-items:center;text-align:center;white-space:nowrap;font-weight:900;font-size:12.5px}.cast div small{display:block;color:var(--muted);font-weight:700;font-size:10.5px}
+.geo{background:#fff;border-radius:12px;padding:6px;display:flex;gap:6px}.geo>div{flex:1;min-width:0;text-align:center;font-size:11px;font-weight:800}
+.pxi{image-rendering:pixelated;image-rendering:crisp-edges;flex:0 0 auto;display:block}
+.av .pxi{margin-top:2px}
+</style></head><body>
+</head><body>
+<div class="page">
+
+<!-- ① 시험범위 코스 -->
+<div><p class="lab">① 캐릭터 + 중1-2 시험범위 코스</p>
+<div class="phone"><div class="top"><b>✨ 개념 나들이</b><small>중1-2 시험범위</small></div><div class="body">
+ <div class="cast">
+  <div><svg class="ch3" data-c="lumi" width="96" height="112"></svg>루미<small>개념 언니</small></div>
+  <div><svg class="ch3" data-c="aha" data-e="aha" width="96" height="112"></svg>아하<small>실수 대장</small></div>
+  <div><svg class="ch3" data-c="ssam" width="96" height="112"></svg>정수쌤<small>아하 포인트</small></div>
+ </div>
+ <div style="font-weight:900;margin:2px 2px 8px">📚 중1-2 시험범위 코스 <span style="color:var(--muted);font-weight:700;font-size:11.5px">· 학교 교과서 단원 순서</span></div>
+ <div class="unit">Ⅰ-1 점·선·면 · 각<span class="st ok">✓ 끝</span></div>
+ <div class="unit">Ⅰ-2 위치 관계<span class="st ok">✓ 끝</span></div>
+ <div class="unit cur">Ⅰ-3 동위각과 엇각 · 평행선<span class="st now">3/8 진행 중</span></div>
+ <div class="unit">Ⅰ-4 작도와 합동<span class="st">8장</span></div>
+ <div class="unit">Ⅱ-1 다각형 · 내각과 외각<span class="st">7장</span></div>
+ <div class="unit">Ⅱ-2 원과 부채꼴<span class="st">9장</span></div>
+ <div style="font-size:11.5px;color:var(--muted);margin-top:6px">단원마다 6~10장 대화 · 끝나면 XP · 스터디 코디가 진도 단원을 계획에 넣어 줘요</div>
+</div></div></div>
+
+<!-- ② 대화 수업 -->
+<div><p class="lab">② 💬 대화 수업 — Ⅰ-3 동위각과 엇각</p>
+<div class="phone"><div class="top"><b>💬 동위각과 엇각</b><small>중1-2 Ⅰ-3 · 3/8</small></div><div class="prog"><i></i></div><div class="body">
+ <div class="msg"><div class="av lumi"><svg class="ch3" data-c="lumi" data-h="1" width="58" height="58"></svg></div><div class="bub"><span class="nm">루미</span><span class="tts">🔊</span>두 직선이 다른 한 직선과 만나면 각이 8개 생겨. 그중 <span class="hl">같은 자리</span>에 있는 각이 <span class="hl">동위각</span>(同位角)이야.</div></div>
+ <div class="msg"><div class="av aha"><svg class="ch3" data-c="aha" data-h="1" width="58" height="58"></svg></div><div class="bub"><span class="nm">아하</span><span class="tts">🔊</span>알아! 동위각은 크기가 같잖아. 그러니까 ∠a = 70°면 ∠b도 무조건 70°!</div></div>
+ <div class="msg"><div class="av lumi"><svg class="ch3" data-c="lumi" data-e="oops" data-h="1" width="58" height="58"></svg></div><div class="bub"><span class="nm">루미</span><span class="tts">🔊</span>앗, 시험 단골 함정! 크기가 같은 건 <span class="hl">두 직선이 평행할 때만</span>이야.</div></div>
+ <div class="card"><h4>① 동위각 = F자 · 엇각 = Z자 — 평행일 때만 같다</h4>
+  <div class="geo">
+   <div><svg style="width:100%;height:auto" viewBox="0 0 140 96"><line x1="8" y1="28" x2="132" y2="28" stroke="#0f172a" stroke-width="2"/><line x1="8" y1="70" x2="132" y2="70" stroke="#0f172a" stroke-width="2"/><line x1="44" y1="92" x2="96" y2="4" stroke="#0f172a" stroke-width="2"/><path d="M83,28 A10,10 0 0 0 76,20" fill="none"/><path d="M89,28 A13,13 0 0 0 82,17" stroke="#f97316" stroke-width="3" fill="none"/><path d="M64,70 A13,13 0 0 0 57,59" stroke="#f97316" stroke-width="3" fill="none"/><text x="120" y="24" font-size="11" font-weight="700">l</text><text x="120" y="66" font-size="11" font-weight="700">m</text><text x="96" y="22" font-size="10" fill="#c2410c" font-weight="800">70°</text><text x="70" y="64" font-size="10" fill="#c2410c" font-weight="800">70°</text></svg><br>l ∥ m → <b style="color:#15803d">같다 ✓</b></div>
+   <div><svg style="width:100%;height:auto" viewBox="0 0 140 96"><line x1="8" y1="28" x2="132" y2="20" stroke="#0f172a" stroke-width="2"/><line x1="8" y1="70" x2="132" y2="82" stroke="#0f172a" stroke-width="2"/><line x1="44" y1="92" x2="96" y2="4" stroke="#0f172a" stroke-width="2"/><path d="M89,24 A13,13 0 0 0 82,16" stroke="#f97316" stroke-width="3" fill="none"/><path d="M64,72 A13,13 0 0 0 57,61" stroke="#94a3b8" stroke-width="3" fill="none"/><text x="96" y="18" font-size="10" fill="#c2410c" font-weight="800">70°</text><text x="70" y="66" font-size="10" fill="#64748b" font-weight="800">?</text></svg><br>평행 ✕ → <b style="color:#dc2626">다를 수 있다</b></div>
+  </div></div>
+ <div class="quiz"><h4>✋ 직접 해 볼래? <small style="color:var(--muted);font-weight:700">(교재 예제 숫자만 바꿈)</small></h4>
+  <div class="q">l ∥ m, 엇각 하나가 65°일 때 ∠x = ?</div>
+  <div class="opts"><span class="opt ok">65° ✓</span><span class="opt no">115°</span></div></div>
+ <div class="msg"><div class="av aha"><svg class="ch3" data-c="aha" data-e="aha" data-h="1" width="58" height="58"></svg></div><div class="bub"><span class="nm">아하</span>💡 <b>아하!</b> 평행 표시(∥)부터 봐야 하는구나. 엇각은 Z자!</div></div>
+ <div class="point">📌 <b>정수쌤의 아하 포인트</b><br>동위각 <b>F자</b>, 엇각 <b>Z자</b>. 그림에 <b>∥ 표시</b>가 있는지 먼저! 시험엔 평행이 아닌 그림이 함정으로 나와요.
+  <div class="btns"><span>📒 아하노트에 담기</span><span class="r">다음 ›</span></div></div>
+</div></div></div>
+
+<!-- ③ 수학 낱말 Day -->
+<div><p class="lab">③ 🍙 수학 낱말 Day — 중1-2 범위</p>
+<div class="phone"><div class="top"><b>🍙 수학 낱말 Day</b><small>하루 10개</small></div><div class="body">
+ <div class="tabs"><span>중1-1</span><span class="on">중1-2</span><span>중2-1</span><span>중2-2</span></div>
+ <div class="days"><span class="done">Day 1</span><span class="done">Day 2</span><span class="on">Day 3</span><span>Day 4</span><span>…</span><span>Day 9</span></div>
+ <div class="word"><div class="t"><b>동위각</b><span class="hj">同位角</span><span class="hjs">同 같을 동 · 位 자리 위 · 角 뿔 각</span><span class="tag">Ⅰ-3</span></div>
+  <div class="m">두 직선이 한 직선과 만날 때 같은 위치에 있는 두 각</div>
+  <div class="c"><svg class="ch3" data-c="lumi" data-h="1" width="26" height="26"></svg>«같은(同) 자리(位)»의 각! 모양은 F자.</div>
+  <div class="ex">«l ∥ m 이면 동위각의 크기는 서로 같다»</div>
+  <div class="chk"><span class="y">알아요 ✓</span><span>헷갈려요</span></div></div>
+ <div class="word"><div class="t"><b>합동</b><span class="hj">合同</span><span class="hjs">合 합할 합 · 同 한가지 동</span><span class="tag">Ⅰ-4</span></div>
+  <div class="m">모양과 크기가 같아 완전히 포개어지는 두 도형</div>
+  <div class="c"><svg class="ch3" data-c="aha" data-h="1" width="26" height="26"></svg>합쳐(合) 보면 똑같다(同)! 기호는 ≡</div>
+  <div class="ex">«△ABC ≡ △DEF 이면 대응변의 길이가 같다»</div>
+  <div class="chk"><span>알아요</span><span>헷갈려요</span></div></div>
+ <div class="word"><div class="t"><b>현</b><span class="hj">弦</span><span class="hjs">弦 활시위 현</span><span class="tag">Ⅱ-2</span></div>
+  <div class="m">원 위의 두 점을 이은 선분</div>
+  <div class="c"><svg class="ch3" data-c="ssam" data-h="1" width="26" height="26"></svg>호(弧)가 «활», 현(弦)은 «활시위». 같이 외우면 안 헷갈려요.</div>
+  <div class="ex">«원에서 길이가 가장 긴 현은 지름이다»</div>
+  <div class="chk"><span>알아요</span><span>헷갈려요</span></div></div>
+</div></div></div>
+
+<div class="note">💡 <b>도트 시안 3</b> — 참고하신 다른 학원 캐릭터처럼 <b>큰 머리 · 큰 눈(반짝임 2개) · 굵은 외곽선 · 볼터치 빗금 · 손 흔들기</b>로 일러스트를 먼저 그리고, 그것을 <b>전신 72×96칸 · 얼굴 64×52칸</b>으로 줄여 도트 느낌을 냈습니다(24색). 표정: 기본 · 당황(루미 &gt;&lt;) · 아하💡(아하 ^^).<br>
+ <b>중1-2 시험범위</b> 기본 도형(점·선·면 · 위치 관계 · 동위각과 엇각 · 작도와 합동) → 평면도형(다각형 · 원과 부채꼴). 원장님이 학교 교과서 · 문제집 단원을 주시면 단원마다 대화 6~10장 + 낱말 10개를 채팅에서 만들고(API 비용 0), 학원앱에서 원장님이 고쳐 «발행». 아하의 실수는 우리 학생들 매쓰플랫 오답에서 고릅니다.</div>
+</div>
+
+<script>
+/* 도트 캐릭터: docs/char_px/<이름>_<full|head>[_표정].png (40×56 · 32×32 픽셀) */
+document.querySelectorAll('svg.ch3').forEach(function(el){
+  var c=el.getAttribute('data-c'), e=el.getAttribute('data-e'), h=el.getAttribute('data-h');
+  var name=c+(e?'_'+e:'')+'_'+(h?'head':'full');
+  var im=document.createElement('img'); im.src='char_px2/'+name+'.png'; im.className='pxi';
+  im.style.width=el.getAttribute('width')+'px'; im.style.height=(h?Math.round(el.getAttribute('width')*52/64):Math.round(el.getAttribute('width')*96/72))+'px';
+  el.replaceWith(im);
+});
+</script>
+</body></html>

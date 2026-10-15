@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>캐릭터 수업 시안</title>
+<style>
+:root{--navy:#0d2240;--red:#e8192c;--line:#e2e8f0;--muted:#64748b;--cream:#fffaf2;--org:#c2410c;--mint:#ecfdf5}
+*{box-sizing:border-box}body{margin:0;font-family:Pretendard,'Apple SD Gothic Neo',sans-serif;background:#eef2f8;color:#0f172a;font-size:13.5px}
+.page{display:flex;gap:20px;padding:18px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.lab{font-weight:900;font-size:14px;color:#334155;margin:0 0 8px}
+.phone{width:380px;background:var(--cream);border-radius:28px;border:8px solid #0f172a;overflow:hidden}
+.top{background:var(--navy);color:#fff;padding:11px 14px;display:flex;align-items:center;gap:8px}.top b{font-size:15px}.top small{margin-left:auto;color:#cbd5e1;font-size:11px;font-weight:700}
+.prog{height:5px;background:#1e3a5f}.prog i{display:block;height:100%;width:38%;background:#fbbf24}
+.body{padding:12px 12px 16px}
+svg.px{image-rendering:pixelated;shape-rendering:crispEdges;flex:0 0 auto}
+.msg{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}
+.av{width:46px;height:46px;border-radius:14px;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.av.lumi{background:#fff7d6;border-color:#fde68a}.av.aha{background:#ffedd5;border-color:#fed7aa}.av.ssam{background:#e0e7ff;border-color:#c7d2fe}
+.bub{background:#fff;border:1.5px solid var(--line);border-radius:4px 16px 16px 16px;padding:9px 11px;line-height:1.6;position:relative;flex:1}
+.bub .nm{display:block;font-size:11px;font-weight:900;color:var(--muted);margin-bottom:1px}
+.bub .tts{position:absolute;right:8px;top:7px;font-size:12px;opacity:.6}
+.hl{color:var(--org);font-weight:900}
+.card{background:var(--mint);border:1.5px solid #a7f3d0;border-radius:16px;padding:11px 12px;margin:0 0 10px 54px}
+.card h4{margin:0 0 8px;font-size:13px;color:#047857}
+.eq{display:flex;align-items:flex-end;gap:5px;flex-wrap:wrap;margin-bottom:4px}
+.ch{display:flex;flex-direction:column;align-items:center;gap:2px}
+.ch small{font-size:10px;color:var(--muted);font-weight:700}
+.chip{background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:6px 9px;font-weight:900;font-size:15px;font-family:'Times New Roman',serif}
+.chip.mv{background:#f97316;border-color:#f97316;color:#fff}
+.chip.eqs{border:none;background:none;padding:6px 2px}
+.arrow{font-size:11px;font-weight:800;color:var(--org);margin:2px 0 8px}
+.quiz{background:#fff;border:2px solid #fde68a;border-radius:16px;padding:11px 12px;margin:0 0 10px}
+.quiz h4{margin:0 0 6px;font-size:13.5px}.quiz .q{font-family:'Times New Roman',serif;font-size:17px;font-weight:900;text-align:center;margin:6px 0 9px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}.opt{border:2px solid var(--line);border-radius:11px;padding:9px;text-align:center;font-weight:900;font-family:'Times New Roman',serif;font-size:15px;background:#fff}
+.opt.ok{border-color:#22c55e;background:#dcfce7;color:#15803d}.opt.no{border-color:#fecaca;color:#94a3b8;text-decoration:line-through}
+.point{background:var(--navy);color:#fff;border-radius:16px;padding:11px 13px;margin-top:4px}
+.point b{color:#fbbf24}.point .btns{display:flex;gap:6px;margin-top:9px}
+.point .btns span{flex:1;text-align:center;border-radius:10px;padding:8px;font-weight:900;font-size:12.5px;background:#fff;color:var(--navy)}.point .btns span.r{background:var(--red);color:#fff}
+/* 소개 */
+.who{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:12px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
+.who .big{width:84px;height:84px;border-radius:18px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.who h3{margin:0 0 3px;font-size:16px}.who h3 small{font-size:11.5px;color:var(--muted);font-weight:700;margin-left:4px}
+.who p{margin:0;font-size:12.5px;line-height:1.55;color:#334155}
+.who .say{display:inline-block;margin-top:5px;background:#f8fafc;border-radius:8px;padding:3px 8px;font-size:12px;font-weight:800;color:var(--org)}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}.menu div{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px;font-weight:900;font-size:13px}.menu div small{display:block;font-weight:700;color:var(--muted);font-size:11px;margin-top:2px}
+/* 낱말 */
+.tabs{display:flex;gap:5px;margin-bottom:8px}.tabs span{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:5px 10px;font-weight:900;font-size:12px}.tabs span.on{background:#0f766e;border-color:#0f766e;color:#fff}
+.days{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}.days span{font-size:11px;font-weight:800;color:#475569;padding:3px 7px;border-radius:6px}.days span.on{background:#ccfbf1;color:#0f766e}.days span.done{color:#94a3b8;text-decoration:line-through}
+.word{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:8px}
+.word .t{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.word .t b{font-size:17px}.word .t .hj{font-size:14px;color:#334155;font-weight:700}.word .t .hjs{font-size:11px;color:var(--muted)}
+.word .tag{font-size:10.5px;font-weight:900;background:#f1f5f9;border-radius:5px;padding:1px 6px;color:#475569;margin-left:auto}
+.word .m{font-weight:800;margin:3px 0}.word .c{display:flex;gap:6px;align-items:flex-start;font-size:12.5px;color:#0f766e;font-weight:700}
+.word .ex{font-size:12px;color:var(--muted);margin-top:3px}
+.word .chk{display:flex;gap:6px;margin-top:7px}.word .chk span{border:1.5px solid var(--line);border-radius:8px;padding:4px 9px;font-size:11.5px;font-weight:900}.word .chk span.y{border-color:#86efac;color:#15803d;background:#f0fdf4}
+.note{max-width:1180px;background:#fefce8;border:1.5px dashed #facc15;border-radius:14px;padding:12px 16px;color:#713f12;line-height:1.8;font-size:13px}
+.note b{color:#422006}
+</style></head><body>
+<div class="page">
+
+<!-- ① 캐릭터 소개 -->
+<div><p class="lab">① 우리 캐릭터 — 도트(픽셀) 3인방</p>
+<div class="phone"><div class="top"><b>✨ 루멘 친구들</b><small>학생앱 · 홈</small></div><div class="body">
+ <div class="who"><div class="big" style="background:#fff7d6"><svg class="px" data-s="lumi" width="72" height="72"></svg></div>
+  <div><h3>루미<small>중2 · 개념 언니</small></h3><p>머리핀의 별이 «빛(루멘)». 개념을 덩어리로 끊어서 차근차근 설명해요.</p><span class="say">“덩어리만 보이면 하나도 안 무서워!”</span></div></div>
+ <div class="who"><div class="big" style="background:#ffedd5"><svg class="px" data-s="aha" width="72" height="72"></svg></div>
+  <div><h3>아하<small>중1 · 실수 대장</small></h3><p>학생 대신 틀려 주는 친구. 깨달으면 머리 위에 💡 전구가 켜져요.</p><span class="say">“아하! 부호가 바뀌는구나!”</span></div></div>
+ <div class="who"><div class="big" style="background:#e0e7ff"><svg class="px" data-s="ssam" width="72" height="72"></svg></div>
+  <div><h3>정수쌤<small>원장님 · 마무리</small></h3><p>끝에 한 줄 정리와 «시험에 이렇게 나와» 팁을 줘요.</p><span class="say">“오늘 아하 포인트는 하나!”</span></div></div>
+ <div class="menu"><div>💬 개념 나들이<small>캐릭터 대화로 단원 개념</small></div><div>🍙 수학 낱말 Day<small>하루 10개 · 한자 풀이</small></div><div>🔁 오답 다시 보기<small>내가 틀린 유형을 아하가</small></div><div>📒 아하노트 연결<small>깨달은 것 바로 담기</small></div></div>
+</div></div></div>
+
+<!-- ② 개념 나들이 -->
+<div><p class="lab">② 💬 개념 나들이 — 중1 일차방정식 «이항»</p>
+<div class="phone"><div class="top"><b>💬 개념 나들이</b><small>중1-1 Ⅲ. 일차방정식 · 3/8</small></div><div class="prog"><i></i></div><div class="body">
+ <div class="msg"><div class="av lumi"><svg class="px" data-s="lumi" width="40" height="40"></svg></div><div class="bub"><span class="nm">루미</span><span class="tts">🔊</span>오늘은 <span class="hl">이항</span>이야. 등식에서 한 항을 <span class="hl">=의 반대편으로 옮기는 것</span>! 옮길 이(移), 항 항(項).</div></div>
+ <div class="msg"><div class="av aha"><svg class="px" data-s="aha" width="40" height="40"></svg></div><div class="bub"><span class="nm">아하</span><span class="tts">🔊</span>그냥 옮기면 되는 거지? x + 3 = 7 이면… x = 7 + 3 = 10!</div></div>
+ <div class="msg"><div class="av lumi"><svg class="px" data-s="lumi" width="40" height="40"></svg></div><div class="bub"><span class="nm">루미</span><span class="tts">🔊</span>앗, 거기서 다들 한 번씩 틀려! 옮기면 <span class="hl">부호가 바뀌어</span>. 덩어리로 보자.</div></div>
+ <div class="card"><h4>① 이항 = 옮기면 부호가 반대로</h4>
+  <div class="eq"><div class="ch"><small>&nbsp;</small><span class="chip">x</span></div><div class="ch"><small>옮길 항</small><span class="chip mv">+3</span></div><div class="ch"><small>&nbsp;</small><span class="chip eqs">=</span></div><div class="ch"><small>&nbsp;</small><span class="chip">7</span></div></div>
+  <div class="arrow">↓ +3 이 = 건너편으로 가면 −3</div>
+  <div class="eq"><div class="ch"><span class="chip">x</span></div><div class="ch"><span class="chip eqs">=</span></div><div class="ch"><span class="chip">7</span></div><div class="ch"><span class="chip mv">−3</span></div><div class="ch"><span class="chip eqs">=</span></div><div class="ch"><span class="chip">4</span></div></div>
+ </div>
+ <div class="quiz"><h4>✋ 직접 해 볼래? <small style="color:var(--muted);font-weight:700">(교재 예제를 숫자만 바꿨어요)</small></h4>
+  <div class="q">2x − 5 = 9 → 2x = ?</div>
+  <div class="opts"><span class="opt no">9 − 5</span><span class="opt ok">9 + 5 ✓</span></div></div>
+ <div class="msg"><div class="av aha"><svg class="px" data-s="ahaBulb" width="40" height="40"></svg></div><div class="bub"><span class="nm">아하</span>💡 <b>아하!</b> −5가 건너가면 +5. 그래서 2x = 14, x = 7!</div></div>
+ <div class="point">📌 <b>정수쌤의 아하 포인트</b><br>이항하면 <b>부호가 바뀐다</b>. 시험엔 «이항한 식으로 옳은 것»으로 꼭 나와요.
+  <div class="btns"><span>📒 아하노트에 담기</span><span class="r">다음 ›</span></div></div>
+</div></div></div>
+
+<!-- ③ 수학 낱말 Day -->
+<div><p class="lab">③ 🍙 수학 낱말 Day — 한자로 뜻 잡기</p>
+<div class="phone"><div class="top"><b>🍙 수학 낱말 Day</b><small>하루 10개</small></div><div class="body">
+ <div class="tabs"><span>초등</span><span class="on">중1</span><span>중2</span><span>중3</span><span>고1</span></div>
+ <div class="days"><span class="done">Day 1</span><span class="done">Day 2</span><span class="on">Day 3</span><span>Day 4</span><span>Day 5</span><span>…</span><span>Day 24</span></div>
+ <div class="word"><div class="t"><b>이항</b><span class="hj">移項</span><span class="hjs">移 옮길 이 · 項 항목 항</span><span class="tag">중1 방정식</span></div>
+  <div class="m">등식의 한 항을 부호를 바꿔 다른 변으로 옮기는 것</div>
+  <div class="c"><svg class="px" data-s="lumi" width="20" height="20"></svg>항을 «옮긴다(移)»! 옮기면 + 는 − 로.</div>
+  <div class="ex">«x + 3 = 7 에서 3을 이항하면 x = 7 − 3»</div>
+  <div class="chk"><span class="y">알아요 ✓</span><span>헷갈려요</span></div></div>
+ <div class="word"><div class="t"><b>계수</b><span class="hj">係數</span><span class="hjs">係 맬 계 · 數 셈 수</span><span class="tag">중1 문자와 식</span></div>
+  <div class="m">문자에 곱해진(매여 있는) 수</div>
+  <div class="c"><svg class="px" data-s="aha" width="20" height="20"></svg>3x에서 x에 «매여 있는» 3이 계수야!</div>
+  <div class="ex">«−2y 에서 y의 계수는 −2»</div>
+  <div class="chk"><span>알아요</span><span>헷갈려요</span></div></div>
+ <div class="word"><div class="t"><b>소인수</b><span class="hj">素因數</span><span class="hjs">素 바탕 소 · 因 인할 인 · 數 셈 수</span><span class="tag">중1 소인수분해</span></div>
+  <div class="m">어떤 수의 인수 중에서 소수인 것</div>
+  <div class="c"><svg class="px" data-s="ssam" width="20" height="20"></svg>«바탕(素)이 되는 인수». 12의 소인수는 2, 3.</div>
+  <div class="ex">«12 = 2² × 3 이므로 소인수는 2와 3»</div>
+  <div class="chk"><span>알아요</span><span>헷갈려요</span></div></div>
+</div></div></div>
+
+<div class="note">💡 <b>시안 — 무엇을, 어떻게</b><br>
+<b>캐릭터</b> 도트(픽셀) 3인방. <b>루미</b>(개념 언니 · 별 머리핀 = 루멘의 «빛») · <b>아하</b>(학생 대신 틀려 주는 친구 · 깨달으면 💡 = 아하노트) · <b>정수쌤</b>(원장님 · 마무리 한 줄). 지금 그림은 제가 16×16 칸으로 찍은 시안이고, 확정되면 표정(기쁨·당황·💡) 4~5가지와 움직임(눈 깜빡·점프)을 더 그립니다.<br>
+<b>① 개념 나들이</b> 단원마다 6~10장짜리 대화. 아하가 <b>학생들이 실제로 많이 틀리는 실수</b>(매쓰플랫 오답 자료)를 대신 저지르고 → 루미가 덩어리 카드로 짚고 → «직접 해 볼래?» 한 문제 → 💡 → 정수쌤 «아하 포인트» → 아하노트에 담기. 🔊는 기기 음성(무료)으로 읽어 줍니다.<br>
+<b>② 수학 낱말 Day</b> 수학 개념어는 한자어가 많아(이항·계수·소인수·등식·좌표…) 한자 풀이가 곧 뜻입니다. 학년별 하루 10개, «헷갈려요»는 다음 날 다시.<br>
+<b>재료 → 만드는 길</b> 원장님이 교과서·문제집 단원(PDF·사진)을 주시면 → <b>채팅에서</b> 대본을 만들어(API 비용 0) → 원장님이 학원앱에서 대사를 읽고 고쳐 «발행» → 학생앱에 뜹니다. 교재 문제는 그대로 옮기지 않고 <b>숫자만 바꾼 비슷한 문제</b>로 만듭니다(교재 저작권 · 학생앱엔 교재 문제 그림을 싣지 않는 지금 규칙 그대로).<br>
+<b>연결</b> 스터디 코디가 진도 단원의 «개념 나들이 1개»를 계획에 넣고 · 끝내면 XP · 틀린 유형이 생기면 «🔁 오답 다시 보기»에 아하가 그 실수를 재연.</div>
+</div>
+
+<script>
+var PAL={K:'#1f1a17',H:'#6b3e1f',h:'#9a6634',S:'#ffd9b8',E:'#1f1a17',W:'#ffffff',R:'#e8192c',N:'#0d2240',Y:'#fbbf24',P:'#f6a5a5',D:'#2b2b2b',O:'#f97316',G:'#10b981',g:'#94a3b8'};
+var SP={
+ lumi:['.....KKKKKK.....','....KHHHHHHK.Y..','...KHHHHHHHHKYY.','..KHHhHHHHHHHKY.','..KHHSSSSSSHHK..','..KHSSSSSSSSHK..','..KHSEWSSEWSHK..','..KHSEESSEESHK..','..KHPSSSSSSPHK..','..KHSSSRRSSSHK..','...KHSSSSSSHK...','...KKRRNNRRKK...','..KNNNNRRNNNNK..','..KSNNNNNNNNSK..','...KNNNNNNNNK...','....KK....KK....'],
+ aha:['...K.KK.KK.K....','...KDDDDDDDDK...','..KDDDDDDDDDDK..','..KOOOOOOOOOOK..','..KDSSSSSSSSDK..','..KSSSSSSSSSSK..','..KSSEWSSEWSSK..','..KSSEESSEESSK..','..KSPSSSSSSPSK..','..KSSSRRRRSSSK..','...KSSSSSSSSK...','...KKGGWWGGKK...','..KGGGGWWGGGGK..','..KSGGGGGGGGSK..','...KGGGGGGGGK...','....KK....KK....'],
+ ssam:['................','....KKKKKKKK....','...KDDDDDDDDK...','..KDDDDDDDDDDK..','..KDSSSSSSSSDK..','..KSSSSSSSSSSK..','..KSKKKSSKKKSK..','..KSKWEKKWEKSK..','..KSKKKSSKKKSK..','..KSSSSRRSSSSK..','...KSSSSSSSSK...','...KKNNWWNNKK...','..KNNNNWWNNNNK..','..KSNNNNNNNNSK..','...KNNNNNNNNK...','....KK....KK....']
+};
+var BULB=['..KKKK..','.KYYYYK.','KYYWYYYK','KYYYYYYK','.KYYYYK.','..KggK..','..KggK..','...KK...'];
+function draw(svg,rows,ox,oy,n){ var s=''; rows.forEach(function(r,y){ for(var x=0;x<r.length;x++){ var c=r[x]; if(c==='.'||!PAL[c]) continue; s+='<rect x="'+(ox+x)+'" y="'+(oy+y)+'" width="1.02" height="1.02" fill="'+PAL[c]+'"/>'; } }); return s; }
+document.querySelectorAll('svg.px').forEach(function(el){
+  var k=el.getAttribute('data-s');
+  if(k==='ahaBulb'){ el.setAttribute('viewBox','0 0 24 24'); el.innerHTML=draw(el,SP.aha,0,8)+draw(el,BULB,15,0); }
+  else { el.setAttribute('viewBox','0 0 16 16'); el.innerHTML=draw(el,SP[k],0,0); }
+});
+</script>
+</body></html>
