@@ -1,0 +1,237 @@
+<title>루멘수학 AI 사무실</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=Press+Start+2P&display=swap">
+<style>
+/* 배치: 위 상태바 · 왼쪽 도트 사무실(캔버스) · 오른쪽 활동 피드. 폰에서는 위아래로 쌓인다 */
+:root{--bg:#0b0f1a;--panel:#131a2b;--panel2:#0f1524;--line:#243049;--fg:#e6ebf5;--muted:#8a96b3;--accent:#4ade80;--accent2:#fbbf24;--warn:#f87171;--blue:#60a5fa;
+  --font:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;--px:'Press Start 2P','Courier New',monospace;color-scheme:dark}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#eef1f7;--panel:#ffffff;--panel2:#f4f6fb;--line:#d6dce8;--fg:#141a2b;--muted:#5b6682;--accent:#15803d;--accent2:#b45309;--warn:#b91c1c;--blue:#1d4ed8;color-scheme:light}}
+:root[data-theme="light"]{--bg:#eef1f7;--panel:#ffffff;--panel2:#f4f6fb;--line:#d6dce8;--fg:#141a2b;--muted:#5b6682;--accent:#15803d;--accent2:#b45309;--warn:#b91c1c;--blue:#1d4ed8;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:14px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:12px}
+.top .brand{display:flex;flex-direction:column;gap:3px;min-width:0}
+.top .brand b{font-family:var(--px);font-size:11px;letter-spacing:.5px;color:var(--accent)}
+.top .brand span{font-size:12px;color:var(--muted)}
+.stats{display:flex;gap:8px;flex-wrap:wrap}
+.stat{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:5px 10px;min-width:62px}
+.stat small{display:block;font-family:var(--px);font-size:7px;letter-spacing:.5px;color:var(--muted)}
+.stat b{font-family:var(--px);font-size:13px;font-variant-numeric:tabular-nums}
+.stat.on b{color:var(--accent)}.stat.wait b{color:var(--accent2)}.stat.rest b{color:var(--muted)}
+.clock{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.clock .t{font-family:var(--px);font-size:12px;font-variant-numeric:tabular-nums;min-width:11ch}
+button{font-family:var(--font);font-size:12.5px;font-weight:700;border:1px solid var(--line);background:var(--panel2);color:var(--fg);border-radius:7px;padding:6px 10px;cursor:pointer}
+button:hover{border-color:var(--accent)}button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.sel{background:var(--accent);color:#06120a;border-color:var(--accent)}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:12px;align-items:start}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}}
+.office{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;min-width:0}
+canvas{display:block;width:100%;max-width:100%;aspect-ratio:40/24;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;background:#1a2238;cursor:pointer}
+.hint{font-size:12px;color:var(--muted);margin:8px 2px 0;display:flex;gap:10px;flex-wrap:wrap}
+.side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.card h3{margin:0 0 8px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px}
+.card h3 i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.kv{display:grid;grid-template-columns:52px 1fr;gap:4px 10px;font-size:12.5px}
+.kv span{color:var(--muted)}
+.kv code{font-family:var(--px);font-size:8px;word-break:break-all;color:var(--blue)}
+.pill{display:inline-block;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700}
+.pill.work{background:rgba(74,222,128,.18);color:var(--accent)}.pill.idle{background:rgba(251,191,36,.18);color:var(--accent2)}.pill.rest,.pill.walk,.pill.chat{background:rgba(138,150,179,.2);color:var(--muted)}
+.feed{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto}
+.feed div{display:grid;grid-template-columns:5.5ch 1fr;gap:8px;font-size:12.5px;border-bottom:1px dashed var(--line);padding-bottom:5px}
+.feed div:last-child{border-bottom:0}
+.feed time{font-family:var(--px);font-size:8px;color:var(--muted);padding-top:4px}
+.feed .new{animation:pop .5s ease-out}
+@keyframes pop{from{background:rgba(74,222,128,.25)}to{background:transparent}}
+@media (prefers-reduced-motion:reduce){.feed .new{animation:none}}
+.depts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.depts div{display:flex;align-items:center;gap:7px;font-size:12px;border:1px solid var(--line);border-radius:7px;padding:5px 8px;background:var(--panel2)}
+.depts i{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+.depts b{margin-left:auto;font-family:var(--px);font-size:9px;color:var(--accent)}
+.note{font-size:12px;color:var(--muted);line-height:1.6}
+</style>
+
+<div class="top">
+  <div class="brand"><b>LUMEN AGENT HQ</b><span>루멘수학 AI 직원 사무실 · 미리보기(시안)</span></div>
+  <div class="stats">
+    <div class="stat on"><small>WORKING</small><b id="nWork">0</b></div>
+    <div class="stat wait"><small>STANDBY</small><b id="nIdle">0</b></div>
+    <div class="stat rest"><small>BREAK</small><b id="nRest">0</b></div>
+    <div class="stat"><small>STAFF</small><b id="nAll">0</b></div>
+    <div class="stat"><small>TOOLS</small><b>11</b></div>
+  </div>
+  <div class="clock">
+    <span class="t" id="clock">일 03:00</span>
+    <button id="sp0">⏸</button><button id="sp1">실제 속도</button><button id="sp2" class="sel">빨리감기</button>
+    <button id="board">🏛 이사회 소집</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="office">
+    <canvas id="cv" width="1280" height="768" aria-label="루멘수학 AI 직원 사무실 도트 그림"></canvas>
+    <div class="hint"><span>🖱 직원을 누르면 오른쪽에 명함이 뜹니다</span><span>⏩ 빨리감기 = 하루가 2분 반</span><span>🌙 새벽 직원들은 실제 예약 시각(04:25·04:50…)에 출근합니다</span></div>
+  </div>
+  <div class="side">
+    <div class="card" id="who">
+      <h3><i style="background:#8a96b3"></i>직원 명함</h3>
+      <div class="note">사무실에서 직원 한 명을 눌러 보세요. 하는 일·출근 시각·지침서 파일이 보입니다.</div>
+    </div>
+    <div class="card">
+      <h3>부서</h3>
+      <div class="depts" id="depts"></div>
+    </div>
+    <div class="card">
+      <h3>📡 활동 기록 <span class="pill idle" style="margin-left:auto">슬랙 채널에 이렇게 쌓입니다</span></h3>
+      <div class="feed" id="feed"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const T=16,COLS=40,ROWS=24,S=2;
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+
+/* ---------- 부서 · 직원 ---------- */
+const DEPT={
+  mkt:{name:'마케팅부',color:'#f472b6',x:1,y:3,w:14,h:8},
+  data:{name:'학습데이터부',color:'#60a5fa',x:24,y:3,w:15,h:8},
+  biz:{name:'경영부',color:'#fbbf24',x:1,y:13,w:12,h:9},
+  parent:{name:'학부모소통부',color:'#4ade80',x:14,y:13,w:9,h:9},
+  board:{name:'이사회실',color:'#c084fc',x:24,y:13,w:15,h:9}
+};
+// desk: 책상 왼쪽 위 타일. 직원은 책상 아래 칸에 앉는다
+const AG=[
+ {id:'blog',   name:'블로그 작가',  dept:'mkt', desk:[2,5],  hair:'#3b2a1a', file:'.claude/commands/blog.md',   out:'카드 6장 · 네이버 임시저장', sched:[{dow:[1,4],m:600,dur:90,task:'블로그 글 한 편 쓰는 중'}]},
+ {id:'insta',  name:'인스타 담당',  dept:'mkt', desk:[6,5],  hair:'#111',    file:'.claude/agents/insta.md',    out:'캐러셀 → 원장 확인', sched:[{dow:[2,5],m:660,dur:30,task:'캐러셀 4장 준비'}]},
+ {id:'mkplan', name:'마케팅 기획',  dept:'mkt', desk:[10,5], hair:'#6b3e26', file:'.claude/agents/marketing.md',out:'주간 보고 → 슬랙 #마케팅', sched:[{dow:[1],m:540,dur:40,task:'주간 키워드·검색 점검'}]},
+ {id:'place',  name:'플레이스·당근', dept:'mkt', desk:[5,8],  hair:'#1f2937', file:'.claude/agents/place.md',    out:'소식글 초안 2개 → 원장 붙여넣기', sched:[{dow:[1],m:570,dur:30,task:'플레이스 소식 초안'}]},
+ {id:'planner',name:'플래너 채점원',dept:'data',desk:[25,5], hair:'#111',    file:'.github/workflows/planner-night.yml', out:'점수 → 학원앱·학생앱', sched:[{m:265,dur:35,task:'플래너 사진 28장 채점'}]},
+ {id:'mf',     name:'매쓰플랫 수집원',dept:'data',desk:[29,5],hair:'#4a2c17', file:'.github/workflows/mathflat-collect.yml', out:'정오답 → 서버', sched:[{m:240,dur:25,task:'어제치 정오답 수집'},{m:960,dur:20,task:'낮반 정오답 수집'},{m:1320,dur:20,task:'오늘 수업분 수집'}]},
+ {id:'exam',   name:'기출 분석가',  dept:'data',desk:[33,5], hair:'#2d1b0e', file:'sync/exam_hit_worker.js',    out:'적중 보고서 → 학원앱', sched:[{dow:[0],m:210,dur:60,task:'기출 DB 모으는 중'},{dow:[2],m:840,dur:50,task:'적중 분석 요청 처리'}]},
+ {id:'school', name:'학교 정보원',  dept:'data',desk:[29,8], hair:'#333',    file:'.github/workflows/school-info.yml', out:'학사일정 → 학원앱', sched:[{m:210,dur:20,task:'학사일정 확인'},{dow:[0],m:190,dur:25,task:'학교알리미 공시 수집'}]},
+ {id:'pay',    name:'수납 담당',    dept:'biz', desk:[2,15], hair:'#222',    file:'.github/workflows/payssam-collect.yml', out:'수납 → 경영현황판', sched:[{m:280,dur:15,task:'결제선생 수납 수집'}]},
+ {id:'tax',    name:'세무 비서',    dept:'biz', desk:[6,15], hair:'#5b3a1e', file:'.claude/agents/tax.md',      out:'손익·CSV → 세무사 · 슬랙 #세무', sched:[{dom:[1],m:480,dur:45,task:'전월 손익 정리'},{dom:[10],m:540,dur:10,task:'원천세 신고 알림'}]},
+ {id:'brief',  name:'아침 브리핑',  dept:'biz', desk:[4,18], hair:'#111',    file:'.claude/agents/brief.md',    out:'오늘 브리핑 → 슬랙 #아침브리핑', sched:[{m:420,dur:20,task:'오늘 수업·미납·위험 신호 정리'}]},
+ {id:'ultra',  name:'Ultra 작가',   dept:'parent',desk:[16,16],hair:'#3b2a1a',file:'.github/workflows/ultra-night.yml', out:'피드백 초안 → 원장 검토 후 발송', sched:[{m:290,dur:40,task:'Ultra 피드백 초안 9건'}]},
+ {id:'park',   name:'박 실장',  dept:'board',desk:[28,14],hair:'#222',    file:'.claude/agents/coo-park.md',  out:'시스템 점검', sched:[], seat:true, say:'플래너 피드백 칸이 비어 있으면 P-A-F 루프가 끊깁니다'},
+ {id:'kim',    name:'김 이사',  dept:'board',desk:[32,14],hair:'#4a2c17', file:'.claude/agents/cfo-kim.md',   out:'시간·비용 계산', sched:[], seat:true, say:'이 안이면 원장 시간이 주 2시간 줄어듭니다'},
+ {id:'choi',   name:'최 팀장',  dept:'board',desk:[28,18],hair:'#6b3e26', file:'.claude/agents/marketer-choi.md', out:'학부모 안내 문구', sched:[], seat:true, say:'안내문은 학부모 이익 관점으로 다시 씁시다'},
+ {id:'critic', name:'독설가',   dept:'board',desk:[32,18],hair:'#111',    file:'.claude/agents/critic.md',    out:'무너질 지점 찾기', sched:[], seat:true, say:'예외 한 번이 습관을 만듭니다. 기준부터 정하세요'}
+];
+const SPOTS=[{x:19,y:10,b:'☕'},{x:19,y:5,b:'📋'},{x:16,y:11,b:'🌿'},{x:20,y:20,b:'…'},{x:23,y:8,b:'💬'}];
+AG.forEach(a=>{a.px=a.desk[0]*T+T;a.py=(a.desk[1]+2)*T;a.state='idle';a.frame=0;a.dir=1;a.until=0;a.bubble='';a.bubbleUntil=0;a.target=null;a.after=null;a.workEnd=0;a.task='';});
+
+/* ---------- 시계 ---------- */
+let simMin=180, day=0, speed=10; // 시작: 2026-11-01(일) 03:00. speed = 초당 시뮬 분
+const DOWS=['일','월','화','수','목','금','토'];
+const dow=()=> (day)%7, dom=()=> day+1;
+function clockText(){const h=Math.floor(simMin/60),m=Math.floor(simMin%60);return DOWS[dow()]+' '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');}
+
+/* ---------- 피드 ---------- */
+const feedEl=document.getElementById('feed');
+function log(txt,cls){const d=document.createElement('div');d.className='new';d.innerHTML='<time>'+clockText().slice(2)+'</time><span>'+txt+'</span>';feedEl.prepend(d);while(feedEl.children.length>40)feedEl.lastChild.remove();}
+log('🏢 사무실 문 열림 · 직원 '+AG.length+'명 · 이 화면은 시안입니다 (숫자·일정은 예시)');
+
+/* ---------- 일정 처리 ---------- */
+function fire(a,s){a.state='work';a.task=s.task;a.workEnd=simMin+s.dur;a.target=null;a.px=a.desk[0]*T+T;a.py=(a.desk[1]+2)*T;a.bubble=s.task;a.bubbleUntil=simMin+s.dur;log('🟢 <b>'+a.name+'</b> 출근 · '+s.task);}
+function tick(dt){
+  const prev=simMin; simMin+=dt*speed;
+  if(simMin>=1440){simMin-=1440;day++;log('🌅 '+DOWS[dow()]+'요일 시작');}
+  AG.forEach(a=>{
+    a.sched.forEach(s=>{
+      if(s.dow&&!s.dow.includes(dow()))return; if(s.dom&&!s.dom.includes(dom()))return;
+      const crossed=(prev<=s.m&&simMin>=s.m)||(prev>simMin&&s.m<=simMin); // 자정 넘김 포함
+      if(crossed&&a.state!=='work')fire(a,s);
+    });
+    if(a.state==='work'&&simMin>=a.workEnd&&!(prev>simMin)){a.state='idle';a.bubble='';log('✅ <b>'+a.name+'</b> 완료 → '+a.out);a.until=simMin+30;}
+    // 한가할 때 가끔 돌아다닌다
+    if(a.state==='idle'&&!a.seat&&simMin>a.until&&Math.random()<0.004*dt*speed){
+      const sp=SPOTS[Math.floor(Math.random()*SPOTS.length)];a.state='walk';a.target=[sp.x*T+T,(sp.y+1)*T];a.after={state:'rest',bubble:sp.b,stay:12};
+    }
+    if(a.state==='rest'&&simMin>a.until){a.state='walk';a.target=[a.desk[0]*T+T,(a.desk[1]+2)*T];a.after={state:'idle',bubble:'',stay:40};}
+    if(a.state==='walk'&&a.target){
+      const sp=60*dt; // 픽셀/초
+      const dx=a.target[0]-a.px,dy=a.target[1]-a.py;
+      if(Math.abs(dx)>1){a.px+=Math.sign(dx)*Math.min(sp,Math.abs(dx));a.dir=Math.sign(dx);}
+      else if(Math.abs(dy)>1){a.py+=Math.sign(dy)*Math.min(sp,Math.abs(dy));}
+      else{a.state=a.after.state;a.bubble=a.after.bubble;a.bubbleUntil=simMin+10;a.until=simMin+a.after.stay;a.target=null;}
+      a.frame+=dt*8;
+    }
+    if(a.state==='work')a.frame+=dt*6;
+    if(a.bubble&&simMin>a.bubbleUntil&&a.state!=='work')a.bubble='';
+  });
+  // 이사회 회의
+  if(meeting.on){
+    if(simMin>meeting.next){const m=AG.filter(x=>x.seat);const a=m[meeting.i%4];m.forEach(x=>x.bubble='');a.bubble=a.say;a.bubbleUntil=simMin+9;meeting.i++;meeting.next=simMin+9;
+      if(meeting.i===1)log('🏛 이사회 회의 시작 · 안건 「'+meeting.topic+'」');
+      if(meeting.i>5){meeting.on=false;m.forEach(x=>{x.bubble='';x.state='idle'});log('📋 이사회 결정 기록 저장 → board/decisions/ · 원장 확인 대기');}}
+  }
+}
+const meeting={on:false,i:0,next:0,topic:''};
+document.getElementById('board').onclick=()=>{if(meeting.on)return;meeting.on=true;meeting.i=0;meeting.next=simMin;meeting.topic=['리커버리 수업 기준','텐투텐 참여율','겨울방학 특강 안내'][Math.floor(Math.random()*3)];AG.filter(x=>x.seat).forEach(x=>x.state='work');};
+
+/* ---------- 그리기 ---------- */
+const C={wall:'#2a3350',wallTop:'#1c2440',floorA:'#b98a5a',floorB:'#ab7d4f',floorLine:'#8f6640',desk:'#6b4a2b',deskTop:'#8a6238',mon:'#1b2233',monOn:'#7dd3fc',chair:'#3b4661',skin:'#f3c9a0',dark:'#1a1a1a'};
+function px(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x)*S,Math.round(y)*S,w*S,h*S);}
+function drawRoom(){
+  px(0,0,COLS*T,ROWS*T,C.wallTop);
+  for(let y=3;y<ROWS;y++)for(let x=0;x<COLS;x++){px(x*T,y*T,T,T,(x+y)%2?C.floorA:C.floorB);px(x*T,y*T+T-1,T,1,C.floorLine);}
+  px(0,2*T,COLS*T,T,C.wall);
+  for(let x=2;x<COLS-2;x+=7){px(x*T,4,2*T,T+4,'#0f1a33');px(x*T+2,6,2*T-4,T,'#7fb2e5');px(x*T+2,6,2*T-4,4,'#bfe0ff');}
+  // 부서 바닥 띠
+  Object.values(DEPT).forEach(d=>{ctx.globalAlpha=.13;px(d.x*T,d.y*T,d.w*T,d.h*T,d.color);ctx.globalAlpha=1;px(d.x*T,d.y*T,d.w*T,2,d.color);});
+  // 화이트보드 · 커피 · 화분 · 소파
+  px(17*T,2*T+2,5*T,T-2,'#f5f5f5');px(17*T+4,2*T+5,2*T,2,'#e8192c');px(17*T+4,2*T+9,3*T,2,'#334');px(17*T+4,2*T+13,T,2,'#334');
+  px(19*T,8*T,T,T+6,'#444c5e');px(19*T+3,8*T+3,T-6,6,'#9bd');px(19*T+4,9*T+2,T-8,4,'#eee');
+  px(16*T+4,9*T+8,8,10,'#a0522d');px(16*T,9*T-2,T,12,'#2f9e44');px(16*T+3,9*T-6,10,6,'#37b24d');
+  px(19*T,19*T,3*T,T,'#5b2a86');px(19*T,18*T+8,3*T,8,'#7048a8');
+  // 회의 탁자
+  px(27*T,16*T,8*T,2*T,'#5c3d21');px(27*T+2,16*T+2,8*T-4,2*T-4,'#8a6238');px(28*T,15*T+10,T,4,C.chair);px(32*T,15*T+10,T,4,C.chair);px(28*T,18*T+2,T,4,C.chair);px(32*T,18*T+2,T,4,C.chair);
+  // 책상
+  AG.filter(a=>!a.seat).forEach(a=>{const x=a.desk[0]*T,y=a.desk[1]*T;px(x,y+6,2*T,T-4,C.desk);px(x,y+4,2*T,4,C.deskTop);
+    const on=a.state==='work';px(x+9,y-6,14,11,C.mon);px(x+11,y-4,10,7,on?C.monOn:'#2b3650');if(on&&Math.floor(a.frame)%2)px(x+12,y-3+(Math.floor(a.frame/2)%3)*2,6,1,'#fff');
+    px(x+14,y+5,4,2,'#111');px(x+2,y+7,6,3,'#ddd');});
+  // 부서 이름표
+  ctx.font='bold '+(9*S)+'px '+getComputedStyle(document.body).fontFamily;ctx.textBaseline='top';
+  Object.values(DEPT).forEach(d=>{const t=d.name,w=ctx.measureText(t).width/S+8;px(d.x*T+3,d.y*T+4,w,13,'rgba(10,14,26,.78)');ctx.fillStyle=d.color;ctx.fillText(t,(d.x*T+7)*S,(d.y*T+6)*S);});
+}
+function drawAgent(a){
+  const x=Math.round(a.px)-6,y=Math.round(a.py)-16,col=DEPT[a.dept].color,walk=a.state==='walk',f=Math.floor(a.frame)%2;
+  if(selected===a){ctx.strokeStyle='#fbbf24';ctx.lineWidth=S;ctx.setLineDash([3*S,2*S]);ctx.strokeRect((x-2)*S,(y-2)*S,16*S,20*S);ctx.setLineDash([]);}
+  px(x+2,y+15,8,1,'rgba(0,0,0,.25)');
+  px(x+2,y,8,3,a.hair);px(x+2,y+3,8,4,C.skin);px(a.dir>0?x+7:x+3,y+4,1,1,C.dark);px(a.dir>0?x+4:x+6,y+4,1,1,C.dark);
+  px(x+2,y+7,8,5,col);px(x+1,y+8,1,3,C.skin);px(x+10,y+8,1,3,C.skin);
+  if(a.state==='work'){px(x+1,y+8,1,2,C.skin);px(x+10,y+8+f,1,2,C.skin);}
+  px(x+2+(walk&&f?1:0),y+12,3,3,'#2b3a6b');px(x+7-(walk&&f?1:0),y+12,3,3,'#2b3a6b');
+  px(x+2,y+15,3,1,C.dark);px(x+7,y+15,3,1,C.dark);
+  // 이름
+  ctx.font=(7*S)+'px '+getComputedStyle(document.body).fontFamily;ctx.textBaseline='top';const nw=ctx.measureText(a.name).width/S;
+  px(a.px-nw/2-2,a.py+2,nw+4,9,'rgba(10,14,26,.75)');ctx.fillStyle=a.state==='work'?'#4ade80':'#e6ebf5';ctx.fillText(a.name,(a.px-nw/2)*S,(a.py+3)*S);
+  // 말풍선
+  if(a.bubble){ctx.font='bold '+(8*S)+'px '+getComputedStyle(document.body).fontFamily;let t=a.bubble;if(t.length>16)t=t.slice(0,16)+'…';const w=ctx.measureText(t).width/S+8;let bx=Math.max(2,Math.min(COLS*T-w-2,a.px-w/2));const by=y-15;
+    px(bx,by,w,12,'#fff');px(bx+1,by-1,w-2,1,'#fff');px(bx+1,by+12,w-2,1,'#fff');px(a.px-1,by+13,3,2,'#fff');ctx.fillStyle='#111';ctx.fillText(t,(bx+4)*S,(by+2)*S);}
+}
+function draw(){drawRoom();AG.slice().sort((p,q)=>p.py-q.py).forEach(drawAgent);}
+
+/* ---------- 패널 ---------- */
+let selected=null;
+const ST={work:['근무 중','work'],idle:['대기','idle'],walk:['이동 중','walk'],rest:['휴식','rest']};
+function schedText(a){if(a.seat)return '원장이 「🏛 이사회 소집」할 때';return a.sched.map(s=>{const h=String(Math.floor(s.m/60)).padStart(2,'0')+':'+String(s.m%60).padStart(2,'0');const d=s.dow?s.dow.map(i=>DOWS[i]).join('·')+' ':s.dom?'매월 '+s.dom.join('·')+'일 ':'매일 ';return d+h}).join(' / ');}
+function renderWho(){const el=document.getElementById('who');if(!selected)return;const a=selected,d=DEPT[a.dept],st=ST[a.state]||ST.idle;
+  el.innerHTML='<h3><i style="background:'+d.color+'"></i>'+a.name+' <span class="pill '+st[1]+'" style="margin-left:auto">'+st[0]+'</span></h3><div class="kv"><span>부서</span><div>'+d.name+'</div><span>지금</span><div>'+(a.task&&a.state==='work'?a.task:a.seat?a.say:'다음 출근까지 대기')+'</div><span>출근</span><div>'+schedText(a)+'</div><span>결과</span><div>'+a.out+'</div><span>지침서</span><div><code>'+a.file+'</code></div></div>';}
+function renderCounts(){const c={work:0,idle:0,rest:0};AG.forEach(a=>{c[a.state==='work'?'work':a.state==='idle'?'idle':'rest']++});nWork.textContent=String(c.work).padStart(3,'0');nIdle.textContent=String(c.idle).padStart(3,'0');nRest.textContent=String(c.rest).padStart(3,'0');nAll.textContent=String(AG.length).padStart(3,'0');
+  document.getElementById('depts').innerHTML=Object.entries(DEPT).map(([k,d])=>{const m=AG.filter(a=>a.dept===k);return '<div><i style="background:'+d.color+'"></i>'+d.name+'<b>'+m.filter(a=>a.state==='work').length+'/'+m.length+'</b></div>'}).join('');}
+cv.addEventListener('click',e=>{const r=cv.getBoundingClientRect();const mx=(e.clientX-r.left)/r.width*COLS*T,my=(e.clientY-r.top)/r.height*ROWS*T;let best=null,bd=18;AG.forEach(a=>{const d=Math.hypot(a.px-mx,a.py-8-my);if(d<bd){bd=d;best=a}});selected=best;renderWho();});
+[['sp0',0],['sp1',1/60],['sp2',10]].forEach(([id,v])=>{document.getElementById(id).onclick=()=>{speed=v;['sp0','sp1','sp2'].forEach(i=>document.getElementById(i).classList.toggle('sel',i===id));};});
+
+/* ---------- 루프 ---------- */
+let last=performance.now(),acc=0;
+function loop(now){const dt=Math.min(.1,(now-last)/1000);last=now;tick(dt);draw();acc+=dt;if(acc>.4){acc=0;document.getElementById('clock').textContent=clockText();renderCounts();if(selected)renderWho();}requestAnimationFrame(loop);}
+renderCounts();
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(()=>requestAnimationFrame(loop));
+})();
+</script>
