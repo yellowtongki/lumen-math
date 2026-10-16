@@ -32,7 +32,17 @@ const RULE = { twinPer: 2, tbPer: 1, bookTwin: 1, boost: true, theory: false, da
  *   --twin1 <학생키,…>            시험 오답 쌍둥이를 2 → 1 (문항 수 줄이기)
  *   --tests2 <학년 글자>          그 학년은 최근 주간테스트 2개(이번 주·지난 주) 오답을 합쳐 만든다 (예: --tests2 "중학교 3학년")
  *   --unit <학생키>=<단원 정규식>  단원 정답률로 호출된 학생 — 그 단원(교재 기록의 chapter 이름이 맞는 것)의 최근 오답을 교재 오답에 더한다
- *   --update-score               실제 생성 때 리커버리 보드의 점수(snap.score)를 이번에 쓴 최신 시험 점수로 바꾼다 */
+ *   --update-score               실제 생성 때 리커버리 보드의 점수(snap.score)를 이번에 쓴 최신 시험 점수로 바꾼다
+ * ★ 2026-10-16 (학원앱 v19-123 과 같은 규칙 — 원장 「학원앱에도 넣어」 · 「이번주 지난주는 선택가능하게」)
+ *   · 시험 2개 학년은 rc_ws_rule.twoTestGrades(기본 ['중학교 3학년'])를 따른다 (--tests2 를 주면 그 학년으로 덮음)
+ *   · 학원앱 팝업에서 고른 학생별 선택 rc_ws_rule.per[학생키] = { wk, wids, twin1, noBook, unit } 을 그 주에 그대로 쓴다
+ *   --tests <학생키>=<wid,wid>   그 학생은 이 주간테스트들만 쓴다 (이번 주만·지난 주만·둘 다)
+ *   --unit 을 안 주면 «자동 단원 오답»: 보드 기록(snap.units)의 단원(대단원 이름) → 그 교재의 매쓰플랫 유형칩
+ *       (GET /concept/chips?curriculumKey=1&workbookIds=<교재>) 중 bigChapterName 이 같은 유형 → 그 유형들의 최근 교재 오답.
+ *       수집기가 단원 정답률(mf_progress chapters)을 만든 바로 그 사전이다. 칩을 못 받으면 유형DB(mf_typedb 대단원→중단원) +
+ *       유형 사전(mf_concept_names 의 중단원) / 기록 chapter 글자(앞 번호 뗀 것)로 대신한다. --no-unit-auto 로 끈다.
+ *   --no-book 은 «범위 안 교재 오답»만 뺀다(단원 오답은 남긴다 — 학원앱과 같음)
+ *   --force-design (--dry 와 함께만) 이번 주 학습지가 이미 있어도 설계만 다시 해 본다 */
 const csv = (v) => String(v || '').split(',').map((x) => x.trim()).filter(Boolean);
 const TWIN1 = csv(opt('twin1', ''));
 const TESTS2 = opt('tests2', '');
@@ -40,6 +50,12 @@ const UNIT = {}; args.forEach((a, i) => { if (a === '--unit' && args[i + 1]) { c
 const UPD_SCORE = args.includes('--update-score');
 const SKIP = csv(opt('skip', ''));   // 이번에는 건너뛸 학생키
 const NOBOOK = csv(opt('no-book', ''));   // 교재 오답 쌍둥이를 빼고 시험 오답만으로 (문항 수 줄이기)
+const TESTS = {}; args.forEach((a, i) => { if (a === '--tests' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) TESTS[m[1]] = csv(m[2]); } });
+const UNIT_AUTO = !args.includes('--no-unit-auto');
+const FORCE_DESIGN = args.includes('--force-design');
+if (FORCE_DESIGN && !DRY) { console.error('❌ --force-design 는 --dry 와 함께만 쓸 수 있습니다'); process.exit(1); }
+const gradeKey = (g) => { const m = String(g || '').match(/(초|중|고)[^0-9]*(\d)/); return m ? m[1] + m[2] : String(g || '').trim(); };
+const nrm = (x) => String(x || '').replace(/[\s\.\-–·()\[\]0-9ⅠⅡⅢⅣⅤⅥⅦ]/g, '').toLowerCase();   // 학원앱 rcNrm 과 같다
 const MF = 'https://api.mathflat.com', WEB = 'https://teacher.mathflat.com';
 const DESIGN = { layoutType: 11, layoutColor: 'GREEN', partitionType: 4, wrongAnswerNoteFlag: false, conceptNameFlag: false, problemTrendFlag: false,
   answerRateFlag: false, qrFlag: true, relationWorkbookFlag: true, includeProblemFlag: false, pdfDateType: 'TODAY', pdfDate: null,
@@ -74,6 +90,10 @@ const isAuto = (p) => { if (!AUTO) return true; if (MF_AUTO) { const a = p && (p
 
 /* ── 재료 ── */
 async function gather(sid, test, textbooks, unitRe) {
+  if (!test || (Array.isArray(test) && !test.length)) {   // 시험 없이 단원 오답만 (단원으로 불린 학생)
+    const M = { wrong: [], range: [], bookWrong: [], tb: { bid: null, title: '', byCid: {} }, solved: {}, warn: [], tag: '' };
+    if (unitRe) await addUnit(M, sid, unitRe); return M;
+  }
   const tests = Array.isArray(test) ? test : [test];
   if (tests.length > 1) {   // ★ 여러 시험: 시험마다 모은 뒤 합친다 (같은 문항은 한 번만)
     const all = []; for (const t of tests) all.push(await gather(sid, t, textbooks, null));
@@ -113,19 +133,54 @@ async function gather(sid, test, textbooks, unitRe) {
   if (unitRe) await addUnit(M, sid, unitRe);
   return M;
 }
-/* ★ 단원 오답: 교재 기록의 chapter 이름이 단원 정규식에 맞는 문항의 유형을 모아, 그 유형의 최근 오답(교재)을 더한다 */
+/* ★ 단원 오답: unit = RegExp(수동 --unit: 교재 기록 chapter 글자) 또는 { cids:[유형 번호] }(자동) — 그 유형의 최근 오답(교재)을 더한다 */
 async function addUnit(M, sid, re) {
   const since = new Date(Date.now() - RULE.days * 86400000).toISOString();
-  const all = await recs(`select=chapter,concept_id&mf_student_id=eq.${encodeURIComponent(sid)}&source=eq.교재&concept_id=not.is.null&limit=5000`);
-  const cids = {}; all.forEach((x) => { if (re.test(String(x.chapter || ''))) cids[Number(x.concept_id)] = 1; });
-  const list = Object.keys(cids); M.unitN = 0; if (!list.length) { M.warn.push('단원 유형 못 찾음'); return; }
+  let list = [];
+  if (re instanceof RegExp) {
+    const all = await recs(`select=chapter,concept_id&mf_student_id=eq.${encodeURIComponent(sid)}&source=eq.교재&concept_id=not.is.null&limit=5000`);
+    const cids = {}; all.forEach((x) => { if (re.test(String(x.chapter || ''))) cids[Number(x.concept_id)] = 1; }); list = Object.keys(cids);
+  } else list = (re.cids || []).map(String);
+  M.unitN = 0; if (!list.length) { M.warn.push('단원 유형 못 찾음'); return; }
   const r = await recs(`select=book_id,page,number,workbook_problem_id,concept_id,level,score_datetime&mf_student_id=eq.${encodeURIComponent(sid)}&source=eq.교재&result=eq.X&concept_id=in.(${list.join(',')})&score_datetime=gte.${since}&order=score_datetime.desc&limit=300`);
   const seenW = {}; M.bookWrong.forEach((w) => { seenW[w.wpId] = 1; }); const bids = {};
   r.forEach((x) => { const k = Number(x.workbook_problem_id); if (!k || seenW[k]) return; seenW[k] = 1; bids[String(x.book_id)] = 1; M.unitN++;
     M.bookWrong.push({ wpId: k, bid: String(x.book_id), page: x.page, no: x.number, cid: Number(x.concept_id), lv: Number(x.level) || 3, date: String(x.score_datetime || '').slice(0, 10), pid: null, unit: true }); });
-  const st = await store(Object.keys(bids).map((b) => 'mf_textbook_' + b));
+  const st = Object.keys(bids).length ? await store(Object.keys(bids).map((b) => 'mf_textbook_' + b)) : {};
   Object.keys(bids).forEach((b) => { const bank = st['mf_textbook_' + b]; if (!bank || !bank.problems) return; const byWp = {}; bank.problems.forEach((p) => { byWp[String(p.id)] = p; });
     M.bookWrong.forEach((w) => { if (w.unit && w.bid === b && !w.pid && byWp[String(w.wpId)]) { w.pid = bankId(byWp[String(w.wpId)]); w.book = bank.title || ''; if (w.pid) M.solved[String(w.pid)] = 1; } }); });
+  const r3 = await recs(`select=problem_id&mf_student_id=eq.${encodeURIComponent(sid)}&source=eq.학습지&concept_id=in.(${list.join(',')})&problem_id=not.is.null&limit=2000`);
+  r3.forEach((x) => { M.solved[String(x.problem_id)] = 1; });
+}
+/* ★ 자동 단원 → 유형 번호 (학원앱 rcws123_teacher.js 와 같은 길)
+ *   보드 단원 이름 = 수집기가 «유형 → 매쓰플랫 유형칩 bigChapterName» 으로 묶은 이름 → 교재 유형칩에서 같은 이름의 유형을 고른다 */
+const CHIPS = {}; let TYPEDB = null, CNAME = null;
+async function unitCids(units, sid, prog, books) {
+  const P = (prog && prog[sid]) || {}; const out = []; const info = [];
+  for (const u of units) {
+    const k = nrm(u.n); if (!k) continue;
+    let hits = [];
+    const scan = (loose) => Object.keys(P).forEach((b) => ((P[b] && P[b].chapters) || []).forEach((c) => { const ck = nrm(c.n); if (ck && (ck === k || (loose && (ck.includes(k) || k.includes(ck))))) hits.push({ bid: b, n: c.n }); }));
+    scan(false); if (!hits.length) scan(true);
+    const name = hits.length ? hits[0].n : u.n; const bids = [...new Set(hits.filter((h) => nrm(h.n) === nrm(name)).map((h) => h.bid))];
+    const cids = new Set(); let how = '';
+    for (const bid of bids) {
+      if (CHIPS[bid] === undefined) { try { CHIPS[bid] = await mf('GET', `/concept/chips?curriculumKey=1&workbookIds=${bid}`); } catch (e) { CHIPS[bid] = null; } }
+      const fromChips = (Array.isArray(CHIPS[bid]) ? CHIPS[bid] : []).filter((c) => c && c.conceptId != null && nrm(c.bigChapterName) === nrm(name)).map((c) => Number(c.conceptId));
+      if (fromChips.length) { fromChips.forEach((c) => cids.add(c)); how = how || '매쓰플랫 교재 단원표'; continue; }
+      // 대신 길: 유형DB 대단원 → 중단원 이름 · 유형 사전 중단원 / 기록 chapter 글자
+      if (!TYPEDB) { const st = await store(['mf_typedb', 'mf_concept_names']); TYPEDB = st.mf_typedb || {}; CNAME = st.mf_concept_names || {}; }
+      const gl = (books[bid] && books[bid].g) || ''; const mids = [];
+      const midsOf = (g) => ((TYPEDB.grades) || []).forEach((G) => { if (g && G.g !== g) return; (G.b || []).forEach((B) => { if (nrm(B.n) === nrm(name)) (B.m || []).forEach((m) => { if (!mids.includes(m.n)) mids.push(m.n); }); }); });
+      midsOf(gl); if (!mids.length) midsOf(''); if (!mids.length) mids.push(name);
+      const ks = mids.map(nrm);
+      const rs = await recs(`select=concept_id,chapter&mf_student_id=eq.${encodeURIComponent(sid)}&source=eq.교재&book_id=eq.${bid}&limit=3000`);
+      rs.forEach((x) => { if (x.concept_id == null) return; const m = (CNAME[x.concept_id] || {}).m || ''; const lab = String(x.chapter || '').replace(/^\s*\d+\s*/, ''); if ((m && ks.includes(nrm(m))) || ks.includes(nrm(lab))) cids.add(Number(x.concept_id)); });
+      if (cids.size) how = how || '중단원 이름으로 대신 (' + mids.join('·') + ')';
+    }
+    info.push({ n: name, rate: u.rate, cids: cids.size, how, bids }); cids.forEach((c) => { if (!out.includes(c)) out.push(c); });
+  }
+  return { cids: out, info };
 }
 function plan(M, twinPer) {
   const cnt = {}; M.wrong.forEach((w) => { cnt[w.cid] = (cnt[w.cid] || 0) + 1; }); M.bookWrong.forEach((w) => { cnt[w.cid] = (cnt[w.cid] || 0) + 1; });
@@ -169,7 +224,8 @@ async function build(M, P, name, school, sid, recDate, log) {
 
 (async () => {
   if (!SB || !KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
-  const st = await store(['rc_state', 'rc_config', 'or_studentdb', 'mf_weekly', 'mf_textbooks', 'rc_ws_made']);
+  const st = await store(['rc_state', 'rc_config', 'or_studentdb', 'mf_weekly', 'mf_textbooks', 'rc_ws_made', 'rc_ws_rule', 'mf_progress', 'mf_books']);
+  const rule = Object.assign({ twoTestGrades: ['중학교 3학년'], per: {} }, st.rc_ws_rule || {});
   const state = st.rc_state || { calls: {}, dates: {} }; const cfg = Object.assign({ minScore: 80, elem6Score: 75, weeks: 3 }, st.rc_config || {});
   const wk = opt('week', Object.keys(state.calls || {}).sort().pop()); const C = (state.calls || {})[wk] || {};
   const recDate = (state.dates && state.dates[wk]) || wk;
@@ -187,8 +243,9 @@ async function build(M, P, name, school, sid, recDate, log) {
     const e = C[k]; const stu = sdb.find((s) => String(s.id) === String(k)) || sdb.find((s) => s.name === k) || sdb.find((s) => e.snap && s.name === e.snap.name);
     const name = (stu && stu.name) || (e.snap && e.snap.name) || k; const grade = (stu && stu.grade) || (e.snap && e.snap.grade) || '';
     const line = (s) => console.log(`  ${s}`);
-    console.log(`\n▶ ${mask(name)} (${grade}) ${made[k] && made[k].wk === wk ? '— 이미 이번 주 학습지 있음 #' + made[k].wsId + ' (건너뜀)' : ''}`);
-    if (made[k] && made[k].wk === wk) { results.push({ k, skip: 'already' }); continue; }
+    const already = made[k] && made[k].wk === wk;
+    console.log(`\n▶ ${mask(name)} (${grade}) ${already ? '— 이미 이번 주 학습지 있음 #' + made[k].wsId + (FORCE_DESIGN ? ' (설계만 다시 — --force-design)' : ' (건너뜀)') : ''}`);
+    if (already && !FORCE_DESIGN) { results.push({ k, skip: 'already' }); continue; }
     let hit = stu && mfs.find((m) => m.lumen_rec_code && stu.lumen_rec_code && m.lumen_rec_code === stu.lumen_rec_code); if (!hit) { const same = mfs.filter((m) => m.name === name); if (same.length === 1) hit = same[0]; }
     const sid = hit && hit.mf_student_id; if (!sid) { line('✗ 매쓰플랫 학생 번호를 찾지 못함'); results.push({ k, skip: 'no sid' }); continue; }
     const school = schoolOf(grade); if (!school) { line('✗ 고등부(또는 학년 미상) — 제외'); results.push({ k, skip: 'school' }); continue; }
@@ -196,17 +253,32 @@ async function build(M, P, name, school, sid, recDate, log) {
     let test = null;
     tests.forEach((t) => { const me = (t.students || []).find((s) => String(s.sid) === String(sid) && s.score != null); if (!me) return; const on = me.date || t.date; if (!on || on < from || on > to) return; if (me.score < cut && (!test || String(on) > String(test.date))) test = { wid: t.wid, title: t.title, date: on, score: me.score }; });
     if (!test) tests.forEach((t) => { const me = (t.students || []).find((s) => String(s.sid) === String(sid) && s.score != null); if (!me) return; const on = me.date || t.date; if (on && on >= from && (!test || String(on) > String(test.date))) test = { wid: t.wid, title: t.title, date: on, score: me.score, anyScore: true }; });
-    if (!test) { line('✗ 기간 안 주간테스트 기록 없음'); results.push({ k, skip: 'no test' }); continue; }
-    line(`시험 ${test.title} ${test.date} ${test.score}점${test.anyScore ? ' (기준 점수 이상이지만 호출 확정이라 포함)' : ''}`);
+    if (!test && !(e.snap && e.snap.units && e.snap.units.length)) { line('✗ 기간 안 주간테스트 기록 없음'); results.push({ k, skip: 'no test' }); continue; }
+    if (test) line(`시험 ${test.title} ${test.date} ${test.score}점${test.anyScore ? ' (기준 점수 이상이지만 호출 확정이라 포함)' : ''}`);
+    else line('기간 안 주간테스트 없음 — 단원 오답으로만');
     let useTests = test;
-    if (TESTS2 && String(grade).indexOf(TESTS2) >= 0) {   // ★ 최근 주간테스트 2개 (응시일 기준)
-      const mine = []; tests.forEach((t) => { const me = (t.students || []).find((s) => String(s.sid) === String(sid) && s.score != null); if (me) mine.push({ wid: t.wid, title: t.title, date: me.date || t.date, score: me.score }); });
-      mine.sort((a, b) => String(b.date).localeCompare(String(a.date))); useTests = mine.slice(0, 2);
+    const mine = []; tests.forEach((t) => { const me = (t.students || []).find((s) => String(s.sid) === String(sid) && s.score != null); if (me) mine.push({ wid: t.wid, title: t.title, date: me.date || t.date, score: me.score }); });
+    mine.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const per = (rule.per || {})[k] && rule.per[k].wk === wk ? rule.per[k] : null;
+    const two = TESTS2 ? String(grade).indexOf(TESTS2) >= 0 : (rule.twoTestGrades || []).some((g) => gradeKey(g) === gradeKey(grade));
+    const pickW = TESTS[k] || (per && Array.isArray(per.wids) ? per.wids.map(String) : null);
+    if (pickW) {   // ★ 고른 주간테스트 (--tests 또는 학원앱 팝업 선택)
+      const sel = mine.filter((t) => pickW.includes(String(t.wid)));
+      if (sel.length || !pickW.length) { useTests = sel; line(`고른 시험 ${sel.length}개${TESTS[k] ? ' (--tests)' : ' (학원앱 선택)'}: ${sel.map((t) => t.title + ' ' + t.date + ' ' + t.score + '점').join(' + ') || '없음'}`); }
+    } else if (two) {   // ★ 최근 주간테스트 2개 (응시일 기준)
+      useTests = mine.slice(0, 2);
       line(`시험 2개 합침: ${useTests.map((t) => t.title + ' ' + t.date + ' ' + t.score + '점').join(' + ')}`);
     }
-    const twinPer = TWIN1.indexOf(k) >= 0 ? 1 : null; if (twinPer) line('시험 오답 쌍둥이 1개씩 (줄임)');
+    const twinPer = (TWIN1.indexOf(k) >= 0 || (per && per.twin1)) ? 1 : null; if (twinPer) line('시험 오답 쌍둥이 1개씩 (줄임)');
+    const noBook = NOBOOK.indexOf(k) >= 0 || !!(per && per.noBook);
+    let unitArg = UNIT[k] || null, unitInfo = null;
+    if (!unitArg && UNIT_AUTO && !(per && per.unit === false) && e.snap && e.snap.units && e.snap.units.length) {
+      const U = await unitCids(e.snap.units, sid, st.mf_progress && st.mf_progress.byStudent, (st.mf_books && st.mf_books.books) || {});
+      unitInfo = U.info; if (U.cids.length) unitArg = { cids: U.cids };
+      U.info.forEach((u) => line(`단원 「${u.n}」${u.rate != null ? ' ' + u.rate + '%' : ''} → 유형 ${u.cids}개${u.how ? ' (' + u.how + ')' : ' (못 찾음)'}`));
+    }
     try {
-      const M = await gather(sid, useTests, st.mf_textbooks || {}, UNIT[k] || null); if (NOBOOK.indexOf(k) >= 0) { M.bookWrong = []; line('교재 오답 뺌 (줄임)'); } const P = plan(M, twinPer); if (UNIT[k]) line(`단원 오답 ${M.unitN || 0}문항 더함 (${UNIT[k].source})`);
+      const M = await gather(sid, useTests, st.mf_textbooks || {}, unitArg); if (noBook) { M.bookWrong = M.bookWrong.filter((w) => w.unit); line('교재 오답 뺌 (줄임 · 단원 오답은 남김)'); } const P = plan(M, twinPer); if (unitArg) line(`단원 오답 ${M.unitN || 0}문항 더함 (${UNIT[k] ? UNIT[k].source : '자동'})`);
       line(`시험 오답 ${M.wrong.length} · 범위 유형 ${M.range.length} · 교재 오답(범위 안·${RULE.days}일) ${M.bookWrong.length}${M.bookWrong.filter((w) => !w.pid).length ? ' (번호 못 찾음 ' + M.bookWrong.filter((w) => !w.pid).length + ')' : ''} · 교과서 ${M.tb.title || '없음'} · 보강 유형 ${P.boost.length}` + (M.warn.length ? ' · ⚠ ' + M.warn.join(' / ') : ''));
       if (!M.wrong.length && !M.bookWrong.length) { line('✗ 틀린 문항이 없어 만들지 않음'); results.push({ k, skip: 'no wrong' }); continue; }
       const res = await build(M, P, name, school, sid, recDate, line);
@@ -215,7 +287,7 @@ async function build(M, P, name, school, sid, recDate, log) {
       if (!DRY) {
         made[k] = { wk, wsId: res.wsId, title: res.title, n: res.n, parts: res.parts, at: res.at, by: 'server', auto: AUTO };
         await setItem('rc_ws_made', { byKey: made, updated: new Date().toISOString() });
-        const fresh = (await store(['rc_state'])).rc_state || state; if (fresh.calls && fresh.calls[wk] && fresh.calls[wk][k]) { fresh.calls[wk][k].ws = { wsId: res.wsId, n: res.n, parts: res.parts, at: res.at }; if (UPD_SCORE && fresh.calls[wk][k].snap) { const lt = Array.isArray(useTests) ? useTests[0] : useTests; fresh.calls[wk][k].snap.score = lt.score; fresh.calls[wk][k].snap.scoreDate = lt.date; fresh.calls[wk][k].snap.testTitle = lt.title; } await setItem('rc_state', { calls: fresh.calls, dates: fresh.dates || {}, periods: fresh.periods || {}, updated: new Date().toISOString() }); }
+        const fresh = (await store(['rc_state'])).rc_state || state; if (fresh.calls && fresh.calls[wk] && fresh.calls[wk][k]) { fresh.calls[wk][k].ws = { wsId: res.wsId, n: res.n, parts: res.parts, at: res.at }; if (UPD_SCORE && fresh.calls[wk][k].snap) { const lt = (Array.isArray(useTests) ? useTests.slice().sort((a, b) => String(b.date).localeCompare(String(a.date))) : [useTests])[0]; if (lt) { fresh.calls[wk][k].snap.score = lt.score; fresh.calls[wk][k].snap.scoreDate = lt.date; fresh.calls[wk][k].snap.testTitle = lt.title; } } await setItem('rc_state', { calls: fresh.calls, dates: fresh.dates || {}, periods: fresh.periods || {}, updated: new Date().toISOString() }); }
       }
     } catch (err) { line('✗ 실패: ' + err.message); results.push({ k, skip: 'error', why: err.message }); }
     await new Promise((r) => setTimeout(r, 300));
