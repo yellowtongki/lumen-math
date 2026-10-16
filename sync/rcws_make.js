@@ -28,6 +28,18 @@ const AUTO = !args.includes('--no-auto');
 const MF_AUTO = args.includes('--mf-auto');   // 매쓰플랫 자체 자동채점(객관식) 기준
 const ONLY = opt('only', '');
 const RULE = { twinPer: 2, tbPer: 1, bookTwin: 1, boost: true, theory: false, days: 28 };
+/* ★ 2026-10-16 원장 지시 (리커버리 10/17)
+ *   --twin1 <학생키,…>            시험 오답 쌍둥이를 2 → 1 (문항 수 줄이기)
+ *   --tests2 <학년 글자>          그 학년은 최근 주간테스트 2개(이번 주·지난 주) 오답을 합쳐 만든다 (예: --tests2 "중학교 3학년")
+ *   --unit <학생키>=<단원 정규식>  단원 정답률로 호출된 학생 — 그 단원(교재 기록의 chapter 이름이 맞는 것)의 최근 오답을 교재 오답에 더한다
+ *   --update-score               실제 생성 때 리커버리 보드의 점수(snap.score)를 이번에 쓴 최신 시험 점수로 바꾼다 */
+const csv = (v) => String(v || '').split(',').map((x) => x.trim()).filter(Boolean);
+const TWIN1 = csv(opt('twin1', ''));
+const TESTS2 = opt('tests2', '');
+const UNIT = {}; args.forEach((a, i) => { if (a === '--unit' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) UNIT[m[1]] = new RegExp(m[2]); } });
+const UPD_SCORE = args.includes('--update-score');
+const SKIP = csv(opt('skip', ''));   // 이번에는 건너뛸 학생키
+const NOBOOK = csv(opt('no-book', ''));   // 교재 오답 쌍둥이를 빼고 시험 오답만으로 (문항 수 줄이기)
 const MF = 'https://api.mathflat.com', WEB = 'https://teacher.mathflat.com';
 const DESIGN = { layoutType: 11, layoutColor: 'GREEN', partitionType: 4, wrongAnswerNoteFlag: false, conceptNameFlag: false, problemTrendFlag: false,
   answerRateFlag: false, qrFlag: true, relationWorkbookFlag: true, includeProblemFlag: false, pdfDateType: 'TODAY', pdfDate: null,
@@ -61,8 +73,20 @@ const bankId = (p) => { const m = String((p && p.pimg) || '').match(/\/problem\/
 const isAuto = (p) => { if (!AUTO) return true; if (MF_AUTO) { const a = p && (p.autoScoredType || p.auto); return !!(a && a !== 'IMPOSSIBLE'); } return p && p.type !== 'ESSAY' && String(p.answer == null ? '' : p.answer).trim() !== '' && String(p.answer).trim() !== '.'; };
 
 /* ── 재료 ── */
-async function gather(sid, test, textbooks) {
-  const M = { wrong: [], range: [], bookWrong: [], tb: { bid: null, title: '', byCid: {} }, solved: {}, warn: [] };
+async function gather(sid, test, textbooks, unitRe) {
+  const tests = Array.isArray(test) ? test : [test];
+  if (tests.length > 1) {   // ★ 여러 시험: 시험마다 모은 뒤 합친다 (같은 문항은 한 번만)
+    const all = []; for (const t of tests) all.push(await gather(sid, t, textbooks, null));
+    const M = all[0]; const seenP = {}; M.wrong.forEach((w) => { if (w.pid) seenP[w.pid] = 1; });
+    all.slice(1).forEach((o) => { o.wrong.forEach((w) => { if (w.pid && seenP[w.pid]) return; if (w.pid) seenP[w.pid] = 1; w.no = '(' + o.tag + ') ' + w.no; M.wrong.push(w); });
+      o.range.forEach((c) => { if (M.range.indexOf(c) < 0) M.range.push(c); });
+      const seenW = {}; M.bookWrong.forEach((w) => { seenW[w.wpId] = 1; }); o.bookWrong.forEach((w) => { if (!seenW[w.wpId]) { seenW[w.wpId] = 1; M.bookWrong.push(w); } });
+      Object.assign(M.solved, o.solved); });
+    if (unitRe) await addUnit(M, sid, unitRe);
+    return M;
+  }
+  test = tests[0];
+  const M = { wrong: [], range: [], bookWrong: [], tb: { bid: null, title: '', byCid: {} }, solved: {}, warn: [], tag: test.title };
   let rs = await recs(`select=problem_seq,number,result,concept_id,level,problem_id,score_datetime,student_worksheet_id&worksheet_id=eq.${test.wid}&mf_student_id=eq.${encodeURIComponent(sid)}&source=eq.학습지&order=problem_seq.asc&limit=500`);
   if (rs.length) { const bySw = {}; rs.forEach((x) => { const sw = x.student_worksheet_id || '0'; (bySw[sw] = bySw[sw] || []).push(x); }); const ids = Object.keys(bySw); if (ids.length > 1) { ids.sort((a, b) => String(bySw[b][0].score_datetime || '').localeCompare(String(bySw[a][0].score_datetime || ''))); rs = bySw[ids[0]]; } }
   if (!rs.length) { M.warn.push('문항별 기록 없음'); return M; }
@@ -86,11 +110,26 @@ async function gather(sid, test, textbooks) {
   const r3 = await recs(`select=problem_id&mf_student_id=eq.${encodeURIComponent(sid)}&source=eq.학습지&concept_id=in.(${M.range.join(',') || 0})&problem_id=not.is.null&limit=2000`);
   r3.forEach((x) => { M.solved[String(x.problem_id)] = 1; });
   M.wrong.forEach((w) => { if (w.pid) M.solved[String(w.pid)] = 1; }); M.bookWrong.forEach((w) => { if (w.pid) M.solved[String(w.pid)] = 1; });
+  if (unitRe) await addUnit(M, sid, unitRe);
   return M;
 }
-function plan(M) {
+/* ★ 단원 오답: 교재 기록의 chapter 이름이 단원 정규식에 맞는 문항의 유형을 모아, 그 유형의 최근 오답(교재)을 더한다 */
+async function addUnit(M, sid, re) {
+  const since = new Date(Date.now() - RULE.days * 86400000).toISOString();
+  const all = await recs(`select=chapter,concept_id&mf_student_id=eq.${encodeURIComponent(sid)}&source=eq.교재&concept_id=not.is.null&limit=5000`);
+  const cids = {}; all.forEach((x) => { if (re.test(String(x.chapter || ''))) cids[Number(x.concept_id)] = 1; });
+  const list = Object.keys(cids); M.unitN = 0; if (!list.length) { M.warn.push('단원 유형 못 찾음'); return; }
+  const r = await recs(`select=book_id,page,number,workbook_problem_id,concept_id,level,score_datetime&mf_student_id=eq.${encodeURIComponent(sid)}&source=eq.교재&result=eq.X&concept_id=in.(${list.join(',')})&score_datetime=gte.${since}&order=score_datetime.desc&limit=300`);
+  const seenW = {}; M.bookWrong.forEach((w) => { seenW[w.wpId] = 1; }); const bids = {};
+  r.forEach((x) => { const k = Number(x.workbook_problem_id); if (!k || seenW[k]) return; seenW[k] = 1; bids[String(x.book_id)] = 1; M.unitN++;
+    M.bookWrong.push({ wpId: k, bid: String(x.book_id), page: x.page, no: x.number, cid: Number(x.concept_id), lv: Number(x.level) || 3, date: String(x.score_datetime || '').slice(0, 10), pid: null, unit: true }); });
+  const st = await store(Object.keys(bids).map((b) => 'mf_textbook_' + b));
+  Object.keys(bids).forEach((b) => { const bank = st['mf_textbook_' + b]; if (!bank || !bank.problems) return; const byWp = {}; bank.problems.forEach((p) => { byWp[String(p.id)] = p; });
+    M.bookWrong.forEach((w) => { if (w.unit && w.bid === b && !w.pid && byWp[String(w.wpId)]) { w.pid = bankId(byWp[String(w.wpId)]); w.book = bank.title || ''; if (w.pid) M.solved[String(w.pid)] = 1; } }); });
+}
+function plan(M, twinPer) {
   const cnt = {}; M.wrong.forEach((w) => { cnt[w.cid] = (cnt[w.cid] || 0) + 1; }); M.bookWrong.forEach((w) => { cnt[w.cid] = (cnt[w.cid] || 0) + 1; });
-  return { test: M.wrong.map((w) => ({ w, n: RULE.twinPer })), tb: M.wrong.map((w) => ({ w, n: RULE.tbPer })), book: M.bookWrong.map((w) => ({ w, n: RULE.bookTwin })),
+  return { test: M.wrong.map((w) => ({ w, n: twinPer == null ? RULE.twinPer : twinPer })), tb: M.wrong.map((w) => ({ w, n: RULE.tbPer })), book: M.bookWrong.map((w) => ({ w, n: RULE.bookTwin })),
     boost: Object.keys(cnt).filter((c) => cnt[c] >= 2).map((c) => ({ cid: Number(c), n: RULE.boost ? 1 : 0, times: cnt[c] })) };
 }
 function pick(list, lv, n, excl, chosen) { const out = []; const pool = list.filter((p) => isAuto(p) && !excl[String(p.id)] && !chosen[String(p.id)]); pool.sort((a, b) => Math.abs((a.lv || 3) - lv) - Math.abs((b.lv || 3) - lv)); pool.slice(0, n).forEach((p) => { chosen[String(p.id)] = 1; out.push(p.id); }); return out; }
@@ -140,7 +179,7 @@ async function build(M, P, name, school, sid, recDate, log) {
   const tests = ((st.mf_weekly || {}).tests || []).filter((t) => t.type === 'WEEKLY');
   const made = (st.rc_ws_made && st.rc_ws_made.byKey) || {};
   console.log(`주 ${wk} (보충일 ${recDate}) · 기준 기간 ${from}~${to} · 자동채점 ${AUTO ? (MF_AUTO ? '매쓰플랫 기준(객관식)' : '서술형 제외·정답 있는 문항') : '제한 없음'} · ${DRY ? '[설계만]' : '[실제 생성·배정]'}`);
-  const keys = Object.keys(C).filter((k) => C[k] && C[k].on && !C[k].done && !C[k].noshow && (!ONLY || k === ONLY));
+  const keys = Object.keys(C).filter((k) => C[k] && C[k].on && !C[k].done && !C[k].noshow && (!ONLY || k === ONLY) && SKIP.indexOf(k) < 0);
   if (!DRY) await mfLogin();
   else await mfLogin();   // 조회(필터·쌍둥이)는 dry 에서도 매쓰플랫 로그인이 필요하다 (쓰기는 없음)
   const results = [];
@@ -159,8 +198,15 @@ async function build(M, P, name, school, sid, recDate, log) {
     if (!test) tests.forEach((t) => { const me = (t.students || []).find((s) => String(s.sid) === String(sid) && s.score != null); if (!me) return; const on = me.date || t.date; if (on && on >= from && (!test || String(on) > String(test.date))) test = { wid: t.wid, title: t.title, date: on, score: me.score, anyScore: true }; });
     if (!test) { line('✗ 기간 안 주간테스트 기록 없음'); results.push({ k, skip: 'no test' }); continue; }
     line(`시험 ${test.title} ${test.date} ${test.score}점${test.anyScore ? ' (기준 점수 이상이지만 호출 확정이라 포함)' : ''}`);
+    let useTests = test;
+    if (TESTS2 && String(grade).indexOf(TESTS2) >= 0) {   // ★ 최근 주간테스트 2개 (응시일 기준)
+      const mine = []; tests.forEach((t) => { const me = (t.students || []).find((s) => String(s.sid) === String(sid) && s.score != null); if (me) mine.push({ wid: t.wid, title: t.title, date: me.date || t.date, score: me.score }); });
+      mine.sort((a, b) => String(b.date).localeCompare(String(a.date))); useTests = mine.slice(0, 2);
+      line(`시험 2개 합침: ${useTests.map((t) => t.title + ' ' + t.date + ' ' + t.score + '점').join(' + ')}`);
+    }
+    const twinPer = TWIN1.indexOf(k) >= 0 ? 1 : null; if (twinPer) line('시험 오답 쌍둥이 1개씩 (줄임)');
     try {
-      const M = await gather(sid, test, st.mf_textbooks || {}); const P = plan(M);
+      const M = await gather(sid, useTests, st.mf_textbooks || {}, UNIT[k] || null); if (NOBOOK.indexOf(k) >= 0) { M.bookWrong = []; line('교재 오답 뺌 (줄임)'); } const P = plan(M, twinPer); if (UNIT[k]) line(`단원 오답 ${M.unitN || 0}문항 더함 (${UNIT[k].source})`);
       line(`시험 오답 ${M.wrong.length} · 범위 유형 ${M.range.length} · 교재 오답(범위 안·${RULE.days}일) ${M.bookWrong.length}${M.bookWrong.filter((w) => !w.pid).length ? ' (번호 못 찾음 ' + M.bookWrong.filter((w) => !w.pid).length + ')' : ''} · 교과서 ${M.tb.title || '없음'} · 보강 유형 ${P.boost.length}` + (M.warn.length ? ' · ⚠ ' + M.warn.join(' / ') : ''));
       if (!M.wrong.length && !M.bookWrong.length) { line('✗ 틀린 문항이 없어 만들지 않음'); results.push({ k, skip: 'no wrong' }); continue; }
       const res = await build(M, P, name, school, sid, recDate, line);
@@ -169,7 +215,7 @@ async function build(M, P, name, school, sid, recDate, log) {
       if (!DRY) {
         made[k] = { wk, wsId: res.wsId, title: res.title, n: res.n, parts: res.parts, at: res.at, by: 'server', auto: AUTO };
         await setItem('rc_ws_made', { byKey: made, updated: new Date().toISOString() });
-        const fresh = (await store(['rc_state'])).rc_state || state; if (fresh.calls && fresh.calls[wk] && fresh.calls[wk][k]) { fresh.calls[wk][k].ws = { wsId: res.wsId, n: res.n, parts: res.parts, at: res.at }; await setItem('rc_state', { calls: fresh.calls, dates: fresh.dates || {}, periods: fresh.periods || {}, updated: new Date().toISOString() }); }
+        const fresh = (await store(['rc_state'])).rc_state || state; if (fresh.calls && fresh.calls[wk] && fresh.calls[wk][k]) { fresh.calls[wk][k].ws = { wsId: res.wsId, n: res.n, parts: res.parts, at: res.at }; if (UPD_SCORE && fresh.calls[wk][k].snap) { const lt = Array.isArray(useTests) ? useTests[0] : useTests; fresh.calls[wk][k].snap.score = lt.score; fresh.calls[wk][k].snap.scoreDate = lt.date; fresh.calls[wk][k].snap.testTitle = lt.title; } await setItem('rc_state', { calls: fresh.calls, dates: fresh.dates || {}, periods: fresh.periods || {}, updated: new Date().toISOString() }); }
       }
     } catch (err) { line('✗ 실패: ' + err.message); results.push({ k, skip: 'error', why: err.message }); }
     await new Promise((r) => setTimeout(r, 300));
