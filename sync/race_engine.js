@@ -32,7 +32,28 @@
  *   OUT  race_board   = 순위표 (학생앱·학부모앱·학원앱이 읽음, 이름은 김○○)
  *   OUT  race_watch   = 이상 신호 (원장님 화면 전용 — 정답률이 유난히 낮은 학생)
  *
+ * ── 🆕 다음 시즌 «비공개 미리 세기» (2026-10-16, 학원앱 v19-122) ───────────
+ *   IN   race_season_draft = 원장님만 보는 다음 시즌 설정 (학원앱 「🆕 다음 시즌」 카드가 저장)
+ *   OUT  race_board_draft  = 그 시즌 순위표 (원장님 화면 전용)
+ *   OUT  race_watch_draft  = 그 시즌 이상 신호 (원장님 화면 전용)
+ *   ★ 다음 시즌 계산은 race_board · race_season · raid_board · race_history · race_watch 를
+ *     «절대» 쓰지 않는다 — 학생앱·학부모앱·push_boost.js 가 읽는 키는 원장님이 「📣 학생앱에 공개」를
+ *     누를 때(학원앱)만 바뀐다. 레이드도 세지 않는다.
+ *   지금 시즌(race_season)은 예전과 «한 글자도 다르지 않게» 센다(--dry 출력 비교로 확인).
+ *
+ * ── 새 시즌 설정 칸 (없으면 예전과 똑같다) ────────────────────────────
+ *   schoolFrom : { "옥길중":"2026-10-02", "범박고":"2026-10-07", … }
+ *                학생 학교(등록부 학교 이름 앞부분)가 맞으면 그 날부터 센다. 안 맞으면 season.from.
+ *                채점기록·할 일 점수·플래너 날 수·성장률·최근 14일 막대가 모두 «그 학생의 시작일»부터.
+ *                (board.days · 성장상 안내 「10일 이상」은 시즌 전체 시작일 기준 그대로)
+ *   highMult   : 1.5 → «고등 문제»(학생이 아니라 문제) 점수 ×1.5. 학습지는 school==='HIGH',
+ *                교재는 mf_books 의 교재 학년(g '고…'), 없으면 mf_swb_<코드> 의 grade.
+ *                버프보다 먼저 곱한다(곱셈이라 순서와 결과는 같다). 행마다 hi = 곱해진 문항 수.
+ *   leagues.combined : true → 중등·고등을 한 줄(「중고등부」)로 센다. 순위표 키는 board.mid
+ *                (지금 학생앱이 그대로 찾을 수 있게). board.combined · board.bandNames 로 알린다.
+ *
  * 실행: node sync/race_engine.js   또는  require('./race_engine').runRace()
+ *       node sync/race_engine.js --dry [--draft-file 시즌.json]   ← 저장 없이 지금 시즌 + 다음 시즌 미리보기
  */
 
 const SB_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
@@ -51,6 +72,8 @@ const log = (...a) => console.log('[레이스]', ...a);
  *   그대로 돌리되 저장만 막는 것이 유일하게 믿을 수 있는 방법이다. */
 const DRY  = process.argv.includes('--dry');
 const FBUF = process.argv.includes('--buff');
+/* --draft-file <시즌.json> : 서버의 race_season_draft 대신 이 파일을 다음 시즌으로 센다 (--dry 와 함께만) */
+const DRAFT_FILE = (() => { const i = process.argv.indexOf('--draft-file'); return i >= 0 ? (process.argv[i + 1] || '') : ''; })();
 
 const LV_PT = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 4 };
 const ptOf = (level, result) => {
@@ -262,6 +285,31 @@ async function loadRaidJobs() {
   return out;
 }
 
+/* ── 🎓 교재 학년 (highMult 용) ─────────────────────────────────
+ * 교재 채점 행(mf_answer_records)에는 school·grade 가 비어 있고 book_id 만 있다.
+ * mf_books.books[bid].g = '고공통수학1' · '중2-1' … (수집기 gradeKeyOf) — '고' 로 시작하면 고등 문제.
+ * mf_books 에 없거나 g 가 빈 교재만 mf_swb_<코드>.books[].grade('고1' 등)로 메운다(필요할 때만 읽는다). */
+async function loadBookGrades(needIds) {
+  const g = {};
+  try {
+    const mb = await kvGet('mf_books');
+    const bk = (mb && mb.books) || {};
+    Object.keys(bk).forEach((bid) => { if (bk[bid] && bk[bid].g) g[String(bid)] = String(bk[bid].g); });
+  } catch (e) { log('교재 학년(mf_books) 읽기 실패:', e.message); }
+  const miss = (needIds || []).filter((b) => !g[b]);
+  if (miss.length) {
+    try {
+      const rows = await sbAll('lumen_store?key=like.mf_swb_*&select=key,value');
+      rows.forEach((row) => {
+        let v = row.value;
+        if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+        ((v && v.books) || []).forEach((b) => { const id = String(b && b.bid); if (b && b.grade && !g[id]) g[id] = String(b.grade); });
+      });
+    } catch (e) { log('교재 학년(mf_swb) 읽기 실패:', e.message); }
+  }
+  return g;
+}
+
 /* ── 🗂 할 일 보드 점수 (v19-26 · docs/todo_board_contract.md §6) ──────────
  * 카드마다 받음 1 · 하는 중 2 · 제출/확인 끝 3 (누적 아님 — 가장 앞선 상태 하나).
  * 원장 표시(tst)·학생 표시(todo_st_)·자동(auto) 중 앞선 것을 쓰고, 그 시각이 시즌 안일 때만 센다.
@@ -328,13 +376,43 @@ function seatTopTiers(rows, tiers) {
 }
 
 /* ═══ 본체 ═══════════════════════════════════════════════════ */
+/* runRace() — 수집기(mathflat_collector.js)·요청 처리기(collect_request_worker.js)가 부른다.
+ *   ① 지금 시즌(race_season) → race_board · race_watch · raid_board · race_history (예전과 똑같이)
+ *   ② 🆕 다음 시즌(race_season_draft, 있고 paused 가 아니면) → race_board_draft · race_watch_draft 만
+ *   돌려주는 값은 예전처럼 «지금 시즌» 순위표(없으면 null). 다음 시즌이 실패해도 지금 시즌에는 영향 없다. */
 async function runRace() {
   if (!SB_URL || !SB_KEY) { log('Supabase 환경변수 없음 — 건너뜀'); return null; }
+  if (DRAFT_FILE && !DRY) { log('--draft-file 은 --dry 와 함께만 씁니다 — 아무것도 하지 않았습니다'); return null; }
 
+  const ctx = {};   // 학생 명단·플래너·할 일 점수는 두 시즌이 같이 쓴다 (한 번만 읽는다)
+  let board = null;
   const season = await kvGet('race_season');
-  if (!season || !season.from || !season.to) { log('시즌 설정 없음 — 건너뜀'); return null; }
-  if (season.paused) { log('시즌 일시중지 — 건너뜀'); return null; }
+  if (!season || !season.from || !season.to) log('시즌 설정 없음 — 건너뜀');
+  else if (season.paused) log('시즌 일시중지 — 건너뜀');
+  else board = await computeSeason(season, false, ctx);
 
+  try { await runDraft(ctx, season); } catch (e) { log('🆕 다음 시즌(비공개) 계산 실패: ' + e.message); }
+  return board;
+}
+
+/* 🆕 다음 시즌 — 원장님만 보는 미리 세기 */
+async function runDraft(ctx, live) {
+  let draft = null;
+  if (DRAFT_FILE) {
+    draft = JSON.parse(require('fs').readFileSync(DRAFT_FILE, 'utf8'));
+    log(`🆕 다음 시즌 — 파일에서 읽음 (${DRAFT_FILE})`);
+  } else draft = await kvGet('race_season_draft');
+  if (!draft) { log('🆕 다음 시즌(비공개) 없음'); return null; }
+  if (!draft.from || !draft.to) { log('🆕 다음 시즌 기간이 비어 있음 — 건너뜀'); return null; }
+  if (draft.paused) { log('🆕 다음 시즌 일시중지 — 건너뜀'); return null; }
+  if (live && live.id && draft.id && live.id === draft.id) log('⚠️ 다음 시즌 id 가 지금 시즌과 같습니다 — 공개 때 보관이 꼬일 수 있어요');
+  log(`🆕 다음 시즌(비공개) 「${draft.name || ''}」 ${draft.from}~${draft.to} — race_board_draft 에만 씁니다`);
+  return computeSeason(draft, true, ctx);
+}
+
+/* 시즌 하나를 센다. isDraft=true 면 «_draft» 키에만 쓰고 레이드·보관은 하지 않는다. */
+async function computeSeason(season, isDraft, ctx) {
+  ctx = ctx || {};
   const tiers = (Array.isArray(season.tiers) && season.tiers.length ? season.tiers : DEF_TIERS)
     .slice().sort((a, b) => a.at - b.at);
   // elem = 초등부 「체험 리그」 — 시상에서는 빼고, 중등부와 같은 잣대로 점수만 쌓는다
@@ -358,21 +436,61 @@ async function runRace() {
     return (Array.isArray(t) && t.length) ? t.slice().sort((a, b) => a.at - b.at) : tiers;
   };
 
-  const { sid2code, info } = await loadStudents();
+  if (!ctx.stu) ctx.stu = await loadStudents();
+  const { sid2code, info } = ctx.stu;
   log(`학생 매핑 ${Object.keys(sid2code).length}명`);
 
-  const t0 = kstStartUtc(season.from);
+  /* 🏫 학교별 시작일 (season.schoolFrom) — 학생 학교 이름 앞부분이 맞으면 그 날부터.
+   * 긴 이름부터 견준다(「범박고」보다 「범박고등」이 먼저). 맞는 게 없으면 season.from. */
+  const sfRaw = (season.schoolFrom && typeof season.schoolFrom === 'object') ? season.schoolFrom : {};
+  const sfKeys = Object.keys(sfRaw)
+    .filter((k) => String(k).trim() && /^\d{4}-\d\d-\d\d$/.test(String(sfRaw[k] || '')))
+    .sort((a, b) => String(b).trim().length - String(a).trim().length);
+  const fromOf = {};
+  Object.keys(info).forEach((c) => {
+    const mine = String(info[c].sch || '').trim();
+    const k = mine ? sfKeys.find((x) => mine.indexOf(String(x).trim()) === 0) : null;
+    fromOf[c] = k ? String(sfRaw[k]) : season.from;
+  });
+  let minFrom = season.from;
+  sfKeys.forEach((k) => { if (String(sfRaw[k]) < minFrom) minFrom = String(sfRaw[k]); });
+  if (sfKeys.length) {
+    const cnt = {};
+    Object.keys(fromOf).forEach((c) => { cnt[fromOf[c]] = (cnt[fromOf[c]] || 0) + 1; });
+    log(`🏫 학교별 시작일 ${sfKeys.map((k) => k + ' ' + sfRaw[k]).join(' · ')} → ` +
+      Object.keys(cnt).sort().map((d) => `${d}부터 ${cnt[d]}명`).join(' · '));
+  }
+
+  const t0 = kstStartUtc(minFrom);
   const t1 = kstEndUtc(season.to);
   const recs = await sbAll(
-    'mf_answer_records?select=mf_student_id,level,result,score_datetime' +
+    'mf_answer_records?select=mf_student_id,level,result,score_datetime,school,book_id' +
     `&score_datetime=gte.${t0}&score_datetime=lt.${t1}&order=score_datetime.asc`);
   log(`기간 ${season.from}~${season.to} · 채점기록 ${recs.length}건`);
+
+  /* 🎓 고등 문제 배수 (season.highMult) — 학생이 아니라 «문제»가 고등이면 그 문제 점수 × 배수 */
+  const highMult = Number(season.highMult) > 0 ? Number(season.highMult) : 1;
+  const hmOn = highMult !== 1;
+  let bookG = {};
+  if (hmOn) {
+    const need = {};
+    recs.forEach((r) => { if (!r.school && r.book_id != null) need[String(r.book_id)] = 1; });
+    bookG = await loadBookGrades(Object.keys(need));
+  }
+  const hmStat = { n: 0, ws: 0, book: 0, bookUnknown: {} };
+  const isHighRec = (r) => {
+    if (r.school) return r.school === 'HIGH';
+    if (r.book_id == null) return false;
+    const g = bookG[String(r.book_id)];
+    if (!g) { hmStat.bookUnknown[String(r.book_id)] = 1; return false; }
+    return /^고/.test(g);
+  };
 
   /* 🔥 집중 버프 설정 — 시즌에 켜져 있을 때만 (기본 꺼짐) */
   const buffOn = !!(season.buff && season.buff.on) || FBUF;
   const buffMax = Number((season.buff || {}).max) || 0.4;
   if (FBUF && !(season.buff && season.buff.on)) log('🔎 --buff : 시즌 스위치는 꺼져 있지만 켠 셈 치고 계산합니다');
-  const plan = buffOn ? await loadPlanner() : {};
+  const plan = buffOn ? (ctx.plan || (ctx.plan = await loadPlanner())) : {};
   if (buffOn) log(`🔥 집중 버프 켜짐 (최대 ×${(1 + buffMax).toFixed(2)}) · 플래너 있는 학생 ${Object.keys(plan).length}명`);
   /* ★ 추가 버프 — 정해진 날부터만 (docs/race_boost_contract.md). 그 전 날짜는 손대지 않는다. */
   const bz = (season.buff || {}).boost || null;
@@ -388,7 +506,7 @@ async function runRace() {
    * ★ 2026-09-03: 학년마다 따로 잡게 되어 <b>여러 개</b>가 된다.
    *   season.raids = [ {...}, {...} ]  ← 새 방식
    *   season.raid  = {...}             ← 예전 방식도 그대로 받는다 */
-  const raidList = (Array.isArray(season.raids) ? season.raids
+  const raidList = isDraft ? [] : (Array.isArray(season.raids) ? season.raids   // 🆕 다음 시즌은 레이드를 세지 않는다
                    : (season.raid ? [season.raid] : []))
     .filter((r) => r && r.on && r.from && r.to);
   const raidOn = raidList.length > 0;
@@ -435,11 +553,15 @@ async function runRace() {
     if (r.result !== 'O' && r.result !== 'X' && r.result !== '?') return;  // '-' 미채점 제외
     const code = sid2code[r.mf_student_id];
     if (!code || !info[code]) return;
+    if (kstDay(r.score_datetime) < fromOf[code]) return;   // 🏫 그 학생 학교의 시작일 전 (schoolFrom 없으면 해당 없음)
     const a = agg[code] || (agg[code] = { code, pts: 0, base: 0, n: 0, ok: 0, hard: 0, byDay: {} });
     const lv = Number(r.level) || 2;
     /* base = 버프 없는 원점수 · pts = 버프까지 얹은 점수.
-     * 둘 다 남겨야 학원앱에서 「버프로 얼마나 벌었나」를 보여 줄 수 있다. */
-    const raw = ptOf(lv, r.result);
+     * 둘 다 남겨야 학원앱에서 「버프로 얼마나 벌었나」를 보여 줄 수 있다.
+     * 🎓 고등 문제면 원점수부터 × highMult (버프는 그 위에 곱한다) */
+    const hi = hmOn && isHighRec(r);
+    const raw = hi ? ptOf(lv, r.result) * highMult : ptOf(lv, r.result);
+    if (hi) { a.hi = (a.hi || 0) + 1; hmStat.n += 1; if (r.school) hmStat.ws += 1; else hmStat.book += 1; }
     const day = kstDay(r.score_datetime);
     const mult = buffOn ? buffMult((plan[code] || {})[day], buffMax, day, boost) : 1;
     a.base += raw;
@@ -464,10 +586,11 @@ async function runRace() {
 
   /* 🗂 할 일 보드 점수 — 기본 켬 (v19-26) */
   if (season.todoPts !== false) {
-    const { TI, TS } = await loadTodo();
+    if (!ctx.todo) ctx.todo = await loadTodo();
+    const { TI, TS } = ctx.todo;
     let todoTot = 0, todoN = 0;
     Object.keys(info).forEach((code) => {
-      const p = todoPtsOf(TI[code], TS[code], season.from, season.to);
+      const p = todoPtsOf(TI[code], TS[code], fromOf[code], season.to);
       if (!p) return;
       const a = agg[code] || (agg[code] = { code, pts: 0, base: 0, n: 0, ok: 0, hard: 0, byDay: {} });
       a.base += p; a.pts += p; a.todo = p; todoTot += p; todoN += 1;
@@ -481,16 +604,37 @@ async function runRace() {
        t <= new Date(Math.min(new Date(season.to + 'T00:00:00Z').getTime(),
                               new Date(todayK + 'T00:00:00Z').getTime())).getTime();
        t += 86400000) days.push(new Date(t).toISOString().slice(0, 10));
-  const half = Math.max(1, Math.ceil(days.length / 2));
-  const firstHalf = days.slice(0, half), lastHalf = days.slice(half);
+  /* 🏫 학생마다 «그 학생의 시작일 ~ 오늘(또는 종료일)» 날짜 목록 — schoolFrom 이 없으면 모두 days 와 같다 */
+  const daysCache = {};
+  const daysOf = (from) => {
+    if (from === season.from) return days;
+    if (daysCache[from]) return daysCache[from];
+    const out = [];
+    const endT = Math.min(new Date(season.to + 'T00:00:00Z').getTime(), new Date(todayK + 'T00:00:00Z').getTime());
+    for (let t = new Date(from + 'T00:00:00Z').getTime(); t <= endT; t += 86400000) out.push(new Date(t).toISOString().slice(0, 10));
+    daysCache[from] = out;
+    return out;
+  };
+
+  /* 리그 묶음 — leagues.combined 면 중등·고등을 board.mid 하나(「중고등부」)로 센다 */
+  const combined = !!leagues.combined;
+  const membersOf = (band) => {
+    if (band === 'mid' && combined) return ['mid', 'high'].filter((b) => leagues[b]);
+    if (band === 'high' && combined) return [];
+    return leagues[band] ? [band] : [];
+  };
 
   /* 리그별 순위표 만들기 */
   function buildBand(band) {
+    const mem = membersOf(band);
     const rows = Object.keys(info)
-      .filter((c) => info[c].band === band)
+      .filter((c) => mem.indexOf(info[c].band) >= 0)
       .filter((c) => band !== 'elem' || elemGrades.indexOf(String(info[c].gnum)) >= 0)
       .map((c) => {
         const a = agg[c] || { pts: 0, base: 0, n: 0, ok: 0, hard: 0, byDay: {} };
+        const days = daysOf(fromOf[c]);   // 이 학생의 날짜 목록 (바깥 days 를 가린다)
+        const half = Math.max(1, Math.ceil(days.length / 2));
+        const firstHalf = days.slice(0, half), lastHalf = days.slice(half);
         /* 🔥 버프 요약 — 원점수·보너스·플래너 올린 날 수·평균 배율 */
         const pmap = plan[c] || {};
         const pdays = days.filter((d) => (pmap[d] || 0) > 0).length;
@@ -513,6 +657,8 @@ async function runRace() {
           up: days.length < 10 ? null
             : (f ? Math.max(-100, Math.min(300, Math.round(((l - f) / f) * 100))) : (l ? 300 : 0)),
           spark: days.slice(-14).map((d) => a.byDay[d] || 0),        // 최근 14일 막대
+          ...(hmOn ? { hi: a.hi || 0 } : {}),                          // 🎓 고등 문제 ×배수 받은 문항 수
+          ...(sfKeys.length ? { from: fromOf[c] } : {}),               // 🏫 이 학생의 시작일
         };
       })
       .sort((a, b) => b.pts - a.pts || b.n - a.n);
@@ -552,6 +698,16 @@ async function runRace() {
       boost: boost ? Object.assign({}, boost, { to: season.to,
         dday: Math.max(0, Math.round((Date.parse(season.to + 'T00:00:00Z') - Date.parse(todayK + 'T00:00:00Z')) / 86400000)) }) : null },
   };
+  /* 새 시즌 설정 칸이 있을 때만 붙인다 (지금 시즌 순위표 모양은 그대로) */
+  if (hmOn) {
+    board.highMult = highMult;
+    board.hiTotal = hmStat.n;
+    board.rules.high = { mult: highMult, note: `고등 문제(고등 학습지·고등 교재)는 점수 ×${highMult}` };
+    board.rules.note += ` 고등 문제는 점수 ×${highMult}!`;
+  }
+  if (sfKeys.length) board.schoolFrom = sfKeys.reduce((o, k) => { o[k] = String(sfRaw[k]); return o; }, {});
+  if (combined) { board.combined = true; board.bandNames = { elem: '초등부', mid: '중고등부' }; }
+  if (isDraft) { board.draft = true; board.seasonUpdated = season.updated || ''; }
 
   /* ★ v2: 시즌이 끝났는지 — 끝나도 바로 지우지 않고 「최종 결과」로 며칠 더 보여준다.
    * 앱들은 board.ended / board.endedDays를 보고 표시를 바꾼다.
@@ -583,7 +739,7 @@ async function runRace() {
   });
 
   ['elem', 'mid', 'high'].forEach((band) => {
-    if (!leagues[band]) return;
+    if (!membersOf(band).length) return;
     const rows = buildBand(band);
     board[band] = rows;
     if (band === 'elem') return;               // 체험 리그는 여기까지
@@ -637,7 +793,7 @@ async function runRace() {
   /* ★ v2: 끝난 시즌은 'race_history'에 한 번만 담아 둔다.
    * race_board는 키가 하나뿐이라, 다음 시즌을 만들면 지난 결과가 덮여 사라진다.
    * 명예의 전당처럼 두고두고 볼 수 있게 따로 보관한다(최근 12시즌). */
-  if (board.ended && board.seasonId) {
+  if (!isDraft && board.ended && board.seasonId) {   // 🆕 다음 시즌은 보관하지 않는다
     const hist = (await kvGet('race_history')) || {};
     hist.seasons = Array.isArray(hist.seasons) ? hist.seasons : [];
     if (!hist.seasons.some((x) => x && x.seasonId === board.seasonId)) {
@@ -663,7 +819,9 @@ async function runRace() {
   /* ══ ⚔️ 보스 레이드 순위판 ═════════════════════════════════
    * 레이드마다 하나씩 만들어 raid_board.list 에 담는다. 학생앱은 이 하나만
    * 읽으면 「내 레이드」와 「남의 학년 한 줄 구경」을 다 그릴 수 있다. */
-  if (raidOn) {
+  if (isDraft) {
+    /* 🆕 다음 시즌: raid_board 는 건드리지 않는다 (학생앱이 읽는 키) */
+  } else if (raidOn) {
     const jobs = await loadRaidJobs();
     const yDay = new Date(Date.now() + 9 * 3600000 - 86400000).toISOString().slice(0, 10);
     const weekFrom = new Date(Date.now() + 9 * 3600000 - 6 * 86400000).toISOString().slice(0, 10);
@@ -729,15 +887,16 @@ async function runRace() {
     await kvSet('raid_board', { at: new Date().toISOString(), on: false, list: [] });
   }
 
-  if (DRY) dryReport(board);
+  if (DRY) { if (isDraft) dryReportDraft(board, hmStat, fromOf, info); else dryReport(board); }
 
-  await kvSet('race_board', board);
-  await kvSet('race_watch', watch);
+  await kvSet(isDraft ? 'race_board_draft' : 'race_board', board);
+  await kvSet(isDraft ? 'race_watch_draft' : 'race_watch', watch);
 
-  const BN = { elem: '초등부(체험)', mid: '중등부', high: '고등부' };
+  const BN = Object.assign({ elem: '초등부(체험)', mid: '중등부', high: '고등부' }, combined ? { mid: '중고등부' } : {});
   const brief = ['elem', 'mid', 'high'].filter((b) => board[b]).map((b) =>
     `${BN[b]} ${board[b].length}명 · 1위 ${board[b][0] ? board[b][0].pts + '점' : '-'}`).join(' / ');
-  log(`완료: ${brief}${board.ended ? ` · 시즌 종료 ${board.endedDays}일째` : ''}${watch.items.length ? ` · 확인필요 ${watch.items.length}명` : ''}`);
+  log(`${isDraft ? '🆕 다음 시즌(비공개) ' : ''}완료: ${brief}${board.ended ? ` · 시즌 종료 ${board.endedDays}일째` : ''}${watch.items.length ? ` · 확인필요 ${watch.items.length}명` : ''}`
+    + (hmOn ? ` · 고등 문제 ×${highMult} ${hmStat.n}건` : ''));
   return board;
 }
 
@@ -771,7 +930,31 @@ function dryReport(board) {
   console.log('※ 미리보기입니다 — 순위표에 저장하지 않았습니다.\n');
 }
 
-module.exports = { runRace, ptOf, tierOf, seatTopTiers, DEF_TIERS, TOP_SEATS, todoPtsOf, buffMult };
+/* 🆕 다음 시즌 미리보기 표 — 부별 전체 순위 · 점수 · 문항 · 고등 ×배수 문항 · 시작일 */
+function dryReportDraft(board, hmStat, fromOf, info) {
+  const BN = Object.assign({ elem: '초등부(체험)', mid: '중등부', high: '고등부' }, board.bandNames || {});
+  const pad = (v, n) => String(v).padStart(n);
+  console.log(`\n════ 🆕 다음 시즌(비공개) 「${board.name}」 ${board.from}~${board.to} · seasonId ${board.seasonId} ════`);
+  if (board.highMult) {
+    const unk = Object.keys(hmStat.bookUnknown || {});
+    console.log(`🎓 고등 문제 ×${board.highMult}: ${hmStat.n}건 (학습지 ${hmStat.ws} · 교재 ${hmStat.book})`
+      + (unk.length ? ` · 학년을 모르는 교재 ${unk.length}권(곱하지 않음): ${unk.join(',')}` : ''));
+  }
+  if (board.schoolFrom) {
+    const cnt = {};
+    Object.keys(info).forEach((c) => { const f = fromOf[c]; cnt[f] = (cnt[f] || 0) + 1; });
+    console.log(`🏫 학교별 시작일 ${Object.keys(board.schoolFrom).map((k) => k + ' ' + board.schoolFrom[k]).join(' · ')}`);
+  }
+  ['elem', 'mid', 'high'].forEach((band) => {
+    const rows = board[band]; if (!rows) return;
+    console.log(`\n── ${BN[band]} ${rows.length}명 ──`);
+    console.log('순위  학생          점수    문항  고등×  정답률  시작일      리그');
+    rows.forEach((r) => console.log(`${pad(r.rank, 3)}   ${String(r.nm || '').padEnd(10)}${pad(r.pts, 6)}  ${pad(r.n, 5)}  ${pad(r.hi || 0, 5)}  ${pad(r.rate + '%', 5)}  ${r.from || board.from}  ${r.label || ''}`));
+  });
+  console.log('※ 미리보기입니다 — race_board_draft 에도 저장하지 않았습니다.\n');
+}
+
+module.exports = { runRace, computeSeason, ptOf, tierOf, seatTopTiers, DEF_TIERS, TOP_SEATS, todoPtsOf, buffMult };
 
 if (require.main === module) {
   runRace().catch((e) => { console.error('오류:', e.message); process.exit(1); });

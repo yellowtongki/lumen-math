@@ -439,12 +439,24 @@ async function runHwSync() {
   // 🏁 진도 레이스 순위 집계 (v18-86)
   // 5분마다 다시 세면 낭비라서 30분에 한 번만. 단, 앱에서 「지금 다시 세기」를
   // 누르면 race_board를 지우므로 그때는 바로 계산된다.
+  // ★ v19-122: 학원앱 「🆕 다음 시즌 → 🔄 다시 세기 요청」은 race_recount_req {at, by:'teacher'} 를 남긴다.
+  //   요청이 마지막 계산(race_board_draft.at — 없으면 race_board.at)보다 새로우면 30분을 기다리지 않고 바로 센다.
+  //   처리하면 doneAt 을 적어 같은 요청을 두 번 세지 않는다(다음 시즌이 꺼져 있어 draft 가 안 바뀌어도 반복하지 않게).
   try {
     const board = await getKv('race_board');
     const ageMin = board && board.at ? (Date.now() - Date.parse(board.at)) / 60000 : 9999;
-    if (ageMin >= 30) {
+    const rq = await getKv('race_recount_req');
+    let asked = false;
+    if (rq && rq.at && !(rq.doneAt && Date.parse(rq.doneAt) >= Date.parse(rq.at))) {
+      const dft = await getKv('race_board_draft');
+      const ref = (dft && dft.at) || (board && board.at) || '';
+      asked = !ref || Date.parse(rq.at) > Date.parse(ref);
+    }
+    if (ageMin >= 30 || asked) {
+      if (asked) log(`🏁 진도 레이스 다시 세기 요청 (${rq.at}, ${rq.by || ''}) — 바로 셉니다`);
       const { runRace } = require('./race_engine.js');
       await runRace();
+      if (asked) await setKv('race_recount_req', { ...rq, doneAt: new Date().toISOString(), status: 'done' });
     }
   } catch (e) { log('진도 레이스 오류: ' + e.message); }
 

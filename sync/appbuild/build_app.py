@@ -91,7 +91,8 @@ if int(ver.replace('v19-',''))>=121:
     sys.dont_write_bytecode=True; sys.path.insert(0, HERE); from mq_assets import mq_bundle
     mqz=mq_bundle(os.path.normpath(os.path.join(HERE,'..','..')), SP)+open(SP+'/mathquiz121_teacher.js').read()
 else: mqz=''
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+new.lstrip('\n')+'\n\n'+s[end:]
+rnx=open(SP+'/racenext122_teacher.js').read() if int(ver.replace('v19-',''))>=122 else ''   # v19-122: 🏁 진도 레이스 «🆕 다음 시즌 (원장님만 보기 🔒)» — race_season_draft · 서버가 race_board_draft 계산 · 「📣 학생앱에 공개」 때만 race_season/race_board 교체
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -570,6 +571,15 @@ if int(ver.replace('v19-',''))>=121:
     rep("tbmatch:'📚 교과서일치도'", "tbmatch:'📚 교과서일치도',mathquiz:'🧠 루멘 수학퀴즈'")
     #   quiz_index · quiz_<id> · quiz_words_<학년> · quizlog_<코드> · wordlog_<코드> — 화면이 서버에서 바로 읽는다(이 기기 사본 없음)
     rep("'or_students_archive_', 'ms_paper', 'ms_mypaper'];", "'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_'];")
+if int(ver.replace('v19-',''))>=122:
+    # v19-122: 진도 레이스 화면 «시즌 마무리» 카드 바로 아래에 «🆕 다음 시즌» 카드 (지난 시즌이 접혀 있어도 보인다)
+    rep("  h+=(typeof seaCardHtml==='function')?seaCardHtml():'';   /* ★ v19-69: 시즌 마무리 · 다음 시즌 예고 */",
+        "  h+=(typeof seaCardHtml==='function')?seaCardHtml():'';   /* ★ v19-69: 시즌 마무리 · 다음 시즌 예고 */\n  h+=(typeof rnxCardHtml==='function')?rnxCardHtml():'';   /* ★ v19-122: 🆕 다음 시즌 (원장님만 보기) */")
+    #   중고등부(leagues.combined) 시즌을 공개하면 board.bandNames.mid = '중고등부' — 학원앱 순위표 제목도 그 이름으로
+    rep("    var title=(band==='mid'?'중등부':band==='high'?'고등부':'초등부');",
+        "    var title=((b.bandNames||{})[band])||(band==='mid'?'중등부':band==='high'?'고등부':'초등부');   /* ★ v19-122 */")
+    #   다음 시즌 키는 화면이 서버에서 바로 읽는다 — 시작 때 이 기기에 받지 않는다(옛 사본이 남지 않게)
+    rep("'mf_stuck', 'exam_lib'];", "'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req'];")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
