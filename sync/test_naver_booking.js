@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /* 📅 네이버 예약 수집기 검사 — 가짜 자료만(이름·전화는 지어낸 것). 네이버·Supabase 를 부르지 않는다.
  *   쪽 넘김 멈춤 · 기간 거르기 · UTC→한국 시간 · 상품 종류 · 전화/이름 맞추기 · 직접 연결 우선 · 로그인 만료 · 잠근 상자 ·
+ *   기억한 전화(직접 연결이 가르침 → 같은 전화 다음 예약 learned · 형제는 후보만 · 지문만 저장 · 비밀값 따라 지문 다름) ·
  *   «화면에 찍힌 글에 가짜 이름·전화·메모가 하나도 없다»
  *   실행: node sync/test_naver_booking.js */
 'use strict';
@@ -162,6 +163,81 @@ const FX = { items: ITEMS, pages, store: STORE, teacherKey: KEY };
   const out3 = JSON.parse(fs.readFileSync(outFile, 'utf8'));
   t('둘째 쪽이 HTML(로그인 화면) → login · 예약 자료는 안 씀', Object.keys(out3).join() === 'naver_bookings_status' && out3.naver_bookings_status.reason === 'login', JSON.stringify(out3));
   t('쿠키 정리(U+2028 섞임) → NID_AUT·NID_SES 만', col.cleanCookie('NID_AUT=aa\u2028bb; x=1; NID_SES=cc;\u00a0') === 'NID_AUT=aa; NID_SES=cc');
+
+  /* ── 기억한 전화 (원장 2026-10-17 「연결」) — 명단 전화 칸이 비어 있어도, 한 번 직접 연결한 학부모 전화로 다음 예약을 자동 연결 ── */
+  const SK = 'fake-service-key-for-test', SK2 = 'other-fake-service-key';
+  const STU2 = STU.concat([
+    { id: 'S6', name: '가짜육', lumen_rec_code: 'F00006', parentPhone: '', group: 'M2' },
+    { id: 'S7', name: '형제칠', lumen_rec_code: 'F00007', parentPhone: '', group: 'M1' },
+    { id: 'S8', name: '형제팔', lumen_rec_code: 'F00008', parentPhone: '', group: 'M1' }]);
+  const P6 = '010-2222-0006', P7 = '010-2222-0007', P10 = '010-2222-0010';
+  const L = [];
+  L.push(bk(Object.assign(at(D(1), '10:00'), { phone: P6, requestMessage: '잘 부탁드립니다' })));            /* 0 직접 → S6 (가르침) */
+  L.push(bk(Object.assign(at(D(2), '10:00'), { phone: P6, requestMessage: '또 예약합니다' })));              /* 1 같은 전화 → S6 learned */
+  L.push(bk(Object.assign(at(D(3), '10:00'), { phone: '+82 10-2222-0006', requestMessage: '' })));           /* 2 +82 모양 → S6 learned */
+  L.push(bk(Object.assign(at(D(1), '11:00'), { phone: P7 })));                                              /* 3 직접 → S7 */
+  L.push(bk(Object.assign(at(D(1), '12:00'), { phone: P7 })));                                              /* 4 직접 → S8 (형제) */
+  L.push(bk(Object.assign(at(D(2), '11:00'), { phone: P7, requestMessage: '잘 부탁드려요' })));              /* 5 형제 전화 · 이름 없음 → 후보만 */
+  L.push(bk(Object.assign(at(D(2), '12:00'), { phone: P7, requestMessage: '형제팔 보강 예약' })));           /* 6 형제 전화 + 이름 → S8 learned */
+  L.push(bk(Object.assign(at(D(1), '13:00'), { phone: P10 })));                                             /* 7 직접 「명단에 없음」 → 안 가르침 */
+  L.push(bk(Object.assign(at(D(2), '13:00'), { phone: P10, requestMessage: '' })));                          /* 8 같은 전화 → 못 맞춤 */
+  L.push(bk(Object.assign(at(D(2), '14:00'), { phone: '010-1111-0001', requestMessage: '' })));              /* 9 명단 전화 S1 (직접 연결 B[10] 은 S3 를 가르쳤지만 명단이 먼저) */
+  L.forEach((b) => { b.snapshotJson.customFormInputJson = []; });
+  const lid = (i) => String(L[i].bookingId);
+  const LK = Object.assign({}, LINKS); LK[lid(0)] = 'S6'; LK[lid(3)] = 'S7'; LK[lid(4)] = 'S8'; LK[lid(7)] = '';
+  const PG = [B.concat(L)];
+  const ST2 = { or_studentdb: STU2, naver_booking_links: LK, naver_bookings_status: { at: '2026-10-16T00:00:00Z', ok: true } };
+  const runL = async (store, opt) => { const w = {}, lg = []; const r = await col.run(Object.assign({ getJson: fio(opt.pages || PG), store: { get: async () => JSON.parse(JSON.stringify(store)), set: async (k, v) => { w[k] = v; return true; } }, teacherKey: KEY, serviceKey: SK, now: NOW, log: (...a) => lg.push(a.join(' ')) }, opt)); return { w, lg, r }; };
+  const fpOf = (p, k) => col.phoneFp(core.nbDigits(p), col.phoneSecret(k || SK));
+  let R = await runL(ST2, {});
+  const PL = R.w.naver_phone_links, bL = {}; (R.w.naver_bookings.bookings || []).forEach((b) => { bL[b.id] = b; });
+  const mkL = (i) => bL[lid(i)].match ? bL[lid(i)].match.stKey + ':' + bL[lid(i)].match.how : 'null';
+  t('기억: naver_phone_links 저장 · 지문 24글자(16진) · 열쇠 지문', !!PL && Object.keys(PL.map).every((k) => /^[0-9a-f]{24}$/.test(k)) && /^[0-9a-f]{8}$/.test(PL.kid), JSON.stringify(PL && Object.keys(PL.map)));
+  t('기억: 직접 연결이 가르침 → 지문 = S6 (from manual · n 1)', PL.map[fpOf(P6)] && PL.map[fpOf(P6)].stKey === 'S6' && PL.map[fpOf(P6)].from === 'manual' && PL.map[fpOf(P6)].n === 1, JSON.stringify(PL.map[fpOf(P6)]));
+  t('기억: 같은 전화 다른 예약 → S6 learned (+82 모양도)', mkL(1) === 'S6:learned' && mkL(2) === 'S6:learned' && bL[lid(1)].match.code === 'F00006', mkL(1) + ' ' + mkL(2));
+  t('기억: 가르친 예약 자신은 직접(manual)', mkL(0) === 'S6:manual', mkL(0));
+  t('기억: 형제(한 전화 → 두 학생 직접) → cands 만 · stKey 없음', !PL.map[fpOf(P7)].stKey && (PL.map[fpOf(P7)].cands || []).join() === 'S7,S8', JSON.stringify(PL.map[fpOf(P7)]));
+  t('기억: 형제 전화 · 이름 없음 → 자동 연결 안 함 + 후보 2명', mkL(5) === 'null' && (bL[lid(5)].cands || []).join() === 'S7,S8', JSON.stringify(bL[lid(5)]));
+  t('기억: 형제 전화 + 메모에 이름 → S8 learned', mkL(6) === 'S8:learned', mkL(6));
+  t('기억: 「명단에 없음」은 가르치지 않음', !PL.map[fpOf(P10)] && mkL(8) === 'null', mkL(8));
+  t('기억: 명단 전화가 기억보다 먼저 (직접 B[10]→S3 이 같은 전화를 가르쳐도 S1 phone)', PL.map[fpOf('010-1111-0001')] && PL.map[fpOf('010-1111-0001')].stKey === 'S3' && mkL(9) === 'S1:phone', mkL(9));
+  t('기억: counts.how.learned 3 · phoneMemo 3', R.w.naver_bookings.counts.how.learned === 3 && R.w.naver_bookings.counts.phoneMemo === 3, JSON.stringify(R.w.naver_bookings.counts));
+  t('기억 로그: 「기억한 전화 3개 · 기억으로 연결 3건」', R.lg.some((x) => x.indexOf('기억한 전화 3개 · 기억으로 연결 3건') >= 0), R.lg.join(' | '));
+  const rawPh = []; L.concat(B).forEach((b) => { const d = core.nbDigits(b.phone); rawPh.push(d, d.slice(1), d.slice(3), core.nbFmtPhone(d), String(b.phone)); });
+  const notBox = JSON.stringify(Object.keys(R.w).filter((k) => k !== 'naver_bookings_pii').map((k) => R.w[k]));
+  t('기억: 잠근 상자 밖 어디에도 전화번호 없음(숫자·하이픈·뒷자리)', rawPh.every((x) => notBox.indexOf(x) < 0), rawPh.filter((x) => notBox.indexOf(x) >= 0).slice(0, 3).join());
+  t('기억 로그에 전화·지문 없음', rawPh.concat(Object.keys(PL.map)).every((x) => R.lg.join('\n').indexOf(x) < 0));
+  t('지문: 서버 비밀값이 다르면 다름 · 같은 번호 모양은 같음', fpOf(P6, SK) !== fpOf(P6, SK2) && fpOf(P6) === fpOf('+82 10 2222 0006') && fpOf(P6).length === 24);
+
+  /* 다음 실행: 가르친 예약은 이제 안 받아도(오래돼 빠짐) 기억은 남는다 · 새 예약(다른 번호)도 자동 */
+  const ST3 = Object.assign({}, ST2, { naver_phone_links: PL });
+  const NEW = bk(Object.assign(at(D(5), '10:00'), { phone: P6, requestMessage: '' })); NEW.snapshotJson.customFormInputJson = [];
+  R = await runL(ST3, { pages: [B.concat([L[1], NEW])] });
+  const nb = (R.w.naver_bookings.bookings || []).filter((b) => b.id === String(NEW.bookingId))[0];
+  t('다음 실행: 같은 전화 새 예약 → S6 learned (가르친 예약이 목록에 없어도)', nb && nb.match && nb.match.stKey === 'S6' && nb.match.how === 'learned', JSON.stringify(nb));
+  t('다음 실행: 기억이 그대로면 naver_phone_links 다시 쓰지 않음', !R.w.naver_phone_links, Object.keys(R.w).join());
+  /* 「직접 연결 풀기」 → 그 예약이 가르친 것을 잊음 · 다른 학생으로 바꾸면 나중 것이 이김 */
+  const LK2 = Object.assign({}, LK); delete LK2[lid(0)]; LK2[lid(3)] = 'S1'; LK2[lid(4)] = 'S1';
+  R = await runL(Object.assign({}, ST3, { naver_booking_links: LK2 }), { pages: [B.concat([L[1]])] });
+  const PL2 = R.w.naver_phone_links;
+  t('연결 풀기 → 잊음 · 형제 둘 다 S1 로 바꿈 → stKey S1 (나중 것)', PL2 && !PL2.map[fpOf(P6)] && PL2.map[fpOf(P7)] && PL2.map[fpOf(P7)].stKey === 'S1' && !PL2.map[fpOf(P7)].cands, JSON.stringify(PL2 && PL2.map));
+  /* 「명단에 없음」으로 바꿔도 지우지 않음 */
+  const LK3 = Object.assign({}, LK); LK3[lid(0)] = '';
+  R = await runL(Object.assign({}, ST3, { naver_booking_links: LK3 }), { pages: [B.concat([L[1]])] });
+  t('「명단에 없음」으로 바꿔도 기억은 그대로', !R.w.naver_phone_links && (R.w.naver_bookings.bookings.filter((b) => b.id === lid(1))[0].match || {}).how === 'learned');
+  /* 서버 비밀값이 바뀌면 옛 지문은 버리고 새로 */
+  R = await runL(ST3, { serviceKey: SK2 });
+  const PL3 = R.w.naver_phone_links;
+  t('비밀값이 바뀌면 열쇠 지문이 달라 새 지문으로 다시 만듦', PL3 && PL3.kid !== PL.kid && !PL3.map[fpOf(P6)] && PL3.map[fpOf(P6, SK2)] && PL3.map[fpOf(P6, SK2)].stKey === 'S6');
+  /* 비밀값 없음 → 기억 쉼 */
+  R = await runL(ST3, { serviceKey: '' });
+  t('SUPABASE_SERVICE_KEY 없으면 기억 쉼(쓰지 않음 · learned 0)', !R.w.naver_phone_links && !R.w.naver_bookings.counts.how.learned);
+  /* 명령줄 --fixture (서버 비밀값 있음) — 찍힌 글·--out 파일에 전화 없음 */
+  fs.writeFileSync(fxFile, JSON.stringify({ items: ITEMS, pages: PG, store: ST2, teacherKey: KEY, serviceKey: SK }));
+  const run4 = cp.spawnSync(process.execPath, [path.join(__dirname, 'naver_booking_collect.js'), '--fixture', fxFile, '--out', outFile, '--now', NOW], { env, encoding: 'utf8' });
+  const out4 = JSON.parse(fs.readFileSync(outFile, 'utf8')); delete out4.naver_bookings_pii;
+  const o4 = JSON.stringify(out4), p4 = (run4.stdout || '') + (run4.stderr || '');
+  t('명령줄: --out 에 naver_phone_links · 전화번호 없음 · 찍힌 글에도 없음', run4.status === 0 && !!out4.naver_phone_links && rawPh.every((x) => o4.indexOf(x) < 0 && p4.indexOf(x) < 0) && /기억한 전화 3개/.test(p4), p4.slice(0, 400));
 
   console.log('\n' + pass + ' 통과 · ' + fail + ' 실패');
   process.exit(fail ? 1 : 0);
