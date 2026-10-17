@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-129';
+var APP_VER = 'v19-130';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9076,6 +9076,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-130',date:'2026-10-17',stability:'ok',memo:'🧩 <b>카드뉴스 — 문항 카드·모자이크가 바로 보이게</b> (원장 2026-10-17 「모자이크 기능이 사라졌다」). 문항별 적중 카드(08_1번적중 …)와 그 카드의 「🧩 모자이크」 칩은 <b>「🎯 문항별 적중 카드」 칸에서 고른 문항</b>에만 생기는데, 모든 시험에서 아무것도 안 골라져 있었고 그 칸이 아주 긴 설정의 맨 아래쪽에 있어서 안 보였습니다(기능은 그대로 있었음). ① <b>자동 선택</b>: 고른 문항이 없으면 <b>적중 문항 상위 4개</b>(같은 문제 → 숫자변형 → 유사유형 순, 같으면 번호 순)로 문항 카드를 만듭니다 — 화면 미리보기 · 「카드 그림 + 글 자료 내려받기」 · 「블로그 폴더로 내려받기」 · 블로그자료.md 가 모두 같은 문항을 씁니다. 자동 선택은 서버에 저장하지 않고, 원장님이 칩을 <b>처음 누르는 순간</b> 자동 목록을 그대로 옮겨 적은 뒤 넣고/빼서 저장합니다(직접 고르기). 「↺ 자동으로 되돌리기」 칩으로 언제든 자동으로 돌아갑니다(다 빼도 자동). ② 「🎯 문항별 적중 카드」 칸을 카드뉴스 설정 <b>맨 위</b>(색 고르기 위)로 옮겼습니다 — 🤖 AI 판정 안내 줄도 같이. 아래에 「문항 카드마다 🧩 모자이크 칩이 붙습니다 — 카드 목록에서 누르면 그림 위에 상자를 그려 가릴 수 있어요」. <b>«지금 스타일»(옛 카드)을 쓰고 있으면</b> 🧩 모자이크가 없다는 빨간 안내와 「✨ 새 스타일로 바꾸기」 단추가 뜹니다(모자이크·선명/흐리게는 새 스타일 카드에만). 다른 카드·칸은 그대로입니다. 부품 modules/cnpick130_teacher.js · 검사 tests/test_v19130.js.'},
       {ver:'v19-129',date:'2026-10-17',stability:'ok',memo:'📗 <b>교재 목록 새로고침</b> (원장 2026-10-17 「중1 학생들에게 새 교재를 배정했는데 학생앱에 안 보인다」). 학생앱 숙제 화면의 교재 목록(mf_swb_)은 하루 3번 «전체 수집»(약 25분)이 돌 때만 바뀌어서, 낮에 새로 배정한 교재가 한참 안 보였습니다. 이제 <b>울트라일일 「🔄 지금 가져오기」 옆 「📗 교재 목록 새로고침」</b>을 누르면 작은 창이 열려 <b>전체 / 학년 / 반</b>을 고르고 «요청하기»만 하면 됩니다. 서버가 그 학생들의 <b>교재 목록만</b> 매쓰플랫에서 새로 받아 1~2분에 끝냅니다(서버가 5분마다 확인하므로 요청 뒤 최대 약 7분). 단추가 «대기 중 → 갱신 중 → 완료(몇 명 · 몇 분)/실패»로 바뀌고 15초마다 상태를 확인합니다. 다른 화면·기능은 그대로입니다. [서버] 수집기 <code>--swb-only [--codes …]</code> · 워커 <code>mf_swb_req</code> · 문서 docs/swb_refresh.md.'},
       {ver:'v19-128',date:'2026-10-17',stability:'ok',memo:'🎯 <b>적중 분석 — 검토를 빠르게</b> (원장 2026-10-17 「판정은 내가 하나하나 봐야 해서 너무 오래 걸린다」). ① <b>🤖 AI 판정 자동 반영</b>(시험마다 · 기본 켬 · 적중 기준 옆과 오른쪽 칸 스위치): 원장님이 아직 안 본 문항이라도 AI 1순위 후보가 «같은 문제»·«숫자변형»이면 적중으로 셉니다 — 적중률·도넛·오른쪽 숫자·적중 지도·학부모 보고서·카드뉴스·블로그 자료(.md)·요약 복사가 모두 같은 값을 쓰고, 그런 문항에는 ✓ 대신 작은 <b>「AI」</b> 표시(보고서는 «(AI)», .md 는 «AI 판정»)가 붙습니다. 원장님 ✓/✗ 가 늘 우선이고, 스위치를 끄면 예전과 똑같습니다. ② <b>⚡ 빠른 검토</b>(오른쪽 칸 · 적중 기준 옆 · 분석지 머리): 결정이 필요한 문항(같은 문제·숫자변형 후보가 있는데 원장님이 안 본 것)만 하나씩 — 왼쪽 시험 문항 · 오른쪽 후보 그림 · AI 까닭, 단추 ✓ 같은 문제 / 숫자변형 / 유사유형 / ✗ 아님 · 「다음 후보 ▸」. 키보드 <b>1·2·3·4</b> = 네 단추, Enter·→ 다음, ← 이전, ↓ 다음 후보, Esc 닫기 · 진행 「3/9」. 유사유형뿐인 문항은 「접어 둠」(포함하기 가능). ③ 분석지에서 후보가 유사유형뿐인 미확정 문항은 <b>한 줄로 접힘</b>(눌러서 펼치기 · 「유사유형만 문항도 펼치기」 스위치). ④ <b>고등부</b> 요청·다시 판정 화면은 시험 과목(공통수학2·미적분1… 공수2·미적1 같은 줄임말도)에 맞는 <b>수학비서 내 문제지를 자동 체크</b>하고 「📄 과목에 맞는 수학비서 내 문제지 n장을 자동으로 넣었어요」 띠에서 뺄 수 있습니다. 내 문제지 없이 판정된 고등부 결과에는 노란 띠 「수학비서 자료 없이 판정된 결과예요 — 다시 판정을 권해요」 + 「🔄 내 문제지 넣고 다시 판정」. 부품 modules/hitreview128_teacher.js · 문서 docs/exam_hit_contract.md §12.'},
       {ver:'v19-127',date:'2026-10-17',stability:'ok',memo:'📊 <b>예약 통계 · 학생별 월간 참여(학부모 카톡) · 텐투텐 주말 체크</b> (원장 2026-10-17 「1번 시안 그대로」 · 「학생별 리커버리·텐투텐 횟수를 학부모에게」 · 「중·고등은 토·일 텐투텐 필수 — 안 한 학생, 많이 한 학생」). 수업·출결 › <b>예약 통계</b>(네이버 예약 바로 뒤): ① 한눈에(연도·달 고르기) — 전체·완료·취소율·앞으로 예정 · 종류별 건수 ② 달마다 예약 수(종류별로 쌓은 막대) ③ 텐투텐·리커버리 요일 × 시간 ④ 종류별 취소율 · 예약~이용 날 수 · 당일 예약 ⑤ 유입 경로 · 메모에 적힌 학년/학교 ⑥ <b>👨‍👩‍👧 학생별 월간 참여</b> — 달을 고르면 학생마다 텐투텐·리커버리·KMM·TLP 횟수(완료·확정만 · 취소 빼고 · 같은 날 같은 종류는 1회), 줄마다 <b>「📋 카톡」</b> · 맨 위 <b>「📋 전체 복사」</b>(빈 줄로 나눔). 글 틀은 「✏️ 카톡 글 틀 고치기」에서 고칩니다({학생} {월} {텐투텐} {리커버리} {KMM} {TLP} {한마디} — 「{학생}이(가)」는 이름에 맞춰 이/가) ⑦ <b>🔟 텐투텐 주말 체크</b> — 중·고등 재원생마다 주말(토·일) ○ 다녀감 · ✓ 예약 · ✕ 취소 · ✗ 없음, 이번 주말은 맨 위에 보라색으로 「예약 안 한 학생 n명」 + 「📋 복사」 · 「📋 금요일 안내 글」, 이달 텐투텐 TOP 5. 학생마다 「필수 아님」을 누르면 셈에서 빠집니다. 홈 「오늘 네이버 예약」 칸 아래에 금·토요일만 「🔟 이번 주말 텐투텐 미예약 n명」. 수집기는 이제 15분마다 예약 전체를 보관합니다(이름·전화·메모 없이). 부품 modules/naverstats127_teacher.js.'},
@@ -93351,8 +93352,103 @@ window.swbSend=async function(){
 /* 울트라일일 「🔄 지금 가져오기」 단추 바로 뒤에 덧붙인다 (그 단추는 그대로) */
 if(typeof udFetchBtn==='function') udFetchBtn=(function(o){ return function(){ return o.apply(this, arguments)+swbBtn(); }; })(udFetchBtn);
 
+/* ═════════════════════════════════════════════════════════════════
+ * v19-130: 🎯 문항별 적중 카드 «자동 선택» + 고르는 칸을 카드뉴스 설정 맨 위로 (원장 2026-10-17 「모자이크 기능이 사라졌다」)
+ *
+ *  왜: 문항 카드(08_1번적중 …)와 그 카드의 「🧩 모자이크」 칩은 원장님이 「🎯 문항별 적중 카드」 칸에서 고른 문항(card.picks)에만 생긴다.
+ *      그런데 모든 시험의 picks 가 비어 있었고, 그 칸은 아주 긴 설정 칸(약 9700px)의 아래쪽에 있어 보이지 않았다 → «모자이크가 없어졌다»고 느낌.
+ *
+ *  ① 자동 선택: 시험의 card.picks 가 비어 있으면 카드뉴스는 «적중 문항 상위 4개»를 쓴다
+ *       (cnRows 의 r.inB 인 문항 · 같은 문제 → 숫자변형 → (text) → 유사유형 순 · 같으면 번호 작은 것부터).
+ *     카드를 만드는 곳(cnCards · cn2Cards — 화면 미리보기 · .zip 내려받기 · 블로그 폴더 · 블로그자료.md 가 모두 이 둘을 거친다)을
+ *     감싸서, 부르는 동안만 c.picks 에 자동 목록을 잠깐 넣었다가 원래대로(빈 목록) 돌려놓는다 → 서버에는 저장하지 않는다.
+ *     원장님이 칩을 처음 누르면 그때 자동 목록을 c.picks 에 옮겨 적고, 누른 것을 넣고/빼고, 저장한다(직접 고르기 시작).
+ *     「자동으로 되돌리기」 칩 = c.picks=[] 저장. (직접 고른 것을 다 빼도 다시 자동이 된다.)
+ *  ② 「🎯 문항별 적중 카드」 칸을 설정 맨 위(첫 안내 글 바로 아래, 「🎨 색」 위)로 옮긴다.
+ *     v19-128(hitreview128)이 그 칸 바로 앞에 넣는 🤖 AI 안내 줄도 함께 옮긴다. 칸 제목 글자는 그대로 둔다(다른 부품이 이 글자로 찾는다).
+ *     아래에 한 줄: 「문항 카드마다 🧩 모자이크 칩이 붙습니다 …」
+ *  검사 sync/appbuild/tests/test_v19130.js
+ *  ※ 문자열 연결로만 쓴다(템플릿 리터럴 금지). 이전 부품은 고치지 않고 감싸기만 한다.
+ * ═════════════════════════════════════════════════════════════════ */
+var CNP130_ORD = { same:0, 'var':1, text:2, type:3, none:4 };
+var CNP130_MAX = 4;
+var CNP130_MK = '<div class="ht-h">🎯 문항별 적중 카드';
+
+/* 자동으로 고른 문항 번호(it.no) — 적중 문항 상위 4개 */
+function cnp130Auto(d){
+  if(!d) return [];
+  var R=[]; try{ R=cnRows(d); }catch(e){ return []; }
+  return R.filter(function(r){ return r.inB; }).sort(function(a, b){
+    var ka=CNP130_ORD.hasOwnProperty(a.kind)?CNP130_ORD[a.kind]:9, kb=CNP130_ORD.hasOwnProperty(b.kind)?CNP130_ORD[b.kind]:9;
+    return (ka-kb) || ((+a.n||0)-(+b.n||0)); }).slice(0, CNP130_MAX).map(function(r){ return r.no; });
+}
+/* 원장님이 직접 고른 문항이 있나 (저장된 card.picks) */
+function cnp130Manual(d){ var c=d&&d.card; return !!(c && c.picks && c.picks.length); }
+/* 지금 카드에 쓰이는 문항 (직접 고른 것 · 없으면 자동) */
+function cnp130Picks(d){ return cnp130Manual(d) ? d.card.picks.slice() : cnp130Auto(d); }
+window.cnp130Picks=cnp130Picks;
+
+/* fn 을 부르는 동안만 c.picks 에 자동 목록을 넣는다 (서버 저장 없음 · 끝나면 원래 빈 목록으로) */
+function cnp130With(d, fn){
+  if(!d) return fn();
+  var c=cnCfg(d); if(c.picks && c.picks.length) return fn();
+  var A=cnp130Auto(d); if(!A.length) return fn();
+  var keep=c.picks; c.picks=A;
+  try{ return fn(); } finally { if(c.picks===A) c.picks=keep; }
+}
+if(typeof cnCards==='function') cnCards=(function(o){ return function(d){ var self=this, a=arguments; return cnp130With(d, function(){ return o.apply(self, a); }); }; })(cnCards);
+if(typeof cn2Cards==='function') cn2Cards=(function(o){ return function(d){ var self=this, a=arguments; return cnp130With(d, function(){ return o.apply(self, a); }); }; })(cn2Cards);
+
+/* 칩을 누르면: 자동 상태였다면 자동 목록을 먼저 옮겨 적고 → 넣기/빼기 → 저장 (원래 cnToggleNo) */
+if(typeof window.cnToggleNo==='function') window.cnToggleNo=(function(o){ return function(k, no, max){
+  if(k!=='picks') return o.apply(this, arguments);
+  var d=HT.data[HT.cur]; if(!d) return;
+  var c=cnCfg(d);
+  if(!(c.picks && c.picks.length)){
+    var A=cnp130Auto(d);
+    if(A.length){
+      if(A.indexOf(no)<0 && max && A.length>=max){ htToast('자동으로 고른 문항이 이미 '+max+'개예요 — 먼저 하나를 빼고 골라 주세요'); return; }
+      c.picks=A.slice();
+    }
+  }
+  return o.apply(this, arguments); }; })(window.cnToggleNo);
+window.cnp130Reset=function(){ var d=HT.data[HT.cur]; if(!d) return; var c=cnCfg(d); c.picks=[]; cnSave(d); htToast('🎯 문항 카드를 자동 선택으로 되돌렸어요 — 적중 문항 상위 '+cnp130Auto(d).length+'개'); render(); };
+
+/* 문자열 h 의 i 위치 <div …> 가 닫히는 곳(</div> 다음 자리) */
+function cnp130DivEnd(h, i){
+  var re=/<div\b|<\/div>/g, dep=0, m; re.lastIndex=i;
+  while((m=re.exec(h))){ if(m[0]==='</div>'){ dep--; if(dep===0) return m.index+6; } else dep++; }
+  return -1;
+}
+/* 🎯 칸을 잘라 맨 위로 옮기고, 자동 선택 줄 · 되돌리기 칩 · 모자이크 안내를 붙인다 */
+function cnp130Move(h, manual, nAuto){
+  var i=h.indexOf(CNP130_MK); if(i<0) return h;
+  var start=i, ai=h.lastIndexOf('<div class="ht-sub" id="hv-cn-ai"', i);
+  if(ai>=0 && cnp130DivEnd(h, ai)===i) start=ai;   /* 🤖 AI 안내 줄(v19-128)이 바로 앞에 붙어 있으면 같이 옮긴다 */
+  var hEnd=cnp130DivEnd(h, i); if(hEnd<0 || h.slice(hEnd, hEnd+4)!=='<div') return h;
+  var end=cnp130DivEnd(h, hEnd); if(end<0) return h;
+  var blk=h.slice(start, end-6);   /* 칩 칸이 닫히기 직전까지 */
+  if(manual) blk+='<button class="cn-chip" id="cnp130-reset" data-cnp130="reset" style="border-style:dashed" title="직접 고른 것을 지우고 적중 문항 상위 4개로" onclick="cnp130Reset()">↺ 자동으로 되돌리기</button>';
+  blk+='</div>';
+  if(!manual && nAuto) blk+='<div class="ht-sub" id="cnp130-auto" style="margin:-4px 0 4px;color:#1d4ed8;font-weight:800">자동 선택: 적중 문항 상위 '+nAuto+'개 (직접 고르면 그대로 따릅니다)</div>';
+  /* 10/17 원장 「어디에 모자이크가 있다는 말인가?」 — 원장님 기기가 「지금 스타일」(옛 카드)이었다. 🧩 모자이크·선명/흐리게·🖼 배경은 «✨ 새 스타일» 카드에만 붙는다 */
+  if(typeof CN!=='undefined' && CN.style==='v1') blk+='<div class="ht-sub" id="cnp130-v1" style="margin-bottom:12px;padding:8px 10px;border-radius:10px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-weight:800">⚠ 지금은 «지금 스타일»(옛 카드)이라 🧩 모자이크 칩이 안 보입니다. 모자이크·선명/흐리게는 새 스타일 카드에만 있어요 '
+    +'<button class="cn-chip on b" data-cnp130="v2" style="margin-left:6px" onclick="cn2Set(\'style\',\'v2\')">✨ 새 스타일로 바꾸기</button></div>';
+  else blk+='<div class="ht-sub" id="cnp130-hint" style="margin-bottom:12px">문항 카드마다 🧩 모자이크 칩이 붙습니다 — 아래 카드 목록에서 «N · NN_N번적중.png» 이름 옆 「🧩 모자이크」를 누르면 그림 위에 상자를 그려 가릴 수 있어요</div>';
+  blk='<div id="cnp130-sec">'+blk+'</div>';
+  var rest=h.slice(0, start)+h.slice(end);
+  var at=rest.indexOf('<div class="ht-h">🎨 색');
+  if(at<0){ var s0=rest.indexOf('<div class="ht-sub" style="margin-bottom:10px">문항·색'); if(s0>=0) at=cnp130DivEnd(rest, s0); }
+  if(at<0) return h.slice(0, start)+blk+h.slice(end);   /* 자리를 못 찾으면 제자리에 */
+  return rest.slice(0, at)+blk+rest.slice(at);
+}
+if(typeof cnPanelHtml==='function') cnPanelHtml=(function(o){ return function(d){
+  var self=this, a=arguments, manual=cnp130Manual(d), nAuto=manual?0:cnp130Auto(d).length;
+  var h=cnp130With(d, function(){ return o.apply(self, a); });
+  return cnp130Move(h, manual, nAuto); }; })(cnPanelHtml);
+
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~129: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~130: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
