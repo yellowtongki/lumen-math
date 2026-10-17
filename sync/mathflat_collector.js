@@ -39,6 +39,8 @@
  *   --book ID       정답사전을 그 교재 하나만 갱신 (--bookans-only 와 함께)
  *   --skip-swb      학생 교재상태(mf_swb_*) 재수집을 건너뛰고 저장된 것을 쓴다 (빠름)
  *   --elem          정답사전을 초등 배정 교재만 갱신 (--bookans-only 와 함께 · 학생 많은 순 → 초6 → 초5 → 초4)
+ *   --swb-only      학생 교재 목록(mf_swb_*)만 빠르게 새로고침 (1~2분) — 학원앱 「📗 교재 목록 새로고침」용.
+ *                   --codes A,B 와 함께 쓰면 그 학생들만, 안 쓰면 전체 (docs/swb_refresh.md)
  *   --wsq-only      학습지 채점목록(mf_wsq_*)만 갱신 — 학생앱 「📄 학습지」 탭용 (고등 포함)
  *   --tree-only     매쓰플랫 7단계 단원 트리(mf_tree_*)만 갱신 — 학원앱 백지테스트 범위 (평소엔 일요일 새벽 4시 회차에만)
  *   --tree-dry      공통수학1(22개정) 트리 하나만 받아 크기·개수만 출력 (저장 안 함)
@@ -966,6 +968,18 @@ async function main() {
     await refreshWorksheetQueue();
     return;
   }
+  // --swb-only: 학생 교재 목록(mf_swb_*)만 새로고침 (매쓰플랫 로그인 필요) — v19-129
+  //   --codes A,B 를 같이 주면 그 학생들만. 학생앱 «숙제» 화면의 교재 목록을 빨리 맞춘다 (docs/swb_refresh.md)
+  if (has('--swb-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meSw = await login();
+    log(`로그인 성공 · 학원 ${meSw.academyId}`);
+    log(CODES.length ? `교재 목록 새로고침: 학생 ${CODES.length}명만` : '교재 목록 새로고침: 전체 학생');
+    const okSw = await refreshStudentWorkbooks(CODES);
+    if (okSw === false) { console.error('❌ 교재 목록 새로고침 실패'); process.exit(1); }
+    return;
+  }
   // --tree-dry: 공통수학1(22개정) 한 과정만 받아 크기·개수만 보여 준다 (저장 안 함 · 매쓰플랫 읽기만) — v19-98
   if (has('--tree-dry')) {
     if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
@@ -1521,13 +1535,22 @@ async function refreshWorkbookPdfs() {
 // 학생앱 「교재 채점」의 뼈대 데이터. 학생앱은 매쓰플랫에 직접 못 붙으므로
 // 교재·회차(revisionId)·페이지(progressId 포함) 목록을 여기서 미리 만들어 둔다.
 // progressId는 되돌려쓰기(PATCH /student-workbook/scoring)의 필수 키.
-async function refreshStudentWorkbooks() {
+async function refreshStudentWorkbooks(onlyCodes) {
+  /* onlyCodes(학생코드 배열)를 주면 그 학생들만 다시 받는다 — --swb-only 전용 (v19-129).
+   * 안 주면(다른 길) 예전처럼 전체. 로그에는 학생코드·개수만 적는다(Actions 로그는 공개). */
+  const only = (Array.isArray(onlyCodes) && onlyCodes.length) ? onlyCodes.map(String) : null;
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
   try {
     const rs = await fetch(`${url}/rest/v1/mf_students?select=mf_student_id,lumen_rec_code,name`, { headers: sbHeaders });
-    if (!rs.ok) { log('학생 교재상태: mf_students 조회 실패'); return; }
-    const students = (await rs.json()).filter((s) => s.lumen_rec_code && s.mf_student_id);
+    if (!rs.ok) { log('학생 교재상태: mf_students 조회 실패'); return false; }
+    let students = (await rs.json()).filter((s) => s.lumen_rec_code && s.mf_student_id);
+    if (only) {
+      const before = students.length;
+      students = students.filter((s) => only.indexOf(String(s.lumen_rec_code)) >= 0);
+      log(`학생 교재상태: 요청 ${only.length}명 중 ${students.length}명 찾음 (전체 ${before}명)`);
+      if (!students.length) { log('학생 교재상태: 일치하는 학생이 없어 아무것도 저장하지 않음'); return true; }
+    }
     const allPages = {};                                   // bid → Set(wpid) — 정답사전 대상
     let nStu = 0, nBook = 0;
     for (const st of students) {
@@ -1575,12 +1598,22 @@ async function refreshStudentWorkbooks() {
     }
     // 정답사전 대상 페이지 합집합 저장 (refreshBookAnswers가 읽음 — 등록 교재 전체 페이지)
     const union = {}; Object.keys(allPages).forEach((bid) => { union[bid] = Array.from(allPages[bid]); });
+    if (only) {   // 일부 학생만 받았으면 기존 합집합에 합친다 (다른 학생 교재가 정답사전 대상에서 빠지지 않게)
+      try {
+        const rb = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_bookpages&select=value`, { headers: sbHeaders });
+        let old = rb.ok ? ((await rb.json())[0] || {}).value : null;
+        if (typeof old === 'string') { try { old = JSON.parse(old); } catch (_) { old = null; } }
+        const om = (old && old.map) || {};
+        Object.keys(om).forEach((bid) => { union[bid] = Array.from(new Set((om[bid] || []).concat(union[bid] || []))); });
+      } catch (_) { log('정답사전 대상(mf_bookpages) 기존 값 읽기 실패 — 이번 학생 것만 저장'); }
+    }
     await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
       method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify([{ key: 'mf_bookpages', value: { map: union, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
     });
     log(`학생 교재상태(mf_swb_*): 학생 ${nStu} · 교재 ${nBook} · 정답사전 대상 ${Object.keys(union).length}권`);
-  } catch (e) { log('학생 교재상태 갱신 실패(치명적 아님):', e.message); }
+    return nStu > 0 || students.length === 0;   // v19-129: --swb-only 가 성공/실패를 알 수 있게 (다른 호출은 반환값을 안 쓴다)
+  } catch (e) { log('학생 교재상태 갱신 실패(치명적 아님):', e.message); return false; }
 }
 
 // ── v18-74: 교재 정답사전 (mf_bookans_<bookId>) ─────────────────────────
