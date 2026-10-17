@@ -233,7 +233,7 @@ async function run(opt) {
   const put = async (k, v) => { writes[k] = v; if (opt.dry || !store || !store.set) return true; const r = await store.set(k, v); if (r !== true) log('저장 실패', k, r); return r === true; };
 
   let prev = {};
-  try { prev = store && store.get ? await store.get(['or_studentdb', 'naver_booking_links', 'naver_bookings_status', 'naver_phone_links']) : {}; }
+  try { prev = store && store.get ? await store.get(['or_studentdb', 'naver_booking_links', 'naver_bookings_status', 'naver_phone_links'].concat(opt.archive ? ['school_calendar'] : [])) : {}; }
   catch (e) { log('lumen_store 읽기 실패 — 학생 맞추기 없이 진행'); prev = {}; }
   const students = Array.isArray(prev.or_studentdb) ? prev.or_studentdb : [];
   const links = (prev.naver_booking_links && typeof prev.naver_booking_links === 'object') ? prev.naver_booking_links : {};
@@ -288,7 +288,11 @@ async function run(opt) {
   /* ★ 2026-10-17 원장 「올해 네이버예약 다 가져오고 통계」 — 전체 예약 보관(이름·전화·메모 원문 없음).
    *   학교·학년만 메모에서 뽑고, 전화는 서버만 아는 지문(fp)으로 — 재방문·상담→등록 계산용. 유입 경로(areaName)도. */
   if (opt.archive) {
-    const schOf = (t) => { const m = String(t || '').replace(/\s+/g, '').match(/([가-힣]{1,6}?)(초등학교|중학교|고등학교|초|중|고)(?![가-힣])/); return m ? (m[1] + (m[2].charAt(0))) : ''; };
+    /* 학교는 «알려진 학교 이름»만 — 메모의 다른 글자(학생 이름 등)가 섞이지 않게 (2026-10-17: 띄어쓰기를 지우고 뽑았다가 이름이 붙은 일) */
+    const KNOWN = ['옥길산들초', '옥길버들초', '산들초', '버들초', '범박초', '옥길초', '옥길중', '범박중', '범박고', '소사고', '시온고', '소명여고', '부천고', '부천여고', '부천중', '소사중', '계남고', '역곡고'];
+    ((prev.school_calendar && prev.school_calendar.schools) || []).forEach((x) => { const sh = String(x.short || '').trim(); if (sh && KNOWN.indexOf(sh) < 0) KNOWN.push(sh); });
+    KNOWN.sort((x, y) => y.length - x.length);
+    const schOf = (t) => { const s0 = String(t || '').replace(/\s+/g, '').replace(/초등학교/g, '초').replace(/중학교/g, '중').replace(/여자고등학교/g, '여고').replace(/고등학교/g, '고'); for (let i = 0; i < KNOWN.length; i++) if (s0.indexOf(KNOWN[i]) >= 0) return KNOWN[i]; return ''; };
     const grOf = (t) => { const s0 = String(t || '').replace(/\s+/g, ''); let m = s0.match(/(초|중|고)(\d)/); if (m) return m[1] + m[2]; m = s0.match(/(초등|중등|고등|초|중|고)[^\d]{0,6}(\d)\s*학년/); if (m) return m[1].charAt(0) + m[2]; m = s0.match(/(\d)\s*학년/); return m ? '?' + m[1] : ''; };
     const rows = [];
     got.raw.forEach((b) => {
