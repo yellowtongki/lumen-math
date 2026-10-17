@@ -6,7 +6,7 @@ name: 네이버 예약 수집 (15분마다)
 # - 15분마다(매시 07·22·37·52분 — 정각을 피해 GitHub 예약 지연을 줄인다) + 손으로 돌리기.
 #   공개 저장소라 Actions 시간은 무료. 한 번에 1분 안쪽(npm 설치 없음, node 만).
 #   ※ GitHub 예약 실행은 몇 시간씩 밀리기도 한다(mathflat-ondemand 5분 예약 실측). 급하면 Actions 탭 Run workflow.
-# - 저장 키: naver_bookings(시간·상품·상태·연결 학생, 이름·전화 없음) · naver_bookings_pii(예약자 이름·전화·메모를 원장님 열쇠로 잠근 상자)
+# - 저장 키: naver_bookings(시간·상품·상태·연결 학생, 이름·전화 없음) · naver_bookings_pii(예약자 이름·전화·메모를 «예약 열쇠»로 잠근 상자)
 #            · naver_bookings_status(성공/실패만)
 # - 쿠키가 만료되면 실패 대신 naver_bookings_status {ok:false, reason:'login'} 만 남기고 초록불로 끝난다(메일 폭탄 방지).
 #   학원앱이 「네이버 다시 연결이 필요해요」를 띄운다 → 쿠키를 새로 복사해 NAVER_COOKIE 만 바꾸면 된다.
@@ -14,7 +14,8 @@ name: 네이버 예약 수집 (15분마다)
 # 필요한 비밀값 (Repo Settings → Secrets and variables → Actions):
 #   NAVER_COOKIE        = "NID_AUT=...; NID_SES=..."   (맥 크롬 ⌘⌥I → Application → Cookies → naver.com)
 #   SUPABASE_URL, SUPABASE_SERVICE_KEY                 (매쓰플랫 수집과 같은 값)
-#   LUMEN_TEACHER_KEY   = 학원앱 «서버 잠금 열쇠»(lumen_db_key)와 같은 값 — 없으면 이름·전화 칸은 저장하지 않는다
+#   NAVER_PII_KEY       = «예약 열쇠» — 원장님이 지은 긴 암호문(20글자 이상). 학원앱 「네이버 예약 › 🔑 예약 열쇠 넣기」에 같은 글을 넣으면 이름·전화가 보인다
+#   LUMEN_TEACHER_KEY   = (NAVER_PII_KEY 가 없을 때만) 학원앱 «서버 잠금 열쇠»(lumen_db_key)와 같은 값 — 둘 다 없으면 이름·전화 칸은 저장하지 않는다
 #
 # ⚠ 이 저장소와 실행 기록(로그)은 공개다. 수집기는 건수·코드만 찍고 이름·전화·이메일·메모·추가 답은 절대 찍지 않는다.
 
@@ -58,4 +59,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           LUMEN_TEACHER_KEY: ${{ secrets.LUMEN_TEACHER_KEY }}
+          NAVER_PII_KEY: ${{ secrets.NAVER_PII_KEY }}
         run: node sync/naver_booking_collect.js ${{ github.event.inputs.mode == 'dry' && '--dry' || '' }}

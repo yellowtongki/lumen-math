@@ -95,7 +95,8 @@ rnx=open(SP+'/racenext122_teacher.js').read() if int(ver.replace('v19-',''))>=12
 r123=open(SP+'/rcws123_teacher.js').read() if int(ver.replace('v19-',''))>=123 else ''   # v19-123: 🧩 리커버리 학습지 새 규칙 — 주간테스트 고르기(중3 기본 이번 주+지난 주) · 오답 1배수 · 교재 오답 빼기 · 단원 오답(매쓰플랫 교재 단원표) · 만들 때 보드 점수 갱신 · 구성 한 줄
 nbk=(open(os.path.join(HERE,'..','naver_booking_core.js'),encoding='utf-8').read()+'\n'+open(SP+'/naverbook124_teacher.js',encoding='utf-8').read()) if int(ver.replace('v19-',''))>=124 else ''   # v19-124: 📅 네이버 예약 (수집기 sync/naver_booking_collect.js · 공용 함수 sync/naver_booking_core.js 를 그대로 붙임) — 수업·출결 「네이버 예약」 · 리커버리 보드 배지·시간 넣기 · 홈 「오늘 네이버 예약」
 nb5=open(SP+'/naverbook125_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=125 else ''   # v19-125: 📅 네이버 예약 «📞 기억» 배지 — 수집기가 직접 연결한 학부모 전화(지문)를 기억해 다음 예약 자동 연결(how 'learned')
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+nb6=open(SP+'/naverbook126_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=126 else ''   # v19-126: 네이버 예약 — 📅 대신 네이버 로고(SVG) · «예약 열쇠»(or_nb_key, 이 기기에만) 로 이름·전화 상자 열기 · 「🔑 예약 열쇠 넣기」 · #nbkey=
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -598,6 +599,27 @@ if int(ver.replace('v19-',''))>=124:
 if int(ver.replace('v19-',''))>=125:
     # v19-125: 기억한 전화 지문표(naver_phone_links)는 수집기만 쓴다 — 앱은 받지 않는다
     rep("'race_recount_req', 'lumen_db_key'];", "'race_recount_req', 'lumen_db_key', 'naver_phone_links'];")
+if int(ver.replace('v19-',''))>=126:
+    # v19-126: 네이버 예약 — 로고는 부품(naverbook126_teacher.js)이 메뉴 칸·화면 제목·홈 칸에 넣는다 (titles 표의 RIGHT_TITLE 칸은 화면에 없어 그대로)
+    #   «예약 열쇠»(or_nb_key)는 이 기기에만 — 서버로 안 올림(HTS_LOCAL_ONLY · 부품의 scheduleSync 막기) · 시작 다운로드 제외 · 비상 비우기에서도 남김
+    rep("var HTS_LOCAL_ONLY = { or_gh_token:1, or_mf_id:1, or_mf_pw:1 };", "var HTS_LOCAL_ONLY = { or_gh_token:1, or_mf_id:1, or_mf_pw:1, or_nb_key:1 };")
+    rep("'race_recount_req', 'lumen_db_key', 'naver_phone_links'];", "'race_recount_req', 'lumen_db_key', 'naver_phone_links', 'or_nb_key'];")
+    rep("                 lumen_db_key:1, lumen_fz:1, lumen_wb_rw:1, lumen_wb_lw:1 };", "                 lumen_db_key:1, or_nb_key:1, lumen_fz:1, lumen_wb_rw:1, lumen_wb_lw:1 };")
+    #   주소 뒤 #nbkey=… (한 번) → 이 기기 localStorage or_nb_key · 주소에서 그 부분만 지운다. #dbkey 처리보다 먼저(그쪽은 주소 뒤를 통째로 지움)
+    rep("/* ★ v19-18: 서버 «지우기» 잠금 열쇠 (docs/rls_lock.sql).",
+        "/* ★ v19-126: 네이버 예약 «예약 열쇠» — 주소 뒤 #nbkey=… 를 한 번 붙여 열면 이 기기에만 저장(서버로 안 올림), 주소에서는 지운다 */\n"
+        "(function(){\n"
+        "  try{\n"
+        "    var h=String(location.hash||''), m=h.match(/(?:^#|[#&])nbkey=([^&]*)/);\n"
+        "    if(!m) return;\n"
+        "    var v=''; try{ v=decodeURIComponent(m[1]); }catch(e){ v=m[1]; }\n"
+        "    v=String(v).trim();\n"
+        "    var rest=h.replace(/^#/,'').split('&').filter(function(x){ return x && x.indexOf('nbkey=')!==0; }).join('&');\n"
+        "    try{ history.replaceState(null,'',location.pathname+location.search+(rest?'#'+rest:'')); }catch(e){ location.hash=rest; }\n"
+        "    if(v.length>=8){ localStorage.setItem('or_nb_key', v); setTimeout(function(){ try{ alert('🔑 네이버 예약 열쇠를 이 기기에 저장했습니다.\\n이제 「네이버 예약」에서 예약자 이름·전화가 보입니다.'); }catch(e){} }, 700); }\n"
+        "  }catch(e){}\n"
+        "})();\n"
+        "/* ★ v19-18: 서버 «지우기» 잠금 열쇠 (docs/rls_lock.sql).")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
