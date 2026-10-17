@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-130';
+var APP_VER = 'v19-131';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9076,6 +9076,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-131',date:'2026-10-17',stability:'ok',memo:'🧩 <b>카드뉴스 — «지금 스타일»에서도 모자이크 · 자동 선택은 확정 문항 먼저</b> (원장 2026-10-17 「확정한 문항을 먼저 · 모자이크처리를 지금 스타일도 가능하게」). ① 문항 카드를 안 고르면 쓰는 자동 4개는 <b>원장님이 ✓ 확정한 문항부터</b>, 그다음 AI 판정 (같은 묶음 안에서는 같은 문제 → 숫자변형 → 유사유형 → 번호). ② <b>지금 스타일(옛 카드)</b>의 문항 카드 이름 옆에도 「선명 / 흐리게」 · 「🧩 모자이크」가 붙습니다 — 창은 새 스타일과 같고, 그린 상자는 카드 그림과 내려받기(.zip)에 들어갑니다. 흐리게를 고른 적이 없으면 시험 그림에 모자이크를 그린 카드는 선명, 아니면 예전처럼 흐리게. ③ 두 카드 모양은 파일 번호가 달라도(옛 07_17번적중 ↔ 새 08_17번적중) 같은 문항이면 모자이크를 이어 씁니다. 부품 modules/cnmz131_teacher.js · 검사 tests/test_v19131.js.'},
       {ver:'v19-130',date:'2026-10-17',stability:'ok',memo:'🧩 <b>카드뉴스 — 문항 카드·모자이크가 바로 보이게</b> (원장 2026-10-17 「모자이크 기능이 사라졌다」). 문항별 적중 카드(08_1번적중 …)와 그 카드의 「🧩 모자이크」 칩은 <b>「🎯 문항별 적중 카드」 칸에서 고른 문항</b>에만 생기는데, 모든 시험에서 아무것도 안 골라져 있었고 그 칸이 아주 긴 설정의 맨 아래쪽에 있어서 안 보였습니다(기능은 그대로 있었음). ① <b>자동 선택</b>: 고른 문항이 없으면 <b>적중 문항 상위 4개</b>(같은 문제 → 숫자변형 → 유사유형 순, 같으면 번호 순)로 문항 카드를 만듭니다 — 화면 미리보기 · 「카드 그림 + 글 자료 내려받기」 · 「블로그 폴더로 내려받기」 · 블로그자료.md 가 모두 같은 문항을 씁니다. 자동 선택은 서버에 저장하지 않고, 원장님이 칩을 <b>처음 누르는 순간</b> 자동 목록을 그대로 옮겨 적은 뒤 넣고/빼서 저장합니다(직접 고르기). 「↺ 자동으로 되돌리기」 칩으로 언제든 자동으로 돌아갑니다(다 빼도 자동). ② 「🎯 문항별 적중 카드」 칸을 카드뉴스 설정 <b>맨 위</b>(색 고르기 위)로 옮겼습니다 — 🤖 AI 판정 안내 줄도 같이. 아래에 「문항 카드마다 🧩 모자이크 칩이 붙습니다 — 카드 목록에서 누르면 그림 위에 상자를 그려 가릴 수 있어요」. <b>«지금 스타일»(옛 카드)을 쓰고 있으면</b> 🧩 모자이크가 없다는 빨간 안내와 「✨ 새 스타일로 바꾸기」 단추가 뜹니다(모자이크·선명/흐리게는 새 스타일 카드에만). 다른 카드·칸은 그대로입니다. 부품 modules/cnpick130_teacher.js · 검사 tests/test_v19130.js.'},
       {ver:'v19-129',date:'2026-10-17',stability:'ok',memo:'📗 <b>교재 목록 새로고침</b> (원장 2026-10-17 「중1 학생들에게 새 교재를 배정했는데 학생앱에 안 보인다」). 학생앱 숙제 화면의 교재 목록(mf_swb_)은 하루 3번 «전체 수집»(약 25분)이 돌 때만 바뀌어서, 낮에 새로 배정한 교재가 한참 안 보였습니다. 이제 <b>울트라일일 「🔄 지금 가져오기」 옆 「📗 교재 목록 새로고침」</b>을 누르면 작은 창이 열려 <b>전체 / 학년 / 반</b>을 고르고 «요청하기»만 하면 됩니다. 서버가 그 학생들의 <b>교재 목록만</b> 매쓰플랫에서 새로 받아 1~2분에 끝냅니다(서버가 5분마다 확인하므로 요청 뒤 최대 약 7분). 단추가 «대기 중 → 갱신 중 → 완료(몇 명 · 몇 분)/실패»로 바뀌고 15초마다 상태를 확인합니다. 다른 화면·기능은 그대로입니다. [서버] 수집기 <code>--swb-only [--codes …]</code> · 워커 <code>mf_swb_req</code> · 문서 docs/swb_refresh.md.'},
       {ver:'v19-128',date:'2026-10-17',stability:'ok',memo:'🎯 <b>적중 분석 — 검토를 빠르게</b> (원장 2026-10-17 「판정은 내가 하나하나 봐야 해서 너무 오래 걸린다」). ① <b>🤖 AI 판정 자동 반영</b>(시험마다 · 기본 켬 · 적중 기준 옆과 오른쪽 칸 스위치): 원장님이 아직 안 본 문항이라도 AI 1순위 후보가 «같은 문제»·«숫자변형»이면 적중으로 셉니다 — 적중률·도넛·오른쪽 숫자·적중 지도·학부모 보고서·카드뉴스·블로그 자료(.md)·요약 복사가 모두 같은 값을 쓰고, 그런 문항에는 ✓ 대신 작은 <b>「AI」</b> 표시(보고서는 «(AI)», .md 는 «AI 판정»)가 붙습니다. 원장님 ✓/✗ 가 늘 우선이고, 스위치를 끄면 예전과 똑같습니다. ② <b>⚡ 빠른 검토</b>(오른쪽 칸 · 적중 기준 옆 · 분석지 머리): 결정이 필요한 문항(같은 문제·숫자변형 후보가 있는데 원장님이 안 본 것)만 하나씩 — 왼쪽 시험 문항 · 오른쪽 후보 그림 · AI 까닭, 단추 ✓ 같은 문제 / 숫자변형 / 유사유형 / ✗ 아님 · 「다음 후보 ▸」. 키보드 <b>1·2·3·4</b> = 네 단추, Enter·→ 다음, ← 이전, ↓ 다음 후보, Esc 닫기 · 진행 「3/9」. 유사유형뿐인 문항은 「접어 둠」(포함하기 가능). ③ 분석지에서 후보가 유사유형뿐인 미확정 문항은 <b>한 줄로 접힘</b>(눌러서 펼치기 · 「유사유형만 문항도 펼치기」 스위치). ④ <b>고등부</b> 요청·다시 판정 화면은 시험 과목(공통수학2·미적분1… 공수2·미적1 같은 줄임말도)에 맞는 <b>수학비서 내 문제지를 자동 체크</b>하고 「📄 과목에 맞는 수학비서 내 문제지 n장을 자동으로 넣었어요」 띠에서 뺄 수 있습니다. 내 문제지 없이 판정된 고등부 결과에는 노란 띠 「수학비서 자료 없이 판정된 결과예요 — 다시 판정을 권해요」 + 「🔄 내 문제지 넣고 다시 판정」. 부품 modules/hitreview128_teacher.js · 문서 docs/exam_hit_contract.md §12.'},
@@ -93447,8 +93448,123 @@ if(typeof cnPanelHtml==='function') cnPanelHtml=(function(o){ return function(d)
   var h=cnp130With(d, function(){ return o.apply(self, a); });
   return cnp130Move(h, manual, nAuto); }; })(cnPanelHtml);
 
+/* ═══ v19-131: 📰 카드뉴스 — ① 자동 선택은 «원장님 확정» 문항 먼저 ② «지금 스타일»(옛 카드)에서도 🧩 모자이크 ═══
+ *  원장 2026-10-17 「확정한 문항을 먼저 고르게 바꿔 · 모자이크처리를 지금 스타일도 가능하게 하자」
+ *
+ *  ① 자동 선택(v19-130 cnp130Auto, card.picks 가 비었을 때 상위 4개):
+ *     원장님 ✓ 확정(htEff sure===true) → AI 판정/후보 순. 같은 묶음 안에서는 같은 문제 → 숫자변형 → 서술 → 유사유형 → 번호.
+ *  ② 옛 카드(cn_teacher cnCards, CN.style==='v1')의 문항 카드(NN_N번적중)에
+ *     · 카드 이름 옆 칩 「선명 / 흐리게」 · 「🧩 모자이크」 (새 스타일과 같은 창 cn3MzOpen 을 그대로 쓴다)
+ *     · 시험 그림·우리 자료 그림에 모자이크 상자를 넣은 그림(data:png)을 끼운다 (cn3 의 만들기·기억 CN3.mzCache 를 같이 씀)
+ *     · 흐리게: 원장님이 고른 값(card.blur[file] true/false). 고른 적 없으면 — 시험 그림에 모자이크를 그렸으면 선명, 아니면 예전처럼 흐리게
+ *     · 내려받기(.zip) 전에 모자이크 그림을 다 만들어 둔다 (cn3 는 새 스타일만 해 줬다)
+ *  ③ 두 카드 모양은 파일 이름 번호가 다를 수 있다(옛 07_17번적중 ↔ 새 08_17번적중) → 모자이크·흐리게는 «문항 번호»로 이어 쓴다.
+ *     저장할 때 같은 번호의 다른 이름 칸은 지운다(하나만 남게).
+ *  ④ v19-130 의 빨간 안내(«지금 스타일이라 모자이크가 안 보입니다»)는 이제 맞지 않으므로 보통 안내 줄로 바꾼다.
+ *  저장 모양은 그대로: exam_hit_<시험>.card.mosaic[file] = { exam:[{x,y,w,h}], mat:[…] } · card.blur[file] = true|false
+ */
+var CN131_ORD = { same:0, var:1, text:2, type:3 };
+
+/* ① 자동 선택: 확정 먼저 */
+cnp130Auto = function(d){
+  if(!d) return [];
+  var R=[]; try{ R=cnRows(d); }catch(e){ return []; }
+  var sure=function(r){ try{ return htEff(r.it).sure===true ? 0 : 1; }catch(e){ return 1; } };
+  return R.filter(function(r){ return r.inB; }).sort(function(a, b){
+    var ka=CN131_ORD.hasOwnProperty(a.kind)?CN131_ORD[a.kind]:9, kb=CN131_ORD.hasOwnProperty(b.kind)?CN131_ORD[b.kind]:9;
+    return (sure(a)-sure(b)) || (ka-kb) || ((+a.n||0)-(+b.n||0)); }).slice(0, CNP130_MAX).map(function(r){ return r.no; });
+};
+
+/* ③ 같은 문항 번호의 다른 파일 이름 칸 찾기 */
+function cn131Num(file){ var m=/^\d+_(\d+)번적중$/.exec(String(file||'')); return m ? Number(m[1]) : null; }
+function cn131Same(obj, file){
+  var n=cn131Num(file); if(n==null || !obj) return null;
+  if(obj.hasOwnProperty(file)) return file;
+  var ks=Object.keys(obj); for(var i=0;i<ks.length;i++){ if(cn131Num(ks[i])===n) return ks[i]; } return null;
+}
+/* 이 파일 이름으로 보이게(메모리에서만 이어 붙임) */
+function cn131Alias(c, file){
+  if(!c) return;
+  ['mosaic','blur'].forEach(function(f){ var o=c[f]; if(!o) return; var k=cn131Same(o, file); if(k && k!==file) o[file]=o[k]; });
+}
+/* 저장 전: 같은 번호의 다른 이름 칸을 지운다 */
+function cn131Prune(c, file){
+  var n=cn131Num(file); if(n==null || !c) return;
+  ['mosaic','blur'].forEach(function(f){ var o=c[f]; if(!o) return; Object.keys(o).forEach(function(k){ if(k!==file && cn131Num(k)===n) delete o[k]; }); });
+}
+if(typeof cn3Chips==='function') cn3Chips=(function(o){ return function(c, file){ cn131Alias(c, file); return o.apply(this, arguments); }; })(cn3Chips);
+if(typeof cn3PickPanel==='function') cn3PickPanel=(function(o){ return function(d, c, r, file){ cn131Alias(c, file); return o.apply(this, arguments); }; })(cn3PickPanel);
+if(typeof window.cn3MzOpen==='function') window.cn3MzOpen=(function(o){ return function(file){
+  var d=HT.data[HT.cur]; if(d) cn131Alias(cnCfg(d), file); return o.apply(this, arguments); }; })(window.cn3MzOpen);
+if(typeof window.cn3MzSave==='function') window.cn3MzSave=(function(o){ return function(){
+  var s=CN3.mz, d=HT.data[HT.cur]; if(s && d){ var c=cnCfg(d); cn131Alias(c, s.file); cn131Prune(c, s.file); }   /* 흐리게 값도 이 이름으로 옮기고 옛 이름 칸은 지움 */
+  return o.apply(this, arguments); }; })(window.cn3MzSave);
+
+/* 흐리게: 새 스타일은 그대로(꺼짐 = 칸 지움 → 선명). 옛 카드는 «선명»을 false 로 남겨야 예전 기본(흐리게)으로 돌아가지 않는다 */
+function cn131BlurOn(c, file){
+  cn131Alias(c, file);
+  var b=(c.blur||{})[file]; if(b===true) return true; if(b===false) return false;
+  var mz=(c.mosaic||{})[file]||{}; return !((mz.exam||[]).length);   /* 고른 적 없음: 모자이크를 그렸으면 선명, 아니면 예전처럼 흐리게 */
+}
+if(typeof window.cn3Blur==='function') window.cn3Blur=(function(o){ return function(file, on){
+  if(typeof CN==='undefined' || CN.style!=='v1') return o.apply(this, arguments);
+  var d=HT.data[HT.cur]; if(!d) return; var c=cnCfg(d); c.blur=c.blur||{}; cn131Prune(c, file);
+  c.blur[file]=!!on; cnSave(d); cn3Refresh(d); }; })(window.cn3Blur);
+
+/* ② 옛 카드: 그림 칸 바꿔 끼우기 */
+function cn131Img(which, url, rects, blur, alt){
+  var E=cnEsc, src=url, key='';
+  if(url && rects && rects.length){ key=cn3MzKey(url, rects); var m=CN3.mzCache[key];
+    if(m && m!=='busy' && m!=='fail') src=m; else if(!m) cn3MzMake(url, rects); }
+  return url ? ('<img'+(blur?' class="blur" data-blur="1"':'')+' data-which="'+which+'"'+(key?(' data-mzk="'+key+'"'):'')+' src="'+E(src)+'" alt="'+E(alt)+'" crossorigin="anonymous">') : '';
+}
+function cn131Img2(d, c, r, file){
+  var u=cn3Urls(r), mz=(c.mosaic||{})[file]||{}, bl=cn131BlurOn(c, file);
+  return '<div class="img2" style="flex:1"><figure><figcaption>시험 '+r.n+'번</figcaption>'
+    +cn131Img('exam', u.exam, mz.exam, bl, '시험 '+r.n+'번'+(bl?' (흐리게)':''))
+    +(bl?'<span class="bl">시험 문항 · 흐리게 처리</span>':'')+'</figure>'
+    +'<figure><figcaption>루멘수학 자료</figcaption>'+cn131Img('mat', u.mat, mz.mat, false, '루멘수학 자료')+'</figure></div>';
+}
+if(typeof cnCards==='function') cnCards=(function(o){ return function(d){
+  var out=o.apply(this, arguments);
+  if(typeof CN==='undefined' || CN.style!=='v1' || !d || !Array.isArray(out)) return out;   /* 새 스타일(cn2Cards 가 이걸 부른다)은 손대지 않는다 */
+  var c=cnCfg(d), R=null;
+  out.forEach(function(x){
+    if(cn131Num(x.file)==null) return;
+    if(!R) R=cnRows(d);
+    var r=cn3Row(d, x.file, R); if(!r) return;
+    x.html=String(x.html).replace(/<div class="img2" style="flex:1">[\s\S]*?<\/figure><\/div>/, function(){ return cn131Img2(d, c, r, x.file); });
+  });
+  return out; }; })(cnCards);
+
+/* 옛 카드 목록: 카드 이름 옆 칩 */
+function cn131Chips(c, file){
+  var bl=cn131BlurOn(c, file), mz=(c.mosaic||{})[file]||{}, n=(mz.exam||[]).length+(mz.mat||[]).length, f=cnEsc(file);
+  return '<span class="cn3-seg"><button class="cn-chip'+(bl?'':' on b')+'" data-cn3blur="'+f+':0" onclick="cn3Blur(\''+f+'\',0)">선명</button>'
+    +'<button class="cn-chip'+(bl?' on b':'')+'" data-cn3blur="'+f+':1" onclick="cn3Blur(\''+f+'\',1)">흐리게</button></span>'
+    +'<button class="cn-chip'+(n?' on b':'')+'" data-cn3mz="'+f+'" onclick="cn3MzOpen(\''+f+'\')">🧩 모자이크'+(n?(' '+n):'')+'</button>';
+}
+if(typeof cnCardsHtml==='function') cnCardsHtml=(function(o){ return function(d){
+  var h=o.apply(this, arguments);
+  if(typeof CN==='undefined' || CN.style!=='v1' || !d) return h;
+  var c=cnCfg(d);
+  return String(h).replace(/<div class="ht-sub" style="font-weight:800;margin-bottom:4px">(\d+ · (\d+_\d+번적중)\.png)<\/div>/g, function(all, lab, file){
+    return '<div class="ht-sub cn131-lab" style="font-weight:800;margin-bottom:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+      +'<span>'+lab+'</span>'+cn131Chips(c, file)+'</div>'; }); }; })(cnCardsHtml);
+
+/* 옛 카드 내려받기 전에 모자이크 그림을 다 만들어 둔다 */
+if(typeof window.cnExport==='function') window.cnExport=(function(o){ return async function(){
+  if(typeof CN!=='undefined' && CN.style==='v1'){ try{ var d=HT.data[HT.cur]; if(d) await cn3MzPrep(d); }catch(e){} }
+  return o.apply(this, arguments); }; })(window.cnExport);
+
+/* ④ v19-130 빨간 안내 → 보통 안내 */
+if(typeof cnPanelHtml==='function') cnPanelHtml=(function(o){ return function(d){
+  var h=o.apply(this, arguments);
+  return String(h).replace(/<div class="ht-sub" id="cnp130-v1"[\s\S]*?<\/button><\/div>/,
+    '<div class="ht-sub" id="cnp130-hint" style="margin-bottom:12px">문항 카드마다 🧩 모자이크 칩이 붙습니다 (지금 스타일·새 스타일 모두) — 아래 카드 목록에서 «N · NN_N번적중.png» 이름 옆 「🧩 모자이크」를 누르면 그림 위에 상자를 그려 가릴 수 있어요</div>'); }; })(cnPanelHtml);
+
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~130: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~131: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
