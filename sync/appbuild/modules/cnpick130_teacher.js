@@ -77,7 +77,10 @@ function cnp130Move(h, manual, nAuto){
   if(manual) blk+='<button class="cn-chip" id="cnp130-reset" data-cnp130="reset" style="border-style:dashed" title="직접 고른 것을 지우고 적중 문항 상위 4개로" onclick="cnp130Reset()">↺ 자동으로 되돌리기</button>';
   blk+='</div>';
   if(!manual && nAuto) blk+='<div class="ht-sub" id="cnp130-auto" style="margin:-4px 0 4px;color:#1d4ed8;font-weight:800">자동 선택: 적중 문항 상위 '+nAuto+'개 (직접 고르면 그대로 따릅니다)</div>';
-  blk+='<div class="ht-sub" id="cnp130-hint" style="margin-bottom:12px">문항 카드마다 🧩 모자이크 칩이 붙습니다 — 카드 목록에서 누르면 그림 위에 상자를 그려 가릴 수 있어요</div>';
+  /* 10/17 원장 「어디에 모자이크가 있다는 말인가?」 — 원장님 기기가 「지금 스타일」(옛 카드)이었다. 🧩 모자이크·선명/흐리게·🖼 배경은 «✨ 새 스타일» 카드에만 붙는다 */
+  if(typeof CN!=='undefined' && CN.style==='v1') blk+='<div class="ht-sub" id="cnp130-v1" style="margin-bottom:12px;padding:8px 10px;border-radius:10px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-weight:800">⚠ 지금은 «지금 스타일»(옛 카드)이라 🧩 모자이크 칩이 안 보입니다. 모자이크·선명/흐리게는 새 스타일 카드에만 있어요 '
+    +'<button class="cn-chip on b" data-cnp130="v2" style="margin-left:6px" onclick="cn2Set(\'style\',\'v2\')">✨ 새 스타일로 바꾸기</button></div>';
+  else blk+='<div class="ht-sub" id="cnp130-hint" style="margin-bottom:12px">문항 카드마다 🧩 모자이크 칩이 붙습니다 — 아래 카드 목록에서 «N · NN_N번적중.png» 이름 옆 「🧩 모자이크」를 누르면 그림 위에 상자를 그려 가릴 수 있어요</div>';
   blk='<div id="cnp130-sec">'+blk+'</div>';
   var rest=h.slice(0, start)+h.slice(end);
   var at=rest.indexOf('<div class="ht-h">🎨 색');

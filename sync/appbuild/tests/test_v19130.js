@@ -86,7 +86,7 @@ STORE['exam_hit_' + EXAM_ID] = { examId: EXAM_ID, exam: { school: '가나고', g
   t('화면 카드 목록에 문항 카드 4장 + 🧩 모자이크 칩 4개', JSON.stringify(nums(s1.shown)) === '[3,5,9,2]' && JSON.stringify(s1.mz) === '["08_3번적중","09_5번적중","10_9번적중","11_2번적중"]', JSON.stringify([s1.shown, s1.mz]));
   t('고르는 칩: 적중 5개 · 자동 문항 4개가 켜짐 · AI 표시 칩(3·4번) 그대로', s1.chips === 5 && JSON.stringify(s1.on.slice().sort((a, b) => a - b)) === '[2,3,5,9]' && s1.ai === 2, JSON.stringify([s1.chips, s1.on, s1.ai]));
   t('「자동 선택: 적중 문항 상위 4개 (직접 고르면 그대로 따릅니다)」 · 되돌리기 칩 없음', s1.auto === '자동 선택: 적중 문항 상위 4개 (직접 고르면 그대로 따릅니다)' && !s1.reset, JSON.stringify([s1.auto, s1.reset]));
-  t('모자이크 안내 줄', /문항 카드마다 🧩 모자이크 칩이 붙습니다 — 카드 목록에서 누르면 그림 위에 상자를 그려 가릴 수 있어요/.test(s1.hint), s1.hint);
+  t('모자이크 안내 줄', /문항 카드마다 🧩 모자이크 칩이 붙습니다 — 아래 카드 목록에서 .*「🧩 모자이크」를 누르면/.test(s1.hint), s1.hint);
 
   /* ── ④ 자리 ── */
   const pos = await pg.evaluate(() => { const P = document.getElementById('cn-panel'), heads = [...P.querySelectorAll('.ht-h')], top = P.getBoundingClientRect().top;
@@ -156,6 +156,11 @@ STORE['exam_hit_' + EXAM_ID] = { examId: EXAM_ID, exam: { school: '가나고', g
   const s8 = await pg.evaluate(() => { const d = HT.data[HT.cur]; d.items.forEach((it) => { it.hit = { k: null, kind: 'none', ok: false, by: 'teacher' }; }); render();
     return { eff: cnp130Picks(d), q: cn2Cards(d).filter((x) => /번적중$/.test(x.file)).length, auto: !!document.getElementById('cnp130-auto'), sec: !!document.getElementById('cnp130-sec'), none: /적중 문항이 없습니다/.test(document.getElementById('cn-panel').textContent) }; });
   t('적중 0 → 자동 없음 · 문항 카드 0 · 「적중 문항이 없습니다」 그대로', s8.eff.length === 0 && s8.q === 0 && !s8.auto && s8.sec && s8.none, JSON.stringify(s8));
+
+  /* ── 10/17 원장 화면: «지금 스타일»(옛 카드)이면 🧩 칩이 없다 → 빨간 안내 + 「✨ 새 스타일로 바꾸기」 ── */
+  const s9 = await pg.evaluate(() => { cn2Set('style', 'v1'); const a = { warn: (document.getElementById('cnp130-v1') || {}).textContent || '', hint: !!document.getElementById('cnp130-hint'), mz: document.querySelectorAll('[data-cn3mz]').length };
+    const b = document.querySelector('[data-cnp130="v2"]'); if (b) b.click(); return Object.assign(a, { style: CN.style, ls: localStorage.getItem('cn_style'), warn2: !!document.getElementById('cnp130-v1') }); });
+  t('지금 스타일 → 빨간 안내(🧩 안 보임) · 「✨ 새 스타일로 바꾸기」 누르면 v2 · 안내 사라짐', /모자이크 칩이 안 보입니다/.test(s9.warn) && !s9.hint && s9.mz === 0 && s9.style === 'v2' && s9.ls === 'v2' && !s9.warn2, JSON.stringify(s9));
 
   t('페이지 오류 없음', errs.length === 0, errs.slice(0, 3).join(' | '));
   console.log('\n' + (fail ? '❌' : '✅') + ' ' + pass + '/' + (pass + fail) + ' 통과');
