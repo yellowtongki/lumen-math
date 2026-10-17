@@ -430,7 +430,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-123';
+var APP_VER = 'v19-124';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -1269,8 +1269,8 @@ window.supaPullStudentDbRescue = supaPullStudentDbRescue;
 
 // v18-23: onlyKeys를 주면 그 키들만 소량으로 받는다 — 전체(대용량) 동기화가 느린
 // 네트워크에서 실패할 때, 등록부·교재 같은 핵심만 먼저 받아 화면을 살리는 용도.
-var PULL_SKIP_PREFIX = ['mf_bookans_', 'mf_wsq_', 'mf_textbook_', 'mf_swb_', 'mf_ws_recent_', 'mf_wsans_', 'ms_exam', 'haesol_body_', 'hw_synced_', 'hw_scores_', 'typeach_stu_', 'stu_reports_', 'pub_reports_', 'submissions_', 'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_'];
-var PULL_SKIP_KEYS = ['mf_type_ach', 'mf_sol_fix', 'mf_bookpages', 'ms_mydb_index', 'mf_ws_behaviors', 'mf_weekly', 'mf_progress', 'mf_books', 'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req'];
+var PULL_SKIP_PREFIX = ['mf_bookans_', 'mf_wsq_', 'mf_textbook_', 'mf_swb_', 'mf_ws_recent_', 'mf_wsans_', 'ms_exam', 'haesol_body_', 'hw_synced_', 'hw_scores_', 'typeach_stu_', 'stu_reports_', 'pub_reports_', 'submissions_', 'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_', 'naver_book'];
+var PULL_SKIP_KEYS = ['mf_type_ach', 'mf_sol_fix', 'mf_bookpages', 'ms_mydb_index', 'mf_ws_behaviors', 'mf_weekly', 'mf_progress', 'mf_books', 'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req', 'lumen_db_key'];
 async function supaFullPull(onlyKeys) {
   var sb = getSupaClient();
   if (!sb) return false;
@@ -9064,6 +9064,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-124',date:'2026-10-17',stability:'ok',memo:'📅 <b>네이버 예약 → 학원앱</b> (원장 결정 2026-10-17 「클라우드에서 내 네이버 로그인으로」). GitHub 서버가 <b>15분마다</b> 네이버 예약 파트너센터의 예약을 받아 옵니다(sync/naver_booking_collect.js · naver-booking.yml). 「수업·출결 › <b>📅 네이버 예약</b>」(출결·보충 바로 뒤): 마지막으로 받은 때 · 🔄 새로고침 · ⚡ 지금 받기 · 종류 칩(전체 · 리커버리 · 텐투텐 · 상담/테스트 · TLP · KMM · 컨설팅) · <b>텐투텐 날짜별 인원</b> · 오늘 / 다가오는 예약(날짜별) / 지난 7일(접힘). 한 줄 = 시간 · 종류 · 예약자 · 전화(누르면 전화 걸기) · 메모 · 상태(신청·확정·완료·취소 — 취소는 흐리게) · <b>학생</b>(전화번호 → 메모 속 학생 이름 순으로 자동 연결, 형제는 골라 달라고 표시, 못 맞추면 「🔗 학생 연결」에서 고르기 · 「🆕 명단에 없음(새 가족)」). 네이버 로그인이 만료되면 맨 위에 <b>「네이버 다시 연결이 필요해요」</b>와 맥 크롬 방법(⌘⌥I → Application → Cookies → NID_AUT·NID_SES → GitHub 비밀값 NAVER_COOKIE). 🚑 <b>리커버리 보드</b>: 그 주 리커버리 날짜에 리커버리 예약을 한 확정 학생은 「✓ 네이버 예약 14:00」, 시간 칸이 비었으면 <b>「시간 넣기」</b>(누를 때만 들어감 · 다르면 ⚠ 표시), 예약 없는 확정 학생은 「예약 아직」, 예약했지만 확정 명단에 없는 학생은 오른쪽 「예약했지만 명단에 없음」(＋ 확정 명단에). 🏠 홈에 작은 칸 「📅 오늘 네이버 예약 n건」(시간 · 종류 · 이름). 출결은 자동으로 바꾸지 않습니다. 🔒 학부모 이름·전화·메모는 서버에 <b>원장님 열쇠로 잠근 채</b> 저장되어 원장님 기기(서버 잠금 열쇠를 넣은 PC·아이패드)에서만 보입니다 — GitHub 비밀값 LUMEN_TEACHER_KEY 가 있어야 저장됩니다(없으면 시간·상품·학생 연결만). 덤: 이 기기의 <b>서버 잠금 열쇠는 이제 서버로 올리지도 받지도 않습니다</b>(서버에 사본이 올라가 있던 것을 발견 — 열쇠 새로 바꾸기 순서는 docs/naver_booking_rls.sql). 서버 두 번째 자물쇠 제안도 그 파일(새벽에). 부품 modules/naverbook124_teacher.js · 공용 sync/naver_booking_core.js.'},
       {ver:'v19-123',date:'2026-10-16',stability:'ok',memo:'🧩 <b>리커버리 학습지 새 규칙</b> (원장 지시 2026-10-16 「학원앱에도 넣어」 · 「이번주 지난주는 선택가능하게 한다」 — 서버판 sync/rcws_make.js 에 넣은 규칙과 같게). 학생 카드 「🧩 학습지 설계」 팝업 맨 위에 <b>📝 쓸 주간테스트</b> — 그 학생이 본 최근 주간테스트(응시일 순, 제목·날짜·점수)를 ☑ 로 고릅니다(이번 주만 · 지난 주만 · 둘 다). 기본은 <b>중3 = 이번 주+지난 주 두 개</b>(오른쪽 도구 칸 「중3은 주간테스트 2개 합치기」로 끄고 켬, rc_ws_rule.twoTestGrades), 나머지 학년은 지금처럼 기준 미만 최근 시험 1개. 두 시험의 오답을 합치고(같은 문제는 한 번만) 범위 유형·교재 오답도 합칩니다. 학생별 단추 <b>오답 1배수</b>(시험 오답 쌍둥이 2→1) · <b>교재 오답 빼기</b>(시험 오답만) · <b>단원 오답 넣기</b>. 고른 것은 그 주에만 기억합니다(rc_ws_rule.per — 「확정 전원 생성」도 같은 선택을 씁니다, 「↺ 기본으로」). <b>단원 정답률로 불린 학생</b>(예: 「입체도형의 성질」 60%)은 그 단원의 최근 교재 오답(기본 28일, 「단원 오답 최근 N일」)을 더합니다 — 보드의 단원 이름은 수집기가 매쓰플랫 «교재 단원표»(유형칩의 대단원 이름)로 묶은 것이라, 같은 단원표에서 그 단원의 유형을 골라 오답을 찾습니다(교재 목차 글자 「5 다면체와 회전체」「STEP 1」에 기대지 않음). 매쓰플랫 계정이 없으면 유형DB의 중단원 이름으로 대신합니다. 기준 점수 이상이라 시험으로는 안 걸린 단원 학생도 이제 설계할 수 있습니다. 팝업에 <b>구성 한 줄</b>(시험 오답 n개 (시험 2개 합침) · 쌍둥이 ×1/×2 · 교과서 · 교재 오답 · 단원 오답 · 보강 → 예상 문항 수) — 단추를 바꾸면 바로 다시 짭니다. <b>만들면 보드 점수</b>(호출 기록의 점수)를 이번에 쓴 가장 최근 시험 점수로 바꿉니다(점수·날짜·시험 이름).'},
       {ver:'v19-122',date:'2026-10-16',stability:'ok',memo:'🏁 <b>진도 레이스 «🆕 다음 시즌 (원장님만 보기 🔒)»</b> (원장 지시 2026-10-16 「2학기 기말 레이스를 지금부터 세되, 학생·학부모에게는 내가 공개할 때까지 숨긴다」). 진도 레이스 화면 «시즌 마무리» 카드 아래에 새 카드. <b>🆕 새 시즌 만들기</b> → 이름 「2학기 기말고사 진도 레이스」 · 10/1~12/22(학교 기말 중 가장 늦은 날) · <b>학교별 시작일</b>(나이스 학사일정 — 그 학교 2학기 중간이 끝난 다음 날, 지난 시즌 끝난 다음 날보다 이르지 않게: 범박중 10/1 · 옥길중 10/2 · 범박고 10/7 · 소사고 10/14, 초등은 10/1) · <b>🎓 고등 문제 점수 ×1.5</b>(학생이 아니라 «문제»가 고등이면 — 고등 학습지·고등 교재) · <b>중고등부 한 줄</b>(초등 체험 리그는 그대로) · 리그 문턱 지난 시즌 ×1.6 · 상금·버프는 지난 시즌 것(추가 버프는 끔) · 레이드 없음. <b>✏️ 고치기</b>: 이름·기간·학교별 시작일(넣기·지우기)·고등 배수(1.0~2.0)·중고등부 한 줄·리그 문턱·상금·버프 → 💾 저장은 race_season_draft 에만. <b>순위표</b>는 서버(sync/race_engine.js)가 race_board_draft 에 따로 계산하고 이 카드는 보여 주기만 합니다(점수·문항·고등 ×1.5 문항 수·시작일). 「🔄 다시 세기 요청」 = race_recount_req → 서버가 30분을 기다리지 않고 다음 차례에 셉니다(GitHub 토큰이 있으면 바로 깨움). <b>📣 학생앱에 공개</b>(확인 창) = ① 지난 시즌을 보관함(race_history)에 담고(이미 있으면 그대로) ② race_season ← 새 시즌(공개) ③ race_board ← 미리 센 순위표 ④ 레이드 끔 · 다음 시즌 키 지우기. 그 전에는 학생앱·학부모앱이 읽는 키를 하나도 건드리지 않습니다 — 지난 시즌 결과는 학생앱에 그대로(10/30 무렵까지). <b>[알아 둘 것]</b> 학원앱 안의 옛 계산기(「🔄 지금 다시 세기」의 raceCompute)는 이미 서버 엔진과 조금 어긋나 있습니다(리그 칸을 3칸으로 나누는 등 — 서버는 4칸). 새 규칙(학교별 시작일·고등 ×배수·중고등부)은 서버만 알기 때문에, 공개 뒤 새 규칙 시즌에서 「🔄 지금 다시 세기」를 누르면 브라우저에서 세지 않고 서버에 요청만 남깁니다(「🔥 버프 미리보기」도 막음). 학생앱은 아직 중고등부를 「중등부」라고 적습니다 — 공개 전에 학생앱 이름표 한 줄 고치기가 필요합니다.'},
       {ver:'v19-121',date:'2026-10-15',stability:'ok',memo:'🧠 <b>루멘 수학퀴즈 (새 기능 · 시안 승인)</b> — 「📱 학생앱 › 🧠 루멘 수학퀴즈」. 루미(개념 언니)·아하(실수 대장)·정수쌤이 채팅처럼 대화하며 개념을 알려 주는 퀴즈를 만듭니다. <b>✍️ 만들기</b>: 왼쪽 학년·단원(발행/초안/없음)·재료(사진·PDF — 학생앱엔 안 보임) · 가운데 대본(줄마다 캐릭터·표정, 💬 대사·🟩 개념 카드·✋ 문제·📌 아하 포인트, ↑↓·끌어서 순서, ✕) · 오른쪽 학생앱 미리보기(학생앱과 같은 그리기 · 🔊 읽어 주기). 🤖 AI 초안(원장님 열쇠 · «교재 문제는 숫자만 바꾼 비슷한 문제» · «아하는 학생들이 자주 하는 실수») · 📋 대본 붙여넣기(채팅에서 만든 JSON) · 📘 예시(동위각과 엇각). 💾 임시저장 / 🚀 발행해야 학생앱에 보입니다. <b>📊 학생 현황</b>: 끝까지 본 학생 · 문제 정답률 · 평균 시간 · 📒 담음 · 중간에 멈춤 · 학생×줄 표 · 낱말 «헷갈려요» 순위. <b>🍙 낱말 Day</b>: 학년별 Day·낱말(한자 풀이·캐릭터 한마디·예문) 고치기. <b>🎨 캐릭터</b>: 표정 그림 보기(최종 그림은 나중에 교체). 학생앱은 새 버전 v2-137 파일만 만들었고 배포는 안 했습니다.'},
@@ -17581,6 +17582,7 @@ function rHome(){
 
   // ── 오늘 결석·지각 예정(출결) ──
   if(typeof attHomeTodayWidget==='function') h+=attHomeTodayWidget();
+  if(typeof nbkHomeCard==='function') h+=nbkHomeCard();   /* ★ v19-124: 📅 오늘 네이버 예약 */
 
   // v18-84: 🏭 기출 쌍둥이 공장 요약 카드
   h+=raceHomeCard();
@@ -18511,7 +18513,7 @@ function render(){
   if(RT){
     const groupLabel=MENU_GROUP==='all'?'전체 학생':MENU_GROUP==='none'?'미배정':MENU_GROUP;
     const selName=SELECTED_STUDENT?SELECTED_STUDENT.split('__')[0]:'';
-    const titles={home:'🏠 홈',risk:'🚨 위험 신호',cal:'📅 학원 달력',codi:'🧭 스터디 코디',plweek:'📅 주간 점수',plwall:'🗓 주간계획 모아보기',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실',tuition:'💳 수강료',wsgrade:'📄 학습지 채점',todo:'🗂 할 일 보드',blank:'📝 백지테스트',lastcheck:'🎯 시험 대비',examanal:'📚 기출 분석',examhit:'🎯 적중 분석',tbmatch:'📚 교과서일치도',mathquiz:'🧠 루멘 수학퀴즈'};
+    const titles={home:'🏠 홈',risk:'🚨 위험 신호',cal:'📅 학원 달력',codi:'🧭 스터디 코디',plweek:'📅 주간 점수',plwall:'🗓 주간계획 모아보기',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실',tuition:'💳 수강료',wsgrade:'📄 학습지 채점',todo:'🗂 할 일 보드',blank:'📝 백지테스트',lastcheck:'🎯 시험 대비',examanal:'📚 기출 분석',examhit:'🎯 적중 분석',tbmatch:'📚 교과서일치도',mathquiz:'🧠 루멘 수학퀴즈',naverbk:'📅 네이버 예약'};
     const subtitles={typeach:'AI 판독 · 검토 · 전송',list:'학생 카드',student_detail:STUDENT_TAB,studentdb:'등록부',books:'교재 라이브러리',quick:QUICK_TAB+' 입력',class_overview:'진도 현황 · 지연 감지',typedb:'수학 유형 분류 체계',form:'편집 · 미리보기 · 공유',preview:'편집 · 미리보기 · 공유',share:'편집 · 미리보기 · 공유',settings:'설정',bulk:'일괄 작업',exam:'시험지 분석 · O/X · 리포트',record:'특기사항 · 날짜별',pwa:'풀이 분석 · 검토 · 발송',notice:'작성 · 발행 · 읽음 현황',attend:'출석 · 결석보충 · 리커버리',vod:'강의 등록 · 배정 · 시청 모니터링',tuition:'결제선생 청구 · 수납 · 미납',wsgrade:'자동채점 현황 · 학생별 진행',todo:'코스 짜기 · 배정 · 나눠 주기 · 학생별',blank:'틀린 문항 · 아하노트 · 약한 유형 → 한 장'};
     RT.textContent=titles[VIEW]||'학생을 선택해주세요';
     const RST=document.getElementById('RIGHT_SUBTITLE');
@@ -18624,6 +18626,7 @@ function render(){
     else if(VIEW==='tbmatch'){ try{ C.innerHTML=rTbMatch(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">교과서일치도 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='examhit'){ try{ C.innerHTML=rExamHit(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">적중 분석 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='examanal'){ try{ C.innerHTML=rExamAnal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">기출 분석 오류: '+esc2(e.message)+'</div>'; } }   /* ★ v19-33 */
+    else if(VIEW==='naverbk'){ try{ C.innerHTML=rNaverBk(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">네이버 예약 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='mathquiz'){ try{ C.innerHTML=rMathQuiz(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">루멘 수학퀴즈 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='plwall'){ try{ C.innerHTML=rPlWall(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간계획 모아보기 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='plweek'){ try{ C.innerHTML=rPlWeek(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간 점수 오류: '+esc2(e.message)+'</div>'; } }
@@ -18692,6 +18695,7 @@ function render(){
     else if(VIEW==='tbmatch'){ try{ C.innerHTML=rTbMatch(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">교과서일치도 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='examhit'){ try{ C.innerHTML=rExamHit(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">적중 분석 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='examanal'){ try{ C.innerHTML=rExamAnal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">기출 분석 오류: '+esc2(e.message)+'</div>'; } }   /* ★ v19-33 */
+    else if(VIEW==='naverbk'){ try{ C.innerHTML=rNaverBk(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">네이버 예약 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='mathquiz'){ try{ C.innerHTML=rMathQuiz(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">루멘 수학퀴즈 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='plwall'){ try{ C.innerHTML=rPlWall(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간계획 모아보기 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='plweek'){ try{ C.innerHTML=rPlWeek(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간 점수 오류: '+esc2(e.message)+'</div>'; } }
@@ -91214,7 +91218,667 @@ if(typeof l3rMakeBox==='function'){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~123: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * 📅 네이버 예약 — 수집기와 학원앱이 함께 쓰는 순수 함수 (한 곳에서만 고친다)
+ *   · 수집기 sync/naver_booking_collect.js 가 require 로 쓰고,
+ *   · 학원앱 v19-124 는 조립할 때(build_app.py) 이 파일을 그대로 붙여 넣는다.
+ *   → ES5 · 템플릿 리터럴 금지 · 브라우저(window)와 node(module.exports) 둘 다.
+ *
+ *  ① 상품 종류 나누기 nbKindOf(이름, 상품번호) — 이름 낱말 먼저, 모르면 번호, 그래도 모르면 '기타'
+ *  ② 예약 1건 정리 nbNormalize(원본) — 이름·전화·메모·추가 답(form)은 «개인정보 칸(pii)»으로 따로 뺀다
+ *  ③ 상태 nbStatusOf — 네이버 코드(RC02·RC03·RC08 …)를 신청/확정/완료/취소/노쇼로 (모르는 코드는 원래 코드 그대로)
+ *  ④ 학생 맞추기 nbMatch — 원장님 직접 연결 > 전화번호 > 이름(메모·추가 답에 학생 이름)
+ *  ⑤ 개인정보 칸 잠그기 nbSeal / 열기 nbOpen — 원장님 열쇠(학원앱 lumen_db_key = GitHub 비밀값 LUMEN_TEACHER_KEY)로 AES-GCM
+ *     (lumen_store 는 앱의 공개 열쇠로 누구나 읽을 수 있어서, 학부모 이름·전화는 잠근 채로만 둔다)
+ * ═══════════════════════════════════════════════════════════════════ */
+(function(root){
+  'use strict';
+
+  /* ── ① 상품 종류 ── */
+  var NB_KINDS = [
+    { k:'recovery', label:'리커버리',  short:'리커버리', color:'#dc2626', bg:'#fee2e2' },
+    { k:'tenten',   label:'텐투텐',    short:'텐투텐',   color:'#7c3aed', bg:'#ede9fe' },
+    { k:'counsel',  label:'상담/테스트', short:'상담',   color:'#0369a1', bg:'#e0f2fe' },
+    { k:'tlp',      label:'TLP',       short:'TLP',      color:'#047857', bg:'#d1fae5' },
+    { k:'kmm',      label:'KMM',       short:'KMM',      color:'#b45309', bg:'#fef3c7' },
+    { k:'consult',  label:'컨설팅',    short:'컨설팅',   color:'#be185d', bg:'#fce7f3' },
+    { k:'etc',      label:'기타',      short:'기타',     color:'#475569', bg:'#f1f5f9' }
+  ];
+  /* 2026-10-17 업체 1419039 의 상품 6개 (이름이 바뀌어도 번호로 찾는다) */
+  var NB_ITEM_KIND = { '6773412':'counsel', '7401437':'tlp', '7170543':'tenten', '7380213':'recovery', '7280930':'kmm', '7397966':'consult' };
+  function nbKindOf(name, id){
+    var n = String(name == null ? '' : name);
+    if (/리커버리|recovery/i.test(n)) return 'recovery';
+    if (/텐투텐|10\s*to\s*10|ten\s*to\s*ten/i.test(n)) return 'tenten';
+    if (/TLP|학습\s*심리|학습\s*검사/i.test(n)) return 'tlp';
+    if (/KMM|경시/i.test(n)) return 'kmm';
+    if (/컨설팅/.test(n)) return 'consult';
+    if (/테스트|상담/.test(n)) return 'counsel';
+    var byId = NB_ITEM_KIND[String(id == null ? '' : id)];
+    return byId || 'etc';
+  }
+  function nbKindInfo(k){ for (var i = 0; i < NB_KINDS.length; i++) if (NB_KINDS[i].k === k) return NB_KINDS[i]; return NB_KINDS[NB_KINDS.length - 1]; }
+
+  /* ── 시간: UTC → 한국 시간 ── */
+  function nbKst(iso){
+    if (!iso) return null;
+    var s = String(iso);
+    if (/^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d)?(\.\d+)?$/.test(s)) s += 'Z';   /* 시간대 표시가 없으면 UTC 로 본다(snapshotJson 은 Z 가 붙어 온다) */
+    var t = Date.parse(s); if (isNaN(t)) return null;
+    var d = new Date(t + 9 * 3600000);
+    return { date: d.toISOString().slice(0, 10), time: d.toISOString().slice(11, 16) };
+  }
+  function nbTodayKst(now){ return new Date((now == null ? Date.now() : now) + 9 * 3600000).toISOString().slice(0, 10); }
+  function nbAddDays(ymd, n){ var t = Date.parse(ymd + 'T00:00:00Z'); return new Date(t + n * 86400000).toISOString().slice(0, 10); }
+
+  /* ── ③ 상태 ── */
+  var NB_ST_LABEL = { requested:'신청(확정 대기)', confirmed:'확정', completed:'이용 완료', cancelled:'취소', noshow:'노쇼', unknown:'' };
+  function nbStatusOf(b){
+    b = b || {};
+    var code = String(b.bookingStatusCode || ''), admin = String(b.adminBookingStatusCode || '');
+    var k = 'unknown';
+    if (b.cancelledDateTime || b.cancelDateTime || code === 'RC04' || /CANCEL/i.test(admin)) k = 'cancelled';
+    else if (b.isNoShow || b.noShow || b.noShowDateTime || /NOSHOW|NO_SHOW/i.test(code + ' ' + admin)) k = 'noshow';
+    else if (b.isCompleted || b.completedDateTime || code === 'RC08') k = 'completed';
+    else if (code === 'RC03' || b.confirmedDateTime) k = 'confirmed';
+    else if (code === 'RC01' || code === 'RC02') k = 'requested';
+    return { k: k, code: code, admin: admin, label: NB_ST_LABEL[k] || ('상태 ' + (code || '?')) };
+  }
+
+  /* ── 추가 답(customFormInputJson) — 모양이 정해지지 않아 흔한 이름들을 차례로 본다 ── */
+  function nbParse(v){ if (typeof v === 'string'){ try { return JSON.parse(v); } catch (e) { return null; } } return v; }
+  function nbFormOf(snap){
+    var raw = nbParse(snap && (snap.customFormInputJson || snap.customFormInput));
+    if (!raw) return [];
+    if (!Array.isArray(raw)) raw = (typeof raw === 'object') ? (raw.items || raw.list || raw.inputs || Object.keys(raw).map(function(k){ return { title: k, value: raw[k] }; })) : [];
+    var out = [];
+    (raw || []).forEach(function(x){
+      if (x == null) return;
+      if (typeof x !== 'object'){ out.push({ q: '', a: String(x) }); return; }
+      var q = x.title || x.name || x.question || x.label || x.formTitle || x.key || '';
+      var a = x.value; if (a == null) a = x.answer; if (a == null) a = x.inputValue; if (a == null) a = x.text; if (a == null) a = x.selectedValue; if (a == null) a = x.values; if (a == null) a = x.options;
+      if (Array.isArray(a)) a = a.map(function(y){ return (y && typeof y === 'object') ? (y.value || y.name || y.title || '') : y; }).filter(function(y){ return y != null && y !== ''; }).join(', ');
+      else if (a && typeof a === 'object') a = a.value || a.name || a.title || '';
+      a = (a == null) ? '' : String(a);
+      if (!String(q).trim() && !a.trim()) return;
+      out.push({ q: String(q).slice(0, 80), a: a.slice(0, 300) });
+    });
+    return out.slice(0, 12);
+  }
+
+  /* ── 전화번호 ── */
+  function nbDigits(p){
+    var d = String(p == null ? '' : p).replace(/[^0-9]/g, '');
+    if (d.indexOf('82') === 0 && d.length >= 11) d = '0' + d.slice(2);
+    return d;
+  }
+  /* 한 칸에 번호가 둘 이상 적혀 있을 수 있어(「010-… / 010-…」) 숫자 묶음을 다 꺼낸다 */
+  function nbPhonesIn(s){
+    var out = [], t = String(s == null ? '' : s), re = /(?:\+?82[-\s]?)?0?1[016789][-\s.]?\d{3,4}[-\s.]?\d{4}|0\d{1,2}[-\s.]?\d{3,4}[-\s.]?\d{4}/g, m;
+    while ((m = re.exec(t))){ var d = nbDigits(m[0]); if (d.length === 10 && d.charAt(0) === '1') d = '0' + d; if (d.length >= 9 && out.indexOf(d) < 0) out.push(d); }
+    return out;
+  }
+  function nbFmtPhone(p){
+    var d = nbDigits(p);
+    if (d.length === 11) return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7);
+    if (d.length === 10) return d.slice(0, 3) + '-' + d.slice(3, 6) + '-' + d.slice(6);
+    return String(p == null ? '' : p);
+  }
+
+  /* ── ② 예약 1건 정리 → { pub: 공개해도 되는 칸, pii: 잠글 칸 } ── */
+  function nbNormalize(b, items){
+    b = b || {};
+    var snap = nbParse(b.snapshotJson) || {};
+    var itemId = String(b.bizItemId == null ? '' : b.bizItemId);
+    var itemName = b.bizItemName || '';
+    if (!itemName && items){ for (var i = 0; i < items.length; i++) if (String(items[i].bizItemId) === itemId){ itemName = items[i].name || ''; break; } }
+    var st = nbStatusOf(b);
+    var s0 = nbKst(snap.startDateTime || b.startDateTime), e0 = nbKst(snap.endDateTime || b.endDateTime);
+    var date = (s0 && s0.date) || String(b.startDate || '').slice(0, 10);
+    var cancelled = b.cancelledDateTime || b.cancelDateTime || (st.k === 'cancelled' ? (b.updatedDateTime || '') : '') || '';
+    var pub = {
+      id: String(b.bookingId == null ? '' : b.bookingId),
+      item: { id: itemId, name: String(itemName), kind: nbKindOf(itemName, itemId) },
+      status: { code: st.code, admin: st.admin, k: st.k, label: st.label },
+      date: date,
+      start: (s0 && s0.time) || '',
+      end: (e0 && e0.time) || '',
+      endDate: (e0 && e0.date) || String(b.endDate || '').slice(0, 10),
+      count: Number(b.bookingCount) || 1,
+      reg: b.regDateTime || '', confirmed: b.confirmedDateTime || '', completed: b.completedDateTime || '', cancelled: cancelled || ''
+    };
+    var pii = {
+      booker: String(b.name || b.bookerName || b.userName || ''),
+      phone: nbFmtPhone(b.phone || b.phoneNumber || b.bookerPhone || ''),
+      msg: String(b.requestMessage || b.request || '').slice(0, 500),
+      form: nbFormOf(snap)
+    };
+    return { pub: pub, pii: pii };
+  }
+  /* 기간 안인지 — 이용일이 오늘-30일 ~ 오늘+90일, 또는 최근 14일 안에 신청·확정·취소·완료된 것 */
+  function nbInWindow(pub, today, back, ahead, recentDays){
+    back = back == null ? 30 : back; ahead = ahead == null ? 90 : ahead; recentDays = recentDays == null ? 14 : recentDays;
+    var lo = nbAddDays(today, -back), hi = nbAddDays(today, ahead);
+    if (pub.date && pub.date >= lo && pub.date <= hi) return true;
+    var rlo = nbAddDays(today, -recentDays);
+    return [pub.reg, pub.confirmed, pub.cancelled, pub.completed].some(function(x){ var k = nbKst(x); return k && k.date >= rlo; });
+  }
+
+  /* ── ④ 학생 맞추기 ──
+   *  students = 학원앱 등록부(or_studentdb) · 학생 키 = String(id || name) (리커버리 보드 rc_state 와 같은 키)
+   *  links = 원장님이 앱에서 고른 것 { 예약번호: 학생 키 } — 학생 키가 '' 이면 「명단에 없음(새 가족)」으로 고정 */
+  function nbStKey(s){ return String((s && (s.id || s.name)) || ''); }
+  function nbStuPhones(s){
+    var out = [];
+    Object.keys(s || {}).forEach(function(k){
+      if (!/phone|tel|연락/i.test(k)) return;
+      var v = s[k]; if (v == null || typeof v === 'object') return;
+      nbPhonesIn(v).forEach(function(d){ if (out.indexOf(d) < 0) out.push(d); });
+    });
+    return out;
+  }
+  function nbNameKey(n){ return String(n == null ? '' : n).replace(/\s+/g, ''); }
+  function nbMatch(pub, pii, students, links){
+    var id = pub && pub.id;
+    var act = (students || []).filter(function(s){ return s && s.name && !s.withdrawn; });
+    if (links && Object.prototype.hasOwnProperty.call(links, id)){
+      var lk = links[id];
+      if (lk === '' || lk == null) return { stKey: '', code: '', how: 'none' };
+      var hit = (students || []).filter(function(s){ return nbStKey(s) === String(lk); })[0];
+      if (hit) return { stKey: nbStKey(hit), code: String(hit.lumen_rec_code || ''), how: 'manual' };
+    }
+    pii = pii || {};
+    var text = [pii.msg || ''].concat((pii.form || []).map(function(f){ return (f.q || '') + ' ' + (f.a || ''); })).join(' ');
+    var tkey = nbNameKey(text);
+    var byName = function(arr){ return arr.filter(function(s){ var nk = nbNameKey(s.name); return nk.length >= 2 && tkey.indexOf(nk) >= 0; }); };
+    var ph = nbDigits(pii.phone);
+    if (ph.length >= 9){
+      var byPh = act.filter(function(s){ return nbStuPhones(s).indexOf(ph) >= 0; });
+      if (byPh.length === 1) return { stKey: nbStKey(byPh[0]), code: String(byPh[0].lumen_rec_code || ''), how: 'phone' };
+      if (byPh.length > 1){   /* 형제 — 메모에 이름이 있으면 그 아이 */
+        var nb = byName(byPh);
+        if (nb.length === 1) return { stKey: nbStKey(nb[0]), code: String(nb[0].lumen_rec_code || ''), how: 'phone' };
+        return { stKey: '', code: '', how: 'ambiguous', cands: byPh.map(nbStKey) };
+      }
+    }
+    if (tkey){
+      var bn = byName(act);
+      if (bn.length > 1){   /* 「김민준」 안에 「민준」 같은 짧은 이름이 겹치면 긴 이름만 */
+        bn = bn.filter(function(s){ return !bn.some(function(o){ return o !== s && nbNameKey(o.name).length > nbNameKey(s.name).length && nbNameKey(o.name).indexOf(nbNameKey(s.name)) >= 0; }); });
+      }
+      if (bn.length === 1) return { stKey: nbStKey(bn[0]), code: String(bn[0].lumen_rec_code || ''), how: 'name' };
+      if (bn.length > 1) return { stKey: '', code: '', how: 'ambiguous', cands: bn.map(nbStKey) };
+    }
+    return null;
+  }
+
+  /* ── ⑤ 개인정보 칸 잠그기 / 열기 (AES-GCM 256 · 열쇠 = SHA-256('lumen-naver-booking-v1|' + 원장님 열쇠)) ── */
+  function nbSubtle(){ var c = (typeof crypto !== 'undefined') ? crypto : (root && root.crypto); return c && c.subtle ? c : null; }
+  function nbB64(u8){
+    if (typeof Buffer !== 'undefined') return Buffer.from(u8).toString('base64');
+    var s = ''; for (var i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]); return btoa(s);
+  }
+  function nbUnB64(s){
+    if (typeof Buffer !== 'undefined') return new Uint8Array(Buffer.from(String(s), 'base64'));
+    var b = atob(String(s)), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u;
+  }
+  function nbHex(buf){ var u = new Uint8Array(buf), s = ''; for (var i = 0; i < u.length; i++) s += (u[i] < 16 ? '0' : '') + u[i].toString(16); return s; }
+  function nbKeyOf(teacherKey){
+    var C = nbSubtle(); if (!C) return Promise.reject(new Error('이 브라우저는 암호 기능(crypto.subtle)이 없습니다'));
+    var enc = new TextEncoder();
+    return C.subtle.digest('SHA-256', enc.encode('lumen-naver-booking-v1|' + String(teacherKey))).then(function(raw){
+      return C.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+    });
+  }
+  /* 열쇠 지문(앞 8글자) — 열쇠가 다른지 알아보는 용도. 열쇠 자체는 알 수 없다 */
+  function nbKid(teacherKey){
+    var C = nbSubtle(); if (!C) return Promise.resolve('');
+    return C.subtle.digest('SHA-256', new TextEncoder().encode('lumen-naver-kid|' + String(teacherKey))).then(function(h){ return nbHex(h).slice(0, 8); });
+  }
+  function nbSeal(obj, teacherKey){
+    var C = nbSubtle(); if (!C) return Promise.reject(new Error('crypto.subtle 없음'));
+    var iv = C.getRandomValues(new Uint8Array(12));
+    return Promise.all([nbKeyOf(teacherKey), nbKid(teacherKey)]).then(function(r){
+      return C.subtle.encrypt({ name: 'AES-GCM', iv: iv }, r[0], new TextEncoder().encode(JSON.stringify(obj))).then(function(ct){
+        return { v: 1, alg: 'A256GCM', kid: r[1], iv: nbB64(iv), ct: nbB64(new Uint8Array(ct)) };
+      });
+    });
+  }
+  function nbOpen(box, teacherKey){
+    if (!box || !box.ct || !box.iv) return Promise.reject(new Error('잠긴 칸이 없습니다'));
+    var C = nbSubtle(); if (!C) return Promise.reject(new Error('crypto.subtle 없음'));
+    return nbKeyOf(teacherKey).then(function(k){
+      return C.subtle.decrypt({ name: 'AES-GCM', iv: nbUnB64(box.iv) }, k, nbUnB64(box.ct));
+    }).then(function(pt){ return JSON.parse(new TextDecoder().decode(pt)); });
+  }
+
+  var API = { NB_KINDS: NB_KINDS, NB_ITEM_KIND: NB_ITEM_KIND, nbKindOf: nbKindOf, nbKindInfo: nbKindInfo, nbKst: nbKst, nbTodayKst: nbTodayKst, nbAddDays: nbAddDays,
+    nbStatusOf: nbStatusOf, nbFormOf: nbFormOf, nbDigits: nbDigits, nbPhonesIn: nbPhonesIn, nbFmtPhone: nbFmtPhone, nbNormalize: nbNormalize, nbInWindow: nbInWindow,
+    nbStKey: nbStKey, nbStuPhones: nbStuPhones, nbMatch: nbMatch, nbSeal: nbSeal, nbOpen: nbOpen, nbKid: nbKid };
+  if (typeof module !== 'undefined' && module.exports) module.exports = API;
+  else Object.keys(API).forEach(function(k){ root[k] = API[k]; });
+})(typeof window !== 'undefined' ? window : this);
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-124: 📅 네이버 예약 → 학원앱 (수집기 sync/naver_booking_collect.js · GitHub Actions naver-booking.yml 15분마다)
+ *
+ *  자료 (lumen_store — 화면이 서버에서 바로 읽는다 · 이 기기에는 저장하지 않는다 · 시작 다운로드 제외 'naver_book')
+ *    naver_bookings        {at, ok, items, bookings:[{id, item:{id,name,kind}, status:{code,k,label}, date, start, end, count, match:{stKey,code,how}|null, cands?}], counts, pii:{enc,n,kid}}
+ *    naver_bookings_pii    예약자 이름·전화·메모·추가 답을 원장님 열쇠로 잠근 상자 → 이 기기의 서버 잠금 열쇠(lumen_db_key)로 연다(nbOpen)
+ *    naver_bookings_status {at, ok, reason:'login'|'http', code, lastOkAt}
+ *    naver_booking_links   {예약번호: 학생 키} — 「학생 연결」에서 원장님이 고른 것 (''= 명단에 없음 · 새 가족). 수집기도 이것을 먼저 따른다.
+ *
+ *  ① 「수업·출결 › 📅 네이버 예약」 (VIEW 'naverbk', 출결·보충 바로 뒤)
+ *     머리: 마지막으로 받은 때 · 🔄 새로고침 · ⚡ 지금 받기(설정의 GitHub 토큰이 있으면 바로, 없으면 Actions 쪽 열기)
+ *     띠: 쿠키 만료 → 「네이버 다시 연결이 필요해요」 + 맥 크롬 방법 · 오래됨 · 이름·전화 열쇠 안내
+ *     종류 칩(전체 · 리커버리 · 텐투텐 · 상담/테스트 · TLP · KMM · 컨설팅 · 기타) · 텐투텐 날짜별 인원
+ *     목록: 오늘 · 다가오는 예약(날짜별) · 지난 7일(접힘). 줄 = 시간 · 종류 · 예약자 · 전화(누르면 전화) · 메모 · 상태 · 학생(또는 「학생 연결」)
+ *     취소는 흐리게.
+ *  ② 🚑 리커버리 보드: 그 주 리커버리 날짜의 «리커버리» 예약을 확정 학생과 맞춰
+ *     「✓ 네이버 예약 14:00」 · 시간 칸이 비었으면 「시간 넣기」(누를 때만 넣는다) · 예약 없는 확정 학생은 「예약 아직」
+ *     · 확정 명단에 없는 학생/못 맞춘 예약은 오른쪽 「예약했지만 명단에 없음」
+ *  ③ 🏠 홈: 「📅 오늘 네이버 예약 n건」 작은 칸 (시간 · 종류 · 이름)
+ *  ※ 출결은 자동으로 쓰지 않는다(읽기 + 원장님이 누른 단추만). 문자열 연결로만 쓴다(템플릿 리터럴 금지). 학생 실명은 화면에만.
+ * ═══════════════════════════════════════════════════════════════════ */
+var NBK = { loaded:false, loading:false, loadP:null, at:0, data:null, status:null, box:null, pii:null, piiErr:'', links:{}, err:'', kind:'all', edit:{}, busy:false };
+var NBK_TTL = 120000;
+var NBK_KEYS = ['naver_bookings', 'naver_bookings_status', 'naver_bookings_pii', 'naver_booking_links'];
+var NBK_GH_URL = 'https://api.github.com/repos/yellowtongki/lumen-math/actions/workflows/naver-booking.yml/dispatches';
+var NBK_GH_PAGE = 'https://github.com/yellowtongki/lumen-math/actions/workflows/naver-booking.yml';
+
+/* ── 메뉴: 위 기능 탭 「수업·출결」의 출결·보충 바로 뒤 ── */
+(function(){
+  try {
+    var g = (GROUPS || []).filter(function(x){ return x.key === 'class'; })[0]; if (!g) return;
+    if (g.subs.some(function(s){ return s.v === 'naverbk'; })) return;
+    var at = g.subs.length; g.subs.forEach(function(s, j){ if (s.v === 'attend') at = j + 1; });
+    g.subs.splice(at, 0, { v:'naverbk', icon:'📅', label:'네이버 예약', act:function(){ VIEW = 'naverbk'; nbkKick('naverbk', true); } });
+  } catch(e){ try { console.error('[네이버 예약 메뉴]', e); } catch(_){} }
+})();
+
+/* ★ 서버 잠금 열쇠(lumen_db_key)는 이 기기에만 — 서버 동기화(scheduleSync)에 절대 안 올린다.
+ *   (2026-10-17 확인: lumen_store 에 lumen_db_key 줄이 있었다 = 공개 열쇠로 읽힘. 이 열쇠로 이름·전화 상자를 열기 때문에 막는다.
+ *    시작 다운로드에서도 뺀다 — build_app.py v19-124 PULL_SKIP_KEYS) */
+if (typeof scheduleSync === 'function') scheduleSync = (function(o){ return function(key){ if (key === 'lumen_db_key') return; return o.apply(this, arguments); }; })(scheduleSync);
+
+function nbkQ(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function nbkVal(v){ if (typeof v === 'string'){ try { return JSON.parse(v); } catch(e){ return null; } } return v; }
+function nbkStus(){ return (typeof students !== 'undefined' && students) ? students : []; }
+function nbkStu(k){ var a = nbkStus(); for (var i = 0; i < a.length; i++) if (nbStKey(a[i]) === String(k)) return a[i]; return null; }
+
+/* ── 불러오기 (2분 캐시) + 잠근 상자 열기 ── */
+function nbkLoad(force){
+  if (NBK.loading) return NBK.loadP;
+  if (!force && NBK.loaded && Date.now() - NBK.at < NBK_TTL) return Promise.resolve();
+  var sb = getSupaClient(); if (!sb){ NBK.loaded = true; NBK.at = Date.now(); return Promise.resolve(); }
+  NBK.loading = true;
+  NBK.loadP = (async function(){
+    try {
+      var r = await sb.from('lumen_store').select('key,value').in('key', NBK_KEYS);
+      if (r && r.error) throw r.error;
+      var m = {}; ((r && r.data) || []).forEach(function(row){ m[row.key] = nbkVal(row.value); });
+      NBK.data = (m.naver_bookings && Array.isArray(m.naver_bookings.bookings)) ? m.naver_bookings : null;
+      NBK.status = m.naver_bookings_status || null;
+      NBK.links = (m.naver_booking_links && typeof m.naver_booking_links === 'object') ? m.naver_booking_links : {};
+      NBK.box = m.naver_bookings_pii || null;
+      NBK.err = '';
+      await nbkUnlock();
+    } catch(e){ NBK.err = (e && e.message) || String(e); }
+    NBK.loaded = true; NBK.loading = false; NBK.at = Date.now();
+  })();
+  return NBK.loadP;
+}
+async function nbkUnlock(){
+  NBK.pii = null; NBK.piiErr = '';
+  var box = NBK.box;
+  if (!box || !box.ct){ NBK.piiErr = (NBK.data && NBK.data.pii && NBK.data.pii.enc) ? 'nobox' : 'nokey-server'; return; }
+  var k = ''; try { k = lumenDbKey(); } catch(e){}
+  if (!k){ NBK.piiErr = 'nokey-device'; return; }
+  try { var o = await nbOpen(box, k); NBK.pii = (o && o.byId) || {}; }
+  catch(e){ NBK.piiErr = 'badkey'; }
+}
+/* 화면이 부를 때: 아직 안 읽었거나 오래됐으면 읽고, 그 화면이면 다시 그린다 */
+function nbkKick(view, force){
+  if (NBK.loading) return;
+  if (!force && NBK.loaded && Date.now() - NBK.at < NBK_TTL) return;
+  nbkLoad(!!force).then(function(){ try { if (VIEW === view) render(); } catch(e){} });
+}
+window.nbkRefresh = function(){ NBK.edit = {}; nbkLoad(true).then(function(){ render(); plToast('📅 네이버 예약을 다시 읽었어요'); }); };
+/* ⚡ 지금 받기 — 설정의 GitHub 토큰(이 PC 에만)이 있으면 수집기를 바로 깨운다 */
+window.nbkRunNow = function(){
+  var tok = ''; try { tok = (typeof htsGhToken === 'function') ? htsGhToken() : ''; } catch(e){}
+  if (!tok){ try { window.open(NBK_GH_PAGE, '_blank'); } catch(e){} plToast('🐙 GitHub 「네이버 예약 수집」에서 Run workflow 를 눌러 주세요 (설정에 GitHub 토큰을 넣으면 여기서 바로 됩니다)'); return; }
+  fetch(NBK_GH_URL, { method:'POST', headers:{ 'Authorization':'Bearer ' + tok, 'Accept':'application/vnd.github+json', 'X-GitHub-Api-Version':'2022-11-28', 'Content-Type':'application/json' }, body:JSON.stringify({ ref:'main' }) })
+    .then(function(r){ plToast(r.ok || r.status === 204 ? '⚡ 수집을 시작했어요 — 1~2분 뒤 🔄 새로고침' : ('⚠ GitHub 실행 요청 실패 (' + r.status + ')')); })
+    .catch(function(){ plToast('⚠ GitHub 에 연결하지 못했어요'); });
+};
+
+/* ── 예약 한 건 ── */
+function nbkAll(){ return (NBK.data && NBK.data.bookings) || []; }
+function nbkPii(b){ return (NBK.pii && NBK.pii[b.id]) || null; }
+/* 학생 연결: 원장님이 고른 것 > 수집기가 맞춘 것 (등록부에 지금 있는 학생만) */
+function nbkMatch(b){
+  var L = NBK.links || {};
+  if (Object.prototype.hasOwnProperty.call(L, b.id)){
+    var k = L[b.id];
+    if (k === '' || k == null) return { none:true, how:'none' };
+    var st = nbkStu(k); if (st) return { stKey:String(k), st:st, how:'manual' };
+  } else if (b.noStudent) return { none:true, how:'none' };
+  if (b.match && b.match.stKey){ var s2 = nbkStu(b.match.stKey); if (s2) return { stKey:String(b.match.stKey), st:s2, how:b.match.how || '' }; }
+  return null;
+}
+function nbkLive(b){ return !(b.status && b.status.k === 'cancelled'); }
+function nbkWho(b){
+  var m = nbkMatch(b), p = nbkPii(b);
+  if (m && m.st) return m.st.name;
+  if (p && p.booker) return p.booker;
+  return '새 예약';
+}
+function nbkDayLabel(ymd){
+  var d = new Date(ymd + 'T00:00:00'); if (isNaN(d)) return ymd;
+  return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + ['일','월','화','수','목','금','토'][d.getDay()] + ')';
+}
+function nbkMd(ymd){ var d = new Date(ymd + 'T00:00:00'); if (isNaN(d)) return ymd; return (d.getMonth() + 1) + '/' + d.getDate() + '(' + ['일','월','화','수','목','금','토'][d.getDay()] + ')'; }
+function nbkAgo(iso){
+  var t = Date.parse(iso || ''); if (isNaN(t)) return '';
+  var k = nbKst(iso), m = Math.round((Date.now() - t) / 60000);
+  var ago = m < 1 ? '방금' : (m < 60 ? m + '분 전' : (m < 60 * 48 ? Math.round(m / 60) + '시간 전' : Math.round(m / 1440) + '일 전'));
+  return (k ? Number(k.date.slice(5, 7)) + '/' + Number(k.date.slice(8, 10)) + ' ' + k.time : '') + ' (' + ago + ')';
+}
+function nbkKindBadge(k){ var K = nbKindInfo(k); return '<span class="nbk-kind" style="color:' + K.color + ';background:' + K.bg + '">' + nbkQ(K.short) + '</span>'; }
+
+/* ── 띠: 연결 상태 · 오래됨 · 이름·전화 열쇠 ── */
+function nbkBanners(){
+  var S = NBK.status, D = NBK.data, h = '';
+  if (NBK.err) h += '<div class="nbk-ban red" data-nbk-ban="err"><b>⚠ 서버에서 예약을 읽지 못했어요</b><span>' + nbkQ(NBK.err) + '</span></div>';
+  if (S && S.ok === false && (!D || String(S.at || '') >= String(D.at || ''))){
+    if (S.reason === 'login'){
+      h += '<div class="nbk-ban red" data-nbk-ban="login"><b>🔌 네이버 다시 연결이 필요해요</b>'
+        + '<span>네이버 로그인(쿠키)이 만료돼 ' + nbkQ(nbkAgo(S.at)) + '부터 새 예약을 못 받고 있어요.' + (S.lastOkAt ? ' 아래 목록은 ' + nbkQ(nbkAgo(S.lastOkAt)) + ' 것입니다.' : '') + '</span>'
+        + '<ol><li>맥 크롬에서 <b>partner.booking.naver.com</b> 에 로그인된 창을 열고 <b>⌘ + ⌥ + I</b> (개발자 도구)</li>'
+        + '<li>위쪽 <b>Application</b> → 왼쪽 <b>Cookies</b> → <b>https://partner.booking.naver.com</b></li>'
+        + '<li><b>NID_AUT</b> · <b>NID_SES</b> 두 값을 복사해 <code>NID_AUT=값; NID_SES=값</code> 모양으로</li>'
+        + '<li>GitHub 저장소 → Settings → Secrets and variables → Actions → <b>NAVER_COOKIE</b> → Update</li>'
+        + '<li>여기서 <b>⚡ 지금 받기</b> (또는 15분 기다리기)</li></ol></div>';
+    } else {
+      h += '<div class="nbk-ban amber" data-nbk-ban="http"><b>⚠ 네이버 응답이 이상해요 (코드 ' + nbkQ(S.code) + ')</b><span>15분 뒤 다시 시도합니다. 계속되면 Claude 에게 알려 주세요.</span></div>';
+    }
+  } else if (!D){
+    h += '<div class="nbk-ban grey" data-nbk-ban="empty"><b>아직 받은 예약이 없어요</b><span>GitHub 「네이버 예약 수집」이 처음 돌면 채워집니다 (15분마다).</span></div>';
+  } else {
+    var age = Date.now() - Date.parse(D.at || '');
+    if (age > 3 * 3600000) h += '<div class="nbk-ban amber" data-nbk-ban="stale"><b>⏳ 마지막 수집이 ' + nbkQ(nbkAgo(D.at)) + '이에요</b><span>GitHub 예약 실행이 밀릴 때가 있어요. 급하면 ⚡ 지금 받기.</span></div>';
+  }
+  if (D){
+    var pe = NBK.piiErr;
+    if (pe === 'nokey-server') h += '<div class="nbk-ban grey" data-nbk-ban="pii"><b>🔒 예약자 이름·전화는 아직 저장되지 않아요</b><span>GitHub 비밀값 <b>LUMEN_TEACHER_KEY</b>(서버 잠금 열쇠와 같은 값)를 넣으면 보입니다. 시간·상품·학생 연결은 그대로 보여요.</span></div>';
+    else if (pe === 'nokey-device') h += '<div class="nbk-ban grey" data-nbk-ban="pii"><b>🔒 이 기기에는 서버 잠금 열쇠가 없어 이름·전화를 열 수 없어요</b><span>원장님 기기(열쇠를 넣은 PC·아이패드)에서만 보입니다.</span></div>';
+    else if (pe === 'badkey') h += '<div class="nbk-ban amber" data-nbk-ban="pii"><b>🔒 이 기기의 열쇠로 이름·전화를 못 열었어요</b><span>GitHub 비밀값 LUMEN_TEACHER_KEY 와 이 기기의 서버 잠금 열쇠가 같은 값인지 확인해 주세요.</span></div>';
+    else if (pe === 'nobox') h += '<div class="nbk-ban grey" data-nbk-ban="pii"><b>🔒 이름·전화 칸을 받지 못했어요</b><span>🔄 새로고침 해 보세요.</span></div>';
+  }
+  return h;
+}
+
+/* ── 학생 연결 ── */
+function nbkStuCell(b){
+  var m = nbkMatch(b), ed = !!NBK.edit[b.id], h = '';
+  var howKo = { phone:'전화', name:'이름', manual:'직접' };
+  if (m && m.st && !ed){
+    return '<span class="nbk-stu" data-nbk-stu="' + nbkQ(m.stKey) + '">👤 ' + nbkQ(m.st.name) + (m.st.group ? ' <small>' + nbkQ(m.st.group) + '</small>' : '') + (howKo[m.how] ? ' <small class="nbk-how">' + howKo[m.how] + '</small>' : '')
+      + '<button type="button" class="nbk-ed" title="다른 학생으로 바꾸기" data-nbk-id="' + nbkQ(b.id) + '" onclick="nbkEdit(this.getAttribute(\'data-nbk-id\'))">✎</button></span>';
+  }
+  if (m && m.none && !ed){
+    return '<span class="nbk-stu none" data-nbk-stu="">🆕 명단에 없음<button type="button" class="nbk-ed" title="학생 연결" data-nbk-id="' + nbkQ(b.id) + '" onclick="nbkEdit(this.getAttribute(\'data-nbk-id\'))">✎</button></span>';
+  }
+  var cands = (b.cands || []).map(nbkStu).filter(Boolean);
+  if (cands.length) h += '<small class="nbk-cand">형제·같은 이름 ' + cands.length + '명 — 골라 주세요</small>';
+  h += '<select class="nbk-sel" data-nbk-id="' + nbkQ(b.id) + '" aria-label="학생 연결" onchange="nbkLink(this.getAttribute(\'data-nbk-id\'), this.value)">';
+  h += '<option value="">' + (ed ? '학생 바꾸기…' : '🔗 학생 연결…') + '</option>';
+  var seen = {};
+  cands.forEach(function(s){ var k = nbStKey(s); seen[k] = 1; h += '<option value="' + nbkQ(k) + '">★ ' + nbkQ(s.name) + (s.group ? ' (' + nbkQ(s.group) + ')' : '') + '</option>'; });
+  (typeof getSortedStudents === 'function' ? getSortedStudents() : nbkStus()).forEach(function(s){ var k = nbStKey(s); if (seen[k] || !k) return; h += '<option value="' + nbkQ(k) + '">' + nbkQ(s.name) + (s.group ? ' (' + nbkQ(s.group) + ')' : '') + '</option>'; });
+  h += '<option value="__none">🆕 명단에 없음 (새 가족)</option>';
+  if (Object.prototype.hasOwnProperty.call(NBK.links || {}, b.id)) h += '<option value="__clear">↩ 직접 연결 풀기 (자동으로)</option>';
+  h += '</select>';
+  if (ed) h += '<button type="button" class="nbk-ed" data-nbk-id="' + nbkQ(b.id) + '" onclick="nbkEdit(this.getAttribute(\'data-nbk-id\'))">취소</button>';
+  return '<span class="nbk-stu pick">' + h + '</span>';
+}
+window.nbkEdit = function(id){ NBK.edit[id] = !NBK.edit[id]; render(); };
+/* 저장 직전 서버의 연결표를 다시 읽어 합친다(다른 기기에서 고친 것을 덮지 않게) */
+window.nbkLink = async function(id, v){
+  if (!id || !v) return;
+  var sb = getSupaClient(); var cur = {};
+  try { var r = await sb.from('lumen_store').select('value').eq('key', 'naver_booking_links'); var x = nbkVal(r && r.data && r.data[0] && r.data[0].value); if (x && typeof x === 'object') cur = x; } catch(e){}
+  Object.keys(NBK.links || {}).forEach(function(k){ if (!Object.prototype.hasOwnProperty.call(cur, k)) cur[k] = NBK.links[k]; });
+  if (v === '__clear') delete cur[id];
+  else cur[id] = (v === '__none') ? '' : v;
+  NBK.links = cur; NBK.edit[id] = false;
+  var ok = await supaSetItem('naver_booking_links', cur);
+  var st = (v !== '__none' && v !== '__clear') ? nbkStu(v) : null;
+  plToast(ok ? (st ? '🔗 ' + st.name + ' 학생과 연결했어요' : (v === '__none' ? '🆕 명단에 없는 예약으로 표시했어요' : '↩ 자동 연결로 돌렸어요')) : '⚠ 저장하지 못했어요 — 네트워크를 확인해 주세요');
+  render();
+};
+
+/* ── 한 줄 ── */
+function nbkRow(b){
+  var p = nbkPii(b), cx = !nbkLive(b), stk = (b.status && b.status.k) || 'unknown';
+  var h = '<div class="nbk-row' + (cx ? ' nbk-cx' : '') + '" data-nbk-row="' + nbkQ(b.id) + '" data-nbk-kind="' + nbkQ(b.item && b.item.kind) + '">';
+  h += '<div class="nbk-time">' + (b.start ? nbkQ(b.start) : '종일') + (b.end && b.end !== b.start ? '<small>~' + nbkQ(b.end) + '</small>' : '') + '</div>';
+  h += nbkKindBadge(b.item && b.item.kind);
+  h += '<div class="nbk-main"><div class="nbk-who">';
+  if (p && p.booker) h += '<b>' + nbkQ(p.booker) + '</b>';
+  else h += '<b class="nbk-lock" title="이름·전화는 잠겨 있어요">예약자 🔒</b>';
+  if (p && p.phone){ var dg = nbDigits(p.phone); h += ' <a class="nbk-tel" href="tel:' + nbkQ(dg) + '">📞 ' + nbkQ(p.phone) + '</a>'; }
+  if ((b.count || 1) > 1) h += ' <span class="nbk-cnt">' + Number(b.count) + '명</span>';
+  h += ' <small class="nbk-item">' + nbkQ(b.item && b.item.name) + '</small></div>';
+  if (p && p.msg) h += '<div class="nbk-msg">💬 ' + nbkQ(p.msg) + '</div>';
+  if (p && p.form && p.form.length) h += '<div class="nbk-form">' + p.form.map(function(f){ return '<span>' + (f.q ? nbkQ(f.q) + ': ' : '') + '<b>' + nbkQ(f.a) + '</b></span>'; }).join('') + '</div>';
+  h += '</div>';
+  h += '<span class="nbk-st st-' + nbkQ(stk) + '">' + nbkQ((b.status && b.status.label) || '') + '</span>';
+  h += nbkStuCell(b);
+  return h + '</div>';
+}
+function nbkGroupHtml(list, title, cls, desc){
+  var by = {}, days = [];
+  list.forEach(function(b){ if (!by[b.date]){ by[b.date] = []; days.push(b.date); } by[b.date].push(b); });
+  days.sort(); if (desc) days.reverse();
+  var h = '';
+  days.forEach(function(d){
+    var arr = by[d].slice().sort(function(a, b){ return String(a.start).localeCompare(String(b.start)); });
+    var live = arr.filter(nbkLive).length;
+    h += '<div class="nbk-day ' + (cls || '') + '" data-nbk-day="' + nbkQ(d) + '"><div class="nbk-dh">' + nbkQ(title || nbkDayLabel(d)) + ' <small>' + live + '건' + (arr.length > live ? ' · 취소 ' + (arr.length - live) : '') + '</small></div>';
+    arr.forEach(function(b){ h += nbkRow(b); });
+    h += '</div>';
+  });
+  return h;
+}
+/* 텐투텐 날짜별 인원 (오늘부터) */
+function nbkTenten(today){
+  var by = {};
+  nbkAll().forEach(function(b){ if (b.item && b.item.kind === 'tenten' && nbkLive(b) && b.date >= today){ by[b.date] = (by[b.date] || 0) + (Number(b.count) || 1); } });
+  var ds = Object.keys(by).sort();
+  if (!ds.length) return '';
+  return '<div class="nbk-tt" data-nbk-tenten="1"><b>🧮 텐투텐 인원</b>' + ds.slice(0, 10).map(function(d){ return '<span data-nbk-tt="' + nbkQ(d) + '">' + nbkQ(nbkMd(d)) + ' <b>' + by[d] + '명</b></span>'; }).join('') + '</div>';
+}
+window.nbkSetKind = function(k){ NBK.kind = k; render(); };
+
+function rNaverBk(){
+  nbkKick('naverbk');
+  var h = '<div class="nbk-wrap">';
+  h += '<div class="nbk-head"><div><div class="nbk-ttl">📅 네이버 예약</div><div class="nbk-sub">네이버 예약 파트너센터 → 15분마다 자동 · 출결은 바꾸지 않아요</div></div>'
+    + '<div class="nbk-hr">' + (NBK.data ? '<span class="nbk-at" data-nbk-at="1">마지막으로 받은 때 ' + nbkQ(nbkAgo(NBK.data.at)) + '</span>' : '')
+    + '<button type="button" class="nbk-btn" onclick="nbkRefresh()">🔄 새로고침</button><button type="button" class="nbk-btn" onclick="nbkRunNow()">⚡ 지금 받기</button></div></div>';
+  if (!NBK.loaded) return h + '<div class="nbk-empty">📅 네이버 예약 불러오는 중…</div></div>';
+  h += nbkBanners();
+  var all = nbkAll(), today = nbTodayKst(), lo = nbAddDays(today, -7);
+  var vis = all.filter(function(b){ return b.date >= lo; });
+  var cnt = { all:0 }; vis.forEach(function(b){ var k = (b.item && b.item.kind) || 'etc'; cnt[k] = (cnt[k] || 0) + 1; cnt.all++; });
+  h += '<div class="nbk-chips">';
+  var chip = function(k, label){ var on = NBK.kind === k; return '<button type="button" class="nbk-chip' + (on ? ' on' : '') + '" data-nbk-chip="' + k + '" aria-pressed="' + (on ? 'true' : 'false') + '" onclick="nbkSetKind(\'' + k + '\')">' + nbkQ(label) + ' <small>' + (cnt[k] || 0) + '</small></button>'; };
+  h += chip('all', '전체');
+  NB_KINDS.forEach(function(K){ if (K.k === 'etc' && !cnt.etc) return; h += chip(K.k, K.label); });
+  h += '</div>';
+  if (NBK.kind === 'all' || NBK.kind === 'tenten') h += nbkTenten(today);
+  var f = vis.filter(function(b){ return NBK.kind === 'all' || (b.item && b.item.kind) === NBK.kind; });
+  var tod = f.filter(function(b){ return b.date === today; }), up = f.filter(function(b){ return b.date > today; }), past = f.filter(function(b){ return b.date < today; });
+  h += '<div class="nbk-sec" data-nbk-sec="today"><div class="nbk-sh">오늘 · ' + nbkQ(nbkDayLabel(today)) + '</div>' + (tod.length ? nbkGroupHtml(tod, '오늘', 'today') : '<div class="nbk-none">오늘 예약이 없어요</div>') + '</div>';
+  h += '<div class="nbk-sec" data-nbk-sec="up"><div class="nbk-sh">다가오는 예약</div>' + (up.length ? nbkGroupHtml(up) : '<div class="nbk-none">다가오는 예약이 없어요</div>') + '</div>';
+  h += '<details class="nbk-sec nbk-past" data-nbk-sec="past"' + (NBK.pastOpen ? ' open' : '') + ' ontoggle="NBK.pastOpen=this.open"><summary class="nbk-sh">지난 7일 <small>' + past.length + '건</small></summary>' + (past.length ? nbkGroupHtml(past, '', '', true) : '<div class="nbk-none">없어요</div>') + '</details>';
+  return h + '</div>';
+}
+window.rNaverBk = rNaverBk;
+
+/* ═══ 🚑 리커버리 보드 ═══ */
+function nbkHas(){ return !!(NBK.data && NBK.data.bookings); }
+/* 그 학생의 그 날 리커버리 예약(취소 빼고, 이른 시간 먼저) */
+function nbkRecOf(k, ymd){
+  var out = nbkAll().filter(function(b){ if (!(b.item && b.item.kind === 'recovery') || b.date !== ymd || !nbkLive(b)) return false; var m = nbkMatch(b); return m && m.st && m.stKey === String(k); });
+  out.sort(function(a, b){ return String(a.start).localeCompare(String(b.start)); });
+  return out[0] || null;
+}
+function nbkRcBadge(c, recDt, big){
+  var b = nbkRecOf(c.k, recDt), e = c.e || {}, done = !!e.done, kq = nbkQ(String(c.k));
+  if (!b) return done ? '' : '<span class="nbk-rcb no" data-nbk-rc="no" title="' + nbkQ(nbkMd(recDt)) + ' 리커버리 네이버 예약이 아직 없어요">예약 아직</span>';
+  var t = b.start || '', h = '<span class="nbk-rcb ok" data-nbk-rc="ok" title="네이버 예약 · ' + nbkQ(b.status && b.status.label) + '">✓ 네이버 예약 ' + nbkQ(t) + '</span>';
+  if (big || done || !t) return h;
+  if (!e.slot) h += '<button type="button" class="nbk-rcslot" data-nbk-slot="' + kq + '" data-nbk-t="' + nbkQ(t) + '" onclick="nbkRcSlot(this.getAttribute(\'data-nbk-slot\'), this.getAttribute(\'data-nbk-t\'))">시간 넣기</button>';
+  else if (e.slot !== t) h += '<button type="button" class="nbk-rcslot warn" data-nbk-slot="' + kq + '" data-nbk-t="' + nbkQ(t) + '" title="배정한 시간(' + nbkQ(e.slot) + ')과 예약 시간이 달라요" onclick="nbkRcSlot(this.getAttribute(\'data-nbk-slot\'), this.getAttribute(\'data-nbk-t\'))">⚠ ' + nbkQ(e.slot) + ' → ' + nbkQ(t) + '</button>';
+  return h;
+}
+/* 「시간 넣기」 — 누를 때만 그 학생 시간 칸에 예약 시간을 넣는다 (자동으로 덮지 않음) */
+window.nbkRcSlot = function(k, t){
+  if (k == null || !t) return;
+  var wk = rcWeekKey(); var W = RC.state.calls[wk] = RC.state.calls[wk] || {}; var e = W[k] = W[k] || {};
+  e.slot = t;
+  rcSaveState(); render();
+  plToast('🕑 네이버 예약 시간 ' + t + ' 을 넣었어요');
+};
+/* 확정 명단에 없는(또는 학생을 못 맞춘) 그 날 리커버리 예약 */
+function nbkRcSide(conf, recDt){
+  var inConf = {}; (conf || []).forEach(function(c){ inConf[String(c.k)] = 1; });
+  var list = nbkAll().filter(function(b){ if (!(b.item && b.item.kind === 'recovery') || b.date !== recDt || !nbkLive(b)) return false; var m = nbkMatch(b); return !(m && m.st && inConf[m.stKey]); });
+  if (!list.length) return '';
+  list.sort(function(a, b){ return String(a.start).localeCompare(String(b.start)); });
+  var h = '<div class="nbk-rcside" data-nbk-rcside="1"><b>📅 예약했지만 명단에 없음 · ' + list.length + '</b>';
+  list.forEach(function(b){
+    var m = nbkMatch(b), p = nbkPii(b);
+    h += '<div class="nbk-rcs-row" data-nbk-row="' + nbkQ(b.id) + '"><span class="t">' + nbkQ(b.start || '') + '</span><span class="n">' + nbkQ(m && m.st ? m.st.name : ((p && p.booker) || '학생 연결 안 됨')) + '</span>';
+    if (m && m.st) h += '<button type="button" class="nbk-rcadd" data-nbk-add="' + nbkQ(m.stKey) + '" onclick="rcManualAdd({ value: this.getAttribute(\'data-nbk-add\') })">＋ 확정 명단에</button>';
+    else h += '<button type="button" class="nbk-rcadd" onclick="VIEW=\'naverbk\';NBK.kind=\'recovery\';renderFuncTab()">🔗 연결하기</button>';
+    h += '</div>';
+  });
+  return h + '</div>';
+}
+/* 오른쪽 확정 명단 줄마다 이름 뒤에 배지 + 「예약했지만 명단에 없음」 */
+var _rcSidePanel124 = rcSidePanel;
+rcSidePanel = function(conf, wk){
+  var h = _rcSidePanel124.apply(this, arguments);
+  try {
+    if (!NBK.loaded){ nbkKick('recovery'); return h; }
+    nbkKick('recovery');
+    if (!nbkHas()) return h;
+    var recDt = rcRecDate(wk), pos = 0;
+    (conf || []).forEach(function(c){
+      var done = !!(c.e && c.e.done);
+      var mk = '<span style="font-size:13.5px;font-weight:900;color:#0d2240">' + (done ? '✅ ' : '') + esc2(c.name) + '</span>';
+      var i = h.indexOf(mk, pos); if (i < 0) return;
+      var j = i + mk.length, bd = nbkRcBadge(c, recDt, false);
+      h = h.slice(0, j) + bd + h.slice(j); pos = j + bd.length;
+    });
+    var side = nbkRcSide(conf, recDt);
+    var anc = '<div style="display:flex;gap:9px;align-items:flex-start;background:#f0fdf4;border:1.5px solid #bbf7d0;';
+    var a = h.indexOf(anc);
+    if (side) h = (a >= 0) ? (h.slice(0, a) + side + h.slice(a)) : (h + side);
+  } catch(e){ try { console.error('[네이버 예약 · 리커버리]', e); } catch(_){} }
+  return h;
+};
+/* 가운데 학생 카드(호출 확정한 학생)에도 작은 배지 */
+var _rRecovery124 = rRecovery;
+rRecovery = function(){
+  var h = _rRecovery124.apply(this, arguments);
+  try {
+    if (!NBK.loaded || !nbkHas() || RC.view !== 'board' || !RC.loaded) return h;
+    var wk = rcWeekKey(), W = (RC.state.calls || {})[wk] || {}, recDt = rcRecDate(wk), pos = 0;
+    rcRows().forEach(function(x){
+      var mk = '<span style="font-size:19px;font-weight:900;color:#0d2240">' + esc2(x.st.name) + '</span>';
+      var i = h.indexOf(mk, pos); if (i < 0) return;
+      var j = i + mk.length, e = W[x.stKey] || {};
+      if (!e.on && !e.done){ pos = j; return; }
+      var bd = nbkRcBadge({ k:x.stKey, e:e }, recDt, true);
+      h = h.slice(0, j) + bd + h.slice(j); pos = j + bd.length;
+    });
+  } catch(e){ try { console.error('[네이버 예약 · 리커버리 카드]', e); } catch(_){} }
+  return h;
+};
+
+/* ═══ 🏠 홈 — 오늘 네이버 예약 (작게) ═══ */
+window.nbkHomeCard = function(){
+  if (!NBK.loaded){ nbkKick('home'); return ''; }
+  nbkKick('home');
+  var S = NBK.status, bad = S && S.ok === false && S.reason === 'login';
+  if (!NBK.data && !bad) return '';
+  var today = nbTodayKst();
+  var list = nbkAll().filter(function(b){ return b.date === today && nbkLive(b); }).sort(function(a, b){ return String(a.start).localeCompare(String(b.start)); });
+  var h = '<div class="nbk-home" data-nbk-home="1"><div class="nbk-hh"><b>📅 오늘 네이버 예약 ' + list.length + '건</b>'
+    + '<span class="nbk-go" onclick="VIEW=\'naverbk\';renderFuncTab()">전체 보기 ›</span></div>';
+  if (bad) h += '<div class="nbk-hbad" onclick="VIEW=\'naverbk\';renderFuncTab()">🔌 네이버 다시 연결이 필요해요 — 눌러서 방법 보기</div>';
+  if (!list.length && !bad) h += '<div class="nbk-hnone">오늘 예약 없음</div>';
+  list.slice(0, 6).forEach(function(b){ h += '<div class="nbk-hrow"><span class="t">' + nbkQ(b.start || '종일') + '</span>' + nbkKindBadge(b.item && b.item.kind) + '<span class="n">' + nbkQ(nbkWho(b)) + '</span></div>'; });
+  if (list.length > 6) h += '<div class="nbk-hnone">＋ ' + (list.length - 6) + '건 더</div>';
+  return h + '</div>';
+};
+
+/* ── 모양 ── */
+(function(){
+  if (document.getElementById('nbk-css')) return;
+  var st = document.createElement('style'); st.id = 'nbk-css';
+  st.textContent = ''
+    + '.nbk-wrap{padding:18px 22px 40px;max-width:1120px}'
+    + '.nbk-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}'
+    + '.nbk-ttl{font-size:22px;font-weight:900;color:#0d2240}.nbk-sub{font-size:12px;color:#94a3b8;font-weight:700;margin-top:2px}'
+    + '.nbk-hr{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.nbk-at{font-size:11.5px;font-weight:800;color:#64748b}'
+    + '.nbk-btn{border:1px solid #e2e8f0;background:#fff;color:#334155;font-family:inherit;font-size:12px;font-weight:800;padding:6px 12px;border-radius:50px;cursor:pointer}'
+    + '.nbk-ban{border-radius:12px;padding:11px 14px;margin-bottom:10px;font-size:12.5px;line-height:1.6;font-weight:700;display:flex;flex-direction:column;gap:2px}'
+    + '.nbk-ban b{font-size:14px;font-weight:900}.nbk-ban ol{margin:6px 0 0 18px;padding:0}.nbk-ban code{background:rgba(255,255,255,.7);border-radius:5px;padding:0 4px}'
+    + '.nbk-ban.red{background:#fef2f2;border:1.5px solid #fca5a5;color:#991b1b}.nbk-ban.amber{background:#fffbeb;border:1.5px solid #fcd34d;color:#92400e}.nbk-ban.grey{background:#f8fafc;border:1.5px solid #e2e8f0;color:#475569}'
+    + '.nbk-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}'
+    + '.nbk-chip{border:1.5px solid #e2e8f0;background:#fff;color:#475569;border-radius:50px;padding:6px 13px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer}.nbk-chip small{opacity:.7;font-weight:800}'
+    + '.nbk-chip.on{background:#0d2240;border-color:#0d2240;color:#fff}'
+    + '.nbk-tt{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:12px;padding:8px 12px;margin-bottom:12px;font-size:12px;font-weight:800;color:#5b21b6}'
+    + '.nbk-tt span{background:#fff;border-radius:8px;padding:3px 9px}'
+    + '.nbk-sec{margin-bottom:14px}.nbk-sh{font-size:14px;font-weight:900;color:#0d2240;margin:4px 0 8px;cursor:default}.nbk-past>summary{cursor:pointer}.nbk-sh small{color:#94a3b8;font-weight:800}'
+    + '.nbk-day{background:#fff;border:1.5px solid #eef2f7;border-radius:14px;padding:8px 12px;margin-bottom:9px}.nbk-day.today{border-color:#bfdbfe;background:#f8fbff}'
+    + '.nbk-dh{font-size:12.5px;font-weight:900;color:#334155;padding:2px 0 6px}.nbk-dh small{color:#94a3b8;font-weight:800}'
+    + '.nbk-row{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-top:1px solid #f1f5f9;flex-wrap:wrap}.nbk-day .nbk-row:first-of-type{border-top:none}'
+    + '.nbk-row.nbk-cx{opacity:.45}.nbk-row.nbk-cx .nbk-time{text-decoration:line-through}'
+    + '.nbk-time{min-width:52px;font-size:15px;font-weight:900;color:#0d2240;line-height:1.2}.nbk-time small{display:block;font-size:10.5px;color:#94a3b8;font-weight:800}'
+    + '.nbk-kind{flex:none;font-size:11px;font-weight:900;border-radius:7px;padding:3px 8px;margin-top:1px}'
+    + '.nbk-main{flex:1;min-width:180px}.nbk-who{font-size:13.5px;font-weight:800;color:#0f172a}.nbk-lock{color:#94a3b8}.nbk-item{color:#94a3b8;font-weight:700}'
+    + '.nbk-tel{color:#0369a1;text-decoration:none;font-weight:800;white-space:nowrap}.nbk-cnt{background:#ede9fe;color:#5b21b6;border-radius:6px;padding:1px 6px;font-size:11px}'
+    + '.nbk-msg{font-size:12.5px;color:#334155;font-weight:600;margin-top:3px;white-space:pre-wrap;word-break:break-word}'
+    + '.nbk-form{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;color:#64748b;margin-top:3px}'
+    + '.nbk-st{flex:none;font-size:11px;font-weight:900;border-radius:50px;padding:3px 9px;background:#f1f5f9;color:#475569;margin-top:1px}'
+    + '.nbk-st.st-confirmed{background:#dcfce7;color:#15803d}.nbk-st.st-requested{background:#fef3c7;color:#92400e}.nbk-st.st-cancelled{background:#fee2e2;color:#b91c1c}.nbk-st.st-completed{background:#e0e7ff;color:#3730a3}.nbk-st.st-noshow{background:#7f1d1d;color:#fff}'
+    + '.nbk-stu{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:12.5px;font-weight:900;color:#0d2240;background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:10px;padding:4px 9px}'
+    + '.nbk-stu small{color:#64748b;font-weight:800}.nbk-stu .nbk-how{background:#fff;border-radius:6px;padding:0 5px}.nbk-stu.none{background:#fffbeb;border-color:#fde68a}.nbk-stu.pick{background:#fff;border-style:dashed;border-color:#cbd5e1}'
+    + '.nbk-ed{border:none;background:none;color:#64748b;cursor:pointer;font-family:inherit;font-size:12px;font-weight:900}'
+    + '.nbk-sel{font-family:inherit;font-size:12px;font-weight:800;border:1px solid #cbd5e1;border-radius:8px;padding:4px 6px;max-width:200px;background:#fff}'
+    + '.nbk-cand{color:#b45309;font-weight:800}'
+    + '.nbk-none,.nbk-empty{font-size:12.5px;color:#94a3b8;font-weight:700;padding:8px 2px}.nbk-empty{padding:50px;text-align:center}'
+    + '.nbk-rcb{display:inline-block;font-size:10.5px;font-weight:900;border-radius:20px;padding:2px 8px;margin-left:4px}.nbk-rcb.ok{background:#dcfce7;color:#15803d}.nbk-rcb.no{background:#f1f5f9;color:#94a3b8;border:1px dashed #cbd5e1}'
+    + '.nbk-rcslot{border:1.5px solid #1d6fe8;background:#eff6ff;color:#1d4ed8;border-radius:8px;padding:3px 8px;font-family:inherit;font-size:10.5px;font-weight:900;cursor:pointer;margin-left:3px}.nbk-rcslot.warn{border-color:#f59e0b;background:#fffbeb;color:#b45309}'
+    + '.nbk-rcside{border:1.5px solid #fde68a;background:#fffbeb;border-radius:11px;padding:9px 11px;margin:6px 0 10px;font-size:12px;color:#92400e}.nbk-rcside>b{display:block;margin-bottom:5px}'
+    + '.nbk-rcs-row{display:flex;align-items:center;gap:7px;padding:3px 0;font-weight:800;color:#334155}.nbk-rcs-row .t{min-width:40px;color:#0d2240;font-weight:900}.nbk-rcs-row .n{flex:1;min-width:0}'
+    + '.nbk-rcadd{border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:7px;padding:3px 8px;font-family:inherit;font-size:10.5px;font-weight:900;cursor:pointer}'
+    + '.nbk-home{background:#fff;border:1px solid #e6eaf1;border-radius:14px;padding:11px 15px;margin-bottom:14px;box-shadow:0 2px 8px rgba(13,34,64,0.05)}'
+    + '.nbk-hh{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;color:#0d2240;margin-bottom:5px}.nbk-go{font-size:11px;color:#1d6fe8;font-weight:800;cursor:pointer}'
+    + '.nbk-hrow{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:#334155;padding:2px 0}.nbk-hrow .t{min-width:42px;color:#0d2240;font-weight:900}'
+    + '.nbk-hnone{font-size:12px;color:#94a3b8;font-weight:700}.nbk-hbad{font-size:12px;font-weight:900;color:#b91c1c;background:#fef2f2;border-radius:8px;padding:5px 9px;margin-bottom:4px;cursor:pointer}'
+    + '@media(max-width:640px){.nbk-wrap{padding:14px 12px 30px}.nbk-main{min-width:0;flex-basis:100%}.nbk-sel{max-width:100%}}';
+  (document.head || document.documentElement).appendChild(st);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~124: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
