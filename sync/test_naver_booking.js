@@ -2,7 +2,8 @@
 /* 📅 네이버 예약 수집기 검사 — 가짜 자료만(이름·전화는 지어낸 것). 네이버·Supabase 를 부르지 않는다.
  *   쪽 넘김 멈춤 · 기간 거르기 · UTC→한국 시간 · 상품 종류 · 전화/이름 맞추기 · 직접 연결 우선 · 로그인 만료 · 잠근 상자 ·
  *   기억한 전화(직접 연결이 가르침 → 같은 전화 다음 예약 learned · 형제는 후보만 · 지문만 저장 · 비밀값 따라 지문 다름) ·
- *   «화면에 찍힌 글에 가짜 이름·전화·메모가 하나도 없다»
+ *   예약 열쇠(NAVER_PII_KEY)가 LUMEN_TEACHER_KEY 보다 먼저 · 상자에 kk·kid ·
+ *   «화면에 찍힌 글에 가짜 이름·전화·메모·열쇠가 하나도 없다»
  *   실행: node sync/test_naver_booking.js */
 'use strict';
 const fs = require('fs');
@@ -136,10 +137,28 @@ const FX = { items: ITEMS, pages, store: STORE, teacherKey: KEY };
   await col.run({ getJson: fio(pages), store: { get: async () => JSON.parse(JSON.stringify(STORE)), set: async (k, v) => { w3[k] = v; return true; } }, teacherKey: KEY, dry: true, now: NOW, log: () => {} });
   t('--dry: 서버에 쓰지 않음', Object.keys(w3).length === 0);
 
+  /* ── 예약 열쇠(NAVER_PII_KEY) — 공개된 서버 잠금 열쇠 대신 (2026-10-17) ── */
+  const PK = 'fake pii passphrase for test 2026';
+  t('열쇠가 LUMEN_TEACHER_KEY 뿐이면 kk=teacher · kid=그 열쇠 지문', box.kk === 'teacher' && NBd.pii.kk === 'teacher' && box.kid === (await core.nbKid(KEY)) && NBd.pii.kid === box.kid, JSON.stringify({ kk: box.kk, kid: box.kid }));
+  const w5 = {}, lg5 = [];
+  await col.run({ getJson: fio(pages), store: { get: async () => JSON.parse(JSON.stringify(STORE)), set: async (k, v) => { w5[k] = v; return true; } }, teacherKey: KEY, piiKey: PK, now: NOW, log: (...a) => lg5.push(a.join(' ')) });
+  const box5 = w5.naver_bookings_pii;
+  let o5 = null, t5 = false; try { o5 = await core.nbOpen(box5, PK); } catch (e) { o5 = null; } try { await core.nbOpen(box5, KEY); t5 = true; } catch (e) { t5 = false; }
+  t('둘 다 있으면 NAVER_PII_KEY 로 잠금 (예약 열쇠로 열림 · 서버 잠금 열쇠로는 안 열림)', !!o5 && o5.byId[id(2)].booker === B[2].name && !t5);
+  t('상자·공개 칸에 kk=pii · kid=예약 열쇠 지문(8글자)', box5.kk === 'pii' && w5.naver_bookings.pii.kk === 'pii' && box5.kid === (await core.nbKid(PK)) && /^[0-9a-f]{8}$/.test(box5.kid) && w5.naver_bookings.pii.kid === box5.kid && box5.kid !== box.kid, JSON.stringify({ kk: box5.kk, kid: box5.kid }));
+  t('로그: 「열쇠 NAVER_PII_KEY」 · 열쇠 글은 안 찍힘', lg5.some((x) => /잠금 저장 \d+건 \(열쇠 NAVER_PII_KEY\)/.test(x)) && lg5.every((x) => x.indexOf(PK) < 0 && x.indexOf(KEY) < 0 && x.indexOf('passphrase') < 0), lg5.join(' | '));
+  const w6 = {};
+  await col.run({ getJson: fio(pages), store: { get: async () => JSON.parse(JSON.stringify(STORE)), set: async (k, v) => { w6[k] = v; return true; } }, teacherKey: '', piiKey: '  ' + PK + '\n', now: NOW, log: () => {} });
+  let o6 = null; try { o6 = await core.nbOpen(w6.naver_bookings_pii, PK); } catch (e) { o6 = null; }
+  t('예약 열쇠만 있어도 저장 · 앞뒤 빈칸·줄바꿈은 무시', !!o6 && w6.naver_bookings_pii.kk === 'pii' && w6.naver_bookings.pii.enc === true);
+  const w7 = {}, lg7 = [];
+  await col.run({ getJson: fio(pages), store: { get: async () => JSON.parse(JSON.stringify(STORE)), set: async (k, v) => { w7[k] = v; return true; } }, teacherKey: '', piiKey: 'short', now: NOW, log: (...a) => lg7.push(a.join(' ')) });
+  t('짧은 예약 열쇠 → 저장은 하되 「짧아요」 경고 (열쇠 글은 안 찍힘)', !!w7.naver_bookings_pii && lg7.some((x) => /짧아요/.test(x)) && lg7.every((x) => x.indexOf('short') < 0), lg7.join(' | '));
+
   /* ── 명령줄(--fixture) — 찍힌 글 전체에 개인정보가 없는지 ── */
   const fxFile = path.join(SP, 'nb_fixture.json'), outFile = path.join(SP, 'nb_out.json');
   fs.writeFileSync(fxFile, JSON.stringify(FX));
-  const env = Object.assign({}, process.env); delete env.NAVER_COOKIE; delete env.SUPABASE_URL; delete env.SUPABASE_SERVICE_KEY;
+  const env = Object.assign({}, process.env); delete env.NAVER_COOKIE; delete env.SUPABASE_URL; delete env.SUPABASE_SERVICE_KEY; delete env.NAVER_PII_KEY; delete env.LUMEN_TEACHER_KEY;
   const run1 = cp.spawnSync(process.execPath, [path.join(__dirname, 'naver_booking_collect.js'), '--fixture', fxFile, '--out', outFile, '--now', NOW], { env, encoding: 'utf8' });
   const printed = (run1.stdout || '') + (run1.stderr || '');
   t('명령줄 --fixture 종료 0', run1.status === 0, printed.slice(0, 300));
@@ -147,6 +166,19 @@ const FX = { items: ITEMS, pages, store: STORE, teacherKey: KEY };
   t('찍힌 글에 가짜 이름·전화·이메일·메모·추가 답·학생 이름·코드·열쇠 없음', leak.length === 0, leak.slice(0, 5).join(' / '));
   const out1 = JSON.parse(fs.readFileSync(outFile, 'utf8'));
   t('--out 에 쓰려던 값 3개', Object.keys(out1).sort().join() === 'naver_bookings,naver_bookings_pii,naver_bookings_status');
+  /* 명령줄: 비밀값(환경변수) NAVER_PII_KEY + LUMEN_TEACHER_KEY 둘 다 → 예약 열쇠 */
+  const FXE = Object.assign({}, FX); delete FXE.teacherKey;
+  fs.writeFileSync(fxFile, JSON.stringify(FXE));
+  const envK = Object.assign({}, env, { NAVER_PII_KEY: PK, LUMEN_TEACHER_KEY: KEY });
+  const run5 = cp.spawnSync(process.execPath, [path.join(__dirname, 'naver_booking_collect.js'), '--fixture', fxFile, '--out', outFile, '--now', NOW], { env: envK, encoding: 'utf8' });
+  const pr5 = (run5.stdout || '') + (run5.stderr || ''), out5 = JSON.parse(fs.readFileSync(outFile, 'utf8'));
+  let o7 = null; try { o7 = await core.nbOpen(out5.naver_bookings_pii, PK); } catch (e) { o7 = null; }
+  t('명령줄(환경변수 둘 다): NAVER_PII_KEY 로 잠금 · kk pii · kid 기록', run5.status === 0 && !!o7 && out5.naver_bookings_pii.kk === 'pii' && out5.naver_bookings_pii.kid === (await core.nbKid(PK)) && /열쇠 NAVER_PII_KEY/.test(pr5), pr5.slice(0, 300));
+  const leak5 = secrets.concat(STU.map((s) => s.name), ['F0000', KEY, PK, 'passphrase', out5.naver_bookings_pii.kid]).filter((x) => x && pr5.indexOf(x) >= 0);
+  t('명령줄 찍힌 글에 이름·전화·메모·열쇠·열쇠 지문 없음', leak5.length === 0, leak5.slice(0, 5).join(' / '));
+  const pub5 = JSON.stringify(out5.naver_bookings);
+  t('명령줄: 공개 칸(naver_bookings)에 이름·전화·열쇠 없음', secrets.concat([KEY, PK]).every((x) => pub5.indexOf(x) < 0));
+  fs.writeFileSync(fxFile, JSON.stringify(FX));
 
   /* 로그인 만료 */
   const fxL = Object.assign({}, FX, { fail: { reason: 'login', code: 302 } });

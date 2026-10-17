@@ -15,8 +15,11 @@
  *        · 「명단에 없음」('')은 가르치지도 지우지도 않는다 · 「직접 연결 풀기」(연결표에서 빠짐)는 그 예약이 가르친 것을 지운다
  *   ④ 저장 (lumen_store)
  *        naver_bookings        — 시간·상품·상태·연결된 학생 키만 (이름·전화·메모 없음)
- *        naver_bookings_pii    — 예약자 이름·전화·메모·추가 답을 «원장님 열쇠»로 잠근 상자(AES-GCM)
- *                                 열쇠 = GitHub 비밀값 LUMEN_TEACHER_KEY (학원앱의 lumen_db_key 와 같은 값). 없으면 이 칸은 만들지 않는다.
+ *        naver_bookings_pii    — 예약자 이름·전화·메모·추가 답을 «열쇠»로 잠근 상자(AES-GCM)
+ *                                 열쇠 = GitHub 비밀값 NAVER_PII_KEY («예약 열쇠» — 원장님이 지은 긴 암호문, 학원앱 「🔑 예약 열쇠 넣기」에 같은 글)
+ *                                        없으면 LUMEN_TEACHER_KEY (학원앱의 lumen_db_key 와 같은 값 · 예전 방식). 둘 다 없으면 이 칸은 만들지 않는다.
+ *                                 ★ 2026-10-17: 서버 잠금 열쇠가 공개돼 교체 대기 중이라, 이름·전화는 따로 만든 예약 열쇠로 잠근다.
+ *                                 상자에 kk:'pii'|'teacher'(어느 열쇠인지) · kid(열쇠 지문 8글자 — 앱이 「열쇠가 달라요」를 알려 준다) 를 적는다.
  *        naver_bookings_status — {at, ok, reason, code} (개인정보 없음)
  *        naver_phone_links     — 기억한 전화 지문 → 학생 키 (위 ③ · 번호 없음 · SUPABASE_SERVICE_KEY 가 있을 때만)
  *      ⚠ lumen_store 는 학생앱·학부모앱의 공개 열쇠로 읽을 수 있다 → 학부모 이름·전화는 잠근 상자에만 둔다.
@@ -27,7 +30,7 @@
  * ⚠ 이 저장소와 실행 기록(로그)은 공개다. 이름·전화·이메일·메모·추가 답·안내문은 절대 찍지 않는다 — 건수와 코드만.
  *
  * 실행
- *   node sync/naver_booking_collect.js            (비밀값: NAVER_COOKIE · SUPABASE_URL · SUPABASE_SERVICE_KEY · LUMEN_TEACHER_KEY)
+ *   node sync/naver_booking_collect.js            (비밀값: NAVER_COOKIE · SUPABASE_URL · SUPABASE_SERVICE_KEY · NAVER_PII_KEY(또는 LUMEN_TEACHER_KEY))
  *   node sync/naver_booking_collect.js --dry      (저장 안 함, 건수만)
  *   node sync/naver_booking_collect.js --fixture <가짜.json> [--out <결과.json>] [--now 2026-10-17T10:00:00+09:00]
  *        가짜 자료로 돌린다(네이버·Supabase 안 부름). 쓰려던 값은 --out 파일로. 검사: node sync/test_naver_booking.js
@@ -220,6 +223,10 @@ async function run(opt) {
   const at = new Date(now).toISOString();
   const today = core.nbTodayKst(now);
   const getJson = opt.getJson, store = opt.store, teacherKey = opt.teacherKey || '';
+  /* 이름·전화 상자 열쇠: 예약 열쇠(NAVER_PII_KEY)가 먼저, 없으면 원장님 서버 잠금 열쇠(LUMEN_TEACHER_KEY) */
+  const piiKey = String(opt.piiKey || '').trim();
+  const sealKey = piiKey || teacherKey, keyKind = piiKey ? 'pii' : (teacherKey ? 'teacher' : '');
+  const keyName = keyKind === 'pii' ? 'NAVER_PII_KEY' : 'LUMEN_TEACHER_KEY';
   const secret = phoneSecret(opt.serviceKey || '');   /* 기억한 전화 지문 열쇠 — 서버 비밀값이 없으면 기억 기능은 쉰다 */
   const writes = {};
   const put = async (k, v) => { writes[k] = v; if (opt.dry || !store || !store.set) return true; const r = await store.set(k, v); if (r !== true) log('저장 실패', k, r); return r === true; };
@@ -269,11 +276,11 @@ async function run(opt) {
   bookings.sort((a, b) => (a.date + a.start + a.id < b.date + b.start + b.id ? -1 : 1));
 
   let pii = { enc: false, n: 0 };
-  if (teacherKey) {
+  if (sealKey) {
     try {
-      const box = await core.nbSeal({ at, byId: piiById }, teacherKey);
-      box.at = at; box.n = Object.keys(piiById).length;
-      pii = { enc: true, n: box.n, kid: box.kid };
+      const box = await core.nbSeal({ at, byId: piiById }, sealKey);   /* box.kid = 열쇠 지문 8글자(sha256('lumen-naver-kid|'+열쇠) 앞부분) */
+      box.at = at; box.n = Object.keys(piiById).length; box.kk = keyKind;
+      pii = { enc: true, n: box.n, kid: box.kid, kk: keyKind };
       await put('naver_bookings_pii', box);
     } catch (e) { log('개인정보 칸 잠그기 실패 — 이름·전화 없이 저장'); pii = { enc: false, n: 0, err: 'seal' }; }
   }
@@ -287,7 +294,8 @@ async function run(opt) {
   log('상품 ' + items.length + '개 · 종류별 ' + core.NB_KINDS.map((k) => k.label + ' ' + (counts.byKind[k.k] || 0)).join(' · '));
   log('학생 연결 ' + counts.matched + '건 (' + Object.keys(counts.how).map((h) => h + ' ' + counts.how[h]).join(' · ') + ') · 못 맞춤 ' + counts.unmatched + '건' + (counts.ambiguous ? ' (형제·동명 ' + counts.ambiguous + ')' : ''));
   log('기억한 전화 ' + counts.phoneMemo + '개 · 기억으로 연결 ' + (counts.how.learned || 0) + '건' + (secret ? '' : ' (SUPABASE_SERVICE_KEY 없음 — 기억 쉼)'));
-  log('이름·전화 칸: ' + (pii.enc ? '잠금 저장 ' + pii.n + '건' : (teacherKey ? '잠그기 실패' : 'LUMEN_TEACHER_KEY 없음 — 저장 안 함(시간·상품·상태만)')) + (opt.dry ? ' · [dry] 저장 안 함' : ' · 저장 완료'));
+  log('이름·전화 칸: ' + (pii.enc ? '잠금 저장 ' + pii.n + '건 (열쇠 ' + keyName + ')' : (sealKey ? '잠그기 실패' : 'NAVER_PII_KEY·LUMEN_TEACHER_KEY 없음 — 저장 안 함(시간·상품·상태만)')) + (opt.dry ? ' · [dry] 저장 안 함' : ' · 저장 완료'));
+  if (piiKey && piiKey.length < 16) log('⚠ 예약 열쇠(NAVER_PII_KEY)가 짧아요 — 20글자 이상 긴 암호문을 권해요');
   return { ok: true, counts, writes };
 }
 
@@ -296,12 +304,13 @@ module.exports = { run, fetchAll, cleanCookie, NaverErr, phoneSecret, phoneFp, l
 if (require.main === module) {
   const o = args(process.argv.slice(2));
   (async () => {
-    let getJson, store, teacherKey = process.env.LUMEN_TEACHER_KEY || '', serviceKey = process.env.SUPABASE_SERVICE_KEY || '';
+    let getJson, store, teacherKey = process.env.LUMEN_TEACHER_KEY || '', piiKey = process.env.NAVER_PII_KEY || '', serviceKey = process.env.SUPABASE_SERVICE_KEY || '';
     if (o.fixture) {
       const fx = JSON.parse(fs.readFileSync(path.resolve(o.fixture), 'utf8'));
       getJson = fixtureIO(fx);
       store = { get: async () => JSON.parse(JSON.stringify(fx.store || {})), set: async () => true };
       if (fx.teacherKey != null) teacherKey = fx.teacherKey;
+      if (fx.piiKey != null) piiKey = fx.piiKey;
       serviceKey = fx.serviceKey || '';   /* 가짜 자료는 가짜 서버 비밀값만 */
     } else {
       const cookie = cleanCookie(process.env.NAVER_COOKIE);
@@ -311,7 +320,7 @@ if (require.main === module) {
       if (!store.ok && !o.dry) { console.log('[네이버예약] SUPABASE_URL / SUPABASE_SERVICE_KEY 가 없어 --dry 로 돌립니다'); o.dry = true; }
       if (!store.ok) store = null;
     }
-    const r = await run({ getJson, store, teacherKey, serviceKey, dry: o.dry, now: o.now || '' });
+    const r = await run({ getJson, store, teacherKey, piiKey, serviceKey, dry: o.dry, now: o.now || '' });
     if (o.out) fs.writeFileSync(path.resolve(o.out), JSON.stringify(r.writes));
     process.exit(0);
   })().catch((e) => { console.log('[네이버예약] 예기치 못한 오류: ' + ((e && e.name) || 'Error')); process.exit(1); });
