@@ -38,7 +38,7 @@
     /* 지워도 안전한 것만 비운다 — 원본은 서버에 있다.
      * 앱이 반쯤 죽은 상태에서도 도는 가장 단순한 방법으로 쓴다(freeLocalSpace 가 없을 수도 있다). */
     var KEEP = { or_api_key:1, or_gemini_key:1, or_ai_provider:1, lumen_pw_hash:1,
-                 lumen_db_key:1, lumen_fz:1, lumen_wb_rw:1, lumen_wb_lw:1 };
+                 lumen_db_key:1, or_nb_key:1, lumen_fz:1, lumen_wb_rw:1, lumen_wb_lw:1 };
     var n = 0, kb = 0;
     try{
       Object.keys(localStorage).forEach(function(k){
@@ -138,6 +138,18 @@ const SUPA_URL = 'https://bhkkkbcytcrlxhrtjgen.supabase.co';
 const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
 
 let _supaClient = null;
+/* ★ v19-126: 네이버 예약 «예약 열쇠» — 주소 뒤 #nbkey=… 를 한 번 붙여 열면 이 기기에만 저장(서버로 안 올림), 주소에서는 지운다 */
+(function(){
+  try{
+    var h=String(location.hash||''), m=h.match(/(?:^#|[#&])nbkey=([^&]*)/);
+    if(!m) return;
+    var v=''; try{ v=decodeURIComponent(m[1]); }catch(e){ v=m[1]; }
+    v=String(v).trim();
+    var rest=h.replace(/^#/,'').split('&').filter(function(x){ return x && x.indexOf('nbkey=')!==0; }).join('&');
+    try{ history.replaceState(null,'',location.pathname+location.search+(rest?'#'+rest:'')); }catch(e){ location.hash=rest; }
+    if(v.length>=8){ localStorage.setItem('or_nb_key', v); setTimeout(function(){ try{ alert('🔑 네이버 예약 열쇠를 이 기기에 저장했습니다.\n이제 「네이버 예약」에서 예약자 이름·전화가 보입니다.'); }catch(e){} }, 700); }
+  }catch(e){}
+})();
 /* ★ v19-18: 서버 «지우기» 잠금 열쇠 (docs/rls_lock.sql).
  * 공개 주소에 올라간 앱이라 서버 열쇠가 누구에게나 보입니다. 그래서 서버 쪽에
  * 「지우기는 원장님 열쇠가 있을 때만」 규칙을 겁니다. 그 열쇠는 코드에 넣지 않고
@@ -430,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-125';
+var APP_VER = 'v19-126';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -1270,7 +1282,7 @@ window.supaPullStudentDbRescue = supaPullStudentDbRescue;
 // v18-23: onlyKeys를 주면 그 키들만 소량으로 받는다 — 전체(대용량) 동기화가 느린
 // 네트워크에서 실패할 때, 등록부·교재 같은 핵심만 먼저 받아 화면을 살리는 용도.
 var PULL_SKIP_PREFIX = ['mf_bookans_', 'mf_wsq_', 'mf_textbook_', 'mf_swb_', 'mf_ws_recent_', 'mf_wsans_', 'ms_exam', 'haesol_body_', 'hw_synced_', 'hw_scores_', 'typeach_stu_', 'stu_reports_', 'pub_reports_', 'submissions_', 'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_', 'naver_book'];
-var PULL_SKIP_KEYS = ['mf_type_ach', 'mf_sol_fix', 'mf_bookpages', 'ms_mydb_index', 'mf_ws_behaviors', 'mf_weekly', 'mf_progress', 'mf_books', 'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req', 'lumen_db_key', 'naver_phone_links'];
+var PULL_SKIP_KEYS = ['mf_type_ach', 'mf_sol_fix', 'mf_bookpages', 'ms_mydb_index', 'mf_ws_behaviors', 'mf_weekly', 'mf_progress', 'mf_books', 'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req', 'lumen_db_key', 'naver_phone_links', 'or_nb_key'];
 async function supaFullPull(onlyKeys) {
   var sb = getSupaClient();
   if (!sb) return false;
@@ -9064,6 +9076,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-126',date:'2026-10-17',stability:'ok',memo:'🟩 <b>네이버 예약 — 네이버 로고 · 예약 열쇠로 이름·전화 보기</b> (원장 2026-10-17 「네이버로고로 해주고」 · 「왼쪽에 아무것도 안 보여 학생과 못 잇는다」). ① 📅 대신 작은 <b>네이버 로고</b>(초록 네모 + 흰 N)를 메뉴 칸 「네이버 예약」·화면 제목·홈 「오늘 네이버 예약」에 씁니다. ② 예약자 <b>이름·전화·메모</b>를 서버 잠금 열쇠(교체 대기 중) 대신 따로 만든 <b>«예약 열쇠»</b>로 잠그고 엽니다. 원장님이 긴 암호문(20글자 이상)을 하나 지어 GitHub → Settings → Secrets and variables → Actions 에 <b>NAVER_PII_KEY</b> 로 넣고, 학원앱 「네이버 예약」 위 띠의 <b>「🔑 예약 열쇠 넣기」</b> 칸에 같은 글을 넣어 저장하면(또는 주소 뒤에 #nbkey=… 를 한 번 붙여 열면) 다음 수집부터 줄마다 예약자 이름 · 📞 전화(누르면 전화) · 메모가 보입니다. 열쇠는 <b>이 브라우저에만</b> 저장되고 서버로 올라가지 않습니다. 열쇠가 GitHub 것과 다르면 「🔑 열쇠가 달라요」. 수집기는 NAVER_PII_KEY 가 있으면 그것을, 없으면 예전처럼 LUMEN_TEACHER_KEY 를 씁니다. 부품 modules/naverbook126_teacher.js · 수집기 sync/naver_booking_collect.js · naver-booking.yml.'},
       {ver:'v19-125',date:'2026-10-17',stability:'ok',memo:'📞 <b>네이버 예약 — 학부모 전화 기억</b> (원장 2026-10-17 「연결」). 학원 명단의 전화번호 칸이 비어 있어도, 원장님이 「🔗 학생 연결」로 <b>한 번 직접 연결한 예약</b>의 학부모 전화를 GitHub 수집기가 기억해 두었다가 <b>같은 전화로 들어온 다음 예약을 자동으로 그 학생과 연결</b>합니다. 학생 칸에 작은 배지 <b>「📞 기억」</b>(「전화」·「이름」·「직접」과 같은 자리). 맞추는 순서: 직접 연결 → 명단 전화번호 → 📞 기억 → 메모 속 학생 이름. 형제처럼 한 전화를 두 학생에게 각각 직접 연결하면 자동으로 고르지 않고 «형제 후보»로만 보여 줍니다(메모에 아이 이름이 있으면 그 아이). 「🆕 명단에 없음」은 기억시키지 않고, 「↩ 직접 연결 풀기」를 하면 그 예약으로 배운 기억은 지워집니다. 🔒 전화번호 자체는 어디에도 저장하지 않습니다 — 서버 비밀값으로 만든 <b>지문</b>(거꾸로 번호를 알아낼 수 없는 글자)만 lumen_store naver_phone_links 에 두고, 학원앱은 이 표를 받지 않습니다. 실행 기록에는 「기억한 전화 n개 · 기억으로 연결 n건」 숫자만. 부품 modules/naverbook125_teacher.js · 수집기 sync/naver_booking_collect.js.'},
       {ver:'v19-124',date:'2026-10-17',stability:'ok',memo:'📅 <b>네이버 예약 → 학원앱</b> (원장 결정 2026-10-17 「클라우드에서 내 네이버 로그인으로」). GitHub 서버가 <b>15분마다</b> 네이버 예약 파트너센터의 예약을 받아 옵니다(sync/naver_booking_collect.js · naver-booking.yml). 「수업·출결 › <b>📅 네이버 예약</b>」(출결·보충 바로 뒤): 마지막으로 받은 때 · 🔄 새로고침 · ⚡ 지금 받기 · 종류 칩(전체 · 리커버리 · 텐투텐 · 상담/테스트 · TLP · KMM · 컨설팅) · <b>텐투텐 날짜별 인원</b> · 오늘 / 다가오는 예약(날짜별) / 지난 7일(접힘). 한 줄 = 시간 · 종류 · 예약자 · 전화(누르면 전화 걸기) · 메모 · 상태(신청·확정·완료·취소 — 취소는 흐리게) · <b>학생</b>(전화번호 → 메모 속 학생 이름 순으로 자동 연결, 형제는 골라 달라고 표시, 못 맞추면 「🔗 학생 연결」에서 고르기 · 「🆕 명단에 없음(새 가족)」). 네이버 로그인이 만료되면 맨 위에 <b>「네이버 다시 연결이 필요해요」</b>와 맥 크롬 방법(⌘⌥I → Application → Cookies → NID_AUT·NID_SES → GitHub 비밀값 NAVER_COOKIE). 🚑 <b>리커버리 보드</b>: 그 주 리커버리 날짜에 리커버리 예약을 한 확정 학생은 「✓ 네이버 예약 14:00」, 시간 칸이 비었으면 <b>「시간 넣기」</b>(누를 때만 들어감 · 다르면 ⚠ 표시), 예약 없는 확정 학생은 「예약 아직」, 예약했지만 확정 명단에 없는 학생은 오른쪽 「예약했지만 명단에 없음」(＋ 확정 명단에). 🏠 홈에 작은 칸 「📅 오늘 네이버 예약 n건」(시간 · 종류 · 이름). 출결은 자동으로 바꾸지 않습니다. 🔒 학부모 이름·전화·메모는 서버에 <b>원장님 열쇠로 잠근 채</b> 저장되어 원장님 기기(서버 잠금 열쇠를 넣은 PC·아이패드)에서만 보입니다 — GitHub 비밀값 LUMEN_TEACHER_KEY 가 있어야 저장됩니다(없으면 시간·상품·학생 연결만). 덤: 이 기기의 <b>서버 잠금 열쇠는 이제 서버로 올리지도 받지도 않습니다</b>(서버에 사본이 올라가 있던 것을 발견 — 열쇠 새로 바꾸기 순서는 docs/naver_booking_rls.sql). 서버 두 번째 자물쇠 제안도 그 파일(새벽에). 부품 modules/naverbook124_teacher.js · 공용 sync/naver_booking_core.js.'},
       {ver:'v19-123',date:'2026-10-16',stability:'ok',memo:'🧩 <b>리커버리 학습지 새 규칙</b> (원장 지시 2026-10-16 「학원앱에도 넣어」 · 「이번주 지난주는 선택가능하게 한다」 — 서버판 sync/rcws_make.js 에 넣은 규칙과 같게). 학생 카드 「🧩 학습지 설계」 팝업 맨 위에 <b>📝 쓸 주간테스트</b> — 그 학생이 본 최근 주간테스트(응시일 순, 제목·날짜·점수)를 ☑ 로 고릅니다(이번 주만 · 지난 주만 · 둘 다). 기본은 <b>중3 = 이번 주+지난 주 두 개</b>(오른쪽 도구 칸 「중3은 주간테스트 2개 합치기」로 끄고 켬, rc_ws_rule.twoTestGrades), 나머지 학년은 지금처럼 기준 미만 최근 시험 1개. 두 시험의 오답을 합치고(같은 문제는 한 번만) 범위 유형·교재 오답도 합칩니다. 학생별 단추 <b>오답 1배수</b>(시험 오답 쌍둥이 2→1) · <b>교재 오답 빼기</b>(시험 오답만) · <b>단원 오답 넣기</b>. 고른 것은 그 주에만 기억합니다(rc_ws_rule.per — 「확정 전원 생성」도 같은 선택을 씁니다, 「↺ 기본으로」). <b>단원 정답률로 불린 학생</b>(예: 「입체도형의 성질」 60%)은 그 단원의 최근 교재 오답(기본 28일, 「단원 오답 최근 N일」)을 더합니다 — 보드의 단원 이름은 수집기가 매쓰플랫 «교재 단원표»(유형칩의 대단원 이름)로 묶은 것이라, 같은 단원표에서 그 단원의 유형을 골라 오답을 찾습니다(교재 목차 글자 「5 다면체와 회전체」「STEP 1」에 기대지 않음). 매쓰플랫 계정이 없으면 유형DB의 중단원 이름으로 대신합니다. 기준 점수 이상이라 시험으로는 안 걸린 단원 학생도 이제 설계할 수 있습니다. 팝업에 <b>구성 한 줄</b>(시험 오답 n개 (시험 2개 합침) · 쌍둥이 ×1/×2 · 교과서 · 교재 오답 · 단원 오답 · 보강 → 예상 문항 수) — 단추를 바꾸면 바로 다시 짭니다. <b>만들면 보드 점수</b>(호출 기록의 점수)를 이번에 쓴 가장 최근 시험 점수로 바꿉니다(점수·날짜·시험 이름).'},
@@ -83358,7 +83371,7 @@ var HTS_GH_PAGE = 'https://github.com/yellowtongki/lumen-math/actions/workflows/
 var HTS_COURSES = ['공통수학1','공통수학2','대수','미적분1','확률과 통계','미적분2','기하'];
 window.htsSubject = function(v){ HTS.subject=v||''; render(); };
 var HTS_WAKE_KEYS = { exam_hit_req:1, ms_mydb_index_req:1, mf_collect_req:1 };
-var HTS_LOCAL_ONLY = { or_gh_token:1, or_mf_id:1, or_mf_pw:1 };   /* 이 PC 에만 두는 열쇠 — 서버 동기화(scheduleSync)에 절대 안 올린다 */
+var HTS_LOCAL_ONLY = { or_gh_token:1, or_mf_id:1, or_mf_pw:1, or_nb_key:1 };   /* 이 PC 에만 두는 열쇠 — 서버 동기화(scheduleSync)에 절대 안 올린다 */
 
 function htsGroup(kind){ return kind==='textbook'?'tb':(kind==='ms'?'ms':(kind==='upload'?'pdf':'mf')); }
 function htsKindLabel(m){ if(!m) return ''; if(m.kind==='textbook') return '📘 교과서'; if(m.kind==='ms') return '📂 수학비서 학습지'; if(m.kind==='upload') return m.lib?'📄 자료함 프린트':'📄 우리 프린트'; if(m.kind==='book') return '🧮 매쓰플랫 교재'; return '🧮 매쓰플랫 학습지'; }
@@ -91902,7 +91915,194 @@ if (typeof nbkStuCell === 'function') nbkStuCell = (function(o){
 })(nbkStuCell);
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~125: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-126: 네이버 예약 — ① 네이버 로고 ② «예약 열쇠» (원장 2026-10-17 「네이버로고로 해주고」 · 이름이 안 보여 학생과 못 잇는다)
+ *
+ *  ① 📅 대신 작은 네이버 로고(초록 #03C75A 둥근 네모 + 흰 굵은 N, 그림 글자 SVG):
+ *     메뉴 칸(수업·출결 › 네이버 예약) · 화면 제목 · 홈 「오늘 네이버 예약」 · 리커버리 「예약했지만 명단에 없음」
+ *     메뉴는 s.icon 을 innerHTML 로 그리므로(stab .si · lsub-i .ic) SVG 글을 그대로 넣으면 된다 — 그리기 코드는 안 바꾼다.
+ *  ② 예약자 이름·전화 상자(naver_bookings_pii)를 «예약 열쇠»로 연다
+ *     · 서버 잠금 열쇠(LUMEN_TEACHER_KEY = lumen_db_key)가 공개돼 교체 대기 중 → 수집기는 GitHub 비밀값 NAVER_PII_KEY(원장님이 지은 긴 암호문)를 먼저 쓴다
+ *     · 이 기기 열쇠: localStorage or_nb_key 먼저, 없거나 안 맞으면 lumen_db_key (예전 상자)
+ *     · 상자의 kid(열쇠 지문 8글자)와 이 기기 열쇠의 지문이 다르면 「열쇠가 달라요」
+ *     · 「🔑 예약 열쇠 넣기」 칸 → 이 브라우저 localStorage or_nb_key 에만 (서버로 절대 안 올림 — 아래 scheduleSync 막기 ·
+ *       build_app.py v19-126: HTS_LOCAL_ONLY · PULL_SKIP_KEYS · 비상 비우기 KEEP)
+ *     · 주소 뒤 #nbkey=… 를 한 번 붙여 열어도 저장(그 뒤 주소에서 지움) — build_app.py v19-126 이 #dbkey 처리 바로 앞에 넣는다
+ *  문자열 연결로만 쓴다(템플릿 리터럴 금지). 열쇠 글은 화면·로그 어디에도 찍지 않는다.
+ * ═══════════════════════════════════════════════════════════════════ */
+var NBK_LOGO = '<svg class="nbk-logo" viewBox="0 0 20 20" width="1em" height="1em" role="img" aria-label="네이버" focusable="false" style="display:inline-block;vertical-align:-0.14em;flex:none">'
+  + '<rect width="20" height="20" rx="4.6" fill="#03C75A"/>'
+  + '<path d="M5.4 4.9h3.3l2.75 4.25V4.9h3.15v10.2h-3.3L8.55 10.85v4.25H5.4z" fill="#fff"/></svg>';
+function nbkLogo(){ return NBK_LOGO; }
+
+/* ── ① 메뉴 칸 아이콘 ── */
+(function(){
+  try { (GROUPS || []).forEach(function(g){ (g.subs || []).forEach(function(s){ if (s.v === 'naverbk') s.icon = NBK_LOGO; }); }); }
+  catch(e){ try { console.error('[네이버 예약 로고]', e); } catch(_){} }
+})();
+/* 왼쪽 머리(3분할 l3LeftHead)는 화면 이름을 글자로 다룬다(l3Esc) → 이름에서는 로고를 빼고, 머리를 그릴 때만 로고를 붙인다 */
+if (typeof l3ViewTitle === 'function') l3ViewTitle = (function(o){
+  return function(){
+    var r = o.apply(this, arguments);
+    try {
+      if (r && (String(r.name || '').indexOf(NBK_LOGO) >= 0 || String(r.grp || '').indexOf(NBK_LOGO) >= 0)){
+        var c = {}; Object.keys(r).forEach(function(k){ c[k] = r[k]; });
+        c.name = String(r.name || '').split(NBK_LOGO).join('').trim();
+        c.grp = String(r.grp || '').split(NBK_LOGO).join('').trim();
+        r = c;
+      }
+    } catch(e){}
+    return r;
+  };
+})(l3ViewTitle);
+if (typeof window.l3LeftHead === 'function') window.l3LeftHead = (function(o){
+  return function(v){
+    var h = o.apply(this, arguments);
+    return ((v == null ? VIEW : v) === 'naverbk' && h) ? h.replace('<b>네이버 예약</b>', '<b>' + NBK_LOGO + ' 네이버 예약</b>') : h;
+  };
+})(window.l3LeftHead);
+
+/* ── 예약 열쇠: 이 기기에만 ── */
+var NBK_KEY_LS = 'or_nb_key';
+if (typeof scheduleSync === 'function') scheduleSync = (function(o){ return function(key){ if (key === NBK_KEY_LS) return; return o.apply(this, arguments); }; })(scheduleSync);
+try { if (typeof HTS_LOCAL_ONLY === 'object' && HTS_LOCAL_ONLY) HTS_LOCAL_ONLY[NBK_KEY_LS] = 1; } catch(e){}
+function nbkNbKey(){ try { return String((typeof _origGetItem === 'function' ? _origGetItem(NBK_KEY_LS) : localStorage.getItem(NBK_KEY_LS)) || ''); } catch(e){ return ''; } }
+function nbkNbKeySet(v){
+  try {
+    if (v){ if (typeof _origSetItem === 'function') _origSetItem(NBK_KEY_LS, v); else localStorage.setItem(NBK_KEY_LS, v); }
+    else { if (typeof _origRemoveItem === 'function') _origRemoveItem(NBK_KEY_LS); else localStorage.removeItem(NBK_KEY_LS); }
+    return true;
+  } catch(e){ return false; }
+}
+
+/* ── 상자 열기: 예약 열쇠 → 서버 잠금 열쇠 (지문이 다르면 열어 보지도 않는다) ── */
+nbkUnlock = async function(){
+  NBK.pii = null; NBK.piiErr = ''; NBK.piiSrc = ''; NBK.kidMine = '';
+  var box = NBK.box;
+  if (!box || !box.ct){ NBK.piiErr = (NBK.data && NBK.data.pii && NBK.data.pii.enc) ? 'nobox' : 'nokey-server'; return; }
+  var cand = [], nk = nbkNbKey(), dk = '';
+  try { dk = lumenDbKey(); } catch(e){}
+  if (nk) cand.push({ k: nk, src: 'nb' });
+  if (dk && dk !== nk) cand.push({ k: dk, src: 'db' });
+  if (!cand.length){ NBK.piiErr = 'nokey-device'; return; }
+  for (var i = 0; i < cand.length; i++){
+    var kid = '';
+    try { kid = await nbKid(cand[i].k); } catch(e){}
+    if (cand[i].src === 'nb') NBK.kidMine = kid;
+    if (box.kid && kid && kid !== box.kid) continue;
+    try { var o = await nbOpen(box, cand[i].k); NBK.pii = (o && o.byId) || {}; NBK.piiSrc = cand[i].src; return; } catch(e){}
+  }
+  /* 예약 열쇠를 넣었는데 안 맞음 · 예전 상자(서버 잠금 열쇠)인데 그 열쇠가 안 맞음 → 「열쇠가 달라요」
+   * 예약 열쇠 상자인데 이 기기엔 서버 잠금 열쇠뿐 → 「예약 열쇠를 넣으면」 */
+  NBK.piiErr = (nk || box.kk !== 'pii') ? 'badkey' : 'nokey-device';
+};
+
+/* ── 열쇠 넣기 / 지우기 ── */
+window.nbkKeySave = async function(){
+  var el = document.getElementById('nbkKeyIn');
+  var v = String((el && el.value) || '').trim();
+  if (v.length < 8){ plToast('🔑 예약 열쇠가 너무 짧아요 — GitHub NAVER_PII_KEY 에 넣은 글을 그대로 넣어 주세요'); return; }
+  if (!nbkNbKeySet(v)){ plToast('⚠ 이 브라우저에 저장하지 못했어요'); return; }
+  if (el) el.value = '';
+  await nbkUnlock();
+  render();
+  if (NBK.pii) plToast('🔓 예약자 이름·전화를 열었어요');
+  else if (NBK.piiErr === 'badkey') plToast('🔑 열쇠가 달라요 — GitHub NAVER_PII_KEY 와 똑같이 넣어 주세요');
+  else plToast('🔑 이 브라우저에 예약 열쇠를 저장했어요');
+};
+window.nbkKeyForget = async function(){
+  if (!confirm('이 브라우저에 저장한 예약 열쇠를 지울까요?')) return;
+  nbkNbKeySet('');
+  await nbkUnlock(); render();
+  plToast('🔑 예약 열쇠를 지웠어요');
+};
+window.nbkKeyShow = function(cb){ var el = document.getElementById('nbkKeyIn'); if (el) el.type = cb && cb.checked ? 'text' : 'password'; };
+
+function nbkKeyForm(){
+  var has = !!nbkNbKey();
+  return '<div class="nbk-key" data-nbk-key="1"><input type="password" id="nbkKeyIn" class="nbk-kin" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="예약 열쇠 (GitHub NAVER_PII_KEY 와 같은 글)" aria-label="예약 열쇠"'
+    + ' onkeydown="if(event.key===\'Enter\'){event.preventDefault();nbkKeySave();}">'
+    + '<label class="nbk-kshow"><input type="checkbox" onchange="nbkKeyShow(this)"> 보기</label>'
+    + '<button type="button" class="nbk-btn nbk-ksave" onclick="nbkKeySave()">저장</button>'
+    + (has ? '<button type="button" class="nbk-btn nbk-kdel" onclick="nbkKeyForget()">지우기</button>' : '')
+    + '</div><div class="nbk-knote">이 브라우저에만 저장돼요 · 서버로 올라가지 않아요' + (has ? ' · <b>지금 저장된 열쇠 있음 ✓</b>' : '') + '</div>';
+}
+function nbkKeyHowTo(){
+  return '<ol>'
+    + '<li>긴 암호문을 하나 지어요 — <b>20글자 이상</b> (예: 띄어쓰기를 섞은 나만 아는 문장). 학원 다른 비밀번호와 다르게.</li>'
+    + '<li>맥에서 GitHub 저장소 <b>lumen-math</b> → <b>Settings</b> → <b>Secrets and variables</b> → <b>Actions</b> → <b>New repository secret</b></li>'
+    + '<li>Name 에 <code>NAVER_PII_KEY</code> · Secret 에 그 암호문 → <b>Add secret</b></li>'
+    + '<li>아래 칸에 <b>같은 암호문</b>을 넣고 <b>저장</b> (이 브라우저에만 저장)</li>'
+    + '<li>위의 <b>⚡ 지금 받기</b> (또는 15분 기다리기) → 이름·전화가 보여요</li></ol>';
+}
+/* ── 이름·전화 띠 (v19-124 의 같은 자리 띠를 바꾼다) ── */
+function nbkKeyBanner(){
+  if (!NBK.data) return '';
+  var pe = NBK.piiErr, box = NBK.box || {};
+  if (!pe) return '';
+  var viaTeacher = box.kk === 'teacher' || (!box.kk && box.ct);   /* 예전 상자(서버 잠금 열쇠로 잠금) */
+  if (pe === 'nokey-server'){
+    return '<div class="nbk-ban grey" data-nbk-ban="pii" data-nbk-pii="nokey-server"><b>🔒 예약자 이름·전화는 아직 저장되지 않아요</b>'
+      + '<span>GitHub 비밀값 <b>NAVER_PII_KEY</b>(«예약 열쇠»)를 넣으면 다음 수집부터 보여요. 서버 잠금 열쇠(LUMEN_TEACHER_KEY)는 교체 중이라 쓰지 않아요. 시간·상품·학생 연결은 그대로 보여요.</span>'
+      + nbkKeyHowTo() + nbkKeyForm() + '</div>';
+  }
+  if (pe === 'badkey'){
+    return '<div class="nbk-ban amber" data-nbk-ban="pii" data-nbk-pii="badkey"><b>🔑 열쇠가 달라요</b>'
+      + '<span>이 기기의 열쇠로 이름·전화를 못 열었어요. '
+      + (viaTeacher ? '지금 상자는 서버 잠금 열쇠(LUMEN_TEACHER_KEY)로 잠겨 있어요 — GitHub 에 NAVER_PII_KEY 를 넣으면 다음 수집부터 예약 열쇠로 잠겨요.'
+                    : 'GitHub <b>NAVER_PII_KEY</b> 에 넣은 암호문과 <b>똑같이</b>(띄어쓰기·대소문자까지) 다시 넣어 주세요.')
+      + '</span>' + nbkKeyForm() + '</div>';
+  }
+  if (pe === 'nokey-device'){
+    return '<div class="nbk-ban grey" data-nbk-ban="pii" data-nbk-pii="nokey-device"><b>🔑 예약 열쇠를 넣으면 이름·전화가 보여요</b>'
+      + '<span>' + (viaTeacher ? '지금 상자는 서버 잠금 열쇠(LUMEN_TEACHER_KEY)로 잠겨 있어요. ' : '') + 'GitHub <b>NAVER_PII_KEY</b> 에 넣은 암호문을 아래에 넣어 주세요.</span>'
+      + nbkKeyForm() + '</div>';
+  }
+  if (pe === 'nobox') return '<div class="nbk-ban grey" data-nbk-ban="pii" data-nbk-pii="nobox"><b>🔒 이름·전화 칸을 받지 못했어요</b><span>🔄 새로고침 해 보세요.</span></div>';
+  return '';
+}
+nbkBanners = (function(o){
+  return function(){
+    var pe = NBK.piiErr, h;
+    NBK.piiErr = '';   /* 옛 이름·전화 띠는 빼고 그린 뒤 새 띠를 붙인다 */
+    try { h = o.apply(this, arguments); } finally { NBK.piiErr = pe; }
+    return h + nbkKeyBanner();
+  };
+})(nbkBanners);
+
+/* ── 제목 · 홈 · 리커버리: 📅 → 로고 ── */
+rNaverBk = (function(o){
+  return function(){
+    var h = o.apply(this, arguments);
+    return h.replace('<div class="nbk-ttl">📅 네이버 예약</div>', '<div class="nbk-ttl">' + NBK_LOGO + ' 네이버 예약</div>')
+            .replace('<div class="nbk-empty">📅 네이버 예약 불러오는 중…</div>', '<div class="nbk-empty">' + NBK_LOGO + ' 네이버 예약 불러오는 중…</div>');
+  };
+})(rNaverBk);
+window.rNaverBk = rNaverBk;
+window.nbkHomeCard = (function(o){
+  return function(){
+    var h = o.apply(this, arguments);
+    return h ? h.replace('<b>📅 오늘 네이버 예약 ', '<b>' + NBK_LOGO + ' 오늘 네이버 예약 ') : h;
+  };
+})(window.nbkHomeCard);
+if (typeof nbkRcSide === 'function') nbkRcSide = (function(o){
+  return function(){ var h = o.apply(this, arguments); return h ? h.replace('<b>📅 예약했지만 명단에 없음', '<b>' + NBK_LOGO + ' 예약했지만 명단에 없음') : h; };
+})(nbkRcSide);
+
+/* ── 모양 ── */
+(function(){
+  if (document.getElementById('nbk126-css')) return;
+  var st = document.createElement('style'); st.id = 'nbk126-css';
+  st.textContent = ''
+    + '.nbk-ttl{display:flex;align-items:center;gap:7px}.nbk-hh b{display:inline-flex;align-items:center;gap:5px}'
+    + '.nbk-key{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}'
+    + '.nbk-kin{flex:1;min-width:0;max-width:380px;font-family:inherit;font-size:13px;font-weight:700;border:1.5px solid #cbd5e1;border-radius:9px;padding:7px 10px;background:#fff;color:#0f172a}'
+    + '.nbk-kin:focus{outline:none;border-color:#03C75A}.nbk-kshow{font-size:11.5px;font-weight:800;color:#64748b;display:inline-flex;align-items:center;gap:3px;cursor:pointer}'
+    + '.nbk-btn.nbk-ksave{background:#03C75A;border-color:#03C75A;color:#fff}.nbk-knote{font-size:11px;font-weight:700;color:#94a3b8;margin-top:3px}.nbk-knote b{color:#15803d}';
+  (document.head || document.documentElement).appendChild(st);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~126: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
