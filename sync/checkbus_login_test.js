@@ -99,11 +99,35 @@ async function main() {
     log('로그인 관련 요청:', loginHits.length ? loginHits.map((a) => a.status + ' ' + a.method + ' ' + a.url + (a.shape ? ' 응답:' + JSON.stringify(a.shape).slice(0, 300) : '')).join('\n   ') : '(없음 — 폼 전송형일 수 있음)');
     const dlg = await page.evaluate(() => { const els = Array.from(document.querySelectorAll('[role=dialog], .modal, .swal2-container, .popup, .alert')); return els.map((e) => (e.innerText || '').replace(/\s+/g, ' ').slice(0, 120)).join(' / '); });
     if (dlg) log('안내창:', dlg);
+    /* ★ 2단계: 기기 확인(check-device-code) 응답과 화면 글(개인정보 가림) */
+    const dev = api.filter((a) => /device|otp|sms|verify|auth-code/i.test(a.url));
+    dev.forEach((a) => log('기기 확인 요청:', a.status, a.method, a.url, '요청:', JSON.stringify(a.req || null).slice(0, 300), '응답:', JSON.stringify(a.shape || null).slice(0, 600)));
+    const lh = api.find((a) => /\/login$/i.test(a.url));
+    if (lh && lh.shape) log('로그인 응답 전체 모양:', JSON.stringify(lh.shape).slice(0, 1500));
+    const bodyTxt = await page.evaluate(() => (document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 600));
+    log('화면 글:', bodyTxt.replace(/01[016789][-\s]?\d{3,4}[-\s]?\d{4}/g, '01*-****-****').replace(/\d{4,}/g, '####'));
+    const ins2 = await page.$$eval('input', (els) => els.map((e) => (e.type || '') + '|' + (e.name || e.id || '') + '|' + (e.placeholder || '') + '|' + (e.value ? 'v' : '')));
+    log('로그인 뒤 입력칸:', ins2.join(' , ') || '(없음)');
+    const ls = await page.evaluate(() => Object.keys(localStorage).map((k) => k + '(' + String(localStorage.getItem(k) || '').length + '자)'));
+    log('localStorage 키(값 없음):', ls.join(', ') || '(없음)');
   }
   log('로그인 뒤 주소:', cleanUrl(page.url()), '· 제목:', (await page.title()).slice(0, 60));
   const cookieNames = (await ctx.cookies()).map((c) => c.name + '@' + c.domain).join(', ');
   log('쿠키 이름(값 없음):', cookieNames || '(없음)');
 
+  /* ★ 2단계: 화면 JS 묶음에서 내부 주소 후보를 긁는다 (로그인 없이도 됨) */
+  try {
+    const scripts = await page.$$eval('script[src]', (els) => els.map((e) => e.src).filter((u) => /checkbus/.test(u)));
+    const routes = new Set();
+    for (const u of scripts.slice(0, 8)) {
+      const r = await page.request.get(u); const txt = await r.text();
+      const m = txt.match(/["'`](\/(?:api\/)?[a-zA-Z0-9_\-\/{}$:]{3,80})["'`]/g) || [];
+      m.forEach((x) => { const v = x.slice(1, -1); if (/attend|check|in|out|hist|log|record|student|member|class|lesson|daily|report|stat|visit|enter|leave|card|device|login|user|month|day|list|search|excel/i.test(v) && !/\.(png|jpg|svg|css|js|woff)/i.test(v)) routes.add(v); });
+      const hosts = txt.match(/https?:\/\/[a-z0-9.-]*checkbus[a-z0-9.\/-]*/gi) || [];
+      hosts.forEach((h) => routes.add(h));
+    }
+    log('JS 묶음 ' + scripts.length + '개 · 주소 후보 ' + routes.size + '개:', Array.from(routes).sort().slice(0, 200).join(' '));
+  } catch (e) { log('JS 묶음 긁기 실패', String(e && e.message).slice(0, 80)); }
   /* 메뉴 주소 모으기 */
   const hrefs = await page.$$eval('a[href]', (els) => Array.from(new Set(els.map((a) => a.getAttribute('href')))).filter((h) => h && !/^(#|javascript|mailto|tel)/.test(h)).slice(0, 80));
   const menuTexts = await page.$$eval('nav a, .menu a, .sidebar a, .lnb a, .gnb a, aside a, ul li a', (els) => els.map((a) => ((a.innerText || '').trim() + '→' + (a.getAttribute('href') || ''))).filter((s) => s.length > 2 && !/mailto|tel:/.test(s)).slice(0, 60));
