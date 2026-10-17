@@ -70,6 +70,8 @@ async function probe(label, url) {
     ['업체 목록 D', 'https://partner.booking.naver.com/api/v3/businesses?page=0&size=20'],
   ];
   let bizIds = [];
+  /* ★ 2026-10-17: 원장님 화면 주소(partner.booking.naver.com/bizes/1419039)에서 업체 번호 확인 — 공개 예약 페이지에도 나오는 번호라 비밀 아님 */
+  if (process.env.NAVER_BIZ_ID || true) bizIds.push(String(process.env.NAVER_BIZ_ID || '1419039'));
   for (const [label, url] of bizCandidates) {
     const j = await probe(label, url);
     if (!j) continue;
@@ -84,6 +86,15 @@ async function probe(label, url) {
     }
   }
   bizIds = [...new Set(bizIds)].slice(0, 3);
+  /* ★ 업체 번호로 바로 되는 주소 후보 (bizes/… 화면이 쓰는 내부 API 추정) */
+  for (const id of bizIds.slice(0, 1)) {
+    for (const [label, url] of [
+      ['업체 정보', `https://partner.booking.naver.com/api/businesses/${id}`],
+      ['예약 상품 A', `https://partner.booking.naver.com/api/businesses/${id}/biz-items`],
+      ['예약 상품 B', `https://partner.booking.naver.com/api/v3.1/businesses/${id}/biz-items`],
+      ['예약 상품 C', `https://api-partner.booking.naver.com/v3.1/businesses/${id}/biz-items`],
+    ]) await probe(label, url);
+  }
 
   /* 2) 예약 목록 — 업체 id가 잡혔으면 그 업체로, 아니면 대표 주소만 확인 */
   const today = new Date();
@@ -96,6 +107,9 @@ async function probe(label, url) {
       [`예약 목록 A (업체 ${id})`, `https://partner.booking.naver.com/api/businesses/${id}/bookings?page=0&size=20`],
       [`예약 목록 B (업체 ${id})`, `https://partner.booking.naver.com/api/businesses/${id}/bookings?page=0&size=20&startDate=${from}&endDate=${to}`],
       [`예약 목록 C (업체 ${id})`, `https://partner.booking.naver.com/api/v3.1/businesses/${id}/bookings?page=0&size=20`],
+      [`예약 목록 D (업체 ${id})`, `https://partner.booking.naver.com/api/businesses/${id}/bookings?bizItemTypes=STANDARD&startDateTime=${from}T00:00:00&endDateTime=${to}T23:59:59&page=0&size=20`],
+      [`예약 목록 E (업체 ${id})`, `https://api-partner.booking.naver.com/v3.1/businesses/${id}/bookings?page=0&size=20&startDate=${from}&endDate=${to}`],
+      [`예약 목록 F (업체 ${id})`, `https://partner.booking.naver.com/api/v3.1/businesses/${id}/bookings/statistics?startDate=${from}&endDate=${to}`],
     );
   }
   for (const [label, url] of bookingCandidates) {
