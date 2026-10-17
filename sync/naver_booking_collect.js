@@ -61,6 +61,7 @@ function args(argv) {
     else if (a === '--fixture') o.fixture = argv[++i] || '';
     else if (a === '--out') o.out = argv[++i] || '';
     else if (a === '--now') o.now = argv[++i] || '';
+    else if (a === '--archive') o.archive = true;
   }
   return o;
 }
@@ -284,6 +285,27 @@ async function run(opt) {
       await put('naver_bookings_pii', box);
     } catch (e) { log('개인정보 칸 잠그기 실패 — 이름·전화 없이 저장'); pii = { enc: false, n: 0, err: 'seal' }; }
   }
+  /* ★ 2026-10-17 원장 「올해 네이버예약 다 가져오고 통계」 — 전체 예약 보관(이름·전화·메모 원문 없음).
+   *   학교·학년만 메모에서 뽑고, 전화는 서버만 아는 지문(fp)으로 — 재방문·상담→등록 계산용. 유입 경로(areaName)도. */
+  if (opt.archive) {
+    const schOf = (t) => { const m = String(t || '').replace(/\s+/g, '').match(/([가-힣]{1,6}?)(초등학교|중학교|고등학교|초|중|고)(?![가-힣])/); return m ? (m[1] + (m[2].charAt(0))) : ''; };
+    const grOf = (t) => { const s0 = String(t || '').replace(/\s+/g, ''); let m = s0.match(/(초|중|고)(\d)/); if (m) return m[1] + m[2]; m = s0.match(/(초등|중등|고등|초|중|고)[^\d]{0,6}(\d)\s*학년/); if (m) return m[1].charAt(0) + m[2]; m = s0.match(/(\d)\s*학년/); return m ? '?' + m[1] : ''; };
+    const rows = [];
+    got.raw.forEach((b) => {
+      const n = core.nbNormalize(b, got.items); if (!n.pub.id) return;
+      const m = matchBooking(n.pub, n.pii, students, links, plMap, secret);
+      const txt = [n.pii.msg || ''].concat((n.pii.form || []).map((f) => (f.q || '') + ' ' + (f.a || ''))).join(' ');
+      const ph = core.nbDigits(n.pii.phone);
+      rows.push({ id: n.pub.id, kind: n.pub.item.kind, item: n.pub.item.id, date: n.pub.date, start: n.pub.start, st: n.pub.status.k, code: n.pub.status.code,
+        reg: n.pub.reg, conf: n.pub.confirmed, comp: n.pub.completed, canc: n.pub.cancelled, cnt: n.pub.count,
+        area: String(b.areaName || ''), stu: (m && m.stKey) ? m.stKey : '', how: (m && m.how) || '',
+        fp: (secret && ph.length >= 9) ? phoneFp(ph, secret) : '', sch: schOf(txt), gr: grOf(txt) });
+    });
+    rows.sort((a, b) => (a.date + a.start < b.date + b.start ? -1 : 1));
+    await put('naver_bookings_archive', { at, v: 1, items, n: rows.length, from: rows.length ? rows[0].date : '', to: rows.length ? rows[rows.length - 1].date : '', rows });
+    const byY = {}; rows.forEach((r) => { const y = r.date.slice(0, 4); byY[y] = (byY[y] || 0) + 1; });
+    log('보관(archive) ' + rows.length + '건 · ' + Object.keys(byY).sort().map((y) => y + '년 ' + byY[y]).join(' · ') + ' · 학교 뽑힘 ' + rows.filter((r) => r.sch).length + ' · 학년 뽑힘 ' + rows.filter((r) => r.gr).length + (opt.dry ? ' [dry]' : ''));
+  }
   counts.phoneMemo = plMap ? Object.keys(plMap).length : 0;
   if (pl && pl.changed) await put('naver_phone_links', pl.pl);
   const data = { at, ok: true, v: 1, bizId: BIZ, today, window: { back: 30, ahead: 90 }, items, bookings, counts, pii };
@@ -320,7 +342,7 @@ if (require.main === module) {
       if (!store.ok && !o.dry) { console.log('[네이버예약] SUPABASE_URL / SUPABASE_SERVICE_KEY 가 없어 --dry 로 돌립니다'); o.dry = true; }
       if (!store.ok) store = null;
     }
-    const r = await run({ getJson, store, teacherKey, piiKey, serviceKey, dry: o.dry, now: o.now || '' });
+    const r = await run({ getJson, store, teacherKey, piiKey, serviceKey, dry: o.dry, now: o.now || '', archive: !!o.archive });
     if (o.out) fs.writeFileSync(path.resolve(o.out), JSON.stringify(r.writes));
     process.exit(0);
   })().catch((e) => { console.log('[네이버예약] 예기치 못한 오류: ' + ((e && e.name) || 'Error')); process.exit(1); });
