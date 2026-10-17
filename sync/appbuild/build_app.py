@@ -96,7 +96,8 @@ r123=open(SP+'/rcws123_teacher.js').read() if int(ver.replace('v19-',''))>=123 e
 nbk=(open(os.path.join(HERE,'..','naver_booking_core.js'),encoding='utf-8').read()+'\n'+open(SP+'/naverbook124_teacher.js',encoding='utf-8').read()) if int(ver.replace('v19-',''))>=124 else ''   # v19-124: 📅 네이버 예약 (수집기 sync/naver_booking_collect.js · 공용 함수 sync/naver_booking_core.js 를 그대로 붙임) — 수업·출결 「네이버 예약」 · 리커버리 보드 배지·시간 넣기 · 홈 「오늘 네이버 예약」
 nb5=open(SP+'/naverbook125_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=125 else ''   # v19-125: 📅 네이버 예약 «📞 기억» 배지 — 수집기가 직접 연결한 학부모 전화(지문)를 기억해 다음 예약 자동 연결(how 'learned')
 nb6=open(SP+'/naverbook126_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=126 else ''   # v19-126: 네이버 예약 — 📅 대신 네이버 로고(SVG) · «예약 열쇠»(or_nb_key, 이 기기에만) 로 이름·전화 상자 열기 · 「🔑 예약 열쇠 넣기」 · #nbkey=
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+nb7=open(SP+'/naverstats127_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=127 else ''   # v19-127: 📊 예약 통계 — 네이버 예약 보관(naver_bookings_archive)으로 통계 · 학생별 월간 참여 → 학부모 카톡 글 · 텐투텐 주말 체크(중·고등 필수) · 홈 「이번 주말 텐투텐 미예약 n명」(금·토)
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -620,6 +621,14 @@ if int(ver.replace('v19-',''))>=126:
         "  }catch(e){}\n"
         "})();\n"
         "/* ★ v19-18: 서버 «지우기» 잠금 열쇠 (docs/rls_lock.sql).")
+if int(ver.replace('v19-',''))>=127:
+    # v19-127: 📊 예약 통계 (메뉴 칸은 naverstats127_teacher.js 가 「수업·출결」 네이버 예약 바로 뒤에 끼운다) — 가운데 그리기 · 제목
+    a7="    else if(VIEW==='naverbk'){ try{ C.innerHTML=rNaverBk(); }"
+    assert s.count(a7)==2
+    s=s.replace(a7, "    else if(VIEW==='naverstats'){ try{ C.innerHTML=rNaverStats(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">예약 통계 오류: '+esc2(e.message)+'</div>'; } }\n"+a7)
+    rep("naverbk:'📅 네이버 예약'", "naverbk:'📅 네이버 예약',naverstats:'📊 예약 통계'")
+    #   보관(naver_bookings_archive, 약 130KB) · 카톡 글 틀(naver_msg_tpl) · 텐투텐 필수 아님(tenten_optional) — 화면이 서버에서 바로 읽고 쓴다(이 기기 사본 없음)
+    rep("'naver_phone_links', 'or_nb_key'];", "'naver_phone_links', 'or_nb_key', 'naver_bookings_archive', 'naver_msg_tpl', 'tenten_optional'];")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
