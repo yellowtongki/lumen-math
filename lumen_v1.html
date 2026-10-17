@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-132';
+var APP_VER = 'v19-133';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9076,6 +9076,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-133',date:'2026-10-17',stability:'ok',memo:'🖼 <b>카드뉴스 내려받기 — 시험·자료 그림이 옆으로 늘어나던 것 고침</b> (원장 2026-10-17 「다운받으면 기출 부분이 늘려서 보인다」). 카드 PNG 를 만드는 도구가 «비율 유지»를 몰라 그림을 칸 크기로 잡아 늘렸습니다(화면에서는 멀쩡). 이제 PNG 를 만들기 직전에 그림을 칸 비율에 맞춰(비율 그대로 · 위쪽 맞춤) 다시 그려 넣습니다. 지금 스타일 · 새 스타일 · 블로그 폴더 내려받기 모두. 부품 modules/cnfit133_teacher.js · 검사 tests/test_v19133.js.'},
       {ver:'v19-132',date:'2026-10-17',stability:'ok',memo:'🧩 <b>모자이크 창 — 참고 그림 · 🤖 자동 상자</b> (원장 2026-10-17 「오른쪽에 숫자변형한 우리 교재가 보이면 · 숫자만 / 식 / 둘 다 모자이크」). ① 시험 문항을 가릴 때 <b>오른쪽에 우리 자료</b>(숫자변형 문제)가, 우리 자료를 가릴 때는 시험 문항이 보입니다(보기만 · 「참고 그림 숨기기」). ② <b>🤖 자동 상자 「숫자만 · 식 · 둘 다」</b> — 앱이 그림에서 글자 덩어리를 찾고, Claude(원장님 키 · 그림 1장에 요청 1번)가 그중 숫자·수식인 번호만 골라 상자 초안을 넣습니다. 숫자만은 수식 안 숫자 글자만 가리고, 글자를 확실히 못 나누면 그 수식을 통째로 가립니다. 문항 번호·배점은 빼요. 들어간 상자는 되돌리기·모두 지우기·직접 더 그리기로 고친 뒤 「저장」해야 카드에 들어갑니다. 부품 modules/cnmz132_teacher.js · 검사 tests/test_v19132.js.'},
       {ver:'v19-131',date:'2026-10-17',stability:'ok',memo:'🧩 <b>카드뉴스 — «지금 스타일»에서도 모자이크 · 자동 선택은 확정 문항 먼저</b> (원장 2026-10-17 「확정한 문항을 먼저 · 모자이크처리를 지금 스타일도 가능하게」). ① 문항 카드를 안 고르면 쓰는 자동 4개는 <b>원장님이 ✓ 확정한 문항부터</b>, 그다음 AI 판정 (같은 묶음 안에서는 같은 문제 → 숫자변형 → 유사유형 → 번호). ② <b>지금 스타일(옛 카드)</b>의 문항 카드 이름 옆에도 「선명 / 흐리게」 · 「🧩 모자이크」가 붙습니다 — 창은 새 스타일과 같고, 그린 상자는 카드 그림과 내려받기(.zip)에 들어갑니다. 흐리게를 고른 적이 없으면 시험 그림에 모자이크를 그린 카드는 선명, 아니면 예전처럼 흐리게. ③ 두 카드 모양은 파일 번호가 달라도(옛 07_17번적중 ↔ 새 08_17번적중) 같은 문항이면 모자이크를 이어 씁니다. 부품 modules/cnmz131_teacher.js · 검사 tests/test_v19131.js.'},
       {ver:'v19-130',date:'2026-10-17',stability:'ok',memo:'🧩 <b>카드뉴스 — 문항 카드·모자이크가 바로 보이게</b> (원장 2026-10-17 「모자이크 기능이 사라졌다」). 문항별 적중 카드(08_1번적중 …)와 그 카드의 「🧩 모자이크」 칩은 <b>「🎯 문항별 적중 카드」 칸에서 고른 문항</b>에만 생기는데, 모든 시험에서 아무것도 안 골라져 있었고 그 칸이 아주 긴 설정의 맨 아래쪽에 있어서 안 보였습니다(기능은 그대로 있었음). ① <b>자동 선택</b>: 고른 문항이 없으면 <b>적중 문항 상위 4개</b>(같은 문제 → 숫자변형 → 유사유형 순, 같으면 번호 순)로 문항 카드를 만듭니다 — 화면 미리보기 · 「카드 그림 + 글 자료 내려받기」 · 「블로그 폴더로 내려받기」 · 블로그자료.md 가 모두 같은 문항을 씁니다. 자동 선택은 서버에 저장하지 않고, 원장님이 칩을 <b>처음 누르는 순간</b> 자동 목록을 그대로 옮겨 적은 뒤 넣고/빼서 저장합니다(직접 고르기). 「↺ 자동으로 되돌리기」 칩으로 언제든 자동으로 돌아갑니다(다 빼도 자동). ② 「🎯 문항별 적중 카드」 칸을 카드뉴스 설정 <b>맨 위</b>(색 고르기 위)로 옮겼습니다 — 🤖 AI 판정 안내 줄도 같이. 아래에 「문항 카드마다 🧩 모자이크 칩이 붙습니다 — 카드 목록에서 누르면 그림 위에 상자를 그려 가릴 수 있어요」. <b>«지금 스타일»(옛 카드)을 쓰고 있으면</b> 🧩 모자이크가 없다는 빨간 안내와 「✨ 새 스타일로 바꾸기」 단추가 뜹니다(모자이크·선명/흐리게는 새 스타일 카드에만). 다른 카드·칸은 그대로입니다. 부품 modules/cnpick130_teacher.js · 검사 tests/test_v19130.js.'},
@@ -93757,8 +93758,65 @@ var CN132_CSS=''
   +'@media (max-width:900px){.cn132-two{grid-template-columns:1fr}}';
 cn2EnsureCss=(function(o){ return function(){ o(); var st=document.getElementById('cn2-css'); if(st && !st.getAttribute('data-cn132')){ st.textContent+=CN132_CSS; st.setAttribute('data-cn132','1'); } }; })(cn2EnsureCss);
 
+/* ═══ v19-133: 📰 카드뉴스 내려받기 — 그림이 칸에 맞춰 «늘어나는» 문제 고침 ═══
+ *  원장 2026-10-17 「카드뉴스가 다운받으면 기출부분이 이렇게 늘려서 보인다」 (범박고 고1 18번 — 지금 스타일 카드)
+ *  까닭: 카드 그림을 만드는 html2canvas 가 CSS «object-fit: contain»(비율 유지)을 모른다 → 그림을 칸 크기로 잡아 늘린다.
+ *        화면에서는 브라우저가 비율을 지켜 줘서 멀쩡해 보였다.
+ *  고침: html2canvas 가 그리기 직전에, 카드 안 그림(object-fit 이 contain/cover 인 것)을 «칸과 같은 비율의 그림»으로
+ *        미리 다시 그려 끼운다(비율 유지 · object-position 위치 그대로 · 여백은 투명). 칸 비율 = 그림 비율이라 늘어날 일이 없다.
+ *        html2canvas 를 쓰는 모든 내려받기(지금 스타일 .zip · 새 스타일 .zip · 블로그 폴더)에 같이 적용된다.
+ *  화면 카드·저장 자료는 그대로.
+ */
+function cn133Pos(v, free){   /* object-position 한 축 → 0~1 */
+  v=String(v||'50%').trim();
+  if(v==='left'||v==='top') return 0; if(v==='right'||v==='bottom') return 1; if(v==='center') return 0.5;
+  if(/%$/.test(v)) return Math.max(0, Math.min(1, parseFloat(v)/100));
+  if(/px$/.test(v)) return free>0 ? Math.max(0, Math.min(1, parseFloat(v)/free)) : 0;
+  return 0.5;
+}
+function cn133Wait(im){ return new Promise(function(r){ if(im.complete && im.naturalWidth) return r(); im.addEventListener('load', function(){ r(); }, { once:true }); im.addEventListener('error', function(){ r(); }, { once:true }); setTimeout(r, 3000); }); }
+async function cn133Bake(root){
+  if(!root || !root.querySelectorAll) return 0;
+  var imgs=root.querySelectorAll('img'), n=0;
+  for(var i=0;i<imgs.length;i++){
+    var im=imgs[i]; if(im.getAttribute('data-cn133')) continue;
+    await cn133Wait(im);
+    var nw=im.naturalWidth, nh=im.naturalHeight; if(!nw||!nh) continue;
+    var view=im.ownerDocument.defaultView||window, cs=view.getComputedStyle(im), fit=cs.objectFit;
+    if(fit!=='contain' && fit!=='cover' && fit!=='scale-down') continue;
+    var bw=im.clientWidth, bh=im.clientHeight; if(bw<2||bh<2) continue;
+    var k = fit==='cover' ? Math.max(bw/nw, bh/nh) : Math.min(bw/nw, bh/nh); if(fit==='scale-down') k=Math.min(1, k);
+    var dw=nw*k, dh=nh*k, pp=String(cs.objectPosition||'50% 50%').split(/\s+/);
+    var dx=(bw-dw)*cn133Pos(pp[0], bw-dw), dy=(bh-dh)*cn133Pos(pp[1]||'50%', bh-dh);
+    var s=Math.max(1, Math.min(3, nw/Math.max(1,dw)));   /* 원본이 크면 그만큼 선명하게 (최대 3배) */
+    var cv=im.ownerDocument.createElement('canvas'); cv.width=Math.round(bw*s); cv.height=Math.round(bh*s);
+    var g=cv.getContext('2d'); g.imageSmoothingEnabled=true; try{ g.imageSmoothingQuality='high'; }catch(e){}
+    try{
+      g.drawImage(im, dx*s, dy*s, dw*s, dh*s);
+      var du=cv.toDataURL('image/png');   /* 다른 서버 그림이라 막히면(오염) 여기서 오류 → 그대로 둠 */
+      im.setAttribute('data-cn133', '1'); im.style.objectFit='fill'; im.style.width=bw+'px'; im.style.height=bh+'px'; im.style.flex='0 0 auto';
+      im.src=du; await cn133Wait(im); n++;
+    }catch(e){}
+  }
+  return n;
+}
+window.cn133Bake=cn133Bake;
+function cn133Wrap(fn){
+  if(typeof fn!=='function' || fn.__cn133) return fn;
+  var w=function(el, opts){ var self=this, a=arguments; return cn133Bake(el).catch(function(){}).then(function(){ return fn.apply(self, a); }); };
+  w.__cn133=true; w.__orig=fn; return w;
+}
+/* html2canvas 는 내려받기 때 늦게 불러온다 → 들어오는 순간 감싼다 */
+(function(){
+  var cur=cn133Wrap(window.html2canvas);
+  try{
+    Object.defineProperty(window, 'html2canvas', { configurable:true, enumerable:true,
+      get:function(){ return cur; }, set:function(v){ cur=cn133Wrap(v); } });
+  }catch(e){ if(cur) window.html2canvas=cur; }
+})();
+
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~132: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~133: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
