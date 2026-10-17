@@ -11,7 +11,9 @@
  *
  * 🔑 준비 (한 번만, 무료):
  *   1) searchad.naver.com 가입 (광고를 집행하지 않아도 계정은 만들 수 있다)
- *   2) 도구 → API 사용 관리 → 라이선스 발급
+ *   2) ads.naver.com 로그인 → 왼쪽 「도구」 → 「API 사용 관리」 → 라이선스 발급
+ *      (CUSTOMER_ID 는 주소창의 ad-accounts/<숫자> 와 같은 값이다)
+ *      ⚠️ 비밀키는 발급할 때 한 번만 보인다. 바로 .env 에 적어둘 것
  *   3) 아래 3개를 환경변수에 넣는다
  *        NAVER_AD_CUSTOMER_ID, NAVER_AD_API_KEY, NAVER_AD_SECRET_KEY
  *
@@ -35,10 +37,15 @@ const given = args.filter(a => !a.startsWith('--'));
 const log = (...a) => console.error(...a);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-// 조사할 기본 낱말 — 검색 점검기와 같은 목록 + 해시태그 후보
+// 조사할 기본 낱말 — docs/keyword_candidates.txt 가 있으면 그것 + 검색 점검기 목록
 function defaultSeeds() {
+  const cand = path.join(ROOT, 'docs/keyword_candidates.txt');
+  const fromFile = fs.existsSync(cand)
+    ? fs.readFileSync(cand, 'utf8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#'))
+    : [];
   const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'serp_keywords.json'), 'utf8'));
   return [...new Set([
+    ...fromFile,
     ...cfg.keywords.map(k => k.q),
     '옥길동 학원', '부천 수학과외', '옥길중 시험범위', '범박고 내신',
     '관리형 학원', '자기주도학습 학원', '수학 오답노트', '중등 수학 내신',

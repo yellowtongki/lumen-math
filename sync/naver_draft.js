@@ -30,8 +30,21 @@ const opt = {
   dry: args.includes('--dry'),
   noImg: args.includes('--no-img'),
   fast: args.includes('--fast'),      // 기본은 사람 타자 속도. 급하면 --fast
+  size: args.includes('--size') ? String(args[args.indexOf('--size') + 1] || '') : '24',  // --size 0 이면 건드리지 않음
+  peek: args.includes('--peek'),     // 도구줄 단추들을 찍어 본다 (문제 찾을 때만)
 };
-const folder = args.find(a => !a.startsWith('--'));
+// 글 폴더를 안 적으면 blog/ 에서 가장 최근 글을 고른다 (폴더 이름이 날짜로 시작하므로 정렬하면 끝이 최신)
+function newestPost() {
+  const base = path.join(ROOT, 'blog');
+  if (!fs.existsSync(base)) return null;
+  const found = fs.readdirSync(base)
+    .filter(n => /^\d{4}-\d{2}-\d{2}-/.test(n) && fs.existsSync(path.join(base, n, 'post.md')))
+    .sort();
+  return found.length ? path.join('blog', found[found.length - 1]) : null;
+}
+const given = args.find(a => !a.startsWith('--'));
+const folder = given || newestPost();
+if (!given && folder) console.log(`📂 글 폴더를 안 적으셔서 가장 최근 글로 합니다 → ${folder}\n`);
 const log = (...a) => console.log(...a);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -57,7 +70,13 @@ function plan(dir) {
 
   const steps = [];
   let buf = [];
-  const flush = () => { const t = buf.join('\n').replace(/\n{3,}/g, '\n\n').trim(); if (t) steps.push({ kind: 'text', text: t }); buf = []; };
+  // 네이버 에디터는 ** __ ~~ 를 서식 명령으로 먹는다(굵게·밑줄·취소선). 한 번 켜지면 뒤 문단까지 번진다.
+  // 그래서 기호만 떼고 글자는 그대로 넣는다. 굵게는 올린 뒤 원장님이 직접 (문단당 한 곳)
+  const stripMd = (t) => t
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1');
+  const flush = () => { const t = stripMd(buf.join('\n').replace(/\n{3,}/g, '\n\n').trim()); if (t) steps.push({ kind: 'text', text: t }); buf = []; };
 
   for (const line of m[2].split('\n')) {
     let mm;
@@ -72,9 +91,9 @@ function plan(dir) {
       const f = photos[Number(mm[1]) - 1] ? path.join(dir, photos[Number(mm[1]) - 1]) : null;
       steps.push({ kind: 'image', file: f, label: `실사진 ${mm[1]} (${mm[2]})`, exists: !!f && fs.existsSync(f), optional: true });
     } else if (/^\[지도:/.test(line)) {
-      flush(); steps.push({ kind: 'manual', label: '지도', what: '네이버 지도에서 「루멘수학교습소」를 찾아 넣어주세요' });
+      flush(); steps.push({ kind: 'manual', label: '지도', auto: true, what: '네이버 지도에서 「루멘수학교습소」를 찾아 넣어주세요' });
     } else if (/^\[톡톡:/.test(line)) {
-      flush(); steps.push({ kind: 'manual', label: '톡톡', what: '톡톡 버튼을 넣어주세요 (https://talk.naver.com/w9d7umc)' });
+      flush(); steps.push({ kind: 'manual', label: '톡톡', auto: true, what: '톡톡 버튼을 넣어주세요 (https://talk.naver.com/w9d7umc)' });
     } else {
       buf.push(line);
     }
@@ -96,6 +115,10 @@ const SEL = {
   // 네이버는 숨은 input 이 아니라 「사진」 단추를 눌러 파일 선택창을 띄운다
   photoBtn: ['button:has-text("사진")', '[data-name="image"]', '.se-toolbar-item-image button',
              'button[data-log="pst.photo"]', '.se-toolbar-item-image', 'button[title*="사진"]'],
+  // 톡톡 버튼 넣기 — 글쓰기 도구줄의 「톡톡」
+  talkBtn: ['button:has-text("톡톡")', '[data-name="talktalk"]', '[data-name="talk"]',
+            '.se-toolbar-item-talktalk button', '.se-toolbar-item-talktalk',
+            'button[data-log="pst.talk"]', 'button[title*="톡톡"]'],
   popupCancel: ['button.se-popup-button-cancel', '.se-popup-button-cancel', 'button:has-text("취소")'],
 };
 async function firstVisible(frame, list, timeout = 8000) {
@@ -123,11 +146,14 @@ async function insertImage(page, frame, file) {
   }
   if (!btn) throw new Error('「사진」 단추를 못 찾았습니다');
 
-  const [chooser] = await Promise.all([
-    page.waitForEvent('filechooser', { timeout: 20000 }),
-    btn.click(),
-  ]);
-  await chooser.setFiles(file);
+  global.__expectFile = true;
+  try {
+    const [chooser] = await Promise.all([
+      page.waitForEvent('filechooser', { timeout: 20000 }),
+      btn.click(),
+    ]);
+    await chooser.setFiles(file);
+  } finally { global.__expectFile = false; }
 
   // 올라갈 때까지 기다린다 (그림 수가 늘어나는 것으로 확인)
   await sleep(rnd(2500, 4000));
@@ -135,6 +161,204 @@ async function insertImage(page, frame, file) {
   await page.keyboard.press('ArrowDown').catch(() => {});
   await page.keyboard.press('End').catch(() => {});
   await sleep(400);
+}
+
+// 본문 글씨 크기 맞추기 — 되면 좋고, 안 되면 지금 크기로 그냥 간다 (막지 않는다)
+async function setFontSize(page, frame, size) {
+  if (!size || size === '0') return false;
+  const openers = [
+    'button.se-toolbar-option-font-size-code-toolbar-button',
+    '.se-toolbar-option-font-size-code button',
+    'button[data-name="font-size-code"]',
+    'button[class*="font-size"]',
+  ];
+  let btn = null;
+  for (const sel of openers) {
+    for (const scope of [frame, page]) {
+      try { const el = scope.locator(sel).first(); if (await el.isVisible({ timeout: 500 })) { btn = el; break; } } catch {}
+    }
+    if (btn) break;
+  }
+  if (!btn) { log(`   (글씨 크기 단추를 못 찾았습니다 — 지금 크기 그대로 갑니다)`); return false; }
+  await btn.click();
+  await sleep(700);
+  const exact = new RegExp(`^\\s*${size}\\s*$`);
+  for (const tag of ['button', 'li', 'a', 'span']) {
+    try {
+      const el = frame.locator(tag).filter({ hasText: exact }).first();
+      if (await el.isVisible({ timeout: 500 })) {
+        await el.click(); await sleep(500);
+        log(`   글씨 크기 ${size} 로 맞췄습니다`);
+        return true;
+      }
+    } catch {}
+  }
+  await page.keyboard.press('Escape').catch(() => {});
+  log(`   (글씨 크기 ${size} 를 못 골랐습니다 — 지금 크기 그대로 갑니다)`);
+  return false;
+}
+
+// 도구줄에 어떤 단추가 있는지 그대로 찍는다 — 선택자가 안 맞을 때 원인을 찾으려고
+async function peekToolbar(frame) {
+  const rows = await frame.evaluate(() => {
+    const out = [];
+    for (const b of document.querySelectorAll('button, [role="button"]')) {
+      const r = b.getBoundingClientRect();
+      if (r.top > 400 || r.width === 0) continue;      // 위쪽 도구줄만
+      out.push({
+        글자: (b.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 14),
+        title: b.getAttribute('title') || '',
+        aria: b.getAttribute('aria-label') || '',
+        data: b.getAttribute('data-name') || b.getAttribute('data-log') || '',
+        pressed: b.getAttribute('aria-pressed') || '',
+        class: (b.className || '').toString().slice(0, 70),
+      });
+    }
+    return out;
+  }).catch(() => []);
+  log(`\n── 도구줄 단추 ${rows.length}개 ──`);
+  rows.forEach((r, i) => log(`${String(i).padStart(2)} 「${r.글자}」 title=${r.title} aria=${r.aria} data=${r.data} pressed=${r.pressed}\n     class=${r.class}`));
+  log('── 여기까지 ──\n');
+}
+
+// 뭔가 못 찾았을 때, 그 순간 화면에 보이는 단추를 찍는다 — 다음 판에 선택자를 정확히 맞추려고
+async function dumpButtons(frame, why) {
+  const rows = await frame.evaluate(() => {
+    const out = [];
+    for (const b of document.querySelectorAll('button, [role="button"], input')) {
+      const r = b.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      out.push(`「${(b.innerText || b.value || b.placeholder || '').replace(/\s+/g, ' ').trim().slice(0, 16)}」 `
+        + `${b.tagName.toLowerCase()} class=${(b.className || '').toString().slice(0, 60)}`);
+    }
+    return out.slice(0, 40);
+  }).catch(() => []);
+  log(`\n   ── ${why}: 지금 보이는 단추 ${rows.length}개 ──`);
+  rows.forEach((r, i) => log(`   ${String(i).padStart(2)} ${r}`));
+  log('   ── 여기까지 (이 목록을 보내주시면 다음엔 자동으로 됩니다) ──\n');
+}
+
+// 글자 서식(굵게·기울임·밑줄·취소선)이 켜져 있으면 끈다.
+// 어디선가 한 번 켜지면 뒤 문단까지 줄이 번진다. 원인을 몰라도 「켜져 있으면 끈다」로 막는다.
+// 무엇이 켜져 있었는지 로그에 남기므로, 다음에 이 줄을 보면 언제 켜지는지 알 수 있다
+const FMT = [
+  ['굵게',   ['button[data-name="bold"]', '.se-toolbar-option-bold-button', '.se-toolbar-item-bold button', 'button[title*="굵게"]', 'button[aria-label*="굵게"]']],
+  ['기울임', ['button[data-name="italic"]', '.se-toolbar-option-italic-button', '.se-toolbar-item-italic button', 'button[title*="기울"]', 'button[aria-label*="기울"]']],
+  ['밑줄',   ['button[data-name="underline"]', '.se-toolbar-option-underline-button', '.se-toolbar-item-underline button', 'button[title*="밑줄"]', 'button[aria-label*="밑줄"]']],
+  ['취소선', ['button[data-name="strikethrough"]', '.se-toolbar-option-strikethrough-button', '.se-toolbar-item-strikethrough button', 'button[title*="취소선"]', 'button[aria-label*="취소선"]']],
+];
+// 켜짐 판정 — 클래스 「낱말 전체」로만 본다.
+// 네이버 단추 클래스가 se-text-icon-toolbar-button 이라서, 그냥 「on 이 들어가면」으로 보면
+// 모든 단추가 켜진 것처럼 보여 오히려 전부 눌러 켜게 된다 (2026-10-11에 실제로 그랬다)
+const ON_WORD = /^(se-is-on|se-is-selected|se-is-active|is-active|active|selected|on)$/i;
+async function isOn(el) {
+  const cls = ((await el.getAttribute('class').catch(() => '')) || '').split(/\s+/);
+  const pressed = (await el.getAttribute('aria-pressed').catch(() => '')) || '';
+  return pressed === 'true' || cls.some(t => ON_WORD.test(t));
+}
+async function clearFormatting(page, frame) {
+  const turned = [], found = [];
+  for (const [name, sels] of FMT) {
+    let done = false;
+    for (const sel of sels) {
+      if (done) break;
+      for (const scope of [frame, page]) {
+        try {
+          const el = scope.locator(sel).first();
+          if (!(await el.isVisible({ timeout: 200 }))) continue;
+          found.push(name);
+          done = true;
+          if (await isOn(el)) {
+            await el.click();           // 켜져 있으면 눌러서 끈다
+            await sleep(250);
+            if (await isOn(el)) {       // 그래도 켜져 있으면 내가 잘못 본 것 — 되돌린다
+              await el.click(); await sleep(200);
+              log(`   ⚠️ ${name} 을 못 껐습니다 (원래대로 되돌렸습니다)`);
+            } else turned.push(name);
+          }
+          break;                        // 이 서식의 단추는 찾았다 — 다음 서식으로
+        } catch {}
+      }
+    }
+  }
+  if (turned.length) log(`   ⚠️ 켜져 있던 서식을 껐습니다: ${turned.join(', ')}`);
+  if (found.length < FMT.length) log(`   ⚠️ 서식 단추를 못 찾았습니다: ${FMT.map(f => f[0]).filter(n => !found.includes(n)).join(', ')} (--peek 로 도구줄을 찍어 보세요)`);
+  return turned;
+}
+
+// 커서를 본문 맨 끝으로 돌려놓는다.
+// 지도를 넣거나 원장님이 손으로 뭔가 한 뒤에는 커서가 본문 밖에 있다 — 그 상태로 글자를 치면 아무 데도 안 들어간다
+async function focusBodyEnd(page, frame) {
+  try {
+    const paras = frame.locator('.se-main-container .se-text-paragraph');
+    const n = await paras.count();
+    if (!n) return false;
+    await paras.nth(n - 1).click();
+    await sleep(400);
+    await page.keyboard.press('End').catch(() => {});
+    await sleep(250);
+    return true;
+  } catch { return false; }
+}
+
+// 「저장 13」의 숫자를 읽는다. 이 수가 늘면 진짜로 임시저장된 것이다 (알림 띄우는 것보다 확실하다)
+async function saveCount(page, frame) {
+  const sels = ['[class*="save_count_btn"]', '[aria-label*="임시저장된"]', '[title*="임시저장된"]'];
+  for (const sel of sels) {
+    for (const scope of [page, frame]) {
+      try {
+        const t = await scope.locator(sel).first().innerText({ timeout: 400 });
+        const m = String(t).match(/\d+/);
+        if (m) return parseInt(m[0], 10);
+      } catch {}
+    }
+  }
+  return null;
+}
+
+// 정말 저장됐는지 확인한다 — 「저장되었습니다」 알림이 뜨는지 본다. 확인 못 하면 성공이라고 말하지 않는다
+async function savedOk(page, frame) {
+  const marks = ['text=저장되었습니다', 'text=임시저장되었습니다', 'text=저장했습니다', '.se-toast', '[class*="toast"]'];
+  const t0 = Date.now();
+  while (Date.now() - t0 < 9000) {
+    for (const sel of marks) {
+      for (const scope of [frame, page]) {
+        try { if (await scope.locator(sel).first().isVisible({ timeout: 250 })) return true; } catch {}
+      }
+    }
+    await sleep(400);
+  }
+  return false;
+}
+
+// 톡톡 버튼 넣기 — 도구줄 「톡톡」을 누르면 내 톡톡이 뜬다. 확인만 누르면 본문에 버튼이 들어간다
+async function insertTalk(page, frame) {
+  let btn = null;
+  for (const sel of SEL.talkBtn) {
+    for (const scope of [frame, page]) {
+      try { const el = scope.locator(sel).first(); if (await el.isVisible({ timeout: 400 })) { btn = el; break; } } catch {}
+    }
+    if (btn) break;
+  }
+  if (!btn) throw new Error('「톡톡」 단추를 못 찾았습니다');
+  await btn.click();
+  await sleep(2000);
+
+  // 창이 떴으면 확인/등록/삽입 중 하나를 누른다. 창 없이 바로 들어가는 경우도 있다
+  for (const sel of ['button:has-text("확인")', 'button:has-text("등록")', 'button:has-text("삽입")',
+                     'button:has-text("적용")', '.se-popup-button-confirm', 'button[class*="confirm"]']) {
+    for (const scope of [frame, page]) {
+      try {
+        const el = scope.locator(sel).first();
+        if (await el.isVisible({ timeout: 600 })) { await el.click(); await sleep(1800); return true; }
+      } catch {}
+    }
+  }
+  // 확인 단추가 없다 — 버튼이 이미 들어갔는지 본문에서 확인한다
+  for (const sel of ['[class*="talktalk"]', '[class*="se-oglink"]', 'a[href*="talk.naver.com"]']) {
+    try { if (await frame.locator(sel).first().isVisible({ timeout: 800 })) { await sleep(800); return true; } } catch {}
+  }
+  throw new Error('톡톡 창에서 확인 단추를 못 찾았습니다');
 }
 
 // 장소(루멘수학교습소) 넣기 — 되면 좋고, 안 되면 손으로 안내한다
@@ -180,20 +404,25 @@ async function insertPlace(page, frame, keyword) {
   await sleep(1200);
 
   // 「확인」 누르기
-  for (const sel of ['button:has-text("확인")', 'button:has-text("추가")', '[class*="confirm"] button',
-                     'button[class*="confirm"]']) {
+  const okSel = ['button.se-popup-button-confirm', '.se-popup-button-confirm',
+                 'button.se-place-confirm', '[class*="popup"] button[class*="confirm"]',
+                 'button[class*="confirm"]', '[class*="confirm"] button',
+                 'button:has-text("확인")', 'button:has-text("추가")', 'button:has-text("완료")',
+                 'button:has-text("적용")', 'button:has-text("삽입")'];
+  for (const sel of okSel) {
     for (const scope of [frame, page]) {
       try {
         const el = scope.locator(sel).first();
-        if (await el.isVisible({ timeout: 600 })) { await el.click(); await sleep(1800); return true; }
+        if (await el.isVisible({ timeout: 500 })) { await el.click(); await sleep(1800); return true; }
       } catch {}
     }
   }
+  await dumpButtons(frame, '장소 확인 단추를 못 찾음');
   throw new Error('「확인」 단추를 못 찾았습니다 (장소는 골라졌습니다)');
 }
 
 (async () => {
-  if (!opt.login && !folder) { log('사용법: node sync/naver_draft.js <글 폴더>   (처음이면 --login 먼저)'); process.exit(1); }
+  if (!opt.login && !folder) { log('blog/ 에 글이 없습니다. 사용법: node sync/naver_draft.js [글 폴더]   (처음이면 --login 먼저)'); process.exit(1); }
 
   // ── 미리보기 ──
   if (opt.dry) {
@@ -204,7 +433,7 @@ async function insertPlace(page, frame, keyword) {
       const n = String(i + 1).padStart(2);
       if (s.kind === 'text') log(`  ${n}. 글  ${s.text.length}자  「${s.text.slice(0, 28).replace(/\n/g, ' ')}…」`);
       if (s.kind === 'image') log(`  ${n}. 그림 ${s.exists ? '✅' : '❌ 파일 없음 — 손으로'}  ${s.label}`);
-      if (s.kind === 'manual') log(`  ${n}. 손으로 ⏸  ${s.label}`);
+      if (s.kind === 'manual') log(`  ${n}. ${s.label === '지도' || s.auto ? '자동 🔁' : '손으로 ⏸'}  ${s.label}`);
     });
     log(`\n해시태그: ${meta.hashtags}\n`);
     return;
@@ -219,6 +448,9 @@ async function insertPlace(page, frame, keyword) {
     args: ['--disable-blink-features=AutomationControlled'],
   });
   const page = ctx.pages()[0] || await ctx.newPage();
+  // 그림 넣을 때가 아닌데 파일 선택창이 뜨면 맥 창이 떠서 작업이 멈춘다 — 조용히 닫는다
+  global.__expectFile = false;
+  page.on('filechooser', (fc) => { if (!global.__expectFile) fc.setFiles([]).catch(() => {}); });
 
   // ── ① 로그인 ──
   if (opt.login) {
@@ -268,6 +500,9 @@ async function insertPlace(page, frame, keyword) {
   const body = await firstVisible(f, SEL.body, 6000);
   if (body) { await body.click(); } else { await page.keyboard.press('Tab'); }
   await sleep(800);
+  if (opt.peek) await peekToolbar(f);
+  await setFontSize(page, f, opt.size);
+  await clearFormatting(page, f);
 
   // 순서대로 넣기
   let n = 0;
@@ -275,6 +510,7 @@ async function insertPlace(page, frame, keyword) {
     n++;
     if (s.kind === 'text') {
       log(`  ${n}/${steps.length} 글 ${s.text.length}자…`);
+      await clearFormatting(page, f);   // 앞 단계에서 서식이 켜졌을 수 있다
       for (const para of s.text.split('\n')) {
         // 기본은 사람 타자 속도(한 글자 25~70ms). 모니터에 띄워 두고 보기 좋은 속도다
         if (para.trim()) await page.keyboard.type(para, { delay: opt.fast ? rnd(4, 14) : rnd(25, 70) });
@@ -300,21 +536,47 @@ async function insertPlace(page, frame, keyword) {
         try {
           await insertPlace(page, f, '루멘수학교습소');
           log('     ✅ 장소를 넣었습니다 (본문 끝 주소와 맞는지 나중에 확인해 주세요)');
+          await focusBodyEnd(page, f);   // 지도를 넣으면 커서가 본문 밖으로 나간다
         } catch (e) {
           await pause(`장소 넣기가 막혔습니다 (${e.message})`,
             '위쪽 「장소」 단추를 눌러 「루멘수학교습소」를 찾아 넣어주세요.');
+          await focusBodyEnd(page, f);
         }
+      } else if (s.label === '톡톡') {
+        log(`  ${n}/${steps.length} 톡톡 버튼 넣기…`);
+        try {
+          await insertTalk(page, f);
+          log('     ✅ 톡톡 버튼을 넣었습니다');
+        } catch (e) {
+          await pause(`톡톡 넣기가 막혔습니다 (${e.message})`, s.what);
+        }
+        await focusBodyEnd(page, f);
       } else {
         await pause(`${s.label}은 직접 넣으셔야 합니다.`, s.what);
+        await focusBodyEnd(page, f);   // 원장님이 손으로 만진 뒤에는 커서가 어디 있을지 모른다
       }
     }
   }
 
-  // 해시태그
+  // 해시태그 — 본문 맨 끝에 #낱말 로 적으면 네이버가 발행할 때 태그로 잡는다.
+  // (2026-10-11: 「발행 창의 태그 칸」으로 바꿨다가 되돌렸다. 원장님이 쭉 쓰시던 방식이 맞다.
+  //  지난번에 안 들어간 것은 자리가 틀려서가 아니라 커서가 본문 밖에 있었기 때문이다)
   if (meta.hashtags) {
     log('  해시태그…');
+    await focusBodyEnd(page, f);
+    await clearFormatting(page, f);
     await page.keyboard.press('Enter');
     await page.keyboard.type(meta.hashtags, { delay: rnd(20, 50) });
+    await sleep(900);
+    const firstTag = meta.hashtags.split(/\s+/).find(t => t.startsWith('#')) || '';
+    let inBody = false;
+    try { inBody = (await f.evaluate(() => document.body.innerText || '')).includes(firstTag); } catch {}
+    if (inBody) log('     ✅ 본문 끝에 넣었습니다 (발행할 때 태그로 잡힙니다)');
+    else {
+      try { require('child_process').execSync('pbcopy', { input: meta.hashtags }); log('     📋 클립보드에 복사해 뒀습니다'); } catch {}
+      await pause('해시태그가 본문에 안 들어간 것 같습니다.',
+        `본문 맨 끝을 클릭하고 붙여넣기(⌘V) 하세요:\n      ${meta.hashtags}`);
+    }
   }
 
   // 임시저장 — 발행은 절대 안 누른다
@@ -326,10 +588,26 @@ async function insertPlace(page, frame, keyword) {
       log(`   ⚠️ 「${label}」 단추를 잡았습니다 — 발행일 수 있어 누르지 않습니다.`);
       save = null;
     } else {
-      log(`   「${label || '저장'}」 누릅니다…`);
+      const before = await saveCount(page, f);
+      log(`   「${label || '저장'}」 누릅니다…${before === null ? '' : ` (지금 저장함 ${before}개)`}`);
       await save.click();
-      await sleep(3000);
-      log('\n✅ 임시저장했습니다.');
+      // 저장함 숫자가 늘었는지로 본다. 숫자를 못 읽으면 알림으로 본다
+      let ok = false;
+      if (before !== null) {
+        const t0 = Date.now();
+        while (Date.now() - t0 < 9000) {
+          const now = await saveCount(page, f);
+          if (now !== null && now > before) { ok = true; break; }
+          await sleep(600);
+        }
+      }
+      if (!ok) ok = await savedOk(page, f);
+      if (ok) {
+        log(`\n✅ 임시저장했습니다.${before === null ? '' : ` (저장함 ${before} → ${await saveCount(page, f)})`}`);
+      } else {
+        await pause('「저장」을 눌렀는데 저장됐다는 알림이 안 보입니다.',
+          '화면 오른쪽 위 「저장」을 직접 눌러주세요. (「발행」 말고 「저장」입니다)');
+      }
     }
   }
   if (!save) {
