@@ -26,7 +26,7 @@ for it in d['items']:
   for s in range(0,len(C),6):
     grp=C[s:s+6]; ims=[]
     for c in grp:
-      try: ims.append(fit(Image.open(io.BytesIO(url(c['imgUrl']))),440))
+      try: ims.append(fit(Image.open(io.BytesIO(url(c.get('imgUrl') or d.get('mats',{}).get(c['k'],{}).get('img')))),440))   # 2026-10-17: cands 는 mats[k].img
       except Exception as e: ims.append(Image.new('RGB',(440,80),'white'))
     W=900; rows=[ims[i:i+2] for i in range(0,len(ims),2)]
     hh=ex.height+60+sum(max(x.height for x in r)+50 for r in rows)

@@ -758,7 +758,8 @@ async function runExam(exam, opt) {
   const out = { examId, exam: { school: schoolKey(exam.school), grade: gradeKey(exam.grade), year: Number(exam.year), semester: String(exam.semester), term: exam.term, date: exam.date || '', mydb: opt.mydb || null, msLv: msLv || null, subject: exam.subject || (prev && prev.exam && prev.exam.subject) || '' },
     basis: (prev && prev.basis) || 'same+var', from, to, students: codes, items, mats: matOut, stats: st, trend, src: opt.src || (prev && prev.src) || null,
     units: units.list,   /* 2026-10-11: 시험 범위 단원(소단원) — 학원앱 「범위」 칩 */
-    at: new Date().toISOString(), by: 'worker', confirmedAt: (prev && prev.confirmedAt) || null };
+    at: new Date().toISOString(), by: 'worker', confirmedAt: (prev && prev.confirmedAt) || null,
+    ...(prev && prev.autoAi === false ? { autoAi: false } : {}) };   /* 학원앱 v19-128: 원장님이 끈 «🤖 AI 판정 자동 반영»은 다시 판정 뒤에도 꺼 둔다 */
   await kvSet('exam_hit_' + examId, out);
   const idx = (await kvGet('exam_hit_index')) || { items: [] };
   idx.items = (idx.items || []).filter((x) => x.examId !== examId);
