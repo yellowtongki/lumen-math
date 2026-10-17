@@ -9,6 +9,11 @@ name: 네이버 예약 정찰
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'probe | shape'
+        required: false
+        default: 'probe'
 
 concurrency:
   group: naver-booking-probe
@@ -26,4 +31,5 @@ jobs:
       - name: 정찰 실행
         env:
           NAVER_COOKIE: ${{ secrets.NAVER_COOKIE }}
-        run: node sync/naver_booking_probe.js
+        run: |
+          if [ "${{ github.event.inputs.mode }}" = "shape" ]; then node sync/naver_booking_shape.js; else node sync/naver_booking_probe.js; fi

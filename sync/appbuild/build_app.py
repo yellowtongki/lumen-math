@@ -93,7 +93,8 @@ if int(ver.replace('v19-',''))>=121:
 else: mqz=''
 rnx=open(SP+'/racenext122_teacher.js').read() if int(ver.replace('v19-',''))>=122 else ''   # v19-122: 🏁 진도 레이스 «🆕 다음 시즌 (원장님만 보기 🔒)» — race_season_draft · 서버가 race_board_draft 계산 · 「📣 학생앱에 공개」 때만 race_season/race_board 교체
 r123=open(SP+'/rcws123_teacher.js').read() if int(ver.replace('v19-',''))>=123 else ''   # v19-123: 🧩 리커버리 학습지 새 규칙 — 주간테스트 고르기(중3 기본 이번 주+지난 주) · 오답 1배수 · 교재 오답 빼기 · 단원 오답(매쓰플랫 교재 단원표) · 만들 때 보드 점수 갱신 · 구성 한 줄
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+nbk=(open(os.path.join(HERE,'..','naver_booking_core.js'),encoding='utf-8').read()+'\n'+open(SP+'/naverbook124_teacher.js',encoding='utf-8').read()) if int(ver.replace('v19-',''))>=124 else ''   # v19-124: 📅 네이버 예약 (수집기 sync/naver_booking_collect.js · 공용 함수 sync/naver_booking_core.js 를 그대로 붙임) — 수업·출결 「네이버 예약」 · 리커버리 보드 배지·시간 넣기 · 홈 「오늘 네이버 예약」
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -581,6 +582,18 @@ if int(ver.replace('v19-',''))>=122:
         "    var title=((b.bandNames||{})[band])||(band==='mid'?'중등부':band==='high'?'고등부':'초등부');   /* ★ v19-122 */")
     #   다음 시즌 키는 화면이 서버에서 바로 읽는다 — 시작 때 이 기기에 받지 않는다(옛 사본이 남지 않게)
     rep("'mf_stuck', 'exam_lib'];", "'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req'];")
+if int(ver.replace('v19-',''))>=124:
+    # v19-124: 📅 네이버 예약 (메뉴 칸은 naverbook124_teacher.js 가 GROUPS 「수업·출결」에 끼운다) — 가운데 그리기 · 제목 · 시작 다운로드 제외 · 홈 작은 칸
+    a6="    else if(VIEW==='mathquiz'){ try{ C.innerHTML=rMathQuiz(); }"
+    assert s.count(a6)==2
+    s=s.replace(a6, "    else if(VIEW==='naverbk'){ try{ C.innerHTML=rNaverBk(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">네이버 예약 오류: '+esc2(e.message)+'</div>'; } }\n"+a6)
+    rep("mathquiz:'🧠 루멘 수학퀴즈'", "mathquiz:'🧠 루멘 수학퀴즈',naverbk:'📅 네이버 예약'")
+    #   naver_bookings · naver_bookings_pii(잠근 상자) · naver_bookings_status · naver_booking_links — 화면이 서버에서 바로 읽는다(이 기기 사본 없음)
+    rep("'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_'];", "'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_', 'naver_book'];")
+    #   서버 잠금 열쇠(lumen_db_key)는 기기에만 둔다 — 서버에 사본이 있어도(2026-10-17 확인) 받아서 이 기기 열쇠를 덮지 않는다(올리기는 부품이 막음)
+    rep("'race_watch_draft', 'race_recount_req'];", "'race_watch_draft', 'race_recount_req', 'lumen_db_key'];")
+    rep("  if(typeof attHomeTodayWidget==='function') h+=attHomeTodayWidget();\n",
+        "  if(typeof attHomeTodayWidget==='function') h+=attHomeTodayWidget();\n  if(typeof nbkHomeCard==='function') h+=nbkHomeCard();   /* ★ v19-124: 📅 오늘 네이버 예약 */\n")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
