@@ -22,6 +22,10 @@
  *                                 상자에 kk:'pii'|'teacher'(어느 열쇠인지) · kid(열쇠 지문 8글자 — 앱이 「열쇠가 달라요」를 알려 준다) 를 적는다.
  *        naver_bookings_status — {at, ok, reason, code} (개인정보 없음)
  *        naver_phone_links     — 기억한 전화 지문 → 학생 키 (위 ③ · 번호 없음 · SUPABASE_SERVICE_KEY 가 있을 때만)
+ *        naver_bookings_archive — 받은 예약 «전체» 보관(통계용 · 학원앱 v19-127 「📊 예약 통계」) — 2026-10-17 부터 매 실행마다(--archive 없어도)
+ *                                 {at, v:2, h, items, n, from, to, rows:[{id, kind, item, date, start, st, code, reg, conf, comp, canc, cnt, area, stu, how, fp, sch, gr}]}
+ *                                 이름·전화·메모 원문 없음 · 빈 칸('')은 줄 안에 적지 않는다(작게) · fp = 전화 «지문»(번호 아님) · sch = 알려진 학교 이름만
+ *                                 내용(h = 줄들의 지문)이 지난번과 같으면 다시 쓰지 않는다(상태 칸 archH 로 비교 · 6시간마다는 그래도 한 번 씀)
  *      ⚠ lumen_store 는 학생앱·학부모앱의 공개 열쇠로 읽을 수 있다 → 학부모 이름·전화는 잠근 상자에만 둔다.
  *        서버 잠금 제안: docs/naver_booking_rls.sql (새벽에 원장님이 실행)
  *   ⑤ 로그인 만료(네이버가 화면/로그인 페이지를 돌려줌) → naver_bookings_status {ok:false, reason:'login'} 만 쓰고 끝(종료 코드 0).
@@ -31,7 +35,7 @@
  *
  * 실행
  *   node sync/naver_booking_collect.js            (비밀값: NAVER_COOKIE · SUPABASE_URL · SUPABASE_SERVICE_KEY · NAVER_PII_KEY(또는 LUMEN_TEACHER_KEY))
- *   node sync/naver_booking_collect.js --dry      (저장 안 함, 건수만)
+ *   node sync/naver_booking_collect.js --dry      (저장 안 함, 건수만)   ※ --archive 는 예전 옵션(이제 보관은 매번) — 붙여도 똑같다
  *   node sync/naver_booking_collect.js --fixture <가짜.json> [--out <결과.json>] [--now 2026-10-17T10:00:00+09:00]
  *        가짜 자료로 돌린다(네이버·Supabase 안 부름). 쓰려던 값은 --out 파일로. 검사: node sync/test_naver_booking.js
  * ═══════════════════════════════════════════════════════════════════ */
@@ -61,7 +65,7 @@ function args(argv) {
     else if (a === '--fixture') o.fixture = argv[++i] || '';
     else if (a === '--out') o.out = argv[++i] || '';
     else if (a === '--now') o.now = argv[++i] || '';
-    else if (a === '--archive') o.archive = true;
+    else if (a === '--archive') o.archive = true;   /* 예전 옵션 — 이제 보관은 매번 한다(남겨 둬도 아무 일 없음) */
   }
   return o;
 }
@@ -233,7 +237,7 @@ async function run(opt) {
   const put = async (k, v) => { writes[k] = v; if (opt.dry || !store || !store.set) return true; const r = await store.set(k, v); if (r !== true) log('저장 실패', k, r); return r === true; };
 
   let prev = {};
-  try { prev = store && store.get ? await store.get(['or_studentdb', 'naver_booking_links', 'naver_bookings_status', 'naver_phone_links'].concat(opt.archive ? ['school_calendar'] : [])) : {}; }
+  try { prev = store && store.get ? await store.get(['or_studentdb', 'naver_booking_links', 'naver_bookings_status', 'naver_phone_links', 'school_calendar']) : {}; }
   catch (e) { log('lumen_store 읽기 실패 — 학생 맞추기 없이 진행'); prev = {}; }
   const students = Array.isArray(prev.or_studentdb) ? prev.or_studentdb : [];
   const links = (prev.naver_booking_links && typeof prev.naver_booking_links === 'object') ? prev.naver_booking_links : {};
@@ -286,8 +290,10 @@ async function run(opt) {
     } catch (e) { log('개인정보 칸 잠그기 실패 — 이름·전화 없이 저장'); pii = { enc: false, n: 0, err: 'seal' }; }
   }
   /* ★ 2026-10-17 원장 「올해 네이버예약 다 가져오고 통계」 — 전체 예약 보관(이름·전화·메모 원문 없음).
-   *   학교·학년만 메모에서 뽑고, 전화는 서버만 아는 지문(fp)으로 — 재방문·상담→등록 계산용. 유입 경로(areaName)도. */
-  if (opt.archive) {
+   *   학교·학년만 메모에서 뽑고, 전화는 서버만 아는 지문(fp)으로 — 재방문·상담→등록 계산용. 유입 경로(areaName)도.
+   *   ★ 같은 날 원장 결정: 매 실행마다 (학원앱 「📊 예약 통계」 · 학생별 월간 참여 · 텐투텐 주말 체크가 이것을 읽는다) */
+  let archH = '', archAt = '';
+  {
     /* 학교는 «알려진 학교 이름»만 — 메모의 다른 글자(학생 이름 등)가 섞이지 않게 (2026-10-17: 띄어쓰기를 지우고 뽑았다가 이름이 붙은 일) */
     const KNOWN = ['옥길산들초', '옥길버들초', '산들초', '버들초', '범박초', '옥길초', '옥길중', '범박중', '범박고', '소사고', '시온고', '소명여고', '부천고', '부천여고', '부천중', '소사중', '계남고', '역곡고'];
     ((prev.school_calendar && prev.school_calendar.schools) || []).forEach((x) => { const sh = String(x.short || '').trim(); if (sh && KNOWN.indexOf(sh) < 0) KNOWN.push(sh); });
@@ -300,21 +306,31 @@ async function run(opt) {
       const m = matchBooking(n.pub, n.pii, students, links, plMap, secret);
       const txt = [n.pii.msg || ''].concat((n.pii.form || []).map((f) => (f.q || '') + ' ' + (f.a || ''))).join(' ');
       const ph = core.nbDigits(n.pii.phone);
-      rows.push({ id: n.pub.id, kind: n.pub.item.kind, item: n.pub.item.id, date: n.pub.date, start: n.pub.start, st: n.pub.status.k, code: n.pub.status.code,
+      const row = { id: n.pub.id, kind: n.pub.item.kind, item: n.pub.item.id, date: n.pub.date, start: n.pub.start, st: n.pub.status.k, code: n.pub.status.code,
         reg: n.pub.reg, conf: n.pub.confirmed, comp: n.pub.completed, canc: n.pub.cancelled, cnt: n.pub.count,
         area: String(b.areaName || ''), stu: (m && m.stKey) ? m.stKey : '', how: (m && m.how) || '',
-        fp: (secret && ph.length >= 9) ? phoneFp(ph, secret) : '', sch: schOf(txt), gr: grOf(txt) });
+        fp: (secret && ph.length >= 9) ? phoneFp(ph, secret) : '', sch: schOf(txt), gr: grOf(txt) };
+      Object.keys(row).forEach((k) => { if (row[k] === '' || row[k] == null) delete row[k]; });   /* 빈 칸은 적지 않는다 — 보관을 작게 */
+      rows.push(row);
     });
-    rows.sort((a, b) => (a.date + a.start < b.date + b.start ? -1 : 1));
-    await put('naver_bookings_archive', { at, v: 1, items, n: rows.length, from: rows.length ? rows[0].date : '', to: rows.length ? rows[rows.length - 1].date : '', rows });
-    const byY = {}; rows.forEach((r) => { const y = r.date.slice(0, 4); byY[y] = (byY[y] || 0) + 1; });
-    log('보관(archive) ' + rows.length + '건 · ' + Object.keys(byY).sort().map((y) => y + '년 ' + byY[y]).join(' · ') + ' · 학교 뽑힘 ' + rows.filter((r) => r.sch).length + ' · 학년 뽑힘 ' + rows.filter((r) => r.gr).length + (opt.dry ? ' [dry]' : ''));
+    rows.sort((a, b) => ((a.date || '') + (a.start || '') + a.id < (b.date || '') + (b.start || '') + b.id ? -1 : 1));
+    archH = crypto.createHash('sha256').update(JSON.stringify([items, rows])).digest('hex').slice(0, 16);
+    const ps = prev.naver_bookings_status || {};
+    const fresh = ps.archH === archH && ps.archAt && (Date.parse(at) - Date.parse(ps.archAt)) < 6 * 3600000;
+    const byY = {}; rows.forEach((r) => { const y = String(r.date || '').slice(0, 4) || '?'; byY[y] = (byY[y] || 0) + 1; });
+    const desc = rows.length + '건 · ' + Object.keys(byY).sort().map((y) => y + '년 ' + byY[y]).join(' · ') + ' · 학교 뽑힘 ' + rows.filter((r) => r.sch).length + ' · 학년 뽑힘 ' + rows.filter((r) => r.gr).length;
+    if (fresh) { archAt = ps.archAt; log('보관(archive) 그대로 ' + desc + ' — 다시 쓰지 않음'); }
+    else {
+      const ok = await put('naver_bookings_archive', { at, v: 2, h: archH, items, n: rows.length, from: rows.length ? rows[0].date : '', to: rows.length ? rows[rows.length - 1].date : '', rows });
+      if (ok) archAt = at; else archH = '';
+      log('보관(archive) ' + desc + (opt.dry ? ' [dry]' : (ok ? '' : ' · 저장 실패')));
+    }
   }
   counts.phoneMemo = plMap ? Object.keys(plMap).length : 0;
   if (pl && pl.changed) await put('naver_phone_links', pl.pl);
   const data = { at, ok: true, v: 1, bizId: BIZ, today, window: { back: 30, ahead: 90 }, items, bookings, counts, pii };
   await put('naver_bookings', data);
-  await put('naver_bookings_status', { at, ok: true, n: bookings.length, lastOkAt: at });
+  await put('naver_bookings_status', Object.assign({ at, ok: true, n: bookings.length, lastOkAt: at }, archH && archAt ? { archH, archAt } : {}));
 
   log('쪽 ' + got.pages + (got.skipped ? ' (앞쪽 ' + got.skipped + '쪽 건너뜀)' : '') + (got.capped ? ' · 한도 ' + PAGE_CAP + '쪽에서 멈춤' : '') + ' · 예약 전체 ' + counts.total + '건 · 기간 안 ' + counts.inWindow + '건 · 오늘 ' + counts.today + '건 · 취소 ' + counts.cancelled + '건');
   log('상품 ' + items.length + '개 · 종류별 ' + core.NB_KINDS.map((k) => k.label + ' ' + (counts.byKind[k.k] || 0)).join(' · '));

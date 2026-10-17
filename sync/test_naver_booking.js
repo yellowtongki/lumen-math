@@ -99,7 +99,7 @@ const FX = { items: ITEMS, pages, store: STORE, teacherKey: KEY };
   const res = await col.run({ getJson: fio(pages), store: { get: async () => JSON.parse(JSON.stringify(STORE)), set: async (k, v) => { writes[k] = v; return true; } }, teacherKey: KEY, now: NOW, log: (...a) => logs.push(a.join(' ')) });
   const NBd = writes.naver_bookings, byId = {}; (NBd.bookings || []).forEach((b) => { byId[b.id] = b; });
   const id = (i) => String(B[i].bookingId);
-  t('저장한 키 = naver_bookings · naver_bookings_pii · naver_bookings_status', Object.keys(writes).sort().join() === 'naver_bookings,naver_bookings_pii,naver_bookings_status', Object.keys(writes).join());
+  t('저장한 키 = naver_bookings · naver_bookings_archive · naver_bookings_pii · naver_bookings_status (보관은 --archive 없이도 매번)', Object.keys(writes).sort().join() === 'naver_bookings,naver_bookings_archive,naver_bookings_pii,naver_bookings_status', Object.keys(writes).join());
   t('기간: 40일 전·100일 뒤(옛 신청)·200일 전 빠짐 · 100일 뒤(최근 신청) 포함', !byId[id(0)] && !byId[id(9)] && byId[id(8)] && !byId[String(filler[0].bookingId)] && NBd.counts.inWindow === B.length - 2, JSON.stringify(NBd.counts));
   t('시간: 오늘 14:00~15:00 (UTC 05:00Z)', byId[id(2)].start === '14:00' && byId[id(2)].end === '15:00' && byId[id(2)].date === TODAY);
   t('시간: 문자열 snapshot 08:30Z → 17:30 · 상태 신청', byId[id(14)].start === '17:30' && byId[id(14)].status.k === 'requested');
@@ -126,6 +126,29 @@ const FX = { items: ITEMS, pages, store: STORE, teacherKey: KEY };
   t('다른 열쇠로는 못 엶', bad);
   t('상태 ok:true', writes.naver_bookings_status.ok === true && writes.naver_bookings_status.n === NBd.bookings.length);
   t('로그: 쪽 · 기간 안 · 종류별 · 연결/못 맞춤 건수', /쪽 \d/.test(logs.join('\n')) && /기간 안 \d+건/.test(logs.join('\n')) && /리커버리 \d/.test(logs.join('\n')) && /못 맞춤 \d+건/.test(logs.join('\n')), logs.join(' | '));
+
+  /* ── 보관(naver_bookings_archive) — 매 실행 · 개인정보 없음 · 빈 칸 생략 · 그대로면 다시 안 씀 ── */
+  const AR = writes.naver_bookings_archive, arById = {}; (AR.rows || []).forEach((x) => { arById[x.id] = x; });
+  t('보관: 받은 예약 전부(기간 밖 포함 ' + ALL.length + '건) · v2 · 지문 h · from/to', AR.n === ALL.length && AR.rows.length === ALL.length && AR.v === 2 && /^[0-9a-f]{16}$/.test(AR.h) && AR.from === D(-200) && AR.to === D(100), JSON.stringify({ n: AR.n, from: AR.from, to: AR.to }));
+  t('보관 줄: 종류·날짜·시간·상태·학생 키·인원 (전화 → S1 · 취소 · 2명)', arById[id(1)].kind === 'recovery' && arById[id(1)].stu === 'S1' && arById[id(1)].st === 'completed' && arById[id(7)].st === 'cancelled' && arById[id(6)].cnt === 2 && arById[id(6)].kind === 'tenten' && arById[id(2)].start === '14:00', JSON.stringify(arById[id(1)]));
+  t('보관 줄: 추가 답의 학년(중1)만 뽑음 · 직접 연결(S3 manual)', arById[id(14)].gr === '중1' && arById[id(10)].stu === 'S3' && arById[id(10)].how === 'manual', JSON.stringify(arById[id(14)]));
+  const arTxt = JSON.stringify(AR);
+  t('보관에 이름·전화·이메일·메모·추가 답·학생 이름 없음', secrets.concat(STU.map((s) => s.name)).every((x) => !x || arTxt.indexOf(x) < 0), secrets.concat(STU.map((s) => s.name)).filter((x) => x && arTxt.indexOf(x) >= 0).slice(0, 3).join());
+  t('보관 줄에 빈 칸("") 없음 — 작게', AR.rows.every((x) => Object.keys(x).every((k) => x[k] !== '' && x[k] != null)) && !('stu' in arById[id(6)]) && !('fp' in arById[id(6)]), JSON.stringify(arById[id(6)]));
+  t('보관 줄: 날짜·시간 순', AR.rows.every((x, i) => !i || (AR.rows[i - 1].date + (AR.rows[i - 1].start || '')) <= (x.date + (x.start || ''))));
+  t('상태 칸에 보관 지문 archH · archAt', writes.naver_bookings_status.archH === AR.h && writes.naver_bookings_status.archAt === AR.at);
+  const runA = async (st, opt) => { const w = {}, lg = []; await col.run(Object.assign({ getJson: fio(pages), store: { get: async () => JSON.parse(JSON.stringify(st)), set: async (k, v) => { w[k] = v; return true; } }, teacherKey: KEY, now: NOW, log: (...a) => lg.push(a.join(' ')) }, opt || {})); return { w, lg }; };
+  const stSame = Object.assign({}, STORE, { naver_bookings_status: { at: '2026-10-17T00:50:00Z', ok: true, archH: AR.h, archAt: '2026-10-17T00:30:00Z' } });
+  let RA = await runA(stSame);
+  t('보관 내용이 그대로면 다시 쓰지 않음 · 상태 칸 archAt 유지 · 로그 「그대로」', !RA.w.naver_bookings_archive && RA.w.naver_bookings_status.archH === AR.h && RA.w.naver_bookings_status.archAt === '2026-10-17T00:30:00Z' && RA.lg.some((x) => /보관\(archive\) 그대로/.test(x)), Object.keys(RA.w).join() + ' ' + RA.lg.join(' | '));
+  RA = await runA(Object.assign({}, STORE, { naver_bookings_status: { at: '2026-10-16T20:00:00Z', ok: true, archH: AR.h, archAt: '2026-10-16T18:00:00Z' } }));
+  t('그대로여도 6시간이 지나면 한 번 다시 씀', !!RA.w.naver_bookings_archive && RA.w.naver_bookings_status.archAt === RA.w.naver_bookings_archive.at);
+  RA = await runA(Object.assign({}, stSame, { naver_booking_links: Object.assign({}, LINKS, { [id(6)]: 'S2' }) }));
+  t('학생 연결이 바뀌면(직접 연결) 보관을 새로 씀', !!RA.w.naver_bookings_archive && RA.w.naver_bookings_archive.rows.filter((x) => x.id === id(6))[0].stu === 'S2' && RA.w.naver_bookings_archive.h !== AR.h);
+  RA = await runA(STORE, { archive: true });
+  t('예전 --archive 옵션은 아무 영향 없음(같은 보관)', !!RA.w.naver_bookings_archive && RA.w.naver_bookings_archive.h === AR.h && JSON.stringify(RA.w.naver_bookings_archive.rows) === JSON.stringify(AR.rows));
+  RA = await runA(STORE, { dry: true });
+  t('--dry: 보관도 서버에 안 씀(쓰려던 값으로만)', Object.keys(RA.w).length === 0);
 
   /* 열쇠 없음 → 잠근 상자 안 만듦, 공개 칸만 */
   const w2 = {};
@@ -165,7 +188,8 @@ const FX = { items: ITEMS, pages, store: STORE, teacherKey: KEY };
   const leak = secrets.concat(STU.map((s) => s.name), STU.map((s) => s.parentPhone), ['F0000', KEY]).filter((x) => x && printed.indexOf(x) >= 0);
   t('찍힌 글에 가짜 이름·전화·이메일·메모·추가 답·학생 이름·코드·열쇠 없음', leak.length === 0, leak.slice(0, 5).join(' / '));
   const out1 = JSON.parse(fs.readFileSync(outFile, 'utf8'));
-  t('--out 에 쓰려던 값 3개', Object.keys(out1).sort().join() === 'naver_bookings,naver_bookings_pii,naver_bookings_status');
+  t('--out 에 쓰려던 값 4개 (보관 포함)', Object.keys(out1).sort().join() === 'naver_bookings,naver_bookings_archive,naver_bookings_pii,naver_bookings_status', Object.keys(out1).join());
+  t('명령줄: 보관(archive)에도 이름·전화·이메일·메모·추가 답·학생 이름 없음', secrets.concat(STU.map((s) => s.name)).every((x) => !x || JSON.stringify(out1.naver_bookings_archive).indexOf(x) < 0));
   /* 명령줄: 비밀값(환경변수) NAVER_PII_KEY + LUMEN_TEACHER_KEY 둘 다 → 예약 열쇠 */
   const FXE = Object.assign({}, FX); delete FXE.teacherKey;
   fs.writeFileSync(fxFile, JSON.stringify(FXE));

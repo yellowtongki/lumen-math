@@ -18,6 +18,7 @@ const fs = require('fs');
 const FILE = path.resolve(process.argv[2] || 'lumen_v19-124.html');
 const SP = process.env.SP || '/tmp';
 const WANT = (FILE.match(/v19-\d+/) || ['v19-124'])[0];
+const VER = Number(WANT.replace('v19-', ''));   /* v19-126 부터 이름·전화 띠 글이 «예약 열쇠» 쪽으로 바뀜 */
 const MOD = path.join(__dirname, '..', 'modules', 'naverbook124_teacher.js');
 let pass = 0, fail = 0;
 const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : '❌') + ' ' + name + (ok ? '' : ('  ← ' + (info || '')))); };
@@ -190,14 +191,14 @@ const KEY = 'TESTKEY_fake_1234';
   await show('naverbk');
   B = await pg.evaluate(() => [...document.querySelectorAll('[data-nbk-ban]')].map((x) => x.dataset.nbkBan + ':' + x.innerText.slice(0, 40)));
   R = await rowsInfo();
-  t('열쇠 없는 기기 → 「이 기기에는 서버 잠금 열쇠가 없어」 · 예약자 🔒 · 전화 링크 없음 · 학생 연결은 보임', B.length === 1 && /서버 잠금 열쇠가 없어/.test(B[0]) && R.every((r) => /예약자 🔒/.test(r.text) && !r.tel) && /○○○1/.test(R.find((r) => r.id === id.todayTlp).text), JSON.stringify(B) + ' ' + JSON.stringify(R.filter((r) => !/예약자 🔒/.test(r.text) || r.tel).map((r) => r.id + '/' + r.sec + '/' + r.text.slice(0, 60))) + ' tlp:' + (R.find((r) => r.id === id.todayTlp) || {}).text);
+  t('열쇠 없는 기기 → 「이 기기에는 서버 잠금 열쇠가 없어」 · 예약자 🔒 · 전화 링크 없음 · 학생 연결은 보임', B.length === 1 && (VER >= 126 ? /예약 열쇠를 넣으면/ : /서버 잠금 열쇠가 없어/).test(B[0]) && R.every((r) => /예약자 🔒/.test(r.text) && !r.tel) && /○○○1/.test(R.find((r) => r.id === id.todayTlp).text), JSON.stringify(B) + ' ' + JSON.stringify(R.filter((r) => !/예약자 🔒/.test(r.text) || r.tel).map((r) => r.id + '/' + r.sec + '/' + r.text.slice(0, 60))) + ' tlp:' + (R.find((r) => r.id === id.todayTlp) || {}).text);
   await pg.evaluate(() => { localStorage.setItem('lumen_db_key', 'WRONG_KEY_xx'); return nbkLoad(true); }); await show('naverbk');
   B = await pg.evaluate(() => [...document.querySelectorAll('[data-nbk-ban]')].map((x) => x.dataset.nbkBan + ':' + x.innerText.slice(0, 40)));
   t('다른 열쇠 → 「이 기기의 열쇠로 이름·전화를 못 열었어요」', B.length === 1 && /못 열었어요/.test(B[0]), JSON.stringify(B));
   await pg.evaluate(() => localStorage.setItem('lumen_db_key', 'TESTKEY_fake_1234'));   /* 일부러 앱의 저장 길로 — 서버에 올라가면 안 됨 */
   await pg.evaluate(() => T.make({ noBox: true })); await pg.evaluate(() => { T.store.naver_bookings.pii = { enc: false, n: 0 }; return nbkLoad(true); }); await show('naverbk');
   B = await pg.evaluate(() => [...document.querySelectorAll('[data-nbk-ban]')].map((x) => x.dataset.nbkBan + ':' + x.innerText.slice(0, 60)));
-  t('수집기 열쇠 없음 → 「LUMEN_TEACHER_KEY」 안내', B.length === 1 && /LUMEN_TEACHER_KEY/.test(B[0]), JSON.stringify(B));
+  t('수집기 열쇠 없음 → 「LUMEN_TEACHER_KEY」 안내 (v19-126 부터 「NAVER_PII_KEY」)', B.length === 1 && (VER >= 126 ? /NAVER_PII_KEY/ : /LUMEN_TEACHER_KEY/).test(B[0]), JSON.stringify(B));
   await pg.evaluate(() => { const a = new Date(Date.now() - 5 * 3600000).toISOString(); T.store.naver_bookings.at = a; T.store.naver_bookings_status.at = a; return nbkLoad(true); }); await show('naverbk');
   t('5시간 전 수집 → 「마지막 수집이 … 전이에요」', await pg.evaluate(() => !!document.querySelector('[data-nbk-ban="stale"]')));
   await pg.evaluate(() => { delete T.store.naver_bookings; delete T.store.naver_bookings_status; return nbkLoad(true); }); await show('naverbk');
