@@ -94,7 +94,8 @@ else: mqz=''
 rnx=open(SP+'/racenext122_teacher.js').read() if int(ver.replace('v19-',''))>=122 else ''   # v19-122: 🏁 진도 레이스 «🆕 다음 시즌 (원장님만 보기 🔒)» — race_season_draft · 서버가 race_board_draft 계산 · 「📣 학생앱에 공개」 때만 race_season/race_board 교체
 r123=open(SP+'/rcws123_teacher.js').read() if int(ver.replace('v19-',''))>=123 else ''   # v19-123: 🧩 리커버리 학습지 새 규칙 — 주간테스트 고르기(중3 기본 이번 주+지난 주) · 오답 1배수 · 교재 오답 빼기 · 단원 오답(매쓰플랫 교재 단원표) · 만들 때 보드 점수 갱신 · 구성 한 줄
 nbk=(open(os.path.join(HERE,'..','naver_booking_core.js'),encoding='utf-8').read()+'\n'+open(SP+'/naverbook124_teacher.js',encoding='utf-8').read()) if int(ver.replace('v19-',''))>=124 else ''   # v19-124: 📅 네이버 예약 (수집기 sync/naver_booking_collect.js · 공용 함수 sync/naver_booking_core.js 를 그대로 붙임) — 수업·출결 「네이버 예약」 · 리커버리 보드 배지·시간 넣기 · 홈 「오늘 네이버 예약」
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+new.lstrip('\n')+'\n\n'+s[end:]
+nb5=open(SP+'/naverbook125_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=125 else ''   # v19-125: 📅 네이버 예약 «📞 기억» 배지 — 수집기가 직접 연결한 학부모 전화(지문)를 기억해 다음 예약 자동 연결(how 'learned')
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -594,6 +595,9 @@ if int(ver.replace('v19-',''))>=124:
     rep("'race_watch_draft', 'race_recount_req'];", "'race_watch_draft', 'race_recount_req', 'lumen_db_key'];")
     rep("  if(typeof attHomeTodayWidget==='function') h+=attHomeTodayWidget();\n",
         "  if(typeof attHomeTodayWidget==='function') h+=attHomeTodayWidget();\n  if(typeof nbkHomeCard==='function') h+=nbkHomeCard();   /* ★ v19-124: 📅 오늘 네이버 예약 */\n")
+if int(ver.replace('v19-',''))>=125:
+    # v19-125: 기억한 전화 지문표(naver_phone_links)는 수집기만 쓴다 — 앱은 받지 않는다
+    rep("'race_recount_req', 'lumen_db_key'];", "'race_recount_req', 'lumen_db_key', 'naver_phone_links'];")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
