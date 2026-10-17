@@ -19,10 +19,18 @@
  * 실행: 깃허브 Actions 「네이버 예약 정찰」 수동 실행
  * ═══════════════════════════════════════════════════════════════════ */
 
-const COOKIE = (process.env.NAVER_COOKIE || '').trim();
+/* ★ 2026-10-17: 맥 메모장에서 붙여 넣으면 보이지 않는 줄바꿈(U+2028)·공백이 섞인다 → NID_AUT·NID_SES 값만 골라 다시 만든다 */
+function cleanCookie(raw) {
+  const t = String(raw || '').replace(/[\u2028\u2029\u00a0\r\n\t]/g, ' ');
+  const pick = (k) => { const m = t.match(new RegExp(k + '\\s*=\\s*([^;\\s]+)')); return m ? k + '=' + m[1] : ''; };
+  const parts = [pick('NID_AUT'), pick('NID_SES')].filter(Boolean);
+  return parts.length ? parts.join('; ') : t.replace(/[^\x20-\x7e]/g, '').trim();
+}
+const COOKIE = cleanCookie(process.env.NAVER_COOKIE);
 const log = (...a) => console.log('[정찰]', ...a);
 
 if (!COOKIE) { log('NAVER_COOKIE가 없습니다 — Secrets에 등록해 주세요'); process.exit(1); }
+log(`쿠키 확인: NID_AUT ${/NID_AUT=/.test(COOKIE) ? '있음' : '없음 ⚠️'} · NID_SES ${/NID_SES=/.test(COOKIE) ? '있음' : '없음 ⚠️'} (값은 출력하지 않음)`);
 
 const H = {
   cookie: COOKIE,
