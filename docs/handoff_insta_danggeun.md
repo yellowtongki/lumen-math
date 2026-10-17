@@ -2,7 +2,25 @@
 
 > **새 세션은 이 문서부터 읽으면 됩니다.** 맥미니 로컬 세션용입니다.
 
-## 0. 가장 먼저 — 브랜치 확인 ⚠️
+## 0. 가장 먼저 — 글도 도구도 **main 에 있다** ⚠️ (2026-10-17 갱신)
+
+```
+cd ~/lumen-math
+git fetch origin main && git checkout -B blog-latest origin/main
+```
+
+- 예전에는 `claude/gallant-ride-nddobc` 가지에 있었다. **지금은 아니다.** 그 가지를 뒤지면
+  옛 커밋이 나와 틀린 숫자로 글이 나간다 (2026-10-17 실제로 그랬다)
+- 글 폴더: `blog/2026-10-11-janghak-card` · `blog/2026-10-12-janghak-standard` ·
+  `blog/2026-10-14-beombak-h1-exam`
+- **네이버에 넣기**: `node sync/naver_draft.js [글 폴더]` — 폴더를 안 적으면 가장 최근 글
+  - 로그인은 `sync/_naver_profile/` 에 남아 있다(2026-10-11에 해 둠). 다시 안 물어본다.
+    지워졌을 때만 `--login`
+  - **지도·톡톡도 자동**이다. 「손으로 넣어야 한다」는 옛 판 설명이다
+  - 발행은 하지 않는다. 임시저장까지만
+  - 미리 보기만: `--dry`
+
+## 0-2. 예전 브랜치 이야기 (지난 기록)
 
 지금까지의 블로그 자동화 작업은 **`claude/gallant-ride-nddobc`** 가지에 있습니다.
 `main` 에는 없습니다. 세션을 열면 먼저 이걸 확인하세요.
