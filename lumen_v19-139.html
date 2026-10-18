@@ -96698,14 +96698,15 @@ function xt139BoxHTML(k, tr){
   var onlyMe = Object.keys(d.tracks).filter(function(g){ return d.tracks[g] && d.tracks[g].pub; }).join() === k;
   var B = 'border-radius:8px;padding:6px 9px;font-size:10.5px;font-weight:800;cursor:pointer;font-family:inherit';
   var h = '<div class="xt139-box" style="margin-top:9px;padding-top:9px;border-top:1px dashed #e6ebf3">'
-    + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:11px;font-weight:900;color:#0d2240">📝 시험</span>'
-    + '<span id="xt139-exam" style="margin-left:auto;font-size:10.5px;font-weight:900;color:' + (ex ? (over ? '#94a3b8' : '#1d6fe8') : '#b45309') + ';text-align:right">'
-    + (ex ? esc2(ex.label) + ' · ' + esc2(xt139Range(ex)) + (over ? ' · 끝' : (dn != null ? ' · D-' + dn : '')) : '시험 미정') + '</span></div>';
-  if (tr.examManual) h += '<div style="font-size:9.5px;color:#94a3b8;font-weight:700;margin:-3px 0 5px;text-align:right">✍️ 직접 넣은 날짜 — 학사일정이 덮지 않음</div>';
-  if (tr.skipNext) h += '<div style="font-size:9.5px;color:#94a3b8;font-weight:700;margin:-3px 0 5px;text-align:right">↩ 되돌린 트랙 — 다음 시험 트랙은 직접 만드세요</div>';
+    + '<div style="font-size:11px;font-weight:900;color:#0d2240;margin-bottom:3px">📝 대비하는 시험</div>'
+    + '<div id="xt139-exam" style="font-size:11.5px;font-weight:900;margin-bottom:5px;color:' + (ex ? (over ? '#94a3b8' : '#1d6fe8') : '#b45309') + '">'
+    + (ex ? esc2(ex.label) + ' <span style="font-weight:800">' + esc2(xt139Range(ex)) + (over ? ' · 끝' : (dn != null ? ' · D-' + dn : '')) + '</span>' : '시험 미정') + '</div>';
+  if (tr.examManual) h += '<div style="font-size:9.5px;color:#94a3b8;font-weight:700;margin:-2px 0 5px">✍️ 직접 넣은 날짜 — 학사일정이 덮지 않음</div>';
+  if (tr.skipNext) h += '<div style="font-size:9.5px;color:#94a3b8;font-weight:700;margin:-2px 0 5px">↩ 되돌린 트랙 — 다음 시험 트랙은 「＋ 시험 트랙 만들기」로</div>';
+  var SB = 'flex:1;min-width:0;white-space:nowrap;border-radius:8px;padding:6px 3px;font-size:10px;font-weight:800;cursor:pointer;font-family:inherit;background:#fff';
   h += '<div style="display:flex;gap:5px;margin-bottom:9px">'
-    + '<button id="xt139-edit" onclick="xt139MkOpen(\'edit\',\'' + q + '\')" style="flex:1;' + B + ';border:1px solid #e2e8f0;background:#fff;color:#0d2240">✏️ 시험 고치기</button>'
-    + '<button id="xt139-del" onclick="xtDelTrack()" style="' + B + ';border:1px solid #fecaca;background:#fff;color:#dc2626">🗑 트랙 지우기</button></div>';
+    + '<button id="xt139-edit" onclick="xt139MkOpen(\'edit\',\'' + q + '\')" style="' + SB + ';border:1px solid #e2e8f0;color:#0d2240">✏️ 시험 고치기</button>'
+    + '<button id="xt139-del" onclick="xtDelTrack()" style="' + SB + ';border:1px solid #fecaca;color:#dc2626">🗑 트랙 지우기</button></div>';
   h += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">'
     + '<span style="font-size:11px;font-weight:900;color:#0d2240">📱 학생앱</span>'
     + '<span style="margin-left:auto;font-size:10px;font-weight:800;color:' + (pub ? '#0f8a4e' : '#94a3b8') + '">' + (pub ? (d.publish === false ? '공개(전체 비공개 중)' : '보이는 중') : '숨김') + '</span></div>'

@@ -99,6 +99,8 @@ const SEED = { exam_track: XT0, school_calendar: CAL };
     T.reset = () => { T.store = clone(T.SEED); T.w = []; T.toasts = []; T.confirms = []; };
     T.reset();
     students.length = 0; clone(STUDENTS).forEach((s) => students.push(s));
+    try { localStorage.setItem('or_studentdb', JSON.stringify(STUDENTS)); } catch (e) {}
+    T.stuN = () => activeStudents().map((s) => s.lumen_rec_code).join();
   }, { STUDENTS, SEED });
   const settle = (ms) => pg.evaluate((ms) => new Promise((r) => setTimeout(r, ms || 150)), ms);
   const XW = () => pg.evaluate(() => T.w.filter((x) => x.key === 'exam_track').length);
@@ -205,7 +207,7 @@ const SEED = { exam_track: XT0, school_calendar: CAL };
   s = await S();
   const N1 = s.tracks['옥길중 중1'];
   t('만들기 → 기말 트랙 · 교재 2권 그대로(시험범위 p 비움 · 범위 있던 B1은 ⚠ 추정 · pc 있는 B2는 그대로) · 🔒 비공개 · 확인 한 번', N1.exam.label === '2학기 기말' && N1.exam.from === '2026-12-18' && N1.pub === false && N1.items.length === 2 && N1.items.every((i) => i.pFrom == null && i.pTo == null) && N1.items[0].needCheck === true && !N1.items[1].needCheck && N1.items[1].pc && (await pg.evaluate(() => T.confirms.length)) === 1 && !N1.examManual, JSON.stringify(N1).slice(0, 300));
-  if (process.env.DBG) console.log('DBG', JSON.stringify({ keys: Object.keys(s.tracks), past: s.past.map((p) => [p.grp, p.why, p.exam && p.exam.label, Object.keys(p.indiv || {})]), indiv: Object.keys(s.indiv), mk: await pg.evaluate(() => XT.mk), toasts: await pg.evaluate(() => T.toasts.slice(-3)) }));
+  if (process.env.DBG) console.log('DBG', JSON.stringify({ keys: Object.keys(s.tracks), past: s.past.map((p) => [p.grp, p.why, p.exam && p.exam.label, Object.keys(p.indiv || {})]), indiv: Object.keys(s.indiv), mk: await pg.evaluate(() => XT.mk), stu: await pg.evaluate(() => T.stuN()), toasts: await pg.evaluate(() => T.toasts.slice(-3)) }));
   t('지난 중간 트랙은 past 로(why new) · 개별 배정도 같이 · 창 닫힘', s.past.some((p) => p.grp === '옥길중 중1' && p.why === 'new' && p.exam.label === '2학기 중간' && p.indiv && p.indiv.AAA111) && !s.indiv.AAA111 && !(await pg.evaluate(() => document.getElementById('xt139-modal'))));
   /* 직접 입력 · 트랙 없는 학년(범박중 중1) */
   await pg.evaluate(() => { T.confirms = []; xt139MkOpen('new', ''); }); await settle(150);
