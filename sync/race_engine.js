@@ -855,6 +855,10 @@ async function computeSeason(season, isDraft, ctx) {
     const lib = (await kvGet('raid_boss_lib')) || {};
     const artOf = (k) => { const b = (lib.bosses || []).find((x) => x && x.key === k);
       return (b && Array.isArray(b.rows) && Array.isArray(b.pal)) ? { name: b.name || '', w: b.w, h: b.h, pal: b.pal, rows: b.rows } : null; };
+    /* 🏞 배경 (2026-10-18): 레이드 설정 bg → 보스의 기본 bg. 보관함 bgs 에서 찾는다 */
+    const bgOf = (cfg) => { const bk = cfg.bg || ((lib.bosses || []).find((x) => x && x.key === (cfg.boss || 'golem')) || {}).bg;
+      const g = bk && (lib.bgs || []).find((x) => x && x.key === bk);
+      return (g && Array.isArray(g.rows) && Array.isArray(g.pal)) ? { key: g.key, name: g.name || '', w: g.w, h: g.h, floor: 58, pal: g.pal, rows: g.rows } : null; };
     const yDay = new Date(Date.now() + 9 * 3600000 - 86400000).toISOString().slice(0, 10);
     const weekFrom = new Date(Date.now() + 9 * 3600000 - 6 * 86400000).toISOString().slice(0, 10);
 
@@ -892,9 +896,9 @@ async function computeSeason(season, isDraft, ctx) {
       const dday = Math.round((Date.parse(cfg.to) - Date.parse(todayK)) / 86400000);
       /* 학교·학년 가리기 (원장 2026-10-18 중고등부 통합 레이드) — 순위판에서 학교·학년을 비운다 */
       if (cfg.hideSch) rows.forEach((r) => { r.sch = ''; r.gr = ''; });
-      const art = artOf(cfg.boss || 'golem');
+      const art = artOf(cfg.boss || 'golem'), bgArt = bgOf(cfg);
       return {
-        ...(art ? { art } : {}), ...(cfg.hideSch ? { hideSch: true } : {}),
+        ...(art ? { art } : {}), ...(bgArt ? { bgArt } : {}), ...(cfg.hideSch ? { hideSch: true } : {}),
         id: cfg.id, name: cfg.name || '보스 레이드', boss: cfg.boss || 'golem',
         grs, sch, from: cfg.from, to: cfg.to, dday,
         hp, dealt, left, pct: Math.min(100, Math.round(dealt / hp * 1000) / 10),

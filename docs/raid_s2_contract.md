@@ -69,3 +69,12 @@
 3. 순위표 부 이름은 `board.bandNames` 를 따른다(통합이면 「중고등부」).
 4. 추가 버프 띠: `buff.boost.windows` 가 있으면 내 줄의 `bz` 기간으로(기간 전이면 「○월 ○일부터 버프」, 기간 안이면 지금 띠, 없으면 띠 없음).
 5. 「점수는 하루 세 번 들어와요」 안내 → 하루 여섯 번(새벽 4시 · 오후 4시 · 저녁 6시 · 8시 · 밤 10시 · 자정, 늦어질 수 있음).
+
+## 7. 🏞 보스 배경 · 보스 고르기 바로 보이기 (2026-10-18 밤, 원장 「흑기사로 골랐는데 선택이 안된다 · 보스 배경도 만들어줘」)
+
+- **원인**: 보스 고르기는 편집 사본(RX.raids)만 바꾸고, 아래 「💾 레이드·버프 저장」 뒤 서버 다시 세기(몇 시간 걸릴 수 있음)가 돌아야 미리보기 그림이 바뀌었다.
+- **보관함 배경** `raid_boss_lib.bgs = [{key,name,desc,w:128,h:72,pal,rows,by}]` — 8종(volcano 화산 · castle 어둠의 성 · sea 바다 밑 · forest 밤 숲 · cave 수정 동굴 · grave 해골 무덤 · classroom 시험장 · sky 노을 구름). 빈칸 없음(배경은 꽉 찬 그림). 아래 14줄(58~71)이 바닥. 만든 도구 `sync/boss_bg.js`(boss_lib.js --seed 가 같이 넣는다).
+- **보스 기본 배경** `bosses[].bg` (dragon→volcano · phoenix→sky · kraken→sea · dark_knight→castle · golem→cave · lich→grave · slime/king_slime/oni→forest · paper→classroom, `_rm` 은 바탕 보스와 같다). 원장이 보관함에서 바꾸면 `bg` + `bgSet:true` (seed 가 지킨다).
+- **레이드 설정** `raids[].bg` (없으면 보스 기본 배경).
+- **엔진** 순위판 항목에 `bgArt = {key,name,w,h,floor:58,pal,rows}`.
+- **그리는 법(기준)**: 배경을 정수 배율로 깔고, 보스는 같은 배율로 가로 가운데, **보스 맨 아래 줄이 배경 64번째 줄**에 오게(`top = (64 − boss.h) × 배율`, 0보다 작으면 0). 보스가 배경보다 크면 둘 다 줄인다.

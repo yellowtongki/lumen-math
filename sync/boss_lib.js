@@ -19,6 +19,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const BG = require('./boss_bg.js');   // 🏞 보스 배경 8종 (2026-10-18)
 
 const CH = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 const OUT = '#120e22';
@@ -307,6 +308,7 @@ function buildLib() {
     out.push({ key: D.key, name: D.name, en: D.en, tag: `${g[0].length} x ${g.length}`, desc: D.desc, ...encode(g), by: 'claude', base: null, created: now, log: [] }); });
   builtins().forEach((B) => { const g = remaster(B.grid);
     out.push({ key: B.key + '_rm', name: B.name, en: B.en, tag: `${g[0].length} x ${g.length} · 명암 판`, desc: B.name + '에 5단 명암을 입힌 판 (학생앱에는 이름만 보인다)', ...encode(g), by: 'claude', base: B.key, created: now, log: [] }); });
+  out.forEach((b) => { b.bg = BG.bgOfBoss(b.base || b.key); });   // 보스마다 기본 배경
   return out;
 }
 function pick(B) { return { key: B.key, name: B.name, en: B.en, tag: B.tag || '', desc: B.desc || '' }; }
@@ -326,7 +328,7 @@ if (require.main === module) {
   (async () => {
     const bosses = buildLib();
     bosses.forEach((b) => { if (PAST[b.key]) b.log = [PAST[b.key]]; });
-    if (arg('json')) { fs.writeFileSync(arg('json'), JSON.stringify({ v: 1, bosses }, null, 1)); console.log(`보스 ${bosses.length}종 → ${arg('json')}`); return; }
+    if (arg('json')) { fs.writeFileSync(arg('json'), JSON.stringify({ v: 1, bosses, bgs: BG.buildBgs(encode) }, null, 1)); console.log(`보스 ${bosses.length}종 → ${arg('json')}`); return; }
     if (!args.includes('--seed')) { console.log('--json <파일> 또는 --seed [--dry]'); return; }
     const U = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), K = process.env.SUPABASE_SERVICE_KEY || '';
     if (!U || !K) throw new Error('SUPABASE_URL / SUPABASE_SERVICE_KEY 가 필요합니다');
@@ -338,8 +340,12 @@ if (require.main === module) {
     /* 원장이 만든 것·Claude 목록에 없는 것은 그대로 두고, 같은 key 의 사용 기록(log)은 이어 붙인다 */
     bosses.forEach((b) => { const o = old.find((x) => x.key === b.key); if (o) { b.log = (o.log && o.log.length) ? o.log : b.log; b.created = o.created || b.created; } });
     const keep = old.filter((x) => !mine.has(x.key));
-    const lib = Object.assign({}, cur || {}, { v: 1, updated: new Date().toISOString(), bosses: bosses.concat(keep) });
-    console.log(`보관함: 기본·Claude ${bosses.length}종 + 그대로 둔 것 ${keep.length}종`);
+    /* 배경도 같은 방식 — Claude 배경은 새로, 원장이 만든 배경은 그대로 */
+    const bgs = BG.buildBgs(encode); const bgMine = new Set(bgs.map((b) => b.key));
+    const bgKeep = ((cur && Array.isArray(cur.bgs)) ? cur.bgs : []).filter((x) => x && !bgMine.has(x.key));
+    bosses.forEach((b) => { const o = old.find((x) => x.key === b.key); if (o && o.bgSet && o.bg) { b.bg = o.bg; b.bgSet = true; } });  // 원장이 고른 배경은 지킨다
+    const lib = Object.assign({}, cur || {}, { v: 1, updated: new Date().toISOString(), bosses: bosses.concat(keep), bgs: bgs.concat(bgKeep) });
+    console.log(`보관함: 기본·Claude ${bosses.length}종 + 그대로 둔 것 ${keep.length}종 · 배경 ${lib.bgs.length}종`);
     if (args.includes('--dry')) { console.log('(미리보기 — 저장 안 함)'); return; }
     const w = await fetch(`${U}/rest/v1/lumen_store?on_conflict=key`, { method: 'POST', headers: { ...H, Prefer: 'resolution=merge-duplicates' },
       body: JSON.stringify([{ key: 'raid_boss_lib', value: lib, updated_at: new Date().toISOString() }]) });
