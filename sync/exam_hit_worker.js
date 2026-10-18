@@ -185,7 +185,7 @@ async function claude(content, maxTokens) {
   for (let attempt = 0; attempt < 5; attempt++) {
     const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST',
       headers: { 'content-type': 'application/json', 'x-api-key': AI_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: MODELS[MODEL_I], max_tokens: maxTokens || 1200, temperature: 0, messages: [{ role: 'user', content }] }) });
+      body: JSON.stringify({ model: MODELS[MODEL_I], max_tokens: maxTokens || 1200, messages: [{ role: 'user', content }] }) });
     const d = await r.json().catch(() => null);
     if (r.ok && d && !d.error) return ((d.content || []).find((c) => c.type === 'text') || {}).text || '';
     const msg = (d && d.error && d.error.message) || r.statusText;
