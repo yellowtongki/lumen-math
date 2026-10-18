@@ -38,7 +38,7 @@
  *   OUT  race_watch_draft  = 그 시즌 이상 신호 (원장님 화면 전용)
  *   ★ 다음 시즌 계산은 race_board · race_season · raid_board · race_history · race_watch 를
  *     «절대» 쓰지 않는다 — 학생앱·학부모앱·push_boost.js 가 읽는 키는 원장님이 「📣 학생앱에 공개」를
- *     누를 때(학원앱)만 바뀐다. 레이드도 세지 않는다.
+ *     누를 때(학원앱)만 바뀐다. 레이드는 2026-10-18부터 다음 시즌도 세어 raid_board_draft 에만 쓴다.
  *   지금 시즌(race_season)은 예전과 «한 글자도 다르지 않게» 센다(--dry 출력 비교로 확인).
  *
  * ── 새 시즌 설정 칸 (없으면 예전과 똑같다) ────────────────────────────
@@ -102,7 +102,9 @@ const ptOf = (level, result) => {
  *   ⚠️ 학원앱 rcBuffMult(lumen_v19-29.html)와 «똑같은 계산»이어야 한다. */
 const buffMult = (planScore, max, day, boost) => {
   const v = Number(planScore);
-  const b = (boost && boost.on && boost.from && day && String(day) >= String(boost.from)) ? boost : null;
+  /* boost.to (2026-10-18 학교별 버프 기간): 그날이 to 를 넘으면 옛 규칙. to 가 없으면 예전과 같다(끝 없음). */
+  const b = (boost && boost.on && boost.from && day && String(day) >= String(boost.from)
+    && !(boost.to && String(day) > String(boost.to))) ? boost : null;
   const m = b ? (Number(b.max) > 0 ? Number(b.max) : 0.4) : (max > 0 ? max : 0.4);
   const flat = b ? (Number(b.flat) > 0 ? Number(b.flat) : 1) : 1;
   if (!(v > 0)) return flat;                    // 플래너 미제출·0점 — 고정 배수만
@@ -410,7 +412,7 @@ async function runDraft(ctx, live) {
   return computeSeason(draft, true, ctx);
 }
 
-/* 시즌 하나를 센다. isDraft=true 면 «_draft» 키에만 쓰고 레이드·보관은 하지 않는다. */
+/* 시즌 하나를 센다. isDraft=true 면 «_draft» 키에만 쓴다(레이드는 raid_board_draft) · 보관은 하지 않는다. */
 async function computeSeason(season, isDraft, ctx) {
   ctx = ctx || {};
   const tiers = (Array.isArray(season.tiers) && season.tiers.length ? season.tiers : DEF_TIERS)
@@ -494,9 +496,31 @@ async function computeSeason(season, isDraft, ctx) {
   if (buffOn) log(`🔥 집중 버프 켜짐 (최대 ×${(1 + buffMax).toFixed(2)}) · 플래너 있는 학생 ${Object.keys(plan).length}명`);
   /* ★ 추가 버프 — 정해진 날부터만 (docs/race_boost_contract.md). 그 전 날짜는 손대지 않는다. */
   const bz = (season.buff || {}).boost || null;
-  const boost = (bz && bz.on && bz.from) ? { on: true, from: String(bz.from),
+  /* ★ 학교·학년별 버프 기간 (2026-10-18 원장 「시험 2주 전 버프」 — 학교마다 시험일이 다르다)
+   *   boost.windows = [{ sch:'옥길중', grs:['중1','중2'], from:'2026-12-04', to:'2026-12-22' }, …]
+   *   학생 학교 이름 앞부분(sch, 비면 아무 학교)·학년(grs, 비면 아무 학년)이 맞는 «첫 줄»의 기간에만 추가 버프.
+   *   맞는 줄이 없으면 추가 버프 없음. windows 가 없으면 예전처럼 boost.from 하나(모든 학생). */
+  const isD = (d) => /^\d{4}-\d\d-\d\d$/.test(String(d || ''));
+  const bwin = (bz && bz.on && Array.isArray(bz.windows))
+    ? bz.windows.filter((w) => w && isD(w.from) && isD(w.to)) : null;
+  const bFlat = (bz && Number(bz.flat) > 0) ? Number(bz.flat) : 1;
+  const bMax = (bz && Number(bz.max) > 0) ? Number(bz.max) : 0.4;
+  const winOf = {};
+  if (bwin && bwin.length) Object.keys(info).forEach((c) => {
+    const t = info[c]; const mine = String(t.sch || '').trim();
+    const w = bwin.find((x) => {
+      const grs = Array.isArray(x.grs) ? x.grs.map(String) : [];
+      if (grs.length && grs.indexOf(String(t.gr)) < 0) return false;
+      const sc = String(x.sch || '').trim();
+      return !sc || mine.indexOf(sc) === 0;
+    });
+    if (w) winOf[c] = { on: true, from: String(w.from), to: String(w.to), flat: bFlat, max: bMax };
+  });
+  const boost = (bz && bz.on && bz.from && !(bwin && bwin.length)) ? { on: true, from: String(bz.from),
     flat: Number(bz.flat) > 0 ? Number(bz.flat) : 1, max: Number(bz.max) > 0 ? Number(bz.max) : 0.4 } : null;
   if (boost) log(`🔥🔥 추가 버프 ${boost.from}부터 · 고정 ×${boost.flat} · 플래너 최대치 ${boost.max} (플래너 10점이면 ×${(boost.flat * (1 + boost.max)).toFixed(2)})`);
+  if (bwin && bwin.length) log(`🔥🔥 학교별 추가 버프 ${bwin.length}줄 · 고정 ×${bFlat} · 플래너 최대치 ${bMax} · 해당 학생 ${Object.keys(winOf).length}명`);
+  const boostOf = (c) => ((bwin && bwin.length) ? (winOf[c] || null) : boost);
 
   /* 학생별 집계 */
   /* ⚔️ 보스 레이드 — 시즌과 따로, 레이드 시작일부터의 점수만 센다.
@@ -506,7 +530,8 @@ async function computeSeason(season, isDraft, ctx) {
    * ★ 2026-09-03: 학년마다 따로 잡게 되어 <b>여러 개</b>가 된다.
    *   season.raids = [ {...}, {...} ]  ← 새 방식
    *   season.raid  = {...}             ← 예전 방식도 그대로 받는다 */
-  const raidList = isDraft ? [] : (Array.isArray(season.raids) ? season.raids   // 🆕 다음 시즌은 레이드를 세지 않는다
+  /* 2026-10-18: 다음 시즌도 레이드를 센다 — 결과는 raid_board_draft 에만 (원장 「보스 넣어」) */
+  const raidList = (Array.isArray(season.raids) ? season.raids
                    : (season.raid ? [season.raid] : []))
     .filter((r) => r && r.on && r.from && r.to);
   const raidOn = raidList.length > 0;
@@ -563,7 +588,7 @@ async function computeSeason(season, isDraft, ctx) {
     const raw = hi ? ptOf(lv, r.result) * highMult : ptOf(lv, r.result);
     if (hi) { a.hi = (a.hi || 0) + 1; hmStat.n += 1; if (r.school) hmStat.ws += 1; else hmStat.book += 1; }
     const day = kstDay(r.score_datetime);
-    const mult = buffOn ? buffMult((plan[code] || {})[day], buffMax, day, boost) : 1;
+    const mult = buffOn ? buffMult((plan[code] || {})[day], buffMax, day, boostOf(code)) : 1;
     a.base += raw;
     a.pts += raw * mult;
     a.n += 1;
@@ -659,6 +684,7 @@ async function computeSeason(season, isDraft, ctx) {
           spark: days.slice(-14).map((d) => a.byDay[d] || 0),        // 최근 14일 막대
           ...(hmOn ? { hi: a.hi || 0 } : {}),                          // 🎓 고등 문제 ×배수 받은 문항 수
           ...(sfKeys.length ? { from: fromOf[c] } : {}),               // 🏫 이 학생의 시작일
+          ...(winOf[c] ? { bz: { from: winOf[c].from, to: winOf[c].to } } : {}),   // 🔥 이 학생의 추가 버프 기간
         };
       })
       .sort((a, b) => b.pts - a.pts || b.n - a.n);
@@ -696,7 +722,10 @@ async function computeSeason(season, isDraft, ctx) {
     /* 앱들이 「🔥 버프 켜짐」 표시에 쓴다. boost 는 학생앱 띠(C 희망형)가 그대로 읽는다 */
     buff: { on: buffOn, max: buffMax,
       boost: boost ? Object.assign({}, boost, { to: season.to,
-        dday: Math.max(0, Math.round((Date.parse(season.to + 'T00:00:00Z') - Date.parse(todayK + 'T00:00:00Z')) / 86400000)) }) : null },
+        dday: Math.max(0, Math.round((Date.parse(season.to + 'T00:00:00Z') - Date.parse(todayK + 'T00:00:00Z')) / 86400000)) })
+        /* 학교별 기간: 학생마다 다르므로 줄마다 bz{from,to} 를 보고, 여기엔 목록과 전체 범위만 */
+        : ((bwin && bwin.length) ? { on: true, flat: bFlat, max: bMax, windows: bwin.map((w) => ({ sch: w.sch || '', grs: w.grs || [], from: w.from, to: w.to })),
+            from: bwin.map((w) => w.from).sort()[0], to: bwin.map((w) => w.to).sort().slice(-1)[0] } : null) },
   };
   /* 새 시즌 설정 칸이 있을 때만 붙인다 (지금 시즌 순위표 모양은 그대로) */
   if (hmOn) {
@@ -819,10 +848,13 @@ async function computeSeason(season, isDraft, ctx) {
   /* ══ ⚔️ 보스 레이드 순위판 ═════════════════════════════════
    * 레이드마다 하나씩 만들어 raid_board.list 에 담는다. 학생앱은 이 하나만
    * 읽으면 「내 레이드」와 「남의 학년 한 줄 구경」을 다 그릴 수 있다. */
-  if (isDraft) {
-    /* 🆕 다음 시즌: raid_board 는 건드리지 않는다 (학생앱이 읽는 키) */
-  } else if (raidOn) {
+  const raidKey = isDraft ? 'raid_board_draft' : 'raid_board';   /* 🆕 다음 시즌은 원장님만 보는 키에 */
+  if (raidOn) {
     const jobs = await loadRaidJobs();
+    /* 🗃 보스 보관함 (raid_boss_lib, 학원앱 v19-137) — 그림을 순위판에 같이 담아 학생앱이 보관함을 따로 읽지 않게 */
+    const lib = (await kvGet('raid_boss_lib')) || {};
+    const artOf = (k) => { const b = (lib.bosses || []).find((x) => x && x.key === k);
+      return (b && Array.isArray(b.rows) && Array.isArray(b.pal)) ? { name: b.name || '', w: b.w, h: b.h, pal: b.pal, rows: b.rows } : null; };
     const yDay = new Date(Date.now() + 9 * 3600000 - 86400000).toISOString().slice(0, 10);
     const weekFrom = new Date(Date.now() + 9 * 3600000 - 6 * 86400000).toISOString().slice(0, 10);
 
@@ -858,7 +890,11 @@ async function computeSeason(season, isDraft, ctx) {
       const eta = etaDays != null
         ? new Date(Date.parse(todayK) + etaDays * 86400000).toISOString().slice(0, 10) : null;
       const dday = Math.round((Date.parse(cfg.to) - Date.parse(todayK)) / 86400000);
+      /* 학교·학년 가리기 (원장 2026-10-18 중고등부 통합 레이드) — 순위판에서 학교·학년을 비운다 */
+      if (cfg.hideSch) rows.forEach((r) => { r.sch = ''; r.gr = ''; });
+      const art = artOf(cfg.boss || 'golem');
       return {
+        ...(art ? { art } : {}), ...(cfg.hideSch ? { hideSch: true } : {}),
         id: cfg.id, name: cfg.name || '보스 레이드', boss: cfg.boss || 'golem',
         grs, sch, from: cfg.from, to: cfg.to, dday,
         hp, dealt, left, pct: Math.min(100, Math.round(dealt / hp * 1000) / 10),
@@ -869,7 +905,7 @@ async function computeSeason(season, isDraft, ctx) {
       };
     });
 
-    await kvSet('raid_board', { at: new Date().toISOString(), on: true, list });
+    await kvSet(raidKey, { at: new Date().toISOString(), on: true, list });
     list.forEach((r) => log(
       `⚔️ ${r.name}: ${r.rows.length}명 · ${r.dealt.toLocaleString()} / ${r.hp.toLocaleString()} `
       + `(${r.pct}%) · 어제 ${r.yesterday.toLocaleString()}`
@@ -884,7 +920,7 @@ async function computeSeason(season, isDraft, ctx) {
         + (r.eta ? ` · 격파 예상 ${r.eta}` : ''));
     });
   } else {
-    await kvSet('raid_board', { at: new Date().toISOString(), on: false, list: [] });
+    await kvSet(raidKey, { at: new Date().toISOString(), on: false, list: [] });
   }
 
   if (DRY) { if (isDraft) dryReportDraft(board, hmStat, fromOf, info); else dryReport(board); }
