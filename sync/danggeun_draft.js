@@ -176,7 +176,7 @@ async function type(page, el, text) {
       log('\n🔑 당근 비즈니스 창을 엽니다.');
       log('   로그인을 **직접** 해주세요. 이 프로그램은 비밀번호를 보지 않습니다.\n');
       await page.goto(HOME);
-      await pause('로그인을 기다리는 중입니다.', '창에서 로그인을 끝내고 「루멘수학」 관리자 홈이 보이게 해주세요.');
+      await pause('로그인을 기다리는 중입니다.', '창에서 로그인한 뒤 비즈프로필 「루멘수학」 을 눌러 관리자 홈까지 들어가 주세요.');
       log('✅ 로그인 상태를 저장했습니다.');
       log('   이제 글을 넣을 수 있습니다 → node sync/danggeun_draft.js blog/<폴더>\n');
       await ctx.close(); return;
@@ -187,7 +187,20 @@ async function type(page, el, text) {
     if (!biz) {
       await page.goto(HOME, { waitUntil: 'domcontentloaded' });
       await sleep(2500);
-      const m = page.url().match(/biz_accounts\/(\d+)/);
+      let m = page.url().match(/biz_accounts\/(\d+)/);
+      if (!m) {
+        // 계정 고르는 화면(business.daangn.com/profile/login)에 떨어졌다 — 가게 이름을 눌러 들어간다
+        const name = process.env.DAANGN_BIZ_NAME || '루멘수학';
+        log(`   계정 고르는 화면입니다 — 「${name}」 을 누릅니다.`);
+        for (const sel of [`a:has-text("${name}")`, `[role="button"]:has-text("${name}")`,
+                           `div:has-text("${name}") >> nth=-1`, `text=${name}`]) {
+          try {
+            const el = page.locator(sel).first();
+            if (await el.isVisible({ timeout: 1200 })) { await el.click(); await sleep(3500); break; }
+          } catch {}
+        }
+        m = page.url().match(/biz_accounts\/(\d+)/);
+      }
       if (m) biz = m[1];
     }
     if (!biz) {
