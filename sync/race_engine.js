@@ -486,6 +486,21 @@ async function computeSeason(season, isDraft, ctx) {
   const bmRaw = (season.bookMult && typeof season.bookMult === 'object') ? season.bookMult : {};
   const bookMult = {}; Object.keys(bmRaw).forEach((k) => { const m = Number(bmRaw[k]); if (m > 0 && m !== 1) bookMult[String(k)] = m; });
   const bmStat = {};
+  /* 📕 교재별 난이도 다시 매기기 (2026-10-19 원장 「2번으로 해줘」 — 마플시너지)
+   *   season.bookLv = { "<교재 id>": { "1":2, "2":3, "3":"K", … } } — 매쓰플랫 난이도 → 레이스 난이도.
+   *   숫자 = 그 난이도의 기본점(하1·중2·상3·최상4, 맞히면 두 배), "K" = 킬러(틀려도 6 · 맞히면 12).
+   *   마플시너지: 매쓰플랫이 하·중·상으로만 매겨 킬러가 낮게 셈해졌다 → 한 단계 올리고 상은 킬러. */
+  const KILLER_BASE = 6;
+  const bookLv = (season.bookLv && typeof season.bookLv === 'object') ? season.bookLv : {};
+  const lvPts = (bookId, lv, result) => {
+    const m = bookId != null && bookLv[String(bookId)];
+    if (!m) return ptOf(lv, result);
+    const to = m[String(Number(lv) || 2)];
+    if (to == null) return ptOf(lv, result);
+    const base = to === 'K' ? KILLER_BASE : (LV_PT[Number(to)] || 2);
+    bmStat[bookId] = (bmStat[bookId] || 0) + 1;
+    return result === 'O' ? base * 2 : base;
+  };
   const isHighRec = (r) => {
     if (r.school) return r.school === 'HIGH';
     if (r.book_id == null) return false;
@@ -593,7 +608,8 @@ async function computeSeason(season, isDraft, ctx) {
     const hi = hmOn && isHighRec(r);
     const bm = (r.book_id != null && bookMult[String(r.book_id)]) || 1;
     if (bm !== 1) bmStat[r.book_id] = (bmStat[r.book_id] || 0) + 1;
-    const raw = (hi ? ptOf(lv, r.result) * highMult : ptOf(lv, r.result)) * bm;
+    const pt0 = lvPts(r.book_id, lv, r.result);
+    const raw = (hi ? pt0 * highMult : pt0) * bm;
     if (hi) { a.hi = (a.hi || 0) + 1; hmStat.n += 1; if (r.school) hmStat.ws += 1; else hmStat.book += 1; }
     const day = kstDay(r.score_datetime);
     const mult = buffOn ? buffMult((plan[code] || {})[day], buffMax, day, boostOf(code)) : 1;
@@ -742,6 +758,7 @@ async function computeSeason(season, isDraft, ctx) {
     board.rules.high = { mult: highMult, note: `고등 문제(고등 학습지·고등 교재)는 점수 ×${highMult}` };
     board.rules.note += ` 고등 문제는 점수 ×${highMult}!`;
   }
+  if (Object.keys(bookLv).length) board.bookLv = Object.keys(bookLv).map((k) => ({ id: k, map: bookLv[k], n: bmStat[k] || 0 }));
   if (Object.keys(bookMult).length) {   /* 📕 교재별 추가 배율 — 앱이 「이 교재는 ×2」 같은 안내를 쓸 수 있게 */
     board.bookMult = Object.keys(bookMult).map((k) => ({ id: k, mult: bookMult[k], n: bmStat[k] || 0 }));
     log(`📕 교재별 추가 배율 ${board.bookMult.map((x) => x.id + ' ×' + x.mult + ' ' + x.n + '건').join(' · ')}`);
