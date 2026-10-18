@@ -100,6 +100,9 @@ const SEL = {
   file:  ['input[type="file"]'],
   photoBtn: ['button:has-text("/10")', '[class*="photo"] button', '[class*="image"] button',
              'button[aria-label*="사진"]', 'label[for*="file"]'],
+  // 사진 단추를 누르면 「사진 추가」 창이 한 번 더 뜬다 (2026-10-18 확인)
+  album: ['text=내 앨범에서 선택', 'button:has-text("내 앨범")', '[role="button"]:has-text("내 앨범")',
+          'li:has-text("내 앨범")', 'div:has-text("내 앨범에서 선택") >> nth=-1'],
   save:  ['button:has-text("임시 저장")', 'button:has-text("임시저장")',
           '[class*="temp"] button', 'button[class*="temp"]'],
 };
@@ -230,18 +233,7 @@ async function type(page, el, text) {
     // ── ④ 사진 (맨 위에 모아 올라간다) ──
     const files = photos.filter(p => p.file).map(p => p.file);
     if (!opt.noImg && files.length) {
-      let done = false;
-      const fin = await find(page, SEL.file);          // 숨어 있는 파일칸에 바로 넣는 쪽이 제일 튼튼하다
-      if (fin) { try { await fin.setInputFiles(files); done = true; } catch {} }
-      if (!done) {                                      // 안 되면 사진 단추를 눌러 창을 띄운다
-        const btn = await find(page, SEL.photoBtn);
-        if (btn) {
-          global.__expectFile = true;
-          const [fc] = await Promise.all([page.waitForEvent('filechooser', { timeout: 8000 }).catch(() => null), btn.click()]);
-          if (fc) { await fc.setFiles(files); done = true; }
-          global.__expectFile = false;
-        }
-      }
+      const done = await addPhotos(page, files);
       if (done) { log(`🖼  사진 ${files.length}장 올리는 중…`); await sleep(2000 + files.length * 1500); }
       else {
         await dump(page, '사진 넣는 칸을 못 찾음');
