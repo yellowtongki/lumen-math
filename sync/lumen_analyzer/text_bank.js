@@ -131,8 +131,8 @@ async function collectTargets(examId, opt) {
   if (!d || !(d.items || []).length) throw new Error('exam_hit_' + examId + ' 가 없습니다');
   const exam = d.exam || {};
   const src = W.normSrc(d.src || null, exam);
-  const out = []; const info = { examId, from: d.from, to: d.to, src, skipped: {} };
-  const skip = (why) => { info.skipped[why] = (info.skipped[why] || 0) + 1; };
+  const out = []; const info = { examId, from: d.from, to: d.to, src, skipped: {}, skippedKeys: {} };
+  const skip = (why, k) => { info.skipped[why] = (info.skipped[why] || 0) + 1; if (k) info.skippedKeys[k] = why; };
   /* 시험 문항 */
   d.items.forEach((it) => {
     if (!it.img) return skip('시험 문항 그림 없음');
@@ -161,7 +161,7 @@ async function collectTargets(examId, opt) {
     const own = new RegExp(`${W.schoolKey(exam.school)}[^\\n]*${exam.year}[^\\n]*${exam.semester}학기[^\\n]*${exam.term}`);
     const mats = await W.loadMaterials(codes, d.from || W.semStart(exam.year, exam.semester), d.to || new Date().toISOString().slice(0, 10), own);
     mats.forEach((m) => {
-      if (opt.scope === 'exam' && !inExam(m.cid)) return skip('매쓰플랫 시험 범위 밖');
+      if (opt.scope === 'exam' && !inExam(m.cid)) return skip('매쓰플랫 시험 범위 밖', m.k);
       out.push(matTarget(m));
     });
     info.students = codes.length;
@@ -178,8 +178,8 @@ async function collectTargets(examId, opt) {
     const bank = await W.kvGet('mf_textbook_' + bid);
     if (!bank || !(bank.problems || []).length) { skip('교과서 은행 없음'); continue; }
     bank.problems.forEach((p) => {
-      if (!p.pimg) return skip('교과서 문항 그림 없음');
-      if (!inExam(p.cid)) return skip('교과서 시험 범위 밖');
+      if (!p.pimg) return skip('교과서 문항 그림 없음', 'tb:' + p.id);
+      if (!inExam(p.cid)) return skip('교과서 시험 범위 밖', 'tb:' + p.id);
       const pid = W.pidOfUrl(p.pimg);
       out.push({ k: 'tb:' + p.id, kind: 'tb', group: 'tb_' + bid, bid: String(bid), pubOnly: !ownTb.has(String(bid)), page: p.page, no: p.no, title: bank.title || '', img: p.pimg,
         cid: p.cid || null, level: p.level || null, pid, ids: ['wbp:' + p.id].concat(pid ? ['pid:' + pid] : []), dupWb: haveWb.has('wbp:' + p.id),
@@ -277,7 +277,7 @@ async function ensureBank(targets, opt) {
         else {
           const p = (async () => {
             const buf = await t.fetchImage().catch(() => null);
-            if (!buf) { st.noImage++; return entryOf({ err: '그림을 받지 못함' }, t.pid); }
+            if (!buf) { st.noImage++; return entryOf({ err: t.resolve && !t.mat.img ? '매쓰플랫에 문제 그림 없음' : '그림을 받지 못함' }, t.pid); }   /* 교과서 «준비학습·개념 탐구»처럼 답만 있고 문제 그림이 없는 문항 (2026-10-18 확인) */
             const res = await ocrImage(buf);
             if (res.err) { st.err++; if (/^refusal/.test(res.err)) st.refusal++; kindSt(t.kind).err++; }
             else { st.ocr++; kindSt(t.kind).done++; }

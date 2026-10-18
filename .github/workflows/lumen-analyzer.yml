@@ -31,6 +31,11 @@ on:
         default: exam
         type: choice
         options: [exam, all]
+      retry_err:
+        description: '전에 실패한 그림(err)도 다시 옮겨 적기'
+        required: false
+        default: false
+        type: boolean
 
 # 매쓰플랫 로그인이 겹치지 않게 정기 수집·요청 처리와 같은 줄에 선다
 concurrency:
@@ -52,6 +57,7 @@ jobs:
       EXAM: ${{ inputs.exam }}
       LIMIT: ${{ inputs.limit }}
       SCOPE: ${{ inputs.scope || 'exam' }}
+      RETRY_ERR: ${{ inputs.retry_err }}
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -69,6 +75,7 @@ jobs:
         run: |
           ARGS=(--exam "$EXAM" --scope "$SCOPE")
           if [ -n "$LIMIT" ]; then ARGS+=(--limit "$LIMIT"); fi
+          if [ "$RETRY_ERR" = "true" ]; then ARGS+=(--retry-err); fi
           node sync/lumen_analyzer/text_bank.js "${ARGS[@]}"
 
       - name: ② 뼈대·단원 비교 + 검증 보고서
