@@ -59,6 +59,8 @@ const needPhotos = meta.photos === undefined ? 3 : (parseInt(meta.photos, 10) ||
 const slotFiles = [...body.matchAll(/^\[카드 \d+:\s*([^\]]+?)\s*\]$/gm)].map(m => m[1]);
 const slotMissing = slotFiles.filter(f => !pngs.includes(f));
 const vague = body.match(/오늘 오전|오늘 오후(?!에는 그 앞)|며칠 전|얼마 전/g) || [];
+// 진도 레이스와 부딪히는 문장 (2026-10-18 원장 지적) — 프로필 5-1-2
+const antiVolume = /많이 푸는 것보다/.test(body);
 // 카드에서 「밖으로 나가는 글자」만 모은다 (_메모·파일 이름은 내부용이라 검사에서 뺀다)
 // note 는 카드에 찍히는 글자다. 단 external(밖에서 받은 PNG)에서는 내부 메모라 뺀다
 const skipKey = (card, k) => k.startsWith('_') || ['type', 'file', 'bg'].includes(k)
@@ -105,6 +107,9 @@ const checks = [
   ['주소 — 지도나 주소 한 줄 중 하나', hasMap || hasAddr,
     hasMap ? '지도 카드에 주소가 들어감' : (hasAddr ? '본문 끝 주소 한 줄' : '지도를 넣거나 맨 끝에 주소를 적으세요')],
   ['■ 기호는 첫 소제목 하나만', sq <= 1, `${sq}개`],
+  ['「많이 푸는 것보다」를 쓰지 않음', true,
+    antiVolume ? '⚠️ 찾았습니다' : '',
+    antiVolume ? '진도 레이스와 부딪힙니다. 「푼 문제를 다시 맞힐 수 있을 때, 많이 푼 것이 점수가 됩니다」로 바꾸세요 (프로필 5-1-2)' : ''],
   ['외부 서비스 이름 없음', vendors.length === 0,
     vendors.length ? `「${vendors.join('」 「')}」 — 외부 서비스 이름은 쓰지 않습니다. 「루멘수학 시험대비자료」·「학원 학습 기록」 처럼 바꾸세요` : ''],
   ['학교 기출을 드러내지 않음', kichul.length === 0,
