@@ -71,18 +71,26 @@ async function runBoostPush() {
   if (!bz || !bz.on) { log('추가 버프가 꺼져 있습니다 — 보내지 않습니다'); return; }
   if (board.ended) { log('시즌이 끝났습니다 — 보내지 않습니다'); return; }
   if (bz.from && day < String(bz.from)) { log(`아직 시작일(${bz.from}) 전입니다`); return; }
+  /* 2026-10-18 학교별 버프 기간 — boost.windows 가 있으면 순위표 줄마다 bz{from,to} 가 있다.
+   *   오늘이 그 기간 안인 학생에게만 보내고, 「남은 날」도 그 학생의 기간으로 센다. */
+  const myBz = {};
+  if (Array.isArray(bz.windows)) {
+    ['elem', 'mid', 'high'].forEach((b) => (board[b] || []).forEach((x) => { if (x && x.code && x.bz) myBz[x.code] = x.bz; }));
+  }
+  const inWin = (code) => !Array.isArray(bz.windows) || (myBz[code] && day >= myBz[code].from && day <= myBz[code].to);
+  const leftOf = (code) => (myBz[code] ? Math.max(0, Math.round((Date.parse(myBz[code].to) - Date.parse(day)) / 86400000)) + 1 : null);
 
   const flat = Number(bz.flat) || 1, mx = Number(bz.max) || 0.4;
   const top = flat * (1 + mx);
-  const dleft = Math.max(0, Number(bz.dday) || 0) + 1;     // 오늘 포함 남은 날
+  const dleftAll = Math.max(0, Number(bz.dday) || 0) + 1;  // 오늘 포함 남은 날 (학교별 기간이면 학생마다 leftOf)
 
   /* ④ 레이드 상태 */
   const raid = await kvGet('raid_board');
   const raids = (raid && raid.on && Array.isArray(raid.list)) ? raid.list : [];
   const ofCode = {};   // 학생코드 → 그 학생이 낀 레이드
   raids.forEach((r) => (r.rows || []).forEach((x) => { if (x && x.code && !ofCode[x.code]) ofCode[x.code] = r; }));
-  const codes = Object.keys(ofCode);
-  if (!codes.length) { log('레이드에 낀 학생이 없습니다'); return; }
+  const codes = Object.keys(ofCode).filter(inWin);
+  if (!codes.length) { log('레이드에 낀 학생 중 오늘 버프 기간인 학생이 없습니다'); return; }
 
   /* ⑤ 오늘 플래너를 올렸나 — 레이드에 낀 학생 것만 읽는다 */
   const done = {};
@@ -112,6 +120,7 @@ async function runBoostPush() {
   let sent = 0, skipped = 0;
   for (const code of codes) {
     const r = ofCode[code];
+    const dleft = leftOf(code) || dleftAll;
     const left = Math.max(0, (Number(r.hp) || 0) - (Number(r.dealt) || 0));
     const cleared = !!r.cleared || left <= 0;
     let title, body;
