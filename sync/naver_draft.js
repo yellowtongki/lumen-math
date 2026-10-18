@@ -37,10 +37,13 @@ const opt = {
 function newestPost() {
   const base = path.join(ROOT, 'blog');
   if (!fs.existsSync(base)) return null;
+  // 날짜가 같은 폴더가 둘 이상일 수 있다 (하루에 글 두 편).
+  // 그럴 땐 post.md 를 마지막에 고친 폴더가 「방금 작업한 글」이다.
   const found = fs.readdirSync(base)
     .filter(n => /^\d{4}-\d{2}-\d{2}-/.test(n) && fs.existsSync(path.join(base, n, 'post.md')))
-    .sort();
-  return found.length ? path.join('blog', found[found.length - 1]) : null;
+    .map(n => ({ n, day: n.slice(0, 10), at: fs.statSync(path.join(base, n, 'post.md')).mtimeMs }))
+    .sort((a, b) => (a.day < b.day ? -1 : a.day > b.day ? 1 : a.at - b.at));
+  return found.length ? path.join('blog', found[found.length - 1].n) : null;
 }
 const given = args.find(a => !a.startsWith('--'));
 const folder = given || newestPost();
