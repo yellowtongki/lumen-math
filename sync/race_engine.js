@@ -480,6 +480,12 @@ async function computeSeason(season, isDraft, ctx) {
     bookG = await loadBookGrades(Object.keys(need));
   }
   const hmStat = { n: 0, ws: 0, book: 0, bookUnknown: {} };
+  /* 📕 교재별 추가 배율 (2026-10-19 원장 「마플시너지는 킬러문제가 있어서 추가배율이 필요」)
+   *   season.bookMult = { "<매쓰플랫 교재 id>": 배율 } — 그 교재 문제 점수 × 배율 (고등 ×highMult 위에 또 곱한다).
+   *   학습지(book_id 없음)는 해당 없음. 레이드 피해에도 같이 들어간다. */
+  const bmRaw = (season.bookMult && typeof season.bookMult === 'object') ? season.bookMult : {};
+  const bookMult = {}; Object.keys(bmRaw).forEach((k) => { const m = Number(bmRaw[k]); if (m > 0 && m !== 1) bookMult[String(k)] = m; });
+  const bmStat = {};
   const isHighRec = (r) => {
     if (r.school) return r.school === 'HIGH';
     if (r.book_id == null) return false;
@@ -585,7 +591,9 @@ async function computeSeason(season, isDraft, ctx) {
      * 둘 다 남겨야 학원앱에서 「버프로 얼마나 벌었나」를 보여 줄 수 있다.
      * 🎓 고등 문제면 원점수부터 × highMult (버프는 그 위에 곱한다) */
     const hi = hmOn && isHighRec(r);
-    const raw = hi ? ptOf(lv, r.result) * highMult : ptOf(lv, r.result);
+    const bm = (r.book_id != null && bookMult[String(r.book_id)]) || 1;
+    if (bm !== 1) bmStat[r.book_id] = (bmStat[r.book_id] || 0) + 1;
+    const raw = (hi ? ptOf(lv, r.result) * highMult : ptOf(lv, r.result)) * bm;
     if (hi) { a.hi = (a.hi || 0) + 1; hmStat.n += 1; if (r.school) hmStat.ws += 1; else hmStat.book += 1; }
     const day = kstDay(r.score_datetime);
     const mult = buffOn ? buffMult((plan[code] || {})[day], buffMax, day, boostOf(code)) : 1;
@@ -733,6 +741,10 @@ async function computeSeason(season, isDraft, ctx) {
     board.hiTotal = hmStat.n;
     board.rules.high = { mult: highMult, note: `고등 문제(고등 학습지·고등 교재)는 점수 ×${highMult}` };
     board.rules.note += ` 고등 문제는 점수 ×${highMult}!`;
+  }
+  if (Object.keys(bookMult).length) {   /* 📕 교재별 추가 배율 — 앱이 「이 교재는 ×2」 같은 안내를 쓸 수 있게 */
+    board.bookMult = Object.keys(bookMult).map((k) => ({ id: k, mult: bookMult[k], n: bmStat[k] || 0 }));
+    log(`📕 교재별 추가 배율 ${board.bookMult.map((x) => x.id + ' ×' + x.mult + ' ' + x.n + '건').join(' · ')}`);
   }
   if (sfKeys.length) board.schoolFrom = sfKeys.reduce((o, k) => { o[k] = String(sfRaw[k]); return o; }, {});
   if (combined) { board.combined = true; board.bandNames = { elem: '초등부', mid: '중고등부' }; }
