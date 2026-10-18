@@ -306,7 +306,7 @@ function buildLib() {
   DESIGNS.forEach((D) => { const g = fromMap(D.map, D.pal, { half: D.half });
     out.push({ key: D.key, name: D.name, en: D.en, tag: `${g[0].length} x ${g.length}`, desc: D.desc, ...encode(g), by: 'claude', base: null, created: now, log: [] }); });
   builtins().forEach((B) => { const g = remaster(B.grid);
-    out.push({ key: B.key + '_rm', name: B.name + ' (명암)', en: B.en, tag: `${g[0].length} x ${g.length}`, desc: B.name + '에 5단 명암을 입힌 판', ...encode(g), by: 'claude', base: B.key, created: now, log: [] }); });
+    out.push({ key: B.key + '_rm', name: B.name, en: B.en, tag: `${g[0].length} x ${g.length} · 명암 판`, desc: B.name + '에 5단 명암을 입힌 판 (학생앱에는 이름만 보인다)', ...encode(g), by: 'claude', base: B.key, created: now, log: [] }); });
   return out;
 }
 function pick(B) { return { key: B.key, name: B.name, en: B.en, tag: B.tag || '', desc: B.desc || '' }; }
