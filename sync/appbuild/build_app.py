@@ -106,7 +106,8 @@ ft3=open(SP+'/cnfit133_teacher.js',encoding='utf-8').read() if int(ver.replace('
 gh4=open(SP+'/ghtext134_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=134 else ''   # v19-134: 적중 분석 «서버 기다리는 중» 안내 사실대로(자동 순번은 몇 시간 간격) · GitHub 단추 «적중 분석 포함»
 vd5=open(SP+'/vod135_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=135 else ''   # v19-135: 🎬 강의실 묶음 배정 · 시청 지도 · 회차별 시청 기록
 vm6=open(SP+'/vodmap136_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=136 else ''   # v19-136: 🗺 시청 지도 2판 — 세로 영상(단원별) × 가로 학생
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+rd7=open(SP+'/raid137_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=137 else ''   # v19-137: ⚔️ 다음 시즌 보스 레이드 설정·미리보기 · 🔥 학교별 시험 2주 전 버프 · 🗃 보스 보관함(꾸미기) · 공개 때 raid_board_draft → raid_board (docs/raid_s2_contract.md §5)
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -638,6 +639,15 @@ if int(ver.replace('v19-',''))>=127:
     rep("naverbk:'📅 네이버 예약'", "naverbk:'📅 네이버 예약',naverstats:'📊 예약 통계'")
     #   보관(naver_bookings_archive, 약 130KB) · 카톡 글 틀(naver_msg_tpl) · 텐투텐 필수 아님(tenten_optional) — 화면이 서버에서 바로 읽고 쓴다(이 기기 사본 없음)
     rep("'naver_phone_links', 'or_nb_key'];", "'naver_phone_links', 'or_nb_key', 'naver_bookings_archive', 'naver_msg_tpl', 'tenten_optional'];")
+if int(ver.replace('v19-',''))>=137:
+    # v19-137: 다음 시즌 레이드 순위판·보스 보관함은 화면이 서버에서 바로 읽고 쓴다 — 시작 다운로드에서 뺀다(옛 사본이 남지 않게)
+    rep("'or_nb_key', 'naver_bookings_archive', 'naver_msg_tpl', 'tenten_optional'];", "'or_nb_key', 'naver_bookings_archive', 'naver_msg_tpl', 'tenten_optional', 'raid_board_draft', 'raid_boss_lib'];")
+    #   다음 시즌 ✏️ 고치기 칸의 옛 안내(추가 버프는 꺼 둠) → 아래 «🔥 추가 버프 기간» 칸에서 정한다
+    rep("추가 버프(boost)는 꺼 둡니다 — 공개 뒤 ⚙️ 시즌 설정에서 켤 수 있어요", "추가 버프(시험 2주 전)는 아래 «🔥 추가 버프 기간» 칸에서 정합니다")
+    #   지금 시즌 ⚔️ 보스 레이드 칸 머리에 🗃 보스 보관함 단추
+    rep("""    +'<button onclick="raidPeek()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#6d28d9;color:#fff">👁 학생 눈으로</button>'""",
+        """    +'<button onclick="raidPeek()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#6d28d9;color:#fff">👁 학생 눈으로</button>'
+    +'<button id="raid-lib-open" onclick="rxLibOpen()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#0d0a1d;color:#fff">🗃 보스 보관함</button>'""")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
