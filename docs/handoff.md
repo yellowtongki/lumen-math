@@ -105,6 +105,8 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 - 카드뉴스·기출 DB(화면엔 「기출 DB」, 「수학비서」라는 말 금지), 적중 분석: docs/exam_hit_contract.md §9.
 
 ## 6. 남은 일 (10/18 기준)
+- **(끝남 10/18) 소사고 고1 23번 누락 고침**: 수학비서 문제지 「24-26년 공통수학2 학평」 2번(2026 교육청 고2 3월)이 23번 숫자변형인데, 매쓰플랫 AI 가 다른 유형 번호를 붙여 후보에 못 올라갔다. `sync/exam_hit_worker.js` 후보 고르기에 «같은 소단원 수학비서 문항 중 묻는 것·단원 글자가 겹치는 위 3개»를 더하고 1개는 꼭 넣게 함(dry 실행으로 23번 1순위 확인). 저장된 결과도 23번 = mp:2013289:2 숫자변형·원장 확정으로 고침.
+- **🧮 수학비서 분석지 활용 (10/18 상의 중)**: 수학비서 `/bms/api/v1/my-analysis`(목록) · `/my-analysis/<id>`(문항별 results: analysisType PC 같은문제 · NC 숫자변형 · 5D 유사문제 · 4depth 같은유형 · MT 다른 단원 유사, searchSettings.sources 에 myPaperIds·paperFolderIds 가능)를 읽기로 확인. 만들기·문항 넣기·분석 실행은 POST /my-analysis · PUT /<id>/questions · PUT /<id>/analyze (몸체 모양은 미확인 — 더 깊은 분석은 자동 보호 장치가 막음). 매쓰플랫 자료는 수학비서 «나만의DB»에 PDF 로 올려야 비교 대상이 된다(/fps/api/v1/files → /bms/api/v1/upload-originals, 수학비서 쪽 분석·승인 필요). 원장 결정 대기: 1단계 «원장이 만든 분석지 가져오기»부터 · 2단계 매쓰플랫 PDF 올리기 범위 · 3단계 자동 만들기는 수학비서 약관 확인 뒤.
 - **소사고 고1 다시 판정 (10/18 원장 요청, 수학비서 5장 + 교과서)**: 서버 순번이 안 돌아 Claude 가 10/18 12:50 KST 에 mathflat-ondemand.yml 을 직접 실행 → 첫 단계(매쓰플랫) 뒤 적중 분석. 끝나면 결과(같은 문제·숫자변형·수학비서 적중)를 원장께.
 - **🔐 원장 열쇠 교체** — §5. 원장 「열쇠 바꿨어」를 기다림.
 - **🚌 출결선생 기기 인증** — 원장 「시작」 대기(§5).

@@ -642,6 +642,15 @@ async function runExam(exam, opt) {
     log(`시험 범위 단원만 (소단원 ${units.lits.size}개): ` + Object.keys(before).map((k) => `${k} ${before[k]}→${before[k] - (dropped[k] || 0)}`).join(' · '));
   } else if (src.scope === 'exam') log('시험 범위 단원만 — 시험 문항 단원을 몰라 전체를 씀');
   const byCid = {}; mats.forEach((m) => { if (m.cid) (byCid[m.cid] = byCid[m.cid] || []).push(m); });
+  /* 2026-10-18 원장 「소사고 고1 23번과 같은 문제가 수학비서 학습지에 있는데 재검색 때 안 들어갔다」
+     까닭: 후보를 «매쓰플랫 유형 번호(cid)가 같은 것»으로만 골랐다. 매쓰플랫 AI 가 같은 문제에 다른 유형을 붙이면(23번: 집합의 연산 법칙 ↔ 원소배치해석) 아예 후보에 못 올라간다.
+     고침: 수학비서 자료(내 문제지 · 학습지)는 «같은 소단원»까지 넓혀 보고, 수학비서가 붙인 단원·태그 글자와 시험 문항의 «묻는 것»이 얼마나 겹치는지로 순위를 매겨 위 3개를 후보에 더한다. */
+  const byLit = {}; mats.forEach((m) => { if (m.kind !== 'ms' || !m.cid) return; const u = U.of(m.cid); const key = u && (u.lit || u.mid); if (key) (byLit[key] = byLit[key] || []).push(m); });
+  const grams = (t) => { const g = new Set(), z = String(t || '').replace(/[^가-힣a-zA-Z0-9]/g, ''); for (let i = 0; i + 1 < z.length; i++) g.add(z.slice(i, i + 2)); return g; };
+  const nearScore = (it, m) => { const a = grams((it.ask || '') + ' ' + (it.type || '')), b = grams((m.msChapter || '') + ' ' + (m.msTags || []).join(' ') + ' ' + (m.type || '')); if (!a.size || !b.size) return 0; let n = 0; a.forEach((x) => { if (b.has(x)) n++; }); return n / Math.min(a.size, b.size); };
+  const nearOf = (it) => { const u = U.of(it.cid); const key = u && (u.lit || u.mid); if (!key || !byLit[key]) return [];
+    return byLit[key].filter((m) => String(m.cid) !== String(it.cid)).map((m) => ({ m, sc: nearScore(it, m) - Math.abs((m.level || 3) - (it.level || 3)) * 0.03 }))
+      .filter((x) => x.sc >= 0.2).sort((a, b) => b.sc - a.sc).slice(0, 3); };
 
   /* ④ 후보 + 판정 */
   const past = await pastTypes(exam);
@@ -656,6 +665,8 @@ async function runExam(exam, opt) {
     /* 원본 번호가 같은 자료 (유형이 달라도) */
     mats.forEach((m) => { if (srcN && ((srcP === 'p' && m.pid === srcN) || (srcP === 'b' && m.wbp === srcN))) pool[m.k] = { m, idSame: true }; });
     (byCid[it.cid] || []).forEach((m) => { if (!pool[m.k]) pool[m.k] = { m, idSame: false }; });
+    const near = nearOf(it); near.forEach((x) => { if (!pool[x.m.k]) pool[x.m.k] = { m: x.m, idSame: false, near: x.sc }; });
+    if (near.length) log(`  ${it.no}번 같은 소단원 수학비서 후보 ${near.length}: ` + near.map((x) => x.m.k + ' ' + x.sc.toFixed(2)).join(', '));
     /* 다시 판정 때 원장님이 ✓/✗ 로 확정했던 후보는 순위와 상관없이 늘 맨 앞에 남긴다 (2026-10-11 — 순위가 바뀌어 확정이 풀리던 문제) */
     const oldIt = prev && (prev.items || []).find((x) => x.no === it.no);
     const pinK = oldIt && oldIt.hit && oldIt.hit.ok != null && oldIt.hit.k ? oldIt.hit.k : null;
@@ -669,6 +680,8 @@ async function runExam(exam, opt) {
     const head = ranked.filter((c) => c.idSame), rest = ranked.filter((c) => !c.idSame), pick = [];
     const take = (pred, n) => { for (const c of rest) { if (n <= 0) break; if (pick.indexOf(c) < 0 && pred(c.m)) { pick.push(c); n--; } } };
     take((m) => m.mp, 2); take((m) => m.kind === 'textbook', 1); take((m) => m.kind === 'ms' && !m.mp, 1);
+    /* 같은 소단원에서 넓혀 찾은 수학비서 후보 중 글자가 가장 많이 겹치는 것 하나는 꼭 넣는다 */
+    { const bestNear = rest.filter((c) => c.near != null && pick.indexOf(c) < 0).sort((a, b) => b.near - a.near)[0]; if (bestNear) pick.unshift(bestNear); }
     let ordered = head.concat(pick, rest.filter((c) => pick.indexOf(c) < 0));
     if (pinK && pool[pinK]) ordered = [pool[pinK]].concat(ordered.filter((c) => c !== pool[pinK]));
     const cands = []; const seenPid = {};
