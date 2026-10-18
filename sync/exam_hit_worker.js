@@ -1545,7 +1545,10 @@ module.exports = { schoolKey, gradeKey, examIdOf, whereOf, pidOfUrl, semStart, m
   normSrc, textbookBids, loadTextbookMats, matFromItem, isExamPaper, semOf, tbTitle, courseTrie,   /* 2026-10-10 우리 자료 3종 */
   examUnits, inScope, pngDecode, pngEncode, stackPng, packCells, compactTree, mpCurriculum,   /* 2026-10-11 내 문제지 · 시험 범위 */
   pastCfg, pastSelect, pastCands, termOrd,   /* 2026-10-11 지난 기출 비교 */
-  pubCfg, pubName, pubCands, pubBanks, pubRev, pubSubject };   /* 2026-10-11 출판사 교과서 출처 */
+  pubCfg, pubName, pubCands, pubBanks, pubRev, pubSubject,   /* 2026-10-11 출판사 교과서 출처 */
+  /* 2026-10-18 루멘 분석기(sync/lumen_analyzer/) 가 같은 자료 모으기·그림 받기를 쓴다 — 동작은 그대로 */
+  kvGet, kvSet, stGet, stSign, BUCKET, sbRows, keysLike, fetchBuf, mimeOf, tw, ensurePdfLib,
+  loadStudents, loadMaterials, matImage, unitIndex };
 
 if (require.main === module) {
   (async () => {
