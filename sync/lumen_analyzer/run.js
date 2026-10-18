@@ -59,35 +59,48 @@ async function analyze(examId, opt) {
   const tmap = new Map(targets.map((t) => [t.k, t]));
   const examT = targets.filter((t) => t.kind === 'exam');
   const cands = targets.filter((t) => t.kind !== 'exam' && !t.dupWb);   /* 학생이 푼 교재 문항과 같은 교과서 문항은 기록 쪽(wb)만 */
-  /* 비교 준비 */
-  let haveText = 0;
-  cands.forEach((t) => { const e = B.bankGet(bank, t); t.p = M.prep(e || {}); if (e && e.text) haveText++; const u = t.cid ? U.of(t.cid) : null; t.lit = (u && u.lit) || ''; t.mid = (u && u.mid) || ''; });
+  /* 비교 준비 — 글 상태: text 본문 있음 · askOnly 질문 칸에만 글(합쳐 씀) · empty 빈 글 · err 실패 · none 은행에 아직 없음 */
+  const stateOf = (e) => (!e ? 'none' : e.err ? 'err' : (e.text ? 'text' : (e.ask ? 'askOnly' : 'empty')));
+  const cov = { examItems: examT.length, examText: 0, cands: cands.length, candText: 0, byKind: {}, errs: {}, emptyFig: 0 };
+  cands.forEach((t) => {
+    const e = B.bankGet(bank, t); t.e = e; t.p = M.prep(e || {}); t.state = stateOf(e);
+    const u = t.cid ? U.of(t.cid) : null; t.lit = (u && u.lit) || ''; t.mid = (u && u.mid) || '';
+    const b = cov.byKind[t.kind] = cov.byKind[t.kind] || { n: 0, text: 0, askOnly: 0, empty: 0, err: 0, none: 0 };
+    b.n++; b[t.state]++; if (t.p.text) cov.candText++;
+    if (t.state === 'err') { const m = `${KIND_KO[t.kind]} · ${e.err}`; cov.errs[m] = (cov.errs[m] || 0) + 1; }
+    if (t.state === 'empty' && e.fig) cov.emptyFig++;
+  });
   const idx = M.buildIndex(cands.filter((t) => !t.p.short).map((t) => ({ k: t.k, p: t.p })));
   const byCid = new Map(), byLit = new Map();
   cands.forEach((t) => { if (t.cid) { const a = byCid.get(String(t.cid)) || []; a.push(t); byCid.set(String(t.cid), a); } if (t.lit) { const a = byLit.get(t.lit) || []; a.push(t); byLit.set(t.lit, a); } });
-  const cov = { examItems: examT.length, examText: 0, cands: cands.length, candText: haveText, byKind: {} };
-  cands.forEach((t) => { const b = cov.byKind[t.kind] = cov.byKind[t.kind] || { n: 0, text: 0 }; b.n++; if (t.p.text) b.text++; });
+  const cmap = new Map(cands.map((t) => [t.k, t]));
+  /* 원장 확정 키 → 비교 대상 (pub:<id> = tb:<id> = wb:<id>) · 없으면 왜 없는지 */
+  function findT(k) {
+    const m = String(k || '').match(/^(pub|tb|wb):(\d+)$/);
+    const tries = m ? ['tb:' + m[2], 'wb:' + m[2]] : [k];
+    for (const x of tries) if (cmap.has(x)) return { t: cmap.get(x) };
+    for (const x of tries) if (info.skippedKeys[x]) return { t: null, why: info.skippedKeys[x] };
+    return { t: null, why: '이 시험의 비교 자료에 없음 (학생 기록·문제지 구성 밖)' };
+  }
 
   const rows = [];
   for (const it of data.items) {
     const et = examT.find((t) => t.no === it.no);
-    const ee = et ? B.bankGet(bank, et) : null; if (ee && ee.text) cov.examText++;
-    const E = M.prep(ee || {});
+    const ee = et ? B.bankGet(bank, et) : null;
+    const E = M.prep(ee || {}); if (E.text) cov.examText++;
     const u = it.cid ? U.of(it.cid) : null; const lit = (u && u.lit) || '';
+    const gradeT = (t) => {
+      const cidSame = !!(it.cid && t.cid && String(it.cid) === String(t.cid));
+      const unitSame = !!(lit && (t.lit === lit || (t.msChapter && M.chapterLike(lit, t.msChapter))));
+      return M.grade({ exam: E, cand: t.p, unitSame, cidSame });
+    };
     const pool = new Map();
     if (!E.short) idx.topK(E, RETRIEVE).forEach((x) => pool.set(x.k, tmap.get(x.k)));
     (byCid.get(String(it.cid)) || []).forEach((t) => pool.set(t.k, t));
     if (lit) (byLit.get(lit) || []).forEach((t) => pool.set(t.k, t));
     if (lit) cands.forEach((t) => { if (!t.lit && t.msChapter && M.chapterLike(lit, t.msChapter)) pool.set(t.k, t); });
     const graded = [];
-    pool.forEach((t) => {
-      if (!t) return;
-      const cidSame = !!(it.cid && t.cid && String(it.cid) === String(t.cid));
-      const unitSame = !!(lit && (t.lit === lit || (t.msChapter && M.chapterLike(lit, t.msChapter))));
-      const g = M.grade({ exam: E, cand: t.p, unitSame, cidSame });
-      if (g.kind === 'none') return;
-      graded.push({ t, ...g });
-    });
+    pool.forEach((t) => { if (!t) return; const g = gradeT(t); if (g.kind === 'none') return; graded.push({ t, ...g }); });
     graded.sort(M.better);
     /* 같은 그림(같은 매쓰플랫 문항)은 하나로 — 나머지는 also */
     const top = []; const seenId = new Map();
@@ -99,40 +112,56 @@ async function analyze(examId, opt) {
       const row = { k: g.t.k, kind: g.kind, score: g.score, s: g.s, a: g.a, why: g.why, also: [], src: g.t.kind, pubOnly: !!g.t.pubOnly, t: g.t };
       top.push(row); ids.forEach((x) => seenId.set(x, row));
     }
-    rows.push({ it, examText: !!(ee && ee.text), examFig: !!(ee && ee.fig), top, pool: pool.size });
+    rows.push({ it, E, examText: !!E.text, examFig: !!(ee && ee.fig), top, graded, gradeT, pool: pool.size });
   }
-  return { examId, data, targets, tmap, rows, cov, info };
+  return { examId, data, targets, tmap, rows, cov, info, findT };
 }
 
-/* ── 검증: 원장님 확정과 맞추기 ── */
+/* ── 검증: 원장님 확정과 맞추기 (2026-10-18 2회차 기준) ──
+ *   일치     원장 확정 자료가 분석기 위 6개 안에 있다 (등급은 따로 «원장 등급 / 분석기 등급» 으로 본다)
+ *   동급     위 6개 밖이지만, 그 자료의 뼈대 점수(ownerScore)가 분석기 6위 점수 이하 — 분석기가 그만큼 닮은 것을 6개 찾았다
+ *   놓침     글이 있고 6위보다 점수가 높은데 안 나옴(순위 고르기 잘못) · 또는 6개가 다 차지 않았는데 빠짐
+ *   확인 불가 원장 확정 자료의 글이 없다(은행 실패 · 그림 없음 · 비교 범위 밖)
+ *   잘못 찾음 분석기 1순위가 같은문제·숫자변형인데 원장님이 바로 그 자료를 ✗(아님) 표시했다
+ *            ✗ 가 남는 자리: hit {k, ok:false} · cands[].rejected · pub[].rejected (학원앱 hit_teacher · pubgrade116) */
 function validate(A) {
   const SV = (k) => k === 'same' || k === 'var';
-  const out = { items: [], miss: 0, wrong: 0, agree: 0, newFound: 0, ownerSV: 0, unconfirmed: 0, workerAgree: 0 };
+  const out = { items: [], miss: 0, same6: 0, unknown: 0, wrong: 0, agree: 0, kindAgree: 0, ownerSV: 0, ownerType: 0, typeIn6: 0, noHitSV: 0, newFound: 0, unconfirmed: 0, workerAgree: 0, rejectedSeen: 0 };
   A.rows.forEach((r) => {
     const it = r.it, hit = it.hit || null;
     const wTop = (it.cands || [])[0] || null;
     const aTop = r.top[0] || null;
     const seen = (k) => (it.cands || []).some((c) => sameMat(c.k, k, A.tmap) || (c.also || []).some((x) => sameMat(x, k, A.tmap)));
-    const inTop = (k) => r.top.find((c) => sameMat(c.k, k, A.tmap) || c.also.some((x) => sameMat(x, k, A.tmap))) || null;
+    const inTop = (k) => r.top.findIndex((c) => sameMat(c.k, k, A.tmap) || c.also.some((x) => sameMat(x, k, A.tmap)));
+    const rejectedKeys = [].concat(hit && hit.ok === false && hit.k ? [hit.k] : [], (it.cands || []).filter((c) => c.rejected).map((c) => c.k), (it.pub || []).filter((p) => p.rejected).map((p) => p.k));
+    out.rejectedSeen += rejectedKeys.length;
     const v = { no: it.no, owner: hit ? { k: hit.k || null, kind: hit.kind || null, ok: hit.ok } : null, worker: wTop ? { k: wTop.k, kind: wTop.kind } : null,
-      analyzer: r.top.map((c) => ({ k: c.k, kind: c.kind, s: c.s, a: c.a, why: c.why, also: c.also, src: c.src })), status: '', note: '' };
+      analyzer: r.top.map((c) => ({ k: c.k, kind: c.kind, s: c.s, a: c.a, why: c.why, also: c.also, src: c.src })),
+      status: '', note: '', ownerScore: null, ownerRank: null, ownerKindByAnalyzer: null, sixth: r.top[TOP - 1] ? r.top[TOP - 1].s : null, top1: aTop ? aTop.s : null, examText: r.examText };
     const flags = [];
-    if (hit && hit.ok === true && hit.k && SV(hit.kind)) {
-      out.ownerSV++;
-      const f = inTop(hit.k);
-      if (!f || !SV(f.kind)) { out.miss++; flags.push('놓침'); v.note = f ? `원장 적중이 ${f.kind === 'sim' ? '유사문제' : M.LABEL[f.kind]}로만 나옴` : '원장 적중이 위 6개에 없음'; }
-      else if (aTop && sameMat(aTop.k, hit.k, A.tmap)) { out.agree++; flags.push('일치'); }
-      else { out.agree++; flags.push('일치(6개 안)'); }
+    if (hit && hit.ok === true && hit.k) {
+      const isSV = SV(hit.kind); if (isSV) out.ownerSV++; else out.ownerType++;
+      const f = A.findT(hit.k);
+      if (f.t) {
+        const g = r.gradeT(f.t);
+        v.ownerScore = g.s; v.ownerKindByAnalyzer = g.kind; v.ownerWhy = g.why;
+        v.ownerRank = 1 + r.graded.filter((x) => !sameMat(x.t.k, f.t.k, A.tmap) && M.better(x, g) < 0).length;
+      }
+      const pos = inTop(hit.k);
+      let st;
+      if (pos >= 0) { st = '일치'; v.ownerRank = pos + 1; v.ownerKindByAnalyzer = r.top[pos].kind; if (isSV && r.top[pos].kind === hit.kind) out.kindAgree++; }
+      else if (!r.examText) { st = '확인 불가'; v.note = '시험 문항 글이 없음'; }
+      else if (!f.t || !f.t.p.text) { st = '확인 불가'; v.note = !f.t ? f.why : (f.t.state === 'err' ? '은행 실패: ' + f.t.e.err : f.t.state === 'none' ? '글자 은행에 아직 없음' : '옮겨 적은 글이 비어 있음(그림만)'); }
+      else if (r.top.length >= TOP && v.ownerScore <= v.sixth) st = '동급';
+      else { st = '놓침'; v.note = r.top.length < TOP ? `6개가 다 차지 않았는데 빠짐 (분석기 등급 ${M.LABEL[v.ownerKindByAnalyzer] || v.ownerKindByAnalyzer})` : `6위(${v.sixth}) 보다 높은 ${v.ownerScore} 인데 안 나옴`; }
+      if (isSV) { if (st === '일치') out.agree++; else if (st === '동급') out.same6++; else if (st === '놓침') out.miss++; else out.unknown++; }
+      else if (st === '일치') out.typeIn6++;
+      flags.push(isSV ? st : `유형 확정 · ${st}`);
     }
-    /* 잘못 찾음: 분석기가 같은문제·숫자변형이라 한 것 중 원장님 판단과 어긋나는 것 */
-    const svTop = r.top.filter((c) => SV(c.kind));
-    svTop.forEach((c) => {
-      if (hit && hit.ok === false && !hit.k) { out.wrong++; flags.push('잘못 찾음'); v.note = (v.note ? v.note + ' · ' : '') + `원장 «적중 없음»인데 ${c.k} 를 ${M.LABEL[c.kind]}로 봄${seen(c.k) ? '' : ' (원장님이 못 본 후보)'}`; }
-      else if (hit && hit.ok === false && hit.k && sameMat(hit.k, c.k, A.tmap)) { out.wrong++; flags.push('잘못 찾음'); v.note = (v.note ? v.note + ' · ' : '') + `원장 ✗ 한 ${c.k}`; }
-      else if (hit && hit.ok === true && hit.k && !SV(hit.kind) && sameMat(hit.k, c.k, A.tmap)) { out.wrong++; flags.push('잘못 찾음'); v.note = (v.note ? v.note + ' · ' : '') + `원장은 ${M.LABEL[hit.kind] || hit.kind}로 확정`; }
-      else if (hit && hit.ok === true && hit.k && !SV(hit.kind) && seen(c.k)) { out.wrong++; flags.push('잘못 찾음'); v.note = (v.note ? v.note + ' · ' : '') + `원장은 ${c.k} 를 보고도 ${M.LABEL[hit.kind] || hit.kind} 만 확정`; }
-      else if (!(hit && hit.k && sameMat(hit.k, c.k, A.tmap)) && !seen(c.k)) { out.newFound++; flags.push('새로 찾음'); }
-    });
+    /* 잘못 찾음 — 1순위만 본다 */
+    if (aTop && SV(aTop.kind) && rejectedKeys.some((k) => sameMat(k, aTop.k, A.tmap))) { out.wrong++; flags.push('잘못 찾음'); v.note = (v.note ? v.note + ' · ' : '') + `원장 ✗ 한 ${aTop.k} 를 1순위 ${M.LABEL[aTop.kind]}로 봄`; }
+    if (hit && hit.ok === false && !hit.k && aTop && SV(aTop.kind)) { out.noHitSV++; flags.push('참고: 원장 «적중 없음»'); v.note = (v.note ? v.note + ' · ' : '') + `원장 «적중 없음»인데 1순위 ${M.LABEL[aTop.kind]} ${aTop.k}${seen(aTop.k) ? '' : ' (원장님이 못 본 자료)'}`; }
+    r.top.filter((c) => SV(c.kind)).forEach((c) => { if (!(hit && hit.k && sameMat(hit.k, c.k, A.tmap)) && !seen(c.k) && !(hit && hit.ok === false && !hit.k)) { out.newFound++; flags.push('새로 찾음'); } });
     if (!hit || hit.ok == null) { out.unconfirmed++; flags.push('원장 확정 없음'); }
     if (wTop && aTop && sameMat(wTop.k, aTop.k, A.tmap)) out.workerAgree++;
     v.status = [...new Set(flags)].join(' · ') || '—';
@@ -146,49 +175,63 @@ function validate(A) {
 function reportMd(A, V, withTitle) {
   const d = A.data, e = d.exam || {};
   const L = [];
+  const pl = (k) => { const f = A.findT(k); return f.t ? placeOf(f.t, withTitle) : (placeOf(A.tmap.get(String(k || '').replace(/^pub:/, 'tb:')), withTitle) || k || ''); };
+  const kd = (x) => (x === 'sim' ? '유사문제' : M.LABEL[x] || ({ text: '지문만' })[x] || x || '');
   L.push(`# 🔤 루멘 분석기 검증 — ${e.school || ''} ${e.grade || ''} ${e.year || ''}년 ${e.semester || ''}학기 ${e.term || ''}`);
   L.push('');
   L.push(`만든 때 ${new Date().toISOString().slice(0, 16).replace('T', ' ')} (UTC) · 시험 ${A.rows.length}문항 · 비교한 자료 ${A.cov.cands}개`);
   L.push('');
-  L.push(`## 결과: ${V.pass ? '✅ 통과' : '❌ 아직'} (기준: 놓침 0 · 잘못 찾음 2 이하)`);
+  L.push(`## 결과: ${V.pass ? '✅ 통과' : '❌ 아직'} (기준: 놓침 0 · 잘못 찾음 2 이하 — 원장님이 «같은문제·숫자변형»으로 확정한 ${V.ownerSV}문항 기준)`);
   L.push('');
-  L.push(`| 놓침 | 잘못 찾음 | 일치 | 원장 적중(같은문제·숫자변형) | 새로 찾음(원장 확인 필요) | 원장 확정 없는 문항 | 1순위가 지금 워커와 같음 |`);
-  L.push(`|---|---|---|---|---|---|---|`);
-  L.push(`| ${V.miss} | ${V.wrong} | ${V.agree} | ${V.ownerSV} | ${V.newFound} | ${V.unconfirmed} | ${V.workerAgree} |`);
+  L.push('| 일치 | 동급 | 놓침 | 확인 불가 | 잘못 찾음 | 일치 중 등급도 같음 | 유형 확정 중 6개 안 | 새로 찾음 | 원장 확정 없는 문항 | 1순위가 지금 워커와 같음 |');
+  L.push('|---|---|---|---|---|---|---|---|---|---|');
+  L.push(`| ${V.agree} | ${V.same6} | ${V.miss} | ${V.unknown} | ${V.wrong} | ${V.kindAgree} | ${V.typeIn6}/${V.ownerType} | ${V.newFound} | ${V.unconfirmed} | ${V.workerAgree} |`);
   L.push('');
-  L.push('- **놓침** = 원장님이 «같은문제·숫자변형»으로 확정한 자료가 분석기 위 6개에 같은문제·숫자변형으로 없다.');
-  L.push('- **잘못 찾음** = 분석기는 같은문제·숫자변형이라 했는데, 원장님은 «적중 없음» · ✗ · «유형만»으로 확정했다.');
-  L.push('- **새로 찾음** = 원장님이 학원앱에서 못 본 자료를 분석기가 같은문제·숫자변형이라 했다 → 맞는지 봐 주세요.');
+  L.push('- **일치** = 원장님이 확정한 자료가 분석기 위 6개 안에 있다(등급이 달라도). 등급 비교는 표의 «원장/분석기 등급».');
+  L.push('- **동급** = 6개 밖이지만, 분석기가 그 자료보다 뼈대가 같거나 더 닮은 자료 6개를 찾았다(흔한 문제의 쌍둥이가 여럿일 때). 통과 계산에서 빼고 목록으로만 보인다.');
+  L.push('- **놓침** = 원장 확정 자료가 글도 있고 6위보다 더 닮았는데 안 나왔다 · 또는 6개가 다 차지 않았는데 빠졌다.');
+  L.push('- **확인 불가** = 원장 확정 자료의 글이 없다(아래 «글자 은행 채움»).');
+  L.push(`- **잘못 찾음** = 분석기 1순위(같은문제·숫자변형)를 원장님이 ✗ 표시했다. 지금 저장된 ✗ 표시: ${V.rejectedSeen}개 (✗ 는 hit · 후보 rejected · 출판사 rejected 에 남는다. 워커가 다시 판정하면 후보의 rejected 는 지워진다).`);
+  if (V.noHitSV) L.push(`- 참고: 원장님이 «적중 없음»으로 확정한 문항 중 ${V.noHitSV}개에서 분석기 1순위가 같은문제·숫자변형 — 아래 표에서 확인해 주세요.`);
+  L.push('- **새로 찾음** = 학원앱 후보에 없던 자료를 분석기가 같은문제·숫자변형이라 함 → 맞는지 봐 주세요.');
   L.push('');
-  L.push(`## 글자 은행 채움`);
+  L.push('## 글자 은행 채움');
   L.push('');
   L.push(`- 시험 문항 글: ${A.cov.examText}/${A.cov.examItems}`);
-  L.push(`- 자료 글: ${A.cov.candText}/${A.cov.cands} — ` + Object.entries(A.cov.byKind).map(([k, b]) => `${KIND_KO[k] || k} ${b.text}/${b.n}`).join(' · '));
-  if (A.cov.examText < A.cov.examItems || A.cov.candText < A.cov.cands) L.push(`- ⚠ 글이 없는 문항은 단원(유형 번호·소단원)으로만 비교했습니다 → 글자 은행을 먼저 채우세요 (mode=bank).`);
+  L.push(`- 자료 글: ${A.cov.candText}/${A.cov.cands} (질문 칸에만 글이 있던 것은 본문과 합쳐 씀)`);
+  L.push('');
+  L.push('| 자료 | 전체 | 본문 있음 | 질문 칸에만 | 빈 글 | 실패 | 은행에 없음 |');
+  L.push('|---|---|---|---|---|---|---|');
+  Object.entries(A.cov.byKind).forEach(([k, b]) => L.push(`| ${KIND_KO[k] || k} | ${b.n} | ${b.text} | ${b.askOnly} | ${b.empty} | ${b.err} | ${b.none} |`));
+  L.push('');
+  L.push(`- **질문 칸에만**: OCR 이 문제 전체를 ask 칸에 넣고 text 를 비운 것 — 합쳐 쓰므로 비교에 문제없다.`);
+  L.push(`- **빈 글**: 글자가 거의 없는 그림 문항(그림 있음 ${A.cov.emptyFig}개) → 단원으로만 비교.`);
+  Object.entries(A.cov.errs).forEach(([m, n]) => L.push(`- **실패** ${m}: ${n}개` + (/그림을 받지 못함|그림 없음/.test(m) ? ' — 매쓰플랫에 문제 그림이 없는 교과서 문항(준비학습·개념 탐구처럼 답만 있는 것). 다시 해도 그림이 없다.' : '')));
+  L.push(`- **은행에 없음**: 글자 은행을 채운 뒤 새로 들어온 자료이거나 범위를 다르게 돌린 것 → mode=bank 로 다시.`);
+  const skipped = Object.entries(A.info.skipped || {}); if (skipped.length) L.push(`- 모을 때 뺀 것(비교 안 함): ` + skipped.map(([k, n]) => `${k} ${n}`).join(' · '));
   L.push('');
   L.push('## 문항별');
   L.push('');
-  L.push('| 번호 | 상태 | 원장 확정 | 지금 워커 1순위 | 분석기 1순위 | 분석기 2~3순위 |');
-  L.push('|---|---|---|---|---|---|');
-  const pl = (k) => placeOf(A.tmap.get(String(k || '').replace(/^pub:/, 'tb:')), withTitle) || k || '';
-  const kd = (x) => (x === 'sim' ? '유사문제' : M.LABEL[x] || ({ text: '지문만' })[x] || x || '');
+  L.push('| 번호 | 상태 | 원장 확정 | 원장/분석기 등급 · 점수 · 순위 | 지금 워커 1순위 | 분석기 1순위 | 분석기 2~3순위 |');
+  L.push('|---|---|---|---|---|---|---|');
   V.items.forEach((v, i) => {
     const r = A.rows[i];
     const own = v.owner ? (v.owner.ok === false && !v.owner.k ? '적중 없음' : `${v.owner.ok ? '✓' : '✗'} ${kd(v.owner.kind)} ${pl(v.owner.k)}`) : '—';
+    const cmp = v.owner && v.owner.k && v.owner.ok ? `${kd(v.owner.kind)} / ${kd(v.ownerKindByAnalyzer) || '—'} · 뼈대 ${v.ownerScore == null ? '—' : v.ownerScore} · ${v.ownerRank ? v.ownerRank + '위' : '—'} (1위 ${v.top1 == null ? '—' : v.top1} · 6위 ${v.sixth == null ? '—' : v.sixth})` : '';
     const wk = v.worker ? `${kd(v.worker.kind)} ${pl(v.worker.k)}` : '—';
     const a1 = r.top[0] ? `**${kd(r.top[0].kind)}** ${pl(r.top[0].k)}<br>${r.top[0].why}` : '—';
     const a23 = r.top.slice(1, 3).map((c) => `${kd(c.kind)} ${pl(c.k)} (${c.why})`).join('<br>') || '—';
-    L.push(`| ${v.no}${r.examText ? '' : ' ⚠글 없음'} | ${v.status}${v.note ? '<br>' + v.note : ''} | ${own} | ${wk} | ${a1} | ${a23} |`);
+    L.push(`| ${v.no}${r.examText ? '' : ' ⚠글 없음'} | ${v.status}${v.note ? '<br>' + v.note : ''} | ${own} | ${cmp} | ${wk} | ${a1} | ${a23} |`);
   });
   L.push('');
-  L.push(`기준 숫자: 같은문제 뼈대 ≥ ${M.TH.SAME} + 숫자 같음 · 숫자변형 뼈대 ≥ ${M.TH.VAR} + 질문 ≥ ${M.TH.VAR_ASK} · 유사문제 뼈대 ${M.TH.SIM}~${M.TH.VAR} + 같은 소단원 · 같은유형 = 유형 번호 또는 소단원만 같음 (sync/lumen_analyzer/match.js TH)`);
+  L.push(`기준 숫자: 같은문제 뼈대 ≥ ${M.TH.SAME} + 숫자 같음 · 숫자변형 뼈대 ≥ ${M.TH.VAR} · 유사문제 뼈대 ${M.TH.SIM}~${M.TH.VAR} + 같은 소단원(또는 유형 번호) · 같은유형 = 유형 번호 또는 소단원만 같음 · 질문이 ${M.TH.ASK_LIFT} 이상 닮으면 뼈대 +${M.TH.LIFT} (sync/lumen_analyzer/match.js TH). 뼈대는 본문+질문 전체 글.`);
   return L.join('\n') + '\n';
 }
 function reportJson(A, V, withTitle) {
   return { examId: A.examId, at: new Date().toISOString(), th: M.TH, pass: V.pass,
-    counts: { miss: V.miss, wrong: V.wrong, agree: V.agree, ownerSV: V.ownerSV, newFound: V.newFound, unconfirmed: V.unconfirmed, workerAgree: V.workerAgree },
+    counts: { agree: V.agree, same6: V.same6, miss: V.miss, unknown: V.unknown, wrong: V.wrong, kindAgree: V.kindAgree, ownerSV: V.ownerSV, ownerType: V.ownerType, typeIn6: V.typeIn6, noHitSV: V.noHitSV, newFound: V.newFound, unconfirmed: V.unconfirmed, workerAgree: V.workerAgree, rejectedSeen: V.rejectedSeen },
     coverage: A.cov,
-    items: V.items.map((v, i) => ({ ...v, examText: A.rows[i].examText, pool: A.rows[i].pool,
+    items: V.items.map((v, i) => ({ ...v, pool: A.rows[i].pool,
       analyzer: v.analyzer.map((c) => ({ ...c, where: placeOf(A.tmap.get(c.k), withTitle) })) })) };
 }
 
@@ -252,7 +295,7 @@ if (require.main === module) {
     fs.writeFileSync(pathMod.join(dir, 'report.json'), JSON.stringify(reportJson(A, V, false), null, 1));
     log(`보고서: ${dir}/report.md · report.json`);
     log(`글자 은행: 시험 ${A.cov.examText}/${A.cov.examItems} · 자료 ${A.cov.candText}/${A.cov.cands}`);
-    log(`검증: 놓침 ${V.miss} · 잘못 찾음 ${V.wrong} · 일치 ${V.agree}/${V.ownerSV} · 새로 찾음 ${V.newFound} · 원장 확정 없음 ${V.unconfirmed} → ${V.pass ? '통과' : '아직'}`);
+    log(`검증 (같은문제·숫자변형 확정 ${V.ownerSV}): 일치 ${V.agree} · 동급 ${V.same6} · 놓침 ${V.miss} · 확인 불가 ${V.unknown} · 잘못 찾음 ${V.wrong} · 등급도 같음 ${V.kindAgree} · 유형 확정 6개 안 ${V.typeIn6}/${V.ownerType} · 새로 찾음 ${V.newFound} · 원장 확정 없음 ${V.unconfirmed} → ${V.pass ? '통과' : '아직'}`);
     if (!has('no-save')) {
       const j = reportJson(A, V, true); j.md = reportMd(A, V, true);
       await W.kvSet('analyzer_report_' + examId, j);

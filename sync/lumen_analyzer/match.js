@@ -16,7 +16,9 @@
 const TH = {
   SAME: 0.90,        // 같은문제: 뼈대 닮음
   VAR: 0.60,         // 숫자변형: 뼈대 닮음
-  VAR_ASK: 0.50,     // 숫자변형: 질문 닮음
+  VAR_ASK: 0.50,     // 질문 «비슷» 표시 기준 (등급 문턱 아님)
+  ASK_LIFT: 0.80,    // 질문이 이만큼 닮으면
+  LIFT: 0.05,        //   뼈대에 이만큼 얹어 등급을 정한다
   SIM: 0.35,         // 유사문제: 뼈대 닮음 아래 끝
   SHORT: 12,         // 뼈대가 이보다 짧으면(그림 위주 문항) 글자로 판단하지 않는다
 };
@@ -63,10 +65,35 @@ function unifySets(t) {
 }
 
 /* 뼈대 — 숫자 #, 대문자 한 글자 V1·V2…, 소문자 한 글자 v1·v2…(나온 순서대로) · n(A) 의 n 은 기호라 그대로 */
+/* 같은 뜻 다른 말투 — 「~는?」 = 「~를 구하시오.」, 「만족시키는」 = 「만족하는」 */
+const PHRASES = [
+  [/만족시키(?=[는ㄴ다])/g, '만족하'], [/만족시킬/g, '만족할'], [/만족시켜/g, '만족해'],
+  [/\s*(?:을|를|은|는|이|가)?\s*(?:구하시오|구하여라|구하여 보시오|구하면\s*\?|구한 것은\s*\?)\s*\.?/g, '?'],
+  [/\s*(?:은|는)\s*\?/g, '?'],
+  [/(?:이)?라고?\s*할\s*때/g, '라 할 때'], [/(?:이)?라고?\s*하자/g, '라 하자'], [/(?:이)?라고?\s*하면/g, '라 하면'],
+];
+function phrases(t) { let s = t; PHRASES.forEach(([re, to]) => { s = s.replace(re, to); }); return s; }
+/* 「두 집합 A={1,5}, B={…}에 대하여 A⊂X⊂B」 와 「{2,4}⊂X⊂{…}」 — 원소를 늘어놓아 정한 집합 이름은 그 뒤에서 {N} 으로 */
+function inlineSets(t) {
+  const def = new Set();
+  const re = /(?<![A-Za-z])([A-Z])\s*=\s*\{N\}/g; let m;
+  while ((m = re.exec(t))) def.add(m[1]);
+  if (!def.size) return t;
+  /* 정의(A={N})는 {N} 으로, 그 뒤에 나오는 이름 A 도 {N} 으로 */
+  const parts = t.split(/((?<![A-Za-z])[A-Z]\s*=\s*\{N\})/);
+  const seen = new Set();
+  return parts.map((pt) => {
+    const d = pt.match(/^([A-Z])\s*=\s*\{N\}$/); if (d) { seen.add(d[1]); return '{N}'; }   // 정의는 «{N}» 하나로
+    return pt.replace(/(?<![A-Za-z])[A-Z](?![A-Za-z])/g, (c) => (seen.has(c) ? '{N}' : c));
+  }).join('');
+}
 function skeleton(text) {
-  let t = normalize(text);
+  let t = normalize(fullText(text));
   t = stripMeta(t);
+  t = phrases(t);
   t = unifySets(t);
+  t = inlineSets(t);
+  t = t.replace(/(^|[(,=\[{:<>≤≥\s])-\s*(?=\d)/g, '$1');            // 음수 부호는 숫자의 일부 — (0,-1) 과 (0,1) 은 같은 뼈대
   t = t.replace(/\^C(?![a-zA-Z])/g, '^ᶜ');                       // 여집합 C 는 이름 바꾸기에서 뺀다
   t = t.replace(/\d+(?:\.\d+)?/g, '#');                          // 숫자 가리기 (소수 포함)
   t = t.replace(/\{N\}/g, '\uE200');                              // {N} 의 N 은 이름이 아니다
@@ -122,6 +149,20 @@ function simP(E, C) {
   return { s: best, swapped };
 }
 
+/* 문제 전체 글 — OCR 이 질문(ask)을 본문에 넣기도 하고 따로 떼기도 한다 → 본문에 질문이 없으면 붙인다 */
+function fullText(e) {
+  if (typeof e === 'string') return e;
+  const t = String((e && e.text) || '').trim(), q = String((e && e.ask) || '').trim();
+  if (!q) return t; if (!t) return q;
+  const z = (x) => normalize(x).replace(/[\s.,]/g, '');
+  const zt = z(t), zq = z(q);
+  if (zt.includes(zq)) return t;
+  if (zq.includes(zt)) return q;
+  /* 본문과 질문이 같은 말로 시작하면(OCR 이 질문 문장을 본문에도 반쯤 적은 것) 긴 쪽 하나만 */
+  let n = 0; while (n < zt.length && n < zq.length && zt[n] === zq[n]) n++;
+  if (n >= 8 && n >= 0.6 * Math.min(zt.length, zq.length)) return zq.length >= zt.length ? q : t;
+  return t + ' ' + q;
+}
 /* 묻는 것 — OCR 의 ask 가 없으면 글에서 «?» 나 «구하시오» 가 있는 마지막 문장 */
 function askOf(entry) {
   if (entry && entry.ask) return entry.ask;
@@ -152,11 +193,11 @@ function numsEqual(a, b) {
 /* 은행 항목 → 비교 준비물 (한 번만 계산) */
 function prep(entry) {
   const e = entry || {};
-  const text = String(e.text || '');
+  const text = fullText(e);
   const sk = skeleton(text);
-  const ask = askOf(e);
+  const ask = askOf(e.ask ? e : { text });
   const z = compact(sk);
-  return { text, sk, z, g: gramsZ(z), ask, askG: ask ? grams(skeleton(ask), 2) : new Set(), nums: Array.isArray(e.nums) && e.nums.length ? e.nums : numsOf(text), fig: !!e.fig, short: sk.length < TH.SHORT, err: e.err || '' };
+  return { text, sk, z, g: gramsZ(z), ask, askG: ask ? grams(skeleton(ask), 2) : new Set(), nums: numsOf(text), fig: !!e.fig, short: sk.length < TH.SHORT, err: e.err || '' };
 }
 
 /* 등급 — exam·cand 는 prep() 결과(또는 은행 항목), unitSame·cidSame 은 단원 비교 결과 */
@@ -175,16 +216,18 @@ function grade(o) {
   const ne = numsEqual(E.nums, C.nums);
   why.push('뼈대 ' + s.toFixed(2) + (sp.swapped ? '(이름 바꿈)' : ''));
   if (a != null) why.push(a >= 0.8 ? '질문 같음' : a >= TH.VAR_ASK ? '질문 비슷' : '질문 다름');
+  /* 질문 닮음(a)은 «거드는» 신호다 — OCR 이 질문을 떼는 자리가 들쭉날쭉해서 문턱으로 쓰지 않는다(2026-10-18 검증 2회차).
+     뼈대(질문까지 붙인 전체 글)가 문턱 바로 아래면 질문이 아주 닮았을 때 한 칸 올려 준다. */
   let kind = 'none';
-  const askOk = a == null ? s >= 0.75 : a >= TH.VAR_ASK;   // 질문을 못 뽑았으면 뼈대가 더 닮아야
-  if (s >= TH.SAME && ne && askOk) { kind = 'same'; why.push('숫자 같음'); }
-  else if (s >= TH.VAR && askOk) kind = 'var';
-  else if (s >= TH.SIM && (unitSame || cidSame)) kind = 'sim';
-  else if (s >= TH.VAR) kind = 'sim';                       // 뼈대는 닮았는데 질문이 다름
+  const lift = a != null && a >= TH.ASK_LIFT ? TH.LIFT : 0;
+  if (s >= TH.SAME && ne) { kind = 'same'; why.push('숫자 같음'); }
+  else if (s + lift >= TH.VAR) kind = 'var';
+  else if (s + lift >= TH.SIM && (unitSame || cidSame)) kind = 'sim';
   else if (cidSame || unitSame) kind = 'type';
+  if (lift && kind !== 'same' && s < TH.VAR && (kind === 'var' || kind === 'sim')) why.push('질문 덕분에 한 칸');
   if (kind !== 'same' && kind !== 'var') unitWhy();
   if (E.fig !== C.fig && (kind === 'same' || kind === 'var')) why.push(E.fig ? '시험만 그림' : '후보만 그림');
-  const score = s + 0.2 * (a || 0) + (cidSame ? 0.04 : 0) + (unitSame ? 0.02 : 0);
+  const score = s + 0.15 * (a || 0) + (cidSame ? 0.04 : 0) + (unitSame ? 0.02 : 0);
   return { kind, score: Math.round(score * 1000) / 1000, s: Math.round(s * 1000) / 1000, a: a == null ? null : Math.round(a * 1000) / 1000, why: why.join(' · ') };
 }
 function better(x, y) { return (RANK[y.kind] - RANK[x.kind]) || (y.score - x.score); }
@@ -218,4 +261,4 @@ function chapterLike(lit, msChapter) {
   return segs.some((sg) => { const B = new Set(); for (let i = 0; i + 1 < sg.length; i++) B.add(sg.slice(i, i + 2)); let n = 0; A.forEach((x) => { if (B.has(x)) n++; }); const m = Math.min(A.size, B.size); return m >= 3 && n / m >= 0.75; });   // 짧은 쪽이 거의 다 들어 있으면 같은 단원
 }
 
-module.exports = { TH, RANK, LABEL, normalize, stripMeta, unifySets, skeleton, compact, grams, gramsZ, swapVariants, jaccard, sim, simP, askOf, askSim, numsOf, numsEqual, prep, grade, better, buildIndex, chapterLike };
+module.exports = { TH, RANK, LABEL, fullText, phrases, inlineSets, normalize, stripMeta, unifySets, skeleton, compact, grams, gramsZ, swapVariants, jaccard, sim, simP, askOf, askSim, numsOf, numsEqual, prep, grade, better, buildIndex, chapterLike };
