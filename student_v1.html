@@ -4515,6 +4515,10 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-144 (2026-10-19) 🎯 시험대비 트랙 디데이를 내 학년 시험으로 (학원앱 v19-139 와 같이)
+ *   · 트랙에 «대비하는 시험»이 적혀 있으면 그 날짜로 디데이를 셉니다.
+ *   · 없으면 같은 학교라도 내 학년 시험만 고릅니다(중1 에게 3학년 시험 날짜가 보이던 것 고침). 지난 시험은 건너뜁니다.
+ *
  * v2-143 (2026-10-19) 🙈 중고등부 순위에서 학년·학교 가리기 (원장 「학년이 보인다」)
  *   · 중고등부 한 줄 순위표(통합)에서 「중3 범박중 · 」 같은 학년·학교를 안 보입니다. 리그 이름만 남습니다.
  *     초등부와 예전 시즌(통합 아님) 순위는 그대로.
@@ -5147,7 +5151,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-143';
+var STU_VER = 'v2-144';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -15547,15 +15551,22 @@ async function xtLoad(force){
      * (실측: M7 = 범박고 2명 + 소사고 2명). 등록부 학교로 못 찾으면 반 학교로 폴백. */
     var mySc=String(studentInfo.school||'').trim();
     var dds=(v.ddays||[]);
+    /* v2-144: 학년이 맞는 디데이만 (grades 가 비었거나 내 학년 숫자 포함) · 지난 디데이는 건너뜀 */
+    var myGn=(String(studentInfo.grade||'').match(/(\d)/)||[])[1]||'';
+    var todayS=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
     function ddFor(name){
       if(!name) return null;
       var n=String(name).replace(/\s/g,'');
       return dds.filter(function(x){
         var s=String(x.school||'').replace(/\s/g,'');
-        return s&&(n===s||n.indexOf(s)===0||s.indexOf(n)===0);
-      })[0]||null;
+        if(!(s&&(n===s||n.indexOf(s)===0||s.indexOf(n)===0))) return false;
+        if(Array.isArray(x.grades)&&x.grades.length&&myGn&&x.grades.map(String).indexOf(myGn)<0) return false;
+        return !x.date||String(x.to||x.date)>=todayS;
+      }).sort(function(a,b){ return String(a.date||'').localeCompare(String(b.date||'')); })[0]||null;
     }
-    var dd=ddFor(mySc)||ddFor(tr&&tr.school);
+    /* v2-144: 트랙에 대비하는 시험(exam, 학원앱 v19-139)이 적혀 있으면 그것이 먼저 */
+    var dd=(tr&&tr.exam&&tr.exam.from)?{ school:(tr.school||mySc), label:(tr.exam.label||'시험'), date:tr.exam.from }
+          :(ddFor(mySc)||ddFor(tr&&tr.school));
     XTS.my={ g:g, items:items, school:(dd&&dd.school)||mySc||(tr&&tr.school)||'', dd:dd };
     // 내 매쓰플랫 id + 반 친구들 id
     var codes=[code];
