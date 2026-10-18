@@ -13,7 +13,7 @@
  *   ⑥ 🔒/👁 공개 단추 · ✏️ 시험 고치기 · 🗑 트랙 지우기(보관함으로) · 다른 기기가 바꾼 칸을 지우지 않음(서버 다시 읽기)
  *   ⑦ 1180px 가로 넘침 없음 · 페이지 오류 없음 · 부품 글자 검사
  *   실행: SP=<임시폴더> NODE_PATH=/opt/node22/lib/node_modules node sync/appbuild/tests/test_v19139.js lumen_v19-139.html [student_v2-143.html]
- *   그림: $SP/v19139_auto.png · v19139_make.png */
+ *   그림: $SP/v19139_auto.png · v19139_make.png · v19139_box.png */
 const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
@@ -228,6 +228,8 @@ const SEED = { exam_track: XT0, school_calendar: CAL };
   /* 다른 기기가 그 사이에 바꿈: 개별 배정 + 다른 트랙 교재 + 새 칸 */
   await pg.evaluate(() => { const v = T.store.exam_track; v.indiv.BBB000 = [{ id: 'Y1', title: '다른 기기 개별', total: 5 }]; v.tracks['소사고 고2'].items.push({ id: 'Y2', title: '다른 기기 교재', total: 9 }); v.otherDevice = 'keep'; });
   await pg.click('#xt139-pub'); await settle(500);
+  await pg.locator('.xt139-box').evaluate((e) => e.parentElement.scrollIntoView());
+  await pg.locator('.xt139-box').evaluate((e) => e.parentElement.id = 'xt139-shot'); await pg.locator('#xt139-shot').screenshot({ path: SP + '/v19139_box.png' });
   s = await S();
   t('👁 공개 누름 → 옥길중 중1 pub:true · pubTracks=[옥길중 중1] · 단추 「👁 공개」', s.tracks['옥길중 중1'].pub === true && JSON.stringify(s.pubTracks) === '["옥길중 중1"]' && (await pg.evaluate(() => /👁 공개/.test(document.getElementById('xt139-pub').innerText))), JSON.stringify(s.pubTracks));
   t('저장 전에 서버를 다시 읽어 다른 기기 것(개별 배정 · 소사고 고2 교재 · 새 칸) 그대로', s.indiv.BBB000 && s.indiv.BBB000[0].id === 'Y1' && s.tracks['소사고 고2'].items.some((i) => i.id === 'Y2') && s.otherDevice === 'keep' && s.mystery.keep === 1 && s.indiv.ZZZ999, JSON.stringify(Object.keys(s)));
