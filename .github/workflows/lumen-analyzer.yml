@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       exam:
-        description: '시험 id (예: 소사고_고1_2026_2_중간)'
+        description: '시험 id (예: 소사고_고1_2026_2_중간) — 여러 개는 쉼표로 (차례로 처리)'
         required: true
         type: string
       mode:
@@ -31,6 +31,11 @@ on:
         default: exam
         type: choice
         options: [exam, all]
+      apply:
+        description: '분석기 후보를 적중 분석 결과(exam_hit_<시험>)에 넣기 (원장 2026-10-18 「넣어」 승인)'
+        required: false
+        default: false
+        type: boolean
       retry_err:
         description: '전에 실패한 그림(err)도 다시 옮겨 적기'
         required: false
@@ -57,6 +62,7 @@ jobs:
       EXAM: ${{ inputs.exam }}
       LIMIT: ${{ inputs.limit }}
       SCOPE: ${{ inputs.scope || 'exam' }}
+      APPLY: ${{ inputs.apply && '1' || '' }}
       RETRY_ERR: ${{ inputs.retry_err }}
     steps:
       - name: 코드 체크아웃
@@ -73,14 +79,27 @@ jobs:
       - name: ① 글자 은행 채우기
         if: inputs.mode == 'bank' || inputs.mode == 'both'
         run: |
-          ARGS=(--exam "$EXAM" --scope "$SCOPE")
-          if [ -n "$LIMIT" ]; then ARGS+=(--limit "$LIMIT"); fi
-          if [ "$RETRY_ERR" = "true" ]; then ARGS+=(--retry-err); fi
-          node sync/lumen_analyzer/text_bank.js "${ARGS[@]}"
+          IFS=',' read -ra EXAMS <<< "$EXAM"
+          for ex in "${EXAMS[@]}"; do
+            ex="$(echo "$ex" | xargs)"; [ -z "$ex" ] && continue
+            echo "=== 글자 은행: $ex ==="
+            ARGS=(--exam "$ex" --scope "$SCOPE")
+            if [ -n "$LIMIT" ]; then ARGS+=(--limit "$LIMIT"); fi
+            if [ "$RETRY_ERR" = "true" ]; then ARGS+=(--retry-err); fi
+            node sync/lumen_analyzer/text_bank.js "${ARGS[@]}"
+          done
 
-      - name: ② 뼈대·단원 비교 + 검증 보고서
+      - name: ② 뼈대·단원 비교 + 검증 보고서 (+ 넣기)
         if: always() && (inputs.mode == 'report' || inputs.mode == 'both')
-        run: node sync/lumen_analyzer/run.js --exam "$EXAM" --scope "$SCOPE" --report "$RUNNER_TEMP/analyzer"
+        run: |
+          IFS=',' read -ra EXAMS <<< "$EXAM"
+          for ex in "${EXAMS[@]}"; do
+            ex="$(echo "$ex" | xargs)"; [ -z "$ex" ] && continue
+            echo "=== 보고서: $ex ==="
+            ARGS=(--exam "$ex" --scope "$SCOPE" --report "$RUNNER_TEMP/analyzer/$ex")
+            if [ -n "$APPLY" ]; then ARGS+=(--apply); fi
+            node sync/lumen_analyzer/run.js "${ARGS[@]}"
+          done
 
       - name: 보고서 올리기
         if: always() && (inputs.mode == 'report' || inputs.mode == 'both')
