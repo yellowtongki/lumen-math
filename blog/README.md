@@ -174,3 +174,30 @@ node sync/image_gen.js blog/<폴더>           # 키가 있으면 바로 생성 
 - JSON 안에서 역슬래시는 **두 번** 쓴다: `\\alpha`, `\\sqrt{3}`
 - `highlight: true` 를 준 패널은 금색 테두리로 강조된다
 - 줄이 길면 글자가 자동으로 작아진다. 너무 작아지면 `lines` 를 나눠 주면 된다
+
+
+## 당근 소식 자동화 (2026-10-18)
+
+네이버와 같은 규칙이다 — **글·제목·사진을 넣고 「임시 저장」까지.**
+**「다음」과 발행은 원장님이** 직접 하신다 (당근은 광고 톤 반복 게시에 네이버보다 엄격하다).
+
+```
+node sync/danggeun_draft.js --login            처음 한 번만 — 창에서 직접 로그인
+node sync/danggeun_draft.js blog/<폴더> --dry   무엇이 들어갈지만 보기
+node sync/danggeun_draft.js blog/<폴더>         넣고 임시 저장
+node sync/danggeun_draft.js --peek             막혔을 때 — 화면의 칸·단추를 찍어 본다
+```
+
+글 폴더에 **`danggeun.md`** 가 있어야 한다. 머리말이 필요하다.
+
+```
+---
+title: 여섯 주 만에 수학 51점이 79점이 됐습니다
+photos: 01_표지.png, 02_stat.png, 06_closing.png     ← cards/ 안의 파일, 최대 10장
+---
+본문 (당근 소식은 글 중간에 사진이 안 들어간다. 사진은 맨 위에 모여 올라간다)
+```
+
+- 로그인 상태는 `sync/_daangn_profile/` 에만 남는다 (gitignore). 비밀번호는 저장소가 모른다
+- **맥미니·학원 컴퓨터에서만** 돌린다
+- 당근 본문에는 **모집·가격 문구를 넣지 않는다**
