@@ -6,7 +6,7 @@
 ## 1. 지금 버전 (서버 `lumen_store.app_latest` 와 같다)
 | 앱 | 최신 파일 | 고정 주소(사용자가 여는 곳) |
 |---|---|---|
-| 학원앱 | `lumen_v19-140.html` | `lumen_v1.html` = v19-140 (Claude가 배포 때 같이 바꾼다) |
+| 학원앱 | `lumen_v19-141.html` | `lumen_v1.html` = v19-141 (Claude가 배포 때 같이 바꾼다) |
 | 학생앱 | `student_v2-146.html` | `student_v1.html` = v2-146 (**「학생앱배포」 지시가 있을 때만** 바꾼다 · 10/19 원장 「학생앱배포」 — v2-145 주간 점수 새벽 3시 유예·10/12 주 계획 면제 안내 · v2-146 «루멘 영상 플레이어»로 유튜브 이탈 막기(강의실·손풀이 영상, 검사 tests/test_v2146.js 45/45, **아이폰·안드로이드 실제 첫 재생은 원장 확인 필요**)) |
 | 학부모앱 | `parent_v1-35.html` | `parent.html` = v1-35 (**원장님 명령 때만**) |
 
@@ -112,6 +112,8 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 - 카드뉴스·기출 DB(화면엔 「기출 DB」, 「수학비서」라는 말 금지), 적중 분석: docs/exam_hit_contract.md §9.
 
 ## 6. 남은 일 (10/19 오전 기준)
+- **(10/20) 💾 PC 저장 공간 — 학원앱 v19-141 (`modules/store141_teacher.js`)**: 원장 Windows PC 에서 「저장 공간이 가득 찼습니다」 + 「예전 리포트 저장을 적게 · 느려진다」. 실측 서버 1,522키 112MB · 시작 다운로드 45MB · PC 디스크 약 20MB(ptx_* 6.7MB · or_students 3.1MB + 달 서랍 5.2MB · exam_hit_* 1MB …). PULL_SKIP_PREFIX 에 ptx_ · analyzer_report_ · exam_hit_ · mf_tree_ · backup_ 추가(화면은 서버에서 바로 읽음) + isMemOnlyKey 에 3달 넘은 or_students_/lumen_comments_ 달 서랍(디스크 X, 메모리·클라우드 O) + 켜질 때 디스크 사본 정리. **새 큰 키를 만드는 서버 도구(분석기 등)는 반드시 이 목록에 넣을 것.** 남은 큰 것: or_students 원본 3.1MB(«원본, 지우지 않음» 규칙) · lumen_comments 원본 0.75MB — 줄이려면 원장 결정.
+- **(10/20) 유서윤(초5, DG3QWE) 매쓰플랫 신규 연동**: mf_students I2273543 에 lumen_rec_code 를 직접 넣고 정기 수집을 한 번 돌림. 서버 등록부에는 아직 «퇴원 2026.06.26»(withdrawn:true)으로 남아 있어 수집기 이름 매칭이 건너뛰었던 것 — 원장이 학원앱 학생관리에서 재원으로 바꿨는지 확인.
 **▶ 새 세션 첫 일 요약 (자세한 것은 아래 줄들)**
 1. **(끝남 10/19 오전, 원장 「지워」) 다음 시즌 임시 키 4개 지움** — `race_season_draft`·`race_board_draft`·`race_watch_draft`·`raid_board_draft` 각 1줄 (service key). 남은 일은 학원앱 `rnxDel` 고치기(아래 2-①).
 2. **학원앱 v19-140**: ① 학원앱 `rnxDel`(racenext122) 이 서버 잠금 때문에 0줄 지우고도 오류 없이 지나간다 → 지운 줄 수 확인 또는 `{deleted:true}` 쓰기 ② 진도 레이스 설정에 «교재별 난이도 다시 매기기(`bookLv`)·배율(`bookMult`)» 편집 칸(지금은 서버에만 마플시너지 2권) ③ 지금 시즌 편집 폼의 옛 「추가 버프 시작일」 칸이 학교별 기간(`windows`)과 헷갈림 — windows 가 있으면 기간 목록을 보여 주게.
