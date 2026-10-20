@@ -1,0 +1,188 @@
+<title>학원앱 3분할 화면</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<style>
+/* 레이아웃: 위 = 설명, 가운데 = 학원앱 3분할 시안(기능 탭을 누르면 왼쪽·오른쪽이 바뀜, 가운데는 지금 화면 축소판), 아래 = 탭별 왼쪽·오른쪽 표 · 폰 폭 · 만드는 순서 · 여쭐 것 */
+:root{
+  --bg:#eef2f8; --card:#ffffff; --fg:#0d2240; --muted:#64748b; --line:#e6eaf1; --navy:#0d2240; --navy-soft:#e8eef8; --blue:#1d6fe8; --blue-soft:#e8f1ff;
+  --amber:#b45309; --amber-soft:#fff7e6; --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c; --bad-soft:#fee2e2; --side:#0f1d33; --side2:#162a47; --side-fg:#e8eef6; --side-mut:#9fb0c4;
+  --font:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --side:#0a1424; --side2:#122037; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --side:#0a1424; --side2:#122037; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 60px;padding-inline:16px;display:flex;flex-direction:column;gap:22px}
+h1{font-size:23px;font-weight:900;margin:0 0 4px;letter-spacing:-0.01em;text-wrap:balance}
+h2{font-size:16.5px;font-weight:900;margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 .tag{font-size:11px;font-weight:700;letter-spacing:0.04em;padding:2px 8px;border-radius:999px;background:var(--navy-soft);color:var(--blue)}
+p{margin:0}.lead,.note{color:var(--muted);font-size:13px}.note b{color:var(--fg)}
+.sec{display:flex;flex-direction:column;gap:10px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:600px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:0.04em;color:var(--muted);font-weight:700;background:var(--navy-soft)} tr:last-child td{border-bottom:0}
+td.k{font-weight:900;white-space:nowrap}
+/* 앱 시안 */
+.app{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.topbar{background:linear-gradient(90deg,#0d2240,#163560);color:#fff;display:flex;align-items:stretch;overflow-x:auto}
+.topbar button{flex:1;min-width:92px;border:none;background:transparent;color:#cfdbf0;font-family:inherit;font-weight:900;font-size:12.5px;padding:12px 8px 10px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.topbar button.on{color:#fff;background:rgba(255,255,255,.08);border-bottom-color:#ff5a5a}
+.subbar{display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid var(--line);overflow-x:auto;background:var(--card)}
+.subbar span{border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:800;color:var(--muted);white-space:nowrap}
+.subbar span.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+:root[data-theme="dark"] .subbar span.on,:root:not([data-theme="light"]) .subbar span.on{color:var(--bg)}
+.grid{display:grid;grid-template-columns:230px minmax(0,1fr) 250px;min-height:560px}
+.left{background:var(--side);color:var(--side-fg);padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.left .brand{font-weight:900;font-size:15px;letter-spacing:.02em}.left .brand small{display:block;font-size:10px;color:var(--side-mut);font-weight:700}
+.left .ttl{font-size:10.5px;font-weight:800;color:var(--side-mut);letter-spacing:.06em;margin-top:6px}
+.lb{background:var(--side2);border-radius:10px;padding:9px 11px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:6px;cursor:pointer;min-width:0}
+.lb.on{background:var(--blue);color:#fff}
+.lb small{font-weight:700;color:var(--side-mut);font-size:10.5px}.lb.on small{color:#dbe8ff}
+.lb .n{background:rgba(255,255,255,.14);border-radius:999px;padding:1px 7px;font-size:10.5px}
+.lb.stu{padding:6px 10px;font-weight:700}
+.lb.stu i{font-style:normal;color:#ffd166;margin-right:4px}
+.common{border-top:1px dashed rgba(255,255,255,.18);padding-top:8px;margin-top:auto}
+.common .lb{background:transparent;border:1px solid rgba(255,255,255,.14);font-weight:700}
+.center{padding:14px;min-width:0;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.center .pane{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12px;min-width:0}
+.center .pane b{display:block;font-size:13px;margin-bottom:4px}
+.center .ph{height:46px;border:1px dashed var(--line);border-radius:8px;background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(100,116,139,0.10) 6px 7px);display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:800;font-size:11px}
+.center .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.center .st{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11px;color:var(--muted)}.center .st b{display:block;font-size:17px;color:var(--fg)}
+.right{background:var(--card);border-left:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.right .ttl{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-top:6px}
+.tool{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:11.5px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tool b{font-size:12px}
+.tool .ck{display:flex;gap:6px;align-items:center;font-weight:700}.tool .ck i{width:13px;height:13px;border-radius:3px;background:var(--blue);display:inline-block;color:#fff;font-size:9px;text-align:center;line-height:13px;font-style:normal}.tool .ck i.off{background:transparent;border:1.5px solid var(--muted)}
+.btn{border:none;border-radius:8px;padding:7px 10px;font-family:inherit;font-size:11.5px;font-weight:900;cursor:pointer;background:var(--navy-soft);color:var(--blue);text-align:left}
+.btn.main{background:var(--blue);color:#fff}.btn.pri{background:var(--navy);color:#fff}
+:root[data-theme="dark"] .btn.pri,:root:not([data-theme="light"]) .btn.pri{color:var(--bg)}
+.sel{font-family:inherit;font-size:11.5px;font-weight:800;border:1.5px solid var(--line);border-radius:8px;padding:5px 7px;background:var(--card);color:var(--fg)}
+.phone{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;align-items:start}
+.ph-shell{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;max-width:260px}
+.ph-shell .tb{display:flex;gap:4px;overflow:hidden;margin-bottom:6px}.ph-shell .tb span{font-size:10px;font-weight:900;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 7px;white-space:nowrap}.ph-shell .tb span.on{background:var(--navy);color:#fff}
+.ph-shell .chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}.ph-shell .chips span{font-size:10px;font-weight:800;background:var(--navy-soft);color:var(--blue);border-radius:999px;padding:2px 7px}
+.ph-shell .bd{border:1px dashed var(--line);border-radius:10px;height:150px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;font-weight:800;text-align:center;padding:8px}
+.ph-shell .fab{margin-top:6px;display:flex;justify-content:flex-end}.ph-shell .fab span{background:var(--blue);color:#fff;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:900}
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px}
+:root[data-theme="dark"] .step .n,:root:not([data-theme="light"]) .step .n{color:var(--bg)}
+.step b{display:block}.step small{color:var(--muted);font-weight:700}
+.ask{background:var(--card);border:2px solid var(--blue);border-radius:14px;padding:14px;font-size:13.5px}
+.ask ol{margin:6px 0 0;padding-left:20px}.ask li{margin:4px 0}
+@media (max-width:900px){ .grid{grid-template-columns:1fr} .left,.right{display:none} }
+</style>
+
+<div class="wrap">
+  <div>
+    <h1>학원앱 3분할 — 왼쪽은 기능 따라, 오른쪽은 도구</h1>
+    <p class="lead">2026-10-11 · 원장님 말씀: 「가운데 화면은 살리고 우측 빈 화면과 좌측 공용 탭을 필요한 메뉴 구성으로 바꾸자. 기능 탭을 눌렀을 때 좌측 탭이 변경되면 복잡한가?」 복잡하지 않습니다. 아래에서 위쪽 기능 탭(시험·기출 / 백지테스트 / 리커버리 / 홈)을 눌러 보세요. 왼쪽·오른쪽이 바뀌고 가운데는 지금 화면의 축소판입니다. 숫자·이름은 예시입니다.</p>
+  </div>
+
+  <section class="sec">
+    <h2>학원앱 화면 시안 <span class="tag">탭을 눌러 보세요</span></h2>
+    <div class="app">
+      <div class="topbar" id="tabs"></div>
+      <div class="subbar" id="sub"></div>
+      <div class="grid"><div class="left" id="left"></div><div class="center" id="center"></div><div class="right" id="right"></div></div>
+    </div>
+    <p class="note" id="cap"></p>
+  </section>
+
+  <section class="sec">
+    <h2>탭마다 왼쪽·오른쪽에 무엇이 오나 <span class="tag">규칙</span></h2>
+    <div class="tbl"><table>
+      <tr><th style="width:120px">기능 탭</th><th>왼쪽 (목록·고르기)</th><th>오른쪽 (지금 화면의 도구)</th></tr>
+      <tr><td class="k">홈</td><td>지금 공용 탭 그대로 — 진도 현황 · 리커버리 · 명예의 전당 · 수학풀이분석 · 월간/주간 리포트 · 울트라일일 · 발행 현황판 · 상담 준비 · 숙제 현황 · 학생 목록</td><td>오늘 할 일(새 아하노트, 미확정 적중, 보충 호출) · 빠른 단추</td></tr>
+      <tr><td class="k">시험·기출 › 적중 분석</td><td>시험 목록(학교·학년별) · 기출 DB에서 찾기 · 시험지 올리기 · PDF 자료함</td><td><b>우리 자료 3종(교과서·수학비서 폴더·PDF) 체크 + 다시 판정</b> · 적중 기준 · 카드 크기 · 📰 카드뉴스 · 🖨 보고서 · ⬇ 블로그 폴더</td></tr>
+      <tr><td class="k">시험·기출 › 백지테스트</td><td>학생 목록(○/✓ 여러 명 · 중3 전부 · 반 전부) · 보관함</td><td>과정·대단원·단원 트리 · 1부/2부/3부 수 · 3부 출처 · 💬 채팅으로 고치기 · 🖨 인쇄 · 🔑 답지</td></tr>
+      <tr><td class="k">리커버리</td><td>이번 주 호출 학생(🚑 확정/미정) · 장부</td><td>학습지 규칙(쌍둥이·교과서·보강) · 매쓰플랫 계정 · 「전원 생성」 · 학생앱 알리기 · 인쇄</td></tr>
+      <tr><td class="k">수업·출결 · 진도·리포트 · 운영</td><td>그 화면의 목록(반·학생·달)</td><td>그 화면의 필터·인쇄·내보내기</td></tr>
+      <tr><td class="k">공용 항목</td><td colspan="2">홈이 아닌 탭에서는 왼쪽 맨 아래 「공용 메뉴 ▸」로 접힘(누르면 펼침). 학생 목록은 학생이 필요한 탭에서만 왼쪽에 나옴. 「가」 글자 크기 단추는 그대로</td></tr>
+    </table></div>
+  </section>
+
+  <section class="sec">
+    <h2>폰·태블릿 폭에서는 <span class="tag">세로 한 줄</span></h2>
+    <div class="phone">
+      <div class="ph-shell"><div class="tb"><span>홈</span><span>오늘</span><span>수업</span><span class="on">시험·기출</span><span>진도</span></div><div class="chips"><span>☰ 시험 목록</span><span>🛠 도구</span></div><div class="bd">가운데 화면만 세로로.<br>왼쪽 목록은 「☰」, 오른쪽 도구는 「🛠」 단추로 서랍처럼 열림</div><div class="fab"><span>🛠 도구</span></div></div>
+      <div class="ph-shell"><div class="tb"><span class="on">홈</span><span>오늘</span><span>수업</span><span>시험·기출</span><span>진도</span></div><div class="chips"><span>진도 현황</span><span>리커버리</span><span>명예의 전당</span><span>…</span></div><div class="bd">홈 탭은 지금처럼 공용 메뉴가 그대로 보임</div></div>
+    </div>
+    <p class="note">지금 폰에서 쓰는 방식과 같아서 익숙합니다. PC·태블릿 가로에서만 3분할이 됩니다.</p>
+  </section>
+
+  <section class="sec">
+    <h2>만드는 순서 <span class="tag">상의 후</span></h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><b>틀 먼저 (학원앱 v19-104)</b><small>3분할 격자와 「탭마다 왼쪽·오른쪽 내용」을 끼우는 자리만 만듭니다. 아직 아무 탭도 안 옮긴 상태라 홈은 지금과 같고, 다른 탭은 왼쪽에 「공용 메뉴 ▸」(접힘)만 보입니다. 폰에서는 변화 없음.</small></div></div>
+      <div class="step"><span class="n">2</span><div><b>적중 분석부터 옮기기 (v19-105)</b><small>원장님이 지금 제일 많이 쓰는 화면. 오른쪽에 우리 자료 3종·다시 판정·카드뉴스·보고서·블로그 폴더를 모읍니다. 가운데 화면의 같은 단추는 그대로 두어 어느 쪽을 눌러도 됩니다.</small></div></div>
+      <div class="step"><span class="n">3</span><div><b>백지테스트 · 리커버리 (v19-106)</b><small>학생 목록을 왼쪽으로, 트리·규칙·인쇄를 오른쪽으로. 가운데가 넓어져 A4 미리보기가 커집니다.</small></div></div>
+      <div class="step"><span class="n">4</span><div><b>나머지 탭은 쓰시면서 하나씩</b><small>수업·출결, 진도·리포트, 운영은 지금 화면이 불편한 것부터.</small></div></div>
+    </div>
+  </section>
+
+  <section class="ask">
+    <b>여쭐 것</b>
+    <ol>
+      <li>공용 항목(진도 현황·리커버리·명예의 전당 …)을 홈이 아닌 탭에서 <b>「공용 메뉴 ▸」로 접어 두는 것</b> 괜찮으신가요? 늘 보이길 원하는 항목이 있으면 말씀해 주세요(예: 리커버리는 항상).</li>
+      <li>옮기는 순서를 적중 분석 → 백지테스트·리커버리 → 나머지로 해도 될까요?</li>
+      <li>괜찮으면 먼저 결과 화면의 「📂 우리 자료 고르기 → 다시 판정」 단추(v19-103)를 넣고, 이어서 1·2단계를 Opus로 만들겠습니다.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function(){
+  var TABS=['홈','오늘의 확인','수업·출결','시험·기출','진도·리포트','학생앱','운영'];
+  var SUBS={ '시험·기출':['기출모의','기출 해설집','기출 쌍둥이','자체모의','백지테스트','기출 분석','시험 대비','적중 분석','시험대비 트랙','서술형 첨삭','학교성적'] };
+  var state={ tab:'시험·기출', sub:'적중 분석', common:false };
+  var COMMON=[['📚 진도 현황','늦음 5 · 주의 5 · 정상 17'],['🚑 리커버리','주말 보충 · 호출 · 장부'],['🏆 명예의 전당','주간테스트 1등'],['📝 수학풀이분석','AI 풀이 분석'],['📊 월간리포트',''],['🏅 주간 리포트','자동'],['⚡ 울트라일일피드백',''],['📅 발행 현황판',''],['📞 학부모 상담 준비',''],['📈 숙제 현황 (학생별)','']];
+  function esc(t){ return String(t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function lb(t,s,on,n){ return '<div class="lb'+(on?' on':'')+'"><span>'+esc(t)+(s?'<br><small>'+esc(s)+'</small>':'')+'</span>'+(n?'<span class="n">'+esc(n)+'</span>':'')+'</div>'; }
+  function stu(list){ return '<div class="ttl">학생 목록</div>'+list.map(function(x){ return '<div class="lb stu"><span>'+(x[2]?'<i>'+x[2]+'</i>':'')+esc(x[0])+' <small>'+esc(x[1])+'</small></span></div>'; }).join(''); }
+  function commonBlock(full){
+    if(full) return '<div class="ttl">공용 메뉴</div>'+COMMON.map(function(c){ return lb(c[0],c[1]); }).join('')+'<div class="ttl">학생 목록</div>'+lb('📋 전체','',false,'28명')+lb('👥 M3','',false,'4명')+lb('👥 M4','',false,'5명');
+    return '<div class="common"><div class="lb" id="cm">'+(state.common?'▾ 공용 메뉴 접기':'▸ 공용 메뉴 (진도 현황 · 리커버리 · 명예의 전당 …)')+'</div>'+(state.common?COMMON.map(function(c){ return lb(c[0],''); }).join(''):'')+'</div>';
+  }
+  function tool(b,rows,btns){ return '<div class="tool"><b>'+esc(b)+'</b>'+(rows||[]).map(function(r){ return typeof r==='string'?'<span>'+r+'</span>':'<span class="ck"><i class="'+(r[1]?'':'off')+'">'+(r[1]?'✓':'')+'</i>'+esc(r[0])+'</span>'; }).join('')+(btns||[]).map(function(x){ return '<button class="btn'+(x[1]?' '+x[1]:'')+'">'+esc(x[0])+'</button>'; }).join('')+'</div>'; }
+  var SCREENS={
+    '적중 분석':{
+      left:function(){ return '<div class="ttl">시험</div>'+lb('범박고 고1 · 2026 2학기 중간','후보 20 · 확정 3',true)+lb('범박고 고2 · 2026 2학기 중간','후보 23')+lb('옥길중 중2 · 2026 2학기 중간','확정 끝')+lb('옥길중 중3 · 2026 2학기 중간','')+lb('옥길중 중1 · 2026 2학기 중간','')+'<div class="ttl">새로</div>'+lb('📚 기출 DB에서 찾기','1,517장')+lb('📤 시험지 올리기','사진·PDF')+lb('📄 PDF 자료함','3장'); },
+      center:function(){ return '<div class="pane"><b>범박고 고1 · 2026년 2학기 중간고사</b><div class="row"><div class="st"><b>100%</b>유사유형까지 23/23</div><div class="st"><b>23</b>총 문항</div><div class="st"><b>2.5</b>평균 난도</div><div class="st"><b>20</b>확정 안 한 문항</div></div></div><div class="pane"><b>우리 자료별 적중</b><div class="ph">교과서 3 · 학원 대비 학습지 0 · 프린트 0 · 루멘수학 학습지·교재 20 (막대)</div></div><div class="pane"><b>분석지 — 문항별 후보 (가운데는 지금 그대로)</b><div class="ph">01 시험 원본 | 루멘수학 학습지 후보 | 교재 후보 … ✓/✗ 확정</div></div>'; },
+      right:function(){ return '<div class="ttl">이 시험의 도구</div>'+tool('📂 우리 자료 (대조 범위)',[['교과서 — 비상 공통수학1·2 전체',1],['학원 대비 학습지 — 공수2 폴더 12장',1],['PDF 자료함 — 0장',0],['루멘수학 학습지·교재 (자동)',1]],[['🔄 이 구성으로 다시 판정','main'],['💾 구성 기억','']])+tool('적중 기준',['<select class="sel"><option>유사유형까지</option><option>같은 문제 + 숫자변형</option><option>같은 문제만</option></select>','카드 크기: 작게 · <b>보통</b> · 크게'])+tool('내보내기',[],[['📰 카드뉴스','pri'],['🖨 학부모 보고서',''],['⬇ 블로그 폴더로 내려받기',''],['📝 블로그 자료 .md','']])+tool('서버 상태',['⏳ 요청 대기 없음 · ⚡ 즉시 처리 켜짐'],[]); },
+      cap:'적중 분석: 왼쪽은 시험 목록과 새 분석 입구, 오른쪽은 지금 찾기 어려웠던 「우리 자료 고르기 → 다시 판정」이 늘 보입니다.'
+    },
+    '백지테스트':{
+      left:function(){ return '<div class="ttl">학생 고르기 · <small>중3 전부 · 반 전부 · 모두 해제</small></div>'+stu([['○○○','중3 · T630','✓'],['○○○','중3','✓'],['○○○','중3','✓'],['○○○','중2',''],['○○○','고1','']])+'<div class="ttl">보관함</div>'+lb('공통수학1 · 다항식 (3명)','10/10')+lb('중3-2 · 삼각비 (1명)','10/8'); },
+      center:function(){ return '<div class="pane"><b>초안 편집 + A4 미리보기 (가운데가 넓어짐)</b><div class="ph" style="height:150px">왼쪽 편집 칸 · 💬 채팅으로 고치기 | 오른쪽 A4 미리보기</div></div>'; },
+      right:function(){ return '<div class="ttl">시험지 구성</div>'+tool('과정 · 범위',['공통수학1 › 다항식','🌳 단원 트리: 개념 3 · 주제유형 6 · 세부유형 18'],[['범위 트리 열기','']])+tool('문항 수',['1부 개념 백지 <b>8</b> · 2부 다시 풀기 <b>0</b> · 3부 <b>4</b>','3부 출처: 교과서+대표 문항 섞기'])+tool('만들기',[],[['⚡ AI 초안 만들기','main'],['👥 고른 3명에게 같은 시험지','pri'],['🖨 인쇄 · 🔑 답지',''],['💾 보관','']]); },
+      cap:'백지테스트: 학생 고르기와 보관함이 왼쪽, 범위 트리·문항 수·만들기가 오른쪽. 가운데는 편집과 A4 미리보기만 남아 넓어집니다.'
+    },
+    '리커버리':{
+      left:function(){ return '<div class="ttl">이번 주 호출 (10/12 토)</div>'+stu([['○○○','주간 12/20 · 확정','🚑'],['○○○','주간 14/20 · 확정','🚑'],['○○○','주간 15/20 · 미정',''],['○○○','교재 지연 · 확정','🚑']])+'<div class="ttl">장부</div>'+lb('9월 보충 12회','')+lb('10월 보충 5회',''); },
+      center:function(){ return '<div class="pane"><b>호출 명단 · 학습지 구성 (가운데 그대로)</b><div class="ph" style="height:150px">학생별 틀린 문항 → 쌍둥이 2 + 교과서 1 + 보강 · 생성 결과</div></div>'; },
+      right:function(){ return '<div class="ttl">도구</div>'+tool('학습지 규칙',[['쌍둥이 2문제씩',1],['교과서 같은 유형 1',1],['범위 안 교재 오답 보강',1],['자동 채점 문항만',1]],[])+tool('만들기',[],[['⚡ 확정 전원 학습지 생성','main'],['📣 학생앱에 알리기','pri'],['🖨 인쇄','']])+tool('🔐 매쓰플랫 계정',['이 PC에 저장됨 · 즉시 생성 가능'],[]); },
+      cap:'리커버리: 호출 학생이 왼쪽에 🚑 표시로, 규칙·생성·알리기가 오른쪽에.'
+    },
+    '홈':{
+      left:function(){ return '<div class="brand">LUMEN <small>루멘수학 v19-104</small></div>'+commonBlock(true); },
+      center:function(){ return '<div class="pane"><b>홈 (지금 그대로)</b><div class="ph" style="height:150px">오늘 수업 · 알림 · 최근 리포트</div></div>'; },
+      right:function(){ return '<div class="ttl">오늘 할 일</div>'+tool('확인할 것',['🎯 적중 미확정 20문항 (범박고 고1)','📒 새 아하노트 3건','🚑 토요 보충 호출 4명 중 미정 1'],[['바로 가기','']])+tool('빠른 단추',[],[['⚡ 울트라일일 피드백','pri'],['📣 공지 쓰기',''],['☁️ 지금 가져오기','']]); },
+      cap:'홈: 왼쪽은 지금 공용 탭 그대로, 오른쪽은 오늘 할 일. 다른 탭에서는 공용 탭이 「공용 메뉴 ▸」로 접힙니다.'
+    }
+  };
+  function key(){ if(state.tab==='홈') return '홈'; if(state.tab==='시험·기출') return state.sub==='백지테스트'?'백지테스트':'적중 분석'; return '리커버리'; }
+  function paint(){
+    document.getElementById('tabs').innerHTML=TABS.map(function(t){ return '<button class="'+(t===state.tab?'on':'')+'" data-t="'+t+'">'+t+'</button>'; }).join('');
+    var subs=SUBS[state.tab]||[]; document.getElementById('sub').innerHTML=subs.length?subs.map(function(s){ return '<span class="'+(s===state.sub?'on':'')+'" data-s="'+s+'">'+s+'</span>'; }).join(''):'<span style="border:none;color:var(--muted)">'+(state.tab==='홈'?'홈':'(이 시안에서는 「리커버리」 화면으로 보여 줍니다)')+'</span>';
+    var S=SCREENS[key()];
+    document.getElementById('left').innerHTML=(state.tab==='홈'?'':'<div class="brand">LUMEN <small>'+esc(key())+'</small></div>')+S.left()+(state.tab==='홈'?'':commonBlock(false));
+    document.getElementById('center').innerHTML=S.center(); document.getElementById('right').innerHTML=S.right();
+    document.getElementById('cap').innerHTML='<b>'+esc(key())+'</b> — '+esc(S.cap);
+    var cm=document.getElementById('cm'); if(cm) cm.addEventListener('click',function(){ state.common=!state.common; paint(); });
+  }
+  document.getElementById('tabs').addEventListener('click',function(e){ var b=e.target.closest('button'); if(!b) return; state.tab=b.getAttribute('data-t'); if(state.tab==='시험·기출'&&!SUBS[state.tab].includes(state.sub)) state.sub='적중 분석'; paint(); });
+  document.getElementById('sub').addEventListener('click',function(e){ var s=e.target.closest('[data-s]'); if(!s) return; state.sub=s.getAttribute('data-s'); if(state.sub!=='백지테스트'&&state.sub!=='적중 분석') state.sub='적중 분석'; paint(); });
+  paint();
+})();
+</script>

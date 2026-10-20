@@ -1,0 +1,36 @@
+name: 출결선생 기기 인증 (문자 1회)
+
+# 출결선생 2차 인증(문자)을 한 번 통과하고 「기기 기억」을 서버에 잠가 둔다 (sync/checkbus_device_auth.js).
+# 수동 실행 전용. 돌리면 원장님 휴대폰으로 인증 문자가 오고, 원장님이 번호를 Claude 세션에 알려 주면
+# Claude 가 lumen_store 'checkbus_otp' 에 적는다 → 이 작업이 최대 8분 기다렸다가 입력한다.
+# 필요한 비밀값: CHECKBUS_ID, CHECKBUS_PASSWORD, SUPABASE_URL, SUPABASE_SERVICE_KEY, NAVER_PII_KEY
+# 로그에는 비밀번호·토큰·쿠키 값·인증번호를 찍지 않는다 (공개 저장소).
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: checkbus-device
+  cancel-in-progress: false
+
+jobs:
+  auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Playwright 설치
+        run: |
+          npm install --no-save playwright@1.47.2
+          npx playwright install --with-deps chromium
+      - name: 기기 인증
+        env:
+          CHECKBUS_ID: ${{ secrets.CHECKBUS_ID }}
+          CHECKBUS_PASSWORD: ${{ secrets.CHECKBUS_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          NAVER_PII_KEY: ${{ secrets.NAVER_PII_KEY }}
+        run: node sync/checkbus_device_auth.js

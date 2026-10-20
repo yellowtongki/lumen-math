@@ -3,6 +3,12 @@
 한국 수학학원 "루멘수학"의 학원 운영 시스템. 원장(김정수 선생님)이 Claude와 함께 개발 중.
 개발자가 아닌 원장님이 운영하는 프로젝트이므로 **설명은 한국어로, 비개발자도 이해할 수 있게** 할 것.
 
+## 🔁 새 세션은 여기부터
+- **`docs/handoff.md` 를 먼저 읽는다** — 지금 버전 · 학원앱 조립·배포·검사 방법 · 최근 결정 · 남은 일.
+- 학원앱 새 버전은 **`python3 sync/appbuild/build_app.py v19-NN`** 으로 조립한다(부품 `sync/appbuild/modules/`, 버전 메모 `sync/appbuild/memos/`). 결과 html 을 손으로 고치지 말고 부품을 고친 뒤 다시 조립한다.
+- 배포 뒤 최신본 기록은 `node sync/appbuild/app_latest.js teacher|student <파일>`.
+- 원장님이 「인수인계해줘」라고 하면 `docs/handoff.md` 를 갱신하고(새 부품·도구도 저장소에) 마친다.
+
 ## 구성 요소
 
 | 파일 | 역할 |
@@ -90,6 +96,20 @@
 - **학부모 리포트 자동화**: 기존 매쓰플랫 PDF 리포트를 자동 수집 데이터로 대체/보강
 - **XP 연동**: 복습 완료 시 기존 레벨/XP 시스템에 반영
 
+## 💰 Claude API 절약 (2026-10-12 원장 지시 「절약 방법을 기억하고 다음에 작업 때마다 항상 적용」)
+
+서버(GitHub Actions)의 `ANTHROPIC_API_KEY` 는 원장님 콘솔 조직 키 — 2026-10-11 밤 적중 분석(출판사 비교 등)을 몰아 돌려 한도($30→$15)에 걸려 멈췄다. 10/12 원장이 **월 지출 한도 $130** 으로 올림. Max 요금제가 **매달 $100 API 크레딧**을 준다(10/11 부여분 만료 11/6 — 쌓이지 않는다고 본다). 자동 충전(잔액 $5 미만 → $15, 카드)은 켜져 있다.
+같은 키를 **매일 새벽 플래너 채점(04:25) · Ultra Feedback(04:50)** 이 쓰므로 이 두 가지를 먼저 지킨다.
+0. **2026-10-12 ~ 11-06 (크레딧 $100 기간)**: 원장 「품질 좋은 것으로」 → 서버도 써도 된다. 적중 판정 워커·Ultra 글쓰기는 최상위 모델(`claude-opus-5-5`, 워커는 안 되면 sonnet-5-5). 플래너 채점은 학원앱 점수와 맞추려고 `claude-sonnet-4-6` 그대로. 11/6 알림(trig_01YDg7LyZjFcANGP25ViR1nM) 때 크레딧이 매달인지 확인하고 아래 1~4를 다시 정한다.
+1. **그림을 많이 보는 큰 판정은 서버에 보내지 말고 채팅에서 한다** — 출판사 교과서 비교, 새 학교 첫 적중 분석, 다시 판정, 수학비서 대량 비교.
+   - 이 컨테이너엔 API 키가 없다 → 워커를 여기서 돌리면 «AI 없이» 문항 나누기(매쓰플랫)·후보 고르기(유형 번호)만 한다:
+     `exam_hit_req` 를 쓰고 바로 `node sync/exam_hit_worker.js` (요청 길) 또는 `--pub-only <시험>` 등
+   - `python3 sync/chat_judge_sheets.py <시험> <폴더> pub` → 시험 문항+후보 그림 묶음 → **채팅 하위 에이전트 여럿이 나눠 보고** judge_*.json
+   - `python3 sync/chat_judge_apply_pub.py <시험> judge_*.json` → 서버 결과에 넣는다(학원앱 화면은 그대로)
+2. `mathflat-ondemand.yml` 로 AI 판정 요청을 보내기(workflow_dispatch) 전에 «채팅으로 할 수 있는가» 먼저 본다. 원장님이 학원앱에서 직접 누른 요청은 그대로 두되, 큰 것이면 비용을 알린다.
+3. 서버 판정을 꼭 써야 하면 후보를 줄인다(같은 유형 · 난도 ±1 · 교과서 1단계 개념 확인 문제 빼기). 그림 축소 전송은 아직 미구현(할 일).
+4. 원장님께 한도 경고 메일이 오면: 무엇이 썼는지 확인 → 진행 중 서버 판정 멈추고 채팅으로 옮김 → 새벽 작업이 버틸지 알린다.
+
 ## 작업 규칙
 
 - 비밀번호·API 키는 절대 커밋하지 않는다 (환경변수만 사용)
@@ -101,3 +121,25 @@
 - **서버(Supabase) 구조를 바꾸는 SQL(잠금·색인·표 변경)과 수만 건 일괄 갱신은 새벽에만** 한다. 학생들이 앱을 쓰는 저녁(19~23시)에는 절대 하지 않는다 (2026-09-18 저녁 서버 멈춤 — `docs/incident_2026-09-18_supabase.md`)
 - 새 화면이 큰 표(`mf_answer_records` 등)를 새 조건으로 읽게 되면 **색인을 먼저** 만든다 (`docs/index_speedup.sql`)
 - 서버 잠금(RLS) 확인은 `LUMEN_TEACHER_KEY=… node sync/check_rls_lock.js`. 원장 열쇠는 **저장소·문서에 절대 적지 않는다** (공개 저장소)
+
+## 📌 다른 채팅과 이어지는 작업
+
+- **아이디어 보관함**: `docs/ideas.md` — 원장님이 던진 아이디어를 모아두는 곳. 바로 개발하지 않아도 됨
+- **풀이노트(학원노트) 만들기**: 문제집 PDF → 방안지 풀이노트, 남의 노트 로고 교체. **`docs/solution_note.md` 를 먼저 읽을 것** (2026-10-13, 도구 `sync/solution_note_build.py` · `note_logo_swap.py` · `mf_workbook_list.js`). 교재 원본·완성 노트는 저장소에 올리지 않는다(저작권). 컴퓨터(로컬)에서 하면 외장하드 PDF 를 바로 읽는다
+- **블로그·인스타 자동화**: 컴퓨터가 2대로 나뉘어 있다.
+  - **윈도우 데스크탑** — `classby-blog` 도구 설치됨. **네이버 블로그 임시저장은 여기서만** 가능
+  - **맥미니** — 도구 없음. 저장소 작업·글감 생성기·인스타 업로드·힉스필드 영상 담당
+  - 새 채팅 인수인계: **`docs/handoff_macmini.md`** ← **먼저 읽을 것** (2026-09-28, 도구 현황·키·다음 할 일)
+  - 이전 인수인계: `docs/handoff_blog_insta.md` (배경·결정 사항)
+  - 🛠 도구: `sync/blog_topics.js`(글감) · `sync/card_render.js`(카드 8종, 사진배경·수식) · `sync/post_check.js`(검사) · `sync/serp_check.js`(검색 점검) · `sync/keyword_volume.js`(검색량). 사용법은 `blog/README.md`
+  - 설계: `docs/blog_insta_automation_plan.md` · 도구 구조: `docs/blog_automation_overview.md`
+  - ⚠️ 네이버 자동 "발행"은 하지 않는다 (저품질 처리 위험). 임시저장까지만, 발행은 원장님이
+  - 🔄 2026-09-20 방향 전환: **자체 도구를 새로 만든다** → `docs/lumen_blog_tool_design.md`
+  - (2026-10-11 학원앱 세션) 블로그 도구·글 폴더(`blog/`, `sync/card_render.js` 등)를 블로그 브랜치에서 main 으로 가져왔다. 학원앱 카드뉴스는 `sync/card_templates/_base.css` 의 브랜드 색·글꼴에 맞춘다(통일 결정 진행 중).
+
+## 🏛️ 루멘이사회 (2026-09-29 채팅 프로젝트에서 이전)
+
+가상 이사회(박 실장·김 이사·최 팀장·독설가)가 운영 안건을 회의한다. **지침은 `board/CLAUDE.md` — 회의 전에 먼저 읽을 것.**
+- 명령어: `/board 안건`, `/student-review S03`, `/parent-feedback S01 S04`
+- 멤버 정의 `.claude/agents/`, 명령어 `.claude/commands/`, 결정 기록 `board/decisions/`
+- `board/students/`·`board/private/`·`board/reports/`는 git에 안 올라간다 (공개 저장소). 학생 기록 연동은 추후 Supabase로 연결 예정

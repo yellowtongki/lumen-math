@@ -1,0 +1,112 @@
+name: 🔤 루멘 분석기 (글자 은행 · 뼈대 비교 검증)
+
+# 원장 승인 설계 2026-10-18 — docs/lumen_analyzer.md
+#  · bank   : 시험이 비교하는 문제 그림을 Claude Sonnet 5.5 로 «한 번만» 글자로 옮겨 적어 lumen_store ptx_* 에 쌓는다 (이어 하기 됨)
+#  · report : 글자 은행으로 시험 문항마다 닮은 자료 6개를 고르고, 원장님 ✓/✗ 확정과 맞춘 검증 보고서를 만든다 (AI 안 씀)
+#  · both   : 둘 다 (기본)
+# 결과: Actions «Artifacts» 의 analyzer-report (report.md · report.json) + lumen_store analyzer_report_<시험>
+# ⚠ 적중 분석 결과(exam_hit_<시험>)에는 쓰지 않는다 (--apply 는 원장님 승인 뒤에만, 이 작업에는 없음)
+# 로그는 숫자만 남긴다 (공개 저장소 — 학생 이름·문항 글 없음)
+
+on:
+  workflow_dispatch:
+    inputs:
+      exam:
+        description: '시험 id (예: 소사고_고1_2026_2_중간) — 여러 개는 쉼표로 (차례로 처리)'
+        required: true
+        type: string
+      mode:
+        description: 'bank = 글자 은행만 · report = 보고서만 · both = 둘 다'
+        required: true
+        default: both
+        type: choice
+        options: [both, bank, report]
+      limit:
+        description: '이번에 새로 옮겨 적을 최대 그림 수 (비우면 전부)'
+        required: false
+        type: string
+      scope:
+        description: 'exam = 매쓰플랫 학습지·교재도 시험 범위 소단원만 · all = 이번 학기 푼 것 전부 (교과서는 늘 시험 범위만)'
+        required: false
+        default: exam
+        type: choice
+        options: [exam, all]
+      apply:
+        description: '분석기 후보를 적중 분석 결과(exam_hit_<시험>)에 넣기 (원장 2026-10-18 「넣어」 승인)'
+        required: false
+        default: false
+        type: boolean
+      retry_err:
+        description: '전에 실패한 그림(err)도 다시 옮겨 적기'
+        required: false
+        default: false
+        type: boolean
+
+# 2026-10-18 줄 분리: 정기 수집과 같은 줄에 서 있어 몇 시간씩 점수 수집을 막았다(10/18 오후 4시분 취소).
+# 매쓰플랫은 동시 접속이 되므로 분석기는 자기 줄만 쓴다. 분석기끼리는 겹치지 않는다.
+concurrency:
+  group: lumen-analyzer
+  cancel-in-progress: false
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350   # 시험 여러 개를 한 번에 돌리면 2시간을 넘는다 (글자 은행은 이어 하기 되므로 끊겨도 다시 실행하면 된다)
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
+      MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      MATHSECR_ID: ${{ secrets.MATHSECR_ID }}
+      MATHSECR_PASSWORD: ${{ secrets.MATHSECR_PASSWORD }}
+      EXAM: ${{ inputs.exam }}
+      LIMIT: ${{ inputs.limit }}
+      SCOPE: ${{ inputs.scope || 'exam' }}
+      APPLY: ${{ inputs.apply && '1' || '' }}
+      RETRY_ERR: ${{ inputs.retry_err }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Node 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 뼈대 비교 검사 (네트워크 없음)
+        run: node sync/lumen_analyzer/test_match.js
+
+      - name: ① 글자 은행 채우기
+        if: inputs.mode == 'bank' || inputs.mode == 'both'
+        run: |
+          IFS=',' read -ra EXAMS <<< "$EXAM"
+          for ex in "${EXAMS[@]}"; do
+            ex="$(echo "$ex" | xargs)"; [ -z "$ex" ] && continue
+            echo "=== 글자 은행: $ex ==="
+            ARGS=(--exam "$ex" --scope "$SCOPE")
+            if [ -n "$LIMIT" ]; then ARGS+=(--limit "$LIMIT"); fi
+            if [ "$RETRY_ERR" = "true" ]; then ARGS+=(--retry-err); fi
+            node sync/lumen_analyzer/text_bank.js "${ARGS[@]}"
+          done
+
+      - name: ② 뼈대·단원 비교 + 검증 보고서 (+ 넣기)
+        if: always() && (inputs.mode == 'report' || inputs.mode == 'both')
+        run: |
+          IFS=',' read -ra EXAMS <<< "$EXAM"
+          for ex in "${EXAMS[@]}"; do
+            ex="$(echo "$ex" | xargs)"; [ -z "$ex" ] && continue
+            echo "=== 보고서: $ex ==="
+            ARGS=(--exam "$ex" --scope "$SCOPE" --report "$RUNNER_TEMP/analyzer/$ex")
+            if [ -n "$APPLY" ]; then ARGS+=(--apply); fi
+            node sync/lumen_analyzer/run.js "${ARGS[@]}"
+          done
+
+      - name: 보고서 올리기
+        if: always() && (inputs.mode == 'report' || inputs.mode == 'both')
+        uses: actions/upload-artifact@v4
+        with:
+          name: analyzer-report
+          path: ${{ runner.temp }}/analyzer/
+          if-no-files-found: warn
+          retention-days: 14

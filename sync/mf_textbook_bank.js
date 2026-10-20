@@ -31,7 +31,9 @@ const has = (f) => argv.includes(f);
 const val = (f, d) => { const i = argv.indexOf(f); return i >= 0 && argv[i + 1] ? argv[i + 1] : d; };
 const OPT = { school: val('--school', ''), bids: String(val('--bids', '')).split(',').map((s) => s.trim()).filter(Boolean),
   twins: has('--twins'), dry: has('--dry-run'), limit: Number(val('--limit', 0)) || 0, pages: val('--pages', ''),
-  assigned: has('--assigned'), skipDone: has('--skip-done') };
+  assigned: has('--assigned'), skipDone: has('--skip-done'), subject: val('--subject', ''), revision: val('--revision', '') };
+/* --subject 공통수학2 : 매쓰플랫에 있는 «모든 출판사» 그 과목 교과서 (2026-10-11 원장: 「숫자변형 문제가 어느 출판사에서 나왔는지」)
+ *   학생에게 배정되지 않은 교과서는 GET /workbook/{bid}/page/v2 (선생님 웹 「교재 쪽 보기」)로 쪽 목록을 연다 */
 /* --assigned : 활동 학생에게 배정된 «모든» 교재(교과서·시중교재·시그니처·커스텀)를 전부 (2026-09-24 아하노트 ↔ 정오답 연동용:
  *              아하노트의 교재·쪽·번호를 매쓰플랫 문항 id 로 바꾸려면 시중교재의 쪽·번호 표가 필요하다)
  * --skip-done: 이미 서버에 있는 교재는 건너뛴다 */
@@ -102,6 +104,15 @@ async function twinsOf(problemId) {
     log(`배정된 교재 ${Object.keys(ALLB).length}종 (학생 ${stus.length}명)`);
     if (OPT.skipDone) { const idx = (await sbGet('mf_bookbank_index')) || {}; bids = bids.filter((b) => !idx[b]); log(`  이미 받은 것 빼고 ${bids.length}종`); }
   }
+  if (OPT.subject) {
+    const d = await api('/workbook?type=SCHOOL&size=1000'); const all = Array.isArray(d) ? d : ((d && d.content) || []);
+    const want = OPT.subject.split(',').map((x) => x.trim()).filter(Boolean);
+    /* --revision CURRICULUM_22|CURRICULUM_15 : 중학교는 옛·새 과정 교과서 이름이 같다 (2026-10-12) */
+    all.filter((w) => want.indexOf(String(w.subtitle || w.grade || '').trim()) >= 0 && (!OPT.revision || w.revision === OPT.revision)).forEach((w) => {
+      const k = String(w.id); T.books[k] = Object.assign(T.books[k] || {}, { title: w.title, fulltitle: w.fulltitle, publisher: w.publisher, grade: w.subtitle || w.grade, type: 'SCHOOL', revision: w.revision || '' });
+      if (bids.indexOf(k) < 0) bids.push(k); });
+    if (OPT.skipDone) { const idx = (await sbGet('mf_bookbank_index')) || {}; bids = bids.filter((b) => !idx[b]); log(`  이미 받은 것 빼고 ${bids.length}권`); }
+  }
   if (OPT.school) Object.keys(T.bySchoolGrade || {}).forEach((k) => { if (k.split('|')[0] === OPT.school) Object.keys(T.bySchoolGrade[k].books).forEach((b) => { if (bids.indexOf(b) < 0) bids.push(b); }); });
   if (!bids.length) { log('교과서가 없습니다 — --school 또는 --bids'); process.exit(1); }
   log(`교과서 ${bids.length}권: ${bids.map((b) => (T.books[b] || {}).fulltitle || b).join(' · ')}`);
@@ -113,14 +124,22 @@ async function twinsOf(problemId) {
     if (ALLB[bid]) { sid = ALLB[bid].sid; swId = ALLB[bid].swId; revId = ALLB[bid].revId; b = { fulltitle: ALLB[bid].title, type: ALLB[bid].type }; }
     else {
       sid = Object.keys(T.byStudent).find((s) => (T.byStudent[s].books || []).indexOf(bid) >= 0);
-      if (!sid) { log(`  [${bid}] 배정된 학생이 없어 쪽 목록을 못 엽니다`); continue; }
-      const list = await api(`/student-workbook/student/${sid}?workbookType=ALL`);
-      b = (Array.isArray(list) ? list : (list.content || [])).find((x) => String(x.id) === String(bid));
-      if (!b || !b.studentWorkbook) { log(`  [${bid}] 학생 교재함에 없음`); continue; }
-      swId = b.studentWorkbook.id; revId = b.recentRevisionId;
+      if (sid) {
+        const list = await api(`/student-workbook/student/${sid}?workbookType=ALL`);
+        b = (Array.isArray(list) ? list : (list.content || [])).find((x) => String(x.id) === String(bid));
+        if (b && b.studentWorkbook) { swId = b.studentWorkbook.id; revId = b.recentRevisionId; } else { sid = null; b = null; }
+      }
     }
-    const det = await api(`/student-workbook/student/${sid}/${swId}/${revId}?size=2000`);
-    let pages = ((det && det.page && det.page.content) || []).map((pg) => ({ pid: pg.workbookPage.id, page: pg.workbookPage.page, title: pg.workbookPage.title || '' })).filter((p) => p.pid && p.page != null);
+    let pages = [];
+    if (sid) {
+      const det = await api(`/student-workbook/student/${sid}/${swId}/${revId}?size=2000`);
+      pages = ((det && det.page && det.page.content) || []).map((pg) => ({ pid: pg.workbookPage.id, page: pg.workbookPage.page, title: pg.workbookPage.title || '' }));
+    } else {   /* 배정된 학생이 없다 → 교재 자체 쪽 목록 */
+      let pl = null; try { pl = await api(`/workbook/${bid}/page/v2`); } catch (e) { log(`  [${bid}] 쪽 목록 실패: ${e.message}`); continue; }
+      pages = (Array.isArray(pl) ? pl : ((pl && pl.content) || [])).map((pg) => ({ pid: pg.id, page: pg.page, title: pg.title || '' }));
+      if (!b) { try { const w = await api(`/workbook/${bid}`); b = { fulltitle: (w && w.fulltitle) || '', type: (w && w.type) || 'SCHOOL', publisher: (w && w.publisher) || '' }; } catch (e) { b = { fulltitle: '', type: 'SCHOOL' }; } }
+    }
+    pages = pages.filter((p) => p.pid && p.page != null);
     pages.sort((x, y) => x.page - y.page);
     if (range) pages = pages.filter((p) => p.page >= range[0] && p.page <= range[1]);
     if (OPT.limit) pages = pages.slice(0, OPT.limit);
@@ -144,9 +163,9 @@ async function twinsOf(problemId) {
       for (let i = 0; i < problems.length; i++) { problems[i].twins = await twinsOf(problems[i].id); if (problems[i].twins.length) got++; if ((i + 1) % 50 === 0) process.stdout.write(`    쌍둥이 …${i + 1}/${problems.length} (있음 ${got})\r`); await sleep(60); }
       log(`  [${bid}] 쌍둥이 있는 문항 ${got}/${problems.length}`);
     }
-    const ok = await sbSet(`mf_textbook_${bid}`, { bid, title: meta.fulltitle || b.fulltitle || '', type: (b && b.type) || meta.type || '', updated: new Date().toISOString(), pages, problems });
+    const ok = await sbSet(`mf_textbook_${bid}`, { bid, title: meta.fulltitle || b.fulltitle || '', publisher: meta.publisher || (b && b.publisher) || '', subject: meta.grade || '', revision: meta.revision || '', type: (b && b.type) || meta.type || '', updated: new Date().toISOString(), pages, problems });
     log(ok ? `  저장: mf_textbook_${bid}` : `  저장 실패: mf_textbook_${bid}`);
-    if (ok && !OPT.dry) { try { const idx = (await sbGet('mf_bookbank_index')) || {}; idx[bid] = { title: meta.fulltitle || b.fulltitle || '', type: (b && b.type) || meta.type || '', pages: pages.length, problems: problems.length, updated: new Date().toISOString() }; await sbSet('mf_bookbank_index', idx); } catch (e) {} }
+    if (ok && !OPT.dry) { try { const idx = (await sbGet('mf_bookbank_index')) || {}; idx[bid] = { title: meta.fulltitle || b.fulltitle || '', type: (b && b.type) || meta.type || '', revision: meta.revision || '', pages: pages.length, problems: problems.length, updated: new Date().toISOString() }; await sbSet('mf_bookbank_index', idx); } catch (e) {} }
   }
   log('끝');
 })().catch((e) => { console.error('오류:', e.message); process.exit(1); });

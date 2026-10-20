@@ -14,6 +14,15 @@
  * 앱은 30초마다 이 상태를 확인해서, 'done'이 되면 그 날짜를 다시 불러오고
  * 초안이 없는 학생만 AI 초안을 만든다(이미 있는 초안은 건드리지 않음).
  *
+ * ── v19-129: 「📗 교재 목록 새로고침」 요청 (mf_swb_req) ──
+ * 학원앱이 lumen_store 'mf_swb_req' 에 이런 쪽지를 남기면, 이 워커가 «전체 수집(약 25분)» 대신
+ * 학생 교재 목록(mf_swb_<학생코드>)만 빠르게(1~2분) 다시 받는다 (수집기 --swb-only).
+ *
+ *   { status:'requested', codes:['A1B2C3', …]  (빈 배열 = 전체 학생), reqAt:'…', by:'teacher' }
+ *   → running { startedAt, note }  →  done { finishedAt, ok, note:'교재 목록 갱신 완료 (N명 · 약 M분)' }
+ *
+ * 전체 수집 요청(mf_collect_req)보다 먼저 처리한다. 자세한 설명: docs/swb_refresh.md
+ *
  * 필요한 환경변수: SUPABASE_URL, SUPABASE_SERVICE_KEY (+ 수집기용 매쓰플랫 계정)
  */
 const { spawn } = require('child_process');
@@ -121,6 +130,73 @@ function runCollector(days) {
     p.on('close', (code) => resolve(code));
     p.on('error', (e) => { console.error('수집기 실행 실패:', e.message); resolve(1); });
   });
+}
+
+/* ═══ v19-129: 교재 목록 새로고침 요청(mf_swb_req) 처리 ═══════════════════
+ * 원장님이 새 교재를 매쓰플랫에서 배정했는데 학생앱 숙제 화면에 안 보일 때 쓴다.
+ * 전체 수집은 25분쯤 걸리므로, 로그인 + 학생별 교재 목록만 받는 가벼운 길(--swb-only)을 따로 둔다.
+ * (학생앱은 mf_swb_<학생코드> 의 books[] 를 그대로 읽는다.)
+ * 로그에는 학생코드 개수만 적는다 — Actions 로그는 공개라 이름·전화번호는 절대 안 적는다. */
+const SWB_KEY = 'mf_swb_req';
+const SWB_STALE_MIN = 20;       // 'running' 인 채로 이만큼 지나면 죽은 것으로 보고 정리
+const SWB_KILL_MIN = 18;        // 수집기가 이만큼 걸리면 강제 종료(정리 기준보다 짧게)
+function runCollectorSwb(codes) {
+  return new Promise((resolve) => {
+    const script = process.env.SWB_COLLECTOR_SCRIPT || path.join(__dirname, 'mathflat_collector.js');   // 환경변수는 시험용
+    const a = [script, '--swb-only'];
+    if (codes.length) a.push('--codes', codes.join(','));
+    const p = spawn('node', a, { stdio: 'inherit', env: process.env });
+    const timer = setTimeout(() => { try { p.kill('SIGTERM'); } catch (e) {} }, SWB_KILL_MIN * 60000);
+    p.on('close', (code) => { clearTimeout(timer); resolve(code); });
+    p.on('error', (e) => { clearTimeout(timer); console.error('교재 목록 수집기 실행 실패:', e.message); resolve(1); });
+  });
+}
+async function runSwbRequest() {
+  const req = await getKv(SWB_KEY);
+  if (!req || !req.status) return false;
+  if (req.status === 'running') {
+    const started = Date.parse(req.startedAt || req.reqAt || '') || 0;
+    const mins = (Date.now() - started) / 60000;
+    if (mins > SWB_STALE_MIN) {
+      log(`교재 목록 새로고침: 오래된 running 정리 (${Math.round(mins)}분 경과)`);
+      await setKv(SWB_KEY, { ...req, status: 'done', finishedAt: new Date().toISOString(), ok: false, note: '이전 실행이 중단되어 정리됨 — 다시 눌러 주세요' });
+    } else {
+      log(`교재 목록 새로고침: 이미 진행 중 (${Math.round(mins)}분 경과) — 건너뜀`);
+    }
+    return false;
+  }
+  if (req.status !== 'requested') return false;
+
+  /* 학생코드는 영문·숫자만 받는다 (수집기 인자로 넘기므로) */
+  const asked = Array.isArray(req.codes) ? req.codes.map((c) => String(c).trim()).filter(Boolean) : [];
+  const codes = Array.from(new Set(asked.filter((c) => /^[A-Za-z0-9]{3,16}$/.test(c))));
+  const startedAt = new Date().toISOString();
+  if (asked.length && !codes.length) {
+    await setKv(SWB_KEY, { ...req, status: 'done', startedAt, finishedAt: startedAt, ok: false, note: '학생 코드가 올바르지 않아 건너뜀' });
+    log('교재 목록 새로고침: 올바른 학생 코드가 없어 건너뜀');
+    return true;
+  }
+  log(`교재 목록 새로고침 요청 — ${codes.length ? `학생 ${codes.length}명` : '전체 학생'}`);
+  await setKv(SWB_KEY, { ...req, status: 'running', startedAt, note: '매쓰플랫 접속 중…' });
+
+  const code = await runCollectorSwb(codes);
+  const finishedAt = new Date().toISOString();
+  const mins = Math.max(1, Math.round((Date.parse(finishedAt) - Date.parse(startedAt)) / 60000));
+  /* 실제로 새로 쓴 학생 수 = 이번 실행 뒤에 갱신된 mf_swb_* 줄 수 (못 세면 요청한 수로 대신한다) */
+  let n = codes.length;
+  if (code === 0) {
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/lumen_store?key=like.mf_swb_*&updated_at=gte.${encodeURIComponent(startedAt)}&select=key`, { headers: sbH() });
+      if (r.ok) { const rows = await r.json(); if (Array.isArray(rows)) n = rows.filter((x) => /^mf_swb_[^_]+$/.test(x.key)).length; }
+    } catch (e) {}
+  }
+  const who = n ? `${n}명` : (codes.length ? `${codes.length}명` : '전체');
+  await setKv(SWB_KEY, {
+    ...req, status: 'done', startedAt, finishedAt, ok: code === 0,
+    note: code === 0 ? `교재 목록 갱신 완료 (${who} · 약 ${mins}분)` : `교재 목록 갱신 실패 (코드 ${code}) — 잠시 뒤 다시 눌러 주세요`,
+  });
+  log(code === 0 ? `교재 목록 갱신 완료 (${who} · 약 ${mins}분)` : `교재 목록 갱신 실패 (코드 ${code})`);
+  return true;
 }
 
 /* ═══ v18-65: 학습지 생성 요청(ws_make_req) 처리 ═══════════════════════
@@ -426,6 +502,8 @@ async function runHwSync() {
       log(`「지금 반영」 요청 처리 완료 (요청 당시 ${fq.pend || 0}건)`);
     }
   } catch (e) { log('지금 반영 요청 처리 오류:', e.message); }
+  // ★ v19-129: 「📗 교재 목록 새로고침」 — 전체 수집(mf_collect_req)보다 먼저, 교재 목록만 빠르게
+  try { await runSwbRequest(); } catch (e) { log('교재 목록 새로고침 오류: ' + e.message); }
   // ★ 2026-09-19: 새로 출제된 학습지를 학생앱에 바로 보이게 (목록만 가볍게)
   try { await runWsqRefresh(); } catch (e) { log('학습지 목록 갱신 오류:', e.message); }
   // 기출 쌍둥이 요청 (v18-84) — 요청이 없으면 조회 한 번으로 끝난다
@@ -439,12 +517,24 @@ async function runHwSync() {
   // 🏁 진도 레이스 순위 집계 (v18-86)
   // 5분마다 다시 세면 낭비라서 30분에 한 번만. 단, 앱에서 「지금 다시 세기」를
   // 누르면 race_board를 지우므로 그때는 바로 계산된다.
+  // ★ v19-122: 학원앱 「🆕 다음 시즌 → 🔄 다시 세기 요청」은 race_recount_req {at, by:'teacher'} 를 남긴다.
+  //   요청이 마지막 계산(race_board_draft.at — 없으면 race_board.at)보다 새로우면 30분을 기다리지 않고 바로 센다.
+  //   처리하면 doneAt 을 적어 같은 요청을 두 번 세지 않는다(다음 시즌이 꺼져 있어 draft 가 안 바뀌어도 반복하지 않게).
   try {
     const board = await getKv('race_board');
     const ageMin = board && board.at ? (Date.now() - Date.parse(board.at)) / 60000 : 9999;
-    if (ageMin >= 30) {
+    const rq = await getKv('race_recount_req');
+    let asked = false;
+    if (rq && rq.at && !(rq.doneAt && Date.parse(rq.doneAt) >= Date.parse(rq.at))) {
+      const dft = await getKv('race_board_draft');
+      const ref = (dft && dft.at) || (board && board.at) || '';
+      asked = !ref || Date.parse(rq.at) > Date.parse(ref);
+    }
+    if (ageMin >= 30 || asked) {
+      if (asked) log(`🏁 진도 레이스 다시 세기 요청 (${rq.at}, ${rq.by || ''}) — 바로 셉니다`);
       const { runRace } = require('./race_engine.js');
       await runRace();
+      if (asked) await setKv('race_recount_req', { ...rq, doneAt: new Date().toISOString(), status: 'done' });
     }
   } catch (e) { log('진도 레이스 오류: ' + e.message); }
 

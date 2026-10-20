@@ -98,6 +98,18 @@
     t = t.replace(/\\ /g, ' ');                        // 역슬래시+공백
     t = t.replace(/\\hspace\s*\{[^{}]*\}/g, ' ');
     t = t.replace(/\\%/g, '%').replace(/\\\$/g, '$').replace(/\$/g, '');
+    // ★ 2026-10-09 (원장 제보 「분수 채점이 어렵다」): 수학비서(오답 학습지) 정답은 분수를
+    //   「{60/7}」 「2{1/5}」(대분수) 로, 단위를 「[cm]」 「[시간]」 로 준다 — 학습지 정답 227개 실측.
+    //   \frac 와 뒤에 붙는 단위 글자로 바꿔 두면 아래 규칙이 그대로 읽는다.
+    t = t.replace(/(\d+)\s*\{\s*(\d+)\s*\/\s*(\d+)\s*\}/g, '$1\\frac{$2}{$3}');
+    t = t.replace(/\{\s*(-?\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*\}/g, '\\frac{$1}{$2}');
+    //   대괄호는 «단위 목록에 있는 글자»일 때만 단위로 본다 — \sqrt[3]{2}(세제곱근)·[방법1]·[요일] 은 그대로 둔다.
+    t = t.replace(/\[\s*([A-Za-z가-힣㎠㎟㎡㎢㎤㎥㎣㎝㎜㎞㎖㎘㎏㎎°˚%²³^0-9.]{1,6})\s*\]/g,
+      function (m0, u, off, whole) {
+        if (/\\sqrt\s*$/.test(whole.substring(0, off))) return m0;
+        var uu = u.replace(/[˚º∘]/g, '°');
+        return (UNIT_LIST.indexOf(uu) >= 0 || /^[A-Za-z0-9.^²³%°]+$/.test(uu)) ? ' ' + uu + ' ' : m0;
+      });
     var MAP = [
       [/\\pm(?![a-zA-Z])/g, '±'], [/\\mp(?![a-zA-Z])/g, '±'],
       [/\\times(?![a-zA-Z])/g, '×'], [/\\cdot(?![a-zA-Z])/g, '×'], [/\\div(?![a-zA-Z])/g, '÷'],
@@ -350,21 +362,69 @@
     }
     return { tok: tok, i: i };
   }
-  function normTerm(body) {
-    var s = body, i = 0, out = [], f;
+  /* 한 항을 인자 목록으로 읽는다 — [{tok, div}] (div = 나누는 인자). null 이면 못 읽은 것 */
+  function termFactors(body) {
+    var s = body, i = 0, out = [], f, div;
     if (!s) return null;
     while (i < s.length) {
       var c = s.charAt(i);
       if (c === '*') { i++; continue; }
-      if (c === '/') { i++; f = readFactor(s, i); if (!f) return null; out.push('÷' + f.tok); i = f.i; continue; }
-      f = readFactor(s, i); if (!f) return null; out.push(f.tok); i = f.i;
+      div = false;
+      if (c === '/') { i++; div = true; }
+      f = readFactor(s, i); if (!f) return null;
+      out.push({ tok: peelTok(f.tok), div: div }); i = f.i;
     }
-    if (!out.length) return null;
-    for (var q = 0; q < out.length; q++) out[q] = peelTok(out[q]);
-    out = out.filter(function (x) { return x !== '1'; });   // 계수 1은 없는 셈
-    if (!out.length) out = ['1'];
-    out.sort();
-    return out.join('*');
+    return out.length ? out : null;
+  }
+  /* normExpr 결과(「+2*x*÷3」「-3+2*x」)가 항 하나뿐인가 — 괄호 밖 +·- 로 센다 */
+  function singleTermKey(k) {
+    var d = 0, i, c;
+    for (i = 1; i < k.length; i++) {
+      c = k.charAt(i);
+      if (c === '(') d++; else if (c === ')') d--;
+      else if (d === 0 && (c === '+' || c === '-')) return false;
+    }
+    return /^[+-]/.test(k);
+  }
+  /* ★ 2026-10-09: 한 항을 「부호 · 유리수 계수 · 나머지 인자(정렬)」 로 정리한다.
+   *   · 괄호 속이 항 하나뿐이면 괄호를 풀어 인자를 꺼낸다 — (2x)/3 = 2/3·x,  ÷(2x) = ÷2·÷x,  (a+5)h/2 = ½(a+5)h
+   *   · 숫자 인자는 모두 계수 하나로 모은다 — 0.5x = 1/2x = x/2 = x÷2,  3π/2 = 3/2π
+   *   같은 규칙을 정답·학생 답 양쪽에 똑같이 쓰므로 「정답 원문 → 정답」 불변식은 그대로다. */
+  function normTermObj(body) {
+    var fs = termFactors(body); if (!fs) return null;
+    var sign = 1, coef = { n: 1, d: 1 }, rest = [], i, k, t, r, inner, sub, dv, st, m;
+    for (i = 0; i < fs.length; i++) {
+      t = fs[i].tok;
+      if (t.charAt(0) === '(' && t.charAt(t.length - 1) === ')') {
+        inner = t.substring(1, t.length - 1);
+        if (singleTermKey(inner)) {
+          if (inner.charAt(0) === '-') sign = -sign;
+          sub = splitTopMulti(inner.substring(1), '*');
+          for (k = 0; k < sub.length; k++) {
+            dv = fs[i].div; st = sub[k];
+            if (!st) continue;
+            if (st.charAt(0) === '÷') { st = st.substring(1); dv = !dv; }
+            fs.push({ tok: st, div: dv });                 // 뒤에 덧붙여 같은 규칙으로 다시 읽는다
+          }
+          continue;
+        }
+      }
+      r = null;
+      if (/^\d+(\.\d+)?$/.test(t)) r = decRat(t);
+      else if ((m = t.match(/^(\d+)\/(\d+)$/))) r = ratOf(Number(m[1]), Number(m[2]));
+      if (r) {
+        if (r.n === 0) { coef = { n: 0, d: 1 }; continue; }
+        coef = fs[i].div ? ratOf(coef.n * r.d, coef.d * r.n) : ratOf(coef.n * r.n, coef.d * r.d);
+        if (!coef) return null;
+        continue;
+      }
+      rest.push((fs[i].div ? '÷' : '') + t);
+    }
+    if (coef.n < 0) { sign = -sign; coef.n = -coef.n; }
+    rest.sort();
+    var key = (rest.length && coef.n === 1 && coef.d === 1) ? rest.join('*')
+      : ratKey(coef) + (rest.length ? '*' + rest.join('*') : '');
+    return { s: (sign < 0 ? '-' : '+'), t: key };
   }
   function normExpr(s0) {
     var s = String(s0), terms = [], sign = '+', buf = '', d = 0, i, c, prev;
@@ -382,9 +442,9 @@
     terms.push({ s: sign, b: buf });
     var out = [];
     for (i = 0; i < terms.length; i++) {
-      var t = normTerm(terms[i].b);
-      if (t == null) return null;
-      out.push(terms[i].s + t);
+      var o = normTermObj(terms[i].b);
+      if (!o) return null;
+      out.push((((terms[i].s === '-') !== (o.s === '-')) ? '-' : '+') + o.t);
     }
     out.sort();
     return out.join('');
@@ -921,6 +981,10 @@
     var res = { parts: [], gradable: false, shape: 'free', unit: '', labeled: false, essay: false };
     if (!s0 || s0 === '.') { res.essay = true; res.shape = 'essay'; return res; }
     var s = unlatex(s0);
+    // ★ 2026-10-09: 답이 통째로 「-9/2」 「1/4」 꼴이면 구분선이 아니라 분수다 (학습지 정답 35개 실측).
+    //   그래야 「4/1」 이 「1/4」 의 정답으로 받아들여지던 오채점(순서 무시)이 사라진다.
+    var mSl = s.match(/^\s*([+-]?)\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*$/);
+    if (mSl) s = mSl[1] + '\\frac{' + mSl[2] + '}{' + mSl[3] + '}';
     if (mixedMarks(s)) { res.shape = 'free'; return res; }   // ○표·△표가 섞였다 → 자기채점
     var sample = isSample(s);
     if (sample) s = stripSample(s);
@@ -1003,7 +1067,10 @@
     /* 좌표 (0,33/10) · 식 x=7/3 · 부등식 a≥-1/2 처럼 «글 속에» 든 분수도 바꾼다.
        빗금 양옆에 공백이 없을 때만 — 초등 교재의 구분선 「3 / 5」은 건드리지 않는다.
        (뒷걸음 보기(lookbehind)는 옛 사파리가 못 읽어서 앞 글자를 붙잡는 방식으로 쓴다) */
-    var r2 = r.replace(/([^0-9.\/}]|^)(\d+(?:\.\d+)?)\/(\d+(?:\.\d+)?)(?![\d.\/])/g,
+    /* ★ 2026-10-09 (분수 틀 입력): 「28/x」 「y=-15/x」 「2x/3」 「(2x+1)/3」 「√3/2」 「3π/2」 「1/(x+1)」 도 분수다.
+       빗금 앞은 «인자 하나»(숫자·문자 묶음·근호·괄호 묶음), 뒤는 숫자 하나·문자 묶음·괄호 묶음.
+       「15/2x」 는 예전처럼 (15/2)x — 분모는 숫자면 숫자까지만 잡는다. */
+    var r2 = r.replace(/([^0-9A-Za-zπ√∛.\/]|^)((?:\([^()]*\))|[0-9A-Za-zπ√∛.^]+)\/((?:\([^()]*\))|\d+(?:\.\d+)?|[A-Za-zπ][A-Za-z0-9π^]*)(?![\d.\/])/g,
       function (_, pre, aa, bb) { return pre + '\\frac{' + aa + '}{' + bb + '}'; });
     if (r2 !== r) { changed = true; r = r2; }
     return changed ? r : t;

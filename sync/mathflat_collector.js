@@ -39,7 +39,12 @@
  *   --book ID       정답사전을 그 교재 하나만 갱신 (--bookans-only 와 함께)
  *   --skip-swb      학생 교재상태(mf_swb_*) 재수집을 건너뛰고 저장된 것을 쓴다 (빠름)
  *   --elem          정답사전을 초등 배정 교재만 갱신 (--bookans-only 와 함께 · 학생 많은 순 → 초6 → 초5 → 초4)
+ *   --swb-only      학생 교재 목록(mf_swb_*)만 빠르게 새로고침 (1~2분) — 학원앱 「📗 교재 목록 새로고침」용.
+ *                   --codes A,B 와 함께 쓰면 그 학생들만, 안 쓰면 전체 (docs/swb_refresh.md)
  *   --wsq-only      학습지 채점목록(mf_wsq_*)만 갱신 — 학생앱 「📄 학습지」 탭용 (고등 포함)
+ *   --tree-only     매쓰플랫 7단계 단원 트리(mf_tree_*)만 갱신 — 학원앱 백지테스트 범위 (평소엔 일요일 새벽 4시 회차에만)
+ *   --tree-dry      공통수학1(22개정) 트리 하나만 받아 크기·개수만 출력 (저장 안 함)
+ *   --tree-skip-fresh  (--tree-only 과 함께) 24시간 안에 받아 둔 과정은 건너뛰고 이어서 받기
  *
  * 출력 (개인정보 포함 → 커밋 금지, .gitignore 처리):
  *   {out-dir}/mf_answer_records.json   [A] 문항 단위 학습지 정오답
@@ -963,6 +968,35 @@ async function main() {
     await refreshWorksheetQueue();
     return;
   }
+  // --swb-only: 학생 교재 목록(mf_swb_*)만 새로고침 (매쓰플랫 로그인 필요) — v19-129
+  //   --codes A,B 를 같이 주면 그 학생들만. 학생앱 «숙제» 화면의 교재 목록을 빨리 맞춘다 (docs/swb_refresh.md)
+  if (has('--swb-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meSw = await login();
+    log(`로그인 성공 · 학원 ${meSw.academyId}`);
+    log(CODES.length ? `교재 목록 새로고침: 학생 ${CODES.length}명만` : '교재 목록 새로고침: 전체 학생');
+    const okSw = await refreshStudentWorkbooks(CODES);
+    if (okSw === false) { console.error('❌ 교재 목록 새로고침 실패'); process.exit(1); }
+    return;
+  }
+  // --tree-dry: 공통수학1(22개정) 한 과정만 받아 크기·개수만 보여 준다 (저장 안 함 · 매쓰플랫 읽기만) — v19-98
+  if (has('--tree-dry')) {
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meTd = await login();
+    log(`로그인 성공 · 학원 ${meTd.academyId}`);
+    await refreshCurriculumTree({ dry: true });
+    return;
+  }
+  // --tree-only: 매쓰플랫 7단계 단원 트리(mf_tree_*)만 갱신 (매쓰플랫 로그인 필요) — v19-98 백지테스트 범위
+  if (has('--tree-only')) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
+    if (!ID || !PW) { console.error('❌ MATHFLAT_ID / MATHFLAT_PASSWORD 필요'); process.exit(1); }
+    const meT = await login();
+    log(`로그인 성공 · 학원 ${meT.academyId}`);
+    await refreshCurriculumTree({ skipFresh: has('--tree-skip-fresh') });   // --tree-skip-fresh: 24시간 안에 받은 과정은 건너뜀(이어서 받기)
+    return;
+  }
   // --kmm-only: KMM 경시 성적만 수집
   if (has('--kmm-only')) {
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) { console.error('❌ SUPABASE_URL / SUPABASE_SERVICE_KEY 필요'); process.exit(1); }
@@ -1062,6 +1096,9 @@ async function main() {
     await refreshWorkbookPdfs();   // v18-61: 주문 교재 PDF 목록(앱 다운로드용)
     await refreshKmm();            // v1-19: KMM 경시대회 성적·수상
     await refreshTypeDb();
+    // v19-98: 매쓰플랫 7단계 단원 트리 — 요청이 많아(개념 약 9천 개) 일요일 새벽 4시 회차에만
+    if (isSundayDawnKst()) await refreshCurriculumTree();
+    else log('단원 트리(mf_tree_*): 일요일 새벽 회차가 아니라 건너뜀 (따로 돌리기: --tree-only)');
     await refreshRoadmap();
     await refreshWeekly();
     await refreshWkCatalog();
@@ -1498,13 +1535,22 @@ async function refreshWorkbookPdfs() {
 // 학생앱 「교재 채점」의 뼈대 데이터. 학생앱은 매쓰플랫에 직접 못 붙으므로
 // 교재·회차(revisionId)·페이지(progressId 포함) 목록을 여기서 미리 만들어 둔다.
 // progressId는 되돌려쓰기(PATCH /student-workbook/scoring)의 필수 키.
-async function refreshStudentWorkbooks() {
+async function refreshStudentWorkbooks(onlyCodes) {
+  /* onlyCodes(학생코드 배열)를 주면 그 학생들만 다시 받는다 — --swb-only 전용 (v19-129).
+   * 안 주면(다른 길) 예전처럼 전체. 로그에는 학생코드·개수만 적는다(Actions 로그는 공개). */
+  const only = (Array.isArray(onlyCodes) && onlyCodes.length) ? onlyCodes.map(String) : null;
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
   try {
     const rs = await fetch(`${url}/rest/v1/mf_students?select=mf_student_id,lumen_rec_code,name`, { headers: sbHeaders });
-    if (!rs.ok) { log('학생 교재상태: mf_students 조회 실패'); return; }
-    const students = (await rs.json()).filter((s) => s.lumen_rec_code && s.mf_student_id);
+    if (!rs.ok) { log('학생 교재상태: mf_students 조회 실패'); return false; }
+    let students = (await rs.json()).filter((s) => s.lumen_rec_code && s.mf_student_id);
+    if (only) {
+      const before = students.length;
+      students = students.filter((s) => only.indexOf(String(s.lumen_rec_code)) >= 0);
+      log(`학생 교재상태: 요청 ${only.length}명 중 ${students.length}명 찾음 (전체 ${before}명)`);
+      if (!students.length) { log('학생 교재상태: 일치하는 학생이 없어 아무것도 저장하지 않음'); return true; }
+    }
     const allPages = {};                                   // bid → Set(wpid) — 정답사전 대상
     let nStu = 0, nBook = 0;
     for (const st of students) {
@@ -1552,12 +1598,22 @@ async function refreshStudentWorkbooks() {
     }
     // 정답사전 대상 페이지 합집합 저장 (refreshBookAnswers가 읽음 — 등록 교재 전체 페이지)
     const union = {}; Object.keys(allPages).forEach((bid) => { union[bid] = Array.from(allPages[bid]); });
+    if (only) {   // 일부 학생만 받았으면 기존 합집합에 합친다 (다른 학생 교재가 정답사전 대상에서 빠지지 않게)
+      try {
+        const rb = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_bookpages&select=value`, { headers: sbHeaders });
+        let old = rb.ok ? ((await rb.json())[0] || {}).value : null;
+        if (typeof old === 'string') { try { old = JSON.parse(old); } catch (_) { old = null; } }
+        const om = (old && old.map) || {};
+        Object.keys(om).forEach((bid) => { union[bid] = Array.from(new Set((om[bid] || []).concat(union[bid] || []))); });
+      } catch (_) { log('정답사전 대상(mf_bookpages) 기존 값 읽기 실패 — 이번 학생 것만 저장'); }
+    }
     await fetch(`${url}/rest/v1/lumen_store?on_conflict=key`, {
       method: 'POST', headers: { ...sbHeaders, prefer: 'resolution=merge-duplicates,return=minimal' },
       body: JSON.stringify([{ key: 'mf_bookpages', value: { map: union, updated: new Date().toISOString() }, updated_at: new Date().toISOString() }]),
     });
     log(`학생 교재상태(mf_swb_*): 학생 ${nStu} · 교재 ${nBook} · 정답사전 대상 ${Object.keys(union).length}권`);
-  } catch (e) { log('학생 교재상태 갱신 실패(치명적 아님):', e.message); }
+    return nStu > 0 || students.length === 0;   // v19-129: --swb-only 가 성공/실패를 알 수 있게 (다른 호출은 반환값을 안 쓴다)
+  } catch (e) { log('학생 교재상태 갱신 실패(치명적 아님):', e.message); return false; }
 }
 
 // ── v18-74: 교재 정답사전 (mf_bookans_<bookId>) ─────────────────────────
@@ -2051,6 +2107,134 @@ async function refreshTypeDb() {
     });
     log(`유형DB(mf_typedb): 학년 ${out.length} · 유형 ${total} ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('유형DB 갱신 실패(치명적 아님):', e.message); }
+}
+
+// ── 매쓰플랫 7단계 단원 트리 → lumen_store 'mf_tree_<개정>_<과정>' (학원앱 v19-98 백지테스트 범위) ──
+// 원장 지시 2026-10-10: 「매쓰플랫에서 학습지 만들 때 DB 선택을 이렇게 자세히 할 수 있다. 그대로 가져와서 만들 수 있게」
+//   (시안 docs/mockup_bt_tree.html 승인). 매쓰플랫 선생님 웹이 학습지 만들 때 쓰는 두 주소를 그대로 부른다.
+//   GET /curriculums/core               → 개정·학교급 목록 (schoolTypes[].trieKey)
+//   GET /curriculums/by-key?key=<키>     → 과정마다 대단원 → 중단원 → 소단원 → 개념
+//   GET /concepts/<개념ID>/sub-topics    → 개념 아래 주제유형 → 세부유형(대표 문항 그림 주소)
+// 과정 하나 = lumen_store 한 줄 (공통수학1 ≈ 1MB 라 학원앱은 고른 과정 것만 받는다).
+//   value = { updated, rev, label, schoolType, curriculumId,
+//             b:[{id,n, m:[{id,n, s:[{id,n, c:[{id,n,pr,tc,sc, t:[{id,n, u:[{id,n,pid,img}]}]}]}]}]}] }
+//   b=대단원 m=중단원 s=소단원 c=개념(pr 우선순위 · tc/sc 매쓰플랫이 센 주제유형/세부유형 수) t=주제유형 u=세부유형
+//   pid = 대표 문항의 문제 ID(그림 주소 /problem/<pid>/ 에서), img = 그림 주소 전체(뒤쪽 8글자는 다시 만들 수 없어 그대로 둔다)
+// 목록 키 'mf_tree_index' = { updated, items:[{key, rev, label, schoolType, concepts, topics, subs}] }
+// 요청이 많아(초·중·고 × 15·22개정, 개념 약 9천 개) 매일 돌리지 않고 «일요일 새벽 4시 회차»에만 돈다. 따로 돌리기: --tree-only
+const _TREE_HS = { '미적분1': '미적분Ⅰ', '미적분2': '미적분Ⅱ', '확률과 통계': '확률과통계' };
+function treeLabel(cur) {
+  const g = String(cur.grade == null ? '' : cur.grade).trim(), sem = cur.semester;
+  if (cur.schoolType === 'MIDDLE') return `중${g}-${sem}`;
+  if (cur.schoolType === 'ELEMENTARY') return `초${g}-${sem}`;
+  return _TREE_HS[g] || g;
+}
+function treeRev(cur) { return /15/.test(String(cur.revision || '')) ? '15' : '22'; }
+function treePid(url) { const m = String(url || '').match(/\/problem\/(\d+)\//); return m ? Number(m[1]) : null; }
+// 과정 하나를 7단계 트리로 (개념마다 주제유형·세부유형을 부른다)
+async function buildCurriculumTree(cur) {
+  const cnt = { concepts: 0, topics: 0, subs: 0, fail: 0 };
+  const b = [];
+  for (const B of cur.bigChapters || []) {
+    const m = [];
+    for (const M of B.middleChapters || []) {
+      const s = [];
+      for (const L of M.littleChapters || []) {
+        const c = [];
+        for (const C of L.concepts || []) {
+          const node = { id: C.id, n: String(C.name || ''), pr: C.priority != null ? C.priority : null, tc: C.topicCount || 0, sc: C.subTopicCount || 0, t: [] };
+          try {
+            const tops = await api(`/concepts/${C.id}/sub-topics`);
+            (Array.isArray(tops) ? tops : []).forEach((T) => {
+              const u = (T.subTopics || []).map((U) => {
+                const img = U.repProblemImageUrl || '';
+                const x = { id: U.id, n: String(U.name || ''), pid: treePid(img) };
+                if (img) x.img = img;
+                return x;
+              });
+              node.t.push({ id: T.id, n: String(T.name || ''), u });
+              cnt.topics++; cnt.subs += u.length;
+            });
+          } catch (e) { cnt.fail++; }      // 한 개념이 실패해도 개념은 남기고(t:[]) 계속
+          await sleep(60);
+          c.push(node); cnt.concepts++;
+        }
+        s.push({ id: L.id, n: String(L.name || ''), c });
+      }
+      m.push({ id: M.id, n: String(M.name || ''), s });
+    }
+    b.push({ id: B.id, n: String(B.name || ''), m });
+  }
+  const rev = treeRev(cur), label = treeLabel(cur);
+  const value = { updated: new Date().toISOString(), rev, label, schoolType: cur.schoolType, curriculumId: cur.id, b };
+  return { key: `mf_tree_${rev}_${label}`, value, cnt };
+}
+function treeHasConcepts(cur) {
+  return (cur.bigChapters || []).some((B) => (B.middleChapters || []).some((M) => (M.littleChapters || []).some((L) => (L.concepts || []).length)));
+}
+function treeCounts(v) {
+  const c = { concepts: 0, topics: 0, subs: 0 };
+  ((v && v.b) || []).forEach((B) => (B.m || []).forEach((M) => (M.s || []).forEach((L) => (L.c || []).forEach((C) => { c.concepts++; (C.t || []).forEach((T) => { c.topics++; c.subs += (T.u || []).length; }); }))));
+  return c;
+}
+async function refreshCurriculumTree(opts) {
+  const dry = !!(opts && opts.dry); const skipFresh = !!(opts && opts.skipFresh);
+  try {
+    const core = await api('/curriculums/core');
+    const keys = ((core && core.schoolTypes) || []).filter((x) => x && x.trieKey).map((x) => x.trieKey);
+    if (!keys.length) { log('단원 트리: 학교급 목록이 비었음 → 건너뜀'); return; }
+    // 22개정 고등(공통수학1…)부터 받는다 — 백지테스트가 먼저 쓰는 과정이 제일 먼저 서버에 생기게 (전체는 45분쯤 걸린다)
+    const _ORDER = ['1.4.4147', '1.4.4146', '1.4.4145', '1.2.7', '1.2.9', '1.2.5'];
+    keys.sort((a, b) => ((_ORDER.indexOf(a) + 1 || 99) - (_ORDER.indexOf(b) + 1 || 99)));
+    const items = []; let saved = 0, failSave = 0;
+    for (const k of keys) {
+      let curs = [];
+      try { curs = await api(`/curriculums/by-key?key=${encodeURIComponent(k)}`); } catch (e) { log(`  단원 트리 ${k} 받기 실패: ${e.message}`); continue; }
+      for (const cur of Array.isArray(curs) ? curs : []) {
+        if (!cur || !(cur.bigChapters || []).length || !treeHasConcepts(cur)) continue;   // 대단원·개념 없는 과정(예: 「(구) 교육과정」)은 건너뜀
+        if (dry && !(treeRev(cur) === '22' && treeLabel(cur) === '공통수학1')) continue;
+        // --tree-skip-fresh: 24시간 안에 받아 둔 과정은 건너뛴다 (중간에 끊긴 수집을 이어서 돌릴 때)
+        if (skipFresh) {
+          const kOld = `mf_tree_${treeRev(cur)}_${treeLabel(cur)}`;
+          let old = null; try { old = await storeGet(kOld); } catch (e) {}
+          if (old && old.updated && Date.now() - Date.parse(old.updated) < 24 * 3600 * 1000) {
+            const cc = treeCounts(old);
+            items.push({ key: kOld, rev: old.rev, label: old.label, schoolType: old.schoolType, concepts: cc.concepts, topics: cc.topics, subs: cc.subs });
+            log(`  단원 트리 ${kOld}: 24시간 안에 받아 둔 것 → 건너뜀`); continue;
+          }
+        }
+        const t0 = Date.now();
+        const { key, value, cnt } = await buildCurriculumTree(cur);
+        const json = JSON.stringify(value);
+        log(`  단원 트리 ${key}: 개념 ${cnt.concepts} · 주제유형 ${cnt.topics} · 세부유형 ${cnt.subs}${cnt.fail ? ' · 실패 개념 ' + cnt.fail : ''} · ${Math.round(json.length / 1024)}KB · ${Math.round((Date.now() - t0) / 1000)}초`);
+        items.push({ key, rev: value.rev, label: value.label, schoolType: value.schoolType, concepts: cnt.concepts, topics: cnt.topics, subs: cnt.subs });
+        if (dry) {
+          const c0 = value.b[0] && value.b[0].m[0] && value.b[0].m[0].s[0] && value.b[0].m[0].s[0].c[0];
+          const nPid = value.b.reduce((a, B) => a + B.m.reduce((a2, M) => a2 + M.s.reduce((a3, L) => a3 + L.c.reduce((a4, C) => a4 + C.t.reduce((a5, T) => a5 + T.u.filter((U) => U.pid).length, 0), 0), 0), 0), 0);
+          log(`  [미리보기 · 저장 안 함] 대단원 ${value.b.length}개: ${value.b.map((B) => B.n).join(' · ')}`);
+          log(`  [미리보기] 대표 문항 ID 있는 세부유형 ${nPid}/${cnt.subs} · JSON ${json.length.toLocaleString()}바이트`);
+          if (c0) log(`  [미리보기] 첫 개념 「${c0.n}」 주제유형 ${c0.t.length}: ${c0.t.map((T) => T.n + '(' + T.u.length + ')').join(' / ')}${c0.t[0] && c0.t[0].u[0] ? ' · 첫 세부유형 ' + JSON.stringify(c0.t[0].u[0]) : ''}`);
+          return;
+        }
+        const ok = await storeSet(key, value);
+        if (ok) saved++; else failSave++;
+      }
+    }
+    if (dry) { log('단원 트리 미리보기: 공통수학1(22개정)을 찾지 못했습니다'); return; }
+    if (items.length) {
+      // 이미 있는 목록과 합친다(과정 키 기준) — 일부만 다시 받은 날에도 목록이 줄지 않게
+      let prev = null; try { prev = await storeGet('mf_tree_index'); } catch (e) {}
+      const byKey = {}; ((prev && prev.items) || []).forEach((x) => { if (x && x.key) byKey[x.key] = x; }); items.forEach((x) => { byKey[x.key] = x; });
+      await storeSet('mf_tree_index', { updated: new Date().toISOString(), items: Object.values(byKey) });
+    }
+    const tot = items.reduce((a, x) => ({ c: a.c + x.concepts, t: a.t + x.topics, s: a.s + x.subs }), { c: 0, t: 0, s: 0 });
+    log(`단원 트리(mf_tree_*): 과정 ${items.length}개 · 개념 ${tot.c} · 주제유형 ${tot.t} · 세부유형 ${tot.s} · 저장 ${saved}${failSave ? ' · 저장 실패 ' + failSave : ''}`);
+  } catch (e) { log('단원 트리 갱신 실패(치명적 아님):', e.message); }
+}
+// 일요일 새벽 4시 회차인가 (한국 시간). GitHub 예약 실행은 늦게 시작할 때가 있어 3~6시를 같은 회차로 본다.
+function isSundayDawnKst() {
+  const k = new Date(Date.now() + 9 * 3600 * 1000);
+  return k.getUTCDay() === 0 && k.getUTCHours() >= 3 && k.getUTCHours() <= 6;
 }
 
 // ── 로드맵 진도 집계 갱신 ─────────────────────────────────────

@@ -1,0 +1,369 @@
+#!/usr/bin/env node
+/* ═══════════════════════════════════════════════════════════════════
+ * 📅 네이버 예약 수집기 — 파트너센터 예약을 15분마다 학원앱으로 (GitHub Actions naver-booking.yml)
+ * ═══════════════════════════════════════════════════════════════════
+ *
+ * 하는 일
+ *   ① 예약 상품 목록(biz-items) · 예약 목록(bookings, 오래된 것부터 100건씩 쪽 넘김 — 날짜 조건은 네이버가 무시)
+ *   ② 이용일이 오늘-30일 ~ 오늘+90일(또는 최근 14일 안에 신청·확정·취소된) 예약만 정리 (sync/naver_booking_core.js)
+ *   ③ 학원 학생과 맞추기: 원장님이 앱에서 직접 고른 것(naver_booking_links) > 명단 전화번호 > «기억한 전화»(learned) > 메모·추가 답의 학생 이름
+ *      «기억한 전화» (원장 2026-10-17 「연결」): 원장님이 한 번 직접 연결한 예약의 학부모 전화를 기억해 같은 전화의 다음 예약을 자동 연결.
+ *        전화번호 자체는 어디에도 저장하지 않는다 — 비밀 열쇠로 만든 지문(HMAC-SHA256, 24글자)만.
+ *        열쇠 = sha256('nbphone|' + SUPABASE_SERVICE_KEY) — 서버 비밀값에서만 나오므로 지문으로 번호를 거꾸로 맞혀 볼 수 없다.
+ *        lumen_store naver_phone_links = {at, v:1, kid, map:{지문: {stKey | cands:[…], from:'manual', at, n, ids:{예약번호: 학생 키}}}}
+ *        · 형제처럼 한 전화가 두 학생에게 직접 연결되면 cands(후보)만 두고 자동 연결하지 않는다(메모 속 이름으로 후보 중 하나면 연결)
+ *        · 「명단에 없음」('')은 가르치지도 지우지도 않는다 · 「직접 연결 풀기」(연결표에서 빠짐)는 그 예약이 가르친 것을 지운다
+ *   ④ 저장 (lumen_store)
+ *        naver_bookings        — 시간·상품·상태·연결된 학생 키만 (이름·전화·메모 없음)
+ *        naver_bookings_pii    — 예약자 이름·전화·메모·추가 답을 «열쇠»로 잠근 상자(AES-GCM)
+ *                                 열쇠 = GitHub 비밀값 NAVER_PII_KEY («예약 열쇠» — 원장님이 지은 긴 암호문, 학원앱 「🔑 예약 열쇠 넣기」에 같은 글)
+ *                                        없으면 LUMEN_TEACHER_KEY (학원앱의 lumen_db_key 와 같은 값 · 예전 방식). 둘 다 없으면 이 칸은 만들지 않는다.
+ *                                 ★ 2026-10-17: 서버 잠금 열쇠가 공개돼 교체 대기 중이라, 이름·전화는 따로 만든 예약 열쇠로 잠근다.
+ *                                 상자에 kk:'pii'|'teacher'(어느 열쇠인지) · kid(열쇠 지문 8글자 — 앱이 「열쇠가 달라요」를 알려 준다) 를 적는다.
+ *        naver_bookings_status — {at, ok, reason, code} (개인정보 없음)
+ *        naver_phone_links     — 기억한 전화 지문 → 학생 키 (위 ③ · 번호 없음 · SUPABASE_SERVICE_KEY 가 있을 때만)
+ *        naver_bookings_archive — 받은 예약 «전체» 보관(통계용 · 학원앱 v19-127 「📊 예약 통계」) — 2026-10-17 부터 매 실행마다(--archive 없어도)
+ *                                 {at, v:2, h, items, n, from, to, rows:[{id, kind, item, date, start, st, code, reg, conf, comp, canc, cnt, area, stu, how, fp, sch, gr}]}
+ *                                 이름·전화·메모 원문 없음 · 빈 칸('')은 줄 안에 적지 않는다(작게) · fp = 전화 «지문»(번호 아님) · sch = 알려진 학교 이름만
+ *                                 내용(h = 줄들의 지문)이 지난번과 같으면 다시 쓰지 않는다(상태 칸 archH 로 비교 · 6시간마다는 그래도 한 번 씀)
+ *      ⚠ lumen_store 는 학생앱·학부모앱의 공개 열쇠로 읽을 수 있다 → 학부모 이름·전화는 잠근 상자에만 둔다.
+ *        서버 잠금 제안: docs/naver_booking_rls.sql (새벽에 원장님이 실행)
+ *   ⑤ 로그인 만료(네이버가 화면/로그인 페이지를 돌려줌) → naver_bookings_status {ok:false, reason:'login'} 만 쓰고 끝(종료 코드 0).
+ *      지난번 naver_bookings 는 그대로 둔다. 학원앱이 「네이버 다시 연결이 필요해요」를 띄운다.
+ *
+ * ⚠ 이 저장소와 실행 기록(로그)은 공개다. 이름·전화·이메일·메모·추가 답·안내문은 절대 찍지 않는다 — 건수와 코드만.
+ *
+ * 실행
+ *   node sync/naver_booking_collect.js            (비밀값: NAVER_COOKIE · SUPABASE_URL · SUPABASE_SERVICE_KEY · NAVER_PII_KEY(또는 LUMEN_TEACHER_KEY))
+ *   node sync/naver_booking_collect.js --dry      (저장 안 함, 건수만)   ※ --archive 는 예전 옵션(이제 보관은 매번) — 붙여도 똑같다
+ *   node sync/naver_booking_collect.js --fixture <가짜.json> [--out <결과.json>] [--now 2026-10-17T10:00:00+09:00]
+ *        가짜 자료로 돌린다(네이버·Supabase 안 부름). 쓰려던 값은 --out 파일로. 검사: node sync/test_naver_booking.js
+ * ═══════════════════════════════════════════════════════════════════ */
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const core = require('./naver_booking_core.js');
+
+const BIZ = String(process.env.NAVER_BIZ_ID || '1419039');   /* 업체 번호 — 공개 예약 페이지에도 나오는 번호라 비밀 아님 */
+const PAGE_SIZE = 100, PAGE_CAP = 30;
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0 Safari/537.36';
+
+/* ★ 2026-10-17: 맥 메모장에서 붙여 넣으면 보이지 않는 줄바꿈(U+2028)·공백이 섞인다 → NID_AUT·NID_SES 값만 골라 다시 만든다 (naver_booking_probe.js 와 같다) */
+function cleanCookie(raw) {
+  const t = String(raw || '').replace(/[\u2028\u2029\u00a0\r\n\t]/g, ' ');
+  const pick = (k) => { const m = t.match(new RegExp(k + '\\s*=\\s*([^;\\s]+)')); return m ? k + '=' + m[1] : ''; };
+  const parts = [pick('NID_AUT'), pick('NID_SES')].filter(Boolean);
+  return parts.length ? parts.join('; ') : t.replace(/[^\x20-\x7e]/g, '').trim();
+}
+
+function args(argv) {
+  const o = { dry: false, fixture: '', out: '', now: '' };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--dry') o.dry = true;
+    else if (a === '--fixture') o.fixture = argv[++i] || '';
+    else if (a === '--out') o.out = argv[++i] || '';
+    else if (a === '--now') o.now = argv[++i] || '';
+    else if (a === '--archive') o.archive = true;   /* 예전 옵션 — 이제 보관은 매번 한다(남겨 둬도 아무 일 없음) */
+  }
+  return o;
+}
+
+/* 네이버 응답 하나 — JSON 이 아니면(로그인 화면) 'login', 그 밖의 오류는 'http'. 본문·오류 글은 밖으로 내보내지 않는다(개인정보가 섞일 수 있음) */
+class NaverErr extends Error { constructor(reason, code) { super(reason); this.reason = reason; this.code = code; } }
+function naverIO(cookie) {
+  const H = { cookie, accept: 'application/json, text/plain, */*', 'user-agent': UA, referer: 'https://partner.booking.naver.com/' };
+  return async function getJson(url) {
+    let r;
+    try { r = await fetch(url, { headers: H, redirect: 'manual' }); }
+    catch (e) { throw new NaverErr('http', 0); }
+    const loc = r.headers.get('location') || '';
+    if (r.status >= 300 && r.status < 400) throw new NaverErr(/nid\.naver|login/i.test(loc) ? 'login' : 'http', r.status);
+    if (r.status === 401 || r.status === 403) throw new NaverErr('login', r.status);
+    const text = await r.text();
+    const t = text.trim();
+    if (r.status !== 200) throw new NaverErr('http', r.status);
+    if (!/^[\[{]/.test(t)) throw new NaverErr(/<html|<!doctype/i.test(t.slice(0, 200)) ? 'login' : 'http', r.status);
+    let j; try { j = JSON.parse(t); } catch (e) { throw new NaverErr('http', 'json'); }
+    return { json: j, total: Number(r.headers.get('x-total-count')) || 0 };
+  };
+}
+function fixtureIO(fx) {
+  return async function getJson(url) {
+    if (fx.fail) throw new NaverErr(fx.fail.reason || 'login', fx.fail.code || 302);
+    if (/biz-items/.test(url)) return { json: fx.items || [], total: 0 };
+    const m = url.match(/[?&]page=(\d+)/); const p = m ? Number(m[1]) : 0;
+    if (fx.htmlAtPage != null && p === fx.htmlAtPage) throw new NaverErr('login', 200);
+    return { json: (fx.pages || [])[p] || [], total: Number(fx.total) || 0 };
+  };
+}
+
+/* ── 기억한 전화 (원장 2026-10-17 「연결」) ── 전화번호는 지문으로만 다룬다. 번호·지문을 로그에 찍지 않는다 */
+const PL_IDS_CAP = 20, PL_MAP_CAP = 3000;
+function phoneSecret(serviceKey) { return serviceKey ? crypto.createHash('sha256').update('nbphone|' + String(serviceKey)).digest() : null; }
+function phoneFp(digits, secret) { return crypto.createHmac('sha256', secret).update(String(digits)).digest('hex').slice(0, 24); }
+/* 열쇠 지문 — 서버 비밀값이 바뀌면 옛 지문은 쓸모가 없어 새로 시작한다 */
+function phoneKid(secret) { return crypto.createHash('sha256').update(Buffer.concat([Buffer.from('nbphone-kid|'), secret])).digest('hex').slice(0, 8); }
+const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o || {}, k);
+const nameKey = (n) => String(n == null ? '' : n).replace(/\s+/g, '');
+function textOf(pii) { pii = pii || {}; return nameKey([pii.msg || ''].concat((pii.form || []).map((f) => (f.q || '') + ' ' + (f.a || ''))).join(' ')); }
+function entryOf(ids, prevE, at) {
+  let keys = Object.keys(ids);
+  if (keys.length > PL_IDS_CAP) { keys = keys.sort((a, b) => (Number(b) || 0) - (Number(a) || 0)).slice(0, PL_IDS_CAP); const o = {}; keys.forEach((k) => { o[k] = ids[k]; }); ids = o; }
+  const st = []; keys.forEach((k) => { if (st.indexOf(ids[k]) < 0) st.push(ids[k]); });
+  if (!st.length) return null;
+  const e = { from: 'manual', at, n: keys.length, ids };
+  if (st.length === 1) e.stKey = st[0]; else e.cands = st.sort();
+  if (prevE && JSON.stringify(Object.assign({}, prevE, { at: '' })) === JSON.stringify(Object.assign({}, e, { at: '' }))) e.at = prevE.at || at;   /* 그대로면 때도 그대로 */
+  return e;
+}
+/* 이번 실행에 받은 예약 중 원장님이 직접 학생과 연결한 것 → 그 전화 지문을 그 학생으로 기억
+ *   prevPL = 지난 naver_phone_links · raw = 이번에 받은 예약(정리 전) · links = naver_booking_links · students = 명단 */
+function learnPhones(prevPL, raw, links, students, secret, at, items) {
+  const kid = phoneKid(secret);
+  const prevMap = (prevPL && prevPL.kid === kid && prevPL.map && typeof prevPL.map === 'object') ? prevPL.map : {};
+  const known = {}; (students || []).forEach((s) => { const k = core.nbStKey(s); if (k) known[k] = 1; });
+  const idsBy = {};
+  /* 지난 기억 — 연결표에서 빠진 예약(「직접 연결 풀기」)은 잊는다 · 「명단에 없음」('')으로 바뀐 것은 그대로 둔다 */
+  Object.keys(prevMap).forEach((fp) => {
+    const e = prevMap[fp] || {}, ids = {};
+    if (e.ids && typeof e.ids === 'object') {
+      Object.keys(e.ids).forEach((id) => {
+        if (!hasOwn(links, id)) return;
+        const v = links[id];
+        if (v === '' || v == null) ids[id] = String(e.ids[id]);
+        else if (known[String(v)]) ids[id] = String(v);   /* 다른 학생으로 바꿨으면 새 학생 (나중 것이 이긴다) */
+      });
+    }
+    idsBy[fp] = ids;
+  });
+  /* 이번에 받은 예약 */
+  (raw || []).forEach((b) => {
+    const id = String(b && b.bookingId); if (!hasOwn(links, id)) return;
+    const v = links[id]; if (v === '' || v == null || !known[String(v)]) return;   /* 「명단에 없음」 · 없는 학생은 가르치지 않음 */
+    const n = core.nbNormalize(b, items); const ph = core.nbDigits(n.pii.phone); if (ph.length < 9) return;
+    const fp = phoneFp(ph, secret);
+    (idsBy[fp] = idsBy[fp] || {})[id] = String(v);
+  });
+  let map = {};
+  Object.keys(idsBy).forEach((fp) => { const e = entryOf(idsBy[fp], prevMap[fp], at); if (e) map[fp] = e; });
+  const fps = Object.keys(map);
+  if (fps.length > PL_MAP_CAP) { const keep = fps.sort((a, b) => (map[a].at < map[b].at ? 1 : -1)).slice(0, PL_MAP_CAP); const m2 = {}; keep.forEach((k) => { m2[k] = map[k]; }); map = m2; }
+  const changed = !prevPL || prevPL.kid !== kid || JSON.stringify(prevMap) !== JSON.stringify(map);
+  return { pl: { at: changed ? at : (prevPL.at || at), v: 1, kid, map }, changed };
+}
+/* 맞추기 순서: 직접 연결 > 명단 전화 > 기억한 전화(learned) > 메모·추가 답의 이름 > 못 맞춤 */
+function matchBooking(pub, pii, students, links, plMap, secret) {
+  const base = core.nbMatch(pub, pii, students, links);
+  if (base && (base.how === 'manual' || base.how === 'none' || base.how === 'phone')) return base;
+  if (!plMap || !secret) return base;
+  const ph = core.nbDigits(pii && pii.phone); if (ph.length < 9) return base;
+  const act = (students || []).filter((s) => s && s.name && !s.withdrawn);
+  if (act.some((s) => core.nbStuPhones(s).indexOf(ph) >= 0)) return base;   /* 명단 전화가 이미 정함(형제 후보 포함) */
+  const e = plMap[phoneFp(ph, secret)]; if (!e) return base;
+  const byKey = (k) => act.filter((s) => core.nbStKey(s) === String(k))[0];
+  const hit = (s) => ({ stKey: core.nbStKey(s), code: String(s.lumen_rec_code || ''), how: 'learned' });
+  if (e.stKey) { const s = byKey(e.stKey); return s ? hit(s) : base; }
+  const cs = (e.cands || []).map(byKey).filter(Boolean);
+  if (!cs.length) return base;
+  if (cs.length === 1) return hit(cs[0]);   /* 형제 중 한 명만 남음(다른 아이 퇴원) */
+  const tkey = textOf(pii);
+  const named = cs.filter((s) => { const nk = nameKey(s.name); return nk.length >= 2 && tkey.indexOf(nk) >= 0; });
+  if (named.length === 1) return hit(named[0]);
+  if (base && base.how === 'name') return base;
+  return { stKey: '', code: '', how: 'ambiguous', cands: cs.map(core.nbStKey) };
+}
+
+/* Supabase (service_role — 잠금 규칙을 그대로 통과) */
+function storeIO() {
+  const URL0 = (process.env.SUPABASE_URL || '').replace(/\/$/, ''), KEY = process.env.SUPABASE_SERVICE_KEY || '';
+  const H = { apikey: KEY, authorization: 'Bearer ' + KEY };
+  return {
+    ok: !!(URL0 && KEY),
+    async get(keys) {
+      const r = await fetch(URL0 + '/rest/v1/lumen_store?key=in.(' + keys.join(',') + ')&select=key,value', { headers: H });
+      if (!r.ok) throw new Error('lumen_store 읽기 실패 ' + r.status);
+      const out = {}; (await r.json()).forEach((x) => { out[x.key] = (typeof x.value === 'string') ? (() => { try { return JSON.parse(x.value); } catch (e) { return x.value; } })() : x.value; });
+      return out;
+    },
+    async set(key, value) {
+      const r = await fetch(URL0 + '/rest/v1/lumen_store', { method: 'POST', headers: Object.assign({ 'content-type': 'application/json', prefer: 'resolution=merge-duplicates' }, H),
+        body: JSON.stringify({ key, value, updated_at: new Date().toISOString() }) });
+      return r.ok ? true : r.status;
+    },
+  };
+}
+
+/* 모든 예약 쪽 받기 — 오래된 것부터라 끝(빈 쪽·덜 찬 쪽)까지. 같은 쪽이 되풀이되면(쪽 넘김 무시) 멈춘다 */
+async function fetchAll(getJson) {
+  const itemsR = await getJson('https://api-partner.booking.naver.com/v3.1/businesses/' + BIZ + '/biz-items');
+  const items = Array.isArray(itemsR.json) ? itemsR.json : (itemsR.json.content || itemsR.json.list || []);
+  const url = (p) => 'https://partner.booking.naver.com/api/businesses/' + BIZ + '/bookings?page=' + p + '&size=' + PAGE_SIZE;
+  const first = await getJson(url(0));
+  const arr0 = Array.isArray(first.json) ? first.json : (first.json.content || first.json.bookings || []);
+  let start = 0, skipped = 0;
+  /* 총 건수를 알려 주면 너무 많을 때 최근 쪽부터 PAGE_CAP 쪽만 */
+  if (first.total > PAGE_SIZE * PAGE_CAP) { start = Math.ceil(first.total / PAGE_SIZE) - PAGE_CAP; skipped = start; }
+  const all = [], seen = {}; let pages = 0, prevFirst = null, capped = false;
+  for (let p = start; ; p++) {
+    if (pages >= PAGE_CAP) { capped = true; break; }
+    let list;
+    if (p === 0) list = arr0;
+    else { const r = await getJson(url(p)); list = Array.isArray(r.json) ? r.json : (r.json.content || r.json.bookings || []); }
+    pages++;
+    if (!list.length) break;
+    const f = String(list[0] && list[0].bookingId);
+    if (prevFirst !== null && f === prevFirst) break;   /* 쪽 넘김이 안 먹음 */
+    prevFirst = f;
+    list.forEach((b) => { const id = String(b && b.bookingId); if (!seen[id]) { seen[id] = 1; all.push(b); } });
+    if (list.length < PAGE_SIZE) break;
+  }
+  return { items, raw: all, pages, skipped, capped };
+}
+
+async function run(opt) {
+  const log = opt.log || ((...a) => console.log('[네이버예약]', ...a));
+  const now = opt.now ? Date.parse(opt.now) : Date.now();
+  const at = new Date(now).toISOString();
+  const today = core.nbTodayKst(now);
+  const getJson = opt.getJson, store = opt.store, teacherKey = opt.teacherKey || '';
+  /* 이름·전화 상자 열쇠: 예약 열쇠(NAVER_PII_KEY)가 먼저, 없으면 원장님 서버 잠금 열쇠(LUMEN_TEACHER_KEY) */
+  const piiKey = String(opt.piiKey || '').trim();
+  const sealKey = piiKey || teacherKey, keyKind = piiKey ? 'pii' : (teacherKey ? 'teacher' : '');
+  const keyName = keyKind === 'pii' ? 'NAVER_PII_KEY' : 'LUMEN_TEACHER_KEY';
+  const secret = phoneSecret(opt.serviceKey || '');   /* 기억한 전화 지문 열쇠 — 서버 비밀값이 없으면 기억 기능은 쉰다 */
+  const writes = {};
+  const put = async (k, v) => { writes[k] = v; if (opt.dry || !store || !store.set) return true; const r = await store.set(k, v); if (r !== true) log('저장 실패', k, r); return r === true; };
+
+  let prev = {};
+  try { prev = store && store.get ? await store.get(['or_studentdb', 'naver_booking_links', 'naver_bookings_status', 'naver_phone_links', 'school_calendar']) : {}; }
+  catch (e) { log('lumen_store 읽기 실패 — 학생 맞추기 없이 진행'); prev = {}; }
+  const students = Array.isArray(prev.or_studentdb) ? prev.or_studentdb : [];
+  const links = (prev.naver_booking_links && typeof prev.naver_booking_links === 'object') ? prev.naver_booking_links : {};
+
+  let got;
+  try { got = await fetchAll(getJson); }
+  catch (e) {
+    const reason = (e && e.reason) || 'http', code = (e && e.code != null) ? e.code : 0;
+    log('네이버 접속 실패 · 이유 ' + reason + ' · 코드 ' + code + (reason === 'login' ? ' — 쿠키(NAVER_COOKIE) 만료로 보임' : ''));
+    const ps = prev.naver_bookings_status || {};
+    await put('naver_bookings_status', { at, ok: false, reason, code, lastOkAt: ps.ok ? ps.at : (ps.lastOkAt || '') });
+    log('상태 저장: ok=false (지난번 예약 자료는 그대로 둠)' + (opt.dry ? ' [dry]' : ''));
+    return { ok: false, reason, code, writes };
+  }
+
+  /* 기억한 전화: 직접 연결에서 배우기(이번 실행의 맞추기에 바로 쓴다) */
+  let pl = null;
+  if (secret) {
+    try { pl = learnPhones(prev.naver_phone_links || null, got.raw, links, students, secret, at, got.items); }
+    catch (e) { log('전화 기억 계산 실패 — 기억 없이 진행'); pl = null; }
+  }
+  const plMap = pl ? pl.pl.map : null;
+  const items = (got.items || []).map((it) => ({ id: String(it.bizItemId), name: String(it.name || ''), kind: core.nbKindOf(it.name, it.bizItemId), imp: it.isImp !== false }));
+  const bookings = [], piiById = {};
+  const counts = { total: got.raw.length, inWindow: 0, byKind: {}, matched: 0, unmatched: 0, ambiguous: 0, how: {}, cancelled: 0, today: 0 };
+  got.raw.forEach((b) => {
+    const n = core.nbNormalize(b, got.items);
+    if (!n.pub.id || !core.nbInWindow(n.pub, today)) return;
+    const m = matchBooking(n.pub, n.pii, students, links, plMap, secret);
+    n.pub.match = (m && m.stKey) ? { stKey: m.stKey, code: m.code, how: m.how } : null;
+    if (m && m.how === 'ambiguous') n.pub.cands = m.cands;
+    if (m && m.how === 'none') n.pub.noStudent = true;
+    bookings.push(n.pub); piiById[n.pub.id] = n.pii;
+    counts.inWindow++;
+    counts.byKind[n.pub.item.kind] = (counts.byKind[n.pub.item.kind] || 0) + 1;
+    if (n.pub.match) { counts.matched++; counts.how[n.pub.match.how] = (counts.how[n.pub.match.how] || 0) + 1; }
+    else { counts.unmatched++; if (m && m.how === 'ambiguous') counts.ambiguous++; }
+    if (n.pub.status.k === 'cancelled') counts.cancelled++;
+    if (n.pub.date === today) counts.today++;
+  });
+  bookings.sort((a, b) => (a.date + a.start + a.id < b.date + b.start + b.id ? -1 : 1));
+
+  let pii = { enc: false, n: 0 };
+  if (sealKey) {
+    try {
+      const box = await core.nbSeal({ at, byId: piiById }, sealKey);   /* box.kid = 열쇠 지문 8글자(sha256('lumen-naver-kid|'+열쇠) 앞부분) */
+      box.at = at; box.n = Object.keys(piiById).length; box.kk = keyKind;
+      pii = { enc: true, n: box.n, kid: box.kid, kk: keyKind };
+      await put('naver_bookings_pii', box);
+    } catch (e) { log('개인정보 칸 잠그기 실패 — 이름·전화 없이 저장'); pii = { enc: false, n: 0, err: 'seal' }; }
+  }
+  /* ★ 2026-10-17 원장 「올해 네이버예약 다 가져오고 통계」 — 전체 예약 보관(이름·전화·메모 원문 없음).
+   *   학교·학년만 메모에서 뽑고, 전화는 서버만 아는 지문(fp)으로 — 재방문·상담→등록 계산용. 유입 경로(areaName)도.
+   *   ★ 같은 날 원장 결정: 매 실행마다 (학원앱 「📊 예약 통계」 · 학생별 월간 참여 · 텐투텐 주말 체크가 이것을 읽는다) */
+  let archH = '', archAt = '';
+  {
+    /* 학교는 «알려진 학교 이름»만 — 메모의 다른 글자(학생 이름 등)가 섞이지 않게 (2026-10-17: 띄어쓰기를 지우고 뽑았다가 이름이 붙은 일) */
+    const KNOWN = ['옥길산들초', '옥길버들초', '산들초', '버들초', '범박초', '옥길초', '옥길중', '범박중', '범박고', '소사고', '시온고', '소명여고', '부천고', '부천여고', '부천중', '소사중', '계남고', '역곡고'];
+    ((prev.school_calendar && prev.school_calendar.schools) || []).forEach((x) => { const sh = String(x.short || '').trim(); if (sh && KNOWN.indexOf(sh) < 0) KNOWN.push(sh); });
+    KNOWN.sort((x, y) => y.length - x.length);
+    const schOf = (t) => { const s0 = String(t || '').replace(/\s+/g, '').replace(/초등학교/g, '초').replace(/중학교/g, '중').replace(/여자고등학교/g, '여고').replace(/고등학교/g, '고'); for (let i = 0; i < KNOWN.length; i++) if (s0.indexOf(KNOWN[i]) >= 0) return KNOWN[i]; return ''; };
+    const grOf = (t) => { const s0 = String(t || '').replace(/\s+/g, ''); let m = s0.match(/(초|중|고)(\d)/); if (m) return m[1] + m[2]; m = s0.match(/(초등|중등|고등|초|중|고)[^\d]{0,6}(\d)\s*학년/); if (m) return m[1].charAt(0) + m[2]; m = s0.match(/(\d)\s*학년/); return m ? '?' + m[1] : ''; };
+    const rows = [];
+    got.raw.forEach((b) => {
+      const n = core.nbNormalize(b, got.items); if (!n.pub.id) return;
+      const m = matchBooking(n.pub, n.pii, students, links, plMap, secret);
+      const txt = [n.pii.msg || ''].concat((n.pii.form || []).map((f) => (f.q || '') + ' ' + (f.a || ''))).join(' ');
+      const ph = core.nbDigits(n.pii.phone);
+      const row = { id: n.pub.id, kind: n.pub.item.kind, item: n.pub.item.id, date: n.pub.date, start: n.pub.start, st: n.pub.status.k, code: n.pub.status.code,
+        reg: n.pub.reg, conf: n.pub.confirmed, comp: n.pub.completed, canc: n.pub.cancelled, cnt: n.pub.count,
+        area: String(b.areaName || ''), stu: (m && m.stKey) ? m.stKey : '', how: (m && m.how) || '',
+        fp: (secret && ph.length >= 9) ? phoneFp(ph, secret) : '', sch: schOf(txt), gr: grOf(txt) };
+      Object.keys(row).forEach((k) => { if (row[k] === '' || row[k] == null) delete row[k]; });   /* 빈 칸은 적지 않는다 — 보관을 작게 */
+      rows.push(row);
+    });
+    rows.sort((a, b) => ((a.date || '') + (a.start || '') + a.id < (b.date || '') + (b.start || '') + b.id ? -1 : 1));
+    archH = crypto.createHash('sha256').update(JSON.stringify([items, rows])).digest('hex').slice(0, 16);
+    const ps = prev.naver_bookings_status || {};
+    const fresh = ps.archH === archH && ps.archAt && (Date.parse(at) - Date.parse(ps.archAt)) < 6 * 3600000;
+    const byY = {}; rows.forEach((r) => { const y = String(r.date || '').slice(0, 4) || '?'; byY[y] = (byY[y] || 0) + 1; });
+    const desc = rows.length + '건 · ' + Object.keys(byY).sort().map((y) => y + '년 ' + byY[y]).join(' · ') + ' · 학교 뽑힘 ' + rows.filter((r) => r.sch).length + ' · 학년 뽑힘 ' + rows.filter((r) => r.gr).length;
+    if (fresh) { archAt = ps.archAt; log('보관(archive) 그대로 ' + desc + ' — 다시 쓰지 않음'); }
+    else {
+      const ok = await put('naver_bookings_archive', { at, v: 2, h: archH, items, n: rows.length, from: rows.length ? rows[0].date : '', to: rows.length ? rows[rows.length - 1].date : '', rows });
+      if (ok) archAt = at; else archH = '';
+      log('보관(archive) ' + desc + (opt.dry ? ' [dry]' : (ok ? '' : ' · 저장 실패')));
+    }
+  }
+  counts.phoneMemo = plMap ? Object.keys(plMap).length : 0;
+  if (pl && pl.changed) await put('naver_phone_links', pl.pl);
+  const data = { at, ok: true, v: 1, bizId: BIZ, today, window: { back: 30, ahead: 90 }, items, bookings, counts, pii };
+  await put('naver_bookings', data);
+  await put('naver_bookings_status', Object.assign({ at, ok: true, n: bookings.length, lastOkAt: at }, archH && archAt ? { archH, archAt } : {}));
+
+  log('쪽 ' + got.pages + (got.skipped ? ' (앞쪽 ' + got.skipped + '쪽 건너뜀)' : '') + (got.capped ? ' · 한도 ' + PAGE_CAP + '쪽에서 멈춤' : '') + ' · 예약 전체 ' + counts.total + '건 · 기간 안 ' + counts.inWindow + '건 · 오늘 ' + counts.today + '건 · 취소 ' + counts.cancelled + '건');
+  log('상품 ' + items.length + '개 · 종류별 ' + core.NB_KINDS.map((k) => k.label + ' ' + (counts.byKind[k.k] || 0)).join(' · '));
+  log('학생 연결 ' + counts.matched + '건 (' + Object.keys(counts.how).map((h) => h + ' ' + counts.how[h]).join(' · ') + ') · 못 맞춤 ' + counts.unmatched + '건' + (counts.ambiguous ? ' (형제·동명 ' + counts.ambiguous + ')' : ''));
+  log('기억한 전화 ' + counts.phoneMemo + '개 · 기억으로 연결 ' + (counts.how.learned || 0) + '건' + (secret ? '' : ' (SUPABASE_SERVICE_KEY 없음 — 기억 쉼)'));
+  log('이름·전화 칸: ' + (pii.enc ? '잠금 저장 ' + pii.n + '건 (열쇠 ' + keyName + ')' : (sealKey ? '잠그기 실패' : 'NAVER_PII_KEY·LUMEN_TEACHER_KEY 없음 — 저장 안 함(시간·상품·상태만)')) + (opt.dry ? ' · [dry] 저장 안 함' : ' · 저장 완료'));
+  if (piiKey && piiKey.length < 16) log('⚠ 예약 열쇠(NAVER_PII_KEY)가 짧아요 — 20글자 이상 긴 암호문을 권해요');
+  return { ok: true, counts, writes };
+}
+
+module.exports = { run, fetchAll, cleanCookie, NaverErr, phoneSecret, phoneFp, learnPhones, matchBooking };
+
+if (require.main === module) {
+  const o = args(process.argv.slice(2));
+  (async () => {
+    let getJson, store, teacherKey = process.env.LUMEN_TEACHER_KEY || '', piiKey = process.env.NAVER_PII_KEY || '', serviceKey = process.env.SUPABASE_SERVICE_KEY || '';
+    if (o.fixture) {
+      const fx = JSON.parse(fs.readFileSync(path.resolve(o.fixture), 'utf8'));
+      getJson = fixtureIO(fx);
+      store = { get: async () => JSON.parse(JSON.stringify(fx.store || {})), set: async () => true };
+      if (fx.teacherKey != null) teacherKey = fx.teacherKey;
+      if (fx.piiKey != null) piiKey = fx.piiKey;
+      serviceKey = fx.serviceKey || '';   /* 가짜 자료는 가짜 서버 비밀값만 */
+    } else {
+      const cookie = cleanCookie(process.env.NAVER_COOKIE);
+      if (!cookie) { console.log('[네이버예약] NAVER_COOKIE 가 없습니다 — GitHub Secrets 에 등록해 주세요'); process.exit(0); }
+      getJson = naverIO(cookie);
+      store = storeIO();
+      if (!store.ok && !o.dry) { console.log('[네이버예약] SUPABASE_URL / SUPABASE_SERVICE_KEY 가 없어 --dry 로 돌립니다'); o.dry = true; }
+      if (!store.ok) store = null;
+    }
+    const r = await run({ getJson, store, teacherKey, piiKey, serviceKey, dry: o.dry, now: o.now || '', archive: !!o.archive });
+    if (o.out) fs.writeFileSync(path.resolve(o.out), JSON.stringify(r.writes));
+    process.exit(0);
+  })().catch((e) => { console.log('[네이버예약] 예기치 못한 오류: ' + ((e && e.name) || 'Error')); process.exit(1); });
+}

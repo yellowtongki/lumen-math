@@ -1,0 +1,277 @@
+<title>백지테스트 채팅 편집</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=Nanum+Myeongjo:wght@400;700&display=swap">
+<style>
+/* 레이아웃: 위 = 한 줄 설명, 가운데 = 학원앱 백지테스트 편집 화면 시안(왼쪽 문항 목록 + 아래 채팅창 · 오른쪽 A4 미리보기), 아래 = 말할 수 있는 것 표 · 속 구조 · 여쭐 것 */
+:root{
+  --bg:#eef2f8; --card:#ffffff; --fg:#0d2240; --muted:#64748b; --line:#e6eaf1; --navy:#0d2240; --navy-soft:#e8eef8; --blue:#1d6fe8; --blue-soft:#e8f1ff;
+  --amber:#b45309; --amber-soft:#fff7e6; --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c; --bad-soft:#fee2e2; --paper:#ffffff; --paper-line:#cbd5e1;
+  --me:#0d2240; --me-fg:#ffffff; --ai:#f1f5fb; --new:#fff3c4;
+  --font:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; --serif:"Nanum Myeongjo","Noto Serif KR",serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --paper:#f7f7f2; --paper-line:#9aa3ad; --me:#dbe6f6; --me-fg:#0f1621; --ai:#1c2636; --new:#3a3410; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1621; --card:#172030; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3747; --navy:#dbe6f6; --navy-soft:#1c2a3c; --blue:#8ab4f8; --blue-soft:#1a2a44; --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --paper:#f7f7f2; --paper-line:#9aa3ad; --me:#dbe6f6; --me-fg:#0f1621; --ai:#1c2636; --new:#3a3410; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.5;margin:0}
+.wrap{max-width:1100px;margin:0 auto;padding-block:20px 60px;padding-inline:16px;display:flex;flex-direction:column;gap:22px}
+h1{font-size:23px;font-weight:900;margin:0 0 4px;letter-spacing:-0.01em;text-wrap:balance}
+h2{font-size:16.5px;font-weight:900;margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 .tag{font-size:11px;font-weight:700;letter-spacing:0.04em;padding:2px 8px;border-radius:999px;background:var(--navy-soft);color:var(--blue)}
+p{margin:0}.lead,.note{color:var(--muted);font-size:13px}.note b{color:var(--fg)}
+.sec{display:flex;flex-direction:column;gap:10px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:560px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:0.04em;color:var(--muted);font-weight:700;background:var(--navy-soft)} tr:last-child td{border-bottom:0}
+td.k{font-weight:900;white-space:nowrap} td.say{font-family:var(--font)} td.say code{background:var(--navy-soft);color:var(--fg);padding:1px 6px;border-radius:5px;font-size:12px;font-family:inherit;font-weight:800;white-space:nowrap}
+td.do b{color:var(--blue)}
+/* 앱 화면 시안 */
+.app{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.chips{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.chip{border:1.5px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:5px 11px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+:root[data-theme="dark"] .chip.on,:root:not([data-theme="light"]) .chip.on{color:var(--bg)}
+.chip.sub{font-size:11.5px;padding:4px 10px}.chip.sub.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.lbl{font-size:10.5px;font-weight:800;color:var(--muted);letter-spacing:0.03em;margin-right:4px}
+.cfg{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12px;font-weight:800;color:var(--muted)}
+.btn{border:none;border-radius:9px;padding:8px 13px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer;background:var(--navy-soft);color:var(--blue)}
+.btn.main{background:var(--blue);color:#fff}.btn.pri{background:var(--navy);color:#fff}
+:root[data-theme="dark"] .btn.pri,:root:not([data-theme="light"]) .btn.pri{color:var(--bg)}
+.btn.sm{padding:5px 8px;font-size:11px;border-radius:7px}.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+.btn.warn{background:var(--amber-soft);color:var(--amber)} .btn.bad{background:var(--bad-soft);color:var(--bad)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.chip:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:760px){ .two{grid-template-columns:1fr} }
+.ed{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ed h3{font-size:12.5px;font-weight:900;margin:6px 0 0;padding-bottom:3px;border-bottom:1.5px solid var(--navy);display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.ed h3 small{font-size:10.5px;color:var(--muted);font-weight:700}
+.item{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;background:var(--card);transition:background .6s}
+.item.fresh{background:var(--new)}
+.item .no{font-size:12px;font-weight:900;color:var(--muted);padding-top:6px}
+.item .q{font-size:12.5px;line-height:1.5}
+.item .a{font-size:11.5px;color:var(--muted);margin-top:3px;border-top:1px dashed var(--line);padding-top:3px}
+.item .ty{display:inline-block;font-size:10px;font-weight:900;padding:1px 6px;border-radius:5px;margin-bottom:4px;background:var(--navy-soft);color:var(--blue)}
+.item .ty.w{background:var(--amber-soft);color:var(--amber)}
+.item .ops{display:flex;flex-direction:column;gap:3px}
+.tbitem{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:grid;grid-template-columns:22px 70px minmax(0,1fr) auto;gap:8px;align-items:center;background:var(--card);font-size:12px;transition:background .6s}
+.tbitem.fresh{background:var(--new)}
+.tbitem .img{height:46px;border:1px dashed var(--paper-line);border-radius:6px;background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(100,116,139,0.12) 6px 7px);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);font-weight:800}
+.tbitem b{display:block}.tbitem small{color:var(--muted);font-weight:700;font-size:11px}
+/* 채팅창 */
+.chat{border:2px solid var(--blue);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--card);position:sticky;bottom:8px}
+.chat .ttl{font-size:12px;font-weight:900;display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+.chat .ttl small{color:var(--muted);font-weight:700;font-size:11px}
+.log{display:flex;flex-direction:column;gap:6px;max-height:190px;overflow-y:auto;min-width:0}
+.msg{max-width:92%;border-radius:12px;padding:7px 10px;font-size:12.5px;line-height:1.45}
+.msg.me{align-self:flex-end;background:var(--me);color:var(--me-fg);border-bottom-right-radius:3px}
+.msg.ai{align-self:flex-start;background:var(--ai);border-bottom-left-radius:3px}
+.msg.ai b{color:var(--blue)}
+.msg.ai .und{display:inline-block;margin-top:4px;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:11px;font-weight:900;cursor:pointer;background:var(--card);color:var(--muted);font-family:inherit}
+.msg.wait{color:var(--muted);font-style:normal}
+.quick{display:flex;gap:5px;flex-wrap:wrap}
+.quick button{border:1.5px dashed var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:4px 9px;font-family:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.quick button:hover{border-color:var(--blue);color:var(--blue)}
+.inrow{display:flex;gap:6px;align-items:stretch}
+.inrow input{flex:1;min-width:0;font-family:inherit;font-size:13px;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--card);color:var(--fg)}
+.inrow input::placeholder{color:var(--muted)}
+/* 인쇄 미리보기 */
+.pv{min-width:0}
+.pv .cap{font-size:11px;font-weight:800;color:var(--muted);display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px}
+.paper{background:var(--paper);color:#111;border:1px solid var(--paper-line);border-radius:4px;padding:24px 26px;font-family:var(--serif);box-shadow:0 8px 24px rgba(13,34,64,0.12);min-height:520px;font-size:12.5px;line-height:1.7}
+.paper .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:10px;gap:8px;flex-wrap:wrap}
+.paper .hd b{font-size:17px;font-weight:700}.paper .hd span{font-size:11px}
+.paper .pt{font-weight:700;font-size:13px;margin:12px 0 4px;border-bottom:1px solid #999;padding-bottom:2px}
+.paper .q{display:flex;gap:8px;margin:6px 0;border-radius:4px;transition:background .6s}.paper .q.fresh{background:#fff3c4}.paper .q .n{font-weight:700;min-width:18px}
+.paper .blank{display:inline-block;min-width:64px;border-bottom:1.5px solid #111;height:1.1em;vertical-align:-3px;margin:0 3px}
+.paper .ans{height:46px;border:1px dashed #9aa3ad;border-radius:4px;margin:4px 0 2px 26px}
+.paper .tb{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.paper .tb .pb{border:1px solid #cfd6de;border-radius:4px;padding:6px 8px;min-height:84px}
+.paper .tb .pb.fresh{background:#fff3c4}
+.paper .tb .pb small{display:block;font-size:10px;color:#555;font-family:var(--font);font-weight:700;margin-bottom:3px}
+.paper .tb .pb .ph{height:50px;background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(0,0,0,0.06) 6px 7px);border-radius:3px}
+.paper .ft{margin-top:14px;font-size:11px;color:#333;border-top:1px solid #999;padding-top:6px}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.fl{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px}
+.fl b{display:block;margin-bottom:3px}.fl small{color:var(--muted);font-weight:700}
+.ask{background:var(--card);border:2px solid var(--blue);border-radius:14px;padding:14px;font-size:13.5px}
+.ask ol{margin:6px 0 0;padding-left:20px}.ask li{margin:4px 0}
+@media (prefers-reduced-motion: reduce){ .item,.tbitem,.paper .q{transition:none} }
+</style>
+
+<div class="wrap">
+  <div>
+    <h1>백지테스트 — 채팅으로 고치기</h1>
+    <p class="lead">2026-10-10 · 원장님 말씀: 「학원앱에서 지금 채팅처럼, 곱셈공식 변형 더 추가해줘. 이렇게」. 편집 화면 아래에 말 한 줄 넣는 칸이 생기고, AI 가 시험지를 그 말대로 고칩니다. 아직 코드는 없고 시안입니다. 아래 채팅칸에 직접 쳐 보세요.</p>
+  </div>
+
+  <section class="sec">
+    <h2>학원앱 화면 시안 <span class="tag">직접 쳐 보세요</span></h2>
+    <p class="note">학생 ○○○(중3) · 과정 공통수학1 · 대단원 「다항식」 · 1부 5문항 + 3부 교과서 2문항이 이미 만들어진 상태. 시안이라 AI 대신 준비된 문항으로 답하지만, 흐름(말 → 고쳐짐 → 미리보기 반영 → 되돌리기)은 실제와 같습니다.</p>
+    <div class="app">
+      <div class="chips"><span class="lbl">학생</span><button class="chip on">✓ ○○○ <span style="opacity:.7">중3</span></button><button class="chip">○ ○○○</button><button class="chip">○ ○○○</button><span class="lbl" style="margin-left:6px">과정</span><button class="chip on">공통수학1</button><button class="chip">중3-2</button><span class="lbl" style="margin-left:6px">대단원</span><button class="chip on">다항식</button><button class="chip">방정식과 부등식</button></div>
+      <div class="chips"><span class="lbl">소단원</span><button class="chip sub on">다항식의 사칙연산</button><button class="chip sub on">곱셈 공식</button><button class="chip sub">항등식과 나머지정리</button><button class="chip sub">인수분해</button></div>
+      <div class="cfg">
+        <span>1부 개념 백지 <b id="c1">5</b></span><span>2부 다시 풀기 0</span><span>3부 교과서 <b id="c3">2</b></span>
+        <button class="btn">⚡ AI 초안 다시</button><button class="btn pri">🖨️ 인쇄</button><button class="btn">🔑 답지</button><button class="btn">💾 보관</button>
+      </div>
+      <div class="two">
+        <div class="ed">
+          <div id="ed"></div>
+          <div class="chat" id="chat">
+            <div class="ttl"><span>💬 AI 에게 말로 고치기</span><small>지금 시험지를 보고 그 말대로 고칩니다 · 고친 뒤 되돌리기 가능</small></div>
+            <div class="log" id="log"></div>
+            <div class="quick" id="quick"></div>
+            <form class="inrow" id="f"><input id="in" autocomplete="off" placeholder="예: 곱셈공식 변형 2문제 더 추가해줘"><button class="btn main" id="send" type="submit">보내기</button></form>
+          </div>
+        </div>
+        <div class="pv"><div class="cap"><span>인쇄 미리보기 (A4 · 채팅으로 고치면 바로 바뀝니다)</span><span id="pgcnt">1쪽 / 1</span></div><div class="paper" id="paper"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>이렇게 말할 수 있습니다 <span class="tag">AI 가 알아듣는 말</span></h2>
+    <p class="note">정해진 명령어가 아니라 보통 말입니다. AI 가 「지금 시험지 전체」를 보고 있으므로 「3번」「빈칸 문제들」「마지막 거」처럼 가리키기만 해도 됩니다.</p>
+    <div class="tbl"><table>
+      <tr><th style="width:90px">하고 싶은 것</th><th style="width:300px">이렇게 말하면</th><th>앱이 하는 일</th></tr>
+      <tr><td class="k">더 넣기</td><td class="say"><code>곱셈공식 변형 2문제 더</code> · <code>인수분해 개념 빈칸 3개 추가</code></td><td class="do">AI 가 그 유형의 1부 문항을 써서 <b>끝에 붙임</b>. 유형 이름이 고른 소단원 밖이어도(곱셈공식 변형 등) 같은 대단원 안이면 그대로 씀</td></tr>
+      <tr><td class="k">바꾸기</td><td class="say"><code>3번 더 쉽게</code> · <code>5번을 서술형으로</code> · <code>2번은 조립제법 묻는 걸로</code></td><td class="do">그 문항만 <b>다시 써서 자리에 넣음</b>. 나머지는 손대지 않음</td></tr>
+      <tr><td class="k">빼기</td><td class="say"><code>빈칸 문제 중 제일 쉬운 거 하나 빼</code> · <code>4번 삭제</code></td><td class="do">해당 문항 삭제, 번호 다시 매김</td></tr>
+      <tr><td class="k">순서·양</td><td class="say"><code>서술형을 뒤로 모아</code> · <code>1부를 8문항으로 늘려</code></td><td class="do">순서 바꾸기 · 모자란 만큼 AI 가 더 씀</td></tr>
+      <tr><td class="k">3부 교과서</td><td class="say"><code>교과서에서 곱셈공식 문제 2개 더</code> · <code>3부 2번 다른 걸로</code></td><td class="do">AI 를 거치지 않고 <b>교과서 은행(비상교육 공통수학1)</b>에서 그 유형 문항을 바로 꺼냄. 글자 그대로 검색이라 즉시</td></tr>
+      <tr><td class="k">답지·안내</td><td class="say"><code>답지에 힌트 한 줄씩</code> · <code>제목을 「10월 2주 백지테스트」로</code></td><td class="do">모범답 옆에 힌트 칸 · 제목·안내문 고침</td></tr>
+      <tr><td class="k">되돌리기</td><td class="say"><code>방금 거 취소</code> 또는 답변 밑 「↩ 되돌리기」</td><td class="do">한 단계씩 전 상태로. 보관함에 넣을 때 채팅 기록도 같이 남음</td></tr>
+    </table></div>
+  </section>
+
+  <section class="sec">
+    <h2>속에서 일어나는 일 <span class="tag">만들 때 이렇게</span></h2>
+    <div class="flow">
+      <div class="fl"><b>1. 시험지 + 말 한 줄을 AI 에</b><small>지금 1부·3부 문항을 번호 붙여 통째로 보내고, 고른 소단원·유형 이름(유형DB)과 원장님 말을 붙입니다. 기존 🔄·＋ 버튼이 쓰는 프롬프트에 「지시문」 한 칸만 더하는 셈입니다.</small></div>
+      <div class="fl"><b>2. AI 는 「고칠 목록」만 돌려줌</b><small>시험지 전체를 다시 쓰지 않고 {추가:[…], 바꾸기:[{번호, 새 문항}], 삭제:[번호], 순서:[…]} 로만 답합니다. 그래서 손본 문항이 사라지지 않고, 10~15초 안에 끝납니다.</small></div>
+      <div class="fl"><b>3. 앱이 적용 → 미리보기</b><small>목록을 적용하고 오른쪽 A4 를 다시 그립니다. 새로 들어온 문항은 몇 초간 노란 바탕으로 표시. 전 상태는 되돌리기 칸에 쌓아 둡니다.</small></div>
+      <div class="fl"><b>4. 교과서는 AI 없이</b><small>「교과서에서 ○○ n개」는 은행에서 쪽 제목·유형 이름으로 바로 찾아 넣습니다. 못 찾으면 「그 유형은 교과서 은행에 없어요 — AI 창작으로 넣을까요?」 하고 묻습니다.</small></div>
+      <div class="fl"><b>5. 여러 명 같은 시험지도</b><small>한 학생 초안에서 채팅으로 다듬은 뒤 「고른 n명에게 같은 시험지」를 누르면 다듬은 그대로 n장. 채팅 기록은 원본 한 장에만 남습니다.</small></div>
+    </div>
+  </section>
+
+  <section class="ask">
+    <b>여쭐 것</b>
+    <ol>
+      <li><b>채팅칸 자리</b>: 시안처럼 왼쪽 편집 목록 <b>바로 아래(화면에 붙어 있음)</b>로 할까요, 아니면 오른쪽 미리보기 아래로 할까요?</li>
+      <li><b>추가되는 문항의 유형 범위</b>: 「곱셈공식 변형」처럼 고른 소단원에 없는 유형을 말해도 같은 대단원 안이면 그냥 쓰게 두는 걸로 했습니다. 괜찮으신가요?</li>
+      <li>이 시안이 괜찮으면 <b>학원앱 v19-97</b> 로 만들어 바로 배포하겠습니다. 매쓰플랫 학습지 만들기 화면의 세부유형 트리(주제유형·세부유형)를 그대로 가져오는 것은 그다음 단계로 따로 시안을 드리겠습니다.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function(){
+  /* 상태 */
+  var S={ p1:[
+      {type:'blank',q:'다항식을 한 문자에 대하여 차수가 높은 항부터 차례로 나타내는 것을 [[ ]] 이라 하고, 낮은 항부터 나타내는 것을 [[ ]] 이라 한다.',a:'내림차순 / 오름차순',s:'다항식의 사칙연산'},
+      {type:'blank',q:'두 다항식 A, B(B≠0)에 대하여 A를 B로 나눈 몫을 Q, 나머지를 R라 하면 A = [[ ]] 이고, R의 차수는 [[ ]] 의 차수보다 낮다.',a:'BQ + R / B',s:'다항식의 사칙연산'},
+      {type:'write',q:'다항식의 나눗셈에서 나머지의 차수가 나누는 식의 차수보다 낮아야 하는 까닭을 설명하시오.',a:'차수가 같거나 높으면 더 나눌 수 있으므로 몫과 나머지가 하나로 정해지지 않는다',s:'다항식의 사칙연산'},
+      {type:'blank',q:'(a+b)³ = a³ + [[ ]] + [[ ]] + b³',a:'3a²b / 3ab²',s:'곱셈 공식'},
+      {type:'write',q:'(a+b+c)² 의 전개식을 쓰고, 왜 항이 6개가 나오는지 설명하시오.',a:'a²+b²+c²+2ab+2bc+2ca · 제곱 3개, 서로 다른 두 문자 곱 3개',s:'곱셈 공식'}
+    ], p3:[
+      {t:'곱셈 공식',ref:'교과서 24쪽 3번',a:'x³+8'},
+      {t:'다항식의 나눗셈',ref:'교과서 21쪽 5번',a:'몫 x+2, 나머지 3'}
+    ], title:'백지테스트 — 공통수학1 · 다항식', undo:[] };
+  var BANK={
+    '곱셈공식 변형':[
+      {type:'blank',q:'a²+b² = (a+b)² − [[ ]] = (a−b)² + [[ ]]',a:'2ab / 2ab',s:'곱셈 공식'},
+      {type:'blank',q:'a³+b³ = (a+b)³ − [[ ]]',a:'3ab(a+b)',s:'곱셈 공식'},
+      {type:'write',q:'a+b 와 ab 의 값을 알 때 a³+b³ 을 구하는 과정을 식으로 쓰시오.',a:'(a+b)³ − 3ab(a+b)',s:'곱셈 공식'},
+      {type:'blank',q:'x + 1/x = t 일 때, x² + 1/x² = [[ ]], x³ + 1/x³ = [[ ]]',a:'t²−2 / t³−3t',s:'곱셈 공식'}
+    ],
+    '인수분해':[
+      {type:'blank',q:'a³ + b³ = (a+b)( [[ ]] )',a:'a²−ab+b²',s:'인수분해'},
+      {type:'blank',q:'a²+b²+c²+2ab+2bc+2ca = ( [[ ]] )²',a:'a+b+c',s:'인수분해'},
+      {type:'write',q:'x⁴+x²+1 을 인수분해할 때 x² 을 더하고 빼는 까닭을 설명하시오.',a:'(x²+1)² − x² 꼴로 만들어 합차 공식을 쓰기 위해',s:'인수분해'}
+    ],
+    '나머지정리':[
+      {type:'blank',q:'다항식 f(x) 를 일차식 x−a 로 나눈 나머지는 [[ ]] 이다.',a:'f(a)',s:'항등식과 나머지정리'},
+      {type:'write',q:'인수정리가 나머지정리의 특별한 경우인 까닭을 설명하시오.',a:'나머지 f(a)=0 이면 x−a 가 인수',s:'항등식과 나머지정리'}
+    ],
+    '조립제법':[
+      {type:'write',q:'조립제법을 쓸 수 있는 나눗셈의 조건과, 몫의 차수가 어떻게 되는지 설명하시오.',a:'일차식 x−a 로 나눌 때 · 몫은 한 차수 낮다',s:'다항식의 사칙연산'},
+      {type:'blank',q:'조립제법에서 맨 아래 줄의 마지막 수는 [[ ]] 이고, 그 앞의 수들은 [[ ]] 의 계수이다.',a:'나머지 / 몫',s:'다항식의 사칙연산'}
+    ],
+    '항등식':[
+      {type:'blank',q:'ax²+bx+c = 0 이 x 에 대한 항등식이면 a = [[ ]], b = [[ ]], c = [[ ]] 이다.',a:'0 / 0 / 0',s:'항등식과 나머지정리'},
+      {type:'write',q:'계수비교법과 수치대입법의 차이를 설명하시오.',a:'양변을 전개해 계수를 비교 / 적당한 수를 대입해 미정계수를 구함',s:'항등식과 나머지정리'}
+    ]
+  };
+  var TB={ '곱셈공식':[{t:'곱셈 공식',ref:'교과서 25쪽 6번',a:'8x³−36x²+54x−27'},{t:'곱셈 공식',ref:'교과서 25쪽 8번',a:'a²+b²+c²=14'}],
+           '나눗셈':[{t:'다항식의 나눗셈',ref:'교과서 22쪽 7번',a:'몫 x²−x+1, 나머지 −2'}], '인수분해':[{t:'인수분해',ref:'교과서 38쪽 2번',a:'(x+1)(x²−x+1)'}] };
+  var EASY={ 0:{type:'blank',q:'x 에 대한 내림차순은 x 의 차수가 [[ ]] 항부터 쓰는 것이다.',a:'높은',s:'다항식의 사칙연산'}, 3:{type:'blank',q:'(a+b)² = a² + [[ ]] + b²',a:'2ab',s:'곱셈 공식'} };
+  var used={}; var fresh={};
+  function esc(t){ return String(t).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function blank(q){ return esc(q).replace(/\[\[[^\]]*\]\]/g,'<span class="blank"></span>'); }
+  function paint(){
+    var h='<h3>1부 · 개념 백지 <small>'+S.p1.length+'문항</small></h3>';
+    S.p1.forEach(function(x,i){ h+='<div class="item'+(fresh['p1'+i]?' fresh':'')+'"><span class="no">'+(i+1)+'</span><div><span class="ty'+(x.type==='write'?' w':'')+'">'+(x.type==='write'?'서술':'빈칸')+' · '+esc(x.s)+'</span><div class="q">'+blank(x.q)+'</div><div class="a">모범답 · '+esc(x.a)+'</div></div><div class="ops"><button class="btn sm">🔄</button><button class="btn sm ghost">✕</button></div></div>'; });
+    h+='<h3>3부 · 교과서 문항 <small>'+S.p3.length+'문항 · 비상교육 공통수학1</small></h3>';
+    S.p3.forEach(function(x,i){ h+='<div class="tbitem'+(fresh['p3'+i]?' fresh':'')+'"><span class="no">'+(i+1)+'</span><div class="img">그림</div><div><b>'+esc(x.t)+'</b><small>'+esc(x.ref)+' · 정답 '+esc(x.a)+'</small></div><div class="ops"><button class="btn sm">🔄</button></div></div>'; });
+    document.getElementById('ed').innerHTML=h;
+    var p='<div class="hd"><b>'+esc(S.title)+'</b><span>이름: ○○○ &nbsp; 날짜: 10 / 10</span></div><div class="pt">1부. 개념 백지 — 교재·노트를 덮고 떠올려 쓰세요</div>';
+    S.p1.forEach(function(x,i){ p+='<div class="q'+(fresh['p1'+i]?' fresh':'')+'"><span class="n">'+(i+1)+'.</span><span>'+blank(x.q)+'</span></div>'+(x.type==='write'?'<div class="ans"></div>':''); });
+    p+='<div class="pt">3부. 교과서 문항</div><div class="tb">';
+    S.p3.forEach(function(x,i){ p+='<div class="pb'+(fresh['p3'+i]?' fresh':'')+'"><small>'+(i+1)+'. '+esc(x.ref)+'</small><div class="ph"></div></div>'; });
+    p+='</div><div class="ft">루멘수학 · 백지테스트는 「아하!」를 찾는 시험입니다. 틀린 것은 아하노트에.</div>';
+    document.getElementById('paper').innerHTML=p;
+    document.getElementById('c1').textContent=S.p1.length; document.getElementById('c3').textContent=S.p3.length;
+    document.getElementById('pgcnt').textContent=(S.p1.length>8?'2쪽 / 2':'1쪽 / 1');
+    if(Object.keys(fresh).length){ setTimeout(function(){ fresh={}; paint(); },2500); }
+  }
+  function snap(){ S.undo.push(JSON.stringify({p1:S.p1,p3:S.p3,title:S.title})); }
+  function restore(){ var u=S.undo.pop(); if(!u) return false; var o=JSON.parse(u); S.p1=o.p1; S.p3=o.p3; S.title=o.title; return true; }
+  function pick(key,n){ var arr=BANK[key]||[]; var out=[]; for(var i=0;i<arr.length&&out.length<n;i++){ var k=key+i; if(used[k]) continue; used[k]=1; out.push(JSON.parse(JSON.stringify(arr[i]))); } return out; }
+  function num(t){ var m=t.match(/(\d+)\s*(문제|문항|개)/); if(m) return Number(m[1]); if(/한\s*(문제|문항|개)|하나/.test(t)) return 1; if(/두\s*(문제|문항|개)|둘/.test(t)) return 2; if(/세\s*(문제|문항|개)|셋/.test(t)) return 3; return 2; }
+  function topic(t){ if(/곱셈\s*공식\s*(의)?\s*변형|변형/.test(t)) return '곱셈공식 변형'; if(/인수분해/.test(t)) return '인수분해'; if(/조립제법/.test(t)) return '조립제법'; if(/나머지\s*정리|인수정리/.test(t)) return '나머지정리'; if(/항등식|미정계수/.test(t)) return '항등식'; if(/곱셈\s*공식/.test(t)) return '곱셈공식 변형'; return ''; }
+  function idxOf(t){ var m=t.match(/(\d+)\s*번/); return m?Number(m[1])-1:-1; }
+  /* 시안용 가짜 AI — 실제는 AI 가 「고칠 목록」을 돌려준다 */
+  function act(t){
+    t=t.trim(); var ai='';
+    if(/취소|되돌/.test(t)){ return restore()?'↩ 방금 고친 것을 되돌렸습니다.':'되돌릴 것이 없습니다.'; }
+    snap();
+    if(/교과서/.test(t)){
+      var i3=idxOf(t); var k=/곱셈/.test(t)?'곱셈공식':/나눗셈|나누/.test(t)?'나눗셈':/인수분해/.test(t)?'인수분해':'곱셈공식'; var n3=num(t); var got=[]; (TB[k]||[]).forEach(function(x){ var kk='tb'+k+x.ref; if(got.length<n3&&!used[kk]){ used[kk]=1; got.push(JSON.parse(JSON.stringify(x))); } });
+      if(i3>=0&&S.p3[i3]&&got.length){ S.p3[i3]=got[0]; fresh['p3'+i3]=1; ai='3부 '+(i3+1)+'번을 교과서 은행에서 <b>'+esc(got[0].ref)+'</b> 으로 바꿨습니다. (AI 없이 바로)'; }
+      else if(got.length){ got.forEach(function(x){ S.p3.push(x); fresh['p3'+(S.p3.length-1)]=1; }); ai='교과서 은행에서 <b>'+k+' '+got.length+'문항</b>을 3부 끝에 넣었습니다: '+got.map(function(x){ return x.ref; }).join(', ')+'. (AI 없이 바로)'; }
+      else { S.undo.pop(); ai='교과서 은행에 그 유형의 남은 문항이 없습니다. AI 창작으로 넣을까요?'; }
+      return ai;
+    }
+    var i=idxOf(t);
+    if(/빼|삭제|지워|없애/.test(t)){
+      if(i>=0&&S.p1[i]){ var rm=S.p1.splice(i,1)[0]; return (i+1)+'번 「'+esc(rm.q.slice(0,22))+'…」 을 뺐습니다. 번호를 다시 매겼습니다.'; }
+      if(/빈칸/.test(t)){ var j=-1; S.p1.forEach(function(x,k){ if(j<0&&x.type==='blank') j=k; }); if(j>=0){ S.p1.splice(j,1); return '빈칸 문항 중 가장 쉬운 '+(j+1)+'번을 뺐습니다.'; } }
+      if(/서술/.test(t)){ var w=-1; S.p1.forEach(function(x,k){ if(x.type==='write') w=k; }); if(w>=0){ S.p1.splice(w,1); return '서술 문항 '+(w+1)+'번을 뺐습니다.'; } }
+      S.undo.pop(); return '어느 문항을 뺄지 모르겠어요. 「4번 삭제」처럼 번호로 말해 주세요.';
+    }
+    if(i>=0&&S.p1[i]){
+      var x=S.p1[i];
+      if(/쉽게|쉬운/.test(t)){ var e=EASY[i]||{type:'blank',q:x.q.replace(/설명하시오/,'한 줄로 쓰시오'),a:x.a,s:x.s}; S.p1[i]=e; fresh['p1'+i]=1; return (i+1)+'번을 <b>더 쉽게</b> 다시 썼습니다. 나머지는 그대로입니다.'; }
+      if(/서술/.test(t)){ S.p1[i]={type:'write',q:x.q.replace(/\[\[[^\]]*\]\]/g,'( )').replace(/이다\.?$/,'인 까닭을 설명하시오.'),a:x.a,s:x.s}; fresh['p1'+i]=1; return (i+1)+'번을 <b>서술형</b>으로 바꿨습니다.'; }
+      if(/빈칸/.test(t)){ S.p1[i]={type:'blank',q:x.q.replace(/을 설명하시오\.?|를 설명하시오\.?/,'은 [[ ]] 이다.'),a:x.a,s:x.s}; fresh['p1'+i]=1; return (i+1)+'번을 <b>빈칸형</b>으로 바꿨습니다.'; }
+      var tp=topic(t); var g=pick(tp||'곱셈공식 변형',1); if(g.length){ g[0].type=x.type; S.p1[i]=g[0]; fresh['p1'+i]=1; return (i+1)+'번을 '+(tp?'「'+tp+'」 묻는 문항으로':'다른 문장으로')+' 다시 썼습니다.'; }
+    }
+    if(/서술형?을? 뒤로|뒤로 모아/.test(t)){ var b=S.p1.filter(function(x){ return x.type!=='write'; }), w2=S.p1.filter(function(x){ return x.type==='write'; }); S.p1=b.concat(w2); return '서술 문항을 뒤로 모았습니다. 빈칸 '+b.length+' → 서술 '+w2.length+' 순서입니다.'; }
+    var mN=t.match(/(\d+)\s*문항으로/); if(mN){ var want=Number(mN[1]); if(want>S.p1.length){ var add=want-S.p1.length; var ks=['곱셈공식 변형','조립제법','항등식','나머지정리','인수분해']; var got2=[]; ks.forEach(function(k){ if(got2.length<add) got2=got2.concat(pick(k,add-got2.length)); }); got2.forEach(function(x){ S.p1.push(x); fresh['p1'+(S.p1.length-1)]=1; }); return '1부를 '+S.p1.length+'문항으로 늘렸습니다 (범위 안 유형에서 '+got2.length+'개 더 씀).'; } if(want<S.p1.length){ S.p1=S.p1.slice(0,want); return '1부를 '+want+'문항으로 줄였습니다 (뒤에서부터 뺌).'; } S.undo.pop(); return '이미 '+want+'문항입니다.'; }
+    if(/제목/.test(t)){ var mt=t.match(/[「"'](.+?)[」"']/); if(mt){ S.title=mt[1]; return '제목을 「'+esc(mt[1])+'」 로 바꿨습니다.'; } }
+    if(/힌트/.test(t)){ S.p1.forEach(function(x){ if(!/힌트/.test(x.a)) x.a+='  · 힌트: '+x.s+' 정의를 떠올리기'; }); return '답지의 모범답마다 <b>힌트 한 줄</b>을 붙였습니다. (시험지에는 안 보이고 답지에만)'; }
+    var tp2=topic(t);
+    if(tp2){ var n=num(t); var got3=pick(tp2,n); if(!got3.length){ S.undo.pop(); return '「'+tp2+'」 은 시안에 준비된 문항을 다 썼습니다. 실제 앱에서는 AI 가 새로 씁니다.'; } got3.forEach(function(x){ S.p1.push(x); fresh['p1'+(S.p1.length-1)]=1; }); return '「<b>'+tp2+'</b>」 개념 문항 '+got3.length+'개를 1부 끝에 넣었습니다 ('+got3.map(function(x){ return x.type==='write'?'서술':'빈칸'; }).join('·')+'). 소단원 「'+esc(got3[0].s)+'」 로 표시했습니다.'; }
+    S.undo.pop();
+    return '시안이라 이 말은 못 알아들었어요. 예: 「곱셈공식 변형 2문제 더」 「3번 더 쉽게」 「5번을 서술형으로」 「4번 삭제」 「교과서에서 곱셈공식 2개 더」 「1부를 8문항으로」';
+  }
+  var log=document.getElementById('log');
+  function say(cls,html,undoable){ var d=document.createElement('div'); d.className='msg '+cls; d.innerHTML=html+(undoable?'<br><button class="und" type="button">↩ 되돌리기</button>':''); log.appendChild(d); log.scrollTop=log.scrollHeight; if(undoable){ d.querySelector('.und').addEventListener('click',function(){ if(restore()){ paint(); say('ai','↩ 되돌렸습니다.'); } this.disabled=true; }); } return d; }
+  var busy=false;
+  function send(t){ if(busy||!t.trim()) return; busy=true; say('me',esc(t)); var w=say('ai wait','AI 가 시험지를 보고 고치는 중… (실제 10~15초, 교과서는 즉시)'); var before=S.undo.length; var delay=/교과서|취소|되돌/.test(t)?350:1100; setTimeout(function(){ var r=act(t); w.remove(); say('ai',r, S.undo.length>before); paint(); busy=false; },delay); }
+  document.getElementById('f').addEventListener('submit',function(e){ e.preventDefault(); var el=document.getElementById('in'); send(el.value); el.value=''; });
+  ['곱셈공식 변형 2문제 더 추가해줘','3번 더 쉽게','5번을 서술형으로','교과서에서 곱셈공식 문제 2개 더','빈칸 문제 중 쉬운 거 하나 빼','1부를 8문항으로','답지에 힌트 한 줄씩'].forEach(function(q){ var b=document.createElement('button'); b.type='button'; b.textContent=q; b.addEventListener('click',function(){ send(q); }); document.getElementById('quick').appendChild(b); });
+  say('ai','초안이 준비됐습니다. 고치고 싶은 것을 말해 주세요. 예: <b>곱셈공식 변형 2문제 더 추가해줘</b>');
+  paint();
+})();
+</script>

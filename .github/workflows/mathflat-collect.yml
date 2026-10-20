@@ -1,4 +1,4 @@
-name: 매쓰플랫 자동수집 (하루 3번)
+name: 매쓰플랫 자동수집 (하루 6번)
 
 # 매쓰플랫 정오답을 수집해 Supabase에 저장한다. 진도 레이스 점수의 원재료다.
 # - 컴퓨터를 켜둘 필요 없음(GitHub 서버에서 실행).
@@ -20,6 +20,11 @@ on:
     - cron: '0 19 * * *'    # UTC 19:00 = 한국 04:00 새벽 — 어제치 마무리
     - cron: '0 7 * * *'     # UTC 07:00 = 한국 16:00 오후 — 오전·낮반 반영
     - cron: '0 13 * * *'    # UTC 13:00 = 한국 22:00 밤   — 그날 수업까지 반영
+    # 2026-10-18 원장 「점수횟수를 추가」 — 학생들이 숙제하는 저녁에 세 번 더 (하루 6번)
+    #   GitHub 가 예약을 2~5시간씩 미루는 일이 잦아 «정각»은 보장되지 않는다. 횟수를 늘려 빈틈을 줄인다.
+    - cron: '0 9 * * *'     # UTC 09:00 = 한국 18:00 저녁
+    - cron: '0 11 * * *'    # UTC 11:00 = 한국 20:00 저녁
+    - cron: '0 15 * * *'    # UTC 15:00 = 한국 00:00 자정
   workflow_dispatch:
     inputs:
       days:
@@ -27,14 +32,18 @@ on:
         required: false
         default: '7'
 
+# 2026-10-18 줄 분리 (원장 「줄분리」): 예전엔 요청 처리(5분마다)·루멘 분석기와 «한 줄»이었다.
+#   GitHub 는 한 줄에 «기다리는 실행»을 하나만 두고 새로 온 것이 옛것을 취소한다 → 분석기가 몇 시간 도는 동안
+#   기다리던 정기 수집이 5분마다 오는 요청 처리에 밀려 취소됐다(10/18 오후 4시분). 매쓰플랫은 동시 접속이 되므로
+#   (2026-10-07 원장 확인) 정기 수집은 자기 줄만 쓴다. 정기 수집끼리는 여전히 겹치지 않는다.
 concurrency:
-  group: mathflat-collect
+  group: mf-collect   # 옛 이름 mathflat-collect 는 10/18 밤 돌고 있던 분석기가 쥐고 있어 새 이름으로
   cancel-in-progress: false
 
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180   # 2026-10-10: 새벽 준비 단계(학습지 인식 최대 12장)를 더해 120 → 180
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
@@ -70,4 +79,22 @@ jobs:
           # 시험대비 트랙에 새로 담긴 교재의 「쪽별 문항 수」를 매쓰플랫에서 받아
           # 목표 문항 수를 정확한 값으로 채운다. 이미 받아 둔 교재는 그냥 건너뛰므로
           # 평소에는 몇 초면 끝난다(로그인조차 하지 않는다).
-          node sync/mf_book_toc.js --track --apply || echo "교재 목차 수집 실패 (수집은 정상)" 
+          node sync/mf_book_toc.js --track --apply || echo "교재 목차 수집 실패 (수집은 정상)"
+
+      # 🎯 적중 분석 «우리 자료 3종» 새벽 준비 (2026-10-10 원장 결정 — docs/exam_hit_contract.md §10)
+      #   수학비서 학년 폴더(고1·고2·…) 학습지를 미리 매쓰플랫 AI 로 인식(ms_paper_<id>) · PDF 자료함(exam_lib) 대기 파일 인식 ·
+      #   지정 교과서 은행(mf_textbook_<bid>)이 없으면 만들기. 04시 회차에만 실제로 돈다
+      #   (PREP_ROUND=dawn 이거나 한국 3~6시가 아니면 워커가 스스로 건너뛴다 — 16시·22시 회차는 몇 초 만에 끝).
+      #   앞 단계가 실패해도 돈다(if: always()). pdf-lib 는 워커가 필요할 때 즉석 설치.
+      - name: 적중 분석 자료 새벽 준비 (수학비서 학습지 · 자료함 · 교과서 은행)
+        if: always()
+        env:
+          MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
+          MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MATHSECR_ID: ${{ secrets.MATHSECR_ID }}
+          MATHSECR_PASSWORD: ${{ secrets.MATHSECR_PASSWORD }}
+          PREP_ROUND: ${{ github.event.schedule == '0 19 * * *' && 'dawn' || '' }}
+        run: node sync/exam_hit_worker.js --prep
+

@@ -50,6 +50,7 @@ exam_hit_<examId>       // examId = 옥길중_중1_2026_2_중간 처럼
   basis: 'same' | 'same+var' | 'type',            // 원장님이 고른 적중 기준 (기본 'same+var')
   items: [{ no, img, type:{cid, name, chapter}, level, killer, answerType, source:'textbook'|'ours'|'outside'|'',
             repeat:[{year, no}],                   // 같은 학교 지난 기출의 같은 세부유형
+            past:[…], pastTop, pastHit,            // (v19-109) 같은 학교 지난 시험 문항과 그림 비교 — §11 (우리 자료 적중률과 따로)
             cands:[{ matId, kind:'same'|'var'|'type'|'text', score, why }],  // 자동 후보
             hit:  { kind, matId, ok:true|false|null, by:'teacher', at } }],  // ok=null 이면 미확정
   mats:  [{ matId, kind:'ws'|'book'|'twin'|'upload', title, where:'학습지 이름 3번' | '교재 87쪽 5번', img, problemId, cid }],
@@ -155,3 +156,163 @@ exam_hit_index          // { items:[{ examId, school, grade, year, semester, ter
 - (v19-81) 난이도 칸: 원장님이 개수(2~5)·경계를 고른다(`card.diff = { src:'ms'|'mf', n, cuts }`). 기준은 기출 DB 난이도 1~9(기본 쉬움 1~2 · 보통 3~4 · 어려움 5 이상) — `exam.msLv`(워커가 기출 DB 시험지에서 저장, 문항 번호 순) 또는 받아 둔 `ms_exams` 에서 같은 시험. 없으면 매쓰플랫 1~5.
 - (v19-81) 자료 이름: 교과서 말고는 «루멘수학 시험대비자료»(`card.matMode='one'`) 또는 나눠서 루멘수학 자체교재 · 학습지 · 대비자료 · 기출자료(`'split'`).
 - (v19-81) 카드 왼쪽 위 «루멘수학»(한글, 2배) · 밑에 «쌤 모르겠어요에서 아하까지».
+
+## 10. 자료 3종 (10/10 원장 결정) — 교과서 · 수학비서 학습지 · PDF 자료함 (학원앱 v19-99)
+
+원장 결정 2026-10-10 (시안 `docs/mockup_exam_hit_sources.html` 승인): **학년 폴더 기본 · 교과서 전체 포함(기본) · PDF 자료함 둠 · 다른 학교 기출 시험지는 기본 꺼 둠 · 교과서 은행 없는 책은 새벽 자동 생성**.
+까닭: 범박고 고1 분석이 «우리 자료 0개» — `loadMaterials` 가 `mf_answer_records`(매쓰플랫 채점 기록)만 읽는데 고등부는 기록이 없다.
+
+### 10-1. 흐름
+```
+학원앱 「📤 시험지 올리기」 / 「📚 기출 DB → 🎯 적중 분석」
+  → (confirm 대신) 요청 화면: 📘 교과서 · 📂 수학비서 학습지 · 📄 PDF 자료함 · 🧮 매쓰플랫(자동) · 합계 띠
+  → 「🎯 적중 분석 시작」 = exam_hit_req.src 와 함께 요청      「💾 이 구성 기억」 = exam_hit_src_<학교>_<학년>
+워커(exam_hit_worker.js, 5분 워크플로) runExam ③ 우리 자료 = (a) 교과서 은행 + (b) ms_paper_<id> + (c) exam_lib + (d) mf_answer_records
+  · 아직 인식 안 된 수학비서 학습지·자료함 PDF 는 «분석 때 바로 인식»(같은 매쓰플랫 AI 길, 장당 2~5분) — 요청에서 조용히 빠지지 않는다
+  · 띠 글: 「자료 모으는 중 — 교과서 783 · 수학비서 3장 · 프린트 1장 · 매쓰플랫 N」
+새벽 준비 node sync/exam_hit_worker.js --prep (mathflat-collect.yml 04시 회차, PREP_ROUND=dawn 또는 한국 3~6시)
+  · 수학비서 학년 폴더(고1·고2·고3·중1·중2·중3, 아래 폴더 포함) 최근 150일 학습지 → ms_paper_<id> (오래된 것부터 한 번에 12장)
+  · 기억한 구성(exam_hit_src_*)의 msOn 학습지도 미리 인식 · ms_papers_index 갱신
+  · PDF 자료함 대기 파일 인식(한 번에 6개) · 지정 교과서(type SCHOOL) 은행이 없으면 mf_textbook_bank.js --bids 로 만들기
+  · --dry = 읽기만 하고 할 일 목록만 · --force = 새벽 아니어도 · --cap N
+```
+
+### 10-2. 요청 — `exam_hit_req.src`
+```js
+src: { tb:{ on:true, mode:'all'|'scope', bids:['3219971', …] },   // 교과서 — 체크한 지정 교과서
+       ms:['711431', …],                                         // 수학비서 학습지 id
+       lib:['L…', …],                                            // 자료함 id
+       mf:true }                                                 // 매쓰플랫 채점 기록
+```
+- `src` 가 없으면 예전과 같다 + **고등부만** 지정 교과서 전체(`mode:'all'`)를 기본으로 넣는다. `tb.bids` 가 비면 `mf_textbooks.bySchoolGrade['학교|학년']` 의 SCHOOL 책 전부.
+- `mode:'scope'` = 시험 문항의 유형(cid)이 나오는 쪽의 소단원 제목 + 시험 문항 중단원 이름과 같은 쪽 제목 → 그 소단원 쪽만. 맞는 쪽이 없으면 전체.
+- 같은 문항이 매쓰플랫 교재 기록(`wb:<id>`)에도 있으면 정오가 있는 기록 쪽을 남기고 교과서 쪽은 뺀다.
+- 분석하는 시험지 자체(`req.mydb`)가 ms 에 있으면 뺀다. 결과 `exam_hit_<시험>.src` 에 요청한 src 를 남겨 「🔄 다시 판정」이 같은 구성으로 돈다.
+
+### 10-3. 저장 키
+| 키 | 모양 | 쓰는 쪽 |
+|---|---|---|
+| `ms_paper_<id>` | `{ id, title, folder, grade, uploadedAt, n, status:'ready'\|'pending'\|'error', err, updated, items:[{ no, img, cid, level, src, srcWb, pid }] }` — `img` = exam_images `ms/<id>/<번호>.png` | 워커 |
+| `ms_papers_index` | `{ updated, items:[{ id, title, folder, sub?, grade, uploadedAt, n, status, exam }] }` — 학년 폴더 전부(기출은 `exam:true`) + 다른 폴더의 1년 안 학습지. 학년 폴더 아래 폴더는 `folder`=학년 폴더, `sub`=아래 폴더 (약 160KB) | 워커 → 앱 |
+| `exam_lib` | `{ updated, items:[{ id, title, school, grade, sem, year, uploadedAt, src, path, n, status, err, items:[…], moved, deleted }] }` — 앱이 `status:'pending'`·`src:'aha_photos/_exam_hit/lib_<id>/1.pdf'` 로 넣고, 워커가 `exam_images/lib/<id>.pdf` 로 옮겨 인식(`lib/<id>/<번호>.png`). 앱에서 지우면 `deleted:true` 만(워커는 건너뜀). 둘 다 쓰므로 쓰기 직전에 다시 읽어 그 항목만 바꾼다 | 앱 + 워커 |
+| `exam_hit_src_<학교>_<학년>` | `{ folders:[…], tbMode, tbOff:{bid:1}, msOff:{id:1}, msOn:{id:1}, libOn:[…], mf, updated }` — 앱만 쓴다. 워커는 `req.src` 만 읽는다(새벽 준비가 msOn 을 미리 인식하는 것만 예외) | 앱 |
+
+- 결과 `exam_hit_<시험>.mats[k].kind` = `textbook` · `ms` · `upload`(자료함이면 `lib:true`) · `ws` · `book`. 키 이름: `tb:<문항id>` · `ms:<학습지id>:<번호>` · `lib:<자료id>:<번호>` · `up:…` · `ws:…` · `wb:…`.
+- `stats.byKind = { textbook:{mats, hit}, ms:{…}, upload:{…}, ws:{…}, book:{…} }` — `mats` = 대조한 자료 문항 수(워커), `hit` = 자동 1순위 후보가 그 종류인 기준 안 적중 수(워커, 확정 전). **화면의 «우리 자료별 적중» 숫자는 학원앱이 원장님 ✓/✗ 를 반영해 다시 센다**(`htEff` 와 같은 방식, 한 문항은 맨 앞 적중 자료 하나로). `mats` 는 워커 값을 그대로 쓴다.
+- **교과서(출판사) 문항으로 확정 (학원앱 v19-116, 2026-10-12)**: 문항 카드 「📚 출판사 교과서」에서 등급을 고르면 `it.hit = { k:'pub:<문항id>', kind, ok:true, by:'teacher', at, pub:true }` · `mats['pub:<문항id>'] = { kind:'textbook', title:'<출판사> 교과서', where:'<쪽>쪽 <번호>번', img:<imgUrl>, store:'', res:{}, pub:true, pubs, bid, subject }` · `it.pub[]` 의 kind 는 고른 등급(`ai` = AI 처음 판정, `by:'teacher'`). 한 문항 안 같은 imgUrl 후보는 하나로 묶여 모두 같은 등급이 되고 적중 열쇠는 맨 앞 k. 워커는 다시 판정 때 이 적중과 mats 칸을 그대로 옮기고(`runExam`), 출판사 비교를 다시 해도 `by:'teacher'` 등급을 지킨다(`pubCompare` · `chat_judge_apply_pub.py`). 교과서 일치 셈: 같은 그림(imgUrl)이 2개 출판사 이상이면 «공통» 한 번 — 출판사 숫자는 그 출판사에만 있는 그림으로 일치한 문항만(학원앱이 화면에서 센다).
+- 판정 규칙은 그대로: 원본 번호 같음(문제은행 `p`·교재 `b`) → 후보 맨 앞, 같은 유형 번호 → 후보, 그림 판정. 수학비서·자료함 문항은 매쓰플랫 인식의 `src`(가장 닮은 원본)를 `pid`/`wbp` 로 써서 같은 길을 탄다. 교과서 은행 문항은 `wbp`=은행 문항 id, `pid`=그림 주소의 문제 번호.
+- 학생별 「시험 전에 맞혔나」는 매쓰플랫 자료(`ws`·`book`)만. 교과서·수학비서·프린트로 적중한 문항은 «나눠 줌».
+- 학부모 보고서·블로그 .md 의 자료 이름은 종류만: 교과서 · 학원 학습지 · 학원 프린트 · 매쓰플랫 학습지·교재 (「수학비서」 낱말은 밖으로 안 나간다, §6).
+
+### 10-4. ⚡ 즉시 처리
+- 학원앱 설정 「⚡ GitHub 토큰 (선택)」 — localStorage `or_gh_token` (이 PC 에만, `scheduleSync` 에서 빼서 서버로 안 올라간다. 같은 자리에 `or_mf_id`·`or_mf_pw` 도 뺐다).
+- `exam_hit_req` · `ms_mydb_index_req` · `mf_collect_req` 를 `status:'requested'` 로 쓰면 `POST https://api.github.com/repos/yellowtongki/lumen-math/actions/workflows/mathflat-ondemand.yml/dispatches` `{"ref":"main"}` (머리 `Authorization: Bearer …`, `Accept: application/vnd.github+json`, `X-GitHub-Api-Version: 2022-11-28`). 204 → 「⚡ 서버 작업을 깨웠습니다 (1분 안 시작)」.
+- 토큰이 없으면 요청 띠에 「🐙 GitHub에서 바로 실행」(Actions 페이지, 새 창) + 「Run workflow 를 누르면 1분 안에 시작됩니다」. 토큰이 있으면 띠에 「⚡ 다시 깨우기」.
+- 토큰 = GitHub fine-grained, 저장소 lumen-math 하나, 권한 **Actions: Read and write** 만.
+
+### 10-4-1. 고등부 교육과정 키 (같은 날 고침)
+- 매쓰플랫 AI 인식(analysis-flow)에 넘기는 `trieKey` 가 고등부도 중학교 키였다(`trieForExam('2', …)` = 중2). 범박고 고2 미적분1 시험이 「일차함수와 그래프」 유형으로 읽혔고, 교과서 은행(고등 유형 번호)과 유형이 하나도 안 맞았다.
+- 이제 고등부는 과목별 키: 22개정 `1.4.4147.<과정>`(공통수학1 4175 · 공통수학2 4176 · 대수 4177 · 미적분1 4178 · 확률과 통계 4179 · 미적분2 4180 · 기하 4181), 15개정 `1.2.7.<과정>`(수학(상) 41 · (하) 42 · 수학Ⅰ 43 · 수학Ⅱ 44 · 확통 45 · 미적분 46 · 기하 47) — `/curriculums/by-key` 로 확인. 22개정 적용은 고1 2025 · 고2 2026 · 고3 2027 부터.
+- 과목은 `exam.subject`(요청 화면의 「과목」 — 기출 DB 제목 또는 지정 교과서가 한 권이면 그 과목이 기본) → 없으면 `ms_mydb_index` 의 시험지 제목에서 읽는다. 수학비서 학습지·자료함은 제목·폴더 이름에서. 그래도 모르면 예전 키(로그에 ⚠).
+- 실제 매쓰플랫 AI 작업으로는 아직 돌려 보지 않았다(검사 중 매쓰플랫에 작업을 만들지 않음) — 첫 고등부 요청 로그의 「교육과정 키 …」 줄과 문항 유형 이름을 확인할 것.
+
+### 10-5. 2026-10-10 실제 확인 (`--prep --dry`)
+- 수학비서 학년 폴더(고1 219 · 고2 300 · 고3 461 · 중1 11 · 중2 52 · 중3 62장)는 **전부 기출**(학교 시험지·전국 모의고사)이라 새벽에 미리 인식할 학습지가 0장이다.
+  실제 학습지는 과목 폴더(공수2 16 · 미적분1 13 · 공수1 12 · 중등1 10 · 봉쌤모의고사 9 · EBS 9 …)에 있다 → 요청 화면에서 폴더 칩으로 골라 체크하면 «분석 때 바로 인식», 「💾 이 구성 기억」 해 두면 다음 새벽부터 미리 인식.
+- 산 자료(PURCHASE)는 `uploadedAt`·`pdfPath` 가 없다 → 날짜는 `purchasedAt`, 그림은 기출 DB 받기(`msExam`+`msImage`)로 받아 PDF 를 만든 뒤 인식. 150문항·60쪽 넘는 자료는 건너뜀(`error`).
+- 지정 교과서 8권 은행은 모두 있다(범박고 고2 대수 3219971 · 미적분1 3227375 포함).
+
+### 10-6. 2026-10-11 «내 문제지» · 수학비서와 같은 폴더 나무 · 시험 범위 단원만 (학원앱 v19-107)
+원장: 「수학비서는 DB 와 내 문제지가 다르다. 내 문제지가 내가 만든 것이다. 그리고 수학비서 폴더 형태와 똑같아야 헷갈리지 않는다.」 · 「시험 범위 단원만」은 교과서만이 아니라 모든 자료에.
+- 수학비서 API(같은 로그인): 나무 `GET /bms/api/v1/folders?folderType=mypaper` · 목록 `/my-papers?limit=100&folderId=<id>[&cursor=]` · 상세 `/my-papers/<id>`(folders 경로) · 문항 `/my-papers/<id>/cells?limit=100[&cursor=]` (imagePath · passage.imagePath · chapters · adaptiveTags · answers · sources, 그림은 CDN 쿠키).
+- 저장 키 (앱은 시작 때 안 받는다 — PULL_SKIP_PREFIX `ms_mypaper`)
+
+| 키 | 모양 |
+|---|---|
+| `ms_mypapers_index` | `{ updated, tree:[{ id, n, fc, tc, c:[…] }], items:[{ id, title, folderId, folderPath:'작업공간 › 교과서 변형', n, progress, createdAt, avgDiff, status }] }` — 나무·목록 순서는 수학비서 그대로 (약 35KB) |
+| `ms_mypaper_<id>` | `ms_paper_<id>` 와 같은 모양 + `kind:'mp'`, `folderId`, `folderPath`, `subject`, `grade`, `createdAt`, `trie`, `typed` · items 에 `msChapter`(단원 경로) · `msTags` · `answer`(latex) · `msSource` · `msDiff`. 그림 `exam_images/msmp/<id>/<번호>.png` (지문은 위에 붙여 한 장) |
+| `ms_papers_index` | 위 10-3 + `tree`(나만의 DB 폴더 나무, 같은 줄임 모양) · items 에 `fid`(폴더 id) |
+| `exam_hit_src_<학교>_<학년>` | 위 10-3 + `mpOn`/`mpOff`(내 문제지 · 자동 체크와 다른 것만) · `scope:'all'\|'exam'` |
+
+- 인식: 문항 그림을 A4 2단 PDF 로 붙이고 **우리 상자 좌표**로 매쓰플랫 analysis-flow (sync/mypaper_to_mathflat.js 와 같은 방식) → 수학비서 번호와 1:1, 유형·원본 번호. 과목·교육과정 키는 문항 단원 맨 앞(「08 공통수학2」, `decideCurriculum`).
+- **10쪽 제한**: 매쓰플랫 문서 인식은 한 번에 10쪽까지(넘으면 「pageIndexes: must be valid」 — 711432 가 12쪽이었다). 이제 모든 인식(나만의 DB · 내 문제지 · 자료함 PDF)을 10쪽씩 나눠 돌리고 이어 붙인다. 150문항 제한을 600문항·200쪽으로 올렸고, 예전 크기 제한으로 건너뛴 것은 다음 `--prep` 에서 바로 다시 한다.
+- 요청 `src.mp = [id…]` → 자료 키 `mp:<id>:<번호>`, `kind:'ms'` + `mp:true` (보고서 이름 «학원 학습지», 화면 «학원 문제지»). 아직 인식 안 된 것은 분석 때 바로 인식.
+- `src.scope = 'exam'` → 모든 자료에서 시험 문항의 소단원(유형 → `mf_concept_names` 중단원·유형 이름 → `mf_typedb` 소단원)에 없는 문항을 뺀다. 유형이 없거나 단원을 모르는 문항은 남긴다. 소단원을 모르면 중단원으로. 교과서는 예전 `tb.mode='scope'`(쪽 단위)도 같이.
+- 결과: `exam_hit_<시험>.units = [{ mid, lit }]`(시험 단원) · `stats.byKind.ms.mp = { mats, hit, papers, cands, scopeDropped }` · `stats.byKind.ms.papers` · `stats.byKind[k].scopeDropped` · `stats.scope`.
+- 실행: `--mypapers-index` (색인만) · `--mp-build 2061686,2032273` (인식 + 색인) · `--rejudge <시험> --dry --src-file src.json` (저장 없이 자료 구성 바꿔 보기). `--prep` 은 내 문제지 색인 + 기억한 구성의 `mpOn` 미리 인식도 한다.
+- 단위 검사 `sync/appbuild/tests/test_hit_scope.js` (서버 접속 없음) · 앱 검사 `tests/test_v19107.js`.
+
+## 11. 🔁 지난 기출과 비교 (10/11 원장 요청 · 학원앱 v19-109)
+원장: 「범박고 분석 시 범박고 기출에서 나온 것도 확인할 수 있나? 기능을 추가하자. 소사고 분석 시는 소사고 기출과 비교.」
+예전 «반복 출제»(`it.repeat`)는 같은 학교·학년·학기·중간/기말 지난 시험에 **같은 유형 번호**가 있었는지만 셌다(그림 비교 없음). 이제 «우리 자료»와 **따로** 지난 시험 문항과 그림을 비교한다. `it.repeat` 는 예전 화면·옛 결과를 위해 그대로 둔다.
+
+### 11-1. 워커 (`sync/exam_hit_worker.js` — `pastCompare` · `pastSelect` · `pastCands`)
+- **비교 대상** = `ms_exams_<학교>` 의 같은 학교·같은 학년 시험지 중
+  · 분석하는 시험보다 **앞선** 시험만(연도·학기·중간/기말 순서) · 같은 시험지 id(`mydb`) 뺌
+  · 기본 **최근 4년**(2026 시험이면 2022~2025 + 2026 앞 시험) · **중간/기말 · 1/2학기 모두** (`src.past.sameTerm` 이면 같은 시험만)
+  · 고등부: 같은 교육과정 안에서 과목이 다르면 뺀다(공통수학1 ↔ 공통수학2, 대수 ↔ 미적분1 — `courseTrie`). 교육과정이 다르면(수학(하) ↔ 공통수학2) 넣고 유형으로 맞춘다
+  · `ms_exam_bridge.byMydb[id].problems`(매쓰플랫 유형 번호)가 없는 시험지는 뺀다(로그 「유형 번호 없는 n장 뺌」)
+- **후보**(문항마다 최대 3개) = 다리 `problemId` 가 시험 문항의 «가장 닮은 원본»(`it.src` p번호)과 같은 것(원본 번호 같음) → 같은 유형 번호(cid) → 같은 유형 이름 · 최근 시험 · 난이도(수학비서 1~9) 가까운 순. 원장님이 확정한 후보는 맨 앞에 고정.
+- **판정** = 우리 자료와 같은 그림 판정(`judgeItem`, 규칙 글만 «같은 학교의 지난 시험 문항 후보»로) → 같은 문제 / 숫자변형 / 지문만, 아니면 유형이 같을 때 유사유형. 문항당 Claude 한 번 더(23문항 ≈ 23회).
+- 그림: 기출 DB 문항 수와 다리 문항 수가 같으면 `exam_images/<시험지id>/<번호>.png`(1년 서명 `imgUrl`), 다르면 매쓰플랫 문항 그림 + `approx:true`(번호 추정). 새 그림 복사본은 만들지 않는다.
+- **저장**
+```js
+it.past    = [{ k:'past:<시험지id>:<번호>', mydb, exam:'2025 2학기 중간', year, sem, term, no, kind:'same'|'var'|'type'|'text', why, img, imgUrl, idSame, approx?, rejected?, ai? }]
+it.pastTop = { k, kind } | null                       // 자동 1순위 (같은 문제 > 숫자변형 > 유사유형 > 지문만)
+it.pastHit = { k, kind, ok:true, by:'teacher', at }   // 원장 확정 · { k:null, kind:'none', ok:false } = 「겹침 없음」 확정
+stats.past = { same, var, type, text, items /* 같은 문제+숫자변형 문항 수 */, cands, idSame, exams, years, sameTerm, list:[{ mydb, exam, year, sem, term, n }] }
+exam_hit_req.summary.past = { same, var, type, items, exams }
+```
+- 다시 판정: 그 후보가 아직 있으면 `pastHit` 를 남긴다(「겹침 없음」 확정은 늘 남김). `rejected`·`ai` 표시도 같은 후보에 옮긴다.
+- **우리 자료 적중률·`stats.byKind` 에는 들어가지 않는다.**
+- 요청 `exam_hit_req.src.past = { on:true, years:4, sameTerm:false }` (없으면 이 기본값). `on:false` 면 `it.past` 를 지우고 `stats.past` 를 두지 않는다(앱은 예전 «반복 출제» 칸).
+- 실행: `--past-only <시험> [--dry] [--years 4] [--same-term]` = 우리 자료·판정은 그대로 두고 «지난 기출 비교»만 다시(저장 시 결과 키 전체를 다시 쓰므로 원장님이 화면에서 확정하는 중에는 돌리지 않는다).
+- 2026-10-11 `--past-only --dry`(그림 판정 없이, 열쇠 없는 세션): 범박고 고1 2026-2 중간 = 지난 시험 13장(공통수학1 4장 뺌) → 23문항 중 13문항에 후보(17개), 원본 번호 같음 0 · 범박고 고2 = 12장 → 17문항 · 옥길중 중1(시범) = 2장 → 3문항. 같은 문제·숫자변형 수는 그림 판정 뒤에 나온다.
+
+### 11-2. 학원앱 (`modules/pastcmp_teacher.js`, v19-109)
+- 요약 칸: `stats.past` 가 있으면 「반복 출제 (지난 기출)」 → 「🔁 <학교> 기출에서 n문항」(같은 문제 + 숫자변형, 원장 확정 반영) + 작은 글씨 「유사유형 m」. 없으면 예전 칸.
+- 「📚 우리 자료별 적중」 아래 「🔁 <학교> 지난 기출과 비교」: 비교한 지난 시험 수·연도 · 등급별 수 · 문항 목록(번호 · 유형 · 연도·학기·시험·번호 · 등급 알약) → 누르면 그 문항 카드(접힌 것도 펼침) · 「비교 범위 바꾸기」 = 다시 판정 화면.
+- 문항 카드(분석지·표 보기 모두) 아래 「🔁 지난 기출」 줄: 후보 3개 그림 + 등급 단추(✓ 확정) · ✗ 아님 · 「✗ 겹침 없음」 · 「↺ 풀기」 → `it.pastHit` 저장(우리 자료 확정과 같은 방식). 접힌 줄·카드 머리 알약도 «🔁 2025 2학기 중간 3번 · 숫자변형».
+- 요청 화면·다시 판정 화면: 「🔁 지난 기출 비교 켜기/끄기 · 최근 2/3/4/5년 · 같은 시험만(중간/기말)」 → `src.past`. 「💾 이 구성 기억」에도 `past`. 다시 판정은 지난 판정의 `src.past` 로 연다.
+- 밖으로 나가는 글: 블로그 자료 .md 「- 범박고 기출에서 다시 나온 문항: n문항 (똑같은 문제 · 숫자만 바뀐 문제) · 같은 유형 m문항」 + 「## 범박고 기출과 비교」 문항별(연도·학기·번호·등급) · 학부모 보고서 「범박고 기출과 비교」 칸 + 표의 「범박고 기출」 칸. 카드뉴스(새·옛 스타일) 반복 출제 카드 = «지난 시험에서 다시 나온 문항 n문항»(「기출」 낱말·연도 없음, 블로그 규칙). 어디에도 문제 원문·그림·「수학비서」 낱말은 없다.
+- 검사 `tests/test_v19109.js`(20) · 워커 단위 `tests/test_hit_past.js`(9).
+
+## 12. ⚡ 원장님 검토를 빠르게 (10/17 원장 「판정은 내가 하나하나 봐야 해서 너무 오래 걸린다」 · 학원앱 v19-128)
+(요청서에는 «§11»로 적혀 있었지만 §11 은 이미 «지난 기출과 비교»라 §12 로 둔다.)
+
+### 12-1. 🤖 AI 판정 자동 반영 — 한 곳 `hitEff(it, d)`
+```js
+hitEff(it, d) → { kind, by:'teacher'|'ai'|null, cand, k }
+  it.hit.ok===true            → { kind:it.hit.kind, by:'teacher', k:it.hit.k }      // 원장 확정이 늘 이긴다
+  it.hit.ok===false           → { kind:'none', by:'teacher' }                        // 「✗ 적중 없음」
+  d.autoAi!==false && 1순위   → { kind:'same'|'var', by:'ai', cand, k }            // ✗ 아님(rejected) 뺀 맨 앞 후보가 같은 문제·숫자변형
+  그 밖                       → { kind:cands[0].kind | 'none', by:null }            // 예전 «후보»
+exam_hit_<시험>.autoAi        // 없거나 true = 켬(기본) · false = 끔 (학원앱 스위치가 저장, 워커는 다시 판정 때 false 를 그대로 옮긴다)
+```
+- 예전 `htEff(it)` 는 `hitEff` 를 부른다: `sure` = 원장 확정 `true` · AI 자동 `'ai'`(참 값 — «확정»으로 셈) · 후보 `false`. 그래서 적중률·도넛·요약 줄·오른쪽 칸·왼쪽 시험 목록·우리 자료별 적중·학생별·적중 지도·카드뉴스·학부모 보고서·블로그 .md·요약 복사가 모두 같은 값을 쓴다.
+- 끄면 `htEff` 결과가 v19-127 과 똑같다(검사 `tests/test_v19128.js` 가 11문항 모두 비교).
+- AI 로 센 문항 표시: 화면 알약 ✓ 대신 보라색 「AI」 · 도넛 세 겹(원장 확정 진한 빨강 · AI 중간 · 후보 옅게) · 요약 「확정 n (AI m)」 · 학부모 보고서 «(AI)» + 설명 한 줄 · 블로그 .md 등급 «(AI 판정)» + 「AI 판정 n문항(…번)」 줄 · 요약 복사 끝 줄 · 카드뉴스 고르기 칩 「AI」 + 블로그자료.md 안내 줄. **카드 그림(블로그에 올라가는 PNG)에는 표시하지 않는다.**
+- 학생별 «맞혔나»·우리 자료별 적중의 ✓ 숫자에도 AI 가 들어간다(설명 글 「✓ = 확정(원장님 + 🤖 AI 자동)」).
+- 결과에 AI 확신도 값이 없다(`cands[].ai` 는 «원장님이 바꾸기 전 AI 처음 등급»). 그래서 «AI 불확실» 묶음은 아직 없다 — 워커가 확신도를 주면 빠른 검토 목록에 더한다.
+
+### 12-2. ⚡ 빠른 검토
+- 목록 = 원장님이 아직 안 본(`it.hit` 없음) 문항 중 살아 있는 후보에 같은 문제·숫자변형이 있는 것. 그런 후보가 2개 이상이면 「후보 2개 이상 — 확인」.
+- 유사유형뿐인 문항(아래 12-3)은 「유사유형만 n문항 — 접어 둠」 수만 보이고 「포함하기」로 넣는다.
+- 한 문항: 시험 원본 그림 | 후보 그림(없으면 자료 이름·자리·AI 까닭) · 「AI: 등급」 · 단추 ✓ 같은 문제 / 숫자변형 / 유사유형 / ✗ 아님 · 「다음 후보 ▸」.
+  키 1·2·3·4 = 네 단추 · Enter/→ 다음 문항 · ← 이전 · ↓ 다음 후보 · Esc 닫기 · 진행 「3/9」 · 번호 칩(누르면 그 문항).
+- 쓰기는 예전 단추 함수 그대로: 등급 = `htSetKind(no, k, kind)` → `it.hit = { k, kind, ok:true, by:'teacher', at }` · ✗ 아님 = `htConfirm(no, k, false)` (후보 `rejected`).
+  ✗ 뒤 같은 문제·숫자변형 후보가 더 있으면 그 문항에 머물고, 후보가 하나도 안 남으면 `htConfirm(no, null, false)`(「적중 없음」 확정).
+- 입구: 오른쪽 칸 «적중 기준» 아래 · 가운데 적중 기준 옆 · 분석지 머리 「⚡ 빠른 검토 (n)」.
+
+### 12-3. 유사유형 접기
+- 분석지에서 원장님이 아직 안 본 문항 중 살아 있는 후보가 모두 유사유형이고, 교과서 출판사(`it.pub`)·지난 기출(`it.past`)에도 같은 문제·숫자변형이 없으면 한 줄(번호 · 단원 › 유형 · 유사유형 n개 · ▼ 펼치기).
+- 「유사유형만 문항도 펼치기」 스위치 = 이 기기 localStorage `ht_type_open` (서버 저장 없음). 표 보기는 그대로.
+
+### 12-4. 고등부 수학비서 «내 문제지» 기본값
+- 요청·다시 판정 화면에서 시험이 고등(학년 «고…»)이고 과목(`exam.subject`, 요청 화면 「과목」)을 알면, `ms_mypapers_index` 의 내 문제지 중
+  제목의 과목(줄임말 공수1·공수2·미적1·미적2·확통, 공통수학Ⅰ/Ⅱ 포함 — 제목에 과목이 없으면 폴더 이름)이 같은 것을 자동 체크한다.
+  빼는 것: 문항 0개 · 통합기출/「내신」/「기출」/「25년 …」(지난 시험) · 다른 학교 이름 · 시험 첫날(기간 끝) 뒤에 만든 것. 인식 여부는 묻지 않는다(안 된 것은 «분석 때 인식»).
+- 띠 「📄 과목에 맞는 수학비서 내 문제지 n장을 자동으로 넣었어요」 + 목록 체크(끄면 `mpOff` — 「💾 이 구성 기억」에도 남는다).
+- 다시 판정: 지난 판정 `src.mp` 가 비어 있을 때만 자동 체크를 더한다(원장님이 고른 구성이 있으면 그대로).
+- 결과 화면: 고등부인데 `src.mp` 가 비어 있으면 노란 띠 「수학비서 자료 없이 판정된 결과예요 — 다시 판정을 권해요」(과목에 맞는 내 문제지 수) + 「🔄 내 문제지 넣고 다시 판정」 = 다시 판정 화면.
+- 검사 `sync/appbuild/tests/test_v19128.js` (33). `tests/test_v19107.js` 의 「맨 위 폴더 9101 꺼 둠」 한 줄은 이 규칙으로 바뀐다(제목이 공통수학2 라 이제 자동 체크).

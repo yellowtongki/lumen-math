@@ -1,0 +1,34 @@
+name: 문제집 PDF 받아오기 (구글 드라이브 → 학원 서버)
+
+# 원장님이 구글 드라이브에 올린 문제집 PDF 를 학원 서버(Supabase) 비공개 보관함 books 로 옮긴다.
+# 채팅의 Claude 가 손으로 실행한다(workflow_dispatch). 드라이브 파일은 실행 동안만 링크 공유로 열어 두고 끝나면 닫는다.
+# 큰 PDF 는 20MB 조각으로 나눠 넣는다 — sync/book_fetch.py
+
+on:
+  workflow_dispatch:
+    inputs:
+      file_id:
+        description: '구글 드라이브 파일 ID'
+        required: true
+      name:
+        description: '책 이름 (영문·숫자·-·_, 예 ssen-m1-2-2022)'
+        required: true
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: PDF 부품 설치
+        run: pip install --quiet 'pypdf>=5,<7'
+
+      - name: 드라이브에서 받아 학원 서버에 넣기
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          FILE_ID: ${{ inputs.file_id }}
+          BOOK_NAME: ${{ inputs.name }}
+        run: python3 sync/book_fetch.py put "$FILE_ID" "$BOOK_NAME"

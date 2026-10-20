@@ -313,7 +313,8 @@ async function buildIndex() {
   return { updated: new Date().toISOString(), items };
 }
 
-module.exports = { msLogin, msListMydbs, msExam, msImage, fetchOne, buildIndex, parseTitle, sbGet, sbPut };
+module.exports = { msLogin, msListMydbs, msExam, msImage, fetchOne, buildIndex, parseTitle, sbGet, sbPut,
+  msGet };   /* 2026-10-10: 적중 분석 «수학비서 학습지» 새벽 인식(exam_hit_worker --prep)이 폴더 나무를 읽는다 */
 
 /* ── 실행 ─────────────────────────────────────────────────── */
 if (require.main === module) (async () => {

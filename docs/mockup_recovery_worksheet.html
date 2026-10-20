@@ -1,0 +1,208 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>리커버리 학습지 설계</title></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&family=IBM+Plex+Mono:wght@500;700&display=swap">
+<style>
+/* 레이아웃: 위 = 지금 vs 추가 비교, 가운데 = 학원앱 리커버리 안에 들어갈 「학습지 설계」 팝업 시안(직접 눌러 보기), 아래 = 만드는 순서와 위험 */
+:root{
+  --bg:#f4f6f9; --card:#ffffff; --fg:#0f1f33; --muted:#5a6b80; --line:#d8dfe8;
+  --navy:#0d2240; --navy-soft:#e6ebf4; --accent:#1d4f91; --amber:#f59e0b; --amber-soft:#fef3c7;
+  --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c; --bad-soft:#fee2e2; --twin:#6d28d9; --twin-soft:#ede9fe; --redo:#0e7490; --redo-soft:#cffafe;
+  --font:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e141c; --card:#161f2b; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3745; --navy:#dbe6f6; --navy-soft:#1c2a3c; --accent:#8ab4f8;
+  --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --twin:#c4b5fd; --twin-soft:#2a2150; --redo:#67e8f9; --redo-soft:#0c3540; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0e141c; --card:#161f2b; --fg:#e8eef6; --muted:#9fb0c4; --line:#2a3745; --navy:#dbe6f6; --navy-soft:#1c2a3c; --accent:#8ab4f8;
+  --amber:#fbbf24; --amber-soft:#3a2d0c; --ok:#4ade80; --ok-soft:#14321f; --bad:#fca5a5; --bad-soft:#3b1a1a; --twin:#c4b5fd; --twin-soft:#2a2150; --redo:#67e8f9; --redo-soft:#0c3540; color-scheme:dark }
+body{background:var(--bg);color:var(--fg);font-family:var(--font);line-height:1.55;margin:0}
+.wrap{max-width:880px;margin:0 auto;padding-block:20px 60px;padding-inline:16px;display:flex;flex-direction:column;gap:24px}
+h1{font-size:24px;font-weight:900;margin:0 0 4px;letter-spacing:-0.01em;text-wrap:balance}
+h2{font-size:17px;font-weight:900;margin:0;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h2 .tag{font-size:11px;font-weight:700;letter-spacing:0.04em;padding:2px 8px;border-radius:999px;background:var(--navy-soft);color:var(--accent)}
+p{margin:0}.lead{color:var(--muted);font-size:13.5px}.note{font-size:13px;color:var(--muted)}.note b{color:var(--fg)}
+.sec{display:flex;flex-direction:column;gap:12px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:560px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;letter-spacing:0.04em;color:var(--muted);font-weight:700;background:var(--navy-soft)}
+tr:last-child td{border-bottom:0} td.k{font-weight:900;white-space:nowrap} td.now{color:var(--muted)} td.new b{color:var(--accent)}
+/* 팝업 시안 */
+.pop{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:0 10px 30px rgba(13,34,64,0.08)}
+.pop-h{background:var(--navy);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+:root[data-theme="dark"] .pop-h,:root:not([data-theme="light"]) .pop-h{color:#fff}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .pop-h{background:#1c2a3c} }
+:root[data-theme="dark"] .pop-h{background:#1c2a3c}
+.pop-h b{font-size:15px;font-weight:900}.pop-h small{font-size:12px;opacity:0.85;font-weight:700}
+.pop-b{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.range{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted);font-weight:700}
+.range span{background:var(--navy-soft);color:var(--accent);border-radius:999px;padding:2px 9px;font-weight:800}
+.blk{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.blk-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;background:var(--navy-soft);flex-wrap:wrap}
+.blk-h b{font-size:13.5px;font-weight:900}.blk-h small{font-size:11.5px;color:var(--muted);font-weight:700}
+.row{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);font-size:12.5px}
+.row .no{font-family:var(--mono);font-weight:700;color:var(--muted)}
+.row .t b{font-weight:900}.row .t small{display:block;color:var(--muted);font-size:11px;font-weight:700}
+.lv{display:inline-block;font-size:10px;font-weight:900;padding:1px 6px;border-radius:5px;background:var(--amber-soft);color:var(--amber);margin-left:4px;vertical-align:1px}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:11.5px;font-weight:900;padding:6px 9px;cursor:pointer;min-width:0}
+.seg button+button{border-left:1.5px solid var(--line)}
+.seg button.on.twin{background:var(--twin-soft);color:var(--twin)}.seg button.on.redo{background:var(--redo-soft);color:var(--redo)}.seg button.on.off{background:var(--bad-soft);color:var(--bad)}.seg button.on.two{background:var(--twin);color:#fff}
+.seg button:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+.sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.sum div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.sum .n{font-family:var(--mono);font-size:20px;font-weight:700;line-height:1.1}.sum .l{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+.sum .twin .n{color:var(--twin)}.sum .redo .n{color:var(--redo)}
+.opts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;font-weight:800;color:var(--muted)}
+.opts label{display:inline-flex;align-items:center;gap:4px}
+.opts select,.opts input[type=number]{font-family:inherit;font-size:12px;font-weight:800;border:1.5px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--card);color:var(--fg)}
+.foot{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:none;border-radius:10px;padding:10px 14px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;background:var(--navy-soft);color:var(--accent)}
+.btn.main{background:var(--accent);color:#fff}.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--muted)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.bar span{display:block;height:100%}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);font-weight:700}.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.toast{border-radius:10px;padding:9px 12px;font-size:12.5px;font-weight:800;background:var(--ok-soft);color:var(--ok);display:none}.toast.show{display:block}
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.step .n{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .step .n{background:#dbe6f6;color:#0d2240} }
+:root[data-theme="dark"] .step .n{background:#dbe6f6;color:#0d2240}
+.step b{display:block}.step small{color:var(--muted);font-weight:700}
+.risk{background:var(--amber-soft);border-radius:12px;padding:12px 14px;font-size:13px}
+.risk b{color:var(--amber)}
+.risk ul{margin:6px 0 0;padding-left:18px}.risk li{margin:3px 0}
+.ask{background:var(--card);border:2px solid var(--accent);border-radius:14px;padding:14px;font-size:13.5px}
+.ask ol{margin:6px 0 0;padding-left:20px}.ask li{margin:4px 0}
+@media (max-width:520px){ .sum{grid-template-columns:1fr 1fr} .row{grid-template-columns:28px 1fr;} .row .seg{grid-column:2} }
+</style>
+<div class="wrap">
+  <div>
+    <h1>리커버리 학습지, 「유형 12문항」에서 「내가 틀린 문제의 쌍둥이」로</h1>
+    <p class="lead">2026-10-09 · 지금 학원앱의 🧩 학습지 만들기와 원장님이 원하시는 기능을 나란히 놓고, 학원앱 리커버리 안에 들어갈 「학습지 설계」 팝업을 눌러 볼 수 있게 만든 시안입니다. 아직 코드는 없습니다.</p>
+  </div>
+
+  <section class="sec">
+    <h2>지금 vs 추가하고 싶은 것 <span class="tag">비교</span></h2>
+    <div class="tbl"><table>
+      <tr><th style="width:120px">항목</th><th>지금 (v18-65 🧩 학습지 만들기)</th><th>추가 (설계 → 개별 학습지)</th></tr>
+      <tr><td class="k">재료</td><td class="now">주간테스트에서 <b>틀린 유형(concept) 목록</b>만 씀. 어느 문제를 틀렸는지는 안 봄</td><td class="new"><b>틀린 문항 하나하나</b>(이미 서버에 문항별 O/X·유형·난이도가 있음) + <b>시험 범위 안에서 교재로 푼 문제 중 오답</b></td></tr>
+      <tr><td class="k">문제 고르기</td><td class="now">그 유형들에서 매쓰플랫이 <b>아무 문제 12개</b>(난이도 하·중 반반) 골라 줌</td><td class="new">오답 문항마다 <b>쌍둥이 1개</b>(같은 유형·같은 난이도, 그 학생이 안 푼 문제). 교재 오답은 <b>「그대로 다시」 또는 「쌍둥이」</b>를 문항별로 고름. 2번 이상 틀린 유형엔 보강 1문항</td></tr>
+      <tr><td class="k">설계</td><td class="now">확인 창 한 번 (「12문항 · 하·중 · 녹색 서식, 진행할까요?」). 구성은 못 봄·못 고침</td><td class="new">학생마다 <b>설계 팝업</b>: 문항 목록 보고 빼거나 쌍둥이 수를 바꾸고, 문항 수·난이도 규칙을 정한 뒤 만들기. 「확정 전원」은 <b>저장한 규칙</b>으로 자동 설계</td></tr>
+      <tr><td class="k">만들기</td><td class="now">요청만 저장 → 5분 워커가 매쓰플랫에 생성·배정 (녹색 「주간 리커버리」 서식, 이론 없음)</td><td class="new">같은 길 그대로. 요청서에 <b>문항 목록</b>이 들어감. 만든 뒤 매쓰플랫 학습지 번호·문항 수를 리커버리 카드에 표시</td></tr>
+      <tr><td class="k">결과 보기</td><td class="now">「✅ 생성됨 · 12문항」까지. 어떤 문제가 들어갔는지는 매쓰플랫에 가야 보임</td><td class="new">카드에서 <b>「무엇으로 만들었나」</b>(시험 오답 n · 교재 오답 m · 보강 k)가 보이고, 학생앱 리커버리 카드에도 같은 요약이 감</td></tr>
+      <tr><td class="k">대상</td><td class="now">초·중등 + 시험 오답 유형이 있는 학생</td><td class="new">같음. 시험 오답이 없어도 <b>교재 오답만으로</b> 설계 가능</td></tr>
+    </table></div>
+    <p class="note">서버에 이미 있는 자료로 설계는 바로 됩니다(주간테스트 문항별 O/X·유형·난이도, 교재 문항별 O/X·쪽·번호). 새로 확인해야 하는 건 매쓰플랫 쪽 두 가지뿐이고, 아래 「만드는 순서」에 적었습니다.</p>
+  </section>
+
+  <section class="sec">
+    <h2>학원앱 리커버리 → 학생 카드 「🧩 학습지 설계」 팝업 <span class="tag">눌러 보세요</span></h2>
+    <p class="note">보기용 자료입니다(학생 ○○○, 중1, 주간 75점). 문항마다 단추를 바꾸면 아래 합계가 따라 바뀝니다.</p>
+    <div class="pop">
+      <div class="pop-h"><div><b>🧩 학습지 설계 — ○○○ (중1 · T5)</b><br><small>주간테스트 10.06 · 75점 (15/20) · 「중1 (2026.10.03)」</small></div><small>리커버리 10.11(토) 10:00</small></div>
+      <div class="pop-b">
+        <div class="range">시험 범위 <span>다각형</span><span>다각형의 내각과 외각</span><span>원과 부채꼴</span> · 범위 안 교재 채점 <b>10.01~10.08</b></div>
+
+        <div class="blk" id="bA">
+          <div class="blk-h"><b>① 주간테스트 오답 5문항 → 쌍둥이</b><small>같은 유형·같은 난이도, 이 학생이 안 푼 문제</small></div>
+        </div>
+        <div class="blk" id="bB">
+          <div class="blk-h"><b>② 시험 범위 안 교재 오답 4문항</b><small>개념+유형 라이트 중1-2 · 매쓰플랫 채점 기록</small></div>
+        </div>
+        <div class="blk" id="bC">
+          <div class="blk-h"><b>③ 보강 — 두 번 이상 틀린 유형</b><small>유형마다 1문항 (끌 수 있음)</small></div>
+        </div>
+
+        <div class="sum" id="sum"></div>
+        <div class="bar" id="bar" aria-label="구성 비율"></div>
+        <div class="legend"><span><i style="background:var(--twin)"></i>쌍둥이</span><span><i style="background:var(--redo)"></i>그대로 다시</span><span><i style="background:var(--amber)"></i>보강</span></div>
+
+        <div class="opts">
+          <label>최대 <input type="number" id="cap" value="16" min="4" max="30" style="width:52px"> 문항</label>
+          <label>난이도 <select id="lv"><option>틀린 문제와 같게</option><option>한 단계 쉽게</option><option>하·중 섞기</option></select></label>
+          <label>교재 오답 기본 <select id="defB"><option>쌍둥이</option><option>그대로 다시</option></select></label>
+          <label><input type="checkbox" id="theory"> 이론(개념 박스) 넣기</label>
+          <label><input type="checkbox" id="saveRule" checked> 이 규칙을 「확정 전원」에 저장</label>
+        </div>
+        <div class="toast" id="toast"></div>
+        <div class="foot">
+          <button class="btn main" id="mk">🧩 매쓰플랫에 만들기 · 배정</button>
+          <button class="btn" id="pv">👀 문항 그림 미리보기</button>
+          <button class="btn" id="all">확정 전원 같은 규칙으로</button>
+          <button class="btn ghost">닫기</button>
+        </div>
+        <p class="note">만든 뒤 카드에는 「✅ 리커버리 10/11 ○○○ · 14문항 (시험 쌍둥이 5 · 교재 4 · 보강 2) · 매쓰플랫 #80xxxxxx」 이 뜨고, 📄 종이 인쇄와 📣 학생앱 카드에 같은 요약이 붙습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>만드는 순서 <span class="tag">상의 후</span></h2>
+    <div class="steps">
+      <div class="step"><span class="n">0</span><div><b>매쓰플랫 확인 두 가지 (새벽, 시범 학습지 1장)</b><small>㉠ 문제은행 문제의 「유사 문제」를 번호로 받는 길 — 기출 쌍둥이에 쓰는 유사 필터는 수학비서 문제(myDb)용이라 문제은행 문제에도 되는지 봐야 합니다. 안 되면 「같은 유형·같은 난이도·이 학생이 안 푼 문제」로 뽑습니다(이미 검증된 필터에 excludePrevious+studentIds 만 켜면 됨). ㉡ 「그대로 다시」 — 문제 번호를 지정해 학습지에 넣는 길(필터의 problemList 칸). 둘 다 반나절이면 결론이 납니다.</small></div></div>
+      <div class="step"><span class="n">1</span><div><b>설계 자료 모으기 (학원앱, 서버 자료만)</b><small>학생×주간테스트의 문항별 오답(유형·난이도·문제 번호) + 시험 범위 유형 안의 교재 오답(교재·쪽·번호·날짜). 이미 리커버리 「📄 시험지」 팝업이 같은 표에서 읽고 있어 새 수집은 없습니다.</small></div></div>
+      <div class="step"><span class="n">2</span><div><b>「🧩 학습지 설계」 팝업 (학원앱 부품 recovery_wsdesign.js)</b><small>위 시안 그대로. 규칙은 서버 rc_config.wsRule 에 저장해 「확정 전원」이 같은 규칙으로 자동 설계. 요청서 ws_make_req 에 문항 목록(v2)을 담습니다.</small></div></div>
+      <div class="step"><span class="n">3</span><div><b>워커 확장 (sync/collect_request_worker.js)</b><small>요청서 v2를 읽어 ㉠㉡ 길로 문제를 모아 한 장으로 만들고 배정. 지금의 녹색 서식·이론 없음·이름 규칙 그대로. 결과에 「무엇으로 만들었나」 요약을 남깁니다.</small></div></div>
+      <div class="step"><span class="n">4</span><div><b>보이기</b><small>리커버리 카드 상태칩 · 📄 종이 인쇄의 학생 장에 구성 요약 · 📣 학생앱 카드에 「시험 오답 5 · 교재 4」 한 줄.</small></div></div>
+    </div>
+    <div class="risk"><b>미리 말씀드릴 것</b>
+      <ul>
+        <li>쌍둥이의 «진짜» 정도는 매쓰플랫이 주는 유사 문제에 달려 있습니다. ㉠이 안 되면 「같은 유형·같은 난이도」까지입니다(지금 12문항보다 훨씬 정확하지만 숫자만 바뀐 문제는 아닐 수 있음).</li>
+        <li>교재 오답은 매쓰플랫에서 채점한 것만 잡힙니다. 학생앱으로 채점한 것도 매쓰플랫에 되돌려 쓰고 있으니 같이 잡히지만, 종이로만 채점한 건 빠집니다.</li>
+        <li>시험 범위는 시험지 문항들의 유형 묶음으로 정합니다. 원장님이 범위를 손으로 넓히거나 좁히는 칸을 팝업에 둘 수 있습니다.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="ask">
+    <b>원장님께 여쭐 것</b>
+    <ol>
+      <li>교재 오답의 기본값을 「쌍둥이」로 할까요, 「그대로 다시」로 할까요? (시안은 쌍둥이)</li>
+      <li>한 장 최대 문항 수 — 16으로 둘까요? 시험 오답이 많은 학생은 교재 오답을 자동으로 줄입니다.</li>
+      <li>「보강(두 번 이상 틀린 유형에 1문항)」을 넣을까요?</li>
+      <li>0단계 매쓰플랫 확인은 새벽에 시범 학습지 1장을 만들었다 지우는 방식입니다. 진행해도 될까요?</li>
+    </ol>
+  </section>
+</div>
+<script>
+(function(){
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  var LV={1:'최하',2:'하',3:'중',4:'상',5:'최상'};
+  var A=[ {no:4,c:'다각형의 대각선의 개수',lv:2,m:1},{no:7,c:'다각형의 내각의 크기의 합',lv:3,m:1},{no:11,c:'정다각형의 한 외각',lv:3,m:1},{no:15,c:'부채꼴의 호의 길이',lv:3,m:1},{no:18,c:'부채꼴의 넓이의 활용',lv:4,m:1} ];
+  var B=[ {src:'라이트 중1-2 p.84 7번',c:'다각형의 내각의 크기의 합',lv:3,d:'10.02',m:'twin'},{src:'라이트 중1-2 p.85 12번',c:'다각형의 내각의 크기의 합',lv:3,d:'10.02',m:'twin'},{src:'라이트 중1-2 p.91 3번',c:'원과 부채꼴의 성질',lv:2,d:'10.07',m:'twin'},{src:'라이트 중1-2 p.93 9번',c:'부채꼴의 호의 길이',lv:3,d:'10.07',m:'twin'} ];
+  var C=[ {c:'다각형의 내각의 크기의 합',n:3,on:true},{c:'부채꼴의 호의 길이',n:2,on:true} ];
+  function segA(i,it){ return '<span class="seg">'+[0,1,2].map(function(k){ return '<button class="'+(it.m===k?('on '+(k===0?'off':(k===1?'twin':'two'))):'')+'" data-a="'+i+'" data-v="'+k+'">'+(k===0?'빼기':(k===1?'쌍둥이 1':'쌍둥이 2'))+'</button>'; }).join('')+'</span>'; }
+  function segB(i,it){ return '<span class="seg">'+[['twin','쌍둥이'],['redo','그대로 다시'],['off','빼기']].map(function(p){ return '<button class="'+(it.m===p[0]?('on '+p[0]):'')+'" data-b="'+i+'" data-v="'+p[0]+'">'+p[1]+'</button>'; }).join('')+'</span>'; }
+  function segC(i,it){ return '<span class="seg"><button class="'+(it.on?'on twin':'')+'" data-c="'+i+'" data-v="1">넣기</button><button class="'+(!it.on?'on off':'')+'" data-c="'+i+'" data-v="0">빼기</button></span>'; }
+  function paint(){
+    var hA=''; A.forEach(function(it,i){ hA+='<div class="row"><span class="no">'+it.no+'번</span><span class="t"><b>'+esc(it.c)+'</b><span class="lv">'+LV[it.lv]+'</span><small>✗ 틀림 · 시험지 '+it.no+'번과 같은 유형·난이도의 다른 문제</small></span>'+segA(i,it)+'</div>'; });
+    var hB=''; B.forEach(function(it,i){ hB+='<div class="row"><span class="no">'+(i+1)+'</span><span class="t"><b>'+esc(it.src)+'</b><span class="lv">'+LV[it.lv]+'</span><small>'+esc(it.c)+' · '+it.d+' 채점 ✗</small></span>'+segB(i,it)+'</div>'; });
+    var hC=''; C.forEach(function(it,i){ hC+='<div class="row"><span class="no">+1</span><span class="t"><b>'+esc(it.c)+'</b><small>시험·교재 합쳐 '+it.n+'번 틀림 → 같은 유형 1문항 더</small></span>'+segC(i,it)+'</div>'; });
+    var bA=document.getElementById('bA'), bB=document.getElementById('bB'), bC=document.getElementById('bC');
+    bA.innerHTML=bA.firstElementChild.outerHTML+hA; bB.innerHTML=bB.firstElementChild.outerHTML+hB; bC.innerHTML=bC.firstElementChild.outerHTML+hC;
+    var twin=0, redo=0, boost=0;
+    A.forEach(function(it){ twin+=it.m; }); B.forEach(function(it){ if(it.m==='twin') twin++; else if(it.m==='redo') redo++; }); C.forEach(function(it){ if(it.on) boost++; });
+    var cap=Number(document.getElementById('cap').value)||16, tot=twin+redo+boost, over=tot>cap;
+    document.getElementById('sum').innerHTML='<div><div class="n">'+tot+(over?'<small style="font-size:11px;color:var(--bad)"> &gt; '+cap+'</small>':'')+'</div><div class="l">총 문항'+(over?' · 교재 오답부터 줄여요':'')+'</div></div>'
+      +'<div class="twin"><div class="n">'+twin+'</div><div class="l">쌍둥이</div></div><div class="redo"><div class="n">'+redo+'</div><div class="l">그대로 다시</div></div><div><div class="n">'+boost+'</div><div class="l">보강</div></div>';
+    var T=Math.max(1,tot); document.getElementById('bar').innerHTML='<span style="width:'+(twin/T*100)+'%;background:var(--twin)"></span><span style="width:'+(redo/T*100)+'%;background:var(--redo)"></span><span style="width:'+(boost/T*100)+'%;background:var(--amber)"></span>';
+    document.getElementById('toast').className='toast';
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.a!=null){ A[Number(b.dataset.a)].m=Number(b.dataset.v); paint(); }
+    else if(b.dataset.b!=null){ B[Number(b.dataset.b)].m=b.dataset.v; paint(); }
+    else if(b.dataset.c!=null){ C[Number(b.dataset.c)].on=b.dataset.v==='1'; paint(); }
+    else if(b.id==='mk'||b.id==='all'||b.id==='pv'){
+      var t=document.getElementById('toast'); t.className='toast show';
+      t.textContent=b.id==='mk'?'시안입니다 — 실제로는 요청서(ws_make_req v2)를 저장하고 약 5분 뒤 매쓰플랫에 만들어집니다.':(b.id==='all'?'시안입니다 — 확정 명단 전원을 저장한 규칙으로 자동 설계해 한꺼번에 요청합니다.':'시안입니다 — 실제로는 고른 문항의 그림을 매쓰플랫에서 받아 한 장으로 보여 줍니다.');
+    }
+  });
+  document.getElementById('cap').addEventListener('input',paint);
+  document.getElementById('defB').addEventListener('change',function(e){ var v=e.target.value==='쌍둥이'?'twin':'redo'; B.forEach(function(it){ if(it.m!=='off') it.m=v; }); paint(); });
+  paint();
+})();
+</script>
+</body></html>
