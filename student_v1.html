@@ -4556,6 +4556,10 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-147 (2026-10-20) 📷 아하노트 사진 찍으면 앱이 꺼지던 문제 (원장 「아하노트에서 사진찍으면 튕긴다고 한다 · 제출이 안된다」)
+ *   · 사진을 줄이는 방법을 플래너 사진과 같은 가벼운 방법으로 바꿨어요(폰 메모리를 훨씬 덜 써요).
+ *   · 사진이 올라간 뒤 앱이 꺼져도, 다시 「새 IB아하노트」를 누르면 «조금 전에 올린 사진으로 이어서 쓸까요?» — 다시 안 찍어도 돼요.
+ *
  * v2-146 (2026-10-19) 🛡 영상 보다가 유튜브로 빠져나가지 못하게 (원장 「학생앱에 영상을 볼때 유튜브로 가는것을 막을 수 있나? 구현」)
  *   · 🎬 강의실 영상과 ✍️ 손풀이 «풀이 영상»에 루멘 플레이어를 씌웠어요. 유튜브 로고·제목·공유·추천 영상을 눌러도 아무 데도 안 가요.
  *   · 재생/멈춤 · 10초 앞뒤 · 진행 막대 · 배속 · 전체 화면은 영상 아래 루멘 단추로. 화면을 톡 = 재생/멈춤, 두 번 톡 = 10초.
@@ -5202,7 +5206,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-146';
+var STU_VER = 'v2-147';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -8539,6 +8543,33 @@ function ahaShowStage(stage) {  // 'photo' | 'reading' | 'confirm'
   if (c) c.style.display = (stage === 'confirm') ? 'block' : 'none';
 }
 
+/* ★ v2-147: 사진이 올라간 뒤 앱이 꺼져도 이어 쓰기 (이 폰에만, 6시간) */
+function ahaResumeKey(){ return 'aha_resume_' + ((studentInfo && studentInfo.lumen_rec_code) || ''); }
+function ahaResumeSave(o){ try { o.t = Date.now(); localStorage.setItem(ahaResumeKey(), JSON.stringify(o)); } catch(e) {} }
+function ahaResumeGet(){
+  try { var o = JSON.parse(localStorage.getItem(ahaResumeKey()) || 'null');
+    if (o && o.url && (Date.now() - (o.t || 0)) < 6 * 3600 * 1000) return o; } catch(e) {}
+  return null;
+}
+function ahaResumeClear(){ try { localStorage.removeItem(ahaResumeKey()); } catch(e) {} }
+async function ahaResumeApply(rs) {
+  ahaUploadedUrl = rs.url;
+  var slot = document.getElementById('aha-photo-slot');
+  slot.classList.add('has-photo');
+  slot.innerHTML = '<img src="' + ahaEscape(rs.url) + '" alt="">' +
+    '<button class="aha-photo-replace" onclick="event.stopPropagation();ahaTriggerPhoto()">다시 찍기</button>';
+  var ai = (rs.ai && !rs.ai.err) ? rs.ai : null, failMsg = '';
+  if (!ai) {
+    ahaShowStage('reading');
+    try { ai = await ahaReadPhoto(rs.url, 'lamp'); } catch(e) { failMsg = e.message || '읽기 실패'; }
+    if (ahaUploadedUrl !== rs.url) return;   // 그 사이 새로 찍었으면 그만
+  }
+  ahaLampAi = ai ? ai : { err: failMsg, at: new Date().toISOString() };
+  if (ai) ahaResumeSave({ url: rs.url, ai: ai });
+  ahaApplyRead(ai, failMsg);
+  ahaShowStage('confirm');
+}
+
 // ① 시작 → ③ 사진 찍기
 async function ahaGoAdd() {
   if (isTest) { ahaToast('테스트 모드에서는 제출할 수 없어요', 'error'); return; }
@@ -8558,6 +8589,12 @@ async function ahaGoAdd() {
   try { await a7LoadWs(); } catch(e) {}
   a7Open = (a7WsList && a7WsList.length) ? 'ws' : '';
   a7PaintAcc(); a7KindPaint();
+  /* ★ v2-147: 조금 전에 올린 사진이 있으면(앱이 꺼졌던 경우) 이어서 쓸지 묻는다 */
+  var rs = ahaResumeGet();
+  if (rs) {
+    if (confirm('조금 전에 올린 활동지 사진이 있어요.\n그 사진으로 이어서 쓸까요?\n\n[취소]를 누르면 새로 찍어요.')) { await ahaResumeApply(rs); return; }
+    ahaResumeClear();
+  }
   // 사진을 고르면 바로 카메라가 열리도록 안내
   ahaTriggerPhoto();
 }
@@ -8730,6 +8767,7 @@ async function ahaHandlePhoto(inp) {
   var ai = null, failMsg = '';
   try {
     ahaUploadedUrl = await ahaUploadPhoto(ahaPendingPhotoFile, '');
+    ahaResumeSave({ url: ahaUploadedUrl });   /* ★ v2-147: 여기서 앱이 꺼져도 이어 쓰기 */
   } catch(e) {
     ahaShowStage('photo');
     ahaToast(e.message || '사진 업로드 실패', 'error');
@@ -8743,6 +8781,7 @@ async function ahaHandlePhoto(inp) {
   }
 
   ahaLampAi = ai ? ai : { err: failMsg, at: new Date().toISOString() };
+  if (ai) ahaResumeSave({ url: ahaUploadedUrl, ai: ai });   /* ★ v2-147 */
   ahaApplyRead(ai, failMsg);
   ahaShowStage('confirm');
 }
@@ -8854,33 +8893,33 @@ function ahaApplyRead(ai, failMsg) {
   ahaEmptyWarn();
 }
 
-// 이미지 압축 (1MB 이하, 가로 1600px 제한)
+// 이미지 압축 — ★ v2-147: 플래너 사진과 같은 가벼운 길 (사진 전체를 긴 글자로 바꾸지 않는다)
+//   가로 1600 · 세로 2400 을 넘지 않게. 미리보기(dataUrl 칸)는 줄인 사진의 주소(blob:)다.
 function ahaCompressImage(file) {
   return new Promise(function(resolve, reject) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      var img = new Image();
-      img.onload = function() {
-        var maxWidth = 1600;
-        var w = img.width, h = img.height;
-        if (w > maxWidth) {
-          h = Math.round(h * maxWidth / w);
-          w = maxWidth;
-        }
+    var img = new Image();
+    var src = URL.createObjectURL(file);
+    img.onload = function() {
+      try {
+        URL.revokeObjectURL(src);
+        var w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        var sc = Math.min(1, 1600 / w, 2400 / h);
+        var cw = Math.max(1, Math.round(w * sc)), ch = Math.max(1, Math.round(h * sc));
         var canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
+        canvas.width = cw; canvas.height = ch;
         var ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, cw, ch);
         canvas.toBlob(function(blob) {
+          canvas.width = 0; canvas.height = 0;   // 메모리 돌려주기
           if (!blob) { reject(new Error('압축 실패')); return; }
-          resolve({ blob: blob, dataUrl: canvas.toDataURL('image/jpeg', 0.82) });
+          resolve({ blob: blob, dataUrl: URL.createObjectURL(blob) });
         }, 'image/jpeg', 0.82);
-      };
-      img.onerror = function(){ reject(new Error('이미지 로드 실패')); };
-      img.src = e.target.result;
+      } catch(e) { reject(e); }
     };
-    reader.onerror = function(){ reject(new Error('파일 읽기 실패')); };
-    reader.readAsDataURL(file);
+    img.onerror = function(){ URL.revokeObjectURL(src); reject(new Error('이미지 로드 실패')); };
+    img.src = src;
   });
 }
 
@@ -8895,6 +8934,7 @@ function ahaCancelAdd() {
   // 변경사항 있을 때 확인
   if (ahaPendingPhotoFile || ahaUploadedUrl) {
     if (!confirm('올리던 내용이 사라져요. 그래도 나갈까요?')) return;
+    ahaResumeClear();   /* ★ v2-147 */
   }
   ahaPendingPhotoFile = null;
   ahaPendingPhotoDataURL = null;
@@ -8996,6 +9036,7 @@ async function ahaSubmit() {
       var ir = await a7Insert(d, false);
       if (ir.error) throw new Error('저장 실패: ' + ir.error.message);
       ahaToast('IB아하노트 제출 완료! 🎉', 'success');
+      ahaResumeClear();   /* ★ v2-147 */
     }
 
     ahaPendingPhotoFile = null;
@@ -9040,6 +9081,7 @@ async function ahaGoSelfSolve() {
       var ir = await a7Insert(d, true);
       if (ir.error) throw new Error(ir.error.message);
       ahaSelfNoteId = (ir.data && ir.data[0] && ir.data[0].id) || null;
+      if (ahaSelfNoteId) ahaResumeClear();   /* ★ v2-147 */
     }
     if (!ahaSelfNoteId) throw new Error('노트 번호를 받지 못했어요');
     ahaPendingPhotoFile = null; ahaEditingId = null;
