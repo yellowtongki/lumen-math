@@ -653,6 +653,25 @@ if int(ver.replace('v19-',''))>=137:
     rep("""    +'<button onclick="raidPeek()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#6d28d9;color:#fff">👁 학생 눈으로</button>'""",
         """    +'<button onclick="raidPeek()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#6d28d9;color:#fff">👁 학생 눈으로</button>'
     +'<button id="raid-lib-open" onclick="rxLibOpen()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#0d0a1d;color:#fff">🗃 보스 보관함</button>'""")
+if int(ver.replace('v19-',''))>=143:
+    # v19-143: 홈 위 빨간 띠 — 「퇴원 → 재원 (되살아남)」만 있으면 «로그인 코드가 바뀌어 못 들어갑니다»가 아니라
+    #   «퇴원했던 학생이 재원으로 바뀌었습니다 — 일부러 복귀시키셨으면 그대로 두세요»(주황, 한 번만)로. 원장 10/20 「퇴원생 오류」(유서윤 복귀)
+    #   × 로 닫으면 위 여백도 되돌린다.
+    rep("""      d.innerHTML='<span style="font-size:17px">⚠️</span>'
+        +'<span style="flex:1;min-width:200px">학생 <b>로그인 코드가 바뀌었습니다</b> — 이 학생들은 학생앱에 못 들어갑니다.'
+        +'<span style="display:block;font-weight:700;opacity:.9;margin-top:3px;font-size:12.5px">'+ch.map(esc2).join('<br>')+'</span></span>'
+        +'<button onclick="document.getElementById(\\'lm-code-warn\\').remove()" style=""",
+        """      /* ★ v19-143: 코드가 바뀐 줄과 «퇴원 → 재원» 줄을 나눠 말한다 — 복귀만 있으면 주황 안내(사고 아님) */
+      var _rv=ch.filter(function(x){ return /퇴원 → 재원/.test(x); }), _cd=ch.filter(function(x){ return !/퇴원 → 재원/.test(x); });
+      if(!_cd.length) d.style.background='linear-gradient(135deg,#b45309,#d97706)';
+      d.innerHTML='<span style="font-size:17px">'+(_cd.length?'⚠️':'ℹ️')+'</span>'
+        +'<span style="flex:1;min-width:200px">'
+        +(_cd.length?('학생 <b>로그인 코드가 바뀌었습니다</b> — 이 학생들은 학생앱에 못 들어갑니다.'
+          +'<span style="display:block;font-weight:700;opacity:.9;margin-top:3px;font-size:12.5px">'+_cd.map(esc2).join('<br>')+'</span>'):'')
+        +(_rv.length?('<span style="display:block'+(_cd.length?';margin-top:7px':'')+'"><b>퇴원했던 학생이 재원으로 바뀌었습니다</b> — 학생관리에서 일부러 복귀시키셨으면 그대로 두시면 됩니다(이 알림은 한 번만 나옵니다). 모르는 일이면 학생관리에서 🚪 퇴원을 다시 눌러 주세요.</span>'
+          +'<span style="display:block;font-weight:700;opacity:.9;margin-top:3px;font-size:12.5px">'+_rv.map(function(x){ return esc2(x.replace(' (되살아남)',' (복귀)')); }).join('<br>')+'</span>'):'')
+        +'</span>'
+        +'<button onclick="document.getElementById(\\'lm-code-warn\\').remove();document.body.style.paddingTop=\\'\\'" style=""")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
