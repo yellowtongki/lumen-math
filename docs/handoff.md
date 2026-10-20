@@ -6,8 +6,8 @@
 ## 1. 지금 버전 (서버 `lumen_store.app_latest` 와 같다)
 | 앱 | 최신 파일 | 고정 주소(사용자가 여는 곳) |
 |---|---|---|
-| 학원앱 | `lumen_v19-141.html` | `lumen_v1.html` = v19-141 (Claude가 배포 때 같이 바꾼다) |
-| 학생앱 | `student_v2-146.html` | `student_v1.html` = v2-146 (**「학생앱배포」 지시가 있을 때만** 바꾼다 · 10/19 원장 「학생앱배포」 — v2-145 주간 점수 새벽 3시 유예·10/12 주 계획 면제 안내 · v2-146 «루멘 영상 플레이어»로 유튜브 이탈 막기(강의실·손풀이 영상, 검사 tests/test_v2146.js 45/45, **아이폰·안드로이드 실제 첫 재생은 원장 확인 필요**)) |
+| 학원앱 | `lumen_v19-142.html` | `lumen_v1.html` = v19-142 (Claude가 배포 때 같이 바꾼다) |
+| 학생앱 | `student_v2-147.html` (**배포 대기** — 아하노트 사진 앱 꺼짐 고침) | `student_v1.html` = v2-146 (**「학생앱배포」 지시가 있을 때만** 바꾼다 · 10/19 원장 「학생앱배포」 — v2-145 주간 점수 새벽 3시 유예·10/12 주 계획 면제 안내 · v2-146 «루멘 영상 플레이어»로 유튜브 이탈 막기(강의실·손풀이 영상, 검사 tests/test_v2146.js 45/45, **아이폰·안드로이드 실제 첫 재생은 원장 확인 필요**)) |
 | 학부모앱 | `parent_v1-35.html` | `parent.html` = v1-35 (**원장님 명령 때만**) |
 
 ## 2. 학원앱 만드는 법 — 조립 도구 `sync/appbuild/`
@@ -112,7 +112,8 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 - 카드뉴스·기출 DB(화면엔 「기출 DB」, 「수학비서」라는 말 금지), 적중 분석: docs/exam_hit_contract.md §9.
 
 ## 6. 남은 일 (10/19 오전 기준)
-- **(10/20 · 원장 피드백 대기) 💰 수강료 화면 3분할 미리보기**: 원장 「수강료 부분을 좌측탭도 사용하면서 통계부분도 보고 싶다. 미리보기」(운영 › 수강료, v19-141 화면). 시안 artifact https://claude.ai/artifact/4yvqxKg2cLBJLZAPPC9YVY (실제 매출 숫자가 들어 있어 저장소에는 안 올림, 학생 이름은 가짜). 모양은 적중 분석(v19-105)·백지테스트(v19-106)의 3분할(layout3)과 같은 틀: **왼쪽** 남색 판 = 수강료 메뉴 7개(손익 · 학생별 납부 · 점검(14) · 고정비·변동비 · 수강료 규칙 · 학생 경제 · 세금·시뮬레이션) + 기간 칩 + 지난달 요약 + 공통 메뉴 접기 / **가운데** = 고른 메뉴 작업(시안은 학생별 납부 표) / **오른쪽 늘 보이는 통계** = 매출·고정비·변동비·손익분기·순이익 칸 + 월별 막대(4~9월) + 다음 달 예상 + «지금 챙길 것». 원장 답을 받으면 학원앱 v19-142 부품(`modules/tuition142_teacher.js` 예정)으로 만든다. 물어볼 것: 오른쪽 통계에 넣을 숫자 · 좁은 화면에서 오른쪽 판을 접을지 · 기존 상단 탭은 없앨지.
+- **(10/20 · 🚨 학생앱배포 대기) 📷 아하노트 «사진 찍으면 튕긴다 · 제출이 안 된다» — 학생앱 v2-147** (`sync/appbuild/build_student_v2147.py`, 검사 `tests/test_v2147.js` 22/22 · test_v2146 은 버전 1개만 다름): 점검 결과 서버는 정상(사진 올리기 · AI 읽기 aha-read 5.8초 · aha_notes 저장 권한 — 잘못된 status 로 넣어 보아 check 제약까지 닿는 것 확인, 줄은 안 생김). 10/19 22:24~22:25 한 학생(VGKB57)이 사진 3장을 올렸는데 노트 0건 → 사진이 올라간 뒤 폰에서 앱이 꺼진 것으로 추정(마지막 정상 제출 10/19 16:52, v2-146 배포 22:04 — 하지만 v2-141~146 은 아하 코드를 안 건드렸다). 아하 사진만 readAsDataURL 로 사진 전체를 긴 글자로 들고 toDataURL 을 한 번 더 만들었다(플래너는 createObjectURL). v2-147: ① ahaCompressImage 를 플래너 방식으로(가로 1600·세로 2400 · 미리보기는 blob: 주소 · 캔버스 비움) ② 이어 쓰기 — 올린 뒤 localStorage `aha_resume_<코드>`(url+AI 글, 6시간), 「새 IB아하노트」 때 «이어서 쓸까요?» → 다시 안 찍고 확인 화면, 제출·스스로 해결 저장·나가기 때 지움. **원장 「학생앱배포」 받으면 student_v1 교체 + app_latest student.** 원장께 물은 것: 아이폰/안드로이드 · 카메라 열 때/읽는 중 꺼지는지. 그동안 안내: 폰 카메라로 찍고 «갤러리에서 고르기».
+- **(10/20 배포) 💰 수강료 3분할 — 학원앱 v19-142** (`modules/tuition142_teacher.js`, 검사 `tests/test_v19142.js` 23/23, 시안 https://claude.ai/artifact/4yvqxKg2cLBJLZAPPC9YVY): 원장 「오른쪽 접기 넣고 위쪽 탭 없애서 만들어」. 왼쪽(PC 900↑) = l3 머리 + 수강료 칸 일곱(PAY_TABS · 점검 배지) · 기간 칩(payRangeSet m0/m1/r3/yr) · 지난달 한눈에(paySummary) · 바로 가기 · 접힌 공용 메뉴. 가운데 위쪽 칩 줄(payTabBar)은 PC 에서 빈 글자(폰은 그대로). 오른쪽 RIGHT_TOOLS.tuition = 손익(finRangeStat) · 추세 6개월 SVG · 다음 달 예상(finForecast) · 챙길 것(미납→stu · 점검→chk · 고정비 0/인건비 미입력→cost). 「접기 ▸」 = `tu_right_fold`(이 PC 만) → 도구 칸 52px 띠(`.app>.tool-panel.tu-folded:not(.l3-empty)` — 앞 부품 넓은 칸 규칙보다 세게), PC 1024~1279 서랍에선 접기 없음. ⚠ 앱 전체 zoom 1.15 라 화면 폭 검사는 getComputedStyle 로.
 - **(10/20) 💾 PC 저장 공간 — 학원앱 v19-141 (`modules/store141_teacher.js`)**: 원장 Windows PC 에서 「저장 공간이 가득 찼습니다」 + 「예전 리포트 저장을 적게 · 느려진다」. 실측 서버 1,522키 112MB · 시작 다운로드 45MB · PC 디스크 약 20MB(ptx_* 6.7MB · or_students 3.1MB + 달 서랍 5.2MB · exam_hit_* 1MB …). PULL_SKIP_PREFIX 에 ptx_ · analyzer_report_ · exam_hit_ · mf_tree_ · backup_ 추가(화면은 서버에서 바로 읽음) + isMemOnlyKey 에 3달 넘은 or_students_/lumen_comments_ 달 서랍(디스크 X, 메모리·클라우드 O) + 켜질 때 디스크 사본 정리. **새 큰 키를 만드는 서버 도구(분석기 등)는 반드시 이 목록에 넣을 것.** 남은 큰 것: or_students 원본 3.1MB(«원본, 지우지 않음» 규칙) · lumen_comments 원본 0.75MB — 줄이려면 원장 결정.
 - **(10/20) 유서윤(초5, DG3QWE) 매쓰플랫 신규 연동**: mf_students I2273543 에 lumen_rec_code 를 직접 넣고 정기 수집을 한 번 돌림. 서버 등록부에는 아직 «퇴원 2026.06.26»(withdrawn:true)으로 남아 있어 수집기 이름 매칭이 건너뛰었던 것 — 원장이 학원앱 학생관리에서 재원으로 바꿨는지 확인.
 **▶ 새 세션 첫 일 요약 (자세한 것은 아래 줄들)**
