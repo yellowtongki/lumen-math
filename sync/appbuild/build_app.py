@@ -112,7 +112,8 @@ xt9=open(SP+'/xtnext139_teacher.js',encoding='utf-8').read() if int(ver.replace(
 pw0=open(SP+'/plweek140_core.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=140 else ''   # v19-140: 주간 점수 마감 새벽 3시 유예 · 10/12 주 «다음 주 계획» 면제(코디 점검)
 st1=open(SP+'/store141_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=141 else ''   # v19-141: PC 저장 공간 줄이기 — 분석기 글자 은행·적중 분석·단원 트리 시작 다운로드 제외 · 3달 넘은 리포트 서랍은 메모리 전용
 tu2=open(SP+'/tuition142_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=142 else ''   # v19-142: 💳 수강료 3분할 — 왼쪽 수강료 메뉴(칸 일곱·기간·지난달·바로 가기) · 위쪽 칩 줄 없앰(PC) · 오른쪽 통계(손익·추세·다음 달·챙길 것) 접기
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+a44=open(SP+'/aha144_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=144 else ''   # v19-144: 💡 아하노트 «전부 확정»(8점 기준 없앰) · 학생이 나중에 올린 스스로 해결을 AI 초안 경로에 맞춤
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -653,6 +654,18 @@ if int(ver.replace('v19-',''))>=137:
     rep("""    +'<button onclick="raidPeek()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#6d28d9;color:#fff">👁 학생 눈으로</button>'""",
         """    +'<button onclick="raidPeek()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#6d28d9;color:#fff">👁 학생 눈으로</button>'
     +'<button id="raid-lib-open" onclick="rxLibOpen()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#0d0a1d;color:#fff">🗃 보스 보관함</button>'""")
+if int(ver.replace('v19-',''))>=144:
+    # v19-144: 아하노트 일괄 확정에서 «8점 이상» 기준을 없앤다 — AI 초안이 있으면 점수와 상관없이 전부 확정 (원장 10/21 「8점이상 확정말고 전부 확정하자」)
+    rep("s.status==='temp' && (s.total||0)>=8", "s.status==='temp'", 4)
+    rep("✓ 이 날 8점 이상 확정 (", "✓ 이 날 전부 확정 (", 2)
+    rep("' · 8점 이상 '", "' · 확정 대기 '")
+    rep("var min=8;", "var min=0;   /* ★ v19-144: 점수 기준 없음 — 전부 확정 */")
+    rep('title="AI 초안이 있고 질문력 8점 이상인 노트를 그대로 확정합니다"', 'title="AI 초안이 있는 노트를 점수와 상관없이 모두 그대로 확정합니다 (왼쪽에서 학생을 고르면 그 학생만)"')
+    rep(">✓ 8점 이상 확정</button>", ">✓ 전부 확정</button>")
+    rep("「✓ 8점 이상 일괄확정」", "「✓ 전부 확정」", 2)
+    rep("(AI 초안이 있고 질문력 8점 이상)", "(AI 초안이 있는 노트 — 초안이 없으면 먼저 🤖 AI 초안)")
+    rep("(AI 초안이 있고 질문력 '+min+'점 이상인 노트)", "(AI 초안이 있는 노트 — 초안이 없으면 먼저 🤖 AI 초안 일괄)")
+    rep("+targets.length+'건을 AI 초안 그대로 확정할까요? (질문력 '+min+'점 이상)')", "+targets.length+'건을 AI 초안 그대로 확정할까요? (점수와 상관없이 전부)')")
 if int(ver.replace('v19-',''))>=143:
     # v19-143: 홈 위 빨간 띠 — 「퇴원 → 재원 (되살아남)」만 있으면 «로그인 코드가 바뀌어 못 들어갑니다»가 아니라
     #   «퇴원했던 학생이 재원으로 바뀌었습니다 — 일부러 복귀시키셨으면 그대로 두세요»(주황, 한 번만)로. 원장 10/20 「퇴원생 오류」(유서윤 복귀)

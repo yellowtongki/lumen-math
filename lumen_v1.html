@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-143';
+var APP_VER = 'v19-144';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9084,6 +9084,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-144',date:'2026-10-21',stability:'ok',memo:'💡 <b>IB아하노트 «전부 확정» · 학생이 나중에 올린 스스로 해결 반영</b> (원장 2026-10-21 「8점이상 확정말고 전부 확정하자 · 아하리그 점수반영이 안된 것 같다 · 스스로 고쳤다고 체크가 안된다」). [점검] 시즌(9/7~11/30) 노트 126건 중 <b>확정 34건뿐</b>이었습니다 — AI 초안만 있는 89건은 리그에 안 들어갑니다(리그는 확정만 셉니다). 8점 미만 초안이 일괄 확정에서 빠져 계속 쌓였습니다. [고침 ①] 머리의 「✓ 8점 이상 확정」 → <b>「✓ 전부 확정」</b>, 날짜마다 「✓ 이 날 전부 확정」 — AI 초안이 있으면 점수와 상관없이 확정합니다(왼쪽에서 학생을 고르면 그 학생만). 밀린 것은 범위를 <b>전체</b>로 두고 한 번 누르시면 됩니다. 하루 2건·주 8건 상한과 연습 기간(9/16까지 0점)은 그대로입니다. [고침 ②] AI 초안을 만든 <b>뒤에</b> 학생이 🙋 스스로 해결을 올리면 초안이 「해결 경로 없음」으로 남아 「🙋 스스로 해결」 칩이 꺼져 있었습니다. 이제 원장님이 손대지 않은 초안은 채점 작업대를 열 때·확정할 때 학생의 지금 경로로 맞추고 보너스를 다시 셉니다. 🎲 검사(스스로 해결 확인)는 예전처럼 원장님이 누르실 때만입니다.'},
       {ver:'v19-143',date:'2026-10-20',stability:'ok',memo:'ℹ️ <b>홈 위 «퇴원 → 재원» 알림 문구 바로잡기</b> (원장 2026-10-20 「퇴원생 오류」). 유서윤을 다시 재원으로 바꾸시자 홈 위에 빨간 띠로 «학생 로그인 코드가 바뀌었습니다 — 학생앱에 못 들어갑니다»가 떴습니다. 실제로는 코드는 그대로(DG3QWE)이고 학생앱도 들어갈 수 있습니다 — 퇴원생이 몰래 되살아나는 사고를 잡으려고 둔 알림이 제목만 잘못 붙어 있었습니다. 이제 복귀만 있으면 <b>주황 안내</b>로 «퇴원했던 학생이 재원으로 바뀌었습니다 — 일부러 복귀시키셨으면 그대로 두세요»라고 한 번만 알립니다. 로그인 코드가 정말 바뀐 경우는 예전처럼 빨간 띠입니다.'},
       {ver:'v19-142',date:'2026-10-20',stability:'ok',memo:'💳 <b>수강료 화면을 3칸으로</b> (원장 2026-10-20 「오른쪽 접기 넣고 위쪽 탭 없애서 만들어」). <b>왼쪽</b> 남색 칸에 수강료 메뉴 일곱(손익 · 학생별 납부 · 점검(건수) · 고정비·변동비 · 수강료 규칙 · 학생 경제 · 세금·시뮬레이션)과 기간(이달 · 지난달 · 최근 3개월 · 올해) · 지난달 한눈에(청구 · 수납률 · 미납) · 바로 가기(결제선생 · 다시 불러오기)가 있고, 가운데 위쪽 가로 칩 줄은 없앴습니다(폰에서는 그대로). <b>오른쪽</b>은 어느 칸에서나 손익(매출 · 고정비 · 변동비 · 손익분기 · 순이익) · 월별 추세 6개월 · 다음 달 예상 · 지금 챙길 것(누르면 그 칸으로)이 보입니다. 「접기 ▸」를 누르면 좁은 띠(순이익만)로 접히고 「◂ 통계」로 다시 펼칩니다 — 이 PC 에만 기억합니다.'},
       {ver:'v19-141',date:'2026-10-20',stability:'ok',memo:'💾 <b>PC 저장 공간 줄이기 — 「저장 공간이 가득 찼습니다」</b> (원장 2026-10-20 「예전 리포트 저장을 적게 하자. 느려진다」). 앱이 쓰지 않는 루멘 분석기 글자 은행(약 7MB)·적중 분석·단원 트리(약 45MB)는 시작할 때 받지 않고(화면이 필요할 때 서버에서 바로 읽음), <b>3달 넘은 리포트·피드백 서랍</b>은 PC 디스크에 쓰지 않습니다(화면·클라우드는 그대로). 켜질 때 한 번 PC 사본을 정리합니다.'},
@@ -9485,7 +9486,7 @@ function getDefaultVersionMemo(){
       {ver:'v18-162',date:'2026',stability:'warn',memo:'🎁 <b>진도 레이스 상금 오픈 + 시상 발표</b> (원장 지시 2026-09-09). 그동안 진도 레이스는 <b>총상금 10만원만</b> 보여 주고, 1등이 얼마인지도 · 누가 받는지도 앱에서 알릴 길이 없었습니다(IB아하 리그에는 v18-160에 이미 있었습니다). 두 가지를 만들었습니다. [① 개별 금액 공개] ⚙️ 시즌 설정 상금 칸에 <b>「개별 금액을 학생앱에 공개」</b> 스위치가 생겼습니다. 켜면 학생앱 상금 카드에 <b>1등 40,000원 · 2등 20,000원 …</b> 처럼 상마다 금액이 보입니다. <b>학부모앱은 지금처럼 총액만</b> 보입니다(원장 결정 — 집에서 비교되는 일을 줄입니다). 꺼 두면 개별 금액은 <b>순위표에 아예 담기지 않습니다</b> — 담기지 않은 것은 새어 나갈 수도 없습니다. [② 🎁 시상 확정] 레이스 화면 머리에 <b>「🎁 시상 확정」</b> 단추가 생겼습니다. 다섯 상(1·2·3등·꾸준상·성장상)의 학생을 <b>순위와 상 후보로 자동 추천</b>해 두었고, 원장님은 바꾸고 금액만 확인하면 됩니다(합계가 총상금과 같은지 바로 알려 줍니다). <b>「📤 학생앱에 발표하기」</b>를 누르면 학생앱 진도 레이스에 <b>🎉 시즌 결과</b>가 뜹니다. 이름은 <b>성+○○로 가려서</b> 올라가고, 금액은 ① 스위치를 켜 두었을 때만 함께 보입니다. 잘못 발표했으면 <b>「발표 내리기」</b>로 다시 감출 수 있습니다. 부(중등·고등·초등)마다 따로 정합니다. 저장은 race_awards 한 칸입니다. [주의] 순위표는 새벽에 서버가 다시 세므로, 개별 금액 공개 규칙을 <b>서버 집계기(race_engine)에도 똑같이</b> 넣었습니다 — 한쪽만 고치면 새벽에 공개가 풀려 버립니다. [검증] 실브라우저 자동 검사 통과 · 퇴원생 노출 검사 10/10.'},
       {ver:'v18-161',date:'2026',stability:'warn',memo:'✍️ <b>손풀이 — 필기 PDF 한 장을 문제별 풀이로</b> (원장 결정 2026-09-08). 굿노트로 필기한 PDF를 올리면 <b>문제 하나하나로 잘라서</b> 자산이 되고, 학생에게 「모음집」으로 보냅니다. [어디에 있나] <b>📱 학생앱 › ✍️ 손풀이</b> (강의실 다음). 아하노트 머리의 「📚 라이브러리」 옆 <b>「✍️ 손풀이 탭 열기」</b>로도 옵니다. [다섯 칸] <b>⬆ 올리기</b> · <b>📚 서랍</b> · <b>📤 배분</b> · <b>🕳 빈 곳</b> · <b>👤 학생별</b>. [자르는 방법 — 위에서부터 되는 것] ① <b>번호 글자 좌표</b>: 매쓰플랫 학습지·한글로 만든 시험지는 큰 번호(01·02…)의 위치를 읽어 단(段)을 따라 자릅니다. 0.3초, 돈 안 듭니다 ② <b>펜 자국 뭉치</b>: 굿노트 필기는 색 있는 점이 PDF에 남습니다. 뭉치 하나 = 풀이 하나 ③ <b>AI 눈</b>: 글자층도 필기 자국도 없을 때만 씁니다 ④ <b>상자 끌기</b>: 어떤 경우든 화면에서 상자를 끌어 옮기고·크기를 바꾸고·번호를 손으로 적고·지울 수 있습니다. <b>못 올리는 자료는 없습니다</b>. 해설·빠른정답 쪽은 자동으로 건너뜁니다(뒤에 붙은 해설을 문제로 잘못 자르지 않도록). <b>필기가 없는 상자는 「안 올림」</b>으로 시작합니다. [출처 세 가지] <b>📄 매쓰플랫 학습지</b> — 머리글의 학습지 이름·날짜로 채점 기록을 찾아 <b>문항 id·유형·누가 틀렸는지까지 자동</b>으로 붙고, 같은 학습지를 받은 학생이 대상이 됩니다. <b>🏫 학교 기출</b> — 기출모의에 있는 시험을 고르거나 학교·연도·학기를 적으면 「옥길중|2025-1중간|11」 같은 주소가 붙습니다. <b>📎 기타 자료</b> — 자료 이름 한 번. 유형은 <b>🤖 AI 추천</b> 뒤 원장님이 「맞음」을 누르면 확정, 안 누르면 「유형 미확인」으로 서랍에 남고 검색은 됩니다. [배분] 대상 다섯 가지(같은 학습지·시험 대비 학교·반·틀린 학생만·직접 고르기), 보이는 시점 세 가지(바로·힌트 뒤·날짜 예약), 자동 규칙 네 개. 1단계에서 실제로 도는 규칙은 <b>「매쓰플랫 학습지를 올리면 받은 학생에게 바로」</b> 하나이고 나머지는 설정만 저장합니다. <b>보내기 전에는 학생에게 아무것도 보이지 않습니다.</b> [🕳 빈 곳] 학년·단원마다 <b>손풀이 수</b>와 <b>최근 30일 그 단원을 틀린 학생 수</b>를 색 표로 나란히 놓아, <b>많이 틀리는데 풀이가 0인 칸</b>부터 채우시게 했습니다(상위 5개도 따로). [저장] <code>hand_solutions</code>(문제별 자산 items · 모음집 sets) · <code>hand_cfg</code>(자동 규칙). 그림은 Storage <code>aha_photos/hand/ws/…</code>, 원본 PDF는 <code>school_pdfs/hand/</code>에 보관합니다. [남은 것] 학생앱 손풀이 화면은 학생앱 새 버전에서. 음성·영상 붙이기와 「같은 유형 손풀이」 추천은 2단계. [검증] 실브라우저 자동 검사 — 실제 매쓰플랫 학습지 PDF(5쪽·6문제)에서 <b>문제 6개를 정확히 찾고 해설 쪽은 건너뜀</b> 확인 · 퇴원생 노출 검사 10/10.'},
       {ver:'v18-160',date:'2026',stability:'warn',memo:'🏆 <b>루멘 리그 — 세 종목을 한 화면에</b> (원장 결정 2026-09-08). 진도 레이스·IB아하노트·말하기를 <b>따로 겨루되</b>, 등수를 포인트로 바꿔 더한 <b>👑 종합 챔피언</b>을 부(초·중·고)마다 한 명 뽑습니다. 점수를 그냥 더하지 않는 이유는 진도(수천 점)와 아하(수십 점)의 <b>크기가 30~70배</b> 달라서입니다 — 그대로 더하면 아하는 없는 것이나 같아집니다. 포인트는 1위 25 · 2위 18 · 3위 15 · 4위 12 · 5위 10 · 6위 8 · 7위 6 · 8위 4 · 9위 2 · 10위 1이고, <b>두 종목 이상</b> 해야 자격이 생깁니다(한 종목만 한 학생은 「한 종목만」으로 따로 적힙니다). [어디에 있나] <b>📈 진도·리포트 › 🏆 리그</b> 서브탭 (진도 레이스 다음). 아하노트 머리의 <b>「🏆 리그 화면」</b> 단추로도 바로 옵니다. [다섯 칸] ① <b>시즌 한눈에</b> — 세 종목 카드(기간·참여·총상금·1위)와 부별 종합 순위표 ② <b>IB아하 순위표</b> — 진도 레이스와 같은 모양의 표(등수·이름·등급·리그 점수 막대·평균·인정·스스로·AHA·상한초과·최근 14일 막대), 지금 기준 <b>상 후보 배지</b>가 붙고 공개 등수 밖은 흐리게(학생앱에서 보이는 그대로) ③ <b>🎁 시상 확정</b> — 상 4개의 후보를 자동으로 뽑아 두고, 원장님은 학생과 금액만 고르면 됩니다(합계가 총상금과 같은지 바로 알려 줍니다) → 발행하면 학생앱에 「🎉 시즌 결과」 ④ <b>🎲 무작위 설명 검사</b> ⑤ <b>📤 순위표 발행</b>. [상은 네 개] 🥇 질문왕(리그 점수 1위) · 🏆 베스트 질문(시즌 최고 질문 한 편, 순위 무관) · 📈 성장(시즌 전반 대비 후반 평균 질문력 상승폭) · 🪞 성찰(되돌아보기 최다). <b>「스스로 해결상」은 없앴습니다</b> — 이미 맞힌 문제를 스스로 푼 척 올리는 것을 앱이 막을 수 없어서, 상을 없애고 <b>보너스도 +4에서 +2로 낮췄습니다</b>(힌트 1개 +3보다 작습니다). 대신 <b>🎲 무작위 설명 검사</b>를 만들었습니다 — 단추 한 번이면 스스로 해결 노트 하나를 무작위로 뽑아 사진·질문·재풀이를 보여 주고, 수업에서 설명하지 못하면 <b>「못 함」 한 번으로 그 시즌 그 학생의 스스로 해결 점수가 전부 0</b>이 됩니다(원본 채점은 그대로 남고 되돌릴 수 있습니다). 이 규칙은 학생앱 규칙 칸에 미리 적힙니다. [설정] ⚙ 리그 설정에 <b>총상금(기본 5만원)·상 이름 네 개·종합 상(기본 문화상품권 3만원)·등수 포인트·자격 종목 수·말하기 시작일</b>이 생겼습니다. [발행] 「📤 순위표 발행」을 누르면 이름을 <b>성+○○로 가려</b> 학생앱 자리에 올립니다 — <b>금액은 올라가지 않습니다</b>. 누르기 전에는 학생에게 아무것도 안 보입니다. [🎙 말하기] 채점 체계를 먼저 만들어야 해서 지금은 「준비 중」 칸만 있고 종합 포인트에서 빠집니다(11월 시즌 예정). [남은 것] 학생앱 리그 화면은 학생앱 새 버전에서. [검증] 실브라우저 자동 검사 통과 · 퇴원생 노출 검사 10/10.'},
-      {ver:'v18-159',date:'2026',stability:'warn',memo:'🩹 <b>창 겹침 · 일괄 버튼 · 옛 노트 세 가지 수정</b> (원장 제보 2026-09-08 「화면에 뒤에 내용이나 다른 창들이 뜬다. 9월달에 받은 질문들을 내가 일일이 눌러서 해야 하나?」). [① 창이 겹쳐 보이던 것] 채점 패널·리그 순위표·리그 설정·타임테이블 시범이 서로 위에 쌓이고 뒷배경이 반투명(0.5)이라 뒤 내용이 비쳐 보였다 → <b>큰 창은 한 번에 하나만</b> 띄우고(ibqCloseOthers) 뒷배경을 0.86으로 어둡게 했다. 순위표의 ⚙ 설정은 닫으면 <b>순위표로 되돌아온다</b>. 사진 크게 보기는 겹쳐도 되는 것이라 그대로. [② 일괄 버튼이 안 먹히던 것] 「🤖 AI 초안 일괄」·「✓ 8점 이상 일괄확정」이 <code>ahaCurrentNotes()</code>를 쓰는데, 이 함수는 <b>왼쪽에서 반·학생을 골라야만</b> 목록을 돌려준다 → 아무것도 안 고르면 대상이 0건이라 아무 일도 일어나지 않았다. 이제 아무도 안 고르면 <b>전체를 대상</b>으로 삼고, 확인창에 그 사실과 건수를 적는다. 하나씩 누르실 필요 없다. [③ 옛 노트가 리그를 망치던 것 — 중요] 9월 노트 45건 중 <b>새 방식(활동지 사진·LAMP)은 1건뿐</b>이고 36건은 한 줄 메모만(가운데값 16자), 8건은 글이 아예 없다. 이런 노트는 L·A·M이 비어 채점해도 <b>질문력이 2~3점으로 고정</b>되어 순위가 뜻을 잃는다(순위표에 평균 2.0으로 나타났다) → 리그 집계에서 <b>기본으로 뺀다</b>(<code>lampOnly</code>). 순위표에 「옛 방식 노트 N건은 리그에서 뺐습니다」와 이유를 적었고, ⚙ 설정에서 넣도록 바꿀 수 있다. 기록과 채점은 그대로 남는다 — <b>리그는 학생앱에서 활동지 사진으로 올라오는 노트부터</b> 쌓인다. [함께 고친 것] 설정의 켜기/끄기 단추가 값을 <code>\'true\'/\'false\'</code> <b>글자</b>로 저장해 <code>\'false\'</code>도 참으로 읽히던 문제(그동안 표시용 값에만 쓰여 드러나지 않았다) — 참·거짓으로 바꿔 저장한다. [검증] 실브라우저 33/33 — 창 하나만 열림·설정에서 되돌아오기·뒷배경 0.86·옛 노트 제외와 토글·일괄 대상 전체·기존 순위 계산 그대로.'},
+      {ver:'v18-159',date:'2026',stability:'warn',memo:'🩹 <b>창 겹침 · 일괄 버튼 · 옛 노트 세 가지 수정</b> (원장 제보 2026-09-08 「화면에 뒤에 내용이나 다른 창들이 뜬다. 9월달에 받은 질문들을 내가 일일이 눌러서 해야 하나?」). [① 창이 겹쳐 보이던 것] 채점 패널·리그 순위표·리그 설정·타임테이블 시범이 서로 위에 쌓이고 뒷배경이 반투명(0.5)이라 뒤 내용이 비쳐 보였다 → <b>큰 창은 한 번에 하나만</b> 띄우고(ibqCloseOthers) 뒷배경을 0.86으로 어둡게 했다. 순위표의 ⚙ 설정은 닫으면 <b>순위표로 되돌아온다</b>. 사진 크게 보기는 겹쳐도 되는 것이라 그대로. [② 일괄 버튼이 안 먹히던 것] 「🤖 AI 초안 일괄」·「✓ 전부 확정」이 <code>ahaCurrentNotes()</code>를 쓰는데, 이 함수는 <b>왼쪽에서 반·학생을 골라야만</b> 목록을 돌려준다 → 아무것도 안 고르면 대상이 0건이라 아무 일도 일어나지 않았다. 이제 아무도 안 고르면 <b>전체를 대상</b>으로 삼고, 확인창에 그 사실과 건수를 적는다. 하나씩 누르실 필요 없다. [③ 옛 노트가 리그를 망치던 것 — 중요] 9월 노트 45건 중 <b>새 방식(활동지 사진·LAMP)은 1건뿐</b>이고 36건은 한 줄 메모만(가운데값 16자), 8건은 글이 아예 없다. 이런 노트는 L·A·M이 비어 채점해도 <b>질문력이 2~3점으로 고정</b>되어 순위가 뜻을 잃는다(순위표에 평균 2.0으로 나타났다) → 리그 집계에서 <b>기본으로 뺀다</b>(<code>lampOnly</code>). 순위표에 「옛 방식 노트 N건은 리그에서 뺐습니다」와 이유를 적었고, ⚙ 설정에서 넣도록 바꿀 수 있다. 기록과 채점은 그대로 남는다 — <b>리그는 학생앱에서 활동지 사진으로 올라오는 노트부터</b> 쌓인다. [함께 고친 것] 설정의 켜기/끄기 단추가 값을 <code>\'true\'/\'false\'</code> <b>글자</b>로 저장해 <code>\'false\'</code>도 참으로 읽히던 문제(그동안 표시용 값에만 쓰여 드러나지 않았다) — 참·거짓으로 바꿔 저장한다. [검증] 실브라우저 33/33 — 창 하나만 열림·설정에서 되돌아오기·뒷배경 0.86·옛 노트 제외와 토글·일괄 대상 전체·기존 순위 계산 그대로.'},
       {ver:'v18-158',date:'2026',stability:'warn',memo:'🏆 <b>IB아하노트 리그 순위표</b> (원장 지시 2026-09-08 「아하노트 리그 순위표 먼저 학원앱에서 구현해줘」). v18-155에서 설정 화면만 있고 진행·학생 이름이 없던 것을 채웠다. [세는 법 — 설정 <code>aha_league_cfg</code> 를 그대로 따른다] ① 시즌(기본 2달) 안에 <b>확정된 점수만</b> 센다 ② 질문력이 기준(기본 5점) 미만이면 <b>리그 0점</b>(개인 기록에는 남는다) ③ 인정 상한 하루 2건·주 8건 — 넘치면 <b>점수가 높은 것부터</b> 인정한다(많이 올리는 것이 아니라 잘 쓰는 것이 점수 — 원장 결정 Q1) ④ 부(초·중·고)로 나눠 순위 ⑤ 등급은 IB 학습자상 <b>질문자→탐구자→사고자→성찰자</b>, 강등 없음. [화면] 아하노트 머리의 <b>「🏆 리그 순위표」</b> — 부별 3열 순위(등수·이름·등급·평균·리그 점수), 학생을 누르면 <b>상세</b>(리그 점수·평균 질문력·인정 노트·스스로 해결·되돌아보기·채택 + <b>다음 등급까지 진행 막대</b> + 이번 시즌 노트 목록에 「상한 초과」·「임시」 표시, 노트에서 바로 채점 패널 열기). 아래에 <b>🏆 베스트 질문 후보</b>(질문력 8점 이상, 눌러서 선정)와 <b>⚠ 2주째 노트 없는 학생</b>. 이름은 설정대로 성+○○로 가린다. [확정 점수가 없을 때] 안내와 함께 <b>「임시 점수도 보기」</b> — AI 초안 점수로 순위표가 어떻게 보일지 미리 확인할 수 있고, 그때는 머리에 「미리보기」 딱지가 붙는다. 리그 설정은 순위표 안 ⚙ 로 옮겼다. [남은 것] 학생앱 리그 화면은 학생앱 배포 때(v2-71 이후) 함께. [검증] 실브라우저 24/24 — 부 구분·하루 상한(9/6 세 건 중 두 건)·시즌 밖 8월 노트 제외·질문력 4점은 리그 0점·등급 판정(평균 7.9라 사고자 못 됨)·임시 점수 기본 제외/토글·이름 가리기·상세 진행도·베스트 후보·조용한 학생 경고·오류 0.'},
       {ver:'v18-157',date:'2026',stability:'warn',memo:'🕐 <b>타임테이블 채점 — 「공부만 적었나」를 구분</b> (원장 지적 2026-09-08 「칸을 채운다는 것보다, 유현준은 다른 활동을 안 적고 수학 공부만 적었다. 이런 것들을 구분하고 감점을 주어야 한다」). [무엇이 문제였나] v18-156은 <b>칸 수만</b> 셌다. 그래서 기준선을 10칸에 두니 8건 전원이 못 미쳐 <b>2칸 적은 학생과 7칸 적은 학생이 똑같이 −1</b>이 되었고, 반대로 기준선을 낮추면 <b>7칸을 전부 과목으로만 채운 학생</b>이 그냥 통과했다. 원장님이 보시려던 것은 칸 수가 아니라 <b>하루를 기록했는가</b>였다. [고친 것] AI가 채워진 칸마다 무엇을 적었는지 <b>공부 / 생활 / 못 읽음</b> 셋으로 나눈다 — <b>공부</b>(수학·영어·학원·숙제·인강), <b>생활</b>(학교·등교·식사·수면·낮잠·이동·운동·휴식·가족), <b>못 읽음</b>(표시는 있는데 글씨를 못 읽음. 지어내지 않는다). 「학교=생활, 학원=공부」를 프롬프트에 명시. 점수는 <b>기준선 두 개를 모두 넘어야</b> 1점 — ① 채운 칸 N개 이상(기본 5) ② <b>생활 활동 M개 이상(기본 1)</b>. 즉 <b>여덟 칸을 채웠어도 전부 공부면 0점</b>이다. [화면] 슬라이더 두 개(파랑=채운 칸·초록=생활 활동)로 두 기준선을 따로 민다. 표에 <b>「공부 · 생활」 칸</b>과 0점 사유(「공부만 적음」·「칸이 너무 적음」·「너무 적고 생활도 없음」)를 적고, 시간대 막대를 <b>파랑 공부 · 초록 생활 · 주황 못 읽음 · 회색 빈칸</b>으로 칠했다. 비교표 복사에도 공부·생활·사유 열 추가. 생활 기준선을 0으로 내리면 예전처럼 칸 수만 본다(원장님이 끌 수 있다). [그대로인 것] 여전히 <b>아무것도 저장하지 않는다</b> — 9월 점수도 실제 채점 규칙도 안 바뀐다. [검증] 실브라우저 26/26 — 8칸을 채웠어도 공부만 적으면 0점, 생활 적은 학생은 1점, 새벽 생활 칸은 안 셈, 슬라이더 2개 즉시 재계산, 저장 안 함, 오류 0.'},
       {ver:'v18-156',date:'2026',stability:'warn',memo:'🕐 <b>플래너 타임테이블 채점 — 시범 화면</b> (원장 지시 2026-09-08 「타임테이블에 빈 영역이 많으면 점수를 안 주어야 한다. 우선 9월 플래너만. 코딩하지 말고 확인하고 상의하자」). [상의 결과] 원장 결정 — 이 점수는 <b>「얼마나 오래 공부했나」가 아니라 「하루를 통째로 기록했나」</b>다. 수학·영어뿐 아니라 <b>학교·식사·낮잠</b>까지 적어야 하고, 학교 수업 시간이 비어 있으면 그것도 감점이다(「학교」라고 적어야 한다). 점수 자리는 <b>사진 제출 6점 → 5점</b>에서 떼어 <b>타임테이블 1점</b> 신설(10점 만점 유지 — 진도 레이스 집중 버프가 「플래너 점수 ÷ 10」을 쓰므로 만점을 바꾸면 레이스가 통째로 틀어진다). 세는 칸은 <b>아침 6시~자정 18칸</b>만(새벽이 비어 있어도 감점 안 함 — 원장 선택). 형광펜·글씨·괄호 등 <b>어떤 표시라도</b> 있으면 채운 것. [화면] 플래너 사진검토 상단 「🕐 타임테이블 채점 시범」 — ① 9월 세트를 날짜가 겹치지 않게 10건 골라 Haiku 비전으로 시간표만 읽고 ② <b>「지금 점수 → 새 점수 → 차이」 비교표</b>와 시간대 막대(파란 칸=채움)를 보여 준다. <b>기준선(18칸 중 몇 칸)은 슬라이더</b>로, 밀면 표가 그 자리에서 다시 계산된다(AI를 다시 부르지 않는다 — 점수는 앱이 계산하고 AI는 칸만 읽는다). 「② 9월 나머지도 채점」·「📋 비교표 복사」. [중요] <b>이 화면은 아무것도 저장하지 않는다</b> — 9월 점수도 실제 채점 규칙도 그대로다. 원장님이 표를 보고 기준선을 확정한 뒤 다음 버전에서 ① 채점 규칙 교체 ② 새 플래너 자동 판독 ③ 9월 일괄 반영을 한다(합산 지점이 7곳이라 승인 전에는 건드리지 않는다). [사진 복구] 등록부의 사진 주소가 9월 138건 중 112건이 비어 있으나, Storage 파일 이름이 <code>&lt;코드&gt;_&lt;setId&gt;_planner_today_tnone.jpg</code>로 일정해 주소를 되살려 읽는다(실측 6/6 복구). [실측] 9월 세트 138건·학생 26명, 지금 평균 <b>8.4점</b>(9점 이상이 66%) — 지금 채점이 후하다는 원장님 판단이 자료로도 확인된다. [검증] 실브라우저 20/20 — 버튼·규칙 안내·슬라이더 즉시 재계산·깨어 있는 칸만 세기(새벽 3칸 제외)·사진 주소 복구·저장 안 함(등록부 무변경)·오류 0.'},
@@ -48148,7 +48149,7 @@ function rAhaNote(){
     +  (ibqSelfPendingCount()?'<span style="font-size:12px;font-weight:800;background:#f59e0b;color:#78350f;border-radius:20px;padding:3px 11px">🙋 스스로 해결 '+ibqSelfPendingCount()+'건</span>':'')
     +  '<div style="margin-left:auto;font-size:13px;color:rgba(255,255,255,0.85)">최근 7일 '+week+'건 · <b style="color:#fbbf24">미해결 '+pending+'건</b> <span style="opacity:0.5">/ 전체 '+total+'</span></div>'
     +  '<button onclick="ibqBulkDraft()" title="읽은 글자가 있는 미해결 노트에 AI 초안 점수를 한 번에 매깁니다" style="background:#7c3aed;color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer">'+(IBQ_BUSY==='bulk'?'채점 중…':'🤖 AI 초안 일괄')+'</button>'   // v18-155
-    +  '<button onclick="ibqBulkConfirm()" title="AI 초안이 있고 질문력 8점 이상인 노트를 그대로 확정합니다" style="background:#16a34a;color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer">✓ 8점 이상 확정</button>'   // v18-155
+    +  '<button onclick="ibqBulkConfirm()" title="AI 초안이 있는 노트를 점수와 상관없이 모두 그대로 확정합니다 (왼쪽에서 학생을 고르면 그 학생만)" style="background:#16a34a;color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer">✓ 전부 확정</button>'   // v18-155
     +  '<button onclick="lgGo()" title="🏆 루멘 리그 — 시즌 한눈에·순위표·시상·발행" style="background:linear-gradient(135deg,#1d6fe8,#0d2240);color:#fff;border:none;border-radius:7px;padding:6px 12px;font-size:13px;font-weight:800;cursor:pointer">🏆 리그</button>'   // v18-160
     +  ahaMoreBtn()
     +  '<button onclick="ahaReload()" title="새로고침" style="background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:7px;padding:6px 11px;font-size:13px;cursor:pointer;font-weight:600">🔄</button>'
@@ -48558,9 +48559,9 @@ async function wbConfirmDay(dayKey){
   var arr=wbNotes().filter(function(n){
     if(iblDay(n.created_at)!==dayKey) return false;
     var s=ibqOf(n.id);
-    return s && s.status==='temp' && (s.total||0)>=8;
+    return s && s.status==='temp';
   });
-  if(!arr.length){ alert('이 날 확정할 것이 없습니다. (AI 초안이 있고 질문력 8점 이상)'); return; }
+  if(!arr.length){ alert('이 날 확정할 것이 없습니다. (AI 초안이 있는 노트 — 초안이 없으면 먼저 🤖 AI 초안)'); return; }
   if(!confirm(ahaDayHeadLabel(dayKey)+' — '+arr.length+'건을 AI 초안 그대로 확정할까요?')) return;
   arr.forEach(function(n){
     var d=IBQ_SCORES[n.id];
@@ -48639,11 +48640,11 @@ function wbByDay(notes){
   order.forEach(function(k){
     var arr=days[k];
     var unscored=arr.filter(function(n){ return !ibqIsFinal(n.id); }).length;
-    var ready=arr.filter(function(n){ var s=ibqOf(n.id); return s && s.status==='temp' && (s.total||0)>=8; }).length;
+    var ready=arr.filter(function(n){ var s=ibqOf(n.id); return s && s.status==='temp'; }).length;
     var fk=wbKey(k);
     var folded=!!WB.fold[fk];
     var right='';
-    if(ready) right+='<div onclick="wbConfirmDay(\''+ahaEsc(k).replace(/'/g,'')+'\')" style="cursor:pointer;background:#16a34a;color:#fff;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800">✓ 이 날 8점 이상 확정 ('+ready+')</div>';
+    if(ready) right+='<div onclick="wbConfirmDay(\''+ahaEsc(k).replace(/'/g,'')+'\')" style="cursor:pointer;background:#16a34a;color:#fff;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800">✓ 이 날 전부 확정 ('+ready+')</div>';
     right+='<div onclick="wbFold(\''+fk+'\')" style="cursor:pointer;background:#fff;border:1px solid #cbd5e1;color:#475569;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:700">'+(folded?'펼치기':'접기')+'</div>';
     h+=wbBar(k, ahaDayHeadLabel(k), arr.length+'건 · <b>미채점 '+unscored+'</b>'+((arr.length-unscored)?(' · 확정 '+(arr.length-unscored)):''), right, folded);
     if(!folded) arr.forEach(function(n){ h+=wbRow(n, {}); });
@@ -48676,10 +48677,10 @@ function wbByWs(notes){
     var fk=wbKey(k);
     var folded=!!WB.fold[fk];
     var all=[]; g.order.forEach(function(sq){ all=all.concat(g.seqs[sq]); });
-    var ready=all.filter(function(n){ var s=ibqOf(n.id); return s && s.status==='temp' && (s.total||0)>=8; }).length;
+    var ready=all.filter(function(n){ var s=ibqOf(n.id); return s && s.status==='temp'; }).length;
     var unscored=all.filter(function(n){ return !ibqIsFinal(n.id); }).length;
     var right='<div onclick="wbFold(\''+fk+'\')" style="cursor:pointer;background:#fff;border:1px solid #cbd5e1;color:#475569;border-radius:8px;padding:6px 11px;font-size:11.5px;font-weight:700">'+(folded?'펼치기':'접기')+'</div>';
-    h+=wbBar(k, '📄 '+ahaEsc(g.title), g.n+'건 · 문항 '+g.order.length+'개 · <b>미채점 '+unscored+'</b>'+(ready?(' · 8점 이상 '+ready):''), right, folded);
+    h+=wbBar(k, '📄 '+ahaEsc(g.title), g.n+'건 · 문항 '+g.order.length+'개 · <b>미채점 '+unscored+'</b>'+(ready?(' · 확정 대기 '+ready):''), right, folded);
     if(folded) return;
     g.order.sort(function(a,b){ return (Number(a)||0)-(Number(b)||0); });
     g.order.forEach(function(sq){
@@ -49194,11 +49195,11 @@ function wbListHtml(cur){
     var list=days[k];
     var pend=list.filter(function(n){ return !ibqIsFinal(n.id); }).length;
     var done=list.length-pend;
-    var ready=list.filter(function(n){ var s=ibqOf(n.id); return s && s.status==='temp' && (s.total||0)>=8; }).length;
+    var ready=list.filter(function(n){ var s=ibqOf(n.id); return s && s.status==='temp'; }).length;
     var fk=wbKey('L'+k);
     var folded=!!WB.fold[fk];
     var right='';
-    if(ready) right+='<div onclick="wbConfirmDay(\''+ahaEsc(k).replace(/'/g,'')+'\');event.stopPropagation()" style="cursor:pointer;background:#16a34a;color:#fff;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:800">✓ 이 날 8점 이상 확정 ('+ready+')</div>';
+    if(ready) right+='<div onclick="wbConfirmDay(\''+ahaEsc(k).replace(/'/g,'')+'\');event.stopPropagation()" style="cursor:pointer;background:#16a34a;color:#fff;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:800">✓ 이 날 전부 확정 ('+ready+')</div>';
     h+=wbBar(fk, wbDayLong(k), list.length+'건 · 대기 <b style="color:#dc2626">'+pend+'</b>'+(done?(' · 확정 '+done):''), right, folded);
     if(!folded) list.forEach(function(n){
       var mf=n.mf||null;
@@ -50717,15 +50718,15 @@ async function ibqBulkDraft(list){
 window.ibqBulkDraft=ibqBulkDraft;
 
 async function ibqBulkConfirm(){
-  var min=8;
+  var min=0;   /* ★ v19-144: 점수 기준 없음 — 전부 확정 */
   var scope=ibqScopeNotes();
   var targets=scope.list.filter(function(n){
     var s=ibqOf(n.id);
     return s && s.status==='temp' && (s.total||0)>=min;
   });
-  if(!targets.length){ alert('일괄 확정할 것이 없습니다.\n(AI 초안이 있고 질문력 '+min+'점 이상인 노트)'); return; }
+  if(!targets.length){ alert('일괄 확정할 것이 없습니다.\n(AI 초안이 있는 노트 — 초안이 없으면 먼저 🤖 AI 초안 일괄)'); return; }
   if(!confirm((scope.all?'왼쪽에서 아무도 안 고르셔서 전체에서 찾았습니다.\n\n':'')
-    +targets.length+'건을 AI 초안 그대로 확정할까요? (질문력 '+min+'점 이상)')) return;
+    +targets.length+'건을 AI 초안 그대로 확정할까요? (점수와 상관없이 전부)')) return;
   targets.forEach(function(n){
     var d=IBQ_SCORES[n.id];
     ibqPaperApply(n,d);   /* ★ v19-4: 일괄 확정도 종이 규칙을 탄다 */
@@ -51379,7 +51380,7 @@ function iblRender(){
     h+='<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px 18px;margin-bottom:12px;font-size:13px;line-height:1.9;color:#78350f">'
       +'<b>아직 확정한 점수가 없습니다.</b><br>'
       +'리그는 <b>원장님이 「확정」을 누른 점수만</b> 셉니다. 아하노트 카드의 <b>📝 채점</b>에서 몇 건 확정해 보시면 여기에 순위가 쌓입니다. '
-      +'하나씩 누르지 않으셔도 됩니다 — 머리의 <b>「🤖 AI 초안 일괄」 → 「✓ 8점 이상 일괄확정」</b>으로 한 번에 하실 수 있습니다.<br>'
+      +'하나씩 누르지 않으셔도 됩니다 — 머리의 <b>「🤖 AI 초안 일괄」 → 「✓ 전부 확정」</b>으로 한 번에 하실 수 있습니다.<br>'
       +'<div onclick="iblToggleTemp()" style="display:inline-block;margin-top:8px;background:#b45309;color:#fff;border-radius:9px;padding:8px 14px;cursor:pointer;font-size:12.5px;font-weight:800">'
       +'🔎 AI 임시 점수로 미리 보기</div>'
       +'<span style="font-size:11.5px;margin-left:8px">— 확정 전이라도 순위표가 어떻게 보일지 확인만 합니다</span>'
@@ -97022,7 +97023,51 @@ render = window.render = (function(o){ return function(){
 })();
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~143: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-144: 💡 IB아하노트 — 「8점 이상 확정」 → 「전부 확정」 · 학생이 나중에 올린 스스로 해결을 초안에 맞추기
+ * 원장 2026-10-21 「질문은 8점이상 확정말고 전부 확정하자. 아하리그 시작부터 이제까지 점수반영이 안된 것 같다.
+ *   학생앱에서 스스로 고쳤으면 학원앱 아하노트에서 학생이 스스로 고쳤다고 체크가 안되는 것 같다」
+ *  점검(서버): 시즌(9/7~11/30) 노트 126건 중 확정 34 · AI 초안만 89 · 초안 없음 3 — 리그는 «확정»만 센다.
+ *    8점 미만 초안은 일괄 확정에서 빠져 계속 쌓였다 → 단추 문구·조건은 build_app.py(>=144) 가 바꾼다.
+ *  스스로 해결: AI 초안을 만든 «뒤에» 학생이 🙋 스스로 해결을 올리면 초안의 해결 경로(path)가 'none' 으로 남아
+ *    채점 칸의 「🙋 스스로 해결」 칩이 꺼져 있고 확정해도 보너스가 안 붙었다(예: 9/20 노트 — 초안 9/22, 스스로 해결 9/24).
+ *    → 확정 전이고 원장이 손대지 않은 AI 초안(by:'ai')이면 노트의 지금 경로(ibqPathOf)로 맞추고 보너스를 다시 센다.
+ *       채점 작업대를 열 때 · 일괄 확정·하루 확정·한 줄 확정 직전에. 바뀐 것이 있으면 aha_scores 에 한 번 저장.
+ *  ※ 바탕 함수를 감싸기만 한다. 문자열 연결로만 쓴다.
+ * ═══════════════════════════════════════════════════════════════════ */
+var A144 = { saving:false };
+/* 노트 하나 — 바뀌었으면 true */
+function a144Sync(n){
+  if(!n || !n.id) return false;
+  var d=IBQ_SCORES[n.id];
+  if(!d || d.status==='final' || d.by!=='ai') return false;
+  var p; try{ p=ibqPathOf(n); }catch(e){ return false; }
+  if(!p || p==='none' || d.path===p) return false;
+  d.path=p;
+  try{ ibqApplyBonus(d, n); }catch(e){}
+  return true;
+}
+/* 전부 — 바뀐 수 */
+function a144SyncAll(){
+  var c=0;
+  try{ (ahaNotes||[]).forEach(function(n){ if(a144Sync(n)) c++; }); }catch(e){}
+  return c;
+}
+window.a144SyncAll=a144SyncAll;
+function a144SaveIf(c){
+  if(!c || A144.saving) return Promise.resolve();
+  A144.saving=true;
+  return Promise.resolve(ibqSaveScores()).then(function(){ A144.saving=false; }, function(){ A144.saving=false; });
+}
+/* 채점 작업대를 그릴 때 */
+wbMain=(function(o){ return function(){ try{ a144SaveIf(a144SyncAll()); }catch(e){} return o.apply(this, arguments); }; })(wbMain);
+/* 확정 직전에 */
+['ibqBulkConfirm','wbConfirmDay','wbConfirm'].forEach(function(nm){
+  var o=window[nm]; if(typeof o!=='function') return;
+  window[nm]=function(){ try{ a144SyncAll(); }catch(e){} return o.apply(this, arguments); };
+});
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~144: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹

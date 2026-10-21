@@ -112,7 +112,8 @@ const STUDENTS = [
   await pg.setViewportSize({ width: 390, height: 844 }); await pg.waitForTimeout(500);
   s = await S();
   t('⑤ 폰 390: 위쪽 칩 줄 그대로 · 왼쪽 수강료 메뉴 없음', s.payTabs && s.tabs.length === 0, JSON.stringify(s));
-  t('⑥ 서버에 쓴 것 없음', (await P(() => T.w.filter((x) => x.tbl === 'lumen_store').length)) === 0, JSON.stringify(await P(() => T.w)));
+  /* 켜질 때 저장(cn_font·데모 표시 등)은 시점에 따라 잡히므로 수강료 자료(pay_·fin_)만 본다 */
+  t('⑥ 수강료 자료를 서버에 쓴 것 없음', (await P(() => T.w.filter((x) => x.tbl === 'lumen_store' && /^(pay_|fin_)/.test(String(x.key || ''))).length)) === 0, JSON.stringify(await P(() => T.w)));
   t('⑥ 페이지 오류 없음', errs.length === 0, errs.join(' | '));
   await br.close();
   console.log('\n' + pass + '/' + (pass + fail) + (fail ? ' ❌' : ' ✅'));
