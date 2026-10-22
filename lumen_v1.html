@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-148';
+var APP_VER = 'v19-149';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9084,6 +9084,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-149',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 — 고등부는 모든 테스트로 선발</b> (원장 2026-10-22 「리커버리가 고등부 테스트는 체크가 안되는 것 같다 · 우선은 고등부는 모든 테스트를 하자」). 매쓰플랫은 고등 주간테스트가 없어 고등부는 시험 기준으로 한 번도 걸리지 않았습니다. 이제 고등 학생은 <b>일일 TEST · 내신대비 · 모의고사 · 단원·총괄 TEST</b>(오답·숙제·원본 학습지는 빼고) 점수로 선발합니다 — 기준은 중고등 85점 그대로. 리커버리 학습지 설계에도 그 시험을 씁니다. 학부모 안내문은 고등부면 «이번 주 <b>테스트</b>(10/21 화)에서 …»로 나갑니다. 명예의 전당·주간 순위에는 섞이지 않습니다. 「[오답]」 재시험도 일일 TEST 라 함께 셉니다 — 너무 많이 걸리면 말씀해 주세요.'},
       {ver:'v19-148',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 안내문 — 원장님 문자 모양으로</b> (원장 2026-10-22 「이런식으로 학생이름을 넣자」). 「[루멘수학] 안녕하세요,」 · 빈 줄 · <b>«길동이가»</b>(성을 빼고 이름 — 받침이 있으면 «이가», 없으면 «가») · «이번 주 주간테스트(10/21 수)에서 20문항 중 15문항을 맞혀 75점이 나와 10월 24일(토) 리커버리 보충수업을 하려고 합니다.» · 보충 내용 · 네이버 예약 줄 · 빈 줄 · 「감사합니다.」 🤖 AI 초안도 이 모양을 따릅니다.'},
       {ver:'v19-147',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 안내문 — 주간테스트 본 날 · 20문항 바로잡기</b> (원장 2026-10-22 「주간테스트는 20문제이다. 시험지 날짜도 보이게 할까?」). ① 안내문이 <b>«이번 주 주간테스트(10/21 화)에서 20문항 중 15문항을 맞혀 75점이 나와…»</b>처럼 학생이 <b>실제로 본 날</b>을 적습니다(시험지 제목의 날짜는 매쓰플랫이 시험지를 만든 날이라 쓰지 않습니다). ② «40문항»은 서버 집계 잘못이었습니다 — 매쓰플랫 기록을 1,000줄씩 받아 오면서 순서를 정하지 않아 같은 줄이 두 번 들어갔습니다. 수집기를 고치고 다시 셌습니다(주간테스트 전부 20문항, 점수와 맞힌 수가 모두 맞음). 리커버리 왼쪽 «주간 10/40»·틀린 유형 수도 함께 바로잡혔습니다.'},
       {ver:'v19-146',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 안내문에서 시간 빼기</b> (원장 2026-10-22 「네이버예약 시간은 빼자」). 안내문에 <b>날짜만</b> 적습니다 — «네이버 예약으로 편하신 시간을 잡아 주시면 감사하겠습니다»(가능 시간 목록 없음), 예약한 학생은 «네이버 예약은 확인했습니다. 예약하신 시간에 맞춰 보내 주세요»(시간 없음). 🤖 AI 초안도 시간을 쓰지 않습니다. 예약됐는지 표시·📋 복사·예약 주소는 그대로입니다.'},
@@ -14696,7 +14697,7 @@ function bpClassPanel(x){
     myT.sort(function(a,b){ return String(b.date).localeCompare(String(a.date)); });
     if(!myT.length) h+='<div style="font-size:12.5px;color:#94a3b8;font-weight:700">최근 시험 기록 없음</div>';
     myT.slice(0,2).forEach(function(t){
-      h+='<div style="font-size:14px;font-weight:800;color:#334155;padding:4px 0">'+esc2(String(t.date||'').slice(5).replace('-','.'))+' '+(t.type==='WEEKLY'?'주간테스트':'단원테스트')+' <b style="color:#0d2240">'+t.score+'점</b>'+(t.rank?' · 학원 '+t.rank+'등/'+t.n+'명':'')+'</div>';
+      h+='<div style="font-size:14px;font-weight:800;color:#334155;padding:4px 0">'+esc2(String(t.date||'').slice(5).replace('-','.'))+' '+(t.type==='WEEKLY'?'주간테스트':(t.type==='HIGH_TEST'?'테스트':'단원테스트'))+' <b style="color:#0d2240">'+t.score+'점</b>'+(t.rank?' · 학원 '+t.rank+'등/'+t.n+'명':'')+'</div>';
     });
   }
   h+='</div>';
@@ -15307,8 +15308,9 @@ function rcRows(){
     var stKey=String(st.id||st.name);
     // ① 시험 기준
     var testHit=null;
+    var _hiStu=/고/.test(String(st.grade||''));   /* ★ v19-149: 고등부는 HIGH_TEST(일일·내신대비·모의고사…)·단원 TEST 도 */
     (WK.tests||[]).forEach(function(t){
-      if(t.type!=='WEEKLY') return;
+      if(t.type!=='WEEKLY' && !(_hiStu && (t.type==='HIGH_TEST'||t.type==='CHAPTER'))) return;
       var me=(t.students||[]).find(function(sx){ return String(sx.sid)===String(sid)&&sx.score!=null; });
       if(!me) return;
       /* ★ v18-99 버그 고침 — 「학생이 실제로 본 날」로 거른다.
@@ -15321,7 +15323,7 @@ function rcRows(){
       var tookOn = me.date || t.date;
       if(!tookOn||tookOn<since||tookOn>until) return;
       if(me.score<scoreCut){
-        if(!testHit||String(tookOn)>String(testHit.date)) testHit={ date:tookOn, title:t.title, score:me.score, wrong:me.wrongConcepts||[],
+        if(!testHit||String(tookOn)>String(testHit.date)) testHit={ ttype:t.type, date:tookOn, title:t.title, score:me.score, wrong:me.wrongConcepts||[],
           wid:t.wid, correct:me.correct, total:me.total, rank:me.acadRank, rankN:me.acadN, avg:me.acadAvg, paper:t.paper||null };  // ★ v17-27: 시험지 팝업용
       }
     });
@@ -66800,7 +66802,7 @@ function rWeekly(){
   h += '<div style="font-size:10.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:7px 11px;margin-bottom:14px;font-weight:600">ℹ️ 전국 평균·등수는 매쓰플랫 보고서 연동을 확보하면 자동으로 붙습니다 — 지금은 점수·학원 내 등수·오답 유형 기준.</div>';
   if (!WK.loaded) { h += '<div style="padding:36px;text-align:center;color:#94a3b8;font-weight:700">🔄 불러오는 중…</div></div>'; return h; }
   if (!WK.tests.length) { h += '<div style="padding:36px;text-align:center;color:#94a3b8;font-weight:700">아직 수집된 주간테스트가 없어요.<br>수집기가 돌면 자동으로 나타납니다.</div></div>'; return h; }
-  WK.tests.forEach(function(t, ti){
+  WK.tests.filter(function(t){ return t.type!=='HIGH_TEST'; }).forEach(function(t, ti){   /* ★ v19-149 */
     var isOpen = WK.open.hasOwnProperty(t.key) ? WK.open[t.key] : (ti < 2);
     var pubN = t.students.filter(function(s){ return WK.pub[wkKey(t, s)]; }).length;
     h += '<div style="background:white;border:1.5px solid #e8edf5;border-radius:16px;margin-bottom:12px;overflow:hidden">';
@@ -90880,7 +90882,7 @@ function rcws3IsTwo(grade, rule){ var k=rcws3GradeKey(grade); return ((rule&&rul
 function rcws3MyTests(sid){
   var out=[];
   ((typeof WK!=='undefined'&&WK.tests)||[]).forEach(function(t){
-    if(t.type!=='WEEKLY') return;
+    if(t.type!=='WEEKLY' && t.type!=='HIGH_TEST') return;   /* ★ v19-149: 고등부 테스트도 리커버리 학습지 재료로 */
     var me=(t.students||[]).find(function(s){ return String(s.sid)===String(sid)&&s.score!=null; }); if(!me) return;
     out.push({ wid:t.wid, title:t.title, date:me.date||t.date, score:me.score, correct:me.correct, total:me.total, paper:t.paper||null });
   });
@@ -97117,7 +97119,7 @@ window.r145SetUrl=function(v){
 /* 주간테스트 — {score, detail:'40문항 중 10문항'} 또는 null */
 function r145Test(c){
   var t=c && c.row && c.row.testHit;
-  if(t && t.score!=null) return { score:t.score, detail:(t.correct!=null && t.total)?(t.total+'문항 중 '+t.correct+'문항'):'', md:R145_TDATE?r145Md(t.date):'' };
+  if(t && t.score!=null) return { score:t.score, detail:(t.correct!=null && t.total)?(t.total+'문항 중 '+t.correct+'문항'):'', md:R145_TDATE?r145Md(t.date):'', kind:((t.ttype && t.ttype!=='WEEKLY')?'테스트':'주간테스트') };   /* v19-149: 고등부 테스트는 «테스트» */
   if(c && c.score!=null) return { score:c.score, detail:'' };
   return null;
 }
@@ -97148,7 +97150,7 @@ function r145Text(c){
   if(R145_NICK){ L.push('[루멘수학] 안녕하세요,'); L.push(''); L.push(r145Nick(c.name)); }
   else L.push('[루멘수학] 안녕하세요, '+c.name+' 학생 학부모님.');
   var why;
-  if(p.test) why='이번 주 주간테스트'+(p.test.md?('('+p.test.md+')'):'')+'에서 '+(p.test.detail?(p.test.detail+'을 맞혀 '+p.test.score+'점'):(p.test.score+'점'))+'이 나와';
+  if(p.test) why='이번 주 '+(p.test.kind||'주간테스트')+(p.test.md?('('+p.test.md+')'):'')+'에서 '+(p.test.detail?(p.test.detail+'을 맞혀 '+p.test.score+'점'):(p.test.score+'점'))+'이 나와';
   else why='최근 학습 점검에서 보완이 필요한 단원이 있어';
   L.push(why+' '+p.when+' 리커버리 보충수업을 하려고 합니다.');
   if(p.rx) L.push('보충 내용: '+p.rx+'.');
@@ -97202,7 +97204,7 @@ window.rcSmsDraft=async function(i,k){
     var p=r145Parts(c);
     var prompt='한국 수학학원 원장이 학부모께 보내는 주말 리커버리(보충수업) 안내 문자를 써 줘.\n'
       +'- 학생: '+c.name+' / 보충 날짜: '+p.when+'\n'
-      +(p.test?('- 이번 주 주간테스트'+(p.test.md?('(본 날 '+p.test.md+')'):'')+': '+(p.test.detail?(p.test.detail+' 맞힘, '):'')+p.test.score+'점\n'):'- 주간테스트 점수 없음(최근 학습 점검으로 부름)\n')
+      +(p.test?('- 이번 주 '+(p.test.kind||'주간테스트')+(p.test.md?('(본 날 '+p.test.md+')'):'')+': '+(p.test.detail?(p.test.detail+' 맞힘, '):'')+p.test.score+'점\n'):'- 주간테스트 점수 없음(최근 학습 점검으로 부름)\n')
       +(p.units.length?('- 보완할 단원·유형: '+p.units.join(', ')+'\n'):'')
       +(p.rx?('- 보충 내용: '+p.rx+'\n'):'')
       +(p.booked?(R145_TIME?('- 네이버 예약: 이미 '+p.bookAt+' 로 예약함 → 예약 확인했다고 짧게\n'):'- 네이버 예약: 이미 예약함 → 예약 확인했다고 짧게(시간은 쓰지 말 것)\n')
@@ -97226,7 +97228,7 @@ window.rcSmsDraft=async function(i,k){
 };
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~148: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~149: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
