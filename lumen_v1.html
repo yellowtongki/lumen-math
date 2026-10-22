@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-150';
+var APP_VER = 'v19-151';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9084,6 +9084,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-151',date:'2026-10-22',stability:'ok',memo:'📝 <b>아하노트 사진 읽기 — 인쇄된 칸 이름 빼기</b> (원장 2026-10-22 「칸 이름은 빼도록 고쳐줘」). 학생이 활동지 칸을 비워 두면 AI 가 «Learn the question (문제를 정확히 이해하기)» 같은 인쇄 글자를 학생 글로 옮겼습니다. 학원앱 「🤖 사진 읽기」와 학생앱(v2-148) 모두 이제 그 제목을 떼고, 남는 글이 없으면 «종이에 없는 칸(못 읽음)»으로 둡니다. «Pinpoint your confusion (…) - 모르겠다» 처럼 제목 뒤에 쓴 글은 «모르겠다»만 남깁니다.'},
       {ver:'v19-150',date:'2026-10-22',stability:'ok',memo:'💡 <b>아하 리그 등급 — 한 번 오른 등급은 시즌 동안 그대로</b> (원장 2026-10-22 「예전 등급 유지되게 고쳐줘」). 밀린 노트를 한꺼번에 확정하자 낮은 점수가 평균에 들어가 탐구자였던 학생이 질문자로 내려가 보였습니다. 이제 학생마다 <b>이번 시즌 가장 높았던 등급</b>을 서버에 기억해 두고, 지금 평균이 내려가도 그 등급 아래로는 보이지 않습니다(학생앱 순위표도 같음). 다음 시즌에는 새로 시작합니다. ⚙ 리그 설정에서 «강등 있음»을 고르시면 예전처럼 지금 평균으로만 셉니다.'},
       {ver:'v19-149',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 — 고등부는 모든 테스트로 선발</b> (원장 2026-10-22 「리커버리가 고등부 테스트는 체크가 안되는 것 같다 · 우선은 고등부는 모든 테스트를 하자」). 매쓰플랫은 고등 주간테스트가 없어 고등부는 시험 기준으로 한 번도 걸리지 않았습니다. 이제 고등 학생은 <b>일일 TEST · 내신대비 · 모의고사 · 단원·총괄 TEST</b>(오답·숙제·원본 학습지는 빼고) 점수로 선발합니다 — 기준은 중고등 85점 그대로. 리커버리 학습지 설계에도 그 시험을 씁니다. 학부모 안내문은 고등부면 «이번 주 <b>테스트</b>(10/21 화)에서 …»로 나갑니다. 명예의 전당·주간 순위에는 섞이지 않습니다. 「[오답]」 재시험도 일일 TEST 라 함께 셉니다 — 너무 많이 걸리면 말씀해 주세요.'},
       {ver:'v19-148',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 안내문 — 원장님 문자 모양으로</b> (원장 2026-10-22 「이런식으로 학생이름을 넣자」). 「[루멘수학] 안녕하세요,」 · 빈 줄 · <b>«길동이가»</b>(성을 빼고 이름 — 받침이 있으면 «이가», 없으면 «가») · «이번 주 주간테스트(10/21 수)에서 20문항 중 15문항을 맞혀 75점이 나와 10월 24일(토) 리커버리 보충수업을 하려고 합니다.» · 보충 내용 · 네이버 예약 줄 · 빈 줄 · 「감사합니다.」 🤖 AI 초안도 이 모양을 따릅니다.'},
@@ -50028,6 +50029,7 @@ async function ibqReadPhoto(id){
   if(s<0||e<=s) throw new Error('AI가 JSON을 돌려주지 않았습니다');
   var out=JSON.parse(txt.slice(s,e+1));
 
+  try{ out=lampStripAi(out)||out; }catch(e){}   /* ★ v19-151: 인쇄된 칸 이름 빼기 */
   // 마지막 물음표 문장을 질문으로 떼어 낸다 (학생앱 ahaSplitP와 같은 규칙)
   var P=String(out.P||'').trim(), stuck=P, ask=P;
   var parts=P.split(/(?:(?<=[.?!。])\s+)|\n+/).map(function(x){return x.trim();}).filter(Boolean);
@@ -97284,8 +97286,33 @@ iblTierOf=(function(o){ return function(row, cfg){
 window.iblTierOf=iblTierOf;
 try{ setTimeout(tk150Load, 1200); }catch(e){}
 
+/* ═══ LAMP 활동지 «인쇄된 칸 이름» 빼기 — 학생앱(v2-148)·학원앱(v19-151)·엣지 함수 aha-read 가 같은 규칙 ═══
+ * 원장 2026-10-22 「칸 이름은 빼도록 고쳐줘」. 학생이 칸을 비워 두면 AI 가 인쇄된 제목
+ *   «Learn the question (문제를 정확히 이해하기)» «Pinpoint your confusion (…) - 모르겠다» 를 학생 글로 옮겼다.
+ * 영어 제목(인쇄라 잘 읽힘) + 바로 뒤 괄호 설명 + 이어 붙은 «-»·«:» 를 줄마다 떼고, 남은 것이 없으면 그 칸은 빈칸(unread)으로. */
+var LAMP_HEAD_RE = /^\s*(?:[LAMP]\s*[.:)\-]?\s*)?(?:learn\s+the\s+question|activate\s+(?:your\s+)?knowledge|model\s+your\s+reasoning|pinpoint\s+your\s+confusion)\s*(?:\([^)]*\)?)?\s*[-–—:·]?\s*/i;
+var LAMP_HEAD_KO_RE = /^\s*\([^)]*(?:이해하기|떠올리기|풀었나요|접근했나요|정리하기|표현하기|집어내)[^)]*\)?\s*[-–—:·]?\s*/;
+function lampStripHead(s){
+  return String(s == null ? '' : s).split(/\n/).map(function(line){
+    return line.replace(LAMP_HEAD_RE, '').replace(LAMP_HEAD_KO_RE, '').trim();
+  }).filter(function(x){ return x !== ''; }).join('\n');
+}
+function lampStripAi(ai){
+  if (!ai || typeof ai !== 'object') return ai;
+  var un = Array.isArray(ai.unread) ? ai.unread.slice() : [];
+  ['L','A','M','P'].forEach(function(k){
+    if (ai[k] == null) return;
+    var before = String(ai[k]), after = lampStripHead(before);
+    if (after !== before.trim()) ai.headStripped = (ai.headStripped || []).concat([k]);
+    ai[k] = after;
+    if (!after && un.indexOf(k) < 0) un.push(k);
+  });
+  ai.unread = un;
+  return ai;
+}
+
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~150: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~151: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
