@@ -9,6 +9,8 @@
  *  ③ 학생마다 「📋 복사」 — 한 분씩 보내기 쉽게. 「전체 복사」는 그대로.
  *  ※ 바탕 함수(rcConfirmed · rcRecDate · nbkRecOf …)는 부르기만 한다. 문자열 연결로만 쓴다.
  * ═══════════════════════════════════════════════════════════════════ */
+/* v19-146 이 false 로 둔다 — 문자에 시간(배정·네이버 예약 시간·가능 시간)을 넣지 않는다 */
+var R145_TIME = (typeof R145_TIME === 'boolean') ? R145_TIME : true;
 function r145Url(){ try{ return String(localStorage.getItem('rc_nb_url')||'').trim(); }catch(e){ return ''; } }
 window.r145SetUrl=function(v){
   v=String(v||'').trim();
@@ -31,10 +33,10 @@ function r145Book(c, recDt){
 function r145Parts(c){
   var wk=rcWeekKey(), dt=rcRecDate(wk), d=new Date(dt);
   var day=(d.getMonth()+1)+'월 '+d.getDate()+'일('+rcDayLabel(dt)+')';
-  var b=r145Book(c, dt), slot=(b && b.start) || (c.e && c.e.slot) || '';
+  var b=r145Book(c, dt), slot=R145_TIME ? ((b && b.start) || (c.e && c.e.slot) || '') : '';
   var rx=(c.rx && c.rx.length && c.rx[0]!=='원장님 직접 지정')?c.rx[0]:'';
   var units=(c.e && c.e.snap && c.e.snap.units)?c.e.snap.units.map(function(u){ return u.n; }).slice(0,3):[];
-  return { day:day, when:day+(slot?' '+slot:''), booked:!!b, bookAt:(b && b.start)||'', test:r145Test(c), rx:rx, units:units, slots:(RC.cfg.slots||[]).slice(), url:r145Url() };
+  return { day:day, when:day+(slot?' '+slot:''), booked:!!b, bookAt:(b && b.start)||'', test:r145Test(c), rx:rx, units:units, slots:R145_TIME ? (RC.cfg.slots||[]).slice() : [], url:r145Url() };
 }
 function r145Text(c){
   var p=r145Parts(c), L=[];
@@ -44,7 +46,7 @@ function r145Text(c){
   else why='최근 학습 점검에서 보완이 필요한 단원이 있어';
   L.push(why+' '+p.when+' 리커버리 보충수업을 하려고 합니다.');
   if(p.rx) L.push('보충 내용: '+p.rx+'.');
-  if(p.booked) L.push('네이버 예약('+p.bookAt+')은 확인했습니다. 시간 맞춰 보내 주세요.');
+  if(p.booked) L.push(R145_TIME ? ('네이버 예약('+p.bookAt+')은 확인했습니다. 시간 맞춰 보내 주세요.') : '네이버 예약은 확인했습니다. 예약하신 시간에 맞춰 보내 주세요.');
   else {
     L.push('네이버 예약으로 편하신 시간'+(p.slots.length?'('+p.slots.join(' · ')+')':'')+'을 잡아 주시면 감사하겠습니다.');
     if(p.url) L.push('예약: '+p.url);
@@ -96,11 +98,12 @@ window.rcSmsDraft=async function(i,k){
       +(p.test?('- 이번 주 주간테스트: '+(p.test.detail?(p.test.detail+' 맞힘, '):'')+p.test.score+'점\n'):'- 주간테스트 점수 없음(최근 학습 점검으로 부름)\n')
       +(p.units.length?('- 보완할 단원·유형: '+p.units.join(', ')+'\n'):'')
       +(p.rx?('- 보충 내용: '+p.rx+'\n'):'')
-      +(p.booked?('- 네이버 예약: 이미 '+p.bookAt+' 로 예약함 → 예약 확인했다고 짧게\n')
+      +(p.booked?(R145_TIME?('- 네이버 예약: 이미 '+p.bookAt+' 로 예약함 → 예약 확인했다고 짧게\n'):'- 네이버 예약: 이미 예약함 → 예약 확인했다고 짧게(시간은 쓰지 말 것)\n')
                 :('- 네이버 예약: 아직 없음 → 네이버 예약으로 시간을 잡아 달라고 부탁'+(p.slots.length?(' (가능 시간 '+p.slots.join(', ')+')'):'')+'\n'
                   +(p.url?('- 예약 주소(그대로 한 줄로 넣기): '+p.url+'\n'):'')))
+      +(R145_TIME?'':'- 시간(몇 시)은 문자에 쓰지 말 것 — 날짜만\n')
       +'규칙: [루멘수학]으로 시작. 주간테스트 점수가 있으면 반드시 그대로 넣기(숫자 바꾸지 말 것). 4~5줄, 줄마다 한 문장. '
-      +'원장이 직접 쓴 것처럼 짧고 담백하게 — 과한 인사·감탄·「함께 성장」 같은 상투어 금지. 아이를 탓하지 않는다. 날짜·시간을 정확히. 「감사합니다.」로 끝. 문자 본문만 출력.';
+      +'원장이 직접 쓴 것처럼 짧고 담백하게 — 과한 인사·감탄·「함께 성장」 같은 상투어 금지. 아이를 탓하지 않는다. '+(R145_TIME?'날짜·시간을 정확히. ':'날짜를 정확히. ')+'「감사합니다.」로 끝. 문자 본문만 출력.';
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{ 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },

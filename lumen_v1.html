@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-145';
+var APP_VER = 'v19-146';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9084,6 +9084,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-146',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 안내문에서 시간 빼기</b> (원장 2026-10-22 「네이버예약 시간은 빼자」). 안내문에 <b>날짜만</b> 적습니다 — «네이버 예약으로 편하신 시간을 잡아 주시면 감사하겠습니다»(가능 시간 목록 없음), 예약한 학생은 «네이버 예약은 확인했습니다. 예약하신 시간에 맞춰 보내 주세요»(시간 없음). 🤖 AI 초안도 시간을 쓰지 않습니다. 예약됐는지 표시·📋 복사·예약 주소는 그대로입니다.'},
       {ver:'v19-145',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 학부모 안내문 — 주간테스트 점수 + 네이버 예약 부탁</b> (원장 2026-10-22). 리커버리 「학부모 안내문 확인」의 기본 글이 바뀌었습니다: ① <b>이번 주 주간테스트</b>(40문항 중 10문항을 맞혀 25점처럼 — 시험 기록이 없으면 «최근 학습 점검») ② 날짜(네이버 예약이 있으면 그 시간) ③ 보충 내용 ④ <b>네이버 예약</b> — 예약이 이미 있으면 «예약 확인했습니다», 없으면 «네이버 예약으로 편하신 시간(10:00 · 11:00 · 13:00)을 잡아 주세요». 맨 위 칸에 <b>네이버 예약 주소</b>를 한 번 넣어 두시면 예약 부탁 줄 아래에 붙습니다(이 PC 에 기억). 학생마다 <b>예약 됐는지 표시</b>와 <b>「📋 복사」</b> 단추가 생겨 한 분씩 보내기 쉽습니다. 「🤖 AI 초안」도 같은 재료(점수·예약 여부·주소)로 짧고 담백하게 씁니다. 예전처럼 <b>보내지 않고 복사만</b> 합니다.'},
       {ver:'v19-144',date:'2026-10-21',stability:'ok',memo:'💡 <b>IB아하노트 «전부 확정» · 학생이 나중에 올린 스스로 해결 반영</b> (원장 2026-10-21 「8점이상 확정말고 전부 확정하자 · 아하리그 점수반영이 안된 것 같다 · 스스로 고쳤다고 체크가 안된다」). [점검] 시즌(9/7~11/30) 노트 126건 중 <b>확정 34건뿐</b>이었습니다 — AI 초안만 있는 89건은 리그에 안 들어갑니다(리그는 확정만 셉니다). 8점 미만 초안이 일괄 확정에서 빠져 계속 쌓였습니다. [고침 ①] 머리의 「✓ 8점 이상 확정」 → <b>「✓ 전부 확정」</b>, 날짜마다 「✓ 이 날 전부 확정」 — AI 초안이 있으면 점수와 상관없이 확정합니다(왼쪽에서 학생을 고르면 그 학생만). 밀린 것은 범위를 <b>전체</b>로 두고 한 번 누르시면 됩니다. 하루 2건·주 8건 상한과 연습 기간(9/16까지 0점)은 그대로입니다. [고침 ②] AI 초안을 만든 <b>뒤에</b> 학생이 🙋 스스로 해결을 올리면 초안이 「해결 경로 없음」으로 남아 「🙋 스스로 해결」 칩이 꺼져 있었습니다. 이제 원장님이 손대지 않은 초안은 채점 작업대를 열 때·확정할 때 학생의 지금 경로로 맞추고 보너스를 다시 셉니다. 🎲 검사(스스로 해결 확인)는 예전처럼 원장님이 누르실 때만입니다.'},
       {ver:'v19-143',date:'2026-10-20',stability:'ok',memo:'ℹ️ <b>홈 위 «퇴원 → 재원» 알림 문구 바로잡기</b> (원장 2026-10-20 「퇴원생 오류」). 유서윤을 다시 재원으로 바꾸시자 홈 위에 빨간 띠로 «학생 로그인 코드가 바뀌었습니다 — 학생앱에 못 들어갑니다»가 떴습니다. 실제로는 코드는 그대로(DG3QWE)이고 학생앱도 들어갈 수 있습니다 — 퇴원생이 몰래 되살아나는 사고를 잡으려고 둔 알림이 제목만 잘못 붙어 있었습니다. 이제 복귀만 있으면 <b>주황 안내</b>로 «퇴원했던 학생이 재원으로 바뀌었습니다 — 일부러 복귀시키셨으면 그대로 두세요»라고 한 번만 알립니다. 로그인 코드가 정말 바뀐 경우는 예전처럼 빨간 띠입니다.'},
@@ -97067,6 +97068,11 @@ wbMain=(function(o){ return function(){ try{ a144SaveIf(a144SyncAll()); }catch(e
   window[nm]=function(){ try{ a144SyncAll(); }catch(e){} return o.apply(this, arguments); };
 });
 
+/* v19-146: 🚑 리커버리 안내문에서 시간을 뺀다 — 원장 2026-10-22 「네이버예약 시간은 빼자」
+ *   날짜만 적고, 네이버 예약 부탁 줄의 가능 시간(10:00 · 11:00 · 13:00)·예약 확인 줄의 예약 시간·배정 시간을 쓰지 않는다.
+ *   (rcsms145_teacher.js 가 이 값을 보고 글을 만든다. 예약됐는지 표시·복사·예약 주소는 그대로) */
+var R145_TIME = false;
+
 /* ═══════════════════════════════════════════════════════════════════
  * v19-145: 🚑 리커버리 학부모 안내문 — 주간테스트 점수 + 네이버 예약 부탁
  * 원장 2026-10-22 「리커버리 안내문자에 주간테스트 점수포함하고 네이버예약 부탁드린다고 초안작성하자」
@@ -97078,6 +97084,8 @@ wbMain=(function(o){ return function(){ try{ a144SaveIf(a144SyncAll()); }catch(e
  *  ③ 학생마다 「📋 복사」 — 한 분씩 보내기 쉽게. 「전체 복사」는 그대로.
  *  ※ 바탕 함수(rcConfirmed · rcRecDate · nbkRecOf …)는 부르기만 한다. 문자열 연결로만 쓴다.
  * ═══════════════════════════════════════════════════════════════════ */
+/* v19-146 이 false 로 둔다 — 문자에 시간(배정·네이버 예약 시간·가능 시간)을 넣지 않는다 */
+var R145_TIME = (typeof R145_TIME === 'boolean') ? R145_TIME : true;
 function r145Url(){ try{ return String(localStorage.getItem('rc_nb_url')||'').trim(); }catch(e){ return ''; } }
 window.r145SetUrl=function(v){
   v=String(v||'').trim();
@@ -97100,10 +97108,10 @@ function r145Book(c, recDt){
 function r145Parts(c){
   var wk=rcWeekKey(), dt=rcRecDate(wk), d=new Date(dt);
   var day=(d.getMonth()+1)+'월 '+d.getDate()+'일('+rcDayLabel(dt)+')';
-  var b=r145Book(c, dt), slot=(b && b.start) || (c.e && c.e.slot) || '';
+  var b=r145Book(c, dt), slot=R145_TIME ? ((b && b.start) || (c.e && c.e.slot) || '') : '';
   var rx=(c.rx && c.rx.length && c.rx[0]!=='원장님 직접 지정')?c.rx[0]:'';
   var units=(c.e && c.e.snap && c.e.snap.units)?c.e.snap.units.map(function(u){ return u.n; }).slice(0,3):[];
-  return { day:day, when:day+(slot?' '+slot:''), booked:!!b, bookAt:(b && b.start)||'', test:r145Test(c), rx:rx, units:units, slots:(RC.cfg.slots||[]).slice(), url:r145Url() };
+  return { day:day, when:day+(slot?' '+slot:''), booked:!!b, bookAt:(b && b.start)||'', test:r145Test(c), rx:rx, units:units, slots:R145_TIME ? (RC.cfg.slots||[]).slice() : [], url:r145Url() };
 }
 function r145Text(c){
   var p=r145Parts(c), L=[];
@@ -97113,7 +97121,7 @@ function r145Text(c){
   else why='최근 학습 점검에서 보완이 필요한 단원이 있어';
   L.push(why+' '+p.when+' 리커버리 보충수업을 하려고 합니다.');
   if(p.rx) L.push('보충 내용: '+p.rx+'.');
-  if(p.booked) L.push('네이버 예약('+p.bookAt+')은 확인했습니다. 시간 맞춰 보내 주세요.');
+  if(p.booked) L.push(R145_TIME ? ('네이버 예약('+p.bookAt+')은 확인했습니다. 시간 맞춰 보내 주세요.') : '네이버 예약은 확인했습니다. 예약하신 시간에 맞춰 보내 주세요.');
   else {
     L.push('네이버 예약으로 편하신 시간'+(p.slots.length?'('+p.slots.join(' · ')+')':'')+'을 잡아 주시면 감사하겠습니다.');
     if(p.url) L.push('예약: '+p.url);
@@ -97165,11 +97173,12 @@ window.rcSmsDraft=async function(i,k){
       +(p.test?('- 이번 주 주간테스트: '+(p.test.detail?(p.test.detail+' 맞힘, '):'')+p.test.score+'점\n'):'- 주간테스트 점수 없음(최근 학습 점검으로 부름)\n')
       +(p.units.length?('- 보완할 단원·유형: '+p.units.join(', ')+'\n'):'')
       +(p.rx?('- 보충 내용: '+p.rx+'\n'):'')
-      +(p.booked?('- 네이버 예약: 이미 '+p.bookAt+' 로 예약함 → 예약 확인했다고 짧게\n')
+      +(p.booked?(R145_TIME?('- 네이버 예약: 이미 '+p.bookAt+' 로 예약함 → 예약 확인했다고 짧게\n'):'- 네이버 예약: 이미 예약함 → 예약 확인했다고 짧게(시간은 쓰지 말 것)\n')
                 :('- 네이버 예약: 아직 없음 → 네이버 예약으로 시간을 잡아 달라고 부탁'+(p.slots.length?(' (가능 시간 '+p.slots.join(', ')+')'):'')+'\n'
                   +(p.url?('- 예약 주소(그대로 한 줄로 넣기): '+p.url+'\n'):'')))
+      +(R145_TIME?'':'- 시간(몇 시)은 문자에 쓰지 말 것 — 날짜만\n')
       +'규칙: [루멘수학]으로 시작. 주간테스트 점수가 있으면 반드시 그대로 넣기(숫자 바꾸지 말 것). 4~5줄, 줄마다 한 문장. '
-      +'원장이 직접 쓴 것처럼 짧고 담백하게 — 과한 인사·감탄·「함께 성장」 같은 상투어 금지. 아이를 탓하지 않는다. 날짜·시간을 정확히. 「감사합니다.」로 끝. 문자 본문만 출력.';
+      +'원장이 직접 쓴 것처럼 짧고 담백하게 — 과한 인사·감탄·「함께 성장」 같은 상투어 금지. 아이를 탓하지 않는다. '+(R145_TIME?'날짜·시간을 정확히. ':'날짜를 정확히. ')+'「감사합니다.」로 끝. 문자 본문만 출력.';
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{ 'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
@@ -97184,7 +97193,7 @@ window.rcSmsDraft=async function(i,k){
 };
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~145: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~146: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
