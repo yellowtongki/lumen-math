@@ -2595,6 +2595,7 @@ async function refreshWeekly() {
     //   ④ v18-42: 원장이 학원앱에서 직접 고른 학습지(wk_manual_ids) — 고등부 「내신대비」 학습지를
     //      주간테스트로 쓰는 경우. 태그만으로 자동 포함하면 1~2명이 푼 개인 숙제까지 주간테스트가
     //      되어 발표·명예의 전당이 오염되므로, 반드시 원장이 고른 것만 넣는다.
+    let manPick = new Set();   // 2026-10-22: 원장이 고른 학습지 — 앱 화면들이 type WEEKLY 만 읽으므로 출력에서 WEEKLY 로 바꾼다
     try {
       // 2026-10-22: 기록 한 줄 = id 하나. 예전 열쇠(학생·학습지·유형·시각·정오)는 같은 유형 두 문항을 한 줄로 합쳐 버렸다
       const rowKey = (r) => (r.id != null ? 'id' + r.id : [r.mf_student_id, r.student_worksheet_id, r.concept_id, r.score_datetime, r.result].join('|'));
@@ -2612,7 +2613,7 @@ async function refreshWeekly() {
           Object.values(st).forEach((p) => { if (p && p.worksheetId) wkIds.add(Number(p.worksheetId)); }); }
       } catch (e) {}
       // ④ 원장이 직접 고른 학습지 (태그·종류 무관 — 내신대비 등)
-      const manIds = new Set();
+      const manIds = new Set();   // (밖에서도 쓴다 — 아래 out 에서 type 을 WEEKLY 로)
       try {
         const rm = await fetch(`${url}/rest/v1/lumen_store?key=eq.wk_manual_ids&select=value`, { headers: sbHeaders });
         if (rm.ok) { const j = await rm.json(); ((j[0] || {}).value || {}).ids?.forEach((id) => manIds.add(Number(id))); }
@@ -2627,6 +2628,7 @@ async function refreshWeekly() {
         if (!re.ok) continue;
         (await re.json()).forEach((r) => { const k = rowKey(r); if (!seen.has(k)) { seen.add(k); rows.push(r); extraN++; } });
       }
+      manPick = manIds;
       if (extraN) log(`주간테스트: 커스텀·직접지정(고등부 등) 기록 ${extraN}건 포함 (원장 지정 ${manIds.size}개 포함)`);
     } catch (e) { log('커스텀 주간 인식 실패(치명적 아님):', e.message); }
     if (!rows.length) { log('주간테스트: WEEKLY 기록 없음 → 건너뜀'); return; }
@@ -2687,7 +2689,8 @@ async function refreshWeekly() {
           date: a.dt || '', wrongConcepts: [], acadRank: null, acadN: scored.length, acadAvg: avg,
           natAvg: null, natRank: null, natN: null });
       });
-      out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, type: T.type, date: T.date,
+      out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, type: (manPick.has(Number(wid)) ? 'WEEKLY' : T.type), date: T.date,
+        ...(manPick.has(Number(wid)) ? { origType: T.type, manual: true } : {}),
         paper: paperOf(T.school, T.grade, T.chapter, T.title), students });
     });
     out.sort((a, b) => String(b.date).localeCompare(String(a.date)));
