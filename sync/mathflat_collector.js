@@ -830,7 +830,7 @@ async function backfillBehaviors(days) {
     const d0 = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
     const rows = [];
     for (let off = 0; off < 50000; off += 1000) {
-      const q = `select=student_worksheet_id,worksheet_id,worksheet_type,mf_student_id,score_datetime&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${d0}&limit=1000&offset=${off}`;
+      const q = `select=student_worksheet_id,worksheet_id,worksheet_type,mf_student_id,score_datetime&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${d0}&order=id.asc&limit=1000&offset=${off}`;
       const r = await fetch(`${url}/rest/v1/mf_answer_records?${q}`, { headers: sbHeaders });
       if (!r.ok) break;
       const b = await r.json(); rows.push(...b);
@@ -1194,7 +1194,7 @@ async function refreshMonthCounts() {
       const nextYm = next.getFullYear() + '-' + String(next.getMonth() + 1).padStart(2, '0');
       const counts = {};
       for (let off = 0; off < 200000; off += 1000) {
-        const q = `select=lumen_rec_code,mf_student_id,result&score_datetime=gte.${ym}-01&score_datetime=lt.${nextYm}-01&limit=1000&offset=${off}`;
+        const q = `select=lumen_rec_code,mf_student_id,result&score_datetime=gte.${ym}-01&score_datetime=lt.${nextYm}-01&order=id.asc&limit=1000&offset=${off}`;
         const res = await fetch(`${url}/rest/v1/mf_answer_records?${q}`, { headers: sbHeaders });
         if (!res.ok) { log(`월별 집계 조회 실패 ${res.status} (${ym})`); break; }
         const batch = await res.json();
@@ -2006,7 +2006,7 @@ async function refreshBookCatalog() {
     // 누적된 세션 테이블에서 학생별 교재 목록 수집
     const rows = [];
     for (let off = 0; off < 50000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_study_sessions?select=mf_student_id,book_id,title,subtitle&source=eq.${encodeURIComponent('교재')}&limit=1000&offset=${off}`, { headers: sbHeaders });
+      const res = await fetch(`${url}/rest/v1/mf_study_sessions?select=mf_student_id,book_id,title,subtitle&source=eq.${encodeURIComponent('교재')}&order=id.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const batch = await res.json();
       rows.push(...batch);
@@ -2407,7 +2407,7 @@ async function refreshWkCand() {
     const since = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
     const rows = [];
     for (let off = 0; off < 200000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=worksheet_id,worksheet_title,worksheet_type,mf_student_id,score_datetime,school,grade,chapter&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${since}&limit=1000&offset=${off}`, { headers: sbHeaders });
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=worksheet_id,worksheet_title,worksheet_type,mf_student_id,score_datetime,school,grade,chapter&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${since}&order=id.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const batch = await res.json();
       rows.push(...batch);
@@ -2575,6 +2575,7 @@ function paperOf(school, grade, chapter, title) {
   return { sc, g: grade, sem, label: gk + (sem ? '-' + sem : ''), range };
 }
 
+/* 2026-10-22: 아래 limit+offset 으로 나눠 받는 곳은 모두 order=id.asc 를 붙인다 — 순서가 없으면 쪽마다 줄이 겹치거나 빠진다 */
 async function refreshWeekly() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
@@ -2711,7 +2712,7 @@ async function refreshConceptNames() {
     // 1) 저장된 정오답에서 concept_id·book_id 수집
     const usedIds = new Set(); const bookIds = new Set();
     for (let off = 0; off < 50000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=concept_id,book_id,source&limit=1000&offset=${off}`, { headers: sbHeaders });
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=concept_id,book_id,source&order=id.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const rows = await res.json();
       rows.forEach((r) => { if (r.concept_id != null) usedIds.add(r.concept_id); if (r.source === '교재' && r.book_id) bookIds.add(r.book_id); });
