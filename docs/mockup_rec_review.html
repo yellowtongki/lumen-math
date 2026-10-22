@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>녹음 훑어보기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* 레이아웃: 위 = 흐름 한 줄 · 가운데 = 학원앱 새 화면 시안(학년별 카드) · 아래 = 정할 것 */
+:root{
+  --bg:#f3f5f9; --card:#ffffff; --fg:#17243a; --mute:#6b7890; --line:#dfe4ec;
+  --navy:#0d2240; --blue:#1d6fe8; --blue-soft:#e8f0fd;
+  --ok:#15803d; --ok-bg:#dcfce7; --warn:#b45309; --warn-bg:#fef3c7; --bad:#b91c1c; --bad-bg:#fee2e2; --dim:#64748b; --dim-bg:#eef2f7;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1622; --card:#182234; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a;
+  --ok:#86efac; --ok-bg:#14301f; --warn:#fcd34d; --warn-bg:#3a2a0c; --bad:#fca5a5; --bad-bg:#3b1515; --dim:#aab5c6; --dim-bg:#1f2a3c; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f1622; --card:#182234; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a;
+  --ok:#86efac; --ok-bg:#14301f; --warn:#fcd34d; --warn-bg:#3a2a0c; --bad:#fca5a5; --bad-bg:#3b1515; --dim:#aab5c6; --dim-bg:#1f2a3c; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.6;
+  padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:980px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--mute);font-weight:500;margin:0 0 20px}
+h2{font-size:16px;font-weight:900;color:var(--navy);margin:28px 0 10px;display:flex;align-items:center;gap:8px}
+h2 .tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--blue-soft);color:var(--blue)}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+p{margin:0 0 8px}
+small,.small{font-size:12px;color:var(--mute)}
+/* 흐름 */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:700px){.flow{grid-template-columns:1fr 1fr}}
+.step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.step .t{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:.04em}
+.step b{display:block;font-size:14px;color:var(--navy);margin:2px 0}
+.step span{font-size:12px;color:var(--mute)}
+/* 앱 화면 시안 */
+.app{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.appbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg)}
+.appbar .title{font-weight:900;color:var(--navy);font-size:15px;margin-right:auto}
+.chip{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--line);background:var(--card);border-radius:20px;padding:4px 11px;font-size:12px;font-weight:700;color:var(--mute)}
+.chip.on{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+.sum{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+@media(max-width:700px){.sum{grid-template-columns:repeat(3,1fr)}}
+.sum div{background:var(--bg);border-radius:10px;padding:8px 10px;min-width:0}
+.sum .n{font-size:20px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums}
+.sum .l{font-size:11px;color:var(--mute);font-weight:700}
+.grade{padding:14px 16px;border-bottom:1px solid var(--line)}
+.ghead{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin-bottom:8px}
+.ghead b{font-size:15px;color:var(--navy)}
+.ghead .topic{font-size:12.5px;color:var(--fg);background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:2px 9px;font-weight:700}
+.ghead .cnt{font-size:12px;color:var(--mute);font-weight:700}
+.brief{font-size:12.5px;color:var(--mute);background:var(--bg);border-left:3px solid var(--blue);padding:6px 10px;border-radius:0 8px 8px 0;margin-bottom:10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.card{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);min-width:0;display:flex;flex-direction:column;gap:6px}
+.card.bad{border-color:#fca5a5}
+.card.warn{border-color:#fcd34d}
+.row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row1 .nm{font-weight:900;color:var(--navy);font-size:14px}
+.row1 .len{font-size:11.5px;color:var(--mute);font-variant-numeric:tabular-nums}
+.badge{font-size:11px;font-weight:900;padding:2px 8px;border-radius:20px;margin-left:auto;white-space:nowrap}
+.b-ok{background:var(--ok-bg);color:var(--ok)}.b-warn{background:var(--warn-bg);color:var(--warn)}.b-bad{background:var(--bad-bg);color:var(--bad)}.b-dim{background:var(--dim-bg);color:var(--dim)}
+.summ{font-size:13px;color:var(--fg)}
+.why{font-size:12px;color:var(--mute)}
+.why b{color:var(--bad);font-weight:800}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.btn{font-size:11.5px;font-weight:800;border:1.5px solid var(--line);background:var(--bg);border-radius:8px;padding:4px 9px;color:var(--navy);cursor:pointer;font-family:inherit}
+.btn.p{background:var(--blue);border-color:var(--blue);color:#fff}
+details summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--blue);list-style:none}
+details summary::before{content:'▸ '}details[open] summary::before{content:'▾ '}
+.full{font-size:12.5px;color:var(--fg);background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:6px;line-height:1.7}
+.missing{padding:10px 16px;font-size:12.5px;color:var(--mute);background:var(--bg)}
+.missing b{color:var(--bad)}
+/* 정할 것 */
+.q{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:0;padding-top:0}
+.q .n{width:26px;height:26px;border-radius:50%;background:var(--navy);color:var(--card);font-weight:900;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+.q b{display:block;color:var(--navy);font-size:14px;margin-bottom:2px}
+.q .opt{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.q .opt span{border:1.5px solid var(--line);border-radius:8px;padding:3px 9px;font-size:12px;font-weight:700;color:var(--fg);background:var(--bg)}
+.q .opt span.rec{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--mute);font-weight:800;font-size:11.5px}
+td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.note{font-size:12px;color:var(--mute);margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<h1>🎙 녹음 숙제 새벽 자동 읽기 + 훑어보기 화면</h1>
+<p class="lead">학생들이 밤에 올린 하브루타 녹음을 새벽에 Gemini가 글로 옮기고, 그날 주제대로 말했는지 판정해 두면, 아침에 원장님은 이 화면 하나로 전부 훑어봅니다. 아래는 상의용 시안이고 숫자·이름은 전부 가짜입니다.</p>
+
+<h2>흐름 <span class="tag">매일 새벽 자동</span></h2>
+<div class="flow">
+  <div class="step"><div class="t">① 밤</div><b>학생이 녹음 제출</b><span>학생앱 그대로. 바뀌는 것 없음</span></div>
+  <div class="step"><div class="t">② 05:10</div><b>Gemini가 글로 옮김</b><span>어제 올라온 녹음만. 서버(GitHub Actions)가 돌림</span></div>
+  <div class="step"><div class="t">③ 바로 이어서</div><b>주제 판정 + 요약</b><span>그날 배정 주제와 맞는지 · 두 줄 요약 · 개념 틀린 곳</span></div>
+  <div class="step"><div class="t">④ 아침</div><b>원장님이 훑어봄</b><span>학원앱 녹음관리 › 「👀 훑어보기」</span></div>
+</div>
+
+<h2>학원앱 새 화면 시안 <span class="tag">녹음관리 › 👀 훑어보기</span></h2>
+<div class="app">
+  <div class="appbar">
+    <div class="title">👀 녹음 훑어보기</div>
+    <span class="chip">◀</span><span class="chip on">10/21 (화)</span><span class="chip">▶</span>
+    <span class="chip">전체</span><span class="chip on">주제 다름만</span><span class="chip">아직 안 본 것</span>
+  </div>
+  <div class="sum">
+    <div><div class="n">14</div><div class="l">제출</div></div>
+    <div><div class="n" style="color:var(--ok)">9</div><div class="l">✅ 주제대로</div></div>
+    <div><div class="n" style="color:var(--warn)">3</div><div class="l">⚠️ 일부만</div></div>
+    <div><div class="n" style="color:var(--bad)">2</div><div class="l">❌ 다른 내용 · 짧음</div></div>
+    <div><div class="n" style="color:var(--dim)">4</div><div class="l">미제출(수업일)</div></div>
+  </div>
+
+  <div class="grade">
+    <div class="ghead"><b>중2</b><span class="topic">오늘 주제: 일차함수의 그래프에서 기울기와 y절편이 뜻하는 것 설명해 보기</span><span class="cnt">6명 제출 / 8명 수업</span></div>
+    <div class="brief">🧭 이 학년 공통: 기울기는 잘 말하는데 「y절편 = 그래프가 y축과 만나는 점」을 4명이 x절편과 섞어 말했어요.</div>
+    <div class="cards">
+      <div class="card">
+        <div class="row1"><span class="nm">홍길동</span><span class="len">3분 42초</span><span class="badge b-ok">✅ 주제대로</span></div>
+        <div class="summ">기울기를 「x가 1 커질 때 y가 얼마나 변하나」로 설명하고 y=2x+3 예를 들어 절편까지 맞게 말함.</div>
+        <div class="why">개념 오류 없음 · 예시 1개</div>
+        <div class="acts"><button class="btn">▶ 듣기</button><button class="btn">📄 전문</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div>
+      </div>
+      <div class="card warn">
+        <div class="row1"><span class="nm">박하나</span><span class="len">2분 05초</span><span class="badge b-warn">⚠️ 일부만</span></div>
+        <div class="summ">기울기만 설명하고 y절편은 말하지 않음. 뒤쪽 40초는 숙제 범위 얘기.</div>
+        <div class="why">빠진 것: <b>y절편</b></div>
+        <div class="acts"><button class="btn">▶ 듣기</button><button class="btn">📄 전문</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div>
+      </div>
+      <div class="card bad">
+        <div class="row1"><span class="nm">이순신</span><span class="len">4분 10초</span><span class="badge b-bad">❌ 다른 내용</span></div>
+        <div class="summ">연립방정식 가감법을 설명함. 오늘 주제(일차함수)와 다름. 제출 제목은 「오늘 배운 것」.</div>
+        <div class="why">주제와 다름 · 설명 자체는 정확</div>
+        <details><summary>📄 전문 보기 (예시)</summary><div class="full">음 오늘은 연립방정식을 가감법으로 푸는 걸 설명할게요. 먼저 두 식에서 x의 계수를 같게 만들어요. 예를 들어 2x+y=5 하고 x−y=1 이면… 두 식을 더하면 y가 사라지고 3x=6 이니까 x는 2, 그러면 y는 1이에요. 이렇게 한 문자를 없애는 게 가감법이에요.</div></details>
+        <div class="acts"><button class="btn">▶ 듣기</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div>
+      </div>
+      <div class="card">
+        <div class="row1"><span class="nm">김유신</span><span class="len">3분 20초</span><span class="badge b-ok">✅ 주제대로</span></div>
+        <div class="summ">기울기·y절편 둘 다 설명. 다만 「y절편은 x축과 만나는 점」이라고 말함.</div>
+        <div class="why">개념 오류: <b>y절편을 x축과 만나는 점으로 설명</b></div>
+        <div class="acts"><button class="btn">▶ 듣기</button><button class="btn">📄 전문</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div>
+      </div>
+      <div class="card bad">
+        <div class="row1"><span class="nm">장보고</span><span class="len">0분 18초</span><span class="badge b-bad">🔇 너무 짧음</span></div>
+        <div class="summ">「일차함수는… 음…」 뒤에 말이 없음.</div>
+        <div class="why">다시 내게 할지 원장님 판단</div>
+        <div class="acts"><button class="btn">▶ 듣기</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div>
+      </div>
+      <div class="card">
+        <div class="row1"><span class="nm">신사임당</span><span class="len">5분 02초</span><span class="badge b-ok">✅ 주제대로</span></div>
+        <div class="summ">개인 주제(「틀린 일차함수 식 세우기 문제 다시 풀며 설명」)로 제출. 막힌 지점을 스스로 말함.</div>
+        <div class="why">개인 맞춤 주제 · 개념 오류 없음</div>
+        <div class="acts"><button class="btn">▶ 듣기</button><button class="btn">📄 전문</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div>
+      </div>
+    </div>
+    <div class="missing" style="margin-top:10px;border-radius:8px">미제출 <b>2명</b>: 유관순 · 안중근 &nbsp;<small>(수업일인데 녹음 없음 — 학부모앱 알림은 지금 규칙 그대로)</small></div>
+  </div>
+
+  <div class="grade">
+    <div class="ghead"><b>중3</b><span class="topic">오늘 주제: 이차방정식 근의 공식을 완전제곱식으로 유도하는 과정 설명해 보기</span><span class="cnt">5명 제출 / 6명 수업</span></div>
+    <div class="brief">🧭 이 학년 공통: 양변을 a로 나누는 첫 단계는 다들 하는데, 완전제곱 만들 때 더하는 수 (b/2a)² 를 2명이 (b/2)² 로 말했어요.</div>
+    <div class="cards">
+      <div class="card"><div class="row1"><span class="nm">강감찬</span><span class="len">4분 30초</span><span class="badge b-ok">✅ 주제대로</span></div><div class="summ">유도 순서 전부 맞음. 판별식까지 덧붙임.</div><div class="why">개념 오류 없음</div><div class="acts"><button class="btn">▶ 듣기</button><button class="btn">📄 전문</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div></div>
+      <div class="card warn"><div class="row1"><span class="nm">을지문덕</span><span class="len">2분 48초</span><span class="badge b-warn">⚠️ 일부만</span></div><div class="summ">공식을 외워서 말함. 유도 과정은 「양변 나누고 제곱 만들면 된다」 한 문장.</div><div class="why">빠진 것: <b>완전제곱 만드는 단계</b></div><div class="acts"><button class="btn">▶ 듣기</button><button class="btn">📄 전문</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div></div>
+      <div class="card"><div class="row1"><span class="nm">정약용</span><span class="len">3분 15초</span><span class="badge b-dim">자유 제출</span></div><div class="summ">주제 없이 「원의 성질」 복습을 설명. 배정 주제가 없는 날은 판정 없이 요약만.</div><div class="why">자유 제출 허용 규칙 그대로</div><div class="acts"><button class="btn">▶ 듣기</button><button class="btn">📄 전문</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div></div>
+    </div>
+  </div>
+
+  <div class="grade" style="border-bottom:0">
+    <div class="ghead"><b>고1</b><span class="topic">오늘 주제: 없음(배정 안 됨)</span><span class="cnt">3명 제출 / 4명 수업</span></div>
+    <div class="cards">
+      <div class="card"><div class="row1"><span class="nm">허준</span><span class="len">6분 01초</span><span class="badge b-dim">자유 제출</span></div><div class="summ">명제의 역·이·대우를 예로 설명. 「대우는 항상 참·거짓이 같다」까지 정확.</div><div class="why">개념 오류 없음</div><div class="acts"><button class="btn">▶ 듣기</button><button class="btn">📄 전문</button><button class="btn p">✓ 확인</button><button class="btn">💬 한마디</button></div></div>
+    </div>
+  </div>
+</div>
+<p class="note">카드 하나 = 녹음 하나. 「✓ 확인」을 누르면 카드가 흐려지고 「아직 안 본 것」 필터에서 빠집니다. 「💬 한마디」는 지금 녹음 팝업의 피드백 칸과 같은 자리에 저장(학생앱에 보낼지는 아래 ⑥).</p>
+
+<h2>원장님이 정해 주실 것</h2>
+<div class="sec">
+  <div class="q"><div class="n">1</div><div><b>어느 Gemini 로 할까요</b>
+    둘 다 같은 방식(음성 파일을 통째로 보내 글로). 지금 학원앱 단추는 2.5 Flash 를 씁니다.
+    <div class="opt"><span class="rec">2.5 Flash-Lite — 가장 쌈, 받아쓰기엔 충분 (추천)</span><span>2.5 Flash — 지금 앱 단추와 같음, 2~3배</span></div>
+    <table style="margin-top:8px"><tr><th>기준</th><th>Flash-Lite</th><th>Flash</th></tr>
+    <tr><td>녹음 1건(4분)</td><td class="num">약 5원</td><td class="num">약 10원</td></tr>
+    <tr><td>하루 25건 × 한 달</td><td class="num">약 4천 원</td><td class="num">약 8천 원</td></tr></table>
+    <div class="note">공식 요금표(ai.google.dev 가격 페이지) 기준으로 음성 입력 단가로 셈한 어림값입니다. 판정·요약은 글만 보내서 더 쌉니다. Claude 키는 쓰지 않으니 새벽 플래너·Ultra 한도와 무관합니다.</div></div></div>
+  <div class="q"><div class="n">2</div><div><b>판정 기준</b>
+    그날 주제 = 개인 주제 &gt; 학년 주제 &gt; 미션설정 순(학생앱이 보여 주는 것과 같은 규칙). 주제가 없는 날은 「자유 제출」로 요약만.
+    <div class="opt"><span class="rec">✅ 주제대로 / ⚠️ 일부만 / ❌ 다른 내용 / 🔇 너무 짧음(30초 미만) — 4단계 (추천)</span><span>✅ / ❌ 두 단계만</span></div>
+    「개념 오류」 한 줄은 덤으로 붙입니다(틀리게 말한 곳). 점수는 매기지 않습니다 — 원하시면 나중에.</div></div>
+  <div class="q"><div class="n">3</div><div><b>언제, 어느 범위를</b>
+    <div class="opt"><span class="rec">매일 05:10 · 어제 올라온 녹음 전부 + 최근 3일 중 빠진 것 (추천)</span><span>어제 것만</span></div>
+    <div class="note">Ultra(04:50) 뒤에 돕니다. 실패한 건 다음 날 다시 시도. 이미 원장님이 앱에서 손으로 받아쓴 녹음은 건너뜁니다.</div></div></div>
+  <div class="q"><div class="n">4</div><div><b>결과를 어디에 둘까요</b>
+    <div class="opt"><span class="rec">서버 새 칸 `녹음 읽기 결과(날짜별)` — 학생 등록부는 건드리지 않음 (추천)</span><span>지금처럼 등록부 안 녹음 칸(stt)에 바로</span></div>
+    <div class="note">추천안이면 기존 녹음 팝업·그리드의 「✅ STT완료」도 이 결과를 같이 읽게 고쳐 둡니다. 등록부(or_studentdb)는 여러 기기가 동시에 고치는 칸이라 서버 스크립트가 쓰지 않는 게 안전합니다.</div></div></div>
+  <div class="q"><div class="n">5</div><div><b>학년별 「공통」 한 줄</b> (시안의 🧭 띠)
+    같은 학년 녹음을 모아 「여럿이 똑같이 헷갈린 것」을 한 줄로. 수업 전 브리핑으로 쓰기 좋습니다.
+    <div class="opt"><span class="rec">넣기 (추천)</span><span>빼기</span></div></div></div>
+  <div class="q"><div class="n">6</div><div><b>학생·학부모에게 보여 줄까요</b>
+    <div class="opt"><span class="rec">1단계는 원장님만 (추천)</span><span>학생앱에 요약·판정 표시</span><span>학부모앱 녹음 칸에 「주제대로 ✓」</span></div>
+    <div class="note">밖으로 나가는 건 원장님이 「✓ 확인」한 것만, 다음 판에서.</div></div></div>
+  <div class="q"><div class="n">7</div><div><b>원장님이 해 주실 것 하나</b>
+    GitHub › Settings › Secrets › Actions 에 <b>GEMINI_API_KEY</b> 를 넣어 주세요(학원앱 설정 탭의 Gemini 키와 같은 값). 값은 채팅에도 적지 마시고 그곳에만.</div></div>
+</div>
+
+<h2>만들 것 (승인 뒤)</h2>
+<div class="sec">
+  <table><tr><th>무엇</th><th>어디</th><th>설명</th></tr>
+  <tr><td>새벽 스크립트</td><td>sync/rec_night_reader.js</td><td>어제 녹음 목록 → Gemini 받아쓰기 → 주제 판정·요약·개념 오류 → 서버 저장. 로그엔 날짜·건수만(이름·글 없음)</td></tr>
+  <tr><td>예약 실행</td><td>.github/workflows/rec-night.yml</td><td>매일 05:10 KST · 손으로 실행 가능(날짜·dry 옵션)</td></tr>
+  <tr><td>학원앱 새 화면</td><td>학원앱 v19-152 부품</td><td>녹음관리 › 👀 훑어보기(위 시안) · 기존 팝업·그리드가 결과를 같이 읽음 · 확인·한마디</td></tr>
+  <tr><td>검사</td><td>tests/test_v19152.js</td><td>가짜 서버로 화면 검사 · 스크립트는 --dry 로 대상만 뽑아 확인 뒤 실제 1회</td></tr></table>
+  <div class="note">코딩은 원장님 규칙대로 Opus 에이전트가, 검사·조립·배포는 본 세션이 합니다.</div>
+</div>
+</div>
+
+</body>
+</html>
