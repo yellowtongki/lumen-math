@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-149';
+var APP_VER = 'v19-150';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9084,6 +9084,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-150',date:'2026-10-22',stability:'ok',memo:'💡 <b>아하 리그 등급 — 한 번 오른 등급은 시즌 동안 그대로</b> (원장 2026-10-22 「예전 등급 유지되게 고쳐줘」). 밀린 노트를 한꺼번에 확정하자 낮은 점수가 평균에 들어가 탐구자였던 학생이 질문자로 내려가 보였습니다. 이제 학생마다 <b>이번 시즌 가장 높았던 등급</b>을 서버에 기억해 두고, 지금 평균이 내려가도 그 등급 아래로는 보이지 않습니다(학생앱 순위표도 같음). 다음 시즌에는 새로 시작합니다. ⚙ 리그 설정에서 «강등 있음»을 고르시면 예전처럼 지금 평균으로만 셉니다.'},
       {ver:'v19-149',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 — 고등부는 모든 테스트로 선발</b> (원장 2026-10-22 「리커버리가 고등부 테스트는 체크가 안되는 것 같다 · 우선은 고등부는 모든 테스트를 하자」). 매쓰플랫은 고등 주간테스트가 없어 고등부는 시험 기준으로 한 번도 걸리지 않았습니다. 이제 고등 학생은 <b>일일 TEST · 내신대비 · 모의고사 · 단원·총괄 TEST</b>(오답·숙제·원본 학습지는 빼고) 점수로 선발합니다 — 기준은 중고등 85점 그대로. 리커버리 학습지 설계에도 그 시험을 씁니다. 학부모 안내문은 고등부면 «이번 주 <b>테스트</b>(10/21 화)에서 …»로 나갑니다. 명예의 전당·주간 순위에는 섞이지 않습니다. 「[오답]」 재시험도 일일 TEST 라 함께 셉니다 — 너무 많이 걸리면 말씀해 주세요.'},
       {ver:'v19-148',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 안내문 — 원장님 문자 모양으로</b> (원장 2026-10-22 「이런식으로 학생이름을 넣자」). 「[루멘수학] 안녕하세요,」 · 빈 줄 · <b>«길동이가»</b>(성을 빼고 이름 — 받침이 있으면 «이가», 없으면 «가») · «이번 주 주간테스트(10/21 수)에서 20문항 중 15문항을 맞혀 75점이 나와 10월 24일(토) 리커버리 보충수업을 하려고 합니다.» · 보충 내용 · 네이버 예약 줄 · 빈 줄 · 「감사합니다.」 🤖 AI 초안도 이 모양을 따릅니다.'},
       {ver:'v19-147',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 안내문 — 주간테스트 본 날 · 20문항 바로잡기</b> (원장 2026-10-22 「주간테스트는 20문제이다. 시험지 날짜도 보이게 할까?」). ① 안내문이 <b>«이번 주 주간테스트(10/21 화)에서 20문항 중 15문항을 맞혀 75점이 나와…»</b>처럼 학생이 <b>실제로 본 날</b>을 적습니다(시험지 제목의 날짜는 매쓰플랫이 시험지를 만든 날이라 쓰지 않습니다). ② «40문항»은 서버 집계 잘못이었습니다 — 매쓰플랫 기록을 1,000줄씩 받아 오면서 순서를 정하지 않아 같은 줄이 두 번 들어갔습니다. 수집기를 고치고 다시 셌습니다(주간테스트 전부 20문항, 점수와 맞힌 수가 모두 맞음). 리커버리 왼쪽 «주간 10/40»·틀린 유형 수도 함께 바로잡혔습니다.'},
@@ -97228,7 +97229,63 @@ window.rcSmsDraft=async function(i,k){
 };
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~149: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-150: 💡 IB아하 리그 등급 — 한 번 오른 등급은 시즌 동안 내려가지 않게 (원장 2026-10-22 「예전 등급 유지되게 고쳐줘」)
+ *  까닭: iblTierOf 는 설명에 «강등 없음»이라 적혀 있었지만 실제로는 지금 평균으로 매번 다시 셌다.
+ *    10/22 밀린 초안 89건을 확정하자 낮은 점수가 평균에 들어가 1위 학생이 탐구자 → 질문자로 내려가 보였다.
+ *  고침: lumen_store `aha_tier_best` = { season:'<시즌 시작일>', byCode:{ 코드:'knowledge'… }, updated }
+ *    · 등급을 셀 때 «지금 계산» 과 «이번 시즌 가장 높았던 등급» 중 높은 것 (⚙ 리그 설정 «강등 있음»이면 예전처럼 지금 계산만)
+ *    · 지금 계산이 더 높으면 기록을 올리고 잠시 뒤 서버에 저장(앱 켤 때 한 번 읽음). 시즌이 바뀌면 새로 시작.
+ *  ※ 바탕 함수(iblTierOf)를 감싸기만 한다. 문자열 연결로만 쓴다.
+ * ═══════════════════════════════════════════════════════════════════ */
+var TK150 = { data:null, loading:false, dirty:false, t:0 };
+var TK150_ORDER = { inquirer:0, knowledge:1, thinker:2, reflect:3 };
+function tk150Season(cfg){ return String((cfg && cfg.seasonStart) || ''); }
+function tk150Load(){
+  if(TK150.data || TK150.loading) return;
+  var sb=null; try{ sb=getSupaClient(); }catch(e){}
+  if(!sb) return;
+  TK150.loading=true;
+  sb.from('lumen_store').select('key,value').eq('key','aha_tier_best').then(function(r){
+    var v=(r && r.data && r.data[0]) ? r.data[0].value : null;
+    if(typeof v==='string'){ try{ v=JSON.parse(v); }catch(e){ v=null; } }
+    TK150.data=(v && v.byCode) ? v : { season:'', byCode:{} };
+    TK150.loading=false;
+    try{ if(VIEW==='aha' || VIEW==='league' || VIEW==='lgall') render(); }catch(e){}
+  }, function(){ TK150.loading=false; TK150.data={ season:'', byCode:{} }; });
+}
+window.tk150Load=tk150Load;
+function tk150Save(){
+  clearTimeout(TK150.t);
+  TK150.t=setTimeout(function(){
+    if(!TK150.dirty || !TK150.data) return;
+    var sb=null; try{ sb=getSupaClient(); }catch(e){}
+    if(!sb) return;
+    TK150.dirty=false;
+    TK150.data.updated=new Date().toISOString();
+    sb.from('lumen_store').upsert({ key:'aha_tier_best', value:TK150.data }, { onConflict:'key' }).then(function(){}, function(){ TK150.dirty=true; });
+  }, 1500);
+}
+iblTierOf=(function(o){ return function(row, cfg){
+  var now=o.apply(this, arguments);
+  try{
+    if(cfg && (cfg.demote===true || cfg.demote==='true')) return now;   /* 원장이 «강등 있음»을 고른 경우 */
+    if(!TK150.data){ tk150Load(); return now; }
+    var code=row && row.code; if(!code) return now;
+    var season=tk150Season(cfg);
+    if(TK150.data.season!==season){ TK150.data={ season:season, byCode:{} }; TK150.dirty=true; }
+    var best=TK150.data.byCode[code];
+    if(best && (TK150_ORDER[best]||0) > (TK150_ORDER[now]||0)) return best;
+    if(!best || (TK150_ORDER[now]||0) > (TK150_ORDER[best]||0)){
+      if(now!=='inquirer' || best){ TK150.data.byCode[code]=now; TK150.dirty=true; tk150Save(); }
+    }
+  }catch(e){}
+  return now;
+}; })(iblTierOf);
+window.iblTierOf=iblTierOf;
+try{ setTimeout(tk150Load, 1200); }catch(e){}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~150: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
