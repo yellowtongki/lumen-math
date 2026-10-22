@@ -232,7 +232,7 @@ async function build(M, P, name, school, sid, recDate, log) {
   const from = (cfg.range && cfg.range.from) || new Date(Date.now() - cfg.weeks * 7 * 86400000).toISOString().slice(0, 10), to = (cfg.range && cfg.range.to) || new Date().toISOString().slice(0, 10);
   const sdb = Array.isArray(st.or_studentdb) ? st.or_studentdb : Object.values(st.or_studentdb || {});
   const mfs = await q('mf_students?select=mf_student_id,name,lumen_rec_code');
-  const tests = ((st.mf_weekly || {}).tests || []).filter((t) => t.type === 'WEEKLY');
+  const tests = ((st.mf_weekly || {}).tests || []).filter((t) => t.type === 'WEEKLY' || t.type === 'HIGH_TEST');   // 2026-10-22: 고등부는 모든 테스트(수집기 HIGH_TEST)도
   const made = (st.rc_ws_made && st.rc_ws_made.byKey) || {};
   console.log(`주 ${wk} (보충일 ${recDate}) · 기준 기간 ${from}~${to} · 자동채점 ${AUTO ? (MF_AUTO ? '매쓰플랫 기준(객관식)' : '서술형 제외·정답 있는 문항') : '제한 없음'} · ${DRY ? '[설계만]' : '[실제 생성·배정]'}`);
   const keys = Object.keys(C).filter((k) => C[k] && C[k].on && !C[k].done && !C[k].noshow && (!ONLY || k === ONLY) && SKIP.indexOf(k) < 0);

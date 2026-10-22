@@ -655,6 +655,26 @@ if int(ver.replace('v19-',''))>=137:
     rep("""    +'<button onclick="raidPeek()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#6d28d9;color:#fff">👁 학생 눈으로</button>'""",
         """    +'<button onclick="raidPeek()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#6d28d9;color:#fff">👁 학생 눈으로</button>'
     +'<button id="raid-lib-open" onclick="rxLibOpen()" style="border:none;border-radius:8px;padding:6px 13px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#0d0a1d;color:#fff">🗃 보스 보관함</button>'""")
+if int(ver.replace('v19-',''))>=149:
+    # v19-149: 리커버리 — 고등부는 모든 테스트(수집기가 type HIGH_TEST 로 내보냄 · 단원 TEST 도) (원장 10/22 「우선은 체계가 잡히기 전에 고등부는 모든 테스트를 하자」)
+    rep("""    var stKey=String(st.id||st.name);
+    // ① 시험 기준
+    var testHit=null;
+    (WK.tests||[]).forEach(function(t){
+      if(t.type!=='WEEKLY') return;""", """    var stKey=String(st.id||st.name);
+    // ① 시험 기준
+    var testHit=null;
+    var _hiStu=/고/.test(String(st.grade||''));   /* ★ v19-149: 고등부는 HIGH_TEST(일일·내신대비·모의고사…)·단원 TEST 도 */
+    (WK.tests||[]).forEach(function(t){
+      if(t.type!=='WEEKLY' && !(_hiStu && (t.type==='HIGH_TEST'||t.type==='CHAPTER'))) return;""")
+    rep("if(!testHit||String(tookOn)>String(testHit.date)) testHit={ date:tookOn, title:t.title,", "if(!testHit||String(tookOn)>String(testHit.date)) testHit={ ttype:t.type, date:tookOn, title:t.title,")
+    rep("""    if(t.type!=='WEEKLY') return;
+    var me=(t.students||[]).find(function(s){ return String(s.sid)===String(sid)&&s.score!=null; }); if(!me) return;""", """    if(t.type!=='WEEKLY' && t.type!=='HIGH_TEST') return;   /* ★ v19-149: 고등부 테스트도 리커버리 학습지 재료로 */
+    var me=(t.students||[]).find(function(s){ return String(s.sid)===String(sid)&&s.score!=null; }); if(!me) return;""")
+    #   🏆 주간 리포트(발행 화면)에는 고등부 테스트(HIGH_TEST)를 늘어놓지 않는다 — 리커버리 전용
+    rep("  WK.tests.forEach(function(t, ti){\n    var isOpen = WK.open.hasOwnProperty(t.key)", "  WK.tests.filter(function(t){ return t.type!=='HIGH_TEST'; }).forEach(function(t, ti){   /* ★ v19-149 */\n    var isOpen = WK.open.hasOwnProperty(t.key)")
+    #   학생 칸 «최근 시험 2개» 이름 — HIGH_TEST 는 «테스트»
+    rep("+(t.type==='WEEKLY'?'주간테스트':'단원테스트')+", "+(t.type==='WEEKLY'?'주간테스트':(t.type==='HIGH_TEST'?'테스트':'단원테스트'))+")
 if int(ver.replace('v19-',''))>=144:
     # v19-144: 아하노트 일괄 확정에서 «8점 이상» 기준을 없앤다 — AI 초안이 있으면 점수와 상관없이 전부 확정 (원장 10/21 「8점이상 확정말고 전부 확정하자」)
     rep("s.status==='temp' && (s.total||0)>=8", "s.status==='temp'", 4)

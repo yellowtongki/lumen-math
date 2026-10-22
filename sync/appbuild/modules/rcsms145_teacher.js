@@ -24,7 +24,7 @@ window.r145SetUrl=function(v){
 /* 주간테스트 — {score, detail:'40문항 중 10문항'} 또는 null */
 function r145Test(c){
   var t=c && c.row && c.row.testHit;
-  if(t && t.score!=null) return { score:t.score, detail:(t.correct!=null && t.total)?(t.total+'문항 중 '+t.correct+'문항'):'', md:R145_TDATE?r145Md(t.date):'' };
+  if(t && t.score!=null) return { score:t.score, detail:(t.correct!=null && t.total)?(t.total+'문항 중 '+t.correct+'문항'):'', md:R145_TDATE?r145Md(t.date):'', kind:((t.ttype && t.ttype!=='WEEKLY')?'테스트':'주간테스트') };   /* v19-149: 고등부 테스트는 «테스트» */
   if(c && c.score!=null) return { score:c.score, detail:'' };
   return null;
 }
@@ -55,7 +55,7 @@ function r145Text(c){
   if(R145_NICK){ L.push('[루멘수학] 안녕하세요,'); L.push(''); L.push(r145Nick(c.name)); }
   else L.push('[루멘수학] 안녕하세요, '+c.name+' 학생 학부모님.');
   var why;
-  if(p.test) why='이번 주 주간테스트'+(p.test.md?('('+p.test.md+')'):'')+'에서 '+(p.test.detail?(p.test.detail+'을 맞혀 '+p.test.score+'점'):(p.test.score+'점'))+'이 나와';
+  if(p.test) why='이번 주 '+(p.test.kind||'주간테스트')+(p.test.md?('('+p.test.md+')'):'')+'에서 '+(p.test.detail?(p.test.detail+'을 맞혀 '+p.test.score+'점'):(p.test.score+'점'))+'이 나와';
   else why='최근 학습 점검에서 보완이 필요한 단원이 있어';
   L.push(why+' '+p.when+' 리커버리 보충수업을 하려고 합니다.');
   if(p.rx) L.push('보충 내용: '+p.rx+'.');
@@ -109,7 +109,7 @@ window.rcSmsDraft=async function(i,k){
     var p=r145Parts(c);
     var prompt='한국 수학학원 원장이 학부모께 보내는 주말 리커버리(보충수업) 안내 문자를 써 줘.\n'
       +'- 학생: '+c.name+' / 보충 날짜: '+p.when+'\n'
-      +(p.test?('- 이번 주 주간테스트'+(p.test.md?('(본 날 '+p.test.md+')'):'')+': '+(p.test.detail?(p.test.detail+' 맞힘, '):'')+p.test.score+'점\n'):'- 주간테스트 점수 없음(최근 학습 점검으로 부름)\n')
+      +(p.test?('- 이번 주 '+(p.test.kind||'주간테스트')+(p.test.md?('(본 날 '+p.test.md+')'):'')+': '+(p.test.detail?(p.test.detail+' 맞힘, '):'')+p.test.score+'점\n'):'- 주간테스트 점수 없음(최근 학습 점검으로 부름)\n')
       +(p.units.length?('- 보완할 단원·유형: '+p.units.join(', ')+'\n'):'')
       +(p.rx?('- 보충 내용: '+p.rx+'\n'):'')
       +(p.booked?(R145_TIME?('- 네이버 예약: 이미 '+p.bookAt+' 로 예약함 → 예약 확인했다고 짧게\n'):'- 네이버 예약: 이미 예약함 → 예약 확인했다고 짧게(시간은 쓰지 말 것)\n')
