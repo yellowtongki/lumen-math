@@ -41,9 +41,19 @@ function r145Parts(c){
   var units=(c.e && c.e.snap && c.e.snap.units)?c.e.snap.units.map(function(u){ return u.n; }).slice(0,3):[];
   return { day:day, when:day+(slot?' '+slot:''), booked:!!b, bookAt:(b && b.start)||'', test:r145Test(c), rx:rx, units:units, slots:R145_TIME ? (RC.cfg.slots||[]).slice() : [], url:r145Url() };
 }
+/* v19-148 이 true 로 둔다 — 원장님 문자 모양: 「안녕하세요,」 · 빈 줄 · «길동이가» · … · 빈 줄 · 「감사합니다.」 */
+var R145_NICK = (typeof R145_NICK === 'boolean') ? R145_NICK : false;
+/* 이름 부르기 — 성을 빼고(세 글자 이상) 받침 있으면 «이가», 없으면 «가» : 홍길동 → 길동이가 · 박하나 → 하나가 */
+function r145Nick(name){
+  var n=String(name||'').replace(/\s/g,''); var g=(n.length>=3)?n.slice(1):n;
+  var ch=g.charCodeAt(g.length-1), bat=(ch>=0xAC00 && ch<=0xD7A3) ? ((ch-0xAC00)%28!==0) : false;
+  return g+(bat?'이가':'가');
+}
+window.r145Nick=r145Nick;
 function r145Text(c){
   var p=r145Parts(c), L=[];
-  L.push('[루멘수학] 안녕하세요, '+c.name+' 학생 학부모님.');
+  if(R145_NICK){ L.push('[루멘수학] 안녕하세요,'); L.push(''); L.push(r145Nick(c.name)); }
+  else L.push('[루멘수학] 안녕하세요, '+c.name+' 학생 학부모님.');
   var why;
   if(p.test) why='이번 주 주간테스트'+(p.test.md?('('+p.test.md+')'):'')+'에서 '+(p.test.detail?(p.test.detail+'을 맞혀 '+p.test.score+'점'):(p.test.score+'점'))+'이 나와';
   else why='최근 학습 점검에서 보완이 필요한 단원이 있어';
@@ -54,6 +64,7 @@ function r145Text(c){
     L.push('네이버 예약으로 편하신 시간'+(p.slots.length?'('+p.slots.join(' · ')+')':'')+'을 잡아 주시면 감사하겠습니다.');
     if(p.url) L.push('예약: '+p.url);
   }
+  if(R145_NICK) L.push('');
   L.push('감사합니다.');
   return L.join('\n');
 }
@@ -105,6 +116,7 @@ window.rcSmsDraft=async function(i,k){
                 :('- 네이버 예약: 아직 없음 → 네이버 예약으로 시간을 잡아 달라고 부탁'+(p.slots.length?(' (가능 시간 '+p.slots.join(', ')+')'):'')+'\n'
                   +(p.url?('- 예약 주소(그대로 한 줄로 넣기): '+p.url+'\n'):'')))
       +(R145_TIME?'':'- 시간(몇 시)은 문자에 쓰지 말 것 — 날짜만\n')
+      +(R145_NICK?('- 모양(꼭 이대로): 첫 줄 「[루멘수학] 안녕하세요,」 · 빈 줄 · 「'+r145Nick(c.name)+'」 한 줄 · 이어서 «이번 주 주간테스트…» 문장 · 보충 내용 · 예약 줄 · 빈 줄 · 「감사합니다.」\n'):'')
       +'규칙: [루멘수학]으로 시작. 주간테스트 점수가 있으면 반드시 그대로 넣기(숫자 바꾸지 말 것). 4~5줄, 줄마다 한 문장. '
       +'원장이 직접 쓴 것처럼 짧고 담백하게 — 과한 인사·감탄·「함께 성장」 같은 상투어 금지. 아이를 탓하지 않는다. '+(R145_TIME?'날짜·시간을 정확히. ':'날짜를 정확히. ')+'「감사합니다.」로 끝. 문자 본문만 출력.';
     var resp=await fetch('https://api.anthropic.com/v1/messages',{
