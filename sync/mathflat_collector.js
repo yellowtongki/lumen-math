@@ -2581,7 +2581,8 @@ async function refreshWeekly() {
   try {
     const rows = [];
     for (let off = 0; off < 500000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade&source=eq.${encodeURIComponent('학습지')}&worksheet_type=in.(WEEKLY,CHAPTER)&limit=1000&offset=${off}`, { headers: sbHeaders });
+      // 2026-10-22: order=id 없이 offset 으로 넘기면 쪽마다 순서가 달라 같은 줄이 두 번 들어왔다(20문항 → «40문항»). id 순서로 고정
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=id,mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade&source=eq.${encodeURIComponent('학습지')}&worksheet_type=in.(WEEKLY,CHAPTER)&order=id.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const batch = await res.json();
       rows.push(...batch);
@@ -2594,7 +2595,9 @@ async function refreshWeekly() {
     //      주간테스트로 쓰는 경우. 태그만으로 자동 포함하면 1~2명이 푼 개인 숙제까지 주간테스트가
     //      되어 발표·명예의 전당이 오염되므로, 반드시 원장이 고른 것만 넣는다.
     try {
-      const rowKey = (r) => [r.mf_student_id, r.student_worksheet_id, r.concept_id, r.score_datetime, r.result].join('|');
+      // 2026-10-22: 기록 한 줄 = id 하나. 예전 열쇠(학생·학습지·유형·시각·정오)는 같은 유형 두 문항을 한 줄로 합쳐 버렸다
+      const rowKey = (r) => (r.id != null ? 'id' + r.id : [r.mf_student_id, r.student_worksheet_id, r.concept_id, r.score_datetime, r.result].join('|'));
+      { const u = new Map(); rows.forEach((r) => { const k = rowKey(r); if (!u.has(k)) u.set(k, r); }); const dup = rows.length - u.size; rows.length = 0; u.forEach((r) => rows.push(r)); if (dup) log(`주간테스트: 겹친 기록 ${dup}건 뺌`); }
       const seen = new Set(rows.map(rowKey));
       const wkIds = new Set();
       try {
@@ -2613,7 +2616,7 @@ async function refreshWeekly() {
         const rm = await fetch(`${url}/rest/v1/lumen_store?key=eq.wk_manual_ids&select=value`, { headers: sbHeaders });
         if (rm.ok) { const j = await rm.json(); ((j[0] || {}).value || {}).ids?.forEach((id) => manIds.add(Number(id))); }
       } catch (e) {}
-      const sel = 'select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade';
+      const sel = 'select=id,mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade';
       const urls = [`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.CUSTOM&worksheet_title=ilike.${encodeURIComponent('*주간*')}&limit=5000`];
       if (wkIds.size) urls.push(`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.CUSTOM&worksheet_id=in.(${Array.from(wkIds).join(',')})&limit=5000`);
       if (manIds.size) urls.push(`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_id=in.(${Array.from(manIds).join(',')})&limit=8000`);
