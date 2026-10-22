@@ -11,6 +11,9 @@
  * ═══════════════════════════════════════════════════════════════════ */
 /* v19-146 이 false 로 둔다 — 문자에 시간(배정·네이버 예약 시간·가능 시간)을 넣지 않는다 */
 var R145_TIME = (typeof R145_TIME === 'boolean') ? R145_TIME : true;
+/* v19-147 이 true 로 둔다 — 주간테스트를 본 날(학생 응시일)을 «주간테스트(10/21 화)»로 넣는다 */
+var R145_TDATE = (typeof R145_TDATE === 'boolean') ? R145_TDATE : false;
+function r145Md(ymd){ var d=new Date(String(ymd||'')+'T00:00:00'); if(isNaN(d)) return ''; return (d.getMonth()+1)+'/'+d.getDate()+' '+['일','월','화','수','목','금','토'][d.getDay()]; }
 function r145Url(){ try{ return String(localStorage.getItem('rc_nb_url')||'').trim(); }catch(e){ return ''; } }
 window.r145SetUrl=function(v){
   v=String(v||'').trim();
@@ -21,7 +24,7 @@ window.r145SetUrl=function(v){
 /* 주간테스트 — {score, detail:'40문항 중 10문항'} 또는 null */
 function r145Test(c){
   var t=c && c.row && c.row.testHit;
-  if(t && t.score!=null) return { score:t.score, detail:(t.correct!=null && t.total)?(t.total+'문항 중 '+t.correct+'문항'):'' };
+  if(t && t.score!=null) return { score:t.score, detail:(t.correct!=null && t.total)?(t.total+'문항 중 '+t.correct+'문항'):'', md:R145_TDATE?r145Md(t.date):'' };
   if(c && c.score!=null) return { score:c.score, detail:'' };
   return null;
 }
@@ -42,7 +45,7 @@ function r145Text(c){
   var p=r145Parts(c), L=[];
   L.push('[루멘수학] 안녕하세요, '+c.name+' 학생 학부모님.');
   var why;
-  if(p.test) why='이번 주 주간테스트에서 '+(p.test.detail?(p.test.detail+'을 맞혀 '+p.test.score+'점'):(p.test.score+'점'))+'이 나와';
+  if(p.test) why='이번 주 주간테스트'+(p.test.md?('('+p.test.md+')'):'')+'에서 '+(p.test.detail?(p.test.detail+'을 맞혀 '+p.test.score+'점'):(p.test.score+'점'))+'이 나와';
   else why='최근 학습 점검에서 보완이 필요한 단원이 있어';
   L.push(why+' '+p.when+' 리커버리 보충수업을 하려고 합니다.');
   if(p.rx) L.push('보충 내용: '+p.rx+'.');
@@ -95,7 +98,7 @@ window.rcSmsDraft=async function(i,k){
     var p=r145Parts(c);
     var prompt='한국 수학학원 원장이 학부모께 보내는 주말 리커버리(보충수업) 안내 문자를 써 줘.\n'
       +'- 학생: '+c.name+' / 보충 날짜: '+p.when+'\n'
-      +(p.test?('- 이번 주 주간테스트: '+(p.test.detail?(p.test.detail+' 맞힘, '):'')+p.test.score+'점\n'):'- 주간테스트 점수 없음(최근 학습 점검으로 부름)\n')
+      +(p.test?('- 이번 주 주간테스트'+(p.test.md?('(본 날 '+p.test.md+')'):'')+': '+(p.test.detail?(p.test.detail+' 맞힘, '):'')+p.test.score+'점\n'):'- 주간테스트 점수 없음(최근 학습 점검으로 부름)\n')
       +(p.units.length?('- 보완할 단원·유형: '+p.units.join(', ')+'\n'):'')
       +(p.rx?('- 보충 내용: '+p.rx+'\n'):'')
       +(p.booked?(R145_TIME?('- 네이버 예약: 이미 '+p.bookAt+' 로 예약함 → 예약 확인했다고 짧게\n'):'- 네이버 예약: 이미 예약함 → 예약 확인했다고 짧게(시간은 쓰지 말 것)\n')
