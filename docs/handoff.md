@@ -7,7 +7,7 @@
 | 앱 | 최신 파일 | 고정 주소(사용자가 여는 곳) |
 |---|---|---|
 | 학원앱 | `lumen_v19-151.html` | `lumen_v1.html` = v19-151 (Claude가 배포 때 같이 바꾼다) |
-| 학생앱 | `student_v2-148.html` (**학생앱배포 대기** — 칸 이름 빼기) | `student_v1.html` = v2-147 (10/20 원장 「학생앱배포」 — 아하노트 사진 앱 꺼짐 고침 · 이어 쓰기 · **「학생앱배포」 지시가 있을 때만** 바꾼다 · 10/19 원장 「학생앱배포」 — v2-145 주간 점수 새벽 3시 유예·10/12 주 계획 면제 안내 · v2-146 «루멘 영상 플레이어»로 유튜브 이탈 막기(강의실·손풀이 영상, 검사 tests/test_v2146.js 45/45, **아이폰·안드로이드 실제 첫 재생은 원장 확인 필요**)) |
+| 학생앱 | `student_v2-148.html` | `student_v1.html` = v2-148 (10/22 원장 「학생앱배포」 — 아하 사진 읽기 칸 이름 빼기 · 이전: v2-147 10/20 원장 「학생앱배포」 — 아하노트 사진 앱 꺼짐 고침 · 이어 쓰기 · **「학생앱배포」 지시가 있을 때만** 바꾼다 · 10/19 원장 「학생앱배포」 — v2-145 주간 점수 새벽 3시 유예·10/12 주 계획 면제 안내 · v2-146 «루멘 영상 플레이어»로 유튜브 이탈 막기(강의실·손풀이 영상, 검사 tests/test_v2146.js 45/45, **아이폰·안드로이드 실제 첫 재생은 원장 확인 필요**)) |
 | 학부모앱 | `parent_v1-35.html` | `parent.html` = v1-35 (**원장님 명령 때만**) |
 
 ## 2. 학원앱 만드는 법 — 조립 도구 `sync/appbuild/`
@@ -112,7 +112,12 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 - 카드뉴스·기출 DB(화면엔 「기출 DB」, 「수학비서」라는 말 금지), 적중 분석: docs/exam_hit_contract.md §9.
 
 ## 6. 남은 일 (10/22 기준 — 맨 위가 최신)
-- **(10/22) 📝 아하 사진 읽기에서 인쇄된 LAMP 칸 이름 빼기 — 학원앱 v19-151(배포) · 학생앱 v2-148(**학생앱배포 대기**) · 엣지 함수 aha-read(코드만, **원장 재배포 필요**)**: 원장 「칸 이름은 빼도록 고쳐줘」. 규칙 한 곳 `sync/appbuild/modules/lampstrip_core.js`(lampStripHead/lampStripAi — 영어 제목 Learn the question·Activate knowledge·Model your reasoning·Pinpoint your confusion + 뒤 괄호 + «-», 한글 괄호 제목만 남은 줄도) → 학원앱은 build_app.py `>=151`(ibqReadPhoto 결과), 학생앱은 `build_student_v2148.py`(ahaReadPhoto lamp 결과), 엣지 함수는 같은 정규식을 손으로 옮김(+ 프롬프트에 «인쇄된 제목은 옮기지 않는다»). 남는 글이 없으면 그 칸은 unread. 검사 `tests/test_v19151.js` 10/10(세 곳 정규식 같은지까지). 학생앱만 배포돼도 효과 있음 — 엣지 함수 재배포는 덤(docs/edge_function_deploy.md, Supabase 화면에서 index.ts 붙여넣기). 이미 저장된 옛 노트 글은 안 고쳤다(채점은 이미 0점으로 맞게 됨).
+**▶ 다음 세션 첫 일 (10/22 저녁 정리)**
+1. 원장 확인 대기: 아하노트 사진 튕김(v2-147)·칸 이름 빼기(v2-148)가 학생 폰에서 괜찮은지 · 고등부 리커버리가 너무 많이 걸리는지(「[오답]」 재시험 포함) · 리커버리 안내문 네이버 예약 주소 넣었는지.
+2. 원장 할 일(Claude 못 함): 엣지 함수 aha-read 재배포(docs/edge_function_deploy.md) · 아이패드에서 학원앱이 안 열리는 원인 확인(증상 사진).
+3. 이번 세션 원칙 다시: 메모·주석·검사·인수인계에 학생 실명 금지(홍길동·박하나 같은 가짜 이름) · 실서버 일괄 쓰기는 «시험 브라우저에서 앱 함수 실행 → 결과만 쓰기 → 그 사이 바뀌었는지 확인 → lumen_store backup_ 키에 백업» 순서.
+
+- **(10/22) 📝 아하 사진 읽기에서 인쇄된 LAMP 칸 이름 빼기 — 학원앱 v19-151(배포) · 학생앱 v2-148(10/22 배포) · 엣지 함수 aha-read(코드만, **원장 재배포 필요**)**: 원장 「칸 이름은 빼도록 고쳐줘」. 규칙 한 곳 `sync/appbuild/modules/lampstrip_core.js`(lampStripHead/lampStripAi — 영어 제목 Learn the question·Activate knowledge·Model your reasoning·Pinpoint your confusion + 뒤 괄호 + «-», 한글 괄호 제목만 남은 줄도) → 학원앱은 build_app.py `>=151`(ibqReadPhoto 결과), 학생앱은 `build_student_v2148.py`(ahaReadPhoto lamp 결과), 엣지 함수는 같은 정규식을 손으로 옮김(+ 프롬프트에 «인쇄된 제목은 옮기지 않는다»). 남는 글이 없으면 그 칸은 unread. 검사 `tests/test_v19151.js` 10/10(세 곳 정규식 같은지까지). 학생앱만 배포돼도 효과 있음 — 엣지 함수 재배포는 덤(docs/edge_function_deploy.md, Supabase 화면에서 index.ts 붙여넣기). 이미 저장된 옛 노트 글은 안 고쳤다(채점은 이미 0점으로 맞게 됨).
 - **(10/22 배포) 💡 아하 리그 등급 유지 — 학원앱 v19-150** (`modules/tierkeep150_teacher.js`, 검사 `tests/test_v19150.js` 10/10): 원장 「예전 등급 유지되게 고쳐줘」. iblTierOf 는 «강등 없음»이라 적혀 있었지만 지금 평균으로만 셌다 → lumen_store `aha_tier_best` {season:시즌 시작일, byCode:{코드:등급}} 에 시즌 최고 등급을 두고 max(지금, 최고)로 보임(설정 demote:true 면 예전대로). 씨앗: 일괄 확정 전 순위표 등급(TUL0TE knowledge — 다른 학생은 모두 질문자였음). 순위표 다시 발행(시험 브라우저에서 앱 lgPublishBoard → aha_league_board 만 씀, 그 사이 발행 없음 확인): 1위 탐구자 유지. ⚠ 시험 브라우저에서 lgAutoPublish(2초 타이머)로 잡은 결과는 엉뚱했다 — 직접 `await lgPublishBoard(true)` 로 할 것.
 - **(10/22) 원장 질문 «질문을 많이 하는 학생이 왜 점수가 안 붙나»(채팅 답만)**: 그 학생 시즌 노트 36건 대부분 질문력 0~3 — 활동지 L·A·M 칸을 비워 두고 사진을 찍어 AI가 인쇄된 칸 이름(«Learn the question (문제를 정확히 이해하기)» 등)만 읽음, P칸은 «모르겠다» 한 줄. 질문력 5 미만은 리그 0. 안내: 칸마다 자기 말로 채우기 · 하루 2건까지만 인정 · 글씨 또렷하게. (앱 고칠 거리 후보: aha-read 가 인쇄된 칸 이름을 글로 읽지 않게)
 - **(10/22 16시대) 💡 아하 밀린 초안 89건 일괄 확정 (원장 「아하리그 8점이하는 반영이 안된것 같다. 밀린 점수 올려줘」)**: 원장이 v19-144 「전부 확정」을 7일 범위에서만 눌러 대기(temp) 89건이 남아 있었다. 방법 — 실제 aha_notes·lumen_store 를 임시 폴더로 받아 학원앱 v19-149 를 시험 브라우저에 띄우고(가짜 서버가 실제 자료를 내줌) 앱의 `ibqBulkConfirm` 을 전체 노트(ahaNotes, 퇴원생 제외)로 실행 → 앱이 만든 aha_scores·aha_league_board 만 서버에 씀(그 사이 aha_scores.updated 가 안 바뀐 것 확인 후). 결과: temp 89 → final, 기존 final 34 그대로 → final 123. 순위표 참여 6 → 11명, 1위 리그 점수 21 → 59. 확정 점수 분포 0~4점이 많아(질문력 5 미만은 리그 0 — 규칙 그대로) 평균이 내려가 1위 등급이 탐구자 → 질문자로 표시됨(cfg demote:false 인데 순위표 계산은 평균 기준) — 원장께 알림. 되돌리기 백업: lumen_store `backup_aha_scores_20261022` {aha_scores, aha_league_board}. **원장 앱이 옛 점수를 들고 있으면 다음 저장 때 덮으므로 새로고침 안내함.** 이번 일 도구는 임시 폴더(aha_bulk.js)에만 — 같은 일이 또 필요하면 원장이 범위 「전체」로 「✓ 전부 확정」을 누르면 된다.

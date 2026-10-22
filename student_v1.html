@@ -4556,6 +4556,10 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-148 (2026-10-22) 📝 아하노트 사진 읽기에서 인쇄된 칸 이름 빼기 (원장 「칸 이름은 빼도록 고쳐줘」)
+ *   · 칸을 비워 두고 찍으면 «Learn the question (문제를 정확히 이해하기)» 같은 인쇄 글자가 내 글처럼 채워지던 것을 고쳤어요.
+ *   · 이제 그 칸은 «못 읽은 칸»으로 보여요 — 내 말로 써서 다시 찍으면 돼요.
+ *
  * v2-147 (2026-10-20) 📷 아하노트 사진 찍으면 앱이 꺼지던 문제 (원장 「아하노트에서 사진찍으면 튕긴다고 한다 · 제출이 안된다」)
  *   · 사진을 줄이는 방법을 플래너 사진과 같은 가벼운 방법으로 바꿨어요(폰 메모리를 훨씬 덜 써요).
  *   · 사진이 올라간 뒤 앱이 꺼져도, 다시 「새 IB아하노트」를 누르면 «조금 전에 올린 사진으로 이어서 쓸까요?» — 다시 안 찍어도 돼요.
@@ -5206,7 +5210,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-147';
+var STU_VER = 'v2-148';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -8733,11 +8737,36 @@ async function ahaUploadPhoto(blob, prefix) {
 /* AI에게 활동지를 읽어 달라고 한다 (Supabase Edge Function 'aha-read').
  * 함수가 아직 배포되지 않았거나 실패해도 앱은 멈추지 않는다 — 그때는
  * 빈 칸으로 두고 「선생님이 읽어 드립니다」로 안내한다. */
+/* ═══ LAMP 활동지 «인쇄된 칸 이름» 빼기 — 학생앱(v2-148)·학원앱(v19-151)·엣지 함수 aha-read 가 같은 규칙 ═══
+ * 원장 2026-10-22 「칸 이름은 빼도록 고쳐줘」. 학생이 칸을 비워 두면 AI 가 인쇄된 제목
+ *   «Learn the question (문제를 정확히 이해하기)» «Pinpoint your confusion (…) - 모르겠다» 를 학생 글로 옮겼다.
+ * 영어 제목(인쇄라 잘 읽힘) + 바로 뒤 괄호 설명 + 이어 붙은 «-»·«:» 를 줄마다 떼고, 남은 것이 없으면 그 칸은 빈칸(unread)으로. */
+var LAMP_HEAD_RE = /^\s*(?:[LAMP]\s*[.:)\-]?\s*)?(?:learn\s+the\s+question|activate\s+(?:your\s+)?knowledge|model\s+your\s+reasoning|pinpoint\s+your\s+confusion)\s*(?:\([^)]*\)?)?\s*[-–—:·]?\s*/i;
+var LAMP_HEAD_KO_RE = /^\s*\([^)]*(?:이해하기|떠올리기|풀었나요|접근했나요|정리하기|표현하기|집어내)[^)]*\)?\s*[-–—:·]?\s*/;
+function lampStripHead(s){
+  return String(s == null ? '' : s).split(/\n/).map(function(line){
+    return line.replace(LAMP_HEAD_RE, '').replace(LAMP_HEAD_KO_RE, '').trim();
+  }).filter(function(x){ return x !== ''; }).join('\n');
+}
+function lampStripAi(ai){
+  if (!ai || typeof ai !== 'object') return ai;
+  var un = Array.isArray(ai.unread) ? ai.unread.slice() : [];
+  ['L','A','M','P'].forEach(function(k){
+    if (ai[k] == null) return;
+    var before = String(ai[k]), after = lampStripHead(before);
+    if (after !== before.trim()) ai.headStripped = (ai.headStripped || []).concat([k]);
+    ai[k] = after;
+    if (!after && un.indexOf(k) < 0) un.push(k);
+  });
+  ai.unread = un;
+  return ai;
+}
+
 async function ahaReadPhoto(url, mode) {
   var r = await sb.functions.invoke('aha-read', { body: { photo_url: url, mode: mode || 'lamp' } });
   if (r.error) throw new Error(r.error.message || 'AI 읽기 실패');
   if (!r.data || r.data.error) throw new Error((r.data && r.data.error) || 'AI 읽기 실패');
-  return r.data;
+  return (mode && mode !== 'lamp') ? r.data : lampStripAi(r.data);   /* ★ v2-148: 인쇄된 칸 이름 빼기 */
 }
 
 // 사진 선택 후 처리 — 압축 → 미리보기 → 업로드 → AI 읽기 → 확인 화면
