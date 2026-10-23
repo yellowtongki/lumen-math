@@ -93,6 +93,9 @@ function schoolOf(grade) { const m = String(grade || '').match(/(초|중|고)[^0
  *   --min N  문항이 N 보다 적으면 틀린 유형(시험·교재)의 같은 유형 문항으로 채운다(보강으로 셈)
  *   --redo   이번 주 학습지가 이미 있어도 새로 만들고, 새 것이 만들어진 뒤에 옛 학습지를 매쓰플랫에서 지운다 */
 const MAXN = Number(opt('max', '0')) || 0, MINN = Number(opt('min', '0')) || 0, REDO = args.includes('--redo');
+/* ★ 2026-10-23 원장 「초6 농도문제는 제거해줘」
+ *   --exclude-concept <정규식>  유형 이름(mf_concept_names)이 맞는 유형은 시험·교재 오답에서 빼고, 쌍둥이·같은 유형 고를 때도 뺀다 (예: 농도) */
+const EXCL_RE = opt('exclude-concept', '') ? new RegExp(opt('exclude-concept', '')) : null; let EXC = null;
 const HIGH = {}; args.forEach((a, i) => { if (a === '--high' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) HIGH[m[1]] = m[2]; } });
 const bankId = (p) => { const m = String((p && p.pimg) || '').match(/\/problem\/(\d+)\//); return m ? Number(m[1]) : null; };
 const isAuto = (p) => { if (!AUTO) return true; if (MF_AUTO) { const a = p && (p.autoScoredType || p.auto); return !!(a && a !== 'IMPOSSIBLE'); } return p && p.type !== 'ESSAY' && String(p.answer == null ? '' : p.answer).trim() !== '' && String(p.answer).trim() !== '.'; };
@@ -196,7 +199,7 @@ function plan(M, twinPer) {
   return { test: M.wrong.map((w) => ({ w, n: twinPer == null ? RULE.twinPer : twinPer })), tb: M.wrong.map((w) => ({ w, n: RULE.tbPer })), book: M.bookWrong.map((w) => ({ w, n: RULE.bookTwin })),
     boost: Object.keys(cnt).filter((c) => cnt[c] >= 2).map((c) => ({ cid: Number(c), n: RULE.boost ? 1 : 0, times: cnt[c] })) };
 }
-function pick(list, lv, n, excl, chosen) { const out = []; const pool = list.filter((p) => isAuto(p) && !excl[String(p.id)] && !chosen[String(p.id)]); pool.sort((a, b) => Math.abs((a.lv || 3) - lv) - Math.abs((b.lv || 3) - lv)); pool.slice(0, n).forEach((p) => { chosen[String(p.id)] = 1; out.push(p.id); }); return out; }
+function pick(list, lv, n, excl, chosen) { const out = []; const pool = list.filter((p) => isAuto(p) && !excl[String(p.id)] && !chosen[String(p.id)] && !(EXC && p.cid != null && EXC[p.cid])); pool.sort((a, b) => Math.abs((a.lv || 3) - lv) - Math.abs((b.lv || 3) - lv)); pool.slice(0, n).forEach((p) => { chosen[String(p.id)] = 1; out.push(p.id); }); return out; }
 
 /* ── 만들기 ── */
 async function build(M, P, name, school, sid, recDate, log) {
@@ -207,13 +210,13 @@ async function build(M, P, name, school, sid, recDate, log) {
   const fid = f.filterId || f;
   const chosen = {}, items = [], parts = { twin: 0, tb: 0, book: 0, boost: 0, fallback: 0 };
   let poolByCid = null;
-  const addPool = (ps) => { (Array.isArray(ps) ? ps : (ps.problemList || [])).forEach((p) => { const pr = p.problem || p; if (pr.conceptId && pr.id) (poolByCid[pr.conceptId] = poolByCid[pr.conceptId] || []).push({ id: pr.id, lv: pr.level || 3, autoScoredType: pr.autoScoredType, type: pr.type, answer: pr.answer }); }); };
+  const addPool = (ps) => { (Array.isArray(ps) ? ps : (ps.problemList || [])).forEach((p) => { const pr = p.problem || p; if (pr.conceptId && pr.id) (poolByCid[pr.conceptId] = poolByCid[pr.conceptId] || []).push({ id: pr.id, cid: pr.conceptId, lv: pr.level || 3, autoScoredType: pr.autoScoredType, type: pr.type, answer: pr.answer }); }); };
   const pool = async (cid) => { if (!poolByCid) { poolByCid = {}; try { addPool(await mf('POST', '/worksheet/problem', { filterId: fid })); } catch (e) {} }
     if (cid && !(poolByCid[cid] || []).some((p) => isAuto(p) && !M.solved[String(p.id)] && !chosen[String(p.id)]) && !poolByCid['_tried' + cid]) { poolByCid['_tried' + cid] = 1;
       try { const f2 = await mf('POST', '/worksheet/filter/concept', { type: 'CONCEPT', conceptIdList: [cid], excludedTopicIds: [], excludedSubTopicIds: [], problemList: null, problemCount: 40, level: 3, levelWeight: [10, 30, 30, 20, 10], problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: MF_AUTO, excludePrevious: false, previousExclusionScope: null, studentIds: null, excludeOOC: true, equalityLevel: null, minRate: 0, maxRate: 100, selectedConceptIdList: [], selectedLittleChapterIdList: [] }); addPool(await mf('POST', '/worksheet/problem', { filterId: f2.filterId || f2 })); } catch (e) {} }
     return poolByCid; };
   const twins = async (pid, lv, n, label) => { if (!n) return []; const d = await mf('POST', '/derivation/problem/' + pid, { excludedProblemIds: Object.keys(chosen).map(Number), filterId: fid, bookType: 'WORKSHEET', tagTop: null });
-    const pk = (x) => ({ id: x.problem.id, lv: x.problem.level, autoScoredType: x.problem.autoScoredType, type: x.problem.type, answer: x.problem.answer });
+    const pk = (x) => ({ id: x.problem.id, cid: x.problem.conceptId, lv: x.problem.level, autoScoredType: x.problem.autoScoredType, type: x.problem.type, answer: x.problem.answer });
     const pair = ((d && d.pairProblemList) || []).map(pk);
     const sim = ((d && d.similarProblemList) || []).map(pk);
     let got = pick(pair, lv, n, M.solved, chosen); if (got.length < n) got = got.concat(pick(sim, lv, n - got.length, M.solved, chosen));
@@ -304,7 +307,12 @@ async function build(M, P, name, school, sid, recDate, log) {
       U.info.forEach((u) => line(`단원 「${u.n}」${u.rate != null ? ' ' + u.rate + '%' : ''} → 유형 ${u.cids}개${u.how ? ' (' + u.how + ')' : ' (못 찾음)'}`));
     }
     try {
-      const M = await gather(sid, useTests, st.mf_textbooks || {}, unitArg); if (noBook) { M.bookWrong = M.bookWrong.filter((w) => w.unit); line('교재 오답 뺌 (줄임 · 단원 오답은 남김)'); } const P = plan(M, twinPer); if (unitArg) line(`단원 오답 ${M.unitN || 0}문항 더함 (${UNIT[k] ? UNIT[k].source : '자동'})`);
+      const M = await gather(sid, useTests, st.mf_textbooks || {}, unitArg);
+      if (EXCL_RE) {   /* ★ --exclude-concept: 그 유형 오답은 뺀다 */
+        if (!EXC) { const cn = (await store(['mf_concept_names'])).mf_concept_names || {}; EXC = {}; Object.keys(cn).forEach((c) => { const nm = (cn[c] && (cn[c].n || cn[c].name)) || (typeof cn[c] === 'string' ? cn[c] : ''); if (EXCL_RE.test(nm)) EXC[Number(c)] = nm; }); }
+        const w0 = M.wrong.length, b0 = M.bookWrong.length; M.wrong = M.wrong.filter((w) => !EXC[w.cid]); M.bookWrong = M.bookWrong.filter((w) => !EXC[w.cid]);
+        line(`--exclude-concept ${EXCL_RE.source}: 유형 ${Object.keys(EXC).length}개 · 시험 오답 ${w0 - M.wrong.length} · 교재 오답 ${b0 - M.bookWrong.length} 뺌`);
+      } if (noBook) { M.bookWrong = M.bookWrong.filter((w) => w.unit); line('교재 오답 뺌 (줄임 · 단원 오답은 남김)'); } const P = plan(M, twinPer); if (unitArg) line(`단원 오답 ${M.unitN || 0}문항 더함 (${UNIT[k] ? UNIT[k].source : '자동'})`);
       line(`시험 오답 ${M.wrong.length} · 범위 유형 ${M.range.length} · 교재 오답(범위 안·${RULE.days}일) ${M.bookWrong.length}${M.bookWrong.filter((w) => !w.pid).length ? ' (번호 못 찾음 ' + M.bookWrong.filter((w) => !w.pid).length + ')' : ''} · 교과서 ${M.tb.title || '없음'} · 보강 유형 ${P.boost.length}` + (M.warn.length ? ' · ⚠ ' + M.warn.join(' / ') : ''));
       if (!M.wrong.length && !M.bookWrong.length) { line('✗ 틀린 문항이 없어 만들지 않음'); results.push({ k, skip: 'no wrong' }); continue; }
       const res = await build(M, P, name, school, sid, recDate, line);
