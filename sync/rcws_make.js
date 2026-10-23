@@ -96,6 +96,12 @@ const MAXN = Number(opt('max', '0')) || 0, MINN = Number(opt('min', '0')) || 0, 
 /* ★ 2026-10-23 원장 「초6 농도문제는 제거해줘」
  *   --exclude-concept <정규식>  유형 이름(mf_concept_names)이 맞는 유형은 시험·교재 오답에서 빼고, 쌍둥이·같은 유형 고를 때도 뺀다 (예: 농도) */
 const EXCL_RE = opt('exclude-concept', '') ? new RegExp(opt('exclude-concept', '')) : null; let EXC = null;
+/* ★ 2026-10-23 원장 「초6은 쌍둥이 1 + 단원 · 윤○○ 은 중1-2 최근 오답까지(1안)」 · 「최근 오답문제를 안놓치려면」
+ *   --lean <학생키,…>              시험 오답 쌍둥이 1개 + 단원 오답(·최근 오답)만 — 교과서 같은 유형·보강·범위 안 교재 오답은 뺀다
+ *   --recent <학생키>=<일수>[:<제목 정규식>]  시험 범위와 상관없이 최근 N일 «다시 풀어도 아직 틀린» 문제(교재·학습지)를 쌍둥이 1개씩 더한다.
+ *                                  제목 정규식을 주면 그 교재·학습지 제목만 (예: 30:중등수학1\(하\)|중1-2) */
+const LEAN = csv(opt('lean', ''));
+const RECENT = {}; args.forEach((a, i) => { if (a === '--recent' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(\d+)(?::(.+))?$/); if (m) RECENT[m[1]] = { days: Number(m[2]), re: m[3] ? new RegExp(m[3]) : null }; } });
 const HIGH = {}; args.forEach((a, i) => { if (a === '--high' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) HIGH[m[1]] = m[2]; } });
 const bankId = (p) => { const m = String((p && p.pimg) || '').match(/\/problem\/(\d+)\//); return m ? Number(m[1]) : null; };
 const isAuto = (p) => { if (!AUTO) return true; if (MF_AUTO) { const a = p && (p.autoScoredType || p.auto); return !!(a && a !== 'IMPOSSIBLE'); } return p && p.type !== 'ESSAY' && String(p.answer == null ? '' : p.answer).trim() !== '' && String(p.answer).trim() !== '.'; };
@@ -144,6 +150,23 @@ async function gather(sid, test, textbooks, unitRe) {
   M.wrong.forEach((w) => { if (w.pid) M.solved[String(w.pid)] = 1; }); M.bookWrong.forEach((w) => { if (w.pid) M.solved[String(w.pid)] = 1; });
   if (unitRe) await addUnit(M, sid, unitRe);
   return M;
+}
+/* ★ 최근 오답 (--recent): 최근 N일 문제별 «마지막 결과»가 아직 X 인 것 — 교재는 교과서 은행으로 문제 번호를 찾고, 학습지는 문제 번호 그대로 */
+async function addRecent(M, sid, R) {
+  const since = new Date(Date.now() - R.days * 86400000).toISOString();
+  const rs = await recs(`select=source,worksheet_title,book_id,page,number,workbook_problem_id,problem_id,concept_id,level,result,score_datetime&mf_student_id=eq.${encodeURIComponent(sid)}&score_datetime=gte.${since}&concept_id=not.is.null&order=score_datetime.asc&limit=5000`);
+  const last = {}; rs.forEach((x) => { if (R.re && !R.re.test(String(x.worksheet_title || ''))) return; const k = x.source === '교재' ? (x.workbook_problem_id ? 'w' + x.workbook_problem_id : '') : (x.problem_id ? 'p' + x.problem_id : ''); if (k) last[k] = x; });
+  const seenW = {}, seenP = {}; M.bookWrong.forEach((w) => { if (w.wpId) seenW[w.wpId] = 1; if (w.pid) seenP[w.pid] = 1; }); M.wrong.forEach((w) => { if (w.pid) seenP[w.pid] = 1; });
+  const bids = {}; let n = 0;
+  Object.keys(last).forEach((k) => { const x = last[k]; if (x.result !== 'X') return;
+    if (x.source === '교재') { const wp = Number(x.workbook_problem_id); if (seenW[wp]) return; seenW[wp] = 1; bids[String(x.book_id)] = 1; n++;
+      M.bookWrong.push({ wpId: wp, bid: String(x.book_id), page: x.page, no: x.number, cid: Number(x.concept_id), lv: Number(x.level) || 3, date: String(x.score_datetime || '').slice(0, 10), pid: null, unit: true, recent: true }); }
+    else { const pid = Number(x.problem_id); if (seenP[pid]) return; seenP[pid] = 1; n++;
+      M.bookWrong.push({ wpId: null, bid: '', page: '학습지', no: x.number != null ? x.number : '', cid: Number(x.concept_id), lv: Number(x.level) || 3, date: String(x.score_datetime || '').slice(0, 10), pid, unit: true, recent: true }); M.solved[String(pid)] = 1; } });
+  const st = Object.keys(bids).length ? await store(Object.keys(bids).map((b) => 'mf_textbook_' + b)) : {};
+  Object.keys(bids).forEach((b) => { const bank = st['mf_textbook_' + b]; if (!bank || !bank.problems) return; const byWp = {}; bank.problems.forEach((p) => { byWp[String(p.id)] = p; });
+    M.bookWrong.forEach((w) => { if (w.recent && w.bid === b && !w.pid && byWp[String(w.wpId)]) { w.pid = bankId(byWp[String(w.wpId)]); w.book = bank.title || ''; if (w.pid) M.solved[String(w.pid)] = 1; } }); });
+  M.recentN = n; return n;
 }
 /* ★ 단원 오답: unit = RegExp(수동 --unit: 교재 기록 chapter 글자) 또는 { cids:[유형 번호] }(자동) — 그 유형의 최근 오답(교재)을 더한다 */
 async function addUnit(M, sid, re) {
@@ -298,8 +321,8 @@ async function build(M, P, name, school, sid, recDate, log) {
       useTests = mine.slice(0, 2);
       line(`시험 2개 합침: ${useTests.map((t) => t.title + ' ' + t.date + ' ' + t.score + '점').join(' + ')}`);
     }
-    const twinPer = (TWIN1.indexOf(k) >= 0 || (per && per.twin1)) ? 1 : null; if (twinPer) line('시험 오답 쌍둥이 1개씩 (줄임)');
-    const noBook = NOBOOK.indexOf(k) >= 0 || !!(per && per.noBook);
+    const twinPer = (TWIN1.indexOf(k) >= 0 || LEAN.indexOf(k) >= 0 || (per && per.twin1)) ? 1 : null; if (twinPer) line('시험 오답 쌍둥이 1개씩 (줄임)');
+    const noBook = NOBOOK.indexOf(k) >= 0 || LEAN.indexOf(k) >= 0 || !!(per && per.noBook);
     let unitArg = UNIT[k] || null, unitInfo = null;
     if (!unitArg && UNIT_AUTO && !(per && per.unit === false) && e.snap && e.snap.units && e.snap.units.length) {
       const U = await unitCids(e.snap.units, sid, st.mf_progress && st.mf_progress.byStudent, (st.mf_books && st.mf_books.books) || {});
@@ -312,7 +335,8 @@ async function build(M, P, name, school, sid, recDate, log) {
         if (!EXC) { const cn = (await store(['mf_concept_names'])).mf_concept_names || {}; EXC = {}; Object.keys(cn).forEach((c) => { const nm = (cn[c] && (cn[c].n || cn[c].name)) || (typeof cn[c] === 'string' ? cn[c] : ''); if (EXCL_RE.test(nm)) EXC[Number(c)] = nm; }); }
         const w0 = M.wrong.length, b0 = M.bookWrong.length; M.wrong = M.wrong.filter((w) => !EXC[w.cid]); M.bookWrong = M.bookWrong.filter((w) => !EXC[w.cid]);
         line(`--exclude-concept ${EXCL_RE.source}: 유형 ${Object.keys(EXC).length}개 · 시험 오답 ${w0 - M.wrong.length} · 교재 오답 ${b0 - M.bookWrong.length} 뺌`);
-      } if (noBook) { M.bookWrong = M.bookWrong.filter((w) => w.unit); line('교재 오답 뺌 (줄임 · 단원 오답은 남김)'); } const P = plan(M, twinPer); if (unitArg) line(`단원 오답 ${M.unitN || 0}문항 더함 (${UNIT[k] ? UNIT[k].source : '자동'})`);
+      } if (noBook) { M.bookWrong = M.bookWrong.filter((w) => w.unit); line('교재 오답 뺌 (줄임 · 단원 오답은 남김)'); } if (RECENT[k]) { const rn = await addRecent(M, sid, RECENT[k]); if (EXC) M.bookWrong = M.bookWrong.filter((w) => !EXC[w.cid]); line(`최근 오답(--recent ${RECENT[k].days}일${RECENT[k].re ? ' · ' + RECENT[k].re.source : ''}) ${rn}문항 더함 · 번호 못 찾음 ${M.bookWrong.filter((w) => w.recent && !w.pid).length}`); }
+      const P = plan(M, twinPer); if (LEAN.indexOf(k) >= 0) { P.tb.forEach((y) => { y.n = 0; }); P.boost.forEach((b) => { b.n = 0; }); line('--lean: 쌍둥이 1 + 단원·최근 오답만 (교과서·보강 뺌)'); } if (unitArg) line(`단원 오답 ${M.unitN || 0}문항 더함 (${UNIT[k] ? UNIT[k].source : '자동'})`);
       line(`시험 오답 ${M.wrong.length} · 범위 유형 ${M.range.length} · 교재 오답(범위 안·${RULE.days}일) ${M.bookWrong.length}${M.bookWrong.filter((w) => !w.pid).length ? ' (번호 못 찾음 ' + M.bookWrong.filter((w) => !w.pid).length + ')' : ''} · 교과서 ${M.tb.title || '없음'} · 보강 유형 ${P.boost.length}` + (M.warn.length ? ' · ⚠ ' + M.warn.join(' / ') : ''));
       if (!M.wrong.length && !M.bookWrong.length) { line('✗ 틀린 문항이 없어 만들지 않음'); results.push({ k, skip: 'no wrong' }); continue; }
       const res = await build(M, P, name, school, sid, recDate, line);
