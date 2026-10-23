@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-153';
+var APP_VER = 'v19-154';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9084,6 +9084,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-154',date:'2026-10-23',stability:'ok',memo:'🔄 <b>리커버리 「채점 새로고침」</b> (원장 2026-10-23 「매쓰플랫 채점결과가 바로 적용이 안된다 · 새로고침 단추 넣어줘」). 리커버리 보드 머리 아래에 «📡 매쓰플랫 채점 자료 · 마지막 수집 HH:MM (n분 전)» 줄이 생겼습니다. <b>「🔄 채점 새로고침」</b>을 누르면 서버가 매쓰플랫 채점과 주간테스트 점수를 지금 새로 모읍니다 — 설정 탭에 GitHub 토큰이 있으면 1분 안에 시작(다 모으는 데 10~20분), 없으면 서버가 요청을 확인할 때까지 기다립니다. 끝나면 보드가 저절로 새 점수로 바뀝니다(요청됨 → 수집 중 → 방금 모음, 요청됨일 때 누르면 취소). <b>「↻ 다시 읽기」</b>는 서버에 이미 모인 자료를 몇 초 만에 다시 읽습니다. 고친 것: 예전 머리의 새로고침은 확정 명단만 다시 읽고 주간테스트 점수는 앱을 켤 때 읽은 것을 계속 써서, 서버가 새로 모아도 앱을 껐다 켜기 전엔 옛 점수였습니다 — 이제 주간테스트·진도·네이버 예약까지 다시 읽습니다. 울트라일일 「🔄 지금 가져오기」와 같은 요청을 씁니다.'},
       {ver:'v19-153',date:'2026-10-23',stability:'ok',memo:'🚑 <b>리커버리 — 네이버 예약 시간이 그대로 시간 칸으로 · 리커버리 전용 왼쪽 기둥 · 📊 통계</b> (원장 2026-10-23 「리커버리 A안 추천대로 진행」). <b>[예약 시간 자동]</b> 보드를 열면 그 주 확정 학생 중 네이버 리커버리 예약이 있는 학생의 시간 칸이 예약 시간으로 맞춰집니다(예: 홍길동 09:00 · «⟳ 자동»). 예약 시간이 바뀌면 따라가고, 예약이 취소되면 시간은 두고 «⚠ 예약 취소됨 (11:00)»으로 알려 줍니다. 원장님이 칩을 직접 누른 학생(예: 이순신 10:00)은 덮지 않고 «✋ 직접 10:00 · ⚠ 예약과 다름» + 「예약 시간으로」 단추만 보입니다(같은 칩을 다시 눌러 풀면 예약 시간이 다시 들어감). 칩은 기본 10:00·11:00·13:00 에 그 날·최근 8주 네이버 예약 시간(점선)이 더해집니다 — 기본 칩 설정은 그대로. 「시간 넣기」 단추는 이제 필요 없어 뺐습니다. 학생앱 알림·안내문은 같은 시간을 씁니다. <b>[왼쪽 기둥 (PC)]</b> 이번 주 숫자(확정 · 네이버 예약 · 예약 아직 · 학습지 만듦) → 시간대별 인원 → 명단(✓09:00 · ✋10:00 ⚠ · 예약 아직 · 📄) → 「📨 예약 안 한 n명 · 안내문 ›」 → 📊 이번 달 호출·출석·노쇼·다음 테스트 ↑ + 6개월 막대 · 🔁 3회 이상 상담 신호 · 통계 자세히 · 📜 장부 → ⚙ 기준(주간·단원·초6·주). <b>[📊 통계 탭]</b> 가운데 «📊 통계» — 이번 달 호출·출석률·노쇼 · <b>리커버리 뒤 다음 주간테스트 평균 ±점</b>(«n명 중 m명 올랐어요», 출석한 학생 기준) · 학습지 정답률(채점 기록이 생기면) · 달별 6개월 표 · 학년×사유 · 🔁 자주 오는 학생(3개월, 점수 흐름 · 3회 이상 상담 권유) · 예약 통계(v19-127) 바로가기. 새로 모으는 자료는 없습니다. <b>[홈]</b> 리커버리 전날·당일에 예약 안 한 확정 학생이 있으면 네이버 예약 칸에 «🚑 내일 리커버리 · 예약 아직 2명 — 박하나 · 장보고» + 「📨 안내문」 한 줄(0명이면 안 보임).'},
       {ver:'v19-152',date:'2026-10-23',stability:'ok',memo:'👀 <b>녹음관리 › 훑어보기 — 새벽에 읽어 둔 녹음을 아침에 한 화면으로</b> (원장 2026-10-23 「소리는 비공개 유지 · 안 A로 진행」). 매일 새벽 5시 10분에 서버가 어제 올라온 하브루타 녹음을 Gemini 로 글로 옮기고 그날 주제대로 말했는지(✅ 주제대로 · ⚠️ 일부만 · ❌ 다른 내용 · 🔇 너무 짧음 · 자유 제출) 판정해 둡니다. 녹음관리에 들어가면 이제 «👀 훑어보기»가 먼저 열립니다 — 날짜 ◀ ▶ · «전체 / 주제 다름만 / 아직 안 본 것» · 요약 숫자 5칸 · 학년마다 그날 주제와 🧭 공통으로 헷갈린 것 한 줄 · 학생 카드(두 줄 요약 · 빠진 것 · 개념 오류 · ▶ 듣기 · 📄 전문) · 그 학년 미제출 명단(수업일인 학생). 「✓ 확인」이나 «💬 한마디» 칩(예: 홍길동 카드에 「주제대로 잘 설명했어요」)을 누르면 확인 기록이 서버에 남고 카드가 흐려집니다(「확인 취소」로 되돌림) — 학부모앱 다음 판(v1-36)이 이 확인과 한마디만 보여 주고 소리는 계속 비공개입니다. 그리드의 ✅ 와 녹음 팝업도 새벽 읽기 결과(«🌙 새벽 읽기»)를 같이 봅니다.'},
       {ver:'v19-151',date:'2026-10-22',stability:'ok',memo:'📝 <b>아하노트 사진 읽기 — 인쇄된 칸 이름 빼기</b> (원장 2026-10-22 「칸 이름은 빼도록 고쳐줘」). 학생이 활동지 칸을 비워 두면 AI 가 «Learn the question (문제를 정확히 이해하기)» 같은 인쇄 글자를 학생 글로 옮겼습니다. 학원앱 「🤖 사진 읽기」와 학생앱(v2-148) 모두 이제 그 제목을 떼고, 남는 글이 없으면 «종이에 없는 칸(못 읽음)»으로 둡니다. «Pinpoint your confusion (…) - 모르겠다» 처럼 제목 뒤에 쓴 글은 «모르겠다»만 남깁니다.'},
@@ -98359,8 +98360,129 @@ if (typeof window.nbkHomeCard === 'function') window.nbkHomeCard = (function(o){
   (document.head || document.documentElement).appendChild(st);
 })();
 
+/* ═══════════════════════════════════════════════════════════════════════
+ * v19-154: 🚑 리커버리 「🔄 채점 새로고침」 (원장 2026-10-23 「매쓰플랫 채점결과가 바로 적용이 안된다 · 새로고침 단추 넣어줘」)
+ *  까닭 두 가지
+ *   ① 서버 수집은 하루 6번이지만 GitHub 가 2~5시간씩 미룬다 → 원장이 원할 때 수집을 바로 요청한다.
+ *      울트라일일 「🔄 지금 가져오기」와 같은 길: lumen_store `mf_collect_req` {status:'requested'} 를 쓰면
+ *      mathflat-ondemand.yml 이 수집기(주간테스트 mf_weekly 포함)를 돌린다. 설정 탭 GitHub 토큰이 있으면
+ *      supaSetItem 감싸기(v19-99 HTS_WAKE_KEYS)가 바로 깨운다(1분 안 시작). 없으면 GitHub 예약을 기다린다.
+ *   ② 보드 머리의 예전 「새로고침」은 rcLoad(true) 만 불러 rc_state 만 다시 읽고, 주간테스트(wkLoad)·진도(bpLoad)는
+ *      한 번 읽은 것을 계속 썼다 → 서버가 새로 모아 와도 앱을 껐다 켜기 전엔 그대로였다. 이제 셋 다 + 네이버 예약을 다시 읽는다.
+ *  보드 머리 아래 한 줄: «📡 채점 자료 마지막 수집 HH:MM (n분 전)» + 단추(요청됨/수집 중/완료 상태) + «다시 읽기».
+ *  ※ 문자열 연결만. 바탕 함수는 감싸기만.
+ * ═══════════════════════════════════════════════════════════════════════ */
+var RC154 = { at: '', req: null, poll: null, loading: false, t: 0 };
+var RC154_COOL_MIN = 10;
+function rc154HM(iso){ try { var d = new Date(iso); if (isNaN(d)) return ''; return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); } catch(e){ return ''; } }
+function rc154Ago(iso){ var m = (Date.now() - Date.parse(iso)) / 60000; if (!(m >= 0)) return ''; if (m < 1) return '방금'; if (m < 60) return Math.round(m) + '분 전'; if (m < 60 * 24) return Math.floor(m / 60) + '시간 ' + (Math.round(m % 60) ? Math.round(m % 60) + '분 ' : '') + '전'; return Math.floor(m / 1440) + '일 전'; }
+/* 서버에서 «마지막 수집 시각»(mf_weekly 가 마지막으로 바뀐 때)과 요청 상태를 읽는다 */
+function rc154Meta(){
+  var sb = null; try { sb = getSupaClient(); } catch(e){}
+  if (!sb || RC154.loading) return Promise.resolve();
+  RC154.loading = true;
+  return sb.from('lumen_store').select('key,value,updated_at').in('key', ['mf_weekly', 'mf_collect_req']).then(function(r){
+    RC154.loading = false; RC154.t = Date.now();
+    ((r && r.data) || []).forEach(function(row){
+      if (row.key === 'mf_weekly') RC154.at = row.updated_at || (row.value && row.value.updated) || RC154.at;
+      if (row.key === 'mf_collect_req'){ var v = row.value; if (typeof v === 'string'){ try { v = JSON.parse(v); } catch(e){ v = null; } } RC154.req = v || null; }
+    });
+  }, function(){ RC154.loading = false; RC154.t = Date.now(); });
+}
+function rc154State(){
+  var q = RC154.req;
+  if (!q || !q.status) return { k: 'idle' };
+  if (q.status === 'requested') return { k: 'wait', q: q };
+  if (q.status === 'running') return { k: 'run', q: q };
+  if (q.status === 'done'){ var fin = Date.parse(q.finishedAt || q.reqAt || '') || 0, mins = (Date.now() - fin) / 60000; if (mins < RC154_COOL_MIN) return { k: 'cool', q: q, left: Math.max(1, Math.ceil(RC154_COOL_MIN - mins)) }; }
+  return { k: 'idle', q: q };
+}
+/* 앱이 들고 있는 자료를 전부 다시 읽는다 (서버 수집 없이) */
+window.rc154Reload = function(quiet){
+  var jobs = [];
+  try { if (typeof wkLoad === 'function') jobs.push(wkLoad(true)); } catch(e){}
+  try { if (typeof bpLoad === 'function') jobs.push(bpLoad(true)); } catch(e){}
+  try { if (typeof nbkLoad === 'function') jobs.push(nbkLoad(true)); } catch(e){}
+  jobs.push(rc154Meta());
+  return Promise.all(jobs.map(function(p){ return Promise.resolve(p).catch(function(){}); }))
+    .then(function(){ return rcLoad(true); })
+    .then(function(){ try { render(); } catch(e){} if (!quiet) plToast('🔄 채점·예약 자료를 다시 읽었어요' + (RC154.at ? ' (마지막 수집 ' + rc154HM(RC154.at) + ')' : '')); });
+};
+/* 서버 수집 요청 */
+window.rc154Fetch = function(){
+  var st = rc154State();
+  if (st.k === 'wait' || st.k === 'run' || st.k === 'cool') return;
+  var tok = ''; try { tok = (typeof htsGhToken === 'function') ? htsGhToken() : ''; } catch(e){}
+  var msg = '🔄 채점 새로고침\n\n매쓰플랫 채점 기록과 주간테스트 점수를 지금 서버에서 새로 모읍니다.\n\n'
+    + (tok ? '· 설정의 GitHub 토큰으로 서버를 바로 깨웁니다 (1분 안 시작 · 다 모으는 데 10~20분)\n'
+           : '· 설정 탭에 GitHub 토큰이 없어 서버가 요청을 확인할 때까지 기다립니다 (몇 시간 걸릴 수 있어요)\n')
+    + '· 끝나면 이 화면이 저절로 새 점수로 바뀝니다\n· 학습지·확정 명단은 바뀌지 않습니다\n\n지금 요청할까요?';
+  if (!confirm(msg)) return;
+  var d = new Date(), iso = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  var req = { status: 'requested', date: iso, reqAt: new Date().toISOString(), by: 'recovery' };
+  Promise.resolve(supaSetItem('mf_collect_req', req)).then(function(ok){
+    if (!ok){ plToast('요청 저장 실패 — 네트워크를 확인해 주세요'); return; }
+    RC154.req = req; rc154Poll(); try { render(); } catch(e){}
+    plToast(tok ? '🔄 요청했습니다 — 서버를 깨웠어요' : '🔄 요청했습니다 — 서버가 확인하면 시작돼요');
+  });
+};
+window.rc154Cancel = function(){
+  if (!RC154.req) return;
+  if (RC154.req.status === 'running'){ alert('이미 수집이 시작되어 취소할 수 없습니다. 곧 끝납니다.'); return; }
+  if (!confirm('채점 새로고침 요청을 취소할까요?')) return;
+  Promise.resolve(supaSetItem('mf_collect_req', Object.assign({}, RC154.req, { status: 'cancelled', cancelledAt: new Date().toISOString() }))).then(function(){ RC154.req = null; try { render(); } catch(e){} plToast('요청을 취소했습니다'); });
+};
+function rc154Poll(){
+  if (RC154.poll) return;
+  RC154.poll = setInterval(function(){
+    var before = RC154.req && RC154.req.status;
+    rc154Meta().then(function(){
+      var st = rc154State();
+      if (st.k === 'cool' || (RC154.req && RC154.req.status === 'done' && before !== 'done')){
+        clearInterval(RC154.poll); RC154.poll = null;
+        plToast('✅ 수집 완료 — 새 점수를 불러옵니다');
+        rc154Reload(true);
+        return;
+      }
+      if (st.k !== 'wait' && st.k !== 'run'){ clearInterval(RC154.poll); RC154.poll = null; }
+      try { if (VIEW === 'recovery') render(); } catch(e){}
+    });
+  }, 30000);
+}
+function rc154Bar(){
+  if (!RC154.t || Date.now() - RC154.t > 120000) rc154Meta().then(function(){ try { if (VIEW === 'recovery') render(); } catch(e){} });
+  var st = rc154State(); if (st.k === 'wait' || st.k === 'run') rc154Poll();
+  var lastTxt = RC154.at ? ('마지막 수집 <b>' + rc154HM(RC154.at) + '</b> <span style="color:#94a3b8">(' + rc154Ago(RC154.at) + ')</span>') : '마지막 수집 확인 중…';
+  var btn, base = 'border:none;font-family:inherit;font-size:12.5px;font-weight:900;padding:8px 14px;border-radius:10px;';
+  if (st.k === 'wait' || st.k === 'run'){
+    btn = '<button type="button" id="rc154-btn" data-rc154="' + st.k + '" onclick="rc154Cancel()" style="' + base + 'cursor:pointer;background:#475569;color:#fff">'
+      + (st.k === 'wait' ? '⏳ 요청됨 · 곧 시작' : '🔄 수집 중…') + ' <span style="font-size:10.5px;opacity:.85">' + (st.k === 'wait' ? ('요청 ' + rc154HM(st.q.reqAt) + ' · 누르면 취소') : esc2(st.q.note || '10~20분')) + '</span></button>';
+  } else if (st.k === 'cool'){
+    btn = '<button type="button" id="rc154-btn" data-rc154="cool" disabled style="' + base + 'cursor:default;background:#94a3b8;color:#fff">🕓 방금 모음 <span style="font-size:10.5px;opacity:.85">' + st.left + '분 후 다시 가능</span></button>';
+  } else {
+    btn = '<button type="button" id="rc154-btn" data-rc154="idle" onclick="rc154Fetch()" title="매쓰플랫 채점·주간테스트 점수를 서버에서 지금 새로 모읍니다" style="' + base + 'cursor:pointer;background:linear-gradient(135deg,#dc2626,#f43f5e);color:#fff;box-shadow:0 4px 12px rgba(220,38,38,.3)">🔄 채점 새로고침</button>';
+  }
+  return '<div id="rc154-bar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:8px 12px;margin:0 0 12px;font-size:12.5px;font-weight:700;color:#7c2d12">'
+    + '<span>📡 매쓰플랫 채점 자료 · ' + lastTxt + '</span>'
+    + '<span style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+    + '<button type="button" id="rc154-reload" onclick="rc154Reload()" title="서버에 이미 모인 자료를 앱이 다시 읽습니다 (몇 초)" style="border:1.5px solid #fdba74;background:#fff;color:#9a3412;font-family:inherit;font-size:12px;font-weight:800;padding:7px 11px;border-radius:10px;cursor:pointer">↻ 다시 읽기</button>'
+    + btn + '</span></div>';
+}
+var RC154_TABBAR = '<div style="display:inline-flex;background:#f1f5f9;border-radius:12px;padding:4px;gap:4px;margin-bottom:14px">';
+var _rRecovery154 = rRecovery;
+rRecovery = function(){
+  var h = _rRecovery154.apply(this, arguments);
+  try {
+    if (!RC.loaded) return h;
+    h = h.split('rcLoad(true).then(function(){render()})').join('rc154Reload()');   /* 머리의 옛 새로고침도 전부 다시 읽기로 */
+    var i = h.indexOf(RC154_TABBAR);
+    if (i >= 0) h = h.slice(0, i) + rc154Bar() + h.slice(i);
+  } catch(e){}
+  return h;
+};
+
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~153: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~154: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
