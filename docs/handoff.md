@@ -6,9 +6,9 @@
 ## 1. 지금 버전 (서버 `lumen_store.app_latest` 와 같다)
 | 앱 | 최신 파일 | 고정 주소(사용자가 여는 곳) |
 |---|---|---|
-| 학원앱 | `lumen_v19-152.html` | `lumen_v1.html` = v19-152 (Claude가 배포 때 같이 바꾼다) |
+| 학원앱 | `lumen_v19-153.html` | `lumen_v1.html` = v19-153 (Claude가 배포 때 같이 바꾼다) |
 | 학생앱 | `student_v2-148.html` | `student_v1.html` = v2-148 (10/22 원장 「학생앱배포」 — 아하 사진 읽기 칸 이름 빼기 · 이전: v2-147 10/20 원장 「학생앱배포」 — 아하노트 사진 앱 꺼짐 고침 · 이어 쓰기 · **「학생앱배포」 지시가 있을 때만** 바꾼다 · 10/19 원장 「학생앱배포」 — v2-145 주간 점수 새벽 3시 유예·10/12 주 계획 면제 안내 · v2-146 «루멘 영상 플레이어»로 유튜브 이탈 막기(강의실·손풀이 영상, 검사 tests/test_v2146.js 45/45, **아이폰·안드로이드 실제 첫 재생은 원장 확인 필요**)) |
-| 학부모앱 | `parent_v1-36.html` (10/23 녹음 안 A, **배포 안 함** — 원장 「학부모앱은 배포하지 않는다」) | `parent.html` = v1-35 (**원장님 명령 때만**) |
+| 학부모앱 | `parent_v1-37.html` (10/23 숙제 4단계 · v1-36 녹음 안 A 포함, **배포 안 함** — 원장 「학부모앱은 배포하지 않는다」) | `parent.html` = v1-35 (**원장님 명령 때만**) |
 
 ## 2. 학원앱 만드는 법 — 조립 도구 `sync/appbuild/`
 학원앱은 «바탕 `lumen_v19-42.html` + 기능별 부품(modules/) + 버전별 고침(build_app.py 의 `if int(ver)>=NN:` 블록) + 버전 메모(memos/)» 로 **조립**한다.
@@ -113,6 +113,9 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 
 ## 6. 남은 일 (10/23 기준 — 맨 위가 최신)
 **▶ 10/23 세션 (녹음 자동 읽기 · 시안 4개) — 다음 세션 첫 일**
+0. **(10/23 오후 배포) 학원앱 v19-153 리커버리** (`modules/rcnaver153_teacher.js`, 계약서 `docs/recovery_tab_contract.md`, 검사 `tests/test_v19153.js` 63/63): 네이버 예약 시간이 시간 칸에 자동(손으로 고른 시간은 ✋ 보호 · 예약 취소 ⚠) · 칩 = 기본 + 그날·최근 8주 예약 시간 · 왼쪽 기둥 리커버리 전용 6칸 · 가운데 「📊 통계」(다음 주간테스트 ±는 출석자만) · 홈 네이버 칸에 «🚑 내일 리커버리 · 예약 아직 n명 → 📨 안내문». 다음 판 후보: D-3 출석 자동(출결선생 뒤) · D-4 효과 숫자 복사. **원장 실제 화면 확인 필요**(가짜 자료로만 검사). 검사 test_v19106 2개·145~147 일부는 이전 판에서 이미 바뀐 모양이라 실패(의도).
+0-1. **(10/23) 학부모앱 v1-37 숙제 4단계** (`modules/parent37.js` · `build_parent_v137.py` · `tests/test_p137.js` 43/43, 배포 안 함): 카드 4칸 항상 펼침(○ ◔ ◐ ✓) · 숙제 탭 «최근 7일 단계 표»(옛 7일 총합 막대 카드는 뺌) · 월 기록 단계별 평균 + 달력 점 4개. 원장이 「학부모앱 배포」라고 하면 parent.html = v1-37.
+0-2. 원장 10/23 「녹음확인이 주별로 보는게 사라졌다」 → 바로 「아니다」로 취소. 그리드(학생×날짜)는 왼쪽 메뉴에 그대로 있고 첫 화면만 훑어보기. 원하면 `REC_MGR_VIEW='review'` 기본을 'grid' 로 되돌리면 됨(build_app.py >=152 rep 한 줄).
 1. **원장 결정 대기 (시안 4개, 전부 채팅 artifact + docs/mockup_*.html)**: ① 리커버리 ↔ 네이버 예약 시간 자동 연동 + 전용 왼쪽 기둥 + 📊 통계 화면 `docs/mockup_recovery_tab.html`(정할 것 A~D · 더 발전시킬 것 1~4) ② 클로드 대시보드 방향 — 원장용 «루멘 운영 대시보드» https://claude.ai/artifact/7r8nW5sV5geeK8nuKrBYWZ (예시 숫자 · Supabase 연결기(읽기 전용)로 실제 연결 추천 · 학생앱·학부모앱은 Claude 계정이 없어 앱 홈을 대시보드 모양으로) ③ 학부모앱 숙제 4단계(풀이·채점·오답·아하노트 항상 펼침 · 7일 단계 표 · 월 단계 평균) `docs/mockup_parent_hw4.html` → 승인되면 v1-37 파일만 ④ 녹음 학부모앱 홈 «✓ 선생님 확인»을 어제 녹음 확인도 보이게 바꿀지(지금은 오늘 확인된 것만).
 2. **🎙 녹음 새벽 읽기 (배포됨)**: `sync/rec_night_reader.js` + `.github/workflows/rec-night.yml`(05:10 KST) + 검사 `sync/test_rec_night.js` 55/55 · 계약서 `docs/rec_review_contract.md` · 학원앱 v19-152 「녹음관리 › 👀 훑어보기」(`modules/recreview152_teacher.js`, 검사 `tests/test_v19152.js` 44/44) · 학부모앱 v1-36(`modules/parent36.js` · `build_parent_v136.py` · `tests/test_p136.js` 36/36, **배포 안 함**). **원장 할 일: GitHub Secret `GEMINI_API_KEY`** → Actions 「녹음 숙제 새벽 읽기」 dry=true 로 한 번 → 실제 한 번. 서버 키: `rec_read_<날짜>`(스크립트) · `rec_review_<코드>`(원장 확인·한마디, 학부모앱이 읽음) · `rec_read_last`. 실제 Gemini 호출은 아직 한 번도 안 해 봄.
 3. **⚠ 저장소에 빠져 있던 부품 복구 (10/23)**: `raid137 · raid138 · xtnext139 · plweek140_core · store141` 부품과 `memo_19137~141` 이 커밋돼 있지 않아 새 복제본에서 `build_app.py` 가 멈췄다(이전 세션들이 컨테이너 안에서만 만들고 커밋 안 함). 배포된 `lumen_v19-151.html` 에서 그대로 떼어 넣었고 v19-151 재조립이 바이트까지 같음을 확인. **새 부품·메모는 반드시 같은 커밋에 넣을 것.**
