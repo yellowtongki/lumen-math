@@ -85,6 +85,10 @@ async function mf(method, p, body) {
 /* ── 학생·시험 고르기 (학원앱 rcRows 와 같은 기준) ── */
 function bandOf(grade) { const m = String(grade || '').match(/(초|중|고)[^0-9]*(\d)/); if (!m) return 'mid'; if (m[1] !== '초') return 'mid'; return Number(m[2]) >= 6 ? 'elem6' : 'elemLow'; }
 function schoolOf(grade) { const m = String(grade || '').match(/(초|중|고)[^0-9]*(\d)/); if (!m || m[1] === '고') return null; return { schoolType: m[1] === '초' ? 'ELEMENTARY' : 'MIDDLE', grade: m[2] }; }
+/* ★ 2026-10-23 원장 「고1 윤○○ 리커버리 만들어줘」 — 고등부는 과목을 지정한 학생만 만든다.
+ *   --high <학생키>=<과목>  (과목 = 매쓰플랫 고등 grade 값: 공통수학1 · 공통수학2 · 대수 · 미적분1 · 확률과 통계 · 미적분2 · 기하 — sync/mypaper_to_mathflat.js GRADE_VALUE_22 와 같음)
+ *   지정하지 않으면 예전처럼 고등부는 건너뛴다. 교과서 은행이 없으면 «같은 유형»으로 대체된다. */
+const HIGH = {}; args.forEach((a, i) => { if (a === '--high' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) HIGH[m[1]] = m[2]; } });
 const bankId = (p) => { const m = String((p && p.pimg) || '').match(/\/problem\/(\d+)\//); return m ? Number(m[1]) : null; };
 const isAuto = (p) => { if (!AUTO) return true; if (MF_AUTO) { const a = p && (p.autoScoredType || p.auto); return !!(a && a !== 'IMPOSSIBLE'); } return p && p.type !== 'ESSAY' && String(p.answer == null ? '' : p.answer).trim() !== '' && String(p.answer).trim() !== '.'; };
 
@@ -248,7 +252,9 @@ async function build(M, P, name, school, sid, recDate, log) {
     if (already && !FORCE_DESIGN) { results.push({ k, skip: 'already' }); continue; }
     let hit = stu && mfs.find((m) => m.lumen_rec_code && stu.lumen_rec_code && m.lumen_rec_code === stu.lumen_rec_code); if (!hit) { const same = mfs.filter((m) => m.name === name); if (same.length === 1) hit = same[0]; }
     const sid = hit && hit.mf_student_id; if (!sid) { line('✗ 매쓰플랫 학생 번호를 찾지 못함'); results.push({ k, skip: 'no sid' }); continue; }
-    const school = schoolOf(grade); if (!school) { line('✗ 고등부(또는 학년 미상) — 제외'); results.push({ k, skip: 'school' }); continue; }
+    const school = schoolOf(grade) || (HIGH[k] && /고/.test(String(grade)) ? { schoolType: 'HIGH', grade: HIGH[k] } : null);
+    if (!school) { line('✗ 고등부(또는 학년 미상) — 제외 (만들려면 --high <학생키>=<과목>)'); results.push({ k, skip: 'school' }); continue; }
+    if (school.schoolType === 'HIGH') line(`고등부 과목 ${school.grade} (--high)`);
     const band = bandOf(grade); const cut = band === 'elem6' ? cfg.elem6Score : cfg.minScore;
     let test = null;
     tests.forEach((t) => { const me = (t.students || []).find((s) => String(s.sid) === String(sid) && s.score != null); if (!me) return; const on = me.date || t.date; if (!on || on < from || on > to) return; if (me.score < cut && (!test || String(on) > String(test.date))) test = { wid: t.wid, title: t.title, date: on, score: me.score }; });
