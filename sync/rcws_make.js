@@ -25,7 +25,7 @@ const args = process.argv.slice(2);
 const opt = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 && args[i + 1] && !/^--/.test(args[i + 1]) ? args[i + 1] : d; };
 const DRY = args.includes('--dry');
 const AUTO = !args.includes('--no-auto');
-const MF_AUTO = args.includes('--mf-auto');   // 매쓰플랫 자체 자동채점(객관식) 기준
+const MF_AUTO = !args.includes('--no-mf-auto');   // ★ 2026-10-23 밤 원장 «항상 자동채점 문항으로만» — 매쓰플랫 자동채점 가능(autoScoredType ≠ IMPOSSIBLE)만 · 필터 onlyAutoScorable:true. --no-mf-auto 로만 끔(그때는 «서술형 아님+정답 있음»)
 const ONLY = opt('only', '');
 const RULE = { twinPer: 2, tbPer: 1, bookTwin: 1, boost: true, theory: false, days: 28 };   // ★ v19-155: 실행 때 rc_ws_rule 값으로 바뀐다(ruleOf)
 /* ★ 2026-10-23 밤 원장 결정 (학원앱 v19-155 와 같은 규칙 · docs/recovery_recent_contract.md)
@@ -146,7 +146,9 @@ const RECENT = {}; args.forEach((a, i) => { if (a === '--recent' && args[i + 1])
 const HIGH = {}; args.forEach((a, i) => { if (a === '--high' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) HIGH[m[1]] = m[2]; } });
 const bankId = (p) => { const m = String((p && p.pimg) || '').match(/\/problem\/(\d+)\//); return m ? Number(m[1]) : null; };
 let CUR_HARD = true;   // ★ v19-155: false 면 쌍둥이·같은 유형에서 최상(5단계)을 빼고 상(4)까지
-const isAuto = (p) => { if (!AUTO) return true; if (MF_AUTO) { const a = p && (p.autoScoredType || p.auto); return !!(a && a !== 'IMPOSSIBLE'); } return p && p.type !== 'ESSAY' && String(p.answer == null ? '' : p.answer).trim() !== '' && String(p.answer).trim() !== '.'; };
+/* 매쓰플랫 자동채점 가능 = autoScoredType 이 IMPOSSIBLE…(IMPOSSIBLE · _DRAWING · _DESCRIPTIVE · _ETC · _EXAMPLE_ANSWER · _INPUT_LIMIT) 도, UNDEFINED · UNIDENTIFIED 도 아닌 것 (2026-10-23 초6·중1 전수 확인) */
+const mfAutoOk = (a) => a === true || (typeof a === 'string' && a !== '' && !/^IMPOSSIBLE/.test(a) && a !== 'UNDEFINED' && a !== 'UNIDENTIFIED');
+const isAuto = (p) => { if (MF_AUTO) { const a = p && (p.autoScoredType || p.auto); return mfAutoOk(a); } if (!AUTO) return true; return p && p.type !== 'ESSAY' && String(p.answer == null ? '' : p.answer).trim() !== '' && String(p.answer).trim() !== '.'; };
 
 /* ── 재료 ── */
 async function gather(sid, test, textbooks, unitRe) {
@@ -442,4 +444,4 @@ async function main() {
 }
 if (require.main === module) main().catch((e) => { console.error('❌', e.message); process.exit(1); });
 /* 검사용 (sync/test_rcws_rule.js) — 실행하지 않고 함수만 꺼내 쓴다 */
-module.exports = { ruleOf, cfgFor, plan, groupPerType, build, addRecent, subjNorm, subjFromTitle, RULE, _setTok: (t) => { TOK = t; }, _setExc: (m) => { EXC = m; } };
+module.exports = { ruleOf, cfgFor, plan, groupPerType, build, addRecent, subjNorm, subjFromTitle, RULE, mfAutoOk, _setTok: (t) => { TOK = t; }, _setExc: (m) => { EXC = m; } };

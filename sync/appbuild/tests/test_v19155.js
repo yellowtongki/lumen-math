@@ -209,6 +209,8 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
   await pg.evaluate(() => { window.__W.length = 0; rw155Rule('hardest', true); rw155Rule('min', 25); rw155Rule('max', 35); rw155Rule('exclude', '농도'); rw155Rule('unitAuto', true); });
   await pg.waitForTimeout(200);
   RW = await pg.evaluate(() => window.__W.filter((x) => x.key === 'rc_ws_rule').map((x) => x.value).pop());
+  t('규칙 칸 ①-2 «자동채점 문항만(매쓰플랫 기준 · 항상)» — 끄는 체크 없음 · 규칙 auto 항상 true', /✓ 자동채점 문항만 \(매쓰플랫 기준 · 항상\)/.test(box) && !/id="l3r-auto"/.test(box) && (await pg.evaluate(() => { RCWS.rule = Object.assign({}, RCWS.rule, { auto: false }); return rcwsRule().auto === true; })));
+  t('규칙 칸 ②-0 예상 표 «자동채점 아님 0» · 머리 «자동채점 문항만»', await pg.evaluate(() => { render(); const e = document.getElementById('rw155-est'); return !!e && /자동채점 문항만/.test(e.innerText) && /자동채점 아님 0/.test((e.querySelector('[data-rw155-nonauto]') || {}).innerText || ''); }));
   t('규칙 칸 ② 저장 (hardest · min 25 · max 35 · exclude · unitAuto)', RW && RW.hardest === true && RW.min === 25 && RW.max === 35 && RW.exclude === '농도' && RW.unitAuto === true, JSON.stringify(RW));
   await pg.evaluate(() => { rw155Rule('exclude', '(농도'); }); await pg.waitForTimeout(100);
   t('규칙 칸 ③ 잘못된 정규식은 저장 안 함', (await pg.evaluate(() => rcwsRule().exclude)) === '농도');
@@ -247,13 +249,14 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
   await pg.evaluate(() => { rcPopClose(); rw155Rule('exclude', '농도'); });
   await pg.evaluate(() => {
     const CID = window.__CIDOF, LV = {}; window.__LV = LV; window.__MF = { calls: [], made: null, filters: {} }; let fn = 0;
-    const prob = (id, c, lv) => { CID[id] = c; LV[id] = lv; return { id, level: lv, conceptId: c, type: 'SHORT', answer: '1' }; };
+    const prob = (id, c, lv, imp) => { CID[id] = c; LV[id] = lv; if (imp) window.__IMP[id] = 1; return { id, level: lv, conceptId: c, type: 'SHORT', answer: '1', autoScoredType: imp ? 'IMPOSSIBLE' : 'POSSIBLE_PLUS' }; };
+    window.__IMP = {}; window.__ONLY = [];
     rcwsApi.call = (m, p, b) => { window.__MF.calls.push(m + ' ' + p);
-      if (p === '/worksheet/filter/concept') { fn++; window.__MF.filters['F' + fn] = (b.conceptIdList || []).slice(); return Promise.resolve({ filterId: 'F' + fn }); }
+      if (p === '/worksheet/filter/concept') { fn++; window.__ONLY.push(b.onlyAutoScorable); window.__MF.filters['F' + fn] = (b.conceptIdList || []).slice(); return Promise.resolve({ filterId: 'F' + fn }); }
       if (/^\/derivation\/problem\//.test(p)) { const pid = Number(p.split('/').pop()); const c = CID[pid] || 999;
-        const pair = [prob(pid * 10 + 1, 103, 3), prob(pid * 10 + 2, c, 5), prob(pid * 10 + 3, c, 4), prob(pid * 10 + 4, c, 3)];
+        const pair = [prob(pid * 10 + 1, 103, 3), prob(pid * 10 + 5, c, 4, true), prob(pid * 10 + 6, c, 3, true), prob(pid * 10 + 2, c, 5), prob(pid * 10 + 3, c, 4), prob(pid * 10 + 4, c, 3)];   // 자동채점 아님(IMPOSSIBLE) 섞음
         return Promise.resolve({ pairProblemList: pair.map((x) => ({ problem: x })), similarProblemList: [] }); }
-      if (p === '/worksheet/problem') { const cl = window.__MF.filters[b.filterId] || []; const out = []; cl.forEach((c) => { for (let k = 1; k <= 10; k++) out.push({ problem: prob(c * 1000 + k, c, k <= 2 ? 5 : 3) }); }); return Promise.resolve(out); }
+      if (p === '/worksheet/problem') { const cl = window.__MF.filters[b.filterId] || []; const out = []; cl.forEach((c) => { for (let k = 1; k <= 10; k++) out.push({ problem: prob(c * 1000 + k, c, k <= 2 ? 5 : 3, k === 3 || k === 4) }); }); return Promise.resolve(out); }
       if (p === '/worksheet') { window.__MF.made = b; return Promise.resolve({ id: 5555 }); }
       return Promise.resolve({}); };
   });
@@ -262,13 +265,15 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
   if (!PP) console.log('POP 없음', errs, await pg.evaluate(() => { try { const rs = rcRows(); return JSON.stringify(rs.map((r) => [r.stKey, !!r.testHit, rcws3Can(r)])) + ' ' + VIEW + ' wk' + (WK.tests || []).length + ' bp' + (BP.mfList || []).length; } catch (e) { return 'ERR ' + e.message + e.stack; } }));
   t('만들기 ① 빼는 유형 켠 팝업 — «빼는 유형 «농도» 1문항 뺌» · 5문항', /빼는 유형 «농도» 1문항 뺌/.test(PP.txt) && PP.tot['총 문항'] === 5, PP.txt.slice(0, 300));
   await pg.evaluate(() => { window.__W.length = 0; }); await pg.click('#rcws-make'); await pg.waitForTimeout(1500);
-  const MD = await pg.evaluate(() => ({ made: window.__MF.made, cid: window.__CIDOF, lv: window.__LV, w: window.__W.filter((x) => x.key === 'rc_ws_made').map((x) => x.value).pop() }));
+  const MD = await pg.evaluate(() => ({ made: window.__MF.made, cid: window.__CIDOF, lv: window.__LV, imp: window.__IMP, only: window.__ONLY, pop: (document.getElementById('rc-pop') || {}).innerText || '', w: window.__W.filter((x) => x.key === 'rc_ws_made').map((x) => x.value).pop() }));
   const ids = MD.made ? MD.made.problemList.map((x) => x.id) : [];
   t('만들기 ② 매쓰플랫에 5문항 학습지', ids.length === 5, ids.length);
   t('만들기 ③ 빼는 유형(농도 c103) 문제 없음', ids.length > 0 && ids.every((id) => MD.cid[id] !== 103));
+  t('만들기 ③-2 자동채점 아님(IMPOSSIBLE) 문제 없음 · 필터는 onlyAutoScorable:true', ids.length > 0 && ids.every((id) => !MD.imp[id]) && MD.only.length > 0 && MD.only.every((x) => x === true), JSON.stringify(MD.only));
+  t('만들기 ③-3 결과·기록에 «자동채점 아님 0»', MD.w.byKey.S1.parts.nonAuto === 0 && MD.w.byKey.S1.parts.autoDrop > 0 && /자동채점 아님 0/.test(MD.pop), JSON.stringify(MD.w.byKey.S1.parts));
   t('만들기 ④ 최상 빼기 — 최상(5) 문제 없음 · 최상이던 1번은 상(4)으로', ids.every((id) => MD.lv[id] !== 5) && ids.indexOf(90013) >= 0, JSON.stringify(ids.map((id) => [id, MD.lv[id]])));
   t('만들기 ⑤ rc_ws_made 기록에 최근 오답 수(parts.recent=3)', MD.w && MD.w.byKey && MD.w.byKey.S1 && MD.w.byKey.S1.parts.recent === 3, JSON.stringify(MD.w && MD.w.byKey && MD.w.byKey.S1 && MD.w.byKey.S1.parts));
-  t('만들기 ⑥ 최상 포함이면 고른다 (rcwsPickFrom 감싸기)', await pg.evaluate(() => { const L = [{ id: 1, lv: 5 }, { id: 2, lv: 4 }]; return rcwsPickFrom(L, 5, 1, {}, {}, { hardest: false, auto: false })[0] === 2 && rcwsPickFrom(L, 5, 1, {}, {}, { hardest: true, auto: false })[0] === 1; }));
+  t('만들기 ⑥ 최상 포함이면 고른다 (rcwsPickFrom 감싸기)', await pg.evaluate(() => { const L = [{ id: 1, lv: 5, autoScoredType: 'POSSIBLE_PLUS' }, { id: 2, lv: 4, autoScoredType: 'POSSIBLE_PLUS' }, { id: 3, lv: 5, autoScoredType: 'IMPOSSIBLE' }]; return rcwsPickFrom(L, 5, 1, {}, {}, { hardest: false, auto: false })[0] === 2 && rcwsPickFrom(L, 5, 1, {}, {}, { hardest: true, auto: false })[0] === 1; }));
   await pg.evaluate(() => { rcPopClose(); rw155Rule('exclude', ''); render(); }); await pg.waitForTimeout(300);
   t('만들기 ⑦ 카드 ✅ 칸에 «최근 오답 3»', await pg.evaluate(() => /최근 오답 3 · 보강/.test(document.getElementById('CONTENT').innerText)));
 

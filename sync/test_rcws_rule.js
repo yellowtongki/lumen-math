@@ -10,7 +10,8 @@ const DAY = 86400000, iso = (d) => new Date(Date.now() - d * DAY).toISOString();
 const CID = {}, LV = {}; let fn = 0; const FIL = {}; const CALLS = [];
 let RECS = [];
 const BANK = { mf_textbook_77: { title: '가짜 교재', problems: [{ id: 1, pimg: 'https://x/problem/1001/a.png' }, { id: 3, pimg: 'https://x/problem/1003/a.png' }, { id: 5, pimg: 'https://x/problem/1005/a.png' }] } };
-const prob = (id, c, lv) => { CID[id] = c; LV[id] = lv; return { id, conceptId: c, level: lv, type: 'SHORT', answer: '1' }; };
+const IMP = {}; let ONLY = [];
+const prob = (id, c, lv, imp) => { CID[id] = c; LV[id] = lv; if (imp) IMP[id] = 1; return { id, conceptId: c, level: lv, type: 'SHORT', answer: '1', autoScoredType: imp ? 'IMPOSSIBLE' : 'POSSIBLE_PLUS' }; };
 global.fetch = async (url, o) => {
   const u = String(url), body = o && o.body ? JSON.parse(o.body) : null; CALLS.push((o && o.method || 'GET') + ' ' + u.replace(/\?.*/, ''));
   const ok = (j) => ({ ok: true, status: 200, json: async () => j, text: async () => JSON.stringify(j) });
@@ -18,10 +19,10 @@ global.fetch = async (url, o) => {
   if (u.startsWith('http://sb.fake/rest/v1/lumen_store')) { const m = decodeURIComponent(u).match(/key=in\.\(([^)]*)\)/); const ks = m ? m[1].split(',') : []; return ok(ks.filter((k) => BANK[k]).map((k) => ({ key: k, value: BANK[k] }))); }
   if (u.startsWith('https://api.mathflat.com')) {
     const p = u.slice('https://api.mathflat.com'.length);
-    if (p === '/worksheet/filter/concept') { fn++; FIL['F' + fn] = (body.conceptIdList || []).slice(); return ok({ data: { filterId: 'F' + fn } }); }
+    if (p === '/worksheet/filter/concept') { ONLY.push(body.onlyAutoScorable); fn++; FIL['F' + fn] = (body.conceptIdList || []).slice(); return ok({ data: { filterId: 'F' + fn } }); }
     if (p.startsWith('/derivation/problem/')) { const pid = Number(p.split('/').pop()); const c = CID[pid] || 999;
-      return ok({ data: { pairProblemList: [prob(pid * 10 + 1, c, 5), prob(pid * 10 + 2, c, 4), prob(pid * 10 + 3, c, 3)].map((x) => ({ problem: x })), similarProblemList: [] } }); }
-    if (p === '/worksheet/problem') { const out = []; (FIL[body.filterId] || []).forEach((c) => { for (let k = 1; k <= 6; k++) out.push({ problem: prob(c * 100 + k, c, k <= 2 ? 5 : 3) }); }); return ok({ data: out }); }
+      return ok({ data: { pairProblemList: [prob(pid * 10 + 7, c, 3, true), prob(pid * 10 + 1, c, 5), prob(pid * 10 + 8, c, 4, true), prob(pid * 10 + 2, c, 4), prob(pid * 10 + 3, c, 3)].map((x) => ({ problem: x })), similarProblemList: [] } }); }
+    if (p === '/worksheet/problem') { const out = []; (FIL[body.filterId] || []).forEach((c) => { for (let k = 1; k <= 8; k++) out.push({ problem: prob(c * 100 + k, c, k <= 2 ? 5 : 3, k === 3 || k === 4) }); }); return ok({ data: out }); }
   }
   throw new Error('막힌 주소 ' + u);
 };
@@ -85,7 +86,7 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
   /* ⑤ 상한 우선순위 */
   const mkM = () => ({ wrong: [{ no: 1, pid: 2001, cid: 20, lv: 3 }, { no: 2, pid: 2002, cid: 21, lv: 3 }, { no: 3, pid: 2003, cid: 22, lv: 3 }], range: [20, 21, 22],
     bookWrong: [{ wpId: 31, pid: 3001, cid: 30, lv: 3, page: 1, no: 1, recent: true, unit: true, at: Date.now() - 5 * DAY }, { wpId: 32, pid: 3002, cid: 31, lv: 3, page: 1, no: 2, recent: true, unit: true, at: Date.now() - 1 * DAY }, { wpId: 33, pid: 3003, cid: 32, lv: 3, page: 1, no: 3 }],
-    tb: { bid: '9', title: '교과서', byCid: { 20: [{ id: 4001, lv: 3, type: 'SHORT', answer: '1' }], 21: [{ id: 4002, lv: 3, type: 'SHORT', answer: '1' }], 22: [{ id: 4003, lv: 3, type: 'SHORT', answer: '1' }] } }, solved: {}, warn: [] });
+    tb: { bid: '9', title: '교과서', byCid: { 20: [{ id: 4009, lv: 3, type: 'SHORT', answer: '1', auto: 'IMPOSSIBLE' }, { id: 4001, lv: 3, type: 'SHORT', answer: '1', auto: 'POSSIBLE_PLUS' }], 21: [{ id: 4002, lv: 3, type: 'SHORT', answer: '1', auto: 'POSSIBLE_UNIT' }], 22: [{ id: 4003, lv: 3, type: 'SHORT', answer: '1', auto: 'POSSIBLE_FRACTION' }, { id: 4008, lv: 3, type: 'SHORT', answer: '1' }] } }, solved: {}, warn: [] });
   [2001, 2002, 2003].forEach((p, i) => { CID[p] = 20 + i; }); CID[3001] = 30; CID[3002] = 31; CID[3003] = 32;
   const P2 = () => ({ test: [0, 1, 2].map((i) => ({ w: mkM().wrong[i], n: 2 })), tb: [0, 1, 2].map((i) => ({ w: mkM().wrong[i], n: 1 })), book: mkM().bookWrong.map((w) => ({ w, n: 1 })), boost: [{ cid: 20, n: 1, times: 2 }] });
   const logs = []; const log = (s) => logs.push(s);
@@ -95,6 +96,7 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
   t('상한 ② 4 → 쌍둥이 첫째 3 + 최근 오답 중 새것(3002 쌍둥이)', r.n === 4 && r.parts.recent === 1 && r.items.some((it) => Math.floor(it.id / 10) === 3002) && !r.items.some((it) => Math.floor(it.id / 10) === 3001), JSON.stringify(r.items.map((it) => it.id)));
   r = await X.build(mkM(), P2(), '가짜', { schoolType: 'MIDDLE', grade: '2' }, 'M1', '2026-10-24', log, { max: 0, min: 0, hardest: true });
   t('상한 ③ 상한 없음이면 13 그대로', r.n === 13, r.n);
+  t('자동채점 ① 매쓰플랫 자동채점 아님(IMPOSSIBLE·교과서 auto 없음) 은 하나도 안 들어감 · 필터 onlyAutoScorable:true', r.items.every((it) => !IMP[it.id] && it.id !== 4009 && it.id !== 4008) && r.items.some((it) => it.id === 4001) && ONLY.length && ONLY.every((x) => x === true), JSON.stringify(r.items.map((it) => it.id)) + ' ' + JSON.stringify(ONLY));
 
   /* ⑥ 하한 — 넓히기 → 같은 유형 */
   const M3 = mkM(); M3.recentWide = [{ wpId: 41, pid: 5001, cid: 40, lv: 3, page: 2, no: 1, recent: true, wide: true }, { wpId: 42, pid: 5002, cid: 41, lv: 3, page: 2, no: 2, recent: true, wide: true }]; CID[5001] = 40; CID[5002] = 41;
@@ -115,6 +117,9 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
   /* ⑧ 고등 과목 */
   t('고등 ① 제목 [공통수학2] → 공통수학2 · 미적분Ⅰ → 미적분1 · 확률과통계 → 확률과 통계 · 없는 과목은 빈 글자',
     X.subjFromTitle('[공통수학2] 집합과 명제') === '공통수학2' && X.subjNorm('미적분Ⅰ') === '미적분1' && X.subjNorm('확률과통계') === '확률과 통계' && X.subjFromTitle('고1 일일테스트') === '' && X.subjNorm('수학') === '');
+  t('자동채점 판정: IMPOSSIBLE 계열·UNDEFINED·UNIDENTIFIED 는 아님 · POSSIBLE_*·*_KEYPAD·CALCULATION_FRACTION 은 맞음',
+    ['IMPOSSIBLE', 'IMPOSSIBLE_DRAWING', 'IMPOSSIBLE_DESCRIPTIVE', 'IMPOSSIBLE_ETC', 'IMPOSSIBLE_EXAMPLE_ANSWER', 'IMPOSSIBLE_INPUT_LIMIT', 'UNDEFINED', 'UNIDENTIFIED', '', null, false].every((a) => !X.mfAutoOk(a))
+    && ['POSSIBLE_PLUS', 'POSSIBLE_UNIT', 'POSSIBLE_TEXT', 'MIDDLE_KEYPAD', 'ELEMENTARY_KEYPAD', 'OAX_KEYPAD', 'CALCULATION_FRACTION', true].every((a) => X.mfAutoOk(a)));
   t('외부 호출은 가짜뿐 (만들기 POST /worksheet 없음 — --dry)', !CALLS.some((c) => /POST https:\/\/api\.mathflat\.com\/worksheet$/.test(c)));
   console.log('\n' + pass + '/' + (pass + fail) + (fail ? ' ❌' : ' ✅'));
   process.exit(fail ? 1 : 0);

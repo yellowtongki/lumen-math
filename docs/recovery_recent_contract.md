@@ -39,3 +39,23 @@
 - `rule = st.rc_ws_rule` 의 recent/perType/max/min/exclude 를 기본값으로 쓴다(지금 명령줄에만 있음). perType 은 서버판에 새로 넣는다(`--per-type`).
 - `--min` 채우기에 «기간 넓히기(56일)» 1단계를 더한다.
 - 검사: `--dry` 로 가짜가 아닌 실제 자료는 돌리지 않는다(원장 승인 없이). 함수 단위로 `sync/test_rcws_rule.js`(가짜 fetch) — 우선순위·perType·min/max.
+
+## 4. 원장 10/23 밤 최종 결정 → 구현 (v19-155 · 서버판) — 위 1~3 보다 이것이 이긴다
+시안 `docs/mockup_recovery_recent.html`. 부품 `sync/appbuild/modules/rcws155_teacher.js` · 검사 `sync/appbuild/tests/test_v19155.js`(64) · 서버 `sync/rcws_make.js` · 검사 `sync/test_rcws_rule.js`(27).
+| 칸 (rc_ws_rule) | 기본 | 비고 |
+|---|---|---|
+| `twinPer`·`tbPer`·`bookTwin`·`boost`·`unitAuto` | 1·0·0·끔·끔 | 기본 구성 = 테스트 오답 쌍둥이 1 + 최근 오답 유형마다 1. 나머지는 오른쪽 «학습지 규칙» 체크칸으로 켠다 |
+| `recent` | `{on:true, days:7}` | 칩 1주·2주·4주. 학생별 `per[k].recentDays` |
+| `perType` | true | 유형마다 **1개** = 그 유형에서 가장 최근 틀린 문제. 이번 테스트 오답 문제는 먼저 뺀 뒤 고른다 |
+| `hardest` | false | 끄면 쌍둥이·같은 유형에서 level 5 를 빼고 4 까지(목표 난이도도 4로). 학생별 `per[k].hardest` |
+| `max`·`min` | 0·0 (없음) | 단 최근 기간이 **2주 이상인 학생만 상한 40 자동**(규칙·학생별·`--max` 로 정한 값이 있으면 그 값). 학생별 `per[k].max/min` |
+| `exclude` | '' | 유형 이름 정규식 |
+| `twoTestGrades` | [] | 중3 2개 합산 기본 끔 (학생별 팝업에서 고르면 2개) |
+| `per[k].subject` | — | 고등 과목(공통수학1·2·대수·미적분1·확률과 통계·미적분2·기하). 없으면 그 학생의 가장 최근 시험 제목 `[과목]` 에서 자동. 주가 바뀌어도 남긴다 |
+- **예전 저장분 바꿔 읽기**: `rc_ws_rule` 에 `v155` 표시가 없으면 위 기본 구성(twinPer 1 … twoTestGrades [])으로 한 번 바꿔 읽는다. 다음 저장 때 `v155:1` 이 붙고 그 뒤로는 저장값을 그대로 쓴다. 서버판도 같다(`--classic` = 예전 구성).
+- 학생별 `per[k]` 는 그 주(`wk`)에만. 시험을 직접 고르지 않았으면 `wids` 를 저장하지 않는다(새 주간테스트가 들어오면 그것으로).
+- **학생별 예상**(보드 가운데 표): 확정 학생마다 «테스트 쌍둥이 n + 최근 오답 n유형 = 예상 n문항» · 단원 비율(테스트 한 칸 + 중단원 상위 3 + 기타) · 최상 n(끄면 «0 (켜면 +n)»). 매쓰플랫 호출 없이 `mf_answer_records` 만 — 후보 학생 전부를 `in.(sid,…)` 한 번(1000줄씩 넘김, 최대 30쪽)에 28일(또는 고른 기간·시험 날짜까지) 읽어 메모리에 두고, 규칙·칩을 바꾸면 다시 읽지 않고 센다. 자동 단원 오답은 예상에서 빼고 센다.
+- 보드 카드 줄은 «🕘 최근 1주 아직 틀린 n유형 (m문항) · 테스트 범위 밖 k (중1-2 다각형 3 · …)» — 시안처럼 유형 수로.
+- 서버판 우선순위 바뀐 점: `--max` 때 최근 오답이 교과서보다 앞(계약서 순서). 예전 `--recent` 문제는 «교재 오답»과 같은 맨 뒤였다.
+- **색인**: 새로 읽는 조건은 `mf_student_id = / in (…)` + `score_datetime >=` (+ `concept_id is not null`) 뿐이라 기존 `idx_mf_ans_student (mf_student_id, score_datetime)`(docs/supabase_setup.sql)로 충분 — 새 색인 필요 없음. (`docs/index_speedup.sql` 은 저장소에 없다.)
+- **자동채점 (원장 10/23 밤 «항상 자동채점 문항으로만»)**: 매쓰플랫 자체 자동채점 가능 문항만(`autoScoredType ≠ IMPOSSIBLE`, 교과서 은행은 `autoScoredType || auto`, 둘 다 없으면 뺀다). 학원앱은 필터 요청에 `onlyAutoScorable:true` · 쌍둥이·유사·같은 유형 응답에서 걸러 내고(모자라면 같은 유형의 다른 자동채점 문항) · «자동채점 문항만» 칸은 항상 켜짐(끄는 체크 없음) · 결과·기록에 `parts.nonAuto`(자동채점 아님 수, 0 이어야 함)·`parts.autoDrop`. 서버판은 `MF_AUTO` 기본 켬(`--no-mf-auto` 로만 끔).
