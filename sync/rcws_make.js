@@ -88,6 +88,11 @@ function schoolOf(grade) { const m = String(grade || '').match(/(초|중|고)[^0
 /* ★ 2026-10-23 원장 「고1 윤○○ 리커버리 만들어줘」 — 고등부는 과목을 지정한 학생만 만든다.
  *   --high <학생키>=<과목>  (과목 = 매쓰플랫 고등 grade 값: 공통수학1 · 공통수학2 · 대수 · 미적분1 · 확률과 통계 · 미적분2 · 기하 — sync/mypaper_to_mathflat.js GRADE_VALUE_22 와 같음)
  *   지정하지 않으면 예전처럼 고등부는 건너뛴다. 교과서 은행이 없으면 «같은 유형»으로 대체된다. */
+/* ★ 2026-10-23 원장 「30-40문제로 조정」
+ *   --max N  문항이 N 보다 많으면 줄인다. 남기는 순서: 시험 오답 쌍둥이 첫째 → 교과서 같은 유형 → 쌍둥이 둘째 → 보강 → 교재·단원 오답 쌍둥이
+ *   --min N  문항이 N 보다 적으면 틀린 유형(시험·교재)의 같은 유형 문항으로 채운다(보강으로 셈)
+ *   --redo   이번 주 학습지가 이미 있어도 새로 만들고, 새 것이 만들어진 뒤에 옛 학습지를 매쓰플랫에서 지운다 */
+const MAXN = Number(opt('max', '0')) || 0, MINN = Number(opt('min', '0')) || 0, REDO = args.includes('--redo');
 const HIGH = {}; args.forEach((a, i) => { if (a === '--high' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) HIGH[m[1]] = m[2]; } });
 const bankId = (p) => { const m = String((p && p.pimg) || '').match(/\/problem\/(\d+)\//); return m ? Number(m[1]) : null; };
 const isAuto = (p) => { if (!AUTO) return true; if (MF_AUTO) { const a = p && (p.autoScoredType || p.auto); return !!(a && a !== 'IMPOSSIBLE'); } return p && p.type !== 'ESSAY' && String(p.answer == null ? '' : p.answer).trim() !== '' && String(p.answer).trim() !== '.'; };
@@ -214,10 +219,24 @@ async function build(M, P, name, school, sid, recDate, log) {
     let got = pick(pair, lv, n, M.solved, chosen); if (got.length < n) got = got.concat(pick(sim, lv, n - got.length, M.solved, chosen));
     log(`    ${label}: 쌍둥이 ${pair.length}·유사 ${sim.length} → ${got.length}`); return got; };
   const same = async (cid, lv, n) => { if (!n) return []; const Pz = await pool(cid); return pick(Pz[cid] || [], lv, n, M.solved, chosen); };
-  for (const x of P.test) { if (!x.n) continue; let got = x.w.pid ? await twins(x.w.pid, x.w.lv, x.n, x.w.no + '번') : []; if (got.length < x.n) { const g = await same(x.w.cid, x.w.lv, x.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id) => items.push({ id, kind: 'twin' })); parts.twin += got.length; }
+  for (const x of P.test) { if (!x.n) continue; let got = x.w.pid ? await twins(x.w.pid, x.w.lv, x.n, x.w.no + '번') : []; if (got.length < x.n) { const g = await same(x.w.cid, x.w.lv, x.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id, j) => items.push({ id, kind: 'twin', r: j })); parts.twin += got.length; }
   for (const y of P.tb) { if (!y.n) continue; let got = pick(M.tb.byCid[y.w.cid] || [], y.w.lv, y.n, M.solved, chosen); if (got.length < y.n) { const g = await same(y.w.cid, y.w.lv, y.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id) => items.push({ id, kind: 'tb' })); parts.tb += got.length; }
   for (const z of P.book) { if (!z.n) continue; let got = z.w.pid ? await twins(z.w.pid, z.w.lv, z.n, 'p.' + z.w.page + ' ' + z.w.no) : []; if (got.length < z.n) { const g = await same(z.w.cid, z.w.lv, z.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id) => items.push({ id, kind: 'book' })); parts.book += got.length; }
   for (const b of P.boost) { if (!b.n) continue; const got = await same(b.cid, 3, b.n); got.forEach((id) => items.push({ id, kind: 'boost' })); parts.boost += got.length; }
+  if (MINN && items.length < MINN) {   /* ★ --min: 틀린 유형의 같은 유형 문항으로 채움 */
+    const cl = M.wrong.map((w) => w.cid).concat(M.bookWrong.map((w) => w.cid)).filter((c) => c != null); let i = 0, miss = 0; const before = items.length;
+    while (cl.length && items.length < MINN && miss < cl.length * 2) { const c = cl[i++ % cl.length]; const g = await same(c, 3, 1); if (!g.length) { miss++; continue; } items.push({ id: g[0], kind: 'boost', fill: 1 }); parts.boost++; }
+    log(`    --min ${MINN}: 같은 유형 ${items.length - before}문항 채움`);
+  }
+  if (MAXN && items.length > MAXN) {   /* ★ --max: 우선순위대로 남기고 나머지는 뺀다 */
+    const pr = (it) => (it.kind === 'twin' ? (it.r ? 2 : 0) : it.kind === 'tb' ? 1 : it.kind === 'boost' ? 3 : 4);
+    const keep = items.map((it, i) => ({ it, i, p: pr(it) })).sort((a, b) => a.p - b.p || a.i - b.i).slice(0, MAXN).sort((a, b) => a.i - b.i).map((x) => x.it);
+    const cut = {}; items.forEach((it) => { if (keep.indexOf(it) < 0) cut[it.kind + (it.kind === 'twin' && it.r ? '2' : '')] = (cut[it.kind + (it.kind === 'twin' && it.r ? '2' : '')] || 0) + 1; });
+    items.splice(0, items.length, ...keep);
+    ['twin', 'tb', 'book', 'boost'].forEach((k) => { parts[k] = items.filter((it) => it.kind === k).length; });
+    parts.cut = Object.keys(cut).reduce((a, k) => a + cut[k], 0);
+    log(`    --max ${MAXN}: ${parts.cut}문항 뺌 (${Object.keys(cut).map((k) => ({ twin: '쌍둥이 첫째', twin2: '쌍둥이 둘째', tb: '교과서', boost: '보강', book: '교재 오답' }[k] || k) + ' ' + cut[k]).join(' · ')})`);
+  }
   if (!items.length) throw new Error('문항을 하나도 받지 못함');
   const d = new Date(recDate); const title = `리커버리 ${d.getMonth() + 1}/${d.getDate()} ${name}`;
   if (DRY) return { wsId: null, title, n: items.length, parts, items, at: new Date().toISOString() };
@@ -248,8 +267,9 @@ async function build(M, P, name, school, sid, recDate, log) {
     const name = (stu && stu.name) || (e.snap && e.snap.name) || k; const grade = (stu && stu.grade) || (e.snap && e.snap.grade) || '';
     const line = (s) => console.log(`  ${s}`);
     const already = made[k] && made[k].wk === wk;
-    console.log(`\n▶ ${mask(name)} (${grade}) ${already ? '— 이미 이번 주 학습지 있음 #' + made[k].wsId + (FORCE_DESIGN ? ' (설계만 다시 — --force-design)' : ' (건너뜀)') : ''}`);
-    if (already && !FORCE_DESIGN) { results.push({ k, skip: 'already' }); continue; }
+    console.log(`\n▶ ${mask(name)} (${grade}) ${already ? '— 이미 이번 주 학습지 있음 #' + made[k].wsId + (FORCE_DESIGN ? ' (설계만 다시 — --force-design)' : (REDO ? ' (다시 만들기)' : ' (건너뜀)')) : ''}`);
+    if (already && !FORCE_DESIGN && !REDO) { results.push({ k, skip: 'already' }); continue; }
+    const oldWs = already && REDO ? made[k].wsId : null; if (oldWs) line(`다시 만들기 (--redo) — 새 학습지를 만든 뒤 옛 #${oldWs} 를 지운다`);
     let hit = stu && mfs.find((m) => m.lumen_rec_code && stu.lumen_rec_code && m.lumen_rec_code === stu.lumen_rec_code); if (!hit) { const same = mfs.filter((m) => m.name === name); if (same.length === 1) hit = same[0]; }
     const sid = hit && hit.mf_student_id; if (!sid) { line('✗ 매쓰플랫 학생 번호를 찾지 못함'); results.push({ k, skip: 'no sid' }); continue; }
     const school = schoolOf(grade) || (HIGH[k] && /고/.test(String(grade)) ? { schoolType: 'HIGH', grade: HIGH[k] } : null);
@@ -291,6 +311,10 @@ async function build(M, P, name, school, sid, recDate, log) {
       line(`${DRY ? '설계' : '✅ 생성·배정'} ${res.title.replace(name, mask(name))} · ${res.n}문항 (시험 쌍둥이 ${res.parts.twin} · 교과서 ${res.parts.tb} · 교재 쌍둥이 ${res.parts.book} · 보강 ${res.parts.boost}${res.parts.fallback ? ' · 같은 유형 대체 ' + res.parts.fallback : ''})${res.wsId ? ' · 매쓰플랫 #' + res.wsId : ''}`);
       results.push({ k, ok: true, res });
       if (!DRY) {
+        if (oldWs && res.wsId && String(oldWs) !== String(res.wsId)) {   /* ★ --redo: 새 것이 생긴 뒤에만 옛 학습지 지우기 */
+          let gone = false; for (const pth of ['/worksheet', '/worksheet/trash/by-worksheet']) { try { await mf('DELETE', pth, [Number(oldWs)]); gone = true; line(`옛 학습지 #${oldWs} 지움`); break; } catch (e2) { /* 다음 방법 */ } }
+          if (!gone) line(`⚠ 옛 학습지 #${oldWs} 를 지우지 못했습니다 — 매쓰플랫에서 직접 지워 주세요`);
+        }
         made[k] = { wk, wsId: res.wsId, title: res.title, n: res.n, parts: res.parts, at: res.at, by: 'server', auto: AUTO };
         await setItem('rc_ws_made', { byKey: made, updated: new Date().toISOString() });
         const fresh = (await store(['rc_state'])).rc_state || state; if (fresh.calls && fresh.calls[wk] && fresh.calls[wk][k]) { fresh.calls[wk][k].ws = { wsId: res.wsId, n: res.n, parts: res.parts, at: res.at }; if (UPD_SCORE && fresh.calls[wk][k].snap) { const lt = (Array.isArray(useTests) ? useTests.slice().sort((a, b) => String(b.date).localeCompare(String(a.date))) : [useTests])[0]; if (lt) { fresh.calls[wk][k].snap.score = lt.score; fresh.calls[wk][k].snap.scoreDate = lt.date; fresh.calls[wk][k].snap.testTitle = lt.title; } } await setItem('rc_state', { calls: fresh.calls, dates: fresh.dates || {}, periods: fresh.periods || {}, updated: new Date().toISOString() }); }
