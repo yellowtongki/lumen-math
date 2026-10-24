@@ -665,6 +665,17 @@ if int(ver.replace('v19-',''))>=151:
     # v19-151: 학원앱 「🤖 사진 읽기」 결과에서도 인쇄된 칸 이름을 뗀다 (원장 10/22 「칸 이름은 빼도록 고쳐줘」)
     rep("  // 마지막 물음표 문장을 질문으로 떼어 낸다 (학생앱 ahaSplitP와 같은 규칙)\n  var P=String(out.P||'').trim()",
         "  try{ out=lampStripAi(out)||out; }catch(e){}   /* ★ v19-151: 인쇄된 칸 이름 빼기 */\n  // 마지막 물음표 문장을 질문으로 떼어 낸다 (학생앱 ahaSplitP와 같은 규칙)\n  var P=String(out.P||'').trim()")
+if int(ver.replace('v19-',''))>=156:
+    # v19-156: 출결·보충 — 결석한 그 날 보충도 지정 가능 (원장 10/24 「같은날 보충도 가능하게 수정」)
+    #   예전(v17-19)엔 보충 칸 m[보충일]={planned} 이 결석 칸 m[결석일] 을 덮어써 기록이 깨져서 막아 두었다.
+    #   같은 날이면 보충 칸을 따로 만들지 않고 결석 칸 안에만 적는다(makeupDate=결석일 · makeupSame:true) — 결석은 그대로 남고 보충 예정/완료만 바뀐다.
+    rep("  if(dp===absKey){alert('보충 날짜는 결석일('+attMd(absKey)+')과 다른 날짜로 선택해주세요.');return;}",
+        "  if(dp===absKey){ m[absKey].makeupDate=dp; m[absKey].makeupTime=tp||''; m[absKey].makeupSame=true; attSave(); render(); return; }   /* ★ v19-156: 같은 날 보충 — 결석 칸 안에만 적는다 */")
+    rep("if(mk&&m[mk])delete m[mk];delete m[absKey]", "if(mk&&mk!==absKey&&m[mk])delete m[mk];delete m[absKey].makeupSame;delete m[absKey]")
+    rep("var mk=m[absKey].makeupDate;if(mk&&m[mk])m[mk].status='done';", "var mk=m[absKey].makeupDate;if(mk&&mk!==absKey&&m[mk])m[mk].status='done';")
+    rep("if(mk&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;", "if(mk&&mk!==absKey&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;")
+    rep("if(ad.makeupDone)info='✓ '+attMd(ad.makeupDate)+' 보충';else if(ad.makeupDate)info='→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||'');",
+        "if(ad.makeupDone)info=(ad.makeupSame?'✓ 같은 날 보충':'✓ '+attMd(ad.makeupDate)+' 보충');else if(ad.makeupDate)info=(ad.makeupSame?'→ 같은 날 '+(ad.makeupTime||'')+' 보충':'→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||''));")
 if int(ver.replace('v19-',''))>=152:
     # v19-152: 🎙 녹음관리 › 👀 훑어보기 (원장 10/23 「안 A로 진행」 · docs/rec_review_contract.md §3 · 부품 recreview152_teacher.js)
     #   ① 왼쪽 메뉴 맨 위에 «👀 훑어보기» ② 가운데 그리기 가지 ③ 녹음관리 들어가면 훑어보기부터
