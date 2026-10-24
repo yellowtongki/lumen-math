@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-155';
+var APP_VER = 'v19-156';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9084,6 +9084,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-156',date:'2026-10-24',stability:'ok',memo:'🩹 <b>출결·보충 — 결석한 그 날 보충도 지정</b> (원장 2026-10-24 「같은날 보충도 가능하게 수정」). 결석 보충 관리에서 보충 날짜를 결석일과 같은 날로 고르면 «보충 날짜는 결석일과 다른 날짜로…» 창이 떠서 막혔습니다. 예전에는 보충 기록이 같은 날의 결석 기록을 덮어써 기록이 깨졌기 때문에 막아 두었던 것인데, 이제 같은 날이면 결석 기록 안에 «같은 날 보충»으로만 적어 결석은 그대로 남고 보충 예정·완료만 바뀝니다. 달력 그 날 칸에는 «결석 · → 같은 날 14:00 보충», 완료하면 «✓ 같은 날 보충». 보충완료·되돌리기·보충 취소도 결석 기록을 건드리지 않습니다.'},
       {ver:'v19-155',date:'2026-10-23',stability:'ok',memo:'🕘 <b>리커버리 학습지 3판</b> (원장 2026-10-23 밤 결정). <b>기본 구성이 바뀝니다</b>: 주간테스트 오답 쌍둥이 1개 + <b>최근 1주 «아직 틀린 문제»</b>(교재·학습지에서 풀었는데 아직 틀린 채로 남은 문제 — 다시 풀어 맞힌 것은 뺌)를 <b>유형마다 1개</b>(그 유형에서 가장 최근 것, 이번 테스트 문제는 먼저 뺌). 테스트와 진도가 달라 진도 쪽 오답이 통째로 빠지던 일이 없어집니다. 교과서 같은 유형·보강·범위 안 교재 오답·자동 단원 오답은 꺼짐(오른쪽 «학습지 규칙» 체크칸으로 켤 수 있음) · <b>최상(5단계)은 기본 빼기</b>(체크로 포함) · 문항 상한·하한은 «없음», 단 기간을 2주 이상으로 고른 학생만 상한 40(넘으면 «테스트 쌍둥이 첫째 → 최근 오답 새것 → 교과서 → 쌍둥이 둘째 → 보강 → 교재 오답» 순으로 남김) · 중3 «주간테스트 2개 합산»도 기본에서 끔(학생별 팝업에서 고르면 2개 가능). 기간은 칩 <b>[1주][2주][4주]</b> — 학생별로도 바꿀 수 있습니다(예: 지난주 결석한 학생은 2주). 리커버리 보드 가운데에 <b>«🔢 학생별 예상»</b> 표가 생겼습니다 — 확정 학생마다 «테스트 쌍둥이 n + 최근 오답 n유형 = 예상 n문항», 단원 비율 막대, 최상 문제 수. 규칙을 바꾸면 매쓰플랫 호출 없이 바로 다시 셉니다(실제 쌍둥이 수와 1~2개 다를 수 있음). 학생 카드에는 «🕘 최근 1주 아직 틀린 n유형 · 테스트 범위 밖 m» 한 줄(범위 밖이 있으면 주황). 설계 팝업에는 «🕘 최근 오답» 칸(교재·학습지별 · 중단원별 개수 · 뺀 것)과 이 학생만 기간·최상·문항 범위·끄기. 빼는 유형(예 «농도»)을 적으면 모든 재료와 쌍둥이에서 빠집니다. <b>고등부도 같은 규칙</b>으로 만들 수 있습니다 — 과목은 가장 최근 시험 제목의 [과목](예 [공통수학2])에서 자동으로, 없으면 카드의 «과목 고르기». 서버(확정 전원 서버 생성)도 같은 규칙을 기본으로 씁니다.'},
       {ver:'v19-154',date:'2026-10-23',stability:'ok',memo:'🔄 <b>리커버리 「채점 새로고침」</b> (원장 2026-10-23 「매쓰플랫 채점결과가 바로 적용이 안된다 · 새로고침 단추 넣어줘」). 리커버리 보드 머리 아래에 «📡 매쓰플랫 채점 자료 · 마지막 수집 HH:MM (n분 전)» 줄이 생겼습니다. <b>「🔄 채점 새로고침」</b>을 누르면 서버가 매쓰플랫 채점과 주간테스트 점수를 지금 새로 모읍니다 — 설정 탭에 GitHub 토큰이 있으면 1분 안에 시작(다 모으는 데 10~20분), 없으면 서버가 요청을 확인할 때까지 기다립니다. 끝나면 보드가 저절로 새 점수로 바뀝니다(요청됨 → 수집 중 → 방금 모음, 요청됨일 때 누르면 취소). <b>「↻ 다시 읽기」</b>는 서버에 이미 모인 자료를 몇 초 만에 다시 읽습니다. 고친 것: 예전 머리의 새로고침은 확정 명단만 다시 읽고 주간테스트 점수는 앱을 켤 때 읽은 것을 계속 써서, 서버가 새로 모아도 앱을 껐다 켜기 전엔 옛 점수였습니다 — 이제 주간테스트·진도·네이버 예약까지 다시 읽습니다. 울트라일일 「🔄 지금 가져오기」와 같은 요청을 씁니다.'},
       {ver:'v19-153',date:'2026-10-23',stability:'ok',memo:'🚑 <b>리커버리 — 네이버 예약 시간이 그대로 시간 칸으로 · 리커버리 전용 왼쪽 기둥 · 📊 통계</b> (원장 2026-10-23 「리커버리 A안 추천대로 진행」). <b>[예약 시간 자동]</b> 보드를 열면 그 주 확정 학생 중 네이버 리커버리 예약이 있는 학생의 시간 칸이 예약 시간으로 맞춰집니다(예: 홍길동 09:00 · «⟳ 자동»). 예약 시간이 바뀌면 따라가고, 예약이 취소되면 시간은 두고 «⚠ 예약 취소됨 (11:00)»으로 알려 줍니다. 원장님이 칩을 직접 누른 학생(예: 이순신 10:00)은 덮지 않고 «✋ 직접 10:00 · ⚠ 예약과 다름» + 「예약 시간으로」 단추만 보입니다(같은 칩을 다시 눌러 풀면 예약 시간이 다시 들어감). 칩은 기본 10:00·11:00·13:00 에 그 날·최근 8주 네이버 예약 시간(점선)이 더해집니다 — 기본 칩 설정은 그대로. 「시간 넣기」 단추는 이제 필요 없어 뺐습니다. 학생앱 알림·안내문은 같은 시간을 씁니다. <b>[왼쪽 기둥 (PC)]</b> 이번 주 숫자(확정 · 네이버 예약 · 예약 아직 · 학습지 만듦) → 시간대별 인원 → 명단(✓09:00 · ✋10:00 ⚠ · 예약 아직 · 📄) → 「📨 예약 안 한 n명 · 안내문 ›」 → 📊 이번 달 호출·출석·노쇼·다음 테스트 ↑ + 6개월 막대 · 🔁 3회 이상 상담 신호 · 통계 자세히 · 📜 장부 → ⚙ 기준(주간·단원·초6·주). <b>[📊 통계 탭]</b> 가운데 «📊 통계» — 이번 달 호출·출석률·노쇼 · <b>리커버리 뒤 다음 주간테스트 평균 ±점</b>(«n명 중 m명 올랐어요», 출석한 학생 기준) · 학습지 정답률(채점 기록이 생기면) · 달별 6개월 표 · 학년×사유 · 🔁 자주 오는 학생(3개월, 점수 흐름 · 3회 이상 상담 권유) · 예약 통계(v19-127) 바로가기. 새로 모으는 자료는 없습니다. <b>[홈]</b> 리커버리 전날·당일에 예약 안 한 확정 학생이 있으면 네이버 예약 칸에 «🚑 내일 리커버리 · 예약 아직 2명 — 박하나 · 장보고» + 「📨 안내문」 한 줄(0명이면 안 보임).'},
@@ -18354,7 +18355,7 @@ function attCalHtml(st){
     if(dateStr===today)cls+=' istoday';
     if(s==='present'){fill='<div class="fill f-present'+(hasRec?' hasrec':'')+'"><div class="flabel">출석</div></div>';dnumCls+=' '+(c===0?'sun':c===6?'sat':'muted');}
     else if(s==='late'){var lvl=m[dateStr].lateMin||10,lc=lvl>=30?'f-late30':'f-late10';fill='<div class="fill '+lc+(hasRec?' hasrec':'')+'"><div class="flabel">지각</div><div class="finfo">'+lvl+'분</div>'+(m[dateStr].reason?'<div class="finfo" style="opacity:.92">'+attEsc(m[dateStr].reason)+'</div>':'')+'</div>';dnumCls+=' dark';}
-    else if(s==='absent'){var ad=m[dateStr],info;if(ad.makeupDone)info='✓ '+attMd(ad.makeupDate)+' 보충';else if(ad.makeupDate)info='→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||'');else info='보충 미지정';fill='<div class="fill f-absent'+(hasRec?' hasrec':'')+'"><div class="flabel">결석</div><div class="finfo">'+info+'</div>'+(ad.reason?'<div class="finfo" style="opacity:.92">'+attEsc(ad.reason)+'</div>':'')+'</div>';dnumCls+=' dark';}
+    else if(s==='absent'){var ad=m[dateStr],info;if(ad.makeupDone)info=(ad.makeupSame?'✓ 같은 날 보충':'✓ '+attMd(ad.makeupDate)+' 보충');else if(ad.makeupDate)info=(ad.makeupSame?'→ 같은 날 '+(ad.makeupTime||'')+' 보충':'→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||''));else info='보충 미지정';fill='<div class="fill f-absent'+(hasRec?' hasrec':'')+'"><div class="flabel">결석</div><div class="finfo">'+info+'</div>'+(ad.reason?'<div class="finfo" style="opacity:.92">'+attEsc(ad.reason)+'</div>':'')+'</div>';dnumCls+=' dark';}
     else if(s==='planned'){fill='<div class="fill f-planned'+(hasRec?' hasrec':'')+'"><div class="flabel">보충예정</div><div class="finfo">'+(m[dateStr].makeupTime||'')+' · '+attMd(m[dateStr].makeupOf)+'분</div></div>';dnumCls+=' dark';}
     else if(s==='done'){fill='<div class="fill f-done'+(hasRec?' hasrec':'')+'"><div class="flabel">보충완료</div><div class="finfo">✓</div></div>';dnumCls+=' dark';}
     else{if(hasRec){dnumCls+=' muted';}else{cls+=' empty';clickable=false;dnumCls+=(c===0?' sun':c===6?' sat':' muted');}}
@@ -18410,12 +18411,12 @@ function attSetPlan(name,absKey){
   if(!dp){alert('보충 날짜를 선택해주세요.');return;}
   // v17-19: 보충일을 결석일과 같은 날로 지정하면 그 하루가 자기 자신을 가리키며 덮어써져
   // 기록이 깨지고(상태가 planned로 바뀌며 이 목록에서 사라짐) 이후 취소도 못 하게 되던 사고 방지.
-  if(dp===absKey){alert('보충 날짜는 결석일('+attMd(absKey)+')과 다른 날짜로 선택해주세요.');return;}
+  if(dp===absKey){ m[absKey].makeupDate=dp; m[absKey].makeupTime=tp||''; m[absKey].makeupSame=true; attSave(); render(); return; }   /* ★ v19-156: 같은 날 보충 — 결석 칸 안에만 적는다 */
   m[absKey].makeupDate=dp;m[absKey].makeupTime=tp||'';m[dp]={status:'planned',makeupOf:absKey,makeupTime:tp||''};attSave();render();
 }
-function attCancelPlan(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);var mk=m[absKey].makeupDate;if(mk&&m[mk])delete m[mk];delete m[absKey].makeupDate;delete m[absKey].makeupTime;delete m[absKey].makeupDone;attSave();render();}
-function attMarkDone(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);var mk=m[absKey].makeupDate;if(mk&&m[mk])m[mk].status='done';m[absKey].makeupDone=true;attSave();render();}
-function attUndoDone(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);if(!m[absKey])return;var mk=m[absKey].makeupDate;if(mk&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;attSave();render();}
+function attCancelPlan(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);var mk=m[absKey].makeupDate;if(mk&&mk!==absKey&&m[mk])delete m[mk];delete m[absKey].makeupSame;delete m[absKey].makeupDate;delete m[absKey].makeupTime;delete m[absKey].makeupDone;attSave();render();}
+function attMarkDone(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);var mk=m[absKey].makeupDate;if(mk&&mk!==absKey&&m[mk])m[mk].status='done';m[absKey].makeupDone=true;attSave();render();}
+function attUndoDone(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);if(!m[absKey])return;var mk=m[absKey].makeupDate;if(mk&&mk!==absKey&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;attSave();render();}
 
 /* ── 일정 등록(기간 결석·지각 + 사유) ── */
 function attGoPlan(){ATT_TAB='plan';ATT_STUDENT=null;render();}
@@ -99313,7 +99314,7 @@ if (typeof window.rc154Reload === 'function'){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~155: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~156: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
