@@ -1,0 +1,70 @@
+name: 녹음 숙제 새벽 읽기 (고정 스크립트)
+
+# 학생들이 밤에 올린 하브루타 녹음을 원장님이 아침에 다 들을 수는 없다(원장 결정 2026-10-22~23 「안 A로 진행」).
+# 새벽에 미리 받아쓰고 «그날 주제대로 설명했는지»를 한 줄로 판정해 두면, 원장님은 학원앱
+# 녹음관리 › 👀 훑어보기에서 주제가 다른 녹음만 골라 들으면 된다. 자료 모양은 docs/rec_review_contract.md §1·§2.
+#   ① 등록부의 재원생마다 Storage recordings/<코드>/ 에서 어제부터 3일 치 녹음만 고른다 (이미 읽은 것은 건너뜀)
+#   ② Gemini 로 받아쓰기(원장님 손 받아쓰기가 있으면 그 글) → 그날 주제와 대조 판정 → lumen_store rec_read_<날짜>
+#   ③ 날짜·학년마다 «여럿이 똑같이 헷갈린 것» 한 줄 · rec_read_last 에 건수·토큰 합
+# 울트라 초안(04:50) 뒤에 돈다. 등록부(or_studentdb)에는 쓰지 않는다. Claude 키는 쓰지 않는다(녹음 1건 약 5원).
+# 로그에는 날짜·건수·실패 수·토큰 합만 남는다(이름·코드·전문 없음 — 공개 저장소라 Actions 로그가 공개된다).
+#
+# 필요한 비밀값: SUPABASE_URL, SUPABASE_SERVICE_KEY, GEMINI_API_KEY (원장님이 GitHub Secrets 에 넣는다)
+
+on:
+  schedule:
+    - cron: '10 20 * * *'   # UTC 20:10 = 한국시간 05:10
+  workflow_dispatch:
+    inputs:
+      days:
+        description: '어제부터 며칠 치 녹음을 읽을지 (기본 3)'
+        required: false
+        default: '3'
+      date:
+        description: '그 날 하나만 (YYYY-MM-DD) — 비우면 위 며칠'
+        required: false
+        default: ''
+      max:
+        description: '한 번에 최대 녹음 수 (기본 80)'
+        required: false
+        default: '80'
+      dry:
+        description: 'true 면 읽지 않고 대상 건수만'
+        required: false
+        default: 'false'
+      force:
+        description: 'true 면 이미 읽은 녹음도 다시 읽기'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: rec-night
+  cancel-in-progress: false
+
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # npm install 없음 — Node 22 내장 fetch 만 쓴다
+      # 손으로 넣은 값은 환경변수로 넘겨 따옴표 안에서만 쓴다 (명령 줄에 글자가 그대로 끼어들지 않게)
+      - name: 녹음 받아쓰기 · 판정
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          IN_DAYS: ${{ github.event.inputs.days || '3' }}
+          IN_DATE: ${{ github.event.inputs.date || '' }}
+          IN_MAX: ${{ github.event.inputs.max || '80' }}
+          IN_DRY: ${{ github.event.inputs.dry || 'false' }}
+          IN_FORCE: ${{ github.event.inputs.force || 'false' }}
+        run: |
+          set -- --days "$IN_DAYS" --max "$IN_MAX"
+          if [ -n "$IN_DATE" ]; then set -- "$@" --date "$IN_DATE"; fi
+          if [ "$IN_DRY" = "true" ]; then set -- "$@" --dry; fi
+          if [ "$IN_FORCE" = "true" ]; then set -- "$@" --force; fi
+          node sync/rec_night_reader.js "$@"
