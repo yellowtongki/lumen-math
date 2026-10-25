@@ -31,6 +31,7 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 3. 최신본 기록(안 하면 원장님 기기가 옛 버전에 머문다):
    `NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt node sync/appbuild/app_latest.js teacher lumen_v19-92.html "메모"`
    학생앱배포 때는 `student student_v2-132.html`.
+   **학원앱 판은 main 에 최근 20판만** — 새 판을 올리는 같은 배포에서 가장 오래된 `lumen_v19-NN.html` 하나를 `git rm`(단 `lumen_v19-42.html` = 조립 바탕, 절대 지우지 않음). 2026-10-25 원장 「깃허브 정리해」: v18 76개 + v19-1~136(42 빼고) 삭제 → 저장소 1.53GB → 353MB (Pages 한도 1GB).
 4. 커밋 끝 두 줄: `Co-Authored-By: …` · `Claude-Session: …` (세션 안내 그대로). 커밋·코드에 모델 이름 넣지 않음.
 
 ## 4. 검사

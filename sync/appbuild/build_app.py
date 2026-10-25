@@ -116,7 +116,11 @@ a44=open(SP+'/aha144_teacher.js',encoding='utf-8').read() if int(ver.replace('v1
 r45=((open(SP+'/rcsms148_teacher.js',encoding='utf-8').read()+'\n') if int(ver.replace('v19-',''))>=148 else '')+((open(SP+'/rcsms147_teacher.js',encoding='utf-8').read()+'\n') if int(ver.replace('v19-',''))>=147 else '')+((open(SP+'/rcsms146_teacher.js',encoding='utf-8').read()+'\n') if int(ver.replace('v19-',''))>=146 else '')+open(SP+'/rcsms145_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=145 else ''   # v19-146: 안내문에서 시간 빼기(R145_TIME=false 를 145 앞에)   # v19-145: 🚑 리커버리 학부모 안내문 — 주간테스트 점수 + 네이버 예약 부탁(예약 있으면 확인) · 예약 주소 · 학생별 복사
 tk0=open(SP+'/tierkeep150_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=150 else ''   # v19-150: 💡 아하 리그 등급 — 시즌 동안 한 번 오른 등급 유지(aha_tier_best)
 ls1=open(SP+'/lampstrip_core.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=151 else ''   # v19-151: 📝 아하 사진 읽기에서 인쇄된 LAMP 칸 이름 빼기(학생앱 v2-148 · 엣지 함수와 같은 글)
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+rr2=open(SP+'/recreview152_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=152 else ''   # v19-152: 🎙 녹음관리 › 👀 훑어보기 — 새벽 읽기 결과(rec_read_*) 학년별 카드 · ✓ 확인/💬 한마디(rec_review_<코드>) · 그리드 ✅·팝업 «🌙 새벽 읽기» (docs/rec_review_contract.md §3)
+rn3=open(SP+'/rcnaver153_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=153 else ''   # v19-153: 🚑 리커버리 — 네이버 예약 시간 자동 연동(slotSrc naver/manual) · 전용 왼쪽 기둥 · 📊 통계 탭 · 홈 «예약 아직» (docs/recovery_tab_contract.md)
+rr4=open(SP+'/rcrefresh154_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=154 else ''   # v19-154: 🚑 리커버리 「🔄 채점 새로고침」(mf_collect_req · 토큰 있으면 즉시) + ↻ 다시 읽기(주간테스트·진도·네이버 예약까지)
+rw5=open(SP+'/rcws155_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=155 else ''   # v19-155: 🚑 리커버리 학습지 3판 — «아직 틀린 문제»(최근 28일) · 유형마다 1개 · 문항 30~40 · 빼는 유형 · 보드 «🕘» 한 줄 (docs/recovery_recent_contract.md)
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+(rr2+'\n' if rr2 else '')+(rn3+'\n' if rn3 else '')+(rr4+'\n' if rr4 else '')+(rw5+'\n' if rw5 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -661,6 +665,30 @@ if int(ver.replace('v19-',''))>=151:
     # v19-151: 학원앱 「🤖 사진 읽기」 결과에서도 인쇄된 칸 이름을 뗀다 (원장 10/22 「칸 이름은 빼도록 고쳐줘」)
     rep("  // 마지막 물음표 문장을 질문으로 떼어 낸다 (학생앱 ahaSplitP와 같은 규칙)\n  var P=String(out.P||'').trim()",
         "  try{ out=lampStripAi(out)||out; }catch(e){}   /* ★ v19-151: 인쇄된 칸 이름 빼기 */\n  // 마지막 물음표 문장을 질문으로 떼어 낸다 (학생앱 ahaSplitP와 같은 규칙)\n  var P=String(out.P||'').trim()")
+if int(ver.replace('v19-',''))>=156:
+    # v19-156: 출결·보충 — 결석한 그 날 보충도 지정 가능 (원장 10/24 「같은날 보충도 가능하게 수정」)
+    #   예전(v17-19)엔 보충 칸 m[보충일]={planned} 이 결석 칸 m[결석일] 을 덮어써 기록이 깨져서 막아 두었다.
+    #   같은 날이면 보충 칸을 따로 만들지 않고 결석 칸 안에만 적는다(makeupDate=결석일 · makeupSame:true) — 결석은 그대로 남고 보충 예정/완료만 바뀐다.
+    rep("  if(dp===absKey){alert('보충 날짜는 결석일('+attMd(absKey)+')과 다른 날짜로 선택해주세요.');return;}",
+        "  if(dp===absKey){ m[absKey].makeupDate=dp; m[absKey].makeupTime=tp||''; m[absKey].makeupSame=true; attSave(); render(); return; }   /* ★ v19-156: 같은 날 보충 — 결석 칸 안에만 적는다 */")
+    rep("if(mk&&m[mk])delete m[mk];delete m[absKey]", "if(mk&&mk!==absKey&&m[mk])delete m[mk];delete m[absKey].makeupSame;delete m[absKey]")
+    rep("var mk=m[absKey].makeupDate;if(mk&&m[mk])m[mk].status='done';", "var mk=m[absKey].makeupDate;if(mk&&mk!==absKey&&m[mk])m[mk].status='done';")
+    rep("if(mk&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;", "if(mk&&mk!==absKey&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;")
+    rep("if(ad.makeupDone)info='✓ '+attMd(ad.makeupDate)+' 보충';else if(ad.makeupDate)info='→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||'');",
+        "if(ad.makeupDone)info=(ad.makeupSame?'✓ 같은 날 보충':'✓ '+attMd(ad.makeupDate)+' 보충');else if(ad.makeupDate)info=(ad.makeupSame?'→ 같은 날 '+(ad.makeupTime||'')+' 보충':'→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||''));")
+if int(ver.replace('v19-',''))>=152:
+    # v19-152: 🎙 녹음관리 › 👀 훑어보기 (원장 10/23 「안 A로 진행」 · docs/rec_review_contract.md §3 · 부품 recreview152_teacher.js)
+    #   ① 왼쪽 메뉴 맨 위에 «👀 훑어보기» ② 가운데 그리기 가지 ③ 녹음관리 들어가면 훑어보기부터
+    rep("    {id:'grid',    icon:'📅', label:'그리드'},", "    {id:'review',  icon:'👀', label:'훑어보기'},   /* ★ v19-152 */\n    {id:'grid',    icon:'📅', label:'그리드'},")
+    rep("  if (REC_MGR_VIEW === 'grid')         body = rRecMgrGrid();", "  if (REC_MGR_VIEW === 'review')       body = rr152View();   /* ★ v19-152 */\n  else if (REC_MGR_VIEW === 'grid')    body = rRecMgrGrid();")
+    rep("REC_MGR_VIEW='grid'; }},", "REC_MGR_VIEW='review'; }},")
+    #   ④ 그리드 ✅ = 손 받아쓰기 또는 새벽 읽기 · 팝업 STT 칸에 «🌙 새벽 읽기»(판정·요약·전문) — 손 받아쓰기 칸은 예전 그대로
+    rep("var hasStt = !!savedRec.stt;", "var hasStt = !!savedRec.stt || rr152Has(code, dayFiles);   /* ★ v19-152: 새벽 읽기도 ✅ */")
+    rep("""    if (savedRec.stt) {
+      html += '<div style="background:white;border-radius:8px;padding:8px;border:1px solid #e2e8f0;margin-bottom:6px"><div style="font-size:10px;font-weight:700;color:#0369a1;margin-bottom:4px">🔤 STT</div><div style="font-size:12px;color:#334155;line-height:1.6">' + savedRec.stt + '</div></div>';
+    }""", """    html += rr152PopStt(savedRec, stCode, file.name);   /* ★ v19-152: 🌙 새벽 읽기 + 🔤 STT(손 받아쓰기, 예전 그대로) */""")
+    #   ⑤ 새벽 읽기 결과·확인 기록은 화면이 서버에서 바로 읽는다 — 시작 다운로드에서 뺀다
+    rep("'naver_book'];", "'naver_book', 'rec_read_', 'rec_review_'];")
 if int(ver.replace('v19-',''))>=149:
     # v19-149: 리커버리 — 고등부는 모든 테스트(수집기가 type HIGH_TEST 로 내보냄 · 단원 TEST 도) (원장 10/22 「우선은 체계가 잡히기 전에 고등부는 모든 테스트를 하자」)
     rep("""    var stKey=String(st.id||st.name);
