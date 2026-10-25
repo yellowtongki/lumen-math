@@ -16,6 +16,7 @@
  *     "curriculumId": "1",                   // 1=15개정, 2=22개정
  *     "top": "04 중3-2",                     // 대단원 이름 — 「중N-M」 또는 고등 과목명
  *     "mylist": "모의고사",                   // 매쓰플랫 마이리스트 폴더 (없으면 「수학비서」)
+ *     "assign": ["I2103268"],                // (선택) 만들면서 바로 배정할 매쓰플랫 학생 id
  *     "items": [ { "no": 1, "file": "/abs/q01.png", "answer": ["3"], "type": "single_choice" }, … ]
  *   }
  *   type: single_choice · multiple_choice · short_answer · latex_answer (수학비서와 같은 이름)
@@ -37,9 +38,18 @@ const SRC = path.join(__dirname, 'mypaper_to_mathflat.js');
 let code = fs.readFileSync(SRC, 'utf8');
 /* 원래 파일의 «바로 실행» 부분만 떼어 내고, 같은 모듈 안에서 수학비서 함수를 바꿔 끼운다 */
 code = code.replace(/\nif \(require\.main === module\)[\s\S]*$/, '\n');
+/* 2026-10-24 원장님 지시 — 목록 파일에 "assign" 이 있으면 만들면서 바로 그 학생들에게 배정한다.
+ * (매쓰플랫은 학습지를 «만들 때» assignStudentIdList 로 넣어야 배정된다 — exam_twin_pipeline.js 와 같음)
+ * 원래 수학비서 → 매쓰플랫 길(mypaper_to_mathflat.js)은 그대로 «배정 없음»이다. */
+const nAssign = (code.match(/assignStudentIdList: \[\]/g) || []).length;
+if (nAssign < 2) throw new Error('mypaper_to_mathflat.js 의 학습지 만들기 부분이 바뀌었습니다 — 배정 자리를 찾지 못했습니다');
+code = code.replace(/assignStudentIdList: \[\]/g, 'assignStudentIdList: __ASSIGN');
+code += '\nvar __ASSIGN = [];\n';   /* 맨 앞(#! 줄)에 넣으면 문법 오류 — 뒤에 var 로 둔다 */
 code += `
 module.exports.__runManifest = async function (man, dry) {
   const ID = String(man.id);
+  __ASSIGN = (man.assign || []).map(String);
+  if (__ASSIGN.length) log('배정할 학생 ' + __ASSIGN.length + '명 (매쓰플랫 학생 id)');
   /* 수학비서 대신 목록 파일에서 읽는다 */
   msGet = async () => ({ data: { title: man.title, questionCount: man.items.length } });
   msCells = async () => man.items.map((it) => ({
@@ -59,6 +69,7 @@ module.exports.__runManifest = async function (man, dry) {
     st.processed = st.processed || {};
     st.processed[ID] = { at: new Date().toISOString(), title: r.title, n: r.n, worksheetIds: r.worksheetIds, paperIds: r.paperIds,
       parts: (r.parts || []).map((x) => ({ title: x.title, n: x.n, worksheetId: x.worksheetId, withAnswer: x.withAnswer, autoScored: x.autoScored })),
+      ...(__ASSIGN.length ? { assigned: __ASSIGN } : {}),
       ...(r.placeholders && r.placeholders.length ? { placeholders: r.placeholders } : {}) };
     await kvSet('pdf_mf_state', st);
   }

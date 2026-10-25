@@ -282,4 +282,21 @@ footer{
 .calc{display:block; overflow-x:auto; -webkit-overflow-scrolling:touch}
 .cond .row>span:last-child{min-width:0; overflow-x:auto; padding-bottom:2px}
 .result .val{min-width:0; overflow-x:auto; padding-bottom:2px}
+/* ── 인쇄: A4 세로 · 좌우 2단 (2026-10-23 원장님 요청) — 화면 모습은 그대로 ── */
+@media print{
+  @page{size:A4 portrait;margin:9mm 8mm}
+  html,body{background:#fff!important}
+  body{zoom:.78}
+  .wrap{max-width:none!important;margin:0!important;padding:0!important;column-count:2;column-gap:7mm;column-rule:.6pt solid #c9d1db}
+  .wrap>.masthead,.wrap>.insight,.wrap>.warn,.wrap>nav.idx+div,.wrap>footer,footer{column-span:all}
+  .wrap>nav.idx{display:none}
+  .masthead{padding-top:0!important;margin-bottom:8px!important}
+  section.sol{break-inside:auto;margin:0 0 14px!important;padding:0!important;border:none!important;background:none!important}
+  .sol-head{break-inside:avoid;break-after:avoid;margin-bottom:6px!important;padding-bottom:6px!important;border-bottom:1.2pt solid #1f2a37}
+  .sol-body{border:none!important;background:none!important;padding:0!important;border-radius:0!important}
+  .pstate,.step,.result,.miss,.mathrow,.cond,.calc,.aside,.warn,.fig-frame{break-inside:avoid}
+  .fig-frame{padding:6px!important;margin:6px 0!important}
+  .fig-frame svg{max-width:100%!important;max-height:62mm;width:auto!important;height:auto;display:block;margin:0 auto}
+  *{box-shadow:none!important}
+}
 </style>

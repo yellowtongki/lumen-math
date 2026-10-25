@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-151';
+var APP_VER = 'v19-156';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -1281,7 +1281,7 @@ window.supaPullStudentDbRescue = supaPullStudentDbRescue;
 
 // v18-23: onlyKeys를 주면 그 키들만 소량으로 받는다 — 전체(대용량) 동기화가 느린
 // 네트워크에서 실패할 때, 등록부·교재 같은 핵심만 먼저 받아 화면을 살리는 용도.
-var PULL_SKIP_PREFIX = ['mf_bookans_', 'mf_wsq_', 'mf_textbook_', 'mf_swb_', 'mf_ws_recent_', 'mf_wsans_', 'ms_exam', 'haesol_body_', 'hw_synced_', 'hw_scores_', 'typeach_stu_', 'stu_reports_', 'pub_reports_', 'submissions_', 'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_', 'naver_book'];
+var PULL_SKIP_PREFIX = ['mf_bookans_', 'mf_wsq_', 'mf_textbook_', 'mf_swb_', 'mf_ws_recent_', 'mf_wsans_', 'ms_exam', 'haesol_body_', 'hw_synced_', 'hw_scores_', 'typeach_stu_', 'stu_reports_', 'pub_reports_', 'submissions_', 'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_', 'naver_book', 'rec_read_', 'rec_review_'];
 var PULL_SKIP_KEYS = ['mf_type_ach', 'mf_sol_fix', 'mf_bookpages', 'ms_mydb_index', 'mf_ws_behaviors', 'mf_weekly', 'mf_progress', 'mf_books', 'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req', 'lumen_db_key', 'naver_phone_links', 'or_nb_key', 'naver_bookings_archive', 'naver_msg_tpl', 'tenten_optional', 'raid_board_draft', 'raid_boss_lib'];
 async function supaFullPull(onlyKeys) {
   var sb = getSupaClient();
@@ -9084,6 +9084,11 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-156',date:'2026-10-24',stability:'ok',memo:'🩹 <b>출결·보충 — 결석한 그 날 보충도 지정</b> (원장 2026-10-24 「같은날 보충도 가능하게 수정」). 결석 보충 관리에서 보충 날짜를 결석일과 같은 날로 고르면 «보충 날짜는 결석일과 다른 날짜로…» 창이 떠서 막혔습니다. 예전에는 보충 기록이 같은 날의 결석 기록을 덮어써 기록이 깨졌기 때문에 막아 두었던 것인데, 이제 같은 날이면 결석 기록 안에 «같은 날 보충»으로만 적어 결석은 그대로 남고 보충 예정·완료만 바뀝니다. 달력 그 날 칸에는 «결석 · → 같은 날 14:00 보충», 완료하면 «✓ 같은 날 보충». 보충완료·되돌리기·보충 취소도 결석 기록을 건드리지 않습니다.'},
+      {ver:'v19-155',date:'2026-10-23',stability:'ok',memo:'🕘 <b>리커버리 학습지 3판</b> (원장 2026-10-23 밤 결정). <b>기본 구성이 바뀝니다</b>: 주간테스트 오답 쌍둥이 1개 + <b>최근 1주 «아직 틀린 문제»</b>(교재·학습지에서 풀었는데 아직 틀린 채로 남은 문제 — 다시 풀어 맞힌 것은 뺌)를 <b>유형마다 1개</b>(그 유형에서 가장 최근 것, 이번 테스트 문제는 먼저 뺌). 테스트와 진도가 달라 진도 쪽 오답이 통째로 빠지던 일이 없어집니다. 교과서 같은 유형·보강·범위 안 교재 오답·자동 단원 오답은 꺼짐(오른쪽 «학습지 규칙» 체크칸으로 켤 수 있음) · <b>최상(5단계)은 기본 빼기</b>(체크로 포함) · 문항 상한·하한은 «없음», 단 기간을 2주 이상으로 고른 학생만 상한 40(넘으면 «테스트 쌍둥이 첫째 → 최근 오답 새것 → 교과서 → 쌍둥이 둘째 → 보강 → 교재 오답» 순으로 남김) · 중3 «주간테스트 2개 합산»도 기본에서 끔(학생별 팝업에서 고르면 2개 가능). 기간은 칩 <b>[1주][2주][4주]</b> — 학생별로도 바꿀 수 있습니다(예: 지난주 결석한 학생은 2주). 리커버리 보드 가운데에 <b>«🔢 학생별 예상»</b> 표가 생겼습니다 — 확정 학생마다 «테스트 쌍둥이 n + 최근 오답 n유형 = 예상 n문항», 단원 비율 막대, 최상 문제 수. 규칙을 바꾸면 매쓰플랫 호출 없이 바로 다시 셉니다(실제 쌍둥이 수와 1~2개 다를 수 있음). 학생 카드에는 «🕘 최근 1주 아직 틀린 n유형 · 테스트 범위 밖 m» 한 줄(범위 밖이 있으면 주황). 설계 팝업에는 «🕘 최근 오답» 칸(교재·학습지별 · 중단원별 개수 · 뺀 것)과 이 학생만 기간·최상·문항 범위·끄기. 빼는 유형(예 «농도»)을 적으면 모든 재료와 쌍둥이에서 빠집니다. <b>고등부도 같은 규칙</b>으로 만들 수 있습니다 — 과목은 가장 최근 시험 제목의 [과목](예 [공통수학2])에서 자동으로, 없으면 카드의 «과목 고르기». 서버(확정 전원 서버 생성)도 같은 규칙을 기본으로 씁니다.'},
+      {ver:'v19-154',date:'2026-10-23',stability:'ok',memo:'🔄 <b>리커버리 「채점 새로고침」</b> (원장 2026-10-23 「매쓰플랫 채점결과가 바로 적용이 안된다 · 새로고침 단추 넣어줘」). 리커버리 보드 머리 아래에 «📡 매쓰플랫 채점 자료 · 마지막 수집 HH:MM (n분 전)» 줄이 생겼습니다. <b>「🔄 채점 새로고침」</b>을 누르면 서버가 매쓰플랫 채점과 주간테스트 점수를 지금 새로 모읍니다 — 설정 탭에 GitHub 토큰이 있으면 1분 안에 시작(다 모으는 데 10~20분), 없으면 서버가 요청을 확인할 때까지 기다립니다. 끝나면 보드가 저절로 새 점수로 바뀝니다(요청됨 → 수집 중 → 방금 모음, 요청됨일 때 누르면 취소). <b>「↻ 다시 읽기」</b>는 서버에 이미 모인 자료를 몇 초 만에 다시 읽습니다. 고친 것: 예전 머리의 새로고침은 확정 명단만 다시 읽고 주간테스트 점수는 앱을 켤 때 읽은 것을 계속 써서, 서버가 새로 모아도 앱을 껐다 켜기 전엔 옛 점수였습니다 — 이제 주간테스트·진도·네이버 예약까지 다시 읽습니다. 울트라일일 「🔄 지금 가져오기」와 같은 요청을 씁니다.'},
+      {ver:'v19-153',date:'2026-10-23',stability:'ok',memo:'🚑 <b>리커버리 — 네이버 예약 시간이 그대로 시간 칸으로 · 리커버리 전용 왼쪽 기둥 · 📊 통계</b> (원장 2026-10-23 「리커버리 A안 추천대로 진행」). <b>[예약 시간 자동]</b> 보드를 열면 그 주 확정 학생 중 네이버 리커버리 예약이 있는 학생의 시간 칸이 예약 시간으로 맞춰집니다(예: 홍길동 09:00 · «⟳ 자동»). 예약 시간이 바뀌면 따라가고, 예약이 취소되면 시간은 두고 «⚠ 예약 취소됨 (11:00)»으로 알려 줍니다. 원장님이 칩을 직접 누른 학생(예: 이순신 10:00)은 덮지 않고 «✋ 직접 10:00 · ⚠ 예약과 다름» + 「예약 시간으로」 단추만 보입니다(같은 칩을 다시 눌러 풀면 예약 시간이 다시 들어감). 칩은 기본 10:00·11:00·13:00 에 그 날·최근 8주 네이버 예약 시간(점선)이 더해집니다 — 기본 칩 설정은 그대로. 「시간 넣기」 단추는 이제 필요 없어 뺐습니다. 학생앱 알림·안내문은 같은 시간을 씁니다. <b>[왼쪽 기둥 (PC)]</b> 이번 주 숫자(확정 · 네이버 예약 · 예약 아직 · 학습지 만듦) → 시간대별 인원 → 명단(✓09:00 · ✋10:00 ⚠ · 예약 아직 · 📄) → 「📨 예약 안 한 n명 · 안내문 ›」 → 📊 이번 달 호출·출석·노쇼·다음 테스트 ↑ + 6개월 막대 · 🔁 3회 이상 상담 신호 · 통계 자세히 · 📜 장부 → ⚙ 기준(주간·단원·초6·주). <b>[📊 통계 탭]</b> 가운데 «📊 통계» — 이번 달 호출·출석률·노쇼 · <b>리커버리 뒤 다음 주간테스트 평균 ±점</b>(«n명 중 m명 올랐어요», 출석한 학생 기준) · 학습지 정답률(채점 기록이 생기면) · 달별 6개월 표 · 학년×사유 · 🔁 자주 오는 학생(3개월, 점수 흐름 · 3회 이상 상담 권유) · 예약 통계(v19-127) 바로가기. 새로 모으는 자료는 없습니다. <b>[홈]</b> 리커버리 전날·당일에 예약 안 한 확정 학생이 있으면 네이버 예약 칸에 «🚑 내일 리커버리 · 예약 아직 2명 — 박하나 · 장보고» + 「📨 안내문」 한 줄(0명이면 안 보임).'},
+      {ver:'v19-152',date:'2026-10-23',stability:'ok',memo:'👀 <b>녹음관리 › 훑어보기 — 새벽에 읽어 둔 녹음을 아침에 한 화면으로</b> (원장 2026-10-23 「소리는 비공개 유지 · 안 A로 진행」). 매일 새벽 5시 10분에 서버가 어제 올라온 하브루타 녹음을 Gemini 로 글로 옮기고 그날 주제대로 말했는지(✅ 주제대로 · ⚠️ 일부만 · ❌ 다른 내용 · 🔇 너무 짧음 · 자유 제출) 판정해 둡니다. 녹음관리에 들어가면 이제 «👀 훑어보기»가 먼저 열립니다 — 날짜 ◀ ▶ · «전체 / 주제 다름만 / 아직 안 본 것» · 요약 숫자 5칸 · 학년마다 그날 주제와 🧭 공통으로 헷갈린 것 한 줄 · 학생 카드(두 줄 요약 · 빠진 것 · 개념 오류 · ▶ 듣기 · 📄 전문) · 그 학년 미제출 명단(수업일인 학생). 「✓ 확인」이나 «💬 한마디» 칩(예: 홍길동 카드에 「주제대로 잘 설명했어요」)을 누르면 확인 기록이 서버에 남고 카드가 흐려집니다(「확인 취소」로 되돌림) — 학부모앱 다음 판(v1-36)이 이 확인과 한마디만 보여 주고 소리는 계속 비공개입니다. 그리드의 ✅ 와 녹음 팝업도 새벽 읽기 결과(«🌙 새벽 읽기»)를 같이 봅니다.'},
       {ver:'v19-151',date:'2026-10-22',stability:'ok',memo:'📝 <b>아하노트 사진 읽기 — 인쇄된 칸 이름 빼기</b> (원장 2026-10-22 「칸 이름은 빼도록 고쳐줘」). 학생이 활동지 칸을 비워 두면 AI 가 «Learn the question (문제를 정확히 이해하기)» 같은 인쇄 글자를 학생 글로 옮겼습니다. 학원앱 「🤖 사진 읽기」와 학생앱(v2-148) 모두 이제 그 제목을 떼고, 남는 글이 없으면 «종이에 없는 칸(못 읽음)»으로 둡니다. «Pinpoint your confusion (…) - 모르겠다» 처럼 제목 뒤에 쓴 글은 «모르겠다»만 남깁니다.'},
       {ver:'v19-150',date:'2026-10-22',stability:'ok',memo:'💡 <b>아하 리그 등급 — 한 번 오른 등급은 시즌 동안 그대로</b> (원장 2026-10-22 「예전 등급 유지되게 고쳐줘」). 밀린 노트를 한꺼번에 확정하자 낮은 점수가 평균에 들어가 탐구자였던 학생이 질문자로 내려가 보였습니다. 이제 학생마다 <b>이번 시즌 가장 높았던 등급</b>을 서버에 기억해 두고, 지금 평균이 내려가도 그 등급 아래로는 보이지 않습니다(학생앱 순위표도 같음). 다음 시즌에는 새로 시작합니다. ⚙ 리그 설정에서 «강등 있음»을 고르시면 예전처럼 지금 평균으로만 셉니다.'},
       {ver:'v19-149',date:'2026-10-22',stability:'ok',memo:'🚑 <b>리커버리 — 고등부는 모든 테스트로 선발</b> (원장 2026-10-22 「리커버리가 고등부 테스트는 체크가 안되는 것 같다 · 우선은 고등부는 모든 테스트를 하자」). 매쓰플랫은 고등 주간테스트가 없어 고등부는 시험 기준으로 한 번도 걸리지 않았습니다. 이제 고등 학생은 <b>일일 TEST · 내신대비 · 모의고사 · 단원·총괄 TEST</b>(오답·숙제·원본 학습지는 빼고) 점수로 선발합니다 — 기준은 중고등 85점 그대로. 리커버리 학습지 설계에도 그 시험을 씁니다. 학부모 안내문은 고등부면 «이번 주 <b>테스트</b>(10/21 화)에서 …»로 나갑니다. 명예의 전당·주간 순위에는 섞이지 않습니다. 「[오답]」 재시험도 일일 TEST 라 함께 셉니다 — 너무 많이 걸리면 말씀해 주세요.'},
@@ -11972,7 +11977,7 @@ var GROUPS=[
     {v:'todo', icon:'🗂', label:'할 일 보드', act:function(){ VIEW='todo'; TD.addOpen=false; }},
     /* v19-14: 📄 학습지 채점 — 매쓰플랫이 객관식만 채점하므로 나머지를 루멘이 채점한다.
      * 어느 학습지가 얼마나 자동채점되고 누가 어디까지 풀었는지 보는 화면 (보기 전용). */
-    {v:'recmgr', icon:'🎙️', label:'녹음관리', act:function(){ VIEW='recmgr'; REC_MGR_VIEW='grid'; }},
+    {v:'recmgr', icon:'🎙️', label:'녹음관리', act:function(){ VIEW='recmgr'; REC_MGR_VIEW='review'; }},
     {v:'aha', icon:'💡', label:'아하노트', act:function(){ VIEW='aha'; }},
     {v:'bulk', icon:'✨', label:'일괄피드백', act:function(){ VIEW='bulk'; }}
   ]},
@@ -18350,7 +18355,7 @@ function attCalHtml(st){
     if(dateStr===today)cls+=' istoday';
     if(s==='present'){fill='<div class="fill f-present'+(hasRec?' hasrec':'')+'"><div class="flabel">출석</div></div>';dnumCls+=' '+(c===0?'sun':c===6?'sat':'muted');}
     else if(s==='late'){var lvl=m[dateStr].lateMin||10,lc=lvl>=30?'f-late30':'f-late10';fill='<div class="fill '+lc+(hasRec?' hasrec':'')+'"><div class="flabel">지각</div><div class="finfo">'+lvl+'분</div>'+(m[dateStr].reason?'<div class="finfo" style="opacity:.92">'+attEsc(m[dateStr].reason)+'</div>':'')+'</div>';dnumCls+=' dark';}
-    else if(s==='absent'){var ad=m[dateStr],info;if(ad.makeupDone)info='✓ '+attMd(ad.makeupDate)+' 보충';else if(ad.makeupDate)info='→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||'');else info='보충 미지정';fill='<div class="fill f-absent'+(hasRec?' hasrec':'')+'"><div class="flabel">결석</div><div class="finfo">'+info+'</div>'+(ad.reason?'<div class="finfo" style="opacity:.92">'+attEsc(ad.reason)+'</div>':'')+'</div>';dnumCls+=' dark';}
+    else if(s==='absent'){var ad=m[dateStr],info;if(ad.makeupDone)info=(ad.makeupSame?'✓ 같은 날 보충':'✓ '+attMd(ad.makeupDate)+' 보충');else if(ad.makeupDate)info=(ad.makeupSame?'→ 같은 날 '+(ad.makeupTime||'')+' 보충':'→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||''));else info='보충 미지정';fill='<div class="fill f-absent'+(hasRec?' hasrec':'')+'"><div class="flabel">결석</div><div class="finfo">'+info+'</div>'+(ad.reason?'<div class="finfo" style="opacity:.92">'+attEsc(ad.reason)+'</div>':'')+'</div>';dnumCls+=' dark';}
     else if(s==='planned'){fill='<div class="fill f-planned'+(hasRec?' hasrec':'')+'"><div class="flabel">보충예정</div><div class="finfo">'+(m[dateStr].makeupTime||'')+' · '+attMd(m[dateStr].makeupOf)+'분</div></div>';dnumCls+=' dark';}
     else if(s==='done'){fill='<div class="fill f-done'+(hasRec?' hasrec':'')+'"><div class="flabel">보충완료</div><div class="finfo">✓</div></div>';dnumCls+=' dark';}
     else{if(hasRec){dnumCls+=' muted';}else{cls+=' empty';clickable=false;dnumCls+=(c===0?' sun':c===6?' sat':' muted');}}
@@ -18406,12 +18411,12 @@ function attSetPlan(name,absKey){
   if(!dp){alert('보충 날짜를 선택해주세요.');return;}
   // v17-19: 보충일을 결석일과 같은 날로 지정하면 그 하루가 자기 자신을 가리키며 덮어써져
   // 기록이 깨지고(상태가 planned로 바뀌며 이 목록에서 사라짐) 이후 취소도 못 하게 되던 사고 방지.
-  if(dp===absKey){alert('보충 날짜는 결석일('+attMd(absKey)+')과 다른 날짜로 선택해주세요.');return;}
+  if(dp===absKey){ m[absKey].makeupDate=dp; m[absKey].makeupTime=tp||''; m[absKey].makeupSame=true; attSave(); render(); return; }   /* ★ v19-156: 같은 날 보충 — 결석 칸 안에만 적는다 */
   m[absKey].makeupDate=dp;m[absKey].makeupTime=tp||'';m[dp]={status:'planned',makeupOf:absKey,makeupTime:tp||''};attSave();render();
 }
-function attCancelPlan(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);var mk=m[absKey].makeupDate;if(mk&&m[mk])delete m[mk];delete m[absKey].makeupDate;delete m[absKey].makeupTime;delete m[absKey].makeupDone;attSave();render();}
-function attMarkDone(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);var mk=m[absKey].makeupDate;if(mk&&m[mk])m[mk].status='done';m[absKey].makeupDone=true;attSave();render();}
-function attUndoDone(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);if(!m[absKey])return;var mk=m[absKey].makeupDate;if(mk&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;attSave();render();}
+function attCancelPlan(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);var mk=m[absKey].makeupDate;if(mk&&mk!==absKey&&m[mk])delete m[mk];delete m[absKey].makeupSame;delete m[absKey].makeupDate;delete m[absKey].makeupTime;delete m[absKey].makeupDone;attSave();render();}
+function attMarkDone(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);var mk=m[absKey].makeupDate;if(mk&&mk!==absKey&&m[mk])m[mk].status='done';m[absKey].makeupDone=true;attSave();render();}
+function attUndoDone(name,absKey){var st=attFindStudent(name);if(!st)return;var m=attMap(st);if(!m[absKey])return;var mk=m[absKey].makeupDate;if(mk&&mk!==absKey&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;attSave();render();}
 
 /* ── 일정 등록(기간 결석·지각 + 사유) ── */
 function attGoPlan(){ATT_TAB='plan';ATT_STUDENT=null;render();}
@@ -36520,7 +36525,8 @@ function hwcPosPop(){
 
 function rRecMgr() {
   var body = '';
-  if (REC_MGR_VIEW === 'grid')         body = rRecMgrGrid();
+  if (REC_MGR_VIEW === 'review')       body = rr152View();   /* ★ v19-152 */
+  else if (REC_MGR_VIEW === 'grid')    body = rRecMgrGrid();
   else if (REC_MGR_VIEW === 'list')    body = rRecMgrList();
   else if (REC_MGR_VIEW === 'topics')  body = rRecMgrTopics();
   else if (REC_MGR_VIEW === 'mission') body = rRecMgrMission();
@@ -36685,7 +36691,7 @@ async function loadRecMgrGrid() {
       if (dayFiles.length > 0 || hasPhotoDay) {
         total += dayFiles.length;
         var savedRec = dayFiles.length>0 ? ((st.lumen_recordings || {})[dayFiles[0].name] || {}) : {};
-        var hasStt = !!savedRec.stt;
+        var hasStt = !!savedRec.stt || rr152Has(code, dayFiles);   /* ★ v19-152: 새벽 읽기도 ✅ */
         // 타입별 아이콘/색상
         var hasRec2 = dayFiles.length > 0;
         var icon, bg, border;
@@ -36809,9 +36815,7 @@ async function openRecPopup(stCode, stId, stName, preloadFiles, filterDate) {
     html += '<button onclick="sttRecBtn(this)" data-url="' + url + '" data-stid="' + stId + '" data-file="' + file.name.replace(/"/g,'') + '" style="flex:1;padding:7px;background:' + (savedRec.stt?'#dcfce7':'#f0f9ff') + ';color:' + (savedRec.stt?'#059669':'#0369a1') + ';border:1.5px solid ' + (savedRec.stt?'#bbf7d0':'#bae6fd') + ';border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">' + (savedRec.stt?'✅ STT완료':'🟦 STT (Gemini)') + '</button>';
     html += '<button onclick="aiRecBtn(this)" data-stid="' + stId + '" data-file="' + file.name.replace(/"/g,'') + '" style="flex:1;padding:7px;background:' + (savedRec.feedback?'#f0fdf4':'#faf5ff') + ';color:' + (savedRec.feedback?'#059669':'#7c3aed') + ';border:1.5px solid ' + (savedRec.feedback?'#bbf7d0':'#e9d5ff') + ';border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">' + (savedRec.feedback?'✅ 피드백완료':'🟣 피드백 (Claude)') + '</button>';
     html += '</div>';
-    if (savedRec.stt) {
-      html += '<div style="background:white;border-radius:8px;padding:8px;border:1px solid #e2e8f0;margin-bottom:6px"><div style="font-size:10px;font-weight:700;color:#0369a1;margin-bottom:4px">🔤 STT</div><div style="font-size:12px;color:#334155;line-height:1.6">' + savedRec.stt + '</div></div>';
-    }
+    html += rr152PopStt(savedRec, stCode, file.name);   /* ★ v19-152: 🌙 새벽 읽기 + 🔤 STT(손 받아쓰기, 예전 그대로) */
     if (savedRec.feedback) {
       html += '<div style="background:#f0fdf4;border-radius:8px;padding:8px;border:1px solid #bbf7d0"><div style="font-size:10px;font-weight:700;color:#059669;margin-bottom:4px">🤖 AI피드백</div><div style="font-size:12px;color:#334155;line-height:1.6">' + savedRec.feedback + '</div></div>';
     }
@@ -37748,6 +37752,7 @@ function rPlannerLeftNav() {
 
 function rRecMgrLeftNav() {
   var VIEWS = [
+    {id:'review',  icon:'👀', label:'훑어보기'},   /* ★ v19-152 */
     {id:'grid',    icon:'📅', label:'그리드'},
     {id:'list',    icon:'📋', label:'목록'},
     {id:'topics',  icon:'🎯', label:'주제 배정'},
@@ -97312,7 +97317,2004 @@ function lampStripAi(ai){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~151: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-152: 🎙 녹음관리 › 👀 훑어보기 — 새벽에 Gemini 가 읽어 둔 녹음을 아침에 한 화면으로 (원장 2026-10-23 「안 A로 진행」)
+ *  계약서 docs/rec_review_contract.md §1·§3 · 시안 docs/mockup_rec_review.html «학원앱 새 화면 시안»
+ *  읽기: lumen_store «rec_read_<YYYY-MM-DD>»(새벽 스크립트 sync/rec_night_reader.js 가 씀) · «rec_read_last»(머리줄)
+ *        · «rec_topics»·«lumen_group_days»(이 기기 사본, 없으면 서버) · 등록부(이름·학년·반·미션)
+ *  쓰기: lumen_store «rec_review_<코드>» = { byDate:{ 'YYYY-MM-DD':{ file, ok:true, at, msg, sec, topic } }, updated }
+ *        · 쓰기 직전 서버 최신본을 읽어 byDate 를 합친다(다른 기기) · 확인 취소 = 그 날짜 칸 삭제 · 학부모앱 v1-36 이 읽는다
+ *  화면: 날짜 ◀ ▶(기본 = 결과가 있는 가장 최근 날짜, 없으면 어제) · 칩 «전체 / 주제 다름만 / 아직 안 본 것»
+ *        · 요약 5칸 · 학년 섹션(초→중→고) — 그날 학년 주제 · 🧭 공통 한 줄 · 카드 · 그 학년 미제출(그날 수업인 학생)
+ *  그리드 ✅ · 녹음 팝업 «🌙 새벽 읽기» 도 같은 결과를 본다(build_app.py >=152 rep 블록이 rr152Has · rr152PopStt 를 꽂는다).
+ *  등록부(or_studentdb)에는 쓰지 않는다. 녹음 소리·전문은 원장 화면에만.
+ *  ※ 문자열 연결로만 쓴다(템플릿 리터럴 금지). 바탕 함수는 감싸기만 한다.
+ * ═══════════════════════════════════════════════════════════════════ */
+var RR152 = { init:false, loading:false, date:'', userDate:false, filter:'all', read:{}, month:{}, monthP:{}, last:null,
+  review:{}, reviewLoaded:false, saving:{}, topics:null, gdays:null, cards:[] };
+var RR152_WD = ['일','월','화','수','목','금','토'];
+
+/* ── 작은 도구 ── */
+function rr152Esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function rr152Two(n){ return (n < 10 ? '0' : '') + n; }
+function rr152Ymd(d){ return d.getFullYear() + '-' + rr152Two(d.getMonth()+1) + '-' + rr152Two(d.getDate()); }
+function rr152Date(ymd){ var m = String(ymd||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; }
+function rr152Add(ymd, n){ var d = rr152Date(ymd); if(!d) return ymd; d.setDate(d.getDate() + n); return rr152Ymd(d); }
+function rr152Today(){ return rr152Ymd(new Date()); }
+function rr152Yday(){ return rr152Add(rr152Today(), -1); }
+function rr152Dot(ymd){ return String(ymd||'').replace(/-/g, '.'); }
+function rr152Label(ymd){ var d = rr152Date(ymd); return d ? ((d.getMonth()+1) + '/' + d.getDate() + ' (' + RR152_WD[d.getDay()] + ')') : ''; }
+function rr152Hm(iso){ var d = new Date(iso || ''); return isNaN(d.getTime()) ? '' : rr152Two(d.getHours()) + ':' + rr152Two(d.getMinutes()); }
+function rr152When(iso){ var d = new Date(iso || ''); return isNaN(d.getTime()) ? '' : (d.getMonth()+1) + '/' + d.getDate() + ' ' + rr152Hm(iso); }
+function rr152Len(sec){ if(sec == null || sec === '' || isNaN(+sec)) return ''; sec = Math.max(0, Math.round(+sec)); return Math.floor(sec/60) + '분 ' + rr152Two(sec%60) + '초'; }
+function rr152Val(v){ if(typeof v === 'string'){ try{ v = JSON.parse(v); }catch(e){ v = null; } } return v; }
+function rr152Sb(){ try{ return getSupaClient(); }catch(e){ return null; } }
+function rr152FileDate(name){ var m = String(name||'').match(/_(\d{4})(\d{2})(\d{2})_/); return m ? (m[1] + '-' + m[2] + '-' + m[3]) : ''; }
+/* 학년 키 — 등록부 grade('중학교 2학년'·'중2') → '중2' (새벽 스크립트 gradeKey 와 같은 결과) */
+function rr152Gk(g){
+  var s = String(g || ''), m = s.match(/(초|중|고)[^0-9]*([1-6])/);
+  if(m) return m[1] + m[2];
+  var n = (s.match(/(\d)\s*학년/) || [])[1]; if(!n) return '';
+  return (/초등/.test(s) ? '초' : /고등/.test(s) ? '고' : '중') + n;
+}
+function rr152GkOrder(gk){ var o = {'초':0,'중':1,'고':2}[String(gk).charAt(0)]; return (o == null ? 9 : o) * 10 + (parseInt(String(gk).slice(1), 10) || 0); }
+function rr152Students(){
+  var all = []; try{ all = getSortedStudents(); }catch(e){ try{ all = students.slice(); }catch(e2){ all = []; } }
+  return all.filter(function(s){ return s && s.lumen_rec_code && !s.withdrawn; });
+}
+
+/* ── 서버 읽기 ── */
+function rr152Rows(q){
+  return q.then(function(r){
+    var out = {};
+    if(r && r.error) throw r.error;
+    ((r && r.data) || []).forEach(function(row){ if(row && row.key) out[row.key] = rr152Val(row.value); });
+    return out;
+  });
+}
+/* 한 달 치 rec_read_YYYY-MM-* 를 like 로 한 번에 (그리드·훑어보기·팝업이 같이 쓴다) */
+function rr152LoadMonthP(ym){
+  if(RR152.month[ym]) return Promise.resolve(true);
+  if(RR152.monthP[ym]) return RR152.monthP[ym];
+  var sb = rr152Sb(); if(!sb) return Promise.resolve(false);
+  var p;
+  try{
+    p = rr152Rows(sb.from('lumen_store').select('key,value').like('key', 'rec_read_' + ym + '-%')).then(function(map){
+      Object.keys(map).forEach(function(k){
+        var m = k.match(/^rec_read_(\d{4}-\d{2}-\d{2})$/);
+        if(m && m[1].slice(0,7) === ym && map[k] && typeof map[k] === 'object') RR152.read[m[1]] = map[k];
+      });
+      RR152.month[ym] = true; delete RR152.monthP[ym];
+      return true;
+    }, function(e){ delete RR152.monthP[ym]; console.warn('[녹음 훑어보기] 새벽 읽기 결과를 못 읽음', e); return false; });
+  }catch(e){ return Promise.resolve(false); }
+  RR152.monthP[ym] = p;
+  return p;
+}
+window.rr152LoadMonthP = rr152LoadMonthP;
+function rr152LoadReviews(){
+  var sb = rr152Sb(); if(!sb) return Promise.resolve(false);
+  try{
+    return rr152Rows(sb.from('lumen_store').select('key,value').like('key', 'rec_review_%')).then(function(map){
+      Object.keys(map).forEach(function(k){
+        var m = k.match(/^rec_review_(.+)$/);
+        if(m && map[k] && typeof map[k] === 'object' && !RR152.saving[m[1]]) RR152.review[m[1]] = map[k];
+      });
+      RR152.reviewLoaded = true; return true;
+    }, function(e){ console.warn('[녹음 훑어보기] 확인 기록을 못 읽음', e); return false; });
+  }catch(e){ return Promise.resolve(false); }
+}
+/* rec_topics · lumen_group_days — 이 기기 사본이 있으면 그것, 없으면 서버에서 한 번 */
+function rr152LocalTopics(){ var o = null; try{ o = lumenLS('rec_topics', null); }catch(e){} return (o && typeof o === 'object' && (Object.keys(o.byGrade||{}).length || Object.keys(o.byStudent||{}).length)) ? o : null; }
+function rr152LocalDays(){
+  var o = null;
+  try{ if(typeof groupDays !== 'undefined' && groupDays && Object.keys(groupDays).length) o = groupDays; }catch(e){}
+  if(!o){ try{ o = lumenLS('lumen_group_days', null); }catch(e){} }
+  return (o && typeof o === 'object' && Object.keys(o).length) ? o : null;
+}
+function rr152Topics(){ return rr152LocalTopics() || RR152.topics || { byGrade:{}, byStudent:{} }; }
+function rr152Days(){ return rr152LocalDays() || RR152.gdays || {}; }
+
+function rr152Init(force){
+  if(RR152.init && !force) return;
+  RR152.init = true; RR152.loading = true;
+  var sb = rr152Sb();
+  if(!sb){ RR152.loading = false; return; }
+  var keys = ['rec_read_last'];
+  if(!rr152LocalTopics()) keys.push('rec_topics');
+  if(!rr152LocalDays()) keys.push('lumen_group_days');
+  var pKeys;
+  try{ pKeys = rr152Rows(sb.from('lumen_store').select('key,value').in('key', keys)); }catch(e){ pKeys = Promise.resolve({}); }
+  Promise.all([
+    pKeys.then(function(m){ return m; }, function(){ return {}; }),
+    rr152LoadMonthP(rr152Yday().slice(0,7)),
+    rr152LoadReviews()
+  ]).then(function(r){
+    var map = r[0] || {};
+    RR152.last = (map.rec_read_last && typeof map.rec_read_last === 'object') ? map.rec_read_last : null;
+    if(map.rec_topics) RR152.topics = { byGrade:map.rec_topics.byGrade || {}, byStudent:map.rec_topics.byStudent || {} };
+    if(map.lumen_group_days) RR152.gdays = map.lumen_group_days;
+    var best = rr152BestDate();
+    if(!RR152.userDate || !RR152.date) RR152.date = best || rr152Yday();
+    return rr152LoadMonthP(RR152.date.slice(0,7));
+  }).then(function(){ RR152.loading = false; rr152Paint(); }, function(e){ RR152.loading = false; console.warn('[녹음 훑어보기]', e); rr152Paint(); });
+}
+window.rr152Init = rr152Init;
+/* 결과가 있는 가장 최근 날짜 (rec_read_last.dates + 읽어 둔 달) — 오늘보다 뒤는 빼고 */
+function rr152BestDate(){
+  var today = rr152Today(), c = [];
+  ((RR152.last && RR152.last.dates) || []).forEach(function(d){ if(/^\d{4}-\d{2}-\d{2}$/.test(d)) c.push(d); });
+  Object.keys(RR152.read).forEach(function(d){ var v = RR152.read[d]; if(v && v.items && Object.keys(v.items).length) c.push(d); });
+  c = c.filter(function(d){ return d <= today; }).sort();
+  return c.length ? c[c.length-1] : '';
+}
+
+/* ── 새벽 결과 찾기 (그리드 ✅ · 팝업) ── */
+function rr152Item(code, file){
+  var d = rr152FileDate(file); if(!d) return null;
+  var rd = RR152.read[d];
+  if(!rd){ if(!RR152.month[d.slice(0,7)]) rr152LoadMonthP(d.slice(0,7)); return null; }
+  var arr = (rd.items || {})[code] || [];
+  for(var i = 0; i < arr.length; i++){ if(arr[i] && arr[i].file === file) return arr[i]; }
+  return null;
+}
+function rr152Stt(code, file){ var it = rr152Item(code, file); return (it && it.stt) ? String(it.stt) : ''; }
+window.rr152Stt = rr152Stt;
+function rr152Has(code, files){
+  try{ for(var i = 0; i < (files||[]).length; i++){ var f = files[i]; if(f && rr152Stt(code, f.name || f)) return true; } }catch(e){}
+  return false;
+}
+window.rr152Has = rr152Has;
+/* 그리드: 칸을 칠하기 전에 그 달 결과를 먼저 받아 둔다 (✅ = 손 받아쓰기 또는 새벽 읽기) */
+try{
+  if(typeof loadRecMgrGrid === 'function'){
+    loadRecMgrGrid = (function(o){ return function(){
+      var self = this, args = arguments, ym = String(REC_MGR_MONTH || '').replace('.', '-');
+      var go = function(){ return o.apply(self, args); };
+      var p = /^\d{4}-\d{2}$/.test(ym) ? rr152LoadMonthP(ym) : Promise.resolve();
+      return Promise.race([p, new Promise(function(res){ setTimeout(res, 4000); })]).then(go, go);
+    }; })(loadRecMgrGrid);
+    window.loadRecMgrGrid = loadRecMgrGrid;
+  }
+}catch(e){}
+
+/* 녹음 팝업 STT 칸 — 손 받아쓰기(등록부)는 예전 그대로, 새벽 읽기가 있으면 «🌙 새벽 읽기» 칸 */
+var RR152_BADGE = {
+  ok:['b-ok','✅ 주제대로'], part:['b-warn','⚠️ 일부만'], off:['b-bad','❌ 다른 내용'], short:['b-bad','🔇 너무 짧음'],
+  free:['b-dim','자유 제출'], fail:['b-dim','⚠ 읽기 실패']
+};
+var RR152_BCOL = { 'b-ok':['#dcfce7','#15803d'], 'b-warn':['#fef3c7','#b45309'], 'b-bad':['#fee2e2','#b91c1c'], 'b-dim':['#eef2f7','#64748b'] };
+function rr152PopStt(savedRec, code, file){
+  var h = '', it = null;
+  try{ it = rr152Item(code, file); }catch(e){}
+  savedRec = savedRec || {};
+  if(it){
+    var b = RR152_BADGE[it.match] || RR152_BADGE.free, c = RR152_BCOL[b[0]];
+    h += '<div class="rr152-pop" style="background:#f8fafc;border-radius:8px;padding:8px;border:1px solid #c7d7f5;margin-bottom:6px">'
+      + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px"><span style="font-size:10px;font-weight:800;color:#1d6fe8">🌙 새벽 읽기</span>'
+      + '<span style="font-size:10px;font-weight:900;padding:1px 7px;border-radius:20px;background:' + c[0] + ';color:' + c[1] + '">' + b[1] + '</span>'
+      + (rr152Len(it.sec) ? '<span style="font-size:10px;color:#64748b">' + rr152Len(it.sec) + '</span>' : '')
+      + (it.at ? '<span style="font-size:10px;color:#94a3b8;margin-left:auto">' + rr152When(it.at) + '</span>' : '') + '</div>'
+      + (it.topic && it.topic.t ? '<div style="font-size:11px;color:#b45309;font-weight:700;margin-bottom:3px">🎯 ' + rr152Esc(it.topic.t) + '</div>' : '')
+      + (it.summary ? '<div style="font-size:12px;color:#17243a;margin-bottom:3px">' + rr152Esc(it.summary) + '</div>' : '')
+      + (it.err ? '<div style="font-size:11px;color:#b91c1c;font-weight:700;margin-bottom:3px">개념 오류: ' + rr152Esc(it.err) + '</div>' : '')
+      + ((!savedRec.stt && it.stt) ? '<div style="font-size:12px;color:#334155;line-height:1.6;border-top:1px dashed #dfe4ec;padding-top:4px">' + rr152Esc(it.stt) + '</div>' : '')
+      + '</div>';
+  }
+  if(savedRec.stt){
+    h += '<div style="background:white;border-radius:8px;padding:8px;border:1px solid #e2e8f0;margin-bottom:6px"><div style="font-size:10px;font-weight:700;color:#0369a1;margin-bottom:4px">🔤 STT</div><div style="font-size:12px;color:#334155;line-height:1.6">' + savedRec.stt + '</div></div>';
+  }
+  return h;
+}
+window.rr152PopStt = rr152PopStt;
+
+/* ── 그날 주제 (§0 우선순위: 미션 → 개인 → 학년, 날짜 키가 없으면 7일 안 가장 가까운 지난 날짜) ── */
+function rr152Near(map, ymd){
+  if(!map) return null;
+  for(var i = 0; i < 7; i++){ var k = rr152Dot(rr152Add(ymd, -i)); if(map[k] && map[k].t) return map[k]; }
+  return null;
+}
+function rr152GradeTopic(gk, ymd){ var t = rr152Near((rr152Topics().byGrade || {})[gk], ymd); return t ? { t:String(t.t), g:t.g || '', src:'grade' } : null; }
+function rr152TopicFor(st, ymd){
+  if(!st) return null;
+  var ms = String(st.lumen_rec_mission || '').trim(); if(ms) return { t:ms, src:'mission' };
+  var p = rr152Near((rr152Topics().byStudent || {})[st.lumen_rec_code], ymd); if(p) return { t:String(p.t), src:'student' };
+  return rr152GradeTopic(rr152Gk(st.grade), ymd);
+}
+function rr152HasClass(st, dow){
+  var gd = rr152Days(), days = (st && st.group && gd[st.group]) ? gd[st.group] : null;
+  return (Array.isArray(days) && days.length) ? days.map(Number).indexOf(dow) >= 0 : [1,3,5].indexOf(dow) >= 0;
+}
+
+/* ── 화면 자료 ── */
+function rr152Model(ymd){
+  var rd = RR152.read[ymd]; if(!rd) return null;
+  var items = rd.items || {}, fail = rd.fail || {};
+  var stu = rr152Students(), by = {}, order = {};
+  stu.forEach(function(s, i){ by[s.lumen_rec_code] = s; order[s.lumen_rec_code] = i; });
+  var dd = rr152Date(ymd), dow = dd ? dd.getDay() : -1;
+  var G = {};
+  var grp = function(gk){ gk = gk || '기타'; if(!G[gk]) G[gk] = { gk:gk, cards:[], sub:{}, cls:{} }; return G[gk]; };
+  Object.keys(items).forEach(function(code){
+    (Array.isArray(items[code]) ? items[code] : []).forEach(function(it){
+      if(!it) return;
+      var st = by[code] || null, g = grp(it.grade || rr152Gk(st && st.grade));
+      g.cards.push({ code:code, st:st, it:it }); g.sub[code] = 1;
+    });
+  });
+  Object.keys(fail).forEach(function(code){
+    var have = {}; ((items[code] || [])).forEach(function(x){ if(x) have[x.file] = 1; });
+    (Array.isArray(fail[code]) ? fail[code] : []).forEach(function(f){
+      if(!f || have[f]) return;
+      var st = by[code] || null, g = grp(rr152Gk(st && st.grade));
+      g.cards.push({ code:code, st:st, it:{ file:f, code:code, match:'fail', sec:null, topic:rr152TopicFor(st, ymd) || { t:'', src:'free' },
+        summary:'새벽 읽기에 실패했어요 — ▶ 듣기로 직접 확인해 주세요.', why:'', missing:'', err:'', stt:'' } });
+      g.sub[code] = 1;
+    });
+  });
+  stu.forEach(function(st){ if(dow >= 0 && rr152HasClass(st, dow)) grp(rr152Gk(st.grade)).cls[st.lumen_rec_code] = st; });
+  var list = Object.keys(G).map(function(k){ return G[k]; }).sort(function(a, b){ return rr152GkOrder(a.gk) - rr152GkOrder(b.gk) || (a.gk < b.gk ? -1 : 1); });
+  var S = { n:0, ok:0, part:0, bad:0, free:0, miss:0 };
+  list.forEach(function(g){
+    g.cards.sort(function(a, b){
+      var oa = order[a.code] == null ? 9999 : order[a.code], ob = order[b.code] == null ? 9999 : order[b.code];
+      return oa - ob || (String(a.it.file) < String(b.it.file) ? -1 : 1);
+    });
+    g.missing = Object.keys(g.cls).filter(function(c){ return !g.sub[c]; }).sort(function(a, b){ return order[a] - order[b]; }).map(function(c){ return g.cls[c]; });
+    var all = {}; Object.keys(g.cls).forEach(function(c){ all[c] = 1; }); Object.keys(g.sub).forEach(function(c){ all[c] = 1; });
+    g.nSub = Object.keys(g.sub).length; g.nAll = Object.keys(all).length;
+    g.cards.forEach(function(c){
+      var m = c.it.match; S.n++;
+      if(m === 'ok') S.ok++; else if(m === 'part') S.part++; else if(m === 'off' || m === 'short') S.bad++; else if(m === 'free') S.free++;
+    });
+    S.miss += g.missing.length;
+  });
+  return { rd:rd, groups:list, S:S };
+}
+function rr152Rev(code, ymd){ var r = RR152.review[code]; return (r && r.byDate && r.byDate[ymd]) || null; }
+function rr152Done(c, ymd){ var rv = rr152Rev(c.code, ymd); return !!(rv && rv.ok && rv.file === c.it.file); }
+
+/* 한마디 칩 — 판정별 먼저, 그다음 다른 것, 맨 끝 ✏️ 직접 쓰기 */
+function rr152Chips(it){
+  var miss = String((it && it.missing) || '').trim();
+  var by = {
+    ok:['주제대로 잘 설명했어요', '예시까지 들어 좋았어요'],
+    part: miss ? ['다음엔 ' + miss + '도 같이', '핵심은 잘 짚었어요, 다음엔 ' + miss + '까지'] : ['다음엔 빠진 부분도 같이', '핵심은 잘 짚었어요, 다음엔 끝까지'],
+    off:['오늘 주제로 다시 한 번!'],
+    short:['조금 더 길게, 예를 하나 들어 보자'],
+    free:['스스로 설명해 본 것 좋아요']
+  };
+  var m = (it && it.match) || 'free', out = (by[m] || []).slice();
+  ['ok','off','short','free'].forEach(function(k){ if(k !== m) by[k].forEach(function(x){ if(out.indexOf(x) < 0) out.push(x); }); });
+  return out;
+}
+
+/* ── 그리기 ── */
+var RR152_CSS = '<style id="rr152-css">'
+  + '.rr152{--bg:#f3f5f9;--card:#ffffff;--fg:#17243a;--mute:#6b7890;--line:#dfe4ec;--navy:#0d2240;--blue:#1d6fe8;--blue-soft:#e8f0fd;'
+  + '--ok:#15803d;--ok-bg:#dcfce7;--warn:#b45309;--warn-bg:#fef3c7;--bad:#b91c1c;--bad-bg:#fee2e2;--dim:#64748b;--dim-bg:#eef2f7;'
+  + 'color:var(--fg);font-size:14px;line-height:1.6;padding:14px}'
+  + '.rr152 *{box-sizing:border-box}'
+  + '.rr152 .rr-app{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}'
+  + '.rr152 .rr-appbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--bg)}'
+  + '.rr152 .rr-appbar .rr-title{font-weight:900;color:var(--navy);font-size:15px;margin-right:auto}'
+  + '.rr152 .rr-night{flex-basis:100%;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--mute);font-weight:700}'
+  + '.rr152 .rr-chip{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--line);background:var(--card);border-radius:20px;padding:4px 11px;font-size:12px;font-weight:700;color:var(--mute);cursor:pointer;font-family:inherit;line-height:1.5}'
+  + '.rr152 .rr-chip.rr-on{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}'
+  + '.rr152 .rr-chip[disabled]{opacity:.4;cursor:default}'
+  + '.rr152 .rr-sum{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}'
+  + '@media(max-width:700px){.rr152 .rr-sum{grid-template-columns:repeat(3,1fr)}}'
+  + '.rr152 .rr-sum>div{background:var(--bg);border-radius:10px;padding:8px 10px;min-width:0}'
+  + '.rr152 .rr-sum .rr-n{font-size:20px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums}'
+  + '.rr152 .rr-sum .rr-l{font-size:11px;color:var(--mute);font-weight:700}'
+  + '.rr152 .rr-grade{padding:14px 16px;border-bottom:1px solid var(--line)}'
+  + '.rr152 .rr-grade:last-child{border-bottom:0}'
+  + '.rr152 .rr-ghead{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin-bottom:8px}'
+  + '.rr152 .rr-ghead b{font-size:15px;color:var(--navy)}'
+  + '.rr152 .rr-ghead .rr-topic{font-size:12.5px;background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:2px 9px;font-weight:700}'
+  + '.rr152 .rr-ghead .rr-cnt{font-size:12px;color:var(--mute);font-weight:700}'
+  + '.rr152 .rr-brief{font-size:12.5px;color:var(--mute);background:var(--bg);border-left:3px solid var(--blue);padding:6px 10px;border-radius:0 8px 8px 0;margin-bottom:10px}'
+  + '.rr152 .rr-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}'
+  + '.rr152 .rr-card{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);min-width:0;display:flex;flex-direction:column;gap:6px}'
+  + '.rr152 .rr-card.rr-bad{border-color:#fca5a5}.rr152 .rr-card.rr-warn{border-color:#fcd34d}'
+  + '.rr152 .rr-card.rr-done{opacity:.55}.rr152 .rr-card.rr-done:hover{opacity:1}'
+  + '.rr152 .rr-row1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}'
+  + '.rr152 .rr-row1 .rr-nm{font-weight:900;color:var(--navy);font-size:14px}'
+  + '.rr152 .rr-row1 .rr-len{font-size:11.5px;color:var(--mute);font-variant-numeric:tabular-nums}'
+  + '.rr152 .rr-badge{font-size:11px;font-weight:900;padding:2px 8px;border-radius:20px;margin-left:auto;white-space:nowrap}'
+  + '.rr152 .rr-b-ok{background:var(--ok-bg);color:var(--ok)}.rr152 .rr-b-warn{background:var(--warn-bg);color:var(--warn)}.rr152 .rr-b-bad{background:var(--bad-bg);color:var(--bad)}.rr152 .rr-b-dim{background:var(--dim-bg);color:var(--dim)}'
+  + '.rr152 .rr-tp{font-size:11.5px;color:var(--warn);font-weight:700}'
+  + '.rr152 .rr-summ{font-size:13px;color:var(--fg)}'
+  + '.rr152 .rr-why{font-size:12px;color:var(--mute)}'
+  + '.rr152 .rr-why b{color:var(--bad);font-weight:800}'
+  + '.rr152 .rr-donel{font-size:12px;color:var(--ok);font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap}'
+  + '.rr152 .rr-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}'
+  + '.rr152 .rr-btn{font-size:11.5px;font-weight:800;border:1.5px solid var(--line);background:var(--bg);border-radius:8px;padding:4px 9px;color:var(--navy);cursor:pointer;font-family:inherit}'
+  + '.rr152 .rr-btn.rr-p{background:var(--blue);border-color:var(--blue);color:#fff}'
+  + '.rr152 .rr-btn.rr-s{padding:2px 8px;font-size:11px}'
+  + '.rr152 .rr-msgs{display:flex;gap:5px;flex-wrap:wrap}'
+  + '.rr152 .rr-msgs .rr-chip{font-size:11.5px;padding:3px 10px}'
+  + '.rr152 .rr-msgs .rr-chip.rr-first{border-color:var(--blue);color:var(--blue)}'
+  + '.rr152 .rr-full{font-size:12.5px;color:var(--fg);background:var(--bg);border-radius:8px;padding:8px 10px;line-height:1.7;white-space:pre-wrap}'
+  + '.rr152 .rr-aud audio{width:100%;height:34px}'
+  + '.rr152 .rr-missing{padding:10px 16px;font-size:12.5px;color:var(--mute);background:var(--bg);margin-top:10px;border-radius:8px}'
+  + '.rr152 .rr-missing b{color:var(--bad)}'
+  + '.rr152 .rr-empty{padding:36px 16px;text-align:center;color:var(--mute);font-size:13px}'
+  + '</style>';
+
+function rr152View(){
+  rr152Init();
+  if(!RR152.date) RR152.date = rr152BestDate() || rr152Yday();
+  return RR152_CSS + '<div id="rr152-root" class="rr152">' + rr152Inner() + '</div>';
+}
+window.rr152View = rr152View;
+function rr152Paint(){
+  var el = document.getElementById('rr152-root');
+  if(el){ el.innerHTML = rr152Inner(); return; }
+  try{ if(VIEW === 'recmgr' && REC_MGR_VIEW === 'review') render(); }catch(e){}
+}
+window.rr152Paint = rr152Paint;
+
+function rr152Inner(){
+  var d = RR152.date || rr152Yday(), today = rr152Today();
+  var F = [['all','전체'], ['diff','주제 다름만'], ['unseen','아직 안 본 것']];
+  var h = '<div class="rr-app"><div class="rr-appbar"><div class="rr-title">👀 녹음 훑어보기</div>';
+  h += '<button class="rr-chip" id="rr152-prev" onclick="rr152Go(-1)" title="하루 앞">◀</button>'
+    + '<span class="rr-chip rr-on" id="rr152-date">' + rr152Label(d) + '</span>'
+    + '<button class="rr-chip" id="rr152-next" onclick="rr152Go(1)" title="하루 뒤"' + (d >= today ? ' disabled' : '') + '>▶</button>';
+  F.forEach(function(f){ h += '<button class="rr-chip rr152-f' + (RR152.filter === f[0] ? ' rr-on' : '') + '" data-f="' + f[0] + '" onclick="rr152Filter(\'' + f[0] + '\')">' + f[1] + '</button>'; });
+  var L = RR152.last, nl = '🌙 새벽 읽기 기록 없음';
+  if(L){
+    var fl = L.fail; fl = Array.isArray(fl) ? fl.length : (fl && typeof fl === 'object') ? Object.keys(fl).length : (+fl || 0);
+    nl = '🌙 새벽 읽기 ' + (rr152When(L.at) || '-') + ' · ' + (+L.made || 0) + '건 · 실패 ' + fl;
+  }
+  h += '<div class="rr-night"><span id="rr152-night">' + nl + '</span><button class="rr-btn rr-s" onclick="rr152Refresh()" title="서버에서 다시 읽기">⟳ 새로고침</button></div>';
+  h += '</div>';
+  RR152.cards = [];
+  var ym = d.slice(0,7);
+  if(!RR152.month[ym] && !RR152.read[d]){
+    h += '<div class="rr-empty">' + (RR152.loading || RR152.monthP[ym] ? '🔄 불러오는 중…' : (rr152Sb() ? '🔄 불러오는 중…' : '서버에 연결되지 않았어요')) + '</div></div>';
+    if(!RR152.monthP[ym] && rr152Sb()) rr152LoadMonthP(ym).then(rr152Paint);
+    return h;
+  }
+  var M = rr152Model(d);
+  if(!M){
+    h += '<div class="rr-empty">📭 ' + rr152Label(d) + ' 녹음은 아직 새벽 읽기 결과가 없어요.<br><small>매일 새벽 5시 10분에 어제 올라온 녹음을 읽습니다. 그리드에서 직접 들을 수 있어요.</small></div></div>';
+    return h;
+  }
+  var S = M.S;
+  h += '<div class="rr-sum" id="rr152-sum">'
+    + '<div><div class="rr-n" data-k="n">' + S.n + '</div><div class="rr-l">제출' + (S.free ? ' (자유 ' + S.free + ')' : '') + '</div></div>'
+    + '<div><div class="rr-n" data-k="ok" style="color:var(--ok)">' + S.ok + '</div><div class="rr-l">✅ 주제대로</div></div>'
+    + '<div><div class="rr-n" data-k="part" style="color:var(--warn)">' + S.part + '</div><div class="rr-l">⚠️ 일부만</div></div>'
+    + '<div><div class="rr-n" data-k="bad" style="color:var(--bad)">' + S.bad + '</div><div class="rr-l">❌ 다른 내용 · 짧음</div></div>'
+    + '<div><div class="rr-n" data-k="miss" style="color:var(--dim)">' + S.miss + '</div><div class="rr-l">미제출(수업일)</div></div>'
+    + '</div>';
+  var bg = (M.rd && M.rd.byGrade) || {}, shown = 0;
+  M.groups.forEach(function(g){
+    var vis = g.cards.filter(function(c){
+      if(RR152.filter === 'diff') return ['part','off','short'].indexOf(c.it.match) >= 0;
+      if(RR152.filter === 'unseen') return !rr152Done(c, d);
+      return true;
+    });
+    if(RR152.filter !== 'all' && !vis.length) return;
+    shown++;
+    var gt = g.gk === '기타' ? null : rr152GradeTopic(g.gk, d);
+    if(!gt){ for(var i = 0; i < g.cards.length; i++){ var tp = g.cards[i].it.topic; if(tp && tp.src === 'grade' && tp.t){ gt = tp; break; } } }
+    h += '<div class="rr-grade" data-gk="' + rr152Esc(g.gk) + '">';
+    h += '<div class="rr-ghead"><b>' + rr152Esc(g.gk) + '</b><span class="rr-topic">오늘 주제: ' + (gt ? rr152Esc(gt.t) : '없음(배정 안 됨)') + '</span>'
+      + '<span class="rr-cnt">' + g.nSub + '명 제출 / ' + g.nAll + '명 수업</span></div>';
+    var br = bg[g.gk] && bg[g.gk].brief;
+    if(br) h += '<div class="rr-brief">🧭 이 학년 공통: ' + rr152Esc(br) + '</div>';
+    if(vis.length){ h += '<div class="rr-cards">'; vis.forEach(function(c){ h += rr152Card(c, d); }); h += '</div>'; }
+    if(RR152.filter === 'all' && g.missing.length){
+      h += '<div class="rr-missing">미제출 <b>' + g.missing.length + '명</b>: ' + g.missing.map(function(s){ return rr152Esc(s.name || s.lumen_rec_code); }).join(' · ')
+        + ' &nbsp;<small>(수업일인데 녹음 없음)</small></div>';
+    }
+    h += '</div>';
+  });
+  if(!shown) h += '<div class="rr-empty">' + (RR152.filter === 'diff' ? '주제와 다른 녹음이 없어요 👍' : RR152.filter === 'unseen' ? '모두 확인했어요 ✓' : '이 날은 녹음이 없어요') + '</div>';
+  h += '</div>';
+  return h;
+}
+
+function rr152Card(c, d){
+  var it = c.it, i = RR152.cards.length, chips = rr152Chips(it);
+  RR152.cards.push({ code:c.code, date:d, it:it, chips:chips });
+  var b = RR152_BADGE[it.match] || RR152_BADGE.free;
+  var cls = it.match === 'part' ? ' rr-warn' : (it.match === 'off' || it.match === 'short') ? ' rr-bad' : '';
+  var done = rr152Done(c, d), rv = rr152Rev(c.code, d);
+  var name = (c.st && c.st.name) || c.code;
+  var h = '<div class="rr-card' + cls + (done ? ' rr-done' : '') + '" id="rr152c' + i + '" data-code="' + rr152Esc(c.code) + '" data-match="' + rr152Esc(it.match || '') + '">';
+  h += '<div class="rr-row1"><span class="rr-nm">' + rr152Esc(name) + '</span><span class="rr-len">' + rr152Len(it.sec) + '</span><span class="rr-badge rr-' + b[0] + '">' + b[1] + '</span></div>';
+  if(it.topic && it.topic.t && (it.topic.src === 'mission' || it.topic.src === 'student')){
+    h += '<div class="rr-tp">🎯 ' + (it.topic.src === 'mission' ? '미션' : '개인 주제') + ': ' + rr152Esc(it.topic.t) + '</div>';
+  }
+  if(it.summary) h += '<div class="rr-summ">' + rr152Esc(it.summary) + '</div>';
+  var w = [];
+  if(it.why) w.push(rr152Esc(it.why));
+  if(it.missing) w.push('빠진 것: <b>' + rr152Esc(it.missing) + '</b>');
+  if(it.err) w.push('개념 오류: <b>' + rr152Esc(it.err) + '</b>');
+  if(it.match === 'short' && !it.why) w.push('다시 내게 할지 원장님 판단');
+  if(w.length) h += '<div class="rr-why">' + w.join(' · ') + '</div>';
+  if(done){
+    h += '<div class="rr-donel">✓ 확인 ' + rr152Hm(rv.at) + (rv.msg ? ' · 💬 ' + rr152Esc(rv.msg) : '')
+      + '<button class="rr-btn rr-s" onclick="rr152Undo(' + i + ')">확인 취소</button></div>';
+  } else if(rv && rv.file && rv.file !== it.file){
+    h += '<div class="rr-why">같은 날 다른 녹음을 확인했어요(' + rr152Hm(rv.at) + ')</div>';
+  }
+  h += '<div class="rr-acts"><button class="rr-btn" onclick="rr152Play(' + i + ')">▶ 듣기</button>'
+    + (it.stt ? '<button class="rr-btn" onclick="rr152Full(' + i + ')">📄 전문</button>' : '')
+    + (done ? '' : '<button class="rr-btn rr-p" onclick="rr152Ok(' + i + ')">✓ 확인</button>')
+    + '<button class="rr-btn" onclick="rr152MsgOpen(' + i + ')">💬 한마디</button></div>';
+  h += '<div class="rr-msgs" id="rr152m' + i + '" style="display:none">';
+  chips.forEach(function(t, j){ h += '<button class="rr-chip' + (j < 2 ? ' rr-first' : '') + '" onclick="rr152Msg(' + i + ',' + j + ')">' + rr152Esc(t) + '</button>'; });
+  h += '<button class="rr-chip" onclick="rr152Msg(' + i + ',-1)">✏️ 직접 쓰기</button></div>';
+  h += '<div class="rr-aud" id="rr152a' + i + '" style="display:none"></div>';
+  if(it.stt) h += '<div class="rr-full" id="rr152f' + i + '" style="display:none">' + (it.title ? '<b>✏️ 제출 제목:</b> ' + rr152Esc(it.title) + '\n' : '') + rr152Esc(it.stt) + '</div>';
+  h += '</div>';
+  return h;
+}
+
+/* ── 단추 ── */
+function rr152Go(n){
+  var d = rr152Add(RR152.date || rr152Yday(), n);
+  if(d > rr152Today()) return;
+  RR152.date = d; RR152.userDate = true;
+  var ym = d.slice(0,7);
+  if(!RR152.month[ym]) rr152LoadMonthP(ym).then(rr152Paint);
+  rr152Paint();
+}
+function rr152Filter(f){ RR152.filter = f; rr152Paint(); }
+function rr152Refresh(){
+  RR152.read = {}; RR152.month = {}; RR152.monthP = {}; RR152.last = null; RR152.review = {}; RR152.topics = null; RR152.gdays = null;
+  if(!RR152.userDate) RR152.date = '';
+  rr152Init(true); rr152Paint();
+}
+function rr152Toggle(id){ var el = document.getElementById(id); if(!el) return null; el.style.display = (el.style.display === 'none') ? '' : 'none'; return el; }
+function rr152Play(i){
+  var c = RR152.cards[i]; if(!c) return;
+  var el = document.getElementById('rr152a' + i); if(!el) return;
+  if(!el.firstChild){
+    var url = ''; try{ url = getRecordingUrl(c.code, c.it.file); }catch(e){}
+    if(!url){ alert('녹음 주소를 만들지 못했어요 (서버 연결 확인)'); return; }
+    el.innerHTML = '<audio controls preload="none" src="' + rr152Esc(url) + '"></audio>';
+    el.style.display = '';
+    try{ var a = el.querySelector('audio'); var p = a.play(); if(p && p.catch) p.catch(function(){}); }catch(e){}
+    return;
+  }
+  rr152Toggle('rr152a' + i);
+}
+function rr152Full(i){ rr152Toggle('rr152f' + i); }
+function rr152MsgOpen(i){ rr152Toggle('rr152m' + i); }
+function rr152Ok(i){ var c = RR152.cards[i]; if(!c) return; return rr152Save(c, ''); }
+function rr152Msg(i, j){
+  var c = RR152.cards[i]; if(!c) return;
+  var t;
+  if(j < 0){
+    var rv = rr152Rev(c.code, c.date);
+    t = prompt('💬 한마디 (학부모앱에 «선생님 한마디»로 보입니다)', (rv && rv.msg) || '');
+    if(t == null) return;
+    t = String(t).trim();
+  } else t = c.chips[j] || '';
+  return rr152Save(c, t);
+}
+function rr152Undo(i){ var c = RR152.cards[i]; if(!c) return; return rr152Write(c.code, c.date, null); }
+function rr152Save(c, msg){
+  var it = c.it, tp = it.topic && typeof it.topic === 'object' ? { t:String(it.topic.t || ''), src:String(it.topic.src || (it.topic.t ? 'grade' : 'free')) } : { t:'', src:'free' };
+  return rr152Write(c.code, c.date, { file:it.file, ok:true, at:new Date().toISOString(), msg:String(msg || ''), sec:(it.sec == null ? null : it.sec), topic:tp });
+}
+window.rr152Go = rr152Go; window.rr152Filter = rr152Filter; window.rr152Refresh = rr152Refresh; window.rr152Play = rr152Play; window.rr152Full = rr152Full;
+window.rr152MsgOpen = rr152MsgOpen; window.rr152Ok = rr152Ok; window.rr152Msg = rr152Msg; window.rr152Undo = rr152Undo;
+
+/* 저장 — 화면은 바로 바꾸고, 서버는 «최신본 읽기 → 이 날짜 칸만 바꾸기 → 올리기» (다른 기기에서 확인한 날짜를 지우지 않게) */
+function rr152Apply(obj, ymd, entry){
+  obj = (obj && typeof obj === 'object') ? JSON.parse(JSON.stringify(obj)) : {};
+  if(!obj.byDate || typeof obj.byDate !== 'object') obj.byDate = {};
+  if(entry) obj.byDate[ymd] = entry; else delete obj.byDate[ymd];
+  obj.updated = new Date().toISOString();
+  return obj;
+}
+function rr152Write(code, ymd, entry){
+  var key = 'rec_review_' + code;
+  var before = RR152.review[code];
+  RR152.review[code] = rr152Apply(before, ymd, entry);
+  RR152.saving[code] = (RR152.saving[code] || 0) + 1;
+  rr152Paint();
+  var sb = rr152Sb();
+  var fin = function(){ RR152.saving[code]--; if(RR152.saving[code] <= 0) delete RR152.saving[code]; };
+  if(!sb){ fin(); RR152.review[code] = before; rr152Paint(); alert('서버에 연결되지 않아 저장하지 못했어요.'); return Promise.resolve(false); }
+  return rr152Rows(sb.from('lumen_store').select('key,value').eq('key', key)).then(function(map){
+    var val = rr152Apply(map[key], ymd, entry);
+    return sb.from('lumen_store').upsert({ key:key, value:val }, { onConflict:'key' }).then(function(r){
+      if(r && r.error) throw r.error;
+      fin(); RR152.review[code] = val; rr152Paint(); return true;
+    });
+  }).then(null, function(e){
+    fin(); console.warn('[녹음 훑어보기] 저장 실패', e);
+    RR152.review[code] = before; rr152Paint();
+    alert('확인 기록을 저장하지 못했어요. 잠시 뒤 다시 눌러 주세요.\n' + ((e && e.message) || ''));
+    return false;
+  });
+}
+window.rr152Write = rr152Write;
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-153: 🚑 리커버리 — 네이버 예약 시간 자동 연동 · 전용 왼쪽 기둥 · 📊 통계 (계약서 docs/recovery_tab_contract.md · 시안 docs/mockup_recovery_tab.html)
+ * 원장 2026-10-23 「리커버리 A안 추천대로 진행」 = 시안의 추천 전부
+ *
+ *  A 예약 시간 자동 연동 (rcSidePanel · rcSetSlot · nbkRcBadge 를 감싼다)
+ *    1 보드를 그릴 때(네이버 예약을 읽은 뒤) 그 주 확정 학생(완료 아님)의 그 날 리커버리 예약 시간을 시간 칸(e.slot)에 넣는다
+ *      — e.slotSrc 가 'manual' 이 아니고 시간이 다를 때만. 바뀐 것은 모아서 rcSaveState() 한 번 + setTimeout(render,0) 한 번.
+ *    2 원장님이 칩을 직접 누르면 e.slotSrc='manual' (같은 칩 다시 눌러 해제하면 slotSrc 삭제 → 다음 그리기에서 예약 시간이 다시 들어감)
+ *      예약과 다르면 «✋ 직접 HH:MM · ⚠ 예약과 다름» + 「예약 시간으로」(rn153UseBook)
+ *    3 칩 = RC.cfg.slots ∪ 그 날 예약 시간 ∪ 최근 8주 리커버리 예약 시간(D-2). 네이버에서 온 시간은 점선. 원장 설정(RC.cfg.slots)은 바꾸지 않는다
+ *    4 예약 취소 + slotSrc 'naver' → 시간은 두고 «⚠ 예약 취소됨 (HH:MM)» · 예약도 시간도 없으면 «예약 아직»
+ *    5 옛 「시간 넣기」 단추는 그리지 않는다(nbkRcSlot 함수는 남김). 학생앱 알림·안내문은 e.slot 을 그대로 읽는다
+ *  B 왼쪽 기둥(PC ≥900) l3rLeft 를 통째로 다시 그린다: ① 이번 주 숫자 4칸 ② 시간대별 인원 ③ 명단 ④ 📨 예약 안 한 학생
+ *    ⑤ 📊 통계 요약(숫자 4칸 · 6개월 막대 · 🔁 3회 이상 · 통계 자세히 · 📜 장부) ⑥ ⚙ 기준 + 접힌 공용 메뉴
+ *  C 가운데 「📊 통계」 탭(RC.view 'stats') — rRecovery 를 감싼다. 자료는 있는 것만(rc_state · 주간테스트 mf_weekly · naver_bookings)
+ *  D-1 홈 «🚑 내일(오늘) 리커버리 · 예약 아직 n명» 한 줄 — nbkHomeCard 를 감싼다(리커버리 전날~당일, 0명이면 없음)
+ *  ※ 새로 적는 칸은 e.slotSrc('naver'|'manual')·e.slotAt 두 개뿐. 네이버 예약은 읽기만. 등록부 안 씀.
+ *  ※ 바탕 함수는 감싸기만 한다. 문자열 연결로만 쓴다(템플릿 리터럴 금지). 학생 실명은 화면에만.
+ * ═══════════════════════════════════════════════════════════════════ */
+var RN153 = { reTimer:null, homeKick:false, memo:null, memoTick:-2 };
+
+/* ── 작은 도움 ── */
+function rn153Q(s){ return esc2(s); }
+function rn153K(k){ return String(k == null ? '' : k).replace(/'/g, ''); }
+function rn153Today(){ return new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10); }
+function rn153Add(ymd, n){ var t = Date.parse(String(ymd || '').slice(0, 10) + 'T00:00:00Z'); if (isNaN(t)) return ''; return new Date(t + n * 86400000).toISOString().slice(0, 10); }
+function rn153NowYm(){ var n = new Date(); return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0'); }   /* l3rLedgerBox 와 같은 «이번 달» */
+function rn153YmAdd(ym, n){ var y = Number(String(ym).slice(0, 4)), m = Number(String(ym).slice(5, 7)) - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y + '-' + (m < 9 ? '0' : '') + (m + 1); }
+function rn153Md(ymd){ var d = new Date(String(ymd || '') + 'T00:00:00'); if (isNaN(d)) return String(ymd || ''); return (d.getMonth() + 1) + '/' + d.getDate() + ' (' + ['일','월','화','수','목','금','토'][d.getDay()] + ')'; }
+function rn153Min(t){ var m = String(t || '').match(/^(\d{1,2}):(\d{2})/); return m ? Number(m[1]) * 60 + Number(m[2]) : 9999; }
+function rn153Clock(t){ var m = String(t || '').match(/^(\d{1,2})/); var h = m ? Number(m[1]) % 12 : 0; return ['🕛','🕐','🕑','🕒','🕓','🕔','🕕','🕖','🕗','🕘','🕙','🕚'][h]; }
+function rn153Sign(v){ if (v == null || isNaN(v)) return '—'; if (v > 0) return '+' + v; if (v < 0) return '−' + Math.abs(v); return '±0'; }
+function rn153R1(v){ return Math.round(v * 10) / 10; }
+function rn153Stu(k){ var a = (typeof students !== 'undefined' && students) ? students : []; for (var i = 0; i < a.length; i++){ if (String(a[i].id || a[i].name) === String(k)) return a[i]; } return null; }
+/* 학년 키 — ultra_night_writer.js gradeKey 규칙(«중학교 2학년» → 중2) + «초6»처럼 이미 짧은 것도 */
+function rn153Grade(g){
+  var s = String(g || ''), m = s.match(/(\d)\s*학년/);
+  if (m) return (/초등/.test(s) ? '초' : (/고등/.test(s) ? '고' : '중')) + m[1];
+  m = s.match(/(초|중|고)[^0-9]*(\d)/);
+  return m ? (m[1] + m[2]) : '—';
+}
+function rn153GradeRank(g){ var m = String(g).match(/^(초|중|고)(\d)$/); return m ? ({ '초':0, '중':10, '고':20 }[m[1]] + Number(m[2])) : 99; }
+
+/* ── 네이버 예약 ── */
+function rn153NbkOk(){ try { return !!(typeof NBK !== 'undefined' && NBK.loaded && typeof nbkHas === 'function' && nbkHas()); } catch(e){ return false; } }
+function rn153Book(k, dt){ try { return rn153NbkOk() ? nbkRecOf(k, dt) : null; } catch(e){ return null; } }
+/* 그 학생 그 날 «취소된» 리커버리 예약 (살아 있는 예약이 있으면 그것을 쓰므로 여기선 취소만) */
+function rn153Cancel(k, dt){
+  if (!rn153NbkOk()) return null;
+  var out = nbkAll().filter(function(b){ if (!(b.item && b.item.kind === 'recovery') || b.date !== dt || nbkLive(b)) return false; var m = nbkMatch(b); return m && m.st && m.stKey === String(k); });
+  out.sort(function(a, b){ return String(b.start).localeCompare(String(a.start)); });
+  return out[0] || null;
+}
+/* 칩 목록 = 원장 설정 ∪ 그 날 리커버리 예약 시간 ∪ 최근 8주 리커버리 예약 시간 (취소 빼고) · nv = 네이버에서만 온 시간 */
+function rn153Times(dt, extra){
+  var base = (RC.cfg && Array.isArray(RC.cfg.slots)) ? RC.cfg.slots.slice() : [], seen = {}, nv = {}, list = [];
+  base.forEach(function(s){ if (s && !seen[s]){ seen[s] = 1; list.push(s); } });
+  var add = function(t, isNv){ if (!t || !/^\d{1,2}:\d{2}$/.test(String(t)) || seen[t]) return; seen[t] = 1; list.push(String(t)); if (isNv) nv[t] = 1; };
+  var since = rn153Add(rn153Today(), -56);
+  try {
+    if (rn153NbkOk()) nbkAll().forEach(function(b){
+      if (!(b.item && b.item.kind === 'recovery') || !nbkLive(b) || !b.start) return;
+      if (b.date === dt || String(b.date) >= since) add(b.start, true);
+    });
+  } catch(e){}
+  try {   /* 예약 통계(v19-127)가 «전체 보관»을 이미 읽어 두었으면 그것도 (새로 읽지는 않는다) */
+    if (typeof NBS !== 'undefined' && NBS.arch && Array.isArray(NBS.arch.rows)) NBS.arch.rows.forEach(function(r){
+      if (r && r.kind === 'recovery' && !r.canc && r.start && String(r.date) >= since) add(r.start, true);
+    });
+  } catch(e){}
+  (extra || []).forEach(function(t){ add(t, false); });
+  list.sort(function(a, b){ return rn153Min(a) - rn153Min(b); });
+  return { list:list, nv:nv };
+}
+
+/* ═══ A-1 자동 맞춤 — 그리는 중에는 저장만, 다시 그리기는 한 번 뒤로 ═══ */
+function rn153Sync(conf, wk){
+  if (!rn153NbkOk() || !RC.loaded) return 0;
+  var dt = rcRecDate(wk), n = 0, at = new Date().toISOString();
+  (conf || []).forEach(function(c){
+    var e = c && c.e; if (!e || !e.on || e.done) return;
+    if (e.slotSrc === 'manual') return;
+    var b = rn153Book(c.k, dt); if (!b || !b.start) return;
+    if (e.slot === b.start) return;
+    e.slot = b.start; e.slotSrc = 'naver'; e.slotAt = at; n++;
+  });
+  if (n){
+    rcSaveState();
+    if (!RN153.reTimer) RN153.reTimer = setTimeout(function(){ RN153.reTimer = null; try { render(); } catch(e){} }, 0);
+  }
+  return n;
+}
+
+/* ═══ A-2 손으로 고른 시간 보호 ═══ */
+var _rcSetSlot153 = window.rcSetSlot;
+window.rcSetSlot = function(k, slot){
+  try {
+    var wk = rcWeekKey(), W = RC.state.calls[wk] = RC.state.calls[wk] || {}, e = W[k] = W[k] || {};
+    if (e.slot === slot){ delete e.slotSrc; delete e.slotAt; }          /* 해제 → 다음 그리기에서 예약 시간이 다시 들어간다 */
+    else { e.slotSrc = 'manual'; e.slotAt = new Date().toISOString(); }
+  } catch(err){}
+  return _rcSetSlot153.apply(this, arguments);
+};
+/* 「예약 시간으로」 — 직접 고른 시간을 버리고 네이버 예약 시간으로 */
+window.rn153UseBook = function(k){
+  if (k == null) return;
+  var wk = rcWeekKey(), b = rn153Book(k, rcRecDate(wk)); if (!b || !b.start) return;
+  var W = RC.state.calls[wk] = RC.state.calls[wk] || {}, e = W[k] = W[k] || {};
+  e.slot = b.start; e.slotSrc = 'naver'; e.slotAt = new Date().toISOString();
+  rcSaveState(); render();
+  try { plToast('🕑 네이버 예약 시간 ' + b.start + ' 으로 바꿨어요'); } catch(err){}
+};
+
+/* ═══ A-2·4·5 배지 — 「시간 넣기」 없이 ═══ */
+var _nbkRcBadge153 = nbkRcBadge;
+nbkRcBadge = function(c, recDt, big){
+  try { return rn153Badge(c, recDt, big); } catch(err){ return _nbkRcBadge153.apply(this, arguments); }
+};
+function rn153Badge(c, recDt, big){
+  var b = rn153Book(c.k, recDt), e = c.e || {}, done = !!e.done, kq = rn153Q(rn153K(c.k));
+  if (!b){
+    if (done) return '';
+    var cx = rn153Cancel(c.k, recDt);
+    if (cx && e.slot && (e.slotSrc === 'naver' || (!e.slotSrc && e.slot === cx.start)))
+      return '<span class="nbk-rcb rn153-cx" data-nbk-rc="cancel" title="네이버 예약이 취소됐어요 — 시간 칸은 그대로 두었습니다">⚠ 예약 취소됨 (' + rn153Q(e.slot) + ')</span>';
+    return '<span class="nbk-rcb no" data-nbk-rc="no" title="' + rn153Q(rn153Md(recDt)) + ' 리커버리 네이버 예약이 아직 없어요">예약 아직</span>';
+  }
+  var t = b.start || '';
+  var h = '<span class="nbk-rcb ok" data-nbk-rc="ok" title="네이버 예약 · ' + rn153Q(b.status && b.status.label) + '">✓ 네이버 예약 ' + rn153Q(t) + '</span>';
+  if (big || done || !t) return h;
+  if (e.slot && e.slotSrc === 'manual' && e.slot !== t){
+    h += '<span class="nbk-rcb rn153-man" data-nbk-rc="manual">✋ 직접 ' + rn153Q(e.slot) + ' · ⚠ 예약과 다름</span>'
+      + '<button type="button" class="nbk-rcslot warn" data-rn153-use="' + kq + '" title="직접 고른 시간 대신 네이버 예약 시간(' + rn153Q(t) + ')으로" onclick="rn153UseBook(this.getAttribute(\'data-rn153-use\'))">예약 시간으로</button>';
+  } else if (e.slot === t && e.slotSrc === 'manual') h += '<span class="nbk-rcb rn153-man" data-nbk-rc="manual">✋ 직접</span>';
+  else if (e.slot === t) h += '<span class="nbk-rcb rn153-auto" data-nbk-rc="auto" title="네이버 예약 시간이 자동으로 들어갔어요">⟳ 자동</span>';
+  return h;
+}
+
+/* ═══ A-1·3 오른쪽 «확정 명단 · 시간 배분» ═══ */
+function rn153MarkChips(h, T){
+  return h.replace(/<button onclick="rcSetSlot\('([^']*)','([^']*)'\)" style="/g, function(m, k, t){
+    var nv = !!(T && T.nv && T.nv[t]);
+    return '<button class="rn153-chip' + (nv ? ' rn153-nv' : '') + '" data-rn153-k="' + k + '" data-rn153-slot="' + t + '"' + (nv ? ' title="네이버 예약에서 온 시간"' : '') + ' onclick="rcSetSlot(\'' + k + '\',\'' + t + '\')" style="';
+  });
+}
+var _rcSidePanel153 = rcSidePanel;
+rcSidePanel = function(conf, wk){
+  try { rn153Sync(conf, wk); } catch(err){ try { console.error('[리커버리 자동 시간]', err); } catch(_){} }
+  var keep = RC.cfg.slots, T = null, h;
+  try { T = rn153Times(rcRecDate(wk)); RC.cfg.slots = T.list; } catch(err){ T = null; }
+  try { h = _rcSidePanel153.apply(this, arguments); }
+  finally { RC.cfg.slots = keep; }                                    /* 원장 설정은 그대로 */
+  try {
+    h = rn153MarkChips(h, T);
+    h = h.replace('💡 시간대를 누르면 배정 — 안내문·출결 기록에 자동 반영', '💡 네이버 예약 시간이 자동으로 들어갑니다(⟳ · 점선 = 네이버 시간) · 직접 누르면 ✋ 직접으로 고정 — 안내문·학생앱·출결 기록에 반영');
+  } catch(err){}
+  return h;
+};
+
+/* ═══ C 통계 자료 (있는 것만 센다) ═══ */
+/* 리커버리 날짜 «뒤» 첫 주간테스트 (고등은 v19-149 처럼 HIGH_TEST·단원 TEST 도) */
+function rn153Next(k, dt){
+  try {
+    var st = rn153Stu(k); if (!st || typeof WK === 'undefined' || !WK.tests) return null;
+    var sid = bpSidOf(st); if (sid == null) return null;
+    var hi = /고/.test(String(st.grade || '')), best = null;
+    WK.tests.forEach(function(t){
+      if (t.type !== 'WEEKLY' && !(hi && (t.type === 'HIGH_TEST' || t.type === 'CHAPTER'))) return;
+      var me = (t.students || []).find(function(x){ return String(x.sid) === String(sid) && x.score != null; }); if (!me) return;
+      var took = String(me.date || t.date || ''); if (!took || took <= String(dt)) return;
+      if (!best || took < best.date) best = { score:Number(me.score), date:took, title:t.title || '' };
+    });
+    return best;
+  } catch(e){ return null; }
+}
+function rn153Why(e){
+  var r = String(e.reason || e.why || '');
+  if (r){ if (/직접|manual/i.test(r)) return '직접'; if (/둘|both/i.test(r)) return '둘 다'; if (/단원|unit/i.test(r)) return '단원'; if (/주간|테스트|test|week/i.test(r)) return '주간테스트'; }
+  if (e.manual) return '직접';
+  var s = e.snap || {}, hasT = s.score != null, hasU = !!(s.units && s.units.length);
+  return hasT && hasU ? '둘 다' : (hasT ? '주간테스트' : (hasU ? '단원' : '기타'));
+}
+function rn153WsRate(ws){
+  if (!ws) return null;
+  if (ws.total && ws.correct != null) return { c:Number(ws.correct), t:Number(ws.total) };
+  if (ws.rate != null && !isNaN(ws.rate)) return { c:Number(ws.rate), t:100 };
+  return null;
+}
+function rn153Entries(){
+  var calls = RC.state.calls || {}, out = [];
+  Object.keys(calls).forEach(function(wk){
+    var W = calls[wk] || {}, dt = String(rcRecDate(wk) || wk);
+    Object.keys(W).forEach(function(k){
+      var e = W[k]; if (!e || !(e.on || e.done)) return;
+      var snap = e.snap || {}, st = rn153Stu(k);
+      var sc = (snap.score != null && !isNaN(Number(snap.score))) ? Number(snap.score) : null;
+      var nx = sc != null ? rn153Next(k, dt) : null;
+      out.push({ wk:wk, dt:dt, ym:dt.slice(0, 7), k:k, nm:rcNameOf(k, e.snap), grade:rn153Grade(snap.grade || (st && st.grade) || ''), e:e,
+        done:!!e.done, noshow:!!e.noshow && !e.done, ws:!!e.ws, wsr:rn153WsRate(e.ws), score:sc, next:nx,
+        delta:(e.done && sc != null && nx) ? (nx.score - sc) : null, why:rn153Why(e) });
+    });
+  });
+  out.sort(function(a, b){ return a.dt < b.dt ? -1 : (a.dt > b.dt ? 1 : 0); });
+  return out;
+}
+function rn153Stats(force){
+  var tick = (typeof L3B !== 'undefined' && L3B) ? L3B.tick : -1;
+  if (!force && RN153.memo && RN153.memoTick === tick && tick >= 0) return RN153.memo;
+  var E = rn153Entries(), nowYm = rn153NowYm(), months = [], by = {};
+  for (var i = 5; i >= 0; i--){ var ym = rn153YmAdd(nowYm, -i); months.push(ym); by[ym] = { ym:ym, calls:0, done:0, noshow:0, ws:0, dSum:0, dN:0, up:0, wc:0, wt:0 }; }
+  var G = {}, from6 = months[0];
+  E.forEach(function(x){
+    var m = by[x.ym]; if (!m) return;
+    m.calls++; if (x.done) m.done++; if (x.noshow) m.noshow++; if (x.ws) m.ws++;
+    if (x.wsr){ m.wc += x.wsr.c; m.wt += x.wsr.t; }
+    if (x.delta != null){ m.dSum += x.delta; m.dN++; if (x.delta > 0) m.up++; }
+    var g = G[x.grade] = G[x.grade] || { g:x.grade, calls:0, why:{} }; g.calls++; g.why[x.why] = (g.why[x.why] || 0) + 1;
+  });
+  months.forEach(function(ym){ var m = by[ym]; m.rate = m.calls ? Math.round(m.done / m.calls * 100) : null; m.avg = m.dN ? rn153R1(m.dSum / m.dN) : null; m.wsRate = m.wt ? Math.round(m.wc / m.wt * 100) : null; });
+  var grades = Object.keys(G).map(function(k){ return G[k]; }).sort(function(a, b){ return rn153GradeRank(a.g) - rn153GradeRank(b.g); });
+  /* 🔁 자주 오는 학생 — 최근 3개월 */
+  var since3 = rn153Add(rn153Today(), -92), P = {};
+  E.forEach(function(x){
+    if (x.dt < since3) return;
+    var p = P[x.k] = P[x.k] || { k:x.k, nm:x.nm, calls:0, done:0, noshow:0, scores:[], last:'' };
+    p.nm = x.nm; p.calls++; if (x.done) p.done++; if (x.noshow) p.noshow++;
+    if (x.score != null) p.scores.push(x.score);
+    if (x.dt > p.last) p.last = x.dt;
+  });
+  var freq = Object.keys(P).map(function(k){
+    var p = P[k], nx = rn153Next(k, p.last), seq = p.scores.slice();
+    if (nx) seq.push(nx.score);
+    var dir = seq.length >= 2 ? (seq[seq.length - 1] > seq[0] ? '↗' : (seq[seq.length - 1] < seq[0] ? '↘' : '→')) : '';
+    p.flow = seq.length ? (seq.join(' → ') + '점' + (dir ? ' ' + dir : '')) : '';
+    p.next = nx; p.signal = p.calls >= 3;
+    return p;
+  }).sort(function(a, b){ return ((b.signal ? 1 : 0) - (a.signal ? 1 : 0)) || (b.calls - a.calls) || String(a.nm).localeCompare(String(b.nm), 'ko'); });
+  RN153.memo = { entries:E, months:months, by:by, cur:by[nowYm], nowYm:nowYm, grades:grades, freq:freq, freq3:freq.filter(function(p){ return p.signal; }), from6:from6 };
+  RN153.memoTick = tick;
+  return RN153.memo;
+}
+
+/* ═══ B 왼쪽 기둥 ═══ */
+function rn153Sub(x){
+  var r = x.row, bits = [];
+  if (r && r.testHit){ var t = r.testHit; bits.push(((t.ttype && t.ttype !== 'WEEKLY') ? '테스트 ' : '주간 ') + ((t.correct != null && t.total) ? (t.correct + '/' + t.total) : (t.score + '점'))); }
+  else if (x.score != null) bits.push('주간 ' + x.score + '점');
+  else if (r && r.unitHits && r.unitHits.length) bits.push('단원 ' + r.unitHits[0].rate + '%');
+  if (x.manual) bits.push('👋 직접');
+  return bits.join(' · ');
+}
+/* 명단 오른쪽 — ✓HH:MM · ✋HH:MM ⚠ · 예약 아직 · 📄 · ✅/⛔ */
+function rn153Right(x, dt, nbOk){
+  var e = x.e || {};
+  if (!e.on && !e.done) return '미정';
+  var bits = [];
+  if (e.done) bits.push('✅');
+  else if (e.noshow) bits.push('⛔');
+  else {
+    var b = nbOk ? rn153Book(x.k, dt) : null;
+    if (b){
+      if (e.slot && e.slotSrc === 'manual' && e.slot !== b.start) bits.push('✋' + e.slot + ' ⚠');
+      else if (e.slot && e.slotSrc === 'manual') bits.push('✋' + e.slot);
+      else bits.push('✓' + (e.slot || b.start));
+    } else if (nbOk){
+      var cx = rn153Cancel(x.k, dt);
+      if (cx && e.slot && (e.slotSrc === 'naver' || (!e.slotSrc && e.slot === cx.start))) bits.push('⚠ 취소 ' + e.slot);
+      else bits.push((e.slot ? '✋' + e.slot + ' · ' : '') + '예약 아직');
+    } else bits.push(e.slot || '시간 미정');
+  }
+  var ws = false; try { ws = !!rcwsMadeOf(x.k); } catch(err){}
+  if (ws || e.ws) bits.push('📄');
+  return bits.join(' · ');
+}
+function rn153Bars(S){
+  var mx = 1; S.months.forEach(function(ym){ if (S.by[ym].calls > mx) mx = S.by[ym].calls; });
+  var w = 120, hgt = 34, bw = 16, gap = (w - bw * 6) / 5, svg = '<svg class="rn153-bars" viewBox="0 0 ' + w + ' ' + (hgt + 11) + '" role="img" aria-label="최근 6개월 리커버리 호출 수" preserveAspectRatio="none">';
+  S.months.forEach(function(ym, i){
+    var c = S.by[ym].calls, bh = c ? Math.max(2, Math.round(c / mx * hgt)) : 1, x = Math.round(i * (bw + gap));
+    svg += '<rect x="' + x + '" y="' + (hgt - bh) + '" width="' + bw + '" height="' + bh + '" rx="2" fill="#60a5fa" opacity="' + (ym === S.nowYm ? '1' : '.45') + '"><title>' + Number(ym.slice(5)) + '월 호출 ' + c + '명</title></rect>'
+      + '<text x="' + (x + bw / 2) + '" y="' + (hgt + 9) + '" text-anchor="middle" font-size="7.5" fill="rgba(232,238,246,.55)">' + Number(ym.slice(5)) + '</text>';
+  });
+  return svg + '</svg>';
+}
+function rn153Num(v, k, cls, attr){ return '<div class="' + (cls || '') + '"' + (attr || '') + '><div class="v">' + v + '</div><div class="k">' + k + '</div></div>'; }
+function rn153Left(){
+  var h = l3LeftHead('recovery');
+  if (!RC.loaded){ try { rcLoad().then(function(){ if (VIEW === 'recovery') render(); }); } catch(e){}
+    return h + '<div class="l3-sec" style="font-weight:700">불러오는 중…</div>' + l3CommonFold(); }
+  try { nbkKick('recovery'); } catch(e){}
+  var wk = rcWeekKey(), dt = rcRecDate(wk), nbOk = rn153NbkOk();
+  var L = l3rList(), conf = L.filter(function(x){ return x.e && x.e.on; });
+  var live = conf.filter(function(x){ return !x.e.done; });
+  var booked = nbOk ? conf.filter(function(x){ return !!rn153Book(x.k, dt); }) : [];
+  var noBook = nbOk ? live.filter(function(x){ return !rn153Book(x.k, dt); }) : [];
+  var made = conf.filter(function(x){ var m = false; try { m = !!rcwsMadeOf(x.k); } catch(e){} return m || !!x.e.ws; });
+  /* ① 이번 주 */
+  h += '<div class="l3-sec" data-rn153-sec="week">🚑 이번 주 · ' + rn153Q(rn153Md(dt)) + '</div>';
+  h += '<div class="rn153-num" data-rn153-week="1">'
+    + rn153Num(conf.length, '확정', '', ' data-rn153-n="conf"')
+    + rn153Num(nbOk ? booked.length : '—', '네이버 예약', 'ok', ' data-rn153-n="booked"')
+    + rn153Num(nbOk ? noBook.length : '—', '예약 아직', 'warn', ' data-rn153-n="nobook"')
+    + rn153Num(made.length, '학습지 만듦', '', ' data-rn153-n="ws"') + '</div>';
+  /* ② 시간대별 인원 */
+  var cnt = {}, none = 0, extra = [];
+  live.forEach(function(x){ var s = x.e.slot; if (s){ cnt[s] = (cnt[s] || 0) + 1; extra.push(s); } else none++; });
+  var T = rn153Times(dt, extra), anyT = false;
+  T.list.forEach(function(t){
+    if (!cnt[t]) return; anyT = true;
+    h += '<div class="l3-lb rn153-static" data-rn153-time="' + rn153Q(t) + '"><span>' + rn153Clock(t) + ' ' + rn153Q(t) + (T.nv[t] ? ' <small style="display:inline">네이버</small>' : '') + '</span><span class="n">' + cnt[t] + '명</span></div>';
+  });
+  if (none) h += '<div class="l3-lb rn153-static l3r-dim" data-rn153-time="none"><span>시간 미정</span><span class="n">' + none + '명</span></div>';
+  /* ③ 명단 */
+  h += '<div class="l3-sec">명단 · 호출 ' + conf.length + ' · 미정 ' + (L.length - conf.length) + '</div>';
+  if (!L.length) h += '<div class="l3-sec" style="font-weight:700;letter-spacing:0">지금 기준으로 선발·호출된 학생이 없습니다</div>';
+  var mi = false;
+  L.forEach(function(x){
+    if (!x.e.on && !x.e.done && !mi){ mi = true; h += '<div class="l3-sec" style="padding-top:6px">예상 명단 · 미정</div>'; }
+    var on = L3B.rcFocus === x.k, sub = rn153Sub(x);
+    h += '<button type="button" class="l3-lb' + (on ? ' on' : '') + (x.e.on || x.e.done ? '' : ' l3r-dim') + '" data-l3r-stu="' + rn153Q(x.k) + '" onclick="l3rPick(this.getAttribute(\'data-l3r-stu\'))"><span>' + (x.e.on || x.e.done ? '🚑 ' : '') + rn153Q(x.name) + (sub ? '<small>' + rn153Q(sub) + '</small>' : '') + '</span><span class="n" data-rn153-right="' + rn153Q(x.k) + '">' + rn153Q(rn153Right(x, dt, nbOk)) + '</span></button>';
+  });
+  /* ④ 예약 안 한 학생 */
+  if (noBook.length){
+    var nm = noBook.slice(0, 3).map(function(x){ return x.name; }).join(' · ') + (noBook.length > 3 ? ' …' : '');
+    h += '<div class="l3-sec">📨 예약 안 한 ' + noBook.length + '명</div>'
+      + '<button type="button" class="l3-lb" data-rn153-nobook="' + noBook.length + '" onclick="rcOpenSms()"><span>' + rn153Q(nm) + '</span><span class="n">안내문 ›</span></button>';
+  }
+  /* ⑤ 통계 요약 */
+  var S = rn153Stats(), C = S.cur;
+  h += '<div class="l3-sec">📊 통계 · ' + Number(S.nowYm.slice(5)) + '월</div>';
+  h += '<div class="rn153-num" data-rn153-month="' + S.nowYm + '">'
+    + rn153Num(C.calls, '호출', '', ' data-rn153-n="calls"')
+    + rn153Num(C.done, '출석' + (C.rate != null ? ' (' + C.rate + '%)' : ''), 'ok', ' data-rn153-n="done"')
+    + rn153Num(C.noshow, '노쇼', 'bad', ' data-rn153-n="noshow"')
+    + rn153Num(rn153Sign(C.avg), '다음 테스트 ' + (C.avg != null && C.avg < 0 ? '↓' : '↑'), C.avg != null && C.avg < 0 ? 'bad' : 'ok', ' data-rn153-n="delta"') + '</div>';
+  h += '<div class="rn153-barbox" title="최근 6개월 호출">' + rn153Bars(S) + '</div>';
+  if (S.freq3.length) h += '<button type="button" class="l3-lb" data-rn153-freq="' + S.freq3.length + '" onclick="rn153GoFreq()"><span>🔁 3회 이상 · ' + S.freq3.length + '명</span><span class="n">상담 신호 ›</span></button>';
+  h += '<button type="button" class="l3-lb' + (RC.view === 'stats' ? ' on' : '') + '" data-rn153-stats="1" onclick="rcSetView(\'stats\')"><span>📊 통계 자세히</span><span class="n">›</span></button>';
+  if (RC.view === 'stats') h += '<button type="button" class="l3-lb" onclick="rcSetView(\'board\')"><span>🚑 이번 주 보드로</span></button>';
+  h += '<div class="l3-sec">📜 장부</div>' + l3rLedgerBox();
+  /* ⑥ 기준 */
+  var cf = RC.cfg || {};
+  h += '<div class="l3-sec">⚙ 기준</div><div class="rn153-cfg" data-rn153-cfg="1">'
+    + '<button type="button" onclick="rcEditCfg(\'score\')" title="중·고 주간테스트 기준 점수">주간 ' + rn153Q(cf.minScore) + '점</button>'
+    + '<button type="button" onclick="rcEditCfg(\'unit\')" title="단원 정답률 기준">단원 ' + rn153Q(cf.minUnit) + '%</button>'
+    + '<button type="button" onclick="rcEditCfg(\'elem6\')" title="초6 주간테스트 기준 점수">초6 ' + rn153Q(cf.elem6Score) + '점</button>'
+    + (cf.range ? '<button type="button" onclick="rcOpenPeriod()" title="선발 기준 기간">🗓 기간</button>' : '<button type="button" onclick="rcEditCfg(\'weeks\')" title="최근 몇 주를 볼까요">' + rn153Q(cf.weeks) + '주</button>')
+    + '</div>';
+  return h + l3CommonFold();
+}
+var _l3rLeft153 = l3rLeft;
+l3rLeft = function(){
+  try { return rn153Left(); }
+  catch(e){ try { console.error('[리커버리 왼쪽 기둥]', e); } catch(_){} return _l3rLeft153.apply(this, arguments); }
+};
+window.rn153GoFreq = function(){
+  RC.view = 'stats'; render();
+  try { l3bFlash('#rn153-freq'); } catch(e){ var el = document.getElementById('rn153-freq'); if (el && el.scrollIntoView) el.scrollIntoView(); }
+};
+window.rn153GoNbs = function(){
+  VIEW = 'naverstats'; try { GRP = groupOfView('naverstats'); } catch(e){}
+  try { if (typeof nbsKick === 'function') nbsKick('naverstats', true); } catch(e){}
+  try { renderFuncTab(); } catch(e){ render(); }
+};
+
+/* ═══ C 가운데 📊 통계 화면 ═══ */
+function rn153Card(l, v, sub, cls, attr){
+  var bg = cls === 'b' ? '#eff6ff' : (cls === 'g' ? '#f0fdf4' : (cls === 'y' ? '#fffbeb' : (cls === 'r' ? '#fef2f2' : '#f8fafc')));
+  var bd = cls === 'b' ? '#3b82f6' : (cls === 'g' ? '#22c55e' : (cls === 'y' ? '#f59e0b' : (cls === 'r' ? '#ef4444' : '#cbd5e1')));
+  return '<div' + (attr || '') + ' style="flex:1;min-width:140px;background:' + bg + ';border-left:4px solid ' + bd + ';border-radius:13px;padding:12px 15px">'
+    + '<div style="font-size:11px;color:#64748b;font-weight:800">' + l + '</div>'
+    + '<div style="font-size:23px;font-weight:900;color:#0d2240;line-height:1.15;margin-top:2px;font-variant-numeric:tabular-nums">' + v + '</div>'
+    + (sub ? '<div style="font-size:11.5px;color:#15803d;font-weight:800;margin-top:2px">' + sub + '</div>' : '') + '</div>';
+}
+function rn153DeltaTd(v){ var col = v == null ? '#94a3b8' : (v > 0 ? '#15803d' : (v < 0 ? '#b91c1c' : '#475569')); return '<td class="rn153-n" style="color:' + col + ';font-weight:900">' + rn153Sign(v) + '</td>'; }
+function rn153StatsHtml(){
+  var S = rn153Stats(), C = S.cur, h = '';
+  var curDN = C.dN, curUp = C.up;
+  h += '<div class="rn153-stats" data-rn153-statsview="1">';
+  h += '<div style="font-size:12.5px;color:#64748b;font-weight:700;margin-bottom:12px">숫자는 지금 있는 자료(리커버리 장부 · 주간테스트 · 학습지)로만 셉니다. 달은 리커버리 날짜 기준 · «다음 테스트»는 출석한 학생의 호출 때 점수 → 리커버리 날짜 뒤 첫 주간테스트.</div>';
+  h += '<div style="display:flex;gap:11px;margin-bottom:16px;flex-wrap:wrap">';
+  h += rn153Card('📞 ' + Number(S.nowYm.slice(5)) + '월 호출', C.calls + '<span style="font-size:12px;color:#94a3b8;font-weight:800"> 명</span>', '', 'b', ' data-rn153-kpi="calls"');
+  h += rn153Card('✅ 출석률', C.rate != null ? C.rate + '%' : '—', C.calls ? (C.done + '/' + C.calls + '명') : '', 'g', ' data-rn153-kpi="rate"');
+  h += rn153Card('⛔ 노쇼', C.noshow + '<span style="font-size:12px;color:#94a3b8;font-weight:800"> 명</span>', '', 'r', ' data-rn153-kpi="noshow"');
+  h += rn153Card('📈 리커버리 뒤 다음 주간테스트', C.avg != null ? rn153Sign(C.avg) + '점' : '—', curDN ? (curDN + '명 중 ' + curUp + '명 올랐어요') : '아직 다음 테스트 기록이 없어요', 'y', ' data-rn153-kpi="delta"');
+  h += rn153Card('🧩 학습지 정답률', C.wsRate != null ? C.wsRate + '%' : '—', C.wsRate != null ? '' : '<span style="color:#94a3b8">채점 기록 없음</span>', '', ' data-rn153-kpi="wsrate"');
+  h += '</div>';
+  /* ① 달별 6개월 */
+  h += '<div class="rn153-box"><div class="rn153-bh">📅 달별 (최근 6개월)</div><div class="rn153-tw"><table class="rn153-t" data-rn153-table="months"><tr><th>달</th><th class="rn153-n">호출</th><th class="rn153-n">출석</th><th class="rn153-n">노쇼</th><th class="rn153-n">출석률</th><th class="rn153-n">학습지</th><th class="rn153-n">다음 테스트</th></tr>';
+  S.months.slice().reverse().forEach(function(ym){
+    var m = S.by[ym];
+    h += '<tr data-rn153-ym="' + ym + '" data-calls="' + m.calls + '" data-done="' + m.done + '" data-noshow="' + m.noshow + '" data-ws="' + m.ws + '" data-avg="' + (m.avg == null ? '' : m.avg) + '"' + (ym === S.nowYm ? ' style="background:#f8fbff"' : '') + '>'
+      + '<td style="font-weight:900;color:#0d2240">' + Number(ym.slice(5)) + '월' + (ym === S.nowYm ? ' <span style="font-size:10.5px;color:#1d6fe8">이번 달</span>' : '') + '</td>'
+      + '<td class="rn153-n">' + m.calls + '</td><td class="rn153-n">' + m.done + '</td><td class="rn153-n">' + m.noshow + '</td>'
+      + '<td class="rn153-n">' + (m.rate != null ? m.rate + '%' : '—') + '</td><td class="rn153-n">' + (m.ws || '—') + '</td>' + rn153DeltaTd(m.avg) + '</tr>';
+  });
+  h += '</table></div></div>';
+  /* ② 학년 × 사유 · ③ 자주 오는 학생 */
+  h += '<div class="rn153-two">';
+  h += '<div class="rn153-box"><div class="rn153-bh">🎓 학년 · 사유 <span class="rn153-sub">(최근 6개월)</span></div>';
+  if (!S.grades.length) h += '<div class="rn153-empty">아직 기록이 없어요</div>';
+  else {
+    h += '<table class="rn153-t" data-rn153-table="grades"><tr><th>학년</th><th class="rn153-n">호출</th><th>사유</th></tr>';
+    var ORD = ['주간테스트', '단원', '둘 다', '직접', '기타'], SH = { '주간테스트':'주간', '단원':'단원', '둘 다':'둘 다', '직접':'직접', '기타':'기타' };
+    S.grades.forEach(function(g){
+      var why = ORD.filter(function(w){ return g.why[w]; }).map(function(w){ return SH[w] + ' ' + g.why[w]; }).join(' · ');
+      h += '<tr data-rn153-grade="' + rn153Q(g.g) + '"><td style="font-weight:900;color:#0d2240;white-space:nowrap">' + rn153Q(g.g) + '</td><td class="rn153-n">' + g.calls + '</td><td>' + rn153Q(why) + '</td></tr>';
+    });
+    h += '</table>';
+  }
+  h += '</div>';
+  h += '<div class="rn153-box" id="rn153-freq"><div class="rn153-bh">🔁 자주 오는 학생 <span class="rn153-sub">(최근 3개월 · 3회 이상 먼저)</span></div>';
+  var F = S.freq.filter(function(p){ return p.calls >= 2; }).slice(0, 12);
+  if (!F.length) h += '<div class="rn153-empty">3개월 동안 두 번 넘게 온 학생이 없어요</div>';
+  else {
+    h += '<table class="rn153-t" data-rn153-table="freq"><tr><th>학생</th><th class="rn153-n">호출</th><th class="rn153-n">출석</th><th>흐름</th></tr>';
+    F.forEach(function(p){
+      var flow = (p.flow || '—') + (p.noshow ? ' · 노쇼 ' + p.noshow : '');
+      h += '<tr data-rn153-stu="' + rn153Q(p.k) + '"' + (p.signal ? ' style="background:#fff7ed"' : '') + '><td style="font-weight:900;color:#0d2240;white-space:nowrap">' + rn153Q(p.nm) + '</td><td class="rn153-n">' + p.calls + '</td><td class="rn153-n">' + p.done + '</td>'
+        + '<td>' + rn153Q(flow) + (p.signal ? ' <span class="rn153-sig" title="같은 학생이 3번 넘게 오면 리커버리로는 모자란 신호 — 상담을 권해요">상담 권유</span>' : '') + '</td></tr>';
+    });
+    h += '</table>';
+  }
+  h += '<div style="font-size:11.5px;color:#94a3b8;font-weight:700;margin-top:8px">«흐름» = 호출 때 점수들 → 마지막 리커버리 뒤 첫 주간테스트. 3번 넘게 오면 리커버리로는 모자란 신호라 상담을 권합니다.</div>';
+  h += '</div></div>';
+  h += '<div class="rn153-nbs">요일×시간 열지도 · 학생별 월간 참여 · 학부모 카톡 글은 <b>📊 예약 통계</b>(v19-127)에 있어요.'
+    + '<button type="button" onclick="rn153GoNbs()">📊 예약 통계 열기 ›</button></div>';
+  h += '</div>';
+  return h;
+}
+/* 탭 줄: 🚑 이번 주 보드 · 📒 운영 장부 · 📊 통계 */
+var RN153_TABBAR = '<div style="display:inline-flex;background:#f1f5f9;border-radius:12px;padding:4px;gap:4px;margin-bottom:14px">';
+function rn153Tabs(h){
+  var i = h.indexOf(RN153_TABBAR); if (i < 0) return h;
+  var j = h.indexOf('</div>', i); if (j < 0) return h;
+  var tb = function(v, label){ var on = (RC.view === v); return '<button data-rn153-tab="' + v + '" onclick="rcSetView(\'' + v + '\')" style="border:none;font-family:inherit;font-size:14px;font-weight:900;padding:9px 18px;border-radius:10px;cursor:pointer;' + (on ? 'background:#0d2240;color:#fff' : 'background:transparent;color:#64748b') + '">' + label + '</button>'; };
+  return h.slice(0, i) + RN153_TABBAR + tb('board', '🚑 이번 주 보드') + tb('ledger', '📒 운영 장부') + tb('stats', '📊 통계') + h.slice(j);
+}
+var _rRecovery153 = rRecovery;
+rRecovery = function(){
+  if (RC.view !== 'stats' || !RC.loaded) return rn153Tabs(_rRecovery153.apply(this, arguments));
+  var keep = rcLedger, h;
+  rcLedger = rn153StatsHtml; RC.view = 'ledger';                     /* 머리·탭은 바탕 그대로, 장부 자리에 통계를 그린다 */
+  try { h = _rRecovery153.apply(this, arguments); }
+  finally { RC.view = 'stats'; rcLedger = keep; }
+  return rn153Tabs(h);
+};
+
+/* ═══ D-1 홈 — 리커버리 전날~당일 «예약 아직» ═══ */
+function rn153HomeLine(){
+  if (!rn153NbkOk()) return '';
+  var today = rn153Today();
+  if (!RC.loaded){
+    var wk0 = rcWeekKey();
+    if (!RN153.homeKick && rn153Add(wk0, -2) <= today && today <= wk0){
+      RN153.homeKick = true;
+      try { rcLoad().then(function(){ if (VIEW === 'home') render(); }); } catch(e){}
+    }
+    return '';
+  }
+  var wk = rcWeekKey(), dt = String(rcRecDate(wk));
+  if (!(today >= rn153Add(dt, -1) && today <= dt)) return '';
+  var miss = rcConfirmed().filter(function(c){ return c.e && !c.e.done && !rn153Book(c.k, dt); });
+  if (!miss.length) return '';
+  var names = miss.slice(0, 4).map(function(c){ return c.name; }).join(' · ') + (miss.length > 4 ? ' …' : '');
+  return '<div class="rn153-home" data-rn153-home="' + miss.length + '"><span>🚑 ' + (today === dt ? '오늘' : '내일') + ' 리커버리 · 예약 아직 <b>' + miss.length + '명</b> — ' + rn153Q(names) + '</span>'
+    + '<button type="button" onclick="rn153GoSms()">📨 안내문</button></div>';
+}
+window.rn153GoSms = function(){
+  VIEW = 'recovery'; try { GRP = groupOfView('recovery'); } catch(e){}
+  RC.view = 'board';
+  try { renderFuncTab(); } catch(e){ render(); }
+  rcLoad().then(function(){ try { rcOpenSms(); } catch(e){} });
+};
+if (typeof window.nbkHomeCard === 'function') window.nbkHomeCard = (function(o){
+  return function(){
+    var h = o.apply(this, arguments);
+    try {
+      if (!h) return h;
+      var x = rn153HomeLine();
+      if (x){ var i = h.lastIndexOf('</div>'); if (i > 0) h = h.slice(0, i) + x + h.slice(i); }
+    } catch(e){ try { console.error('[리커버리 · 홈]', e); } catch(_){} }
+    return h;
+  };
+})(window.nbkHomeCard);
+
+/* ── 모양 ── */
+(function(){
+  if (document.getElementById('rn153-css')) return;
+  var st = document.createElement('style'); st.id = 'rn153-css';
+  st.textContent = ''
+    /* A 칩·배지 */
+    + '.rn153-chip.rn153-nv{border-style:dashed!important}'
+    + '.rn153-chip.rn153-nv[style*="color:#94a3b8"]{border-color:#1d6fe8!important;color:#1d6fe8!important}'
+    + '.rn153-chip.rn153-nv[style*="background:#1d6fe8"]{border-color:#bfdbfe!important}'
+    + '.nbk-rcb.rn153-auto{background:#e8f0fd;color:#1d6fe8}.nbk-rcb.rn153-man{background:#fef3c7;color:#b45309}.nbk-rcb.rn153-cx{background:#fee2e2;color:#b91c1c}'
+    /* B 왼쪽 기둥 (어두운 바탕) */
+    + '.rn153-num{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:2px 10px 6px}'
+    + '.rn153-num>div{background:rgba(255,255,255,.07);border-radius:9px;padding:6px 9px;min-width:0}'
+    + '.rn153-num .v{font-size:17px;font-weight:900;color:#fff;font-variant-numeric:tabular-nums;line-height:1.2}'
+    + '.rn153-num .k{font-size:10.5px;color:rgba(232,238,246,.6);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}'
+    + '.rn153-num .ok .v{color:#86efac}.rn153-num .warn .v{color:#fcd34d}.rn153-num .bad .v{color:#fca5a5}'
+    + '.l3-lb.rn153-static{cursor:default;padding:7px 12px;font-size:13px}.l3-lb.rn153-static:hover{background:rgba(255,255,255,.07)}'
+    + '.rn153-barbox{padding:2px 14px 6px}.rn153-bars{display:block;width:100%;height:46px}'
+    + '.rn153-cfg{display:flex;flex-wrap:wrap;gap:5px;padding:2px 10px 6px}'
+    + '.rn153-cfg button{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.07);color:#e8eef6;border-radius:8px;padding:5px 9px;font-family:inherit;font-size:11.5px;font-weight:800;cursor:pointer}'
+    + '.rn153-cfg button:hover{background:rgba(255,255,255,.16)}.rn153-cfg button:focus-visible{outline:2px solid #fbbf24;outline-offset:1px}'
+    /* C 통계 화면 */
+    + '.rn153-box{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:12px 14px;min-width:0;margin-bottom:14px}'
+    + '.rn153-bh{font-size:14px;font-weight:900;color:#0d2240;margin-bottom:8px}.rn153-sub{font-size:11px;color:#94a3b8;font-weight:700}'
+    + '.rn153-tw{overflow-x:auto}.rn153-t{border-collapse:collapse;width:100%;font-size:12.5px}'
+    + '.rn153-t th,.rn153-t td{padding:6px 8px;border-bottom:1px solid #eef2f7;text-align:left;vertical-align:top}'
+    + '.rn153-t th{color:#64748b;font-weight:800;font-size:11.5px}.rn153-t .rn153-n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}'
+    + '.rn153-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:900px){.rn153-two{grid-template-columns:1fr}}'
+    + '.rn153-empty{font-size:12.5px;color:#94a3b8;font-weight:700;padding:10px 2px}'
+    + '.rn153-sig{display:inline-block;font-size:10.5px;font-weight:900;color:#b45309;background:#fef3c7;border-radius:20px;padding:1px 8px;margin-left:4px}'
+    + '.rn153-nbs{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:#475569;font-weight:700;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:10px 13px}'
+    + '.rn153-nbs button{margin-left:auto;border:1px solid #cbd5e1;background:#fff;color:#0d2240;border-radius:9px;padding:6px 12px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer}'
+    /* D-1 홈 */
+    + '.rn153-home{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;font-size:12.5px;font-weight:800;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:6px 10px}'
+    + '.rn153-home span{flex:1;min-width:0}.rn153-home button{flex:none;border:none;background:#ffd54a;color:#0d2240;border-radius:8px;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:900;cursor:pointer}';
+  (document.head || document.documentElement).appendChild(st);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════════
+ * v19-154: 🚑 리커버리 「🔄 채점 새로고침」 (원장 2026-10-23 「매쓰플랫 채점결과가 바로 적용이 안된다 · 새로고침 단추 넣어줘」)
+ *  까닭 두 가지
+ *   ① 서버 수집은 하루 6번이지만 GitHub 가 2~5시간씩 미룬다 → 원장이 원할 때 수집을 바로 요청한다.
+ *      울트라일일 「🔄 지금 가져오기」와 같은 길: lumen_store `mf_collect_req` {status:'requested'} 를 쓰면
+ *      mathflat-ondemand.yml 이 수집기(주간테스트 mf_weekly 포함)를 돌린다. 설정 탭 GitHub 토큰이 있으면
+ *      supaSetItem 감싸기(v19-99 HTS_WAKE_KEYS)가 바로 깨운다(1분 안 시작). 없으면 GitHub 예약을 기다린다.
+ *   ② 보드 머리의 예전 「새로고침」은 rcLoad(true) 만 불러 rc_state 만 다시 읽고, 주간테스트(wkLoad)·진도(bpLoad)는
+ *      한 번 읽은 것을 계속 썼다 → 서버가 새로 모아 와도 앱을 껐다 켜기 전엔 그대로였다. 이제 셋 다 + 네이버 예약을 다시 읽는다.
+ *  보드 머리 아래 한 줄: «📡 채점 자료 마지막 수집 HH:MM (n분 전)» + 단추(요청됨/수집 중/완료 상태) + «다시 읽기».
+ *  ※ 문자열 연결만. 바탕 함수는 감싸기만.
+ * ═══════════════════════════════════════════════════════════════════════ */
+var RC154 = { at: '', req: null, poll: null, loading: false, t: 0 };
+var RC154_COOL_MIN = 10;
+function rc154HM(iso){ try { var d = new Date(iso); if (isNaN(d)) return ''; return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); } catch(e){ return ''; } }
+function rc154Ago(iso){ var m = (Date.now() - Date.parse(iso)) / 60000; if (!(m >= 0)) return ''; if (m < 1) return '방금'; if (m < 60) return Math.round(m) + '분 전'; if (m < 60 * 24) return Math.floor(m / 60) + '시간 ' + (Math.round(m % 60) ? Math.round(m % 60) + '분 ' : '') + '전'; return Math.floor(m / 1440) + '일 전'; }
+/* 서버에서 «마지막 수집 시각»(mf_weekly 가 마지막으로 바뀐 때)과 요청 상태를 읽는다 */
+function rc154Meta(){
+  var sb = null; try { sb = getSupaClient(); } catch(e){}
+  if (!sb || RC154.loading) return Promise.resolve();
+  RC154.loading = true;
+  return sb.from('lumen_store').select('key,value,updated_at').in('key', ['mf_weekly', 'mf_collect_req']).then(function(r){
+    RC154.loading = false; RC154.t = Date.now();
+    ((r && r.data) || []).forEach(function(row){
+      if (row.key === 'mf_weekly') RC154.at = row.updated_at || (row.value && row.value.updated) || RC154.at;
+      if (row.key === 'mf_collect_req'){ var v = row.value; if (typeof v === 'string'){ try { v = JSON.parse(v); } catch(e){ v = null; } } RC154.req = v || null; }
+    });
+  }, function(){ RC154.loading = false; RC154.t = Date.now(); });
+}
+function rc154State(){
+  var q = RC154.req;
+  if (!q || !q.status) return { k: 'idle' };
+  if (q.status === 'requested') return { k: 'wait', q: q };
+  if (q.status === 'running') return { k: 'run', q: q };
+  if (q.status === 'done'){ var fin = Date.parse(q.finishedAt || q.reqAt || '') || 0, mins = (Date.now() - fin) / 60000; if (mins < RC154_COOL_MIN) return { k: 'cool', q: q, left: Math.max(1, Math.ceil(RC154_COOL_MIN - mins)) }; }
+  return { k: 'idle', q: q };
+}
+/* 앱이 들고 있는 자료를 전부 다시 읽는다 (서버 수집 없이) */
+window.rc154Reload = function(quiet){
+  var jobs = [];
+  try { if (typeof wkLoad === 'function') jobs.push(wkLoad(true)); } catch(e){}
+  try { if (typeof bpLoad === 'function') jobs.push(bpLoad(true)); } catch(e){}
+  try { if (typeof nbkLoad === 'function') jobs.push(nbkLoad(true)); } catch(e){}
+  jobs.push(rc154Meta());
+  return Promise.all(jobs.map(function(p){ return Promise.resolve(p).catch(function(){}); }))
+    .then(function(){ return rcLoad(true); })
+    .then(function(){ try { render(); } catch(e){} if (!quiet) plToast('🔄 채점·예약 자료를 다시 읽었어요' + (RC154.at ? ' (마지막 수집 ' + rc154HM(RC154.at) + ')' : '')); });
+};
+/* 서버 수집 요청 */
+window.rc154Fetch = function(){
+  var st = rc154State();
+  if (st.k === 'wait' || st.k === 'run' || st.k === 'cool') return;
+  var tok = ''; try { tok = (typeof htsGhToken === 'function') ? htsGhToken() : ''; } catch(e){}
+  var msg = '🔄 채점 새로고침\n\n매쓰플랫 채점 기록과 주간테스트 점수를 지금 서버에서 새로 모읍니다.\n\n'
+    + (tok ? '· 설정의 GitHub 토큰으로 서버를 바로 깨웁니다 (1분 안 시작 · 다 모으는 데 10~20분)\n'
+           : '· 설정 탭에 GitHub 토큰이 없어 서버가 요청을 확인할 때까지 기다립니다 (몇 시간 걸릴 수 있어요)\n')
+    + '· 끝나면 이 화면이 저절로 새 점수로 바뀝니다\n· 학습지·확정 명단은 바뀌지 않습니다\n\n지금 요청할까요?';
+  if (!confirm(msg)) return;
+  var d = new Date(), iso = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+  var req = { status: 'requested', date: iso, reqAt: new Date().toISOString(), by: 'recovery' };
+  Promise.resolve(supaSetItem('mf_collect_req', req)).then(function(ok){
+    if (!ok){ plToast('요청 저장 실패 — 네트워크를 확인해 주세요'); return; }
+    RC154.req = req; rc154Poll(); try { render(); } catch(e){}
+    plToast(tok ? '🔄 요청했습니다 — 서버를 깨웠어요' : '🔄 요청했습니다 — 서버가 확인하면 시작돼요');
+  });
+};
+window.rc154Cancel = function(){
+  if (!RC154.req) return;
+  if (RC154.req.status === 'running'){ alert('이미 수집이 시작되어 취소할 수 없습니다. 곧 끝납니다.'); return; }
+  if (!confirm('채점 새로고침 요청을 취소할까요?')) return;
+  Promise.resolve(supaSetItem('mf_collect_req', Object.assign({}, RC154.req, { status: 'cancelled', cancelledAt: new Date().toISOString() }))).then(function(){ RC154.req = null; try { render(); } catch(e){} plToast('요청을 취소했습니다'); });
+};
+function rc154Poll(){
+  if (RC154.poll) return;
+  RC154.poll = setInterval(function(){
+    var before = RC154.req && RC154.req.status;
+    rc154Meta().then(function(){
+      var st = rc154State();
+      if (st.k === 'cool' || (RC154.req && RC154.req.status === 'done' && before !== 'done')){
+        clearInterval(RC154.poll); RC154.poll = null;
+        plToast('✅ 수집 완료 — 새 점수를 불러옵니다');
+        rc154Reload(true);
+        return;
+      }
+      if (st.k !== 'wait' && st.k !== 'run'){ clearInterval(RC154.poll); RC154.poll = null; }
+      try { if (VIEW === 'recovery') render(); } catch(e){}
+    });
+  }, 30000);
+}
+function rc154Bar(){
+  if (!RC154.t || Date.now() - RC154.t > 120000) rc154Meta().then(function(){ try { if (VIEW === 'recovery') render(); } catch(e){} });
+  var st = rc154State(); if (st.k === 'wait' || st.k === 'run') rc154Poll();
+  var lastTxt = RC154.at ? ('마지막 수집 <b>' + rc154HM(RC154.at) + '</b> <span style="color:#94a3b8">(' + rc154Ago(RC154.at) + ')</span>') : '마지막 수집 확인 중…';
+  var btn, base = 'border:none;font-family:inherit;font-size:12.5px;font-weight:900;padding:8px 14px;border-radius:10px;';
+  if (st.k === 'wait' || st.k === 'run'){
+    btn = '<button type="button" id="rc154-btn" data-rc154="' + st.k + '" onclick="rc154Cancel()" style="' + base + 'cursor:pointer;background:#475569;color:#fff">'
+      + (st.k === 'wait' ? '⏳ 요청됨 · 곧 시작' : '🔄 수집 중…') + ' <span style="font-size:10.5px;opacity:.85">' + (st.k === 'wait' ? ('요청 ' + rc154HM(st.q.reqAt) + ' · 누르면 취소') : esc2(st.q.note || '10~20분')) + '</span></button>';
+  } else if (st.k === 'cool'){
+    btn = '<button type="button" id="rc154-btn" data-rc154="cool" disabled style="' + base + 'cursor:default;background:#94a3b8;color:#fff">🕓 방금 모음 <span style="font-size:10.5px;opacity:.85">' + st.left + '분 후 다시 가능</span></button>';
+  } else {
+    btn = '<button type="button" id="rc154-btn" data-rc154="idle" onclick="rc154Fetch()" title="매쓰플랫 채점·주간테스트 점수를 서버에서 지금 새로 모읍니다" style="' + base + 'cursor:pointer;background:linear-gradient(135deg,#dc2626,#f43f5e);color:#fff;box-shadow:0 4px 12px rgba(220,38,38,.3)">🔄 채점 새로고침</button>';
+  }
+  return '<div id="rc154-bar" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:8px 12px;margin:0 0 12px;font-size:12.5px;font-weight:700;color:#7c2d12">'
+    + '<span>📡 매쓰플랫 채점 자료 · ' + lastTxt + '</span>'
+    + '<span style="margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap">'
+    + '<button type="button" id="rc154-reload" onclick="rc154Reload()" title="서버에 이미 모인 자료를 앱이 다시 읽습니다 (몇 초)" style="border:1.5px solid #fdba74;background:#fff;color:#9a3412;font-family:inherit;font-size:12px;font-weight:800;padding:7px 11px;border-radius:10px;cursor:pointer">↻ 다시 읽기</button>'
+    + btn + '</span></div>';
+}
+var RC154_TABBAR = '<div style="display:inline-flex;background:#f1f5f9;border-radius:12px;padding:4px;gap:4px;margin-bottom:14px">';
+var _rRecovery154 = rRecovery;
+rRecovery = function(){
+  var h = _rRecovery154.apply(this, arguments);
+  try {
+    if (!RC.loaded) return h;
+    h = h.split('rcLoad(true).then(function(){render()})').join('rc154Reload()');   /* 머리의 옛 새로고침도 전부 다시 읽기로 */
+    var i = h.indexOf(RC154_TABBAR);
+    if (i >= 0) h = h.slice(0, i) + rc154Bar() + h.slice(i);
+  } catch(e){}
+  return h;
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-155: 🚑 리커버리 학습지 3판 — «아직 틀린 문제» · 유형마다 1개 · 학생별 예상 · 최상 포함 선택 · 보드 한 줄
+ *   계약서 docs/recovery_recent_contract.md + 원장 10/23 밤 추가 결정(계약서보다 이것이 이긴다)
+ *   서버판 sync/rcws_make.js 와 같은 규칙. 규칙 값은 lumen_store rc_ws_rule 한 곳.
+ *
+ *  기본 구성 (원장 10/23 밤) = 테스트 오답 쌍둥이 1개 + 최근 «아직 틀린 문제» 유형마다 1개
+ *    교과서 같은 유형 · 보강 · 범위 안 교재 오답 · 자동 단원 오답은 끔(오른쪽 «학습지 규칙» 체크칸으로 켠다) · 상한/하한 «없음»
+ *    → 예전에 저장된 rc_ws_rule 에 v155 표시가 없으면 이 구성으로 한 번 바꿔 읽는다(다음 저장 때 v155:1 이 붙는다)
+ *  규칙 칸 (rc_ws_rule)
+ *    recent  { on:true, days:7 }  최근 N일(칩 1주·2주·4주) «문제별 마지막 결과가 아직 X» 인 문제 — 교재 workbook_problem_id · 학습지 problem_id 단위
+ *    perType true                 최근 오답·교재 오답은 유형마다 1개 = 그 유형에서 가장 최근 틀린 문제
+ *                                 (이번 주 테스트 오답 문제는 먼저 뺀 뒤 고른다 — 테스트 쌍둥이로 이미 들어가므로)
+ *    hardest false                최상(5단계) 포함 — 끄면 쌍둥이·같은 유형을 고를 때 level 5 를 빼고 4단계까지
+ *    unitAuto false               단원 정답률로 불린 학생의 자동 단원 오답
+ *    max 0 · min 0                학생 한 명 문항 상한·하한(0 = 없음). 넘으면 «쌍둥이 첫째 → 최근 오답(새것) → 교과서 → 쌍둥이 둘째 → 보강 → 교재 오답»
+ *                                 순으로 남기고, 모자라면 최근 오답 기간을 56일로 넓힌 뒤 테스트·최근 오답 유형의 같은 유형(보강)으로 채운다
+ *    exclude ''                   뺄 유형 이름 정규식(mf_concept_names) — 모든 재료와 쌍둥이 고르기에서 뺀다
+ *    per[학생키] (그 주에만)       recent:false · recentDays · hardest · max · min · unitOn 을 덮어쓴다
+ *  재료  rcws3Gather 를 감싸 한 학생 기록(mf_student_id + score_datetime>=, 기존 색인)을 56일치 읽어 «아직 틀린 문제»를 더한다.
+ *  계획  rcwsPlan 을 감싸 최근 오답 1개씩 · 빼는 유형 · 유형마다 1개 · 하한 · 상한 · 최상 포함 여부(plan.rule.hardest)
+ *  만들기 rcwsBuild 를 감싸 하한에서 더한 문제를 재료에 넣고 빼는 유형을 매쓰플랫 응답에서 걸러 낸다 · rcwsPickFrom 을 감싸 최상 빼기
+ *  화면  설계 팝업 «🕘 최근 오답» 칸 · 학생별 끄기·기간 칩·최상·문항 범위 / 오른쪽 «학습지 규칙» 칸 / «📊 학생별 예상»(확정 학생,
+ *        매쓰플랫 호출 없이 기록만으로 «테스트 쌍둥이 n + 최근 오답 n유형 = 예상 n문항» + 중단원 비율 막대) / 보드 카드 «🕘» 한 줄
+ *        보드·예상 자료는 후보 학생 전부를 in.(sid,…) 한 번(1000줄씩 넘김)에 읽어 메모리에 두고, 규칙을 바꾸면 다시 읽지 않고 센다.
+ *  ※ 문자열 연결만(템플릿 리터럴 금지). 바탕·앞 부품 함수는 감싸기만. 학생 실명은 화면에만.
+ * ═══════════════════════════════════════════════════════════════════ */
+var RW155 = { cname:null, cnameP:null, mk:[], bd:{ key:'', loading:'', bySid:{}, partial:false, err:'', win:0 }, fullBook:null, fullBoost:null, curOpt:null };
+var RW155_WIDE = 56;
+var RW155_DAYS = [7, 14, 28];
+var RW155_BASE = { twinPer:1, tbPer:0, bookTwin:0, boost:false, unitAuto:false, recent:{ on:true, days:7 }, perType:true, hardest:false, max:0, min:0, exclude:'', twoTestGrades:[] };
+var RW155_AUTOMAX = 40;   /* 원장 최종 결정: 상한은 기본 없음 — 기간이 2주 이상인 학생만 40 */
+RCWS_RULE_DEFAULT = Object.assign({}, RCWS_RULE_DEFAULT, RW155_BASE, { recent:{ on:true, days:7 } });
+
+/* ── 규칙: 예전 저장분은 새 기본 구성으로 한 번 바꿔 읽는다 ── */
+var _rw155Rule92 = rcwsRule;
+rcwsRule = function(){
+  var r = _rw155Rule92();
+  if (RCWS.rule && !RCWS.rule.v155) Object.keys(RW155_BASE).forEach(function(k){ r[k] = RW155_BASE[k]; });
+  r.recent = Object.assign({ on:true, days:7 }, (r.recent && typeof r.recent === 'object') ? r.recent : (r.recent === false ? { on:false } : {}));
+  r.v155 = 1;
+  r.auto = true;   /* 원장 10/23 밤 «리커버리 학습지는 항상 자동채점 문항으로만» — 매쓰플랫 기준, 끄는 칸 없음 */
+  return r;
+};
+/* ── 자동채점 = 매쓰플랫 자체 자동채점 가능 문항(autoScoredType ≠ IMPOSSIBLE · 교과서 은행은 auto) — 없으면 뺀다 ── */
+/* IMPOSSIBLE 로 시작하는 값(_DRAWING·_DESCRIPTIVE·_ETC·_EXAMPLE_ANSWER·_INPUT_LIMIT)과 UNDEFINED·UNIDENTIFIED 도 «자동채점 아님» (2026-10-23 초6·중1 전수 확인) */
+function rw155AutoOk(a){ return a === true || (typeof a === 'string' && a !== '' && !/^IMPOSSIBLE/.test(a) && a !== 'UNDEFINED' && a !== 'UNIDENTIFIED'); }
+function rw155MfAuto(p){ var a = p && (p.autoScoredType || p.auto); return rw155AutoOk(a); }
+var _rw155IsAuto92 = rcwsIsAuto;
+rcwsIsAuto = function(p, rule){
+  if (p && (p.autoScoredType != null || p.auto != null)) return rw155MfAuto(p);
+  return _rw155IsAuto92(p, { auto:true });                                  // 매쓰플랫 응답 단계에서 이미 걸렀다(rw155Api) — 남은 것은 서술형·정답 없음만 다시 본다
+};
+function rw155Clamp(d){ return Math.max(7, Math.min(120, Math.round(Number(d)) || 7)); }
+function rw155Cfg(rule, opt){
+  rule = rule || rcwsRule(); opt = opt || {};
+  var rc = rule.recent, on = true, days = 7;
+  if (rc === false) on = false;
+  else if (rc && typeof rc === 'object'){ on = rc.on !== false; days = Number(rc.days) || 7; }
+  var ruleDays = rw155Clamp(days);
+  days = opt.recentDays ? rw155Clamp(opt.recentDays) : ruleDays;
+  var num = function(v, d){ if (v === '' || v == null) return d; var n = Math.round(Number(v)); return n >= 0 ? n : d; };
+  var maxSet = (opt.max != null && opt.max !== '') ? num(opt.max, 0) : ((Number(rule.max) > 0) ? num(rule.max, 0) : null);
+  var max = (maxSet != null) ? maxSet : (days >= 14 ? RW155_AUTOMAX : 0), min = num(opt.min, num(rule.min, 0));
+  if (max > 0 && min > max) min = max;
+  var src = String(rule.exclude || '').trim(), ex = null;
+  if (src){ try { ex = new RegExp(src); } catch(e){ ex = null; } }
+  return { ruleRecentOn:on, recentOn:on && opt.recent !== false, days:days, ruleDays:ruleDays, perType:rule.perType !== false,
+    hardest:(opt.hardest != null ? !!opt.hardest : rule.hardest === true), ruleHardest:rule.hardest === true, unitAuto:rule.unitAuto === true,
+    max:max, autoMax:(maxSet == null && max > 0), min:min, ex:ex, exSrc:src };
+}
+function rw155DaysLabel(d){ return (d % 7 === 0) ? ((d / 7) + '주') : (d + '일'); }
+
+/* ── 유형 이름 사전 (mf_concept_names → 없으면 유형성취도 사전) ── */
+function rw155Names(){
+  if (RW155.cname) return Promise.resolve(RW155.cname);
+  if (RW155.cnameP) return RW155.cnameP;
+  RW155.cnameP = rcwsStore(['mf_concept_names']).then(function(st){ RW155.cname = st.mf_concept_names || {}; return RW155.cname; },
+    function(){ RW155.cname = {}; return RW155.cname; });
+  return RW155.cnameP;
+}
+function rw155CName(cid){
+  var c = RW155.cname && RW155.cname[cid];
+  var n = (c && typeof c === 'object') ? (c.n || c.name || '') : (typeof c === 'string' ? c : '');
+  if (!n){ var t = tqName(cid); if (t !== String(cid)) n = t; }
+  return n || '';
+}
+function rw155Mid(cid){ var c = RW155.cname && RW155.cname[cid]; var m = (c && typeof c === 'object' && c.m) || ''; if (!m){ try { m = rcUnitOf(cid) || ''; } catch(e){} } return m; }
+function rw155IsEx(cid, re){ if (!re || cid == null || isNaN(cid)) return false; var n = rw155CName(cid); return !!(n && re.test(n)); }
+/* 교재·학습지 제목 → 「중1-2」 같은 짧은 학년 글자 (없으면 빈 글자) */
+function rw155GL(title){
+  var s = String(title || ''), m = s.match(/(초|중|고)[^0-9]{0,6}(\d)\s*-\s*(\d)/);
+  if (m) return m[1] + m[2] + '-' + m[3];
+  m = s.match(/(초|중|고)[^0-9]{0,6}(\d)\s*\(\s*(상|하)/);
+  if (m) return m[1] + m[2] + '-' + (m[3] === '상' ? '1' : '2');
+  return '';
+}
+
+/* ── 문항 기록 읽기: 학생 한 명(eq) 또는 여러 명(in) · 1000줄씩 넘겨 읽기 ── */
+async function rw155Read(sids, since, cap){
+  var sb = getSupaClient(); if (!sb) throw new Error('서버 연결 없음');
+  var out = [], off = 0, pages = 0, partial = false;
+  while (true){
+    var q = sb.from('mf_answer_records').select('id,mf_student_id,source,worksheet_id,worksheet_title,student_worksheet_id,book_id,page,number,workbook_problem_id,problem_id,concept_id,level,result,score_datetime');
+    q = (sids.length === 1) ? q.eq('mf_student_id', sids[0]) : q.in('mf_student_id', sids);
+    q = q.gte('score_datetime', since).not('concept_id', 'is', null).order('id', { ascending:true });
+    var canRange = typeof q.range === 'function';
+    var r = await (canRange ? q.range(off, off + 999) : q.limit(1000));
+    if (r && r.error) throw new Error(r.error.message || '문항 기록을 읽지 못했습니다');
+    var d = (r && r.data) || []; out = out.concat(d); pages++;
+    if (d.length < 1000 || !canRange) break;
+    if (pages >= cap){ partial = true; break; }
+    off += 1000;
+  }
+  return { rows:out, partial:partial };
+}
+/* 문제별 «마지막 결과» — 교재는 workbook_problem_id, 학습지는 problem_id (서버판 addRecent 와 같은 열쇠) */
+function rw155Key(x){ return x.source === '교재' ? (x.workbook_problem_id ? 'w' + x.workbook_problem_id : '') : (x.problem_id ? 'p' + x.problem_id : ''); }
+function rw155T(x){ return Date.parse(x && x.score_datetime || '') || 0; }
+function rw155Still(rows, days, wideDays){
+  var now = Date.now(), s1 = now - days * 86400000, s2 = now - wideDays * 86400000, last = {}, hadX = {};
+  (rows || []).forEach(function(x){
+    var k = rw155Key(x); if (!k) return; k = String(x.mf_student_id) + '|' + k;
+    if (x.result === 'X' && rw155T(x) >= s1) hadX[k] = 1;
+    var o = last[k], a = rw155T(x), b = o ? rw155T(o) : -1;
+    if (!o || a > b || (a === b && Number(x.id || 0) >= Number(o.id || 0))) last[k] = x;
+  });
+  var rec = [], wide = [], fixed = 0;
+  Object.keys(last).forEach(function(k){ var x = last[k]; if (x.result !== 'X'){ if (hadX[k]) fixed++; return; } var t = rw155T(x);
+    if (t >= s1) rec.push(x); else if (t >= s2) wide.push(x); });
+  var byD = function(a, b){ return rw155T(b) - rw155T(a); };
+  rec.sort(byD); wide.sort(byD);
+  return { rec:rec, wide:wide, fixed:fixed };
+}
+function rw155Item(x){
+  var bk = x.source === '교재';
+  return { wpId:bk ? Number(x.workbook_problem_id) : null, bid:bk ? String(x.book_id) : '', page:bk ? x.page : '학습지', no:(x.number != null ? x.number : ''),
+    cid:Number(x.concept_id), lv:Number(x.level) || 3, date:String(x.score_datetime || '').slice(0, 10), at:rw155T(x), pid:bk ? null : Number(x.problem_id),
+    recent:true, src:bk ? '교재' : '학습지', title:String(x.worksheet_title || ''), book:bk ? '' : String(x.worksheet_title || '') };
+}
+/* 교재 문제 → 문제은행 번호 (mf_textbook_<교재> 은행 · 메모리에 둔다) */
+async function rw155Banks(items){
+  var need = {};
+  items.forEach(function(w){ if (w.src === '교재' && !w.pid && w.bid) need[w.bid] = 1; });
+  var miss = Object.keys(need).filter(function(b){ return RCWS.cache['bank_' + b] === undefined; });
+  if (miss.length){
+    var st = await rcwsStore(miss.map(function(b){ return 'mf_textbook_' + b; }));
+    miss.forEach(function(b){ var bank = st['mf_textbook_' + b], byWp = null;
+      if (bank && bank.problems){ byWp = {}; bank.problems.forEach(function(p){ byWp[String(p.id)] = p; }); }
+      RCWS.cache['bank_' + b] = byWp ? { title:bank.title || '', byWp:byWp } : null; });
+  }
+  items.forEach(function(w){ if (w.src !== '교재' || w.pid) return; var B = RCWS.cache['bank_' + w.bid]; if (!B) return;
+    var p = B.byWp[String(w.wpId)]; if (p) w.pid = rcwsBankId(p); if (!w.book) w.book = B.title; });
+}
+
+/* ── 재료: «아직 틀린 문제» 더하기 ── */
+async function rw155AddRecent(M, row, opt){
+  var R = rw155Cfg(rcwsRule(), opt);
+  M.recentWide = []; M.recentInfo = null;
+  if (!R.ruleRecentOn || M.sid == null) return;
+  var win = Math.max(R.days, RW155_WIDE), ck = 'r155_' + M.sid + '_' + win, got = RCWS.cache[ck];
+  if (!got){ got = await rw155Read([M.sid], new Date(Date.now() - win * 86400000).toISOString(), 10); RCWS.cache[ck] = got; }
+  await rw155Names();
+  var S = rw155Still(got.rows, R.days, win);
+  var testP = {}, byWp = {}, byP = {}, range = {};
+  M.wrong.forEach(function(w){ if (w.pid) testP[w.pid] = 1; });
+  M.bookWrong.forEach(function(w){ if (w.wpId) byWp[w.wpId] = w; if (w.pid) byP[w.pid] = w; });
+  (M.range || []).forEach(function(c){ range[c] = 1; });
+  var add = [], up = 0;
+  S.rec.forEach(function(x){
+    var w = rw155Item(x), o = (w.src === '교재') ? byWp[w.wpId] : byP[w.pid];
+    if (w.src === '학습지' && testP[w.pid]) return;                         // 이번 테스트 오답 그 문제 — 쌍둥이로 이미 들어감(유형마다 1개 고르기 전에 뺀다)
+    if (o){ if (!o.recent){ o.recent = true; o.rbase = o.unit ? 'unit' : 'book'; o.at = w.at; o.out = !range[o.cid]; up++; } return; }   // 범위 안 교재·단원 오답과 같은 문제 — 한 번만
+    w.out = !range[w.cid]; add.push(w);
+  });
+  var wide = [];
+  S.wide.forEach(function(x){ var w = rw155Item(x); if ((w.src === '학습지' && testP[w.pid]) || (w.src === '교재' ? byWp[w.wpId] : byP[w.pid])) return; w.wide = true; w.out = !range[w.cid]; wide.push(w); });
+  await rw155Banks(add.concat(wide));
+  add.forEach(function(w){ M.bookWrong.push(w); if (w.pid) M.solved[String(w.pid)] = 1; });
+  wide.forEach(function(w){ if (w.pid) M.solved[String(w.pid)] = 1; });
+  M.recentWide = wide;
+  M.recentInfo = rw155Info(M.bookWrong.filter(function(w){ return w.recent; }), R);
+  M.recentInfo.up = up; M.recentInfo.partial = !!got.partial; M.recentInfo.wideN = wide.length; M.recentInfo.fixed = S.fixed;
+}
+/* 교재·학습지별 · 중단원별 개수 */
+function rw155Info(list, R){
+  var bySrc = {}, byMid = {}, out = 0, types = {};
+  list.forEach(function(w){
+    var s = w.src === '학습지' ? ('학습지 ' + (w.title || '')) : (w.book || w.title || ('교재 ' + w.bid));
+    s = s.length > 18 ? s.slice(0, 18) + '…' : s;
+    bySrc[s] = (bySrc[s] || 0) + 1;
+    var m = rw155Mid(w.cid) || '기타'; byMid[m] = (byMid[m] || 0) + 1;
+    if (w.out) out++; types[w.cid] = 1;
+  });
+  var srt = function(o){ return Object.keys(o).map(function(k){ return [k, o[k]]; }).sort(function(a, b){ return b[1] - a[1]; }); };
+  return { n:list.length, types:Object.keys(types).length, out:out, bySrc:srt(bySrc), byMid:srt(byMid), days:R.days };
+}
+var _rw155Gather123 = rcws3Gather;
+rcws3Gather = async function(row, opt){
+  RW155.curOpt = opt || null;
+  var M;
+  try { M = await _rw155Gather123(row, opt); } finally { RW155.curOpt = null; }
+  try { await rw155TbAuto(M); } catch(e){}
+  try { await rw155AddRecent(M, row, opt || {}); }
+  catch(e){ M.recentWide = []; M.recentInfo = null; M.warn.push('최근 «아직 틀린 문제»를 읽지 못했습니다: ' + (e.message || e)); }
+  return M;
+};
+/* 교과서 은행 문항도 매쓰플랫 자동채점(p.autoScoredType || p.auto)만 — 둘 다 없으면 뺀다 (모자라면 만들 때 같은 유형으로) */
+async function rw155TbAuto(M){
+  if (!M || !M.tb || !M.tb.bid) return;
+  var ck = 'tbank_' + M.tb.bid, A = RCWS.cache[ck];
+  if (A === undefined){ var st = await rcwsStore(['mf_textbook_' + M.tb.bid]), bank = st['mf_textbook_' + M.tb.bid]; A = null;
+    if (bank && bank.problems){ A = {}; bank.problems.forEach(function(p){ var id = rcwsBankId(p); if (id) A[id] = p.autoScoredType || p.auto || ''; }); }
+    RCWS.cache[ck] = A; }
+  if (!A) return;
+  var by = {}, drop = 0;
+  Object.keys(M.tb.byCid || {}).forEach(function(c){ by[c] = (M.tb.byCid[c] || []).filter(function(q){ var a = A[q.id]; if (rw155AutoOk(a)){ q.autoScoredType = a; return true; } drop++; return false; }); });
+  M.tb = Object.assign({}, M.tb, { byCid:by, autoDrop:drop });
+}
+/* 자동 단원 오답 — 꺼진 학생은 읽지 않는다(매쓰플랫 유형칩 호출도 없음). 팝업의 «단원 오답 넣기»로 켜면 다시 모은다 */
+var _rw155Units123 = rcws3AddUnits;
+rcws3AddUnits = async function(M, units){
+  var o = RW155.curOpt;
+  if (o && o.unit === false){ M.unitInfo = (units || []).map(function(u){ return { n:u.n, rate:u.rate, cids:0, wrong:0, how:'꺼짐 — «단원 오답 넣기»로 켜기' }; }); return; }
+  return _rw155Units123.apply(this, arguments);
+};
+var _rw155Tog123 = window.rcws3Toggle;
+window.rcws3Toggle = rcws3Toggle = function(k){
+  var r = _rw155Tog123.apply(this, arguments);
+  if (k === 'unit') return Promise.resolve(r).then(function(){ return rcws3Refresh(true); });
+  return r;
+};
+/* 학생별 단추 반영: 최근 오답은 «학생별 끄기»만 본다 (교재 오답 빼기와 상관없음) */
+var _rw155View123 = rcws3View;
+rcws3View = function(raw, opt){
+  var v = _rw155View123(raw, opt); opt = opt || {};
+  var on = rw155Cfg(rcwsRule(), opt).recentOn, out = [];
+  raw.bookWrong.forEach(function(w){
+    if (w.recent && on){ out.push(w); return; }
+    if (w.recent && !w.rbase) return;                                       // 최근 오답으로만 들어온 문제
+    var keep = w.unit ? (opt.unit !== false) : !opt.noBook;
+    if (keep) out.push(w.recent ? Object.assign({}, w, { recent:false }) : w);
+  });
+  v.bookWrong = out;
+  v.recentWide = on ? (raw.recentWide || []) : [];
+  v.recentInfo = raw.recentInfo || null;
+  return v;
+};
+
+/* ── 학생별 선택 (그 주에만 — rcws3SaveOpt 와 같은 자리) ── */
+var _rw155Opt123 = rcws3Opt;
+rcws3Opt = function(row){
+  var o = _rw155Opt123(row), p = (rcwsRule().per || {})[row.stKey], R = rw155Cfg(rcwsRule(), {});
+  if (!p || p.wk !== rcWeekKey()) p = null;
+  o.recent = !(p && p.recent === false);
+  o.recentDays = (p && p.recentDays) ? rw155Clamp(p.recentDays) : null;
+  o.hardest = (p && p.hardest != null) ? !!p.hardest : null;
+  o.max = (p && p.max != null && p.max !== '') ? Number(p.max) : null;
+  o.min = (p && p.min != null && p.min !== '') ? Number(p.min) : null;
+  if (p && p.unitOn === true) o.unit = true;
+  else if (!R.unitAuto) o.unit = false;                                      // 규칙에서 꺼짐 → 학생별로 켠 경우만
+  return o;
+};
+var _rw155SaveOpt123 = rcws3SaveOpt;
+rcws3SaveOpt = function(stKey, o){
+  var keep = rcwsSaveRule, before = rcwsRule().per || {};
+  rcwsSaveRule = function(r){
+    if (r && r.per) Object.keys(before).forEach(function(k){ var sj = before[k] && before[k].subject; if (!sj) return;   /* 고등 과목은 주가 바뀌어도 남긴다 */
+      if (r.per[k]){ if (!r.per[k].subject) r.per[k].subject = sj; } else r.per[k] = { subject:sj }; });
+    if (o && r && r.per && r.per[stKey]){ var e = r.per[stKey];
+      if (!o.custom) delete e.wids;                                          // 시험을 직접 고르지 않았으면 고정하지 않는다(새 주간테스트가 들어오면 그것으로)
+      if (o.recent === false) e.recent = false;
+      if (o.recentDays) e.recentDays = rw155Clamp(o.recentDays);
+      if (o.hardest != null) e.hardest = !!o.hardest;
+      if (o.max != null) e.max = Number(o.max);
+      if (o.min != null) e.min = Number(o.min);
+      e.unitOn = o.unit === true; }
+    return keep(r);
+  };
+  try { return _rw155SaveOpt123(stKey, o); } finally { rcwsSaveRule = keep; }
+};
+
+/* ── 계획: 최근 오답 1개씩 · 빼는 유형 · 유형마다 1개 · 하한 · 상한 · 최상 ── */
+function rw155Rank(x){ return (x.w.recent || x.wide) ? 0 : (x.w.unit ? 1 : 2); }
+function rw155BookOrd(a, b){ var ra = rw155Rank(a), rb = rw155Rank(b); return (ra - rb) || (ra === 0 ? ((b.w.at || 0) - (a.w.at || 0)) || String(b.w.date || '').localeCompare(String(a.w.date || '')) : 0) || (a.i - b.i); }
+function rw155ApplyPlan(p, M, opt){
+  var R = rw155Cfg(p.rule, opt), info = { R:R, ex:{}, exN:0, grp:0, wide:0, fill:0, cut:null, cutN:0, extra:[] };
+  p.r155 = info; p.rule.hardest = R.hardest;
+  // ⓪ 최근 오답은 문제마다 쌍둥이 1개 (범위 안 교재 오답 칸과 따로)
+  p.book.forEach(function(x){ if (x.w.recent) x.n = 1; });
+  // ① 빼는 유형
+  if (R.ex){
+    var chk = function(c){ if (info.ex[c] === undefined) info.ex[c] = rw155IsEx(c, R.ex); return info.ex[c]; };
+    ['test', 'tb', 'book'].forEach(function(k){ p[k].forEach(function(x){ if (chk(x.w.cid)){ if (k !== 'tb') info.exN++; x.n = 0; x.ex = true; } }); });
+    p.boost.forEach(function(b){ if (chk(b.cid)){ b.n = 0; b.ex = true; } });
+    Object.keys(info.ex).forEach(function(c){ if (!info.ex[c]) delete info.ex[c]; });
+  }
+  // ② 유형마다 1개 — 그 유형에서 가장 최근 틀린 문제(최근 오답 → 단원 오답 → 교재 오답 순)
+  if (R.perType){
+    var seen = {};
+    p.book.filter(function(x){ return x.n > 0; }).sort(rw155BookOrd).forEach(function(x){
+      var c = x.w.cid; if (seen[c]){ x.n = 0; x.grp = true; info.grp++; } else seen[c] = 1; });
+  }
+  var tot = function(){ return rcwsPlanTotals(p).total; };
+  // ③ 하한 — 최근 오답 기간을 56일로 넓혀 → 그래도 모자라면 테스트·최근 오답 유형의 같은 유형(보강으로 셈)
+  if (R.min > 0 && tot() < R.min){
+    var per = {};
+    p.book.forEach(function(x){ if (x.n > 0) per[x.w.cid] = (per[x.w.cid] || 0) + 1; });
+    var wides = (R.recentOn && M.recentWide) || [];
+    for (var i = 0; i < wides.length && tot() < R.min; i++){
+      var w = wides[i]; if (rw155IsEx(w.cid, R.ex)) continue; if (R.perType && per[w.cid]) continue;
+      per[w.cid] = (per[w.cid] || 0) + 1; p.book.push({ i:p.book.length, w:w, n:1, wide:true }); info.extra.push(w); info.wide++;
+    }
+    var need = R.min - tot();
+    if (need > 0){
+      var cl = [], sc = {};
+      var addc = function(c){ if (c == null || isNaN(c) || sc[c] || rw155IsEx(c, R.ex)) return; sc[c] = 1; cl.push(Number(c)); };
+      p.test.forEach(function(x){ addc(x.w.cid); });
+      p.book.forEach(function(x){ if (x.w.recent || x.wide) addc(x.w.cid); });
+      if (!cl.length) p.book.forEach(function(x){ addc(x.w.cid); });
+      if (cl.length){ var fills = {};
+        for (var j = 0; j < need; j++){ var c = cl[j % cl.length]; fills[c] = (fills[c] || 0) + 1; }
+        cl.forEach(function(c){ if (fills[c]) p.boost.push({ cid:c, n:fills[c], times:0, fill:true }); });
+        info.fill = need; }
+    }
+  }
+  // ④ 상한 — 우선순위대로 남긴다
+  if (R.max > 0 && tot() > R.max){
+    var units = [];
+    p.test.forEach(function(x, j){ for (var r = 0; r < x.n; r++) units.push({ x:x, pr:r ? 3 : 0, o:j, d:0, k:r ? 'twin2' : 'twin1' }); });
+    p.book.forEach(function(x){ var rc = !!(x.w.recent || x.wide); for (var r = 0; r < x.n; r++) units.push({ x:x, pr:rc ? 1 : 5, o:x.i, d:rc ? (x.w.at || Date.parse(x.w.date || '') || 0) : 0, k:rc ? 'recent' : 'book' }); });
+    p.tb.forEach(function(x, j){ for (var r = 0; r < x.n; r++) units.push({ x:x, pr:2, o:j, d:0, k:'tb' }); });
+    p.boost.forEach(function(b, j){ for (var r = 0; r < b.n; r++) units.push({ x:b, pr:4, o:j, d:0, k:'boost' }); });
+    units.sort(function(a, b){ return (a.pr - b.pr) || (b.d - a.d) || (a.o - b.o); });
+    var cut = {}, all = [p.test, p.tb, p.book, p.boost];
+    units.slice(R.max).forEach(function(u){ cut[u.k] = (cut[u.k] || 0) + 1; });
+    all.forEach(function(L){ L.forEach(function(x){ x._k155 = 0; }); });
+    units.slice(0, R.max).forEach(function(u){ u.x._k155++; });
+    all.forEach(function(L){ L.forEach(function(x){ if (x.n !== x._k155) x.cut = x.n - x._k155; x.n = x._k155; delete x._k155; }); });
+    info.cut = cut; info.cutN = units.length - R.max;
+  }
+  return p;
+}
+var _rw155Plan123 = rcwsPlan;
+rcwsPlan = function(model, rule, opt){
+  var p = _rw155Plan123(model, rule, opt);
+  try { rw155ApplyPlan(p, model, p.opt || opt || (model && model.opt) || {}); } catch(e){ try { console.error('[리커버리 3판 계획]', e); } catch(_){} }
+  return p;
+};
+var _rw155Totals123 = rcwsPlanTotals;
+rcwsPlanTotals = function(plan){
+  var t = _rw155Totals123(plan), u = 0, rc = 0, fl = 0;
+  plan.book.forEach(function(x){ if (x.w.recent || x.wide) rc += x.n; else if (x.w.unit) u += x.n; });
+  plan.boost.forEach(function(b){ if (b.fill) fl += b.n; });
+  t.recent = rc; t.unit = u; t.bookOnly = t.book - u - rc; t.fill = fl;
+  return t;
+};
+
+/* ── 만들기: 최상 빼기 · 하한에서 더한 문제를 재료에 · 빼는 유형은 매쓰플랫 응답에서 걸러 냄 ── */
+var _rw155Pick92 = rcwsPickFrom;
+rcwsPickFrom = function(list, lv, n, excl, chosen, rule){
+  if (rule && rule.hardest === false){ list = (list || []).filter(function(p){ return (Number(p && p.lv) || 3) < 5; }); lv = Math.min(Number(lv) || 3, 4); }
+  return _rw155Pick92(list, lv, n, excl, chosen, rule);
+};
+function rw155Strip(path, d, ex, st){
+  st = st || { drop:0, auto:{} };
+  var bad = function(pr){ var c = pr && (pr.conceptId != null ? pr.conceptId : pr.cid);
+    if (pr && pr.id != null && rw155MfAuto(pr)) st.auto[pr.id] = 1;
+    if (pr && !rw155MfAuto(pr)){ st.drop++; return true; }                    // 자동채점 아님 → 뺀다
+    return c != null && ex[c]; };
+  if (!d || typeof d !== 'object') return d;
+  if (/^\/derivation\/problem\//.test(path)){
+    var o = Object.assign({}, d);
+    ['pairProblemList', 'similarProblemList'].forEach(function(k){ if (Array.isArray(d[k])) o[k] = d[k].filter(function(x){ return !bad(x && (x.problem || x)); }); });
+    return o;
+  }
+  if (path === '/worksheet/problem'){
+    if (Array.isArray(d)) return d.filter(function(x){ return !bad(x && (x.problem || x)); });
+    if (Array.isArray(d.problemList)) return Object.assign({}, d, { problemList:d.problemList.filter(function(x){ return !bad(x && (x.problem || x)); }) });
+  }
+  return d;
+}
+function rw155Api(api, ex, st){
+  ex = ex || {}; st = st || { drop:0, auto:{} };
+  return { st:st, call:function(m, p, b){
+    if (p === '/worksheet/filter/concept' && b) b = Object.assign({}, b, { onlyAutoScorable:true });   // 매쓰플랫 필터부터 자동채점 문항만
+    return Promise.resolve(api.call(m, p, b)).then(function(d){ return rw155Strip(p, d, ex, st); }); } };
+}
+var _rw155Build123 = rcwsBuild;
+rcwsBuild = async function(model, plan, api, onLog){
+  var I = plan.r155 || { ex:{}, extra:[] }, ex = I.ex || {};
+  var notEx = function(w){ return !ex[w.cid]; };
+  var M2 = Object.assign({}, model, { wrong:model.wrong.filter(notEx), bookWrong:model.bookWrong.filter(notEx).concat(I.extra || []) });
+  var P2 = Object.assign({}, plan, { boost:plan.boost.filter(function(b){ return !ex[b.cid]; }) });
+  var API = rw155Api(api, ex);
+  ((M2.tb && M2.tb.byCid) ? Object.keys(M2.tb.byCid) : []).forEach(function(c){ (M2.tb.byCid[c] || []).forEach(function(q){ if (rw155MfAuto(q)) API.st.auto[q.id] = 1; }); });
+  var res = await _rw155Build123(M2, P2, API, onLog);
+  try { var t = rcwsPlanTotals(plan); res.parts = res.parts || {}; res.parts.recent = t.recent; if (t.fill) res.parts.fill = t.fill;
+    res.parts.nonAuto = (res.items || []).filter(function(it){ return !API.st.auto[it.id]; }).length; res.parts.autoDrop = API.st.drop; } catch(e){}
+  return res;
+};
+
+/* ── 설계 팝업: «🕘 최근 오답» 칸 · 학생별 끄기·기간·최상·문항 범위 · 하한 채우기 칸 ── */
+function rw155CurOk(){ var C = RCWS_CUR; return !!(C && !C.busy && !C.loading); }
+window.rw155Tog = function(){ if (!rw155CurOk()) return; var C = RCWS_CUR; C.opt.recent = (C.opt.recent === false); rcws3SaveOpt(C.stKey, C.opt); return rcws3Refresh(false); };
+window.rw155Days = function(d){
+  if (!rw155CurOk()) return; var C = RCWS_CUR, RR = rw155Cfg(C.rule, {});
+  d = rw155Clamp(d); C.opt.recentDays = (d === RR.ruleDays) ? null : d;
+  rcws3SaveOpt(C.stKey, C.opt); return rcws3Refresh(true);
+};
+window.rw155Hard = function(){
+  if (!rw155CurOk()) return; var C = RCWS_CUR, R = rw155Cfg(C.rule, C.opt), RR = rw155Cfg(C.rule, {});
+  var v = !R.hardest; C.opt.hardest = (v === RR.ruleHardest) ? null : v;
+  rcws3SaveOpt(C.stKey, C.opt); return rcws3Refresh(false);
+};
+window.rw155Lim = function(k, v){
+  if (!rw155CurOk()) return; var C = RCWS_CUR;
+  var s = String(v == null ? '' : v).trim();
+  var nv = (s === '') ? null : Math.max(0, Math.min(200, Math.round(Number(s)) || 0));
+  if (nv === (C.opt[k] == null ? null : C.opt[k])) return;                 // 같은 값 (다시 그릴 때 blur 로 한 번 더 오는 change) — 무시
+  C.opt[k] = nv;
+  rcws3SaveOpt(C.stKey, C.opt); return rcws3Refresh(false);
+};
+var _rw155Sum123 = rcws3Summary;
+rcws3Summary = function(M, P){
+  if (RCWS_CUR && P === RCWS_CUR.plan && (RW155.fullBook || RW155.fullBoost)) P = Object.assign({}, P, { book:RW155.fullBook || P.book, boost:RW155.fullBoost || P.boost });
+  var S = _rw155Sum123(M, P), t = rcwsPlanTotals(P);
+  S.t = t;
+  S.text = S.text.replace(' · 교재 오답 ', ' · 최근 오답 ' + t.recent + ' · 교재 오답 ');
+  var I = P.r155;
+  if (I){ var lim = [];
+    if (!I.R.hardest) lim.push('최상 뺌');
+    if (I.R.min || I.R.max) lim.push('문항 ' + (I.R.min || 0) + '~' + (I.R.max || '제한 없음'));
+    if (I.cutN) lim.push('상한으로 ' + I.cutN + '문항 뺌');
+    if (I.wide || I.fill) lim.push('하한 채움 ' + (I.wide ? '최근 ' + RW155_WIDE + '일 ' + I.wide : '') + (I.wide && I.fill ? ' · ' : '') + (I.fill ? '같은 유형 ' + I.fill : ''));
+    if (lim.length) S.text += ' (' + lim.join(' · ') + ')'; }
+  return S;
+};
+function rw155Chips(cur, pre, dis, attr){   /* pre = onclick 앞부분 (예 «rw155Days(») — 뒤에 일수와 «)» 를 붙인다 */
+  return RW155_DAYS.map(function(d){ var on = d === cur;
+    return '<button type="button" ' + (attr || '') + ' data-rw155-days="' + d + '" onclick="' + pre + d + ')" style="border:1.5px solid ' + (on ? '#c2410c' : '#e2e8f0') + ';background:' + (on ? '#c2410c' : '#fff') + ';color:' + (on ? '#fff' : '#64748b') + ';border-radius:7px;padding:3px 8px;font-family:inherit;font-size:11px;font-weight:900;cursor:pointer"' + (dis || '') + '>' + rw155DaysLabel(d) + '</button>'; }).join('');
+}
+function rw155PaintPatch(h, C, full, fullBoost){
+  var M = C.model, P = C.plan, I = P.r155 || { R:rw155Cfg(P.rule, C.opt), ex:{} }, R = I.R, RR = rw155Cfg(P.rule, {}), O = C.opt || {}, RI = M.recentInfo;
+  var rowH = function(no, main, sub, ctl){ return '<div style="display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:center;padding:7px 11px;border-top:1px solid #f1f5f9;font-size:12px"><span style="font-family:ui-monospace,monospace;font-weight:700;color:#64748b">' + no + '</span><span><b>' + main + '</b><small style="display:block;color:#64748b;font-size:10.5px;font-weight:700">' + sub + '</small></span>' + ctl + '</div>'; };
+  var blk = function(title, sub, attr){ return '<div ' + (attr || '') + ' style="border:1px solid #e2e8f0;border-radius:11px;overflow:hidden;margin-bottom:9px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 11px;background:#f1f5f9;flex-wrap:wrap"><b style="font-size:12.5px">' + title + '</b><small style="font-size:11px;color:#64748b;font-weight:700">' + sub + '</small></div>'; };
+  var lvTag = function(lv){ return ' <span style="font-size:10px;font-weight:900;padding:1px 6px;border-radius:5px;background:' + (lv >= 5 ? '#fee2e2;color:#b91c1c' : '#fef3c7;color:#b45309') + '">' + (RCWS_LV[lv] || '') + '</span>'; };
+  // ① 학생별: 최근 오답 끄기 · 기간 칩 · 최상 · 문항 범위 (구성 한 줄 바로 위)
+  var on = R.recentOn, dis = (C.loading || C.busy) ? ' disabled' : '';
+  var btn = function(attr, onc, active, label, title, col){ return '<button ' + attr + ' onclick="' + onc + '" title="' + esc2(title) + '" style="border:1.5px solid ' + (active ? col : '#e2e8f0') + ';background:' + (active ? '#fff7ed' : '#fff') + ';color:' + (active ? col : '#64748b') + ';border-radius:8px;padding:5px 10px;font-family:inherit;font-size:11.5px;font-weight:900;cursor:pointer"' + dis + '>' + (active ? '✓ ' : '') + label + '</button>'; };
+  var ctl = '<div data-rw155-ctl style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:8px;font-size:11.5px;font-weight:800;color:#475569">'
+    + (R.ruleRecentOn ? btn('data-rcws-tg="recent"', 'rw155Tog()', on, '🕘 최근 오답 넣기', '최근 «아직 틀린 문제»(테스트 범위와 상관없이) — 이 학생만 끄기', '#c2410c')
+        + (on ? '<span style="display:inline-flex;gap:3px;align-items:center">' + rw155Chips(R.days, 'rw155Days(', dis) + (O.recentDays ? '<small style="color:#c2410c">이 학생만</small>' : '') + '</span>' : '')
+      : '<span style="color:#94a3b8">🕘 최근 오답 — 규칙에서 꺼짐(오른쪽 «학습지 규칙»)</span>')
+    + btn('data-rw155-hard', 'rw155Hard()', R.hardest, '최상(5단계) 포함', '끄면 쌍둥이·같은 유형을 고를 때 최상 문제를 빼고 상(4단계)까지', '#b91c1c')
+    + (R.autoMax && !O.max ? '<span data-rw155-automax style="color:#b91c1c">· 기간 2주 이상 → 상한 ' + RW155_AUTOMAX + ' 자동</span>' : '')
+    + '<label>문항 <input id="rw155-min" type="number" min="0" max="200" value="' + (O.min != null ? O.min : '') + '" placeholder="' + (RR.min || '없음') + '" onchange="rw155Lim(\'min\',this.value)" style="width:46px;font-family:inherit;font-size:11.5px;font-weight:800;border:1.5px solid #e2e8f0;border-radius:7px;padding:3px 5px"' + dis + '>~<input id="rw155-max" type="number" min="0" max="200" value="' + (O.max != null ? O.max : '') + '" placeholder="' + (RR.max || '없음') + '" onchange="rw155Lim(\'max\',this.value)" style="width:46px;font-family:inherit;font-size:11.5px;font-weight:800;border:1.5px solid #e2e8f0;border-radius:7px;padding:3px 5px"' + dis + '> <small style="color:#94a3b8">(이 학생만 · 비우면 규칙)</small></label>'
+    + (R.perType ? '<span style="color:#64748b">· 유형마다 1개</span>' : '')
+    + (R.exSrc ? '<span style="color:#b91c1c">· 빼는 유형 «' + esc2(R.exSrc) + '»' + (I.exN ? ' ' + I.exN + '문항 뺌' : '') + '</span>' : '')
+    + '</div>';
+  var k = h.indexOf('<div data-rcws-sum'); if (k >= 0) h = h.slice(0, k) + ctl + h.slice(k);
+  // ② 상한·하한 안내
+  var notes = '';
+  if (I.cutN){ var nm = { twin1:'쌍둥이 첫째', recent:'최근 오답', tb:'교과서', twin2:'쌍둥이 둘째', boost:'보강', book:'교재·단원 오답' };
+    notes += '<div data-rw155-cut style="background:#fef2f2;color:#991b1b;border-radius:9px;padding:7px 10px;font-size:11.5px;font-weight:800;margin-bottom:8px">✂ 상한 ' + R.max + '문항 — ' + I.cutN + '문항 뺐습니다 (' + Object.keys(I.cut).map(function(x){ return (nm[x] || x) + ' ' + I.cut[x]; }).join(' · ') + ') · 남기는 순서: 쌍둥이 첫째 → 최근 오답 → 교과서 → 쌍둥이 둘째 → 보강 → 교재 오답</div>'; }
+  if (I.wide || I.fill) notes += '<div data-rw155-fill style="background:#f0fdf4;color:#166534;border-radius:9px;padding:7px 10px;font-size:11.5px;font-weight:800;margin-bottom:8px">➕ 하한 ' + R.min + '문항 — ' + (I.wide ? '최근 오답 기간을 ' + RW155_WIDE + '일로 넓혀 ' + I.wide + '문항' : '') + (I.wide && I.fill ? ' · ' : '') + (I.fill ? '테스트·최근 오답 유형의 같은 유형 ' + I.fill + '문항(보강)' : '') + ' 더했습니다</div>';
+  if (notes){ var k2 = h.indexOf('<div data-rcws-sum'); if (k2 >= 0){ var e2 = h.indexOf('</div>', k2); if (e2 >= 0) h = h.slice(0, e2 + 6) + notes + h.slice(e2 + 6); } }
+  // ③ 🕘 최근 오답 칸
+  var rl = full.filter(function(x){ return x.w.recent || x.wide; });
+  rl.sort(function(a, b){ return (a.wide ? 1 : 0) - (b.wide ? 1 : 0) || (b.w.at || 0) - (a.w.at || 0) || a.i - b.i; });
+  var rb = '';
+  if (R.ruleRecentOn){
+    var n = RI ? RI.n : 0, sum = rl.reduce(function(a, x){ return a + x.n; }, 0);
+    rb += blk('🕘 최근 오답 ' + (on ? n : 0) + '문항' + (on && RI ? ' (' + RI.types + '유형)' : '') + ' → 쌍둥이 ' + (on ? sum : 0), on ? ('최근 ' + rw155DaysLabel(R.days) + ' «아직 틀린 문제» · 다시 풀어 맞힌 문제는 뺌' + (RI && RI.out ? ' · 테스트 범위 밖 ' + RI.out : '')) : '이 학생은 끔', 'data-rw155-recent');
+    if (!on) rb += '<div style="padding:10px 11px;font-size:12px;color:#94a3b8;font-weight:700">🕘 최근 오답 넣기를 끈 학생입니다</div>';
+    else if (!rl.length && !(RI && RI.n)) rb += '<div style="padding:10px 11px;font-size:12px;color:#94a3b8;font-weight:700">최근 ' + rw155DaysLabel(R.days) + '에 아직 틀린 문제가 없습니다</div>';
+    else {
+      if (RI){
+        rb += '<div data-rw155-src style="padding:6px 11px;border-top:1px solid #f1f5f9;font-size:11.5px;font-weight:800;color:#9a3412">교재·학습지별 ' + RI.bySrc.slice(0, 5).map(function(a){ return esc2(a[0]) + ' ' + a[1]; }).join(' · ') + (RI.bySrc.length > 5 ? ' …' : '') + '</div>';
+        rb += '<div data-rw155-mid style="padding:6px 11px;border-top:1px solid #f1f5f9;font-size:11.5px;font-weight:800;color:#9a3412">중단원별 ' + RI.byMid.slice(0, 6).map(function(a){ return esc2(a[0]) + ' ' + a[1]; }).join(' · ') + (RI.byMid.length > 6 ? ' …' : '') + '</div>';
+        var gone = []; if (RI.fixed) gone.push('다시 풀어 맞힌 문제 ' + RI.fixed); if (I.exN) gone.push('빼는 유형 «' + esc2(R.exSrc) + '» ' + I.exN); if (I.grp) gone.push('같은 유형의 더 오래된 오답 ' + I.grp);
+        if (gone.length) rb += '<div data-rw155-gone style="padding:6px 11px;border-top:1px solid #f1f5f9;font-size:11.5px;font-weight:800;color:#64748b">🚫 뺀 것 ' + gone.join(' · ') + '</div>';
+        if (RI.partial) rb += '<div style="padding:6px 11px;font-size:11px;font-weight:800;color:#b45309">⚠ 기록이 많아 일부만 읽었습니다</div>';
+      }
+      rl.forEach(function(x, j){ var w = x.w, tags = [];
+        if (w.out) tags.push('<span style="color:#c2410c">테스트 범위 밖</span>');
+        if (x.wide) tags.push('하한 채우기(' + RW155_WIDE + '일)');
+        if (w.rbase) tags.push(w.rbase === 'unit' ? '단원 오답과 같은 문제' : '범위 안 교재 오답과 같은 문제');
+        if (x.grp) tags.push('같은 유형의 더 최근 문제가 있어 뺌');
+        if (x.ex) tags.push('<span style="color:#b91c1c">빼는 유형</span>');
+        if (x.cut) tags.push('상한으로 ' + x.cut + ' 뺌');
+        var title = (w.src === '학습지' ? '📄 ' + (w.title ? w.title.slice(0, 16) + ' ' : '') + w.no + '번' : (w.book ? w.book.slice(0, 16) + ' ' : '') + 'p.' + w.page + ' ' + w.no + '번');
+        rb += rowH(String(j + 1), esc2(title) + lvTag(w.lv), esc2(rw155CName(w.cid) || tqName(w.cid)) + ' · ' + esc2(String(w.date || '').slice(5).replace('-', '.')) + ' 채점' + (w.pid ? '' : ' · 번호 못 찾음 → 같은 유형으로 대체') + (tags.length ? ' · ' + tags.join(' · ') : ''), rcwsSeg('book', x.i, x.n, 2));
+      });
+    }
+    rb += '</div>';
+  }
+  // ④ 하한 채우기 (같은 유형 · 보강으로 셈)
+  var fl = []; (fullBoost || []).forEach(function(b, i){ if (b.fill) fl.push({ b:b, i:i }); });
+  if (fl.length){ rb += blk('➕ 하한 채우기 — 같은 유형', '테스트·최근 오답 유형 · 보강으로 셈', 'data-rw155-fillblk');
+    fl.forEach(function(f){ rb += rowH('+' + f.b.n, esc2(rw155CName(f.b.cid) || tqName(f.b.cid)), '문항이 하한(' + R.min + ')보다 적어 같은 유형으로 채움' + (f.b.cut ? ' · 상한으로 ' + f.b.cut + ' 뺌' : ''), rcwsSeg('boost', f.i, f.b.n, Math.max(3, f.b.n))); });
+    rb += '</div>'; }
+  if (rb){
+    var g = h.indexOf('<div style="display:grid;grid-template-columns:repeat(6,1fr)');
+    var b4 = h.indexOf('<b style="font-size:12.5px">④ 보강');
+    var at = b4 >= 0 ? h.lastIndexOf('<div style="border:1px solid #e2e8f0;border-radius:11px;overflow:hidden;margin-bottom:9px">', b4) : g;
+    if (at < 0) at = g;
+    if (at >= 0) h = h.slice(0, at) + rb + h.slice(at);
+  }
+  // ⑤-0 자동채점: 끄는 칸 숨김(항상 매쓰플랫 기준) · 결과에 «자동채점 아님 n»
+  h = h.replace(/<label title="서술형을 빼고[^"]*"><input type="checkbox" id="rcws-auto"[^>]*> 자동채점 문항만<\/label>/, '<span data-rw155-auto style="color:#15803d">✓ 자동채점 문항만(매쓰플랫 기준 · 항상)</span><input type="checkbox" id="rcws-auto" checked disabled style="display:none">');
+  if (C.result && C.result.parts && C.result.parts.nonAuto != null) h = h.replace(' — 매쓰플랫 → 학습지 → 내학습지에서 인쇄', ' · <span data-rw155-nonauto>자동채점 아님 ' + C.result.parts.nonAuto + '</span>' + (C.result.parts.autoDrop ? ' (후보 중 자동채점 아님 ' + C.result.parts.autoDrop + ' 뺌)' : '') + ' — 매쓰플랫 → 학습지 → 내학습지에서 인쇄');
+  // ⑤ 합계 칸에 «최근 오답»
+  var gi = h.indexOf('<div style="display:grid;grid-template-columns:repeat(6,1fr)');
+  if (gi >= 0){
+    h = h.slice(0, gi) + h.slice(gi).replace('repeat(6,1fr)', 'repeat(7,1fr)');
+    var ci = h.indexOf('<div data-rcws-tot="교재 오답"');
+    var cs = ci >= 0 ? h.lastIndexOf('<div style="border:1px solid #e2e8f0;border-radius:9px;padding:6px 4px;text-align:center">', ci) : -1;
+    if (cs >= 0){ var tt = rcwsPlanTotals(Object.assign({}, P, { book:full, boost:fullBoost || P.boost }));
+      h = h.slice(0, cs) + '<div style="border:1px solid #e2e8f0;border-radius:9px;padding:6px 4px;text-align:center"><div data-rcws-tot="최근 오답" style="font-size:18px;font-weight:900;color:#c2410c">' + tt.recent + '</div><div style="font-size:10px;color:#64748b;font-weight:800">최근 오답</div></div>' + h.slice(cs); }
+  }
+  return h;
+}
+var _rw155Paint123 = rcwsPaint;
+rcwsPaint = function(){
+  var C = RCWS_CUR;
+  if (!C || !C.plan || !C.model || !document.getElementById('rc-pop')) return _rw155Paint123.apply(this, arguments);
+  var full = C.plan.book, fullBoost = C.plan.boost, keepShow = rcPopShow;
+  RW155.fullBook = full; RW155.fullBoost = fullBoost;
+  C.plan.book = full.filter(function(x){ return !(x.w.recent || x.wide); });
+  C.plan.boost = fullBoost.filter(function(b){ return !b.fill; });   // 하한 채우기는 맨 뒤에 붙으므로 앞의 번호는 그대로
+  rcPopShow = function(h){ var out = h; try { out = rw155PaintPatch(h, C, full, fullBoost); } catch(e){ try { console.error('[리커버리 3판 팝업]', e); } catch(_){} } return keepShow(out); };
+  try { return _rw155Paint123.apply(this, arguments); }
+  finally { C.plan.book = full; C.plan.boost = fullBoost; rcPopShow = keepShow; RW155.fullBook = null; RW155.fullBoost = null; }
+};
+
+/* ── 「확정 전원 생성」 확인 글에 새 규칙 한 줄 ── */
+var _rw155All123 = rcMakeWsAll;
+rcMakeWsAll = function(){
+  var keep = window.confirm, R = rw155Cfg(rcwsRule(), {});
+  window.confirm = function(m){ window.confirm = keep;
+    var line = '\n · 아직 틀린 문제: ' + (R.ruleRecentOn ? '최근 ' + rw155DaysLabel(R.days) : '끔') + ' · 유형마다 1개: ' + (R.perType ? '켬' : '끔') + ' · 최상(5단계): ' + (R.hardest ? '포함' : '뺌') + ' · 문항 ' + (R.min || (R.max && !R.autoMax) ? (R.min || 0) + '~' + (R.max || '제한 없음') : '제한 없음(기간 2주 이상인 학생만 상한 ' + RW155_AUTOMAX + ')') + (R.exSrc ? ' · 빼는 유형 «' + R.exSrc + '»' : '') + ' (학생별 기간·끄기·최상·문항 범위는 그대로)';
+    return keep.call(window, String(m).replace('\n매쓰플랫에 즉시', line + '\n매쓰플랫에 즉시')); };
+  try { return _rw155All123.apply(this, arguments); } finally { window.confirm = keep; }
+};
+window.rcMakeWsAll = rcMakeWsAll;
+
+/* ── 오른쪽 도구 «학습지 규칙»: 칸 더하기 ── */
+window.rw155Rule = function(k, v){
+  if (!RCWS.loaded) return;
+  var r = rcwsRule(); delete r.updated;
+  var rc = Object.assign({}, r.recent);
+  if (k === 'recentOn') rc.on = !!v;
+  else if (k === 'days') rc.days = rw155Clamp(v);
+  else if (k === 'perType' || k === 'hardest' || k === 'unitAuto') r[k] = !!v;
+  else if (k === 'min' || k === 'max'){
+    var s = String(v == null ? '' : v).trim(), n = s === '' ? 0 : Math.round(Number(s)); if (!(n >= 0)) n = 0; n = Math.min(200, n); r[k] = n;
+    var mx = Number(r.max) || 0, mn = Number(r.min) || 0;
+    if (k === 'min' && mx > 0 && n > mx) r.max = n;
+    if (k === 'max' && n > 0 && mn > n) r.min = n;
+  } else if (k === 'exclude'){
+    var x = String(v == null ? '' : v).trim();
+    if (x){ try { new RegExp(x); } catch(e){ plToast('빼는 유형 글자를 알아볼 수 없어요 — ' + e.message); render(); return; } }
+    r.exclude = x;
+  }
+  r.recent = rc;
+  var p = rcwsSaveRule(r); render(); return p;
+};
+if (typeof l3rRuleBox === 'function'){
+  var _rw155RuleBox123 = l3rRuleBox;
+  l3rRuleBox = function(){
+    var h = _rw155RuleBox123.apply(this, arguments); if (!RCWS.loaded) return h;
+    var R = rw155Cfg(rcwsRule(), {}), r = rcwsRule();
+    var ninp = function(id, k, val){ return '<input type="number" id="' + id + '" min="0" max="200" value="' + (val ? l3bQ(val) : '') + '" placeholder="없음" onchange="rw155Rule(\'' + k + '\',this.value)" style="width:48px">'; };
+    var add = '<label class="l3r-ck" data-l3r-rule="recent" title="테스트 범위와 상관없이 최근 기간에 «다시 풀어도 아직 틀린» 문제(교재·학습지)를 재료에 넣습니다"><input type="checkbox" id="l3r-recent"' + (R.ruleRecentOn ? ' checked' : '') + ' onchange="rw155Rule(\'recentOn\',this.checked)"><span>아직 틀린 문제</span></label>'
+      + (R.ruleRecentOn ? '<span data-l3r-rule="rdays" style="display:flex;gap:4px;align-items:center;padding-left:22px">' + rw155Chips(R.ruleDays, 'rw155RuleDays(', '', 'class="l3r-rday"') + '</span>' : '')
+      + '<label class="l3r-ck" data-l3r-rule="perType" title="최근 오답·교재 오답은 유형마다 그 유형에서 가장 최근 틀린 문제 1개 (테스트 오답 쌍둥이는 묶지 않음)"><input type="checkbox" id="l3r-pertype"' + (R.perType ? ' checked' : '') + ' onchange="rw155Rule(\'perType\',this.checked)"><span>유형마다 1개</span></label>'
+      + '<label class="l3r-ck" data-l3r-rule="hardest" title="끄면 쌍둥이·같은 유형을 고를 때 최상 문제를 빼고 상(4단계)까지"><input type="checkbox" id="l3r-hardest"' + (R.ruleHardest ? ' checked' : '') + ' onchange="rw155Rule(\'hardest\',this.checked)"><span>최상(5단계) 난이도 포함</span></label>'
+      + '<label class="l3r-ck" data-l3r-rule="unitAuto" title="단원 정답률로 불린 학생은 그 단원의 최근 교재 오답을 더합니다"><input type="checkbox" id="l3r-unitauto"' + (R.unitAuto ? ' checked' : '') + ' onchange="rw155Rule(\'unitAuto\',this.checked)"><span>자동 단원 오답</span></label>'
+      + '<label class="l3b-num" data-l3r-rule="minmax" title="학생 한 명 문항 수 (비우면 없음) — 넘으면 우선순위대로 남기고, 모자라면 최근 오답 기간을 56일로 넓히고 같은 유형으로 채웁니다">문항<span style="display:flex;align-items:center;gap:3px">' + ninp('l3r-min', 'min', Number(r.min) || 0) + '~' + ninp('l3r-max', 'max', Number(r.max) || 0) + '</span></label>'
+      + '<label class="l3b-num" data-l3r-rule="exclude" title="이 유형 이름이 들어간 문제는 모든 재료와 쌍둥이에서 뺍니다 (여러 개는 농도|속력)">빼는 유형<input type="text" id="l3r-excl" placeholder="예: 농도" value="' + l3bQ(R.exSrc) + '" onchange="rw155Rule(\'exclude\',this.value)" style="width:110px"></label>';
+    h = h.replace(/<label class="l3r-ck" data-l3r-rule="auto"[\s\S]*?<\/label>/, '<span class="l3r-ck" data-l3r-rule="auto" title="매쓰플랫이 자동채점할 수 있는 문항만(autoScoredType ≠ IMPOSSIBLE) — 원장 결정으로 항상 켜짐" style="color:#15803d">✓ 자동채점 문항만 (매쓰플랫 기준 · 항상)</span>');
+    var k = h.indexOf('<span class="l3-sub">「확정 전원'); h = k >= 0 ? h.slice(0, k) + add + h.slice(k) : h;
+    return h.replace('<span class="l3-sub">「확정 전원 생성」과 학생별 설계 팝업이 이 규칙으로 시작합니다.</span>', '<span class="l3-sub">「확정 전원 생성」과 학생별 설계 팝업이 이 규칙으로 시작합니다. 규칙을 바꾸면 가운데 «🔢 학생별 예상»이 바로 다시 계산됩니다(매쓰플랫에는 «생성»을 눌러야 만들어집니다).</span>');
+  };
+}
+window.rw155RuleDays = function(d){ return rw155Rule('days', d); };
+
+
+/* ═══ 고등부 — 같은 규칙 · 과목 = per[학생키].subject 또는 가장 최근 HIGH_TEST 제목의 [과목] (서버판 --high 와 같은 뜻) ═══ */
+var RW155_SUBJ = ['공통수학1', '공통수학2', '대수', '미적분1', '확률과 통계', '미적분2', '기하'];
+function rw155SubjNorm(s){
+  var k = String(s || '').replace(/\s/g, '').replace(/Ⅱ/g, '2').replace(/Ⅰ/g, '1').replace(/^(공통수학|미적분)II$/, '$12').replace(/^(공통수학|미적분)I$/, '$11');
+  if (k === '확률과통계') return '확률과 통계';
+  return RW155_SUBJ.indexOf(k) >= 0 ? k : '';
+}
+function rw155TitleSubj(title){ var m = String(title || '').match(/\[([^\]]+)\]/); return m ? rw155SubjNorm(m[1]) : ''; }
+function rw155IsHigh(st){ var m = String((st && st.grade) || '').match(/(초|중|고)[^0-9]*(\d)/); return !!(m && m[1] === '고'); }
+function rw155Subject(st){
+  if (!st) return null;
+  var k = String(st.id || st.name), p = ((RCWS.rule && RCWS.rule.per) || {})[k];
+  if (p && p.subject && rw155SubjNorm(p.subject)) return { subj:rw155SubjNorm(p.subject), how:'manual' };
+  var sid = null; try { sid = bpSidOf(st); } catch(e){}
+  if (sid == null) return null;
+  var mine = [];
+  ((typeof WK !== 'undefined' && WK.tests) || []).forEach(function(t){
+    if (t.type !== 'HIGH_TEST' && t.type !== 'CHAPTER' && t.type !== 'WEEKLY') return;
+    var me = (t.students || []).find(function(s){ return String(s.sid) === String(sid); }); if (!me) return;
+    var sj = rw155TitleSubj(t.title); if (sj) mine.push({ d:String(me.date || t.date || ''), sj:sj, title:t.title });
+  });
+  mine.sort(function(a, b){ return b.d.localeCompare(a.d); });
+  return mine.length ? { subj:mine[0].sj, how:'auto', title:mine[0].title } : null;
+}
+var _rw155School = rcWsSchool;
+rcWsSchool = function(st){
+  var r = _rw155School.apply(this, arguments); if (r || !rw155IsHigh(st)) return r;
+  var S = rw155Subject(st); return S ? { schoolType:'HIGH', grade:S.subj, how:S.how } : null;
+};
+window.rw155SetSubject = function(stKey, v){
+  if (!RCWS.loaded) return;
+  var r = rcwsRule(); delete r.updated; r.per = Object.assign({}, r.per || {});
+  var e = Object.assign({}, r.per[stKey] || {}), sj = rw155SubjNorm(v);
+  if (sj) e.subject = sj; else delete e.subject;
+  if (Object.keys(e).length) r.per[stKey] = e; else delete r.per[stKey];
+  var p = rcwsSaveRule(r); render(); return p;
+};
+function rw155SubjPick(x){
+  var S = rw155Subject(x.st), k = String(x.stKey).replace(/'/g, '');
+  var opts = '<option value="">' + (S ? '과목 자동' : '과목 고르기') + '</option>' + RW155_SUBJ.map(function(sj){ return '<option value="' + esc2(sj) + '"' + (S && S.how === 'manual' && S.subj === sj ? ' selected' : '') + '>' + esc2(sj) + '</option>'; }).join('');
+  return '<span data-rw155-subj="' + esc2(String(x.stKey)) + '" style="display:inline-flex;gap:5px;align-items:center;font-size:11.5px;font-weight:800;color:' + (S ? '#475569' : '#b45309') + '">'
+    + (S ? '📘 ' + esc2(S.subj) + (S.how === 'auto' ? ' <small style="color:#94a3b8">(최근 시험 제목에서)</small>' : '') : '📘 고등 과목을 골라 주세요')
+    + '<select onchange="rw155SetSubject(\'' + k + '\',this.value)" style="font-family:inherit;font-size:11.5px;font-weight:800;border:1.5px solid ' + (S ? '#e2e8f0' : '#f59e0b') + ';border-radius:7px;padding:3px 5px">' + opts + '</select></span>';
+}
+
+/* ═══ 보드·예상 자료 — 후보 학생 전부를 한 번에 (매쓰플랫 호출 없음) ═══ */
+function rw155Rows(){ try { return rcRows(); } catch(e){ return []; } }
+function rw155Win(rows){
+  var w = 28, now = Date.now();
+  rows.forEach(function(row){
+    try { var o = rcws3Opt(row), R = rw155Cfg(rcwsRule(), o); if (R.days > w) w = R.days;
+      rcws3Mine(row).forEach(function(t){ if (o.wids.indexOf(String(t.wid)) >= 0){ var a = Math.ceil((now - (Date.parse(String(t.date || '').slice(0, 10)) || now)) / 86400000) + 2; if (a > w) w = a; } }); } catch(e){}
+  });
+  return Math.min(120, w);
+}
+function rw155Kick(rows){
+  rows = rows || rw155Rows();
+  var sids = [];
+  rows.forEach(function(x){ if (x && x.sid != null && sids.indexOf(String(x.sid)) < 0) sids.push(String(x.sid)); });
+  if (!sids.length) return;
+  sids.sort();
+  var win = rw155Win(rows), B = RW155.bd, sk = sids.join(',');
+  if (B.key && B.win >= win && B.sidKey === sk) return;                   // 이미 넉넉히 읽음 — 규칙을 바꿔도 다시 읽지 않고 센다
+  var key = win + '|' + sk;
+  if (B.loading === key) return;
+  B.loading = key;
+  Promise.all([rw155Names(), rw155Read(sids, new Date(Date.now() - win * 86400000).toISOString(), 30)]).then(function(a){
+    if (B.loading !== key) return;
+    var by = {}; a[1].rows.forEach(function(x){ var s = String(x.mf_student_id); (by[s] = by[s] || []).push(x); });
+    B.bySid = by; B.partial = a[1].partial; B.key = key; B.win = win; B.sidKey = sk; B.loading = ''; B.err = '';
+    try { if (VIEW === 'recovery') render(); } catch(e){}
+  }, function(e){
+    if (B.loading !== key) return;
+    B.bySid = {}; B.key = key; B.win = win; B.sidKey = sk; B.loading = ''; B.err = (e && e.message) || String(e);
+    try { if (VIEW === 'recovery') render(); } catch(_){}
+  });
+}
+/* 한 학생: 고른 시험의 오답(가장 최근 응시) · 범위 · 최근 «아직 틀린» 문제 (테스트 문제 먼저 뺌) */
+function rw155Stu(row, rule){
+  rule = rule || rcwsRule();
+  var rs = RW155.bd.bySid[String(row.sid)] || [], o = {}, wids = [];
+  try { o = rcws3Opt(row); wids = (o.wids || []).map(String); } catch(e){}
+  if (!wids.length && row.testHit && row.testHit.wid != null) wids = [String(row.testHit.wid)];
+  var R = rw155Cfg(rule, o), byW = {}, range = {}, hasR = false, testP = {}, wrong = [], seenP = {};
+  rs.forEach(function(x){ if (x.source === '학습지' && wids.indexOf(String(x.worksheet_id)) >= 0){ var w = String(x.worksheet_id), sw = String(x.student_worksheet_id || '0');
+    var a = byW[w] = byW[w] || {}; (a[sw] = a[sw] || []).push(x); } });
+  Object.keys(byW).forEach(function(w){ var a = byW[w], best = null, bt = -1;
+    Object.keys(a).forEach(function(sw){ var t = Math.max.apply(null, a[sw].map(rw155T)); if (t > bt){ bt = t; best = sw; } });
+    a[best].forEach(function(x){ if (x.concept_id != null){ range[Number(x.concept_id)] = 1; hasR = true; } if (x.problem_id) testP[Number(x.problem_id)] = 1;
+      if (x.result === 'X'){ var pid = Number(x.problem_id) || null; if (pid && seenP[pid]) return; if (pid) seenP[pid] = 1; wrong.push({ pid:pid, cid:Number(x.concept_id), lv:Number(x.level) || 3 }); } }); });
+  if (!hasR && row.testHit && Array.isArray(row.testHit.wrong)) row.testHit.wrong.forEach(function(w){ if (w && w.id != null){ range[Number(w.id)] = 1; hasR = true; } });
+  var still = rw155Still(rs, R.days, R.days).rec.filter(function(x){ return !(x.source === '학습지' && (testP[Number(x.problem_id)] || wids.indexOf(String(x.worksheet_id)) >= 0)); });
+  return { o:o, R:R, wids:wids, wrong:wrong, range:range, hasR:hasR, still:still, rs:rs };
+}
+/* 보드 줄 (한 학생) — 유형 수로 센다 (유형마다 1개 규칙과 같은 단위) */
+function rw155LineData(row){
+  var S = rw155Stu(row), list = S.still.filter(function(x){ return !rw155IsEx(Number(x.concept_id), S.R.ex); });
+  var all = {}, out = {}, g = {};
+  list.forEach(function(x){ var c = Number(x.concept_id); all[c] = 1; if (S.hasR && S.range[c]) return; if (out[c]) return; out[c] = 1;
+    var gl = rw155GL(x.worksheet_title), mid = rw155Mid(c) || '기타', k = gl + '|' + mid; (g[k] = g[k] || { gl:gl, mid:mid, c:0 }).c++; });
+  return { n:Object.keys(all).length, probs:list.length, m:S.hasR ? Object.keys(out).length : null, groups:Object.keys(g).map(function(k){ return g[k]; }).sort(function(a, b){ return b.c - a.c; }), days:S.R.days };
+}
+/* 학생별 예상 (매쓰플랫 호출 없이 · rcwsPlan 과 같은 셈) */
+function rw155Est(row, rule){
+  rule = rule || rcwsRule();
+  var S = rw155Stu(row, rule), R = S.R, o = S.o, ex = function(c){ return rw155IsEx(c, R.ex); };
+  var wrong = S.wrong.filter(function(w){ return !ex(w.cid); }), exN = S.wrong.length - wrong.length;
+  var twinPer = Number(rule.twinPer) || 0; if (o.twin1 && twinPer > 0) twinPer = 1;
+  var tbPer = Number(rule.tbPer) || 0, bookTwin = Number(rule.bookTwin) || 0;
+  var rec = R.recentOn ? S.still.filter(function(x){ return !ex(Number(x.concept_id)); }) : [], picks = [], seen = {};
+  rec.forEach(function(x){ var c = Number(x.concept_id); if (R.perType && seen[c]) return; seen[c] = 1; picks.push({ cid:c, lv:Number(x.level) || 3, key:rw155Key(x) }); });
+  var book = [];
+  if (bookTwin > 0 && !o.noBook){
+    var since = Date.now() - (Number(rule.days) || 28) * 86400000, pk = {}, sw = {};
+    picks.forEach(function(p){ pk[p.key] = 1; });
+    S.rs.forEach(function(x){ if (x.source !== '교재' || x.result !== 'X' || !S.range[Number(x.concept_id)] || rw155T(x) < since || ex(Number(x.concept_id))) return;
+      var k = rw155Key(x); if (!k || sw[k] || pk[k]) return; sw[k] = 1;
+      var c = Number(x.concept_id); if (R.perType && seen[c]) return; seen[c] = 1; book.push({ cid:c, lv:Number(x.level) || 3 }); });
+  }
+  var cnt = {}; wrong.forEach(function(w){ cnt[w.cid] = (cnt[w.cid] || 0) + 1; }); rec.forEach(function(x){ var c = Number(x.concept_id); cnt[c] = (cnt[c] || 0) + 1; }); book.forEach(function(b){ cnt[b.cid] = (cnt[b.cid] || 0) + 1; });
+  var boost = rule.boost ? Object.keys(cnt).filter(function(c){ return cnt[c] >= 2 && !ex(Number(c)); }).length : 0;
+  var tw = wrong.length * twinPer, tb = wrong.length * tbPer, rn = picks.length, bn = book.length * bookTwin, raw = tw + tb + rn + bn + boost, total = raw;
+  if (R.min > 0 && total < R.min) total = R.min;
+  if (R.max > 0 && total > R.max) total = R.max;
+  var hard = wrong.filter(function(w){ return w.lv >= 5; }).length + picks.filter(function(p){ return p.lv >= 5; }).length + book.filter(function(b){ return b.lv >= 5; }).length;
+  // 단원 비율: 테스트(가장 많은 단원) 한 칸 + 최근·교재 오답 중단원 상위 3 + 기타
+  var tm = {}; wrong.forEach(function(w){ var m = rw155Mid(w.cid) || '기타'; tm[m] = (tm[m] || 0) + 1; });
+  var tTop = Object.keys(tm).sort(function(a, b){ return tm[b] - tm[a]; })[0] || '';
+  var segs = []; if (tw + tb) segs.push({ label:'테스트' + (tTop ? '(' + tTop + ')' : ''), w:tw + tb, test:true });
+  var mid = {}; picks.forEach(function(p){ var m = rw155Mid(p.cid) || '기타'; mid[m] = (mid[m] || 0) + 1; }); book.forEach(function(b){ var m = rw155Mid(b.cid) || '기타'; mid[m] = (mid[m] || 0) + bookTwin; });
+  var mids = Object.keys(mid).map(function(k){ return [k, mid[k]]; }).sort(function(a, b){ return b[1] - a[1]; });
+  mids.slice(0, 3).forEach(function(m){ segs.push({ label:m[0], w:m[1] }); });
+  var etc = mids.slice(3).reduce(function(a, x){ return a + x[1]; }, 0) + boost; if (etc) segs.push({ label:'기타', w:etc });
+  return { twin:tw, tb:tb, types:rn, book:bn, boost:boost, total:total, raw:raw, hard:hard, hardOn:R.hardest, segs:segs, R:R, wrongN:wrong.length, exN:exN };
+}
+var RW155_COL = ['#3b82f6', '#f59e0b', '#22c55e', '#a855f7', '#94a3b8'];
+function rw155EstSum(){
+  var sum = 0, n = 0;
+  if (!RW155.bd.key) return null;
+  try { var rule = rcwsRule(); rcConfirmed().forEach(function(c){ if (!c.row || (c.e && c.e.done) || rcwsMadeOf(c.k) || !rcWsSchool(c.row.st)) return; sum += rw155Est(c.row, rule).total; n++; }); } catch(e){ return null; }
+  return { sum:sum, n:n };
+}
+function rw155EstTable(){
+  var conf = []; try { conf = rcConfirmed().filter(function(c){ return c.row && !(c.e && c.e.done); }); } catch(e){}
+  if (!conf.length) return '';
+  rw155Kick();
+  var B = RW155.bd, rule = rcwsRule(), R0 = rw155Cfg(rule, {});
+  var h = '<div id="rw155-est" style="background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:12px 14px;margin-bottom:14px">'
+    + '<div style="font-size:14px;font-weight:900;color:#0d2240">🔢 학생별 예상 · 이번 주 확정 ' + conf.length + '명 <span style="font-size:11.5px;color:#64748b;font-weight:700">· 규칙: ' + (R0.ruleRecentOn ? '최근 ' + rw155DaysLabel(R0.ruleDays) : '최근 오답 끔') + ' · ' + (R0.perType ? '유형마다 1개' : '유형 묶지 않음') + ' · 최상 ' + (R0.ruleHardest ? '포함' : '빼기') + ' · 자동채점 문항만' + (R0.exSrc ? ' · 빼는 유형 «' + esc2(R0.exSrc) + '»' : '') + '</span></div>';
+  if (!B.key){ return h + '<div style="padding:12px;color:#94a3b8;font-weight:700;font-size:12.5px">채점 기록 읽는 중…</div></div>'; }
+  var th = 'padding:6px 8px;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:11.5px;font-weight:800;text-align:left;white-space:nowrap';
+  var td = 'padding:6px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle;font-size:12.5px';
+  h += '<div style="overflow-x:auto;margin-top:6px"><table style="border-collapse:collapse;width:100%;min-width:640px"><thead><tr>'
+    + '<th style="' + th + '">학생</th><th style="' + th + '">기간</th><th style="' + th + ';text-align:right">테스트 쌍둥이</th><th style="' + th + ';text-align:right">최근 오답</th><th style="' + th + ';text-align:right">예상</th><th style="' + th + '">단원 비율</th><th style="' + th + ';text-align:right">최상</th></tr></thead><tbody>';
+  var sum = 0;
+  conf.forEach(function(c){
+    var sch = rcWsSchool(c.row.st), k = String(c.k).replace(/'/g, '');
+    var E = rw155Est(c.row, rule); sum += E.total;
+    var pill = E.total > 40 ? '<span style="font-size:10.5px;font-weight:900;border-radius:20px;padding:1px 8px;background:#fef3c7;color:#b45309">많음</span>' : (E.total < 20 ? '<span style="font-size:10.5px;font-weight:900;border-radius:20px;padding:1px 8px;background:#e0e7ff;color:#3730a3">적음</span>' : '');
+    var tw = 0; E.segs.forEach(function(s){ tw += s.w; }); tw = tw || 1;
+    var bar = '', leg = [], ci = 0;
+    E.segs.forEach(function(s){ var col = s.test ? '#0d2240' : RW155_COL[s.label === '기타' ? 4 : Math.min(ci++, 3)];
+      bar += '<span style="display:block;height:100%;width:' + (s.w / tw * 100).toFixed(1) + '%;background:' + col + '"></span>';
+      leg.push('<span style="color:' + col + '">■</span> ' + esc2(s.label) + ' ' + Math.round(s.w / tw * 100) + '%'); });
+    h += '<tr data-rw155-est="' + esc2(String(c.k)) + '">'
+      + '<td style="' + td + '"><button type="button" onclick="rcwsOpen(\'' + k + '\')" style="border:none;background:none;padding:0;font-family:inherit;font-size:13px;font-weight:900;color:#0d2240;cursor:pointer;text-decoration:underline dotted">' + esc2(c.name) + '</button>'
+        + '<div style="font-size:10.5px;color:#94a3b8;font-weight:700">' + esc2(String((c.row.st && c.row.st.grade) || '').replace(/학교|학년/g, '').replace(/\s/g, '')) + (c.group ? ' · ' + esc2(c.group) : '') + (rw155IsHigh(c.row.st) ? (sch ? ' · ' + esc2(sch.grade) : ' · <b style="color:#b45309">과목 고르기</b>') : '') + '</div></td>'
+      + '<td style="' + td + ';white-space:nowrap">' + (E.R.ruleRecentOn ? rw155Chips(E.R.days, 'rw155EstDays(\'' + k + '\',', '', '') + (E.R.days !== E.R.ruleDays ? ' <small style="color:#c2410c;font-weight:800">학생별</small>' : '') : '<span style="color:#94a3b8">끔</span>') + '</td>'
+      + '<td data-rw155-twin style="' + td + ';text-align:right;font-variant-numeric:tabular-nums">' + E.twin + (E.tb ? ' <small style="color:#64748b">+교과서 ' + E.tb + '</small>' : '') + (E.exN ? ' <small style="color:#b91c1c">(뺌 ' + E.exN + ')</small>' : '') + '</td>'
+      + '<td data-rw155-types style="' + td + ';text-align:right;font-variant-numeric:tabular-nums">' + E.types + (E.R.perType ? '유형' : '문항') + (E.book ? ' <small style="color:#64748b">+교재 ' + E.book + '</small>' : '') + (E.boost ? ' <small style="color:#64748b">+보강 ' + E.boost + '</small>' : '') + '</td>'
+      + '<td data-rw155-total style="' + td + ';text-align:right;white-space:nowrap"><b style="font-size:16px;color:#0d2240">' + E.total + '</b>' + (E.total !== E.raw ? ' <small style="color:#64748b">(' + E.raw + (E.R.max && E.raw > E.R.max ? ' → 상한 ' + E.R.max + (E.R.autoMax ? ' 자동' : '') : ' → 하한 ' + E.R.min) + ')</small>' : '') + ' ' + pill + '</td>'
+      + '<td style="' + td + ';min-width:190px">' + (bar ? '<div style="display:flex;height:12px;border-radius:6px;overflow:hidden;background:#f1f5f9">' + bar + '</div><div data-rw155-mids style="font-size:10.5px;color:#64748b;font-weight:700;line-height:1.5;margin-top:2px">' + leg.join(' ') + '</div>' : '<span style="color:#94a3b8">—</span>') + '</td>'
+      + '<td data-rw155-hard style="' + td + ';text-align:right;white-space:nowrap">' + (E.hardOn ? E.hard : '0' + (E.hard ? ' <small style="color:#94a3b8">(켜면 +' + E.hard + ')</small>' : '')) + '<div data-rw155-nonauto style="font-size:10px;color:#15803d;font-weight:800">자동채점 아님 0</div></td></tr>';
+  });
+  h += '</tbody></table></div>'
+    + '<div data-rw155-sum style="font-size:11.5px;color:#64748b;font-weight:700;margin-top:6px">합계 약 <b style="color:#0d2240">' + sum + '문항</b> · 예상은 채점 기록만으로 센 숫자라(매쓰플랫 호출 없음), 매쓰플랫에 쌍둥이가 없는 문제는 같은 유형으로 바뀌어 1~2문항 다를 수 있습니다. 「많음」은 40 넘을 때, 「적음」은 20 아래일 때. 이름을 누르면 설계 팝업이 열립니다.'
+    + (B.partial ? ' ⚠ 기록이 많아 일부만 읽었습니다.' : '') + (B.err ? ' <span style="color:#b91c1c">기록을 읽지 못했습니다: ' + esc2(B.err) + '</span>' : '') + '</div></div>';
+  return h;
+}
+window.rw155EstDays = function(stKey, d){
+  var row = rw155Rows().find(function(r){ return String(r.stKey) === String(stKey); }); if (!row || !RCWS.loaded) return;
+  var o = rcws3Opt(row), RR = rw155Cfg(rcwsRule(), {}); d = rw155Clamp(d);
+  o.recentDays = (d === RR.ruleDays) ? null : d;
+  var p = rcws3SaveOpt(row.stKey, o); render(); return p;
+};
+if (typeof l3rMakeBox === 'function'){
+  var _rw155MakeBox123 = l3rMakeBox;
+  l3rMakeBox = function(){
+    var h = _rw155MakeBox123.apply(this, arguments), S = rw155EstSum();
+    if (S && S.n) h = h.replace(/(⚡ 확정 전원 학습지 생성 \(\d+명)\)/, '$1 · 예상 ' + S.sum + '문항)');
+    return h;
+  };
+}
+
+/* ── 보드 카드 한 줄 «🕘 최근 1주 아직 틀린 n유형 · 테스트 범위 밖 m (…)» · 고등 과목 칸 ── */
+var _rw155WsBtn123 = rcWsBtn;
+rcWsBtn = function(x){
+  var h = _rw155WsBtn123.apply(this, arguments);
+  try { var m = x && rcwsMadeOf(x.stKey); if (m && m.parts && m.parts.recent) h = h.replace(' · 보강 ', ' · 최근 오답 ' + m.parts.recent + ' · 보강 '); if (m && m.parts && m.parts.nonAuto != null) h = h.replace(/(✅ [^<]*)<\/span>/, '$1 · 자동채점 아님 ' + m.parts.nonAuto + '</span>'); } catch(e){}
+  try { if (x && x.st && rw155IsHigh(x.st)) h += rw155SubjPick(x); } catch(e){}
+  if (x && x.stKey != null){ RW155.mk.push(x); h = '<!--rw155#' + (RW155.mk.length - 1) + '-->' + h; }
+  return h;
+};
+function rw155Line(x){
+  var B = RW155.bd, base = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;font-weight:800;border-radius:9px;padding:6px 10px;';
+  var at = ' data-rw155-line="' + esc2(String(x.stKey)) + '"';
+  if (!B.key){ if (B.loading) return '<div' + at + ' style="' + base + 'background:#f8fafc;color:#94a3b8;border:1px dashed #e2e8f0">🕘 아직 틀린 문제 읽는 중…</div>'; return ''; }
+  if (B.err) return '';
+  var d = rw155LineData(x), lab = '최근 ' + rw155DaysLabel(d.days);
+  if (!d.n) return '<div' + at + ' data-rw155-out="0" style="' + base + 'background:#f8fafc;color:#64748b;border:1px solid #e2e8f0">🕘 ' + lab + ' 아직 틀린 문제 없음</div>';
+  var orange = d.m > 0, prev = null;
+  var g = d.groups.slice(0, 4).map(function(a){ var s = (a.gl && a.gl !== prev ? a.gl + ' ' : '') + a.mid + ' ' + a.c; prev = a.gl || prev; return esc2(s); }).join(' · ') + (d.groups.length > 4 ? ' …' : '');
+  var txt = '🕘 ' + lab + ' 아직 틀린 <b>' + d.n + '유형</b> <small style="font-weight:700">(' + d.probs + '문항)</small>' + (d.m != null ? ' · 테스트 범위 밖 <b>' + d.m + '</b>' : '') + (g ? ' <span style="font-weight:700">(' + g + ')</span>' : '') + (B.partial ? ' <small style="color:#94a3b8">· 일부만 읽음</small>' : '');
+  var tip = '다시 풀어 맞힌 문제는 뺀 수입니다(유형 수 = 유형마다 1개 규칙의 최근 오답 수). 테스트 범위 밖이 많으면 테스트와 지금 진도가 달라 예전 규칙이면 빠졌을 오답입니다' + (rw155Cfg(rcwsRule(), {}).ruleRecentOn ? '' : ' — 지금 규칙에서 꺼져 있음');
+  return '<div' + at + ' data-rw155-out="' + (d.m || 0) + '" title="' + esc2(tip) + '" style="' + base + (orange ? 'background:#fff7ed;color:#c2410c;border:1.5px solid #fdba74' : 'background:#f8fafc;color:#475569;border:1px solid #e2e8f0') + '">' + txt + '</div>';
+}
+var RW155_WSROW = '<div style="display:flex;align-items:center;gap:8px;margin-top:9px">';
+var _rRecovery155 = rRecovery;
+rRecovery = function(){
+  RW155.mk = [];
+  var h = _rRecovery155.apply(this, arguments);
+  try {
+    if (RC.loaded && RC.view === 'board'){
+      var rows = RW155.mk.slice();
+      if (rows.length) h = h.replace(/<div style="display:flex;align-items:center;gap:8px;margin-top:9px"><!--rw155#(\d+)-->/g, function(all, n){ var x = rows[Number(n)]; return (x ? rw155Line(x) : '') + RW155_WSROW; });
+      var est = rw155EstTable();
+      if (est){ var gi = h.indexOf('<div class="l3r-grid"'); if (gi < 0) gi = h.indexOf('<div style="display:grid;grid-template-columns:minmax(0,1fr) 400px'); if (gi >= 0) h = h.slice(0, gi) + est + h.slice(gi); }
+      else if (rows.length) rw155Kick();
+    }
+  } catch(e){ try { console.error('[리커버리 3판 보드]', e); } catch(_){} }
+  return h.replace(/<!--rw155#\d+-->/g, '');
+};
+/* 「↻ 다시 읽기」 때 최근 오답 메모리도 비운다 */
+if (typeof window.rc154Reload === 'function'){
+  var _rw155Reload154 = window.rc154Reload;
+  window.rc154Reload = function(){
+    RW155.bd.key = ''; RW155.bd.win = 0;
+    try { Object.keys(RCWS.cache).forEach(function(k){ if (/^r155_/.test(k)) delete RCWS.cache[k]; }); } catch(e){}
+    return _rw155Reload154.apply(this, arguments);
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~156: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
