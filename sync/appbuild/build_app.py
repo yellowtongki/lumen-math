@@ -123,7 +123,8 @@ rw5=open(SP+'/rcws155_teacher.js',encoding='utf-8').read() if int(ver.replace('v
 mu7=open(SP+'/mfunlink157_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=157 else ''   # v19-157: 👤 학생관리 «🔗 매쓰플랫과 연결 안 된 학생» 띠 · 데이터 재연결 나눠 읽기
 op8=open(SP+'/opscal158_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=158 else ''   # v19-158: 📅 운영 달력 — 운영·마케팅·학교·돈·지표 층 + 월 달력 아래 체크리스트 (docs/opscal_contract.md)
 oh9=open(SP+'/ophome159_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=159 else ''   # v19-159: 🏠 홈 «📅 오늘 운영 할 일» 카드
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+(rr2+'\n' if rr2 else '')+(rn3+'\n' if rn3 else '')+(rr4+'\n' if rr4 else '')+(rw5+'\n' if rw5 else '')+(mu7+'\n' if mu7 else '')+(op8+'\n' if op8 else '')+(oh9+'\n' if oh9 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+pa0=open(SP+'/progalert160_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=160 else ''   # v19-160: 📚 진도 기준(중등 2~2.5개월·고등 학기 중 숙제) + 🔔 알림
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+(rr2+'\n' if rr2 else '')+(rn3+'\n' if rn3 else '')+(rr4+'\n' if rr4 else '')+(rw5+'\n' if rw5 else '')+(mu7+'\n' if mu7 else '')+(op8+'\n' if op8 else '')+(oh9+'\n' if oh9 else '')+(pa0+'\n' if pa0 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -824,6 +825,36 @@ if int(ver.replace('v19-',''))>=159:
   };
   var _ws = []; for (var _w = 0; _w < Math.min(3, jobs.length); _w++) _ws.push(_worker(_w));
   await Promise.all(_ws);""")
+if int(ver.replace('v19-',''))>=160:
+    # v19-160: 📚 진도 기준 + 🔔 알림 (원장 10/26 「모두 적용 배포」 · 부품 progalert160_teacher.js · 시안 https://claude.ai/artifact/Hzu1pWgMr91xSTqTdW1tth)
+    #   ① bp_config 에 hiSem(고등 학기 중 숙제 진도로) 읽기·저장
+    rep("rep:v.rep||{}, done:v.done||{}, starts:v.starts||{} }; }", "rep:v.rep||{}, done:v.done||{}, starts:v.starts||{}, hiSem:v.hiSem!==false }; }   /* ★ v19-160 */")
+    rep("starts:BP.cfg.starts||{}, updated:new Date().toISOString() }); plToast('💾 진도 기준 저장'); }", "starts:BP.cfg.starts||{}, hiSem:BP.cfg.hiSem!==false, updated:new Date().toISOString() }); plToast('💾 진도 기준 저장'); }")
+    #   ② ✎ 기준 입력 — 중등 교재는 비우면 2.5개월(목표 2개월). 직접 적은 적이 없으면 빈칸으로 연다(그냥 확인을 눌러 고정되지 않게)
+    rep("var v=prompt('이 교재의 기준 기간(개월)을 입력하세요.\\n(비우면 기본 '+(BP.cfg.def||3)+'개월)',cur);",
+        "var v=prompt('이 교재의 기준 기간(개월)을 입력하세요.\\n'+(bpLvlOf(bid)==='mid'?'(비우면 중등 교재 기본 — 목표 2개월 · 한계 2.5개월)':'(비우면 기본 '+(BP.cfg.def||3)+'개월)'),(Number(BP.cfg.months[bid])>0?cur:''));   /* ★ v19-160 */")
+    rep("  if(x.status==='r'&&x.lastAgo>=14) return (x.pct!=null?x.pct+'%':'')+'·끊김';\n",
+        "  if(x.status==='r'&&x.lastAgo>=14) return (x.pct!=null?x.pct+'%':'')+'·끊김';\n  if(x.tag) return (x.pct!=null?x.pct+'%':'')+'·'+x.tag;   /* ★ v19-160: 중등 급함·주의 */\n")
+    rep("기준 '+bpMonthsOf(e.bid)+'개월 ✎</button>';", "'+(bpMidStd(e.bid)?'목표 2 · 한계 2.5개월':'기준 '+bpMonthsOf(e.bid)+'개월')+' ✎</button>';")
+    #   ③ 진도 현황 화면 — 기준 막대 · 고등부 학기 중은 따로(숙제 진도) · 개수 칩
+    rep("  var rows=all.main.filter(function(x){ return BP.filter==='all'||x.st.group===BP.filter; });\n  var c={r:0,y:0,g:0};",
+        "  var hsRows=all.main.concat(all.rest).filter(function(x){ return x.hs&&(BP.filter==='all'||x.st.group===BP.filter); });   /* ★ v19-160: 고등 학기 중 */\n  var rows=all.main.filter(function(x){ return !x.hs&&(BP.filter==='all'||x.st.group===BP.filter); });\n  all.rest=all.rest.filter(function(x){ return !x.hs; });\n  var c={r:0,y:0,g:0};")
+    rep("  if(BP.pagesOpen) h+=bpPagesPanel();\n", "  h+=bpStdBar();   /* ★ v19-160 */\n  if(BP.pagesOpen) h+=bpPagesPanel();\n")
+    rep("color:#dc2626\">🔴 늦음 '+c.r+'</span>';", "color:#dc2626\">🔴 급함·늦음 '+c.r+'</span>';")
+    rep("color:#15803d\">🟢 정상 '+c.g+'</span>';\n",
+        "color:#15803d\">🟢 정상 '+c.g+'</span>';\n  if(hsRows.length) h+='<span style=\"font-size:11.5px;font-weight:900;border-radius:50px;padding:5px 12px;background:#f5f3ff;color:#6d28d9\">🎓 고등 숙제 미흡 '+hsRows.filter(function(x){ return x.hwStat&&x.hwStat.s>=1; }).length+'/'+hsRows.length+'</span>';   /* ★ v19-160 */\n")
+    rep("  var sel=rows.find(function(x){ return (x.stKey||String(x.st.id||x.st.name))===BP.sel; })", "  var sel=rows.concat(hsRows).find(function(x){ return (x.stKey||String(x.st.id||x.st.name))===BP.sel; })")
+    rep("  if(all.rest.length){\n    h+='<div style=\"font-size:10px;color:#94a3b8;font-weight:700;padding:6px 4px\">▪ 기록 없음/미연결</div>';",
+        "  h+=bpHsList(hsRows,selKey);   /* ★ v19-160 */\n  if(all.rest.length){\n    h+='<div style=\"font-size:10px;color:#94a3b8;font-weight:700;padding:6px 4px\">▪ 기록 없음/미연결</div>';")
+    #   ④ 🚨 위험 신호에 «고등 숙제 진도»
+    rep("  return out;\n}\nvar RISK_NAMES={ plz:'플래너 0점',", "  try{ if(typeof bpHwSig==='function'){ var hwp=bpHwSig(st); if(hwp) out.push(hwp); } }catch(e){}   /* ★ v19-160 */\n  return out;\n}\nvar RISK_NAMES={ hwp:'고등 숙제 진도', plz:'플래너 0점',")
+    rep(" · 진도: 진도 현황의 🔴🟡 그대로", " · 진도: 진도 현황의 🔴🟡 그대로(중등 교재 목표 2개월·한계 2.5개월) · 고등 숙제 진도: 학기 중 고등학생, 최근 2주 수업일 숙제체크에서 풀이 100%가 아니거나 안 찍은 날이 2번 이상")
+    #   ⑤ 🏠 홈 «🔔 이번 주 경고» 카드(운영 할 일 위) · 위쪽 줄 🔔 단추 · 시작 다운로드에서 alert_state 빼기
+    rep("  if(typeof opsHomeCard==='function') h+=opsHomeCard();", "  if(typeof alHomeCard==='function') h+=alHomeCard();   /* ★ v19-160: 🔔 이번 주 경고 */\n  if(typeof opsHomeCard==='function') h+=opsHomeCard();")
+    rep("'raid_boss_lib', 'ops_plan', 'ops_checks'];", "'raid_boss_lib', 'ops_plan', 'ops_checks', 'alert_state'];")
+    rep("""      <button class="ftb" id="grp-ops" onclick="selGroup('ops')"><span>🏫</span><span>운영</span></button>""",
+        """      <button class="ftb" id="grp-ops" onclick="selGroup('ops')"><span>🏫</span><span>운영</span></button>
+      <button class="ftb" id="al-bell" onclick="alBell()" title="원장님 알림 — 진도 급함·숙제·채점 끊김·플래너·주간테스트" style="flex:0 0 84px;position:relative"><span>🔔</span><span>알림</span><em id="al-bell-n" style="display:none;position:absolute;top:8px;right:12px;font-style:normal;background:#ef4444;color:#fff;border-radius:10px;padding:0 6px;font-size:12px;font-weight:900;line-height:19px"></em></button>""")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
