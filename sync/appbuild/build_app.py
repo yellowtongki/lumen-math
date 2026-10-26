@@ -124,7 +124,8 @@ mu7=open(SP+'/mfunlink157_teacher.js',encoding='utf-8').read() if int(ver.replac
 op8=open(SP+'/opscal158_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=158 else ''   # v19-158: 📅 운영 달력 — 운영·마케팅·학교·돈·지표 층 + 월 달력 아래 체크리스트 (docs/opscal_contract.md)
 oh9=open(SP+'/ophome159_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=159 else ''   # v19-159: 🏠 홈 «📅 오늘 운영 할 일» 카드
 pa0=open(SP+'/progalert160_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=160 else ''   # v19-160: 📚 진도 기준(중등 2~2.5개월·고등 학기 중 숙제) + 🔔 알림
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+(rr2+'\n' if rr2 else '')+(rn3+'\n' if rn3 else '')+(rr4+'\n' if rr4 else '')+(rw5+'\n' if rw5 else '')+(mu7+'\n' if mu7 else '')+(op8+'\n' if op8 else '')+(oh9+'\n' if oh9 else '')+(pa0+'\n' if pa0 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+cr1=open(SP+'/consult161_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=161 else ''   # v19-161: 📋 상담 리포트
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+(rr2+'\n' if rr2 else '')+(rn3+'\n' if rn3 else '')+(rr4+'\n' if rr4 else '')+(rw5+'\n' if rw5 else '')+(mu7+'\n' if mu7 else '')+(op8+'\n' if op8 else '')+(oh9+'\n' if oh9 else '')+(pa0+'\n' if pa0 else '')+(cr1+'\n' if cr1 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -727,7 +728,7 @@ if int(ver.replace('v19-',''))>=144:
     rep("+targets.length+'건을 AI 초안 그대로 확정할까요? (질문력 '+min+'점 이상)')", "+targets.length+'건을 AI 초안 그대로 확정할까요? (점수와 상관없이 전부)')")
 if int(ver.replace('v19-',''))>=143:
     # v19-143: 홈 위 빨간 띠 — 「퇴원 → 재원 (되살아남)」만 있으면 «로그인 코드가 바뀌어 못 들어갑니다»가 아니라
-    #   «퇴원했던 학생이 재원으로 바뀌었습니다 — 일부러 복귀시키셨으면 그대로 두세요»(주황, 한 번만)로. 원장 10/20 「퇴원생 오류」(유서윤 복귀)
+    #   «퇴원했던 학생이 재원으로 바뀌었습니다 — 일부러 복귀시키셨으면 그대로 두세요»(주황, 한 번만)로. 원장 10/20 「퇴원생 오류」(유○○ 복귀)
     #   × 로 닫으면 위 여백도 되돌린다.
     rep("""      d.innerHTML='<span style="font-size:17px">⚠️</span>'
         +'<span style="flex:1;min-width:200px">학생 <b>로그인 코드가 바뀌었습니다</b> — 이 학생들은 학생앱에 못 들어갑니다.'
@@ -855,6 +856,16 @@ if int(ver.replace('v19-',''))>=160:
     rep("""      <button class="ftb" id="grp-ops" onclick="selGroup('ops')"><span>🏫</span><span>운영</span></button>""",
         """      <button class="ftb" id="grp-ops" onclick="selGroup('ops')"><span>🏫</span><span>운영</span></button>
       <button class="ftb" id="al-bell" onclick="alBell()" title="원장님 알림 — 진도 급함·숙제·채점 끊김·플래너·주간테스트" style="flex:0 0 84px;position:relative"><span>🔔</span><span>알림</span><em id="al-bell-n" style="display:none;position:absolute;top:8px;right:12px;font-style:normal;background:#ef4444;color:#fff;border-radius:10px;padding:0 6px;font-size:12px;font-weight:900;line-height:19px"></em></button>""")
+if int(ver.replace('v19-',''))>=161:
+    # v19-161: 📋 상담 리포트 (원장 10/26 「학원앱에 상담 리포트 v19-161 로」 · 부품 consult161_teacher.js · 설계 docs/consult_report_design.md)
+    #   ① 진도·리포트 탭 안 «📋 상담 리포트» ② 그리기 가지 ③ 제목 ④ 시작 다운로드에서 consult_<코드> 빼기
+    rep("    {v:'risk', icon:'🚨', label:'위험 신호', act:function(){ VIEW='risk'; }},\n",
+        "    {v:'risk', icon:'🚨', label:'위험 신호', act:function(){ VIEW='risk'; }},\n    {v:'consult', icon:'📋', label:'상담 리포트', act:function(){ VIEW='consult'; }},   /* ★ v19-161 */\n")
+    b="    else if(VIEW==='risk'){ try{ C.innerHTML=rRisk(); }"
+    assert s.count(b)==2
+    s=s.replace(b, "    else if(VIEW==='consult'){ try{ C.innerHTML=rConsult(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">상담 리포트 오류: '+esc2(e.message)+'</div>'; } }\n"+b)
+    rep("opscal:'📅 운영 달력',", "opscal:'📅 운영 달력',consult:'📋 상담 리포트',")
+    rep("var PULL_SKIP_PREFIX = ['mf_bookans_', ", "var PULL_SKIP_PREFIX = ['consult_', 'mf_bookans_', ")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
