@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-163';
+var APP_VER = 'v19-164';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9086,6 +9086,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-164',date:'2026-10-26',stability:'ok',memo:'📋 <b>상담 리포트 — 번호 · 계획 칸은 원장님만 · 📱 모바일 이미지</b> (원장 2026-10-26 「계획·가정에서 칸은 나만 보게 · 표랑 그래프마다 번호를 매기자, 통화하면서 몇 번을 보라고 할 예정 · 학부모 보고서는 핸드폰으로 보니 모바일 버전 이미지 출력도」). ① 그래프·표마다 번호 1, 2, 3 …(과정별 시험은 7-1·7-2 …) — 화면·인쇄·모바일 이미지 모두 같은 번호, 통화 대본 «꼭 짚을 것»에 «리포트 1·2·3번». ② «다음 달 학원 계획 · 가정에서 도와주실 것»은 🔒 원장님만 — 인쇄·PDF·모바일 이미지에서 빠짐. ③ 📞 학부모 상담 위쪽 «📱 모바일 이미지» — 폭 480 한 줄 배치로 그린 PNG(넓은 그래프는 글자를 키움) → «⬇ 이미지 저장» 후 카톡으로. ④ (서버 설정) 진도 레이스 2학기 기말 시즌에 블랙라벨 중1(하)·중3(상)을 «킬러»로(틀려도 6점 · 맞히면 12점).'},
       {ver:'v19-163',date:'2026-10-26',stability:'ok',memo:'📛 <b>플래너 거짓 제출 — 눌러서 사진 확인</b> (원장 2026-10-26 「플래너 거짓 제출을 누르면 확인할 수 있게 링크로 · 플래너 탭에서 거짓 제출을 볼 수 있는 기능」 → 시안 → 「좋다. v19-163 으로 진행하고 배포해」). ① 플래너 탭 왼쪽 «📛 거짓 제출 (확인 전 개수)» — 최근 30일, 왼쪽에 학생별 건수(30일 거짓 3건 이상 ●), 거르기(확인 전 · 전체 · 거짓 · 날짜 문제). 카드를 펼치면 <b>이번에 낸 사진과 같다고 본(먼저 낸) 사진을 나란히</b> · 글이 같은 정도 · 사진 지문 차이 · AI 가 읽은 할 일 중 겹친 줄(빨강). 단추: ⛔ 0점 확정(원장 확인 표시) · ↩ 다른 날 맞음 — 점수 되살리기 · 💬 학생에게 보낼 말 복사 · 사진을 누르면 새 창에서 크게. 거짓 = 같은 날짜 또 냄·같은 쪽 다시 냄, 날짜 없음·다른 날짜는 «날짜 문제»로 따로. ② <b>바로 가기</b> — 🔔 알림 줄(플래너 0점·거짓 제출), 🚨 위험 신호 줄, 사진검토 승인 카드의 «⛔ 그날 0점» 띠 «📛 사진 나란히 확인 ›» → 그 학생 카드가 열린 채로. ③ 📞 학부모 상담 메모에 «확정 / 확인 전» 날짜 + 바로 가기. 학생앱 0점 표시는 예전 그대로. ④ <b>📋 상담 리포트 인쇄 여백</b>(원장 「출력했을 때 여백이 너무 많다」) — A4 인쇄 폭이 화면용 «좁으면 한 줄» 규칙에 걸려 그래프가 한 칸씩 크게 나오고 큰 상자를 못 잘라 첫 장이 비던 것 → 인쇄 전용 배치(두 칸 · 과정별 시험 세 칸 · 글자·간격 줄임 · 위아래 8mm). 가짜 학생 기준 A4 9장 → 3장.'},
       {ver:'v19-162',date:'2026-10-26',stability:'ok',memo:'📞 <b>학부모 상담 — 한 화면으로</b> (원장 2026-10-26 「좌측 학부모상담준비와 통합하고 화면 구성하자」 → 시안 → 「좋다. v19-162로 진행하고 배포해」). 들어가는 곳은 왼쪽 «📞 학부모 상담 준비» 하나 — 진도·리포트 탭의 «상담 리포트»는 뺐고, 진도 현황 상세의 «📋 상담 리포트» 단추도 이 화면으로 옵니다. 위 한 줄에서 학생 · 상담 종류(정기·성적 하락·학부모 문의·진학) · 기간 · 집중 교재를 고르면 ① 30초 브리핑(과제 완성도 · 최근 테스트 · 안 풀린 문제 · 플래너 + <b>집중 교재 숙제 해 온 수업 «N번 중 M번» · 집중 교재 진도·필요 속도</b>, 지난 상담 · <b>지난번 계획 → 지금</b>) ② 탭 세 개 — <b>📊 상담 리포트</b>(v19-161 그래프, 인쇄·PDF) · <b>📞 통화 대본</b>(예전 6단락 대본 그대로 + «꼭 짚을 것 — 숙제 흐름» 단락에 리포트 숫자) · <b>📝 상담 기록</b>(통화 메모·분위기 + 다음 달 계획·가정에서 → 한 번 저장으로 counsel_log 와 consult_<코드>에 같이, 지난 상담 목록에 «계획 주 N쪽 → 지금 주 M쪽»). 🔒 원장 메모는 탭 아래 공통(인쇄에 빠짐).'},
       {ver:'v19-161',date:'2026-10-26',stability:'ok',memo:'📋 <b>상담 리포트</b> (원장 2026-10-26 「학부모 상담 요청 — 진도·앱 체크 숙제로 보여 줄 상담 보고서를 학원앱에 · 그래프 위주 · 문제 교재 숙제를 안 해 오는 것을 강조 · 주간테스트는 과정별 · 숙제 현황판은 빼고 · 수학 시간은 하루 평균」). 진도·리포트 탭 «📋 상담 리포트» 또는 진도 현황 오른쪽 상세의 단추. 학생 · 기간(2/3/4/6개월) · <b>집중 교재</b>(기본 = 진도 현황 대표 교재)를 고르면 ① 집중 교재 숙제 흐름 — 최근 수업 20번 판(그 수업까지 채점해 온 문항: ✓ 10문항 이상 · △ 1~9 · ✗ 0, 같은 기간 해 온 다른 교재 이름) · 날짜별 교재 레인(빈 기간 빨간 띠) · 주별 문항 막대(집중 교재 vs 많이 푼 다른 교재) ② 진도 곡선(기준 속도 · 지금 속도 · 완주 계획) ③ 교재별 월 진행 쪽수 · 월 정답률 ④ 시험 점수 과정별(중1-1 · 중1-2 …, 학기가 없는 시험지는 시험지 날짜로 1·2학기를 나눔, 집중 교재 학습지 점수 ◆) ⑤ 최근 5주 틀린 개념 ⑥ 숙제 단계별 월 평균 ⑦ 학생앱 채점 입력 ⑧ 하루 평균 공부·수학 시간(수학은 플래너 할 일 비율로 추정) ⑨ 아하노트 질문 수 ⑩ 다음 달 계획·가정에서(고쳐 쓰기) ⑪ 🔒 원장 메모(플래너 같은 사진 감지 · 출결 · 수업 메모). 「🖨 인쇄 · PDF」는 원장 메모를 빼고 새 창으로 · 「💾 저장」은 lumen_store consult_<코드>. 자료는 읽기만(매쓰플랫 문항 기록은 학생 한 명·기간만).'},
@@ -100893,7 +100894,92 @@ window.crPrint = function(){
 };
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~163: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-164: 📋 상담 리포트 — 번호 · 계획 칸은 원장님만 · 📱 모바일 이미지 (원장 10/26
+ *   「상담보고서에서 저 내용(다음 달 계획·가정에서)은 나만 보게 · 표랑 그래프마다 번호를 매기자, 통화하면서 몇 번을 보라고 할 예정 ·
+ *    학부모 보고서는 핸드폰으로 보니 모바일 버전 이미지 출력도 있으면 좋겠다」)
+ *   ① 그래프·표마다 번호(1, 2, 3 … · 과정별 시험은 7-1, 7-2 …) — 화면·인쇄·모바일 이미지 모두 같은 번호. 통화 대본 «꼭 짚을 것»에 «리포트 1~3번».
+ *   ② «다음 달 학원 계획 / 가정에서 도와주실 것»은 🔒 원장님만 — 인쇄·모바일 이미지에서 뺀다(화면·상담 기록 탭에만).
+ *   ③ 📱 모바일 이미지: 폭 480px 한 줄 배치로 그려 PNG 로 저장(html2canvas). 넓은 그래프는 글자를 키워 폰에서 읽히게.
+ *   ※ 문자열 연결로만 쓴다.
+ * ═══════════════════════════════════════════════════════════════════ */
+var CR_M = false;
+CR_CSS += '.cr-no{display:inline-flex;min-width:24px;height:24px;padding:0 6px;border-radius:12px;background:#0d2240;color:#fff;font-size:13px;font-weight:900;align-items:center;justify-content:center;margin-right:7px;vertical-align:2px}'
+  + '.cr-no.sm{min-width:30px;height:20px;font-size:11.5px;background:#475569;margin-right:6px;vertical-align:1px}'
+  + '.cr-focus .cr-no{background:#e0670b}';
+CR_PRINT_CSS += '.cr-no{min-width:19px;height:19px;font-size:11px;margin-right:5px}.cr-no.sm{min-width:24px;height:16px;font-size:9.5px}';
+var CR_MOB_CSS = '.cr-mob{width:480px;background:#fff;padding:14px 12px 18px;font-family:"Noto Sans KR",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}'
+  + '.cr-mob .cr{max-width:none;gap:10px;font-size:14px}'
+  + '.cr-mob .cr-sum,.cr-mob .cr-grid,.cr-mob .cr-tps,.cr-mob .cr-plan{grid-template-columns:minmax(0,1fr)!important}'
+  + '.cr-mob .cr-card.wide{grid-column:auto}.cr-mob .cr-cls{grid-template-columns:repeat(5,minmax(0,1fr))!important}'
+  + '.cr-mob .cr-top{flex-direction:column;align-items:flex-start;padding:14px 16px}.cr-mob .cr-top .wh{text-align:left}.cr-mob .cr-top h1{font-size:22px}'
+  + '.cr-mob .cr-focus{padding:12px 12px}.cr-mob .cr-card{padding:10px 12px 8px}.cr-mob h3{font-size:16px}.cr-mob .cr-take{font-size:13px}'
+  + '.cr-mob .cr-big b,.cr-mob .cr-cd .rp,.cr-mob .cr-legend span,.cr-mob .cr-sum b{white-space:nowrap}.cr-mob .cr-no,.cr-mob .cr-tag,.cr-mob .cr-tp-h b,.cr-mob .cr-top h1{white-space:nowrap;flex-shrink:0}.cr-mob .cr-top h1{line-height:1.35}.cr-mob .cr-top{padding-bottom:18px}.cr-mob .cr-top .wh{white-space:nowrap;line-height:1.6}.cr-mob .cr-top>div{min-width:0}.cr-mob .cr-big span{flex:1 1 90px;min-width:0}.cr-mob .cr-legend{font-size:12px}.cr-mob .cr-big b{font-size:24px}.cr-mob .cr-cd .m{font-size:18px}.cr-mob .cr-cd .d{font-size:12px}';
+/* 모바일: 넓은 그래프(viewBox 900)는 폰 화면에서 글자가 너무 작아진다 → 글자만 키우고, 긴 왼쪽 이름은 줄인다 */
+var _sSvg161 = sSvg;
+sSvg = function(w, h, body, label){
+  if (CR_M){
+    var k = Math.max(1, Math.min(2.2, w / 430));
+    if (k > 1.05){
+      body = body.replace(/(<text x="([\d.]+)"[^>]*text-anchor="([a-z]+)"[^>]*font-size=")([\d.]+)(")/g, function(m, pre, x, anc, v, post){ var kk = (anc === 'end' && Number(x) < 70) ? Math.min(k, 1.3) : k; return pre + (Number(v) * kk).toFixed(1) + post; })
+        .replace(/(\d+)일 (동안 \d+문항|비어 있음)/g, '$1일')
+        .replace(/\(이번 주\)/g, '')
+        .replace(/(<text x="([\d.]+)"[^>]*text-anchor="end"[^>]*>)([^<]{10,})(<\/text>)/g, function(m, a, x, t, z){ return Number(x) < 230 ? a + t.slice(0, 7) + '…' + z : m; });
+    }
+  }
+  return _sSvg161(w, h, body, label);
+};
+var _crReport161 = crReport;
+crReport = function(X, mode){
+  var h = _crReport161(X, mode), plan = h.indexOf('<div class="cr-plan">'); if (plan < 0) plan = h.length;
+  var n = 0, cur = 0, sub = 0;
+  h = h.replace(/<h3>|<div class="cr-tp-h"><b>/g, function(m, off){
+    if (off >= plan) return m;
+    if (m === '<h3>'){ n++; cur = n; sub = 0; return '<h3><span class="cr-no">' + n + '</span>'; }
+    sub++; return '<div class="cr-tp-h"><span class="cr-no sm">' + cur + '-' + sub + '</span><b>'; });
+  if (mode === 'print'){ var p2 = h.indexOf('<div class="cr-plan">'), f = h.indexOf('<div class="cr-foot">'); if (p2 >= 0 && f > p2) h = h.slice(0, p2) + h.slice(f); }
+  else h = h.replace('<h3>다음 달 학원 계획 <span style="font-size:11.5px;color:#5f6b80;font-weight:600">한 줄에 하나 · 고쳐 쓰세요</span></h3>', '<h3>🔒 다음 달 학원 계획 <span style="font-size:11.5px;color:#5f6b80;font-weight:600">원장님만 · 인쇄·이미지에 빠짐 · 한 줄에 하나</span></h3>')
+    .replace('<h3>가정에서 도와주실 것</h3>', '<h3>🔒 가정에서 도와주실 것</h3>');
+  return h;
+};
+if (typeof cn2Log === 'function'){ var _cn2Log162 = cn2Log; cn2Log = function(st, X){ return _cn2Log162(st, X).replace('리포트 인쇄에도 이 칸이 나갑니다', '🔒 원장님만 — 인쇄·모바일 이미지에는 빠집니다'); }; }
+if (typeof cnsScript === 'function'){ var _cnsScript162 = cnsScript; cnsScript = function(g, kind){ var out = _cnsScript162(g, kind);
+  out.forEach(function(o){ if (/^꼭 짚을 것 — /.test(o.t)) o.say += ' <span class="cns-hl2">📊 리포트 1·2·3번 그래프를 같이 보시면 됩니다.</span>'; }); return out; }; }
+/* 📱 모바일 이미지 */
+/* 그림이 하얗게만 나왔는지 (가운데 세로줄 40곳을 본다) */
+function crBlank(cv){ try { var c = cv.getContext('2d'), x = Math.floor(cv.width * 0.3); for (var i = 1; i <= 40; i++){ var d = c.getImageData(x, Math.floor(cv.height * i / 41), 1, 1).data; if (d[0] < 235 || d[1] < 235 || d[2] < 235) return false; } return true; } catch(e){ return true; } }
+window.crMobile = async function(){
+  var X = null; try { X = crCompute(); } catch(e){} if (!X){ try { plToast('리포트를 먼저 불러오세요'); } catch(e){} return; }
+  try { plToast('📱 이미지 만드는 중…'); } catch(e){}
+  try { if (typeof html2canvas === 'undefined') await _mrLoadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'); } catch(e){ alert('이미지 도구를 불러오지 못했습니다 — 인터넷 연결을 확인하세요'); return; }
+  CR_M = true; var html; try { html = crReport(X, 'print'); } finally { CR_M = false; }
+  var host = document.createElement('div'); host.id = 'cr-mob-host'; host.className = 'cr-mob';
+  host.style.cssText = 'position:absolute;left:0;top:0;z-index:-9999;pointer-events:none';   /* 화면 뒤 맨 위 — foreignObject 는 화면 밖이면 빈 그림이 된다 */
+  host.innerHTML = '<style>' + CR_CSS + CR_MOB_CSS + '</style>' + html;
+  document.body.appendChild(host);
+  try {
+    await new Promise(function(r){ setTimeout(r, 120); });
+    var hh = host.scrollHeight, sc = (480 * 2 * hh * 2 > 16000000) ? 1.5 : 2;
+    /* 브라우저가 그린 그대로(foreignObject) 먼저 — 글자 간격·줄바꿈이 정확하다. 막히면(일부 사파리) 예전 방식 */
+    var canvas = null, url = '';
+    try { canvas = await html2canvas(host, { scale: sc, useCORS: true, backgroundColor: '#ffffff', windowWidth: 480, foreignObjectRendering: true }); if (crBlank(canvas)) throw new Error('blank'); url = canvas.toDataURL('image/png'); }
+    catch(e1){ canvas = await html2canvas(host, { scale: sc, useCORS: true, backgroundColor: '#ffffff', windowWidth: 480 }); url = canvas.toDataURL('image/png'); }
+    var name = X.st.name + '_상담리포트_' + X.to + '.png';
+    var ov = document.createElement('div'); ov.id = 'cr-mob-ov';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.72);display:flex;flex-direction:column;align-items:center;padding:16px;overflow:auto';
+    ov.innerHTML = '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;justify-content:center"><a href="' + url + '" download="' + crE(name) + '" style="background:#0d2240;color:#fff;border-radius:10px;padding:9px 16px;font-weight:900;text-decoration:none;font-size:14px">⬇ 이미지 저장</a>'
+      + '<button type="button" onclick="document.getElementById(\'cr-mob-ov\').remove()" style="border:none;border-radius:10px;padding:9px 16px;font-weight:900;font-size:14px;cursor:pointer">닫기</button></div>'
+      + '<div style="color:#e2e8f0;font-size:12.5px;font-weight:700;margin-bottom:8px">카톡으로 보낼 땐 저장한 그림을 보내세요 · 아이패드는 그림을 길게 눌러 «사진에 저장» · 원장님 계획·메모는 빠져 있습니다</div>'
+      + '<img src="' + url + '" alt="모바일 상담 리포트" style="width:min(420px,100%);border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.4)">';
+    document.body.appendChild(ov);
+  } catch(e){ alert('이미지 만들기 실패: ' + e.message); }
+  finally { host.remove(); }
+};
+/* 단추 — 📞 학부모 상담 위쪽 줄(인쇄 옆) */
+if (typeof rCounsel === 'function'){ var _rCounsel162 = rCounsel; rCounsel = function(){
+  return _rCounsel162().replace('<button type="button" onclick="cn2Print()"', '<button type="button" onclick="crMobile()" style="font-family:inherit;font-size:12.5px;font-weight:900;border-radius:10px;padding:7px 12px;cursor:pointer;border:1.5px solid #0d2240;background:#fff;color:#0d2240">📱 모바일 이미지</button><button type="button" onclick="cn2Print()"'); }; }
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~164: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
