@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-162';
+var APP_VER = 'v19-163';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9086,6 +9086,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-163',date:'2026-10-26',stability:'ok',memo:'📛 <b>플래너 거짓 제출 — 눌러서 사진 확인</b> (원장 2026-10-26 「플래너 거짓 제출을 누르면 확인할 수 있게 링크로 · 플래너 탭에서 거짓 제출을 볼 수 있는 기능」 → 시안 → 「좋다. v19-163 으로 진행하고 배포해」). ① 플래너 탭 왼쪽 «📛 거짓 제출 (확인 전 개수)» — 최근 30일, 왼쪽에 학생별 건수(30일 거짓 3건 이상 ●), 거르기(확인 전 · 전체 · 거짓 · 날짜 문제). 카드를 펼치면 <b>이번에 낸 사진과 같다고 본(먼저 낸) 사진을 나란히</b> · 글이 같은 정도 · 사진 지문 차이 · AI 가 읽은 할 일 중 겹친 줄(빨강). 단추: ⛔ 0점 확정(원장 확인 표시) · ↩ 다른 날 맞음 — 점수 되살리기 · 💬 학생에게 보낼 말 복사 · 사진을 누르면 새 창에서 크게. 거짓 = 같은 날짜 또 냄·같은 쪽 다시 냄, 날짜 없음·다른 날짜는 «날짜 문제»로 따로. ② <b>바로 가기</b> — 🔔 알림 줄(플래너 0점·거짓 제출), 🚨 위험 신호 줄, 사진검토 승인 카드의 «⛔ 그날 0점» 띠 «📛 사진 나란히 확인 ›» → 그 학생 카드가 열린 채로. ③ 📞 학부모 상담 메모에 «확정 / 확인 전» 날짜 + 바로 가기. 학생앱 0점 표시는 예전 그대로. ④ <b>📋 상담 리포트 인쇄 여백</b>(원장 「출력했을 때 여백이 너무 많다」) — A4 인쇄 폭이 화면용 «좁으면 한 줄» 규칙에 걸려 그래프가 한 칸씩 크게 나오고 큰 상자를 못 잘라 첫 장이 비던 것 → 인쇄 전용 배치(두 칸 · 과정별 시험 세 칸 · 글자·간격 줄임 · 위아래 8mm). 가짜 학생 기준 A4 9장 → 3장.'},
       {ver:'v19-162',date:'2026-10-26',stability:'ok',memo:'📞 <b>학부모 상담 — 한 화면으로</b> (원장 2026-10-26 「좌측 학부모상담준비와 통합하고 화면 구성하자」 → 시안 → 「좋다. v19-162로 진행하고 배포해」). 들어가는 곳은 왼쪽 «📞 학부모 상담 준비» 하나 — 진도·리포트 탭의 «상담 리포트»는 뺐고, 진도 현황 상세의 «📋 상담 리포트» 단추도 이 화면으로 옵니다. 위 한 줄에서 학생 · 상담 종류(정기·성적 하락·학부모 문의·진학) · 기간 · 집중 교재를 고르면 ① 30초 브리핑(과제 완성도 · 최근 테스트 · 안 풀린 문제 · 플래너 + <b>집중 교재 숙제 해 온 수업 «N번 중 M번» · 집중 교재 진도·필요 속도</b>, 지난 상담 · <b>지난번 계획 → 지금</b>) ② 탭 세 개 — <b>📊 상담 리포트</b>(v19-161 그래프, 인쇄·PDF) · <b>📞 통화 대본</b>(예전 6단락 대본 그대로 + «꼭 짚을 것 — 숙제 흐름» 단락에 리포트 숫자) · <b>📝 상담 기록</b>(통화 메모·분위기 + 다음 달 계획·가정에서 → 한 번 저장으로 counsel_log 와 consult_<코드>에 같이, 지난 상담 목록에 «계획 주 N쪽 → 지금 주 M쪽»). 🔒 원장 메모는 탭 아래 공통(인쇄에 빠짐).'},
       {ver:'v19-161',date:'2026-10-26',stability:'ok',memo:'📋 <b>상담 리포트</b> (원장 2026-10-26 「학부모 상담 요청 — 진도·앱 체크 숙제로 보여 줄 상담 보고서를 학원앱에 · 그래프 위주 · 문제 교재 숙제를 안 해 오는 것을 강조 · 주간테스트는 과정별 · 숙제 현황판은 빼고 · 수학 시간은 하루 평균」). 진도·리포트 탭 «📋 상담 리포트» 또는 진도 현황 오른쪽 상세의 단추. 학생 · 기간(2/3/4/6개월) · <b>집중 교재</b>(기본 = 진도 현황 대표 교재)를 고르면 ① 집중 교재 숙제 흐름 — 최근 수업 20번 판(그 수업까지 채점해 온 문항: ✓ 10문항 이상 · △ 1~9 · ✗ 0, 같은 기간 해 온 다른 교재 이름) · 날짜별 교재 레인(빈 기간 빨간 띠) · 주별 문항 막대(집중 교재 vs 많이 푼 다른 교재) ② 진도 곡선(기준 속도 · 지금 속도 · 완주 계획) ③ 교재별 월 진행 쪽수 · 월 정답률 ④ 시험 점수 과정별(중1-1 · 중1-2 …, 학기가 없는 시험지는 시험지 날짜로 1·2학기를 나눔, 집중 교재 학습지 점수 ◆) ⑤ 최근 5주 틀린 개념 ⑥ 숙제 단계별 월 평균 ⑦ 학생앱 채점 입력 ⑧ 하루 평균 공부·수학 시간(수학은 플래너 할 일 비율로 추정) ⑨ 아하노트 질문 수 ⑩ 다음 달 계획·가정에서(고쳐 쓰기) ⑪ 🔒 원장 메모(플래너 같은 사진 감지 · 출결 · 수업 메모). 「🖨 인쇄 · PDF」는 원장 메모를 빼고 새 창으로 · 「💾 저장」은 lumen_store consult_<코드>. 자료는 읽기만(매쓰플랫 문항 기록은 학생 한 명·기간만).'},
       {ver:'v19-160',date:'2026-10-26',stability:'ok',memo:'📚 <b>진도 기준 바꾸기 · 🔔 원장님 알림</b> (원장 2026-10-26 「중등부 교재는 1권이 2달에서 최대 2.5달 · 고등부는 학기 중엔 숙제체크 진도만 · 내가 알 수 있는 알림」 → 시안 보고 「모두 적용 배포」). ① <b>중등 교재</b>(매쓰플랫 교재 학년 중1~중3)는 ✎ 로 따로 적지 않았으면 <b>목표 2개월 · 한계 2.5개월</b> — 예상 완주가 2개월 넘으면 🟡 주의, 2.5개월 넘거나 이미 지났으면 🔴 급함. 그 밖의 교재는 예전 그대로 3개월. 🔴🟡 학생 오른쪽 상세에 «○/○까지 끝내려면 주 +N쪽 (지금 +M쪽)»(한계일이 5주 안 남았거나 지났으면 오늘부터 5주). ② <b>고등학생은 학기 중(3~7·9~12월)</b> 교재 %·초과·끊김을 보지 않고 아래 «🎓 고등부 · 학기 중 숙제 진도» 칸으로 — 최근 2주 수업일의 숙제체크 풀이 100% ✓ · 덜 함 ✗ · 안 찍음 ?. 진도 현황 머리 «기준» 줄의 단추로 끌 수 있음. 🚨 위험 신호에도 «고등 숙제 진도». ③ <b>🔔 알림</b> — 홈 맨 위 «🔔 이번 주 경고» 카드 + 위쪽 줄 오른쪽 끝 🔔 단추(개수). 진도 급함 · 고등 숙제 진도 미흡 · 채점 7일 이상 없음 · 플래너 0점/거짓 제출 · 주간테스트 20점 넘게 하락만 골라 띄운다. 처음 생긴 경고에는 «새로»(7일), «확인함»을 누르면 2주 동안 숨기고 더 나빠지면 다시 뜬다. 월요일엔 지난주 요약 한 줄. 원장님만 봄(학부모·학생앱엔 안 감) — lumen_store alert_state.'},
@@ -37723,6 +37724,7 @@ function rPlanner(){
            : PLANNER_VIEW==='studytime'  ? rPlannerStudyTime()
            : PLANNER_VIEW==='monthly'    ? rPlannerMonthly()
            : PLANNER_VIEW==='race'       ? rPlannerRace()
+           : PLANNER_VIEW==='fake'       ? rPlannerFake()   /* ★ v19-163 */
            : rPlannerRanking();
   return '<div style="display:flex;flex-direction:column;height:100%"><div style="flex:1;overflow-y:auto">'+body+'</div></div>';
 }
@@ -37737,6 +37739,7 @@ function rPlannerLeftNav() {
     {id:'monthly',   icon:'📊', label:'월간',     red:false},
     {id:'ranking',   icon:'🏆', label:'랭킹',     red:false},
     {id:'race',      icon:'🎮', label:'레이스',   red:false},
+    {id:'fake',      icon:'📛', label:'거짓 제출'+(typeof pfCount==='function'&&pfCount()?' ('+pfCount()+')':''), red:false},   /* ★ v19-163 */
     /* ★ v19-81: 플래너와 이어진 화면 (원장 지시 2026-10-05) */
     {sep:'📅 주간 · 순공 · 코디'},
     {id:'@plweek',   icon:'📅', label:'주간 점수(계획·순공)', red:false},
@@ -78127,7 +78130,7 @@ function rRisk(){
   h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px">';
   flagged.forEach(function(r){ var s=r.st; var red=r.sig.some(function(x){ return x.sev===2; });
     h+='<div style="background:#fff;border:1.5px solid '+(red?'#fca5a5':'#fde68a')+';border-radius:14px;padding:12px 14px"><div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px"><b style="font-size:15px;color:#0d2240">'+esc2(s.name)+'</b><span style="font-size:11px;color:#64748b;font-weight:700">'+esc2(s.group||'미배정')+' · '+esc2(String(s.grade||'').replace('학교',''))+'</span><span style="margin-left:auto;font-size:11px;font-weight:900;color:'+(red?'#dc2626':'#b45309')+'">'+r.sig.length+'개</span></div>';
-    r.sig.sort(function(a,b){ return b.sev-a.sev; }).forEach(function(x){ h+='<div onclick="riskGo(\''+x.go+'\')" style="cursor:pointer;display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border-radius:8px;margin:3px 0;background:'+(x.sev===2?'#fef2f2':'#fffbeb')+'"><span style="font-size:12.5px;font-weight:900;color:'+(x.sev===2?'#b91c1c':'#b45309')+';white-space:nowrap">'+(x.sev===2?'🔴':'🟡')+' '+esc2(x.t)+'</span><span style="font-size:11px;color:#64748b;font-weight:700;line-height:1.4">'+esc2(x.d||'')+'</span><span style="margin-left:auto;font-size:10.5px;color:#94a3b8;font-weight:800;white-space:nowrap">'+esc2(RISK_NAMES[x.k])+' ›</span></div>'; });
+    r.sig.sort(function(a,b){ return b.sev-a.sev; }).forEach(function(x){ h+='<div onclick="riskGo(\''+x.go+'\',\''+s.id+'\')" style="cursor:pointer;display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border-radius:8px;margin:3px 0;background:'+(x.sev===2?'#fef2f2':'#fffbeb')+'"><span style="font-size:12.5px;font-weight:900;color:'+(x.sev===2?'#b91c1c':'#b45309')+';white-space:nowrap">'+(x.sev===2?'🔴':'🟡')+' '+esc2(x.t)+'</span><span style="font-size:11px;color:#64748b;font-weight:700;line-height:1.4">'+esc2(x.d||'')+'</span><span style="margin-left:auto;font-size:10.5px;color:#94a3b8;font-weight:800;white-space:nowrap">'+esc2(RISK_NAMES[x.k])+' ›</span></div>'; });
     h+='</div>'; });
   h+='</div>';
   if(clean.length) h+='<div style="margin-top:14px;font-size:12px;color:#64748b;font-weight:700">✅ 이상 없음 '+clean.length+'명 — '+clean.map(function(r){ return esc2(r.st.name); }).join(' · ')+'</div>';
@@ -100697,7 +100700,200 @@ rCounsel = function(){
 rConsult = function(){ VIEW = 'counsel'; CNS.tab = 'rep'; return rCounsel(); };
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~162: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-163: 📛 플래너 거짓 제출 확인 (원장 10/26 「플래너 거짓 제출을 누르면 확인할 수 있게 링크로 · 플래너 탭에서 거짓 제출을 볼 수 있는 기능」
+ *   → 시안 docs/mockup_planner_fake.html → 「좋다. v19-163 으로 진행하고 배포해」)
+ *   · 플래너 탭 왼쪽 «📛 거짓 제출» (PLANNER_VIEW 'fake') — 최근 30일, 학생별 건수, 확인 전/전체/같은 날짜/같은 쪽/날짜 문제
+ *     카드: 이번에 낸 사진 vs 같다고 본(먼저 낸) 사진 나란히 · 글 같은 정도 · 사진 지문 차이 · AI 가 읽은 할 일 중 겹친 줄
+ *     단추: ⛔ 거짓 맞음 — 0점 확정(analysis.zeroOk = 날짜) · ↩ 다른 날 맞음 — 점수 되살리기(기존 plzClear) · 🔍 사진 크게 · 💬 학생에게 보낼 말 복사
+ *   · 거짓 = 같은 날짜 또 냄(sameDate)·같은 쪽 다시 냄(dup). 날짜 없음(noDate)·다른 날짜(wrongDate)는 «날짜 문제»로 따로 센다.
+ *   · 바로 가기: 🔔 알림 줄 · 🚨 위험 신호 줄(플래너 0점·거짓 제출) · 사진검토 승인 카드 «⛔ 그날 0점» 띠 → 그 학생 카드가 열린 채로
+ *   · 학부모 상담 메모(v19-161~162)는 확정 / 확인 전을 나눠 적는다. 학생앱 발행(plzFlags)은 예전 그대로(바꾸지 않음).
+ *   ※ 문자열 연결로만 쓴다(중첩 템플릿 리터럴 금지).
+ * ═══════════════════════════════════════════════════════════════════ */
+var PF = { stu: '', filter: 'todo', open: {} };
+var PF_LIE = { dup: 1, sameDate: 1 }, PF_DATE = { noDate: 1, wrongDate: 1 };
+function pfToday(){ return new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10); }
+function pfAddD(s, n){ var d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); }
+function pfE(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function pfMD(s){ s = String(s || ''); return s.length >= 10 ? (+s.slice(5, 7)) + '/' + (+s.slice(8, 10)) : s; }
+/* 최근 30일 사건 목록 */
+function pfCases(){
+  var from = pfAddD(pfToday(), -30), out = [];
+  (students || []).forEach(function(st){ if (!st || st.withdrawn) return;
+    (st.lumen_planner_photos || []).forEach(function(p){ var a = p && p.analysis; if (!a || a.zeroCleared || !(a.zeroDay || a.zeroWarn)) return;
+      var r = a.zeroReason || ''; if (!PF_LIE[r] && !PF_DATE[r]) return;
+      var day = plzSetDay(p.setId); if (!day || day < from) return;
+      out.push({ st: st, p: p, a: a, r: r, lie: !!PF_LIE[r], day: day, ok: a.zeroOk || '', key: st.id + '|' + p.setId }); }); });
+  out.sort(function(x, y){ return x.day < y.day ? 1 : -1; });
+  return out;
+}
+function pfCount(){ try { return pfCases().filter(function(c){ return c.lie && !c.ok; }).length; } catch(e){ return 0; } }
+function pfReasonTag(c){ return c.r === 'sameDate' ? '같은 날짜 또 냄' : c.r === 'dup' ? '같은 쪽 다시 냄' : c.r === 'noDate' ? '날짜 없음' : '날짜가 다름'; }
+window.pfOpen = function(stId, setId){
+  VIEW = 'planner'; PLANNER_VIEW = 'fake'; PF.stu = stId || ''; PF.open = {};
+  var cs = pfCases().filter(function(c){ return !stId || c.st.id === stId; });
+  PF.filter = cs.some(function(c){ return !c.ok; }) ? 'todo' : 'all';
+  var first = setId ? cs.filter(function(c){ return c.p.setId === setId; })[0] : (cs.filter(function(c){ return !c.ok && c.lie; })[0] || cs[0]);
+  if (first) PF.open[first.key] = 1;
+  try { renderFuncTab(); } catch(e){ render(); }
+};
+window.pfSet = function(k, v){ PF[k] = v; render(); };
+window.pfToggle = function(key){ PF.open[key] = !PF.open[key]; render(); };
+window.pfConfirm = function(stId, setId){
+  var st = (students || []).find(function(s){ return s && s.id === stId; }); if (!st) return;
+  var p = (st.lumen_planner_photos || []).find(function(x){ return x && x.setId === setId; }); if (!p || !p.analysis) return;
+  p.analysis.zeroOk = p.analysis.zeroOk ? '' : pfToday();
+  if (typeof saveStudents === 'function') saveStudents();
+  try { plToast(p.analysis.zeroOk ? '⛔ 0점 확정 — 거짓 제출로 남깁니다' : '↩ 확정 취소 — 다시 «확인 전»'); } catch(e){}
+  render();
+};
+window.pfCopy = function(stId, setId){
+  var c = pfCases().filter(function(x){ return x.st.id === stId && x.p.setId === setId; })[0]; if (!c) return;
+  var nm = c.st.name, d0 = c.a.zeroDup || {};
+  var msg = c.r === 'sameDate' ? (nm + ', ' + pfMD(c.day) + '에 낸 플래너 날짜가 ' + pfMD(d0.day) + '에 이미 낸 날짜와 같아. 그날 쓴 플래너를 다시 찍어서 내 줘.')
+    : c.r === 'dup' ? (nm + ', ' + pfMD(c.day) + '에 낸 플래너가 ' + pfMD(d0.day) + '에 낸 것과 같은 쪽이야. 그날 쓴 플래너를 다시 찍어서 내 줘.')
+    : (nm + ', ' + pfMD(c.day) + ' 플래너에 날짜가 ' + (c.r === 'noDate' ? '안 보여' : '그날과 달라') + '. 두 장 모두 맨 위에 날짜를 쓰고 다시 내 줘.');
+  var done = function(){ try { plToast('💬 복사했습니다 — 카톡에 붙여 넣으세요'); } catch(e){} };
+  try { navigator.clipboard.writeText(msg).then(done, function(){ prompt('복사해서 보내세요', msg); }); } catch(e){ prompt('복사해서 보내세요', msg); }
+};
+function pfPhotos(urls, cap, hot){
+  if (!urls || !urls.length) return '<div style="padding:30px;text-align:center;color:#94a3b8;font-size:12px;font-weight:700;background:#f8fafc;border-radius:8px">사진 없음</div>';
+  return '<div style="display:flex;gap:6px;flex-wrap:wrap">' + urls.slice(0, 2).map(function(u){
+    return '<a href="' + pfE(u) + '" target="_blank" rel="noopener" title="새 창에서 크게" style="flex:1;min-width:120px"><img src="' + pfE(u) + '" loading="lazy" alt="' + pfE(cap) + '" style="width:100%;max-height:340px;object-fit:contain;background:#fff;border-radius:8px;border:2px solid ' + (hot ? '#fca5a5' : '#e2e8f0') + '"></a>'; }).join('') + '</div>';
+}
+function pfCard(c){
+  var a = c.a, d0 = a.zeroDup || {}, st = c.st, open = !!PF.open[c.key];
+  var p2 = d0.setId ? (st.lumen_planner_photos || []).find(function(x){ return x && x.setId === d0.setId; }) : null, a2 = (p2 && p2.analysis) || {};
+  var tag = '<span style="font-size:11.5px;font-weight:900;border-radius:6px;padding:1px 8px;background:' + (c.lie ? '#fde8e8;color:#c81e1e' : '#fdf1d8;color:#b45309') + '">' + pfReasonTag(c) + '</span>';
+  var stt = c.ok ? '<span style="font-size:11.5px;font-weight:900;border-radius:6px;padding:1px 8px;background:#e5e7eb;color:#475569">⛔ 0점 확정 ' + pfMD(c.ok) + '</span>'
+    : (a.zeroWarn && !a.zeroDay ? '<span style="font-size:11.5px;font-weight:900;border-radius:6px;padding:1px 8px;background:#fef9c3;color:#92400e">경고만(점수 그대로)</span>' : '<span style="font-size:11.5px;font-weight:900;border-radius:6px;padding:1px 8px;background:#fdf1d8;color:#b45309">확인 전</span>');
+  var h = '<div style="background:#fff;border:1.5px solid ' + (c.ok ? '#e2e8f0' : (c.lie ? '#fca5a5' : '#fde68a')) + ';border-radius:12px;padding:11px 14px;margin-bottom:10px">';
+  h += '<div onclick="pfToggle(\'' + pfE(c.key).replace(/'/g, '') + '\')" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;cursor:pointer"><b style="font-size:15px;color:#0d2240">' + pfE(st.name) + ' · ' + pfMD(c.day) + ' 제출</b>' + tag + stt
+    + '<span style="font-size:12px;color:#64748b;font-weight:700">' + pfE(plzReasonKo(a)) + '</span><span style="margin-left:auto;color:#94a3b8;font-weight:900">' + (open ? '▲' : '▼') + '</span></div>';
+  if (!open) return h + '</div>';
+  h += '<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:10px">';
+  h += '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:8px;background:#f8fafc"><div style="display:flex;justify-content:space-between;gap:6px;font-size:12px;font-weight:800;margin-bottom:6px"><span>이번에 낸 것 · ' + pfMD(c.day) + ' 제출</span><span style="color:#c81e1e">적힌 날짜 ' + pfE(a.date || '없음') + '</span></div>' + pfPhotos(c.p.urls, '이번 제출', true) + '</div>';
+  if (p2) h += '<div style="border:1px solid #e2e8f0;border-radius:10px;padding:8px;background:#f8fafc"><div style="display:flex;justify-content:space-between;gap:6px;font-size:12px;font-weight:800;margin-bottom:6px"><span>' + (c.r === 'sameDate' ? '먼저 낸 것' : '같다고 본 것') + ' · ' + pfMD(plzSetDay(p2.setId)) + ' 제출</span><span>적힌 날짜 ' + pfE(a2.date || '—') + '</span></div>' + pfPhotos(p2.urls, '먼저 낸 것', false) + '</div>';
+  else h += '<div style="border:1px dashed #e2e8f0;border-radius:10px;padding:14px;font-size:12.5px;color:#64748b;font-weight:700;line-height:1.7">' + (c.lie ? '비교할 예전 사진을 찾지 못했습니다(지워졌거나 오래됨).' : '날짜 문제 — 비교할 사진 없음.<br>사진 맨 위 날짜 칸을 확인하세요.') + '</div>';
+  h += '</div>';
+  if (c.lie){
+    var ln = [];
+    if (d0.sim != null) ln.push('글이 같은 정도 <b>' + d0.sim + '%</b><span style="display:inline-block;width:120px;height:8px;border-radius:4px;background:#e5e7eb;vertical-align:1px;margin-left:6px;overflow:hidden"><i style="display:block;height:100%;width:' + Math.min(100, +d0.sim || 0) + '%;background:#c81e1e"></i></span>');
+    if (d0.hd != null && d0.hd < 99) ln.push('사진 지문 차이 <b>' + d0.hd + '</b> <span style="color:#94a3b8">(' + (window.PLZ ? PLZ.HASH_DIST : 8) + ' 이하면 같은 사진으로 봄)</span>');
+    if (c.r === 'sameDate') ln.push('적힌 날짜 <b>같음</b>');
+    if (ln.length) h += '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:13px;color:#334155">' + ln.join('') + '</div>';
+    var t1 = (a.tasksTranscript || []).concat(a.totalTime ? ['TOTAL ' + a.totalTime] : []), t2 = (a2.tasksTranscript || []).concat(a2.totalTime ? ['TOTAL ' + a2.totalTime] : []);
+    var norm = function(s){ return String(s).replace(/\s+/g, ''); }, set2 = {}; t2.forEach(function(x){ set2[norm(x)] = 1; });
+    if (t1.length) h += '<div style="margin-top:8px;font-size:12.5px;background:#f8fafc;border-radius:8px;padding:7px 10px;line-height:1.85">AI 가 읽은 할 일 — 예전 것과 겹친 줄 빨강: '
+      + t1.map(function(x){ return set2[norm(x)] ? '<mark style="background:#fde2e2;color:#c81e1e;border-radius:3px;padding:0 3px">' + pfE(x) + '</mark>' : pfE(x); }).join(' · ') + '</div>';
+  }
+  var sq = "'" + st.id + "','" + String(c.p.setId).replace(/'/g, '') + "'";
+  var b = function(t, f, sty){ return '<button type="button" onclick="' + f + '" style="font-family:inherit;font-size:12.5px;font-weight:900;border-radius:9px;padding:6px 12px;cursor:pointer;' + sty + '">' + t + '</button>'; };
+  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'
+    + (c.ok ? b('↩ 확정 취소', 'pfConfirm(' + sq + ')', 'border:1.5px solid #cbd5e1;background:#fff;color:#475569') : b('⛔ ' + (c.lie ? '거짓 맞음' : '날짜 문제 맞음') + ' — 0점 확정', 'pfConfirm(' + sq + ')', 'border:none;background:#c81e1e;color:#fff'))
+    + b('↩ 다른 날 맞음 — 점수 되살리기', 'if(confirm(\'이 세트를 정상으로 되돌리고 원래 점수를 살릴까요?\'))plzClear(' + sq + ')', 'border:1.5px solid #15803d;background:#fff;color:#15803d')
+    + b('💬 학생에게 보낼 말 복사', 'pfCopy(' + sq + ')', 'border:1.5px solid #cbd5e1;background:#fff;color:#475569') + '</div>';
+  return h + '</div>';
+}
+function rPlannerFake(){
+  var all = pfCases(), byS = {};
+  all.forEach(function(c){ var k = c.st.id; (byS[k] = byS[k] || { st: c.st, lie: 0, date: 0, todo: 0 }); if (c.lie) byS[k].lie++; else byS[k].date++; if (!c.ok) byS[k].todo++; });
+  var match = function(c){ if (PF.filter === 'todo') return !c.ok; if (PF.filter === 'lie') return c.lie; if (PF.filter === 'date') return !c.lie; return true; };
+  var list = all.filter(function(c){ return match(c) && (!PF.stu || c.st.id === PF.stu); });
+  var studs = Object.keys(byS).map(function(k){ return byS[k]; }).sort(function(a, b){ return (b.todo - a.todo) || (b.lie - a.lie); });
+  var h = '<div style="padding:16px 20px 40px;max-width:1300px">';
+  h += '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px"><b style="font-size:20px;color:#0d2240">📛 플래너 거짓 제출</b><span style="font-size:12px;color:#64748b;font-weight:700">최근 30일 · 같은 날짜 또 냄 · 같은 쪽 다시 냄 (날짜 없음·다른 날짜는 «날짜 문제»로 따로)</span></div>';
+  h += '<div style="display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start">';
+  /* 왼쪽 */
+  var todo = all.filter(function(c){ return !c.ok; }).length;
+  h += '<div style="background:#fbfcfe;border:1px solid #e2e8f0;border-radius:12px;padding:10px">';
+  h += '<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:8px">' + [[todo, '확인 전'], [studs.length, '학생'], [all.length, '30일 전체']].map(function(x){ return '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:5px 7px;font-size:11px;color:#64748b;font-weight:700"><b style="display:block;font-size:17px;color:#0d2240">' + x[0] + '</b>' + x[1] + '</div>'; }).join('') + '</div>';
+  h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">' + [['todo', '확인 전'], ['all', '전체'], ['lie', '거짓(같은 날짜·쪽)'], ['date', '날짜 문제']].map(function(f){ var on = PF.filter === f[0];
+    return '<button type="button" onclick="pfSet(\'filter\',\'' + f[0] + '\')" style="font-family:inherit;font-size:11.5px;font-weight:800;border-radius:14px;padding:2px 9px;cursor:pointer;border:1px solid ' + (on ? '#c81e1e' : '#e2e8f0') + ';background:' + (on ? '#fde8e8' : '#fff') + ';color:' + (on ? '#c81e1e' : '#475569') + '">' + f[1] + '</button>'; }).join('') + '</div>';
+  h += '<button type="button" onclick="pfSet(\'stu\',\'\')" style="width:100%;text-align:left;font-family:inherit;font-size:13px;font-weight:800;border-radius:9px;padding:6px 10px;margin-bottom:5px;cursor:pointer;border:1.5px solid ' + (!PF.stu ? '#1d4ed8' : '#e2e8f0') + ';background:#fff">전체 학생</button>';
+  studs.forEach(function(s){ var on = PF.stu === s.st.id;
+    h += '<button type="button" onclick="pfSet(\'stu\',\'' + s.st.id + '\')" style="width:100%;display:flex;align-items:center;gap:8px;text-align:left;font-family:inherit;border-radius:10px;padding:6px 10px;margin-bottom:5px;cursor:pointer;border:1.5px solid ' + (on ? '#1d4ed8' : '#e2e8f0') + ';background:#fff">'
+      + '<span><b style="font-size:14.5px;color:#0d2240">' + pfE(s.st.name) + (s.lie >= 3 ? ' <span title="30일에 거짓 3건 이상" style="color:#c81e1e">●</span>' : '') + '</b><small style="display:block;color:#64748b;font-size:11px;font-weight:700">' + pfE(s.st.group || '') + ' · 거짓 ' + s.lie + ' · 날짜 ' + s.date + '</small></span>'
+      + (s.todo ? '<span style="margin-left:auto;font-weight:900;color:#c81e1e">' + s.todo + '</span>' : '<span style="margin-left:auto;color:#15803d;font-weight:900">✓</span>') + '</button>'; });
+  if (!studs.length) h += '<div style="font-size:12.5px;color:#15803d;font-weight:800;padding:8px">최근 30일 거짓 제출이 없습니다 🎉</div>';
+  h += '<div style="font-size:11px;color:#94a3b8;font-weight:700;line-height:1.6;margin-top:6px">● = 30일에 거짓 3건 이상 · 📞 학부모 상담 메모에 확정/확인 전으로 들어갑니다</div></div>';
+  /* 오른쪽 */
+  h += '<div>';
+  if (!list.length) h += '<div style="background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:30px;text-align:center;color:#64748b;font-weight:800">' + (PF.filter === 'todo' ? '확인할 것이 없습니다 ✓ — «전체»에서 지난 것을 볼 수 있어요' : '해당하는 제출이 없습니다') + '</div>';
+  list.forEach(function(c){ h += pfCard(c); });
+  h += '<div style="font-size:11.5px;color:#64748b;font-weight:700;background:#f8fafc;border-radius:8px;padding:8px 11px;line-height:1.7">«⛔ 0점 확정»은 원장님이 사진을 보고 확인했다는 표시입니다(점수는 이미 0점). «↩ 다른 날 맞음»을 누르면 원래 점수로 돌아가고 이 목록에서 빠집니다. 학생앱의 0점 표시는 예전처럼 승인한 세트에만 나갑니다.</div>';
+  return h + '</div></div></div>';
+}
+/* 승인 카드 «⛔ 그날 0점» 띠에 바로 가기 */
+var _plzCardHtml162 = window.plzCardHtml;
+window.plzCardHtml = function(a, stId, setId){
+  var h = _plzCardHtml162(a, stId, setId);
+  if (!h || !a || a.zeroCleared || !(a.zeroDay || a.zeroWarn) || !(PF_LIE[a.zeroReason] || PF_DATE[a.zeroReason])) return h;
+  return h + '<button type="button" onclick="pfOpen(\'' + stId + '\',\'' + String(setId).replace(/'/g, '') + '\')" style="margin:-2px 0 8px;border:1.5px solid #1d4ed8;background:#fff;color:#1d4ed8;border-radius:8px;padding:4px 11px;font-size:11.5px;font-weight:900;cursor:pointer;font-family:inherit">📛 사진 나란히 확인 ›</button>';
+};
+/* 🔔 알림 · 🚨 위험 신호 → 그 학생 카드 */
+var _alGo160 = window.alGo;
+window.alGo = function(i){
+  var a = (AL._last || [])[i];
+  if (a && (a.k === 'plz' || a.k === 'plzlie')){ try { alPopClose(); } catch(e){} pfOpen(a.st.id); return; }
+  return _alGo160(i);
+};
+var _riskGo = window.riskGo;
+window.riskGo = function(v, stId){ if (v === 'planner' && stId){ pfOpen(stId); return; } return _riskGo(v); };
+/* 학부모 상담 메모 — 확정 / 확인 전 나눠 적기 */
+if (typeof crCompute === 'function'){
+  var _crCompute161 = crCompute;
+  crCompute = function(){
+    var X = _crCompute161(); if (!X || !X.memo) return X;
+    try {
+      var cs = pfCases().filter(function(c){ return c.st === X.st && c.lie && c.day >= X.from; });
+      X.memo = X.memo.filter(function(m){ return m.indexOf('<b>플래너</b>') !== 0; });
+      if (cs.length){ var okL = cs.filter(function(c){ return c.ok; }), noL = cs.filter(function(c){ return !c.ok; });
+        X.memo.unshift('<b>플래너 거짓 제출</b>: ' + (okL.length ? '확정 ' + okL.map(function(c){ return pfMD(c.day); }).join('·') : '') + (okL.length && noL.length ? ' / ' : '') + (noL.length ? '확인 전 ' + noL.map(function(c){ return pfMD(c.day); }).join('·') : '')
+          + ' — <a href="#" onclick="pfOpen(\'' + X.st.id + '\');return false" style="color:#1d4ed8;font-weight:800">사진 나란히 확인 ›</a>'); }
+    } catch(e){}
+    return X;
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-163: 📋 상담 리포트 인쇄 여백 줄이기 (원장 10/26 「상담 리포트를 출력했을 때 여백이 너무 많다」)
+ *   [원인] A4 인쇄 폭(약 720px)이 화면용 «820px 아래면 한 줄» 규칙에 걸려 그래프가 모두 한 칸씩 크게 나오고,
+ *          큰 카드(숙제 흐름)를 페이지 중간에서 못 자르게 막아 첫 장 대부분이 비었다 → A4 9장.
+ *   [고침] 인쇄 창 전용 배치: 두 칸 그리드 유지 · 과정별 시험 세 칸 · 글자·간격·카드 안쪽 여백 줄임 · 위아래 8mm ·
+ *          큰 «숙제 흐름» 상자는 페이지에 걸치면 나뉘어도 되게(안의 그래프 하나하나는 안 잘림).
+ *   ※ 문자열 연결로만 쓴다.
+ * ═══════════════════════════════════════════════════════════════════ */
+var CR_PRINT_CSS = '@page{size:A4;margin:8mm 8mm 9mm}'
+  + 'body{margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+  + '.cr{max-width:none;gap:7px;font-size:11.5px;line-height:1.45}'
+  + '.cr-sum,.cr-sum[class]{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px}'
+  + '.cr-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px}'
+  + '.cr-plan{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px}'
+  + '.cr-tps{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px}'
+  + '.cr-cls{grid-template-columns:repeat(10,minmax(0,1fr))!important;gap:3px}'
+  + '.cr-top{padding:8px 12px;border-radius:7px}.cr-top h1{font-size:18px;margin:0}.cr-top .br{font-size:9.5px}.cr-top .wh{font-size:10.5px}'
+  + '.cr-sum div{padding:5px 9px;font-size:11px;border-radius:7px}.cr-sum b{font-size:17px}'
+  + '.cr-focus{padding:8px 10px;gap:6px;border-radius:9px}.cr-focus h2{font-size:15px}'
+  + '.cr h3{font-size:12.5px;margin:0 0 1px}.cr-take{font-size:10.5px;margin:0 0 2px}'
+  + '.cr-card{padding:6px 9px 4px;border-radius:8px}.cr-tp{padding:4px 6px}.cr-tp-h{font-size:10.5px}.cr-tp-h b{font-size:13px}'
+  + '.cr-big{gap:10px;margin-bottom:3px}.cr-big b{font-size:20px}.cr-big span{font-size:10.5px}'
+  + '.cr-cd{padding:2px 1px;border-width:1.5px;border-radius:6px}.cr-cd .d{font-size:9.5px}.cr-cd .m{font-size:13px;line-height:1.2}.cr-cd .n{font-size:9px;min-height:11px}.cr-cd .rp{font-size:8.5px}'
+  + '.cr-legend{font-size:9.5px;gap:8px;margin-top:2px}.cr-legend i{width:9px;height:9px}'
+  + '.cr-plan ol,.cr-plan ul{font-size:11.5px;margin:2px 0 0;padding-left:18px}.cr-plan li{margin-bottom:1px}'
+  + '.cr-note{font-size:10.5px;padding:3px 0}.cr-foot{font-size:9.5px}'
+  + '.cr-card,.cr-tp,.cr-focus>div,.cr-sum,.cr-top{break-inside:avoid}.cr-focus{break-inside:auto}';
+window.crPrint = function(){
+  var X = null; try { X = crCompute(); } catch(e){} if (!X) return;
+  var w = window.open('', '_blank'); if (!w){ try { plToast('⚠ 팝업이 막혔습니다 — 브라우저에서 팝업을 허용해 주세요'); } catch(e){} return; }
+  w.document.open();
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>' + crE(X.st.name) + ' 상담 리포트 ' + crE(X.to) + '</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap"><style>'
+    + CR_CSS + CR_PRINT_CSS + '</style></head><body>' + crReport(X, 'print') + '</body></html>');
+  w.document.close(); setTimeout(function(){ try { w.focus(); w.print(); } catch(e){} }, 900);
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~163: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
