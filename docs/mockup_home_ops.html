@@ -1,0 +1,383 @@
+<title>학원앱 새 첫 화면</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap">
+<style>
+/* 레이아웃: 맨 위 보기 전환(새 첫 화면 · 운영 달력 탭) → 학원앱 틀(왼쪽 남색 기둥 + 위쪽 탭 + 본문) → 아래 «바뀌는 점» */
+:root{ --bg:#eef1f6; --fg:#14213a; --mute:#64708a; --line:#dde3ec; --card:#fff; --soft:#f6f8fb;
+  --navy:#0f1f3d; --navy2:#16294d; --blue:#2563eb; --blue-soft:#e6eefc; --red:#dc2626; --red-soft:#fde8e8;
+  --ok:#15803d; --ok-soft:#dcfce7; --amber:#b45309; --amber-soft:#fef3c7; --teal:#0f766e; --teal-soft:#d9f3ef; --violet:#6d28d9; --violet-soft:#efe7fd;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0b111c; --fg:#e6ebf3; --mute:#9aa6ba; --line:#28344a; --card:#151e2e; --soft:#1a2436; --navy:#0a1428; --navy2:#11203d; --blue:#6f9cff; --blue-soft:#1b2a48; --red:#f87171; --red-soft:#3a1717; --ok:#7ee0a0; --ok-soft:#14301f; --amber:#f6c56b; --amber-soft:#36290f; --teal:#5fd6c6; --teal-soft:#11302c; --violet:#c4a8ff; --violet-soft:#2a2047; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0b111c; --fg:#e6ebf3; --mute:#9aa6ba; --line:#28344a; --card:#151e2e; --soft:#1a2436; --navy:#0a1428; --navy2:#11203d; --blue:#6f9cff; --blue-soft:#1b2a48; --red:#f87171; --red-soft:#3a1717; --ok:#7ee0a0; --ok-soft:#14301f; --amber:#f6c56b; --amber-soft:#36290f; --teal:#5fd6c6; --teal-soft:#11302c; --violet:#c4a8ff; --violet-soft:#2a2047; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15.5px;line-height:1.6;padding-block:22px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{margin:0;font-size:22px;font-weight:900;text-wrap:balance}
+.lead{margin:2px 0 0;color:var(--mute)}
+.tag{display:inline-block;font-size:12px;font-weight:800;border-radius:20px;padding:1px 9px;background:var(--amber-soft);color:var(--amber);vertical-align:3px}
+.switch{display:flex;gap:6px;flex-wrap:wrap}
+.switch button{font:inherit;font-size:14.5px;font-weight:800;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:22px;padding:5px 16px;cursor:pointer}
+.switch button[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+button:focus-visible,.cal td:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+/* app frame */
+.app{display:grid;grid-template-columns:230px minmax(0,1fr);border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--card);min-height:760px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.side{display:none!important}}
+.side{background:var(--navy);color:#e8eefc;padding:14px 10px;display:flex;flex-direction:column;gap:6px}
+.brand{padding:2px 6px 8px}
+.brand small{display:block;font-size:11.5px;opacity:.7}
+.brand b{font-size:22px;letter-spacing:.02em}.brand i{font-style:normal;font-size:12px;opacity:.7;margin-left:4px}
+.ai{display:flex;gap:6px;padding:0 4px 6px}
+.ai span{font-size:12px;font-weight:800;border-radius:8px;padding:2px 8px;background:rgba(255,255,255,.1)}
+.side .grp{font-size:11.5px;opacity:.55;padding:8px 8px 2px;font-weight:700}
+.side a{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#e8eefc;text-decoration:none;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.05)}
+.side a small{margin-left:auto;font-size:11.5px;font-weight:900;border-radius:8px;padding:0 7px;background:#f59e0b;color:#111}
+.main{min-width:0;display:flex;flex-direction:column}
+.tabs{display:flex;background:var(--navy2);overflow-x:auto}
+.tabs button{font:inherit;flex:1 0 auto;min-width:92px;border:0;background:transparent;color:#c7d3ec;font-size:14.5px;font-weight:800;padding:10px 8px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:3px solid transparent}
+.tabs button span{font-size:20px;line-height:1}
+.tabs button[aria-selected="true"]{color:#fff;background:rgba(255,255,255,.08);border-bottom-color:#ef4444}
+.tabs button.new{color:#fde68a}
+.body{padding:18px;background:var(--soft);flex:1;min-width:0}
+/* home */
+.hello{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.hello h2{margin:0;font-size:24px;font-weight:900}
+.hello p{margin:0;color:var(--mute);font-size:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:13.5px;font-weight:800;border-radius:20px;padding:3px 12px;background:var(--card);border:1px solid var(--line)}
+.chip.red{background:var(--red-soft);color:var(--red);border-color:transparent}
+.chip.blue{background:var(--blue-soft);color:var(--blue);border-color:transparent}
+.chip.violet{background:var(--violet-soft);color:var(--violet);border-color:transparent}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:14px}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.card h3{margin:0 0 8px;font-size:16.5px;font-weight:900;display:flex;align-items:center;gap:8px}
+.card h3 .more{margin-left:auto;font-size:13px;font-weight:800;color:var(--blue);background:none;border:0;cursor:pointer;font-family:inherit}
+.sec{font-size:13px;font-weight:900;color:var(--mute);margin:10px 0 2px;letter-spacing:.02em}
+.sec.red{color:var(--red)}
+.todo{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;padding:7px 0;border-top:1px dashed var(--line)}
+.sec+.todo{border-top:0}
+.todo input{width:18px;height:18px;margin-top:3px;accent-color:var(--blue)}
+.todo b{font-weight:800}
+.todo small{display:block;color:var(--mute);font-size:12.5px}
+.todo.done b{text-decoration:line-through;opacity:.5}
+.todo.over b{color:var(--red)}
+.who{font-size:11.5px;font-weight:900;border-radius:7px;padding:0 7px;margin-right:4px;color:#fff;display:inline-block}
+.w원장{background:#7c3aed}.w실장{background:#2563eb}.w강사{background:#0f766e}.w조교{background:#c2410c}
+.go{font:inherit;font-size:12.5px;font-weight:800;color:var(--blue);border:1.5px solid var(--blue);background:transparent;border-radius:14px;padding:1px 10px;cursor:pointer;white-space:nowrap}
+.steps{grid-column:2/4;background:var(--soft);border-radius:8px;padding:6px 10px 6px 28px;margin:0;font-size:13.5px}
+.alert{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px dashed var(--line);font-size:14.5px}
+.alert:first-of-type{border-top:0}
+.alert .n{font-weight:900;font-variant-numeric:tabular-nums;min-width:30px;text-align:center;border-radius:8px;padding:1px 6px}
+.n.red{background:var(--red-soft);color:var(--red)}.n.amber{background:var(--amber-soft);color:var(--amber)}.n.blue{background:var(--blue-soft);color:var(--blue)}.n.ok{background:var(--ok-soft);color:var(--ok)}
+.alert span.t{flex:1;min-width:0}
+.alert small{display:block;color:var(--mute);font-size:12.5px}
+.next{display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px;padding:6px 0;border-top:1px dashed var(--line);font-size:14px}
+.next:first-of-type{border-top:0}
+.next .d{font-weight:900;font-variant-numeric:tabular-nums}
+.next .d small{display:block;font-size:11.5px;color:var(--mute);font-weight:700}
+.kind{font-size:11.5px;font-weight:900;border-radius:6px;padding:0 6px;margin-right:4px}
+.k-ev{background:var(--blue-soft);color:var(--blue)}.k-reg{background:var(--teal-soft);color:var(--teal)}.k-sch{background:var(--violet-soft);color:var(--violet)}
+.stu{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 0;border-top:1px dashed var(--line);font-size:14px}
+.stu:first-of-type{border-top:0}
+.stu .tm{font-weight:900;color:var(--mute);font-variant-numeric:tabular-nums}
+.st{font-size:12px;font-weight:800;border-radius:7px;padding:0 7px;margin-left:3px}
+.st.ok{background:var(--ok-soft);color:var(--ok)}.st.no{background:var(--red-soft);color:var(--red)}.st.wait{background:var(--soft);color:var(--mute);border:1px solid var(--line)}
+/* mini cal */
+.mini{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12.5px;text-align:center}
+.mini th{color:var(--mute);font-weight:800;padding:2px}
+.mini td{padding:3px 0;font-variant-numeric:tabular-nums;cursor:pointer;border-radius:6px}
+.mini td.today{background:var(--navy);color:#fff;font-weight:900}
+.mini td i{display:block;height:5px;margin:1px auto 0;width:5px;border-radius:50%}
+.mini td.out{color:var(--line);cursor:default}
+/* ops calendar */
+.ophead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.ophead .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.nav{font:inherit;font-size:16px;font-weight:900;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;width:34px;height:34px;cursor:pointer}
+.mtitle{font-size:20px;font-weight:900;min-width:150px;text-align:center}
+.flt button{font:inherit;font-size:13px;font-weight:800;border:1.5px solid var(--line);background:var(--card);color:var(--fg);border-radius:16px;padding:2px 11px;cursor:pointer}
+.flt button[aria-pressed="true"]{background:var(--fg);color:var(--card);border-color:var(--fg)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--mute);font-weight:700;margin-bottom:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.opgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px}
+@media(max-width:1100px){.opgrid{grid-template-columns:1fr}}
+.calscroll{overflow-x:auto;min-width:0}
+.cal{width:100%;min-width:660px;border-collapse:collapse;table-layout:fixed;background:var(--card)}
+.cal th{font-size:12.5px;color:var(--mute);padding:5px;font-weight:800;border-bottom:1px solid var(--line)}
+.cal th:first-child{color:var(--red)}
+.cal td{border:1px solid var(--line);vertical-align:top;height:112px;padding:4px 5px;cursor:pointer;font-size:12px;line-height:1.35}
+.cal td.out{background:var(--soft);cursor:default}
+.cal td.sun{background:var(--soft)}
+.cal td .dn{font-weight:900;font-size:13px;font-variant-numeric:tabular-nums}
+.cal td.sun .dn{color:var(--red)}
+.cal td.today{outline:2.5px solid var(--blue);outline-offset:-2px}
+.cal td.sel{background:var(--blue-soft)}
+.it{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;border-radius:5px;padding:1px 5px;margin-top:2px;font-weight:700;overflow:hidden;word-break:keep-all}
+.it.ev{background:var(--blue-soft);color:var(--blue)}.it.reg{background:var(--teal-soft);color:var(--teal)}.it.sch{background:var(--violet-soft);color:var(--violet)}.it.over{background:var(--red-soft);color:var(--red)}
+.it.mark{background:var(--navy);color:#fff}
+.cal .more{color:var(--mute);font-weight:800;font-size:11.5px;display:block;margin-top:2px}
+.dayp{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;align-self:start;min-width:0}
+.dayp h4{margin:0 0 6px;font-size:16px}
+.yr{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:12px}
+@media(max-width:700px){.yr{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.yr button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:6px 8px;text-align:left;cursor:pointer}
+.yr button b{display:block;font-size:13.5px}
+.yr button small{color:var(--mute);font-size:12px;font-weight:700}
+.yr .bar{height:4px;border-radius:2px;background:var(--line);margin-top:4px;overflow:hidden}
+.yr .bar i{display:block;height:100%;background:var(--blue)}
+.yr button[aria-current="true"]{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+/* notes */
+.notes{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.notes h2{margin:0 0 8px;font-size:17px}
+.notes table{width:100%;border-collapse:collapse;font-size:14px}
+.notes td,.notes th{text-align:left;vertical-align:top;padding:7px 8px;border-bottom:1px solid var(--line)}
+.notes th{font-size:12.5px;color:var(--mute)}
+.notes td:first-child{font-weight:900;white-space:nowrap}
+.tscroll{overflow-x:auto}
+.tscroll table{min-width:620px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>학원앱 새 첫 화면 · 운영 달력 <span class="tag">예시 화면 · 오늘 = 10/27(화)</span></h1>
+    <p class="lead">첫 화면을 「오늘 수업」에서 「오늘 할 일 + 확인할 것 + 앞으로 2주」로 바꾸고, 위쪽 탭에 📅 운영 달력을 새로 둡니다. 행사와 할 일은 학관노 백업(행사 8개 · D-업무 49건)에서 그대로 가져왔고, 학생은 가짜 이름입니다.</p>
+  </header>
+  <div class="switch" role="group" aria-label="보기">
+    <button type="button" data-v="home" aria-pressed="true">🏠 새 첫 화면</button>
+    <button type="button" data-v="ops" aria-pressed="false">📅 운영 달력 탭</button>
+  </div>
+
+  <section class="app" aria-label="학원앱 미리보기">
+    <nav class="side" aria-label="왼쪽 기둥">
+      <div class="brand"><small>🏫 루멘수학</small><b>LUMEN</b><i>v19-157</i></div>
+      <div class="ai"><span>🟣 Claude ✓</span><span>🔵 Gemini ✓</span></div>
+      <div class="grp">자주 쓰는 것</div>
+      <a href="#" onclick="return false">🚑 리커버리<small>2</small></a>
+      <a href="#" onclick="return false">⚡ 울트라 일일피드백</a>
+      <a href="#" onclick="return false">🎙 녹음 확인<small>5</small></a>
+      <a href="#" onclick="return false">📚 진도 현황</a>
+      <div class="grp">리포트</div>
+      <a href="#" onclick="return false">🏆 명예의 전당</a>
+      <a href="#" onclick="return false">📊 월간 · 주간 리포트</a>
+      <a href="#" onclick="return false">🗓 발행 현황판</a>
+      <a href="#" onclick="return false">📞 학부모 상담 준비</a>
+      <a href="#" onclick="return false">📝 수학풀이분석</a>
+      <div class="grp">학생 목록</div>
+      <a href="#" onclick="return false">📋 전체<small style="background:#334a78;color:#fff">28명</small></a>
+    </nav>
+    <div class="main">
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" data-v="home" aria-selected="true"><span>🏠</span>홈</button>
+        <button role="tab" data-v="ops" aria-selected="false" class="new"><span>📅</span>운영 달력</button>
+        <button role="tab" aria-selected="false" disabled><span>✅</span>오늘의 확인</button>
+        <button role="tab" aria-selected="false" disabled><span>🗓️</span>수업·출결</button>
+        <button role="tab" aria-selected="false" disabled><span>📝</span>시험·기출</button>
+        <button role="tab" aria-selected="false" disabled><span>📈</span>진도·리포트</button>
+        <button role="tab" aria-selected="false" disabled><span>📱</span>학생앱</button>
+        <button role="tab" aria-selected="false" disabled><span>🏫</span>운영</button>
+      </div>
+
+      <!-- 새 첫 화면 -->
+      <div class="body" id="v-home">
+        <div class="hello">
+          <div><p>2026.10.27 · 화목토반 수업일</p><h2>10월 27일 화요일</h2></div>
+          <div class="chips" id="hchips"></div>
+        </div>
+        <div class="grid">
+          <div class="col">
+            <div class="card" id="todo"></div>
+            <div class="card">
+              <h3>👥 오늘 수업 <span class="chip" style="font-size:12px">12명 중 6명 표시</span><button class="more" type="button">전체 · 요일 보기 ›</button></h3>
+              <div id="stu"></div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card">
+              <h3>🔔 확인할 것 <span class="note" style="font-size:12px;color:var(--mute);font-weight:700">새벽 자동 수집</span></h3>
+              <div class="alert"><span class="n blue">5</span><span class="t">새 녹음 숙제<small>새벽 5:10 글로 옮김 · 주제 벗어남 1건</small></span><button class="go" type="button">녹음 확인</button></div>
+              <div class="alert"><span class="n amber">3</span><span class="t">아하노트 질문 대기</span><button class="go" type="button">아하노트</button></div>
+              <div class="alert"><span class="n red">2</span><span class="t">미보충 결석<small>10/20 홍길동 · 10/22 박하나</small></span><button class="go" type="button">출결</button></div>
+              <div class="alert"><span class="n amber">2</span><span class="t">토요일 리커버리 · 네이버 예약 아직</span><button class="go" type="button">리커버리</button></div>
+              <div class="alert"><span class="n ok">18</span><span class="t">어제 매쓰플랫 채점 반영<small>새벽 4:00 수집 끝</small></span></div>
+            </div>
+            <div class="card">
+              <h3>📆 앞으로 2주 <button class="more" type="button" data-go="ops">운영 달력 ›</button></h3>
+              <div id="next"></div>
+            </div>
+            <div class="card">
+              <h3>🗓 10월 <button class="more" type="button" data-go="ops">크게 보기 ›</button></h3>
+              <table class="mini" id="mini"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead><tbody></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 운영 달력 -->
+      <div class="body" id="v-ops" hidden>
+        <div class="ophead">
+          <div class="row"><button class="nav" type="button" id="prev" aria-label="이전 달">‹</button><span class="mtitle" id="mt"></span><button class="nav" type="button" id="nextm" aria-label="다음 달">›</button></div>
+          <div class="row flt" id="flt" role="group" aria-label="담당 고르기"></div>
+        </div>
+        <div class="legend"><span><i style="background:var(--blue)"></i>행사 D-업무</span><span><i style="background:var(--teal)"></i>정기 업무 (청구·파기·리포트·급여)</span><span><i style="background:var(--violet)"></i>학교 일정 (학사일정 자동)</span><span><i style="background:var(--red)"></i>기한 지남</span><span><i style="background:var(--navy)"></i>행사 당일</span></div>
+        <div class="opgrid">
+          <div class="calscroll"><table class="cal" id="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead><tbody></tbody></table></div>
+          <aside class="dayp" id="dayp" aria-live="polite"></aside>
+        </div>
+        <div class="yr" id="yr"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <h2>지금 첫 화면과 달라지는 점</h2>
+    <div class="tscroll"><table>
+      <thead><tr><th>자리</th><th>지금 (v19-156)</th><th>바뀐 뒤</th></tr></thead>
+      <tbody>
+        <tr><td>본문 맨 위</td><td>요일 띠 + 오늘 수업 학생 카드 (수업 없는 날은 빈 화면)</td><td><b>오늘 할 일</b>: 밀린 일 → 오늘 행사 업무 → 오늘 정기 업무 → 매일 업무. 체크하면 운영 달력에도 반영, 「매뉴얼」을 누르면 단계가 펼쳐짐</td></tr>
+        <tr><td>오른쪽</td><td>없음 (알림은 화면 곳곳에 흩어짐)</td><td><b>확인할 것</b>: 새벽에 자동으로 모인 숫자(녹음·아하노트·미보충·리커버리 예약·채점)를 한 칸에. 누르면 그 화면으로</td></tr>
+        <tr><td></td><td>없음</td><td><b>앞으로 2주</b>: 행사 D-업무 · 청구일 · 학교 시험을 날짜순으로. 계획 없이 지나가는 일을 막는 칸</td></tr>
+        <tr><td>오늘 수업</td><td>본문 전체</td><td>아래로 내려 짧게. 「전체 · 요일 보기」로 지금 화면 그대로 열림</td></tr>
+        <tr><td>왼쪽 기둥</td><td>API 키 입력 상자가 늘 열려 있고, 큰 색 버튼 9개</td><td>키는 ✓ 표시만 (입력은 설정으로), 버튼은 작게 묶고 할 일 숫자 배지</td></tr>
+        <tr><td>위쪽 탭</td><td>홈 · 오늘의 확인 · 수업·출결 · 시험·기출 · 진도·리포트 · 학생앱 · 운영</td><td>홈 바로 옆에 <b>📅 운영 달력</b> 추가 (월 달력 · 담당별 보기 · 날짜 누르면 그날 할 일 · 1년 한눈에)</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+var EV=[{"n":"겨울방학특강 모집 시작","date":"2026-11-02","d":[[-14,"원장","겨울특강 대상·커리큘럼·시간표 확정"],[-7,"실장","안내문·블로그 글 준비"],[0,"실장","모집 시작 · 재원생 학부모 카톡, 블로그 발행"],[7,"실장","신청 현황 확인 · 미신청 재원생 개별 연락"],[21,"원장","특강 반 편성·교재 확정"]]},{"n":"중3 2학기 기말고사대비","date":"2026-11-10","d":[[-14,"강사","학교별 시험범위·시험일 확인 (학사일정·학교 홈페이지)"],[-7,"원장","시험대비 트랙 교재 배정 · 학생앱에 공개"],[-3,"실장","학부모에게 시험대비 일정 카톡 안내"],[0,"강사","시험대비 시작 · 학생별 목표 점수와 플래너 작성"],[7,"강사","1차 점검 · 트랙 진도와 오답 확인, 부족한 학생 보강 요청"],[14,"조교","빈칸 테스트 출력·채점"]]},{"n":"고등부 2학기 기말고사 직전보강","date":"2026-12-07","d":[[-21,"실장","학교별 시험 일정·과목 파악"],[-14,"원장","직전보강 시간표 확정"],[-7,"실장","학부모·학생에게 직전보강 시간표 카톡 안내"],[-2,"강사","학교 프린트·기출 학습지 준비"],[-1,"조교","출력물·좌석·출석부 준비"],[0,"강사","직전보강 수업 · 출석 확인"]]},{"n":"중등부 2학기 기말고사대비","date":"2026-12-10","d":[[-14,"강사","학교별 시험범위·시험일 확인 (학사일정·학교 홈페이지)"],[-7,"원장","시험대비 트랙 교재 배정 · 학생앱에 공개"],[-3,"실장","학부모에게 시험대비 일정 카톡 안내"],[0,"강사","시험대비 시작 · 학생별 목표 점수와 플래너 작성"],[7,"강사","1차 점검 · 트랙 진도와 오답 확인, 부족한 학생 보강 요청"],[14,"조교","빈칸 테스트 출력·채점"]]},{"n":"학부모 간담회","date":"2026-12-12","d":[[-21,"원장","간담회 주제·대상 확정"],[-14,"실장","예약표 만들어 학부모 카톡 안내"],[-7,"강사","학생별 자료 준비 (성적·아하노트·플래너)"],[-3,"실장","예약 마감 안내 · 미예약 학부모 연락"],[-1,"조교","상담실·출력 자료 준비"],[0,"원장","간담회 진행"],[1,"강사","상담 결과를 학원앱 학생 메모에 기록"]]},{"n":"겨울방학 특강 시작","date":"2027-01-11","d":[[-21,"원장","특강 교재·반 편성 확정"],[-14,"실장","특강 수강료 청구(결제선생) · 시간표 안내"],[-7,"조교","교재·출석부 준비"],[-1,"실장","개강 전날 재안내 카톡"],[0,"강사","개강 · 출결 확인"],[7,"원장","첫 주 점검 · 학부모 피드백"]]},{"n":"새학기 학부모 설명회","date":"2027-02-20","d":[[-21,"원장","설명회 주제·발표자료 준비 (진학 나침반 자료)"],[-14,"실장","블로그·카톡 안내 · 신청 받기"],[-3,"실장","신청자 재안내 · 참석 인원 확인"],[-1,"조교","좌석·빔·자료 출력 준비"],[0,"원장","설명회 진행 · 질문 받기"],[1,"실장","후기 문자 · 상담 예약 연결"]]},{"n":"새학기 운영 시작","date":"2027-03-02","d":[[-21,"원장","새 학기 반편성·시간표 확정"],[-14,"실장","새 학기 수강료 청구·시간표 안내"],[-7,"조교","교재 준비 · 새 학생 학생앱 코드 확인"],[-1,"실장","새 시간표 재공지"],[0,"조교","출결버스 등록 · 첫날 출결 확인"],[7,"원장","첫 주 점검 · 학부모 피드백"]]}];
+var SCH=[["2026-11-30","A중 2학기 기말 시작 (예시)"],["2026-12-08","B고 2학기 기말 시작 (예시)"],["2026-12-24","겨울방학식 (예시)"]];
+var MAN={
+ '결제선생 청구서 발송':['재원생 명단과 청구서 대상·금액 대조','결제선생으로 청구서 발송'],
+ '1차 파기 청구서 확인 → 원장 확인':['파기된 청구서 명단 확인','명단을 원장에게 보내 확인받기','원장이 확인한 학부모에게 2차 청구서 발송'],
+ '매일테스트 출력':['매쓰플랫 배정 확인','문제지만 출력 (답지 X)','학년별 파일에 나눠 넣기'],
+ '학부모피드백 발행':['Ultra Feedback 열기','테스트 점수 = 매쓰플랫 확인','숙제 4단계 확인','AI 초안 고치기','발행']};
+var TODAY=new Date(2026,9,27);
+var DOW=['일','월','화','수','목','금','토'];
+var pd=function(s){var a=s.split('-');return new Date(+a[0],a[1]-1,+a[2]);};
+var key=function(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();};
+var add=function(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);};
+var sat=function(d){return d.getDay()===0?add(d,-1):d;};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+var md=function(d){return (d.getMonth()+1)+'/'+d.getDate()+'('+DOW[d.getDay()]+')';};
+var DONE={};
+
+// 모든 항목 만들기 (2026-10 ~ 2027-03)
+var ITEMS=[];
+EV.forEach(function(e){var b=pd(e.date);e.d.forEach(function(x){var raw=add(b,x[0]),d=sat(raw);ITEMS.push({date:d,k:'ev',who:x[1],t:x[2],ev:e.n,dd:x[0],sh:raw.getDay()===0,mark:x[0]===0});});});
+SCH.forEach(function(s){ITEMS.push({date:pd(s[0]),k:'sch',who:'',t:s[1]});});
+for(var y=2026,m=9;!(y===2027&&m===3);m++){if(m===12){m=0;y++;}
+  var last=new Date(y,m+1,0).getDate();
+  ITEMS.push({date:sat(new Date(y,m,20)),k:'reg',who:'실장',t:'결제선생 청구서 발송'});
+  ITEMS.push({date:sat(new Date(y,m,25)),k:'reg',who:'실장',t:'1차 파기 청구서 확인 → 원장 확인'});
+  ITEMS.push({date:sat(new Date(y,m,Math.min(30,last))),k:'reg',who:'실장',t:'2차 파기 청구서 확인 · 원장 보고'});
+  ITEMS.push({date:sat(new Date(y,m,last)),k:'reg',who:'실장',t:'급여 정리'});
+  var fm=new Date(y,m,1);while(fm.getDay()!==1)fm=add(fm,1);
+  ITEMS.push({date:fm,k:'reg',who:'원장',t:'월간 결과물 업로드 (지난달 리포트)'});
+}
+ITEMS.sort(function(a,b){return a.date-b.date;});
+// 예시: 10/25 일은 한 것으로
+ITEMS.forEach(function(it,i){it.id='i'+i;if(it.date<TODAY&&!/커리큘럼|안내문/.test(it.t))DONE[it.id]=1;});
+var isOver=function(it){return it.date<TODAY&&!DONE[it.id]&&it.k!=='sch';};
+var on=function(d){var k=key(d);return ITEMS.filter(function(x){return key(x.date)===k;});};
+
+function whoTag(w){return w?'<span class="who w'+w+'">'+w+'</span>':'';}
+function todoRow(it,sub){var id=it.id;var m=MAN[it.t];
+  return '<div class="todo'+(DONE[id]?' done':'')+(isOver(it)?' over':'')+'"><input type="checkbox" data-id="'+id+'"'+(DONE[id]?' checked':'')+' aria-label="완료"><div><b>'+esc(it.t)+'</b><small>'+whoTag(it.who)+esc(sub)+'</small></div>'+
+   (m?'<button class="go" type="button" data-man="'+id+'">매뉴얼</button>':(it.app?'<button class="go" type="button">'+esc(it.app)+' ›</button>':'<span></span>'))+
+   (m?'<ol class="steps" id="m_'+id+'" hidden>'+m.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>':'')+'</div>';}
+var DAILY=[{id:'d1',t:'매일테스트 출력',who:'조교',sub:'등원 전 · 화목토반',app:''},{id:'d2',t:'출결 확인 · 미등원 전화',who:'실장',sub:'수업 시작 10분 뒤',app:'출결'},{id:'d3',t:'핸드폰 수거·반납',who:'조교',sub:'등원·하원 때'},{id:'d4',t:'학부모피드백 발행',who:'원장',sub:'밤 10시 이후 · 오늘 12명'}];
+function drawTodo(){
+  var over=ITEMS.filter(isOver), today=on(TODAY).filter(function(x){return x.k!=='sch';});
+  var h='<h3>✅ 오늘 할 일 <button class="more" type="button" data-go="ops">운영 달력 ›</button></h3>';
+  if(over.length)h+='<div class="sec red">밀린 일 '+over.length+'</div>'+over.map(function(it){return todoRow(it,md(it.date)+' · '+(it.ev||'정기'));}).join('');
+  h+='<div class="sec">오늘 행사 업무</div>'+(today.filter(function(x){return x.k==='ev';}).map(function(it){return todoRow(it,it.ev+' D'+(it.dd<0?it.dd:'+'+it.dd));}).join('')||'<p class="note" style="margin:4px 0;color:var(--mute);font-size:13.5px">없음</p>');
+  var reg=today.filter(function(x){return x.k==='reg';});
+  if(reg.length)h+='<div class="sec">오늘 정기 업무</div>'+reg.map(function(it){return todoRow(it,'매월');}).join('');
+  h+='<div class="sec">매일</div>'+DAILY.map(function(it){return todoRow(it,it.sub);}).join('');
+  document.getElementById('todo').innerHTML=h;
+  var ex=SCH[0];var dd=Math.round((pd(ex[0])-TODAY)/864e5);
+  document.getElementById('hchips').innerHTML='<span class="chip">오늘 수업 12명</span><span class="chip blue">할 일 '+(today.length+DAILY.length)+'</span>'+(over.length?'<span class="chip red">밀린 일 '+over.length+'</span>':'')+'<span class="chip violet">A중 기말 D-'+dd+'</span>';
+}
+function drawNext(){
+  var end=add(TODAY,14);
+  var l=ITEMS.filter(function(x){return x.date>TODAY&&x.date<=end;});
+  document.getElementById('next').innerHTML=l.map(function(it){var lab={ev:'행사',reg:'정기',sch:'학교'}[it.k];
+    return '<div class="next"><span class="d">'+md(it.date)+'<small>'+Math.round((it.date-TODAY)/864e5)+'일 뒤</small></span><span><span class="kind k-'+it.k+'">'+lab+'</span>'+whoTag(it.who)+esc(it.t)+(it.ev?'<small style="display:block;color:var(--mute);font-size:12px">'+esc(it.ev)+'</small>':'')+'</span></div>';}).join('');
+}
+function drawStu(){
+  var S=[['15:00','홍길동','중2','ok','ok'],['15:00','박하나','중2','ok','no'],['16:30','김가람','중3','ok','wait'],['16:30','이누리','중3','no','wait'],['18:00','최바다','고1','ok','wait'],['18:00','정다온','고1','wait','wait']];
+  var L={ok:'✓',no:'✗',wait:'-'};
+  document.getElementById('stu').innerHTML=S.map(function(s){return '<div class="stu"><span class="tm">'+s[0]+'</span><span><b>'+s[1]+'</b> <span style="color:var(--mute);font-size:13px">'+s[2]+'</span></span><span><span class="st '+s[3]+'">숙제 '+L[s[3]]+'</span><span class="st '+s[4]+'">테스트 '+L[s[4]]+'</span></span></div>';}).join('');
+}
+function drawMini(){
+  var y=2026,m=9,first=new Date(y,m,1).getDay(),dim=31,h='',n=1-first;
+  for(var w=0;w<5;w++){h+='<tr>';for(var d=0;d<7;d++,n++){if(n<1||n>dim){h+='<td class="out"></td>';continue;}
+    var dt=new Date(y,m,n),l=on(dt),c=l.some(isOver)?'var(--red)':l.some(function(x){return x.k==='ev';})?'var(--blue)':l.length?'var(--teal)':'transparent';
+    h+='<td class="'+(key(dt)===key(TODAY)?'today':'')+'" data-jump="'+n+'">'+n+'<i style="background:'+c+'"></i></td>';}h+='</tr>';}
+  document.querySelector('#mini tbody').innerHTML=h;
+}
+// 운영 달력
+var cur={y:2026,m:9}, sel=null, flt='전체';
+var MIN=[2026,9],MAX=[2027,2];
+function vis(it){return flt==='전체'||it.who===flt||it.k==='sch';}
+function drawCal(){
+  var y=cur.y,m=cur.m,first=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();
+  document.getElementById('mt').textContent=y+'년 '+(m+1)+'월';
+  var h='',n=1-first;var rows=Math.ceil((first+dim)/7);
+  for(var w=0;w<rows;w++){h+='<tr>';for(var d=0;d<7;d++,n++){
+    if(n<1||n>dim){h+='<td class="out"></td>';continue;}
+    var dt=new Date(y,m,n),l=on(dt).filter(vis);
+    var c=[];if(d===0)c.push('sun');if(key(dt)===key(TODAY))c.push('today');if(sel&&key(dt)===key(sel))c.push('sel');
+    var inner=l.slice(0,3).map(function(it){var cl=it.mark?'mark':isOver(it)?'over':it.k;return '<span class="it '+cl+'" title="'+esc((it.who?it.who+' · ':'')+it.t)+'">'+esc(it.t)+'</span>';}).join('');
+    if(l.length>3)inner+='<span class="more">외 '+(l.length-3)+'건</span>';
+    if(d===0&&!l.length)inner+='<span class="more">휴무</span>';
+    h+='<td class="'+c.join(' ')+'" data-d="'+n+'" tabindex="0"><span class="dn">'+n+'</span>'+inner+'</td>';}
+    h+='</tr>';}
+  document.querySelector('#cal tbody').innerHTML=h;
+  document.getElementById('prev').disabled=(y===MIN[0]&&m===MIN[1]);
+  document.getElementById('nextm').disabled=(y===MAX[0]&&m===MAX[1]);
+  drawDay();drawYr();
+}
+function drawDay(){
+  var d=sel||TODAY;var l=on(d).filter(vis);
+  var h='<h4>'+(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+DOW[d.getDay()]+')'+(key(d)===key(TODAY)?' · 오늘':'')+'</h4>';
+  h+=l.map(function(it){var lab={ev:it.ev+(it.dd!=null?' · D'+(it.dd<0?it.dd:it.dd===0?'-day':'+'+it.dd):''),reg:'정기 (매월)',sch:'학교 일정 · 학사일정에서 자동'}[it.k];
+    return it.k==='sch'?'<div class="todo"><span></span><div><b style="color:var(--violet)">'+esc(it.t)+'</b><small>'+lab+'</small></div><span></span></div>':todoRow(it,lab+(it.sh?' · 일요일→토요일':''));}).join('')||'<p style="color:var(--mute);margin:4px 0">이날은 정해진 업무가 없습니다.</p>';
+  h+='<p style="font-size:12.5px;color:var(--mute);margin:10px 0 0">매일 업무(테스트 출력 · 출결 · 핸드폰 · 학부모피드백)와 수·목 주간테스트 출력은 첫 화면 「오늘 할 일」에만 띄웁니다.</p>';
+  document.getElementById('dayp').innerHTML=h;
+}
+function drawYr(){
+  var ms=[],y=2026,m=9;for(var i=0;i<6;i++){ms.push([y,m]);m++;if(m===12){m=0;y++;}}
+  var cnt=ms.map(function(a){return ITEMS.filter(function(x){return x.k==='ev'&&x.date.getFullYear()===a[0]&&x.date.getMonth()===a[1]&&vis(x);}).length;});
+  var mx=Math.max.apply(null,cnt.concat([1]));
+  document.getElementById('yr').innerHTML=ms.map(function(a,i){var evs=EV.filter(function(e){var d=pd(e.date);return d.getFullYear()===a[0]&&d.getMonth()===a[1];}).map(function(e){return e.n;});
+    return '<button type="button" data-ym="'+a[0]+'-'+a[1]+'"'+(a[0]===cur.y&&a[1]===cur.m?' aria-current="true"':'')+'><b>'+(a[1]+1)+'월</b><small>행사 업무 '+cnt[i]+'건</small><div class="bar"><i style="width:'+Math.round(cnt[i]/mx*100)+'%"></i></div><small style="display:block;margin-top:3px">'+(evs.map(esc).join(' · ')||'&nbsp;')+'</small></button>';}).join('');
+}
+var FL=['전체','원장','실장','강사','조교'];
+document.getElementById('flt').innerHTML='<span style="font-size:13px;font-weight:800;color:var(--mute)">담당</span>'+FL.map(function(f){return '<button type="button" data-f="'+f+'" aria-pressed="'+(f==='전체')+'">'+f+'</button>';}).join('');
+
+function show(v){
+  document.getElementById('v-home').hidden=v!=='home';document.getElementById('v-ops').hidden=v!=='ops';
+  document.querySelectorAll('[data-v]').forEach(function(b){var o=b.dataset.v===v;b.setAttribute(b.getAttribute('role')==='tab'?'aria-selected':'aria-pressed',o?'true':'false');});
+}
+document.addEventListener('click',function(e){
+  var b=e.target.closest('[data-v],[data-go],[data-man],[data-f],[data-ym],[data-jump],#prev,#nextm,td[data-d]');if(!b)return;
+  if(b.dataset.v){show(b.dataset.v);return;}
+  if(b.dataset.go){show(b.dataset.go);return;}
+  if(b.dataset.man){var ol=document.getElementById('m_'+b.dataset.man);if(ol)ol.hidden=!ol.hidden;return;}
+  if(b.dataset.f){flt=b.dataset.f;document.querySelectorAll('[data-f]').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});drawCal();return;}
+  if(b.dataset.ym){var a=b.dataset.ym.split('-');cur={y:+a[0],m:+a[1]};sel=null;drawCal();return;}
+  if(b.dataset.jump){cur={y:2026,m:9};sel=new Date(2026,9,+b.dataset.jump);show('ops');drawCal();return;}
+  if(b.id==='prev'){cur.m--;if(cur.m<0){cur.m=11;cur.y--;}sel=null;drawCal();return;}
+  if(b.id==='nextm'){cur.m++;if(cur.m>11){cur.m=0;cur.y++;}sel=null;drawCal();return;}
+  if(b.dataset.d){sel=new Date(cur.y,cur.m,+b.dataset.d);drawCal();}
+});
+document.addEventListener('keydown',function(e){if((e.key==='Enter'||e.key===' ')&&e.target.matches('td[data-d]')){e.preventDefault();e.target.click();}});
+document.addEventListener('change',function(e){var c=e.target.closest('input[data-id]');if(!c)return;if(c.checked)DONE[c.dataset.id]=1;else delete DONE[c.dataset.id];drawTodo();drawMini();drawCal();});
+drawTodo();drawNext();drawStu();drawMini();drawCal();
+})();
+</script>

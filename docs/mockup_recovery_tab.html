@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>리커버리 전용 탭</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap">
+<style>
+/* 레이아웃: ① 네이버 예약 시간 자동 연동 규칙 · ② 왼쪽 리커버리 전용 기둥 시안 · ③ 가운데 「📊 리커버리 통계」 시안 · ④ 더 발전시킬 것 */
+:root{ --bg:#f3f5f9; --fg:#17243a; --mute:#6b7890; --line:#dfe4ec; --card:#fff; --navy:#0d2240; --blue:#1d6fe8; --blue-soft:#e8f0fd;
+  --ok:#15803d; --ok-bg:#dcfce7; --warn:#b45309; --warn-bg:#fef3c7; --bad:#b91c1c; --bad-bg:#fee2e2; --dim:#64748b; --dim-bg:#eef2f7;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --ok:#86efac; --ok-bg:#14301f; --warn:#fcd34d; --warn-bg:#3a2a0c; --bad:#fca5a5; --bad-bg:#3b1515; --dim:#aab5c6; --dim-bg:#1f2a3c; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --ok:#86efac; --ok-bg:#14301f; --warn:#fcd34d; --warn-bg:#3a2a0c; --bad:#fca5a5; --bad-bg:#3b1515; --dim:#aab5c6; --dim-bg:#1f2a3c; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.6;padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1060px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 18px}
+h2{font-size:16px;font-weight:900;color:var(--navy);margin:28px 0 10px;display:flex;gap:8px;align-items:center}
+h2 .tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--blue-soft);color:var(--blue)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+p{margin:0 0 8px}.note{font-size:12px;color:var(--mute);margin-top:8px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.rule{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg);min-width:0}
+.rule b{display:block;color:var(--navy);margin-bottom:3px}.rule span{font-size:12.5px;color:var(--mute)}
+/* 확정 명단 줄 흉내 */
+.row{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:11px;margin-top:7px;background:var(--card);flex-wrap:wrap}
+.row .nm{font-weight:900;color:var(--navy);font-size:13.5px}.row .g{font-size:10.5px;color:var(--mute);font-weight:700}
+.nb{font-size:10px;font-weight:900;border-radius:20px;padding:2px 8px}
+.nb.ok{background:var(--ok-bg);color:var(--ok)}.nb.no{background:var(--warn-bg);color:var(--warn)}.nb.x{background:var(--bad-bg);color:var(--bad)}.nb.auto{background:var(--blue-soft);color:var(--blue)}
+.row .sl{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-size:11px;font-weight:900;border-radius:8px;padding:5px 9px;border:1.5px solid var(--line);background:var(--card);color:var(--navy)}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}.chip.nv{border-style:dashed;border-color:var(--blue);color:var(--blue)}
+.chip.warn{border-color:#f59e0b;color:var(--warn)}
+/* 3분할 흉내 */
+.l3{display:grid;grid-template-columns:270px 1fr;gap:12px}
+@media(max-width:760px){.l3{grid-template-columns:1fr}}
+.left{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;min-width:0}
+.lsec{font-size:10.5px;font-weight:900;color:var(--mute);letter-spacing:.04em;padding:8px 6px 4px}
+.lb{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:6px 9px;font-size:12.5px;font-weight:800;color:var(--fg);background:var(--bg);margin-bottom:4px}
+.lb.on{border-color:var(--blue);background:var(--blue-soft);color:var(--blue)}
+.lb .r{margin-left:auto;font-size:10.5px;color:var(--mute);font-weight:700;white-space:nowrap}
+.lb.dim{opacity:.6}
+.num{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:2px 2px 6px}
+.num div{background:var(--bg);border-radius:9px;padding:6px 8px;min-width:0}
+.num .v{font-size:17px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.2}.num .k{font-size:10px;color:var(--mute);font-weight:700}
+.bar{display:flex;gap:3px;align-items:flex-end;height:34px;padding:0 4px 4px}
+.bar i{flex:1;background:var(--blue);border-radius:3px 3px 0 0;opacity:.45}.bar i.now{opacity:1}
+.ctr{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.ctr h3{margin:0 0 8px;font-size:15px;color:var(--navy)}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+.kpi div{background:var(--bg);border-radius:10px;padding:9px 10px}
+.kpi .v{font-size:20px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums}.kpi .k{font-size:11px;color:var(--mute);font-weight:700}
+.kpi .d{font-size:11px;font-weight:800;color:var(--ok)}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--mute);font-weight:800;font-size:11.5px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tw{overflow-x:auto}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media(max-width:760px){.two{grid-template-columns:1fr}}
+.sub{font-size:12px;color:var(--mute)}
+.q{display:grid;grid-template-columns:28px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.q:first-child{border-top:0;padding-top:0}
+.q .n{width:26px;height:26px;border-radius:50%;background:var(--navy);color:var(--card);font-weight:900;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+.q b{display:block;color:var(--navy)}.q .opt{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.q .opt span{border:1.5px solid var(--line);border-radius:8px;padding:3px 9px;font-size:12px;font-weight:700;background:var(--bg)}
+.q .opt span.rec{border-color:var(--blue);color:var(--blue);background:var(--blue-soft)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<h1>🚑 리커버리 — 네이버 예약 시간 자동 연동 + 전용 왼쪽 기둥 + 📊 통계</h1>
+<p class="lead">원장님 지적: 「리커버리 시간이 네이버 예약과 다르다 · 자동으로 바뀌면 좋겠다 · 왼쪽을 리커버리 전용(통계 등) 탭으로」. 아래 이름·숫자는 전부 가짜입니다.</p>
+
+<h2>① 네이버 예약 시간이 그대로 시간 칸이 되게 <span class="tag">지금: 「시간 넣기」를 눌러야만</span></h2>
+<div class="card">
+  <p>지금은 학생 줄의 시간 칸(10:00 · 11:00 · 13:00 고정 칩)과 네이버 예약 시간(09:00 등)이 따로 놀고, 「시간 넣기」를 눌러야 들어갑니다. 예약 시간이 칩에 없으면(09:00) 넣어도 칩이 안 켜져 보였습니다. 바꿀 규칙 넷:</p>
+  <div class="rules">
+    <div class="rule"><b>1. 예약이 있으면 그 시간이 자동으로</b><span>보드를 열 때 그 날 리커버리 예약이 있는 확정 학생의 시간 칸을 예약 시간으로 맞춥니다. 예약 시간이 바뀌면 따라갑니다(15분 수집마다).</span></div>
+    <div class="rule"><b>2. 원장님이 손으로 고른 시간은 안 덮음</b><span>칩을 직접 누른 학생은 「✋ 직접」 표시. 예약과 다르면 ⚠ 와 「예약 시간으로」 단추만 보여 줍니다.</span></div>
+    <div class="rule"><b>3. 칩 목록 = 기본 시간대 + 그 날 예약 시간</b><span>09:00 예약이 있으면 09:00 칩이 생겨 켜집니다(점선 테두리 = 네이버에서 온 시간).</span></div>
+    <div class="rule"><b>4. 예약 취소·변경 알림</b><span>예약이 취소되면 시간은 두되 「⚠ 예약 취소됨」. 학부모 안내문·학생앱 알림(rc_calls_pub)도 같은 시간을 씁니다.</span></div>
+  </div>
+  <div class="row"><span class="nm">홍길동</span><span class="g">초등6 · M3 · 25점</span><span class="nb ok">✓ 네이버 예약 09:00</span><span class="nb auto">⟳ 자동</span><span class="sl"><span class="chip on nv">09:00</span><span class="chip">10:00</span><span class="chip">11:00</span><span class="chip">13:00</span><span class="chip">⛔</span></span></div>
+  <div class="row"><span class="nm">박하나</span><span class="g">초등6 · T3 · 55점</span><span class="nb ok">✓ 네이버 예약 11:00</span><span class="nb no">✋ 직접 10:00 · ⚠ 예약과 다름</span><span class="sl"><span class="chip on">10:00</span><span class="chip nv">11:00</span><span class="chip">13:00</span><span class="chip warn">예약 시간으로</span></span></div>
+  <div class="row"><span class="nm">이순신</span><span class="g">중2 · T5 · 65점</span><span class="nb no">예약 아직</span><span class="sl"><span class="chip">10:00</span><span class="chip">11:00</span><span class="chip">13:00</span><span class="chip">⛔</span></span></div>
+  <div class="row"><span class="nm">김유신</span><span class="g">중2 · M4 · 75점</span><span class="nb x">⚠ 예약 취소됨 (11:00)</span><span class="sl"><span class="chip on nv">11:00</span><span class="chip">10:00</span><span class="chip">13:00</span></span></div>
+  <div class="note">저장 모양: 시간 칸 옆에 「어디서 온 시간인지」(네이버/직접)만 한 글자 더 적습니다(`rc_state.calls[주][학생].slotSrc`). 다른 화면은 지금처럼 `slot` 만 읽으면 됩니다.</div>
+</div>
+
+<h2>② 왼쪽 기둥을 리커버리 전용으로 <span class="tag">지금: 호출 명단 + 장부 두 줄</span></h2>
+<div class="l3">
+  <div class="left">
+    <div class="lsec">🚑 이번 주 · 10/24 (토)</div>
+    <div class="num"><div><div class="v">14</div><div class="k">확정</div></div><div><div class="v" style="color:var(--ok)">9</div><div class="k">네이버 예약</div></div><div><div class="v" style="color:var(--warn)">5</div><div class="k">예약 아직</div></div><div><div class="v">11</div><div class="k">학습지 만듦</div></div></div>
+    <div class="lb"><span>🕘 09:00</span><span class="r">2명</span></div>
+    <div class="lb"><span>🕙 10:00</span><span class="r">4명</span></div>
+    <div class="lb"><span>🕚 11:00</span><span class="r">3명</span></div>
+    <div class="lb dim"><span>시간 미정</span><span class="r">5명</span></div>
+    <div class="lsec">명단 · 호출 9 · 미정 5</div>
+    <div class="lb on"><span>🚑 홍길동</span><span class="r">✓09:00 · 📄</span></div>
+    <div class="lb"><span>🚑 박하나</span><span class="r">✋10:00 ⚠ · 📄</span></div>
+    <div class="lb"><span>🚑 이순신</span><span class="r">예약 아직</span></div>
+    <div class="lb dim"><span>장보고</span><span class="r">미정</span></div>
+    <div class="lsec">📨 예약 안 한 5명</div>
+    <div class="lb"><span>이순신 · 장보고 · 신사임당 …</span><span class="r">안내문 ›</span></div>
+    <div class="lsec">📊 통계 · 10월</div>
+    <div class="num"><div><div class="v">38</div><div class="k">호출</div></div><div><div class="v">33</div><div class="k">출석 (87%)</div></div><div><div class="v" style="color:var(--bad)">3</div><div class="k">노쇼</div></div><div><div class="v" style="color:var(--ok)">+11</div><div class="k">다음 테스트 ↑</div></div></div>
+    <div class="bar" title="최근 6개월 호출"><i style="height:40%"></i><i style="height:55%"></i><i style="height:35%"></i><i style="height:70%"></i><i style="height:60%"></i><i class="now" style="height:85%"></i></div>
+    <div class="lb"><span>🔁 3회 이상 · 4명</span><span class="r">상담 신호 ›</span></div>
+    <div class="lb"><span>📊 통계 자세히</span><span class="r">›</span></div>
+    <div class="lb"><span>📜 장부</span><span class="r">이번 달 38 · 지난 달 29</span></div>
+    <div class="lsec">⚙ 기준</div>
+    <div class="lb dim"><span>주간 80점 · 단원 60% · 초6 75점 · 3주</span><span class="r">고치기</span></div>
+  </div>
+  <div class="ctr">
+    <h3>📊 리커버리 통계 <span class="sub">(가운데 새 화면 · 왼쪽 「통계 자세히」로 열림)</span></h3>
+    <div class="kpi"><div><div class="v">38</div><div class="k">10월 호출</div></div><div><div class="v">87%</div><div class="k">출석률</div></div><div><div class="v">3</div><div class="k">노쇼</div></div><div><div class="v">+11점</div><div class="k">리커버리 뒤 다음 주간테스트</div><div class="d">23명 중 18명 올랐어요</div></div><div><div class="v">72%</div><div class="k">학습지 정답률</div></div></div>
+    <div class="tw"><table><tr><th>달</th><th class="n">호출</th><th class="n">출석</th><th class="n">노쇼</th><th class="n">출석률</th><th class="n">학습지</th><th class="n">다음 테스트</th></tr>
+      <tr><td>10월</td><td class="n">38</td><td class="n">33</td><td class="n">3</td><td class="n">87%</td><td class="n">31</td><td class="n" style="color:var(--ok)">+11</td></tr>
+      <tr><td>9월</td><td class="n">29</td><td class="n">26</td><td class="n">2</td><td class="n">90%</td><td class="n">24</td><td class="n" style="color:var(--ok)">+8</td></tr>
+      <tr><td>8월</td><td class="n">34</td><td class="n">27</td><td class="n">5</td><td class="n">79%</td><td class="n">—</td><td class="n" style="color:var(--ok)">+6</td></tr></table></div>
+    <div class="two">
+      <div><b>학년 · 사유</b><table><tr><th>학년</th><th class="n">호출</th><th>사유</th></tr><tr><td>초6</td><td class="n">9</td><td>주간 7 · 단원 2</td></tr><tr><td>중1</td><td class="n">8</td><td>주간 5 · 둘 다 3</td></tr><tr><td>중2</td><td class="n">12</td><td>주간 6 · 단원 4 · 직접 2</td></tr><tr><td>중3</td><td class="n">6</td><td>주간테스트 2개 합산</td></tr><tr><td>고등</td><td class="n">3</td><td>테스트</td></tr></table></div>
+      <div><b>🔁 자주 오는 학생 (3개월)</b><table><tr><th>학생</th><th class="n">호출</th><th class="n">출석</th><th>흐름</th></tr><tr><td>홍길동</td><td class="n">5</td><td class="n">5</td><td>25 → 40 → 55점 ↗</td></tr><tr><td>박하나</td><td class="n">4</td><td class="n">3</td><td>55 → 50 → 60점 →</td></tr><tr><td>장보고</td><td class="n">4</td><td class="n">2</td><td>노쇼 2 · 상담 권유</td></tr><tr><td>신사임당</td><td class="n">3</td><td class="n">3</td><td>65 → 85점 ↗ 졸업</td></tr></table><div class="note">「흐름」 = 호출 때 점수 → 다음 주간테스트. 같은 학생이 3번 넘게 오면 리커버리로는 모자란 신호라 상담 카드로 보냅니다.</div></div>
+    </div>
+    <div class="note">요일×시간 열지도와 학생별 월간 참여·학부모 카톡 글은 이미 있는 「📊 예약 통계」(v19-127)에 있으니 거기로 단추만 둡니다. 숫자는 전부 지금 있는 자료(장부 rc_state · 네이버 예약 · 주간테스트 · 학습지 채점)로 셉니다. 새 수집 없음.</div>
+  </div>
+</div>
+
+<h2>③ 오퍼스로 더 발전시킬 만한 것 <span class="tag">원장 질문</span></h2>
+<div class="card">
+  <div class="q"><div class="n">1</div><div><b>예약 안 한 학생 자동 챙기기</b> 리커버리 전날(금요일) 저녁에 예약 안 한 확정 학생을 홈 「오늘의 확인」에 띄우고, 학부모 안내문(v19-148 모양)을 학생별로 미리 채워 「📋 복사」만 하게. 지금은 보드를 열어 봐야 압니다.<div class="opt"><span class="rec">넣기 (추천)</span><span>나중</span></div></div></div>
+  <div class="q"><div class="n">2</div><div><b>네이버 예약 시간대를 그대로 칩으로</b> 네이버 상품(리커버리 클래스)에 정해 둔 시간대를 수집기가 받아 와 기본 칩(지금 10·11·13시)으로 씁니다. 네이버에서 시간대를 바꾸면 앱도 따라갑니다.<div class="opt"><span class="rec">넣기 (추천 · 수집기 한 줄)</span><span>지금 칩 그대로</span></div></div></div>
+  <div class="q"><div class="n">3</div><div><b>출석·노쇼 자동</b> 지금은 ✅ 완료·⛔ 노쇼를 손으로 누릅니다. 출결선생 연동(기기 인증 대기 중)이 되면 토요일 출결로 자동. 그 전엔 학습지 채점 기록이 있으면 「출석으로 추정」 표시.<div class="opt"><span>출결선생 뒤에</span><span class="rec">학습지 채점으로 추정만 먼저</span></div></div></div>
+  <div class="q"><div class="n">4</div><div><b>효과 숫자를 학부모·블로그에</b> 「리커버리 뒤 다음 주간테스트 평균 +11점」은 학부모 안내문 한 줄·블로그 글감(이름 없이)으로 바로 쓸 수 있습니다.<div class="opt"><span class="rec">통계 화면에 「복사」 단추</span><span>나중</span></div></div></div>
+</div>
+
+<h2>정해 주실 것</h2>
+<div class="card">
+  <div class="q"><div class="n">A</div><div><b>자동 연동 범위</b><div class="opt"><span class="rec">예약 있으면 자동 · 손으로 고른 것은 보호 (추천)</span><span>항상 예약이 이김</span><span>지금처럼 단추</span></div></div></div>
+  <div class="q"><div class="n">B</div><div><b>왼쪽 기둥 구성</b> 위 시안 그대로(이번 주 요약 → 시간대별 → 명단 → 예약 안 한 학생 → 통계 요약 → 기준). 빼거나 넣을 칸이 있으면 말씀해 주세요.</div></div>
+  <div class="q"><div class="n">C</div><div><b>📊 통계 화면</b><div class="opt"><span class="rec">가운데 새 화면으로 (추천)</span><span>왼쪽 요약만</span></div></div></div>
+  <div class="q"><div class="n">D</div><div><b>③의 1~4 중 이번에 같이 할 것</b> 추천: 1·2 지금, 3·4 다음.</div></div>
+</div>
+</div>
+
+</body>
+</html>
