@@ -122,7 +122,8 @@ rr4=open(SP+'/rcrefresh154_teacher.js',encoding='utf-8').read() if int(ver.repla
 rw5=open(SP+'/rcws155_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=155 else ''   # v19-155: 🚑 리커버리 학습지 3판 — «아직 틀린 문제»(최근 28일) · 유형마다 1개 · 문항 30~40 · 빼는 유형 · 보드 «🕘» 한 줄 (docs/recovery_recent_contract.md)
 mu7=open(SP+'/mfunlink157_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=157 else ''   # v19-157: 👤 학생관리 «🔗 매쓰플랫과 연결 안 된 학생» 띠 · 데이터 재연결 나눠 읽기
 op8=open(SP+'/opscal158_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=158 else ''   # v19-158: 📅 운영 달력 — 운영·마케팅·학교·돈·지표 층 + 월 달력 아래 체크리스트 (docs/opscal_contract.md)
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+(rr2+'\n' if rr2 else '')+(rn3+'\n' if rn3 else '')+(rr4+'\n' if rr4 else '')+(rw5+'\n' if rw5 else '')+(mu7+'\n' if mu7 else '')+(op8+'\n' if op8 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+oh9=open(SP+'/ophome159_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=159 else ''   # v19-159: 🏠 홈 «📅 오늘 운영 할 일» 카드
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+(rr2+'\n' if rr2 else '')+(rn3+'\n' if rn3 else '')+(rr4+'\n' if rr4 else '')+(rw5+'\n' if rw5 else '')+(mu7+'\n' if mu7 else '')+(op8+'\n' if op8 else '')+(oh9+'\n' if oh9 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -766,6 +767,63 @@ if int(ver.replace('v19-',''))>=158:
     rep("cal:'📅 학원 달력',", "cal:'📅 학원 달력',opscal:'📅 운영 달력',")
     rep("'tenten_optional', 'raid_board_draft', 'raid_boss_lib'];", "'tenten_optional', 'raid_board_draft', 'raid_boss_lib', 'ops_plan', 'ops_checks'];")
     rep("eaBtn('＋ 일정 넣기','ctNew()','pri')+eaBtn('🔄 새로고침','ctLoad(true)')", "eaBtn('📅 운영 달력',\"VIEW='opscal';render()\")+eaBtn('＋ 일정 넣기','ctNew()','pri')+eaBtn('🔄 새로고침','ctLoad(true)')")
+if int(ver.replace('v19-',''))>=159:
+    # v19-159: ① 📅 운영 달력을 위쪽 탭으로 (원장 10/26 「홈화면에 운영달력 안 보인다» — 홈 탭은 누르면 바로 대시보드라 v19-158 의 안쪽 줄이 안 보였다)
+    rep("    {v:'home', icon:'🏠', label:'대시보드', act:function(){ VIEW='home'; }},\n    {v:'opscal', icon:'📅', label:'운영 달력', act:function(){ VIEW='opscal'; OPS.man=''; }}   /* ★ v19-158 */\n  ]},",
+        "    {v:'home', icon:'🏠', label:'대시보드', act:function(){ VIEW='home'; }}\n  ]},\n  /* ★ v19-159: 📅 운영 달력 — 위쪽 탭 */\n  {key:'opscal', icon:'📅', label:'운영 달력', memo:'계획', subs:[\n    {v:'opscal', icon:'📅', label:'운영 달력', act:function(){ VIEW='opscal'; OPS.man=''; }}\n  ]},")
+    #   ② 홈 «📅 오늘 운영 할 일» 카드 (빠른 실행 바로 아래) + «오늘 챙길 것» 개수에 더하기
+    rep("  // ── 오늘 결석·지각 예정(출결) ──\n  if(typeof attHomeTodayWidget==='function') h+=attHomeTodayWidget();",
+        "  if(typeof opsHomeCard==='function') h+=opsHomeCard();   /* ★ v19-159: 📅 오늘 운영 할 일 */\n  // ── 오늘 결석·지각 예정(출결) ──\n  if(typeof attHomeTodayWidget==='function') h+=attHomeTodayWidget();")
+    rep("(hallPend===null?0:hallPend), (pcPend===null?0:pcPend)];", "(hallPend===null?0:hallPend), (pcPend===null?0:pcPend), (typeof opsHomeCount==='function'?opsHomeCount():0)];   /* ★ v19-159: 운영 할 일 */")
+    rep("  try { if (VIEW === 'opscal') render(); } catch(e){}", "  try { if (VIEW === 'opscal' || VIEW === 'home') render(); } catch(e){}   /* ★ v19-159: 홈 카드도 */")
+    #   위쪽 탭 단추는 HTML 에 따로 적혀 있다 — 홈 다음에 «📅 운영 달력»
+    rep("""      <button class="ftb" id="grp-home" onclick="selGroup('home')"><span>🏠</span><span>홈</span></button>""",
+        """      <button class="ftb" id="grp-home" onclick="selGroup('home')"><span>🏠</span><span>홈</span></button>
+      <button class="ftb" id="grp-opscal" onclick="selGroup('opscal')"><span>📅</span><span>운영 달력</span></button>""")
+    #   «밀린 일»은 계획을 넣은 날(ops_plan.upd) 1주 전부터만 센다 — 계획이 없던 10월 초 일이 빨갛게 쌓이지 않게
+    rep("it.d < opsToday() && !opsDone(it) && it.d >= '2026-10-01'; }", "it.d < opsToday() && !opsDone(it) && it.d >= opsStart(); }   /* ★ v19-159 */")
+    #   ③ 📔 플래너 사진 AI 일괄 분석 — 한 세트씩 → 세 세트씩 함께 (원장 10/26 「플래너 검토가 오래 걸린다」)
+    #      같은 학생 세트는 겹쳐 돌리지 않는다 · 429(요청 과다)가 한 번이라도 나면 한 줄로 돌아가 10초 간격(예전 그대로) · 중단 단추 존중
+    rep("""  window._plannerAdaptiveGap = 0;
+  for (var k = 0; k < jobs.length; k++) {
+    var job = jobs[k];
+    var result = await _analyzeWithRetry(job.stId, job.si, job.setId, 2);
+    if (!result.ok) failed++;
+    if (result.rateLimited) window._plannerAdaptiveGap = 10; // 한 번이라도 429면 이후 10초 간격
+    done++;
+    if (statusEl) statusEl.innerHTML = renderProgress(done, total, failed);
+    if (k < jobs.length - 1 && window._plannerAdaptiveGap > 0) {
+      for (var s = window._plannerAdaptiveGap; s > 0; s--) {
+        if (statusEl) statusEl.innerHTML = renderProgress(done, total, failed, '다음 분석까지 ' + s + '초 대기');
+        await new Promise(function(r) { setTimeout(r, 1000); });
+      }
+    }
+  }""", """  window._plannerAdaptiveGap = 0;
+  /* ★ v19-159: 세 세트씩 함께 — 같은 학생은 겹치지 않게, 429 가 나면 한 줄 + 10초 간격 */
+  var _pool = jobs.slice(), _busy = {}, _conc = 3;
+  var _take = function(){ for (var q = 0; q < _pool.length; q++){ if (!_busy[_pool[q].stId]) return _pool.splice(q, 1)[0]; } return null; };
+  var _worker = async function(wid){
+    while (_pool.length){
+      if (window.PL_STOP || wid >= _conc) return;
+      var job = _take();
+      if (!job){ await new Promise(function(r){ setTimeout(r, 300); }); continue; }
+      _busy[job.stId] = 1;
+      var result = await _analyzeWithRetry(job.stId, job.si, job.setId, 2);
+      delete _busy[job.stId];
+      if (!result.ok) failed++;
+      if (result.rateLimited){ window._plannerAdaptiveGap = 10; _conc = 1; } // 한 번이라도 429면 한 줄로 · 10초 간격
+      done++;
+      if (statusEl) statusEl.innerHTML = renderProgress(done, total, failed);
+      if (_pool.length && window._plannerAdaptiveGap > 0){
+        for (var s = window._plannerAdaptiveGap; s > 0; s--){
+          if (statusEl) statusEl.innerHTML = renderProgress(done, total, failed, '다음 분석까지 ' + s + '초 대기');
+          await new Promise(function(r){ setTimeout(r, 1000); });
+        }
+      }
+    }
+  };
+  var _ws = []; for (var _w = 0; _w < Math.min(3, jobs.length); _w++) _ws.push(_worker(_w));
+  await Promise.all(_ws);""")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
