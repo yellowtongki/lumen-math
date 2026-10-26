@@ -889,6 +889,11 @@ if int(ver.replace('v19-',''))>=163:
     rep("           : PLANNER_VIEW==='race'       ? rPlannerRace()\n", "           : PLANNER_VIEW==='race'       ? rPlannerRace()\n           : PLANNER_VIEW==='fake'       ? rPlannerFake()   /* ★ v19-163 */\n")
     #   🚨 위험 신호 줄을 누르면 그 학생으로 (플래너 0점·거짓 제출은 거짓 제출 카드가 열린 채로)
     rep("h+='<div onclick=\"riskGo(\\''+x.go+'\\')\"", "h+='<div onclick=\"riskGo(\\''+x.go+'\\',\\''+s.id+'\\')\"")
+if int(ver.replace('v19-',''))>=165:
+    # v19-165: 📱 모바일 이미지 오른쪽 잘림 (원장 10/26) — 앱 글씨 배율(body zoom 0.72~1.45)이 그림 틀에도 걸려
+    #   그림 폭과 내용 폭이 어긋났다 → 그림 틀을 body 밖(html 바로 아래)에 붙여 배율과 무관하게 480px 로 그린다
+    rep("host.innerHTML = '<style>' + CR_CSS + CR_MOB_CSS + '</style>' + html;\n  document.body.appendChild(host);",
+        "host.innerHTML = '<style>' + CR_CSS + CR_MOB_CSS + '</style>' + html;\n  document.documentElement.appendChild(host);   /* ★ v19-165: body 는 글씨 배율(zoom)이 걸려 있다 — 밖에 붙여야 폭이 480 그대로 */")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
