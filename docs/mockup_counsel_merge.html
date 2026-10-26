@@ -1,0 +1,170 @@
+<title>학부모 상담 통합 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* 레이아웃: 위 = 바뀌는 점 3줄 · 아래 = 학원앱 화면 그대로(왼쪽 사이드바 진입 단추 + 오른쪽 통합 화면: 학생·상담 종류 줄 → 30초 브리핑 → 탭 3개) */
+:root{ --bg:#eef1f5; --ink:#15233b; --mute:#5f6b80; --line:#e3e7ee; --card:#ffffff; --soft:#f6f8fb;
+  --navy:#0d2240; --teal:#0d9488; --or:#e0670b; --blue:#2563eb; --bad:#c81e1e; --ok:#15803d; --warn:#b45309;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14.5px;line-height:1.6;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font-size:21px;font-weight:900}
+.chg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media(max-width:860px){.chg{grid-template-columns:1fr}}
+.chg div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 13px;font-size:13.5px}
+.chg b{display:block;font-size:14.5px}
+.app{display:grid;grid-template-columns:230px minmax(0,1fr);background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-height:760px}
+@media(max-width:860px){.app{grid-template-columns:1fr}.side{display:none}}
+.side{background:#0f1f3d;padding:14px 10px;display:flex;flex-direction:column;gap:7px}
+.side .lg{color:#fff;font-weight:900;font-size:17px;padding:4px 6px 10px}
+.sb{border:none;border-radius:11px;padding:11px 12px;color:#fff;font:inherit;font-size:13.5px;font-weight:800;text-align:left;cursor:default;opacity:.55}
+.sb.on{opacity:1;outline:3px solid #fde047;outline-offset:2px}
+.main{padding:16px 18px;background:var(--bg);min-width:0}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.bar .t{font-size:20px;font-weight:900;margin-right:6px}
+.sel{border:1.5px solid #cbd5e1;border-radius:9px;padding:5px 10px;font-weight:800;background:#fff;font-size:13.5px}
+.chip{border:1.5px solid #e2e8f0;background:#fff;border-radius:10px;padding:5px 11px;font-weight:800;font-size:12.5px}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn{border:1.5px solid #cbd5e1;background:#fff;border-radius:9px;padding:5px 11px;font-weight:800;font-size:12.5px}
+.btn.pri{background:var(--navy);border-color:var(--navy);color:#fff}
+.brief{background:linear-gradient(135deg,#0d2240,#1d3a6b);color:#fff;border-radius:14px;padding:13px 16px;margin-bottom:12px}
+.brief .k{font-size:11px;opacity:.75;font-weight:800}
+.brief .nm{font-size:19px;font-weight:900;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:11px;font-weight:900;border-radius:20px;padding:2px 9px}
+.nums{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px}
+@media(max-width:860px){.nums{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.nums div{background:rgba(255,255,255,.1);border-radius:10px;padding:7px 10px}
+.nums b{display:block;font-size:18px;font-weight:900;line-height:1.2}
+.nums span{font-size:10.5px;opacity:.75;font-weight:800}
+.nums .new{outline:2px dashed #fde047;outline-offset:-2px}
+.last{margin-top:9px;background:rgba(255,255,255,.13);border-radius:10px;padding:8px 11px;font-size:12.5px;font-weight:700}
+.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:12px;flex-wrap:wrap}
+.tab{border:none;background:none;font:inherit;font-weight:900;font-size:14.5px;padding:8px 14px;color:var(--mute);border-bottom:3px solid transparent;margin-bottom:-2px;cursor:pointer}
+.tab.on{color:var(--ink);border-bottom-color:var(--navy)}
+.tab small{font-weight:700;font-size:11px;color:var(--mute);margin-left:4px}
+.pane{display:none}.pane.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;min-width:0}
+.card h3{margin:0 0 4px;font-size:14px;font-weight:900}
+.focus{border:2px solid var(--or)}
+.cls{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;margin-top:6px}
+.cls i{height:28px;border-radius:6px;font-style:normal;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.cls .f{background:var(--or);color:#fff}.cls .p{background:#fbe3d2;color:var(--or)}.cls .n{border:2px dashed var(--bad);color:var(--bad)}
+.ph{height:120px;border-radius:8px;background:repeating-linear-gradient(135deg,#f3f5f9 0 10px,#eceff4 10px 20px);display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:12.5px;font-weight:700;text-align:center;padding:8px}
+.say{background:#f8fafc;border-left:3px solid var(--blue);border-radius:0 10px 10px 0;padding:9px 12px;font-size:13.5px;margin-top:6px}
+.say mark{background:#fef9c3;padding:0 3px;border-radius:4px}
+.n2{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;align-items:center;justify-content:center;margin-right:6px}
+.ev{border-radius:10px;padding:9px 12px;margin-bottom:8px;font-size:12.5px}
+.ev div{display:flex;justify-content:space-between;gap:8px}
+textarea{width:100%;min-height:90px;font:inherit;font-size:13.5px;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.hist div{background:var(--soft);border-radius:8px;padding:7px 10px;margin-bottom:6px;font-size:12.5px}
+.note{font-size:12px;color:var(--mute)}
+.new-l{display:inline-block;font-size:10.5px;font-weight:900;background:#fde047;color:#713f12;border-radius:5px;padding:0 6px;margin-left:5px;vertical-align:2px}
+</style>
+
+<div class="wrap">
+  <header><h1>학부모 상담 — 한 화면으로 합치기 (시안)</h1><p class="note" style="margin:2px 0 0">가짜 학생 홍길동 · 숫자는 예시. 노란 테두리·«새로» 표시가 이번에 바뀌는 곳입니다.</p></header>
+  <div class="chg">
+    <div><b>① 들어가는 곳은 하나</b>왼쪽 «📞 학부모 상담 준비» 단추. 진도·리포트 탭의 «📋 상담 리포트»는 빼고, 진도 현황·위험 신호·알림의 단추는 모두 이 화면으로 옵니다.</div>
+    <div><b>② 위는 같이, 아래는 탭 3개</b>학생·상담 종류·기간·집중 교재를 한 줄에서 고르면 30초 브리핑과 세 탭이 모두 그 학생으로 바뀝니다.</div>
+    <div><b>③ 대본이 그래프 숫자를 씁니다</b>«꼭 짚을 것»에 «최근 수업 20번 중 개념편 해 온 날 4번» 같은 리포트 숫자가 들어가고, 기록 한 번 저장에 통화 메모와 다음 달 계획이 같이 남습니다.</div>
+  </div>
+
+  <div class="app">
+    <aside class="side">
+      <div class="lg">LUMEN</div>
+      <button class="sb" style="background:linear-gradient(135deg,#7c3aed,#4c1d95)" type="button">⚡ 울트라일일피드백</button>
+      <button class="sb" style="background:linear-gradient(135deg,#0d2240,#1d6fe8)" type="button">🗓️ 발행 현황판</button>
+      <button class="sb on" style="background:linear-gradient(135deg,#134e4a,#0d9488)" type="button">📞 학부모 상담 준비</button>
+      <button class="sb" style="background:linear-gradient(135deg,#7c2d12,#ea580c)" type="button">📊 숙제 현황 (학생별)</button>
+      <div class="note" style="color:#cbd5e1;padding:6px">↑ 여기 하나로 들어갑니다</div>
+    </aside>
+    <main class="main">
+      <div class="bar">
+        <span class="t">📞 학부모 상담</span>
+        <span class="sel">홍길동 (M3) · 상담 기록 없음 ▾</span>
+        <span class="chip">정기 상담</span><span class="chip">성적 하락</span><span class="chip on">학부모 문의</span><span class="chip">진학·시험</span>
+      </div>
+      <div class="bar">
+        <span class="sel">최근 3개월 ▾</span><span class="sel" style="border-color:var(--or);color:#9a3412">집중: 개념편 중1(하) ▾</span><span class="new-l">새로</span>
+        <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap"><span class="btn">📱 통화 모드</span><span class="btn">🔒 메모 숨기기</span><span class="btn pri">🖨 인쇄 · PDF</span></span>
+      </div>
+
+      <section class="brief">
+        <div class="k">📞 통화 전 30초 브리핑</div>
+        <div class="nm">홍길동 <span style="font-size:12px;opacity:.75">초6 · M3반</span><span class="tag" style="background:#fee2e2;color:#b91c1c">🔴 최근 저조</span></div>
+        <div class="nums">
+          <div><b style="color:#fca5a5">57%</b><span>최근 과제 완성도</span></div>
+          <div><b>25점</b><span>최근 테스트 (중1-1)</span></div>
+          <div class="new"><b style="color:#fca5a5">20번 중 4번</b><span>개념편 숙제 해 온 수업</span></div>
+          <div class="new"><b style="color:#fde68a">54%</b><span>개념편 진도 · 필요 주 +15쪽</span></div>
+          <div><b>0개</b><span>이번 달 질문</span></div>
+        </div>
+        <div class="last">📌 <b>첫 상담</b>입니다 — 어머님이 «테스트 결과와 진도»를 물으셨으니 리포트 탭의 그래프부터 보여 드리세요.</div>
+      </section>
+
+      <div class="tabs" role="tablist">
+        <button class="tab on" type="button" data-p="p1">📊 상담 리포트<small>학부모께 보여 드릴 그래프</small></button>
+        <button class="tab" type="button" data-p="p2">📞 통화 대본<small>6단락 · 숫자 근거 · 예상 질문</small></button>
+        <button class="tab" type="button" data-p="p3">📝 상담 기록<small>통화 메모 · 다음 달 계획 · 지난 기록</small></button>
+      </div>
+
+      <section class="pane on" id="p1">
+        <div class="card focus" style="margin-bottom:12px"><h3>개념편 중1(하) — 숙제 흐름</h3>
+          <div class="note">최근 수업 20번 · ✓ 4 · △ 2 · ✗ 14</div>
+          <div class="cls"><i class="n">✗</i><i class="n">✗</i><i class="f">✓</i><i class="f">✓</i><i class="n">✗</i><i class="n">✗</i><i class="n">✗</i><i class="n">✗</i><i class="p">△</i><i class="n">✗</i><i class="n">✗</i><i class="n">✗</i><i class="f">✓</i><i class="p">△</i><i class="n">✗</i><i class="n">✗</i><i class="n">✗</i><i class="f">✓</i><i class="n">✗</i><i class="n">✗</i></div>
+          <div class="grid" style="margin-top:10px"><div class="ph">날짜별 교재 레인<br>(빈 기간 빨간 띠)</div><div class="ph">주별 문항 막대<br>개념편 vs RPM</div></div>
+        </div>
+        <div class="grid">
+          <div class="card"><h3>진도 곡선</h3><div class="ph">누적 쪽 · 기준 속도 · 11/30 완주 계획</div></div>
+          <div class="card"><h3>시험 점수 — 과정별</h3><div class="ph">중1-2 · 중1-1 · 초6-2 따로</div></div>
+          <div class="card"><h3>교재별 월 쪽수 · 정답률</h3><div class="ph">묶음 막대 · 선</div></div>
+          <div class="card"><h3>하루 평균 공부 · 수학 시간</h3><div class="ph">월별 · 수학은 플래너 할 일 비율</div></div>
+          <div class="card"><h3>틀린 개념 · 숙제 단계 · 학생앱 채점 · 질문 수</h3><div class="ph">v19-161 그래프 그대로</div></div>
+          <div class="card"><h3>다음 달 계획 · 가정에서</h3><div class="ph">자동 문장 → 고쳐 쓰기<br>(📝 상담 기록 탭과 같은 칸)</div></div>
+        </div>
+        <p class="note">🖨 인쇄·PDF = 이 탭의 그래프 + 계획만 (원장 메모·대본은 빠짐).</p>
+      </section>
+
+      <section class="pane" id="p2">
+        <div class="grid" style="grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)">
+          <div>
+            <div class="card" style="margin-bottom:8px"><h3><span class="n2">1</span>인사 · 먼저 들은 말 확인 <span class="note">30초</span></h3><div class="say">어머님, 연락 주셔서 감사합니다. 테스트 결과와 진도가 궁금하셨다고요 — 오늘 숫자로 같이 보시죠.</div></div>
+            <div class="card" style="margin-bottom:8px"><h3><span class="n2">2</span>먼저 인정할 것 <span class="note">40초</span></h3><div class="say">초6 현행은 <mark>10월 85·90점</mark>으로 학원 평균보다 높습니다. 공부 시간도 하루 <mark>3시간 넘게</mark> 유지하고 있어요.</div></div>
+            <div class="card" style="margin-bottom:8px;border:2px solid #fde047"><h3><span class="n2">3</span>꼭 짚을 것 <span class="new-l">새로 — 리포트 숫자</span> <span class="note">1분</span></h3><div class="say">걱정되는 건 개념편 중1(하)예요. <mark>최근 수업 20번 중 해 온 날이 4번</mark>이고, 9월 10일부터 3주 넘게 거의 비어 있습니다. 같은 기간 RPM은 꾸준히 풀었어요.</div></div>
+            <div class="card"><h3><span class="n2">4~6</span>학원이 할 것 · 가정 부탁 하나 · 마무리</h3><div class="say">11월엔 개념편을 <mark>주 15쪽</mark>씩, 수업마다 확인하겠습니다. 가정에서는 «채점까지 했니?» 한 번만 물어봐 주세요.</div></div>
+          </div>
+          <div>
+            <div class="ev" style="background:#fffbeb;border:1.5px solid #fde68a;color:#92400e"><b>📊 숫자 근거 — «왜요?» 하시면</b><div><span>최근 과제 완성도</span><b>57%</b></div><div><span>풀이 · 채점 · 오답</span><b>57 · 30 · 17%</b></div></div>
+            <div class="ev" style="background:#eff6ff;border:1.5px solid #bfdbfe;color:#1d4ed8"><b>📝 성적</b><div><span>최근 테스트</span><b>25점 (평균 52)</b></div><div><span>진행 교재</span><b>개념편 · RPM · 최상위</b></div></div>
+            <div class="ev" style="background:#faf5ff;border:1.5px solid #e9d5ff;color:#7c3aed"><b>🏠 생활 습관</b><div><span>플래너 제출 (30일)</span><b>93%</b></div><div><span>출결 (60일)</span><b>결석 0 · 지각 0</b></div></div>
+            <div class="ev" style="background:#f8fafc;border:1px solid var(--line)"><b>❓ 예상 질문 5개</b> — «선행을 줄여야 하나요?» → 숫자로 답이 자동 작성 (지금 그대로)</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" id="p3">
+        <div class="grid">
+          <div class="card"><h3>통화 메모 · 분위기</h3><textarea id="m-note" placeholder="어머님이 하신 말씀 / 오늘 약속한 것 …"></textarea><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap"><span class="chip">🙂 좋음</span><span class="chip">😐 보통</span><span class="chip">😟 우려</span></div></div>
+          <div class="card"><h3>다음 달 계획 <span class="new-l">새로 — 리포트와 같은 칸</span></h3><textarea id="m-plan">개념편 중1(하) 주 15쪽씩 → 11/30 완주
+일차식·방정식 틀린 유형 학습지 주 1회
+수업 시작 10분, 채점·오답 확인</textarea></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap"><span class="btn pri">💾 상담 기록 저장</span><span class="note">한 번 저장에 통화 메모(counsel_log) + 계획·핵심 숫자(consult_코드)가 같이 남습니다</span></div>
+        <div class="card hist"><h3>지난 상담</h3>
+          <div><b>예시 · 9/12 정기 상담 🙂</b> — «선행 속도 괜찮은지 물으심» · 계획: 개념편 주 12쪽 → <b style="color:var(--bad)">실제 주 5쪽</b> <span class="new-l">새로 — 지난 계획 대비</span></div>
+          <div class="note">다음 상담 때 30초 브리핑 맨 아래에 «지난번 약속 → 지금»이 자동으로 뜹니다.</div>
+        </div>
+      </section>
+      <section class="card" style="margin-top:12px;background:#fff8e6;border:1.5px dashed #f1d48a"><b>🔒 원장님만 보는 메모</b> <span class="note">— 세 탭 아래 공통 · 인쇄에 빠짐</span><div class="note" style="color:var(--ink)">플래너 같은 사진 감지 날짜 · 수업 메모 · 출결 · 마지막 질문</div></section>
+    </main>
+  </div>
+</div>
+<script>
+document.querySelectorAll('.tab').forEach(function(b){ b.addEventListener('click', function(){
+  document.querySelectorAll('.tab').forEach(function(x){ x.classList.toggle('on', x === b); });
+  document.querySelectorAll('.pane').forEach(function(p){ p.classList.toggle('on', p.id === b.getAttribute('data-p')); });
+}); });
+</script>
