@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-157';
+var APP_VER = 'v19-158';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -1282,7 +1282,7 @@ window.supaPullStudentDbRescue = supaPullStudentDbRescue;
 // v18-23: onlyKeys를 주면 그 키들만 소량으로 받는다 — 전체(대용량) 동기화가 느린
 // 네트워크에서 실패할 때, 등록부·교재 같은 핵심만 먼저 받아 화면을 살리는 용도.
 var PULL_SKIP_PREFIX = ['mf_bookans_', 'mf_wsq_', 'mf_textbook_', 'mf_swb_', 'mf_ws_recent_', 'mf_wsans_', 'ms_exam', 'haesol_body_', 'hw_synced_', 'hw_scores_', 'typeach_stu_', 'stu_reports_', 'pub_reports_', 'submissions_', 'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_', 'naver_book', 'rec_read_', 'rec_review_'];
-var PULL_SKIP_KEYS = ['mf_type_ach', 'mf_sol_fix', 'mf_bookpages', 'ms_mydb_index', 'mf_ws_behaviors', 'mf_weekly', 'mf_progress', 'mf_books', 'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req', 'lumen_db_key', 'naver_phone_links', 'or_nb_key', 'naver_bookings_archive', 'naver_msg_tpl', 'tenten_optional', 'raid_board_draft', 'raid_boss_lib'];
+var PULL_SKIP_KEYS = ['mf_type_ach', 'mf_sol_fix', 'mf_bookpages', 'ms_mydb_index', 'mf_ws_behaviors', 'mf_weekly', 'mf_progress', 'mf_books', 'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req', 'lumen_db_key', 'naver_phone_links', 'or_nb_key', 'naver_bookings_archive', 'naver_msg_tpl', 'tenten_optional', 'raid_board_draft', 'raid_boss_lib', 'ops_plan', 'ops_checks'];
 async function supaFullPull(onlyKeys) {
   var sb = getSupaClient();
   if (!sb) return false;
@@ -9084,6 +9084,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-158',date:'2026-10-26',stability:'warn',memo:'📅 <b>운영 달력</b> (원장 2026-10-25~26 — 학관노 업무 매뉴얼 + 2026 연간마케팅 플랜을 한 달력에). 🏠 홈 탭 › 📅 운영 달력. 층(켜고 끄기): 학교 일정(나이스 시험·학교 행사) · 학원 일정(학원 달력) · 운영(학관노 행사 D-업무) · 마케팅(블로그·인스타·당근·카카오채널 — 시험 3주 전·시험 뒤·모집 행사에 맞춰 자동 제안) · 돈(결제선생 20일 청구·25일 1차 파기·30일 2차 파기·급여·세금) · 지표(매주 월요일 입력). 보기 세 가지: 1년 한눈에(달마다 테마·키워드·시험·행사, 「운영 계획 없음」 표시) · 월 달력 · 체크리스트(달력 바로 아래 주별 체크리스트, 할 일마다 단계 체크 — 다 체크하면 자동 완료, 날짜를 누르면 그날 할 일이 파랗게, 오른쪽에 매일 체크리스트) · 목표·지표(신규생 목표·문의·등록·퇴원, 작년 같은 주 방문 수). 담당(원장·실장·강사·조교)으로 거르기. 「매뉴얼 ›」 = 학관노 2쪽 매뉴얼. 체크는 서버에 저장되어 PC·휴대폰이 같습니다. 내용(행사·매뉴얼·테마)은 학관노 백업·마케팅 시트에서 Claude가 서버(ops_plan)에 넣습니다 — 운영 내용은 원장님 임시안입니다.'},
       {ver:'v19-157',date:'2026-10-26',stability:'ok',memo:'🔗 <b>매쓰플랫과 연결 안 된 학생 알림 · 플래너 표 말일 잘림 · 데이터 재연결 시간 초과</b> (원장 2026-10-26). ① 학생관리 맨 위에 «🔗 매쓰플랫과 연결 안 된 학생» 띠 — 매쓰플랫에는 있는데 학원앱 등록부에 같은 이름이 없어서 연결되지 않은 학생을 보여 줍니다(학원앱과 매쓰플랫은 이름으로 이어집니다). 「＋ 등록」을 누르면 학생 추가 창에 이름·학년이 채워지고, 반·연락처를 넣어 저장하면 다음 매쓰플랫 수집(매일 04·16·22시) 때 자동으로 연결됩니다. 「🔄 지금 수집 요청」으로 바로 돌릴 수도 있습니다. 시험용·선생님 계정은 「숨기기」. ② 플래너 입력 표 오른쪽 «합계» 칸이 27~31일을 덮던 문제 — 칸을 조금 줄이고, 화면보다 넓으면 표를 가로로 밀어 볼 수 있게 했습니다. 표를 열면 오늘 칸이 가운데 오도록 자동으로 밀려 있고, 끝까지 밀면 말일까지 보입니다(합계 칸은 오른쪽에 붙어 있음). ③ 「🔗 데이터 재연결」이 서버 전체를 한꺼번에 읽다가 «statement timeout»으로 실패하던 것 — 필요한 것만 나눠 읽습니다. (이 단추는 학생 로그인 코드가 바뀌었을 때 옛 기록을 되찾는 도구이고, 매쓰플랫 연결과는 다릅니다.)'},
       {ver:'v19-156',date:'2026-10-24',stability:'ok',memo:'🩹 <b>출결·보충 — 결석한 그 날 보충도 지정</b> (원장 2026-10-24 「같은날 보충도 가능하게 수정」). 결석 보충 관리에서 보충 날짜를 결석일과 같은 날로 고르면 «보충 날짜는 결석일과 다른 날짜로…» 창이 떠서 막혔습니다. 예전에는 보충 기록이 같은 날의 결석 기록을 덮어써 기록이 깨졌기 때문에 막아 두었던 것인데, 이제 같은 날이면 결석 기록 안에 «같은 날 보충»으로만 적어 결석은 그대로 남고 보충 예정·완료만 바뀝니다. 달력 그 날 칸에는 «결석 · → 같은 날 14:00 보충», 완료하면 «✓ 같은 날 보충». 보충완료·되돌리기·보충 취소도 결석 기록을 건드리지 않습니다.'},
       {ver:'v19-155',date:'2026-10-23',stability:'ok',memo:'🕘 <b>리커버리 학습지 3판</b> (원장 2026-10-23 밤 결정). <b>기본 구성이 바뀝니다</b>: 주간테스트 오답 쌍둥이 1개 + <b>최근 1주 «아직 틀린 문제»</b>(교재·학습지에서 풀었는데 아직 틀린 채로 남은 문제 — 다시 풀어 맞힌 것은 뺌)를 <b>유형마다 1개</b>(그 유형에서 가장 최근 것, 이번 테스트 문제는 먼저 뺌). 테스트와 진도가 달라 진도 쪽 오답이 통째로 빠지던 일이 없어집니다. 교과서 같은 유형·보강·범위 안 교재 오답·자동 단원 오답은 꺼짐(오른쪽 «학습지 규칙» 체크칸으로 켤 수 있음) · <b>최상(5단계)은 기본 빼기</b>(체크로 포함) · 문항 상한·하한은 «없음», 단 기간을 2주 이상으로 고른 학생만 상한 40(넘으면 «테스트 쌍둥이 첫째 → 최근 오답 새것 → 교과서 → 쌍둥이 둘째 → 보강 → 교재 오답» 순으로 남김) · 중3 «주간테스트 2개 합산»도 기본에서 끔(학생별 팝업에서 고르면 2개 가능). 기간은 칩 <b>[1주][2주][4주]</b> — 학생별로도 바꿀 수 있습니다(예: 지난주 결석한 학생은 2주). 리커버리 보드 가운데에 <b>«🔢 학생별 예상»</b> 표가 생겼습니다 — 확정 학생마다 «테스트 쌍둥이 n + 최근 오답 n유형 = 예상 n문항», 단원 비율 막대, 최상 문제 수. 규칙을 바꾸면 매쓰플랫 호출 없이 바로 다시 셉니다(실제 쌍둥이 수와 1~2개 다를 수 있음). 학생 카드에는 «🕘 최근 1주 아직 틀린 n유형 · 테스트 범위 밖 m» 한 줄(범위 밖이 있으면 주황). 설계 팝업에는 «🕘 최근 오답» 칸(교재·학습지별 · 중단원별 개수 · 뺀 것)과 이 학생만 기간·최상·문항 범위·끄기. 빼는 유형(예 «농도»)을 적으면 모든 재료와 쌍둥이에서 빠집니다. <b>고등부도 같은 규칙</b>으로 만들 수 있습니다 — 과목은 가장 최근 시험 제목의 [과목](예 [공통수학2])에서 자동으로, 없으면 카드의 «과목 고르기». 서버(확정 전원 서버 생성)도 같은 규칙을 기본으로 씁니다.'},
@@ -11967,7 +11968,8 @@ function xtSchoolSummary(){
 
 var GROUPS=[
   {key:'home', icon:'🏠', label:'홈', memo:'출발점', subs:[
-    {v:'home', icon:'🏠', label:'대시보드', act:function(){ VIEW='home'; }}
+    {v:'home', icon:'🏠', label:'대시보드', act:function(){ VIEW='home'; }},
+    {v:'opscal', icon:'📅', label:'운영 달력', act:function(){ VIEW='opscal'; OPS.man=''; }}   /* ★ v19-158 */
   ]},
   {key:'daily', icon:'✅', label:'오늘의 확인', memo:'매일', subs:[
     {v:'ultra', icon:'⚡', label:'울트라일일', act:function(){ VIEW='ultra'; }},
@@ -18567,7 +18569,7 @@ function render(){
   if(RT){
     const groupLabel=MENU_GROUP==='all'?'전체 학생':MENU_GROUP==='none'?'미배정':MENU_GROUP;
     const selName=SELECTED_STUDENT?SELECTED_STUDENT.split('__')[0]:'';
-    const titles={home:'🏠 홈',risk:'🚨 위험 신호',cal:'📅 학원 달력',codi:'🧭 스터디 코디',plweek:'📅 주간 점수',plwall:'🗓 주간계획 모아보기',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실',tuition:'💳 수강료',wsgrade:'📄 학습지 채점',todo:'🗂 할 일 보드',blank:'📝 백지테스트',lastcheck:'🎯 시험 대비',examanal:'📚 기출 분석',examhit:'🎯 적중 분석',tbmatch:'📚 교과서일치도',mathquiz:'🧠 루멘 수학퀴즈',naverbk:'📅 네이버 예약',naverstats:'📊 예약 통계'};
+    const titles={home:'🏠 홈',risk:'🚨 위험 신호',cal:'📅 학원 달력',opscal:'📅 운영 달력',codi:'🧭 스터디 코디',plweek:'📅 주간 점수',plwall:'🗓 주간계획 모아보기',typeach:'📊 유형 성취도',list:groupLabel,analyzing:'PDF 분석 중',planner:'📓 플래너',student_detail:selName,studentdb:'학생 관리',books:'📚 교재·유형',quick:'⚡ 빠른 입력',roadmap_mgr:'🗺️ 로드맵 관리',typedb:'🔬 유형 DB',class_overview:'📊 반 현황',form:`${form.name||'새 학생'} 편집`,preview:'미리보기',share:'공유',settings:'설정',bulk:'✨ 일괄 피드백 생성',exam:'📝 시험 관리',mockexam:'🏫 기출모의',schoolscore:'📚 학교성적',record:'📝 학생 기록',pwa:'📝 수학풀이분석',essay:'✍️ 서술형 첨삭',notice:'📢 공지사항',attend:'📅 출결·보충',vod:'🎬 강의실',tuition:'💳 수강료',wsgrade:'📄 학습지 채점',todo:'🗂 할 일 보드',blank:'📝 백지테스트',lastcheck:'🎯 시험 대비',examanal:'📚 기출 분석',examhit:'🎯 적중 분석',tbmatch:'📚 교과서일치도',mathquiz:'🧠 루멘 수학퀴즈',naverbk:'📅 네이버 예약',naverstats:'📊 예약 통계'};
     const subtitles={typeach:'AI 판독 · 검토 · 전송',list:'학생 카드',student_detail:STUDENT_TAB,studentdb:'등록부',books:'교재 라이브러리',quick:QUICK_TAB+' 입력',class_overview:'진도 현황 · 지연 감지',typedb:'수학 유형 분류 체계',form:'편집 · 미리보기 · 공유',preview:'편집 · 미리보기 · 공유',share:'편집 · 미리보기 · 공유',settings:'설정',bulk:'일괄 작업',exam:'시험지 분석 · O/X · 리포트',record:'특기사항 · 날짜별',pwa:'풀이 분석 · 검토 · 발송',notice:'작성 · 발행 · 읽음 현황',attend:'출석 · 결석보충 · 리커버리',vod:'강의 등록 · 배정 · 시청 모니터링',tuition:'결제선생 청구 · 수납 · 미납',wsgrade:'자동채점 현황 · 학생별 진행',todo:'코스 짜기 · 배정 · 나눠 주기 · 학생별',blank:'틀린 문항 · 아하노트 · 약한 유형 → 한 장'};
     RT.textContent=titles[VIEW]||'학생을 선택해주세요';
     const RST=document.getElementById('RIGHT_SUBTITLE');
@@ -18687,6 +18689,7 @@ function render(){
     else if(VIEW==='plweek'){ try{ C.innerHTML=rPlWeek(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간 점수 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='codi'){ try{ C.innerHTML=rCodi(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">스터디 코디 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='cal'){ try{ C.innerHTML=rCal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">학원 달력 오류: '+esc2(e.message)+'</div>'; } }
+    else if(VIEW==='opscal'){ try{ C.innerHTML=rOpsCal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">운영 달력 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='risk'){ try{ C.innerHTML=rRisk(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">위험 신호 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='todo'){ try{ C.innerHTML=rTodo(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">할 일 보드 오류: '+esc2(e.message)+'</div>'; } }   /* ★ v19-26 */
     else if(VIEW==='wsgrade'){ VIEW='bookdash'; MF.tab='sheet'; try{ C.innerHTML=rMfHub(); if(!WSG.loaded) setTimeout(wsgLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
@@ -18757,6 +18760,7 @@ function render(){
     else if(VIEW==='plweek'){ try{ C.innerHTML=rPlWeek(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">주간 점수 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='codi'){ try{ C.innerHTML=rCodi(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">스터디 코디 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='cal'){ try{ C.innerHTML=rCal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">학원 달력 오류: '+esc2(e.message)+'</div>'; } }
+    else if(VIEW==='opscal'){ try{ C.innerHTML=rOpsCal(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">운영 달력 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='risk'){ try{ C.innerHTML=rRisk(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">위험 신호 오류: '+esc2(e.message)+'</div>'; } }
     else if(VIEW==='todo'){ try{ C.innerHTML=rTodo(); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:#b91c1c;font-weight:800">할 일 보드 오류: '+esc2(e.message)+'</div>'; } }   /* ★ v19-26 */
     else if(VIEW==='wsgrade'){ VIEW='bookdash'; MF.tab='sheet'; try{ C.innerHTML=rMfHub(); if(!WSG.loaded) setTimeout(wsgLoad,0); }catch(e){ console.error(e); C.innerHTML='<div style="padding:20px;color:red">'+e.message+'</div>'; } }
@@ -78147,7 +78151,7 @@ function rCal(){
   if(!CT.loaded&&!CT.loading) setTimeout(function(){ ctLoad(); },0);
   var today=ctTodayStr(), h='<div style="padding:18px 22px 60px;background:#eef2f8;min-height:100%">';
   h+='<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px"><div><div style="font-size:21px;font-weight:900;color:#0d2240;letter-spacing:-.02em">📅 학원 달력</div><div style="font-size:11.5px;color:#64748b;font-weight:700;margin-top:2px">학교별 시험 D-day · 진도 레이스 · 휴원·행사·시험대비 수업 — 「학생앱 공개」를 켠 일정은 학생앱 내 달력에 그대로 뜹니다</div></div>'
-    +'<div style="margin-left:auto;display:flex;gap:6px">'+eaBtn('＋ 일정 넣기','ctNew()','pri')+eaBtn('🔄 새로고침','ctLoad(true)')+'</div></div>';
+    +'<div style="margin-left:auto;display:flex;gap:6px">'+eaBtn('📅 운영 달력',"VIEW='opscal';render()")+eaBtn('＋ 일정 넣기','ctNew()','pri')+eaBtn('🔄 새로고침','ctLoad(true)')+'</div></div>';
   if(CT.err) h+='<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:10px 13px;color:#b91c1c;font-size:12px;font-weight:800;margin-bottom:10px">'+ctEsc(CT.err)+'</div>';
   if(!CT.loaded) return h+'<div style="'+eaCard()+'"><div style="font-size:12px;color:#94a3b8;font-weight:700">불러오는 중…</div></div></div>';
   /* ① 학교별 D-day 카드 */
@@ -99437,7 +99441,291 @@ async function mfuRelinkRows(sb){
 })();
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~157: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-158: 📅 운영 달력 — 운영(학관노 매뉴얼) · 마케팅 실행 · 학교 일정 · 수납·세금 · 지표를 한 달력에 층으로
+ *   원장 2026-10-25~26 「학관노 매뉴얼 + 2026 연간마케팅 플랜을 운영 달력에」 · 「월 달력 밑에 체크리스트」 · 「오른쪽 칸 없애고」
+ *   시안 docs/mockup_home_ops.html · 채팅 artifact 3yQ98nsixtHd7sPiXJ9DLE
+ *   읽는 것: lumen_store ops_plan  { year, themes[12], keywords[12][], tax[[YYYY-MM-DD,글]], schoolExtra[[YYYY-MM-DD,글]],
+ *                                    events[{id,n,type,date,d:[[D,담당,할 일]]}], regular[{rule,d?,L,who,t,st[],man?}],
+ *                                    mkt{ channels[], steps{채널:[단계]}, exam[[기준,D,채널,글]], recruit[[D,채널,글]], special[[YYYY-MM-DD,채널,글]] },
+ *                                    manuals[{name,rank,cycle,timing,where,what,prep[],steps[],done,evid,report,ex[]}], ranks{r1:'원장'…},
+ *                                    kpi{ year, ask[12], reg[12], out[12], goal }, traffic{ weeks[], rows{이름:[숫자]} } }
+ *            lumen_store ops_checks { '<날짜>|<할 일>':1, '<날짜>|<할 일>#<단계>':1, 'day|<날짜>|<업무>#<단계>':1 }
+ *            학원 달력(cal_teacher.js) 의 CT: 나이스 시험(ctExams) · 학원 일정(lumen_events) · 공휴일(CT_HOLI)
+ *   쓰는 것: ops_checks 만 (체크할 때마다 서버 최신본을 받아 그 한 칸만 바꿔 올린다 — 체크 해제도 그대로 남는다)
+ *   두 키는 시작 다운로드에서 뺀다(PULL_SKIP_KEYS) — 화면이 서버에서 바로 읽는다.
+ *   ※ 문자열 연결로만 쓴다(중첩 템플릿 리터럴 금지).
+ * ═══════════════════════════════════════════════════════════════════ */
+var OPS = { loaded: false, loading: false, err: '', plan: null, ck: {}, y: 0, m: 0, view: 'month', sel: '', who: '전체',
+  on: { sch: 1, acad: 1, ops: 1, mkt: 1, money: 1, kpi: 1 }, man: '' };
+var OPS_L = { sch: ['학교', '#6d28d9', '#efe7fd'], acad: ['학원 일정', '#374151', '#e5e7eb'], ops: ['운영', '#1d4ed8', '#e6eefc'], mkt: ['마케팅', '#be185d', '#fce7f1'], money: ['돈', '#0f766e', '#d9f3ef'], kpi: ['지표', '#b45309', '#fef3c7'] };
+var OPS_WCOL = { '원장': '#7c3aed', '실장': '#2563eb', '강사': '#0f766e', '조교': '#c2410c' };
+var OPS_DOW = ['일', '월', '화', '수', '목', '금', '토'];
+function opsE(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+function opsJs(s){ return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+function opsToday(){ return new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10); }
+function opsAdd(s, n){ var t = new Date(s + 'T00:00:00Z'); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); }
+function opsDow(s){ return new Date(s + 'T00:00:00Z').getUTCDay(); }
+function opsSat(s){ return opsDow(s) === 0 ? opsAdd(s, -1) : s; }        /* 일요일(휴무)이면 토요일로 당김 */
+function opsYmd(y, m, d){ return y + '-' + ('0' + m).slice(-2) + '-' + ('0' + d).slice(-2); }
+function opsMd(s){ return Number(s.slice(5, 7)) + '/' + Number(s.slice(8, 10)); }
+function opsDim(y, m){ return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+function opsDl(n){ return n === 0 ? 'D-day' : (n < 0 ? 'D' + n : 'D+' + n); }
+
+async function opsLoad(force){
+  if (OPS.loading) return; if (OPS.loaded && !force) return;
+  OPS.loading = true; OPS.err = '';
+  try {
+    var sb = getSupaClient(); if (!sb) throw new Error('서버 연결이 없습니다');
+    var r = await sb.from('lumen_store').select('key,value').in('key', ['ops_plan', 'ops_checks']);
+    if (r.error) throw r.error;
+    var got = {}; (r.data || []).forEach(function(x){ var v = x.value; if (typeof v === 'string'){ try { v = JSON.parse(v); } catch(e){ v = null; } } got[x.key] = v; });
+    OPS.plan = got.ops_plan || null; OPS.ck = got.ops_checks || {};
+    OPS.loaded = true;
+  } catch(e){ OPS.err = String(e.message || e); }
+  OPS.loading = false;
+  try { if (typeof CT !== 'undefined' && !CT.loaded && typeof ctLoad === 'function') ctLoad(); } catch(e){}
+  try { if (VIEW === 'opscal') render(); } catch(e){}
+}
+
+/* ── 학교 시험 물결: 나이스 시험(ctExams)을 20일 넘게 떨어지면 끊어 묶는다 ── */
+function opsWaves(){
+  var ex = []; try { ex = (typeof ctExams === 'function' && typeof CT !== 'undefined' && CT.loaded) ? ctExams() : []; } catch(e){ ex = []; }
+  var w = [], cur = null;
+  ex.slice().sort(function(a, b){ return a.from < b.from ? -1 : 1; }).forEach(function(e){
+    var to = e.to || e.from;
+    if (cur && opsDiff(cur.to, e.from) <= 20){ if (to > cur.to) cur.to = to; cur.n++; }
+    else { cur = { from: e.from, to: to, n: 1 }; w.push(cur); }
+  });
+  w.forEach(function(x){ var m = Number(x.from.slice(5, 7)); x.label = m <= 5 ? '1학기 중간' : m <= 8 ? '1학기 기말' : m <= 10 ? '2학기 중간' : '2학기 기말'; });
+  return w;
+}
+function opsDiff(a, b){ return Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 86400000); }
+
+/* ── 한 달의 할 일 만들기 ── */
+function opsItems(y, m){
+  var P = OPS.plan || {}, out = [], ym = y + '-' + ('0' + m).slice(-2);
+  var inM = function(d){ return d && d.slice(0, 7) === ym; };
+  var push = function(d, L, t, sub, o){ if (!inM(d)) return; var it = { d: d, L: L, t: t, sub: sub || '', who: '', st: [] }; for (var k in (o || {})) it[k] = o[k]; it.id = d + '|' + t; out.push(it); };
+  /* 학교 일정: 나이스 시험 + 시트에서 옮긴 학교 행사 */
+  try { if (typeof ctExams === 'function' && CT.loaded) ctExams().forEach(function(e){
+    for (var d = e.from; d <= (e.to || e.from); d = opsAdd(d, 1)) push(d, 'sch', e.school + ' ' + (e.label || '시험') + (d === e.from && e.to && e.to !== e.from ? ' (' + opsMd(e.from) + '~' + opsMd(e.to) + ')' : ''), '학교 시험 · 나이스 학사일정', { first: d === e.from });
+  }); } catch(e){}
+  (P.schoolExtra || []).forEach(function(x){ push(x[0], 'sch', x[1], '학교 일정'); });
+  /* 학원 일정 (학원 달력 lumen_events) */
+  try { if (typeof ctEventsOn === 'function' && CT.loaded) for (var dd = 1; dd <= opsDim(y, m); dd++){ var ds = opsYmd(y, m, dd); ctEventsOn(ds).forEach(function(ev){ push(ds, 'acad', ev.title || '학원 일정', '학원 달력' + (ev.time ? ' · ' + ev.time : '')); }); } } catch(e){}
+  /* 세금 */
+  (P.tax || []).forEach(function(x){ push(x[0], 'money', x[1], '세금', { who: '원장', st: ['금액 확인 (세무사·홈택스)', '납부·신고', '영수증 보관'] }); });
+  /* 정기 업무 */
+  (P.regular || []).forEach(function(r){
+    var d = '';
+    if (r.rule === 'day') d = opsYmd(y, m, Math.min(r.d, opsDim(y, m)));
+    else if (r.rule === 'last') d = opsYmd(y, m, opsDim(y, m));
+    else if (r.rule === 'firstMon'){ for (var i = 1; i <= 7; i++){ if (opsDow(opsYmd(y, m, i)) === 1){ d = opsYmd(y, m, i); break; } } }
+    if (!d) return; if (r.rule !== 'firstMon') d = opsSat(d);
+    push(d, r.L || 'money', r.t, r.sub || '매월', { who: r.who || '', st: r.st || [], man: r.man || '' });
+  });
+  /* 운영 행사 D-업무 + 모집 행사 마케팅 */
+  var MK = P.mkt || {}, CH = MK.steps || {};
+  var mk = function(d, ch, txt, sub){ if ((MK.channels || []).indexOf(ch) < 0) return; push(opsSat(d), 'mkt', ch + ': ' + txt, sub, { who: '원장', st: CH[ch] || [] }); };
+  (P.events || []).forEach(function(e){
+    (e.d || []).forEach(function(x){ var raw = opsAdd(e.date, x[0]); push(opsSat(raw), 'ops', x[2], e.n + ' · ' + opsDl(x[0]) + (opsDow(raw) === 0 ? ' · 일요일→토요일' : ''), { who: x[1], mark: x[0] === 0 }); });
+    if (e.type === '신규모집') (MK.recruit || []).forEach(function(x){ mk(opsAdd(e.date, x[0]), x[1], x[2], e.n + ' · ' + opsDl(x[0])); });
+  });
+  /* 시험 물결 마케팅 */
+  opsWaves().forEach(function(w){ (MK.exam || []).forEach(function(x){ var base = x[0] === 'start' ? w.from : w.to; mk(opsAdd(base, x[1]), x[2], x[3].replace('{w}', w.label), '시험 ' + (x[0] === 'start' ? '시작' : '끝') + ' ' + opsDl(x[1]) + ' · 자동 제안'); }); });
+  (MK.special || []).forEach(function(x){ mk(x[0], x[1], x[2], '기념일'); });
+  out.sort(function(a, b){ return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+  return out;
+}
+function opsVis(it){ return OPS.on[it.L] && (OPS.who === '전체' || it.L === 'sch' || it.L === 'acad' || it.who === OPS.who); }
+function opsDone(it){ return !!OPS.ck[it.id]; }
+function opsOver(it){ return it.L !== 'sch' && it.L !== 'acad' && it.d < opsToday() && !opsDone(it) && it.d >= '2026-10-01'; }
+
+/* ── 체크 저장: 서버 최신본에 그 칸만 바꿔 올린다 ── */
+window.opsTick = async function(key, on, parent, n){
+  if (on) OPS.ck[key] = 1; else delete OPS.ck[key];
+  if (parent && on){ var all = true; for (var i = 0; i < n; i++) if (!OPS.ck[parent + '#' + i]) all = false; if (all) OPS.ck[parent] = 1; }
+  try { render(); } catch(e){}
+  try {
+    var sb = getSupaClient(); var cur = {};
+    if (sb){ var r = await sb.from('lumen_store').select('value').eq('key', 'ops_checks'); var v = r && r.data && r.data[0] ? r.data[0].value : {}; if (typeof v === 'string'){ try { v = JSON.parse(v); } catch(e){ v = {}; } } cur = v || {}; }
+    if (on) cur[key] = 1; else delete cur[key];
+    if (parent && on && OPS.ck[parent]) cur[parent] = 1;
+    var ok = await supaSetItem('ops_checks', cur);
+    if (ok === false) throw new Error('저장 실패');
+    OPS.ck = cur;
+  } catch(e){ try { plToast('⚠ 체크를 서버에 저장하지 못했습니다 — 다시 눌러 주세요'); } catch(e2){} }
+};
+
+/* ── 화면 ── */
+function opsCss(){
+  return '<style id="ops158-css">'
+    + '.o8{padding:18px 22px 60px;background:#eef2f8;min-height:100%;font-size:14px;color:#14213a}'
+    + '.o8 h2{margin:0;font-size:21px;font-weight:900;color:#0d2240}'
+    + '.o8-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}'
+    + '.o8-seg{display:flex;gap:4px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:4px;margin-left:auto}'
+    + '.o8-seg button,.o8-chip{font-family:inherit;font-size:13px;font-weight:800;border:0;border-radius:9px;padding:6px 13px;cursor:pointer;background:transparent;color:#475569}'
+    + '.o8-seg button.on{background:#0d2240;color:#fff}'
+    + '.o8-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}'
+    + '.o8-chip{border:1.5px solid #e2e8f0;background:#fff;padding:3px 11px;display:inline-flex;align-items:center;gap:5px}'
+    + '.o8-chip.off{opacity:.45;text-decoration:line-through}.o8-chip.sel{background:#0d2240;color:#fff;border-color:#0d2240}'
+    + '.o8-chip i{width:10px;height:10px;border-radius:3px;display:inline-block}'
+    + '.o8-card{background:#fff;border:1px solid #e6eaf1;border-radius:14px;padding:13px 15px;margin-bottom:12px}'
+    + '.o8-mh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}.o8-mh b{font-size:19px;min-width:130px;text-align:center}'
+    + '.o8-nav{font-family:inherit;font-size:16px;font-weight:900;border:1.5px solid #e2e8f0;background:#fff;border-radius:10px;width:34px;height:34px;cursor:pointer}'
+    + '.o8-th{font-size:13px;color:#be185d;font-weight:800;margin-left:auto}'
+    + '.o8-cal{width:100%;border-collapse:collapse;table-layout:fixed;min-width:700px}'
+    + '.o8-cal th{font-size:12.5px;color:#64748b;padding:5px;border-bottom:1px solid #e2e8f0}.o8-cal th:first-child{color:#dc2626}'
+    + '.o8-cal td{border:1px solid #e2e8f0;vertical-align:top;height:108px;padding:4px 5px;cursor:pointer;font-size:12px;line-height:1.35;background:#fff}'
+    + '.o8-cal td.out{background:#f8fafc;cursor:default}.o8-cal td.hol{background:#fff1f2}.o8-cal td.today{outline:2.5px solid #2563eb;outline-offset:-2px}.o8-cal td.sel{background:#e6eefc}'
+    + '.o8-dn{font-weight:900;font-size:13px;display:flex;justify-content:space-between;gap:4px}.o8-dn small{font-size:10.5px;color:#dc2626;font-weight:800;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}'
+    + '.o8-it{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;border-radius:5px;padding:1px 5px;margin-top:2px;font-weight:700;word-break:keep-all}'
+    + '.o8-it.dn{opacity:.5;text-decoration:line-through}.o8-more{color:#64748b;font-weight:800;font-size:11.5px;display:block;margin-top:2px}'
+    + '.o8-cg{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:14px}@media(max-width:1100px){.o8-cg{grid-template-columns:1fr}}'
+    + '.o8-wk{border:1px solid #e2e8f0;border-radius:12px;padding:8px 12px;margin-bottom:10px;background:#fff}.o8-wk h4{margin:0 0 2px;font-size:15px}.o8-wk h4 small{font-size:12px;color:#64748b;font-weight:700;margin-left:6px}'
+    + '.o8-ck{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;padding:8px 0;border-top:1px dashed #e2e8f0;font-size:14px}.o8-ck:first-of-type{border-top:0}'
+    + '.o8-ck>input{width:18px;height:18px;margin-top:3px;accent-color:#2563eb}.o8-ck.hl{background:#e6eefc;border-radius:8px;padding-left:6px;padding-right:6px}'
+    + '.o8-ck b{font-weight:800}.o8-ck small{display:block;color:#64748b;font-size:12.5px}.o8-ck.dn b{text-decoration:line-through;opacity:.5}.o8-ck.ov b{color:#dc2626}'
+    + '.o8-k{font-size:11px;font-weight:900;border-radius:6px;padding:0 6px;margin-right:4px}.o8-w{font-size:11px;font-weight:900;border-radius:6px;padding:0 6px;margin-right:4px;color:#fff}'
+    + '.o8-cd{font-weight:900;font-size:13px;margin-right:6px}'
+    + '.o8-sub{margin-top:3px}.o8-sub summary{cursor:pointer;font-size:12.5px;font-weight:800;color:#2563eb}.o8-sub label,.o8-dl{display:block;font-size:13px;padding:2px 0 2px 4px;cursor:pointer}'
+    + '.o8-go{font-family:inherit;font-size:12px;font-weight:800;color:#2563eb;border:1.5px solid #2563eb;background:transparent;border-radius:12px;padding:0 8px;margin-top:3px;cursor:pointer}'
+    + '.o8-prog{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}.o8-prog .b{flex:1;min-width:160px;height:10px;border-radius:5px;background:#e2e8f0;overflow:hidden}.o8-prog .b i{display:block;height:100%;background:#2563eb}'
+    + '.o8-ovr{font-size:13px;font-weight:900;color:#dc2626;background:#fde8e8;border-radius:8px;padding:0 8px}'
+    + '.o8-daily{border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;align-self:start;background:#f8fafc}.o8-daily h4{margin:0 0 4px;font-size:15px}'
+    + '.o8-year{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}@media(max-width:1100px){.o8-year{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:700px){.o8-year{grid-template-columns:repeat(2,minmax(0,1fr))}}'
+    + '.o8-mon{border:1px solid #e2e8f0;border-radius:12px;padding:10px 12px;background:#fff;cursor:pointer;text-align:left;font-family:inherit;color:inherit;display:flex;flex-direction:column;gap:5px}'
+    + '.o8-mon.past{background:#f8fafc}.o8-mon.now{border-color:#2563eb;box-shadow:inset 0 0 0 1.5px #2563eb}'
+    + '.o8-kw span{font-size:11.5px;background:#fce7f1;color:#be185d;border-radius:6px;padding:0 6px;font-weight:700;margin:0 3px 3px 0;display:inline-block}'
+    + '.o8-t{border-collapse:collapse;font-size:13px;min-width:100%}.o8-t th,.o8-t td{border:1px solid #e2e8f0;padding:4px 6px;text-align:center;white-space:nowrap}.o8-t th{background:#f8fafc;font-size:12px;color:#64748b}.o8-t td:first-child{text-align:left;font-weight:800}'
+    + '.o8-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}@media(max-width:800px){.o8-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}'
+    + '.o8-kpi{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px 14px}.o8-kpi .v{font-size:28px;font-weight:900;line-height:1.2}.o8-kpi .k{font-size:13px;color:#64748b;font-weight:800}'
+    + '.o8-modal{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}'
+    + '.o8-mbox{background:#fff;border-radius:16px;max-width:860px;width:100%;padding:18px 20px}.o8-pages{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:700px){.o8-pages{grid-template-columns:1fr}}'
+    + '.o8-pg{border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px}.o8-pg h5{margin:0 0 6px;font-size:12.5px;color:#64748b}.o8-kv{display:grid;grid-template-columns:56px minmax(0,1fr);gap:6px;margin:3px 0}.o8-kv b{color:#0d2240}'
+    + '</style>';
+}
+function opsWho(w){ return w ? '<span class="o8-w" style="background:' + (OPS_WCOL[w] || '#64748b') + '">' + opsE(w) + '</span>' : ''; }
+function opsKind(L){ var c = OPS_L[L]; return '<span class="o8-k" style="background:' + c[2] + ';color:' + c[1] + '">' + c[0] + '</span>'; }
+function opsRow(it, showDate, hl){
+  var st = it.st || [], done = opsDone(it), nd = 0; st.forEach(function(s, i){ if (OPS.ck[it.id + '#' + i]) nd++; });
+  if (it.L === 'sch' || it.L === 'acad') return '<div class="o8-ck' + (hl ? ' hl' : '') + '"><span></span><div>' + (showDate ? '<span class="o8-cd">' + opsMd(it.d) + ' (' + OPS_DOW[opsDow(it.d)] + ')</span>' : '') + opsKind(it.L) + '<b>' + opsE(it.t) + '</b><small>' + opsE(it.sub) + '</small></div></div>';
+  var k = opsJs(it.id);
+  return '<div class="o8-ck' + (done ? ' dn' : '') + (opsOver(it) ? ' ov' : '') + (hl ? ' hl' : '') + '"><input type="checkbox"' + (done ? ' checked' : '') + ' onchange="opsTick(\'' + k + '\',this.checked)" aria-label="완료"><div>'
+    + (showDate ? '<span class="o8-cd">' + opsMd(it.d) + ' (' + OPS_DOW[opsDow(it.d)] + ')</span>' : '') + opsKind(it.L) + opsWho(it.who) + '<b>' + opsE(it.t) + '</b>'
+    + '<small>' + opsE(it.sub) + (opsOver(it) ? ' · 기한 지남' : '') + '</small>'
+    + (st.length ? '<details class="o8-sub"' + (OPS.open === it.id ? ' open' : '') + ' ontoggle="OPS.open=this.open?\'' + k + '\':(OPS.open===\'' + k + '\'?\'\':OPS.open)"><summary>단계 ' + nd + '/' + st.length + '</summary>'
+      + st.map(function(s, i){ return '<label><input type="checkbox"' + (OPS.ck[it.id + '#' + i] ? ' checked' : '') + ' onchange="OPS.open=\'' + k + '\';opsTick(\'' + k + '#' + i + '\',this.checked,\'' + k + '\',' + st.length + ')"> ' + opsE(s) + '</label>'; }).join('') + '</details>' : '')
+    + (it.man ? '<button type="button" class="o8-go" onclick="opsMan(\'' + opsJs(it.man) + '\')">매뉴얼 ›</button>' : '')
+    + '</div></div>';
+}
+function rOpsCal(){
+  if (!OPS.y){ var t = opsToday(); OPS.y = +t.slice(0, 4); OPS.m = +t.slice(5, 7); OPS.sel = t; }
+  if (!OPS.loaded && !OPS.loading) setTimeout(function(){ opsLoad(); }, 0);
+  var h = opsCss() + '<div class="o8"><div class="o8-top"><div><h2>📅 운영 달력</h2><div style="font-size:12.5px;color:#64748b;font-weight:700;margin-top:2px">운영(학관노 매뉴얼) · 마케팅 · 학교 일정 · 수납·세금 · 지표를 한 달력에서 계획하고 체크합니다</div></div>'
+    + '<div class="o8-seg">' + [['year', '1년 한눈에'], ['month', '월 달력 · 체크리스트'], ['kpi', '목표·지표']].map(function(v){ return '<button type="button" class="' + (OPS.view === v[0] ? 'on' : '') + '" onclick="OPS.view=\'' + v[0] + '\';render()">' + v[1] + '</button>'; }).join('') + '</div>'
+    + eaBtn('🗓 학원 일정 넣기', "VIEW='cal';CT.edit=null;render()") + eaBtn('🔄', 'opsLoad(true)') + '</div>';
+  if (OPS.err) h += '<div class="o8-card" style="color:#b91c1c;font-weight:800">' + opsE(OPS.err) + '</div>';
+  if (!OPS.loaded) return h + '<div class="o8-card" style="color:#94a3b8;font-weight:700">불러오는 중…</div></div>';
+  if (!OPS.plan) return h + '<div class="o8-card"><b>아직 운영 계획이 없습니다.</b><div style="color:#64748b;margin-top:4px">학관노 도구 백업 파일과 연간 마케팅 시트를 채팅에 주시면 Claude가 서버(ops_plan)에 넣습니다.</div></div></div>';
+  h += '<div class="o8-bar"><span style="font-size:13px;font-weight:800;color:#64748b">층</span>' + Object.keys(OPS_L).map(function(L){ var c = OPS_L[L]; return '<button type="button" class="o8-chip' + (OPS.on[L] ? '' : ' off') + '" onclick="OPS.on.' + L + '=OPS.on.' + L + '?0:1;render()"><i style="background:' + c[1] + '"></i>' + c[0] + '</button>'; }).join('')
+    + '<span style="font-size:13px;font-weight:800;color:#64748b;margin-left:10px">담당</span>' + ['전체', '원장', '실장', '강사', '조교'].map(function(w){ return '<button type="button" class="o8-chip' + (OPS.who === w ? ' sel' : '') + '" onclick="OPS.who=\'' + w + '\';render()">' + w + '</button>'; }).join('') + '</div>';
+  if (OPS.view === 'year') h += opsYear(); else if (OPS.view === 'kpi') h += opsKpi(); else h += opsMonth();
+  h += '</div>';
+  if (OPS.man) h += opsManHtml(OPS.man);
+  return h;
+}
+function opsMonth(){
+  var y = OPS.y, m = OPS.m, P = OPS.plan, today = opsToday(), items = opsItems(y, m).filter(opsVis);
+  var first = opsDow(opsYmd(y, m, 1)), dim = opsDim(y, m), rows = Math.ceil((first + dim) / 7), n = 1 - first;
+  var holi = (typeof CT_HOLI !== 'undefined') ? CT_HOLI : {};
+  var h = '<div class="o8-card"><div class="o8-mh"><button class="o8-nav" type="button" onclick="opsMove(-1)" aria-label="이전 달">‹</button><b>' + y + '년 ' + m + '월</b><button class="o8-nav" type="button" onclick="opsMove(1)" aria-label="다음 달">›</button>'
+    + '<button class="o8-chip" type="button" onclick="opsMove(0)">오늘</button>'
+    + '<span class="o8-th">' + opsE((P.themes || [])[m - 1] || '') + ' ' + ((P.keywords || [])[m - 1] || []).map(function(k){ return '#' + opsE(k); }).join(' ') + '</span></div>'
+    + '<div style="overflow-x:auto"><table class="o8-cal"><thead><tr>' + OPS_DOW.map(function(d){ return '<th>' + d + '</th>'; }).join('') + '</tr></thead><tbody>';
+  for (var w = 0; w < rows; w++){ h += '<tr>';
+    for (var d = 0; d < 7; d++, n++){
+      if (n < 1 || n > dim){ h += '<td class="out"></td>'; continue; }
+      var ds = opsYmd(y, m, n), l = items.filter(function(x){ return x.d === ds && !(x.L === 'sch' && x.first === false); }), ho = holi[ds];
+      var c = []; if (ho) c.push('hol'); if (ds === today) c.push('today'); if (ds === OPS.sel) c.push('sel');
+      h += '<td class="' + c.join(' ') + '" onclick="opsPick(\'' + ds + '\')"><div class="o8-dn"><span' + (d === 0 ? ' style="color:#dc2626"' : '') + '>' + n + '</span>' + (ho ? '<small>' + opsE(ho) + '</small>' : '') + '</div>'
+        + l.slice(0, 3).map(function(x){ var cc = OPS_L[opsOver(x) ? 'mkt' : x.L]; var red = opsOver(x); return '<span class="o8-it' + (opsDone(x) ? ' dn' : '') + '" title="' + opsE((x.who ? x.who + ' · ' : '') + x.t) + '" style="background:' + (red ? '#fde8e8' : cc[2]) + ';color:' + (red ? '#dc2626' : cc[1]) + '">' + (opsDone(x) ? '✓ ' : x.mark ? '● ' : '') + opsE(x.t) + '</span>'; }).join('')
+        + (l.length > 3 ? '<span class="o8-more">외 ' + (l.length - 3) + '건</span>' : '') + '</td>';
+    }
+    h += '</tr>'; }
+  h += '</tbody></table></div></div>';
+  /* 체크리스트 (달력 바로 아래) */
+  var todo = items.filter(function(x){ return x.L !== 'sch' && x.L !== 'acad'; }), dn = todo.filter(opsDone).length, ov = todo.filter(opsOver).length;
+  h += '<div class="o8-card"><div class="o8-mh" style="justify-content:flex-start"><b style="text-align:left;min-width:0">✅ ' + m + '월 체크리스트</b></div>'
+    + '<div class="o8-prog"><b>' + dn + ' / ' + todo.length + ' 완료</b>' + (ov ? '<span class="o8-ovr">기한 지남 ' + ov + '</span>' : '') + '<div class="b"><i style="width:' + (todo.length ? Math.round(dn / todo.length * 100) : 0) + '%"></i></div></div>'
+    + '<div class="o8-cg"><div>';
+  var wk = []; items.forEach(function(x){ if (x.L === 'sch' && x.first === false) return; var wi = Math.floor((Number(x.d.slice(8, 10)) + first - 1) / 7); (wk[wi] = wk[wi] || []).push(x); });
+  for (var i = 0; i < 6; i++){ if (!wk[i]) continue; var a = Math.max(1, i * 7 - first + 1), b = Math.min(dim, i * 7 + 7 - first), td = wk[i].filter(function(x){ return x.L !== 'sch' && x.L !== 'acad'; });
+    h += '<div class="o8-wk" id="o8w' + i + '"><h4>' + (i + 1) + '주 <small>' + m + '/' + a + ' ~ ' + m + '/' + b + ' · ' + td.filter(opsDone).length + '/' + td.length + '</small></h4>' + wk[i].map(function(x){ return opsRow(x, true, x.d === OPS.sel); }).join('') + '</div>'; }
+  if (!items.length) h += '<div style="color:#64748b">이 달에는 할 일이 없습니다.</div>';
+  h += '</div>' + opsDaily() + '</div></div>';
+  return h;
+}
+function opsDaily(){
+  var day = OPS.sel || opsToday(), P = OPS.plan, rk = P.ranks || {};
+  var ms = (P.manuals || []).filter(function(x){ return x.cycle === 'daily' && x.steps && x.steps.length && (OPS.who === '전체' || rk[x.rank] === OPS.who); });
+  var h = '<aside class="o8-daily"><h4>매일 체크리스트 <small style="font-size:12px;color:#64748b;font-weight:700">' + opsMd(day) + ' (' + OPS_DOW[opsDow(day)] + ') · 날마다 따로</small></h4>';
+  ms.forEach(function(x){ var base = 'day|' + day + '|' + x.name, k = opsJs(base);
+    h += '<div class="o8-ck"><span></span><div>' + opsWho(rk[x.rank]) + '<b>' + opsE(x.name) + '</b> <button type="button" class="o8-go" onclick="opsMan(\'' + opsJs(x.name) + '\')">매뉴얼</button>'
+      + x.steps.map(function(s, i){ return '<label class="o8-dl"><input type="checkbox"' + (OPS.ck[base + '#' + i] ? ' checked' : '') + ' onchange="opsTick(\'' + k + '#' + i + '\',this.checked)"> ' + opsE(s) + '</label>'; }).join('') + '</div></div>'; });
+  if (!ms.length) h += '<div style="color:#64748b;font-size:13px">매일 업무 매뉴얼이 없습니다.</div>';
+  return h + '<div style="font-size:12px;color:#64748b;margin-top:6px">달력에서 날짜를 누르면 그 날 것으로 바뀝니다. 학관노 매뉴얼의 단계가 그대로 체크 칸입니다.</div></aside>';
+}
+function opsYear(){
+  var y = OPS.y, P = OPS.plan, now = opsToday().slice(0, 7), h = '<div class="o8-year">';
+  for (var m = 1; m <= 12; m++){
+    var l = opsItems(y, m).filter(opsVis), c = function(L){ return l.filter(function(x){ return x.L === L; }).length; };
+    var ex = []; l.forEach(function(x){ if (x.L === 'sch' && x.first){ var s = x.t.replace(/ \(.*/, ''); if (ex.indexOf(s) < 0) ex.push(s); } });
+    var ev = []; l.forEach(function(x){ if (x.L === 'ops'){ var s = x.sub.split(' · ')[0]; if (ev.indexOf(s) < 0) ev.push(s); } });
+    var ym = y + '-' + ('0' + m).slice(-2);
+    h += '<button type="button" class="o8-mon' + (ym < now ? ' past' : '') + (ym === now ? ' now' : '') + '" onclick="OPS.m=' + m + ';OPS.sel=\'' + ym + '-01\';OPS.view=\'month\';render()">'
+      + '<span style="display:flex;justify-content:space-between"><b style="font-size:17px">' + m + '월</b><small style="color:#64748b;font-weight:800">' + (ym === now ? '이번 달' : ym < now ? '지남' : '') + '</small></span>'
+      + '<span style="font-size:13px;font-weight:800;color:#be185d">' + opsE((P.themes || [])[m - 1] || '') + '</span><span class="o8-kw">' + ((P.keywords || [])[m - 1] || []).map(function(k){ return '<span>#' + opsE(k) + '</span>'; }).join('') + '</span>'
+      + (OPS.on.sch && ex.length ? '<span style="font-size:12.5px"><b style="color:#6d28d9">●</b> ' + opsE(ex.slice(0, 4).join(' · ')) + (ex.length > 4 ? ' 외 ' + (ex.length - 4) : '') + '</span>' : '')
+      + (OPS.on.ops ? (ev.length ? '<span style="font-size:12.5px"><b style="color:#1d4ed8">●</b> ' + opsE(ev.join(' · ')) + '</span>' : '<span style="font-size:12px;color:#dc2626;font-weight:800">운영 계획 없음</span>') : '')
+      + '<span style="display:flex;gap:4px;flex-wrap:wrap">' + ['ops', 'mkt', 'money'].filter(function(L){ return OPS.on[L]; }).map(function(L){ var cc = OPS_L[L]; return '<span class="o8-k" style="background:' + cc[2] + ';color:' + cc[1] + '">' + cc[0] + ' ' + c(L) + '</span>'; }).join('') + '</span></button>';
+  }
+  return h + '</div><div style="font-size:12.5px;color:#64748b;margin-top:8px">달을 누르면 그 달 달력과 체크리스트가 열립니다. 「운영 계획 없음」 = 행사 D-업무가 없는 달 · 학관노 도구에서 행사를 더하면 채워집니다.</div>';
+}
+function opsKpi(){
+  var K = (OPS.plan && OPS.plan.kpi) || null, T = (OPS.plan && OPS.plan.traffic) || null, h = '';
+  if (!K) return '<div class="o8-card">지표가 아직 없습니다.</div>';
+  var sum = function(a){ return (a || []).reduce(function(s, v){ return s + (+v || 0); }, 0); }, reg = sum(K.reg), out = sum(K.out), ask = sum(K.ask), goal = K.goal || 0;
+  h += '<div class="o8-kpis"><div class="o8-kpi"><div class="k">' + K.year + ' 신규생 목표 ' + goal + '명</div><div class="v">' + reg + '<span style="font-size:15px;color:#64748b"> / ' + goal + '</span></div><div class="o8-prog" style="margin:6px 0 0"><div class="b"><i style="width:' + (goal ? Math.min(100, Math.round(reg / goal * 100)) : 0) + '%"></i></div></div></div>'
+    + '<div class="o8-kpi"><div class="k">퇴원</div><div class="v">' + out + '</div></div><div class="o8-kpi"><div class="k">순증</div><div class="v">' + (reg - out >= 0 ? '+' : '') + (reg - out) + '</div></div><div class="o8-kpi"><div class="k">문의 → 등록</div><div class="v">' + ask + ' → ' + reg + '</div></div></div>'
+    + '<div style="font-size:12.5px;color:#64748b;margin:6px 0 14px">' + opsE(K.note || '연간 마케팅 시트에 적힌 숫자입니다.') + '</div>';
+  h += '<div class="o8-card"><b>월별 문의 · 등록 · 퇴원 (' + K.year + ')</b><div style="overflow-x:auto;margin-top:6px"><table class="o8-t"><thead><tr><th></th>' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function(m){ return '<th>' + m + '월</th>'; }).join('') + '</tr></thead><tbody>'
+    + [['문의', K.ask], ['등록', K.reg], ['퇴원', K.out]].map(function(r){ return '<tr><td>' + r[0] + '</td>' + (r[1] || []).map(function(v){ return '<td>' + (v || '·') + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div></div>';
+  if (T && T.rows) h += '<div class="o8-card"><b>작년 같은 주 방문 수</b> <span style="font-size:12.5px;color:#64748b">(시트 「작년」 줄 · 진할수록 많음)</span><div style="overflow-x:auto;margin-top:6px"><table class="o8-t"><thead><tr><th>주 시작</th>' + (T.weeks || []).map(function(w){ return '<th>' + opsE(w) + '</th>'; }).join('') + '</tr></thead><tbody>'
+    + Object.keys(T.rows).map(function(k){ var a = T.rows[k], mx = Math.max.apply(null, a.filter(function(v){ return v != null; }).concat([1]));
+      return '<tr><td>' + opsE(k) + '</td>' + a.map(function(v){ if (v == null) return '<td>·</td>'; var p = v / mx; return '<td style="background:rgba(245,158,11,' + (p * 0.55).toFixed(2) + ');' + (p > 0.8 ? 'font-weight:900' : '') + '">' + v + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>'
+    + (T.note ? '<div style="font-size:13px;margin-top:8px;color:#92400e">' + opsE(T.note) + '</div>' : '') + '</div>';
+  return h;
+}
+function opsManHtml(name){
+  var x = ((OPS.plan && OPS.plan.manuals) || []).filter(function(t){ return t.name === name; })[0];
+  if (!x) return '';
+  var rk = (OPS.plan.ranks || {})[x.rank] || '', kv = function(k, v){ return v ? '<div class="o8-kv"><b>' + k + '</b><span>' + opsE(v) + '</span></div>' : ''; };
+  return '<div class="o8-modal" onclick="if(event.target===this){OPS.man=\'\';render()}"><div class="o8-mbox"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><b style="font-size:18px">📘 ' + opsE(x.name) + '</b>' + opsWho(rk) + '<button type="button" class="o8-chip" style="margin-left:auto" onclick="OPS.man=\'\';render()">닫기 ✕</button></div>'
+    + '<div class="o8-pages"><div class="o8-pg"><h5>1쪽 · 언제 → 누가 → 어디서 → 무엇을 → 어떻게</h5>' + kv('언제', x.timing) + kv('누가', rk + (x.with ? ' · ' + x.with : '')) + kv('어디서', x.where) + kv('무엇을', [x.what, (x.prep || []).length ? '준비: ' + x.prep.join(' / ') : ''].filter(Boolean).join(' · '))
+    + '<div class="o8-kv"><b>어떻게</b><span></span></div><ol style="margin:4px 0 0;padding-left:22px">' + (x.steps || []).map(function(s){ return '<li>' + opsE(s) + '</li>'; }).join('') + '</ol></div>'
+    + '<div class="o8-pg"><h5>2쪽 · 완료와 보고</h5>' + kv('완료', x.done) + kv('증빙', x.evid) + kv('보고', x.report) + ((x.ex || []).length ? '<div class="o8-kv"><b>예외</b><span>' + x.ex.map(opsE).join('<br>') + '</span></div>' : '') + '</div></div>'
+    + '<div style="font-size:12px;color:#64748b;margin-top:8px">학관노 도구에서 쓴 매뉴얼입니다. 고치려면 학관노 도구에서 고친 뒤 백업 파일을 채팅에 주세요.</div></div></div>';
+}
+window.opsMan = function(n){ OPS.man = n; render(); };
+window.opsMove = function(n){ if (!n){ var t = opsToday(); OPS.y = +t.slice(0, 4); OPS.m = +t.slice(5, 7); OPS.sel = t; } else { OPS.m += n; if (OPS.m > 12){ OPS.m = 1; OPS.y++; } if (OPS.m < 1){ OPS.m = 12; OPS.y--; } OPS.sel = opsYmd(OPS.y, OPS.m, 1); } render(); };
+window.opsPick = function(ds){
+  OPS.sel = ds; render();
+  setTimeout(function(){ var el = document.querySelector('.o8-ck.hl'); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 30);
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~158: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
