@@ -1,0 +1,118 @@
+<title>플래너 거짓 제출 확인 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* 레이아웃: ① 알림 줄에서 누르면 → ② 플래너 탭 «📛 거짓 제출» 화면(왼쪽 학생 목록 · 오른쪽 사건 카드: 이번 제출 vs 그때 사진 나란히 + 판정 단추) */
+:root{ --bg:#eef1f5; --ink:#15233b; --mute:#5f6b80; --line:#e3e7ee; --card:#fff; --soft:#f6f8fb; --navy:#0d2240; --bad:#c81e1e; --bad-bg:#fde8e8; --ok:#15803d; --ok-bg:#e3f4e8; --warn:#b45309; --warn-bg:#fdf1d8; --blue:#1d4ed8;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14.5px;line-height:1.6;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font-size:21px;font-weight:900}
+.note{font-size:12.5px;color:var(--mute)}
+.step{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:14px}
+@media(max-width:900px){.step{grid-template-columns:1fr}}
+.box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:0}
+.box h2{margin:0 0 8px;font-size:16px;font-weight:900}
+.al{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:8px;align-items:start;padding:8px 0;border-top:1px dashed var(--line);font-size:13.5px}
+.al:first-of-type{border-top:0}
+.al b{color:var(--bad)}
+.lk{border:1.5px solid var(--blue);color:var(--blue);background:#fff;border-radius:9px;padding:2px 10px;font-weight:800;font-size:12.5px;white-space:nowrap}
+.lk.hot{background:var(--blue);color:#fff;box-shadow:0 0 0 3px #fde047}
+.arrow{font-size:13px;color:var(--mute);margin-top:6px}
+.app{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sub{display:flex;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--soft)}
+.sub span{border:1.5px solid var(--line);background:#fff;border-radius:20px;padding:3px 12px;font-weight:800;font-size:13px}
+.sub span.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sub em{font-style:normal;background:var(--bad);color:#fff;border-radius:10px;padding:0 6px;font-size:11px;margin-left:4px}
+.body{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:600px}
+@media(max-width:900px){.body{grid-template-columns:1fr}}
+.left{border-right:1px solid var(--line);padding:12px;display:flex;flex-direction:column;gap:6px;background:#fbfcfe}
+.sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:6px}
+.sum div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 7px;font-size:11px;color:var(--mute)}
+.sum b{display:block;font-size:17px;color:var(--ink)}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.chips span{font-size:11.5px;font-weight:800;border:1px solid var(--line);border-radius:14px;padding:1px 8px;background:#fff}
+.chips span.on{border-color:var(--bad);color:var(--bad);background:var(--bad-bg)}
+.st{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:10px;padding:7px 10px;background:#fff;font-size:13.5px}
+.st.on{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.st b{font-size:15px}
+.st .n{margin-left:auto;font-weight:900;color:var(--bad)}
+.st small{display:block;color:var(--mute);font-size:11px}
+.right{padding:14px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.case{border:1.5px solid #fca5a5;border-radius:12px;padding:12px 14px;background:#fff}
+.case.done{border-color:var(--line);opacity:.75}
+.case h3{margin:0;font-size:15px;font-weight:900;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:11.5px;font-weight:900;border-radius:6px;padding:0 7px}
+.cmp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:10px}
+@media(max-width:700px){.cmp{grid-template-columns:1fr}}
+.ph{border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--soft)}
+.ph .cap{font-size:12px;font-weight:800;display:flex;justify-content:space-between;gap:6px;margin-bottom:6px}
+.ph svg{display:block;width:100%;height:auto;border-radius:6px;background:#fffdf8}
+.sim{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:13px}
+.bar{width:150px;height:8px;border-radius:4px;background:var(--line);display:inline-block;vertical-align:1px;overflow:hidden;margin-left:6px}
+.bar i{display:block;height:100%;background:var(--bad)}
+.tx{margin-top:8px;font-size:12.5px;background:var(--soft);border-radius:8px;padding:7px 10px;line-height:1.8}
+.tx mark{background:#fde2e2;color:var(--bad);border-radius:3px;padding:0 3px}
+.act{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.act span{border-radius:9px;padding:5px 12px;font-weight:900;font-size:12.5px;border:1.5px solid var(--line);background:#fff}
+.act .b1{background:var(--bad);border-color:var(--bad);color:#fff}
+.act .b2{border-color:var(--ok);color:var(--ok)}
+.rule{font-size:12.5px;color:var(--mute);background:var(--soft);border-radius:8px;padding:8px 11px}
+</style>
+
+<div class="wrap">
+  <header><h1>플래너 거짓 제출 — 눌러서 확인하는 화면 (시안)</h1><p class="note" style="margin:2px 0 0">가짜 학생 · 사진은 그림으로 대신 그렸습니다. 실제 화면에는 학생이 낸 플래너 사진이 그대로 나옵니다.</p></header>
+
+  <div class="step">
+    <section class="box">
+      <h2>① 🔔 알림 · 🚨 위험 신호에서</h2>
+      <div class="al"><span>📔</span><span><b>홍길동 · 플래너 0점 1건</b> — 날짜 없음·같은 날짜·같은 쪽<br><span class="note">같은 날짜 또 냄 (2026.10.17 은 10/8 제출분에 이미 있음)</span></span><span class="lk">플래너 0점 ›</span></div>
+      <div class="al"><span>📛</span><span><b>홍길동 · 거짓 제출 2건 (30일)</b><br><span class="note">같은 날짜 또 냄 · 같은 쪽 다시 냄</span></span><span class="lk hot">거짓 제출 확인 ›</span></div>
+      <p class="arrow">지금은 «플래너» 화면 첫 장으로만 갑니다 → <b>그 학생의 거짓 제출 카드가 바로 열리게</b> 바꿉니다. 승인 카드의 «⛔ 그날 0점» 띠에도 같은 단추를 붙입니다.</p>
+    </section>
+    <section class="box">
+      <h2>무엇이 «거짓 제출»인가 (지금 규칙 그대로)</h2>
+      <div class="rule">
+        · <b>같은 날짜 또 냄</b> — 이미 낸 날짜를 다시 적어 냄 (예: 10/17 에 낸 플래너 날짜가 10/8 것과 같음)<br>
+        · <b>같은 쪽 다시 냄</b> — 최근 14일 안 다른 날 낸 것과 글이 80% 이상 같거나 사진 지문이 거의 같음<br>
+        · <b>날짜 없음 · 다른 날짜</b> — 0점이지만 «거짓»으로 세지 않고 따로 «날짜 문제»로 봅니다<br>
+        · 원장님이 «다른 날 맞음 — 점수 되살리기»를 누르면 거짓에서 빠집니다 (지금도 있는 단추)
+      </div>
+    </section>
+  </div>
+
+  <section class="app">
+    <div class="sub"><span>📓 입력</span><span>🖼 사진 검토</span><span>📊 점수판</span><span class="on">📛 거짓 제출<em>5</em></span></div>
+    <div class="body">
+      <aside class="left">
+        <div class="sum"><div><b>5</b>확인 전</div><div><b>3</b>학생</div><div><b>12</b>30일 전체</div></div>
+        <div class="chips"><span class="on">확인 전</span><span>전체</span><span>같은 날짜</span><span>같은 쪽</span><span>날짜 문제</span></div>
+        <div class="st on"><span><b>홍길동</b><small>M3 · 30일 2건</small></span><span class="n">2</span></div>
+        <div class="st"><span><b>박하나</b><small>T5 · 30일 3건 · 지난주도</small></span><span class="n">3</span></div>
+        <div class="st"><span><b>김새봄</b><small>M4 · 30일 1건</small></span><span class="n">1</span></div>
+        <p class="note">30일에 3건 넘는 학생은 이름 옆에 빨간 점 · 📞 학부모 상담 메모에도 자동으로 들어갑니다.</p>
+      </aside>
+      <div class="right">
+        <div class="case">
+          <h3>10/17 제출 <span class="tag" style="background:var(--bad-bg);color:var(--bad)">같은 날짜 또 냄</span><span class="tag" style="background:var(--warn-bg);color:var(--warn)">확인 전</span><span class="note" style="font-weight:600">10/18 00:12 올림 · 그날 0점 처리됨</span></h3>
+          <div class="cmp">
+            <div class="ph"><div class="cap"><span>이번에 낸 것 · 10/17 제출</span><span style="color:var(--bad)">적힌 날짜 2026.10.08</span></div>
+              <svg viewBox="0 0 300 200" role="img" aria-label="이번 제출 플래너 그림"><rect x="8" y="8" width="284" height="184" rx="6" fill="#fffdf8" stroke="#d6d3ce"/><line x1="150" y1="8" x2="150" y2="192" stroke="#d6d3ce"/><text x="20" y="30" font-size="13" font-weight="700" fill="#c81e1e">2026.10.08</text><g stroke="#cfd6e2"><line x1="20" y1="50" x2="140" y2="50"/><line x1="20" y1="70" x2="140" y2="70"/><line x1="20" y1="90" x2="140" y2="90"/><line x1="20" y1="110" x2="140" y2="110"/><line x1="160" y1="50" x2="280" y2="50"/><line x1="160" y1="70" x2="280" y2="70"/><line x1="160" y1="90" x2="280" y2="90"/></g><text x="22" y="46" font-size="10" fill="#334155">[O] 수학숙제 RPM 30문제</text><text x="22" y="66" font-size="10" fill="#334155">[O] 영어 단어 3과</text><text x="162" y="46" font-size="10" fill="#334155">TOTAL 3시간</text><rect x="160" y="110" width="60" height="70" fill="#e0670b" fill-opacity=".25"/></svg></div>
+            <div class="ph"><div class="cap"><span>그때 낸 것 · 10/8 제출</span><span>적힌 날짜 2026.10.08</span></div>
+              <svg viewBox="0 0 300 200" role="img" aria-label="먼저 낸 플래너 그림"><rect x="8" y="8" width="284" height="184" rx="6" fill="#fffdf8" stroke="#d6d3ce"/><line x1="150" y1="8" x2="150" y2="192" stroke="#d6d3ce"/><text x="20" y="30" font-size="13" font-weight="700" fill="#334155">2026.10.08</text><g stroke="#cfd6e2"><line x1="20" y1="50" x2="140" y2="50"/><line x1="20" y1="70" x2="140" y2="70"/><line x1="20" y1="90" x2="140" y2="90"/><line x1="20" y1="110" x2="140" y2="110"/><line x1="160" y1="50" x2="280" y2="50"/><line x1="160" y1="70" x2="280" y2="70"/><line x1="160" y1="90" x2="280" y2="90"/></g><text x="22" y="46" font-size="10" fill="#334155">[O] 수학숙제 RPM 30문제</text><text x="22" y="66" font-size="10" fill="#334155">[O] 영어 단어 3과</text><text x="162" y="46" font-size="10" fill="#334155">TOTAL 3시간</text><rect x="160" y="110" width="60" height="70" fill="#e0670b" fill-opacity=".25"/></svg></div>
+          </div>
+          <div class="sim"><span>글이 같은 정도 <b>92%</b><span class="bar"><i style="width:92%"></i></span></span><span>사진 지문 차이 <b>3</b> <span class="note">(8 이하면 같은 사진으로 봄)</span></span><span>날짜 <b>같음</b></span></div>
+          <div class="tx">AI가 읽은 할 일 — 겹친 줄 빨강: <mark>[O] 수학숙제 RPM 30문제</mark> · <mark>[O] 영어 단어 3과</mark> · <mark>TOTAL 3시간</mark></div>
+          <div class="act"><span class="b1">⛔ 거짓 맞음 — 0점 확정</span><span class="b2">↩ 다른 날 맞음 — 점수 되살리기</span><span>🔍 사진 크게</span><span>💬 학생에게 보낼 말 복사</span></div>
+          <div class="note" style="margin-top:6px">학생에게: «홍길동, 10/17 플래너가 10/8 것과 같은 쪽이야. 그날 쓴 플래너를 다시 찍어서 내 줘.»</div>
+        </div>
+        <div class="case done">
+          <h3>10/22 제출 <span class="tag" style="background:var(--bad-bg);color:var(--bad)">같은 쪽 다시 냄</span><span class="tag" style="background:var(--line);color:var(--mute)">⛔ 0점 확정 10/23</span></h3>
+          <div class="note">10/13 것과 글 88% 같음 · 접힌 카드 — 누르면 사진 비교가 열립니다</div>
+        </div>
+        <div class="rule">«⛔ 0점 확정»을 누른 것만 학생앱 «거짓 제출» 표시와 학부모 상담 메모에 남습니다. 확인 전인 것은 원장님 화면에만 «확인 전»으로 보입니다.</div>
+      </div>
+    </div>
+  </section>
+</div>
