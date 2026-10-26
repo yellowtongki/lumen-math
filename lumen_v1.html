@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-156';
+var APP_VER = 'v19-157';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9084,6 +9084,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-157',date:'2026-10-26',stability:'ok',memo:'🔗 <b>매쓰플랫과 연결 안 된 학생 알림 · 플래너 표 말일 잘림 · 데이터 재연결 시간 초과</b> (원장 2026-10-26). ① 학생관리 맨 위에 «🔗 매쓰플랫과 연결 안 된 학생» 띠 — 매쓰플랫에는 있는데 학원앱 등록부에 같은 이름이 없어서 연결되지 않은 학생을 보여 줍니다(학원앱과 매쓰플랫은 이름으로 이어집니다). 「＋ 등록」을 누르면 학생 추가 창에 이름·학년이 채워지고, 반·연락처를 넣어 저장하면 다음 매쓰플랫 수집(매일 04·16·22시) 때 자동으로 연결됩니다. 「🔄 지금 수집 요청」으로 바로 돌릴 수도 있습니다. 시험용·선생님 계정은 「숨기기」. ② 플래너 입력 표 오른쪽 «합계» 칸이 27~31일을 덮던 문제 — 칸을 조금 줄이고, 화면보다 넓으면 표를 가로로 밀어 볼 수 있게 했습니다. 표를 열면 오늘 칸이 가운데 오도록 자동으로 밀려 있고, 끝까지 밀면 말일까지 보입니다(합계 칸은 오른쪽에 붙어 있음). ③ 「🔗 데이터 재연결」이 서버 전체를 한꺼번에 읽다가 «statement timeout»으로 실패하던 것 — 필요한 것만 나눠 읽습니다. (이 단추는 학생 로그인 코드가 바뀌었을 때 옛 기록을 되찾는 도구이고, 매쓰플랫 연결과는 다릅니다.)'},
       {ver:'v19-156',date:'2026-10-24',stability:'ok',memo:'🩹 <b>출결·보충 — 결석한 그 날 보충도 지정</b> (원장 2026-10-24 「같은날 보충도 가능하게 수정」). 결석 보충 관리에서 보충 날짜를 결석일과 같은 날로 고르면 «보충 날짜는 결석일과 다른 날짜로…» 창이 떠서 막혔습니다. 예전에는 보충 기록이 같은 날의 결석 기록을 덮어써 기록이 깨졌기 때문에 막아 두었던 것인데, 이제 같은 날이면 결석 기록 안에 «같은 날 보충»으로만 적어 결석은 그대로 남고 보충 예정·완료만 바뀝니다. 달력 그 날 칸에는 «결석 · → 같은 날 14:00 보충», 완료하면 «✓ 같은 날 보충». 보충완료·되돌리기·보충 취소도 결석 기록을 건드리지 않습니다.'},
       {ver:'v19-155',date:'2026-10-23',stability:'ok',memo:'🕘 <b>리커버리 학습지 3판</b> (원장 2026-10-23 밤 결정). <b>기본 구성이 바뀝니다</b>: 주간테스트 오답 쌍둥이 1개 + <b>최근 1주 «아직 틀린 문제»</b>(교재·학습지에서 풀었는데 아직 틀린 채로 남은 문제 — 다시 풀어 맞힌 것은 뺌)를 <b>유형마다 1개</b>(그 유형에서 가장 최근 것, 이번 테스트 문제는 먼저 뺌). 테스트와 진도가 달라 진도 쪽 오답이 통째로 빠지던 일이 없어집니다. 교과서 같은 유형·보강·범위 안 교재 오답·자동 단원 오답은 꺼짐(오른쪽 «학습지 규칙» 체크칸으로 켤 수 있음) · <b>최상(5단계)은 기본 빼기</b>(체크로 포함) · 문항 상한·하한은 «없음», 단 기간을 2주 이상으로 고른 학생만 상한 40(넘으면 «테스트 쌍둥이 첫째 → 최근 오답 새것 → 교과서 → 쌍둥이 둘째 → 보강 → 교재 오답» 순으로 남김) · 중3 «주간테스트 2개 합산»도 기본에서 끔(학생별 팝업에서 고르면 2개 가능). 기간은 칩 <b>[1주][2주][4주]</b> — 학생별로도 바꿀 수 있습니다(예: 지난주 결석한 학생은 2주). 리커버리 보드 가운데에 <b>«🔢 학생별 예상»</b> 표가 생겼습니다 — 확정 학생마다 «테스트 쌍둥이 n + 최근 오답 n유형 = 예상 n문항», 단원 비율 막대, 최상 문제 수. 규칙을 바꾸면 매쓰플랫 호출 없이 바로 다시 셉니다(실제 쌍둥이 수와 1~2개 다를 수 있음). 학생 카드에는 «🕘 최근 1주 아직 틀린 n유형 · 테스트 범위 밖 m» 한 줄(범위 밖이 있으면 주황). 설계 팝업에는 «🕘 최근 오답» 칸(교재·학습지별 · 중단원별 개수 · 뺀 것)과 이 학생만 기간·최상·문항 범위·끄기. 빼는 유형(예 «농도»)을 적으면 모든 재료와 쌍둥이에서 빠집니다. <b>고등부도 같은 규칙</b>으로 만들 수 있습니다 — 과목은 가장 최근 시험 제목의 [과목](예 [공통수학2])에서 자동으로, 없으면 카드의 «과목 고르기». 서버(확정 전원 서버 생성)도 같은 규칙을 기본으로 씁니다.'},
       {ver:'v19-154',date:'2026-10-23',stability:'ok',memo:'🔄 <b>리커버리 「채점 새로고침」</b> (원장 2026-10-23 「매쓰플랫 채점결과가 바로 적용이 안된다 · 새로고침 단추 넣어줘」). 리커버리 보드 머리 아래에 «📡 매쓰플랫 채점 자료 · 마지막 수집 HH:MM (n분 전)» 줄이 생겼습니다. <b>「🔄 채점 새로고침」</b>을 누르면 서버가 매쓰플랫 채점과 주간테스트 점수를 지금 새로 모읍니다 — 설정 탭에 GitHub 토큰이 있으면 1분 안에 시작(다 모으는 데 10~20분), 없으면 서버가 요청을 확인할 때까지 기다립니다. 끝나면 보드가 저절로 새 점수로 바뀝니다(요청됨 → 수집 중 → 방금 모음, 요청됨일 때 누르면 취소). <b>「↻ 다시 읽기」</b>는 서버에 이미 모인 자료를 몇 초 만에 다시 읽습니다. 고친 것: 예전 머리의 새로고침은 확정 명단만 다시 읽고 주간테스트 점수는 앱을 켤 때 읽은 것을 계속 써서, 서버가 새로 모아도 앱을 껐다 켜기 전엔 옛 점수였습니다 — 이제 주간테스트·진도·네이버 예약까지 다시 읽습니다. 울트라일일 「🔄 지금 가져오기」와 같은 요청을 씁니다.'},
@@ -19380,9 +19381,7 @@ async function openDataRelink(){
   // 1) lumen_store 전체 스캔
   var allRows=[];
   try{
-    var res=await sb.from('lumen_store').select('key,value');
-    if(res.error){ throw res.error; }
-    allRows=res.data||[];
+    allRows=await mfuRelinkRows(sb);   /* ★ v19-157: 필요한 키만 나눠 읽기 (전체 읽기는 시간 초과) */
   }catch(e){ alert('스캔 실패: '+(e&&e.message?e.message:e)); if(btn){btn.disabled=false;btn.textContent='🔗 데이터 재연결';} return; }
 
   var plannerByCode={}; var submByCode={}; var cloudDb=null;
@@ -20236,6 +20235,7 @@ function rStudentDb(){
       </div>
     </div>
 
+    ${typeof mfuHtml==='function'?mfuHtml():''}
     <!-- 필터 바 -->
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
       <!-- v18-92: 재원 / 퇴원 가르기 -->
@@ -40860,7 +40860,8 @@ function rPlannerInput(){
   h+='</div>';
 
   // 표
-  h+='<div style="background:white;border:1.5px solid #e8edf5;border-radius:14px;overflow:hidden">';
+  h+='<style>#plGridWrap th{min-width:22px!important;padding-left:1px!important;padding-right:1px!important}#plGridWrap td{padding:1px!important}#plGridWrap .planner-cell{width:21px!important;height:22px!important;font-size:9.5px!important}#plGridWrap td>div[onclick^="VIEW="]{width:22px!important;height:22px!important;font-size:9.5px!important}#plGridWrap td:first-child,#plGridWrap th:first-child{padding:4px 8px!important}</style>';   /* ★ v19-157 */
+  h+='<div id="plGridWrap" style="background:white;border:1.5px solid #e8edf5;border-radius:14px;overflow-x:auto">';
   h+='<table style="border-collapse:collapse;width:100%;font-size:11px">';
 
   // 요일 헤더 행
@@ -99314,7 +99315,129 @@ if (typeof window.rc154Reload === 'function'){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~156: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-157: 👤 학생관리 «🔗 매쓰플랫에만 있는 학생» 띠 (원장 10/26 「매쓰플랫 학생이 연결이 안 되었다」)
+ *   매쓰플랫 학생(mf_students)과 학원앱 학생은 «이름»으로 이어진다(수집기 04·16·22시가 이름이 같으면 코드를 채움).
+ *   학원앱 등록부에 그 이름이 없으면 영영 연결되지 않는데, 그걸 알려 주는 곳이 없었다.
+ *   · mf_students 중 ACTIVE · lumen_rec_code 없음 → 학원앱 등록부(재원·퇴원 모두)에 같은 이름이 있는지 본다
+ *     - 없으면 «학원앱에 없음» + 「＋ 등록」(학생 추가 창에 이름·학년을 채워 연다)
+ *     - 있으면 «등록됨 · 다음 수집 때 연결»
+ *   · 「숨기기」 = 시험용·선생님 계정 등(서버 lumen_store `mf_unlink_hide` 에 매쓰플랫 학생 번호 목록)
+ *   · 「🔄 지금 수집 요청」 = 리커버리 새로고침과 같은 길(lumen_store `mf_collect_req` requested)
+ *   ※ 문자열 연결로만 쓴다(중첩 템플릿 리터럴 금지).
+ * ═══════════════════════════════════════════════════════════════════ */
+var MFU = { loaded: false, loading: false, rows: [], hide: [], at: 0 };
+function mfuNorm(s){ return String(s || '').replace(/\s+/g, ''); }
+function mfuGrade(r){
+  var g = parseInt(r.grade, 10) || 0, t = String(r.school_type || '');
+  if (!g) return '';
+  if (t === 'ELEMENTARY') return '초등학교 ' + g + '학년';
+  if (t === 'MIDDLE') return '중학교 ' + g + '학년';
+  if (t === 'HIGH') return '고등학교 ' + g + '학년';
+  return '';
+}
+function mfuShort(r){ var g = mfuGrade(r); return g ? g.replace('초등학교 ', '초').replace('중학교 ', '중').replace('고등학교 ', '고').replace('학년', '') : ''; }
+function mfuLoad(force){
+  if (MFU.loading) return;
+  if (MFU.loaded && !force && Date.now() - MFU.at < 120000) return;
+  var sb = (typeof getSupaClient === 'function') ? getSupaClient() : null; if (!sb) return;
+  MFU.loading = true;
+  Promise.all([
+    sb.from('mf_students').select('mf_student_id,name,grade,school_type,status,lumen_rec_code'),
+    sb.from('lumen_store').select('value').eq('key', 'mf_unlink_hide')
+  ]).then(function(rs){
+    MFU.rows = (rs[0] && rs[0].data) || [];
+    var hv = rs[1] && rs[1].data && rs[1].data[0] ? rs[1].data[0].value : [];
+    if (typeof hv === 'string'){ try { hv = JSON.parse(hv); } catch(e){ hv = []; } }
+    MFU.hide = Array.isArray(hv) ? hv.map(String) : [];
+    MFU.loaded = true; MFU.at = Date.now();
+  }).catch(function(){}).then(function(){
+    MFU.loading = false;
+    try { if (VIEW === 'studentdb') render(); } catch(e){}
+  });
+}
+function mfuList(){
+  var names = {};
+  (students || []).forEach(function(st){ names[mfuNorm(st.name)] = st.withdrawn ? 'out' : 'live'; });
+  return MFU.rows.filter(function(r){
+    return r && r.status === 'ACTIVE' && !r.lumen_rec_code && r.name && MFU.hide.indexOf(String(r.mf_student_id)) < 0;
+  }).map(function(r){ return { r: r, inApp: names[mfuNorm(r.name)] || '' }; });
+}
+function mfuHtml(){
+  mfuLoad(false);
+  if (!MFU.loaded) return '';
+  var l = mfuList(); if (!l.length) return '';
+  var miss = l.filter(function(x){ return !x.inApp; }).length;
+  var h = '<div id="mfu-band" style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:14px;padding:12px 16px;margin-bottom:14px">'
+    + '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">'
+    + '<b style="font-size:14.5px;color:#9a3412">🔗 매쓰플랫과 연결 안 된 학생 ' + l.length + '명</b>'
+    + '<span style="font-size:12.5px;color:#9a3412">' + (miss ? '학원앱에 <b>같은 이름</b>으로 등록하면 다음 매쓰플랫 수집(매일 04·16·22시) 때 자동으로 연결됩니다.' : '등록은 되어 있어 다음 수집 때 연결됩니다.') + '</span>'
+    + '<button type="button" onclick="mfuReq()" style="margin-left:auto;border:none;border-radius:9px;padding:6px 12px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;background:#ea580c;color:#fff">🔄 지금 수집 요청</button>'
+    + '</div><div style="display:flex;flex-wrap:wrap;gap:8px">';
+  l.forEach(function(x){
+    var r = x.r, id = String(r.mf_student_id).replace(/[^A-Za-z0-9_-]/g, '');
+    h += '<span style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #fed7aa;border-radius:10px;padding:4px 6px 4px 10px;font-size:13px">'
+      + '<b>' + esc2(r.name) + '</b><span style="color:#9a3412;font-size:12px">' + esc2(mfuShort(r)) + '</span>'
+      + (x.inApp ? '<span style="font-size:11.5px;font-weight:800;color:#15803d;background:#dcfce7;border-radius:6px;padding:0 6px">등록됨 · 다음 수집 때 연결' + (x.inApp === 'out' ? ' (퇴원 상태)' : '') + '</span>'
+        : '<button type="button" onclick="mfuAdd(\'' + id + '\')" style="border:none;border-radius:7px;padding:2px 9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;background:#0d2240;color:#fff">＋ 등록</button>')
+      + '<button type="button" onclick="mfuHide(\'' + id + '\')" title="시험용·선생님 계정 등 학원생이 아니면 숨깁니다" style="border:none;border-radius:7px;padding:2px 7px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;background:#f1f5f9;color:#64748b">숨기기</button>'
+      + '</span>';
+  });
+  return h + '</div></div>';
+}
+window.mfuAdd = function(id){
+  var r = MFU.rows.filter(function(x){ return String(x.mf_student_id) === String(id); })[0]; if (!r) return;
+  try { addNewStudent(); } catch(e){ return; }
+  var n = document.getElementById('edit-name'); if (n) n.value = r.name;
+  var g = document.getElementById('edit-grade'), gv = mfuGrade(r);
+  if (g && gv && [].some.call(g.options, function(o){ return o.value === gv; })) g.value = gv;
+  try { plToast('🔗 매쓰플랫 «' + r.name + '» — 반·연락처를 채우고 저장하세요'); } catch(e){}
+};
+window.mfuHide = function(id){
+  var r = MFU.rows.filter(function(x){ return String(x.mf_student_id) === String(id); })[0];
+  if (!confirm('«' + (r ? r.name : id) + '»을(를) 이 목록에서 숨길까요?\n(시험용·선생님 계정처럼 학원생이 아닌 경우)')) return;
+  if (MFU.hide.indexOf(String(id)) < 0) MFU.hide.push(String(id));
+  Promise.resolve(supaSetItem('mf_unlink_hide', MFU.hide)).then(function(){ try { render(); } catch(e){} });
+};
+window.mfuReq = function(){
+  var req = { status: 'requested', by: 'studentdb', at: new Date().toISOString() };
+  Promise.resolve(supaSetItem('mf_collect_req', req)).then(function(ok){
+    try { plToast(ok === false ? '⚠ 요청을 저장하지 못했습니다' : '🔄 매쓰플랫 수집을 요청했습니다 — 몇 분 뒤 연결됩니다'); } catch(e){}
+    setTimeout(function(){ mfuLoad(true); }, 240000);
+  });
+};
+
+/* v19-157: 🔗 데이터 재연결 — lumen_store 전체를 한 번에 읽다가 «statement timeout» 으로 실패하던 것을
+ *   필요한 키(student_planner_* · submissions_* · or_studentdb)만 100줄씩 나눠 읽는다 */
+async function mfuRelinkRows(sb){
+  var out = [], qs = [['like', 'student_planner_%'], ['like', 'submissions_%'], ['eq', 'or_studentdb']];
+  for (var i = 0; i < qs.length; i++){
+    for (var off = 0; off < 20000; off += 100){
+      var q = sb.from('lumen_store').select('key,value').order('key', { ascending: true }).range(off, off + 99);
+      q = qs[i][0] === 'like' ? q.like('key', qs[i][1]) : q.eq('key', qs[i][1]);
+      var r = await q;
+      if (r.error) throw r.error;
+      out = out.concat(r.data || []);
+      if (!r.data || r.data.length < 100) break;
+    }
+  }
+  return out;
+}
+
+/* v19-157: 📔 플래너 입력 표 — 화면이 좁으면 표를 가로로 밀어 본다. 표가 새로 그려질 때 한 번, 오늘 칸이 가운데 오게 맞춘다 */
+(function(){
+  try {
+    new MutationObserver(function(){
+      var w = document.getElementById('plGridWrap'); if (!w || w.dataset.sc) return;
+      w.dataset.sc = '1';
+      if (w.scrollWidth <= w.clientWidth) return;
+      var td = w.querySelector('thead tr:nth-child(2) th[style*="#1d6fe8"]');
+      if (td) w.scrollLeft = Math.max(0, td.offsetLeft - w.clientWidth / 2);
+    }).observe(document.body, { childList: true, subtree: true });
+  } catch(e){}
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~157: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
