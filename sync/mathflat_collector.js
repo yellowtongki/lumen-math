@@ -830,7 +830,7 @@ async function backfillBehaviors(days) {
     const d0 = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
     const rows = [];
     for (let off = 0; off < 50000; off += 1000) {
-      const q = `select=student_worksheet_id,worksheet_id,worksheet_type,mf_student_id,score_datetime&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${d0}&limit=1000&offset=${off}`;
+      const q = `select=student_worksheet_id,worksheet_id,worksheet_type,mf_student_id,score_datetime&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${d0}&order=id.asc&limit=1000&offset=${off}`;
       const r = await fetch(`${url}/rest/v1/mf_answer_records?${q}`, { headers: sbHeaders });
       if (!r.ok) break;
       const b = await r.json(); rows.push(...b);
@@ -1194,7 +1194,7 @@ async function refreshMonthCounts() {
       const nextYm = next.getFullYear() + '-' + String(next.getMonth() + 1).padStart(2, '0');
       const counts = {};
       for (let off = 0; off < 200000; off += 1000) {
-        const q = `select=lumen_rec_code,mf_student_id,result&score_datetime=gte.${ym}-01&score_datetime=lt.${nextYm}-01&limit=1000&offset=${off}`;
+        const q = `select=lumen_rec_code,mf_student_id,result&score_datetime=gte.${ym}-01&score_datetime=lt.${nextYm}-01&order=id.asc&limit=1000&offset=${off}`;
         const res = await fetch(`${url}/rest/v1/mf_answer_records?${q}`, { headers: sbHeaders });
         if (!res.ok) { log(`월별 집계 조회 실패 ${res.status} (${ym})`); break; }
         const batch = await res.json();
@@ -2006,7 +2006,7 @@ async function refreshBookCatalog() {
     // 누적된 세션 테이블에서 학생별 교재 목록 수집
     const rows = [];
     for (let off = 0; off < 50000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_study_sessions?select=mf_student_id,book_id,title,subtitle&source=eq.${encodeURIComponent('교재')}&limit=1000&offset=${off}`, { headers: sbHeaders });
+      const res = await fetch(`${url}/rest/v1/mf_study_sessions?select=mf_student_id,book_id,title,subtitle&source=eq.${encodeURIComponent('교재')}&order=id.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const batch = await res.json();
       rows.push(...batch);
@@ -2407,7 +2407,7 @@ async function refreshWkCand() {
     const since = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
     const rows = [];
     for (let off = 0; off < 200000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=worksheet_id,worksheet_title,worksheet_type,mf_student_id,score_datetime,school,grade,chapter&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${since}&limit=1000&offset=${off}`, { headers: sbHeaders });
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=worksheet_id,worksheet_title,worksheet_type,mf_student_id,score_datetime,school,grade,chapter&source=eq.${encodeURIComponent('학습지')}&score_datetime=gte.${since}&order=id.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const batch = await res.json();
       rows.push(...batch);
@@ -2575,13 +2575,15 @@ function paperOf(school, grade, chapter, title) {
   return { sc, g: grade, sem, label: gk + (sem ? '-' + sem : ''), range };
 }
 
+/* 2026-10-22: 아래 limit+offset 으로 나눠 받는 곳은 모두 order=id.asc 를 붙인다 — 순서가 없으면 쪽마다 줄이 겹치거나 빠진다 */
 async function refreshWeekly() {
   const url = process.env.SUPABASE_URL.replace(/\/$/, ''); const key = process.env.SUPABASE_SERVICE_KEY;
   const sbHeaders = { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' };
   try {
     const rows = [];
     for (let off = 0; off < 500000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade&source=eq.${encodeURIComponent('학습지')}&worksheet_type=in.(WEEKLY,CHAPTER)&limit=1000&offset=${off}`, { headers: sbHeaders });
+      // 2026-10-22: order=id 없이 offset 으로 넘기면 쪽마다 순서가 달라 같은 줄이 두 번 들어왔다(20문항 → «40문항»). id 순서로 고정
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=id,mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade&source=eq.${encodeURIComponent('학습지')}&worksheet_type=in.(WEEKLY,CHAPTER)&order=id.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const batch = await res.json();
       rows.push(...batch);
@@ -2593,8 +2595,12 @@ async function refreshWeekly() {
     //   ④ v18-42: 원장이 학원앱에서 직접 고른 학습지(wk_manual_ids) — 고등부 「내신대비」 학습지를
     //      주간테스트로 쓰는 경우. 태그만으로 자동 포함하면 1~2명이 푼 개인 숙제까지 주간테스트가
     //      되어 발표·명예의 전당이 오염되므로, 반드시 원장이 고른 것만 넣는다.
+    let manPick = new Set();
+    let hiTest = new Set();   // 2026-10-22: 고등부 «모든 테스트» — 리커버리만 읽는 type HIGH_TEST 로 내보낸다   // 2026-10-22: 원장이 고른 학습지 — 앱 화면들이 type WEEKLY 만 읽으므로 출력에서 WEEKLY 로 바꾼다
     try {
-      const rowKey = (r) => [r.mf_student_id, r.student_worksheet_id, r.concept_id, r.score_datetime, r.result].join('|');
+      // 2026-10-22: 기록 한 줄 = id 하나. 예전 열쇠(학생·학습지·유형·시각·정오)는 같은 유형 두 문항을 한 줄로 합쳐 버렸다
+      const rowKey = (r) => (r.id != null ? 'id' + r.id : [r.mf_student_id, r.student_worksheet_id, r.concept_id, r.score_datetime, r.result].join('|'));
+      { const u = new Map(); rows.forEach((r) => { const k = rowKey(r); if (!u.has(k)) u.set(k, r); }); const dup = rows.length - u.size; rows.length = 0; u.forEach((r) => rows.push(r)); if (dup) log(`주간테스트: 겹친 기록 ${dup}건 뺌`); }
       const seen = new Set(rows.map(rowKey));
       const wkIds = new Set();
       try {
@@ -2608,12 +2614,12 @@ async function refreshWeekly() {
           Object.values(st).forEach((p) => { if (p && p.worksheetId) wkIds.add(Number(p.worksheetId)); }); }
       } catch (e) {}
       // ④ 원장이 직접 고른 학습지 (태그·종류 무관 — 내신대비 등)
-      const manIds = new Set();
+      const manIds = new Set();   // (밖에서도 쓴다 — 아래 out 에서 type 을 WEEKLY 로)
       try {
         const rm = await fetch(`${url}/rest/v1/lumen_store?key=eq.wk_manual_ids&select=value`, { headers: sbHeaders });
         if (rm.ok) { const j = await rm.json(); ((j[0] || {}).value || {}).ids?.forEach((id) => manIds.add(Number(id))); }
       } catch (e) {}
-      const sel = 'select=mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade';
+      const sel = 'select=id,mf_student_id,worksheet_id,student_worksheet_id,worksheet_title,worksheet_type,concept_id,result,score,score_datetime,chapter,school,grade';
       const urls = [`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.CUSTOM&worksheet_title=ilike.${encodeURIComponent('*주간*')}&limit=5000`];
       if (wkIds.size) urls.push(`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_type=eq.CUSTOM&worksheet_id=in.(${Array.from(wkIds).join(',')})&limit=5000`);
       if (manIds.size) urls.push(`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&worksheet_id=in.(${Array.from(manIds).join(',')})&limit=8000`);
@@ -2623,6 +2629,25 @@ async function refreshWeekly() {
         if (!re.ok) continue;
         (await re.json()).forEach((r) => { const k = rowKey(r); if (!seen.has(k)) { seen.add(k); rows.push(r); extraN++; } });
       }
+      manPick = manIds;
+      // ⑤ 2026-10-22 원장 「우선은 체계가 잡히기 전에 고등부는 모든 테스트를 하자」 — 매쓰플랫은 고등 주간 TEST 가 없다.
+      //    고등(HIGH) 학습지 중 태그가 «…TEST»(일일·주간·단원·총괄·모의고사, 입학 TEST 뺌) 또는 «내신대비» 인 것 — 최근 120일.
+      //    오답·숙제·원본·유형 학습지는 시험이 아니라 뺀다. 명예의 전당·주간 순위는 type WEEKLY 만 읽으므로 섞이지 않는다.
+      try {
+        const rt2 = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_tags&select=value`, { headers: sbHeaders });
+        const tg = rt2.ok ? ((((await rt2.json())[0] || {}).value || {}).tags || {}) : {};
+        const okTag = (t) => !!t && ((/_TEST$/.test(t.tag || '') && t.tag !== 'ENTRANCE_TEST') || t.tag === 'SCHOOL_PREPARE');
+        const since2 = new Date(Date.now() - 120 * 86400000).toISOString().slice(0, 10);
+        let hiN = 0;
+        for (let off = 0; off < 60000; off += 1000) {
+          const rh = await fetch(`${url}/rest/v1/mf_answer_records?${sel}&source=eq.${encodeURIComponent('학습지')}&school=eq.HIGH&score_datetime=gte.${since2}&order=id.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
+          if (!rh.ok) break;
+          const b = await rh.json();
+          b.forEach((r) => { if (!okTag(tg[r.worksheet_id])) return; hiTest.add(Number(r.worksheet_id)); const k = rowKey(r); if (!seen.has(k)) { seen.add(k); rows.push(r); hiN++; } });
+          if (b.length < 1000) break;
+        }
+        log(`주간테스트: 고등부 테스트(리커버리용 HIGH_TEST) 학습지 ${hiTest.size}개 · 새 기록 ${hiN}건`);
+      } catch (e) { log('고등부 테스트 인식 실패(치명적 아님):', e.message); }
       if (extraN) log(`주간테스트: 커스텀·직접지정(고등부 등) 기록 ${extraN}건 포함 (원장 지정 ${manIds.size}개 포함)`);
     } catch (e) { log('커스텀 주간 인식 실패(치명적 아님):', e.message); }
     if (!rows.length) { log('주간테스트: WEEKLY 기록 없음 → 건너뜀'); return; }
@@ -2683,7 +2708,8 @@ async function refreshWeekly() {
           date: a.dt || '', wrongConcepts: [], acadRank: null, acadN: scored.length, acadAvg: avg,
           natAvg: null, natRank: null, natN: null });
       });
-      out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, type: T.type, date: T.date,
+      out.push({ key: 'w' + wid, wid: Number(wid), title: T.title, type: (manPick.has(Number(wid)) ? 'WEEKLY' : ((hiTest.has(Number(wid)) && T.type !== 'WEEKLY' && T.type !== 'CHAPTER') ? 'HIGH_TEST' : T.type)), date: T.date,
+        ...(manPick.has(Number(wid)) ? { origType: T.type, manual: true } : ((hiTest.has(Number(wid)) && T.type !== 'WEEKLY' && T.type !== 'CHAPTER') ? { origType: T.type } : {})),
         paper: paperOf(T.school, T.grade, T.chapter, T.title), students });
     });
     out.sort((a, b) => String(b.date).localeCompare(String(a.date)));
@@ -2692,8 +2718,8 @@ async function refreshWeekly() {
       body: JSON.stringify([{ key: 'mf_weekly', value: { updated: new Date().toISOString(), tests: out }, updated_at: new Date().toISOString() }]),
     });
     const nStu = out.reduce((a, t) => a + t.students.length, 0);
-    const nWk = out.filter((t) => t.type === 'WEEKLY').length, nCh = out.filter((t) => t.type === 'CHAPTER').length;
-    log(`주간·단원테스트(mf_weekly): 테스트 ${out.length}개(주간 ${nWk}·단원 ${nCh}) · 학생기록 ${nStu}건 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
+    const nWk = out.filter((t) => t.type === 'WEEKLY').length, nCh = out.filter((t) => t.type === 'CHAPTER').length, nHi = out.filter((t) => t.type === 'HIGH_TEST').length;
+    log(`주간·단원테스트(mf_weekly): 테스트 ${out.length}개(주간 ${nWk}·단원 ${nCh}·고등 테스트 ${nHi}) · 학생기록 ${nStu}건 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('주간테스트 갱신 실패(치명적 아님):', e.message); }
 }
 
@@ -2708,7 +2734,7 @@ async function refreshConceptNames() {
     // 1) 저장된 정오답에서 concept_id·book_id 수집
     const usedIds = new Set(); const bookIds = new Set();
     for (let off = 0; off < 50000; off += 1000) {
-      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=concept_id,book_id,source&limit=1000&offset=${off}`, { headers: sbHeaders });
+      const res = await fetch(`${url}/rest/v1/mf_answer_records?select=concept_id,book_id,source&order=id.asc&limit=1000&offset=${off}`, { headers: sbHeaders });
       if (!res.ok) break;
       const rows = await res.json();
       rows.forEach((r) => { if (r.concept_id != null) usedIds.add(r.concept_id); if (r.source === '교재' && r.book_id) bookIds.add(r.book_id); });

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학부모앱 숙제 4단계</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap">
+<style>
+/* 레이아웃: 폰 화면 3장(홈 카드 · 7일 단계 표 · 월 기록) + 대시보드 방향 3앱 */
+:root{ --bg:#f3f5f9; --fg:#17243a; --mute:#6b7890; --line:#dfe4ec; --card:#fff; --navy:#0d2240; --blue:#1d6fe8; --blue-soft:#e8f0fd;
+  --s1:#3b82f6; --s2:#f59e0b; --s3:#22c55e; --s4:#a855f7; --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.6;padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1060px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 18px}
+h2{font-size:16px;font-weight:900;color:var(--navy);margin:28px 0 10px;display:flex;gap:8px;align-items:center}
+h2 .tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--blue-soft);color:var(--blue)}
+.phones{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.phones{grid-template-columns:1fr}}
+.ph{min-width:0}.ph .cap{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:6px}.ph .cap small{color:var(--mute);font-weight:600}
+.scr{background:#eef2f8;color:#0f172a;border:8px solid #1f2937;border-radius:28px;padding:10px 0 14px;font-size:12px;line-height:1.5;min-height:520px}
+.pagehd{padding:12px 16px 8px;font-size:16px;font-weight:900;color:#0d2240}.pagehd small{font-size:10px;color:#94a3b8;font-weight:700;margin-left:6px}
+.sec{margin:10px 12px 0;background:#fff;border-radius:17px;padding:13px 14px;box-shadow:0 3px 12px rgba(13,34,64,.05)}
+.st{font-size:13px;font-weight:900;color:#0d2240;display:flex;align-items:center;gap:6px}.st .more{margin-left:auto;font-size:10px;color:#1d6fe8;font-weight:800}
+.hwhd{border-radius:14px;padding:11px 13px;color:#fff;background:linear-gradient(135deg,#4d7c0f,#84cc16)}
+.hwhd .t{font-size:10px;font-weight:800;opacity:.9}.hwhd .b{font-size:22px;font-weight:900;line-height:1.1;margin-top:2px}.hwhd .b span{font-size:12px}
+.hwhd .d{font-size:9.5px;opacity:.9;margin-top:2px}
+.stg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}
+.stg div{border-radius:11px;padding:7px 6px;text-align:center;border:1.5px solid #eef2f7;background:#fbfcff}
+.stg .n{font-size:9.5px;font-weight:800;color:#64748b}.stg .m{font-size:17px;font-weight:900;line-height:1.1;margin:2px 0}.stg .p{font-size:9.5px;font-weight:800}
+.s1 .m{color:var(--s1)}.s2 .m{color:var(--s2)}.s3 .m{color:var(--s3)}.s4 .m{color:var(--s4)}
+.stg .s1{border-color:#bfdbfe;background:#eff6ff}.stg .s2{border-color:#fde68a;background:#fffbeb}.stg .s3{border-color:#bbf7d0;background:#f0fdf4}.stg .s4{border-color:#e9d5ff;background:#faf5ff}
+.co{margin-top:8px;border-radius:9px;padding:7px 10px;font-size:10.5px;font-weight:700;background:#fef9c3;color:#854d0e;line-height:1.5}
+.tip{font-size:9.5px;color:#94a3b8;font-weight:700;margin-top:6px;line-height:1.5}
+table.g{border-collapse:separate;border-spacing:3px;width:100%;font-size:10px;margin-top:8px}
+table.g th{font-weight:800;color:#94a3b8;font-size:9px;padding:2px 0}
+table.g td{text-align:center;border-radius:7px;padding:5px 0;font-weight:900;font-size:11px;background:#f1f5f9;color:#cbd5e1}
+table.g td.l{text-align:left;background:none;color:#334155;font-size:10px;font-weight:800;padding-left:2px;white-space:nowrap}
+td.ok{background:#dcfce7;color:#15803d}td.half{background:#fef3c7;color:#b45309}td.no{background:#fee2e2;color:#b91c1c}td.na{background:#f8fafc;color:#cbd5e1}
+.avg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.avg div{text-align:center;border-radius:10px;padding:7px 4px;background:#f8fafc}
+.avg .v{font-size:16px;font-weight:900}.avg .k{font-size:9px;color:#64748b;font-weight:800}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.cal div{aspect-ratio:1;border-radius:7px;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.cal .d{font-size:8px;font-weight:800;color:#94a3b8}
+.cal .dots{display:flex;gap:2px}.cal .dots i{width:5px;height:5px;border-radius:50%;background:#e2e8f0}
+.cal .dots i.a{background:var(--s1)}.cal .dots i.b{background:var(--s2)}.cal .dots i.c{background:var(--s3)}.cal .dots i.e{background:var(--s4)}
+.tabs{display:flex;justify-content:space-around;margin:14px 12px 0;padding-top:8px;border-top:1px solid #e2e8f0;font-size:9px;font-weight:800;color:#94a3b8}.tabs span.on{color:#1d6fe8}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg);min-width:0}
+.box b{display:block;color:var(--navy);margin-bottom:4px}.box p{margin:0 0 4px;font-size:12.5px}.box .sub{font-size:12px;color:var(--mute)}
+.rec{border-color:var(--blue)}
+.note{font-size:12px;color:var(--mute);margin-top:8px}
+/* 학생앱 미니 대시보드 */
+.sd{background:#0f172a;color:#e2e8f0;border-radius:14px;padding:12px;font-size:11px}
+.sd .t{font-size:12px;font-weight:900;color:#fff}.sd .take{font-size:10.5px;color:#94a3b8;margin:2px 0 8px}
+.sd .k4{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.sd .k4 div{background:#1e293b;border-radius:9px;padding:6px;text-align:center}
+.sd .k4 .v{font-size:15px;font-weight:900;color:#fff}.sd .k4 .l{font-size:8.5px;color:#94a3b8}
+.sd .sp{height:26px;display:flex;gap:2px;align-items:flex-end;margin-top:8px}.sd .sp i{flex:1;background:#38bdf8;border-radius:2px 2px 0 0;opacity:.6}.sd .sp i.n{opacity:1}
+.sd .src{font-size:8.5px;color:#64748b;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>학부모앱 숙제 4단계 보이기 + 대시보드 방향</h1>
+<p class="lead">원장님 지적: 「학원앱에선 풀이·채점·오답·아하노트를 각각 체크하는데 학부모앱은 총합만 보여 정보가 떨어진다」. 지금 학부모앱도 카드를 누르면 4줄이 나오긴 하지만 접혀 있고 달력은 총합만 그립니다. 아래는 처음부터 4단계가 보이는 모양입니다. 이름·숫자는 가짜입니다.</p>
+
+<h2>학부모앱 — 4단계가 처음부터 보이게 <span class="tag">학원앱 숙제체크와 같은 눈금</span></h2>
+<div class="phones">
+  <div class="ph"><div class="cap">① 홈 · 과제 완성도 카드 <small>— 총합 뒤에 4칸 바로</small></div>
+    <div class="scr">
+      <div class="pagehd">📚 숙제 <small>10/22 (수)</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="hwhd"><div class="t">루멘수학 · 과제 완성도 · 10/22 (수)</div><div class="b">80<span>%</span></div><div class="d">풀이·채점은 다 했고, 틀린 문제 다시 풀기가 절반이에요</div></div>
+        <div class="stg">
+          <div class="s1"><div class="n">1 풀이</div><div class="m">✓</div><div class="p" style="color:var(--s1)">100%</div></div>
+          <div class="s2"><div class="n">2 채점</div><div class="m">✓</div><div class="p" style="color:var(--s2)">100%</div></div>
+          <div class="s3"><div class="n">3 오답</div><div class="m">◐</div><div class="p" style="color:var(--s3)">60%</div></div>
+          <div class="s4"><div class="n">4 아하노트</div><div class="m">—</div><div class="p" style="color:#94a3b8">해당 없음</div></div>
+        </div>
+        <div class="co">💬 선생님: 오답 다시 풀기까지 하면 100%예요. 틀린 3문제만 남았어요.</div>
+        <div class="tip">✓ 다 함 · ◐ 절반(60%) · ◔ 조금(30%) · ○ 안 함 — 학원에서 선생님이 직접 확인한 체크예요. 4 아하노트는 막힌 문제가 없던 날 «해당 없음».</div>
+      </div>
+      <div class="sec"><div class="st">🏠 집에서 할 것</div><div class="tip" style="margin-top:4px">📓 오늘 플래너 제출 완료 ✓ · 🎙️ 녹음 숙제 아직</div></div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+  <div class="ph"><div class="cap">② 최근 7일 단계 표 <small>— 학원앱 숙제체크 표 그대로</small></div>
+    <div class="scr">
+      <div class="pagehd">📚 숙제 <small>최근 수업일 7번</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="st">단계별 체크 <span class="more">월 기록 ›</span></div>
+        <table class="g"><tr><th></th><th>10/8</th><th>10/10</th><th>10/13</th><th>10/15</th><th>10/17</th><th>10/20</th><th>10/22</th></tr>
+          <tr><td class="l">1 풀이</td><td class="ok">✓</td><td class="ok">✓</td><td class="half">◐</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+          <tr><td class="l">2 채점</td><td class="ok">✓</td><td class="half">◔</td><td class="no">○</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+          <tr><td class="l">3 오답</td><td class="half">◐</td><td class="no">○</td><td class="no">○</td><td class="ok">✓</td><td class="half">◐</td><td class="ok">✓</td><td class="half">◐</td></tr>
+          <tr><td class="l">4 아하</td><td class="na">—</td><td class="no">0/2</td><td class="na">—</td><td class="ok">1/1</td><td class="na">—</td><td class="ok">2/2</td><td class="na">—</td></tr>
+          <tr><td class="l" style="color:#0d2240">종합</td><td>83</td><td>35</td><td>20</td><td>100</td><td>87</td><td>100</td><td>80</td></tr></table>
+        <div class="tip">한 줄이 한 단계예요. 어느 단계에서 자꾸 멈추는지가 보입니다 — 이 아이는 「3 오답 다시 풀기」에서 멈춰요.</div>
+        <div class="co" style="background:#eef6ff;color:#1e3a8a">📌 이번 주 집에서: 틀린 문제를 «답 보기 전에 한 번 더» — 3단계가 올라가면 종합이 100%에 가까워져요</div>
+      </div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+  <div class="ph"><div class="cap">③ 월 기록 <small>— 단계별 평균 + 달력 점 4개</small></div>
+    <div class="scr">
+      <div class="pagehd">📊 과제 완성도 기록 <small>2026년 10월</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="st">단계별 평균 · 수업 11일</div>
+        <div class="avg"><div><div class="v" style="color:var(--s1)">94%</div><div class="k">1 풀이</div></div><div><div class="v" style="color:var(--s2)">85%</div><div class="k">2 채점</div></div><div><div class="v" style="color:var(--s3)">58%</div><div class="k">3 오답</div></div><div><div class="v" style="color:var(--s4)">3/5</div><div class="k">4 질문</div></div></div>
+        <div class="tip">지난달보다 오답 +12%p. 가장 낮은 단계에 선생님 코멘트가 붙어요.</div>
+        <div class="st" style="margin-top:10px">달력 <span class="more" style="color:#94a3b8">점 = 풀이·채점·오답·아하</span></div>
+        <div class="cal">
+          <div><div class="d">1</div><div class="dots"><i class="a"></i><i class="b"></i><i class="c"></i><i></i></div></div><div><div class="d">2</div></div><div><div class="d">3</div><div class="dots"><i class="a"></i><i class="b"></i><i></i><i></i></div></div><div><div class="d">4</div></div><div><div class="d">5</div></div><div><div class="d">6</div><div class="dots"><i class="a"></i><i class="b"></i><i class="c"></i><i class="e"></i></div></div><div><div class="d">7</div></div>
+          <div><div class="d">8</div><div class="dots"><i class="a"></i><i class="b"></i><i class="c"></i><i></i></div></div><div><div class="d">9</div></div><div><div class="d">10</div><div class="dots"><i class="a"></i><i></i><i></i><i></i></div></div><div><div class="d">11</div></div><div><div class="d">12</div></div><div><div class="d">13</div><div class="dots"><i class="a"></i><i></i><i></i><i></i></div></div><div><div class="d">14</div></div>
+          <div><div class="d">15</div><div class="dots"><i class="a"></i><i class="b"></i><i class="c"></i><i class="e"></i></div></div><div><div class="d">16</div></div><div><div class="d">17</div><div class="dots"><i class="a"></i><i class="b"></i><i class="c"></i><i></i></div></div><div><div class="d">18</div></div><div><div class="d">19</div></div><div><div class="d">20</div><div class="dots"><i class="a"></i><i class="b"></i><i class="c"></i><i class="e"></i></div></div><div><div class="d">21</div></div>
+          <div><div class="d">22</div><div class="dots"><i class="a"></i><i class="b"></i><i class="c"></i><i></i></div></div><div><div class="d">23</div></div><div><div class="d">24</div></div><div><div class="d">25</div></div><div><div class="d">26</div></div><div><div class="d">27</div></div><div><div class="d">28</div></div>
+        </div>
+      </div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+</div>
+<div class="card" style="margin-top:12px">
+  <b style="color:var(--navy)">바뀌는 것 정리</b>
+  <p>① 홈 카드는 총합 바로 아래에 4칸을 항상 펼쳐 보여 줍니다(접기 없음). 눈금은 학원앱 체크와 같은 0 · 30 · 60 · 100 을 ○ ◔ ◐ ✓ 로. ② 숙제 탭에 «최근 7일 단계 표»가 새로 생깁니다(학원앱 숙제체크 표와 같은 모양, 아하노트는 질문/막힘 수). ③ 월 기록은 총합 막대 대신 단계별 평균 4개와 달력 점 4개. 자료는 이미 학부모앱이 받는 `lumen_hw`(p·c·w)와 아하노트 수라 서버 변경이 없습니다.</p>
+  <p class="note">배포는 하지 않고 새 버전 파일(v1-37)까지만 만듭니다. 녹음 v1-36 위에 얹습니다.</p>
+</div>
+
+<h2>클로드 대시보드 — 세 앱에 어떻게 쓸까 <span class="tag">원장 질문</span></h2>
+<div class="three">
+  <div class="box rec"><b>학원앱(원장님) → 클로드 대시보드 그대로 ✅</b>
+    <p>claude.ai 에 「루멘 운영 대시보드」 한 장. 출석·숙제·플래너·녹음·리커버리·수강료·새벽 작업 상태를 숫자와 그래프로, <b>숫자마다 어디서 온 것인지</b>가 붙습니다(Sources). 폰 Claude 앱에서도 열리고, 배우자와 공유할 수 있습니다.</p>
+    <p class="sub">미리보기(예시 숫자): https://claude.ai/artifact/7r8nW5sV5geeK8nuKrBYWZ<br>실제 숫자를 넣는 길 두 가지 — ㉠ Supabase(포스트그레스) 연결기를 claude.ai 에 읽기 전용으로 달면 대시보드가 열 때마다 서버에서 바로 셈(가장 깔끔) ㉡ 연결기 없이 새벽 Actions 가 숫자 JSON 을 만들고 Claude 예약 작업이 올림. 추천은 ㉠.</p></div>
+  <div class="box"><b>학생앱 → 앱 안에 「내 대시보드」 홈</b>
+    <p>학생은 Claude 계정이 없고 30명 각자 자료라 claude.ai 대시보드를 줄 수 없습니다. 대신 같은 설계를 학생앱 홈에: 한 줄 요약 → 숫자 4개 → 작은 추세 → «어디서 온 숫자» 표시.</p>
+    <div class="sd"><div class="t">길동이의 이번 주</div><div class="take">플래너 5/5 · 녹음 2/3 · 숙제 완성도 ↑ 12 — 녹음 하나만 더!</div>
+      <div class="k4"><div><div class="v">80%</div><div class="l">숙제</div></div><div><div class="v">5일</div><div class="l">플래너 🔥</div></div><div><div class="v">2/3</div><div class="l">녹음</div></div><div><div class="v">7위</div><div class="l">리그</div></div></div>
+      <div class="sp"><i style="height:40%"></i><i style="height:55%"></i><i style="height:35%"></i><i style="height:70%"></i><i style="height:60%"></i><i style="height:80%"></i><i class="n" style="height:85%"></i></div>
+      <div class="src">숙제 = 선생님 체크 · 플래너 = 내가 올린 사진 · 녹음 = 제출 기록 · 리그 = 아하노트 점수</div></div></div>
+  <div class="box"><b>학부모앱 → 홈을 대시보드 모양으로</b>
+    <p>위 「숙제 4단계」 카드가 첫 조각입니다. 같은 원칙으로 홈을 «한 줄 요약 + 타일 4개(숙제·플래너·녹음·리커버리) + 7일 추세 + 출처»로 정리하면 학부모가 매일 열어 보는 한 장이 됩니다.</p>
+    <p class="sub">학부모도 Claude 계정이 없으니 claude.ai 대시보드는 쓰지 않고 앱 안에서 구현합니다. 리포트 발행처럼 «원장님이 확인한 숫자만» 나가는 규칙은 그대로.</p></div>
+</div>
+<div class="card" style="margin-top:12px"><b style="color:var(--navy)">정해 주실 것</b>
+  <p>A. 학부모앱 숙제 4단계 — 위 ①②③ 모양으로 v1-37 만들지(배포 없음). B. 원장 운영 대시보드 — 실제 숫자로 연결할지, 연결한다면 ㉠ Supabase 연결기(원장님이 claude.ai 설정에서 읽기 전용 계정으로 추가) 또는 ㉡ 새벽 JSON. C. 학생앱·학부모앱 홈 대시보드화는 숙제 4단계 뒤 다음 판으로.</p></div>
+</div>
+
+</body>
+</html>

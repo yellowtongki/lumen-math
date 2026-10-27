@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학부모앱 녹음 화면</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap">
+<style>
+/* 레이아웃: 폰 화면 3장을 나란히(홈 · 숙제 탭 · 녹음 기록) — 학부모앱 v1-35 실제 색·모양 그대로 */
+:root{
+  --bg:#f3f5f9; --fg:#17243a; --mute:#6b7890; --line:#dfe4ec; --card:#fff;
+  --navy:#0d2240; --blue:#1d6fe8; --green:#059669; --green-bg:#ecfdf5; --green-line:#a7f3d0;
+  --amber-bg:#fff7ed; --amber-line:#fed7aa; --amber:#9a3412; --pbg:#eef2f8;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.6;padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1040px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 18px}
+h2{font-size:16px;font-weight:900;color:var(--navy);margin:26px 0 10px}
+.phones{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.phones{grid-template-columns:1fr}}
+.ph{min-width:0}
+.ph .cap{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:6px}
+.ph .cap small{color:var(--mute);font-weight:600}
+/* 폰 — 학부모앱 실제 값: 바탕 #eef2f8 · 글자 #0f172a · 카드 흰 17px · 남색 #0d2240 */
+.scr{background:#eef2f8;color:#0f172a;border:8px solid #1f2937;border-radius:28px;padding:10px 0 14px;font-size:12px;line-height:1.5;min-height:560px}
+.sec{margin:10px 12px 0;background:#fff;border-radius:17px;padding:13px 14px;box-shadow:0 3px 12px rgba(13,34,64,.05)}
+.st{font-size:13px;font-weight:900;color:#0d2240;display:flex;align-items:center;gap:6px}
+.st .more{margin-left:auto;font-size:10px;color:#1d6fe8;font-weight:800}
+.pagehd{padding:12px 16px 8px;font-size:16px;font-weight:900;color:#0d2240}
+.pagehd small{font-size:10px;color:#94a3b8;font-weight:700;margin-left:6px}
+.box{display:flex;gap:9px;align-items:flex-start;margin-top:9px;border-radius:11px;padding:10px 12px;border:1px solid}
+.ok{background:#ecfdf5;border-color:#a7f3d0}.ok .t{color:#065f46}.ok .s{color:#059669}
+.wait{background:#f8fafc;border-color:#e2e8f0}.wait .t{color:#334155}.wait .s{color:#64748b}
+.no{background:#fff7ed;border-color:#fed7aa}.no .t{color:#9a3412}.no .s{color:#c2410c}
+.box .t{font-size:11px;font-weight:900}.box .s{font-size:9.5px;font-weight:700;margin-top:1px}
+.topic{font-size:11px;font-weight:800;color:#0d2240;background:#fef9c3;border:1px solid #fde68a;border-radius:9px;padding:7px 10px;margin-top:9px;line-height:1.5}
+.topic small{display:block;font-size:9px;color:#a16207;font-weight:800;margin-bottom:1px}
+.say{margin-top:8px;background:#eef6ff;border-left:3px solid #1d6fe8;border-radius:0 9px 9px 0;padding:7px 10px;font-size:11px;color:#1e3a8a;font-weight:700;line-height:1.55}
+.say small{display:block;font-size:9px;color:#60a5fa;font-weight:800;margin-top:2px}
+.strip{display:flex;gap:3px;margin-top:5px}
+.strip div{flex:1;text-align:center}
+.strip .d{font-size:7.5px;color:#94a3b8;font-weight:800;margin-bottom:2px}
+.strip .c{height:20px;border-radius:6px;background:#eef2f7;color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.strip .c.on{background:#059669}.strip .c.td{box-shadow:0 0 0 2px #ffd54a}
+.sub{font-size:10px;color:#64748b;font-weight:600;margin-top:8px}
+.lbl{font-size:10.5px;font-weight:800;color:#0d2240;margin-top:11px}
+/* 홈 매일 확인 칸 */
+.daily{display:flex;gap:8px;margin-top:9px}
+.p35{flex:1;border-radius:13px;padding:10px 10px 9px;border:1.5px solid #a7f3d0;background:#ecfdf5;text-align:left}
+.p35.rest{border-color:#e2e8f0;background:#f8fafc}
+.p35 .ttl{font-size:10px;font-weight:800;color:#64748b}
+.p35 .big{font-size:12.5px;font-weight:900;color:#065f46;margin-top:2px}
+.p35.rest .big{color:#334155}
+.p35 .dots{display:flex;gap:3px;margin-top:6px}
+.p35 .dots i{flex:1;height:6px;border-radius:3px;background:#d1fae5}.p35 .dots i.ok{background:#059669}.p35 .dots i.nc{background:#eef2f7}.p35 .dots i.now{outline:2px solid #ffd54a}
+.p35 .sb{font-size:9.5px;color:#059669;font-weight:700;margin-top:5px}
+.p35 .tp{font-size:9.5px;color:#0d2240;font-weight:700;margin-top:5px;background:#fff;border-radius:7px;padding:4px 6px;line-height:1.4}
+/* 기록 탭 */
+.stats{display:flex;gap:6px;margin:0 12px}
+.stats div{flex:1;background:#fff;border:1.5px solid #eef2f7;border-radius:12px;padding:9px 6px;text-align:center}
+.stats .k{font-size:9px;color:#94a3b8;font-weight:800}.stats .v{font-size:18px;font-weight:900;color:#0d2240;font-variant-numeric:tabular-nums}
+.item{padding:8px 0;border-bottom:1px solid #f1f5f9}
+.item .r1{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:#334155}
+.item .r1 .chk{margin-left:auto;font-size:9.5px;font-weight:900;color:#059669;background:#ecfdf5;border-radius:10px;padding:1px 7px;white-space:nowrap}
+.item .r1 .chk.w{color:#64748b;background:#f1f5f9}
+.item .r2{font-size:10.5px;color:#0d2240;font-weight:700;margin-top:2px}
+.item .r3{font-size:10px;color:#1e3a8a;font-weight:700;margin-top:3px;background:#eef6ff;border-radius:7px;padding:4px 8px}
+.lock{background:#f8fafc;border:1px solid #e8eef8;border-radius:12px;padding:10px 12px;font-size:10.5px;color:#475569;font-weight:700;line-height:1.65;margin:0 12px 10px}
+.lock b{color:#0d2240}
+.tabs{display:flex;justify-content:space-around;margin:14px 12px 0;padding-top:8px;border-top:1px solid #e2e8f0;font-size:9px;font-weight:800;color:#94a3b8}
+.tabs span.on{color:#1d6fe8}
+/* 아래 설명 */
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.rule{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13px}
+.rule b{color:var(--navy);white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chips span{border:1.5px solid var(--line);border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700;background:var(--bg)}
+.chips span.p{border-color:var(--blue);color:var(--blue)}
+.note{font-size:12px;color:var(--mute);margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:6px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--mute);font-weight:800;font-size:11.5px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<h1>학부모앱 녹음 화면 — 안 A</h1>
+<p class="lead">소리는 지금처럼 비공개. 「무엇을 설명했는지(주제) · 선생님이 들었는지(확인) · 한마디」 세 줄이 새로 보입니다. 아래 세 화면은 학부모앱 v1-35 의 실제 색과 틀에 올린 것이고, 아이 이름·글은 가짜입니다.</p>
+
+<div class="phones">
+  <div class="ph"><div class="cap">① 홈 › 📌 매일 확인 <small>— 칸 아래 주제 한 줄만 추가</small></div>
+    <div class="scr">
+      <div class="pagehd">📌 매일 확인 <small>10/21 (화)</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="daily">
+          <div class="p35"><div class="ttl">📓 플래너 사진</div><div class="big">✓ 오늘 제출</div><div class="dots"><i class="ok"></i><i class="ok"></i><i class="ok"></i><i></i><i class="ok"></i><i class="ok"></i><i class="ok now"></i></div><div class="sb">🔥 3일 연속 제출</div></div>
+          <div class="p35"><div class="ttl">🎙️ 녹음 숙제</div><div class="big">✓ 오늘 제출</div><div class="dots"><i class="ok"></i><i class="nc"></i><i class="ok"></i><i class="nc"></i><i class="ok"></i><i class="nc"></i><i class="ok now"></i></div><div class="sb">🔥 4회 연속 · ✓ 선생님 확인</div><div class="tp">💬 일차함수의 기울기와 y절편</div></div>
+        </div>
+        <div class="sub">플래너·녹음은 <b>아이가 집에서</b> 올리는 것이라, 저녁에 올리면 초록으로 바뀝니다</div>
+      </div>
+      <div class="sec"><div class="st">📚 숙제 <span class="more">더보기 ›</span></div><div class="sub" style="margin-top:6px">🟢 숙제 완료 · 최근 7일 완성도 92%</div></div>
+      <div class="sec"><div class="st">📋 리포트 <span class="more">더보기 ›</span></div><div class="sub" style="margin-top:6px">10/19 주간테스트 피드백 도착</div></div>
+      <div class="tabs"><span class="on">홈</span><span>숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+
+  <div class="ph"><div class="cap">② 숙제 탭 › 🎙️ 하브루타 녹음 <small>— 세 줄이 핵심</small></div>
+    <div class="scr">
+      <div class="pagehd">📚 숙제 <small>과제 완성도 · 플래너 · 녹음</small></div>
+      <div class="sec" style="margin-top:0"><div class="st">📓 오늘 플래너 <span class="more">사진 보기 ›</span></div><div class="box ok"><span>✅</span><div><div class="t">오늘 플래너 제출 완료</div><div class="s">계획 7개 중 6개 실천</div></div></div></div>
+      <div class="sec">
+        <div class="st">🎙️ 하브루타 녹음 <span class="more">제출 기록 ›</span></div>
+        <div class="topic"><small>10/21 (화) 오늘 주제</small>일차함수의 그래프에서 기울기와 y절편이 뜻하는 것 설명해 보기</div>
+        <div class="box ok"><span>✅</span><div><div class="t">제출 완료 · ✓ 선생님이 들었어요</div><div class="s">3분 42초 · 오늘도 스스로 설명해 봤어요</div></div></div>
+        <div class="say">💬 기울기를 y=2x+3 예시로 잘 풀어 설명했어요. 다음엔 y절편까지 같이!<small>— 선생님 한마디 · 10/22 아침</small></div>
+        <div class="lbl">최근 2주 제출 현황</div>
+        <div class="strip">
+          <div><div class="d">8</div><div class="c on">✓</div></div><div><div class="d">9</div><div class="c"></div></div><div><div class="d">10</div><div class="c on">✓</div></div><div><div class="d">11</div><div class="c"></div></div><div><div class="d">12</div><div class="c"></div></div><div><div class="d">13</div><div class="c on">✓</div></div><div><div class="d">14</div><div class="c"></div></div><div><div class="d">15</div><div class="c on">✓</div></div><div><div class="d">16</div><div class="c"></div></div><div><div class="d">17</div><div class="c on">✓</div></div><div><div class="d">18</div><div class="c"></div></div><div><div class="d">19</div><div class="c"></div></div><div><div class="d">20</div><div class="c on">✓</div></div><div><div class="d">21</div><div class="c on td">✓</div></div>
+        </div>
+        <div class="sub">🔒 녹음 소리는 선생님만 듣습니다 — 아이가 편하게 말할 수 있도록 비공개로 운영하고, 주제와 선생님 한마디만 보여 드려요</div>
+      </div>
+      <div class="sec" style="border:1.5px dashed #cbd5e1;box-shadow:none">
+        <div class="st" style="color:#64748b">다른 날 모양 (참고)</div>
+        <div class="box wait"><span>✅</span><div><div class="t">제출 완료 · 선생님 확인 전</div><div class="s">선생님이 들으면 한마디가 여기 와요</div></div></div>
+        <div class="box no"><span>⏰</span><div><div class="t">오늘 녹음이 아직 제출 전이에요</div><div class="s">아이에게 응원 한마디 부탁드려요</div></div></div>
+      </div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+
+  <div class="ph"><div class="cap">③ 녹음 제출 기록 <small>— 날짜만 있던 목록에 주제·확인·한마디</small></div>
+    <div class="scr">
+      <div class="pagehd">← 🎙️ 하브루타 녹음 <small>제출 기록</small></div>
+      <div class="lock">🔒 <b>녹음 소리는 공개하지 않습니다</b><br>하브루타는 아이가 <b>틀려도 편하게</b> 소리 내어 설명해 보는 연습입니다. 선생님이 듣고 남긴 한마디와 그날 주제만 보여 드려요.</div>
+      <div class="stats"><div><div class="k">최근 30일 제출</div><div class="v">11회</div></div><div><div class="k">연속 제출</div><div class="v" style="color:#ea580c">🔥 4회</div></div><div><div class="k">선생님 확인</div><div class="v" style="color:#059669">10회</div></div></div>
+      <div class="sec">
+        <div class="st">최근 제출</div>
+        <div class="item"><div class="r1">✅ 10.21 (화)<span class="chk">✓ 선생님 확인</span></div><div class="r2">일차함수의 기울기와 y절편 설명해 보기 · 3분 42초</div><div class="r3">💬 기울기를 예시로 잘 풀어 설명했어요. 다음엔 y절편까지 같이!</div></div>
+        <div class="item"><div class="r1">✅ 10.20 (월)<span class="chk w">확인 전</span></div><div class="r2">틀린 「일차함수 식 세우기」 문제 다시 풀며 설명 · 5분 02초</div></div>
+        <div class="item"><div class="r1">✅ 10.17 (금)<span class="chk">✓ 선생님 확인</span></div><div class="r2">연립방정식 가감법·대입법 차이 설명해 보기 · 4분 10초</div><div class="r3">💬 가감법 설명이 정확했어요 👍</div></div>
+        <div class="item"><div class="r1">✅ 10.15 (수)<span class="chk">✓ 선생님 확인</span></div><div class="r2">자유 제출 · 「오늘 배운 것」 · 2분 48초</div><div class="r3">💬 조금 더 길게, 예를 하나 들어 보자</div></div>
+        <div class="item" style="border:0"><div class="r1">✅ 10.13 (월)<span class="chk">✓ 선생님 확인</span></div><div class="r2">일차함수와 정비례의 관계 설명해 보기 · 3분 20초</div></div>
+      </div>
+      <div class="sec"><div class="st">최근 5주 제출 달력</div><div class="sub" style="margin-top:4px">(지금 달력 그대로)</div></div>
+    </div>
+  </div>
+</div>
+
+<h2>학부모에게 나가는 규칙</h2>
+<div class="card">
+  <div class="rule">
+    <b>주제</b><span>그날 배정된 주제(개인 &gt; 학년 &gt; 미션). 없으면 학생이 적은 제출 제목을 「자유 제출」로.</span>
+    <b>✓ 선생님 확인</b><span>원장님이 훑어보기 화면에서 「✓ 확인」을 누른 것만. 누르기 전엔 「확인 전」으로만 보이고, AI 판정(⚠️ ❌)은 학부모에게 절대 안 나갑니다.</span>
+    <b>💬 한마디</b><span>「✓ 확인」 때 고른 문구. 안 고르면 한마디 없이 확인 표시만. 학생앱에는 1단계에서 안 보냅니다.</span>
+    <b>소리·전문</b><span>학부모앱·학생앱 어디에도 없음. 지금 규칙 그대로.</span>
+  </div>
+  <div class="note">원장님 쪽 「✓ 확인」 단추 옆에 기본 한마디 칩을 둡니다. 판정에 따라 어울리는 칩이 먼저 나옵니다. 누르면 바로 저장되니 녹음 하나에 2초면 됩니다.</div>
+  <div class="chips"><span class="p">주제대로 잘 설명했어요</span><span class="p">예시까지 들어 좋았어요</span><span>다음엔 ○○도 같이</span><span>조금 더 길게, 예를 하나 들어 보자</span><span>오늘 주제로 다시 한 번!</span><span>✏️ 직접 쓰기</span></div>
+  <div class="note">「다음엔 ○○도 같이」의 ○○은 AI 가 찾은 빠진 개념이 자동으로 들어가고, 원장님이 고쳐 쓸 수 있습니다.</div>
+</div>
+
+<h2>자료가 흐르는 길</h2>
+<div class="card">
+  <table><tr><th>누가</th><th>언제</th><th>무엇을</th></tr>
+  <tr><td>새벽 스크립트</td><td>05:10</td><td>어제 녹음 → 받아쓰기·판정·요약 → 서버 「녹음 읽기 결과」(날짜별)</td></tr>
+  <tr><td>원장님 (학원앱 v19-152)</td><td>아침</td><td>훑어보기에서 ✓ 확인 + 한마디 칩 → 서버 「녹음 확인」 칸(학생코드·날짜·한마디)</td></tr>
+  <tr><td>학부모앱 (새 버전 v1-36)</td><td>열 때</td><td>그날 주제 + 「녹음 확인」 칸을 읽어 ①②③ 화면에 표시. <b>parent.html 교체는 원장님 지시 때만</b></td></tr></table>
+  <div class="note">학부모앱이 새로 읽는 칸은 둘뿐(그날 주제 rec_topics 는 이미 서버에 있음 · 원장 확인 칸 하나 추가). 학생 등록부는 건드리지 않습니다.</div>
+</div>
+</div>
+
+</body>
+</html>

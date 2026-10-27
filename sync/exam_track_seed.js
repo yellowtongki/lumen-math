@@ -61,7 +61,7 @@ async function recentBooks(days) {
   const cut = new Date(Date.now() - (days || 30) * 86400000).toISOString();
   const rows = await sbPage(`/mf_study_sessions?update_datetime=gte.${cut}`
     + `&select=mf_student_id,book_id,title,source,correct_count,wrong_count,student_workbook_id,student_book_id,update_datetime`
-    + `&order=update_datetime.desc`, 10);
+    + `&order=update_datetime.desc,id.desc`, 10);   // 2026-10-22: 같은 시각 줄이 쪽 사이에서 겹치지 않게 id 로 한 번 더
   const last = {};
   rows.forEach((x) => {
     const k = `${x.mf_student_id}|${x.book_id}|${x.student_workbook_id || x.student_book_id || 0}`;

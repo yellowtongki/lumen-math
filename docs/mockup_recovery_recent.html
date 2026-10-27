@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>리커버리 학습지 3판</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap">
+<style>
+/* 레이아웃: ① 오른쪽 «학습지 규칙» 도구 · ② 가운데 «학생별 예상» 표(문항 수·단원 비율·최상) · ③ 학생 설계 팝업 · ④ 보드 카드 한 줄 */
+:root{ --bg:#f3f5f9; --fg:#17243a; --mute:#6b7890; --line:#dfe4ec; --card:#fff; --navy:#0d2240; --blue:#1d6fe8; --blue-soft:#e8f0fd;
+  --ok:#15803d; --ok-bg:#dcfce7; --warn:#b45309; --warn-bg:#fef3c7; --bad:#b91c1c; --bad-bg:#fee2e2;
+  --u1:#3b82f6; --u2:#f59e0b; --u3:#22c55e; --u4:#a855f7; --u5:#94a3b8; --test:#0d2240;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --ok:#86efac; --ok-bg:#14301f; --warn:#fcd34d; --warn-bg:#3a2a0c; --bad:#fca5a5; --bad-bg:#3b1515; --test:#c7d2fe; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --ok:#86efac; --ok-bg:#14301f; --warn:#fcd34d; --warn-bg:#3a2a0c; --bad:#fca5a5; --bad-bg:#3b1515; --test:#c7d2fe; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.6;padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1100px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 18px}
+h2{font-size:16px;font-weight:900;color:var(--navy);margin:26px 0 10px;display:flex;gap:8px;align-items:center}
+h2 .tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--blue-soft);color:var(--blue)}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr);gap:14px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.tool{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.tool b.h{display:block;color:var(--navy);font-size:14px;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px 0;border-top:1px dashed var(--line);font-size:13px}
+.row:first-of-type{border-top:0}
+.row .l{font-weight:800;color:var(--fg);min-width:100%}
+.chip{font-size:12px;font-weight:800;border:1.5px solid var(--line);border-radius:20px;padding:3px 11px;background:var(--bg);color:var(--fg)}
+.chip.on{border-color:var(--blue);background:var(--blue);color:#fff}
+.ck{display:flex;gap:6px;align-items:flex-start;font-size:13px;font-weight:700}
+.ck i{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--line);flex-shrink:0;margin-top:3px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:11px;color:#fff}
+.ck i.on{background:var(--blue);border-color:var(--blue)}
+.ck small{display:block;color:var(--mute);font-weight:600;font-size:11.5px}
+.inp{border:1.5px solid var(--line);border-radius:8px;padding:2px 8px;font-size:12.5px;font-weight:800;background:var(--bg);color:var(--fg)}
+.btn{display:block;width:100%;text-align:center;border-radius:10px;padding:9px;font-weight:900;font-size:13px;margin-top:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--navy)}
+.btn.main{background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;border:0}
+.ctr{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;min-width:0}
+.ctr h3{margin:0 0 4px;font-size:15px;color:var(--navy)}
+.sub{font-size:12px;color:var(--mute)}
+.tw{overflow-x:auto;margin-top:8px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:640px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{color:var(--mute);font-weight:800;font-size:11.5px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td b.big{font-size:16px;color:var(--navy)}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;min-width:180px;background:var(--bg)}
+.bar span{display:block;height:100%}
+.leg{font-size:11px;color:var(--mute);margin-top:3px;line-height:1.5}
+.leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin:0 3px 0 6px;vertical-align:0}
+.pill{font-size:10.5px;font-weight:900;border-radius:20px;padding:1px 8px;white-space:nowrap}
+.p-warn{background:var(--warn-bg);color:var(--warn)}.p-ok{background:var(--ok-bg);color:var(--ok)}.p-bad{background:var(--bad-bg);color:var(--bad)}.p-blue{background:var(--blue-soft);color:var(--blue)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.pop{border:1.5px solid var(--line);border-radius:14px;padding:14px;background:var(--card);max-width:620px}
+.pop h4{margin:0 0 6px;color:var(--navy)}
+.src{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;font-size:12.5px;align-items:center;margin-top:8px}
+.src .k{font-weight:800}
+.src .v{color:var(--mute)}
+.bd{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--card);margin-top:8px}
+.bd .nm{font-weight:900;color:var(--navy);font-size:15px}
+.note{font-size:12px;color:var(--mute);margin-top:8px}
+.q{display:grid;grid-template-columns:26px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.q:first-child{border-top:0;padding-top:0}
+.q .n{width:24px;height:24px;border-radius:50%;background:var(--navy);color:var(--card);font-weight:900;font-size:12px;display:flex;align-items:center;justify-content:center}
+.q b{color:var(--navy)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🚑 리커버리 학습지 3판 — 최근 오답 기간 고르기 · 예상 문항·단원 비율 · 최상 포함</h1>
+<p class="lead">원장님 요청 「최근 2주·1주 오답을 학원앱에 반영 · 선택할 수 있게 · 학생별 예상 문제수와 단원 비율 · 최상 문제 포함 선택」. 숫자는 10/24 초6 네 명 실제 결과를 가짜 이름으로 옮겼습니다.</p>
+
+<h2>① 오른쪽 «학습지 규칙» + ② 가운데 «학생별 예상» <span class="tag">리커버리 화면</span></h2>
+<div class="grid">
+  <div class="tool">
+    <b class="h">학습지 규칙</b>
+    <div class="row"><span class="l">🕘 아직 틀린 문제 · 최근</span><span class="chip on">1주</span><span class="chip">2주</span><span class="chip">4주</span></div>
+    <div class="row"><span class="ck"><i class="on">✓</i><span>유형마다 1개<small>같은 유형을 여러 번 틀려도 1문제 · 테스트 쌍둥이와 겹치면 그 유형의 다음 오답</small></span></span></div>
+    <div class="row"><span class="ck"><i class="on">✓</i><span>테스트 오답 쌍둥이 <span class="inp">1</span>문제씩</span></span></div>
+    <div class="row"><span class="ck"><i></i><span>최상(5단계) 난이도 포함<small>끄면 쌍둥이·같은 유형에서 최상을 빼고 상(4)까지</small></span></span></div>
+    <div class="row"><span class="ck"><i></i><span>교과서 같은 유형 · 보강 · 범위 안 교재 오답<small>예전 규칙 — 켜면 문항이 늘어납니다</small></span></span></div>
+    <div class="row"><span class="l">문항 상한·하한</span><span class="inp">없음</span>~<span class="inp">없음</span></div>
+    <div class="row"><span class="l">빼는 유형</span><span class="inp" style="flex:1">농도</span></div>
+    <div class="btn main">⚡ 확정 전원 학습지 생성 (4명 · 예상 138문항)</div>
+    <div class="note">규칙을 바꾸면 가운데 «학생별 예상»이 바로 다시 계산됩니다. 매쓰플랫에는 «생성»을 눌러야 만들어집니다.</div>
+  </div>
+  <div class="ctr">
+    <h3>🔢 학생별 예상 <span class="sub">· 이번 주 확정 초6 4명 · 규칙: 최근 1주 · 유형마다 1개 · 최상 빼기</span></h3>
+    <div class="tw"><table>
+      <tr><th>학생</th><th>기간</th><th class="n">테스트 쌍둥이</th><th class="n">최근 오답</th><th class="n">예상</th><th>단원 비율</th><th class="n">최상</th></tr>
+      <tr><td><b>홍길동</b><div class="sub">초6 · M3</div></td><td><span class="chip on" style="font-size:11px">1주</span></td><td class="n">9</td><td class="n">21유형</td><td class="n"><b class="big">30</b></td>
+        <td><div class="bar"><span style="width:30%;background:var(--test)"></span><span style="width:40%;background:var(--u1)"></span><span style="width:17%;background:var(--u2)"></span><span style="width:7%;background:var(--u3)"></span><span style="width:6%;background:var(--u5)"></span></div>
+          <div class="leg"><i style="background:var(--test)"></i>테스트(문자와 식) 30%<i style="background:var(--u1)"></i>일차방정식의 활용 40%<i style="background:var(--u2)"></i>일차방정식 17%<i style="background:var(--u3)"></i>공간과 입체 7%<i style="background:var(--u5)"></i>기타</div></td><td class="n">0 <span class="sub">(켜면 +2)</span></td></tr>
+      <tr><td><b>박하나</b><div class="sub">초6 · M3 · 지난주 결석</div></td><td><span class="chip on" style="font-size:11px">2주</span> <span class="pill p-blue">학생별</span></td><td class="n">13</td><td class="n">38유형</td><td class="n"><b class="big">51</b> <span class="pill p-warn">많음</span></td>
+        <td><div class="bar"><span style="width:25%;background:var(--test)"></span><span style="width:24%;background:var(--u1)"></span><span style="width:20%;background:var(--u2)"></span><span style="width:14%;background:var(--u3)"></span><span style="width:17%;background:var(--u5)"></span></div>
+          <div class="leg"><i style="background:var(--test)"></i>테스트 25%<i style="background:var(--u1)"></i>원과 부채꼴 24%<i style="background:var(--u2)"></i>일차방정식의 활용 20%<i style="background:var(--u3)"></i>다각형 14%<i style="background:var(--u5)"></i>기타</div></td><td class="n">0 <span class="sub">(켜면 +4)</span></td></tr>
+      <tr><td><b>이순신</b><div class="sub">초6 · M3</div></td><td><span class="chip on" style="font-size:11px">1주</span></td><td class="n">9</td><td class="n">21유형</td><td class="n"><b class="big">30</b></td>
+        <td><div class="bar"><span style="width:30%;background:var(--test)"></span><span style="width:43%;background:var(--u1)"></span><span style="width:17%;background:var(--u2)"></span><span style="width:4%;background:var(--u3)"></span><span style="width:6%;background:var(--u5)"></span></div>
+          <div class="leg"><i style="background:var(--test)"></i>테스트 30%<i style="background:var(--u1)"></i>일차방정식의 활용 43%<i style="background:var(--u2)"></i>문자의 사용과 식의 계산 17%<i style="background:var(--u3)"></i>비례식 4%<i style="background:var(--u5)"></i>기타</div></td><td class="n">0 <span class="sub">(켜면 +1)</span></td></tr>
+      <tr><td><b>김유신</b><div class="sub">초6 · M4</div></td><td><span class="chip on" style="font-size:11px">1주</span></td><td class="n">6</td><td class="n">21유형</td><td class="n"><b class="big">27</b></td>
+        <td><div class="bar"><span style="width:22%;background:var(--test)"></span><span style="width:37%;background:var(--u1)"></span><span style="width:19%;background:var(--u2)"></span><span style="width:11%;background:var(--u3)"></span><span style="width:11%;background:var(--u5)"></span></div>
+          <div class="leg"><i style="background:var(--test)"></i>테스트(초6) 22%<i style="background:var(--u1)"></i>다각형 37%<i style="background:var(--u2)"></i>원과 부채꼴 19%<i style="background:var(--u3)"></i>일차방정식의 활용 11%<i style="background:var(--u5)"></i>기타</div></td><td class="n">0 <span class="sub">(켜면 +3)</span></td></tr>
+    </table></div>
+    <div class="note">예상은 채점 기록만으로 센 숫자라, 매쓰플랫에 쌍둥이가 없는 문제는 같은 유형으로 바뀌어 1~2문항 다를 수 있습니다. 「많음」은 40 넘을 때, 「적음」은 20 아래일 때 붙습니다. 학생 이름을 누르면 ③ 설계 팝업이 열립니다.</div>
+  </div>
+</div>
+
+<h2>③ 학생 설계 팝업 <span class="tag">학생별로 기간·최상·상한 덮어쓰기</span></h2>
+<div class="pop">
+  <h4>🧩 박하나 · 리커버리 10/24 설계</h4>
+  <div class="row" style="border:0"><span class="l">이 학생만</span><span class="chip">1주</span><span class="chip on">2주</span><span class="chip">4주</span><span class="sub">(지난주 결석)</span></div>
+  <div class="row"><span class="ck"><i></i><span>최상 포함</span></span><span class="ck"><i></i><span>상한 40</span></span></div>
+  <div class="src">
+    <span class="k">📝 테스트 오답</span><span class="v">중1 (5/30) 10/21 · 25점 · 15개 중 농도 2 뺌</span><span>13</span>
+    <span class="k">🕘 최근 2주 아직 틀린 문제</span><span class="v">68문항 → 유형마다 1개</span><span>38</span>
+    <span class="k" style="padding-left:14px;font-weight:600">· 원과 부채꼴</span><span class="v">개념+유형 중1(하) · 10/19 오답 학습지</span><span>12</span>
+    <span class="k" style="padding-left:14px;font-weight:600">· 일차방정식의 활용</span><span class="v">RPM 중1(상)</span><span>10</span>
+    <span class="k" style="padding-left:14px;font-weight:600">· 다각형</span><span class="v">개념+유형 중1(하) · 10/23 학습지</span><span>7</span>
+    <span class="k" style="padding-left:14px;font-weight:600">· 기타</span><span class="v">일차방정식 · 비례식 …</span><span>9</span>
+    <span class="k">🚫 뺀 것</span><span class="v">농도 2 · 다시 풀어 맞힌 문제 30</span><span></span>
+  </div>
+  <div class="btn" style="margin-top:12px">이 학생만 만들기 (예상 51문항)</div>
+</div>
+
+<h2>④ 리커버리 보드 학생 카드 한 줄 <span class="tag">만들기 전에 빠진 진도가 보이게</span></h2>
+<div class="bd"><span class="nm">김유신</span><span class="sub">초6 · M4</span><span class="pill p-bad">주간 70 (10/23)</span><span class="pill p-warn">🕘 최근 1주 아직 틀린 21유형 · 테스트 범위 밖 18 (다각형 · 원과 부채꼴)</span></div>
+<div class="bd"><span class="nm">홍길동</span><span class="sub">초6 · M3</span><span class="pill p-bad">주간 50 (10/23)</span><span class="pill p-ok">🕘 최근 1주 아직 틀린 21유형 · 테스트 범위 밖 9</span></div>
+<p class="note">«테스트 범위 밖»이 많으면 주황 — 테스트와 지금 진도가 달라 예전 규칙이면 빠졌을 오답입니다.</p>
+
+<h2>정해 주실 것</h2>
+<div class="card">
+  <div class="q"><div class="n">1</div><div><b>기본 기간</b> — 1주로 둡니다(오늘 결정). 2주·4주는 칩으로 고르고, 결석한 학생은 학생별로 2주.</div></div>
+  <div class="q"><div class="n">2</div><div><b>최상 기본값</b> — 초6은 «빼기», 중·고등은 «포함»으로 나눌지, 모두 «빼기»로 할지.</div></div>
+  <div class="q"><div class="n">3</div><div><b>상한</b> — 기본 «없음»(1주 규칙이면 대부분 27~31). 박하나처럼 2주라 51이 되는 학생에게만 40 상한을 걸지.</div></div>
+  <div class="q"><div class="n">4</div><div><b>중3·고등도 같은 규칙</b>으로 할지 — 지금 중3은 주간테스트 2개 합산 규칙이 따로 있습니다.</div></div>
+</div>
+</div>
+
+</body>
+</html>

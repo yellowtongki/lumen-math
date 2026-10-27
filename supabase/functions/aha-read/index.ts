@@ -33,7 +33,7 @@ const PROMPT = `사진은 루멘수학 「LAMP 활동지」 또는 학생 공책
 칸: 머리(교재/프린트 이름 book, 쪽 page, 번호 num, 틀린이유 reason: 연산오류|문제잘못읽음|관련개념부족|문제이해못함|틀린이유모름),
 L(문제 이해) A(이론·공식) M(풀이 논리) P(막힌 곳과 질문) retry(6단계 재풀이, 있으면) aha(7단계 AHA, 있으면).
 규칙: 쓴 그대로 옮긴다(맞춤법 고치지 않음). 식은 x^2, 1/2, √ 처럼 한 줄로. 못 읽는 낱말은 「?」로 두고
-빈 칸은 ""로. 읽지 못한 칸 이름을 unread 배열에 넣는다(L·A·M·P 중에서). 활동지가 아니라 공책이면 L·A·M·P 제목을 찾아 같은 규칙으로.
+빈 칸은 ""로. 인쇄된 칸 제목(예: Learn the question (문제를 정확히 이해하기), Pinpoint your confusion (…))은 옮기지 않는다 — 학생이 연필로 쓴 글만. 제목만 있고 손글씨가 없으면 그 칸은 "". 읽지 못한 칸 이름을 unread 배열에 넣는다(L·A·M·P 중에서). 활동지가 아니라 공책이면 L·A·M·P 제목을 찾아 같은 규칙으로.
 제목이 아예 없는 공책이면 글의 흐름으로 나누되, 확신이 없는 칸은 ""로 두고 unread에 넣는다.
 concepts: 다음 영문 키 중 이 문제와 가장 관련 있는 것 최대 3개 —
 change, equivalence, generalization, validity, approximation, model, pattern, quantity, representation, simplification, space, system.
@@ -76,6 +76,12 @@ function parseJson(text: string) {
 }
 
 const str = (v: unknown) => (typeof v === 'string' ? v.trim().slice(0, 1200) : '');
+
+/* 2026-10-22 원장 「칸 이름은 빼도록 고쳐줘」 — 인쇄된 LAMP 칸 제목을 학생 글에서 뗀다.
+ * 학생앱 v2-148 · 학원앱 v19-151 의 sync/appbuild/modules/lampstrip_core.js 와 같은 규칙(바꿀 때 셋 다 같이). */
+const LAMP_HEAD_RE = /^\s*(?:[LAMP]\s*[.:)\-]?\s*)?(?:learn\s+the\s+question|activate\s+(?:your\s+)?knowledge|model\s+your\s+reasoning|pinpoint\s+your\s+confusion)\s*(?:\([^)]*\)?)?\s*[-–—:·]?\s*/i;
+const LAMP_HEAD_KO_RE = /^\s*\([^)]*(?:이해하기|떠올리기|풀었나요|접근했나요|정리하기|표현하기|집어내)[^)]*\)?\s*[-–—:·]?\s*/;
+const stripHead = (v: string) => v.split(/\n/).map((l) => l.replace(LAMP_HEAD_RE, '').replace(LAMP_HEAD_KO_RE, '').trim()).filter((x) => x !== '').join('\n');
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
@@ -144,7 +150,7 @@ Deno.serve(async (req: Request) => {
       page: raw.page == null ? '' : String(raw.page).trim().slice(0, 20),
       num: str(raw.num).slice(0, 20),
       reason: REASONS.indexOf(str(raw.reason)) >= 0 ? str(raw.reason) : '',
-      L: str(raw.L), A: str(raw.A), M: str(raw.M), P: str(raw.P),
+      L: stripHead(str(raw.L)), A: stripHead(str(raw.A)), M: stripHead(str(raw.M)), P: stripHead(str(raw.P)),
       retry: str(raw.retry), aha: str(raw.aha),
       concepts: (Array.isArray(raw.concepts) ? raw.concepts : [])
         .map((c: unknown) => String(c)).filter((c: string) => CONCEPTS.indexOf(c) >= 0).slice(0, 3),
