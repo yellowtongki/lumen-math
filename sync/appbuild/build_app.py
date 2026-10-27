@@ -895,6 +895,34 @@ if int(ver.replace('v19-',''))>=165:
     #   그림 폭과 내용 폭이 어긋났다 → 그림 틀을 body 밖(html 바로 아래)에 붙여 배율과 무관하게 480px 로 그린다
     rep("host.innerHTML = '<style>' + CR_CSS + CR_MOB_CSS + '</style>' + html;\n  document.body.appendChild(host);",
         "host.innerHTML = '<style>' + CR_CSS + CR_MOB_CSS + '</style>' + html;\n  document.documentElement.appendChild(host);   /* ★ v19-165: body 는 글씨 배율(zoom)이 걸려 있다 — 밖에 붙여야 폭이 480 그대로 */")
+if int(ver.replace('v19-',''))>=167:
+    # v19-167: 재원생이 자꾸 «퇴원»으로 되돌아가던 것 (원장 10/27 「재원생인데 자꾸 퇴원생으로 되어서 학생이 접속이 안 된다」)
+    #   [원인] 등록부 합치기는 «이 기기 사본이 이긴다». 옛 사본(퇴원 상태)을 든 기기가 동기화할 때마다 서버를 다시 퇴원으로 덮었다.
+    #          복귀 때 지운 퇴원 날짜도 서버 사본에서 되살아남(서버 기록: 재원인데 6/26 퇴원 날짜가 남아 있었다).
+    #   [고침] 퇴원·복귀를 누른 시각 withdrawnAt 을 적고, 합칠 때 시각이 있는 쪽 중 더 나중 것이 퇴원 여부·퇴원 날짜를 정한다.
+    rep("""  st.withdrawn=true;
+  st.withdrawnDate=new Date().toISOString().slice(0,10).replace(/-/g,'.');""", """  st.withdrawn=true;
+  st.withdrawnDate=new Date().toISOString().slice(0,10).replace(/-/g,'.');
+  st.withdrawnAt=new Date().toISOString();   /* ★ v19-167: 누른 시각 — 기기끼리 합칠 때 더 나중 것이 이긴다 */""")
+    rep("""  st.withdrawn=false;
+  delete st.withdrawnDate;""", """  st.withdrawn=false;
+  delete st.withdrawnDate;
+  st.withdrawnAt=new Date().toISOString();   /* ★ v19-167: 복귀 시각 — 옛 기기의 «퇴원» 사본이 다시 덮지 못하게 */""")
+    rep("""            if(prev.withdrawn && s.withdrawn === undefined){
+              m.withdrawn = true;
+              if(prev.withdrawnDate) m.withdrawnDate = prev.withdrawnDate;
+            }""", """            if(prev.withdrawn && s.withdrawn === undefined){
+              m.withdrawn = true;
+              if(prev.withdrawnDate) m.withdrawnDate = prev.withdrawnDate;
+            }
+            /* ★ v19-167: 퇴원·복귀를 누른 시각(withdrawnAt)이 있으면 더 나중 쪽이 이긴다 — 옛 사본을 든 기기가 «복귀»를 «퇴원»으로 되돌리던 것 */
+            var _wl = Date.parse(s.withdrawnAt || '') || 0, _wc = Date.parse(prev.withdrawnAt || '') || 0;
+            if(_wl || _wc){
+              var _ww = _wc > _wl ? prev : s;
+              m.withdrawn = !!_ww.withdrawn; m.withdrawnAt = _ww.withdrawnAt;
+              if(_ww.withdrawn && _ww.withdrawnDate) m.withdrawnDate = _ww.withdrawnDate;
+              else if(!_ww.withdrawn) delete m.withdrawnDate;
+            }""")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''

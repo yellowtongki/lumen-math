@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-166';
+var APP_VER = 'v19-167';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -1109,6 +1109,14 @@ function applyCloudStudentDbMerge(supaStu){
             if(prev.withdrawn && s.withdrawn === undefined){
               m.withdrawn = true;
               if(prev.withdrawnDate) m.withdrawnDate = prev.withdrawnDate;
+            }
+            /* ★ v19-167: 퇴원·복귀를 누른 시각(withdrawnAt)이 있으면 더 나중 쪽이 이긴다 — 옛 사본을 든 기기가 «복귀»를 «퇴원»으로 되돌리던 것 */
+            var _wl = Date.parse(s.withdrawnAt || '') || 0, _wc = Date.parse(prev.withdrawnAt || '') || 0;
+            if(_wl || _wc){
+              var _ww = _wc > _wl ? prev : s;
+              m.withdrawn = !!_ww.withdrawn; m.withdrawnAt = _ww.withdrawnAt;
+              if(_ww.withdrawn && _ww.withdrawnDate) m.withdrawnDate = _ww.withdrawnDate;
+              else if(!_ww.withdrawn) delete m.withdrawnDate;
             }
             if(!s.parentPhone && prev.parentPhone) m.parentPhone = prev.parentPhone;
             if(!s.studentPhone && prev.studentPhone) m.studentPhone = prev.studentPhone;
@@ -3178,6 +3186,7 @@ function withdrawStudent(id){
   if(!confirm(st.name+' 학생을 퇴원 처리하시겠습니까?\n퇴원 후에는 학생앱에 접근할 수 없게 됩니다.\n(기록은 퇴원생 폴더에 보존됩니다)'))return;
   st.withdrawn=true;
   st.withdrawnDate=new Date().toISOString().slice(0,10).replace(/-/g,'.');
+  st.withdrawnAt=new Date().toISOString();   /* ★ v19-167: 누른 시각 — 기기끼리 합칠 때 더 나중 것이 이긴다 */
   saveStudents();
   scheduleSync(null);
   render();
@@ -3188,6 +3197,7 @@ function restoreStudent(id){
   if(!confirm(st.name+' 학생을 복귀 처리하시겠습니까?'))return;
   st.withdrawn=false;
   delete st.withdrawnDate;
+  st.withdrawnAt=new Date().toISOString();   /* ★ v19-167: 복귀 시각 — 옛 기기의 «퇴원» 사본이 다시 덮지 못하게 */
   saveStudents();
   scheduleSync(null);
   render();
@@ -9086,6 +9096,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-167',date:'2026-10-27',stability:'ok',memo:'🩹 <b>재원생이 자꾸 «퇴원»으로 되돌아가던 것</b> (원장 2026-10-27 「재원생인데 자꾸 퇴원생으로 되어서 학생이 접속이 안 된다」). [원인] 학생 명단을 기기끼리 합칠 때 «이 기기 사본이 이긴다». 예전에 퇴원했다 돌아온 학생은, 옛 사본(퇴원 상태)을 가진 기기(아이패드 등)가 동기화할 때마다 서버가 다시 퇴원으로 덮였고 학생앱 로그인이 막혔다. [고침] 퇴원·복귀를 누른 시각을 함께 적고, 합칠 때 더 나중에 누른 쪽이 이긴다 — 옛 기기는 서버의 «복귀»를 받아 저절로 바로잡힌다. 그 학생은 서버에 복귀 시각을 적어 둠.'},
       {ver:'v19-166',date:'2026-10-27',stability:'ok',memo:'🩹 <b>주간 점수 체크하기 · 거짓 제출 사진</b> (원장 2026-10-27 「깜빡하고 체크 못 한 것을 다시 체크하려고 할 때 찾지 못한다 — 어제 월수금 체크를 못 하였다 · «…»가 화면에서 잘린다 · 플래너 거짓 체크에서 사진이 안 보인다」). ① 📔 순공 종이 카드 위에 «📅 어느 수업 날?» 날짜 칩 — 이번 주 월요일부터 오늘까지 수업 있던 날마다 그날 반과 남은 학생 수(놓친 날은 빨강 + 안내 한 줄). 지난 날을 고르고 «가져옴»을 누르면 그 수업 날에 가져온 것으로 적어 점수도 그날 기준(오늘 날짜로 적혀 지각 2점이 되던 것 막음). ② «…» 손으로 고치기 창이 왼쪽 줄 카드에서 화면 밖으로 잘리던 것 → 자리가 없으면 반대쪽으로 열림 · 한 번에 하나만. ③ 📛 거짓 제출 카드 «사진 없음» → 서버 등록부에 비워 둔 사진 주소 대신 사진 저장소에서 그 제출의 사진을 찾아 나란히 보여 줌.'},
       {ver:'v19-165',date:'2026-10-26',stability:'ok',memo:'🩹 <b>📱 모바일 이미지 오른쪽이 잘리던 것</b> (원장 2026-10-26 「모바일 이미지 짤린다」). [원인] 학원앱은 글씨 크기(「가」 단추 · 좁은 모니터 자동 축소)를 화면 전체 배율(zoom 0.72~1.45)로 바꾸는데, 이미지용 임시 틀에도 그 배율이 걸려 그림 폭과 내용 폭이 어긋났다(배율이 1보다 작으면 오른쪽이 잘리고, 크면 오른쪽에 빈 칸). [고침] 임시 틀을 배율이 안 걸리는 곳에 붙여, 어떤 글씨 크기에서도 폭 480 그대로 그린다.'},
       {ver:'v19-164',date:'2026-10-26',stability:'ok',memo:'📋 <b>상담 리포트 — 번호 · 계획 칸은 원장님만 · 📱 모바일 이미지</b> (원장 2026-10-26 「계획·가정에서 칸은 나만 보게 · 표랑 그래프마다 번호를 매기자, 통화하면서 몇 번을 보라고 할 예정 · 학부모 보고서는 핸드폰으로 보니 모바일 버전 이미지 출력도」). ① 그래프·표마다 번호 1, 2, 3 …(과정별 시험은 7-1·7-2 …) — 화면·인쇄·모바일 이미지 모두 같은 번호, 통화 대본 «꼭 짚을 것»에 «리포트 1·2·3번». ② «다음 달 학원 계획 · 가정에서 도와주실 것»은 🔒 원장님만 — 인쇄·PDF·모바일 이미지에서 빠짐. ③ 📞 학부모 상담 위쪽 «📱 모바일 이미지» — 폭 480 한 줄 배치로 그린 PNG(넓은 그래프는 글자를 키움) → «⬇ 이미지 저장» 후 카톡으로. ④ (서버 설정) 진도 레이스 2학기 기말 시즌에 블랙라벨 중1(하)·중3(상)을 «킬러»로(틀려도 6점 · 맞히면 12점).'},
@@ -101152,7 +101163,7 @@ pfCard = function(c){
 };
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~166: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~167: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
