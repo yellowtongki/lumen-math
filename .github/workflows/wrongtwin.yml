@@ -1,0 +1,58 @@
+name: 오답 쌍둥이 숙제 (금·토 새벽 5시 출제)
+
+# 원장 2026-10-28 「월수금은 금요일 · 화목토는 토요일 오답 프린트 숙제를 자동으로」.
+# 학생마다 «아직 틀린 문제»(첫 회 10/1부터 · 학교 시험범위 단원만 · 다시 맞힌 문제는 뺌)마다 쌍둥이 1문제를
+# 매쓰플랫 «숙제» 태그 학습지로 만들어 바로 배정한다. 규칙·서버 키는 docs/wrong_twin_contract.md, 실행 파일은 sync/wrongtwin_make.js.
+# 새벽 정기 수집(mathflat-collect.yml)이 끝난 뒤에 돌아야 어제 채점까지 들어간다 → --wait-collect 가 최대 90분 기다린다.
+# 깃허브 예약은 몇 시간 늦게 도는 일이 있다(그래도 그날 안에는 돈다). 로그에는 학생 이름 첫 글자만 남는다(공개 저장소).
+# 필요한 비밀값: SUPABASE_URL, SUPABASE_SERVICE_KEY, MATHFLAT_ID, MATHFLAT_PASSWORD (이미 있음)
+
+on:
+  schedule:
+    - cron: '0 20 * * 4'   # UTC 목 20:00 = 한국 금 05:00 → 월수금 반
+    - cron: '0 20 * * 5'   # UTC 금 20:00 = 한국 토 05:00 → 화목토 반
+  workflow_dispatch:
+    inputs:
+      batch:
+        description: 'fri(월수금 반) · sat(화목토 반) · all · auto(오늘 요일대로)'
+        required: false
+        default: 'auto'
+      dry:
+        description: 'true 면 설계만 (학습지 안 만듦 · 학원앱 미리보기만 새로)'
+        required: false
+        default: 'false'
+      only:
+        description: '이 학생 코드만 (쉼표로) — 비우면 그 반 전체'
+        required: false
+        default: ''
+
+concurrency:
+  group: wrongtwin
+  cancel-in-progress: false
+
+jobs:
+  make:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # 손으로 넣은 값은 환경변수로 넘겨 따옴표 안에서만 쓴다
+      - name: 오답 쌍둥이 만들기
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
+          MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
+          IN_BATCH: ${{ github.event.inputs.batch || 'auto' }}
+          IN_DRY: ${{ github.event.inputs.dry || 'false' }}
+          IN_ONLY: ${{ github.event.inputs.only || '' }}
+          IS_SCHEDULE: ${{ github.event_name == 'schedule' }}
+        run: |
+          set -- --batch "$IN_BATCH"
+          if [ "$IN_DRY" = "true" ]; then set -- "$@" --dry; fi
+          if [ -n "$IN_ONLY" ]; then set -- "$@" --only "$IN_ONLY"; fi
+          if [ "$IS_SCHEDULE" = "true" ]; then set -- "$@" --wait-collect; fi
+          node sync/wrongtwin_make.js "$@"
