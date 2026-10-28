@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>루멘 문제 DB</title>
+<!-- 🗂 루멘 문제 DB 고르기·출력 화면 (sync/bank_build.py 가 bank 폴더에 bank.html 로 복사한다)
+     맥미니에서 더블클릭해 연다. 인터넷 없이 같은 폴더의 bank_data.js 와 img/ 만 읽는다. 아무 데도 보내지 않는다. -->
+<style>
+:root{--red:#c03f3f;--navy:#073756;--bg:#f8f4ef;--line:#e8ded6;--text:#1c1414;--muted:#6b5a5a;--ok:#2f7d4f;--warn:#c27c0e}
+*{box-sizing:border-box}
+body{margin:0;font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+header{display:flex;gap:12px;align-items:center;padding:10px 16px;background:var(--navy);color:#fff;flex-wrap:wrap}
+header h1{font-size:17px;margin:0 8px 0 0}
+header select,header input{font:inherit;padding:5px 8px;border-radius:6px;border:0}
+header label{display:flex;gap:4px;align-items:center;font-size:13px}
+.wrap{display:grid;grid-template-columns:300px 1fr 280px;height:calc(100vh - 52px)}
+nav,main,aside{overflow:auto;padding:12px}
+nav{border-right:1px solid var(--line);background:#fff}
+aside{border-left:1px solid var(--line);background:#fff}
+details{margin:2px 0}
+summary{cursor:pointer;padding:3px 2px;border-radius:4px;list-style:none;display:flex;gap:6px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary:hover{background:#f3ece6}
+.lv1>summary{font-weight:700;color:var(--navy)}
+.lv2{margin-left:12px}.lv3{margin-left:14px}
+.typ{margin-left:30px;display:flex;gap:6px;padding:2px;align-items:flex-start;font-size:13px}
+.cnt{color:var(--muted);font-size:12px;margin-left:auto;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.card{background:#fff;border:2px solid var(--line);border-radius:8px;padding:8px;cursor:pointer;position:relative}
+.card.on{border-color:var(--red);box-shadow:0 0 0 2px #c03f3f33}
+.card img{width:100%;display:block;margin-top:6px}
+.card .src{font-size:12px;color:var(--muted)}
+.card .src b{color:var(--text)}
+.card .tag{font-size:11px;padding:1px 6px;border-radius:9px;background:#eee;margin-left:4px}
+.card .tag.check{background:#fde7c4;color:var(--warn)}
+.card .tag.nobox{background:#f6d4d4;color:var(--red)}
+.card .noimg{height:60px;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:12px;background:#fbf2f2;margin-top:6px}
+.empty{color:var(--muted);padding:40px;text-align:center}
+aside h2{font-size:15px;margin:4px 0 8px}
+aside .row{margin:8px 0}
+aside input[type=text],aside textarea{width:100%;font:inherit;padding:6px;border:1px solid var(--line);border-radius:6px}
+button{font:inherit;padding:8px 12px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer}
+button.main{background:var(--red);color:#fff;border-color:var(--red);font-weight:700;width:100%;padding:11px}
+ol.sel{padding-left:22px;font-size:12px;max-height:38vh;overflow:auto}
+ol.sel li{margin:2px 0}
+ol.sel a{color:var(--red);cursor:pointer;margin-left:4px}
+.hint{font-size:12px;color:var(--muted)}
+#print{display:none}
+@media print{
+  @page{size:A4;margin:12mm 12mm 14mm}
+  body{background:#fff}
+  header,.wrap{display:none!important}
+  #print{display:block}
+  .ph{display:flex;align-items:center;gap:10px;border-bottom:2px solid var(--red);padding-bottom:6px;margin-bottom:8px}
+  .ph img{height:28px}
+  .ph .t{font-size:17px;font-weight:800;flex:1}
+  .ph .m{font-size:11px;color:#444}
+  .cols{column-count:2;column-gap:9mm;column-rule:1px solid #ddd}
+  .q{break-inside:avoid;margin:0 0 4mm}
+  .q .qs{font-size:9pt;color:#555;margin-bottom:1mm}
+  .q .qs b{color:#000;font-size:11pt;margin-right:5px}
+  .q img{max-width:100%;display:block}
+  .ans{break-before:page}
+  .ans table{border-collapse:collapse;width:100%;font-size:10pt}
+  .ans td{border:1px solid #bbb;padding:3px 6px}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>🗂 루멘 문제 DB</h1>
+  <label>교재 <select id="book"></select></label>
+  <label><input type="checkbox" class="st" value="A" checked>A단계</label>
+  <label><input type="checkbox" class="st" value="B" checked>B단계</label>
+  <label><input type="checkbox" class="st" value="C" checked>C단계</label>
+  <label>번호로 고르기 <input id="nos" placeholder="547 553 560-565" size="16"></label>
+  <span id="made" class="hint" style="color:#cfd9e2;margin-left:auto"></span>
+</header>
+<div class="wrap">
+  <nav id="tree"></nav>
+  <main><div id="grid" class="grid"></div></main>
+  <aside>
+    <h2>고른 문항 <span id="n">0</span>개</h2>
+    <div class="row"><input type="text" id="title" placeholder="학습지 제목 (예: 다각형 유형 연습)"></div>
+    <div class="row">풀이 여백
+      <select id="gap"><option value="4">작게</option><option value="25" selected>보통</option><option value="55">크게</option></select>
+      <label style="margin-left:8px"><input type="checkbox" id="withAns" checked> 정답지</label>
+    </div>
+    <div class="row"><button class="main" id="go">🖨 학습지 출력 (PDF 저장 가능)</button></div>
+    <div class="row" style="display:flex;gap:6px"><button id="clear">모두 빼기</button><button id="copy">번호 목록 복사</button></div>
+    <p class="hint">왼쪽에서 단원·유형을 체크하면 가운데에 문항이 뜹니다. 문항을 누르면 고르고 빼기. 출력 창에서 「PDF로 저장」을 고르면 파일이 됩니다.</p>
+    <ol class="sel" id="sel"></ol>
+  </aside>
+</div>
+<div id="print"></div>
+<script src="bank_data.js"></script>
+<script>
+const B = window.BANK || { books: [], problems: [] };
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const bookName = Object.fromEntries(B.books.map((b) => [b.id, b.short]));
+let picked = [];                       // 고른 순서 그대로 출력한다
+let shownTypes = new Set();            // 체크한 유형(소단원|유형)
+const KEY = 'lumen_bank_pick';
+try { const s = JSON.parse(localStorage.getItem(KEY) || '{}'); picked = s.picked || []; } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ picked })); } catch (e) {} };
+const byId = Object.fromEntries(B.problems.map((p) => [p.id, p]));
+picked = picked.filter((id) => byId[id]);
+$('#made').textContent = B.made ? '자료 ' + B.made.replace('T', ' ') : '';
+B.books.forEach((b) => $('#book').insertAdjacentHTML('beforeend', `<option value="${esc(b.id)}">${esc(b.short)}</option>`));
+const steps = () => [...document.querySelectorAll('.st:checked')].map((x) => x.value);
+const label = (p) => `${bookName[p.book] || ''} · ${p.page}쪽 · ${p.no}번`;
+const tkey = (p) => p.little + '|' + p.concept;
+
+function inBook() { const bk = $('#book').value; return B.problems.filter((p) => p.book === bk && steps().includes((p.step || '')[0])); }
+
+function drawTree() {
+  const ps = inBook(); const tree = {};
+  ps.forEach((p) => {
+    const a = tree[p.big || '(대단원)'] = tree[p.big || '(대단원)'] || {};
+    const b = a[p.mid || '(중단원)'] = a[p.mid || '(중단원)'] || {};
+    const c = b[p.little || '(소단원)'] = b[p.little || '(소단원)'] || {};
+    (c[p.concept || '(유형)'] = c[p.concept || '(유형)'] || []).push(p);
+  });
+  const cnt = (o) => Array.isArray(o) ? o.length : Object.values(o).reduce((n, v) => n + cnt(v), 0);
+  const keysOf = (o) => Array.isArray(o) ? [] : Object.entries(o).flatMap(([k, v]) => Array.isArray(v) ? [v[0] && tkey(v[0])] : keysOf(v));
+  let h = '';
+  for (const [big, mids] of Object.entries(tree)) {
+    h += `<details class="lv1" open><summary><input type="checkbox" data-keys="${esc(JSON.stringify(keysOf(mids)))}">${esc(big)}<span class="cnt">${cnt(mids)}</span></summary>`;
+    for (const [mid, lits] of Object.entries(mids)) {
+      h += `<details class="lv2" open><summary><input type="checkbox" data-keys="${esc(JSON.stringify(keysOf(lits)))}">${esc(mid)}<span class="cnt">${cnt(lits)}</span></summary>`;
+      for (const [lit, typs] of Object.entries(lits)) {
+        h += `<details class="lv3"><summary><input type="checkbox" data-keys="${esc(JSON.stringify(keysOf(typs)))}">${esc(lit)}<span class="cnt">${cnt(typs)}</span></summary>`;
+        for (const [typ, arr] of Object.entries(typs))
+          h += `<label class="typ"><input type="checkbox" data-keys="${esc(JSON.stringify([tkey(arr[0])]))}">${esc(typ)}<span class="cnt">${arr.length}</span></label>`;
+        h += '</details>';
+      }
+      h += '</details>';
+    }
+    h += '</details>';
+  }
+  $('#tree').innerHTML = h || '<p class="empty">이 교재에 문항이 없습니다</p>';
+  $('#tree').querySelectorAll('input[data-keys]').forEach((cb) => {
+    const ks = JSON.parse(cb.dataset.keys); cb.checked = ks.length && ks.every((k) => shownTypes.has(k));
+    cb.addEventListener('click', (e) => { e.stopPropagation(); ks.forEach((k) => cb.checked ? shownTypes.add(k) : shownTypes.delete(k)); drawTree(); drawGrid(); });
+  });
+}
+
+function parseNos(s) {
+  const out = new Set();
+  String(s || '').split(/[\s,]+/).filter(Boolean).forEach((t) => {
+    const m = t.match(/^(\d+)-(\d+)$/);
+    if (m) { for (let i = +m[1]; i <= +m[2]; i++) out.add(String(i)); } else out.add(t.replace(/번$/, ''));
+  });
+  return out;
+}
+
+function drawGrid() {
+  const nos = parseNos($('#nos').value);
+  const ps = inBook().filter((p) => nos.size ? nos.has(p.no) : shownTypes.has(tkey(p)));
+  $('#grid').innerHTML = ps.length ? ps.map((p) => `
+    <div class="card ${picked.includes(p.id) ? 'on' : ''}" data-id="${esc(p.id)}">
+      <div class="src"><b>${esc(p.page)}쪽 ${esc(p.no)}번</b> · ${esc(p.step)} · ${esc(p.concept)}
+        ${p.status === 'check' ? '<span class="tag check">확인 필요</span>' : ''}${p.status === 'nobox' ? '<span class="tag nobox">그림 없음</span>' : ''}</div>
+      ${p.img ? `<img loading="lazy" src="${esc(p.img)}" alt="">` : '<div class="noimg">아직 잘리지 않은 문항</div>'}
+    </div>`).join('') : '<p class="empty">왼쪽에서 단원·유형을 체크하거나, 위에 번호를 적어 주세요</p>';
+  $('#grid').querySelectorAll('.card').forEach((c) => c.addEventListener('click', () => {
+    const id = c.dataset.id; const i = picked.indexOf(id);
+    if (i < 0 && !byId[id].img) return;   // 그림이 없는 문항은 고를 수 없다
+    i >= 0 ? picked.splice(i, 1) : picked.push(id); save(); c.classList.toggle('on'); drawSel();
+  }));
+}
+
+function drawSel() {
+  $('#n').textContent = picked.length;
+  $('#sel').innerHTML = picked.map((id) => `<li>${esc(label(byId[id]))}<a data-id="${esc(id)}">빼기</a></li>`).join('');
+  $('#sel').querySelectorAll('a').forEach((a) => a.addEventListener('click', () => { picked = picked.filter((x) => x !== a.dataset.id); save(); drawSel(); drawGrid(); }));
+}
+
+function doPrint() {
+  const list = picked.map((id) => byId[id]).filter((p) => p && p.img);
+  if (!list.length) { alert('그림이 있는 문항을 먼저 골라 주세요'); return; }
+  const gap = +$('#gap').value; const title = $('#title').value.trim() || '루멘 학습지';
+  const d = new Date(); const date = `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
+  let h = `<div class="ph"><img src="logo_bulb.png" onerror="this.remove()"><div class="t">${esc(title)}</div><div class="m">${date} · ${list.length}문항 · 이름 ________</div></div><div class="cols">`;
+  list.forEach((p, i) => { h += `<div class="q" style="padding-bottom:${gap}mm"><div class="qs"><b>${i + 1}</b>${esc(label(p))}</div><img src="${esc(p.img)}" data-dpi="220"></div>`; });
+  h += '</div>';
+  if ($('#withAns').checked) {
+    h += `<div class="ans"><div class="ph"><div class="t">${esc(title)} · 정답</div></div><table>`;
+    for (let i = 0; i < list.length; i += 2) {
+      const c = (p, k) => p ? `<td><b>${k + 1}</b></td><td>${esc(p.answer)}</td><td style="color:#777;font-size:9pt">${esc(label(p))}</td>` : '<td></td><td></td><td></td>';
+      h += `<tr>${c(list[i], i)}${c(list[i + 1], i + 1)}</tr>`;
+    }
+    h += '</table></div>';
+  }
+  $('#print').innerHTML = h;
+  const imgs = [...$('#print').querySelectorAll('img[data-dpi]')];
+  let left = imgs.length;
+  const done = () => { if (--left <= 0) setTimeout(() => window.print(), 50); };
+  imgs.forEach((im) => {
+    const fit = () => { im.style.width = (im.naturalWidth / 220 * 25.4).toFixed(1) + 'mm'; done(); };   // 책에 찍힌 크기 그대로
+    im.complete && im.naturalWidth ? fit() : (im.onload = fit, im.onerror = done);
+  });
+}
+
+$('#book').addEventListener('change', () => { shownTypes.clear(); drawTree(); drawGrid(); });
+document.querySelectorAll('.st').forEach((x) => x.addEventListener('change', () => { drawTree(); drawGrid(); }));
+$('#nos').addEventListener('input', drawGrid);
+$('#go').addEventListener('click', doPrint);
+$('#clear').addEventListener('click', () => { picked = []; save(); drawSel(); drawGrid(); });
+$('#copy').addEventListener('click', () => { const t = picked.map((id) => label(byId[id])).join('\n'); navigator.clipboard && navigator.clipboard.writeText(t); });
+drawTree(); drawGrid(); drawSel();
+</script>
+</body>
+</html>
