@@ -923,6 +923,26 @@ if int(ver.replace('v19-',''))>=167:
               if(_ww.withdrawn && _ww.withdrawnDate) m.withdrawnDate = _ww.withdrawnDate;
               else if(!_ww.withdrawn) delete m.withdrawnDate;
             }""")
+if int(ver.replace('v19-',''))>=168:
+    # v19-168: 🚑 리커버리 화면에서 앱이 멈추던 것 (원장 10/28 「리커버리 화면에서 멈춘다」 — 크롬 «응답 없는 페이지»)
+    #   [원인] rc154Bar 가 그릴 때마다 «마지막 수집 확인»(rc154Meta)을 묻고 답이 오면 다시 그린다. 답을 기다리는 중(loading)에
+    #          다시 그리면 rc154Meta 가 곧바로 «끝났음»(Promise.resolve)을 돌려줘 → 다시 그리기 → 또 묻기 … 끝없는 반복이
+    #          브라우저를 붙잡아 서버 답이 영영 못 들어옴. 서버가 조금만 느려도 생긴다.
+    #   [고침] 기다리는 중이면 같은 약속(진행 중인 질문)을 돌려주고, 그리기에서는 기다리는 중이면 새로 묻지 않는다.
+    rep("""  if (!sb || RC154.loading) return Promise.resolve();
+  RC154.loading = true;
+  return sb.from('lumen_store').select('key,value,updated_at').in('key', ['mf_weekly', 'mf_collect_req']).then(function(r){""",
+        """  if (!sb) return Promise.resolve();
+  if (RC154.loading) return RC154.p || Promise.resolve();   /* ★ v19-168: 기다리는 중이면 같은 질문을 기다린다(바로 «끝»을 돌려주면 그리기가 끝없이 반복됐다) */
+  RC154.loading = true;
+  return (RC154.p = sb.from('lumen_store').select('key,value,updated_at').in('key', ['mf_weekly', 'mf_collect_req']).then(function(r){""")
+    rep("""  }, function(){ RC154.loading = false; RC154.t = Date.now(); });
+}
+function rc154State(){""", """  }, function(){ RC154.loading = false; RC154.t = Date.now(); }));
+}
+function rc154State(){""")
+    rep("""  if (!RC154.t || Date.now() - RC154.t > 120000) rc154Meta().then(function(){ try { if (VIEW === 'recovery') render(); } catch(e){} });""",
+        """  if (!RC154.loading && (!RC154.t || Date.now() - RC154.t > 120000)) rc154Meta().then(function(){ try { if (VIEW === 'recovery') render(); } catch(e){} });   /* ★ v19-168: 묻는 중이면 또 묻지 않는다 */""")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
