@@ -1,0 +1,401 @@
+<title>루멘 운영 달력</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap">
+<style>
+/* 레이아웃: 위 «학관노 도구 파악» 접이식 → 학원앱 새 탭(상단 하위탭 4개: 월간 달력 · 1년 한눈에 · 매뉴얼 · 점검) → 아래 «가져오기/바꾸기/빼기» 표 */
+:root{ --bg:#f3f5f9; --fg:#17243a; --mute:#6b7890; --line:#dfe4ec; --card:#fff; --navy:#0d2240; --blue:#1d6fe8; --blue-soft:#e8f0fd;
+  --ok:#15803d; --ok-bg:#dcfce7; --warn:#b45309; --warn-bg:#fef3c7; --bad:#b91c1c; --bad-bg:#fee2e2;
+  --sch:#7c3aed; --sch-bg:#f1eafe; --ev:#1d6fe8; --ev-bg:#e8f0fd; --reg:#0f766e; --reg-bg:#dcf5f1; --hol:#dc2626;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --ok:#86efac; --ok-bg:#14301f; --warn:#fcd34d; --warn-bg:#3a2a0c; --bad:#fca5a5; --bad-bg:#3b1515; --sch:#c4b5fd; --sch-bg:#2a2147; --ev:#93b8ff; --ev-bg:#1d2d4a; --reg:#5eead4; --reg-bg:#12302c; --hol:#f87171; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --ok:#86efac; --ok-bg:#14301f; --warn:#fcd34d; --warn-bg:#3a2a0c; --bad:#fca5a5; --bad-bg:#3b1515; --sch:#c4b5fd; --sch-bg:#2a2147; --ev:#93b8ff; --ev-bg:#1d2d4a; --reg:#5eead4; --reg-bg:#12302c; --hol:#f87171; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.6;padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font-size:22px;font-weight:900;color:var(--navy);margin:0;text-wrap:balance}
+.lead{color:var(--mute);margin:2px 0 0}
+h2{font-size:16px;font-weight:900;color:var(--navy);margin:0 0 10px;text-wrap:balance}
+h3{font-size:14.5px;font-weight:900;color:var(--navy);margin:14px 0 6px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+details.box>summary{cursor:pointer;font-weight:900;color:var(--navy);font-size:15px}
+.tag{display:inline-block;font-size:11px;font-weight:800;padding:1px 8px;border-radius:20px;background:var(--blue-soft);color:var(--blue);vertical-align:2px}
+.tag.ex{background:var(--warn-bg);color:var(--warn)}
+.find{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:12px}
+.find div{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;min-width:0}
+.find b{display:block;color:var(--navy);font-size:13.5px;margin-bottom:2px}
+.find ul{margin:4px 0 0;padding-left:18px}
+.find li{margin:1px 0}
+/* app frame */
+.app{display:grid;grid-template-columns:150px minmax(0,1fr);background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.side{background:var(--navy);color:#fff;padding:12px 8px;display:flex;flex-direction:column;gap:2px;font-size:13px}
+:root[data-theme="dark"] .side{color:var(--bg)}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .side{color:var(--bg)} }
+.side span{padding:6px 10px;border-radius:8px;opacity:.7}
+.side span.on{background:var(--blue);opacity:1;font-weight:800;color:#fff}
+.side small{opacity:.55;padding:8px 10px 2px;font-size:11px}
+.main{padding:16px;min-width:0;display:flex;flex-direction:column;gap:12px}
+@media(max-width:760px){.app{grid-template-columns:1fr}.side{flex-direction:row;flex-wrap:wrap}.side small{display:none}}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{font:inherit;font-size:13px;font-weight:800;border:1.5px solid var(--line);background:var(--bg);color:var(--fg);border-radius:20px;padding:5px 14px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+.tabs button:focus-visible,.cal td:focus-visible,.btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.stat .v{font-size:22px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums}
+.stat .k{font-size:12px;color:var(--mute);font-weight:700}
+.stat.alert{border-color:var(--bad);background:var(--bad-bg)}.stat.alert .v{color:var(--bad)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mute);font-weight:700}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.calwrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px}
+@media(max-width:900px){.calwrap{grid-template-columns:1fr}}
+.calscroll{overflow-x:auto;min-width:0}
+.cal{width:100%;min-width:640px;border-collapse:collapse;table-layout:fixed}
+.cal th{font-size:12px;color:var(--mute);padding:4px;font-weight:800}
+.cal th:first-child{color:var(--hol)}
+.cal td{border:1px solid var(--line);vertical-align:top;height:96px;padding:4px;cursor:pointer;font-size:11.5px;line-height:1.35}
+.cal td.out{background:var(--bg);cursor:default}
+.cal td.off{background:var(--bg)}
+.cal td .n{font-weight:900;font-size:12.5px;font-variant-numeric:tabular-nums;display:flex;justify-content:space-between}
+.cal td.sun .n{color:var(--hol)}
+.cal td.today{outline:2px solid var(--blue);outline-offset:-2px}
+.cal td.sel{background:var(--blue-soft)}
+.it{display:block;border-radius:5px;padding:1px 5px;margin-top:2px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it.sch{background:var(--sch-bg);color:var(--sch)}
+.it.ev{background:var(--ev-bg);color:var(--ev)}
+.it.reg{background:var(--reg-bg);color:var(--reg)}
+.it.done{text-decoration:line-through;opacity:.55}
+.it.over{background:var(--bad-bg);color:var(--bad)}
+.more{color:var(--mute);font-weight:700;margin-top:2px;display:block}
+.week{font-size:12px;color:var(--mute);font-weight:700;margin-top:6px}
+.week b{color:var(--reg)}
+.day{border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0;align-self:start}
+.day h4{margin:0 0 8px;font-size:15px;color:var(--navy)}
+.ck{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-top:1px dashed var(--line);font-size:13px}
+.ck:first-of-type{border-top:0}
+.ck input{margin-top:4px;accent-color:var(--blue)}
+.ck b{display:block}
+.ck small{display:block;color:var(--mute);font-size:11.5px;font-weight:600}
+.ck.over b{color:var(--bad)}
+.link{display:inline-block;margin-top:3px;font-size:11.5px;font-weight:800;color:var(--blue);border:1px solid var(--blue);border-radius:12px;padding:0 8px}
+.chip{display:inline-block;font-size:11px;font-weight:800;border-radius:10px;padding:0 7px;margin-right:4px}
+.chip.sch{background:var(--sch-bg);color:var(--sch)}.chip.ev{background:var(--ev-bg);color:var(--ev)}.chip.reg{background:var(--reg-bg);color:var(--reg)}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}.chip.warn{background:var(--warn-bg);color:var(--warn)}.chip.bad{background:var(--bad-bg);color:var(--bad)}
+/* year */
+.year{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.mon{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.mon .h{display:flex;justify-content:space-between;align-items:baseline;font-weight:900;color:var(--navy)}
+.mon .h small{color:var(--mute);font-weight:700;font-size:11.5px}
+.bar{height:5px;border-radius:3px;background:var(--line);margin:4px 0 6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--blue)}
+.mon .e{font-size:12px;margin:2px 0}
+/* manuals */
+.mlist{display:flex;flex-direction:column;gap:8px}
+.man{border:1px solid var(--line);border-radius:12px;min-width:0}
+.man>summary{cursor:pointer;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.man>summary .t{font-weight:900;color:var(--navy);flex:1;min-width:160px}
+.man>summary .s{font-size:12px;color:var(--mute);font-weight:700;font-variant-numeric:tabular-nums}
+.pages{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px 12px}
+@media(max-width:700px){.pages{grid-template-columns:1fr}}
+.page{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;min-width:0}
+.page h5{margin:0 0 6px;font-size:12.5px;color:var(--mute)}
+.kv{display:grid;grid-template-columns:56px minmax(0,1fr);gap:6px;margin:3px 0}
+.kv b{color:var(--navy)}
+.page ol{margin:4px 0 0;padding-left:20px}
+.page li{margin:2px 0}
+.warnbox{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700;margin:0 12px 12px}
+.score{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;font-weight:700;color:var(--mute);padding:0 12px 10px}
+.score span{border:1px solid var(--line);border-radius:8px;padding:1px 8px;font-variant-numeric:tabular-nums}
+.btn{font:inherit;font-size:12.5px;font-weight:800;border:1.5px solid var(--blue);color:var(--blue);background:transparent;border-radius:16px;padding:3px 12px;cursor:pointer}
+.btn.pri{background:var(--blue);color:#fff}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+/* audit */
+.au{display:grid;grid-template-columns:minmax(0,1.4fr) 110px 120px minmax(0,1fr);gap:8px;padding:8px 0;border-top:1px dashed var(--line);font-size:13px;align-items:center}
+.au.h{font-size:12px;color:var(--mute);font-weight:800;border-top:0}
+@media(max-width:640px){.au{grid-template-columns:1fr 1fr}.au.h{display:none}}
+/* mapping table */
+.tscroll{overflow-x:auto}
+table.map{width:100%;min-width:620px;border-collapse:collapse;font-size:13px}
+table.map th,table.map td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+table.map th{font-size:12px;color:var(--mute)}
+table.map td:first-child{font-weight:900;white-space:nowrap}
+.note{font-size:12.5px;color:var(--mute)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>운영 달력·매뉴얼 <span class="tag">학원앱 새 탭 미리보기</span> <span class="tag ex">내용은 모두 예시</span></h1>
+    <p class="lead">학관노 도구의 틀(행사 D-업무 · 2쪽 매뉴얼 · 월간 달력 · 운영 점검)을 루멘수학 1인 원장 학원에 맞게 줄였습니다. 날짜와 업무는 원장님이 고칠 수 있는 예시입니다.</p>
+  </header>
+
+  <details class="box" id="found">
+    <summary>학관노 도구를 이렇게 파악했습니다 (펼치기)</summary>
+    <div class="find">
+      <div><b>① 업무 4가지 주기</b>매일 · 정기(매주·매월) · 발생 시(결석, 상담 요청 등) · 행사 때. 모든 업무를 이 넷 중 하나로 나눕니다.</div>
+      <div><b>② 행사 → D-업무</b>행사마다 기준일을 넣고 「D-14 목표·일정 확정 → D-7 안내 → D-3 자료 → D-1 점검 → D-day → D+1 결과 기록」처럼 펼칩니다. 쉬는 요일에 걸리면 <u>앞 근무일로 당깁니다</u>.</div>
+      <div><b>③ 월간 달력 = 엑셀 「연간기획」</b>
+        <ul><li>12개월 달력을 옆으로 나란히, 날짜 칸에 공휴일 · ●행사 · 「담당: 할 일」(한 칸 4줄, 넘치면 「외 N건」)</li>
+        <li>그 아래 담당 × 주(1~6주) 표, 마지막 칸은 「정기」 업무</li>
+        <li>맨 아래 월별 체크리스트</li></ul>
+        화면에는 월별 업무 수 막대와 월별 액션플랜 목록이 있고, 달력 모양은 엑셀로 내보낼 때 만들어집니다.</div>
+      <div><b>④ 매뉴얼은 2쪽</b>1쪽: 언제 → 누가 → 어디서 → 무엇을 → 어떻게(4~6단계, 동사로 끝나게). 2쪽: 완료 기준 · 증빙 · 보고 · 예외(승인자) · 단계별 사진.</div>
+      <div><b>⑤ 무엇부터 쓰나</b>빈도 · 사고 위험 · 원장 의존도를 1~5점 매겨 합계 상위 10개만 먼저 매뉴얼로 만듭니다.</div>
+      <div><b>⑥ 점검·승인</b>7문항(언제/누가/어디서/무엇을/순서/완료·증빙/예외 승인자) + 직원이 매뉴얼만 보고 해 보기 → 승인. 「잘, 꼼꼼, 적절, 신속, 철저…」 같은 막연한 말은 자동 경고.</div>
+      <div><b>⑦ 운영 점검</b>승인 뒤 매일 업무는 7일, 정기·발생 시 업무는 30일마다 표본 점검. 「문제」로 표시한 항목은 「개정할 점」으로 모입니다.</div>
+      <div><b>⑧ 저장 방식</b>그 기기 브라우저에만 저장(사진도). 다른 기기는 백업 파일로 옮김. 엑셀 · 인쇄용 문서 · 이미지 액션플랜 · CSV로 내보냅니다.</div>
+    </div>
+  </details>
+
+  <section class="app" aria-label="학원앱 화면 미리보기">
+    <nav class="side" aria-label="학원앱 왼쪽 메뉴">
+      <small>운영</small>
+      <span>학생관리</span><span>출결·보충</span><span>리커버리</span><span>녹음 확인</span>
+      <span class="on">📅 운영 달력</span>
+      <small>학습</small>
+      <span>시험대비 트랙</span><span>아하노트</span>
+    </nav>
+    <div class="main">
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" data-tab="cal" aria-selected="true">월간 달력</button>
+        <button role="tab" data-tab="year" aria-selected="false">1년 한눈에</button>
+        <button role="tab" data-tab="man" aria-selected="false">매뉴얼</button>
+        <button role="tab" data-tab="aud" aria-selected="false">점검</button>
+      </div>
+
+      <!-- 월간 달력 -->
+      <div id="p-cal">
+        <div class="stats">
+          <div class="stat"><div class="v" id="sToday">0</div><div class="k">오늘 할 일</div></div>
+          <div class="stat"><div class="v" id="sWeek">0</div><div class="k">이번 주 행사 업무</div></div>
+          <div class="stat alert"><div class="v" id="sOver">0</div><div class="k">기한 지남</div></div>
+          <div class="stat"><div class="v">3</div><div class="k">이번 달 행사·시험</div></div>
+        </div>
+        <div class="row" style="justify-content:space-between;margin:12px 0 6px">
+          <div class="row"><button class="btn" type="button" aria-label="이전 달">‹</button><b style="font-size:16px;color:var(--navy)">2026년 11월</b><button class="btn" type="button" aria-label="다음 달">›</button></div>
+          <div class="legend"><span><i style="background:var(--sch)"></i>학교 일정(자동)</span><span><i style="background:var(--ev)"></i>행사 D-업무</span><span><i style="background:var(--reg)"></i>정기 업무</span><span><i style="background:var(--bad)"></i>기한 지남</span></div>
+        </div>
+        <div class="calwrap">
+          <div class="calscroll"><table class="cal" id="cal"><thead><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead><tbody></tbody></table>
+            <p class="week"><b>매주 반복</b> · 월 리커버리 명단 확정 · 금 리커버리 학습지 만들기 · 매일 녹음 확인 · 매일 Ultra Feedback <span class="note">(달력을 덜 복잡하게 하려고 칸에는 매월 업무만 넣고, 매주·매일 업무는 「오늘 할 일」에만 띄웁니다)</span></p>
+          </div>
+          <aside class="day" id="day" aria-live="polite"></aside>
+        </div>
+      </div>
+
+      <!-- 1년 한눈에 -->
+      <div id="p-year" hidden>
+        <p class="note" style="margin:0 0 8px">학관노 엑셀 「연간기획」의 화면판입니다. 막대는 그달 행사 업무 수. 학교 시험일은 학사일정 수집(매일 자동)에서 가져와 기준일이 됩니다. 2027 수업일정(횟수제)은 상의 중이라 비워 두었습니다.</p>
+        <div class="year" id="year"></div>
+        <div class="row" style="margin-top:10px"><button class="btn pri" type="button">엑셀 연간기획 내보내기 (학관노 양식)</button><button class="btn" type="button">이달 체크리스트 인쇄</button></div>
+      </div>
+
+      <!-- 매뉴얼 -->
+      <div id="p-man" hidden>
+        <div class="row" style="justify-content:space-between;margin-bottom:8px">
+          <p class="note" style="margin:0">점수(빈도·사고 위험·원장 의존 1~5) 높은 순 · 상위 10개부터 씁니다. 「앱에서 하기」는 해당 학원앱 화면으로 바로 갑니다.</p>
+          <button class="btn pri" type="button">＋ 업무 추가</button>
+        </div>
+        <div class="mlist">
+          <details class="man" open>
+            <summary><span class="t">리커버리 학습지 만들기</span><span class="chip reg">정기 · 매주</span><span class="chip ok">사용 중</span><span class="s">점수 13 (5·3·5)</span></summary>
+            <div class="pages">
+              <div class="page"><h5>1쪽 · 언제 → 누가 → 어디서 → 무엇을 → 어떻게</h5>
+                <div class="kv"><b>언제</b><span>매주 금요일 저녁, 리커버리 전날</span></div>
+                <div class="kv"><b>누가</b><span>원장 (조교가 생기면 조교, 확정은 원장)</span></div>
+                <div class="kv"><b>어디서</b><span>학원앱 리커버리 탭 → 매쓰플랫</span></div>
+                <div class="kv"><b>무엇을</b><span>이번 주 확정 명단 · 최근 1주 주간테스트·교재 오답</span></div>
+                <div class="kv"><b>어떻게</b><span></span></div>
+                <ol>
+                  <li>리커버리 탭에서 ↻ 새로고침을 눌러 오늘 채점까지 반영한다</li>
+                  <li>네이버 예약 시간과 명단을 맞춰 확정 인원을 정한다</li>
+                  <li>기간을 고른다 (기본 1주, 지난주 결석한 학생은 2주)</li>
+                  <li>학생별 예상 문항 수(30~40)와 단원 비율을 확인한다</li>
+                  <li>「학습지 만들기」를 누르고 매쓰플랫 배정 번호를 확인한다</li>
+                </ol>
+              </div>
+              <div class="page"><h5>2쪽 · 완료와 보고</h5>
+                <div class="kv"><b>완료</b><span>확정 학생 전원에게 학습지 배정 · 전부 자동채점 문항 · 최상 난이도 없음</span></div>
+                <div class="kv"><b>증빙</b><span>매쓰플랫 학습지 번호 (리커버리 탭에 자동 기록)</span></div>
+                <div class="kv"><b>보고</b><span>없음 (학생앱에 자동 표시)</span></div>
+                <div class="kv"><b>예외</b><span>2주 학생은 상한 40문항 · 문항이 20개 미만이면 단원 문제 추가 여부는 원장 판단</span></div>
+                <div class="row" style="margin-top:8px"><button class="btn pri" type="button">앱에서 하기 → 리커버리</button><button class="btn" type="button">이번 주 완료 ✓</button></div>
+              </div>
+            </div>
+          </details>
+          <details class="man">
+            <summary><span class="t">2학기 기말 직전보강</span><span class="chip ev">행사 때</span><span class="chip warn">초안</span><span class="s">점수 12 (2·5·5) · D-업무 6개</span></summary>
+            <div class="pages">
+              <div class="page"><h5>D-업무 (기준일 = 학교 시험 첫날, 학사일정에서 자동)</h5>
+                <ol>
+                  <li>D-21 · 학교별 시험범위 확인, 시험대비 트랙 공개</li>
+                  <li>D-14 · 직전보강 시간표 학부모 안내 (카톡)</li>
+                  <li>D-7 · 학교별 기출 학습지 출력</li>
+                  <li>D-3 · 빈칸 테스트로 최종 점검</li>
+                  <li>D-day · 시험 응원 문자</li>
+                  <li>D+1 · 시험 후기 받기 · 성적 입력 요청</li>
+                </ol>
+              </div>
+              <div class="page"><h5>2쪽 · 완료와 보고</h5>
+                <div class="kv"><b>완료</b><span>학교별 범위 끝까지 1회 이상 · 트랙 진도 100%</span></div>
+                <div class="kv"><b>증빙</b><span>시험대비 트랙 진도 · 출력물 사진</span></div>
+                <div class="kv"><b>보고</b><span>학부모앱 공지</span></div>
+                <div class="kv"><b>예외</b><span>시험일이 다른 학교는 따로 기준일</span></div>
+              </div>
+            </div>
+          </details>
+          <details class="man">
+            <summary><span class="t">보충 수업 잡기</span><span class="chip ev" style="background:var(--bg);color:var(--fg)">발생 시</span><span class="chip warn">초안</span><span class="s">점수 12 (4·4·4)</span></summary>
+            <div class="pages">
+              <div class="page"><h5>1쪽</h5>
+                <div class="kv"><b>언제</b><span>결석 연락을 받았을 때 (당일)</span></div>
+                <div class="kv"><b>어디서</b><span>학원앱 출결 달력</span></div>
+                <ol><li>결석 표시와 사유를 적는다</li><li>보충 날짜·시간을 정한다 (같은 날 보충도 가능)</li><li>학부모에게 보충 시간을 카톡으로 안내한다</li><li>보충이 끝나면 ✓ 완료를 누른다</li></ol>
+              </div>
+              <div class="page"><h5>2쪽</h5>
+                <div class="kv"><b>완료</b><span>결석일에 보충 날짜와 완료 표시가 있음</span></div>
+                <div class="kv"><b>증빙</b><span>출결 달력 기록</span></div>
+              </div>
+            </div>
+            <div class="warnbox">자동 점검: 예외·승인자가 없습니다 (예: 보충 2회 이상 미참석은 원장 상담)</div>
+          </details>
+          <details class="man">
+            <summary><span class="t">녹음 숙제 확인</span><span class="chip reg">매일</span><span class="chip ok">사용 중</span><span class="s">점수 11 (5·2·4)</span></summary>
+            <div class="pages"><div class="page"><ol><li>녹음 훑어보기를 연다 (새벽에 글로 옮겨져 있음)</li><li>주제가 맞는지 표시를 본다</li><li>한마디를 남기고 ✓ 선생님 확인을 누른다</li></ol></div><div class="page"><div class="kv"><b>완료</b><span>오늘 낸 녹음 전부 ✓ (학부모앱에 표시됨)</span></div></div></div>
+          </details>
+          <details class="man">
+            <summary><span class="t">신규 상담</span><span class="chip ev" style="background:var(--bg);color:var(--fg)">발생 시</span><span class="chip bad">아직 안 씀</span><span class="s">점수 11 (2·4·5)</span></summary>
+          </details>
+        </div>
+      </div>
+
+      <!-- 점검 -->
+      <div id="p-aud" hidden>
+        <p class="note" style="margin:0 0 8px">1인 원장판: 직원 테스트·승인 단계는 끄고, 「매뉴얼대로 했나」만 스스로 봅니다. 매일 업무는 7일, 나머지는 30일마다. 조교가 생기면 승인 단계를 켭니다.</p>
+        <div class="au h"><span>매뉴얼</span><span>다음 점검</span><span>최근 결과</span><span>개정할 점</span></div>
+        <div class="au"><b>리커버리 학습지 만들기</b><span class="chip bad">11/7 지남</span><span class="chip ok">정상 6/6</span><span>-</span></div>
+        <div class="au"><b>녹음 숙제 확인</b><span>11/12</span><span class="chip warn">문제 1</span><span>주말 녹음 확인이 월요일에 밀림 → 「언제」에 토요일 추가</span></div>
+        <div class="au"><b>2학기 기말 직전보강</b><span>시험 끝난 뒤</span><span>-</span><span>-</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="box">
+    <h2>학관노 도구에서 가져오기 · 바꾸기 · 빼기</h2>
+    <div class="tscroll"><table class="map">
+      <thead><tr><th>구분</th><th>학관노 도구</th><th>루멘수학판</th></tr></thead>
+      <tbody>
+        <tr><td>가져오기</td><td>업무 4주기 · 행사 D-업무 · 휴무일 당김 · 2쪽 매뉴얼 · 점수로 10개 고르기 · 막연한 말 경고 · 월간 달력 · 엑셀 연간기획</td><td>그대로 씁니다. 엑셀 연간기획도 같은 모양으로 내보내서 학관노 숙제로 낼 수 있게 합니다.</td></tr>
+        <tr><td>바꾸기</td><td>직급 여러 개(원장·실장·강사·조교)</td><td>담당은 「원장 / 조교(나중)」 두 칸만</td></tr>
+        <tr><td></td><td>시스템 이름을 칸에 직접 입력</td><td>학원앱 · 매쓰플랫 · 페이쌤 · 카톡 · 학부모앱으로 고정, 업무마다 「앱에서 하기」 버튼</td></tr>
+        <tr><td></td><td>행사 날짜 직접 입력</td><td>학교 시험일은 학사일정(매일 자동 수집)에서 기준일을 가져옴. 시험이 바뀌면 D-업무도 따라 움직임</td></tr>
+        <tr><td></td><td>그 기기 브라우저에만 저장</td><td>서버(Supabase) 저장 → PC·휴대폰 어디서나 같음. 저장소(공개)에는 빈 화면만 올라감</td></tr>
+        <tr><td>빼기</td><td>직원 업무 수집 양식 · 자주 오는 질문 · 직원 테스트·승인</td><td>지금은 끔. 조교를 뽑으면 켜는 스위치만 남김</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note" style="margin:10px 0 0">더상승에듀의 업무 문장 164건은 넣지 않습니다. 원장님이 학관노 숙제로 채운 내용은 엑셀로 받아 서버에 넣을 수 있게 하겠습니다.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+// 예시 데이터 — 2026년 11월, 일요일 휴무, 오늘 = 11/10(화)
+var TODAY=10;
+var ITEMS=[
+ {d:3,k:'reg',t:'월간 리포트 학부모 발송 (매쓰플랫)',m:'매월 첫 주',a:'학부모 리포트',done:true},
+ {d:5,k:'ev',t:'D-30 겨울특강 커리큘럼 확정',m:'겨울방학 특강 · 기준일 12/5',over:true},
+ {d:10,k:'ev',t:'D-21 학교별 시험범위 확인 · 트랙 공개',m:'2학기 기말 직전보강 · A중 기말 12/1',a:'시험대비 트랙'},
+ {d:12,k:'ev',t:'D-30 예비 중1 설명회 장소·자료 확정',m:'예비 중1 설명회 · 기준일 12/12'},
+ {d:14,k:'ev',t:'D-21 겨울특강 안내문 발송 (카톡·블로그)',m:'겨울방학 특강'},
+ {d:17,k:'ev',t:'D-14 직전보강 시간표 학부모 안내',m:'2학기 기말 직전보강'},
+ {d:19,k:'sch',t:'수능 (고등부 휴강 여부)',m:'학교 일정 · 예시'},
+ {d:21,k:'ev',t:'D-21 설명회 블로그 글 · 신청 받기 시작',m:'예비 중1 설명회',a:'블로그 글감'},
+ {d:24,k:'ev',t:'D-7 학교별 기출 학습지 출력',m:'2학기 기말 직전보강'},
+ {d:25,k:'reg',t:'다음 달 수강료 안내 (페이쌤)',m:'매월 25일'},
+ {d:28,k:'ev',t:'D-3 빈칸 테스트 최종 점검',m:'2학기 기말 직전보강',a:'빈칸 테스트'},
+ {d:30,k:'sch',t:'B고 기말 시작',m:'학교 일정 · 학사일정 자동'},
+ {d:30,k:'ev',t:'D-1 A중 시험 응원 문자 준비',m:'2학기 기말 직전보강'},
+ {d:30,k:'reg',t:'플래너 월간 랭킹 정리',m:'매월 말'}
+];
+var DAILY=[
+ {t:'녹음 숙제 확인',m:'매일 · 새벽에 글로 옮겨 둠',a:'녹음 확인'},
+ {t:'Ultra Feedback 발송 확인',m:'매일 · 새벽 초안'},
+ {t:'아하노트 질문 해결',m:'매일'}
+];
+var sel=TODAY;
+var tb=document.querySelector('#cal tbody');
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+function cls(it){return it.over?'over':it.k;}
+function drawCal(){
+  var first=0, dim=30, html='', n=1-first;
+  for(var w=0;w<5;w++){ html+='<tr>';
+    for(var d=0;d<7;d++,n++){
+      if(n<1||n>dim){html+='<td class="out"></td>';continue;}
+      var list=ITEMS.filter(function(x){return x.d===n;});
+      var c=[]; if(d===0)c.push('sun','off'); if(n===TODAY)c.push('today'); if(n===sel)c.push('sel');
+      var inner=list.slice(0,3).map(function(x){return '<span class="it '+cls(x)+(x.done?' done':'')+'" title="'+esc(x.t)+'">'+esc(x.t)+'</span>';}).join('');
+      if(list.length>3)inner+='<span class="more">외 '+(list.length-3)+'건</span>';
+      if(d===0)inner+='<span class="more">휴무</span>';
+      html+='<td class="'+c.join(' ')+'" data-d="'+n+'" tabindex="0" aria-label="11월 '+n+'일 '+list.length+'건"><span class="n"><span>'+n+'</span></span>'+inner+'</td>';
+    }
+    html+='</tr>';
+  }
+  tb.innerHTML=html;
+}
+function drawDay(){
+  var list=ITEMS.filter(function(x){return x.d===sel;});
+  var dow=['일','월','화','수','목','금','토'][(sel-1)%7];
+  var h='<h4>11월 '+sel+'일('+dow+')'+(sel===TODAY?' · 오늘':'')+'</h4>';
+  if(sel===TODAY){
+    var over=ITEMS.filter(function(x){return x.over;});
+    over.forEach(function(x){h+=row(x,'기한 지남 · 11/'+x.d);});
+    DAILY.forEach(function(x){h+=row({k:'reg',t:x.t,m:x.m,a:x.a},'');});
+    h+=row({k:'reg',t:'리커버리 명단 확정 (네이버 예약 확인)',m:'매주 월 · 어제 못 함',a:'리커버리'},'');
+  }
+  list.forEach(function(x){h+=row(x,'');});
+  if(!list.length&&sel!==TODAY)h+='<p class="note">이날은 정해진 업무가 없습니다.</p>';
+  document.getElementById('day').innerHTML=h;
+}
+function row(x,extra){
+  var lab={sch:'학교 일정',ev:'행사',reg:'정기'}[x.k];
+  return '<label class="ck'+(x.over?' over':'')+'"><input type="checkbox"'+(x.done?' checked':'')+'><span><b>'+esc(x.t)+'</b><small><span class="chip '+x.k+'">'+lab+'</span>'+esc(extra||x.m)+'</small>'+(x.a?'<span class="link">앱에서 하기 → '+esc(x.a)+'</span>':'')+'</span></label>';
+}
+function stats(){
+  document.getElementById('sToday').textContent=DAILY.length+1+ITEMS.filter(function(x){return x.d===TODAY;}).length;
+  document.getElementById('sWeek').textContent=ITEMS.filter(function(x){return x.k==='ev'&&x.d>=9&&x.d<=14;}).length;
+  document.getElementById('sOver').textContent=ITEMS.filter(function(x){return x.over;}).length;
+}
+tb.addEventListener('click',function(e){var td=e.target.closest('td[data-d]');if(!td)return;sel=+td.dataset.d;drawCal();drawDay();});
+tb.addEventListener('keydown',function(e){if(e.key!=='Enter'&&e.key!==' ')return;var td=e.target.closest('td[data-d]');if(!td)return;e.preventDefault();sel=+td.dataset.d;drawCal();drawDay();var nt=tb.querySelector('td[data-d="'+sel+'"]');if(nt)nt.focus();});
+
+// 1년 한눈에 (예시)
+var YEAR=[
+ ['1월',9,['겨울방학 특강 (개강 1/4)','고1 예비 진단평가']],
+ ['2월',8,['신학기 학부모 설명회','반편성·교재 발주']],
+ ['3월',6,['신학기 진단평가','학부모 상담 주간']],
+ ['4월',11,['1학기 중간 직전보강 (학교별 자동)']],
+ ['5월',5,['KMM 경시 대비 (예시)','학부모 간담회']],
+ ['6월',9,['1학기 기말 직전보강 시작']],
+ ['7월',10,['기말 직전보강','여름특강 모집']],
+ ['8월',7,['여름방학 특강','2학기 반편성']],
+ ['9월',6,['2학기 시작 · 진단평가']],
+ ['10월',11,['2학기 중간 직전보강']],
+ ['11월',12,['2학기 기말 직전보강','예비 중1 설명회','겨울특강 안내']],
+ ['12월',8,['겨울특강 모집 마감','올해 결과 정리 · 블로그']]
+];
+var max=Math.max.apply(null,YEAR.map(function(m){return m[1];}));
+document.getElementById('year').innerHTML=YEAR.map(function(m){
+  return '<div class="mon"><div class="h"><span>'+m[0]+'</span><small>업무 '+m[1]+'건</small></div><div class="bar"><i style="width:'+Math.round(m[1]/max*100)+'%"></i></div>'+m[2].map(function(e){return '<div class="e"><span class="chip ev">●</span>'+esc(e)+'</div>';}).join('')+'</div>';
+}).join('');
+
+// 탭
+var tabs=document.querySelectorAll('#tabs button');
+tabs.forEach(function(b){b.addEventListener('click',function(){
+  tabs.forEach(function(x){x.setAttribute('aria-selected',x===b?'true':'false');});
+  ['cal','year','man','aud'].forEach(function(k){document.getElementById('p-'+k).hidden=(k!==b.dataset.tab);});
+});});
+
+drawCal();drawDay();stats();
+})();
+</script>

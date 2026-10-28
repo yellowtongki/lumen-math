@@ -116,7 +116,21 @@ a44=open(SP+'/aha144_teacher.js',encoding='utf-8').read() if int(ver.replace('v1
 r45=((open(SP+'/rcsms148_teacher.js',encoding='utf-8').read()+'\n') if int(ver.replace('v19-',''))>=148 else '')+((open(SP+'/rcsms147_teacher.js',encoding='utf-8').read()+'\n') if int(ver.replace('v19-',''))>=147 else '')+((open(SP+'/rcsms146_teacher.js',encoding='utf-8').read()+'\n') if int(ver.replace('v19-',''))>=146 else '')+open(SP+'/rcsms145_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=145 else ''   # v19-146: 안내문에서 시간 빼기(R145_TIME=false 를 145 앞에)   # v19-145: 🚑 리커버리 학부모 안내문 — 주간테스트 점수 + 네이버 예약 부탁(예약 있으면 확인) · 예약 주소 · 학생별 복사
 tk0=open(SP+'/tierkeep150_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=150 else ''   # v19-150: 💡 아하 리그 등급 — 시즌 동안 한 번 오른 등급 유지(aha_tier_best)
 ls1=open(SP+'/lampstrip_core.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=151 else ''   # v19-151: 📝 아하 사진 읽기에서 인쇄된 LAMP 칸 이름 빼기(학생앱 v2-148 · 엣지 함수와 같은 글)
-s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+new.lstrip('\n')+'\n\n'+s[end:]
+rr2=open(SP+'/recreview152_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=152 else ''   # v19-152: 🎙 녹음관리 › 👀 훑어보기 — 새벽 읽기 결과(rec_read_*) 학년별 카드 · ✓ 확인/💬 한마디(rec_review_<코드>) · 그리드 ✅·팝업 «🌙 새벽 읽기» (docs/rec_review_contract.md §3)
+rn3=open(SP+'/rcnaver153_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=153 else ''   # v19-153: 🚑 리커버리 — 네이버 예약 시간 자동 연동(slotSrc naver/manual) · 전용 왼쪽 기둥 · 📊 통계 탭 · 홈 «예약 아직» (docs/recovery_tab_contract.md)
+rr4=open(SP+'/rcrefresh154_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=154 else ''   # v19-154: 🚑 리커버리 「🔄 채점 새로고침」(mf_collect_req · 토큰 있으면 즉시) + ↻ 다시 읽기(주간테스트·진도·네이버 예약까지)
+rw5=open(SP+'/rcws155_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=155 else ''   # v19-155: 🚑 리커버리 학습지 3판 — «아직 틀린 문제»(최근 28일) · 유형마다 1개 · 문항 30~40 · 빼는 유형 · 보드 «🕘» 한 줄 (docs/recovery_recent_contract.md)
+mu7=open(SP+'/mfunlink157_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=157 else ''   # v19-157: 👤 학생관리 «🔗 매쓰플랫과 연결 안 된 학생» 띠 · 데이터 재연결 나눠 읽기
+op8=open(SP+'/opscal158_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=158 else ''   # v19-158: 📅 운영 달력 — 운영·마케팅·학교·돈·지표 층 + 월 달력 아래 체크리스트 (docs/opscal_contract.md)
+oh9=open(SP+'/ophome159_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=159 else ''   # v19-159: 🏠 홈 «📅 오늘 운영 할 일» 카드
+pa0=open(SP+'/progalert160_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=160 else ''   # v19-160: 📚 진도 기준(중등 2~2.5개월·고등 학기 중 숙제) + 🔔 알림
+cr1=open(SP+'/consult161_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=161 else ''   # v19-161: 📋 상담 리포트
+cs2=open(SP+'/counsel162_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=162 else ''   # v19-162: 📞 학부모 상담 통합
+pf3=open(SP+'/plfake163_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=163 else ''   # v19-163: 📛 플래너 거짓 제출 확인
+cp3=open(SP+'/crprint163_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=163 else ''   # v19-163: 📋 상담 리포트 인쇄 여백
+rn4=open(SP+'/repnum164_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=164 else ''   # v19-164: 📋 리포트 번호·원장만 계획·📱 모바일 이미지
+wf6=open(SP+'/wkfix166_teacher.js',encoding='utf-8').read() if int(ver.replace('v19-',''))>=166 else ''   # v19-166: 체크하기 지난 수업 날 · «…» 창 잘림 · 거짓 제출 사진
+s=s[:start]+risk+'\n'+cal+'\n'+xp+'\n'+codi+'\n'+ahs+'\n'+guard+'\n'+plsc+'\n'+plz+'\n'+pls+'\n'+sea+'\n'+nkt+'\n'+hit+'\n'+nfo+'\n'+cn+'\n'+plr+'\n'+nopt+'\n'+sgs+'\n'+sds+'\n'+wks+'\n'+sgv+'\n'+rcw+'\n'+bt2+'\n'+hsr+'\n'+(cn2+'\n' if cn2 else '')+(cn3+'\n' if cn3 else '')+(cn4+'\n' if cn4 else '')+(hs2+'\n' if hs2 else '')+(l3+'\n' if l3 else '')+(l3h+'\n' if l3h else '')+(l3b+'\n' if l3b else '')+(mst+'\n' if mst else '')+(msd+'\n' if msd else '')+(pcm+'\n' if pcm else '')+(pbs+'\n' if pbs else '')+(tbm+'\n' if tbm else '')+(h12+'\n' if h12 else '')+(sev+'\n' if sev else '')+(rkf+'\n' if rkf else '')+(wpp+'\n' if wpp else '')+(pwl+'\n' if pwl else '')+(pg6+'\n' if pg6 else '')+(wkg+'\n' if wkg else '')+(g19+'\n' if g19 else '')+(mqz+'\n' if mqz else '')+(rnx+'\n' if rnx else '')+(r123+'\n' if r123 else '')+(nbk+'\n' if nbk else '')+(nb5+'\n' if nb5 else '')+(nb6+'\n' if nb6 else '')+(nb7+'\n' if nb7 else '')+(hv8+'\n' if hv8 else '')+(sw9+'\n' if sw9 else '')+(cp0+'\n' if cp0 else '')+(mz1+'\n' if mz1 else '')+(mz2+'\n' if mz2 else '')+(ft3+'\n' if ft3 else '')+(gh4+'\n' if gh4 else '')+(vd5+'\n' if vd5 else '')+(vm6+'\n' if vm6 else '')+(rd7+'\n' if rd7 else '')+(rd8+'\n' if rd8 else '')+(xt9+'\n' if xt9 else '')+(pw0+'\n' if pw0 else '')+(st1+'\n' if st1 else '')+(tu2+'\n' if tu2 else '')+(a44+'\n' if a44 else '')+(r45+'\n' if r45 else '')+(tk0+'\n' if tk0 else '')+(ls1+'\n' if ls1 else '')+(rr2+'\n' if rr2 else '')+(rn3+'\n' if rn3 else '')+(rr4+'\n' if rr4 else '')+(rw5+'\n' if rw5 else '')+(mu7+'\n' if mu7 else '')+(op8+'\n' if op8 else '')+(oh9+'\n' if oh9 else '')+(pa0+'\n' if pa0 else '')+(cr1+'\n' if cr1 else '')+(cs2+'\n' if cs2 else '')+(pf3+'\n' if pf3 else '')+(cp3+'\n' if cp3 else '')+(rn4+'\n' if rn4 else '')+(wf6+'\n' if wf6 else '')+new.lstrip('\n')+'\n\n'+s[end:]
 def rep(a,b,n=1):
     global s
     assert s.count(a)==n,(a[:70],s.count(a)); s=s.replace(a,b)
@@ -661,6 +675,30 @@ if int(ver.replace('v19-',''))>=151:
     # v19-151: 학원앱 「🤖 사진 읽기」 결과에서도 인쇄된 칸 이름을 뗀다 (원장 10/22 「칸 이름은 빼도록 고쳐줘」)
     rep("  // 마지막 물음표 문장을 질문으로 떼어 낸다 (학생앱 ahaSplitP와 같은 규칙)\n  var P=String(out.P||'').trim()",
         "  try{ out=lampStripAi(out)||out; }catch(e){}   /* ★ v19-151: 인쇄된 칸 이름 빼기 */\n  // 마지막 물음표 문장을 질문으로 떼어 낸다 (학생앱 ahaSplitP와 같은 규칙)\n  var P=String(out.P||'').trim()")
+if int(ver.replace('v19-',''))>=156:
+    # v19-156: 출결·보충 — 결석한 그 날 보충도 지정 가능 (원장 10/24 「같은날 보충도 가능하게 수정」)
+    #   예전(v17-19)엔 보충 칸 m[보충일]={planned} 이 결석 칸 m[결석일] 을 덮어써 기록이 깨져서 막아 두었다.
+    #   같은 날이면 보충 칸을 따로 만들지 않고 결석 칸 안에만 적는다(makeupDate=결석일 · makeupSame:true) — 결석은 그대로 남고 보충 예정/완료만 바뀐다.
+    rep("  if(dp===absKey){alert('보충 날짜는 결석일('+attMd(absKey)+')과 다른 날짜로 선택해주세요.');return;}",
+        "  if(dp===absKey){ m[absKey].makeupDate=dp; m[absKey].makeupTime=tp||''; m[absKey].makeupSame=true; attSave(); render(); return; }   /* ★ v19-156: 같은 날 보충 — 결석 칸 안에만 적는다 */")
+    rep("if(mk&&m[mk])delete m[mk];delete m[absKey]", "if(mk&&mk!==absKey&&m[mk])delete m[mk];delete m[absKey].makeupSame;delete m[absKey]")
+    rep("var mk=m[absKey].makeupDate;if(mk&&m[mk])m[mk].status='done';", "var mk=m[absKey].makeupDate;if(mk&&mk!==absKey&&m[mk])m[mk].status='done';")
+    rep("if(mk&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;", "if(mk&&mk!==absKey&&m[mk])m[mk].status='planned';m[absKey].makeupDone=false;")
+    rep("if(ad.makeupDone)info='✓ '+attMd(ad.makeupDate)+' 보충';else if(ad.makeupDate)info='→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||'');",
+        "if(ad.makeupDone)info=(ad.makeupSame?'✓ 같은 날 보충':'✓ '+attMd(ad.makeupDate)+' 보충');else if(ad.makeupDate)info=(ad.makeupSame?'→ 같은 날 '+(ad.makeupTime||'')+' 보충':'→ '+attMd(ad.makeupDate)+' '+(ad.makeupTime||''));")
+if int(ver.replace('v19-',''))>=152:
+    # v19-152: 🎙 녹음관리 › 👀 훑어보기 (원장 10/23 「안 A로 진행」 · docs/rec_review_contract.md §3 · 부품 recreview152_teacher.js)
+    #   ① 왼쪽 메뉴 맨 위에 «👀 훑어보기» ② 가운데 그리기 가지 ③ 녹음관리 들어가면 훑어보기부터
+    rep("    {id:'grid',    icon:'📅', label:'그리드'},", "    {id:'review',  icon:'👀', label:'훑어보기'},   /* ★ v19-152 */\n    {id:'grid',    icon:'📅', label:'그리드'},")
+    rep("  if (REC_MGR_VIEW === 'grid')         body = rRecMgrGrid();", "  if (REC_MGR_VIEW === 'review')       body = rr152View();   /* ★ v19-152 */\n  else if (REC_MGR_VIEW === 'grid')    body = rRecMgrGrid();")
+    rep("REC_MGR_VIEW='grid'; }},", "REC_MGR_VIEW='review'; }},")
+    #   ④ 그리드 ✅ = 손 받아쓰기 또는 새벽 읽기 · 팝업 STT 칸에 «🌙 새벽 읽기»(판정·요약·전문) — 손 받아쓰기 칸은 예전 그대로
+    rep("var hasStt = !!savedRec.stt;", "var hasStt = !!savedRec.stt || rr152Has(code, dayFiles);   /* ★ v19-152: 새벽 읽기도 ✅ */")
+    rep("""    if (savedRec.stt) {
+      html += '<div style="background:white;border-radius:8px;padding:8px;border:1px solid #e2e8f0;margin-bottom:6px"><div style="font-size:10px;font-weight:700;color:#0369a1;margin-bottom:4px">🔤 STT</div><div style="font-size:12px;color:#334155;line-height:1.6">' + savedRec.stt + '</div></div>';
+    }""", """    html += rr152PopStt(savedRec, stCode, file.name);   /* ★ v19-152: 🌙 새벽 읽기 + 🔤 STT(손 받아쓰기, 예전 그대로) */""")
+    #   ⑤ 새벽 읽기 결과·확인 기록은 화면이 서버에서 바로 읽는다 — 시작 다운로드에서 뺀다
+    rep("'naver_book'];", "'naver_book', 'rec_read_', 'rec_review_'];")
 if int(ver.replace('v19-',''))>=149:
     # v19-149: 리커버리 — 고등부는 모든 테스트(수집기가 type HIGH_TEST 로 내보냄 · 단원 TEST 도) (원장 10/22 「우선은 체계가 잡히기 전에 고등부는 모든 테스트를 하자」)
     rep("""    var stKey=String(st.id||st.name);
@@ -695,7 +733,7 @@ if int(ver.replace('v19-',''))>=144:
     rep("+targets.length+'건을 AI 초안 그대로 확정할까요? (질문력 '+min+'점 이상)')", "+targets.length+'건을 AI 초안 그대로 확정할까요? (점수와 상관없이 전부)')")
 if int(ver.replace('v19-',''))>=143:
     # v19-143: 홈 위 빨간 띠 — 「퇴원 → 재원 (되살아남)」만 있으면 «로그인 코드가 바뀌어 못 들어갑니다»가 아니라
-    #   «퇴원했던 학생이 재원으로 바뀌었습니다 — 일부러 복귀시키셨으면 그대로 두세요»(주황, 한 번만)로. 원장 10/20 「퇴원생 오류」(유서윤 복귀)
+    #   «퇴원했던 학생이 재원으로 바뀌었습니다 — 일부러 복귀시키셨으면 그대로 두세요»(주황, 한 번만)로. 원장 10/20 「퇴원생 오류」(유○○ 복귀)
     #   × 로 닫으면 위 여백도 되돌린다.
     rep("""      d.innerHTML='<span style="font-size:17px">⚠️</span>'
         +'<span style="flex:1;min-width:200px">학생 <b>로그인 코드가 바뀌었습니다</b> — 이 학생들은 학생앱에 못 들어갑니다.'
@@ -712,6 +750,199 @@ if int(ver.replace('v19-',''))>=143:
           +'<span style="display:block;font-weight:700;opacity:.9;margin-top:3px;font-size:12.5px">'+_rv.map(function(x){ return esc2(x.replace(' (되살아남)',' (복귀)')); }).join('<br>')+'</span>'):'')
         +'</span>'
         +'<button onclick="document.getElementById(\\'lm-code-warn\\').remove();document.body.style.paddingTop=\\'\\'" style=""")
+if int(ver.replace('v19-',''))>=157:
+    # v19-157: ① 👤 학생관리 «🔗 매쓰플랫과 연결 안 된 학생» 띠 (원장 10/26 「매쓰플랫 학생이 연결이 안 되었다」 — 학원앱 등록부에 없던 신규생 2명)
+    rep("    <!-- 필터 바 -->", "    ${typeof mfuHtml==='function'?mfuHtml():''}\n    <!-- 필터 바 -->")
+    #   ② 🔗 데이터 재연결 — lumen_store 전체 읽기가 statement timeout → 필요한 키만 100줄씩
+    rep("    var res=await sb.from('lumen_store').select('key,value');\n    if(res.error){ throw res.error; }\n    allRows=res.data||[];",
+        "    allRows=await mfuRelinkRows(sb);   /* ★ v19-157: 필요한 키만 나눠 읽기 (전체 읽기는 시간 초과) */")
+    #   ③ 📔 플래너 입력 표 — 감싼 틀이 overflow:hidden 이라 오른쪽 «합계»(sticky)가 27~31일을 덮었다 (원장 10/26 「말일에 짤린다」)
+    #      → 가로로 밀어 볼 수 있게 + 칸을 조금 줄여 대부분 화면에서 말일까지 한 번에 보이게
+    rep("""  h+='<div style="background:white;border:1.5px solid #e8edf5;border-radius:14px;overflow:hidden">';
+  h+='<table style="border-collapse:collapse;width:100%;font-size:11px">';""",
+        """  h+='<style>#plGridWrap th{min-width:22px!important;padding-left:1px!important;padding-right:1px!important}#plGridWrap td{padding:1px!important}#plGridWrap .planner-cell{width:21px!important;height:22px!important;font-size:9.5px!important}#plGridWrap td>div[onclick^="VIEW="]{width:22px!important;height:22px!important;font-size:9.5px!important}#plGridWrap td:first-child,#plGridWrap th:first-child{padding:4px 8px!important}</style>';   /* ★ v19-157 */
+  h+='<div id="plGridWrap" style="background:white;border:1.5px solid #e8edf5;border-radius:14px;overflow-x:auto">';
+  h+='<table style="border-collapse:collapse;width:100%;font-size:11px">';""")
+if int(ver.replace('v19-',''))>=158:
+    # v19-158: 📅 운영 달력 (원장 10/26 「오른쪽 칸 없애고 v19-158 진행해」 · 부품 opscal158_teacher.js · docs/opscal_contract.md)
+    #   ① 🏠 홈 탭에 «📅 운영 달력» ② 그리기 가지 ③ 제목 ④ 시작 다운로드에서 ops_plan·ops_checks 빼기 ⑤ 학원 달력 머리에 «📅 운영 달력» 단추
+    rep("    {v:'home', icon:'🏠', label:'대시보드', act:function(){ VIEW='home'; }}\n  ]},",
+        "    {v:'home', icon:'🏠', label:'대시보드', act:function(){ VIEW='home'; }},\n    {v:'opscal', icon:'📅', label:'운영 달력', act:function(){ VIEW='opscal'; OPS.man=''; }}   /* ★ v19-158 */\n  ]},")
+    b="    else if(VIEW==='risk'){ try{ C.innerHTML=rRisk(); }"
+    assert s.count(b)==2
+    s=s.replace(b, "    else if(VIEW==='opscal'){ try{ C.innerHTML=rOpsCal(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">운영 달력 오류: '+esc2(e.message)+'</div>'; } }\n"+b)
+    rep("cal:'📅 학원 달력',", "cal:'📅 학원 달력',opscal:'📅 운영 달력',")
+    rep("'tenten_optional', 'raid_board_draft', 'raid_boss_lib'];", "'tenten_optional', 'raid_board_draft', 'raid_boss_lib', 'ops_plan', 'ops_checks'];")
+    rep("eaBtn('＋ 일정 넣기','ctNew()','pri')+eaBtn('🔄 새로고침','ctLoad(true)')", "eaBtn('📅 운영 달력',\"VIEW='opscal';render()\")+eaBtn('＋ 일정 넣기','ctNew()','pri')+eaBtn('🔄 새로고침','ctLoad(true)')")
+if int(ver.replace('v19-',''))>=159:
+    # v19-159: ① 📅 운영 달력을 위쪽 탭으로 (원장 10/26 「홈화면에 운영달력 안 보인다» — 홈 탭은 누르면 바로 대시보드라 v19-158 의 안쪽 줄이 안 보였다)
+    rep("    {v:'home', icon:'🏠', label:'대시보드', act:function(){ VIEW='home'; }},\n    {v:'opscal', icon:'📅', label:'운영 달력', act:function(){ VIEW='opscal'; OPS.man=''; }}   /* ★ v19-158 */\n  ]},",
+        "    {v:'home', icon:'🏠', label:'대시보드', act:function(){ VIEW='home'; }}\n  ]},\n  /* ★ v19-159: 📅 운영 달력 — 위쪽 탭 */\n  {key:'opscal', icon:'📅', label:'운영 달력', memo:'계획', subs:[\n    {v:'opscal', icon:'📅', label:'운영 달력', act:function(){ VIEW='opscal'; OPS.man=''; }}\n  ]},")
+    #   ② 홈 «📅 오늘 운영 할 일» 카드 (빠른 실행 바로 아래) + «오늘 챙길 것» 개수에 더하기
+    rep("  // ── 오늘 결석·지각 예정(출결) ──\n  if(typeof attHomeTodayWidget==='function') h+=attHomeTodayWidget();",
+        "  if(typeof opsHomeCard==='function') h+=opsHomeCard();   /* ★ v19-159: 📅 오늘 운영 할 일 */\n  // ── 오늘 결석·지각 예정(출결) ──\n  if(typeof attHomeTodayWidget==='function') h+=attHomeTodayWidget();")
+    rep("(hallPend===null?0:hallPend), (pcPend===null?0:pcPend)];", "(hallPend===null?0:hallPend), (pcPend===null?0:pcPend), (typeof opsHomeCount==='function'?opsHomeCount():0)];   /* ★ v19-159: 운영 할 일 */")
+    rep("  try { if (VIEW === 'opscal') render(); } catch(e){}", "  try { if (VIEW === 'opscal' || VIEW === 'home') render(); } catch(e){}   /* ★ v19-159: 홈 카드도 */")
+    #   위쪽 탭 단추는 HTML 에 따로 적혀 있다 — 홈 다음에 «📅 운영 달력»
+    rep("""      <button class="ftb" id="grp-home" onclick="selGroup('home')"><span>🏠</span><span>홈</span></button>""",
+        """      <button class="ftb" id="grp-home" onclick="selGroup('home')"><span>🏠</span><span>홈</span></button>
+      <button class="ftb" id="grp-opscal" onclick="selGroup('opscal')"><span>📅</span><span>운영 달력</span></button>""")
+    #   «밀린 일»은 계획을 넣은 날(ops_plan.upd) 1주 전부터만 센다 — 계획이 없던 10월 초 일이 빨갛게 쌓이지 않게
+    rep("it.d < opsToday() && !opsDone(it) && it.d >= '2026-10-01'; }", "it.d < opsToday() && !opsDone(it) && it.d >= opsStart(); }   /* ★ v19-159 */")
+    #   ③ 📔 플래너 사진 AI 일괄 분석 — 한 세트씩 → 세 세트씩 함께 (원장 10/26 「플래너 검토가 오래 걸린다」)
+    #      같은 학생 세트는 겹쳐 돌리지 않는다 · 429(요청 과다)가 한 번이라도 나면 한 줄로 돌아가 10초 간격(예전 그대로) · 중단 단추 존중
+    rep("""  window._plannerAdaptiveGap = 0;
+  for (var k = 0; k < jobs.length; k++) {
+    var job = jobs[k];
+    var result = await _analyzeWithRetry(job.stId, job.si, job.setId, 2);
+    if (!result.ok) failed++;
+    if (result.rateLimited) window._plannerAdaptiveGap = 10; // 한 번이라도 429면 이후 10초 간격
+    done++;
+    if (statusEl) statusEl.innerHTML = renderProgress(done, total, failed);
+    if (k < jobs.length - 1 && window._plannerAdaptiveGap > 0) {
+      for (var s = window._plannerAdaptiveGap; s > 0; s--) {
+        if (statusEl) statusEl.innerHTML = renderProgress(done, total, failed, '다음 분석까지 ' + s + '초 대기');
+        await new Promise(function(r) { setTimeout(r, 1000); });
+      }
+    }
+  }""", """  window._plannerAdaptiveGap = 0;
+  /* ★ v19-159: 세 세트씩 함께 — 같은 학생은 겹치지 않게, 429 가 나면 한 줄 + 10초 간격 */
+  var _pool = jobs.slice(), _busy = {}, _conc = 3;
+  var _take = function(){ for (var q = 0; q < _pool.length; q++){ if (!_busy[_pool[q].stId]) return _pool.splice(q, 1)[0]; } return null; };
+  var _worker = async function(wid){
+    while (_pool.length){
+      if (window.PL_STOP || wid >= _conc) return;
+      var job = _take();
+      if (!job){ await new Promise(function(r){ setTimeout(r, 300); }); continue; }
+      _busy[job.stId] = 1;
+      var result = await _analyzeWithRetry(job.stId, job.si, job.setId, 2);
+      delete _busy[job.stId];
+      if (!result.ok) failed++;
+      if (result.rateLimited){ window._plannerAdaptiveGap = 10; _conc = 1; } // 한 번이라도 429면 한 줄로 · 10초 간격
+      done++;
+      if (statusEl) statusEl.innerHTML = renderProgress(done, total, failed);
+      if (_pool.length && window._plannerAdaptiveGap > 0){
+        for (var s = window._plannerAdaptiveGap; s > 0; s--){
+          if (statusEl) statusEl.innerHTML = renderProgress(done, total, failed, '다음 분석까지 ' + s + '초 대기');
+          await new Promise(function(r){ setTimeout(r, 1000); });
+        }
+      }
+    }
+  };
+  var _ws = []; for (var _w = 0; _w < Math.min(3, jobs.length); _w++) _ws.push(_worker(_w));
+  await Promise.all(_ws);""")
+if int(ver.replace('v19-',''))>=160:
+    # v19-160: 📚 진도 기준 + 🔔 알림 (원장 10/26 「모두 적용 배포」 · 부품 progalert160_teacher.js · 시안 https://claude.ai/artifact/Hzu1pWgMr91xSTqTdW1tth)
+    #   ① bp_config 에 hiSem(고등 학기 중 숙제 진도로) 읽기·저장
+    rep("rep:v.rep||{}, done:v.done||{}, starts:v.starts||{} }; }", "rep:v.rep||{}, done:v.done||{}, starts:v.starts||{}, hiSem:v.hiSem!==false }; }   /* ★ v19-160 */")
+    rep("starts:BP.cfg.starts||{}, updated:new Date().toISOString() }); plToast('💾 진도 기준 저장'); }", "starts:BP.cfg.starts||{}, hiSem:BP.cfg.hiSem!==false, updated:new Date().toISOString() }); plToast('💾 진도 기준 저장'); }")
+    #   ② ✎ 기준 입력 — 중등 교재는 비우면 2.5개월(목표 2개월). 직접 적은 적이 없으면 빈칸으로 연다(그냥 확인을 눌러 고정되지 않게)
+    rep("var v=prompt('이 교재의 기준 기간(개월)을 입력하세요.\\n(비우면 기본 '+(BP.cfg.def||3)+'개월)',cur);",
+        "var v=prompt('이 교재의 기준 기간(개월)을 입력하세요.\\n'+(bpLvlOf(bid)==='mid'?'(비우면 중등 교재 기본 — 목표 2개월 · 한계 2.5개월)':'(비우면 기본 '+(BP.cfg.def||3)+'개월)'),(Number(BP.cfg.months[bid])>0?cur:''));   /* ★ v19-160 */")
+    rep("  if(x.status==='r'&&x.lastAgo>=14) return (x.pct!=null?x.pct+'%':'')+'·끊김';\n",
+        "  if(x.status==='r'&&x.lastAgo>=14) return (x.pct!=null?x.pct+'%':'')+'·끊김';\n  if(x.tag) return (x.pct!=null?x.pct+'%':'')+'·'+x.tag;   /* ★ v19-160: 중등 급함·주의 */\n")
+    rep("기준 '+bpMonthsOf(e.bid)+'개월 ✎</button>';", "'+(bpMidStd(e.bid)?'목표 2 · 한계 2.5개월':'기준 '+bpMonthsOf(e.bid)+'개월')+' ✎</button>';")
+    #   ③ 진도 현황 화면 — 기준 막대 · 고등부 학기 중은 따로(숙제 진도) · 개수 칩
+    rep("  var rows=all.main.filter(function(x){ return BP.filter==='all'||x.st.group===BP.filter; });\n  var c={r:0,y:0,g:0};",
+        "  var hsRows=all.main.concat(all.rest).filter(function(x){ return x.hs&&(BP.filter==='all'||x.st.group===BP.filter); });   /* ★ v19-160: 고등 학기 중 */\n  var rows=all.main.filter(function(x){ return !x.hs&&(BP.filter==='all'||x.st.group===BP.filter); });\n  all.rest=all.rest.filter(function(x){ return !x.hs; });\n  var c={r:0,y:0,g:0};")
+    rep("  if(BP.pagesOpen) h+=bpPagesPanel();\n", "  h+=bpStdBar();   /* ★ v19-160 */\n  if(BP.pagesOpen) h+=bpPagesPanel();\n")
+    rep("color:#dc2626\">🔴 늦음 '+c.r+'</span>';", "color:#dc2626\">🔴 급함·늦음 '+c.r+'</span>';")
+    rep("color:#15803d\">🟢 정상 '+c.g+'</span>';\n",
+        "color:#15803d\">🟢 정상 '+c.g+'</span>';\n  if(hsRows.length) h+='<span style=\"font-size:11.5px;font-weight:900;border-radius:50px;padding:5px 12px;background:#f5f3ff;color:#6d28d9\">🎓 고등 숙제 미흡 '+hsRows.filter(function(x){ return x.hwStat&&x.hwStat.s>=1; }).length+'/'+hsRows.length+'</span>';   /* ★ v19-160 */\n")
+    rep("  var sel=rows.find(function(x){ return (x.stKey||String(x.st.id||x.st.name))===BP.sel; })", "  var sel=rows.concat(hsRows).find(function(x){ return (x.stKey||String(x.st.id||x.st.name))===BP.sel; })")
+    rep("  if(all.rest.length){\n    h+='<div style=\"font-size:10px;color:#94a3b8;font-weight:700;padding:6px 4px\">▪ 기록 없음/미연결</div>';",
+        "  h+=bpHsList(hsRows,selKey);   /* ★ v19-160 */\n  if(all.rest.length){\n    h+='<div style=\"font-size:10px;color:#94a3b8;font-weight:700;padding:6px 4px\">▪ 기록 없음/미연결</div>';")
+    #   ④ 🚨 위험 신호에 «고등 숙제 진도»
+    rep("  return out;\n}\nvar RISK_NAMES={ plz:'플래너 0점',", "  try{ if(typeof bpHwSig==='function'){ var hwp=bpHwSig(st); if(hwp) out.push(hwp); } }catch(e){}   /* ★ v19-160 */\n  return out;\n}\nvar RISK_NAMES={ hwp:'고등 숙제 진도', plz:'플래너 0점',")
+    rep(" · 진도: 진도 현황의 🔴🟡 그대로", " · 진도: 진도 현황의 🔴🟡 그대로(중등 교재 목표 2개월·한계 2.5개월) · 고등 숙제 진도: 학기 중 고등학생, 최근 2주 수업일 숙제체크에서 풀이 100%가 아니거나 안 찍은 날이 2번 이상")
+    #   ⑤ 🏠 홈 «🔔 이번 주 경고» 카드(운영 할 일 위) · 위쪽 줄 🔔 단추 · 시작 다운로드에서 alert_state 빼기
+    rep("  if(typeof opsHomeCard==='function') h+=opsHomeCard();", "  if(typeof alHomeCard==='function') h+=alHomeCard();   /* ★ v19-160: 🔔 이번 주 경고 */\n  if(typeof opsHomeCard==='function') h+=opsHomeCard();")
+    rep("'raid_boss_lib', 'ops_plan', 'ops_checks'];", "'raid_boss_lib', 'ops_plan', 'ops_checks', 'alert_state'];")
+    rep("""      <button class="ftb" id="grp-ops" onclick="selGroup('ops')"><span>🏫</span><span>운영</span></button>""",
+        """      <button class="ftb" id="grp-ops" onclick="selGroup('ops')"><span>🏫</span><span>운영</span></button>
+      <button class="ftb" id="al-bell" onclick="alBell()" title="원장님 알림 — 진도 급함·숙제·채점 끊김·플래너·주간테스트" style="flex:0 0 84px;position:relative"><span>🔔</span><span>알림</span><em id="al-bell-n" style="display:none;position:absolute;top:8px;right:12px;font-style:normal;background:#ef4444;color:#fff;border-radius:10px;padding:0 6px;font-size:12px;font-weight:900;line-height:19px"></em></button>""")
+if int(ver.replace('v19-',''))>=161:
+    # v19-161: 📋 상담 리포트 (원장 10/26 「학원앱에 상담 리포트 v19-161 로」 · 부품 consult161_teacher.js · 설계 docs/consult_report_design.md)
+    #   ① 진도·리포트 탭 안 «📋 상담 리포트» ② 그리기 가지 ③ 제목 ④ 시작 다운로드에서 consult_<코드> 빼기
+    rep("    {v:'risk', icon:'🚨', label:'위험 신호', act:function(){ VIEW='risk'; }},\n",
+        "    {v:'risk', icon:'🚨', label:'위험 신호', act:function(){ VIEW='risk'; }},\n    {v:'consult', icon:'📋', label:'상담 리포트', act:function(){ VIEW='consult'; }},   /* ★ v19-161 */\n")
+    b="    else if(VIEW==='risk'){ try{ C.innerHTML=rRisk(); }"
+    assert s.count(b)==2
+    s=s.replace(b, "    else if(VIEW==='consult'){ try{ C.innerHTML=rConsult(); }catch(e){ console.error(e); C.innerHTML='<div style=\"padding:20px;color:#b91c1c;font-weight:800\">상담 리포트 오류: '+esc2(e.message)+'</div>'; } }\n"+b)
+    rep("opscal:'📅 운영 달력',", "opscal:'📅 운영 달력',consult:'📋 상담 리포트',")
+    rep("var PULL_SKIP_PREFIX = ['mf_bookans_', ", "var PULL_SKIP_PREFIX = ['consult_', 'mf_bookans_', ")
+if int(ver.replace('v19-',''))>=162:
+    # v19-162: 📞 학부모 상담 = 학부모 상담 준비(통화 대본) + 상담 리포트 한 화면 (원장 10/26 · 부품 counsel162_teacher.js · 시안 docs/mockup_counsel_merge.html)
+    #   ① 진도·리포트 탭의 «상담 리포트» 빼기(들어가는 곳 = 왼쪽 «📞 학부모 상담 준비» 하나)
+    rep("    {v:'consult', icon:'📋', label:'상담 리포트', act:function(){ VIEW='consult'; }},   /* ★ v19-161 */\n", "")
+    #   ② 옛 통화 대본 화면을 «📞 통화 대본» 탭 안에 넣을 수 있게 — CNS.embed 이면 머리줄·브리핑·통화 후 기록 칸을 건너뛴다
+    rep("  // 헤더\n  h+='<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap\">';",
+        "  // 헤더\n  if(!CNS.embed){   /* ★ v19-162 */\n  h+='<div style=\"display:flex;align-items:center;gap:10px;margin-bottom:13px;flex-wrap:wrap\">';")
+    rep("  h+='</div>';\n\n  var g=cnsGather(st);", "  h+='</div>';\n  }   /* ★ v19-162 */\n\n  var g=cnsGather(st);")
+    rep("  h+='<div id=\"cns-print\">';\n", "  h+='<div id=\"cns-print\">';\n  if(!CNS.embed){   /* ★ v19-162 */\n")
+    rep("  h+='</div>';\n\n  h+='<div style=\"display:grid;grid-template-columns:'+(big?", "  h+='</div>';\n  }   /* ★ v19-162 */\n\n  h+='<div style=\"display:grid;grid-template-columns:'+(big?")
+    rep("  // 통화 후 기록\n", "  if(!CNS.embed){   /* ★ v19-162 */\n  // 통화 후 기록\n")
+    rep("    });\n  }\n  h+='</div>';\n  h+='</div>';\n  // 오른쪽 — 근거 + 예상 질문", "    });\n  }\n  h+='</div>';\n  }   /* ★ v19-162 */\n  h+='</div>';\n  // 오른쪽 — 근거 + 예상 질문")
+if int(ver.replace('v19-',''))>=163:
+    # v19-163: 📛 플래너 거짓 제출 확인 (원장 10/26 · 부품 plfake163_teacher.js · 시안 docs/mockup_planner_fake.html)
+    rep("    {id:'race',      icon:'🎮', label:'레이스',   red:false},\n",
+        "    {id:'race',      icon:'🎮', label:'레이스',   red:false},\n    {id:'fake',      icon:'📛', label:'거짓 제출'+(typeof pfCount==='function'&&pfCount()?' ('+pfCount()+')':''), red:false},   /* ★ v19-163 */\n")
+    rep("           : PLANNER_VIEW==='race'       ? rPlannerRace()\n", "           : PLANNER_VIEW==='race'       ? rPlannerRace()\n           : PLANNER_VIEW==='fake'       ? rPlannerFake()   /* ★ v19-163 */\n")
+    #   🚨 위험 신호 줄을 누르면 그 학생으로 (플래너 0점·거짓 제출은 거짓 제출 카드가 열린 채로)
+    rep("h+='<div onclick=\"riskGo(\\''+x.go+'\\')\"", "h+='<div onclick=\"riskGo(\\''+x.go+'\\',\\''+s.id+'\\')\"")
+if int(ver.replace('v19-',''))>=165:
+    # v19-165: 📱 모바일 이미지 오른쪽 잘림 (원장 10/26) — 앱 글씨 배율(body zoom 0.72~1.45)이 그림 틀에도 걸려
+    #   그림 폭과 내용 폭이 어긋났다 → 그림 틀을 body 밖(html 바로 아래)에 붙여 배율과 무관하게 480px 로 그린다
+    rep("host.innerHTML = '<style>' + CR_CSS + CR_MOB_CSS + '</style>' + html;\n  document.body.appendChild(host);",
+        "host.innerHTML = '<style>' + CR_CSS + CR_MOB_CSS + '</style>' + html;\n  document.documentElement.appendChild(host);   /* ★ v19-165: body 는 글씨 배율(zoom)이 걸려 있다 — 밖에 붙여야 폭이 480 그대로 */")
+if int(ver.replace('v19-',''))>=167:
+    # v19-167: 재원생이 자꾸 «퇴원»으로 되돌아가던 것 (원장 10/27 「재원생인데 자꾸 퇴원생으로 되어서 학생이 접속이 안 된다」)
+    #   [원인] 등록부 합치기는 «이 기기 사본이 이긴다». 옛 사본(퇴원 상태)을 든 기기가 동기화할 때마다 서버를 다시 퇴원으로 덮었다.
+    #          복귀 때 지운 퇴원 날짜도 서버 사본에서 되살아남(서버 기록: 재원인데 6/26 퇴원 날짜가 남아 있었다).
+    #   [고침] 퇴원·복귀를 누른 시각 withdrawnAt 을 적고, 합칠 때 시각이 있는 쪽 중 더 나중 것이 퇴원 여부·퇴원 날짜를 정한다.
+    rep("""  st.withdrawn=true;
+  st.withdrawnDate=new Date().toISOString().slice(0,10).replace(/-/g,'.');""", """  st.withdrawn=true;
+  st.withdrawnDate=new Date().toISOString().slice(0,10).replace(/-/g,'.');
+  st.withdrawnAt=new Date().toISOString();   /* ★ v19-167: 누른 시각 — 기기끼리 합칠 때 더 나중 것이 이긴다 */""")
+    rep("""  st.withdrawn=false;
+  delete st.withdrawnDate;""", """  st.withdrawn=false;
+  delete st.withdrawnDate;
+  st.withdrawnAt=new Date().toISOString();   /* ★ v19-167: 복귀 시각 — 옛 기기의 «퇴원» 사본이 다시 덮지 못하게 */""")
+    rep("""            if(prev.withdrawn && s.withdrawn === undefined){
+              m.withdrawn = true;
+              if(prev.withdrawnDate) m.withdrawnDate = prev.withdrawnDate;
+            }""", """            if(prev.withdrawn && s.withdrawn === undefined){
+              m.withdrawn = true;
+              if(prev.withdrawnDate) m.withdrawnDate = prev.withdrawnDate;
+            }
+            /* ★ v19-167: 퇴원·복귀를 누른 시각(withdrawnAt)이 있으면 더 나중 쪽이 이긴다 — 옛 사본을 든 기기가 «복귀»를 «퇴원»으로 되돌리던 것 */
+            var _wl = Date.parse(s.withdrawnAt || '') || 0, _wc = Date.parse(prev.withdrawnAt || '') || 0;
+            if(_wl || _wc){
+              var _ww = _wc > _wl ? prev : s;
+              m.withdrawn = !!_ww.withdrawn; m.withdrawnAt = _ww.withdrawnAt;
+              if(_ww.withdrawn && _ww.withdrawnDate) m.withdrawnDate = _ww.withdrawnDate;
+              else if(!_ww.withdrawn) delete m.withdrawnDate;
+            }""")
+if int(ver.replace('v19-',''))>=168:
+    # v19-168: 🚑 리커버리 화면에서 앱이 멈추던 것 (원장 10/28 「리커버리 화면에서 멈춘다」 — 크롬 «응답 없는 페이지»)
+    #   [원인] rc154Bar 가 그릴 때마다 «마지막 수집 확인»(rc154Meta)을 묻고 답이 오면 다시 그린다. 답을 기다리는 중(loading)에
+    #          다시 그리면 rc154Meta 가 곧바로 «끝났음»(Promise.resolve)을 돌려줘 → 다시 그리기 → 또 묻기 … 끝없는 반복이
+    #          브라우저를 붙잡아 서버 답이 영영 못 들어옴. 서버가 조금만 느려도 생긴다.
+    #   [고침] 기다리는 중이면 같은 약속(진행 중인 질문)을 돌려주고, 그리기에서는 기다리는 중이면 새로 묻지 않는다.
+    rep("""  if (!sb || RC154.loading) return Promise.resolve();
+  RC154.loading = true;
+  return sb.from('lumen_store').select('key,value,updated_at').in('key', ['mf_weekly', 'mf_collect_req']).then(function(r){""",
+        """  if (!sb) return Promise.resolve();
+  if (RC154.loading) return RC154.p || Promise.resolve();   /* ★ v19-168: 기다리는 중이면 같은 질문을 기다린다(바로 «끝»을 돌려주면 그리기가 끝없이 반복됐다) */
+  RC154.loading = true;
+  return (RC154.p = sb.from('lumen_store').select('key,value,updated_at').in('key', ['mf_weekly', 'mf_collect_req']).then(function(r){""")
+    rep("""  }, function(){ RC154.loading = false; RC154.t = Date.now(); });
+}
+function rc154State(){""", """  }, function(){ RC154.loading = false; RC154.t = Date.now(); }));
+}
+function rc154State(){""")
+    rep("""  if (!RC154.t || Date.now() - RC154.t > 120000) rc154Meta().then(function(){ try { if (VIEW === 'recovery') render(); } catch(e){} });""",
+        """  if (!RC154.loading && (!RC154.t || Date.now() - RC154.t > 120000)) rc154Meta().then(function(){ try { if (VIEW === 'recovery') render(); } catch(e){} });   /* ★ v19-168: 묻는 중이면 또 묻지 않는다 */""")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
