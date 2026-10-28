@@ -513,6 +513,21 @@ async function runHwSync() {
   } catch (e) { log('기출 쌍둥이 오류:', e.message); }
   // 학습지 생성 요청은 수집보다 가볍고 빠르므로 먼저 처리한다
   try { await runWsRequests(); } catch (e) { log('학습지 요청 처리 오류:', e.message); }
+  // ★ v19-169: 📄 오답 쌍둥이 — 학원앱 「👁 다시 계산」·「📤 지금 출제」는 wt_req {status:'requested', batch, dry, only:[코드], at} 를 남긴다
+  //   (정기 출제는 wrongtwin.yml 금·토 새벽 5시). 요청이 없으면 조회 한 번으로 끝난다.
+  try {
+    const wq = await getKv('wt_req');
+    if (wq && wq.status === 'requested') {
+      await setKv('wt_req', { ...wq, status: 'running', startedAt: new Date().toISOString() });
+      const a = [path.join(__dirname, 'wrongtwin_make.js'), '--batch', ['fri', 'sat', 'all'].includes(wq.batch) ? wq.batch : 'all'];
+      if (wq.dry) a.push('--dry');
+      if (Array.isArray(wq.only) && wq.only.length) a.push('--only', wq.only.map(String).join(','));
+      log(`📄 오답 쌍둥이 요청 — ${wq.dry ? '다시 계산(설계만)' : '지금 출제'} · ${wq.batch || 'all'}${wq.only && wq.only.length ? ' · ' + wq.only.length + '명' : ''}`);
+      const { spawnSync } = require('child_process');
+      const r = spawnSync('node', a, { stdio: 'inherit', env: process.env, timeout: 50 * 60000 });
+      await setKv('wt_req', { ...wq, status: r.status === 0 ? 'done' : 'error', doneAt: new Date().toISOString(), error: r.status === 0 ? '' : ('종료 코드 ' + r.status) });
+    }
+  } catch (e) { log('오답 쌍둥이 요청 오류:', e.message); }
 
   // 🏁 진도 레이스 순위 집계 (v18-86)
   // 5분마다 다시 세면 낭비라서 30분에 한 번만. 단, 앱에서 「지금 다시 세기」를
