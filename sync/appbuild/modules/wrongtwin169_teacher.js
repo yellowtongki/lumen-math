@@ -19,7 +19,7 @@ function wtWhen(iso){ var d = new Date(iso || ''); return isNaN(d.getTime()) ? '
 function wtGk(g){ var m = String(g || '').match(/(초|중|고)[^0-9]*(\d)/); return m ? m[1] + m[2] : ''; }
 function wtShortSchool(s){ return String(s || '').trim().replace(/등학교$|학교$/, ''); }
 function wtScopeKey(st){ return wtShortSchool(st.school) + '|' + wtGk(st.grade); }
-function wtCfg(){ return Object.assign({ on: true, start: '2026-10-01', chunk: 50, excludeGrades: ['중3'], skip: {} }, WT.cfg || {}); }
+function wtCfg(){ return Object.assign({ on: true, start: '2026-10-01', chunk: 60, maxPer: 60, excludeGrades: ['중3'], skip: {} }, WT.cfg || {}); }
 /* 반 → 금(fri) / 토(sat) : 금요일 수업이 있는 반은 금요일, 그 밖의 수업 반은 토요일 (서버와 같은 규칙) */
 function wtBatchOf(g){ var d = (WT.days || {})[String(g || '').trim()]; if (!Array.isArray(d) || !d.length) return ''; return d.indexOf(5) >= 0 ? 'fri' : 'sat'; }
 /* 다음 출제 시각 (그 요일 05:00) */
@@ -107,7 +107,7 @@ function wtTable(batch){
     var c = s.lumen_rec_code, r = by[c] || null, sk = !!(cfg.skip && cfg.skip[c] && cfg.skip[c] >= wtYmd(new Date())), my = st[c] || {}, last = (my.runs || []).slice(-1)[0];
     var bs = (r && r.bySrc) || {}, n = r ? (r.n != null ? r.n : r.nWrong) : null;
     if (!sk){ nOn++; nP += n || 0; nS += (r && r.sheets) || (n ? Math.ceil(n / (cfg.chunk || 50)) : 0); }
-    var stt = r && r.err ? '<span class="wt-st e">' + wtE(r.err) + '</span>' : sk ? '<span class="wt-st x">이번엔 건너뜀</span>' : !r ? '<span class="wt-st x">계산 전</span>' : (n === 0 ? '<span class="wt-st d">새 오답 없음</span>' : '<span class="wt-st w">' + (((r.sheets || 1) > 1) ? r.sheets + '장으로 나눔' : '대기') + '</span>');
+    var stt = r && r.err ? '<span class="wt-st e">' + wtE(r.err) + '</span>' : sk ? '<span class="wt-st x">이번엔 건너뜀</span>' : !r ? '<span class="wt-st x">계산 전</span>' : (n === 0 ? '<span class="wt-st d">새 오답 없음</span>' : '<span class="wt-st w">' + (((r.sheets || 1) > 1) ? r.sheets + '장으로 나눔' : '대기') + '</span>' + (r.carry ? ' <span class="wt-st x">다음 주로 ' + r.carry + '</span>' : ''));
     h += '<div class="wt-row' + (sk ? ' skip' : '') + '"><input type="checkbox" ' + (sk ? '' : 'checked ') + 'aria-label="' + wtE(s.name) + ' 출제" onchange="wtSkip(\'' + wtJs(c) + '\',\'' + batch + '\',!this.checked)">'
       + '<span class="nm" onclick="wtOpen(\'' + wtJs(c) + '\')"><b>' + wtE(s.name) + (WT.open === c ? ' ▴' : ' ▾') + '</b><small>' + wtE(wtGk(s.grade)) + ' · ' + (r && r.scope ? '범위 ' + wtE(r.scope.split('|')[0]) : '범위 없음 → 전부') + '</small></span>'
       + '<span class="hx">' + wtE(s.group || '') + '</span><span class="wt-num hx">' + (r ? bs.ws || 0 : '–') + '</span><span class="wt-num hx">' + (r ? bs.book || 0 : '–') + '</span><span class="wt-num hx">' + (r ? bs.test || 0 : '–') + '</span>'
@@ -164,7 +164,7 @@ window.rWtwin = function(){
       + '<div>' + grpOf(b).map(function(g){ return '<span class="wt-chip">' + wtE(g) + '</span>'; }).join('') + '</div><div class="n">대상 <b>' + x[1].length + '명</b></div></div>';
   });
   h += '</div>';
-  h += '<div class="wt-rule"><span>틀린 문제 1개 → <b>쌍둥이 1개</b> (없으면 같은 유형)</span><span>문제 수 <b>제한 없음</b> · ' + (cfg.chunk || 50) + '문항씩 나눔</span><span>지난 출제 뒤 새로 틀린 것만 · <b>다시 맞힌 문제는 뺌</b></span><span>첫 회 <b>' + wtE(cfg.start) + '</b>부터</span><span>학교 <b>시험범위 단원만</b></span><span>매쓰플랫 <b>자동채점</b> 문항</span><span>태그 <b>숙제</b></span><span><b>' + wtE((cfg.excludeGrades || []).join('·')) + ' 제외</b></span></div>';
+  h += '<div class="wt-rule"><span>틀린 문제 1개 → <b>쌍둥이 1개</b> (없으면 같은 유형)</span>' + (cfg.maxPer ? '<span>한 번에 <b>최대 ' + cfg.maxPer + '문항</b> · 최근에 틀린 것 먼저 · 나머지는 다음 주</span>' : '<span>문제 수 <b>제한 없음</b> · ' + (cfg.chunk || 50) + '문항씩 나눔</span>') + '<span>지난 출제 뒤 새로 틀린 것만 · <b>다시 맞힌 문제는 뺌</b></span><span>첫 회 <b>' + wtE(cfg.start) + '</b>부터</span><span>학교 <b>시험범위 단원만</b></span><span>매쓰플랫 <b>자동채점</b> 문항</span><span>태그 <b>숙제</b></span><span><b>' + wtE((cfg.excludeGrades || []).join('·')) + ' 제외</b></span></div>';
   h += '<div class="wt-tabs">' + [['fri', '금요일 반 (월수금) ' + fri.length + '명'], ['sat', '토요일 반 (화목토) ' + sat.length + '명'], ['log', '지난 출제'], ['scope', '시험범위']].map(function(t){ return '<button type="button" class="wt-tab' + (WT.tab === t[0] ? ' on' : '') + '" onclick="wtTab(\'' + t[0] + '\')">' + t[1] + '</button>'; }).join('') + '</div>';
   if (WT.tab === 'fri' || WT.tab === 'sat') h += wtTable(WT.tab);
   else if (WT.tab === 'log') h += wtLogTab();

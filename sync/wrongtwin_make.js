@@ -14,7 +14,8 @@
  *       · 그 ✗ 가 wt_config.start(첫 회 10/1) 뒤이고 · 그 문제를 아직 쌍둥이로 낸 적이 없을 때(또는 낸 뒤에 또 틀렸을 때)
  *       · 학교 시험범위(wt_scope «학교|학년».mids = 매쓰플랫 중단원 이름)가 있으면 그 단원만 · 없으면(초등 등) 전부
  *   · 쌍둥이 = 매쓰플랫 쌍둥이(/derivation) 1개 — 없으면 같은 유형·비슷한 난도 다른 문제 1개 · 자동채점 문항만 ·
- *       이 학생이 이미 푼 문제는 안 고름 · 문제 수 제한 없음 · wt_config.chunk(50)문항씩 나눠 여러 장
+ *       이 학생이 이미 푼 문제는 안 고름 · 한 번에 최대 wt_config.maxPer(60)문항 — 최근에 틀린 것 먼저, 나머지는 다음 출제로 넘김
+ *       (원장 2026-10-28 «첫 회 분량이 크다(금요일 반 1,350문항) → 한 번에 최대 60»). wt_config.chunk(60)문항씩 나눠 여러 장
  *   · 학습지 = 태그 HOMEWORK · 머리말 «숙제» · 제목 «오답쌍둥이 10/30 이름 (1/3)» · 그 학생에게 바로 배정
  *   · 교재 오답은 매쓰플랫 문항 번호가 기록에 없다 → 교재 번호표(mf_textbook_<교재>)로 찾고, 없으면 같은 유형으로
  *
@@ -43,7 +44,7 @@ const mask = (n) => (n ? String(n).charAt(0) + '○○' : '?');
 const log = (...a) => console.log(...a);
 
 /* 기본 설정 — 서버에 wt_config / wt_scope 가 없을 때 처음 한 번 써 둔다(학원앱에서 고친다) */
-const DEF_CONFIG = { on: true, start: '2026-10-01', chunk: 50, excludeGrades: ['중3'], hiSubject: { '고1': '공통수학2', '고2': '미적분1', '고3': '미적분2' }, skip: {}, v: 1 };
+const DEF_CONFIG = { on: true, start: '2026-10-01', chunk: 60, maxPer: 60, excludeGrades: ['중3'], hiSubject: { '고1': '공통수학2', '고2': '미적분1', '고3': '미적분2' }, skip: {}, v: 1 };
 /* 시험범위 초안 = 작년 같은 시험(2학기 기말) 범위 — 원장 확인 2026-10-28. mids = 매쓰플랫 중단원 이름(/concept/chips middleChapterName) */
 const DEF_SCOPE = { v: 1, note: '작년 2학기 기말 범위로 만든 초안 (원장 확인 2026-10-28) — 학교에서 실제 범위가 나오면 고친다', byKey: {
   '옥길중|중1': { exam: '2학기 기말', date: '2026-12-18', src: '2024·2025 2학기 기말: 중1-2 다각형 ~ 자료의 정리와 해석', mids: ['다각형', '원과 부채꼴', '다면체와 회전체', '입체도형의 겉넓이와 부피', '자료의 정리와 해석'] },
@@ -94,6 +95,7 @@ async function mf(method, p, body) {
     const r = await fetch(`${MF}${p}`, { method, headers: { 'content-type': 'application/json', accept: 'application/json, text/plain, */*', 'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com', authorization: 'Bearer ' + TOK, 'x-auth-token': TOK, origin: WEB, referer: WEB + '/' }, body: body ? JSON.stringify(body) : undefined });
     const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch (e) {}
     if (r.ok) return j && (j.data !== undefined ? j.data : j);
+    if (i < 2 && (r.status === 401 || (j && j.code === 'UNAUTHORIZED'))) { await mfLogin(); continue; }   // 오래 돌면 로그인이 풀린다(2026-10-28 실측 약 20분) → 다시 로그인
     if (i < 2 && (r.status === 429 || r.status >= 500)) { await new Promise((ok) => setTimeout(ok, 1500 * (i + 1))); continue; }
     throw new Error(`${(j && j.code) || r.status} @ ${p}`);
   }
@@ -179,6 +181,8 @@ async function main() {
         bySrc: { ws: W.list.filter((w) => w.src === 'ws').length, book: W.list.filter((w) => w.src === 'book').length, test: W.list.filter((w) => w.src === 'test').length } });
       log(`  기록 ${rs.length} · 아직 틀린 새 문제 ${W.list.length} (학습지 ${row.bySrc.ws} · 교재 ${row.bySrc.book} · 주간T ${row.bySrc.test}) · 다시 맞힘 ${W.st.fixed} · 이미 냄 ${W.st.already}${sc ? ` · 범위 ${sk}: 범위 밖 ${W.st.outScope} · 단원 모름 ${W.st.unknown}(넣음)` : ' · 범위 없음 → 전부'}`);
       if (!W.list.length) { row.n = 0; rows.push(row); continue; }
+      const maxPer = Number(cfg.maxPer) || 0;   /* 한 번에 최대 — 최근에 틀린 것 먼저. 안 낸 것은 장부(given)에 안 적으니 다음 출제에 다시 나온다 */
+      if (maxPer && W.list.length > maxPer) { const keep = W.list.slice().sort((a, b) => T(b.at) - T(a.at)).slice(0, maxPer); row.carry = W.list.length - keep.length; W.list = keep.sort((a, b) => T(a.at) - T(b.at)); log(`  한 번에 최대 ${maxPer} — 최근 ${maxPer}개만 · ${row.carry}개는 다음 출제로`); }
       /* 교재 오답 → 매쓰플랫 문항 번호(교재 번호표) */
       for (const w of W.list) if (w.src === 'book' && w.bid && !w.pid) { const b = await bankOf(w.bid); if (b && b[String(w.wpId)]) w.pid = b[String(w.wpId)]; }
       const solved = W.solved; W.list.forEach((w) => { if (w.pid) solved[String(w.pid)] = 1; });

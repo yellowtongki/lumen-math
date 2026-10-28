@@ -62,10 +62,10 @@ Object.keys(PLANS).forEach((n) => { const p = PLANS[n]; if (!p) return; STORE['w
 /* ── v19-169: 오답 쌍둥이 자료 ── */
 STUDENTS.push({ id: 'S11', name: '○○○11', grade: '중학교 3학년', group: 'M4', lumen_rec_code: 'CCC111', lumen_planner: {} });
 STORE.lumen_group_days = { M4: [1, 3, 5], T5: [2, 4, 6] };
-STORE.wt_config = { on: true, start: '2026-10-01', chunk: 50, excludeGrades: ['중3'], skip: {}, v: 1 };
+STORE.wt_config = { on: true, start: '2026-10-01', chunk: 60, maxPer: 60, excludeGrades: ['중3'], skip: {}, v: 1 };
 STORE.wt_scope = { v: 1, note: '작년 범위 초안', byKey: { '옥길중|중1': { exam: '2학기 기말', date: '2026-12-18', src: '작년', mids: ['다각형', '원과 부채꼴'] } } };
 STORE.wt_preview = { at: '2026-10-28T05:00:00Z', batch: 'fri', dry: true, rows: [
-  { code: C[1], grp: 'M4', grade: '중1', batch: 'fri', at: '2026-10-28T05:00:00Z', dry: true, scope: '옥길중|중1', nWrong: 120, fixed: 8, outScope: 30, unknown: 2, already: 0, bySrc: { ws: 70, book: 40, test: 10 }, n: 118, twin: 90, same: 28, none: 2, sheets: 3 },
+  { code: C[1], grp: 'M4', grade: '중1', batch: 'fri', at: '2026-10-28T05:00:00Z', dry: true, scope: '옥길중|중1', nWrong: 60, carry: 60, fixed: 8, outScope: 30, unknown: 2, already: 0, bySrc: { ws: 30, book: 20, test: 10 }, n: 58, twin: 40, same: 18, none: 2, sheets: 1 },
   { code: C[2], grp: 'M4', grade: '중1', batch: 'fri', at: '2026-10-28T05:00:00Z', dry: true, scope: '', nWrong: 0, fixed: 1, outScope: 0, bySrc: { ws: 0, book: 0, test: 0 }, n: 0, sheets: 0 },
   { code: C[8], grp: 'T5', grade: '중1', batch: 'sat', at: '2026-10-28T05:00:00Z', dry: true, scope: '', nWrong: 12, fixed: 0, outScope: 0, bySrc: { ws: 5, book: 6, test: 1 }, n: 12, twin: 10, same: 2, sheets: 1 } ] };
 STORE.wt_state = { byCode: { [C[3]]: { given: {}, runs: [{ at: '2026-10-24T20:10:00Z', batch: 'fri', n: 33, ws: [84300001] }] } } };
@@ -117,11 +117,11 @@ STORE.wt_log = { runs: [{ at: '2026-10-24T20:10:00Z', batch: 'fri', dry: false, 
   const rows = () => pg.evaluate(() => [...document.querySelectorAll('.wt-tbl .wt-row:not(.h)')].map((r) => r.innerText.replace(/\s+/g, ' ')));
   let R = await rows();
   t('금요일 반 탭: M4 7명(중3 제외) · 토요일 반 3명 · 다음 출제 금/토', R.length === 7 && /금요일 반 \(월수금\) 7명/.test(tx) && /토요일 반 \(화목토\) 3명/.test(tx) && /\(금\)/.test(tx) && /\(토\)/.test(tx), R.length + ' ' + tx.slice(0, 300));
-  t('미리보기 숫자: 118 · 3장으로 나눔 · 범위 옥길중 · 다시 맞힘 −8 · 새 오답 없음 · 계산 전', R.some((r) => /○○○1 /.test(r) && /118/.test(r) && /3장으로 나눔/.test(r) && /−8/.test(r)) && R.some((r) => /○○○2 /.test(r) && /새 오답 없음/.test(r)) && R.some((r) => /계산 전/.test(r)), JSON.stringify(R.slice(0, 3)));
+  t('미리보기 숫자: 58 · 다음 주로 60 · 다시 맞힘 −8 · 새 오답 없음 · 계산 전 · 규칙 «최대 60»', /최대 60문항/.test(tx) && R.some((r) => /○○○1 /.test(r) && /58/.test(r) && /다음 주로 60/.test(r) && /−8/.test(r)) && R.some((r) => /○○○2 /.test(r) && /새 오답 없음/.test(r)) && R.some((r) => /계산 전/.test(r)), JSON.stringify(R.slice(0, 3)));
   if (SHOT) await pg.screenshot({ path: SHOT, fullPage: true });
   await pg.evaluate((c) => wtOpen(c), STUDENTS[0].lumen_rec_code); await settle(200);
   tx = await pg.evaluate(() => document.getElementById('CONTENT').innerText);
-  t('학생 이름 누르면 자세히: 쌍둥이 90 · 같은 유형 28 · 시험범위 단원', /쌍둥이 90/.test(tx) && /같은 유형 28/.test(tx) && /다각형 · 원과 부채꼴/.test(tx), tx.slice(0, 400));
+  t('학생 이름 누르면 자세히: 쌍둥이 40 · 같은 유형 18 · 시험범위 단원', /쌍둥이 40/.test(tx) && /같은 유형 18/.test(tx) && /다각형 · 원과 부채꼴/.test(tx), tx.slice(0, 400));
   await pg.evaluate(() => { const cb = document.querySelectorAll('.wt-tbl .wt-row:not(.h) input[type=checkbox]')[1]; cb.checked = false; cb.dispatchEvent(new Event('change')); }); await settle(500);
   const sk = await pg.evaluate(() => T.store.wt_config.skip);
   t('«이번엔 건너뛰기» 체크 해제 → wt_config.skip[코드] = 다음 금요일', Object.keys(sk).length === 1 && new Date(Object.values(sk)[0] + 'T00:00:00').getDay() === 5, JSON.stringify(sk));
