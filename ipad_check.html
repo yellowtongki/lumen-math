@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>학원앱 진단</title>
+<style>
+/* 아이패드에서 학원앱이 하얀 화면일 때 원인 찾기 (2026-10-30). 학원앱 파일을 받아 «실행하지 않고» 문법만 검사한다.
+   학생 자료·열쇠는 읽지 않는다(이 기기 저장 공간 크기만 잰다). */
+:root{--bg:#f3f5f9;--card:#fff;--ink:#15233b;--sub:#5f6b80;--ok:#15803d;--bad:#c81e1e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--card:#16213a;--ink:#e6ebf5;--sub:#9aa6bd}}
+:root[data-theme="dark"]{--bg:#0f172a;--card:#16213a;--ink:#e6ebf5;--sub:#9aa6bd}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Apple SD Gothic Neo",sans-serif;font-size:15px;line-height:1.6}
+.w{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:4px 0 12px}
+.c{background:var(--card);border-radius:12px;padding:12px 14px;margin-bottom:10px;word-break:break-all}
+.ok{color:var(--ok);font-weight:800}.bad{color:var(--bad);font-weight:800}.s{color:var(--sub);font-size:13px}
+pre{white-space:pre-wrap;font-size:12.5px;margin:6px 0 0}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>🔍 학원앱 진단 (아이패드용)</h1>
+<div class="c s">끝까지 기다렸다가 이 화면을 캡처해서 보내 주세요. 학생 자료는 읽지 않습니다.</div>
+<div id="out"></div>
+</div>
+<script>
+(function(){
+  var out = document.getElementById('out');
+  function add(html){ var d = document.createElement('div'); d.className = 'c'; d.innerHTML = html; out.appendChild(d); return d; }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  add('<b>기기</b><pre>' + esc(navigator.userAgent) + '</pre><span class="s">화면 ' + screen.width + '×' + screen.height + ' · 메모리 ' + (navigator.deviceMemory || '?') + 'GB</span>');
+  /* 이 기기 저장 공간(학원앱이 쓰는 것) — 크기만 */
+  try {
+    var n = 0, big = [];
+    for (var i = 0; i < localStorage.length; i++){ var k = localStorage.key(i), v = localStorage.getItem(k) || ''; n += k.length + v.length; big.push([v.length, k]); }
+    big.sort(function(a, b){ return b[0] - a[0]; });
+    var mb = (n * 2 / 1048576).toFixed(2);
+    var t = 'ok';
+    try { localStorage.setItem('_diag_probe', new Array(200001).join('x')); localStorage.removeItem('_diag_probe'); } catch(e){ t = 'full'; }
+    add('<b>저장 공간</b> 항목 ' + localStorage.length + '개 · 약 ' + mb + 'MB · ' + (t === 'ok' ? '<span class="ok">여유 있음</span>' : '<span class="bad">가득 참 (새로 쓰기 실패)</span>')
+      + '<pre>' + big.slice(0, 8).map(function(x){ return (x[0] * 2 / 1048576).toFixed(2) + 'MB  ' + esc(x[1].replace(/[가-힣]/g, '·')); }).join('\n') + '</pre>');
+  } catch(e){ add('<b>저장 공간</b> <span class="bad">읽기 실패: ' + esc(e.message) + '</span>'); }
+  /* 학원앱 파일 받기 → 스크립트마다 문법만 검사(new Function 은 실행하지 않고 읽기만) */
+  var url = 'lumen_v1.html?diag=' + Date.now(), t0 = Date.now();
+  var st = add('<b>학원앱 파일 받는 중…</b>');
+  fetch(url, { cache: 'no-store' }).then(function(r){ return r.text().then(function(tx){ return [r.status, tx]; }); }).then(function(a){
+    var tx = a[1], sec = ((Date.now() - t0) / 1000).toFixed(1);
+    var ver = (tx.match(/var APP_VER = '([^']+)'/) || [])[1] || '?';
+    st.innerHTML = '<b>학원앱 파일</b> 상태 ' + a[0] + ' · ' + (tx.length / 1048576).toFixed(2) + 'MB(글자) · ' + sec + '초 · 판 <b>' + esc(ver) + '</b>';
+    var re = /<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi, m, i = 0, bad = [], okN = 0;
+    while ((m = re.exec(tx))){
+      i++; if (/type=["']?(module|application\/json|text\/template)/i.test(m[1])) continue;
+      var code = m[2], line0 = tx.slice(0, m.index).split('\n').length;
+      try { new Function(code); okN++; }
+      catch(e){
+        var ln = e.line || e.lineNumber || 0, near = '';
+        if (ln){ var ls = code.split('\n'); near = ls.slice(Math.max(0, ln - 2), ln + 1).join('\n').slice(0, 400); }
+        bad.push({ i: i, msg: e.name + ': ' + e.message, ln: ln, file: ln ? line0 + ln - 1 : line0, near: near });
+      }
+    }
+    if (!bad.length) add('<span class="ok">✅ 문법 검사 통과</span> (스크립트 ' + okN + '개) — 문법 문제는 아닙니다. 아래 «실제로 열어 보기»를 눌러 주세요.');
+    bad.forEach(function(b){ add('<span class="bad">❌ 이 아이패드가 못 읽는 코드</span> · 스크립트 ' + b.i + ' · 파일 ' + b.file + '번째 줄 근처<pre>' + esc(b.msg) + '\n\n' + esc(b.near) + '</pre>'); });
+    var go = add('<b>실제로 열어 보기</b> <span class="s">— 오류가 나면 여기에 적힙니다(20초 기다림)</span><div id="fr"></div>');
+    var btn = document.createElement('button'); btn.textContent = '▶ 학원앱 열어 보기'; btn.style.cssText = 'font:inherit;font-weight:800;padding:8px 14px;border-radius:10px;border:0;background:#1d4ed8;color:#fff;margin-top:6px';
+    go.appendChild(btn);
+    btn.onclick = function(){
+      btn.disabled = true; var errs = [];
+      var f = document.createElement('iframe'); f.style.cssText = 'width:100%;height:320px;border:1px solid #ccc;border-radius:8px;margin-top:8px;background:#fff';
+      f.onload = function(){
+        try {
+          var w = f.contentWindow;
+          w.addEventListener('error', function(ev){ errs.push((ev.message || '') + ' @' + (ev.lineno || '') + ':' + (ev.colno || '')); });
+          w.addEventListener('unhandledrejection', function(ev){ errs.push('약속 실패: ' + String(ev.reason && (ev.reason.message || ev.reason))); });
+        } catch(e){}
+      };
+      f.src = 'lumen_v1.html?diag=' + Date.now();
+      document.getElementById('fr').appendChild(f);
+      setTimeout(function(){
+        var ok = false, info = '';
+        try { var w = f.contentWindow; ok = !!(w.APP_VER); info = '판 ' + (w.APP_VER || '?') + ' · 학생 ' + ((w.students || []).length) + '명 · 화면 ' + (w.VIEW || '?'); } catch(e){ info = '읽기 실패: ' + e.message; }
+        add((ok ? '<span class="ok">앱 시작됨</span> ' : '<span class="bad">앱이 시작하지 못함</span> ') + esc(info) + (errs.length ? '<pre>' + esc(errs.slice(0, 8).join('\n')) + '</pre>' : '<div class="s">잡힌 오류 없음</div>'));
+      }, 20000);
+    };
+  }).catch(function(e){ st.innerHTML = '<span class="bad">학원앱 파일을 받지 못함: ' + esc(e.message) + '</span>'; });
+})();
+</script>
+</body>
+</html>
