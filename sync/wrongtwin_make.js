@@ -208,7 +208,7 @@ async function main() {
         if (!p) { p = await same(w.cid, w.lv); how = 'same'; }
         if (!p) { nNone++; continue; }
         if (how === 'same') nSame++; else nTwin++;
-        items.push({ id: p.id, k: w.k, at: w.at, how, src: w.src });
+        items.push({ id: p.id, k: w.k, at: w.at, how, src: w.src, cid: w.cid });
       }
       row.n = items.length; row.twin = nTwin; row.same = nSame; row.none = nNone;
       const chunk = Math.max(10, Number(cfg.chunk) || 50), parts = [];
@@ -220,8 +220,10 @@ async function main() {
       if (!school) { row.err = '학년·과목을 몰라 학습지를 못 만듦'; log('  ✗ ' + row.err); rows.push(row); continue; }
       row.ws = [];
       for (let i = 0; i < parts.length; i++) {
+        /* ★ 매쓰플랫은 학습지를 만들 때 쓴 문제 묶음(filterId)을 한 번 쓰면 버린다(2026-10-30 rc_twin_make 둘째 장 WORKSHEET_NOT_FOUND) → 둘째 장부터 새 묶음 */
+        const fp = i === 0 ? fid : await (async () => { const cs = [...new Set(parts[i].map((it) => it.cid).filter(Boolean))]; const f3 = await mf('POST', '/worksheet/filter/concept', FILTER(cs.length ? cs : cids.slice(0, 300))); return f3.filterId || f3; })();
         const title = `오답쌍둥이 ${md} ${name}` + (parts.length > 1 ? ` (${i + 1}/${parts.length})` : '');
-        const made = await mf('POST', '/worksheet', { filterId: fid, problemList: parts[i].map((it) => ({ id: it.id, tagTop: null })), conceptIdList: [], littleChapterConceptIdList: [], assignStudentIdList: [sid], shareScope: 'ACADEMY',
+        const made = await mf('POST', '/worksheet', { filterId: fp, problemList: parts[i].map((it) => ({ id: it.id, tagTop: null })), conceptIdList: [], littleChapterConceptIdList: [], assignStudentIdList: [sid], shareScope: 'ACADEMY',
           title, writer: '김정수 선생님', prefix: '숙제', tag: 'HOMEWORK', schoolType: school.schoolType, grade: String(school.grade), revision: 'CURRICULUM_22', ...DESIGN });
         const wsId = (made && (made.id || made.worksheetId)) || made; row.ws.push(wsId);
         parts[i].forEach((it) => { my.given[it.k] = startedAt; });
@@ -246,4 +248,4 @@ async function main() {
   return { rows, tot, sheets };
 }
 if (require.main === module) main().catch((e) => { console.error('❌', e.message); process.exit(1); });
-module.exports = { wrongList, scopeKey, shortSchool, gradeKey, DEF_SCOPE, DEF_CONFIG };
+module.exports = { wrongList, scopeKey, shortSchool, gradeKey, DEF_SCOPE, DEF_CONFIG, mf, mfLogin, FILTER, mfAutoOk, store, setItem, q, schoolOf, bankId, DESIGN };
