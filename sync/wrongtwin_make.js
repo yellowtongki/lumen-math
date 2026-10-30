@@ -36,6 +36,7 @@ const args = process.argv.slice(2);
 const opt = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 && args[i + 1] && !/^--/.test(args[i + 1]) ? args[i + 1] : d; };
 const DRY = args.includes('--dry'), NOSAVE = args.includes('--no-save'), WAIT = args.includes('--wait-collect');
 const ONLY = String(opt('only', '')).split(',').map((s) => s.trim()).filter(Boolean);
+const EXCL_WS = String(opt('exclude-ws', '')).split(',').map((s) => s.trim()).filter(Boolean);   // ★ 이 학습지들에 이미 든 문제는 고르지 않음(예: 같은 날 리커버리 학습지와 겹치지 않게)
 const MF = 'https://api.mathflat.com', WEB = 'https://teacher.mathflat.com';
 const DESIGN = { layoutType: 11, layoutColor: 'GREEN', partitionType: 4, wrongAnswerNoteFlag: false, conceptNameFlag: false, problemTrendFlag: false,
   answerRateFlag: false, qrFlag: true, relationWorkbookFlag: true, includeProblemFlag: false, pdfDateType: 'TODAY', pdfDate: null,
@@ -164,6 +165,8 @@ async function main() {
   const mfs = await q('mf_students?select=mf_student_id,name,lumen_rec_code');
   log(`📄 오답 쌍둥이 ${batch === 'fri' ? '금요일(월수금 반)' : batch === 'sat' ? '토요일(화목토 반)' : '전체'} · 대상 ${targets.length}명 · 시작 ${cfg.start} · ${cfg.chunk}문항씩 · ${DRY ? '[설계만]' : '[실제 출제]'}`);
   await mfLogin();
+  const exclIds = {}; for (const w of EXCL_WS){ try { const a = await mf('GET', '/worksheet/' + w); ((a && (a.problems || a.problemList)) || []).forEach((p) => { if (p && p.id) exclIds[String(p.id)] = 1; });   /* GET /worksheet/{id} 의 문제 목록 칸 = problems */ } catch(e){ log('⚠ 학습지 #' + w + ' 문제 목록을 못 읽음: ' + e.message); } }
+  if (EXCL_WS.length) log(`빼는 문제: 학습지 ${EXCL_WS.length}장 · ${Object.keys(exclIds).length}문제`);
   const bankCache = {};
   const bankOf = async (bid) => { if (bankCache[bid] !== undefined) return bankCache[bid]; const s2 = await store(['mf_textbook_' + bid]); const b = s2['mf_textbook_' + bid]; const m = {}; if (b && b.problems) b.problems.forEach((p) => { const id = bankId(p); if (id) m[String(p.id)] = id; }); bankCache[bid] = Object.keys(m).length ? m : null; return bankCache[bid]; };
   const prevRows = {}; ((await store(['wt_preview'])).wt_preview || { rows: [] }).rows.forEach((r) => { prevRows[r.code] = r; });
@@ -187,7 +190,7 @@ async function main() {
       if (maxPer && W.list.length > maxPer) { const keep = W.list.slice().sort((a, b) => T(b.at) - T(a.at)).slice(0, maxPer); row.carry = W.list.length - keep.length; W.list = keep.sort((a, b) => T(a.at) - T(b.at)); log(`  한 번에 최대 ${maxPer} — 최근 ${maxPer}개만 · ${row.carry}개는 다음 출제로`); }
       /* 교재 오답 → 매쓰플랫 문항 번호(교재 번호표) */
       for (const w of W.list) if (w.src === 'book' && w.bid && !w.pid) { const b = await bankOf(w.bid); if (b && b[String(w.wpId)]) w.pid = b[String(w.wpId)]; }
-      const solved = W.solved; W.list.forEach((w) => { if (w.pid) solved[String(w.pid)] = 1; });
+      const solved = W.solved; W.list.forEach((w) => { if (w.pid) solved[String(w.pid)] = 1; }); Object.assign(solved, exclIds);
       const cids = [...new Set(W.list.map((w) => w.cid).filter((c) => c))];
       const fid = await (async () => { const f = await mf('POST', '/worksheet/filter/concept', FILTER(cids.slice(0, 300))); return f.filterId || f; })();
       const chosen = {}, pool = {}, tried = {}; let nTwin = 0, nSame = 0, nNone = 0;
