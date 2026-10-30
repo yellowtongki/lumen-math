@@ -24,7 +24,12 @@ const W = require('./wrongtwin_make.js');
 const args = process.argv.slice(2);
 const opt = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 && args[i + 1] && !/^--/.test(args[i + 1]) ? args[i + 1] : d; };
 const DRY = args.includes('--dry');
-const ONLY = String(opt('only', '')).split(',').filter(Boolean), SKIP_ITEMS = Number(opt('skip-items', '0')) || 0;   // 이어 만들기: 그 학생만 · 앞 N문항(이미 만든 장)은 건너뜀
+const ONLY = String(opt('only', '')).split(',').filter(Boolean), SKIP_ITEMS = Number(opt('skip-items', '0')) || 0;
+/* ★ 원장 2026-10-31 「유사 문제 빼고 쌍둥이로만 · 성재연 줄이자, 유형별 3개 이하」
+ *   --twin-only : 매쓰플랫 쌍둥이(pair)만 — 없으면 그 문제는 뺀다(유사·같은 유형으로 대신하지 않음)
+ *   계획의 perConcept:N : 같은 유형(conceptId) 오답은 N개까지만(테스트 오답 먼저, 교재는 새것 먼저)
+ *   --replace : 계획의 replace:[옛 학습지 번호] 를 새 학습지를 다 만든 뒤 매쓰플랫에서 지운다 */
+const TWIN_ONLY = args.includes('--twin-only'), REPLACE = args.includes('--replace');   // 이어 만들기: 그 학생만 · 앞 N문항(이미 만든 장)은 건너뜀
 const T = (s) => Date.parse(s || '') || 0;
 const mask = (n) => (n ? String(n).charAt(0) + '○○' : '?');
 
@@ -68,7 +73,9 @@ async function main() {
       for (const w of bookW) { const b = await bankOf(w.bid); if (b && b[String(w.wpId)]) w.pid = b[String(w.wpId)]; }
       Object.assign(row, { test: testW.length, book: bookW.length, tests: useT.map((t) => t.d.slice(5)).join('·') });
       console.log(`  주간테스트 ${useT.length}회(${row.tests}) 오답 ${testW.length} · 범위 교재 오답 ${bookW.length}${sc ? '' : ' (범위 없음 → 전부)'} · 번호표 없는 교재 오답 ${bookW.filter((w) => !w.pid).length}`);
-      const all = testW.concat(bookW); if (!all.length) { row.n = 0; rows.push(row); continue; }
+      let all = testW.concat(bookW);
+      if (p.perConcept){ const c = {}, before = all.length; all = all.filter((w) => { c[w.cid] = (c[w.cid] || 0) + 1; return c[w.cid] <= p.perConcept; }); row.capped = before - all.length; console.log(`  유형마다 ${p.perConcept}개까지 → ${row.capped}문제 뺌 (${before} → ${all.length})`); }
+      if (!all.length) { row.n = 0; rows.push(row); continue; }
       all.forEach((w) => { if (w.pid) solved[String(w.pid)] = 1; });
       const cids = [...new Set(all.map((w) => w.cid).filter(Boolean))];
       const f = await W.mf('POST', '/worksheet/filter/concept', W.FILTER(cids.slice(0, 300))); const fid = f.filterId || f;
@@ -81,8 +88,8 @@ async function main() {
         let x = null, how = '';
         if (w.pid) { try { const d = await W.mf('POST', '/derivation/problem/' + w.pid, { excludedProblemIds: Object.keys(chosen).map(Number), filterId: fid, bookType: 'WORKSHEET', tagTop: null });
           const pk = (y) => ({ id: y.problem.id, lv: y.problem.level, autoScoredType: y.problem.autoScoredType });
-          x = pick(((d && d.pairProblemList) || []).map(pk), w.lv); how = 'twin'; if (!x) { x = pick(((d && d.similarProblemList) || []).map(pk), w.lv); how = 'sim'; } } catch (e) {} }
-        if (!x) { x = await same(w.cid, w.lv); how = 'same'; }
+          x = pick(((d && d.pairProblemList) || []).map(pk), w.lv); how = 'twin'; if (!x && !TWIN_ONLY) { x = pick(((d && d.similarProblemList) || []).map(pk), w.lv); how = 'sim'; } } catch (e) {} }
+        if (!x && !TWIN_ONLY) { x = await same(w.cid, w.lv); how = 'same'; }
         if (!x) { cnt.none++; continue; }
         cnt[how]++; items.push({ id: x.id, cid: w.cid });
       }
@@ -103,6 +110,9 @@ async function main() {
           title, writer: '김정수 선생님', prefix: '취약유형', tag: 'WEAK_CONCEPT_CHIP', schoolType: school.schoolType, grade: String(school.grade), revision: 'CURRICULUM_22', ...W.DESIGN });
         const wsId = (made && (made.id || made.worksheetId)) || made; row.ws.push(wsId);
         console.log(`  ✅ 매쓰플랫 #${wsId} ${title.replace(name, mask(name))} · ${parts[i].length}문항`);
+      }
+      if (REPLACE && Array.isArray(p.replace) && p.replace.length && row.ws && row.ws.length === parts.length - skipParts) {   /* 새 것이 다 생긴 뒤에만 옛 학습지 지우기 */
+        for (const old of p.replace) { let gone = false; for (const pth of ['/worksheet', '/worksheet/trash/by-worksheet']) { try { await W.mf('DELETE', pth, [Number(old)]); gone = true; break; } catch (e2) {} } console.log(`  ${gone ? '🗑 옛 학습지 #' + old + ' 지움' : '⚠ 옛 학습지 #' + old + ' 를 못 지움 — 매쓰플랫에서 직접'}`); (row.deleted = row.deleted || []).push(gone ? old : '!' + old); }
       }
     } catch (e) { row.err = e.message; console.log('  ✗ 실패: ' + e.message); }
     rows.push(row);

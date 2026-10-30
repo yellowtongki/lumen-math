@@ -44,7 +44,7 @@ const mask = (n) => (n ? String(n).charAt(0) + '○○' : '?');
 const log = (...a) => console.log(...a);
 
 /* 기본 설정 — 서버에 wt_config / wt_scope 가 없을 때 처음 한 번 써 둔다(학원앱에서 고친다) */
-const DEF_CONFIG = { on: true, start: '2026-10-01', chunk: 60, maxPer: 60, excludeGrades: ['중3'], hiSubject: { '고1': '공통수학2', '고2': '미적분1', '고3': '미적분2' }, skip: {}, v: 1 };
+const DEF_CONFIG = { on: true, twinOnly: true, start: '2026-10-01', chunk: 60, maxPer: 60, excludeGrades: ['중3'], hiSubject: { '고1': '공통수학2', '고2': '미적분1', '고3': '미적분2' }, skip: {}, v: 1 };
 /* 시험범위 초안 = 작년 같은 시험(2학기 기말) 범위 — 원장 확인 2026-10-28. mids = 매쓰플랫 중단원 이름(/concept/chips middleChapterName) */
 const DEF_SCOPE = { v: 1, note: '작년 2학기 기말 범위로 만든 초안 (원장 확인 2026-10-28) — 학교에서 실제 범위가 나오면 고친다', byKey: {
   '옥길중|중1': { exam: '2학기 기말', date: '2026-12-18', src: '2024·2025 2학기 기말: 중1-2 다각형 ~ 자료의 정리와 해석', mids: ['다각형', '원과 부채꼴', '다면체와 회전체', '입체도형의 겉넓이와 부피', '자료의 정리와 해석'] },
@@ -140,6 +140,8 @@ async function main() {
   if (!st.wt_scope) { await setItem('wt_scope', DEF_SCOPE); st.wt_scope = DEF_SCOPE; if (!NOSAVE) log('wt_scope 시험범위 초안을 처음 저장'); }
   const cfg = Object.assign({}, DEF_CONFIG, st.wt_config || {});
   if (cfg.on === false && !DRY && !ONLY.length) { log('자동 출제가 꺼져 있습니다(wt_config.on=false)'); return; }
+  /* ★ 같은 날 같은 반 출제는 한 번만 — 깃허브 예약이 늦게 돌거나 손으로 먼저 돌렸을 때 두 번 나가지 않게 (2026-10-31) */
+  if (!DRY && !ONLY.length) { const lg0 = (await store(['wt_log'])).wt_log || { runs: [] }; const dup = (lg0.runs || []).find((r) => !r.dry && !r.only && r.batch === batch && kday(r.at) === kday()); if (dup) { log(`오늘(${kday()}) ${batch} 출제는 이미 했습니다 (${dup.at}) — 건너뜀`); return; } }
   /* 새벽 정기 수집이 끝났는지 — mf_weekly 가 오늘 한국 03시 뒤에 갱신됐는지. 아니면 최대 90분 기다림 */
   if (WAIT) {
     const need = Date.parse(kday() + 'T03:00:00+09:00');
@@ -196,17 +198,17 @@ async function main() {
         try { const f2 = await mf('POST', '/worksheet/filter/concept', FILTER([cid], 40)); addPool(await mf('POST', '/worksheet/problem', { filterId: f2.filterId || f2 })); } catch (e) {}
         return pick(pool[cid] || [], lv);
       };
-      const items = [];
+      const items = [], noTwin = [], twinOnly = cfg.twinOnly !== false;   /* ★ 원장 2026-10-31 «유사 문제 빼고 쌍둥이로만» — 쌍둥이 없는 문제는 빼고 장부에 적어 다음에 또 찾지 않는다(그 문제를 또 틀리면 다시) */
       for (const w of W.list) {
         let p = null, how = '';
         if (w.pid) {
           try { const d = await mf('POST', '/derivation/problem/' + w.pid, { excludedProblemIds: Object.keys(chosen).map(Number), filterId: fid, bookType: 'WORKSHEET', tagTop: null });
             const pk = (x) => ({ id: x.problem.id, lv: x.problem.level, autoScoredType: x.problem.autoScoredType });
-            p = pick(((d && d.pairProblemList) || []).map(pk), w.lv); how = 'twin'; if (!p) { p = pick(((d && d.similarProblemList) || []).map(pk), w.lv); how = 'sim'; }
+            p = pick(((d && d.pairProblemList) || []).map(pk), w.lv); how = 'twin'; if (!p && !twinOnly) { p = pick(((d && d.similarProblemList) || []).map(pk), w.lv); how = 'sim'; }
           } catch (e) { /* 같은 유형으로 */ }
         }
-        if (!p) { p = await same(w.cid, w.lv); how = 'same'; }
-        if (!p) { nNone++; continue; }
+        if (!p && !twinOnly) { p = await same(w.cid, w.lv); how = 'same'; }
+        if (!p) { nNone++; noTwin.push(w.k); continue; }
         if (how === 'same') nSame++; else nTwin++;
         items.push({ id: p.id, k: w.k, at: w.at, how, src: w.src, cid: w.cid });
       }
@@ -227,6 +229,7 @@ async function main() {
           title, writer: '김정수 선생님', prefix: '숙제', tag: 'HOMEWORK', schoolType: school.schoolType, grade: String(school.grade), revision: 'CURRICULUM_22', ...DESIGN });
         const wsId = (made && (made.id || made.worksheetId)) || made; row.ws.push(wsId);
         parts[i].forEach((it) => { my.given[it.k] = startedAt; });
+        if (i === 0) noTwin.forEach((k) => { my.given[k] = startedAt; });
         log(`  ✅ 매쓰플랫 #${wsId} ${title.replace(name, mask(name))} · ${parts[i].length}문항`);
       }
       my.runs = (my.runs || []).concat([{ at: startedAt, batch, n: items.length, ws: row.ws }]).slice(-30);
