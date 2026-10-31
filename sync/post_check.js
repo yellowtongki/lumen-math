@@ -47,6 +47,10 @@ const scorePii = body.match(/(○○|아무개|[가-힣]{2,3}\s?(학생|군|양)
 // 사람이 눈으로 볼 수 있게 점수는 세어만 둔다
 const scores = [...new Set(body.match(/\d{1,3}점/g) || [])];
 // 2026-09-20 발행본에서 배운 것 (docs/lumen_blog_profile.md 4-5)
+// 날짜는 「그날 있었던 일」을 쓰는 글에만 필요하다. 제도·시스템을 설명하는 글은
+// 반 년 뒤에 읽어도 유효해야 하므로 날짜를 박으면 오히려 낡아 보인다 (2026-10-31 원장 지적).
+// 머리말에 dated: false 를 적으면 이 검사를 건너뛴다.
+const needDate = String(meta.dated || '').trim() !== 'false';
 const hasDate = /\d{1,2}월\s?\d{1,2}일|\d{4}[.\-]\d{1,2}[.\-]\d{1,2}/.test(body.slice(0, 400));
 const hasAddr = /옥길로\s?116/.test(body);
 // 지도(장소) 카드 안에 주소가 글자로 들어간다 → 본문에 또 적을 필요가 없다 (2026-10-11 원장 지시)
@@ -103,7 +107,9 @@ const checks = [
     scores.length ? `점수 ${scores.join(' ')} — 제도 기준이면 괜찮습니다. 특정 아이 점수가 아닌지 눈으로 보세요` : ''],
   ['모집 글이면 교습비·등록번호 표기', meta.recruit !== 'true' || /교습비 등 표시/.test(body), meta.recruit === 'true' ? '' : '모집 글 아님 → 생략'],
   ['미확정 빈칸(❏) 없음', !/❏/.test(body), ''],
-  ['도입에 날짜가 있음', hasDate, hasDate ? '' : '「9월 20일 일요일」처럼 날짜·요일을 적으세요'],
+  ['도입에 날짜가 있음', !needDate || hasDate,
+    needDate ? (hasDate ? '' : '「9월 20일 일요일」처럼 날짜·요일을 적으세요')
+             : '제도·시스템 글이라 건너뜀 (머리말 dated: false)'],
   ['주소 — 지도나 주소 한 줄 중 하나', hasMap || hasAddr,
     hasMap ? '지도 카드에 주소가 들어감' : (hasAddr ? '본문 끝 주소 한 줄' : '지도를 넣거나 맨 끝에 주소를 적으세요')],
   ['■ 기호는 첫 소제목 하나만', sq <= 1, `${sq}개`],
