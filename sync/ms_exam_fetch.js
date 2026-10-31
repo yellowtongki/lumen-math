@@ -5,9 +5,11 @@
  *
  * 수학비서 「나만의 DB」 시험지(mydb id)의 문항 그림과 문항 정보(정답·배점·난이도·단원)를
  * 받아 폴더에 저장한다. 해설집(docs/exam_reports/<코드>/) 작업의 출발점.
+ * 「내 문제지」(my-papers, 범위맞춤 묶음 등)는 --paper 를 붙인다 — 문항마다 원래 시험지(source)도 적는다.
  *
  *   NODE_USE_ENV_PROXY=1 NODE_EXTRA_CA_CERTS=/root/.ccr/ca-bundle.crt \
  *     node sync/ms_exam_fetch.js 366369 <폴더>
+ *     node sync/ms_exam_fetch.js 2144553 <폴더> --paper
  *
  *   <폴더>/cells.json   [{no, score, difficulty, answer, answerType, chapter}]
  *   <폴더>/img/qNN.png  문항 그림 (저작권 — 저장소에 올리지 않는다. 해설집 폴더면 img/ 는 .gitignore)
@@ -32,11 +34,11 @@ async function login() {
   TOK = j.data ? j.data.accessToken : j.accessToken;
   if (!TOK) throw new Error('수학비서 로그인 실패');
 }
-async function cells(id) {
+async function cells(id, paper) {
   const out = [];
   let cursor = '';
   for (let i = 0; i < 10; i++) {
-    const r = await fetch(`${MS_API}/bms/api/v1/mydbs/${id}/cells?curriculumId=2&limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, { headers: H() });
+    const r = await fetch(`${MS_API}/bms/api/v1/${paper ? 'my-papers' : 'mydbs'}/${id}/cells?curriculumId=2&limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, { headers: H() });
     const sc = r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean);
     const hit = sc.find((c) => c && c.includes('Cloud-CDN-Cookie'));
     if (hit) CDN = hit.split(';')[0];
@@ -59,11 +61,13 @@ function answerOf(c) {
 }
 
 (async () => {
-  const [id, dir] = process.argv.slice(2);
-  if (!id || !dir) { console.error('사용법: node sync/ms_exam_fetch.js <mydb id> <폴더>'); process.exit(1); }
+  const args = process.argv.slice(2);
+  const paper = args.includes('--paper');
+  const [id, dir] = args.filter((a) => !a.startsWith('--'));
+  if (!id || !dir) { console.error('사용법: node sync/ms_exam_fetch.js <mydb id | 내 문제지 id> <폴더> [--paper]'); process.exit(1); }
   await login();
-  const m = (await (await fetch(`${MS_API}/bms/api/v1/mydbs/${id}`, { headers: H() })).json()).data || {};
-  const cs = await cells(id);
+  const m = (await (await fetch(`${MS_API}/bms/api/v1/${paper ? 'my-papers' : 'mydbs'}/${id}`, { headers: H() })).json()).data || {};
+  const cs = await cells(id, paper);
   fs.mkdirSync(path.join(dir, 'img'), { recursive: true });
   const rows = [];
   for (const c of cs) {
@@ -72,7 +76,8 @@ function answerOf(c) {
     const ch = ((c.chapters || []).find((x) => String(x.curriculumId) === '1') || (c.chapters || [])[0] || {}).chapter || [];
     const a0 = (c.answers || [])[0] || {};
     const psg = c.passage && c.passage.imagePath;
-    rows.push({ no, score: (mi.scores || [])[0] ?? null, difficulty: (a0.difficulty && a0.difficulty.mathSecr) ?? null, ...answerOf(c), chapter: ch.join(' > '), ...(psg ? { passage: c.passage.id } : {}) });
+    rows.push({ no, score: (mi.scores || [])[0] ?? null, difficulty: (a0.difficulty && a0.difficulty.mathSecr) ?? null, ...answerOf(c), chapter: ch.join(' > '), ...(psg ? { passage: c.passage.id } : {}),
+      ...(paper ? { source: ((c.sources || [])[0] || {}).combinedTitle || mi.title || '', sourceNo: mi.cellNo || null } : {}) });
     if (psg) {
       const r = await fetch(psg, { headers: { cookie: CDN, origin: MS_ORIGIN, referer: MS_ORIGIN + '/' } });
       if (r.ok) fs.writeFileSync(path.join(dir, 'img', `p${String(no).padStart(2, '0')}.png`), Buffer.from(await r.arrayBuffer()));
@@ -86,5 +91,5 @@ function answerOf(c) {
   fs.writeFileSync(path.join(dir, 'cells.json'), JSON.stringify(rows, null, 1));
   fs.writeFileSync(path.join(dir, 'meta.json'), JSON.stringify({ id: Number(id), title: m.title, questionCount: m.questionCount }, null, 1));
   console.log(`「${m.title}」 ${rows.length}문항 → ${dir}`);
-  rows.forEach((r) => console.log(`  ${r.no}. ${r.answer} · ${r.score}점 · 난이도 ${r.difficulty} · ${r.chapter}`));
+  rows.forEach((r) => console.log(`  ${r.no}. ${r.answer} · ${r.score}점 · 난이도 ${r.difficulty} · ${r.chapter}${r.source ? ` · 출처 ${r.source} ${r.sourceNo || ''}번` : ''}`));
 })().catch((e) => { console.error('오류:', e.message); process.exit(1); });
