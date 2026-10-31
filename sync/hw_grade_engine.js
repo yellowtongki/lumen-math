@@ -128,6 +128,10 @@
     for (var i = 0; i < MAP.length; i++) t = t.replace(MAP[i][0], MAP[i][1]);
     // 각도 위첨자 40^{\circ} · 40^° → 40°  (초등 교재가 이 꼴로 준다)
     t = t.replace(/\^\s*\{\s*°\s*\}/g, '°').replace(/\^\s*°/g, '°');
+    // ★ 2026-10-31 (학생앱 v2-150): 순환소수 점 \dot{4} → 「4」 위에 점(U+0307). 학생 자판의 「순환점」 키도 같은 글자를 넣는다.
+    t = t.replace(/\\dot\s*\{\s*(\d)\s*\}/g, '$1\u0307').replace(/\\dot\s*(\d)/g, '$1\u0307');
+    // ★ 2026-10-31: 분수 안 지수 \frac{1}{{a}^{2}} — {a}^{2} 를 a^2 로 (겹친 중괄호 때문에 분수를 못 풀었다 · 중2 지수법칙)
+    t = t.replace(/\{\s*([A-Za-z0-9]+)\s*\}(?=\s*\^)/g, '$1').replace(/\^\s*\{\s*(-?[A-Za-z0-9]+)\s*\}/g, '^$1');
     // 중괄호로 감싼 표시 글자 {○} → ○
     t = t.replace(/\{\s*([○◯〇△▲□■☆✓×])\s*\}/g, '$1');
     // 「210 \text{ cm}^2」 → 「210 cm^2」 (단위와 제곱 사이가 벌어진 것)
@@ -272,10 +276,44 @@
       var q = ratOf(a.n * b.d, a.d * b.n); if (!q) return null;
       q.n *= sign; return q;
     }
+    // ★ 2026-10-31: 순환소수 — 점 찍은 꼴 「0.4̇8̇」(점은 순환마디 처음·끝) · 늘어놓은 꼴 「0.2272727···」
+    var rd = repDecRat(s);
+    if (rd) { rd.n *= sign; return rd; }
     // 그냥 숫자
     if (/^\.\d+$/.test(s)) s = '0' + s;
     if (/^\d+(\.\d+)?$/.test(s)) { var r = decRat(s); if (!r) return null; r.n *= sign; return r; }
     return null;
+  }
+  /* 순환소수 → 분수. 「0.4̇8̇」 = 0.484848… · 「0.\dot{1}8\dot{5}」 = 0.185185… · 「1.1666···」 = 1.1666…
+     늘어놓은 꼴은 끝에서 두 번 이상 되풀이되는 가장 짧은 마디를 순환마디로 본다. 못 읽으면 null */
+  function repDecRat(s) {
+    var m = String(s).match(/^(\d*)\.((?:\d\u0307?)+)$/), w, ds = [], dots = [], i, a, b;
+    if (m && m[2].indexOf('\u0307') >= 0) {
+      w = m[1] || '0';
+      for (i = 0; i < m[2].length; i++) { var ch = m[2].charAt(i); if (ch === '\u0307') dots[ds.length - 1] = 1; else ds.push(ch); }
+      for (a = 0; a < ds.length && !dots[a]; a++);
+      for (b = ds.length - 1; b >= 0 && !dots[b]; b--);
+      if (b !== ds.length - 1) return null;               // 마지막 점 뒤에 숫자가 더 있으면 못 읽는다
+      for (i = a + 1; i < b; i++) if (dots[i]) return null; // 점은 처음·끝 두 개까지만
+      return repRat(w, ds.slice(0, a).join(''), ds.slice(a).join(''));
+    }
+    m = String(s).match(/^(\d*)\.(\d+)(?:···|…|\.\.\.|⋯)$/);
+    if (!m) return null;
+    var d = m[2];
+    for (var p = 1; p * 2 <= d.length; p++) {
+      var st = d.length - p;
+      while (st - p >= 0 && d.substr(st - p, p) === d.substr(st, p)) st -= p;
+      // 마디가 두 번 이상 나오고, 앞쪽 남는 숫자는 마디 길이 안쪽에서 끝까지 맞춰 본다
+      while (st > 0 && d.charAt(st - 1) === d.charAt(st - 1 + p)) st--;
+      if (d.length - st >= 2 * p) return repRat(m[1] || '0', d.slice(0, st), d.substr(st, p));
+    }
+    return null;
+  }
+  function repRat(w, pre, rep) {
+    if (!rep || pre.length + rep.length > 12) return null;
+    var N = Number(pre + rep) - Number(pre || '0'), D = (Math.pow(10, rep.length) - 1) * Math.pow(10, pre.length);
+    var W = Number(w); if (!isFinite(W)) return null;
+    return ratOf(W * D + N, D);
   }
   function ratKey(r) { return (r.d === 1 ? String(r.n) : r.n + '/' + r.d); }
 
@@ -751,7 +789,12 @@
   /* 한 조각을 「이름표 + 값」으로 읽는다 */
   /* 조각을 감싼 괄호는 «못 읽었을 때만» 껍데기로 보고 벗긴다.
      먼저 그대로 읽어 보므로 좌표 「(3,6)」은 예전처럼 좌표로 읽힌다. */
+  /* ★ 2026-10-31: 합동·닮음 조건(SSS·SAS·ASA·RHA·RHS·AA)은 낱말이다 — 문자식으로 읽으면 「RAH」 도 맞게 된다 */
+  var COND_RE = /^(SSS|SAS|ASA|RHA|RHS|AA)\s*(?:합동|닮음)?$/i;
   function analyzePart(raw) {
+    var lm = trim(raw).match(/^(\([가-하]\))\s*(.*)$/), body = lm ? trim(lm[2]) : trim(raw);
+    var cm = body.match(COND_RE);
+    if (cm) return { label: lm ? lm[1] : '', kind: 'word', keys: ['조건' + cm[1].toUpperCase()], unit: '', eq: false, src: trim(raw) };
     var r = analyzePart0(raw);
     if (r && r.keys && r.keys.length) return r;
     var s = trim(raw), t = stripWrapParen(s);
@@ -993,6 +1036,11 @@
     s = trim(s.replace(/[\[(]\s*방법\s*\d*\s*[\])]/g, ','));
     // 「① 4, 4 ② 4, 5 ③ …」 처럼 작은 문제 번호로 나눠 적은 답도 칸 구분으로 바꾼다
     if ((s.match(/[①-⑮]\s+\S/g) || []).length >= 2) s = trim(s.replace(/[①-⑮]\s+/g, ','));
+    // ★ 2026-10-31: 증명 빈칸 「㈎ ∠ADE, ㈏ ∠A」 의 ㈎ 는 이름표 (가) 다 (기호 하나만 있는 답 「㈎」 는 그대로)
+    s = s.replace(/(^|[,;])\s*([\u320E-\u321B])\s+(?=\S)/g, function (m0, pre, c) {
+      return pre + '(' + '가나다라마바사아자차카타파하'.charAt(c.charCodeAt(0) - 0x320E) + ') '; });
+    // ★ 2026-10-31: 「△ABC≡△FED(RHA 합동)」 → 대응 한 칸 + 조건 한 칸
+    s = s.replace(/(△\s*[A-Z]{3}\s*[≡∽]\s*△\s*[A-Z]{3})\s*\(\s*([A-Za-z]{2,3})\s*(?:합동|닮음)?\s*\)/g, '$1,$2');
     // 「변 ㄱㄹ과 변 ㄴㄷ」 처럼 「과·와」로 이은 도형 답은 쉼표로 이은 것과 같이 본다
     s = s.replace(/([A-Zㄱ-ㅎ])\s*(?:과|와)\s*(선분|반직선|직선|호|점|면|변|모서리|꼭짓점|각)\s*([A-Zㄱ-ㅎ])/g, '$1,$2 $3');
     var alts = splitTopWord(s, '또는'), prim = null, primIdx = -1, first = null, i, j, k;
@@ -1083,6 +1131,15 @@
     if (alt !== String(studentRaw == null ? '' : studentRaw)) {
       var r2 = gradeOnce(correctRaw, alt);
       if (r2.gradable && r2.correct) return r2;
+    }
+    /* ★ 2026-10-31 (학생앱 v2-150): 각도 답에 「°」를 붙여 친 「7°」, 자판에서 «°» 옆 «·» 를 잘못 누른 「12·」 —
+       10월 실제 30건이 «맞는 답인데 ✗» 였다. 숫자 뒤 「°·」를 떼고 한 번 더 본다 (정답 단위가 없거나 ° 일 때만). */
+    var st = String(studentRaw == null ? '' : studentRaw);
+    var st2 = st.replace(/(\d)\s*[·°˚]+\s*(?=,|$)/g, '$1');
+    if (st2 !== st && /^°?$/.test(canonUnit(unitOf(correctRaw)))) {
+      var r3 = gradeOnce(correctRaw, st2);
+      if (!r3.correct) { var a3 = slashToFrac(st2); if (a3 !== st2) r3 = gradeOnce(correctRaw, a3); }
+      if (r3.gradable && r3.correct) return r3;
     }
     return r;
   }
