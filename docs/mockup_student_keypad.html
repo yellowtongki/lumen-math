@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>학생앱 수식 자판 시안</title>
+<!-- 2026-10-31 원장 「매쓰플랫 화면이 깔끔하다 — 우리 학생앱에 적용하면 어떻게 되는지」.
+     매쓰플랫 10/29 수식 키패드(기본·함수·삼각·벡터집합)의 모양을 빌리고, 우리 자판의 중등 키(도형·보기 기호·대분수·다음 칸)는 그대로 살린 시안.
+     키 글자는 KaTeX 로 그려 교과서 수식 글꼴이 된다. 실제 앱이 아니라 모양 보기용. -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+:root{--bg:#eef0f3;--card:#fff;--ink:#1f2937;--sub:#6b7280;--key:#fff;--key2:#e7e8eb;--pad:#f4f4f5;--tabon:#5b5b5f;--line:#e5e7eb;--teal:#0f766e;--teal2:#14b8a6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#eef0f3}}
+:root[data-theme="dark"]{--bg:#eef0f3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.phone{width:390px;max-width:100%;height:780px;margin:0 auto;position:relative;overflow:hidden;background:#f6f7f9}
+.hdr{height:112px;background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;display:flex;align-items:flex-end;padding:0 16px 18px;gap:14px}
+.hdr .bk{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:20px}
+.hdr .t{font-size:17px;font-weight:800}
+.qcard{margin:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.qcard .no{font-size:15px;font-weight:800;color:#111827}
+.qcard .show{flex:1;min-height:40px;border-radius:10px;background:#f8fafc;display:flex;align-items:center;padding:0 12px;font-size:17px;color:#111827}
+.qcard .show.empty{color:#b0b6bf;font-size:13px}
+.qcard .dk{width:46px;height:46px;border-radius:50%;background:#f3f4f6;border:0;color:#6b7280;font:inherit;font-size:12.5px}
+/* 자판 */
+.kb{position:absolute;left:8px;right:8px;bottom:8px;background:var(--pad);border-radius:18px;box-shadow:0 6px 28px rgba(15,23,42,.16);padding:0 8px 10px}
+.bar{position:relative;top:-12px;margin:0 -2px -4px;background:#fff;border-radius:16px;box-shadow:0 3px 14px rgba(15,23,42,.12);display:flex;align-items:center;padding:6px 6px 6px 16px;min-height:52px}
+.bar .in{flex:1;font-size:18px;color:#111827;min-height:30px;display:flex;align-items:center;overflow-x:auto;white-space:nowrap}
+.bar .in.empty{color:#9aa0a8;font-size:14.5px}
+.bar .caret{display:inline-block;width:2px;height:22px;background:var(--teal2);margin-left:2px;animation:bl 1s steps(2) infinite}
+@keyframes bl{to{opacity:0}}
+.bar .go{width:38px;height:38px;border-radius:50%;border:0;background:var(--teal);color:#fff;font-size:19px;font-weight:700}
+.tabs{display:flex;gap:6px;margin:2px 0 9px;overflow-x:auto}
+.tabs button{border:1px solid #e5e7eb;background:#fff;color:#374151;border-radius:12px;padding:8px 13px;font:inherit;font-size:14px;font-weight:700;white-space:nowrap}
+.tabs button.on{background:var(--tabon);color:#fff;border-color:var(--tabon)}
+.tabs .sep{width:1px;background:#d4d4d8;margin:6px 2px}
+.grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px}
+.grid button{height:44px;border:0;border-radius:9px;background:var(--key);box-shadow:0 1px 2px rgba(0,0,0,.13);font-size:16px;color:#1f2937;padding:0;display:flex;align-items:center;justify-content:center;font-family:inherit;overflow:hidden}
+.grid button .katex{font-size:1.08em}
+.grid button.sm .katex{font-size:.86em}
+.grid button.ko{font-size:15px}
+.grid button.w2{grid-column:span 2}
+.grid button:active{background:#e5e7eb}
+.fnrow{display:grid;grid-template-columns:1fr 1fr 1fr 1.25fr 1fr;gap:5px;margin-top:5px}
+.fnrow button{height:46px;border:0;border-radius:9px;background:var(--key2);box-shadow:0 1px 2px rgba(0,0,0,.12);font:inherit;font-size:14px;font-weight:700;color:#374151}
+.handle{width:58px;height:5px;border-radius:5px;background:#c9cbd0;margin:9px auto 0}
+.note{max-width:390px;margin:10px auto 24px;font-size:12px;color:#6b7280;line-height:1.6;padding:0 16px}
+</style>
+</head>
+<body>
+<div class="phone" id="ph">
+  <div class="hdr"><div class="bk">←</div><div class="t" id="ttl">52P · 쎈 중1(하)</div></div>
+  <div class="qcard"><div class="no">0573</div><div class="show empty" id="show">자판에서 답을 쳐요</div><button class="dk">모름</button></div>
+  <div class="kb">
+    <div class="bar"><div class="in empty" id="in">답안을 입력해 주세요.</div><button class="go" title="제출">↑</button></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="grid" id="grid"></div>
+    <div class="fnrow"><button data-k="NEXT">다음 칸</button><button data-k="SPC">띄우기</button><button data-k="L">←</button><button data-k="R">→</button><button data-k="BS">⌫</button></div>
+    <div class="handle"></div>
+  </div>
+</div>
+<div class="note">시안 — 매쓰플랫 10/29 수식 자판 모양 + 우리 중등 키. 중등 학생은 «기본·문자·도형·보기» 탭, 고등 학생은 «기본·문자·함수·삼각·집합» 탭이 보이게 한다(주소 끝 <code>#hi</code>). 키를 누르면 위 칸에 수식으로 써진다.</div>
+<script>
+/* 키 = [보이는 수식(LaTeX), 넣을 조각(LaTeX)] · 한 글자면 그대로. 'ko:' 로 시작하면 한글 글자 키 */
+var B = '\\square';
+var P = {
+  기본: ['1','2','3','4','5','6','7','8','9','0',
+        '+','-','\\times','\\div','=','\\neq','<','>','\\le','\\ge',
+        '(',')',['\\frac{'+B+'}{'+B+'}','\\frac{'+B+'}{'+B+'}'],[B+'\\tfrac{'+B+'}{'+B+'}',B+'\\frac{'+B+'}{'+B+'}'],[B+'^{'+B+'}',B+'^{'+B+'}'],['\\sqrt{'+B+'}','\\sqrt{'+B+'}'],'x','y','\\pi',['\\square^{\\circ}','^{\\circ}']],
+  문자: ['q','w','e','r','t','y','u','i','o','p',
+        'a','s','d','f','g','h','j','k','l',["'","'"],
+        'z','x','c','v','b','n','m',[',',','],[':',':'],['\\square_{'+B+'}','_{'+B+'}']],
+  도형: ['A','B','C','D','E','F','G','H','O','P',
+        ['\\overline{'+B+'}','\\overline{'+B+'}'],['\\overrightarrow{'+B+'}','\\overrightarrow{'+B+'}'],['\\overleftrightarrow{'+B+'}','\\overleftrightarrow{'+B+'}'],['\\overset{\\frown}{'+B+'}','\\overset{\\frown}{'+B+'}'],'\\angle','\\triangle','\\square','\\bigcirc','\\perp','\\parallel',
+        'ko:ㄱ','ko:ㄴ','ko:ㄷ','ko:ㄹ','ko:ㅁ','\\equiv','\\backsim',['\\square^{\\circ}','^{\\circ}'],["'","'"],[':',':']],
+  보기: ['ko:①','ko:②','ko:③','ko:④','ko:⑤','ko:ㄱ','ko:ㄴ','ko:ㄷ','ko:ㄹ','ko:ㅁ',
+        'ko:㉠','ko:㉡','ko:㉢','ko:㉣','ko:㉤','ko:㉮','ko:㉯','ko:㉰','ko:㉱','ko:㉲',
+        'ko:(1)','ko:(2)','ko:(3)','ko:(4)','ko:(5)','ko:㈎','ko:㈏','ko:㈐','ko:㈑',[',',',']],
+  함수: ['1','2','3','4','5','6','7','8','9','0',
+        '+','-',['\\sqrt{'+B+'}','\\sqrt{'+B+'}'],['\\sqrt['+B+']{'+B+'}','\\sqrt['+B+']{'+B+'}'],['\\log_{'+B+'}','\\log_{'+B+'}'],['\\log '+B,'\\log '],['\\ln '+B,'\\ln '],'|','f','e',
+        '(',')',['\\frac{'+B+'}{'+B+'}','\\frac{'+B+'}{'+B+'}'],[B+'^{'+B+'}',B+'^{'+B+'}'],[B+'_{'+B+'}','_{'+B+'}'],'x','y','\\alpha','\\beta','\\infty'],
+  삼각: ['1','2','3','4','5','6','7','8','9','0',
+        '+','-','\\times',['\\frac{'+B+'}{'+B+'}','\\frac{'+B+'}{'+B+'}'],[B+'^{'+B+'}',B+'^{'+B+'}'],['\\sqrt{'+B+'}','\\sqrt{'+B+'}'],['\\square^{\\circ}','^{\\circ}'],'x','\\theta','\\pi',
+        '(',')',['\\sin','\\sin '],['\\cos','\\cos '],['\\tan','\\tan '],['\\csc','\\csc '],['\\sec','\\sec '],['\\cot','\\cot '],'C','r'],
+  집합: ['1','2','3','4','5','6','7','8','9','0',
+        '+','-','\\cdot',['\\overline{'+B+'}','\\overline{'+B+'}'],['\\overrightarrow{'+B+'}','\\overrightarrow{'+B+'}'],'A','B','a','b','c',
+        '\\{','\\}','\\cup','\\cap','\\subset','\\supset','\\in','\\notin','\\varnothing',[B+'^{c}','^{c}']]
+};
+var MID = ['기본','문자','도형','보기'], HI = ['기본','문자','함수','삼각','집합'];
+var tabs = location.hash === '#hi' ? HI : MID, cur = tabs[0], T = [];
+function kx(s){ try { return katex.renderToString(s, { throwOnError:false }); } catch(e){ return s; } }
+function drawTabs(){
+  document.getElementById('tabs').innerHTML = tabs.map(function(t){ return '<button class="'+(t===cur?'on':'')+'" data-t="'+t+'">'+t+'</button>'; }).join('');
+}
+function drawGrid(){
+  document.getElementById('grid').innerHTML = P[cur].map(function(k, i){
+    var face = Array.isArray(k) ? k[0] : k;
+    if (typeof face === 'string' && face.indexOf('ko:') === 0) return '<button class="ko" data-i="'+i+'">'+face.slice(3)+'</button>';
+    return '<button'+(/log|ln|sqrt\[/.test(face)?' class="sm"':'')+' data-i="'+i+'">'+kx(face)+'</button>';
+  }).join('');
+}
+function drawIn(){
+  var el = document.getElementById('in'), sh = document.getElementById('show');
+  if (!T.length){ el.className='in empty'; el.innerHTML='답안을 입력해 주세요.'; sh.className='show empty'; sh.textContent='자판에서 답을 쳐요'; return; }
+  var tex = T.join(' ');
+  el.className='in'; el.innerHTML = kx(tex) + '<span class="caret"></span>';
+  sh.className='show'; sh.innerHTML = kx(tex);
+}
+document.getElementById('tabs').onclick = function(e){ var b = e.target.closest('button'); if (!b) return; cur = b.dataset.t; drawTabs(); drawGrid(); };
+document.getElementById('grid').onclick = function(e){
+  var b = e.target.closest('button'); if (!b) return; var k = P[cur][+b.dataset.i];
+  var put = Array.isArray(k) ? k[1] : k; if (put.indexOf('ko:') === 0) put = '\\text{'+put.slice(3)+'}';
+  T.push(put); drawIn();
+};
+document.querySelector('.fnrow').onclick = function(e){
+  var b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.k === 'BS') T.pop(); else if (b.dataset.k === 'SPC') T.push('\\ ');
+  drawIn();
+};
+/* 처음 보여 줄 예시 답 (주소 #hi 면 고등 예) */
+T = location.hash === '#hi' ? ['\\log_{2}','8','+','\\sin ','\\frac{\\pi}{6}'] : ['2','\\frac{3}{5}'];
+if (location.hash === '#hi') document.getElementById('ttl').textContent = '84P · 쎈 공통수학2';
+drawTabs(); drawGrid(); drawIn();
+window.__setTab = function(t, ex){ cur = t; if (ex) T = ex; drawTabs(); drawGrid(); drawIn(); };
+</script>
+</body>
+</html>
