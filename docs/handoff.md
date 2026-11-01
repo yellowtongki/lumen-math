@@ -1,4 +1,4 @@
-# 🔁 세션 인수인계 (마지막 갱신 2026-10-31 KST · 세션 01Majju37zxoG8L6CrVK5VcG)
+# 🔁 세션 인수인계 (마지막 갱신 2026-11-01 KST · 세션 01Majju37zxoG8L6CrVK5VcG)
 
 새 세션은 **이 문서를 먼저 읽고** 시작한다. 설명은 원장님께 한국어로, 비개발자가 알아듣게 한다(CLAUDE.md).
 큰 주제 하나가 끝나거나 자동 압축이 1~2번 일어나면 원장님이 「인수인계해줘」라고 한다. 그때 이 문서를 갱신하고 새 세션으로 넘긴다.
@@ -6,7 +6,7 @@
 ## 1. 지금 버전 (서버 `lumen_store.app_latest` 와 같다)
 | 앱 | 최신 파일 | 고정 주소(사용자가 여는 곳) |
 |---|---|---|
-| 학원앱 | `lumen_v19-169.html` | `lumen_v1.html` = v19-169 (Claude가 배포 때 같이 바꾼다) · main 에는 최근 20판(v19-150~169) + 조립 바탕 v19-42 만 |
+| 학원앱 | `lumen_v19-170.html` | `lumen_v1.html` = v19-170 (Claude가 배포 때 같이 바꾼다) · main 에는 최근 20판(v19-151~170) + 조립 바탕 v19-42 만 |
 | 학생앱 | `student_v2-151.html` | `student_v1.html` = v2-151 (11/1 원장 「학생앱배포」 — 홈 맨 아래 «채점» 카드가 아래 탭 줄에 가리던 것: 화면 높이 dvh(@supports, fzApply 가 --scrhd) + 아래 여백 = 실제 탭 줄 높이(--btabh, `stuTabPad`)+24px · `build_student_v2151.py` · 검사 `tests/test_stu_v2151.js` 10/10 · 아이폰 사파리 실제 확인은 원장 · 이전: v2-150 10/31 원장 「학생앱 배포」 — 매쓰플랫식 수식 자판(탭 기본·문자·도형·보기 · 답 막대 · 지수·√·선분 틀 · 순환점) + 엔진 보강(순환소수·분수 안 지수·합동 조건·㈎ 빈칸·«7°»«12·») · `build_student_v2150.py` · 검사 `tests/test_stu_v2150.js` 23/23 · 이전: v2-149 10/26 원장 「학생앱배포」 — 플래너 제출 안내 맨 위 «📒 플래너는 모트모트로 내요» · `build_student_v2149.py` · 검사 `tests/test_stu_v2149.js` 5/5 · 이전: v2-148 10/22 원장 「학생앱배포」 — 아하 사진 읽기 칸 이름 빼기 · 이전: v2-147 10/20 원장 「학생앱배포」 — 아하노트 사진 앱 꺼짐 고침 · 이어 쓰기 · **「학생앱배포」 지시가 있을 때만** 바꾼다 · 10/19 원장 「학생앱배포」 — v2-145 주간 점수 새벽 3시 유예·10/12 주 계획 면제 안내 · v2-146 «루멘 영상 플레이어»로 유튜브 이탈 막기(강의실·손풀이 영상, 검사 tests/test_v2146.js 45/45, **아이폰·안드로이드 실제 첫 재생은 원장 확인 필요**)) |
 | 학부모앱 | `parent_v1-37.html` (10/23 숙제 4단계 · v1-36 녹음 안 A 포함, **배포 안 함** — 원장 「학부모앱은 배포하지 않는다」) | `parent.html` = v1-35 (**원장님 명령 때만**) |
 
@@ -113,7 +113,17 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 - 카드뉴스·기출 DB(화면엔 「기출 DB」, 「수학비서」라는 말 금지), 적중 분석: docs/exam_hit_contract.md §9.
 
 ## 6. 남은 일 (10/26 기준 — 맨 위가 최신)
-**▶ 10/31 오후 (제미나이 녹음 · 네이버예약 · 매쓰플랫 학생앱 비교) — 다음 세션 첫 일**
+**▶ 11/1 (매쓰플랫 월간보고서 · 서술형 최종 답) — 다음 세션 첫 일**
+- **📑 학원앱 v19-170 (11/1 배포) 진도·리포트 › 월간보고서** — 원장 「9월 보고서는 하나하나 만들어서 오래 걸렸다 · 여러 학생을 하나씩 열어봐서 확인 · 학원앱에서 쉽게 확인하고 배포」. 부품 `modules/mfreport170_teacher.js` · 검사 `tests/test_v19170.js` 14/14 · 서버 `sync/mf_report_worker.js` (`--req | --list YYYY-MM | --make YYYY-MM [--only] | --auto`) · 요청 `mfrep_req` → `collect_request_worker`(5분마다) · 목록 `mfrep_<YYYY-MM>`(학생 이름·의견 — 기기엔 안 둠 PULL_SKIP_PREFIX) · 기록 `mfrep_log` · 예약 `.github/workflows/mf-report.yml` 매달 2일 03:20 지난달 보고서 **비공개**로 만들기(끄기 `mfrep_config.auto=false`).
+  - 매쓰플랫 주소(선생님 웹 10/29 판 코드에서 읽음): 목록 `GET /v2/report/custom?studentIds=..`(studentId 는 안 됨) · 내용·설정 `GET /v2/report/custom/{id}/scoring` → `request.commentComponent.comment` · 계산(저장 안 함) `POST /v2/report/custom/scoring` · AI 의견 `POST https://ai.mathflat.com/ai/report-comment` · 만들기 `POST /v2/report/custom {students:[…], source:'CUSTOM_CREATE', groupKey, groupName, groupType:'student'}`(늘 비공개) · 고치기 `PUT /v2/report/custom/{id}`(PDF 다시 만듦) · 공개 `POST /v2/report/custom/share/parent-app {reportIds, shouldSendSmsToParent}` · 비공개 `…/unshare/parent-app`. 의견 한도 650자. 목록의 «실시간보고서»(REAL_TIME)는 체크가 안 된다(매쓰플랫이 막음) — 원장이 «10월은 체크가 안 된다»고 한 까닭.
+  - **10월 보고서 31명 비공개로 만듦**(11/1, 의견 = 매쓰플랫 AI 250~380자, 9월과 같은 구성, 학습평가 비교는 «같은 학년»). 9월 27명은 원장이 만든 것(의견 있음 · 비공개) · 8월은 공개됐지만 «선생님의견» 쪽이 25명 꺼져 있었음. **공개는 원장이 학원앱에서 누를 때만** — 아직 아무것도 공개 안 함.
+  - 공개(`share/parent-app`) 실제 호출은 아직 한 번도 안 해 봄(학부모에게 나가는 일) — 원장이 처음 누를 때 결과(mfrep_req.result) 확인할 것.
+- **✍️ 서술형 최종 답 (원장 「B로 진행」)**: 쎈 중1(하)(2129121) 서술형 242문항 = 매쓰플랫 정답이 그림뿐 → 채팅 하위 에이전트 4명이 그림을 읽어 최종 답 201문항(single 196 · multi 5), 41문항은 표·작도·증명·문장이라 사진 자기채점 그대로. 정답사전 문항을 `type:'SHORT_ANSWER', answer:<최종 답>, essayFinal:true, origType, origAnswer` 로 바꿈 + 덮어쓰기표 `mf_essayfinal_2129121`(수집기가 쪽을 새로 받아도 다시 넣음). 도구 `sync/essay_final_apply.js <교재> <폴더>`(list.json·all.json). 원본 백업은 scratchpad 에만. 3장 직접 확인(91°·4cm·35%) 정확. **다른 교재도 같은 방법**: 서술형/글자정답없음 많은 교재 — 3220081(1029, 그림 없음) · 2129421(168) · 1429132(166) · 1424152(165) · 2129201(150) …
+  - 계기: 김○○(중1)이 쎈 중1(하)를 학생앱에서 채점하며 92문항 중 12문항 사진(모두 서술형). 학생앱 v2-150 자판·엔진 문제는 아니었음.
+  - 원장 질문 «서술형은 사진 찍고 학생 스스로 판단?» → 예(사진 → 정답 그림 → ◯/✗). 원장은 학원앱 📋 숙제체크 › 교재 채점(자기채점 훑어보기, 최근 7일)에서 사진과 정답을 나란히 보고 ◯/✗ 를 고칠 수 있다.
+- 김○○ 학생앱에 쎈 중1(하) 추가(`--swb-only --codes`).
+
+**▶ 10/31 오후 (제미나이 녹음 · 네이버예약 · 매쓰플랫 학생앱 비교)**
 - **🎙 녹음 새벽 읽기 연결 끝**: 원장이 GitHub Secret `GEMINI_API_KEY` 등록 → rec-night 손 실행 성공. `rec_read_last` = 10/28~30 녹음 **41건 읽음 · 실패 1** · 모델 gemini-2.5-flash. 학원앱 녹음관리 › 👀 훑어보기 날짜 ◀▶ 로 확인. 이제 매일 새벽 자동(깃허브 예약은 늦게 돌 수 있음).
 - **📅 네이버예약 다시 연결**: 원장이 네이버 쿠키 Secret 을 `NID_AUT=..; NID_SES=..` 꼴로 다시 넣음(첫 시도는 401) → 예약 수집 다시 흐름. 쿠키가 만료되면 같은 증상(401)이 다시 난다 — 그때 같은 꼴로 다시 넣게 안내.
 - **📄 입학생 학부모 안내문(노션용)** `docs/parent_guide_new_student.md` — [대괄호] 칸(수업 시간·결석/보강·교습비·상담·전화번호)은 원장이 채울 것.
