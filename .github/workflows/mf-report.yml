@@ -1,0 +1,31 @@
+name: 📑 매쓰플랫 월간보고서 (매달 2일 새벽 — 지난달 보고서 비공개로 만들기)
+
+# 원장 2026-11-01 「9월 보고서는 하나하나 만들어서 오래 걸렸다 · 학원앱에서 쉽게 확인하고 배포」
+#   지난달 보고서가 없는 재원생만 «비공개»로 만들고(선생님의견 = 매쓰플랫 AI), 학원앱 목록(mfrep_<YYYY-MM>)을 저장한다.
+#   학부모앱 공개는 하지 않는다 — 원장님이 학원앱 «📑 월간보고서»에서 확인한 뒤 공개한다.
+#   끄기: lumen_store mfrep_config = { "auto": false }
+on:
+  schedule:
+    - cron: '20 18 1 * *'   # UTC 매달 1일 18:20 = 한국 2일 03:20
+  workflow_dispatch:
+
+concurrency:
+  group: mf-report
+  cancel-in-progress: false
+
+jobs:
+  monthly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 지난달 보고서 만들기(비공개) + 목록
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
+          MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
+        run: node sync/mf_report_worker.js --auto
