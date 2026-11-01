@@ -34,6 +34,8 @@ html, body { height: 100%; background: #f8fafc; font-family: 'Apple SD Gothic Ne
  *  머리띠가 위로 밀리면서 그 밑 카드(💡 오늘의 노트 후보)가 잘려 보였다.
  * fzApply() 가 --scrh 를 (100/zoom)vh 로 맞춰 준다 (기본은 100vh). */
 .screen { display: none; height: var(--scrh, 100vh); overflow-y: auto; flex-direction: column; }
+/* ★ v2-151: 아이폰 사파리의 100vh 는 막대가 숨은 «큰» 높이 — 지금 보이는 높이(dvh)로. fzApply 가 --scrhd 를 (100/zoom)dvh 로 맞춘다 */
+@supports (height: 100dvh) { .screen { height: var(--scrhd, 100dvh); } }
 .screen.active { display: flex; }
 
 /* 헤더 */
@@ -2900,6 +2902,9 @@ body.lyp-lock{overflow:hidden;}
 .bellh{margin-left:6px;width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);font-size:17px;cursor:pointer;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:inherit;padding:0}
 .bell-n{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;font-size:10px;font-weight:900;border-radius:9px;padding:1px 6px;line-height:1.4}
 #screen-home .h3-body{padding-bottom:calc(74px + env(safe-area-inset-bottom));gap:10px}
+/* ★ v2-151: 탭 줄 높이를 재서(--btabh) 그만큼 + 24px 비워 둔다 — 마지막 카드가 탭 줄에 가리지 않게 */
+html.btabh-on #screen-home .h3-body{padding-bottom:calc(var(--btabh) + 24px)}
+html.btabh-on .tab-body{padding-bottom:calc(var(--btabh) + 24px)}
 .tab-body{padding:12px 12px calc(84px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
 .tab-body>*{flex-shrink:0}
 .hdr-chip{margin-left:auto;font-size:10.5px;font-weight:800;color:#cfe0ff;background:rgba(255,255,255,.14);border-radius:50px;padding:4px 10px}
@@ -4606,6 +4611,10 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-151 (2026-11-01) 📱 홈 맨 아래 «채점» 카드가 아래 탭 줄에 가리던 것 (원장 제보 — 학생 아이폰 캡처)
+ *   · 아이폰 사파리는 주소창·아래 막대가 보일 때도 화면 높이를 «막대가 숨은 큰 높이»로 알려 줘서, 화면 아래쪽이 막대 뒤로 들어갔습니다.
+ *     이제 «지금 보이는 높이»로 잽니다. 아래 여백도 실제 탭 줄 높이에 맞춰 늘어납니다(글씨 크게·아주 크게에서도).
+ *
  * v2-150 (2026-10-31) ⌨️ 매쓰플랫식 수식 자판 + 앱이 읽는 답 늘리기 (원장 「매쓰플랫 화면이 깔끔하다 · 그 순서로 진행」)
  *   · <b>[자판]</b> 탭이 <b>기본 · 문자 · 도형 · 보기</b> 로 바뀌었습니다. 흰 키, 수식 글꼴, 자판 위 «답 막대»(지금 칸을 크게 보여 주고 «제출 ↑»).
  *     분수·대분수뿐 아니라 <b>지수 □ⁿ · 제곱근 √□ · 선분·반직선·직선·호</b>도 빈칸 틀로 칩니다. <b>순환점</b>(숫자 위 점)과 <b>각도 °</b> 키가 생겼습니다.
@@ -5274,7 +5283,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-150';
+var STU_VER = 'v2-151';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -15876,6 +15885,8 @@ function fzApply(){
     /* ★ v2-78: zoom 이 100vh 까지 부풀려 화면 한 장이 폰 화면보다 길어지는 것을 되돌린다.
      * (홈 아래가 잘리고 문서가 한 번 더 스크롤돼 카드가 머리띠 밑으로 들어가던 원인) */
     document.documentElement.style.setProperty('--scrh', (z===1 ? 100 : (100/z)) + 'vh');
+    document.documentElement.style.setProperty('--scrhd', (z===1 ? 100 : (100/z)) + 'dvh');   /* ★ v2-151 */
+    if(window.stuTabPad) setTimeout(stuTabPad, 0);
     if(z!==1 && !('zoom' in document.body.style)){
       document.documentElement.style.fontSize = Math.round(16*z)+'px';
     }
@@ -24001,7 +24012,18 @@ function test(){ return (typeof isTest!=='undefined') && isTest; }
 function shown(el){ return !!(el && el.style.display!=='none'); }
 
 /* ── 아래 탭 ── */
+/* ★ v2-151: 아래 탭 줄의 실제 높이(아래 띠 포함)를 --btabh 로 — 홈·탭 화면 아래 여백에 쓴다 */
+window.stuTabPad=function(){
+  try{
+    var nav=document.getElementById('btabs'); if(!nav||nav.style.display==='none') return;
+    var h=nav.offsetHeight; if(!h) return;
+    document.documentElement.style.setProperty('--btabh', h+'px');
+    document.documentElement.classList.add('btabh-on');
+  }catch(e){}
+};
+try{ window.addEventListener('resize', function(){ setTimeout(stuTabPad, 50); }); }catch(e){}
 window.btabsPaint=function(id){
+  setTimeout(stuTabPad, 0);
   var nav=$('btabs'); if(!nav) return;
   var on=!!TABS[id];
   nav.style.display=on?'grid':'none';
