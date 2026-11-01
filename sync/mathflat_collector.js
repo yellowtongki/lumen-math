@@ -1755,6 +1755,13 @@ async function refreshBookAnswers() {
         if (rr.ok) { const j = await rr.json(); if (j[0] && j[0].value) store = (typeof j[0].value === 'string' ? JSON.parse(j[0].value) : j[0].value); }
       } catch (e) {}
       store.pages = store.pages || {};
+      /* ★ 2026-11-01: 서술형 «최종 답» 덮어쓰기표(mf_essayfinal_<교재>) — 매쓰플랫엔 정답이 그림뿐인 서술형을
+       *   채팅에서 그림을 읽어 최종 답을 적어 두었다. 쪽을 새로 받아도 그 답이 다시 들어가게 한다. */
+      let essayFinal = {};
+      try {
+        const re = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_essayfinal_${bid}&select=value`, { headers: sbHeaders });
+        if (re.ok) { const j = await re.json(); const v = j[0] && j[0].value; essayFinal = ((typeof v === 'string' ? JSON.parse(v) : v) || {}).answers || {}; }
+      } catch (e) {}
       let changed = false, bPages = 0;
       for (const pid of pageIds) {
         if (capLeft <= 0) break;
@@ -1766,6 +1773,9 @@ async function refreshBookAnswers() {
         const items = (page && (page.content || page)) || [];
         if (!Array.isArray(items) || !items.length) continue;
         const probs = items.map(bookAnsRec);
+        probs.forEach((x) => { const f = essayFinal[x.wpId]; if (!f) return;   // 서술형 최종 답 (위 덮어쓰기표)
+          x.origType = x.type; x.origAnswer = x.answer; x.type = 'SHORT_ANSWER'; x.answer = f; x.essayFinal = true;
+          const sh = HWGrade.shapeOf({ type: x.type, answer: x.answer, objective: x.objective, cnt: x.cnt, units: x.units }); x.self = !!sh.self; x.gradable = !!sh.gradable; x.shape = sh.shape; });
         items.forEach((p) => { if (p.autoScoredType && p.autoScoredType !== 'IMPOSSIBLE') nAuto++; });
         store.pages[pid] = {
           v: BOOKANS_VER,

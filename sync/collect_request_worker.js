@@ -528,6 +528,16 @@ async function runHwSync() {
       await setKv('wt_req', { ...wq, status: r.status === 0 ? 'done' : 'error', doneAt: new Date().toISOString(), error: r.status === 0 ? '' : ('종료 코드 ' + r.status) });
     }
   } catch (e) { log('오답 쌍둥이 요청 오류:', e.message); }
+  // ★ v19-170: 📑 매쓰플랫 월간보고서 — 학원앱 «새로고침 · 의견 저장 · 학부모앱 공개 · 보고서 만들기» 는 mfrep_req 를 남긴다.
+  //   요청이 없으면 조회 한 번으로 끝난다. 공개는 이 요청(원장님이 누른 것)으로만 한다.
+  try {
+    const mq = await getKv('mfrep_req');
+    if (mq && mq.status === 'requested') {
+      log(`📑 월간보고서 요청 — ${mq.action} ${mq.month || ''}`);
+      const { spawnSync } = require('child_process');
+      spawnSync('node', [path.join(__dirname, 'mf_report_worker.js'), '--req'], { stdio: 'inherit', env: process.env, timeout: 40 * 60000 });
+    }
+  } catch (e) { log('월간보고서 요청 오류:', e.message); }
 
   // 🏁 진도 레이스 순위 집계 (v18-86)
   // 5분마다 다시 세면 낭비라서 30분에 한 번만. 단, 앱에서 「지금 다시 세기」를
