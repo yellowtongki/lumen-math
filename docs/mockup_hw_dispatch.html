@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>숙제 분배 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 레이아웃: 세로 한 줄 읽기. ① 아이디어 정리(흐름도) ② 화면 시안 6장(폰·PC 틀) ③ 상의할 것 ④ 만드는 순서 */
+:root{
+  --bg:#f4f5f2; --fg:#1b2430; --mute:#6a7482; --line:#dde1dc; --card:#ffffff; --card2:#f8f9f6;
+  --ink:#153446;            /* 제목·진한 글자 */
+  --acc:#c8731e;            /* 강조: 숙제 주황 */
+  --acc-soft:#fbead8;
+  --teach:#2b5f8a; --teach-soft:#e3eef8;   /* 학원앱 */
+  --stu:#2f7d5b;  --stu-soft:#e1f2ea;      /* 학생앱 */
+  --par:#7a4fa3;  --par-soft:#efe6f8;      /* 학부모앱 */
+  --ok:#2f7d5b; --warn:#b7791f; --bad:#b4433a;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35;
+  --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --stu:#78c8a0; --stu-soft:#17322a; --par:#c1a1e3; --par-soft:#2d2238;
+  --ok:#78c8a0; --warn:#e0b25a; --bad:#e58a82; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35;
+  --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --stu:#78c8a0; --stu-soft:#17322a; --par:#c1a1e3; --par-soft:#2d2238;
+  --ok:#78c8a0; --warn:#e0b25a; --bad:#e58a82; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.65;
+  padding-block:28px 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin:0 auto}
+h1{font-size:24px;font-weight:900;color:var(--ink);margin:0 0 6px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 22px;max-width:70ch}
+h2{font-size:17px;font-weight:900;color:var(--ink);margin:36px 0 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h2 .no{font-family:var(--mono);font-size:12px;background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:6px}
+h3{font-size:14px;font-weight:900;color:var(--ink);margin:18px 0 8px}
+p{margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.tag{display:inline-block;font-size:11px;font-weight:800;padding:2px 9px;border-radius:20px;line-height:1.6}
+.t-teach{background:var(--teach-soft);color:var(--teach)} .t-stu{background:var(--stu-soft);color:var(--stu)} .t-par{background:var(--par-soft);color:var(--par)} .t-acc{background:var(--acc-soft);color:var(--acc)}
+.t-have{background:var(--stu-soft);color:var(--stu)} .t-new{background:var(--acc-soft);color:var(--acc)}
+
+/* 흐름도 */
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+@media(max-width:760px){.flow{grid-template-columns:1fr 1fr}}
+.step{border-radius:12px;padding:12px 12px 10px;border:1.5px solid var(--line);background:var(--card2);min-width:0;position:relative}
+.step .who{font-size:10.5px;font-weight:900;letter-spacing:.04em}
+.step .what{font-size:13.5px;font-weight:900;color:var(--ink);margin:3px 0 4px;line-height:1.35}
+.step .how{font-size:12px;color:var(--mute);line-height:1.5}
+.step.teach{border-color:var(--teach)} .step.stu{border-color:var(--stu)} .step.par{border-color:var(--par)}
+.step.teach .who{color:var(--teach)} .step.stu .who{color:var(--stu)} .step.par .who{color:var(--par)}
+.step .st{position:absolute;top:8px;right:10px;font-size:10px;font-weight:900}
+.st.have{color:var(--ok)} .st.new{color:var(--acc)}
+
+/* 폰·PC 틀 */
+.shots{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;align-items:start}
+.shot{min-width:0}
+.shot .cap{font-size:12.5px;font-weight:900;margin-bottom:6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.shot .cap small{color:var(--mute);font-weight:600}
+.phone{background:#eef1ee;color:#182230;border:8px solid #2a3340;border-radius:30px;padding:10px 0 14px;font-size:12px;line-height:1.5;min-height:540px;max-width:100%}
+.pc{background:#f4f6f3;color:#182230;border:6px solid #2a3340;border-radius:12px;padding:0;font-size:12px;line-height:1.5;min-width:0;overflow:hidden}
+.pc .bar{background:#2a3340;color:#cbd5e1;font-size:10px;padding:4px 10px;font-family:var(--mono)}
+.pc .body{padding:12px}
+.hd{padding:10px 14px 6px;font-size:15px;font-weight:900;color:#153446;display:flex;align-items:center;gap:6px}
+.hd small{font-size:10px;color:#8b95a3;font-weight:700;margin-left:auto}
+.sec{margin:8px 10px 0;background:#fff;border-radius:14px;padding:11px 12px;box-shadow:0 2px 10px rgba(21,52,70,.06)}
+.sec .t{font-size:12.5px;font-weight:900;color:#153446;display:flex;align-items:center;gap:6px}
+.sec .t .r{margin-left:auto;font-size:10px;color:#2b5f8a;font-weight:800}
+.row{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed #e5e9e4}
+.row:first-of-type{border-top:0}
+.row .n{flex:1;min-width:0}
+.row .n b{display:block;font-size:12px;color:#182230}
+.row .n span{font-size:10.5px;color:#7b8694}
+.chk{width:20px;height:20px;border-radius:6px;border:2px solid #9aa5b1;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;flex:none}
+.chk.on{background:#2f7d5b;border-color:#2f7d5b} .chk.half{background:#e0b25a;border-color:#e0b25a} .chk.x{background:#b4433a;border-color:#b4433a}
+.pill{font-size:10px;font-weight:900;padding:1px 7px;border-radius:12px;background:#eef1ee;color:#5b6775;white-space:nowrap}
+.pill.o{background:#fbead8;color:#c8731e} .pill.g{background:#e1f2ea;color:#2f7d5b} .pill.b{background:#e3eef8;color:#2b5f8a} .pill.p{background:#efe6f8;color:#7a4fa3} .pill.r{background:#fde3e1;color:#b4433a}
+.btn{display:inline-block;border-radius:9px;padding:6px 11px;font-size:11.5px;font-weight:900;background:#153446;color:#fff;text-align:center}
+.btn.ghost{background:#fff;color:#153446;border:1.5px solid #c9d1cc}
+.btn.acc{background:#c8731e}
+.btn.stu{background:#2f7d5b}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}
+.wk div{border-radius:9px;padding:6px 2px 5px;text-align:center;background:#f3f5f2;min-width:0}
+.wk .d{font-size:9.5px;font-weight:800;color:#8b95a3}
+.wk .v{font-size:15px;font-weight:900;color:#153446;line-height:1.15;font-variant-numeric:tabular-nums}
+.wk .v small{font-size:9px;font-weight:800;color:#8b95a3}
+.wk .m{font-size:9px;color:#7b8694;font-weight:700}
+.wk .cls{background:#e3eef8} .wk .cls .d{color:#2b5f8a} .wk .wkd{background:#fbead8} .wk .wkd .d{color:#c8731e} .wk .off{background:#eceeeb;color:#aab3bd}
+.tl{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;font-size:9px;margin-top:6px}
+.tl div{border-radius:6px;padding:3px 2px;text-align:center;font-weight:800;min-width:0}
+.tl .sch{background:#dfe4ea;color:#5b6775} .tl .acd{background:#e3eef8;color:#2b5f8a} .tl .free{background:#e1f2ea;color:#2f7d5b} .tl .oth{background:#f1e4cf;color:#8a5a12}
+.bar2{height:8px;border-radius:4px;background:#e5e9e4;overflow:hidden;margin-top:4px}
+.bar2 i{display:block;height:100%;background:#2f7d5b}
+.lv{display:flex;gap:6px;margin-top:6px}
+.lv span{flex:1;text-align:center;border-radius:9px;padding:6px 0;font-weight:900;font-size:12px;border:1.5px solid #c9d1cc;background:#fff;color:#5b6775}
+.lv span.on{background:#153446;color:#fff;border-color:#153446}
+.field{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:11.5px}
+.field label{flex:none;width:64px;color:#7b8694;font-weight:800}
+.field .in{flex:1;min-width:0;border:1.5px solid #c9d1cc;border-radius:8px;padding:5px 8px;background:#fff;font-weight:700;color:#182230;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note{font-size:12px;color:var(--mute);margin-top:10px;line-height:1.6}
+.ta{border:1.5px dashed #9aa5b1;border-radius:10px;padding:8px 10px;background:#fff;font-size:11.5px;color:#182230;min-height:44px;margin-top:6px}
+.ta.ph{color:#9aa5b1}
+.mood{display:flex;gap:5px;margin-top:6px}
+.mood span{flex:1;text-align:center;border-radius:8px;padding:5px 0;background:#f3f5f2;font-size:15px}
+.mood span.on{background:#e1f2ea;outline:2px solid #2f7d5b}
+.tabs{display:flex;justify-content:space-around;margin:12px 10px 0;padding-top:8px;border-top:1px solid #dde1dc;font-size:9.5px;font-weight:800;color:#8b95a3}.tabs span.on{color:#2f7d5b}
+.tabs.par span.on{color:#7a4fa3}
+table.cmp{border-collapse:separate;border-spacing:0;width:100%;font-size:11px;margin-top:8px}
+table.cmp th{font-weight:800;color:#7b8694;font-size:10px;padding:4px 6px;text-align:left;border-bottom:1px solid #dde1dc}
+table.cmp td{padding:6px 6px;border-bottom:1px dashed #e5e9e4;vertical-align:middle}
+table.cmp td.c{text-align:center}
+.mat{display:grid;grid-template-columns:auto repeat(4,1fr) auto;gap:4px;align-items:center;font-size:11px;margin-top:8px}
+.mat .h{font-size:9.5px;font-weight:800;color:#7b8694;text-align:center}
+.mat .nm{font-weight:900;color:#182230;white-space:nowrap}
+.mat .cell{display:flex;gap:2px;justify-content:center}
+.mini{width:14px;height:14px;border-radius:4px;background:#e5e9e4;display:inline-block}
+.mini.s{background:#2f7d5b} .mini.t{background:#2b5f8a} .mini.x{background:#b4433a}
+.legend{font-size:10px;color:#7b8694;margin-top:6px}
+.fb{border-left:3px solid #2b5f8a;padding:6px 10px;background:#f4f8fc;border-radius:0 8px 8px 0;font-size:11.5px;margin-top:8px;color:#182230}
+.fb b{color:#2b5f8a}
+.ask{counter-reset:q}
+.q{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.q:first-child{border-top:0}
+.q .k{font-family:var(--mono);font-weight:500;font-size:13px;color:var(--acc);padding-top:2px}
+.q b{color:var(--ink);display:block;margin-bottom:3px}
+.q .opt{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.q .opt span{font-size:12px;border:1.5px solid var(--line);border-radius:20px;padding:2px 10px;background:var(--card2)}
+.q .opt span.rec{border-color:var(--acc);background:var(--acc-soft);color:var(--acc);font-weight:800}
+.phase{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.phase div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.phase b{display:block;color:var(--ink);margin-bottom:4px}
+.phase .sm{font-size:12px;color:var(--mute)}
+code{font-family:var(--mono);font-size:11.5px;background:var(--card2);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+.kv{font-size:12.5px;line-height:1.7}
+.kv b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>숙제 한 바퀴 · 자동 분배 · 수업 일기</h1>
+<p class="lead">원장님이 말씀하신 두 기능을 세 조각으로 나눠 정리했습니다. 코딩 전 미리보기라 숫자와 이름은 모두 예시입니다. 아래 ③「상의할 것」에 답을 주시면 그대로 설계서를 쓰고 만들기 시작합니다.</p>
+
+<!-- ───────── ① 아이디어 정리 ───────── -->
+<h2><span class="no">①</span> 아이디어 정리 · 세 조각</h2>
+
+<div class="card">
+  <h3 style="margin-top:0">A. 숙제 한 바퀴 — 내주기 → 학생 확인 → 학생 체크 → 선생님 2차 확인 → 학부모 보기</h3>
+  <p class="kv">지금은 「선생님이 체크」 한 번만 있습니다. 여기에 <b>학생이 먼저 스스로 체크</b>하는 단계를 끼워 넣고, 선생님 체크는 <b>「확인」</b>으로 성격이 바뀝니다. 학생 체크와 선생님 확인이 다르면 그 차이가 그대로 메타인지 자료가 됩니다.</p>
+  <div class="flow">
+    <div class="step teach"><span class="st new">새로</span><div class="who">학원앱</div><div class="what">숙제 내주기</div><div class="how">교재·범위·기간을 고르면 요일별 분량이 자동으로 나뉨 (B). 지금 있는 「할 일 보드」 카드와는 별개(상의 ③-2)</div></div>
+    <div class="step stu"><span class="st new">새로</span><div class="who">학생앱</div><div class="what">오늘 숙제 확인</div><div class="how">홈 맨 위 「오늘 숙제」 카드. 주간 계획표 달력에도 꽂힘</div></div>
+    <div class="step stu"><span class="st new">새로</span><div class="who">학생앱</div><div class="what">1차 셀프 체크</div><div class="how">풀이·채점·오답·아하노트 4칸을 학생이 직접 누름 (학원앱 4단계와 같은 칸)</div></div>
+    <div class="step teach"><span class="st have">있음→확장</span><div class="who">학원앱</div><div class="what">2차 확인</div><div class="how">지금 숙제체크 화면에 학생 체크가 미리 들어와 있고, 선생님은 맞으면 ✓ 다르면 고침</div></div>
+    <div class="step par"><span class="st have">있음→확장</span><div class="who">학부모앱</div><div class="what">결과 보기</div><div class="how">v1-37 숙제 4단계 카드에 「스스로 체크 / 선생님 확인」 두 줄로</div></div>
+  </div>
+</div>
+
+<div class="grid2" style="margin-top:14px">
+  <div class="card">
+    <h3 style="margin-top:0">B. 자동 분배 — 교재 한 권을 기간 안에</h3>
+    <p class="kv">「2개월 안에 이 책을 끝내려면 하루 몇 문제」를 앱이 셈합니다. 세 가지가 분량을 바꿉니다.</p>
+    <p class="kv"><b>① 수준 상·중·하</b> — 등록부에 <b>이미 있습니다</b>(학생마다 상·중·하, 기본 「중」). 교재마다 상·중·하별 「수업당 쪽수」도 적혀 있어 그 숫자가 첫 제안값이 됩니다. 기간이 같으면 총량은 같으니, 수준은 <b>기본 기간</b>(상 6주·중 8주·하 10주)과 <b>하루 상한</b>(넘으면 기간을 늘리라고 경고)을 정하는 데 씁니다.</p>
+    <p class="kv"><b>② 고정 스케줄</b> — 학생앱 스터디 코디가 쓰는 고정 일정(학교·학원·루멘 수업 블록)과 「빈 시간 30분 칸 세기」가 <b>이미 있습니다</b>. 그걸로 <b>요일마다 공부할 수 있는 시간</b>을 재고, 그 비율로 나눕니다. 평일 40분이면 적게, 토요일 3시간이면 많이.</p>
+    <p class="kv"><b>③ 학생별 손 조정</b> — 자동으로 나눈 뒤 요일 숫자를 원장님이 끌어서 바꿀 수 있다. 수업 있는 날은 0으로, 시험 2주 전은 멈춤.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">C. 수업 일기 — 수업 끝나면 학생이 한 줄, 피드백 재료로</h3>
+    <p class="kv">학생앱이 수업 끝나는 시각(반 수업 시간표)을 알고 있으니 그때 카드가 뜹니다. 세 칸만 씁니다. <b>오늘 배운 것 · 아하! 한 것 · 아직 헷갈리는 것</b>, 그리고 <b>오늘 진도</b>(교재 쪽수는 자동 제안)와 자신감 한 번 누르기.</p>
+    <p class="kv">학원앱 울트라 피드백 화면 옆에 그날 학생 글이 그대로 붙어 나오고, 숙제 체크·진도와 함께 AI 초안의 재료가 됩니다. 학생 글을 학부모 글에 <b>인용</b>하면 피드백이 훨씬 사람 냄새가 납니다.</p>
+    <p class="kv" style="color:var(--mute)">새벽 04:50 자동 피드백은 그 전날 밤 글을 씁니다. 수업 당일 밤에 원장님이 직접 쓸 때도 같은 재료 칸을 봅니다.</p>
+  </div>
+</div>
+
+<!-- ───────── ② 화면 시안 ───────── -->
+<h2><span class="no">②</span> 화면 시안 · 6장</h2>
+<p class="lead" style="margin-bottom:12px">학생 이름·교재·문항 수는 전부 예시입니다.</p>
+
+<div class="shots">
+
+  <!-- 1. 학원앱 분배 화면 -->
+  <div class="shot" style="grid-column:1/-1">
+    <div class="cap"><span class="tag t-teach">학원앱</span> 1. 숙제 내주기 · 자동 분배 <small>· 학생관리 › 학생 상세 › 「📚 숙제 내주기」</small></div>
+    <div class="pc"><div class="bar">lumen_v1.html › 학생관리 › 김○○ (중2 · 수준 중)</div>
+    <div class="body">
+      <div style="display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:14px">
+        <div>
+          <div class="sec" style="margin:0">
+            <div class="t">📚 어떤 책을</div>
+            <div class="field"><label>교재</label><div class="in">개념+유형 중2(상) · 매쓰플랫 배정</div></div>
+            <div class="field"><label>범위</label><div class="in">p.12 ~ p.188 (1,140문항)</div></div>
+            <div class="field"><label>건너뛰기</label><div class="in">최상 난도 빼기 ✓ · 이미 푼 쪽 빼기 ✓</div></div>
+            <div class="t" style="margin-top:12px">🎯 언제까지</div>
+            <div class="lv"><span>상 · 6주</span><span class="on">중 · 8주</span><span>하 · 10주</span></div>
+            <div class="field"><label>기간</label><div class="in">11/3(월) → 12/28(일) · 8주</div></div>
+            <div class="field"><label>멈춤</label><div class="in">12/8~12/19 기말 2주 전 (자동)</div></div>
+            <div class="t" style="margin-top:12px">⏱ 공부 가능 시간 <span class="r">학생앱 고정 스케줄에서</span></div>
+            <div class="tl">
+              <div class="acd">월<br>학원</div><div class="free">화<br>90분</div><div class="acd">수<br>학원</div><div class="oth">목<br>영어</div><div class="acd">금<br>학원</div><div class="free">토<br>180분</div><div class="free">일<br>150분</div>
+            </div>
+            <div class="legend">학원 날 = 수업 숙제만(0) · 영어학원 날 = 40분 · 비는 날은 공부 시간 비율로</div>
+          </div>
+        </div>
+        <div>
+          <div class="sec" style="margin:0">
+            <div class="t">📅 이렇게 나뉩니다 <span class="r">하루 평균 29문항 · 수준 중 상한 35 안</span></div>
+            <div class="wk">
+              <div class="cls"><div class="d">월</div><div class="v">0</div><div class="m">수업</div></div>
+              <div><div class="d">화</div><div class="v">38</div><div class="m">p.12–15</div></div>
+              <div class="cls"><div class="d">수</div><div class="v">0</div><div class="m">수업</div></div>
+              <div><div class="d">목</div><div class="v">17</div><div class="m">p.16–17</div></div>
+              <div class="cls"><div class="d">금</div><div class="v">0</div><div class="m">수업</div></div>
+              <div class="wkd"><div class="d">토</div><div class="v">76</div><div class="m">p.18–25</div></div>
+              <div class="wkd"><div class="d">일</div><div class="v">63</div><div class="m">p.26–31</div></div>
+            </div>
+            <div class="note" style="color:#7b8694;font-size:11px">첫 주 11/3~11/9 · 주 194문항. 숫자를 끌어 바꾸면 나머지 요일이 다시 나뉩니다. 멈춘 기간(기말 2주 전)만큼 뒤가 늘어납니다.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+              <span class="pill b">월 수업 날 0 → 10으로</span><span class="pill">주말 더 몰기</span><span class="pill">평일 고르게</span><span class="pill o">⚠ 화 38 &gt; 상한 35</span>
+            </div>
+            <table class="cmp">
+              <tr><th>주</th><th>기간</th><th>쪽</th><th>문항</th><th></th></tr>
+              <tr><td>1주</td><td>11/3–11/9</td><td>p.12–31</td><td>194</td><td><span class="pill g">보냄</span></td></tr>
+              <tr><td>2주</td><td>11/10–11/16</td><td>p.32–52</td><td>188</td><td></td></tr>
+              <tr><td>…</td><td></td><td></td><td></td><td></td></tr>
+              <tr><td>6주</td><td>12/8–12/19</td><td style="color:#b4433a">기말 대비 · 멈춤</td><td>0</td><td></td></tr>
+              <tr><td>8주</td><td>12/22–12/28</td><td>p.170–188</td><td>142</td><td></td></tr>
+            </table>
+            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><span class="btn acc">📨 학생앱으로 보내기</span><span class="btn ghost">이번 주만 먼저</span><span class="btn ghost">같은 반 6명에게</span></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <!-- 2. 학생앱 오늘 숙제 -->
+  <div class="shot">
+    <div class="cap"><span class="tag t-stu">학생앱</span> 2. 오늘 숙제 · 1차 셀프 체크</div>
+    <div class="phone">
+      <div class="hd">오늘 숙제 <small>11/4(화)</small></div>
+      <div class="sec">
+        <div class="t">📚 개념+유형 중2(상) <span class="r">p.12–15 · 38문항</span></div>
+        <div class="bar2"><i style="width:48%"></i></div>
+        <div class="row"><span class="chk on">✓</span><div class="n"><b>풀이</b><span>다 풀었어요</span></div><span class="pill g">+10 XP</span></div>
+        <div class="row"><span class="chk on">✓</span><div class="n"><b>채점</b><span>답 맞춰 봤어요 · 틀린 문제 6개</span></div><span class="pill g">+10 XP</span></div>
+        <div class="row"><span class="chk"></span><div class="n"><b>오답</b><span>틀린 문제 다시 풀기</span></div><span class="pill">대기</span></div>
+        <div class="row"><span class="chk"></span><div class="n"><b>아하노트</b><span>왜 틀렸는지 한 줄</span></div><span class="pill">대기</span></div>
+        <div class="note" style="color:#7b8694;font-size:10.5px">선생님이 수업 때 확인하면 ✓가 파란색으로 바뀝니다. 다르면 선생님 표시가 남아요.</div>
+      </div>
+      <div class="sec">
+        <div class="t">📅 이번 주 <span class="r">주간 계획표에서 보기</span></div>
+        <div class="wk">
+          <div class="cls"><div class="d">월</div><div class="v">–</div><div class="m">수업</div></div>
+          <div style="outline:2px solid #2f7d5b"><div class="d">화</div><div class="v">38</div><div class="m">오늘</div></div>
+          <div class="cls"><div class="d">수</div><div class="v">–</div><div class="m">수업</div></div>
+          <div><div class="d">목</div><div class="v">17</div><div class="m"></div></div>
+          <div class="cls"><div class="d">금</div><div class="v">–</div><div class="m">수업</div></div>
+          <div class="wkd"><div class="d">토</div><div class="v">76</div><div class="m"></div></div>
+          <div class="wkd"><div class="d">일</div><div class="v">63</div><div class="m"></div></div>
+        </div>
+        <div class="note" style="color:#7b8694;font-size:10.5px">못 한 분량은 다음 날로 넘어가고 빨간 숫자로 보입니다 (상의 ③-5).</div>
+      </div>
+      <div class="sec">
+        <div class="t">🔥 숙제 연속 5일</div>
+        <div style="font-size:10.5px;color:#7b8694">4단계 다 하면 그날 숙제 완료. 플래너 스트릭과 따로 셉니다.</div>
+      </div>
+      <div class="tabs"><span class="on">🏠 홈</span><span>📚 공부</span><span>📅 계획</span><span>🧍 나</span></div>
+    </div>
+  </div>
+
+  <!-- 3. 학원앱 2차 확인 -->
+  <div class="shot">
+    <div class="cap"><span class="tag t-teach">학원앱</span> 3. 숙제체크 = 2차 확인 <small>· 지금 화면 그대로, 학생 체크가 미리 들어옴</small></div>
+    <div class="pc"><div class="bar">lumen_v1.html › 수업·출결 › 숙제체크 · 중2 화목반</div>
+    <div class="body">
+      <div class="mat">
+        <div></div><div class="h">풀이</div><div class="h">채점</div><div class="h">오답</div><div class="h">아하</div><div class="h">분량</div>
+        <div class="nm">김○○</div>
+        <div class="cell"><span class="mini s"></span><span class="mini t"></span></div>
+        <div class="cell"><span class="mini s"></span><span class="mini t"></span></div>
+        <div class="cell"><span class="mini"></span><span class="mini t"></span></div>
+        <div class="cell"><span class="mini"></span><span class="mini"></span></div>
+        <div><span class="pill g">38/38</span></div>
+        <div class="nm">박○○</div>
+        <div class="cell"><span class="mini s"></span><span class="mini t"></span></div>
+        <div class="cell"><span class="mini s"></span><span class="mini x"></span></div>
+        <div class="cell"><span class="mini s"></span><span class="mini x"></span></div>
+        <div class="cell"><span class="mini"></span><span class="mini"></span></div>
+        <div><span class="pill o">24/38</span></div>
+        <div class="nm">이○○</div>
+        <div class="cell"><span class="mini"></span><span class="mini"></span></div>
+        <div class="cell"><span class="mini"></span><span class="mini"></span></div>
+        <div class="cell"><span class="mini"></span><span class="mini"></span></div>
+        <div class="cell"><span class="mini"></span><span class="mini"></span></div>
+        <div><span class="pill r">체크 안 함</span></div>
+      </div>
+      <div class="legend">칸마다 왼쪽 = 학생 셀프 체크(초록) · 오른쪽 = 선생님 확인(파랑 ✓ / 빨강 ✗). 「학생 체크 그대로 ✓」 단추 하나로 반 전체를 넘기고, 다른 학생만 고칩니다.</div>
+      <div class="fb"><b>박○○ 메모</b> 채점·오답을 했다고 했지만 책을 보니 채점 안 됨 → ✗. 이 차이는 피드백 재료 칸과 학부모앱에 「스스로 체크와 다름」으로 표시(상의 ③-7).</div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="btn">학생 체크 그대로 ✓ (3명)</span><span class="btn ghost">분량 조정 → 내주기 화면</span></div>
+    </div></div>
+  </div>
+
+  <!-- 4. 학부모앱 -->
+  <div class="shot">
+    <div class="cap"><span class="tag t-par">학부모앱</span> 4. 숙제 결과 <small>· v1-37 4단계 카드에 두 줄</small></div>
+    <div class="phone">
+      <div class="hd" style="color:#7a4fa3">우리 아이 숙제 <small>이번 주</small></div>
+      <div class="sec">
+        <div class="t">📚 개념+유형 중2(상) <span class="r" style="color:#7a4fa3">8주 계획 · 1주차</span></div>
+        <div class="bar2"><i style="width:17%;background:#7a4fa3"></i></div>
+        <div style="font-size:10.5px;color:#7b8694;margin-top:3px">194 / 1,140문항 · 계획대로 가면 12/28 완주</div>
+      </div>
+      <div class="sec">
+        <div class="t">11/4(화) · 38문항</div>
+        <table class="cmp">
+          <tr><th></th><th class="c">풀이</th><th class="c">채점</th><th class="c">오답</th><th class="c">아하</th></tr>
+          <tr><td style="font-weight:800">스스로 체크</td><td class="c">✓</td><td class="c">✓</td><td class="c">✓</td><td class="c">–</td></tr>
+          <tr><td style="font-weight:800">선생님 확인</td><td class="c" style="color:#2b5f8a">✓</td><td class="c" style="color:#2b5f8a">✓</td><td class="c" style="color:#b4433a">✗</td><td class="c">–</td></tr>
+        </table>
+        <div class="note" style="color:#7b8694;font-size:10.5px">오답 다시 풀기는 수업 때 함께 했습니다.</div>
+      </div>
+      <div class="sec">
+        <div class="t">📝 아이가 쓴 수업 일기 <span class="r" style="color:#7a4fa3">11/4</span></div>
+        <div style="font-size:11.5px;margin-top:4px;color:#182230">“일차함수 기울기가 왜 변화율인지 오늘 알았다. 그래프 그릴 때 y절편 먼저 찍는 게 편했다.”</div>
+        <div class="note" style="color:#7b8694;font-size:10.5px">아이가 「부모님께 보여도 돼요」를 켠 날만 보입니다 (상의 ③-9).</div>
+      </div>
+      <div class="tabs par"><span class="on">홈</span><span>숙제</span><span>리포트</span><span>알림</span></div>
+    </div>
+  </div>
+
+  <!-- 5. 학생앱 수업 일기 -->
+  <div class="shot">
+    <div class="cap"><span class="tag t-stu">학생앱</span> 5. 수업 일기 <small>· 수업 끝나는 시각에 카드가 뜸</small></div>
+    <div class="phone">
+      <div class="hd">오늘 수업 일기 <small>11/4(화) 21:30</small></div>
+      <div class="sec">
+        <div class="t">📖 오늘 배운 것 <span class="r">한 줄</span></div>
+        <div class="ta">일차함수 그래프, 기울기와 y절편</div>
+        <div class="t" style="margin-top:10px">💡 아하! 한 것</div>
+        <div class="ta">기울기 = x가 1 늘 때 y가 얼마나 변하나. 그래서 변화율이라고 하는 거였다</div>
+        <div class="t" style="margin-top:10px">🌀 아직 헷갈리는 것 <span class="r">없으면 비워도 됨</span></div>
+        <div class="ta ph">예: 기울기가 분수일 때 그래프 그리기</div>
+      </div>
+      <div class="sec">
+        <div class="t">📍 오늘 진도 <span class="r">앱이 미리 채움</span></div>
+        <div class="field"><label>교재</label><div class="in">개념+유형 중2(상)</div></div>
+        <div class="field"><label>어디까지</label><div class="in">p.40 → <b>p.46</b> 까지 (고치기)</div></div>
+        <div class="t" style="margin-top:10px">😶 오늘 자신감</div>
+        <div class="mood"><span>😵</span><span>😕</span><span>🙂</span><span class="on">😀</span><span>🤩</span></div>
+      </div>
+      <div style="margin:10px 10px 0;display:flex;gap:6px"><span class="btn stu" style="flex:1">저장 · +5 XP</span><span class="btn ghost">부모님께 보여도 돼요 ✓</span></div>
+      <div class="note" style="margin:8px 12px 0;color:#7b8694;font-size:10.5px">쓰는 데 1분. 글이 길 필요 없고, 「아하!」 칸 하나만 써도 저장됩니다.</div>
+      <div class="tabs"><span>🏠 홈</span><span class="on">📚 공부</span><span>📅 계획</span><span>🧍 나</span></div>
+    </div>
+  </div>
+
+  <!-- 6. 학원앱 피드백 재료 -->
+  <div class="shot">
+    <div class="cap"><span class="tag t-teach">학원앱</span> 6. 울트라 피드백 재료 칸 <small>· 글 쓰는 칸 오른쪽</small></div>
+    <div class="pc"><div class="bar">lumen_v1.html › 울트라일일 › 김○○ 11/4(화)</div>
+    <div class="body">
+      <div class="sec" style="margin:0;background:#fff">
+        <div class="t">🧺 오늘 재료 <span class="r">AI 초안에 자동으로 들어감</span></div>
+        <div class="row"><span class="pill g">일기</span><div class="n"><b>“기울기가 왜 변화율인지 오늘 알았다”</b><span>아하! · 자신감 😀 · 헷갈림: 없음</span></div></div>
+        <div class="row"><span class="pill b">진도</span><div class="n"><b>개념+유형 중2(상) p.40 → p.46</b><span>학생이 적음 · 매쓰플랫 채점 진도 p.46과 같음 · 계획 p.45 → 1쪽 앞섬</span></div></div>
+        <div class="row"><span class="pill o">숙제</span><div class="n"><b>38문항 · 풀이✓ 채점✓ 오답✗ 아하–</b><span>스스로 체크와 선생님 확인이 오답에서 다름</span></div></div>
+        <div class="row"><span class="pill">출결</span><div class="n"><b>19:30 정시</b><span>플래너 오늘 7점 · 아하노트 새 글 1</span></div></div>
+      </div>
+      <div class="fb" style="margin-top:12px"><b>AI 초안 (재료 반영)</b> 오늘 김○○은 일차함수의 기울기를 「변화율」로 이해하는 순간이 있었습니다. 수업 뒤 스스로 “x가 1 늘 때 y가 얼마나 변하나”라고 정리했는데, 이 표현이 정확합니다. 숙제는 풀이·채점까지 잘 했고 오답 다시 풀기는 수업에서 함께 마쳤습니다. 진도는 계획보다 한 쪽 앞서 있습니다.</div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="btn ghost">일기 문장 인용 넣기</span><span class="btn ghost">진도 줄 빼기</span><span class="btn">이 재료로 초안 다시</span></div>
+    </div></div>
+  </div>
+
+</div>
+
+<!-- ───────── ③ 상의할 것 ───────── -->
+<h2><span class="no">③</span> 상의할 것 · 원장님 답이 필요한 11가지</h2>
+<div class="card ask">
+  <div class="q"><div class="k">1</div><div><b>수준 상·중·하는 무엇을 바꾸나</b>기간이 정해져 있으면 총 문항은 같으니 수준이 바꿀 수 있는 건 셋입니다.<div class="opt"><span class="rec">기본 기간 (상 6주·중 8주·하 10주)</span><span class="rec">하루 상한 (넘으면 경고)</span><span>건너뛸 난도 (하는 최상 빼기)</span><span>셋 다</span></div></div></div>
+  <div class="q"><div class="k">2</div><div><b>날마다 나뉜 숙제를 학생앱 어디에 꽂나</b>지금 학생앱엔 「할 일 보드」(원장이 카드로 내주고 학생이 상태를 누름)와 「📅 주간계획표」(학생·코디가 짬)가 따로 있습니다.<div class="opt"><span class="rec">홈 「오늘 숙제」 카드 + 주간계획표에 「선생님」 줄로 자동 꽂기 · 할 일 보드는 그대로</span><span>할 일 보드 카드로 날마다 하나씩</span><span>셋 다 보이게</span></div></div></div>
+  <div class="q"><div class="k">3</div><div><b>고정 스케줄에서 공부 시간을 재는 규칙</b>학원 수업 날은 숙제 0? 다른 학원 있는 날은 몇 분으로 볼지, 비는 날은 몇 분으로 볼지.<div class="opt"><span class="rec">학원 날 0 · 다른 일정 있으면 40분 · 비는 평일 90분 · 주말 180분 (기본값, 학생별 고침)</span><span>시간은 안 보고 「수업 날 / 아닌 날 / 주말」 셋만</span></div></div></div>
+  <div class="q"><div class="k">4</div><div><b>분량 단위</b><div class="opt"><span class="rec">문항 수로 세고 쪽으로 보여 주기</span><span>쪽 수만</span></div>매쓰플랫 교재는 쪽마다 문항 수를 알고 있어 둘 다 됩니다. 매쓰플랫에 없는 교재(PDF·프린트)는 쪽 수만.</div></div>
+  <div class="q"><div class="k">5</div><div><b>못 한 분량</b><div class="opt"><span class="rec">다음 날로 넘기고 빨간 숫자 (주말까지 쌓이면 원장님에게 알림)</span><span>그날로 끝, 넘기지 않음</span><span>주 단위로만 봄</span></div></div></div>
+  <div class="q"><div class="k">6</div><div><b>시험 2주 전</b><div class="opt"><span class="rec">교재 숙제 자동 멈춤, 뒤로 밀림 (학교 일정표에서 자동)</span><span>멈추지 않고 줄이기(절반)</span><span>원장님이 그때 손으로</span></div></div></div>
+  <div class="q"><div class="k">7</div><div><b>학생 체크와 선생님 확인이 다를 때</b><div class="opt"><span class="rec">학부모앱에 두 줄 다 보여 줌</span><span>선생님 확인만 보여 줌</span><span>다른 날만 「선생님 확인과 다름」 표시</span></div></div></div>
+  <div class="q"><div class="k">8</div><div><b>셀프 체크 XP</b>지금 4단계 XP는 선생님 체크 때 줍니다.<div class="opt"><span class="rec">학생 체크 때 조금(단계당 5) · 선생님 확인 때 나머지</span><span>선생님 확인 때만 (지금과 같음)</span></div></div></div>
+  <div class="q"><div class="k">9</div><div><b>수업 일기를 학부모가 보나</b><div class="opt"><span class="rec">학생이 날마다 「보여도 돼요」 켠 것만</span><span>항상 보임</span><span>학부모앱엔 안 보이고 피드백 글에 인용만</span></div></div></div>
+  <div class="q"><div class="k">10</div><div><b>수업 일기 안 쓰면</b><div class="opt"><span class="rec">다음 날 학원앱 숙제체크 화면에 「일기 안 씀」 표시만</span><span>플래너 점수처럼 점수에 넣기</span><span>그냥 둠</span></div></div></div>
+  <div class="q"><div class="k">11</div><div><b>학부모 글에 「숙제」라는 말</b>새벽 자동 피드백은 지금 「숙제」「플래너」 단어를 쓰지 못하게 막아 두었습니다. 숙제 결과를 학부모앱에 보이려면 이 규칙과 어긋납니다.<div class="opt"><span class="rec">학부모앱 숙제 카드는 보이되, 피드백 글에서는 「오늘 분량」「연습」처럼 표현</span><span>규칙을 풀고 「숙제」라고 쓴다</span></div></div></div>
+</div>
+
+<!-- ───────── ④ 만드는 순서 ───────── -->
+<h2><span class="no">④</span> 만드는 순서 · 세 판으로 나눠서</h2>
+<div class="phase">
+  <div><b>1판 · 숙제 한 바퀴</b><span class="sm">학원앱 「숙제 내주기」(손으로 범위·요일 적기) → 학생앱 오늘 숙제 카드 + 셀프 체크 → 숙제체크 화면에 학생 체크 미리 채움 → 학부모앱 두 줄. 자동 분배는 아직 없이, 데이터 길을 먼저 뚫습니다.</span></div>
+  <div><b>2판 · 자동 분배</b><span class="sm">등록부 수준 칸 · 고정 스케줄 읽어 요일 비율 · 기간→요일 분량 계산 · 끌어서 고치기 · 시험 전 멈춤 · 못 한 분량 넘기기. 계산은 <code>sync/hw_dispatch_engine.js</code> 한 곳에 두고 학원앱·학생앱이 같은 식을 씁니다.</span></div>
+  <div><b>3판 · 수업 일기</b><span class="sm">학생앱 수업 끝 카드(세 칸+진도+자신감) → 서버 <code>class_log_&lt;코드&gt;</code> → 학원앱 울트라 피드백 재료 칸 + 새벽 자동 피드백 지시문에 재료 추가 → 학부모앱 인용.</span></div>
+</div>
+<div class="card" style="margin-top:14px">
+  <h3 style="margin-top:0">지금 앱에 이미 있는 것 · 새로 만드는 것</h3>
+  <table class="cmp" style="font-size:12.5px">
+    <tr><th>조각</th><th>지금</th><th>이번에</th></tr>
+    <tr><td>수준 상·중·하</td><td><span class="tag t-have">있음</span> 등록부 학생마다 · 교재마다 수준별 「수업당 쪽수」</td><td>그대로 씀. 기본 기간·하루 상한만 덧붙임</td></tr>
+    <tr><td>고정 스케줄 · 빈 시간</td><td><span class="tag t-have">있음</span> 학생앱 코디의 고정 블록 + 30분 칸 빈 시간 계산</td><td>요일별 공부 가능 시간으로 요약해 분배 비율에 씀</td></tr>
+    <tr><td>선생님 숙제체크</td><td><span class="tag t-have">있음</span> 날짜별 풀이·채점·오답 0/30/60/100 + 아하노트는 자동 계산</td><td>학생 체크를 옆에 미리 채움. 저장 모양은 안 바꿈</td></tr>
+    <tr><td>학생 셀프 체크</td><td><span class="tag t-new">없음</span> 학생앱은 교재 「채점」(답 입력 자동채점)만 있음</td><td>4단계 칸 새로. 채점 칸은 교재 채점 기록이 있으면 자동 ✓</td></tr>
+    <tr><td>숙제 내주기</td><td><span class="tag t-have">비슷한 것</span> 할 일 보드 카드 · 매쓰플랫 교재 배정</td><td>교재 한 권을 날짜로 나누는 「분배」는 새로</td></tr>
+    <tr><td>학생앱 달력</td><td><span class="tag t-have">있음</span> 주간계획표(학생·코디가 짬)</td><td>「선생님」 출처 줄을 자동으로 꽂음</td></tr>
+    <tr><td>학부모앱 숙제 4단계</td><td><span class="tag t-have">부품만</span> v1-37 부품·조립 스크립트(배포 안 함)</td><td>학생 체크 줄 추가</td></tr>
+    <tr><td>수업 일기</td><td><span class="tag t-new">없음</span> 비슷한 것: 녹음 미션 「배운 개념 말하기」 · 아하노트 낼 때 「배운 것·궁금한 것」 · 주간 순공 피드백</td><td>수업 끝 카드 새로. 진도는 매쓰플랫 채점 진도(마지막 쪽)로 미리 채움</td></tr>
+    <tr><td>새벽 울트라 피드백</td><td><span class="tag t-have">있음</span> 최근 7일 학습지 점수·유형만 읽음. 글에 「숙제」「플래너」 말 금지 규칙</td><td>수업 일기·숙제 결과·진도를 재료에 더함. 「숙제」 금지 규칙은 풀지 결정(③-11)</td></tr>
+  </table>
+  <h3>데이터 자리 (초안)</h3>
+  <p class="kv"><b>숙제 배정</b> <code>hw_plan_&lt;코드&gt;</code> — 교재·범위·기간·수준·요일 비율·날짜별 {쪽, 문항, 상태}. 학생앱 주간계획표(<code>wplan_&lt;코드&gt;</code>)에는 날짜별 한 줄을 출처 「선생님」으로 복사해 꽂습니다(아이디어 보관함 1번과 같은 달력).</p>
+  <p class="kv"><b>학생 셀프 체크</b> <code>hw_self_&lt;코드&gt;</code> — 날짜별 {풀이, 채점, 오답, 아하} 0/100 + 시각. 선생님 확인은 지금 쓰는 등록부 안 숙제체크 자료(<code>lumen_hw</code>) 그대로. 학부모앱은 둘을 같이 읽습니다.</p>
+  <p class="kv"><b>수업 일기</b> <code>class_log_&lt;코드&gt;</code> — 날짜별 {배운 것, 아하, 헷갈림, 진도 교재·쪽, 자신감 1~5, 부모 공개}. 새벽 피드백 스크립트(<code>sync/ultra_night_writer.js</code>)와 학원앱 울트라 화면이 이 키를 읽습니다.</p>
+  <p class="kv" style="color:var(--mute)">새 키는 학생이 저녁에 많이 쓰니, 서버 색인·잠금(RLS)은 새벽에만 넣습니다. 학생이 쓰는 키(셀프 체크·일기)는 학생 본인만 고칠 수 있게 잠급니다.</p>
+</div>
+
+</div>
+</body>
+</html>
