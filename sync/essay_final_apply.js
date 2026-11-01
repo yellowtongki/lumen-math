@@ -1,4 +1,4 @@
-const W = require('/home/user/lumen-math/sync/wrongtwin_make.js'); const fs = require('fs');
+const W = require('./wrongtwin_make.js'); const fs = require('fs');
 // 사용: node sync/essay_final_apply.js <교재번호> <폴더(list.json·all.json)>  — 서술형 정답 그림에서 읽은 최종 답을 정답사전에 넣는다 (2026-11-01)
 // all.json = { wpId: {kind:'single'|'multi'|'none', final} } (채팅 하위 에이전트가 그림을 읽어 만든 것). 원본은 폴더에 backup_*.json 으로 남긴다.
 const BID = process.argv[2], DIR = process.argv[3], all = JSON.parse(fs.readFileSync(DIR + '/all.json'));
