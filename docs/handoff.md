@@ -114,7 +114,11 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 - 카드뉴스·기출 DB(화면엔 「기출 DB」, 「수학비서」라는 말 금지), 적중 분석: docs/exam_hit_contract.md §9.
 
 ## 6. 남은 일 (10/26 기준 — 맨 위가 최신)
-**▶ 11/1 (매쓰플랫 월간보고서 · 서술형 최종 답) — 다음 세션 첫 일**
+**▶ 11/2 (세션 01Majju… 마무리)**
+- **💡 학생앱 v2-152 배포** — 학습지로 올린 IB아하노트가 «aha_notes_source_type_check» 로 거절(서버 규칙 'book'·'print' 만) → 'print'(학습지 제목)로 다시 저장. **원장 결정 대기**: 서버 규칙에 'worksheet' 를 더하는 SQL(`ALTER TABLE aha_notes DROP CONSTRAINT aha_notes_source_type_check; ALTER TABLE aha_notes ADD CONSTRAINT aha_notes_source_type_check CHECK (source_type IN ('book','print','worksheet'));`) — 새벽에만, 원장이 Supabase SQL 창에서. 넣으면 앱은 그대로 'worksheet' 로 저장된다.
+- **남은 일 (이 세션 것)**: ① 10월 월간보고서 31명 «비공개» — 원장이 학원앱 📑 월간보고서에서 확인 후 공개(공개 버튼 실제 호출은 아직 0번 — 첫 결과 확인) ② 11/2(일) 03:20 mf-report.yml 첫 자동 실행 결과(10월은 이미 있어 «이미 있음»만 나와야 정상) ③ 서술형 최종 답 — 중3 까지 끝(45권 1,297문항). 남은 학년(초4 이하·고등)은 필요할 때 같은 방법 ④ 학생앱 v2-153(다른 세션 «오늘 숙제»)은 v2-152 고침 포함 — 배포는 원장 지시 때.
+
+**▶ 11/1 (매쓰플랫 월간보고서 · 서술형 최종 답)**
 - **📑 학원앱 v19-170 (11/1 배포) 진도·리포트 › 월간보고서** — 원장 「9월 보고서는 하나하나 만들어서 오래 걸렸다 · 여러 학생을 하나씩 열어봐서 확인 · 학원앱에서 쉽게 확인하고 배포」. 부품 `modules/mfreport170_teacher.js` · 검사 `tests/test_v19170.js` 14/14 · 서버 `sync/mf_report_worker.js` (`--req | --list YYYY-MM | --make YYYY-MM [--only] | --auto`) · 요청 `mfrep_req` → `collect_request_worker`(5분마다) · 목록 `mfrep_<YYYY-MM>`(학생 이름·의견 — 기기엔 안 둠 PULL_SKIP_PREFIX) · 기록 `mfrep_log` · 예약 `.github/workflows/mf-report.yml` 매달 2일 03:20 지난달 보고서 **비공개**로 만들기(끄기 `mfrep_config.auto=false`).
   - 매쓰플랫 주소(선생님 웹 10/29 판 코드에서 읽음): 목록 `GET /v2/report/custom?studentIds=..`(studentId 는 안 됨) · 내용·설정 `GET /v2/report/custom/{id}/scoring` → `request.commentComponent.comment` · 계산(저장 안 함) `POST /v2/report/custom/scoring` · AI 의견 `POST https://ai.mathflat.com/ai/report-comment` · 만들기 `POST /v2/report/custom {students:[…], source:'CUSTOM_CREATE', groupKey, groupName, groupType:'student'}`(늘 비공개) · 고치기 `PUT /v2/report/custom/{id}`(PDF 다시 만듦) · 공개 `POST /v2/report/custom/share/parent-app {reportIds, shouldSendSmsToParent}` · 비공개 `…/unshare/parent-app`. 의견 한도 650자. 목록의 «실시간보고서»(REAL_TIME)는 체크가 안 된다(매쓰플랫이 막음) — 원장이 «10월은 체크가 안 된다»고 한 까닭.
   - **10월 보고서 31명 비공개로 만듦**(11/1, 의견 = 매쓰플랫 AI 250~380자, 9월과 같은 구성, 학습평가 비교는 «같은 학년»). 9월 27명은 원장이 만든 것(의견 있음 · 비공개) · 8월은 공개됐지만 «선생님의견» 쪽이 25명 꺼져 있었음. **공개는 원장이 학원앱에서 누를 때만** — 아직 아무것도 공개 안 함.
