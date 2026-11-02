@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>숙제 계획판 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 레이아웃: ① 한 줄 답 ② 계획판 한 화면(표 + 오른쪽 학생 패널) ③ 새 계획 만들기 ④ 매주 자동 흐름 ⑤ 상의할 것 */
+:root{
+  --bg:#f4f5f2; --fg:#1b2430; --mute:#6a7482; --line:#dde1dc; --card:#ffffff; --card2:#f8f9f6;
+  --ink:#153446; --acc:#c8731e; --acc-soft:#fbead8; --teach:#2b5f8a; --teach-soft:#e3eef8; --stu:#2f7d5b; --stu-soft:#e1f2ea;
+  --ok:#2f7d5b; --warn:#b7791f; --bad:#b4433a;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35; --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --stu:#78c8a0; --stu-soft:#17322a; --ok:#78c8a0; --warn:#e0b25a; --bad:#e58a82; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35; --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --stu:#78c8a0; --stu-soft:#17322a; --ok:#78c8a0; --warn:#e0b25a; --bad:#e58a82; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.65;padding-block:28px 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+h1{font-size:24px;font-weight:900;color:var(--ink);margin:0 0 6px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 20px;max-width:72ch}
+h2{font-size:17px;font-weight:900;color:var(--ink);margin:34px 0 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h2 .no{font-family:var(--mono);font-size:12px;background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:6px}
+h3{font-size:14px;font-weight:900;color:var(--ink);margin:16px 0 8px}
+p{margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kv{font-size:13px;line-height:1.7}.kv b{color:var(--ink)}
+.answer{border-left:4px solid var(--acc);background:var(--acc-soft);border-radius:0 12px 12px 0;padding:12px 16px}
+.answer b{color:var(--acc)}
+/* PC 틀 */
+.pc{background:#f4f6f3;color:#182230;border:6px solid #2a3340;border-radius:12px;overflow:hidden;font-size:12px;line-height:1.5}
+.pc .bar{background:#2a3340;color:#cbd5e1;font-size:10px;padding:4px 10px;font-family:var(--mono)}
+.pc .body{padding:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.chip{border:1.5px solid #c9d1cc;border-radius:20px;padding:2px 10px;font-weight:800;font-size:11px;background:#fff;color:#5b6775}
+.chip.on{background:#153446;color:#fff;border-color:#153446}
+.chip.o{border-color:#c8731e;color:#c8731e;background:#fbead8}
+.split{display:grid;grid-template-columns:1fr 300px;gap:12px}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+table.pl{border-collapse:separate;border-spacing:0;width:100%;font-size:11px;background:#fff;border-radius:10px;overflow:hidden}
+table.pl th{font-weight:800;color:#7b8694;font-size:10px;padding:6px 6px;text-align:left;border-bottom:1px solid #dde1dc;background:#fafbf9;white-space:nowrap}
+table.pl td{padding:6px 6px;border-bottom:1px dashed #e5e9e4;vertical-align:middle;white-space:nowrap}
+table.pl tr.sel td{background:#fff7ee}
+table.pl tr.grp td{background:#eef2f0;font-weight:900;color:#153446;padding:4px 6px;font-size:10.5px}
+.tw{overflow-x:auto}
+.lv{display:inline-flex;border:1.5px solid #c9d1cc;border-radius:8px;overflow:hidden}
+.lv span{padding:1px 7px;font-weight:900;font-size:10.5px;color:#8b95a3;background:#fff}
+.lv span.on{background:#153446;color:#fff}
+.bar2{height:7px;border-radius:4px;background:#e5e9e4;overflow:hidden;width:90px;display:inline-block;vertical-align:middle}
+.bar2 i{display:block;height:100%;background:#2f7d5b}
+.bar2 i.y{background:#e0b25a}.bar2 i.r{background:#b4433a}
+.pill{font-size:10px;font-weight:900;padding:1px 7px;border-radius:12px;background:#eef1ee;color:#5b6775;white-space:nowrap}
+.pill.o{background:#fbead8;color:#c8731e}.pill.g{background:#e1f2ea;color:#2f7d5b}.pill.b{background:#e3eef8;color:#2b5f8a}.pill.r{background:#fde3e1;color:#b4433a}.pill.y{background:#fdf3d7;color:#8a5a12}
+.mini7{display:inline-flex;gap:1px;align-items:flex-end;height:14px;vertical-align:middle}
+.mini7 i{display:block;width:6px;background:#2b5f8a;border-radius:1px}
+.mini7 i.c{background:#cbd5e1}
+.btn{display:inline-block;border-radius:9px;padding:6px 11px;font-size:11.5px;font-weight:900;background:#153446;color:#fff;text-align:center}
+.btn.ghost{background:#fff;color:#153446;border:1.5px solid #c9d1cc}.btn.acc{background:#c8731e}
+.panel{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 10px rgba(21,52,70,.06);min-width:0}
+.panel .t{font-size:12.5px;font-weight:900;color:#153446;display:flex;align-items:center;gap:6px}
+.panel .t .r{margin-left:auto;font-size:10px;color:#2b5f8a;font-weight:800}
+.field{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:11.5px}
+.field label{flex:none;width:62px;color:#7b8694;font-weight:800}
+.field .in{flex:1;min-width:0;border:1.5px solid #c9d1cc;border-radius:8px;padding:4px 8px;background:#fff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.wk div{border-radius:8px;padding:5px 2px 4px;text-align:center;background:#f3f5f2;min-width:0}
+.wk .d{font-size:9px;font-weight:800;color:#8b95a3}.wk .v{font-size:14px;font-weight:900;color:#153446;line-height:1.1;font-variant-numeric:tabular-nums}.wk .m{font-size:8.5px;color:#7b8694;font-weight:700}
+.wk .cls{background:#e3eef8}.wk .cls .d{color:#2b5f8a}.wk .wkd{background:#fbead8}.wk .wkd .d{color:#c8731e}
+.note{font-size:11px;color:#7b8694;margin-top:8px;line-height:1.55}
+.legend{font-size:10px;color:#7b8694;margin-top:6px}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+@media(max-width:860px){.flow{grid-template-columns:repeat(2,1fr)}}
+.step{border-radius:12px;padding:11px 12px 9px;border:1.5px solid var(--line);background:var(--card2);min-width:0}
+.step .who{font-size:10.5px;font-weight:900;letter-spacing:.04em;color:var(--teach)}
+.step .what{font-size:13px;font-weight:900;color:var(--ink);margin:3px 0 4px;line-height:1.35}
+.step .how{font-size:12px;color:var(--mute);line-height:1.5}
+.step.auto{border-color:var(--acc)}.step.auto .who{color:var(--acc)}
+.ask .q{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.ask .q:first-child{border-top:0}
+.ask .k{font-family:var(--mono);font-size:13px;color:var(--acc);padding-top:2px}
+.ask b{color:var(--ink);display:block;margin-bottom:3px}
+.opt{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.opt span{font-size:12px;border:1.5px solid var(--line);border-radius:20px;padding:2px 10px;background:var(--card2)}
+.opt span.rec{border-color:var(--acc);background:var(--acc-soft);color:var(--acc);font-weight:800}
+.wiz{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media(max-width:860px){.wiz{grid-template-columns:1fr 1fr}}
+.wiz .panel .n{font-family:var(--mono);font-size:11px;color:#c8731e;font-weight:500}
+code{font-family:var(--mono);font-size:11.5px;background:var(--card2);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>숙제 계획판 — 날마다 적지 않는 2판</h1>
+<p class="lead">원장님 질문 「매일 공부량을 내가 내주어야 하나?」에 대한 답과 화면입니다. 이름·숫자는 전부 예시입니다.</p>
+
+<div class="answer">
+  <p class="kv"><b>아니요.</b> 1판의 7칸 화면은 「손으로 적는 길」을 먼저 뚫은 것이고, 예외(이번 주만 다르게)에만 씁니다. 2판은 <b>학생마다 계획을 한 번 세우면</b>(교재 · 범위 · 기간 · 수준) 앱이 <b>매주 일요일 밤에 다음 주 카드를 알아서 만들어</b> 보드에 넣습니다. 원장님은 수업 때 2차 확인만 하시고, 늦는 학생만 계획판에서 손봅니다.</p>
+  <p class="kv">계획판은 새 화면을 또 만들지 않고 <b>지금 있는 「진도 현황」</b>(집중 교재 · 예상 완주 · 🔴🟡 경고)에 <b>수준 · 계획 · 이번 주 분량 열</b>을 더한 것입니다. 늦음 경고와 숙제 분량이 한 줄에서 보여야 조정이 됩니다.</p>
+</div>
+
+<h2><span class="no">①</span> 계획판 한 화면 · 진도·리포트 › 진도 현황 (확장)</h2>
+<div class="pc"><div class="bar">lumen_v1.html › 진도·리포트 › 📚 진도 현황 · 숙제 계획</div>
+<div class="body">
+  <div class="chips"><span class="chip on">전체 29</span><span class="chip">M3</span><span class="chip">M4</span><span class="chip">M530</span><span class="chip">T5</span><span class="chip">T630</span><span class="chip">T730</span>
+    <span style="width:10px"></span><span class="chip o">⚠ 계획 없음 6</span><span class="chip">🔴 늦음 3</span><span class="chip">이번 주 카드 안 만듦 0</span>
+    <span style="margin-left:auto" class="btn acc">＋ 새 계획 (여러 명)</span></div>
+  <div class="split">
+    <div class="tw">
+      <table class="pl">
+        <tr><th>학생</th><th>수준</th><th>집중 교재 · 범위</th><th>진행</th><th>기간 · 완주 예정</th><th>하루 상한</th><th>주 분량(월~일)</th><th>이번 주</th><th></th></tr>
+        <tr class="grp"><td colspan="9">M3 · 화목 19:30 · 5명</td></tr>
+        <tr class="sel"><td><b>오○○</b></td><td><span class="lv"><span>상</span><span class="on">중</span><span>하</span></span></td><td>최상위수학S 초6-1 · p.8~142</td><td><span class="bar2"><i style="width:34%"></i></span> 34%</td><td>10/13 → 12/14 · <span class="pill g">정상</span></td><td>30</td><td><span class="mini7"><i style="height:8px"></i><i class="c" style="height:3px"></i><i style="height:8px"></i><i class="c" style="height:3px"></i><i style="height:6px"></i><i style="height:14px"></i><i style="height:12px"></i></span> 118</td><td><span class="pill g">✓ 만듦</span></td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr><td><b>유○○</b></td><td><span class="lv"><span class="on">상</span><span>중</span><span>하</span></span></td><td>최상위수학S 초6-1 · p.8~142</td><td><span class="bar2"><i style="width:58%"></i></span> 58%</td><td>10/6 → 11/23 · <span class="pill g">앞섬</span></td><td>40</td><td><span class="mini7"><i style="height:10px"></i><i class="c" style="height:3px"></i><i style="height:10px"></i><i class="c" style="height:3px"></i><i style="height:8px"></i><i style="height:14px"></i><i style="height:14px"></i></span> 164</td><td><span class="pill g">✓ 만듦</span></td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr><td><b>윤○○</b></td><td><span class="lv"><span>상</span><span>중</span><span class="on">하</span></span></td><td>개념+유형 초6-1 · p.10~120</td><td><span class="bar2"><i class="r" style="width:21%"></i></span> 21%</td><td>9/29 → 12/7 · <span class="pill r">🔴 2주 늦음</span></td><td>25</td><td><span class="mini7"><i style="height:6px"></i><i class="c" style="height:3px"></i><i style="height:6px"></i><i class="c" style="height:3px"></i><i style="height:5px"></i><i style="height:12px"></i><i style="height:10px"></i></span> 84 <span class="pill y">못 한 것 +31</span></td><td><span class="pill g">✓ 만듦</span></td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr><td><b>최○○</b></td><td><span class="lv"><span>상</span><span class="on">중</span><span>하</span></span></td><td style="color:#b4433a">계획 없음 · 매쓰플랫 배정 2권</td><td>–</td><td>–</td><td>–</td><td>–</td><td><span class="pill o">⚠</span></td><td><span class="btn acc" style="padding:2px 8px;font-size:10px">계획 세우기</span></td></tr>
+        <tr><td><b>홍○○</b></td><td><span class="lv"><span>상</span><span class="on">중</span><span>하</span></span></td><td>최상위수학S 초6-1 · p.8~142</td><td><span class="bar2"><i class="y" style="width:30%"></i></span> 30%</td><td>10/13 → 12/14 · <span class="pill y">🟡 4일 늦음</span></td><td>30</td><td><span class="mini7"><i style="height:8px"></i><i class="c" style="height:3px"></i><i style="height:8px"></i><i class="c" style="height:3px"></i><i style="height:6px"></i><i style="height:14px"></i><i style="height:12px"></i></span> 118</td><td><span class="pill g">✓ 만듦</span></td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr class="grp"><td colspan="9">M4 · 월수금 18:00 · 4명</td></tr>
+        <tr><td><b>서○○</b></td><td><span class="lv"><span>상</span><span class="on">중</span><span>하</span></span></td><td>개념+유형 중1(상) · p.12~188 → <span class="pill o">11/17 기말 대비 교재로</span></td><td><span class="bar2"><i style="width:44%"></i></span> 44%</td><td>9/22 → 1/18 · <span class="pill g">정상</span></td><td>35</td><td><span class="mini7"><i class="c" style="height:3px"></i><i style="height:12px"></i><i class="c" style="height:3px"></i><i style="height:6px"></i><i class="c" style="height:3px"></i><i style="height:14px"></i><i style="height:12px"></i></span> 194</td><td><span class="pill g">✓ 만듦</span></td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr><td colspan="9" style="color:#8b95a3;text-align:center">… 반별로 이어짐 · 수준 칸은 줄에서 바로 누르면 바뀜(등록부에 저장) · 「이번 주」가 비면 일요일 밤 자동이 아직 안 돈 것</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="t">오○○ · 계획 고치기 <span class="r">M3 · 수준 중</span></div>
+      <div class="field"><label>교재</label><div class="in">최상위수학S 초6-1 (매쓰플랫 배정)</div></div>
+      <div class="field"><label>범위</label><div class="in">p.8 ~ p.142 · 남은 668문항</div></div>
+      <div class="field"><label>기간</label><div class="in">10/13 → 12/14 · 9주 (수준 중 기본 8주 + 1)</div></div>
+      <div class="field"><label>하루 상한</label><div class="in">30 (수준 중 35 → ✎ 30)</div></div>
+      <div class="field"><label>시험대비</label><div class="in">초6은 학교 시험 없음 → 교체 안 함</div></div>
+      <div class="field"><label>학습지</label><div class="in">오답 쌍둥이(금) 있는 날 교재 그대로 ✓</div></div>
+      <div class="t" style="margin-top:10px">⏱ 공부 시간 → 요일 비율 <span class="r">학생앱 고정 스케줄</span></div>
+      <div class="wk">
+        <div><div class="d">월</div><div class="v">22</div><div class="m">90분</div></div>
+        <div class="cls"><div class="d">화</div><div class="v">8</div><div class="m">수업</div></div>
+        <div><div class="d">수</div><div class="v">22</div><div class="m">90분</div></div>
+        <div class="cls"><div class="d">목</div><div class="v">8</div><div class="m">수업</div></div>
+        <div><div class="d">금</div><div class="v">14</div><div class="m">영어 40분</div></div>
+        <div class="wkd"><div class="d">토</div><div class="v">30</div><div class="m">상한</div></div>
+        <div class="wkd"><div class="d">일</div><div class="v">14</div><div class="m">쉬는 날 ½</div></div>
+      </div>
+      <div class="note">주 118문항 · 숫자를 끌면 나머지가 다시 나뉨 · 수업 날도 8문항(원장 ✎)</div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap"><span class="btn">저장 → 다음 주부터</span><span class="btn ghost">이번 주 다시 만들기</span><span class="btn ghost">이번 주 쉬기</span></div>
+      <div class="t" style="margin-top:12px">앞으로 2주 미리보기</div>
+      <div class="note" style="margin-top:4px">11/3~9 p.48–61 · 118문항 (못 한 것 0)<br>11/10~16 p.62–75 · 118문항<br>… 12/14 완주</div>
+    </div>
+  </div>
+</div></div>
+
+<h2><span class="no">②</span> 새 계획 · 여러 명 한꺼번에 (4단계)</h2>
+<div class="wiz">
+  <div class="panel"><div class="t"><span class="n">1</span> 누구</div><div class="note" style="margin-top:4px">반 칩 → 학생 체크. 「계획 없음」 학생만 모아 보기. 보통 같은 반은 같은 교재라 한 번에.</div></div>
+  <div class="panel"><div class="t"><span class="n">2</span> 교재 · 범위</div><div class="note" style="margin-top:4px">매쓰플랫 배정 교재에서 고름(없으면 등록부 교재). 범위는 「지금 쪽부터 끝까지」가 기본, 이미 푼 쪽은 자동으로 뺌.</div></div>
+  <div class="panel"><div class="t"><span class="n">3</span> 기간</div><div class="note" style="margin-top:4px">학생마다 수준 기본(상 6·중 8·하 10주)이 채워지고 원장이 줄마다 고침. 시험 4주 전 교체 구간은 학교 일정으로 자동 제안.</div></div>
+  <div class="panel"><div class="t"><span class="n">4</span> 미리보기 → 저장</div><div class="note" style="margin-top:4px">학생마다 주 분량·완주일·⚠ 상한 넘는 날이 한 줄씩. 저장하면 이번 주 카드부터 바로 만든다.</div></div>
+</div>
+
+<h2><span class="no">③</span> 매주 돌아가는 것 · 원장이 할 일은 2차 확인뿐</h2>
+<div class="card">
+  <div class="flow">
+    <div class="step auto"><div class="who">일요일 밤 · 자동</div><div class="what">다음 주 카드 만들기</div><div class="how">계획 × 요일 비율 → 날짜별 교재 카드. 못 한 분량은 월요일로 넘김(빨간 숫자)</div></div>
+    <div class="step auto"><div class="who">금·토 새벽 · 자동</div><div class="what">학습지 숙제 붙음</div><div class="how">오답 쌍둥이 등 「숙제」 태그 학습지 (1판 그대로)</div></div>
+    <div class="step"><div class="who">학생앱</div><div class="what">오늘 숙제 · 셀프 체크</div><div class="how">1판 그대로</div></div>
+    <div class="step"><div class="who">학원앱 · 수업 때</div><div class="what">2차 확인</div><div class="how">1판 그대로. 「학생 체크 그대로 ✓」</div></div>
+    <div class="step"><div class="who">학원앱 · 가끔</div><div class="what">계획판에서 손보기</div><div class="how">🔴 늦음 · ⚠ 계획 없음 · 수준 바꾸기 · 이번 주 쉬기 · 시험대비 교재 교체 확인</div></div>
+  </div>
+  <p class="kv" style="margin-top:12px;color:var(--mute)">카드 만들기는 학원앱을 열 때 「지난 일요일 밤 이후 안 만든 주」를 채우는 방식(서버 예약 없이 됨). 원장님이 월요일에 앱을 안 열어도 되게 하려면 서버 새벽 작업(GitHub Actions)으로 옮길 수 있습니다(상의 ④-3).</p>
+</div>
+
+<h2><span class="no">④</span> 상의할 것 · 5가지</h2>
+<div class="card ask">
+  <div class="q"><div class="k">1</div><div><b>집중 교재는 학생당 몇 권</b><div class="opt"><span class="rec">1권 (개념·유형 두 권을 쓰면 「개념 다음 유형」 순서로 한 계획 안에)</span><span>2권 동시에, 요일로 나눔</span></div></div></div>
+  <div class="q"><div class="k">2</div><div><b>계획판 자리</b><div class="opt"><span class="rec">진도 현황 화면을 확장 (열 추가 + 오른쪽 패널)</span><span>할 일 보드 탭에 따로 「📚 계획판」 칩</span></div></div></div>
+  <div class="q"><div class="k">3</div><div><b>다음 주 카드는 누가 만드나</b><div class="opt"><span class="rec">학원앱을 열 때 자동으로 채움 (서버 작업 없음, 원장 PC가 월요일 전에 한 번은 켜짐)</span><span>서버 새벽 작업(일요일 23시)</span><span>둘 다</span></div></div></div>
+  <div class="q"><div class="k">4</div><div><b>수준을 바꾸면</b><div class="opt"><span class="rec">다음 주부터 기간·상한 다시 제안, 이번 주 카드는 그대로</span><span>이번 주 카드도 즉시 다시</span></div></div></div>
+  <div class="q"><div class="k">5</div><div><b>1판 7칸 화면</b><div class="opt"><span class="rec">남겨 두고 「이번 주만 손으로」 예외용 (계획판에서 「이번 주 다시 만들기」와 나란히)</span><span>없앰</span></div></div></div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h3 style="margin-top:0">자료 (초안)</h3>
+  <p class="kv"><code>hw_plan_&lt;코드&gt;</code> = {교재 bookId · 범위 from~to · 시작·끝 · 수준 기본값·원장 지정(기간·하루 상한) · 요일 비율 7개 · 시험대비 교체 구간 · 학습지 빼기 여부 · 만든 주 목록 · 못 한 분량 장부}. 수준은 등록부 <code>lumen_studentLevel</code> 그대로. 공부 시간은 학생앱 고정 스케줄 <code>codi_fixed_&lt;코드&gt;</code>와 반 수업 시간표로 요일 비율을 셈(엔진 <code>sync/hw_dispatch_engine.js</code> 한 곳, 학원앱·서버 같은 식). 카드는 1판과 같은 모양(<code>hw:&lt;날짜&gt;:&lt;bookId&gt;</code>, src 'plan').</p>
+</div>
+</div>
+</body>
+</html>
