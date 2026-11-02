@@ -115,6 +115,7 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 
 ## 6. 남은 일 (10/26 기준 — 맨 위가 최신)
 **▶ 11/2 (세션 01Majju… 마무리)**
+- **🎯 학원앱 v19-172 배포 (11/2 오후)** — 원장 「홈 상단에 학교별 디데이 카드 · 맨 위 탭 밑에 얇은 한 줄로 항상 · 누르면 연결」. 부품 `modules/ddstrip172_teacher.js`(rHome·paintNav 감쌈 · 자리 `#DDAY_STRIP` 은 FUNC_TAB_BAR 바로 아래) · 자료 = 학원 달력 `ctExams()`(school_calendar + exam_track.ddays, 우리 학생 있는 학교만, 학교·학년 묶음마다 다가오는 시험 하나) · 누르면 `ddsGo(학교)` → VIEW 'cal' + CT.filter · 14일 안이면 «가까움» 표시 · 검사 `tests/test_v19172.js` 10/10 · 미리보기 `docs/preview_v19172_dday.png`. 11/2 실제: 범박중3 D-8 · 옥길중3 D-11 · 범박고 D-35 · 범박중1,2 D-37 · 소사고 D-38 · 옥길중1,2 D-46.
 - **💡 학생앱 v2-152 배포** — 학습지로 올린 IB아하노트가 «aha_notes_source_type_check» 로 거절(서버 규칙 'book'·'print' 만) → 'print'(학습지 제목)로 다시 저장. **원장 결정 대기**: 서버 규칙에 'worksheet' 를 더하는 SQL(`ALTER TABLE aha_notes DROP CONSTRAINT aha_notes_source_type_check; ALTER TABLE aha_notes ADD CONSTRAINT aha_notes_source_type_check CHECK (source_type IN ('book','print','worksheet'));`) — 새벽에만, 원장이 Supabase SQL 창에서. 넣으면 앱은 그대로 'worksheet' 로 저장된다.
 - **남은 일 (이 세션 것)**: ① 10월 월간보고서 31명 «비공개» — 원장이 학원앱 📑 월간보고서에서 확인 후 공개(공개 버튼 실제 호출은 아직 0번 — 첫 결과 확인) ② 11/2(일) 03:20 mf-report.yml 첫 자동 실행 결과(10월은 이미 있어 «이미 있음»만 나와야 정상) ③ 서술형 최종 답 — 중3 까지 끝(45권 1,297문항). 남은 학년(초4 이하·고등)은 필요할 때 같은 방법 ④ 학생앱 v2-153(다른 세션 «오늘 숙제»)은 v2-152 고침 포함 — 배포는 원장 지시 때.
 
