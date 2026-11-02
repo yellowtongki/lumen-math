@@ -4611,6 +4611,10 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-152 (2026-11-02) 💡 매쓰플랫 학습지로 올린 IB아하노트가 «저장 실패»로 안 올라가던 것 (원장 제보 — 학생 폰 캡처)
+ *   · 서버가 출처 종류를 «교재·프린트»만 받는데 학습지는 «학습지»로 보내서 거절됐습니다. 이제 거절되면 «프린트(학습지 제목)»로 다시 저장합니다.
+ *     어느 학습지의 몇 번 문제인지(매쓰플랫 연결)는 그대로 함께 저장됩니다.
+ *
  * v2-151 (2026-11-01) 📱 홈 맨 아래 «채점» 카드가 아래 탭 줄에 가리던 것 (원장 제보 — 학생 아이폰 캡처)
  *   · 아이폰 사파리는 주소창·아래 막대가 보일 때도 화면 높이를 «막대가 숨은 큰 높이»로 알려 줘서, 화면 아래쪽이 막대 뒤로 들어갔습니다.
  *     이제 «지금 보이는 높이»로 잽니다. 아래 여백도 실제 탭 줄 높이에 맞춰 늘어납니다(글씨 크게·아주 크게에서도).
@@ -5283,7 +5287,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-151';
+var STU_VER = 'v2-152';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -8391,6 +8395,9 @@ function a7ColMissing(msg){
   var s = String(msg || '');
   return s.indexOf('kind') >= 0 || s.indexOf('mf') >= 0;
 }
+/* ★ v2-152: 서버 검사 규칙(aha_notes_source_type_check)은 'book'·'print' 만 받는다 — 'worksheet' 가 걸리면 'print' 로 */
+function a7SrcRejected(r, d){ return !!(r && r.error && d && d.source_type === 'worksheet' && String(r.error.message || '').indexOf('source_type') >= 0); }
+function a7AsPrint(d){ var o = {}, k; for (k in d) o[k] = d[k]; o.source_type = 'print'; o.source_name = String(d.source_name || '학습지'); return o; }
 function a7Strip(d){
   var out = {}, k;
   for (k in d) if (k !== 'kind' && k !== 'mf') out[k] = d[k];
@@ -8399,6 +8406,12 @@ function a7Strip(d){
 async function a7Insert(d, wantId){
   var r = wantId ? await sb.from('aha_notes').insert(d).select('id')
                  : await sb.from('aha_notes').insert(d);
+  if (a7SrcRejected(r, d)) {   /* ★ v2-152 */
+    console.warn('aha_notes 가 출처 «worksheet» 를 받지 않아 «print»(학습지 제목)로 다시 저장합니다');
+    d = a7AsPrint(d);
+    r = wantId ? await sb.from('aha_notes').insert(d).select('id')
+               : await sb.from('aha_notes').insert(d);
+  }
   if (r && r.error && a7ColMissing(r.error.message)) {
     console.warn('aha_notes 에 kind/mf 열이 없어 두 칸을 빼고 다시 저장합니다 (docs/aha_league2.sql)');
     var d2 = a7Strip(d);
@@ -8409,6 +8422,7 @@ async function a7Insert(d, wantId){
 }
 async function a7Update(d, id){
   var r = await sb.from('aha_notes').update(d).eq('id', id);
+  if (a7SrcRejected(r, d)) { d = a7AsPrint(d); r = await sb.from('aha_notes').update(d).eq('id', id); }   /* ★ v2-152 */
   if (r && r.error && a7ColMissing(r.error.message)) {
     console.warn('aha_notes 에 kind/mf 열이 없어 두 칸을 빼고 다시 저장합니다 (docs/aha_league2.sql)');
     r = await sb.from('aha_notes').update(a7Strip(d)).eq('id', id);
