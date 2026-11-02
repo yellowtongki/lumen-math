@@ -6,7 +6,7 @@
 ## 1. 지금 버전 (서버 `lumen_store.app_latest` 와 같다)
 | 앱 | 최신 파일 | 고정 주소(사용자가 여는 곳) |
 |---|---|---|
-| 학원앱 | `lumen_v19-171.html` | `lumen_v1.html` = v19-171 (Claude가 배포 때 같이 바꾼다) · main 에는 최근 20판(v19-152~171) + 조립 바탕 v19-42 만 |
+| 학원앱 | `lumen_v19-172.html` | `lumen_v1.html` = v19-172 (11/2 🎯 학교별 시험 D-day — 홈 맨 위 카드 + 맨 위 탭 아래 한 줄 `#DDAY_STRIP`, 누르면 학원 달력 그 학교만 · 부품 `ddstrip172_teacher.js` · 검사 `test_v19172.js` 10/10 · 자료는 학원 달력 ctExams 그대로) (Claude가 배포 때 같이 바꾼다) · main 에는 최근 20판(v19-153~172) + 조립 바탕 v19-42 만 |
 | 학생앱 | `student_v2-153.html` (11/2 다른 세션 새 판 — 「📌 오늘 숙제」 카드, **배포 안 함**. v2-152 아하노트 고침도 담고 있음(확인)) | `student_v1.html` = v2-152 (11/2 원장 「학생앱배포」 — 매쓰플랫 학습지로 올린 IB아하노트가 «aha_notes_source_type_check» 로 거절되던 것(서버 규칙 book·print 만, 학습지 노트는 v2-77 부터 0건) → 거절되면 'print'(학습지 제목)로 다시 저장 · mf 연결은 그대로 · `build_student_v2152.py` · 검사 `tests/test_stu_v2152.js` 7/7 · 서버 규칙에 'worksheet' 를 더하는 SQL 은 새벽에만(원장 결정 대기) · 이전: 11/1 원장 「학생앱배포」 — 홈 맨 아래 «채점» 카드가 아래 탭 줄에 가리던 것: 화면 높이 dvh(@supports, fzApply 가 --scrhd) + 아래 여백 = 실제 탭 줄 높이(--btabh, `stuTabPad`)+24px · `build_student_v2151.py` · 검사 `tests/test_stu_v2151.js` 10/10 · 아이폰 사파리 실제 확인은 원장 · 이전: v2-150 10/31 원장 「학생앱 배포」 — 매쓰플랫식 수식 자판(탭 기본·문자·도형·보기 · 답 막대 · 지수·√·선분 틀 · 순환점) + 엔진 보강(순환소수·분수 안 지수·합동 조건·㈎ 빈칸·«7°»«12·») · `build_student_v2150.py` · 검사 `tests/test_stu_v2150.js` 23/23 · 이전: v2-149 10/26 원장 「학생앱배포」 — 플래너 제출 안내 맨 위 «📒 플래너는 모트모트로 내요» · `build_student_v2149.py` · 검사 `tests/test_stu_v2149.js` 5/5 · 이전: v2-148 10/22 원장 「학생앱배포」 — 아하 사진 읽기 칸 이름 빼기 · 이전: v2-147 10/20 원장 「학생앱배포」 — 아하노트 사진 앱 꺼짐 고침 · 이어 쓰기 · **「학생앱배포」 지시가 있을 때만** 바꾼다 · 10/19 원장 「학생앱배포」 — v2-145 주간 점수 새벽 3시 유예·10/12 주 계획 면제 안내 · v2-146 «루멘 영상 플레이어»로 유튜브 이탈 막기(강의실·손풀이 영상, 검사 tests/test_v2146.js 45/45, **아이폰·안드로이드 실제 첫 재생은 원장 확인 필요**)) |
 | 학부모앱 | `parent_v1-37.html` (10/23 숙제 4단계 · v1-36 녹음 안 A 포함, **배포 안 함** — 원장 「학부모앱은 배포하지 않는다」) | `parent.html` = v1-35 (**원장님 명령 때만**) |
 
@@ -115,6 +115,7 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 
 ## 6. 남은 일 (10/26 기준 — 맨 위가 최신)
 **▶ 11/2 (세션 01Majju… 마무리)**
+- **🎯 학원앱 v19-172 배포 (11/2 오후)** — 원장 「홈 상단에 학교별 디데이 카드 · 맨 위 탭 밑에 얇은 한 줄로 항상 · 누르면 연결」. 부품 `modules/ddstrip172_teacher.js`(rHome·paintNav 감쌈 · 자리 `#DDAY_STRIP` 은 FUNC_TAB_BAR 바로 아래) · 자료 = 학원 달력 `ctExams()`(school_calendar + exam_track.ddays, 우리 학생 있는 학교만, 학교·학년 묶음마다 다가오는 시험 하나) · 누르면 `ddsGo(학교)` → VIEW 'cal' + CT.filter · 14일 안이면 «가까움» 표시 · 검사 `tests/test_v19172.js` 10/10 · 미리보기 `docs/preview_v19172_dday.png`. 11/2 실제: 범박중3 D-8 · 옥길중3 D-11 · 범박고 D-35 · 범박중1,2 D-37 · 소사고 D-38 · 옥길중1,2 D-46.
 - **💡 학생앱 v2-152 배포** — 학습지로 올린 IB아하노트가 «aha_notes_source_type_check» 로 거절(서버 규칙 'book'·'print' 만) → 'print'(학습지 제목)로 다시 저장. **원장 결정 대기**: 서버 규칙에 'worksheet' 를 더하는 SQL(`ALTER TABLE aha_notes DROP CONSTRAINT aha_notes_source_type_check; ALTER TABLE aha_notes ADD CONSTRAINT aha_notes_source_type_check CHECK (source_type IN ('book','print','worksheet'));`) — 새벽에만, 원장이 Supabase SQL 창에서. 넣으면 앱은 그대로 'worksheet' 로 저장된다.
 - **남은 일 (이 세션 것)**: ① 10월 월간보고서 31명 «비공개» — 원장이 학원앱 📑 월간보고서에서 확인 후 공개(공개 버튼 실제 호출은 아직 0번 — 첫 결과 확인) ② 11/2(일) 03:20 mf-report.yml 첫 자동 실행 결과(10월은 이미 있어 «이미 있음»만 나와야 정상) ③ 서술형 최종 답 — 중3 까지 끝(45권 1,297문항). 남은 학년(초4 이하·고등)은 필요할 때 같은 방법 ④ 학생앱 v2-153(다른 세션 «오늘 숙제»)은 v2-152 고침 포함 — 배포는 원장 지시 때.
 
