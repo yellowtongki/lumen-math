@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>학부모앱 숙제 체크 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap">
+<style>
+/* 레이아웃: 폰 화면 3장(홈 카드 · 7일 단계 표 · 월 기록) + 대시보드 방향 3앱 */
+:root{ --bg:#f3f5f9; --fg:#17243a; --mute:#6b7890; --line:#dfe4ec; --card:#fff; --navy:#0d2240; --blue:#1d6fe8; --blue-soft:#e8f0fd;
+  --s1:#3b82f6; --s2:#f59e0b; --s3:#22c55e; --s4:#a855f7; --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.6;padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1060px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 18px}
+h2{font-size:16px;font-weight:900;color:var(--navy);margin:28px 0 10px;display:flex;gap:8px;align-items:center}
+h2 .tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--blue-soft);color:var(--blue)}
+.phones{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.phones{grid-template-columns:1fr}}
+.ph{min-width:0}.ph .cap{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:6px}.ph .cap small{color:var(--mute);font-weight:600}
+.scr{background:#eef2f8;color:#0f172a;border:8px solid #1f2937;border-radius:28px;padding:10px 0 14px;font-size:12px;line-height:1.5;min-height:520px}
+.pagehd{padding:12px 16px 8px;font-size:16px;font-weight:900;color:#0d2240}.pagehd small{font-size:10px;color:#94a3b8;font-weight:700;margin-left:6px}
+.sec{margin:10px 12px 0;background:#fff;border-radius:17px;padding:13px 14px;box-shadow:0 3px 12px rgba(13,34,64,.05)}
+.st{font-size:13px;font-weight:900;color:#0d2240;display:flex;align-items:center;gap:6px}.st .more{margin-left:auto;font-size:10px;color:#1d6fe8;font-weight:800}
+.hwhd{border-radius:14px;padding:11px 13px;color:#fff;background:linear-gradient(135deg,#4d7c0f,#84cc16)}
+.hwhd .t{font-size:10px;font-weight:800;opacity:.9}.hwhd .b{font-size:22px;font-weight:900;line-height:1.1;margin-top:2px}.hwhd .b span{font-size:12px}
+.hwhd .d{font-size:9.5px;opacity:.9;margin-top:2px}
+.stg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:9px}
+.stg div{border-radius:11px;padding:7px 6px;text-align:center;border:1.5px solid #eef2f7;background:#fbfcff}
+.stg .n{font-size:9.5px;font-weight:800;color:#64748b}.stg .m{font-size:17px;font-weight:900;line-height:1.1;margin:2px 0}.stg .p{font-size:9.5px;font-weight:800}
+.s1 .m{color:var(--s1)}.s2 .m{color:var(--s2)}.s3 .m{color:var(--s3)}.s4 .m{color:var(--s4)}
+.stg .s1{border-color:#bfdbfe;background:#eff6ff}.stg .s2{border-color:#fde68a;background:#fffbeb}.stg .s3{border-color:#bbf7d0;background:#f0fdf4}.stg .s4{border-color:#e9d5ff;background:#faf5ff}
+.co{margin-top:8px;border-radius:9px;padding:7px 10px;font-size:10.5px;font-weight:700;background:#fef9c3;color:#854d0e;line-height:1.5}
+.tip{font-size:9.5px;color:#94a3b8;font-weight:700;margin-top:6px;line-height:1.5}
+table.g{border-collapse:separate;border-spacing:3px;width:100%;font-size:10px;margin-top:8px}
+table.g th{font-weight:800;color:#94a3b8;font-size:9px;padding:2px 0}
+table.g td{text-align:center;border-radius:7px;padding:5px 0;font-weight:900;font-size:11px;background:#f1f5f9;color:#cbd5e1}
+table.g td.l{text-align:left;background:none;color:#334155;font-size:10px;font-weight:800;padding-left:2px;white-space:nowrap}
+td.ok{background:#dcfce7;color:#15803d}td.half{background:#fef3c7;color:#b45309}td.no{background:#fee2e2;color:#b91c1c}td.na{background:#f8fafc;color:#cbd5e1}
+.avg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.avg div{text-align:center;border-radius:10px;padding:7px 4px;background:#f8fafc}
+.avg .v{font-size:16px;font-weight:900}.avg .k{font-size:9px;color:#64748b;font-weight:800}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.cal div{aspect-ratio:1;border-radius:7px;background:#f8fafc;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.cal .d{font-size:8px;font-weight:800;color:#94a3b8}
+.cal .dots{display:flex;gap:2px}.cal .dots i{width:5px;height:5px;border-radius:50%;background:#e2e8f0}
+.cal .dots i.a{background:var(--s1)}.cal .dots i.b{background:var(--s2)}.cal .dots i.c{background:var(--s3)}.cal .dots i.e{background:var(--s4)}
+.tabs{display:flex;justify-content:space-around;margin:14px 12px 0;padding-top:8px;border-top:1px solid #e2e8f0;font-size:9px;font-weight:800;color:#94a3b8}.tabs span.on{color:#1d6fe8}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--bg);min-width:0}
+.box b{display:block;color:var(--navy);margin-bottom:4px}.box p{margin:0 0 4px;font-size:12.5px}.box .sub{font-size:12px;color:var(--mute)}
+.rec{border-color:var(--blue)}
+.note{font-size:12px;color:var(--mute);margin-top:8px}
+/* 학생앱 미니 대시보드 */
+.sd{background:#0f172a;color:#e2e8f0;border-radius:14px;padding:12px;font-size:11px}
+.sd .t{font-size:12px;font-weight:900;color:#fff}.sd .take{font-size:10.5px;color:#94a3b8;margin:2px 0 8px}
+.sd .k4{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.sd .k4 div{background:#1e293b;border-radius:9px;padding:6px;text-align:center}
+.sd .k4 .v{font-size:15px;font-weight:900;color:#fff}.sd .k4 .l{font-size:8.5px;color:#94a3b8}
+.sd .sp{height:26px;display:flex;gap:2px;align-items:flex-end;margin-top:8px}.sd .sp i{flex:1;background:#38bdf8;border-radius:2px 2px 0 0;opacity:.6}.sd .sp i.n{opacity:1}
+.sd .src{font-size:8.5px;color:#64748b;margin-top:4px}
+
+.ab{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.var{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--card)}
+.var.pick{border-color:var(--blue);background:var(--blue-soft)}
+.var b{display:block;color:var(--navy);margin-bottom:4px}
+.var p{margin:0 0 4px;font-size:12.5px}
+.self{margin-top:8px;border-radius:9px;padding:6px 10px;font-size:10.5px;background:#f1f5f9;color:#475569;line-height:1.5;display:flex;gap:6px;align-items:flex-start}
+.self .ic{flex:none}
+.self.diff{background:#fff7ed;color:#9a3412}
+.ws{margin-top:8px;border-top:1px dashed #e2e8f0;padding-top:8px}
+.ws .r{display:flex;align-items:center;gap:6px;font-size:10.5px;padding:3px 0}
+.ws .r b{font-size:11px;color:#0f172a;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ws .r .pl{font-size:9.5px;font-weight:900;padding:1px 6px;border-radius:10px;background:#fef3c7;color:#b45309;white-space:nowrap}
+.ws .r .pl.g{background:#dcfce7;color:#15803d}.ws .r .pl.b{background:#dbeafe;color:#1d4ed8}
+.pend{border-radius:14px;padding:11px 13px;background:#f1f5f9;color:#334155}
+.pend .t{font-size:10px;font-weight:800;color:#64748b}.pend .b{font-size:15px;font-weight:900;margin-top:2px;color:#0f172a}.pend .d{font-size:9.5px;color:#64748b;margin-top:2px}
+.stg.dim div{opacity:.55}
+td.selfrow{background:none!important;color:#64748b!important;font-size:9px!important;font-weight:800!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>학부모앱 숙제 체크 보이기</h1>
+<p class="lead">원장님 결정(11/2) 「학부모앱엔 선생님 확인만」을 바탕으로 그렸습니다. 학생이 스스로 누른 체크를 어디까지 보여 줄지는 A·B 두 안으로 나란히 두었습니다. 이름·숫자는 예시입니다.</p>
+
+<h2>A안 · 선생님 확인만 <span class="tag">결정 7 그대로</span></h2>
+<div class="phones">
+  <div class="ph"><div class="cap">① 홈 · 수업 전 <small>— 아직 확인 전</small></div>
+    <div class="scr">
+      <div class="pagehd">📚 숙제 <small>11/5 (수) 수업</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="pend"><div class="t">루멘수학 · 숙제 · 11/5 (수) 수업</div><div class="b">선생님 확인 전</div><div class="d">오늘 수업 시간에 선생님이 직접 확인하면 바로 바뀌어요</div></div>
+        <div class="stg dim">
+          <div class="s1"><div class="n">1 풀이</div><div class="m">·</div><div class="p" style="color:#94a3b8">확인 전</div></div>
+          <div class="s2"><div class="n">2 채점</div><div class="m">·</div><div class="p" style="color:#94a3b8">확인 전</div></div>
+          <div class="s3"><div class="n">3 오답</div><div class="m">·</div><div class="p" style="color:#94a3b8">확인 전</div></div>
+          <div class="s4"><div class="n">4 아하노트</div><div class="m">·</div><div class="p" style="color:#94a3b8">확인 전</div></div>
+        </div>
+        <div class="ws">
+          <div class="r"><span>📄</span><b>오답 쌍둥이 프린트 (10/31)</b><span class="pl b">12문항</span><span class="pl">월요일까지</span></div>
+          <div class="r"><span>📗</span><b>개념+유형 중1(상) · 이번 주 분량</b><span class="pl b">p.57~66</span></div>
+        </div>
+        <div class="tip">지난 수업 11/3 (월) 확인: ✓ ✓ ◐ — &nbsp;숙제 탭에서 지난 기록을 볼 수 있어요</div>
+      </div>
+      <div class="sec"><div class="st">🏠 집에서 할 것</div><div class="tip" style="margin-top:4px">📓 오늘 플래너 제출 완료 ✓ · 🎙️ 녹음 숙제 아직</div></div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+  <div class="ph"><div class="cap">② 홈 · 수업 뒤 <small>— 선생님 확인 끝</small></div>
+    <div class="scr">
+      <div class="pagehd">📚 숙제 <small>11/5 (수) 수업</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="hwhd"><div class="t">루멘수학 · 숙제 · 11/5 (수) 수업 · 선생님 확인</div><div class="b">80<span>%</span></div><div class="d">풀이·채점은 다 했고, 틀린 문제 다시 풀기가 절반이에요</div></div>
+        <div class="stg">
+          <div class="s1"><div class="n">1 풀이</div><div class="m">✓</div><div class="p" style="color:var(--s1)">100%</div></div>
+          <div class="s2"><div class="n">2 채점</div><div class="m">✓</div><div class="p" style="color:var(--s2)">100%</div></div>
+          <div class="s3"><div class="n">3 오답</div><div class="m">◐</div><div class="p" style="color:var(--s3)">60%</div></div>
+          <div class="s4"><div class="n">4 아하노트</div><div class="m">—</div><div class="p" style="color:#94a3b8">해당 없음</div></div>
+        </div>
+        <div class="ws">
+          <div class="r"><span>📄</span><b>오답 쌍둥이 프린트 (10/31) · 12문항</b><span class="pl g">9문항 맞음</span><span class="pl g">4단계 ✓</span></div>
+          <div class="r"><span>📗</span><b>개념+유형 중1(상) · p.57~66</b><span class="pl g">풀이 ✓</span><span class="pl">오답 ◐</span></div>
+        </div>
+        <div class="co">💬 선생님: 오답 다시 풀기까지 하면 100%예요. 틀린 3문제는 수업에서 같이 풀었어요.</div>
+        <div class="tip">✓ 다 함 · ◐ 절반 · ◔ 조금 · ○ 안 함 — 학원에서 선생님이 직접 확인한 체크예요.</div>
+      </div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+  <div class="ph"><div class="cap">③ 숙제 탭 · 최근 7번 수업 <small>— 지금 v1-37 표 + 학습지 줄</small></div>
+    <div class="scr">
+      <div class="pagehd">📚 숙제 <small>최근 수업일 7번</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="st">선생님 확인 <span class="more">월 기록 ›</span></div>
+        <table class="g"><tr><th></th><th>10/22</th><th>10/24</th><th>10/27</th><th>10/29</th><th>10/31</th><th>11/3</th><th>11/5</th></tr>
+          <tr><td class="l">1 풀이</td><td class="ok">✓</td><td class="ok">✓</td><td class="half">◐</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+          <tr><td class="l">2 채점</td><td class="ok">✓</td><td class="half">◔</td><td class="no">○</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+          <tr><td class="l">3 오답</td><td class="half">◐</td><td class="no">○</td><td class="no">○</td><td class="ok">✓</td><td class="half">◐</td><td class="ok">✓</td><td class="half">◐</td></tr>
+          <tr><td class="l">4 아하</td><td class="na">—</td><td class="no">0/2</td><td class="na">—</td><td class="ok">1/1</td><td class="na">—</td><td class="ok">2/2</td><td class="na">—</td></tr>
+          <tr><td class="l">📄 학습지</td><td class="na">—</td><td class="ok">✓</td><td class="na">—</td><td class="na">—</td><td class="ok">✓</td><td class="na">—</td><td class="ok">9/12</td></tr>
+          <tr><td class="l" style="color:#0d2240">종합</td><td>83</td><td>35</td><td>20</td><td>100</td><td>87</td><td>100</td><td>80</td></tr></table>
+        <div class="tip">한 줄이 한 단계예요. 📄 학습지 줄은 그 수업까지 마감이던 프린트 숙제(맞은 수).</div>
+        <div class="co" style="background:#eef6ff;color:#1e3a8a">📌 이번 주 집에서: 틀린 문제를 «답 보기 전에 한 번 더» — 3단계가 올라가면 종합이 100%에 가까워져요</div>
+      </div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+</div>
+
+<h2>B안 · 선생님 확인 + 「아이가 스스로 체크했어요」 한 줄 <span class="tag">선택</span></h2>
+<div class="phones">
+  <div class="ph"><div class="cap">④ 홈 · 수업 전 <small>— 선생님 확인 전인데 아이는 체크함</small></div>
+    <div class="scr">
+      <div class="pagehd">📚 숙제 <small>11/5 (수) 수업</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="pend"><div class="t">루멘수학 · 숙제 · 11/5 (수) 수업</div><div class="b">선생님 확인 전</div><div class="d">오늘 수업 시간에 선생님이 직접 확인하면 바로 바뀌어요</div></div>
+        <div class="self"><span class="ic">🙋</span><span><b>아이가 스스로 체크했어요</b> · 11/5 18:40 (등원 전)<br>풀이 ✓ · 채점 ✓ · 오답 ✓ · 아하노트 —</span></div>
+        <div class="tip">스스로 체크는 아이가 앱에서 누른 것이고, 위 4칸은 선생님이 확인한 뒤 채워져요.</div>
+      </div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+  <div class="ph"><div class="cap">⑤ 홈 · 수업 뒤 <small>— 스스로 체크와 다른 칸이 있을 때</small></div>
+    <div class="scr">
+      <div class="pagehd">📚 숙제 <small>11/5 (수) 수업</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="hwhd"><div class="t">루멘수학 · 숙제 · 11/5 (수) 수업 · 선생님 확인</div><div class="b">80<span>%</span></div><div class="d">풀이·채점은 다 했고, 틀린 문제 다시 풀기가 절반이에요</div></div>
+        <div class="stg">
+          <div class="s1"><div class="n">1 풀이</div><div class="m">✓</div><div class="p" style="color:var(--s1)">100%</div></div>
+          <div class="s2"><div class="n">2 채점</div><div class="m">✓</div><div class="p" style="color:var(--s2)">100%</div></div>
+          <div class="s3"><div class="n">3 오답</div><div class="m">◐</div><div class="p" style="color:var(--s3)">60%</div></div>
+          <div class="s4"><div class="n">4 아하노트</div><div class="m">—</div><div class="p" style="color:#94a3b8">해당 없음</div></div>
+        </div>
+        <div class="self diff"><span class="ic">🙋</span><span><b>아이 스스로 체크</b> 풀이 ✓ · 채점 ✓ · 오답 ✓ &nbsp;→&nbsp; 선생님 확인에서 <b>오답은 절반</b>이었어요. 스스로 점검하는 눈을 함께 키우는 중이에요.</span></div>
+        <div class="co">💬 선생님: 오답 다시 풀기까지 하면 100%예요. 틀린 3문제는 수업에서 같이 풀었어요.</div>
+      </div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+  <div class="ph"><div class="cap">⑥ 숙제 탭 <small>— 「스스로」 줄 하나 추가</small></div>
+    <div class="scr">
+      <div class="pagehd">📚 숙제 <small>최근 수업일 7번</small></div>
+      <div class="sec" style="margin-top:0">
+        <div class="st">선생님 확인 <span class="more">월 기록 ›</span></div>
+        <table class="g"><tr><th></th><th>10/22</th><th>10/24</th><th>10/27</th><th>10/29</th><th>10/31</th><th>11/3</th><th>11/5</th></tr>
+          <tr><td class="l">1 풀이</td><td class="ok">✓</td><td class="ok">✓</td><td class="half">◐</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+          <tr><td class="l">2 채점</td><td class="ok">✓</td><td class="half">◔</td><td class="no">○</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td></tr>
+          <tr><td class="l">3 오답</td><td class="half">◐</td><td class="no">○</td><td class="no">○</td><td class="ok">✓</td><td class="half">◐</td><td class="ok">✓</td><td class="half">◐</td></tr>
+          <tr><td class="l">4 아하</td><td class="na">—</td><td class="no">0/2</td><td class="na">—</td><td class="ok">1/1</td><td class="na">—</td><td class="ok">2/2</td><td class="na">—</td></tr>
+          <tr><td class="l">📄 학습지</td><td class="na">—</td><td class="ok">✓</td><td class="na">—</td><td class="na">—</td><td class="ok">✓</td><td class="na">—</td><td class="ok">9/12</td></tr>
+          <tr><td class="l">🙋 스스로</td><td class="selfrow">안 함</td><td class="selfrow">✓</td><td class="selfrow">안 함</td><td class="selfrow">✓</td><td class="selfrow">✓</td><td class="selfrow">✓</td><td class="selfrow">✓ 18:40</td></tr>
+          <tr><td class="l" style="color:#0d2240">종합</td><td>83</td><td>35</td><td>20</td><td>100</td><td>87</td><td>100</td><td>80</td></tr></table>
+        <div class="tip">🙋 줄은 아이가 등원 전에 스스로 체크했는지(시각)만 보여요. 무엇을 눌렀는지는 선생님 확인으로 갈음합니다.</div>
+      </div>
+      <div class="tabs"><span>홈</span><span class="on">숙제</span><span>리포트</span><span>성적</span><span>더보기</span></div>
+    </div>
+  </div>
+</div>
+
+<h2>두 안 비교 · 정해 주실 것</h2>
+<div class="ab">
+  <div class="var pick"><b>A안 · 선생님 확인만 (결정 7)</b><p>학부모가 보는 숫자는 전부 선생님이 확인한 것. 아이가 눌렀는지는 학원앱에서만 보고 학부모에겐 안 나갑니다.</p><p class="sub">장점: 메시지가 하나(학원이 확인한 결과). 아이 체크가 틀려도 집에서 추궁이 안 생깁니다.</p></div>
+  <div class="var"><b>B안 · + 「아이가 스스로 체크했어요」 한 줄</b><p>선생님 칸은 그대로 두고, 아이가 등원 전에 눌렀다는 사실과 시각, 다른 칸이 있으면 «스스로 점검하는 눈을 키우는 중» 문장으로 부드럽게.</p><p class="sub">장점: 메타인지(스스로 점검) 활동이 학부모에게 보입니다 — 아하노트처럼 루멘 색깔. 단점: 차이가 잦은 아이는 집에서 부담이 될 수 있어 문장을 조심해야 합니다.</p></div>
+</div>
+<div class="card" style="margin-top:12px">
+  <b style="color:var(--navy)">공통으로 새로 들어가는 것</b>
+  <p>① «선생님 확인 전» 상태를 따로 보여 줍니다(지금은 그냥 빈칸). ② 📄 학습지 줄: 그 수업까지 마감이던 숙제 태그 프린트와 맞은 수(문제 그림·제목 외 내용은 안 보임). ③ 📗 이번 주 교재 분량 줄(2판에서 분량이 자동으로 정해지면 채워짐 · 그전엔 선생님이 보낸 것만). ④ 3판 공부 일지는 아이가 「보여도 돼요」 켠 날만 이 카드 아래에 한 줄.</p>
+  <p class="note">읽는 자료: 선생님 확인 = 지금 쓰는 숙제체크 값(그대로) · 학습지 = 학생 학습지 목록의 제목·문항·맞은 수 · B안의 스스로 체크 = 학생앱이 쓰는 날짜별 체크 칸(읽기만). 새 서버 표 없음. 배포는 새 버전 파일(v1-38)까지, parent.html 은 원장님 지시 때만.</p>
+  <p><b style="color:var(--navy)">정해 주실 것</b> — A안 / B안 · 📄 학습지 줄을 넣을지 · «선생님 확인 전» 문구 「오늘 수업 시간에 선생님이 직접 확인하면 바로 바뀌어요」가 괜찮은지.</p>
+</div>
+</div>
+</body>
+</html>
