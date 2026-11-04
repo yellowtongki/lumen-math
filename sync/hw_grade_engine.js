@@ -796,6 +796,15 @@
     var cm = body.match(COND_RE);
     if (cm) return { label: lm ? lm[1] : '', kind: 'word', keys: ['조건' + cm[1].toUpperCase()], unit: '', eq: false, src: trim(raw) };
     var r = analyzePart0(raw);
+    /* ★ 2026-11-04 (원장 「학생앱 2차 채점이 안 된다」): 정답 «(다),(마),(가)…» 처럼 여러 칸이 «(가)» 꼴이면
+       조각 하나하나는 괄호째 «(다)» 로 읽혀, 학생이 «다, 마, 가» 로 맞게 쳐도 ✗ 였다(답이 «(가)» 하나일 때는 괄호를 벗겨 맞았다).
+       괄호 속 한 글자도 열쇠로 더한다 — «다» · «(다)» · «㈐» 어느 것으로 쳐도 맞다. */
+    var pm = trim(raw).match(/^\(\s*([가-하])\s*\)$/);
+    if (r && r.kind === 'word' && pm && r.keys) {
+      if (r.keys.indexOf(pm[1]) < 0) r.keys.push(pm[1]);
+      var pi = '가나다라마바사아자차카타파하'.indexOf(pm[1]);
+      if (pi >= 0) { var mt = markTok(PAREN_SYL.charAt(pi)); if (mt && r.keys.indexOf(mt) < 0) r.keys.push(mt); }
+    }
     if (r && r.keys && r.keys.length) return r;
     var s = trim(raw), t = stripWrapParen(s);
     if (t === s || !t) return r;
@@ -1140,6 +1149,20 @@
       var r3 = gradeOnce(correctRaw, st2);
       if (!r3.correct) { var a3 = slashToFrac(st2); if (a3 !== st2) r3 = gradeOnce(correctRaw, a3); }
       if (r3.gradable && r3.correct) return r3;
+    }
+    /* ★ 2026-11-04: 정답이 «(다),(마),(가)» · «ㄱ, ㄴ» 처럼 칸마다 «한 글자 기호»일 때, 학생이 쉼표 없이 «다마가» · «라 가» 로 쳐도
+       글자 수가 칸 수와 같으면 한 글자씩 나눠 한 번 더 본다 (실제 2차 다시 도전에서 맞는 답이 ✗ 였던 것). */
+    var cA = analyze(correctRaw), sing = cA.parts.length >= 2;
+    for (var ci = 0; sing && ci < cA.parts.length; ci++) {
+      var cpi = cA.parts[ci];
+      if (cpi.label || !/^(word|mark)$/.test(cpi.kind) || !/^\(?\s*([가-하]|[ㄱ-ㅎ]|[㉠-㉭]|[㈀-㈍]|[㈎-㈛])\s*\)?$/.test(trim(String(cpi.src || '')))) sing = false;
+    }
+    if (sing) {
+      var sj = st.replace(/[\s,()·]+/g, '');
+      if (sj.length === cA.parts.length && /^([가-하]|[ㄱ-ㅎ]|[㉠-㉭]|[㈀-㈍]|[㈎-㈛])+$/.test(sj) && sj.split('').join(',') !== st) {
+        var r4 = gradeOnce(correctRaw, sj.split('').join(','));
+        if (r4.gradable && r4.correct) return r4;
+      }
     }
     return r;
   }
