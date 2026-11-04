@@ -93,7 +93,10 @@ async function kvSet(key, value) {
 async function msCells(paperId) {
   const cells = []; let cursor = '';
   for (let i = 0; i < 40; i++) {
-    const j = await msGet(`/bms/api/v1/my-papers/${paperId}/cells?limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
+    const q = `limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`;
+    // API 로 새로 만든 문제지는 curriculumId 없이 물으면 400 (2026-11-04 실측) → 22개정(2)으로 다시
+    let j; try { j = await msGet(`/bms/api/v1/my-papers/${paperId}/cells?${q}`); }
+    catch (e) { if (!/400/.test(String(e.message))) throw e; j = await msGet(`/bms/api/v1/my-papers/${paperId}/cells?curriculumId=2&${q}`); }
     const d = j.data || {};
     (d.cells || []).forEach((c) => cells.push(c));
     (d.pages || []).forEach((pg) => (pg.cells || []).forEach((c) => cells.push(c)));
