@@ -235,7 +235,10 @@ function findFolder(nodes, name) {
 async function msCells(id) {
   const cells = []; let cursor = '';
   for (let i = 0; i < 40; i++) {
-    const r = await msFetch(`${MS_API}/bms/api/v1/my-papers/${id}/cells?limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`);
+    const q = `limit=48${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`;
+    let r = await msFetch(`${MS_API}/bms/api/v1/my-papers/${id}/cells?${q}`);
+    // API 로 새로 만든 문제지는 curriculumId 없이 물으면 400 (2026-11-04 실측) → 22개정(2)으로 다시
+    if (r.status === 400) r = await msFetch(`${MS_API}/bms/api/v1/my-papers/${id}/cells?curriculumId=2&${q}`);
     const sc = r.headers.getSetCookie ? r.headers.getSetCookie() : [r.headers.get('set-cookie')].filter(Boolean);
     const hit = (sc || []).find((c) => c && c.includes('Cloud-CDN-Cookie'));
     if (hit) MS_CDN_COOKIE = hit.split(';')[0];
