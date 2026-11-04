@@ -2495,6 +2495,14 @@ html[data-fz="x"] .h3-me{max-width:60%}
 .bk-rtgive{width:100%;margin-top:2px;border:1.5px solid #cbd5e1;background:var(--surface);color:#64748b;border-radius:10px;padding:8px 12px;font-family:inherit;font-size:11.5px;font-weight:900;cursor:pointer}
 .bk-rtcard{background:var(--surface);border:1.5px solid #99e2d8;border-radius:13px;padding:12px 13px;margin-top:10px}
 .bk-rtcard.warn{border-color:#f0d9a8;background:#fffbeb}
+/* ★ v2-157: 다시 도전 카드 — 눈에 띄게(주황) · 기다림(회색) */
+.bk-rtcard.hot{border:2px solid #fb923c;background:linear-gradient(135deg,#fff7ed,#ffedd5);box-shadow:0 4px 14px rgba(234,88,12,.15)}
+.bk-rtcard.hot .t1{color:#c2410c;font-size:15px}
+.bk-rtcard.hot .bk-next{background:#ea580c}
+.bk-rtcard.wait{border-color:#cbd5e1;background:#f8fafc}
+.bk-rtcard.wait .t1{color:#334155}
+.bk-hideans .bk-rtgo{display:block;width:100%;margin-top:8px;border:0;border-radius:10px;background:#ea580c;color:#fff;font-family:inherit;font-size:13px;font-weight:900;padding:10px 6px;cursor:pointer}
+.bk-hideans .when{font-size:12px;font-weight:900;color:#c2410c;margin-top:4px}
 .bk-rtcard .t1{font-size:13.5px;font-weight:900;color:#0d2240;margin-bottom:5px;line-height:1.5}
 .bk-rtcard .s1{font-size:11px;font-weight:700;color:#64748b;line-height:1.65;word-break:break-all}
 .bk-ghost{width:100%;box-sizing:border-box;border:1.5px solid #99e2d8;background:var(--surface);color:#0f766e;border-radius:11px;padding:11px 6px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;line-height:1.4}
@@ -4661,6 +4669,12 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-157 (2026-11-04) 🔁 「다시 도전」이 잘 보이게 (원장 「다시 도전하기가 없다. 잘 보이게」 — 학생 캡처 RPM 중2(하) 127P)
+ *   · 쪽 맨 위에 다시 도전 카드: 「🔁 다시 도전 N문항 · 시작하기」(주황) · 2차도 틀렸으면 「⏳ 3차 도전은 11/7(토)부터」 · 그날이 되면 「🔔 3차 도전하기」.
+ *   · 틀린 문항 칸에도 바로 「다시 도전 시작하기」 버튼 (기다릴 때는 3차 날짜).
+ *   · 채점 홈 맨 위에 «다시 도전을 기다리는 쪽»(최근 14일)을 모아 보여 줍니다 — 누르면 그 쪽으로 가서 바로 시작.
+ *   · 학생앱 홈 「📖 교재 채점」 칸에 「🔁 다시 도전 N」 배지.
+ *
  * v2-156 (2026-11-04) ✅ 「(가)」 꼴 답이 맞게 쳐도 ✗ 이던 것 (원장 「2차 채점이 안 된다」)
  *   · 정답이 «(다),(마),(가)…» 처럼 칸마다 괄호 글자면, 학생이 «다, 마, 가» 로 쳐도 ✗ 였습니다(쎈 중1(하) 801·835번 — 2차 다시 도전에서 네 번씩 맞게 쳐도 ✗).
  *     이제 «다» · «(다)» · «㈐» 어느 것으로 쳐도 맞고, 쉼표 없이 «다마가» · «라 가» 로 쳐도 글자 수가 맞으면 한 글자씩 나눠 봅니다.
@@ -5359,7 +5373,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-156';
+var STU_VER = 'v2-157';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -19157,6 +19171,11 @@ async function bkHomeUpdate(){
   if(pl) pl.textContent=(b.title||'교재').split(' ')[0]+' 진도';
   if(todo) todo.style.display='';
   if(todo) todo.textContent='채점하기 ›';
+  /* ★ v2-157: 다시 도전할 것이 있으면 배지로 */
+  try{ var rn=0; bkRt2Groups().forEach(function(g){ rn+=g.n; });
+    var now=Date.now(); Object.keys(BK.scores).forEach(function(k){ var m=BK.scores[k]; if(m&&!m.self&&(m.r==='X'||m.r==='?')&&bkRtDue3(m,now)) rn++; });
+    if(todo&&rn){ todo.textContent='🔁 다시 도전 '+rn; todo.style.background='#ea580c'; todo.style.color='#fff'; }
+    else if(todo){ todo.style.background=''; todo.style.color=''; } }catch(e){}
 }
 
 /* ── 화면 1: 교재 · 학습지 목록 ──
@@ -19197,6 +19216,7 @@ function bkPaintHome(){
   h+='<div class="s1"><div class="v" style="color:#a15c00">'+qn+'</div><div class="l">모름 ?</div></div>';
   h+='</div>';
   h+=bkRt3Home();                    /* ★ v2-91: 「🔔 3일 전에 못 맞힌 문항」 */
+  h+=bkRt2Home();                    /* ★ v2-157: 「🔁 다시 도전할 문항」 — 쪽마다 */
   body.innerHTML=h+(BK.top==='ws'?bkWsListHtml():bkBookListHtml());
 }
 /* ── 교재 탭 ── */
@@ -20284,7 +20304,7 @@ window.bkRenderQ=function(){
     return;
   }
   var st=bkPageStat(pg,probs);
-  var h=bkRt3Card(pg,probs);            /* ★ v2-91: 「🔔 3일 전에 못 맞힌 문항」 */
+  var h=bkRtTopCard(pg,probs);          /* ★ v2-157: 다시 도전 상태(2차 시작 · 3차 · 3차 기다림) — v2-91 은 3차만 */
   h+=isWs?bkWsHeadHtml(probs):bkNavHtml();
   h+='<div class="bk-strip"><span>'+probs.length+'문항</span><span>채점 '+st.done+'</span>'
     +(st.self?'<span style="background:#e5f5f2;color:#0f766e">자기채점 '+st.self+'</span>':'')+'</div>';
@@ -20569,6 +20589,18 @@ function bkAnsSlot(p,m,wp,mode){
   if(mode==='rt'){
     h+='<div class="s">정답은 이번 도전을 다 마친 뒤에 열어 줄게요.</div>';
   } else {
+    /* ★ v2-157: 지금 할 수 있는 다시 도전을 바로 누르게 · 기다릴 때는 날짜 */
+    var now7=Date.now(), go7='';
+    if(bkRtDue3(m,now7)) go7='<button class="bk-rtgo" onclick="bkRtStart(3)">🔔 3차 도전하기</button>';
+    else if(bkRtWait3(p,m,now7)){
+      h=h.replace('🔁 이 문항은 <b>다시 도전</b>에서 풀어요','🔁 2차 다시 도전에서도 못 맞혔어요');
+      go7='<div class="when">⏳ 3차 도전은 '+bkRtDay(bkRtDueAt(m))+'부터</div>';
+    } else if(bkRt2Want(p,m)){
+      var pr7=bkCurProbs(), st7=BK.page?bkPageStat(BK.page,pr7):null;
+      go7=(st7&&st7.done>=st7.tot)?'<button class="bk-rtgo" onclick="bkRtStart(2)">🔁 다시 도전 시작하기</button>'
+        :'<div class="when">이 쪽을 다 채점하면 「다시 도전」이 열려요</div>';
+    }
+    h+=go7;
     h+='<div class="s">정답은 그때 보여 줄게요 — 지금 보면 다시 풀 까닭이 없으니까요.</div>';
     h+='<button class="bk-seeans" onclick="bkSeeAns('+bkQ(w)+')">지금 정답 보기</button>';
     h+='<div class="s2">누르면 이 문항만 정답이 열리고 「다시 도전」에서는 빠져요 · 되돌릴 수 없어요</div>';
@@ -20627,18 +20659,101 @@ window.bkRtEnd=function(){
   try{ var bd=document.getElementById('bkq-body'); if(bd) bd.scrollTop=0; window.scrollTo(0,0); }catch(e){}
 };
 /* 채점 홈에서 「3차 도전하기」를 누르면 그 학습지·교재 쪽을 열고 바로 3차를 시작한다 */
-window.bkRtGo=async function(gid){
-  gid=String(gid||'');
-  if(gid.indexOf('ws:')===0){ await bkOpenWs(gid.slice(3)); bkRtStart(3); return; }
+window.bkRtGo=async function(gid,round){
+  gid=String(gid||''); round=Number(round)||3;   /* ★ v2-157: 2차도 */
+  if(gid.indexOf('ws:')===0){ await bkOpenWs(gid.slice(3)); bkRtStart(round); return; }
   var pid=gid.slice(3), books=(BK.swb&&BK.swb.books)||[];
   for(var i=0;i<books.length;i++){
     var pgs=books[i].pages||[];
     for(var j=0;j<pgs.length;j++){
-      if(String(pgs[j].pid)===pid){ await bkOpenBook(i); bkOpenPage(j); bkRtStart(3); return; }
+      if(String(pgs[j].pid)===pid){ await bkOpenBook(i); bkOpenPage(j); bkRtStart(round); return; }
     }
   }
   alert('그 교재를 찾지 못했어요');
 };
+/* ★ v2-157: 3차를 기다리는 문항 — 2차에 못 맞혔고 아직 3일이 안 지났다 */
+function bkRtWait3(p,m,now){
+  if(!bkRtBase(p,m)||m.seen) return false;
+  var l=bkRtLast(m);
+  if(!l||Number(l.n)!==2||l.r==='O') return false;
+  return !bkRtDue3(m,now);
+}
+/* 3차가 열리는 때 (ms) */
+function bkRtDueAt(m){ var l=bkRtLast(m); var t=Date.parse(String(l&&l.at||'')); return t?t+BK_RT_DAYS*86400000:0; }
+function bkRtDay(ms){ if(!ms) return ''; var d=new Date(ms); return (d.getMonth()+1)+'/'+d.getDate()+'('+'일월화수목금토'.charAt(d.getDay())+')'; }
+/* 지금 보고 있는 쪽(학습지)의 문항들 */
+function bkCurProbs(){
+  try{ var b=BK.book, pg=BK.page; if(!b||!pg) return [];
+    var ans=BK.ans[b.bid], pa=ans&&ans.pages&&ans.pages[pg.wpid]; return (pa&&pa.problems)||[]; }catch(e){ return []; }
+}
+/* 쪽 맨 위 — 다시 도전 상태 카드 하나 (3차 때 → 2차 시작 → 3차 기다림 순) */
+function bkRtTopCard(pg,probs){
+  var h3=bkRt3Card(pg,probs); if(h3) return h3;
+  var now=Date.now(), rt2=bkRtList(pg,probs,2,now);
+  if(rt2.length){
+    var st=bkPageStat(pg,probs);
+    if(st.done<st.tot) return '';      /* 다 채점하기 전에는 아래 마무리 안내로 */
+    return '<div class="bk-rtcard hot" style="margin:0 0 10px"><div class="t1">🔁 다시 도전할 문항 '+rt2.length+'개</div>'
+      +'<div class="s1">틀린 '+rt2.map(function(p){ return h3Esc(String(p.num||'')); }).join(' · ')+'번을 다시 풀어요. 맞히면 XP!</div>'
+      +'<button class="bk-next" onclick="bkRtStart(2)">다시 도전 시작하기 →</button></div>';
+  }
+  return bkRtWaitCard(pg,probs,'0 0 10px');
+}
+/* 2차도 못 맞혀 3차를 기다리는 문항 — 날짜를 알려 준다 */
+function bkRtWaitCard(pg,probs,mg){
+  var now=Date.now(), nums=[], due=0;
+  (probs||[]).forEach(function(p){
+    var m=BK.scores[bkKeyOf(pg.pid,p.wpId)];
+    if(!bkRtWait3(p,m,now)) return;
+    nums.push(h3Esc(String(p.num||''))); var t=bkRtDueAt(m); if(t&&(!due||t<due)) due=t;
+  });
+  if(!nums.length) return '';
+  return '<div class="bk-rtcard wait" style="margin:'+(mg||'10px 0 0')+'"><div class="t1">⏳ 3차 도전은 '+bkRtDay(due)+'부터 열려요</div>'
+    +'<div class="s1">2차 다시 도전에서 못 맞힌 '+nums.join(' · ')+'번 — 3일 뒤에 한 번 더 풀면 오래 기억에 남아요.<br>그날 이 쪽 맨 위와 채점 홈에 「3차 도전하기」가 떠요.</div></div>';
+}
+/* 채점 홈 — 2차 다시 도전을 기다리는 쪽 모아 보기 (최근 14일) */
+function bkRt2Groups(){
+  var now=Date.now(), groups=[], by={};
+  Object.keys(BK.scores).forEach(function(k){
+    var m=BK.scores[k];
+    if(!m||m.self||m.seen) return;
+    if(m.r!=='X'&&m.r!=='?') return;
+    if(bkRtArr(m).length) return;
+    var t=Date.parse(String(m.at||'')); if(!t||now-t>14*86400000) return;
+    var gid='';
+    if(m.kind==='ws'&&m.swId!=null) gid='ws:'+m.swId;
+    else if(m.pid!=null) gid='bk:'+m.pid;
+    else return;
+    if(!by[gid]){ by[gid]={ gid:gid, n:0, t:'', at:'' }; groups.push(by[gid]); }
+    by[gid].n++; if(String(m.at)>by[gid].at) by[gid].at=String(m.at);
+  });
+  groups.sort(function(a,b){ return a.at<b.at?1:-1; });
+  return groups;
+}
+function bkRtGroupTitle(g){
+  var wsl=(BK.wsq&&BK.wsq.list)||[], books=(BK.swb&&BK.swb.books)||[];
+  if(g.gid.indexOf('ws:')===0){
+    var sid=g.gid.slice(3), w=wsl.find(function(x){ return String(x.swId)===sid; });
+    return w?bkShortTitle(w.title||'학습지'):'';
+  }
+  var pid=g.gid.slice(3), t='';
+  books.forEach(function(b){ (b.pages||[]).forEach(function(pg){ if(String(pg.pid)===pid) t=bkShortTitle(b.title||'교재')+(pg.page!=null?(' '+pg.page+'P'):''); }); });
+  return t;
+}
+function bkRt2Home(){
+  var gs=bkRt2Groups().filter(function(g){ g.t=bkRtGroupTitle(g); return !!g.t; });
+  if(!gs.length) return '';
+  var tot=0; gs.forEach(function(g){ tot+=g.n; });
+  var h='<div class="bk-rtcard hot" style="margin:0 0 10px">';
+  h+='<div class="t1">🔁 다시 도전할 문항 '+tot+'개</div>';
+  h+='<div class="s1">틀린 문항만 다시 풀어요 · 누르면 그 쪽으로 가서 바로 시작해요.</div>';
+  gs.slice(0,6).forEach(function(g){
+    h+='<button class="bk-ghost" onclick="bkRtGo('+bkQ(g.gid)+',2)">'+h3Esc(g.t)+' · '+g.n+'문항 · 다시 도전 →</button>';
+  });
+  if(gs.length>6) h+='<div class="s1" style="margin-top:6px">… 그 밖에 '+(gs.length-6)+'쪽</div>';
+  h+='</div>';
+  return h;
+}
 /* 채점 화면 맨 위 「🔔 3일 전에 못 맞힌 문항」 (계약 §2-4) */
 function bkRt3Card(pg,probs){
   var list=bkRtList(pg,probs,3,Date.now());
@@ -21101,7 +21216,7 @@ function bkDoneHtml(pg,probs){
   var rt2=bkRtList(pg,probs,2,Date.now());
   if(rt2.length){
     if(s.done>=s.tot){
-      h+='<div class="bk-rtcard"><div class="t1">🔁 다시 도전할 문항 '+rt2.length+'개</div>';
+      h+='<div class="bk-rtcard hot"><div class="t1">🔁 다시 도전할 문항 '+rt2.length+'개</div>';
       h+='<div class="s1">틀린 문항만 모아서 다시 풀어요. 종이에 처음부터 다시 풀고 답을 넣으면 돼요.<br>'
         +'직접 쓰는 답은 틀려도 <b>'+BK_RT_MAX_SUBJ+'번까지</b> 다시 낼 수 있어요 (고르는 문항은 한 번).<br>'   /* ★ v2-140 */
         +'정답은 <b>다시 도전을 마친 뒤</b>에 보여 줄게요.</div>';
@@ -21110,6 +21225,9 @@ function bkDoneHtml(pg,probs){
       h+='<div class="bk-hint" style="margin-top:8px">🔁 다시 도전할 문항 '+rt2.length
         +'개 — 남은 문항을 마저 채점하면 시작할 수 있어요.</div>';
     }
+  } else {
+    h+=bkRt3Card(pg,probs).replace('margin:0 0 10px','margin:10px 0 0');   /* ★ v2-157 */
+    h+=bkRtWaitCard(pg,probs);
   }
   if(s.wrong.length){
     h+='<div class="bk-hint" style="margin-top:8px">틀린 문제는 여기서 바로 이어가요.</div>';
