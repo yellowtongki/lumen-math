@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>숙제 규칙 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 레이아웃: ① 한 문장 ② 규칙이 숙제가 되는 길(그림) ③ 화면 한 장(묶음 카드 + 학생 줄 + 오른쪽 «왜 이 범위인가») ④ 상의 7가지 */
+:root{
+  --bg:#f4f5f2; --fg:#1b2430; --mute:#6a7482; --line:#dde1dc; --card:#ffffff; --card2:#f8f9f6;
+  --ink:#153446; --acc:#c8731e; --acc-soft:#fbead8; --teach:#2b5f8a; --teach-soft:#e3eef8; --stu:#2f7d5b; --stu-soft:#e1f2ea;
+  --ok:#2f7d5b; --warn:#b7791f; --bad:#b4433a;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35; --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --stu:#78c8a0; --stu-soft:#17322a; --ok:#78c8a0; --warn:#e0b25a; --bad:#e58a82; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35; --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --stu:#78c8a0; --stu-soft:#17322a; --ok:#78c8a0; --warn:#e0b25a; --bad:#e58a82; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.65;padding-block:28px 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto}
+h1{font-size:24px;font-weight:900;color:var(--ink);margin:0 0 6px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 20px;max-width:72ch}
+h2{font-size:17px;font-weight:900;color:var(--ink);margin:34px 0 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h2 .no{font-family:var(--mono);font-size:12px;background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:6px}
+h3{font-size:14px;font-weight:900;color:var(--ink);margin:16px 0 8px}
+p{margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kv{font-size:13px;line-height:1.7}.kv b{color:var(--ink)}
+.answer{border-left:4px solid var(--acc);background:var(--acc-soft);border-radius:0 12px 12px 0;padding:12px 16px}
+.answer b{color:var(--acc)}
+.big{font-size:20px;font-weight:900;color:var(--ink);line-height:1.4;margin:0 0 6px;text-wrap:balance}
+.big em{font-style:normal;color:var(--acc);border-bottom:3px solid var(--acc-soft)}
+/* 길 그림 */
+.path{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+@media(max-width:860px){.path{grid-template-columns:repeat(2,1fr)}}
+.st{border-radius:12px;padding:11px 12px 9px;border:1.5px solid var(--line);background:var(--card2);min-width:0}
+.st .w{font-size:10.5px;font-weight:900;letter-spacing:.04em;color:var(--teach)}
+.st .t{font-size:13px;font-weight:900;color:var(--ink);margin:3px 0 4px;line-height:1.35}
+.st .h{font-size:12px;color:var(--mute);line-height:1.5}
+.st.auto{border-color:var(--acc)}.st.auto .w{color:var(--acc)}
+.st.me{border-color:var(--stu)}.st.me .w{color:var(--stu)}
+/* PC 틀 */
+.pc{background:#f4f6f3;color:#182230;border:6px solid #2a3340;border-radius:12px;overflow:hidden;font-size:12px;line-height:1.5}
+.pc .bar{background:#2a3340;color:#cbd5e1;font-size:10px;padding:4px 10px;font-family:var(--mono)}
+.pc .body{padding:12px}
+.presets{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:12px}
+.pre{background:#fff;border-radius:12px;padding:10px 12px;box-shadow:0 2px 8px rgba(21,52,70,.06);min-width:0;border:1.5px solid transparent}
+.pre.on{border-color:#c8731e;background:#fff9f2}
+.pre .nm{font-weight:900;color:#153446;font-size:12.5px;display:flex;gap:6px;align-items:center}
+.pre .nm small{margin-left:auto;font-size:10px;color:#8b95a3;font-weight:800}
+.pre .n{font-size:26px;font-weight:900;color:#c8731e;line-height:1.1;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.pre .n small{font-size:11px;color:#5b6775;font-weight:800;margin-left:3px}
+.pre .r{font-size:10.5px;color:#5b6775;line-height:1.5}
+.pre.add{border:1.5px dashed #c9d1cc;background:transparent;display:flex;align-items:center;justify-content:center;color:#8b95a3;font-weight:900}
+.split{display:grid;grid-template-columns:1fr 310px;gap:12px}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+.tw{overflow-x:auto}
+table.pl{border-collapse:separate;border-spacing:0;width:100%;font-size:11px;background:#fff;border-radius:10px;overflow:hidden}
+table.pl th{font-weight:800;color:#7b8694;font-size:10px;padding:6px 6px;text-align:left;border-bottom:1px solid #dde1dc;background:#fafbf9;white-space:nowrap}
+table.pl td{padding:6px 6px;border-bottom:1px dashed #e5e9e4;vertical-align:middle;white-space:nowrap}
+table.pl tr.sel td{background:#fff7ee}
+table.pl tr.grp td{background:#eef2f0;font-weight:900;color:#153446;padding:4px 6px;font-size:10.5px}
+.lv{display:inline-flex;border:1.5px solid #c9d1cc;border-radius:8px;overflow:hidden}
+.lv span{padding:1px 6px;font-weight:900;font-size:10.5px;color:#8b95a3;background:#fff}
+.lv span.on{background:#153446;color:#fff}
+.pill{font-size:10px;font-weight:900;padding:1px 7px;border-radius:12px;background:#eef1ee;color:#5b6775;white-space:nowrap}
+.pill.o{background:#fbead8;color:#c8731e}.pill.g{background:#e1f2ea;color:#2f7d5b}.pill.b{background:#e3eef8;color:#2b5f8a}.pill.r{background:#fde3e1;color:#b4433a}.pill.y{background:#fdf3d7;color:#8a5a12}
+.num{font-family:var(--mono);font-weight:500}
+.btn{display:inline-block;border-radius:9px;padding:6px 11px;font-size:11.5px;font-weight:900;background:#153446;color:#fff;text-align:center}
+.btn.ghost{background:#fff;color:#153446;border:1.5px solid #c9d1cc}.btn.acc{background:#c8731e}
+.panel{background:#fff;border-radius:12px;padding:12px;box-shadow:0 2px 10px rgba(21,52,70,.06);min-width:0}
+.panel .t{font-size:12.5px;font-weight:900;color:#153446;display:flex;align-items:center;gap:6px}
+.panel .t .r{margin-left:auto;font-size:10px;color:#2b5f8a;font-weight:800}
+.trace{margin-top:8px;border-left:2px solid #dde1dc;padding-left:10px}
+.trace div{position:relative;padding:3px 0 3px 2px;font-size:11.5px}
+.trace div::before{content:'';position:absolute;left:-15px;top:9px;width:8px;height:8px;border-radius:50%;background:#2b5f8a}
+.trace div.a::before{background:#c8731e}
+.trace b{color:#153446}
+.trace small{display:block;color:#7b8694;font-size:10.5px}
+.field{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:11.5px}
+.field label{flex:none;width:62px;color:#7b8694;font-weight:800}
+.field .in{flex:1;min-width:0;border:1.5px solid #c9d1cc;border-radius:8px;padding:4px 8px;background:#fff;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.note{font-size:11px;color:#7b8694;margin-top:8px;line-height:1.55}
+.ask .q{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.ask .q:first-child{border-top:0}
+.ask .k{font-family:var(--mono);font-size:13px;color:var(--acc);padding-top:2px}
+.ask b{color:var(--ink);display:block;margin-bottom:3px}
+.opt{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.opt span{font-size:12px;border:1.5px solid var(--line);border-radius:20px;padding:2px 10px;background:var(--card2)}
+.opt span.rec{border-color:var(--acc);background:var(--acc-soft);color:var(--acc);font-weight:800}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:760px){.cmp{grid-template-columns:1fr}}
+.cmp .box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card2)}
+.cmp .box.pick{border-color:var(--acc);background:var(--acc-soft)}
+.cmp b{display:block;color:var(--ink);margin-bottom:4px}
+.cmp p{font-size:12.5px;margin:0 0 4px}
+code{font-family:var(--mono);font-size:11.5px;background:var(--card2);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>숙제 규칙 — 「하루 30문제」 하나로 계속 이어지게</h1>
+<p class="lead">「기간을 정하고 쪼개는 계획」을 버리고, 원장님 말씀대로 <b>규칙을 한 번 걸어 두면 지금 푸는 문제집에서 마지막 푼 문제 다음부터 알아서 이어지는</b> 방식으로 다시 그렸습니다. 이름·숫자는 예시입니다.</p>
+
+<div class="answer">
+  <p class="big">「중1은 <em>하루 30문제</em>」 — 이 한 줄이 규칙입니다.<br>어느 책인지, 어디서부터인지는 <em>매쓰플랫 채점 기록</em>이 알려 줍니다.</p>
+  <p class="kv">학년(또는 반)별 <b>묶음</b>에 하루 문항 수와 요일 비율을 적어 두고 학생을 넣습니다. 학생마다 상·중·하 보정만 겁니다. 그 뒤로는 날마다 앱이 ① 지금 풀고 있는 교재를 찾고 ② 마지막으로 푼 문제를 읽고 ③ 그다음 30문항을 오늘 숙제로 냅니다. <b>안 푼 날은 시작점이 안 움직이니 저절로 이월</b>됩니다. 교재가 끝나면 다음 배정 교재로 넘어가고 원장님께 알립니다. 예상 완주일은 입력이 아니라 결과로 보입니다.</p>
+</div>
+
+<h2><span class="no">①</span> 규칙이 숙제가 되는 길 · 날마다 자동</h2>
+<div class="card">
+  <div class="path">
+    <div class="st me"><div class="w">원장 · 한 번</div><div class="t">묶음에 규칙 걸기</div><div class="h">「중1 · 하루 30 · 수업 날 ½ · 주말 ×1.5」 → 학생 넣기 · 상중하 보정</div></div>
+    <div class="st auto"><div class="w">새벽 04시 · 자동</div><div class="t">지금 푸는 교재 찾기</div><div class="h">매쓰플랫 배정 교재 중 최근 2주 채점이 가장 많은 책 (원장이 고정할 수도)</div></div>
+    <div class="st auto"><div class="w">자동</div><div class="t">마지막 푼 곳 읽기</div><div class="h">매쓰플랫 문항 기록 · 학생앱 채점 · 선생님 확인 중 가장 앞선 곳 = p.57 12번</div></div>
+    <div class="st auto"><div class="w">자동</div><div class="t">오늘 30문항 카드</div><div class="h">p.57 13번 ~ p.60 끝 · 쪽 경계에서 ±5 조정 · 할 일 보드 카드로</div></div>
+    <div class="st"><div class="w">학생앱 · 학원앱</div><div class="t">1판 그대로</div><div class="h">오늘 숙제 → 셀프 체크 → 2차 확인. 확인 ✓ 도 시작점을 앞으로 민다</div></div>
+  </div>
+  <p class="kv" style="margin-top:12px;color:var(--mute)">매쓰플랫 문항 기록(교재·쪽·번호·정오)은 이미 매일 수집하고 있어 새로 모을 것이 없습니다. 교재가 매쓰플랫에 없으면(종이 교재) 시작점은 선생님 확인 ✓ 로만 움직입니다.</p>
+</div>
+
+<h2><span class="no">②</span> 화면 한 장 · 수업·출결 › 📚 숙제 규칙</h2>
+<div class="pc"><div class="bar">lumen_v1.html › 수업·출결 › 📚 숙제 규칙 · 오늘 11/3(월) 04:12 자동 배정 끝 · 29명</div>
+<div class="body">
+  <div class="presets">
+    <div class="pre on"><div class="nm">중1 <small>8명</small></div><div class="n">30<small>문항/일</small></div><div class="r">수업 날 ½ · 주말 ×1.5 · 상 ×1.2 하 ×0.8<br>시험 4주 전 → 시험대비 교재</div></div>
+    <div class="pre"><div class="nm">중2 <small>6명</small></div><div class="n">35<small>문항/일</small></div><div class="r">수업 날 ½ · 주말 ×1.5 · 상 ×1.2 하 ×0.8</div></div>
+    <div class="pre"><div class="nm">중3 <small>5명</small></div><div class="n">35<small>문항/일</small></div><div class="r">수업 날 0 · 주말 ×2 · 시험 4주 전 교체</div></div>
+    <div class="pre"><div class="nm">초6 <small>5명</small></div><div class="n">25<small>문항/일</small></div><div class="r">수업 날 ½ · 일요일 쉼</div></div>
+    <div class="pre"><div class="nm">고등 <small>5명</small></div><div class="n">20<small>문항/일</small></div><div class="r">학기 중 학교 진도 우선 · 수업 날 0</div></div>
+    <div class="pre add">＋ 묶음</div>
+  </div>
+  <div class="split">
+    <div class="tw">
+      <table class="pl">
+        <tr><th>학생</th><th>묶음</th><th>보정</th><th>하루</th><th>지금 푸는 교재 (자동)</th><th>마지막 푼 곳</th><th>오늘 숙제</th><th>밀림</th><th>예상 완주</th><th></th></tr>
+        <tr class="grp"><td colspan="10">중1 · 하루 30 · 8명</td></tr>
+        <tr class="sel"><td><b>김○○</b></td><td>중1</td><td><span class="lv"><span>상</span><span class="on">중</span><span>하</span></span></td><td class="num">30</td><td>개념+유형 중1(상) <span class="pill b">자동</span></td><td class="num">p.57 12번 <span class="pill">어제</span></td><td class="num">p.57 13번 ~ p.60 · 30</td><td>–</td><td>12/19</td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr><td><b>박○○</b></td><td>중1</td><td><span class="lv"><span class="on">상</span><span>중</span><span>하</span></span></td><td class="num">36</td><td>개념+유형 중1(상) <span class="pill b">자동</span></td><td class="num">p.88 4번 <span class="pill">어제</span></td><td class="num">p.88 5번 ~ p.92 · 36</td><td>–</td><td>11/28 <span class="pill o">곧 끝 → 다음 책?</span></td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr><td><b>이○○</b></td><td>중1</td><td><span class="lv"><span>상</span><span>중</span><span class="on">하</span></span></td><td class="num">24</td><td>개념+유형 중1(상) <span class="pill b">자동</span></td><td class="num">p.41 9번 <span class="pill r">4일 전</span></td><td class="num">p.41 10번 ~ p.43 · 24</td><td><span class="pill r">3일째 안 풂</span></td><td>1/16</td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr><td><b>최○○</b></td><td>중1</td><td><span class="lv"><span>상</span><span class="on">중</span><span>하</span></span></td><td class="num">30 <span class="pill y">✎ 20</span></td><td>쎈 중1(상) <span class="pill y">원장 고정</span></td><td class="num">p.120 끝 <span class="pill">✓ 확인</span></td><td class="num">p.121 ~ p.123 · 20</td><td>–</td><td>12/30</td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr><td><b>정○○</b></td><td>중1</td><td><span class="lv"><span>상</span><span class="on">중</span><span>하</span></span></td><td class="num">30</td><td style="color:#b4433a">채점 기록 없음 · 배정 교재 2권</td><td>–</td><td><span class="pill r">못 정함</span></td><td></td><td></td><td><span class="btn acc" style="padding:2px 8px;font-size:10px">교재 고르기</span></td></tr>
+        <tr class="grp"><td colspan="10">초6 · 하루 25 · 5명</td></tr>
+        <tr><td><b>오○○</b></td><td>초6</td><td><span class="lv"><span>상</span><span class="on">중</span><span>하</span></span></td><td class="num">25</td><td>최상위수학S 초6-1 <span class="pill b">자동</span></td><td class="num">p.48 7번 <span class="pill">어제</span></td><td class="num">p.48 8번 ~ p.51 · 25</td><td>–</td><td>12/12</td><td><span class="btn ghost" style="padding:2px 8px;font-size:10px">고치기</span></td></tr>
+        <tr><td colspan="10" style="color:#8b95a3;text-align:center">… 반별로 이어짐 · 「고치기」 없이도 묶음 숫자 하나를 바꾸면 그 묶음 전원이 다음 날부터 바뀜</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="t">김○○ · 오늘 숙제는 왜 이 범위인가 <span class="r">중1 · 보정 중</span></div>
+      <div class="trace">
+        <div><b>묶음 중1 · 하루 30</b><small>월요일 = 평일 ×1 · 보정 중 ×1 → 30문항</small></div>
+        <div><b>교재: 개념+유형 중1(상)</b><small>매쓰플랫 배정 2권 중 최근 2주 채점 142문항으로 1위 (쎈은 0)</small></div>
+        <div><b>마지막 푼 곳: p.57 12번</b><small>매쓰플랫 11/2 채점 · 학생앱 채점 p.56 · 선생님 확인 p.52 → 가장 앞선 곳</small></div>
+        <div class="a"><b>오늘: p.57 13번 ~ p.60 끝 · 30문항</b><small>p.60 이 29번에서 끝나 +1 하면 p.61 로 넘어가므로 29에서 자름(±5 안)</small></div>
+        <div><b>예상 완주 12/19</b><small>남은 412문항 ÷ 주 180 (묶음 요일 비율)</small></div>
+      </div>
+      <div class="t" style="margin-top:12px">고치기 <span class="r">이 학생만</span></div>
+      <div class="field"><label>하루</label><div class="in">묶음 30 → ✎ (비우면 묶음 값)</div></div>
+      <div class="field"><label>교재</label><div class="in">자동 → 고정: [고르기]</div></div>
+      <div class="field"><label>시작점</label><div class="in">자동 → p.__ __번부터 (건너뛰기)</div></div>
+      <div class="field"><label>이번 주</label><div class="in">그대로 / 쉬기 / 절반</div></div>
+      <div class="note">묶음을 바꾸면 다음 날 새벽부터. 「지금 다시 배정」을 누르면 오늘 카드도 바로 다시 만든다.</div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="btn">저장</span><span class="btn ghost">지금 다시 배정</span></div>
+    </div>
+  </div>
+</div></div>
+
+<h2><span class="no">③</span> 두 방식 비교 · 왜 규칙 방식인가</h2>
+<div class="cmp">
+  <div class="box"><b>기간 계획 (앞선 시안)</b><p>「이 책을 12/14까지」 → 날짜별로 쪼갬. 학생마다 계획을 세워야 하고, 밀리면 장부가 필요하고, 책이 바뀌면 다시 세운다.</p><p style="color:var(--mute)">시험 날짜처럼 <b>끝이 정해진 일</b>에 맞다.</p></div>
+  <div class="box pick"><b>규칙 (이번 시안) ✔</b><p>「하루 30」 → 매일 마지막 푼 곳 다음부터. 묶음 하나에 학생을 넣기만 하면 되고, 밀림은 시작점이 안 움직이는 것으로 저절로 드러나며, 책이 끝나면 다음 책으로 이어진다.</p><p style="color:var(--mute)">「끝까지 가는 데 얼마나 걸리나」는 결과로 보여 주고, 원장이 하루 숫자만 조절한다. 기간을 맞추고 싶으면 「12/14까지 끝내려면 하루 34」라고 제안만 해 준다.</p></div>
+</div>
+
+<h2><span class="no">④</span> 상의할 것 · 7가지</h2>
+<div class="card ask">
+  <div class="q"><div class="k">1</div><div><b>규칙 단위</b><div class="opt"><span class="rec">하루 N문항 (묶음마다 수업 날·주말 비율)</span><span>주 N문항을 요일로 나눔</span><span>둘 다 고를 수 있게</span></div></div></div>
+  <div class="q"><div class="k">2</div><div><b>상·중·하 보정</b><div class="opt"><span class="rec">비율 (상 ×1.2 · 중 ×1 · 하 ×0.8, 묶음마다 바꿀 수 있음)</span><span>묶음마다 상·중·하 숫자 따로 (중1: 40 / 30 / 20)</span></div></div></div>
+  <div class="q"><div class="k">3</div><div><b>지금 푸는 교재 고르는 규칙</b><div class="opt"><span class="rec">매쓰플랫 배정 교재 중 최근 2주 채점이 가장 많은 책 · 없으면 「못 정함」으로 원장에게</span><span>원장이 학생마다 고정</span><span>매쓰플랫에서 가장 최근 배정된 책</span></div></div></div>
+  <div class="q"><div class="k">4</div><div><b>시작점(마지막 푼 곳)</b><div class="opt"><span class="rec">매쓰플랫 채점 · 학생앱 채점 · 선생님 확인 ✓ 중 가장 앞선 곳</span><span>매쓰플랫 채점만</span></div>종이로만 풀고 매쓰플랫에 안 올리는 학생은 선생님 ✓ 로만 앞으로 갑니다.</div></div>
+  <div class="q"><div class="k">5</div><div><b>안 푼 날</b><div class="opt"><span class="rec">시작점이 안 움직이니 같은 범위가 다시 나옴 · 「n일째 안 풂」 표시 · 분량은 늘 N</span><span>밀린 만큼 다음 날 분량을 늘림(상한 2N)</span></div></div></div>
+  <div class="q"><div class="k">6</div><div><b>교재가 끝나면</b><div class="opt"><span class="rec">매쓰플랫에 배정된 다음 책으로 자동 + 🔔 알림 (다음 책이 없으면 「책 없음」 알림만)</span><span>자동으로 넘기지 않고 원장이 고름</span></div></div></div>
+  <div class="q"><div class="k">7</div><div><b>시험 4주 전</b><div class="opt"><span class="rec">묶음에 「시험대비 교재」를 적어 두면 학교 일정으로 자동 전환 · 본 교재는 멈춤 · 끝나면 이어서</span><span>전환하지 않고 원장이 그때 바꿈</span></div></div></div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h3 style="margin-top:0">자료 (초안)</h3>
+  <p class="kv"><code>hw_rules</code> = 묶음 목록 {id · 이름 · 하루 N · 수업 날 비율 · 주말 비율 · 상중하 비율 · 시험대비 교재 · 학생 코드 목록}. 학생 보정은 등록부 <code>lumen_studentLevel</code> + <code>hw_rule_<b>&lt;코드&gt;</b></code> {하루 ✎ · 교재 고정 · 시작점 건너뛰기 · 이번 주 모드}. 새벽 04시 수집 뒤 서버(<code>sync/hw_rule_assign.js</code>)가 학생마다 오늘 카드 1장을 할 일 보드에 넣는다(1판 카드 모양, src 'rule'). 학원앱은 같은 엔진으로 「지금 다시 배정」. 시작점은 <code>mf_answer_records</code>(교재·쪽·번호) · <code>hw_scores_&lt;코드&gt;</code> · 카드 <code>thw</code> 에서 읽는다.</p>
+</div>
+</div>
+</body>
+</html>

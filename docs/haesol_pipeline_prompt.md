@@ -20,6 +20,8 @@
 1. **재료 수집** — 수학비서(api.mathsecr.com, 로그인 `POST /mim/api/v1/identities/members/login`, 환경변수 계정)에서 기출 문제·정답·단원 정보를 받거나, 원장님이 시험지 이미지를 주면 그걸 읽음. 문제 이미지는 `img/`에 저장하되 **최종 해설집엔 이미지를 넣지 말고 문제를 직접 LaTeX로 타이핑**(저작권). `img/`는 `.gitignore`로 커밋 제외.
 2. **정답 정리** — `meta.json`에 문항별 정답·난이도·단원 기록.
 3. **문항 풀이 작성** — 각 문제를 직접 풀고 **meta.json 정답과 반드시 대조**(불일치 시 다시 검토). 첨삭 스타일(왜 그렇게 푸는지, 함정·출제의도까지). 그림이 필요한 문항(그래프·도형)은 **원본 SVG를 직접 그림**(수학비서 그림 베끼지 말 것). 한 문제당 `parts/qNN.html` 파일로 저장 → 중간에 끊겨도 이어짐.
+   - 🖼 **풀이에는 가능하면 그림을 넣는다** (2026-11-03 원장 지시 「앞으로 풀이에는 가능하면 그림추가하자」). 도형·그래프 문항은 거의 전부, 계산 문항도 그림 하나로 이해가 빨라지면 넣는다. 그림은 «문제 그림 다시 그리기»가 아니라 **풀이의 핵심을 보이게** — 보조선·같은 길이(같은 색)·직각 표시·구하는 값(빨강)을 그려 넣고, 캡션에 한 줄로 핵심을 쓴다. 예: 범박중3 2025 2학기 중간 17번(접선 조각을 색으로 구분), 18번(대각선 위 중심 거리 8을 빗변으로).
+   - 도구: 문항 HTML은 `sync/haesol_parts.py`(sec·ps·step·figure …), 그림은 `sync/haesol_fig.py`(좌표평면 `Plot`, 도형 `G`). 수학비서 시험지 재료는 `node sync/ms_exam_fetch.js <id> <폴더> [--paper]`.
 4. **조립** — `cat parts/head.html parts/cover.html parts/q0[1-9].html parts/q1*.html parts/q20.html parts/tail.html > 해설집.html`
 5. **렌더 검증** — 로컬 MathJax(Playwright, chromium `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` `--no-sandbox`)로 열어 확인: 수식 오류 0, 가로넘침 0, 그림 정상, 원시 `\lt`/`\gt` 텍스트 잔존 0.
 6. **게시+저장** — Artifact로 게시(링크 원장님께), 저장소 `docs/exam_reports/<시험폴더>/`에 커밋·푸시.
