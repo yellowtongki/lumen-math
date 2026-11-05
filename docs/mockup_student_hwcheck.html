@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>학생앱 숙제 체크 카드</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap">
+<style>
+/* 레이아웃: 폰 화면 3장(홈 처음 · 체크 중 · 다 함) + 눈금 설명 + 상의 */
+:root{ --bg:#f3f5f9; --fg:#17243a; --mute:#6b7890; --line:#dfe4ec; --card:#fff; --navy:#0d2240; --blue:#1d6fe8; --blue-soft:#e8f0fd; --acc:#c8731e; --acc-soft:#fbead8;
+  --s1:#3b82f6; --s2:#f59e0b; --s3:#22c55e; --s4:#a855f7; --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --acc:#e8944a; --acc-soft:#3a2a1a; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --acc:#e8944a; --acc-soft:#3a2a1a; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.6;padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1060px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 18px;max-width:70ch}
+h2{font-size:16px;font-weight:900;color:var(--navy);margin:28px 0 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+h2 .tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--blue-soft);color:var(--blue)}
+.phones{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.phones{grid-template-columns:1fr}}
+.ph{min-width:0}.ph .cap{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:6px}.ph .cap small{color:var(--mute);font-weight:600}
+.scr{background:#0f172a;color:#e2e8f0;border:8px solid #1f2937;border-radius:28px;padding:10px 0 14px;font-size:12px;line-height:1.5;min-height:560px}
+.top{display:flex;align-items:center;gap:8px;padding:6px 14px 10px}
+.top .logo{width:28px;height:28px;border-radius:50%;background:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff}
+.top b{font-size:14px;color:#fff}.top .me{margin-left:auto;font-size:10px;background:#1e293b;border-radius:20px;padding:2px 8px;color:#cbd5e1}
+.hw{margin:0 10px;background:#fff;color:#0f172a;border-radius:18px;padding:12px 13px 11px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.hw .hd{display:flex;align-items:center;gap:6px}
+.hw .hd .t{font-size:13.5px;font-weight:900;color:#0d2240}
+.hw .hd .pct{margin-left:auto;font-size:22px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.hw .hd .pct small{font-size:10px;font-weight:800;color:#64748b;margin-left:2px}
+.hw .dt{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:#475569;font-weight:800}
+.hw .dt .nav{width:22px;height:22px;border-radius:7px;background:#f1f5f9;display:inline-flex;align-items:center;justify-content:center;color:#64748b;font-weight:900}
+.hw .dt .d{flex:1;text-align:center}
+.hw .dt .d small{display:block;font-size:9.5px;color:#94a3b8;font-weight:700}
+.bar{height:8px;border-radius:4px;background:#e2e8f0;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e)}
+.st{margin-top:9px}
+.st .r{padding:7px 0;border-top:1px dashed #e2e8f0}
+.st .r:first-child{border-top:0}
+.st .l{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:900;color:#0d2240}
+.st .l small{font-size:10px;color:#64748b;font-weight:700}
+.st .l .v{margin-left:auto;font-size:12px;font-weight:900;font-variant-numeric:tabular-nums}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:5px}
+.seg span{border-radius:8px;padding:5px 0;text-align:center;font-size:10.5px;font-weight:900;background:#f1f5f9;color:#94a3b8;border:1.5px solid transparent}
+.seg span small{display:block;font-size:8.5px;font-weight:800;color:#94a3b8}
+.seg span.on{color:#fff}
+.seg span.on small{color:rgba(255,255,255,.8)}
+.s1 .seg span.on{background:var(--s1)}.s2 .seg span.on{background:var(--s2)}.s3 .seg span.on{background:var(--s3)}.s4 .seg span.on{background:var(--s4)}
+.s1 .v{color:var(--s1)}.s2 .v{color:var(--s2)}.s3 .v{color:var(--s3)}.s4 .v{color:var(--s4)}
+.xp{margin-top:9px;border-radius:9px;padding:6px 9px;font-size:10.5px;font-weight:800;background:#f0fdf4;color:#15803d;display:flex;gap:6px;align-items:center}
+.xp.wait{background:#f8fafc;color:#64748b}
+.tip{font-size:9.5px;color:#94a3b8;font-weight:700;margin-top:6px;line-height:1.5}
+.sec{margin:10px 10px 0;background:#1e293b;border-radius:16px;padding:11px 12px}
+.sec .t{font-size:12px;font-weight:900;color:#fff}.sec .s{font-size:10.5px;color:#94a3b8;margin-top:3px}
+.hist{display:flex;gap:4px;margin-top:8px}
+.hist div{flex:1;border-radius:7px;background:#f1f5f9;padding:4px 0;text-align:center}
+.hist .d{font-size:8.5px;font-weight:800;color:#94a3b8}
+.hist .p{font-size:11px;font-weight:900;color:#0d2240;font-variant-numeric:tabular-nums}
+.hist .p.t{color:#1d6fe8}
+.tabs{display:flex;justify-content:space-around;margin:14px 10px 0;padding-top:8px;border-top:1px solid #1e293b;font-size:9.5px;font-weight:800;color:#64748b}.tabs span.on{color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kv{font-size:13px;line-height:1.7}.kv b{color:var(--navy)}
+table.sc{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;margin-top:8px}
+table.sc th{text-align:left;font-size:11px;color:var(--mute);padding:4px 8px;border-bottom:1px solid var(--line)}
+table.sc td{padding:6px 8px;border-bottom:1px dashed var(--line)}
+.ask .q{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.ask .q:first-child{border-top:0}
+.ask .k{font-size:13px;color:var(--acc);font-weight:900;padding-top:2px}
+.ask b{color:var(--navy);display:block;margin-bottom:3px}
+.opt{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.opt span{font-size:12px;border:1.5px solid var(--line);border-radius:20px;padding:2px 10px;background:var(--bg)}
+.opt span.rec{border-color:var(--acc);background:var(--acc-soft);color:var(--acc);font-weight:800}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>학생앱 숙제 체크 카드 — 체크만, 퍼센트로</h1>
+<p class="lead">원장님 지시(11/5): 「홈 화면에서 잘 보이게 카드 형태로 · 아직은 숙제를 보여 주는 것 말고 체크만 · 풀이·채점·오답 등을 학생이 퍼센트로」. v2-155 의 ✓/대기 네 칸과 「이번 숙제」 목록을 빼고, <b>단계마다 0 · 30 · 60 · 100 % 네 눈금</b>으로 바꿨습니다. 학원앱 숙제체크와 같은 눈금이라 선생님 확인과 바로 비교됩니다.</p>
+
+<h2>폰 화면 <span class="tag">홈 맨 위 카드</span></h2>
+<div class="phones">
+  <div class="ph"><div class="cap">① 처음 <small>— 아직 안 누름 · 0%</small></div>
+    <div class="scr">
+      <div class="top"><span class="logo">루</span><b>루멘수학</b><span class="me">학생 ○○○</span></div>
+      <div class="hw">
+        <div class="hd"><span>📚</span><span class="t">숙제 체크</span><span class="pct" style="color:#94a3b8">0<small>%</small></span></div>
+        <div class="dt"><span class="nav">◀</span><span class="d">수 11/5 수업<small>수업 전에 눌러 두세요</small></span><span class="nav" style="opacity:.3">▶</span></div>
+        <div class="bar"><i style="width:0%"></i></div>
+        <div class="st">
+          <div class="r s1"><div class="l">1 풀이 <small>문제 풀기</small><span class="v" style="color:#94a3b8">—</span></div><div class="seg"><span>0<small>안 함</small></span><span>30<small>조금</small></span><span>60<small>절반</small></span><span>100<small>다 함</small></span></div></div>
+          <div class="r s2"><div class="l">2 채점 <small>답 맞춰 보기</small><span class="v" style="color:#94a3b8">—</span></div><div class="seg"><span>0<small>안 함</small></span><span>30<small>조금</small></span><span>60<small>절반</small></span><span>100<small>다 함</small></span></div></div>
+          <div class="r s3"><div class="l">3 오답 <small>틀린 문제 다시</small><span class="v" style="color:#94a3b8">—</span></div><div class="seg"><span>0<small>안 함</small></span><span>30<small>조금</small></span><span>60<small>절반</small></span><span>100<small>다 함</small></span></div></div>
+          <div class="r s4"><div class="l">4 아하노트 <small>왜 틀렸는지</small><span class="v" style="color:#94a3b8">—</span></div><div class="seg"><span>0<small>안 함</small></span><span>30<small>조금</small></span><span>60<small>절반</small></span><span>100<small>다 함</small></span></div></div>
+        </div>
+        <div class="xp wait">⭐ 눈금을 누르면 바로 저장돼요 · 다 하면 +20 XP</div>
+      </div>
+      <div class="sec"><div class="t">📌 오늘 할 일</div><div class="s">🎙 하브루타 녹음 · 📓 플래너 사진</div></div>
+      <div class="tabs"><span class="on">🏠 홈</span><span>📚 공부</span><span>📅 계획</span><span>🧍 나</span></div>
+    </div>
+  </div>
+  <div class="ph"><div class="cap">② 체크 중 <small>— 풀이 100 · 채점 60 · 오답 30 · 아하 0</small></div>
+    <div class="scr">
+      <div class="top"><span class="logo">루</span><b>루멘수학</b><span class="me">학생 ○○○</span></div>
+      <div class="hw">
+        <div class="hd"><span>📚</span><span class="t">숙제 체크</span><span class="pct" style="color:#f59e0b">48<small>%</small></span></div>
+        <div class="dt"><span class="nav">◀</span><span class="d">수 11/5 수업<small>저장됨 · 18:40</small></span><span class="nav" style="opacity:.3">▶</span></div>
+        <div class="bar"><i style="width:48%"></i></div>
+        <div class="st">
+          <div class="r s1"><div class="l">1 풀이 <small>문제 풀기</small><span class="v">100%</span></div><div class="seg"><span>0<small>안 함</small></span><span>30<small>조금</small></span><span>60<small>절반</small></span><span class="on">100<small>다 함</small></span></div></div>
+          <div class="r s2"><div class="l">2 채점 <small>답 맞춰 보기</small><span class="v">60%</span></div><div class="seg"><span>0<small>안 함</small></span><span>30<small>조금</small></span><span class="on">60<small>절반</small></span><span>100<small>다 함</small></span></div></div>
+          <div class="r s3"><div class="l">3 오답 <small>틀린 문제 다시</small><span class="v">30%</span></div><div class="seg"><span>0<small>안 함</small></span><span class="on">30<small>조금</small></span><span>60<small>절반</small></span><span>100<small>다 함</small></span></div></div>
+          <div class="r s4"><div class="l">4 아하노트 <small>왜 틀렸는지</small><span class="v">0%</span></div><div class="seg"><span class="on" style="background:#94a3b8">0<small>안 함</small></span><span>30<small>조금</small></span><span>60<small>절반</small></span><span>100<small>다 함</small></span></div></div>
+        </div>
+        <div class="xp">⭐ +5 XP (풀이 다 함) · 채점·오답까지 다 하면 +10 더</div>
+        <div class="tip">선생님이 수업 때 확인한 값이 최종이에요. 솔직하게 누를수록 피드백이 정확해져요.</div>
+      </div>
+      <div class="sec"><div class="t">📌 오늘 할 일</div><div class="s">🎙 하브루타 녹음 · 📓 플래너 사진 ✓</div></div>
+      <div class="tabs"><span class="on">🏠 홈</span><span>📚 공부</span><span>📅 계획</span><span>🧍 나</span></div>
+    </div>
+  </div>
+  <div class="ph"><div class="cap">③ 다 함 <small>— 100% · 지난 수업 기록</small></div>
+    <div class="scr">
+      <div class="top"><span class="logo">루</span><b>루멘수학</b><span class="me">학생 ○○○</span></div>
+      <div class="hw">
+        <div class="hd"><span>📚</span><span class="t">숙제 체크</span><span class="pct" style="color:#22c55e">100<small>%</small></span></div>
+        <div class="dt"><span class="nav">◀</span><span class="d">수 11/5 수업<small>다 했어요 🎉 · 19:05</small></span><span class="nav" style="opacity:.3">▶</span></div>
+        <div class="bar"><i style="width:100%"></i></div>
+        <div class="st">
+          <div class="r s1"><div class="l">1 풀이<span class="v">100%</span></div><div class="seg"><span>0</span><span>30</span><span>60</span><span class="on">100<small>다 함</small></span></div></div>
+          <div class="r s2"><div class="l">2 채점<span class="v">100%</span></div><div class="seg"><span>0</span><span>30</span><span>60</span><span class="on">100<small>다 함</small></span></div></div>
+          <div class="r s3"><div class="l">3 오답<span class="v">100%</span></div><div class="seg"><span>0</span><span>30</span><span>60</span><span class="on">100<small>다 함</small></span></div></div>
+          <div class="r s4"><div class="l">4 아하노트<span class="v">100%</span></div><div class="seg"><span>0</span><span>30</span><span>60</span><span class="on">100<small>다 함</small></span></div></div>
+        </div>
+        <div class="xp">⭐ +20 XP · 숙제 연속 🔥 4번째 수업</div>
+        <div class="hist"><div><div class="d">10/27</div><div class="p t">80</div></div><div><div class="d">10/29</div><div class="p t">100</div></div><div><div class="d">10/31</div><div class="p t">65</div></div><div><div class="d">11/3</div><div class="p t">100</div></div><div><div class="d">11/5</div><div class="p">100</div></div></div>
+        <div class="tip">파란 숫자 = 선생님이 확인한 값 · 검은 숫자 = 내가 누른 값(아직 확인 전)</div>
+      </div>
+      <div class="sec"><div class="t">📌 오늘 할 일</div><div class="s">🎙 하브루타 녹음 ✓ · 📓 플래너 사진 ✓</div></div>
+      <div class="tabs"><span class="on">🏠 홈</span><span>📚 공부</span><span>📅 계획</span><span>🧍 나</span></div>
+    </div>
+  </div>
+</div>
+
+<h2>눈금과 저장 <span class="tag">학원앱 숙제체크와 같은 눈금</span></h2>
+<div class="card">
+  <table class="sc">
+    <tr><th>눈금</th><th>학생이 보는 말</th><th>학원앱 숙제체크</th><th>XP</th></tr>
+    <tr><td><b>0</b></td><td>안 함</td><td>○ 0%</td><td>—</td></tr>
+    <tr><td><b>30</b></td><td>조금</td><td>◔ 30%</td><td>—</td></tr>
+    <tr><td><b>60</b></td><td>절반</td><td>◐ 60%</td><td>—</td></tr>
+    <tr><td><b>100</b></td><td>다 함</td><td>✓ 100%</td><td>단계마다 +5 (네 단계 = +20)</td></tr>
+  </table>
+  <p class="kv" style="margin-top:10px">종합 % = 네 단계 평균(아하노트는 학원앱처럼 막힌 문제가 없으면 「해당 없음」으로 빼고 셋만 평균). 저장은 v2-155 와 같은 학생 전용 칸(날짜 = 확인받는 수업일)에 0·30·60·100 값으로 들어가므로 <b>학원앱 v19-173 의 초록 점·「학생 체크 그대로 ✓」가 그대로 동작</b>합니다(점은 값 크기대로 4단계 진하기). 숙제 목록(카드·학습지)은 이 판에서 홈에 보이지 않고, 📅 계획 탭의 🔒 선생님 줄만 남깁니다.</p>
+</div>
+
+<h2>상의할 것 · 3가지</h2>
+<div class="card ask">
+  <div class="q"><div class="k">1</div><div><b>눈금</b><div class="opt"><span class="rec">0 · 30 · 60 · 100 네 칸(학원앱과 같음)</span><span>0 · 25 · 50 · 75 · 100 다섯 칸</span><span>슬라이더 10% 단위</span></div>네 칸이 학원앱 체크와 1:1 이라 선생님 확인과 비교가 쉽습니다. 슬라이더는 고르기 번거롭고 비교가 흐려집니다.</div></div>
+  <div class="q"><div class="k">2</div><div><b>XP</b><div class="opt"><span class="rec">단계 100% 마다 +5(네 단계 +20), 60·30 은 XP 없음</span><span>퍼센트 비례(100=5 · 60=3 · 30=1)</span></div></div></div>
+  <div class="q"><div class="k">3</div><div><b>지난 수업 기록 줄(파란 숫자 = 선생님 확인)</b><div class="opt"><span class="rec">최근 5번 수업을 카드 아래 작은 줄로</span><span>안 보임(체크만)</span></div>선생님 확인값은 학생앱이 지금 읽지 않는 등록부에 있어, 보이려면 학원앱이 학생별 작은 값을 발행해야 합니다(새 키 하나).</div></div>
+</div>
+</div>
+</body>
+</html>

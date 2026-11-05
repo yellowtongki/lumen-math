@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>리커버리 보드 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 레이아웃: ① 무엇이 바뀌나 ② 화면 A(도구 접힘 · 명단 한눈에) ③ 화면 B(학생 하나 눌러 도구 서랍 열림) ④ 상의 */
+:root{
+  --bg:#f4f5f2; --fg:#1b2430; --mute:#6a7482; --line:#dde1dc; --card:#ffffff; --card2:#f8f9f6;
+  --ink:#153446; --acc:#c8731e; --acc-soft:#fbead8; --teach:#2b5f8a; --teach-soft:#e3eef8; --red:#b4433a; --red-soft:#fde3e1; --ok:#2f7d5b; --ok-soft:#e1f2ea; --warn:#b7791f; --warn-soft:#fdf3d7;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35; --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --red:#e58a82; --red-soft:#3a1f1d; --ok:#78c8a0; --ok-soft:#17322a; --warn:#e0b25a; --warn-soft:#3a3016; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35; --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --red:#e58a82; --red-soft:#3a1f1d; --ok:#78c8a0; --ok-soft:#17322a; --warn:#e0b25a; --warn-soft:#3a3016; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.65;padding-block:28px 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:24px;font-weight:900;color:var(--ink);margin:0 0 6px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 20px;max-width:72ch}
+h2{font-size:17px;font-weight:900;color:var(--ink);margin:34px 0 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h2 .no{font-family:var(--mono);font-size:12px;background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:6px}
+h2 small{font-size:12px;color:var(--mute);font-weight:600}
+h3{font-size:14px;font-weight:900;color:var(--ink);margin:16px 0 8px}
+p{margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kv{font-size:13px;line-height:1.7}.kv b{color:var(--ink)}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card2);min-width:0}
+.box b{display:block;color:var(--ink);margin-bottom:4px}.box p{font-size:12.5px;margin:0 0 4px}
+/* PC 틀 */
+.pc{background:#eef1ee;color:#182230;border:6px solid #2a3340;border-radius:12px;overflow:hidden;font-size:12px;line-height:1.5}
+.pc .bar{background:#2a3340;color:#cbd5e1;font-size:10px;padding:4px 10px;font-family:var(--mono)}
+.app{display:grid;grid-template-columns:200px minmax(0,1fr) 44px;min-height:560px}
+.app.open{grid-template-columns:200px minmax(0,1fr) 300px}
+@media(max-width:900px){.app,.app.open{grid-template-columns:1fr}.left,.rail,.drawer{display:none}}
+.left{background:#153446;color:#dbe7f0;padding:12px 10px;font-size:11px}
+.left .t{font-weight:900;font-size:12.5px;color:#fff;margin-bottom:6px}
+.left .k4{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px}
+.left .k4 div{background:rgba(255,255,255,.08);border-radius:8px;padding:6px 7px}
+.left .k4 b{display:block;font-size:16px;color:#fff;line-height:1.1}
+.left .k4 span{font-size:9.5px;color:#9fb3c8}
+.left .slot{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.left .slot span{background:rgba(255,255,255,.12);border-radius:20px;padding:1px 8px;font-weight:800;font-size:10px}
+.left .nm{padding:3px 0;border-top:1px dashed rgba(255,255,255,.12);display:flex;gap:6px;align-items:center}
+.left .nm i{font-style:normal;font-size:9.5px;color:#9fb3c8;margin-left:auto}
+.mid{padding:12px 14px;min-width:0}
+.hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.hd .ttl{font-size:16px;font-weight:900;color:#153446}
+.hd .sub{font-size:10.5px;color:#7b8694}
+.sum{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.sum span{background:#fff;border-radius:9px;padding:4px 10px;font-size:11px;font-weight:800;color:#5b6775;border-left:3px solid #cbd5e1}
+.sum span b{color:#153446;font-size:14px;margin-right:2px}
+.sum .r{border-color:#b4433a}.sum .y{border-color:#c8731e}.sum .g{border-color:#2f7d5b}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.chip{border:1.5px solid #c9d1cc;border-radius:20px;padding:1px 9px;font-weight:800;font-size:10.5px;background:#fff;color:#5b6775}
+.chip.on{background:#153446;color:#fff;border-color:#153446}
+.chips .sep{width:1px;height:14px;background:#c9d1cc;margin:0 3px}
+.chips .lb{font-size:10px;color:#8b95a3;font-weight:800}
+table.bd{border-collapse:separate;border-spacing:0;width:100%;font-size:11px;background:#fff;border-radius:10px;overflow:hidden}
+table.bd th{font-weight:800;color:#7b8694;font-size:10px;padding:5px 6px;text-align:left;border-bottom:1px solid #dde1dc;background:#fafbf9;white-space:nowrap}
+table.bd td{padding:5px 6px;border-bottom:1px dashed #e5e9e4;vertical-align:middle;white-space:nowrap}
+table.bd tr.g1 td{background:#153446;color:#fff;font-weight:900;font-size:11.5px;padding:5px 8px}
+table.bd tr.g1 td small{font-weight:700;color:#9fb3c8;margin-left:6px}
+table.bd tr.g2 td{background:#eef2f0;color:#153446;font-weight:900;font-size:10.5px;padding:3px 8px}
+table.bd tr.sel td{background:#fff7ee}
+table.bd tr.done td{color:#8b95a3}
+.nm2{font-weight:900;color:#182230;font-size:12px}
+.pill{font-size:9.5px;font-weight:900;padding:1px 6px;border-radius:10px;background:#eef1ee;color:#5b6775;white-space:nowrap;margin-right:2px}
+.pill.r{background:#fde3e1;color:#b4433a}.pill.y{background:#fdf3d7;color:#8a5a12}.pill.g{background:#e1f2ea;color:#2f7d5b}.pill.b{background:#e3eef8;color:#2b5f8a}.pill.p{background:#ede9fe;color:#5b21b6}.pill.o{background:#fbead8;color:#c8731e}.pill.fire{background:#7c2d12;color:#fff}
+.tg{display:inline-block;width:18px;height:18px;border-radius:5px;border:2px solid #c9d1cc;vertical-align:middle}
+.tg.on{background:#b4433a;border-color:#b4433a;color:#fff;font-size:11px;font-weight:900;text-align:center;line-height:14px}
+.tw{overflow-x:auto}
+.rail{background:#fff;border-left:1px solid #dde1dc;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0}
+.rail span{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;background:#f3f5f2;cursor:pointer}
+.rail span.on{background:#153446}
+.rail .lb{font-size:8px;color:#8b95a3;font-weight:800;writing-mode:vertical-rl;margin-top:4px}
+.drawer{background:#fff;border-left:1px solid #dde1dc;padding:10px 12px;font-size:11px;min-width:0}
+.drawer .t{font-size:12.5px;font-weight:900;color:#153446;display:flex;align-items:center;gap:6px}
+.drawer .t .x{margin-left:auto;font-size:10px;color:#8b95a3;font-weight:800}
+.drawer .sec{margin-top:10px;border-top:1px dashed #e5e9e4;padding-top:8px}
+.drawer .row{display:flex;gap:6px;align-items:center;padding:3px 0}
+.drawer .row b{font-size:11px;color:#182230}
+.btn{display:inline-block;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;background:#153446;color:#fff;text-align:center}
+.btn.ghost{background:#fff;color:#153446;border:1.5px solid #c9d1cc}.btn.acc{background:#c8731e}.btn.sm{padding:3px 8px;font-size:10px}
+.ask .q{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.ask .q:first-child{border-top:0}
+.ask .k{font-family:var(--mono);font-size:13px;color:var(--acc);padding-top:2px}
+.ask b{color:var(--ink);display:block;margin-bottom:3px}
+.opt{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.opt span{font-size:12px;border:1.5px solid var(--line);border-radius:20px;padding:2px 10px;background:var(--card2)}
+.opt span.rec{border-color:var(--acc);background:var(--acc-soft);color:var(--acc);font-weight:800}
+.note{font-size:11px;color:#7b8694;margin-top:8px;line-height:1.55}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>리커버리 보드 — 명단 한눈에 · 도구는 필요할 때만</h1>
+<p class="lead">원장님 지적 두 가지: 「학생 명단이 한 번에 안 보인다 · 월수금/화목토 반과 초중고 구분이 있으면 좋겠다」, 「오른쪽 도구 기둥은 필요할 때만 보이면 화면을 더 잘 쓸 수 있다」. 이름·숫자는 예시입니다.</p>
+
+<h2><span class="no">①</span> 무엇이 바뀌나</h2>
+<div class="three">
+  <div class="box"><b>학생 한 줄 = 한 줄</b><p>지금은 학생마다 큰 카드(이름·사유 칩·매칭 단원 목록)라 한 화면에 4~5명. 바꾸면 <b>한 줄에 한 명</b>, 사유는 칩으로 줄여 20명 넘게 한눈에. 매칭 단원 상세는 줄을 누르면 펼쳐지거나 오른쪽 서랍에.</p></div>
+  <div class="box"><b>반 요일 → 학년부 묶음</b><p>반 요일표(⚙️ 설정의 수업 요일)로 <b>월수금 반 / 화목토 반 / 그 밖</b>을 나누고, 그 안에서 <b>초등 · 중등 · 고등</b> 소제목. 머리마다 인원과 🔥 수. 완료·노쇼는 각 묶음 맨 아래 회색.</p></div>
+  <div class="box"><b>도구 기둥은 얇은 띠로</b><p>오른쪽 280px 기둥을 <b>44px 아이콘 띠</b>로 접어 둔다. 아이콘을 누르거나 학생 줄을 고르면 서랍이 열리고, 📌 핀으로 늘 펼쳐 둘 수도 있다. 리커버리뿐 아니라 3분할 화면 전부(적중 분석·백지테스트)에 같은 규칙.</p></div>
+</div>
+
+<h2><span class="no">②</span> 화면 A · 도구 접힘 · 명단 한눈에 <small>PC 1280px</small></h2>
+<div class="pc"><div class="bar">lumen_v1.html › 수업·출결 › 🚑 리커버리 · 이번 주 11/8(토)</div>
+<div class="app">
+  <div class="left">
+    <div class="t">🚑 이번 주 · 11/8 (토)</div>
+    <div class="k4"><div><b>9</b><span>확정</span></div><div><b>6</b><span>네이버 예약</span></div><div><b>3</b><span>예약 아직</span></div><div><b>7</b><span>학습지 만듦</span></div></div>
+    <div class="slot"><span>10:00 · 4</span><span>11:00 · 3</span><span>13:00 · 2</span></div>
+    <div class="t" style="font-size:11px">확정 9</div>
+    <div class="nm">김○○ <i>10:00</i></div><div class="nm">박○○ <i>10:00</i></div><div class="nm">이○○ <i>11:00 ✋</i></div><div class="nm">최○○ <i>예약 아직</i></div><div class="nm">정○○ <i>13:00</i></div><div class="nm" style="color:#9fb3c8">… 4명 더</div>
+    <div class="t" style="font-size:11px;margin-top:10px">미정 5</div>
+    <div class="nm">오○○</div><div class="nm">유○○</div><div class="nm" style="color:#9fb3c8">… 3명 더</div>
+    <div class="t" style="font-size:11px;margin-top:10px">📒 장부 · 📊 통계</div>
+  </div>
+  <div class="mid">
+    <div class="hd"><span class="ttl">🚑 리커버리</span><span class="sub">자동 선발 · 원장 호출 확정 · 완료까지</span><span style="margin-left:auto" class="chip">기준 ✎ 중·고 60 · 초6 70 · 단원 70%</span><span class="chip">🔄</span></div>
+    <div class="sum"><span class="r"><b>14</b>예상 · 🔥3</span><span class="y"><b>9</b>확정</span><span class="g"><b>7</b>학습지</span><span><b>11/8(토)</b>10·11·13시</span></div>
+    <div class="chips"><span class="lb">보기</span><span class="chip on">전체 14</span><span class="chip">🔥 1순위 3</span><span class="chip">확정 9</span><span class="chip">미정 5</span><span class="chip">예약 아직 3</span><span class="chip">완료 2</span><span class="sep"></span><span class="lb">묶음</span><span class="chip on">반 요일 › 학년부</span><span class="chip">학년부 › 반</span><span class="chip">없음</span></div>
+    <div class="tw">
+    <table class="bd">
+      <tr><th style="width:22px"></th><th>학생</th><th>학년 · 반</th><th>사유</th><th>호출</th><th>시간</th><th>학습지</th><th></th></tr>
+      <tr class="g1"><td colspan="8">월 · 수 · 금 반 <small>8명 · 🔥2 · 확정 5</small></td></tr>
+      <tr class="g2"><td colspan="8">중등 5</td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">김○○</td><td>중2 · M4</td><td><span class="pill fire">🔥</span><span class="pill r">주간 52점</span><span class="pill y">「일차함수」 61%</span></td><td><span class="pill r">호출</span></td><td><span class="pill b">10:00 네이버</span></td><td><span class="pill g">30문항 ✓</span></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">박○○</td><td>중2 · M4</td><td><span class="pill r">주간 48점</span></td><td><span class="pill r">호출</span></td><td><span class="pill b">10:00 네이버</span></td><td><span class="pill g">28문항 ✓</span></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">이○○</td><td>중1 · M7</td><td><span class="pill fire">🔥</span><span class="pill r">주간 55점</span><span class="pill y">「정수와 유리수」 58%</span><span class="pill p">🔁 이월</span></td><td><span class="pill r">호출</span></td><td><span class="pill o">11:00 ✋ 직접</span></td><td><span class="pill g">34문항 ✓</span></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr><td><span class="tg"></span></td><td class="nm2">오○○</td><td>중1 · M7</td><td><span class="pill y">「문자와 식」 66%</span></td><td><span class="pill">미정</span></td><td></td><td></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr><td><span class="tg"></span></td><td class="nm2">유○○</td><td>중3 · M530</td><td><span class="pill r">주간 57점</span></td><td><span class="pill">미정</span></td><td></td><td></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr class="g2"><td colspan="8">고등 2</td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">윤○○</td><td>고1 · 고등</td><td><span class="pill r">단원 TEST 54점</span></td><td><span class="pill r">호출</span></td><td><span class="pill y">예약 아직</span></td><td><span class="pill g">40문항 ✓</span></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">장○○</td><td>고2 · 고등</td><td><span class="pill r">내신대비 49점</span></td><td><span class="pill r">호출</span></td><td><span class="pill b">13:00 네이버</span></td><td><span class="pill">아직</span></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr class="g2"><td colspan="8">초등 1</td></tr>
+      <tr class="done"><td><span class="tg on" style="background:#2f7d5b;border-color:#2f7d5b">✓</span></td><td class="nm2">신○○</td><td>초6 · T5</td><td><span class="pill r">주간 64점</span></td><td><span class="pill g">✅ 11/1 완료</span></td><td>10:00</td><td><span class="pill g">27문항 ✓</span></td><td></td></tr>
+      <tr class="g1"><td colspan="8">화 · 목 · 토 반 <small>6명 · 🔥1 · 확정 4</small></td></tr>
+      <tr class="g2"><td colspan="8">초등 3</td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">최○○</td><td>초6 · T630</td><td><span class="pill fire">🔥</span><span class="pill r">주간 62점</span><span class="pill y">「분수의 나눗셈」 60%</span></td><td><span class="pill r">호출</span></td><td><span class="pill y">예약 아직</span></td><td><span class="pill g">30문항 ✓</span></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">정○○</td><td>초6 · T630</td><td><span class="pill y">「비와 비율」 64%</span></td><td><span class="pill r">호출</span></td><td><span class="pill b">13:00 네이버</span></td><td><span class="pill g">30문항 ✓</span></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr><td><span class="tg"></span></td><td class="nm2">한○○</td><td>초6 · T5</td><td><span class="pill r">주간 66점</span></td><td><span class="pill">미정</span></td><td></td><td></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr class="g2"><td colspan="8">중등 3</td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">서○○</td><td>중2 · T730</td><td><span class="pill r">주간 51점</span><span class="pill p">🔁 이월</span></td><td><span class="pill r">호출</span></td><td><span class="pill b">11:00 네이버</span></td><td><span class="pill g">34문항 ✓</span></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">곽○○</td><td>중3 · T630</td><td><span class="pill y">「이차함수」 62%</span></td><td><span class="pill r">호출</span></td><td><span class="pill y">예약 아직</span></td><td><span class="pill">아직</span></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+      <tr><td><span class="tg"></span></td><td class="nm2">조○○</td><td>중2 · T730</td><td><span class="pill r">주간 58점</span></td><td><span class="pill">미정</span></td><td></td><td></td><td><span class="btn ghost sm">상세 ›</span></td></tr>
+    </table>
+    </div>
+    <div class="note">줄을 누르면 오른쪽 서랍에 그 학생의 매칭 단원·시험지·학습지 규칙이 열립니다(화면 B). 호출 칸(✓)은 줄에서 바로 켜고 끕니다. 「상세 ›」 대신 줄 자체를 눌러도 됩니다.</div>
+  </div>
+  <div class="rail"><span title="학생 도구">👤</span><span title="학습지 규칙">📝</span><span title="학습지 만들기">🛠</span><span title="안내문">📨</span><span title="인쇄">🖨</span><span title="매쓰플랫 계정">🔐</span><span class="lb">도구</span><span style="margin-top:auto" title="늘 펼쳐 두기">📌</span></div>
+</div></div>
+
+<h2><span class="no">③</span> 화면 B · 학생 줄을 누르면 서랍이 열림 <small>같은 화면</small></h2>
+<div class="pc"><div class="bar">lumen_v1.html › 🚑 리커버리 · 이○○ 선택</div>
+<div class="app open">
+  <div class="left" style="opacity:.7"><div class="t">🚑 이번 주 · 11/8 (토)</div><div class="k4"><div><b>9</b><span>확정</span></div><div><b>6</b><span>네이버 예약</span></div><div><b>3</b><span>예약 아직</span></div><div><b>7</b><span>학습지 만듦</span></div></div><div class="t" style="font-size:11px">확정 9</div><div class="nm">김○○ <i>10:00</i></div><div class="nm">박○○ <i>10:00</i></div><div class="nm" style="background:rgba(255,255,255,.12);border-radius:6px;padding:3px 5px">이○○ <i>11:00 ✋</i></div><div class="nm" style="color:#9fb3c8">… 6명 더</div></div>
+  <div class="mid">
+    <div class="hd"><span class="ttl">🚑 리커버리</span><span style="margin-left:auto" class="chip">기준 ✎</span></div>
+    <div class="chips"><span class="chip on">전체 14</span><span class="chip">🔥 3</span><span class="chip">확정 9</span><span class="chip">미정 5</span><span class="sep"></span><span class="chip on">반 요일 › 학년부</span></div>
+    <div class="tw">
+    <table class="bd">
+      <tr><th style="width:22px"></th><th>학생</th><th>학년 · 반</th><th>사유</th><th>호출</th><th>시간</th><th>학습지</th></tr>
+      <tr class="g1"><td colspan="7">월 · 수 · 금 반 <small>8명</small></td></tr>
+      <tr class="g2"><td colspan="7">중등 5</td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">김○○</td><td>중2 · M4</td><td><span class="pill fire">🔥</span><span class="pill r">52점</span></td><td><span class="pill r">호출</span></td><td><span class="pill b">10:00</span></td><td><span class="pill g">30 ✓</span></td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">박○○</td><td>중2 · M4</td><td><span class="pill r">48점</span></td><td><span class="pill r">호출</span></td><td><span class="pill b">10:00</span></td><td><span class="pill g">28 ✓</span></td></tr>
+      <tr class="sel"><td><span class="tg on">✓</span></td><td class="nm2">이○○ ◀</td><td>중1 · M7</td><td><span class="pill fire">🔥</span><span class="pill r">55점</span><span class="pill p">🔁</span></td><td><span class="pill r">호출</span></td><td><span class="pill o">11:00 ✋</span></td><td><span class="pill g">34 ✓</span></td></tr>
+      <tr><td><span class="tg"></span></td><td class="nm2">오○○</td><td>중1 · M7</td><td><span class="pill y">66%</span></td><td><span class="pill">미정</span></td><td></td><td></td></tr>
+      <tr><td colspan="7" style="color:#8b95a3;text-align:center">… 서랍이 열리면 표는 칩을 줄여 좁게</td></tr>
+    </table>
+    </div>
+  </div>
+  <div class="drawer">
+    <div class="t">👤 이○○ · 중1 · M7 <span class="x">✕ 닫기 · 📌</span></div>
+    <div class="row"><span class="pill fire">🔥 두 기준 모두</span><span class="pill r">주간 55점 (11/1)</span><span class="btn ghost sm">시험지 보기</span></div>
+    <div class="sec"><div class="t" style="font-size:11.5px">🧩 매칭 단원</div>
+      <div class="row"><b>정수와 유리수</b><span class="pill y">58%</span><span class="pill">개념+유형 p.22~41</span></div>
+      <div class="row"><b>🔁 이월 · 문자의 사용</b><span class="pill p">62%</span><span class="pill">지난 보충 뒤에도 미만</span></div>
+      <div class="row"><b>주간테스트 오답 유형</b><span class="pill">4개</span></div>
+    </div>
+    <div class="sec"><div class="t" style="font-size:11.5px">🗓 시간</div>
+      <div class="row"><span class="chip">10:00 · 4</span><span class="chip on">11:00 ✋</span><span class="chip">13:00 · 2</span></div>
+      <div class="note" style="margin-top:4px">네이버 예약 없음 · 손으로 고른 시간(✋). 예약이 들어오면 ⚠로 알림.</div>
+    </div>
+    <div class="sec"><div class="t" style="font-size:11.5px">📄 학습지</div>
+      <div class="row"><b>34문항 만듦</b><span class="pill g">매쓰플랫 #8466…</span><span class="btn ghost sm">다시</span></div>
+      <div class="note" style="margin-top:4px">규칙: 테스트 오답 쌍둥이 1 + 최근 틀린 유형마다 1 · 최상 빼기 (학생별 ✎)</div>
+    </div>
+    <div class="sec" style="display:flex;gap:6px;flex-wrap:wrap"><span class="btn">📨 안내문 복사</span><span class="btn ghost">✅ 완료</span><span class="btn ghost">노쇼</span></div>
+    <div class="sec"><div class="t" style="font-size:11.5px">🛠 전체 도구</div><div class="row"><span class="btn ghost sm">학습지 규칙</span><span class="btn ghost sm">전원 만들기</span><span class="btn ghost sm">인쇄</span><span class="btn ghost sm">🔐 계정</span></div></div>
+  </div>
+</div></div>
+
+<h2><span class="no">④</span> 상의할 것 · 5가지</h2>
+<div class="card ask">
+  <div class="q"><div class="k">1</div><div><b>묶음 순서</b><div class="opt"><span class="rec">반 요일(월수금 / 화목토 / 그 밖) › 학년부(초·중·고)</span><span>학년부 › 반 요일</span><span>반 이름 그대로(M3·M4·T5…)</span></div>반 요일은 ⚙️ 설정의 수업 요일표로 자동. 요일이 안 적힌 반은 「그 밖」.</div></div>
+  <div class="q"><div class="k">2</div><div><b>학생 상세(매칭 단원·시험지)는 어디에</b><div class="opt"><span class="rec">오른쪽 서랍(줄을 누르면 열림)</span><span>줄 아래로 펼침(아코디언)</span><span>둘 다</span></div></div></div>
+  <div class="q"><div class="k">3</div><div><b>도구 띠 기본 상태</b><div class="opt"><span class="rec">접힘(44px 아이콘) · 📌 누르면 늘 펼침 · 기기마다 기억</span><span>지금처럼 펼침, 접기 단추만 추가</span></div>3분할 화면 전부(리커버리·적중 분석·백지테스트)에 같은 규칙으로 할지도 정해 주세요.</div></div>
+  <div class="q"><div class="k">4</div><div><b>한 줄에 넣을 칸</b><div class="opt"><span class="rec">사유 칩(🔥·점수·단원 1개·이월) · 호출 · 시간 · 학습지</span><span>사유 칩을 2개까지</span><span>점수만</span></div></div></div>
+  <div class="q"><div class="k">5</div><div><b>완료·노쇼 줄</b><div class="opt"><span class="rec">각 묶음 맨 아래 회색으로 남김</span><span>「완료」 보기로만 따로</span></div></div></div>
+</div>
+<div class="card" style="margin-top:14px">
+  <h3 style="margin-top:0">만드는 범위 (한 판)</h3>
+  <p class="kv">학원앱 v19-174 한 판: ① 보드 줄 표(묶음·보기 칩·줄 토글) ② 도구 띠 접기(`layout3` 공용 — 접힘/펼침/📌 기억은 기기 localStorage, 서버로 안 감) ③ 학생 서랍(지금 오른쪽 도구 내용 + 선택 학생 칸). 자료·저장은 그대로(rc_state·네이버 예약·학습지 규칙). 왼쪽 기둥·📒 장부·📊 통계는 안 바꿈.</p>
+</div>
+</div>
+</body>
+</html>
