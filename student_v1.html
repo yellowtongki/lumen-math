@@ -380,6 +380,12 @@ html, body { height: 100%; background: #f8fafc; font-family: 'Apple SD Gothic Ne
 .ps-tabs { display: flex; gap: 4px; background: #f1f5f9; border-radius: 12px; padding: 4px; margin-bottom: 14px; }
 .ps-tab { flex: 1; padding: 8px; border: none; background: transparent; border-radius: 9px; font-size: 14px; font-weight: 700; color: var(--sub); cursor: pointer; font-family: inherit; transition: all 0.15s; }
 .ps-tab.active { background: white; color: var(--navy); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+/* ★ v2-160: 「이번 달」 탭의 달 고르기 줄 ◀ 2026년 10월 ▶ */
+.ps-ym { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -4px 0 12px; padding: 4px 6px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 12px; }
+.ps-ym button { flex: none; width: 36px; height: 32px; border: none; border-radius: 9px; background: #f1f5f9; color: var(--navy); font-size: 14px; font-weight: 900; cursor: pointer; font-family: inherit; }
+.ps-ym button:disabled { color: #cbd5e1; background: #f8fafc; cursor: default; }
+.ps-ym .ps-ym-t { flex: 1; text-align: center; font-size: 15px; font-weight: 800; color: var(--navy); }
+.ps-ym .ps-ym-t small { display: block; font-size: 11px; font-weight: 700; color: #94a3b8; margin-top: 1px; }
 .ps-summary { background: linear-gradient(135deg, #1d6fe8, #0d2240); border-radius: 18px; padding: 18px 20px; color: white; margin-bottom: 13px; box-shadow: 0 4px 16px rgba(13,34,64,0.2); }
 .ps-summary-label { font-size: 12px; color: rgba(255,255,255,0.65); margin-bottom: 4px; font-weight: 700; letter-spacing: 0.3px; }
 .ps-summary-big { font-size: 36px; font-weight: 900; letter-spacing: -1.5px; line-height: 1; }
@@ -4704,6 +4710,12 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-160 (2026-11-05) 📊 「내 플래너 점수」에서 지난달 점수도 볼 수 있게 (원장 2026-11-05 「학생앱에서 지난달 플래너 점수 확인하는 기능을 추가하자」)
+ *   · 「이번 달」 탭 아래에 <b>◀ 2026년 10월 ▶</b> 줄이 생겼습니다. ◀ 로 지난달·그 전달… (정식 집계가 시작된 2026년 5월까지), ▶ 로 이번 달까지 돌아옵니다.
+ *   · 고른 달 기준으로 요약 점수(매일 + 주간) · 🏆 그 달 Top 5 · 내 순위 · 📅 그 달 주간 점수 · 점수 기록이 바뀝니다.
+ *   · 고른 달에 승인된 점수가 없으면 「10월엔 승인된 점수가 없어요」 라고만 보여요. 화면을 다시 열면 이번 달로 돌아옵니다.
+ *   · 「이번 주」「전체」 탭과 저장 자료는 그대로입니다.
+ *
  * v2-159 (2026-11-05) 📚 「숙제 체크」 카드를 접었다 펼치는 아코디언으로 (원장 2026-11-05 「아코디언으로 접은 상태가 보이고 누르면 펼쳐지게」 — 시안 docs/mockup_student_hwcheck_fold.html)
  *   · 홈에서는 기본으로 <b>접힌 두 줄</b>만 보입니다 — 「📚 숙제 체크 · 금 11/6 수업 · 종합 % · ▾」 + 풀이·채점·오답·아하 작은 칩 4개(숫자 · — · 없음).
  *   · 아직 아무것도 안 눌렀으면 주황 「✍ 수업 전에 눌러 주세요」, 체크 중이면 진행 막대, 선생님이 확인한 수업이면 파란 숫자와 「✓ 선생님이 확인했어요」.
@@ -5421,7 +5433,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-159';
+var STU_VER = 'v2-160';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -5597,6 +5609,7 @@ function go(id) {
     })();
   }
   if (id === 'screen-planner-score') {
+    PS_YM = null; window.PS_YM = null;   /* ★ v2-160: 화면을 다시 열면 이번 달로 */
     if (typeof renderPlannerScoreScreen === 'function') renderPlannerScoreScreen();
   }
   if (id === 'screen-aha') {
@@ -6895,14 +6908,44 @@ function getPlannerScoreDateRange(range) {
     };
   }
   if (range === 'month') {
-    var ym = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0');
-    return { start: ym + '.01', end: ym + '.31', label: '이번 달', ym: getCurrentYMKey() };
+    /* ★ v2-160: 고른 달(PS_YM) 기준 — 없으면 이번 달 */
+    var ymk = psYM();
+    var ym = ymk.replace('-', '.');
+    return { start: ym + '.01', end: ym + '.31', label: psYmLabel(ymk), ym: ymk };
   }
   return { start: '0000.00.00', end: '9999.99.99', label: '전체' };
 }
 
 function fmtYMD(d) {
   return d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+}
+/* ★ v2-160: 「이번 달」 탭의 달 고르기 — PS_YM = 고른 달 'YYYY-MM' (null = 이번 달). 화면을 다시 열면(go) 이번 달로 돌아온다 */
+var PS_YM = null;
+window.PS_YM = PS_YM;
+function psYM(){ return (PS_YM && /^\d{4}-\d{2}$/.test(PS_YM)) ? PS_YM : getCurrentYMKey(); }
+/* 집계 시작 달 'YYYY-MM' — PLANNER_SCORE_START_DATE('2026.05.01') 에서 */
+function psStartYM(){ var p = String(PLANNER_SCORE_START_DATE || '').split('.'); return p.length >= 2 ? (p[0] + '-' + p[1]) : '2026-05'; }
+/* 달 더하기 — 'YYYY-MM' + n 달 */
+function psAddYM(ym, n){ var p = ym.split('-'); var y = +p[0], m = +p[1] - 1 + n; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y + '-' + String(m + 1).padStart(2, '0'); }
+/* 짧은 달 이름 — 이번 달 「이번 달」 · 같은 해 「10월」 · 다른 해 「2025년 12월」 */
+function psYmShort(ym){ var cur = getCurrentYMKey(); if (ym === cur) return '이번 달'; var p = ym.split('-'); return (p[0] === cur.slice(0, 4) ? '' : (p[0] + '년 ')) + (+p[1]) + '월'; }
+/* 요약 카드 label — 이번 달 「이번 달」 · 지난달 「지난달 · 10월」 · 그 전 「9월」 */
+function psYmLabel(ym){ var cur = getCurrentYMKey(); if (ym === cur) return '이번 달'; var sh = psYmShort(ym); return ym === psAddYM(cur, -1) ? ('지난달 · ' + sh) : sh; }
+/* ◀ ▶ — 집계 시작 달 ~ 이번 달 사이에서만 움직인다 */
+window.psMonthMove = function(n){
+  var cur = getCurrentYMKey(), st = psStartYM(); var ym = psAddYM(psYM(), n);
+  if (ym > cur) ym = cur; if (ym < st) ym = st;
+  PS_YM = (ym === cur) ? null : ym; window.PS_YM = PS_YM;
+  renderPlannerScoreScreen();
+};
+/* 달 고르기 줄 HTML */
+function psYmBarHtml(ym){
+  var cur = getCurrentYMKey(), st = psStartYM(); var p = ym.split('-');
+  var sub = ym === cur ? '이번 달' : (ym === psAddYM(cur, -1) ? '지난달' : '');
+  return '<div class="ps-ym" id="ps-ym-bar">'
+    + '<button type="button" onclick="psMonthMove(-1)" ' + (ym <= st ? 'disabled' : '') + ' aria-label="지난달">◀</button>'
+    + '<div class="ps-ym-t" id="ps-ym-t">' + p[0] + '년 ' + (+p[1]) + '월' + (sub ? '<small>' + sub + '</small>' : '') + '</div>'
+    + '<button type="button" onclick="psMonthMove(1)" ' + (ym >= cur ? 'disabled' : '') + ' aria-label="다음 달">▶</button></div>';
 }
 function getCurrentYMKey() {
   var now = new Date();
@@ -6956,6 +6999,16 @@ async function renderPlannerScoreScreen() {
   }
 
   var html = '';
+  /* ★ v2-160: 「이번 달」 탭 — 달 고르기 줄을 맨 위에 · 고른 달에 기록(매일·주간)이 없으면 달 안내만 */
+  var psMon = (range === 'month' && rg.ym) ? psYmShort(rg.ym) : '';   /* 「이번 달」 · 「10월」 */
+  if (range === 'month' && rg.ym) {
+    html += psYmBarHtml(rg.ym);
+    if (my.days === 0 && !my.weeks.length) {
+      html += '<div class="ps-empty" id="ps-month-empty"><div class="ps-empty-icon">📋</div>' + (rg.ym === getCurrentYMKey() ? '이번 달엔' : psMon + '엔') + ' 승인된 점수가 없어요<br><br><span style="font-size:13px;color:#94a3b8">◀ ▶ 로 다른 달을 볼 수 있어요</span></div>';
+      body.innerHTML = html;
+      return;
+    }
+  }
 
   // v1-18: 5월 한 달간 시작 안내 배너 표시
   var nowYM = getCurrentYMKey(); // "2026-05"
@@ -6994,7 +7047,7 @@ async function renderPlannerScoreScreen() {
   // ── 월간이면 Top 5 랭킹 ──
   if (range === 'month' && rg.ym) {
     html += '<div class="ps-rank-card" id="ps-rank-container">';
-    html += '<div class="ps-rank-title">🏆 이번 달 Top 5' + (rg.ym >= '2026-10' ? ' <span style="font-size:11px;color:#94a3b8;font-weight:700">매일 + 주간 점수</span>' : '') + '</div>';
+    html += '<div class="ps-rank-title">🏆 ' + psMon + ' Top 5' + (rg.ym >= '2026-10' ? ' <span style="font-size:11px;color:#94a3b8;font-weight:700">매일 + 주간 점수</span>' : '') + '</div>';
     html += '<div id="ps-rank-list"><div class="ps-empty" style="padding:20px">⏳ 불러오는 중...</div></div>';
     html += '<div style="margin-top:10px;font-size:12px;color:#94a3b8;text-align:center;line-height:1.6">💪 원장님이 승인할 때마다 업데이트돼요</div>';
     html += '</div>';
@@ -7002,7 +7055,7 @@ async function renderPlannerScoreScreen() {
 
   /* v2-115: 이번 달 주간 점수 */
   if (range === 'month' && my.weeks.length){
-    html += '<div class="ps-rank-card"><div class="ps-rank-title">📅 이번 달 주간 점수</div><div style="display:flex;flex-direction:column;gap:6px">';
+    html += '<div class="ps-rank-card"><div class="ps-rank-title">📅 ' + psMon + ' 주간 점수</div><div style="display:flex;flex-direction:column;gap:6px">';
     my.weeks.forEach(function(x){ var w = x.w || {};
       html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff7ed;border-radius:8px"><div style="font-size:13.5px;color:#9a3412;font-weight:800">' + PW.md(x.W) + ' ~ ' + PW.md(x.sun) + ' <span style="font-size:11px;color:#b45309;font-weight:700">계획 ' + (w.plan || 0) + ' · 실천 ' + (w.prac || 0) + ' · 순공 사진 ' + (w.photo || 0) + ' · 종이 ' + (w.paper || 0) + '</span></div><div style="font-size:15px;font-weight:900;color:#9a3412">' + x.t + '점</div></div>'; });
     html += '</div></div>';
@@ -7010,7 +7063,7 @@ async function renderPlannerScoreScreen() {
   // ── 최근 점수 기록 ──
   if (my.details.length > 0) {
     html += '<div class="ps-rank-card">';
-    html += '<div class="ps-rank-title">📅 최근 점수 기록</div>';
+    html += '<div class="ps-rank-title">📅 ' + (psMon && psMon !== '이번 달' ? psMon + ' 점수 기록' : '최근 점수 기록') + '</div>';   /* ★ v2-160: 고른 달이면 「10월 점수 기록」 */
     html += '<div style="display:flex;flex-direction:column;gap:6px">';
     my.details.slice(0, 10).forEach(function(d) {
       var color = d.score >= 9 ? '#059669' : d.score >= 6 ? '#1d6fe8' : d.score >= 3 ? '#f59e0b' : '#94a3b8';
