@@ -118,13 +118,15 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
     /* 예전에 저장된 규칙(v155 표시 없음) — 새 기본 구성으로 한 번 바꿔 읽혀야 한다 */
     RCWS.made = {}; RCWS.rule = { twinPer: 2, tbPer: 1, bookTwin: 1, boost: true, theory: false, days: 28, auto: true, twoTestGrades: ['중학교 3학년'], unitDays: 28, per: {} }; RCWS.loaded = true; RCWS.cache = {};
     window.__W.length = 0;
+    /* v19-174 부터 보드가 줄 표 — 이 검사는 옛 카드 보드(「카드 보기」)를 본다 (되돌림이 그대로인지도 함께 확인) */
+    try { if (typeof rb174Set === 'function'){ (typeof _origSetItem === 'function' ? _origSetItem : localStorage.setItem.bind(localStorage))('rc_board_view', JSON.stringify({ group: 'daygrade', filter: 'all', mode: 'cards' })); RB174.view = null; } } catch (e) {}
     VIEW = 'recovery'; render();
     return { wk };
   });
   await pg.waitForTimeout(1800);
   await pg.evaluate(() => render()); await pg.waitForTimeout(800);
   await pg.evaluate(() => render()); await pg.waitForTimeout(300);
-  t('버전', (await pg.evaluate(() => APP_VER)) === 'v19-155');
+  t('버전', (await pg.evaluate(() => APP_VER)) === ((FILE.match(/v19-\d+/) || ['v19-155'])[0]));
 
   /* ── 규칙 기본값 (원장 10/23 밤 최종) ── */
   const RU = await pg.evaluate(() => rcwsRule());

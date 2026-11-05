@@ -83,13 +83,15 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
     NBK.loaded = false; NBK.at = 0; NBK.loading = false; NBK.data = null;
     RCWS.made = { S1: { wk, wsId: 5, n: 10, parts: {} } }; RCWS.loaded = true;
     window.__W.length = 0;
+    /* v19-174 부터 보드가 줄 표 — 이 검사는 옛 카드 보드(「카드 보기」)를 본다 (되돌림이 그대로인지도 함께 확인) */
+    try { if (typeof rb174Set === 'function'){ (typeof _origSetItem === 'function' ? _origSetItem : localStorage.setItem.bind(localStorage))('rc_board_view', JSON.stringify({ group: 'daygrade', filter: 'all', mode: 'cards' })); RB174.view = null; } } catch (e) {}
     VIEW = 'recovery'; render();
     return { today, wk, recDt, wkB, wkC };
   });
   await pg.waitForTimeout(1800);
   await pg.evaluate(() => render()); await pg.waitForTimeout(400);
 
-  t('버전', (await pg.evaluate(() => APP_VER)) === 'v19-153');
+  t('버전', (await pg.evaluate(() => APP_VER)) === ((FILE.match(/v19-\d+/) || ['v19-153'])[0]));
   const E = () => pg.evaluate((wk) => JSON.parse(JSON.stringify(RC.state.calls[wk])), FX.wk);
   const rcW = () => pg.evaluate(() => window.__W.filter((x) => x.key === 'rc_state'));
   let e = await E();
