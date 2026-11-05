@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>숙제 체크 접힌 카드</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap">
+<style>
+:root{ --bg:#f3f5f9; --fg:#17243a; --mute:#6b7890; --line:#dfe4ec; --card:#fff; --navy:#0d2240; --blue:#1d6fe8; --blue-soft:#e8f0fd; --acc:#c8731e; --acc-soft:#fbead8; --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif }
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --acc:#e8944a; --acc-soft:#3a2a1a; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --fg:#e8edf5; --mute:#9aa7bb; --line:#2a3648; --card:#182234; --navy:#dbe6ff; --blue:#6ea0ff; --blue-soft:#1d2d4a; --acc:#e8944a; --acc-soft:#3a2a1a; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.6;padding-block:24px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1060px;margin:0 auto}
+h1{font-size:22px;font-weight:900;color:var(--navy);margin:0 0 4px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 18px;max-width:70ch}
+h2{font-size:16px;font-weight:900;color:var(--navy);margin:28px 0 10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+h2 .tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--blue-soft);color:var(--blue)}
+.phones{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:980px){.phones{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.phones{grid-template-columns:1fr}}
+.ph{min-width:0}.ph .cap{font-size:12px;font-weight:800;color:var(--blue);margin-bottom:6px}.ph .cap small{color:var(--mute);font-weight:600;display:block}
+.scr{background:#0f172a;color:#e2e8f0;border:7px solid #1f2937;border-radius:26px;padding:8px 0 12px;font-size:12px;line-height:1.5;min-height:430px}
+.top{display:flex;align-items:center;gap:7px;padding:4px 12px 8px}
+.top .logo{width:24px;height:24px;border-radius:50%;background:#dc2626;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff}
+.top b{font-size:13px;color:#fff}.top .me{margin-left:auto;font-size:9.5px;background:#1e293b;border-radius:20px;padding:2px 7px;color:#cbd5e1}
+.notice{margin:0 9px 8px;background:#fff;color:#0f172a;border-radius:14px;padding:8px 11px;border-left:4px solid #dc2626;font-size:11px}
+.notice b{display:block;font-size:12px;color:#0d2240}.notice span{color:#94a3b8;font-size:9.5px}
+/* 접힌 숙제 카드 */
+.hw{margin:0 9px;background:#fff;color:#0f172a;border-radius:16px;padding:10px 12px;box-shadow:0 5px 16px rgba(0,0,0,.25)}
+.hw .row1{display:flex;align-items:center;gap:7px}
+.hw .row1 .t{font-size:13px;font-weight:900;color:#0d2240}
+.hw .row1 .d{font-size:10.5px;color:#64748b;font-weight:800}
+.hw .row1 .pct{margin-left:auto;font-size:19px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+.hw .row1 .pct small{font-size:9px;color:#64748b;font-weight:800;margin-left:1px}
+.hw .row1 .ar{width:20px;height:20px;border-radius:6px;background:#f1f5f9;color:#64748b;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+.hw .row2{display:flex;align-items:center;gap:5px;margin-top:7px}
+.hw .chip{flex:1;border-radius:8px;padding:4px 0;text-align:center;font-size:10px;font-weight:900;background:#f1f5f9;color:#94a3b8}
+.hw .chip small{display:block;font-size:8.5px;font-weight:800;color:#94a3b8}
+.hw .chip.s1{background:#dbeafe;color:#1d4ed8}.hw .chip.s2{background:#fef3c7;color:#b45309}.hw .chip.s3{background:#dcfce7;color:#15803d}.hw .chip.s4{background:#f3e8ff;color:#7e22ce}
+.hw .chip.s1 small,.hw .chip.s2 small,.hw .chip.s3 small,.hw .chip.s4 small{color:inherit;opacity:.8}
+.hw .chip.na{background:#f8fafc;color:#cbd5e1}
+.hw .bar{height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden;margin-top:7px}.hw .bar i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e)}
+.hw .nudge{margin-top:7px;border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:800;background:#fff7ed;color:#9a3412}
+.hw .ok{margin-top:7px;border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:800;background:#eff6ff;color:#1e40af}
+.hw.t .row1 .pct{color:#1d6fe8}
+.sec{margin:8px 9px 0;background:#0d2240;border-radius:14px;padding:10px 11px}
+.sec .t{font-size:11.5px;font-weight:900;color:#fff}
+.sec .two{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.sec .two div{border-radius:11px;padding:10px 9px;font-size:11px;font-weight:900;color:#fff}
+.sec .two .r{background:#dc2626}.sec .two .b{background:#2563eb}
+.sec .two small{display:block;font-size:9px;font-weight:700;opacity:.85;margin-top:2px}
+.lg{margin:8px 9px 0;background:linear-gradient(135deg,#f59e0b,#ea580c);border-radius:14px;padding:9px 11px;font-size:11px;font-weight:900;color:#fff}
+.tabs{display:flex;justify-content:space-around;margin:12px 9px 0;padding-top:7px;border-top:1px solid #1e293b;font-size:9.5px;font-weight:800;color:#64748b}.tabs span.on{color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kv{font-size:13px;line-height:1.7}.kv b{color:var(--navy)}
+.ask .q{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.ask .q:first-child{border-top:0}.ask .k{font-size:13px;color:var(--acc);font-weight:900;padding-top:2px}.ask b{color:var(--navy);display:block;margin-bottom:3px}
+.opt{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.opt span{font-size:12px;border:1.5px solid var(--line);border-radius:20px;padding:2px 10px;background:var(--bg)}.opt span.rec{border-color:var(--acc);background:var(--acc-soft);color:var(--acc);font-weight:800}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>숙제 체크 카드 — 접힌 모습</h1>
+<p class="lead">원장님 지시(11/5): 「아코디언으로 접은 상태가 보이고 누르면 펼쳐지게」. 홈에는 <b>두 줄짜리 접힌 카드</b>만 보이고, 카드를 누르면 지금 화면(네 줄 눈금)이 펼쳐집니다. 접힌 줄에서도 날짜·종합 %·네 단계 작은 칩이 보여 안 펼쳐도 상태를 알 수 있습니다.</p>
+<h2>홈 화면 · 접힌 카드 네 가지 상태 <span class="tag">높이 약 90px</span></h2>
+<div class="phones">
+  <div class="ph"><div class="cap">① 아직 안 누름<small>— 0% · 촉구 한 줄</small></div><div class="scr">
+      <div class="top"><span class="logo">루</span><b>루멘수학</b><span class="me">학생 ○○○ · Lv.24</span></div>
+      <div class="notice"><b>🏆 장학카드 안내</b><span>행사 · 10.17 · 읽음</span></div>
+      <div class="hw"><div class="row1"><span>📚</span><span class="t">숙제 체크</span><span class="d">금 11/6 수업</span><span class="pct" style="color:#94a3b8">0<small>%</small></span><span class="ar">▾</span></div>
+      <div class="row2"><span class="chip">풀이<small>—</small></span><span class="chip">채점<small>—</small></span><span class="chip">오답<small>—</small></span><span class="chip">아하<small>—</small></span></div>
+      <div class="nudge">✍ 수업 전에 눌러 주세요 · 누르면 펼쳐져요</div></div>
+      <div class="sec"><div class="t">📌 오늘 할 일 11/5 (목)</div><div class="two"><div class="r">🎙 하브루타<small>아직 안 함</small></div><div class="b">📓 플래너<small>아직 안 함</small></div></div></div>
+      <div class="lg">🏆 루멘 리그 · 종합 10위 · D-25</div>
+      <div class="tabs"><span class="on">🏠 홈</span><span>📚 공부</span><span>📅 계획</span><span>🧍 나</span></div>
+    </div></div>
+  <div class="ph"><div class="cap">② 체크 중<small>— 63% · 칩에 숫자</small></div><div class="scr">
+      <div class="top"><span class="logo">루</span><b>루멘수학</b><span class="me">학생 ○○○ · Lv.24</span></div>
+      <div class="notice"><b>🏆 장학카드 안내</b><span>행사 · 10.17 · 읽음</span></div>
+      <div class="hw"><div class="row1"><span>📚</span><span class="t">숙제 체크</span><span class="d">금 11/6 수업</span><span class="pct" style="color:#f59e0b">63<small>%</small></span><span class="ar">▾</span></div>
+      <div class="row2"><span class="chip s1">풀이<small>100</small></span><span class="chip s2">채점<small>60</small></span><span class="chip s3">오답<small>30</small></span><span class="chip na">아하<small>없음</small></span></div>
+      <div class="bar"><i style="width:63%"></i></div></div>
+      <div class="sec"><div class="t">📌 오늘 할 일 11/5 (목)</div><div class="two"><div class="r">🎙 하브루타<small>아직 안 함</small></div><div class="b">📓 플래너<small>아직 안 함</small></div></div></div>
+      <div class="lg">🏆 루멘 리그 · 종합 10위 · D-25</div>
+      <div class="tabs"><span class="on">🏠 홈</span><span>📚 공부</span><span>📅 계획</span><span>🧍 나</span></div>
+    </div></div>
+  <div class="ph"><div class="cap">③ 다 함<small>— 100%</small></div><div class="scr">
+      <div class="top"><span class="logo">루</span><b>루멘수학</b><span class="me">학생 ○○○ · Lv.24</span></div>
+      <div class="notice"><b>🏆 장학카드 안내</b><span>행사 · 10.17 · 읽음</span></div>
+      <div class="hw"><div class="row1"><span>📚</span><span class="t">숙제 체크</span><span class="d">금 11/6 수업</span><span class="pct" style="color:#22c55e">100<small>%</small></span><span class="ar">▾</span></div>
+      <div class="row2"><span class="chip s1">풀이<small>100</small></span><span class="chip s2">채점<small>100</small></span><span class="chip s3">오답<small>100</small></span><span class="chip s4">아하<small>100</small></span></div>
+      <div class="bar"><i style="width:100%"></i></div></div>
+      <div class="sec"><div class="t">📌 오늘 할 일 11/5 (목)</div><div class="two"><div class="r">🎙 하브루타<small>아직 안 함</small></div><div class="b">📓 플래너<small>아직 안 함</small></div></div></div>
+      <div class="lg">🏆 루멘 리그 · 종합 10위 · D-25</div>
+      <div class="tabs"><span class="on">🏠 홈</span><span>📚 공부</span><span>📅 계획</span><span>🧍 나</span></div>
+    </div></div>
+  <div class="ph"><div class="cap">④ 선생님 확인 끝<small>— 파란 숫자 · 지난 수업</small></div><div class="scr">
+      <div class="top"><span class="logo">루</span><b>루멘수학</b><span class="me">학생 ○○○ · Lv.24</span></div>
+      <div class="notice"><b>🏆 장학카드 안내</b><span>행사 · 10.17 · 읽음</span></div>
+      <div class="hw t"><div class="row1"><span>📚</span><span class="t">숙제 체크</span><span class="d">수 11/4 수업 · 선생님 확인</span><span class="pct">80<small>%</small></span><span class="ar">▾</span></div>
+      <div class="row2"><span class="chip s1">풀이<small>✓</small></span><span class="chip s2">채점<small>✓</small></span><span class="chip s3">오답<small>◐</small></span><span class="chip na">아하<small>—</small></span></div>
+      <div class="ok">✓ 선생님이 확인했어요 · 다음 수업 금 11/6 체크는 ▾ 눌러서</div></div>
+      <div class="sec"><div class="t">📌 오늘 할 일 11/5 (목)</div><div class="two"><div class="r">🎙 하브루타<small>아직 안 함</small></div><div class="b">📓 플래너<small>아직 안 함</small></div></div></div>
+      <div class="lg">🏆 루멘 리그 · 종합 10위 · D-25</div>
+      <div class="tabs"><span class="on">🏠 홈</span><span>📚 공부</span><span>📅 계획</span><span>🧍 나</span></div>
+    </div></div>
+</div>
+<h2>규칙</h2>
+<div class="card">
+  <p class="kv"><b>기본은 접힘.</b> 카드 어디를 눌러도 펼쳐지고(▾ → ▴), 다시 누르면 접힙니다. 펼친 상태는 그 학생 기기에 기억해 두되, <b>날짜가 바뀌면 다시 접힘</b>으로 돌아갑니다(홈이 늘 깔끔하게).</p>
+  <p class="kv"><b>접힌 줄에 보이는 것</b>: 「📚 숙제 체크 · 금 11/6 수업 · 종합 %」 + 네 단계 작은 칩(풀이·채점·오답·아하, 숫자 또는 —, 아하 「없음」). 0%면 촉구 한 줄 「수업 전에 눌러 주세요」, 체크 중·다 함이면 진행 막대, 선생님이 확인한 수업이면 파란 숫자와 「✓ 선생님이 확인했어요」.</p>
+  <p class="kv"><b>펼치면</b> 지금 v2-158 화면 그대로(날짜 ◀▶ · 네 줄 눈금 · 막힌 문제 없어요/있어요 · 최근 5번 기록 줄). 자료·저장은 바뀌지 않습니다.</p>
+</div>
+<h2>상의할 것 · 2가지</h2>
+<div class="card ask">
+  <div class="q"><div class="k">1</div><div><b>펼친 상태 기억</b><div class="opt"><span class="rec">그날만 기억, 날짜 바뀌면 접힘</span><span>늘 접힘(펼쳐도 다음에 열면 접힘)</span><span>마지막 상태 그대로</span></div></div></div>
+  <div class="q"><div class="k">2</div><div><b>접힌 줄에 칩 네 개</b><div class="opt"><span class="rec">네 단계 칩 + 종합 %</span><span>종합 % 와 막대만</span></div></div></div>
+</div>
+</div></body>
+</html>
