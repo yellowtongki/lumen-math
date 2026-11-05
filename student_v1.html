@@ -1878,6 +1878,20 @@ html[data-fz="x"] .h3-me{max-width:60%}
 .hwk-hist .p{font-size:12px;font-weight:900;color:#0d2240;font-variant-numeric:tabular-nums}
 .hwk-hist .p.t{color:#1d6fe8}.hwk-hist .p.e{color:#cbd5e1}
 .hwk-tip2{font-size:9.5px;color:#94a3b8;font-weight:700;margin-top:5px;line-height:1.5}
+/* ★ v2-159: 숙제 체크 카드 접힘/펼침 — 머리 줄(누르면 펼침) · 접힌 칩 4개 · 촉구/확인 줄 (시안 docs/mockup_student_hwcheck_fold.html) */
+.hwk-hd{cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.hwk-hd .d{font-size:11px;color:#64748b;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.hwk-hd .hwk-pct{font-size:20px}
+.hwk-ar{flex:none;width:22px;height:22px;border-radius:6px;background:#f1f5f9;color:#64748b;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;margin-left:2px}
+.hwk-chips{display:flex;gap:5px;margin-top:8px}
+.hwk-chip{flex:1;min-width:0;border-radius:8px;padding:4px 0;text-align:center;font-size:10.5px;font-weight:900;background:#f1f5f9;color:#94a3b8;line-height:1.3}
+.hwk-chip small{display:block;font-size:10px;font-weight:800;color:#94a3b8;font-variant-numeric:tabular-nums}
+.hwk-chip.s1{background:#dbeafe;color:#1d4ed8}.hwk-chip.s2{background:#fef3c7;color:#b45309}.hwk-chip.s3{background:#dcfce7;color:#15803d}.hwk-chip.s4{background:#f3e8ff;color:#7e22ce}
+.hwk-chip.s1 small,.hwk-chip.s2 small,.hwk-chip.s3 small,.hwk-chip.s4 small{color:inherit;opacity:.85}
+.hwk-chip.na{background:#f8fafc;color:#cbd5e1}.hwk-chip.na small{color:#cbd5e1}
+.hwk-nudge{margin-top:7px;border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:800;background:#fff7ed;color:#9a3412}
+.hwk-ok{margin-top:7px;border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:800;background:#eff6ff;color:#1e40af}
+.hwk-body{margin-top:2px}
 /* ★ v2-153: 📅 주간계획표 「🔒 선생님」 줄 (읽기만) */
 .wpc-hw{display:grid;grid-template-columns:24px repeat(7,minmax(0,1fr));background:#f1f5f9;border-bottom:1px solid #e3e8ef}
 .wpc-hw .l{font-size:9px;text-align:center;color:#94a3b8;padding-top:3px;font-weight:900}
@@ -4690,6 +4704,12 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-159 (2026-11-05) 📚 「숙제 체크」 카드를 접었다 펼치는 아코디언으로 (원장 2026-11-05 「아코디언으로 접은 상태가 보이고 누르면 펼쳐지게」 — 시안 docs/mockup_student_hwcheck_fold.html)
+ *   · 홈에서는 기본으로 <b>접힌 두 줄</b>만 보입니다 — 「📚 숙제 체크 · 금 11/6 수업 · 종합 % · ▾」 + 풀이·채점·오답·아하 작은 칩 4개(숫자 · — · 없음).
+ *   · 아직 아무것도 안 눌렀으면 주황 「✍ 수업 전에 눌러 주세요」, 체크 중이면 진행 막대, 선생님이 확인한 수업이면 파란 숫자와 「✓ 선생님이 확인했어요」.
+ *   · 첫 줄을 누르면 v2-158 화면(날짜 ◀▶ · 네 줄 눈금 · 없어요/있어요 · 기록 줄)이 아래로 펼쳐지고(▾ → ▴), 다시 누르면 접힙니다.
+ *   · 펼친 상태는 그날만 기억합니다(날짜가 바뀌면 다시 접힘). 저장 자료는 바뀌지 않습니다.
+ *
  * v2-158 (2026-11-05) 📚 「숙제 체크」 카드 2판 — 네 눈금 · 아하노트 「없어요」 · 기록 줄 (원장 2026-11-05 「추천대로 만들고 배포」 — docs/hw_dispatch_contract.md §10)
  *   · 홈 맨 위(「📌 오늘 할 일」 위) 흰 카드 <b>📚 숙제 체크 · 수 11/5 수업</b>. 오른쪽 위에 종합 %, 아래 진행 막대.
  *   · 풀이 · 채점 · 오답 · 아하노트 네 줄마다 <b>0 안 함 · 30 조금 · 60 절반 넘게 · 100 다 함</b> 네 눈금(학원앱 숙제체크와 같은 눈금). 누르면 바로 저장, 다시 누르면 바뀜.
@@ -5401,7 +5421,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-158';
+var STU_VER = 'v2-159';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -24298,7 +24318,7 @@ function hwCardHtml(it){
   return ht+'</div>';
 }
 function hwQ(s){ return "'"+String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;')+"'"; }
-/* ★ v2-158 hwself-begin */
+/* ★ v2-159 hwself-begin */
 /* ═══════════════ v2-158: 📚 숙제 체크 카드 2판 (docs/hw_dispatch_contract.md §10 · 시안 docs/mockup_student_hwcheck.html) ═══════════════
  * 저장 hw_self_<내 코드> = { byDate:{ 'YYYY-MM-DD':{ p,c,w, a?, aNone?, at } }, upd }  값 0/30/60/100 (v2-155 의 0/100 과 호환) ← 학생앱만 쓴다.
  *   아하노트 「막힌 문제가 없어요」 → aNone:true 로 적고 a 는 지운다 · 「있어요」 → aNone 지우고 a 눈금(처음 0) 저장.
@@ -24400,7 +24420,28 @@ function hwSegHtml(k, cur, chosen, dim, soft){
   });
   return h+'</div>';
 }
-/* 홈 「📚 숙제 체크」 — tdHomeUpdate 가 부른다 (할 일 보드 잠김과 상관없이 hw 스위치만 본다 · 숙제 카드가 없어도 보인다) */
+/* ★ v2-159: 접힘/펼침 — localStorage hw_fold_open = 펼친 날짜('YYYY-MM-DD'). 오늘과 같으면 펼침, 아니면 접힘(날짜가 바뀌면 다시 접힘). 읽기·쓰기 모두 try/catch */
+function hwFoldOpen(){ try{ return localStorage.getItem('hw_fold_open')===hwToday(); }catch(e){ return false; } }
+function hwFoldSet(open){ try{ if(open) localStorage.setItem('hw_fold_open', hwToday()); else localStorage.removeItem('hw_fold_open'); }catch(e){} }
+window.hwFoldOpen=hwFoldOpen;
+/* 카드 머리(첫 줄)를 누르면 펼침 ↔ 접힘 */
+window.hwFoldToggle=function(){ hwFoldSet(!hwFoldOpen()); hwHomeUpdate(); };
+/* 선생님 확인값 한 단계 → 칩 글자 (100 ✓ · 60 ◐ · 30 ◔ · 0 ○ · 없으면 —) */
+function hwTeachMark(v){ if(v==null || v==='' || isNaN(Number(v))) return '—'; v=hwVal(v); return v>=100?'✓':(v>=60?'◐':(v>=30?'◔':'○')); }
+/* 접힌 줄 칩 4개 — h4: 내가 누른 값 · tr: 선생님 확인 기록(있으면 선생님 값 ✓/◐/◔/○ 로) */
+function hwChipsHtml(h4, tr){
+  var names=['풀이','채점','오답','아하'], keys=['p','c','w','a'], h='<div class="hwk-chips">';
+  for(var i=0;i<4;i++){
+    var k=keys[i], txt, cls='';
+    if(tr){ txt=hwTeachMark(tr[k]); cls = txt==='—' ? (k==='a'?' na':'') : (' s'+(i+1)); }
+    else if(k==='a'){ if(h4.aNone){ txt='없음'; cls=' na'; } else if(h4.aSet){ txt=String(h4.a); cls=' s4'; } else txt='—'; }
+    else if(h4.set[k]){ txt=String(h4[k]); cls=' s'+(i+1); } else txt='—';
+    h+='<span class="hwk-chip'+cls+'">'+names[i]+'<small>'+txt+'</small></span>';
+  }
+  return h+'</div>';
+}
+/* 홈 「📚 숙제 체크」 — tdHomeUpdate 가 부른다 (할 일 보드 잠김과 상관없이 hw 스위치만 본다 · 숙제 카드가 없어도 보인다)
+ * v2-159: 기본 접힘(머리 줄 + 칩 4개 + 상태 한 줄) · 머리를 누르면 v2-158 화면(날짜 ◀▶ · 네 줄 눈금 · 기록 줄)이 펼쳐진다 */
 window.hwHomeUpdate=function(){
   var el=document.getElementById('hw-home'); if(!el) return;
   if(!hwOpen()){ el.style.display='none'; el.innerHTML=''; return; }
@@ -24412,7 +24453,20 @@ window.hwHomeUpdate=function(){
   var hint;
   if(h4.has && h4.at){ var hm=hwHM(h4.at); hint=(pct>=100?'다 했어요 🎉':'저장됨')+(hm?(' · '+hm):''); }
   else hint = sel===t ? '수업 전에 눌러 두세요' : (sel===d0 ? '수업 전까지 누르면 돼요' : '아직 안 눌렀어요');
-  var h='<div class="hwk-hd"><span class="ic">📚</span><span class="t">숙제 체크</span><span class="hwk-pct" style="color:'+hwPctColor(pct)+'">'+pct+'<small>%</small></span></div>';
+  /* ★ v2-159: 접힘/펼침 · 접힌 상태에서 선생님 확인값이 있으면 파란 숫자(그 값)로 */
+  var open=hwFoldOpen(); var tt=hwTeachOf(sel); var showT=(!open && tt!=null);
+  var tr=(HW.teach && HW.teach.byDate && HW.teach.byDate[sel] && typeof HW.teach.byDate[sel]==='object')?HW.teach.byDate[sel]:{};
+  var pressed = h4.set.p || h4.set.c || h4.set.w || h4.aSet || h4.aNone;
+  var h='<div class="hwk-hd" onclick="hwFoldToggle()" role="button" aria-expanded="'+(open?'true':'false')+'"><span class="ic">📚</span><span class="t">숙제 체크</span><span class="d">'+lab+'</span>'
+    +'<span class="hwk-pct" style="color:'+(showT?'#1d6fe8':hwPctColor(pct))+'">'+(showT?tt:pct)+'<small>%</small></span><span class="hwk-ar">'+(open?'▴':'▾')+'</span></div>';
+  if(!open){
+    h+=hwChipsHtml(h4, showT?tr:null);
+    if(showT) h+='<div class="hwk-ok">✓ 선생님이 확인했어요'+(sel!==d0?(' · 다음 수업 '+HW_DOW[hwDow(d0)]+' '+hwMD(d0)+' 체크는 ▾ 눌러서'):'')+'</div>';
+    else if(pct===0 && !pressed) h+='<div class="hwk-nudge">✍ 수업 전에 눌러 주세요 · 누르면 펼쳐져요</div>';
+    else h+='<div class="hwk-bar"><i style="width:'+pct+'%"></i></div>';
+    el.innerHTML=h; el.style.display='block'; return;
+  }
+  h+='<div class="hwk-body">';
   h+='<div class="hwk-dt">'
     +'<button type="button" onclick="hwNav(-1)" '+(prev?'':'disabled')+' aria-label="지난 수업일">◀</button>'
     +'<div class="d">'+lab+'<small>'+base+' · '+hint+'</small></div>'
@@ -24441,6 +24495,7 @@ window.hwHomeUpdate=function(){
   h+='<div class="hwk-tip'+(pct>=100?' done':'')+'">눈금을 누르면 바로 저장돼요 · 수업 때 선생님이 확인하면 파란색으로 바뀌어요</div>';
   h+=hwHistHtml(sel);
   h+='<div class="hwk-tip2">최근 5번 수업 · 파란 숫자 = 선생님이 확인한 값 · 검은 숫자 = 내가 누른 값(아직 확인 전)</div>';
+  h+='</div>';
   el.innerHTML=h; el.style.display='block';
 };
 /* 날짜 ◀▶ — 지난 수업일(오늘-7일 안) ↔ 다음 수업일 */
@@ -24500,7 +24555,7 @@ window.hwGoSw=async function(swId){
   BK.top='ws';
   await bkOpenWs(w.swId);
 };
-/* ★ v2-158 hwself-end */
+/* ★ v2-159 hwself-end */
 /* 4칸 누르기 — todo_st_<내 코드>[카드id].hw 에만 쓴다 (todo_<코드> 는 안 건드린다) */
 window.hwToggle=async function(id, k){
   if(!requireLogin(null,null,null)) return;
