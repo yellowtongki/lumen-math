@@ -1898,6 +1898,16 @@ html[data-fz="x"] .h3-me{max-width:60%}
 .hwk-nudge{margin-top:7px;border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:800;background:#fff7ed;color:#9a3412}
 .hwk-ok{margin-top:7px;border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:800;background:#eff6ff;color:#1e40af}
 .hwk-body{margin-top:2px}
+/* ★ v2-161: 📤 선생님께 제출 — 단추 · 위 초록 글 · 아래 회색 안내 · 접힌 줄(초록 제출함 / 주황 제출 전·다시 제출) */
+.hwk-sbw{margin-top:11px}
+.hwk-sbt{font-size:11px;font-weight:800;color:#15803d;text-align:center;margin-bottom:5px}
+.hwk-sb{display:block;width:100%;border:none;border-radius:12px;padding:13px 0;font-size:15px;font-weight:900;font-family:inherit;background:var(--navy,#0d2240);color:#fff;cursor:pointer;box-shadow:0 3px 10px rgba(13,34,64,.22);-webkit-tap-highlight-color:transparent}
+.hwk-sb:active{transform:translateY(1px)}
+.hwk-sb:disabled{background:#e2e8f0;color:#94a3b8;box-shadow:none;cursor:default;transform:none}
+.hwk-sb.done:disabled{background:#dcfce7;color:#15803d}
+.hwk-sbn{font-size:10.5px;color:#94a3b8;font-weight:700;text-align:center;margin-top:5px}
+.hwk-subok{margin-top:7px;border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:800;background:#f0fdf4;color:#15803d}
+.hwk-subno{margin-top:7px;border-radius:8px;padding:5px 9px;font-size:10.5px;font-weight:800;background:#fff7ed;color:#c2410c}
 /* ★ v2-153: 📅 주간계획표 「🔒 선생님」 줄 (읽기만) */
 .wpc-hw{display:grid;grid-template-columns:24px repeat(7,minmax(0,1fr));background:#f1f5f9;border-bottom:1px solid #e3e8ef}
 .wpc-hw .l{font-size:9px;text-align:center;color:#94a3b8;padding-top:3px;font-weight:900}
@@ -4710,6 +4720,13 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  * 예전에는 <title>에 버전을 손으로 적어 두어 v2-41에 멈춘 채 여러 버전을 지나쳤다
  * (학원앱에서도 같은 일이 있었다 — v18-90에서 같은 방식으로 고쳤다). */
 /* ═══════════════ 📒 학생앱 버전 로그 (원장님용) ═══════════════
+ * v2-161 (2026-11-05) 📤 「숙제 체크」에 <b>선생님께 제출</b> 단추 (원장 2026-11-05 「학생앱 숙제체크 후에 제출기능이 없다」 — docs/hw_dispatch_contract.md §11-1)
+ *   · 카드를 펼치면 네 줄 아래에 큰 단추 「📤 선생님께 제출」. 풀이·채점·오답을 모두 고르고 아하노트를 「없어요」 또는 눈금으로 골라야 눌립니다.
+ *   · 제출하면 카드가 접히고 초록 「✓ 제출함 · 16:28 · 수업 때 선생님이 확인해요」. 학원앱은 제출 시각(sub)을 보고 「🙋 제출」로 보여 줍니다.
+ *   · 제출 뒤 눈금을 고치면 제출이 풀리고 「📤 다시 제출」 · 접힌 줄 주황 「고친 내용은 다시 제출해 주세요」.
+ *   · 골랐지만 제출 전이면 접힌 줄 주황 「아직 제출 안 했어요 · ▾ 눌러 제출」. 선생님이 확인한 날은 파란 「✓ 선생님이 확인했어요」가 먼저.
+ *   · 눈금 하나만 눌러도 나머지 칸이 0 으로 저장되던 것을 고쳐, 고른 칸만 저장합니다.
+ *
  * v2-160 (2026-11-05) 📊 「내 플래너 점수」에서 지난달 점수도 볼 수 있게 (원장 2026-11-05 「학생앱에서 지난달 플래너 점수 확인하는 기능을 추가하자」)
  *   · 「이번 달」 탭 아래에 <b>◀ 2026년 10월 ▶</b> 줄이 생겼습니다. ◀ 로 지난달·그 전달… (정식 집계가 시작된 2026년 5월까지), ▶ 로 이번 달까지 돌아옵니다.
  *   · 고른 달 기준으로 요약 점수(매일 + 주간) · 🏆 그 달 Top 5 · 내 순위 · 📅 그 달 주간 점수 · 점수 기록이 바뀝니다.
@@ -5433,7 +5450,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-160';
+var STU_VER = 'v2-161';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -24371,7 +24388,7 @@ function hwCardHtml(it){
   return ht+'</div>';
 }
 function hwQ(s){ return "'"+String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;')+"'"; }
-/* ★ v2-159 hwself-begin */
+/* ★ v2-161 hwself-begin */
 /* ═══════════════ v2-158: 📚 숙제 체크 카드 2판 (docs/hw_dispatch_contract.md §10 · 시안 docs/mockup_student_hwcheck.html) ═══════════════
  * 저장 hw_self_<내 코드> = { byDate:{ 'YYYY-MM-DD':{ p,c,w, a?, aNone?, at } }, upd }  값 0/30/60/100 (v2-155 의 0/100 과 호환) ← 학생앱만 쓴다.
  *   아하노트 「막힌 문제가 없어요」 → aNone:true 로 적고 a 는 지운다 · 「있어요」 → aNone 지우고 a 눈금(처음 0) 저장.
@@ -24420,9 +24437,13 @@ function hwRawOf(date){ var m=(HW.self && HW.self.byDate)||{}; var h=m[date]; re
 function hwSelfOf(date){
   var h=hwRawOf(date)||{};
   return { p:hwVal(h.p), c:hwVal(h.c), w:hwVal(h.w), a:hwVal(h.a), aNone:h.aNone===true, aSet:(h.a!=null && h.aNone!==true), at:h.at||null, has:!!hwRawOf(date),
-    set:{ p:h.p!=null, c:h.c!=null, w:h.w!=null } };
+    set:{ p:h.p!=null, c:h.c!=null, w:h.w!=null },
+    sub:h.sub||null, subPrev:h.subPrev||null };   /* ★ v2-161: sub = 선생님께 제출한 시각 · subPrev = 제출 뒤 고쳐서 풀린 앞 제출 시각 */
 }
 window.hwSelfOf=hwSelfOf;
+/* ★ v2-161: 제출할 수 있나 — 풀이·채점·오답 값이 모두 있고(0 포함) 아하노트가 「없어요」이거나 눈금을 골랐을 때 */
+function hwReady(h4){ return !!(h4 && h4.set.p && h4.set.c && h4.set.w && (h4.aNone || h4.aSet)); }
+window.hwReady=hwReady;
 /* 종합 % — 네 눈금 평균 · 「없어요」면 풀이·채점·오답 셋 평균 */
 function hwPct(h){ if(!h) return 0; var ks=h.aNone?['p','c','w']:['p','c','w','a']; var sum=0; ks.forEach(function(k){ sum+=hwVal(h[k]); }); return Math.round(sum/ks.length); }
 window.hwPct=hwPct;
@@ -24516,7 +24537,11 @@ window.hwHomeUpdate=function(){
     h+=hwChipsHtml(h4, showT?tr:null);
     if(showT) h+='<div class="hwk-ok">✓ 선생님이 확인했어요'+(sel!==d0?(' · 다음 수업 '+HW_DOW[hwDow(d0)]+' '+hwMD(d0)+' 체크는 ▾ 눌러서'):'')+'</div>';
     else if(pct===0 && !pressed) h+='<div class="hwk-nudge">✍ 수업 전에 눌러 주세요 · 누르면 펼쳐져요</div>';
-    else h+='<div class="hwk-bar"><i style="width:'+pct+'%"></i></div>';
+    else if(h4.sub){ var shm=hwHM(h4.sub); h+='<div class="hwk-subok">✓ 제출함'+(shm?(' · '+shm):'')+' · 수업 때 선생님이 확인해요</div>'; }   /* ★ v2-161 */
+    else {
+      h+='<div class="hwk-subno">'+(h4.subPrev?'고친 내용은 다시 제출해 주세요 · ▾ 눌러 제출':'아직 제출 안 했어요 · ▾ 눌러 제출')+'</div>';   /* ★ v2-161 */
+      h+='<div class="hwk-bar"><i style="width:'+pct+'%"></i></div>';
+    }
     el.innerHTML=h; el.style.display='block'; return;
   }
   h+='<div class="hwk-body">';
@@ -24545,6 +24570,7 @@ window.hwHomeUpdate=function(){
     h+='</div>';
   });
   h+='</div>';
+  h+=hwSubHtml(h4);   /* ★ v2-161: 📤 선생님께 제출 */
   h+='<div class="hwk-tip'+(pct>=100?' done':'')+'">눈금을 누르면 바로 저장돼요 · 수업 때 선생님이 확인하면 파란색으로 바뀌어요</div>';
   h+=hwHistHtml(sel);
   h+='<div class="hwk-tip2">최근 5번 수업 · 파란 숫자 = 선생님이 확인한 값 · 검은 숫자 = 내가 누른 값(아직 확인 전)</div>';
@@ -24559,21 +24585,26 @@ window.hwNav=function(dir){
 };
 /* 저장할 기록 — 그 날짜의 지금 값에서 시작(p,c,w 는 늘 숫자 · a 는 「있어요」일 때만 · aNone 은 「없어요」일 때만) */
 function hwRecFor(sel){
-  var raw=hwRawOf(sel)||{}; var rec={ p:hwVal(raw.p), c:hwVal(raw.c), w:hwVal(raw.w) };
+  /* ★ v2-161: 고른 칸만 넣는다(v2-158 은 안 고른 풀이·채점·오답을 0 으로 채웠다 → 「일부만 고름」을 알 수 없었다) */
+  var raw=hwRawOf(sel)||{}; var rec={};
+  ['p','c','w'].forEach(function(k){ if(raw[k]!=null) rec[k]=hwVal(raw[k]); });
   if(raw.aNone===true) rec.aNone=true; else if(raw.a!=null) rec.a=hwVal(raw.a);
+  /* ★ v2-161: 제출한 날을 고치면 sub 는 빠지고 앞 제출 시각만 subPrev 로 남는다(「다시 제출」 표시) */
+  var ps=raw.sub||raw.subPrev; if(ps) rec.subPrev=ps;
   return rec;
 }
 /* hw_self_<내 코드>.byDate[수업일] 에만 쓴다 (todo_st_·todo_ 는 안 건드린다) — 성공 토스트 없음(날짜 줄에 「저장됨 · 시각」) */
-async function hwSelfSave(sel, rec){
+async function hwSelfSave(sel, rec, keepAt){
   var s=tdSb(); var code=studentInfo.lumen_rec_code; var now=new Date().toISOString();
   if(!HW.self || typeof HW.self!=='object') HW.self={ byDate:{} }; if(!HW.self.byDate || typeof HW.self.byDate!=='object') HW.self.byDate={};
-  rec.at=now; HW.self.byDate[sel]=rec; HW.self.upd=now;
+  if(!(keepAt && rec.at)) rec.at=now; HW.self.byDate[sel]=rec; HW.self.upd=now;   /* ★ v2-161: 제출(keepAt)은 작성 시각 at 을 그대로 둔다 */
   var v={ byDate:{}, upd:now }; Object.keys(HW.self.byDate).forEach(function(d){ v.byDate[d]=HW.self.byDate[d]; });
   hwHomeUpdate();
   try{
     var r=await s.from('lumen_store').upsert({ key:'hw_self_'+code, value:v, updated_at:now },{ onConflict:'key' });
     if(r && r.error) throw r.error;
-  }catch(e){ if(typeof toast==='function') toast('저장이 안 됐어요 — 잠시 후 다시 눌러 주세요'); }
+    return true;   /* ★ v2-161: 성공/실패를 돌려준다(제출 토스트용) */
+  }catch(e){ if(typeof toast==='function') toast('저장이 안 됐어요 — 잠시 후 다시 눌러 주세요'); return false; }
 }
 function hwCanSave(){
   if(!requireLogin(null,null,null)) return false;
@@ -24585,7 +24616,9 @@ function hwCanSave(){
 window.hwSelfSet=function(k, v){
   if(['p','c','w','a'].indexOf(k)<0 || HW_VALS.indexOf(Number(v))<0) return;
   if(!hwCanSave()) return;
-  var sel=hwSelDate(); var rec=hwRecFor(sel);
+  var sel=hwSelDate(); var raw=hwRawOf(sel)||{};
+  if(raw.sub && raw[k]!=null && hwVal(raw[k])===Number(v) && (k!=='a' || raw.aNone!==true)) return;   /* ★ v2-161: 바뀐 게 없으면 제출 그대로 */
+  var rec=hwRecFor(sel);
   if(k==='a'){ delete rec.aNone; }
   rec[k]=Number(v);
   hwSelfSave(sel, rec);
@@ -24593,10 +24626,40 @@ window.hwSelfSet=function(k, v){
 /* 「막힌 문제가 없어요 / 있어요」 — 없어요: aNone:true · a 지움 / 있어요: aNone 지움 · a 는 그대로(없으면 0) */
 window.hwAhaNone=function(none){
   if(!hwCanSave()) return;
-  var sel=hwSelDate(); var rec=hwRecFor(sel);
+  var sel=hwSelDate(); var raw=hwRawOf(sel)||{};
+  if(raw.sub && (none ? raw.aNone===true : (raw.a!=null && raw.aNone!==true))) return;   /* ★ v2-161: 바뀐 게 없으면 제출 그대로 */
+  var rec=hwRecFor(sel);
   if(none){ rec.aNone=true; delete rec.a; }
   else { delete rec.aNone; if(rec.a==null) rec.a=0; }
   hwSelfSave(sel, rec);
+};
+/* ★ v2-161: 📤 제출 단추 — 제출됨: 위 초록 「✓ HH:MM 에 제출했어요」 + 비활성 「제출 완료」 · 고친 뒤: 「📤 다시 제출」 · 덜 고름: 회색 + 안내 */
+function hwSubHtml(h4){
+  var ok=hwReady(h4); var h='<div class="hwk-sbw">';
+  if(h4.sub){
+    var hm=hwHM(h4.sub);
+    h+='<div class="hwk-sbt">✓ '+(hm?(hm+' 에 '):'')+'제출했어요</div>';
+    h+='<button type="button" class="hwk-sb done" id="hw-submit" disabled>제출 완료</button>';
+  } else {
+    h+='<button type="button" class="hwk-sb" id="hw-submit" onclick="hwSubmit()"'+(ok?'':' disabled')+'>'+(h4.subPrev?'📤 다시 제출':'📤 선생님께 제출')+'</button>';
+    if(!ok) h+='<div class="hwk-sbn">풀이·채점·오답·아하노트를 모두 고르면 제출할 수 있어요</div>';
+  }
+  return h+'</div>';
+}
+/* ★ v2-161: 제출 — hw_self_<코드>.byDate[수업일].sub = 지금(ISO) · 같은 저장 길(hwSelfSave → upsert onConflict key) · 펼친 날짜 기억 지우고 접힘 */
+window.hwSubmit=async function(){
+  if(!hwCanSave()) return;
+  var sel=hwSelDate(); var h4=hwSelfOf(sel);
+  if(h4.sub) return;
+  if(!hwReady(h4)){ if(typeof toast==='function') toast('풀이·채점·오답·아하노트를 모두 골라 주세요'); return; }
+  var raw=hwRawOf(sel)||{}; var rec=hwRecFor(sel); var now=new Date().toISOString();
+  delete rec.subPrev; rec.sub=now; if(raw.at) rec.at=raw.at;
+  hwFoldSet(false);   /* 접힌 카드로 다시 그린다(hwSelfSave 가 그린다) */
+  var ok=await hwSelfSave(sel, rec, true);
+  if(ok){ if(typeof toast==='function') toast('제출했어요'); return; }
+  /* 저장이 안 됐으면 제출 표시를 되돌린다(저장 실패 토스트는 hwSelfSave 가 띄움) */
+  var cur=hwRawOf(sel); if(cur && cur.sub===now){ delete cur.sub; if(raw.subPrev || raw.sub) cur.subPrev=raw.subPrev||raw.sub; }
+  hwHomeUpdate();
 };
 /* 「📄 학습지 채점으로 가기」 — 학습지 id(swId)로 바로 (기존 학습지 채점 화면 bkOpenWs) · 이 판 홈에는 단추가 없지만 함수는 남긴다 */
 window.hwGoSw=async function(swId){
@@ -24608,7 +24671,7 @@ window.hwGoSw=async function(swId){
   BK.top='ws';
   await bkOpenWs(w.swId);
 };
-/* ★ v2-159 hwself-end */
+/* ★ v2-161 hwself-end */
 /* 4칸 누르기 — todo_st_<내 코드>[카드id].hw 에만 쓴다 (todo_<코드> 는 안 건드린다) */
 window.hwToggle=async function(id, k){
   if(!requireLogin(null,null,null)) return;
