@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>숙제 미흡 리커버리 시안</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 레이아웃: ① 무엇이 바뀌나 ② 화면 A(도구 접힘 · 명단 한눈에) ③ 화면 B(학생 하나 눌러 도구 서랍 열림) ④ 상의 */
+:root{
+  --bg:#f4f5f2; --fg:#1b2430; --mute:#6a7482; --line:#dde1dc; --card:#ffffff; --card2:#f8f9f6;
+  --ink:#153446; --acc:#c8731e; --acc-soft:#fbead8; --teach:#2b5f8a; --teach-soft:#e3eef8; --red:#b4433a; --red-soft:#fde3e1; --ok:#2f7d5b; --ok-soft:#e1f2ea; --warn:#b7791f; --warn-soft:#fdf3d7;
+  --font:'Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35; --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --red:#e58a82; --red-soft:#3a1f1d; --ok:#78c8a0; --ok-soft:#17322a; --warn:#e0b25a; --warn-soft:#3a3016; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#121820; --fg:#e6eaef; --mute:#98a3b1; --line:#2a3440; --card:#1a222c; --card2:#202a35; --ink:#dbe7f0; --acc:#e8944a; --acc-soft:#3a2a1a; --teach:#7fb3e0; --teach-soft:#1c2d3d; --red:#e58a82; --red-soft:#3a1f1d; --ok:#78c8a0; --ok-soft:#17322a; --warn:#e0b25a; --warn-soft:#3a3016; color-scheme:dark }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.65;padding-block:28px 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:24px;font-weight:900;color:var(--ink);margin:0 0 6px;text-wrap:balance}
+.lead{color:var(--mute);margin:0 0 20px;max-width:72ch}
+h2{font-size:17px;font-weight:900;color:var(--ink);margin:34px 0 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h2 .no{font-family:var(--mono);font-size:12px;background:var(--ink);color:var(--bg);padding:2px 8px;border-radius:6px}
+h2 small{font-size:12px;color:var(--mute);font-weight:600}
+h3{font-size:14px;font-weight:900;color:var(--ink);margin:16px 0 8px}
+p{margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kv{font-size:13px;line-height:1.7}.kv b{color:var(--ink)}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card2);min-width:0}
+.box b{display:block;color:var(--ink);margin-bottom:4px}.box p{font-size:12.5px;margin:0 0 4px}
+/* PC 틀 */
+.pc{background:#eef1ee;color:#182230;border:6px solid #2a3340;border-radius:12px;overflow:hidden;font-size:12px;line-height:1.5}
+.pc .bar{background:#2a3340;color:#cbd5e1;font-size:10px;padding:4px 10px;font-family:var(--mono)}
+.app{display:grid;grid-template-columns:200px minmax(0,1fr) 44px;min-height:560px}
+.app.open{grid-template-columns:200px minmax(0,1fr) 300px}
+@media(max-width:900px){.app,.app.open{grid-template-columns:1fr}.left,.rail,.drawer{display:none}}
+.left{background:#153446;color:#dbe7f0;padding:12px 10px;font-size:11px}
+.left .t{font-weight:900;font-size:12.5px;color:#fff;margin-bottom:6px}
+.left .k4{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px}
+.left .k4 div{background:rgba(255,255,255,.08);border-radius:8px;padding:6px 7px}
+.left .k4 b{display:block;font-size:16px;color:#fff;line-height:1.1}
+.left .k4 span{font-size:9.5px;color:#9fb3c8}
+.left .slot{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.left .slot span{background:rgba(255,255,255,.12);border-radius:20px;padding:1px 8px;font-weight:800;font-size:10px}
+.left .nm{padding:3px 0;border-top:1px dashed rgba(255,255,255,.12);display:flex;gap:6px;align-items:center}
+.left .nm i{font-style:normal;font-size:9.5px;color:#9fb3c8;margin-left:auto}
+.mid{padding:12px 14px;min-width:0}
+.hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.hd .ttl{font-size:16px;font-weight:900;color:#153446}
+.hd .sub{font-size:10.5px;color:#7b8694}
+.sum{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.sum span{background:#fff;border-radius:9px;padding:4px 10px;font-size:11px;font-weight:800;color:#5b6775;border-left:3px solid #cbd5e1}
+.sum span b{color:#153446;font-size:14px;margin-right:2px}
+.sum .r{border-color:#b4433a}.sum .y{border-color:#c8731e}.sum .g{border-color:#2f7d5b}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
+.chip{border:1.5px solid #c9d1cc;border-radius:20px;padding:1px 9px;font-weight:800;font-size:10.5px;background:#fff;color:#5b6775}
+.chip.on{background:#153446;color:#fff;border-color:#153446}
+.chips .sep{width:1px;height:14px;background:#c9d1cc;margin:0 3px}
+.chips .lb{font-size:10px;color:#8b95a3;font-weight:800}
+table.bd{border-collapse:separate;border-spacing:0;width:100%;font-size:11px;background:#fff;border-radius:10px;overflow:hidden}
+table.bd th{font-weight:800;color:#7b8694;font-size:10px;padding:5px 6px;text-align:left;border-bottom:1px solid #dde1dc;background:#fafbf9;white-space:nowrap}
+table.bd td{padding:5px 6px;border-bottom:1px dashed #e5e9e4;vertical-align:middle;white-space:nowrap}
+table.bd tr.g1 td{background:#153446;color:#fff;font-weight:900;font-size:11.5px;padding:5px 8px}
+table.bd tr.g1 td small{font-weight:700;color:#9fb3c8;margin-left:6px}
+table.bd tr.g2 td{background:#eef2f0;color:#153446;font-weight:900;font-size:10.5px;padding:3px 8px}
+table.bd tr.sel td{background:#fff7ee}
+table.bd tr.done td{color:#8b95a3}
+.nm2{font-weight:900;color:#182230;font-size:12px}
+.pill{font-size:9.5px;font-weight:900;padding:1px 6px;border-radius:10px;background:#eef1ee;color:#5b6775;white-space:nowrap;margin-right:2px}
+.pill.r{background:#fde3e1;color:#b4433a}.pill.y{background:#fdf3d7;color:#8a5a12}.pill.g{background:#e1f2ea;color:#2f7d5b}.pill.b{background:#e3eef8;color:#2b5f8a}.pill.p{background:#ede9fe;color:#5b21b6}.pill.o{background:#fbead8;color:#c8731e}.pill.fire{background:#7c2d12;color:#fff}
+.tg{display:inline-block;width:18px;height:18px;border-radius:5px;border:2px solid #c9d1cc;vertical-align:middle}
+.tg.on{background:#b4433a;border-color:#b4433a;color:#fff;font-size:11px;font-weight:900;text-align:center;line-height:14px}
+.tw{overflow-x:auto}
+.rail{background:#fff;border-left:1px solid #dde1dc;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 0}
+.rail span{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;background:#f3f5f2;cursor:pointer}
+.rail span.on{background:#153446}
+.rail .lb{font-size:8px;color:#8b95a3;font-weight:800;writing-mode:vertical-rl;margin-top:4px}
+.drawer{background:#fff;border-left:1px solid #dde1dc;padding:10px 12px;font-size:11px;min-width:0}
+.drawer .t{font-size:12.5px;font-weight:900;color:#153446;display:flex;align-items:center;gap:6px}
+.drawer .t .x{margin-left:auto;font-size:10px;color:#8b95a3;font-weight:800}
+.drawer .sec{margin-top:10px;border-top:1px dashed #e5e9e4;padding-top:8px}
+.drawer .row{display:flex;gap:6px;align-items:center;padding:3px 0}
+.drawer .row b{font-size:11px;color:#182230}
+.btn{display:inline-block;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:900;background:#153446;color:#fff;text-align:center}
+.btn.ghost{background:#fff;color:#153446;border:1.5px solid #c9d1cc}.btn.acc{background:#c8731e}.btn.sm{padding:3px 8px;font-size:10px}
+.ask .q{display:grid;grid-template-columns:34px 1fr;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.ask .q:first-child{border-top:0}
+.ask .k{font-family:var(--mono);font-size:13px;color:var(--acc);padding-top:2px}
+.ask b{color:var(--ink);display:block;margin-bottom:3px}
+.opt{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.opt span{font-size:12px;border:1.5px solid var(--line);border-radius:20px;padding:2px 10px;background:var(--card2)}
+.opt span.rec{border-color:var(--acc);background:var(--acc-soft);color:var(--acc);font-weight:800}
+.note{font-size:11px;color:#7b8694;margin-top:8px;line-height:1.55}
+
+.hwc{display:inline-flex;gap:2px;vertical-align:middle}
+.hwc i{display:inline-block;min-width:22px;text-align:center;font-size:9px;font-weight:900;border-radius:4px;padding:1px 2px;font-style:normal}
+.hwc .ok{background:#e1f2ea;color:#2f7d5b}.hwc .lo{background:#fde3e1;color:#b4433a}.hwc .mid{background:#fdf3d7;color:#8a5a12}.hwc .no{background:#eef1ee;color:#8b95a3}
+.sms{background:#fff;border:1px solid #dde1dc;border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.7;white-space:pre-line;color:#182230}
+.stat{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.stat div{background:#fff;border-radius:9px;padding:7px 9px;border-left:3px solid #cbd5e1}
+.stat b{display:block;font-size:16px;color:#153446;line-height:1.1}.stat span{font-size:9.5px;color:#7b8694;font-weight:800}
+.stat .r{border-color:#b4433a}.stat .o{border-color:#c8731e}.stat .g{border-color:#2f7d5b}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>숙제 미흡 리커버리 — 체크 · 기록 · 누적</h1>
+<p class="lead">11월부터 주간테스트 리커버리 외에 <b>숙제 미흡 리커버리</b>를 운영합니다. 새 화면을 만들지 않고 지금 리커버리 보드(v19-174)에 <b>「사유」 하나를 더하는</b> 방식입니다. 학생마다 원장님이 체크하고, 장부에 사유가 남고, 3개월 누적이 재등록 기준으로 이어집니다. 이름·숫자는 예시입니다.</p>
+
+<h2><span class="no">①</span> 무엇이 바뀌나</h2>
+<div class="three">
+  <div class="box"><b>자동 후보 + 원장 체크</b><p>숙제체크(선생님 확인값)에서 <b>최근 2주 수업 중 종합 60% 미만이 2번 이상</b>이면 보드에 「📚 숙제 미흡」 칩으로 올라옵니다(기준 ✎). 호출 ✓는 지금처럼 원장님이 누르고, 사유가 「숙제 미흡」으로 저장됩니다. 주간테스트 사유와 둘 다 걸리면 둘 다 표시.</p></div>
+  <div class="box"><b>장부·통계에 사유 남김</b><p>📒 운영 장부 줄에 사유 태그(주간테스트 / 단원 / 📚 숙제 미흡 / 직접). 📊 통계에 「사유별 호출 수」와 <b>학생별 3개월 누적</b> 표가 생깁니다.</p></div>
+  <div class="box"><b>재등록 기준</b><p>숙제 미흡 리커버리가 <b>3개월 안 3회</b>(기준 ✎)에 닿으면 🔴 「재등록 검토」. 보드 줄·학생 서랍·학생 상세·상담 리포트에 같은 배지가 뜹니다. 2회는 🟡 「주의」로 미리 보입니다.</p></div>
+</div>
+
+<h2><span class="no">②</span> 보드 · 사유 칩과 보기 칩 <small>v19-174 줄 표에 더함</small></h2>
+<div class="pc"><div class="bar">lumen_v1.html › 🚑 리커버리 · 이번 주 11/7(토) 09:00</div>
+<div class="app">
+  <div class="left"><div class="t">🚑 이번 주 · 11/7 (토)</div><div class="k4"><div><b>7</b><span>확정</span></div><div><b>4</b><span>네이버 예약</span></div><div><b>3</b><span>예약 아직</span></div><div><b>5</b><span>학습지 만듦</span></div></div><div class="slot"><span>09:00 · 5</span><span>10:00 · 2</span></div><div class="t" style="font-size:11px">사유</div><div class="nm">📝 주간테스트 <i>4</i></div><div class="nm">📚 숙제 미흡 <i>3</i></div><div class="nm">📝+📚 둘 다 <i>1</i></div><div class="t" style="font-size:11px;margin-top:10px">🔴 재등록 검토 1 · 🟡 주의 2</div></div>
+  <div class="mid">
+    <div class="hd"><span class="ttl">🚑 리커버리</span><span style="margin-left:auto" class="chip">기준 ✎ 중·고 60 · 초6 70 · 단원 70% · <b>📚 숙제 2주 중 2회 60% 미만</b></span></div>
+    <div class="chips"><span class="lb">보기</span><span class="chip on">전체 12</span><span class="chip">🔥 2</span><span class="chip">📝 주간테스트 5</span><span class="chip o">📚 숙제 미흡 4</span><span class="chip">확정 7</span><span class="chip">미정 5</span><span class="chip">🔴🟡 누적 3</span><span class="sep"></span><span class="chip on">반 요일 › 학년부</span></div>
+    <div class="tw">
+    <table class="bd">
+      <tr><th style="width:22px"></th><th>학생</th><th>학년 · 반</th><th>사유</th><th>누적(3개월)</th><th>호출</th><th>시간</th><th>학습지</th></tr>
+      <tr class="g1"><td colspan="8">월 · 수 · 금 반 <small>7명 · 📚 3</small></td></tr>
+      <tr class="g2"><td colspan="8">중등 5</td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">김○○</td><td>중2 · M4</td><td><span class="pill fire">🔥</span><span class="pill r">주간 52점 · 11/1</span><span class="pill y">「일차함수」 60%</span></td><td><span class="pill">📝 1</span></td><td><span class="pill r">호출</span></td><td><span class="pill b">09:00 네이버</span></td><td><span class="pill g">30 ✓</span></td></tr>
+      <tr class="sel"><td><span class="tg on">✓</span></td><td class="nm2">박○○ ◀</td><td>중2 · M4</td><td><span class="pill o">📚 숙제 미흡 2/3</span> <span class="hwc"><i class="lo">35</i><i class="ok">80</i><i class="lo">40</i></span></td><td><span class="pill y">📚 2 🟡 주의</span></td><td><span class="pill r">호출</span></td><td><span class="pill y">예약 아직</span></td><td><span class="pill">밀린 숙제</span></td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">이○○</td><td>중1 · M7</td><td><span class="pill r">주간 55점 · 10/30</span><span class="pill o">📚 숙제 미흡 3/3</span> <span class="hwc"><i class="lo">20</i><i class="lo">0</i><i class="mid">55</i></span></td><td><span class="pill r">📚 3 🔴 재등록 검토</span></td><td><span class="pill r">호출</span></td><td><span class="pill b">09:00 네이버</span></td><td><span class="pill g">34 ✓</span></td></tr>
+      <tr><td><span class="tg"></span></td><td class="nm2">오○○</td><td>중1 · M7</td><td><span class="pill o">📚 숙제 미흡 2/3</span> <span class="hwc"><i class="ok">100</i><i class="lo">30</i><i class="lo">45</i></span></td><td><span class="pill">📚 0</span></td><td><span class="pill">미정</span></td><td></td><td></td></tr>
+      <tr><td><span class="tg"></span></td><td class="nm2">유○○</td><td>중3 · M530</td><td><span class="pill r">주간 57점 · 11/1</span></td><td><span class="pill">📝 2</span></td><td><span class="pill">미정</span></td><td></td><td></td></tr>
+      <tr class="g2"><td colspan="8">고등 2</td></tr>
+      <tr><td><span class="tg on">✓</span></td><td class="nm2">윤○○</td><td>고1 · 고등</td><td><span class="pill r">단원 TEST 54점 · 11/1</span></td><td><span class="pill">📝 1</span></td><td><span class="pill r">호출</span></td><td><span class="pill y">예약 아직</span></td><td><span class="pill g">40 ✓</span></td></tr>
+      <tr><td><span class="tg"></span></td><td class="nm2">장○○</td><td>고2 · 고등</td><td><span class="pill o">📚 숙제 미흡 2/2</span> <span class="hwc"><i class="lo">0</i><i class="lo">30</i></span></td><td><span class="pill y">📚 2 🟡</span></td><td><span class="pill">미정</span></td><td></td><td></td></tr>
+      <tr><td colspan="8" style="color:#8b95a3;text-align:center">… 화·목·토 반 이어짐 · 사유 칩 옆 작은 숫자 = 최근 수업 3번의 숙제 종합 %(선생님 확인값)</td></tr>
+    </table>
+    </div>
+    <div class="note">「📚 숙제 미흡 2/3」 = 최근 2주 수업 3번 중 2번이 60% 미만. 누적 칸은 3개월 안 숙제 미흡 사유로 호출된 횟수(완료된 것만 셈). 🟡 2회 · 🔴 3회(기준 ✎).</div>
+  </div>
+  <div class="drawer">
+    <div class="t">👤 박○○ · 중2 · M4 <span class="x">✕ · 📌</span></div>
+    <div class="row"><span class="pill o">📚 숙제 미흡 2/3</span><span class="pill y">누적 2 🟡 주의</span></div>
+    <div class="sec"><div class="t" style="font-size:11.5px">📚 최근 2주 숙제 (선생님 확인)</div>
+      <div class="row"><b>11/5 (수)</b><span class="hwc"><i class="ok">✓</i><i class="lo">○</i><i class="lo">○</i><i class="no">—</i></span><span class="pill r">35%</span></div>
+      <div class="row"><b>11/3 (월)</b><span class="hwc"><i class="ok">✓</i><i class="ok">✓</i><i class="mid">◐</i><i class="no">—</i></span><span class="pill g">80%</span></div>
+      <div class="row"><b>10/31 (금)</b><span class="hwc"><i class="mid">◐</i><i class="lo">○</i><i class="lo">○</i><i class="no">—</i></span><span class="pill r">40%</span></div>
+      <div class="note" style="margin-top:4px">학생 스스로 체크는 11/5 에 「풀이 100 · 채점 60」 — 선생님 확인과 채점에서 다름</div>
+    </div>
+    <div class="sec"><div class="t" style="font-size:11.5px">사유 · 호출</div>
+      <div class="row"><span class="chip on">📚 숙제 미흡</span><span class="chip">📝 주간테스트</span><span class="chip">둘 다</span><span class="chip">직접</span></div>
+      <div class="row" style="margin-top:4px"><span class="chip on">09:00</span><span class="chip">10:00</span><span class="chip">11:00</span><span class="note" style="margin:0 0 0 4px">숙제 미흡은 09:00 기본</span></div>
+      <div class="row" style="margin-top:4px"><span class="chip">학습지: 밀린 숙제 끝내기(학습지 안 만듦)</span><span class="chip">오답 쌍둥이도</span></div>
+    </div>
+    <div class="sec"><div class="t" style="font-size:11.5px">🗂 누적 (3개월)</div>
+      <div class="row"><b>10/18 (토)</b><span class="pill o">📚 숙제 미흡</span><span class="pill g">출석</span></div>
+      <div class="row"><b>9/27 (토)</b><span class="pill">📝 주간테스트</span><span class="pill g">출석</span></div>
+      <div class="note" style="margin-top:4px">숙제 미흡 2회 → 🟡 주의. 한 번 더면 🔴 재등록 검토(기준 3회). 학부모 안내문에 이 횟수가 들어갑니다.</div>
+    </div>
+    <div class="sec" style="display:flex;gap:6px;flex-wrap:wrap"><span class="btn">📨 숙제 미흡 안내문</span><span class="btn ghost">✅ 완료</span><span class="btn ghost">노쇼</span></div>
+  </div>
+</div></div>
+
+<h2><span class="no">③</span> 📊 통계 · 누적 표와 재등록 기준</h2>
+<div class="pc"><div class="bar">lumen_v1.html › 🚑 리커버리 › 📊 통계 › 사유 · 누적</div>
+<div class="body" style="padding:12px 14px">
+  <div class="stat"><div class="r"><b>11</b><span>이번 달 호출</span></div><div class="o"><b>5</b><span>📚 숙제 미흡</span></div><div><b>6</b><span>📝 주간테스트</span></div><div class="g"><b>91%</b><span>출석률</span></div></div>
+  <div class="chips"><span class="chip on">학생별 누적 · 3개월</span><span class="chip">달별 · 사유</span><span class="chip">학년 × 사유</span><span style="margin-left:auto" class="chip">재등록 기준 ✎ 숙제 미흡 3개월 3회</span></div>
+  <div class="tw">
+  <table class="bd">
+    <tr><th>학생</th><th>학년 · 반</th><th>📚 숙제 미흡</th><th>📝 주간테스트</th><th>노쇼</th><th>마지막</th><th>최근 숙제 흐름(수업 10번)</th><th>상태</th></tr>
+    <tr><td class="nm2">이○○</td><td>중1 · M7</td><td><b>3</b> (10/4 · 10/18 · 11/1)</td><td>1</td><td>0</td><td>11/1</td><td><span class="hwc"><i class="lo">20</i><i class="lo">0</i><i class="mid">55</i><i class="ok">80</i><i class="lo">30</i><i class="lo">40</i><i class="ok">100</i><i class="lo">35</i><i class="mid">60</i><i class="lo">20</i></span></td><td><span class="pill r">🔴 재등록 검토</span></td></tr>
+    <tr><td class="nm2">박○○</td><td>중2 · M4</td><td><b>2</b> (10/18 · 11/7 예정)</td><td>1</td><td>0</td><td>10/18</td><td><span class="hwc"><i class="ok">80</i><i class="lo">35</i><i class="ok">80</i><i class="lo">40</i><i class="ok">100</i><i class="ok">100</i><i class="mid">60</i><i class="ok">80</i><i class="lo">30</i><i class="ok">100</i></span></td><td><span class="pill y">🟡 주의</span></td></tr>
+    <tr><td class="nm2">장○○</td><td>고2 · 고등</td><td><b>2</b> (10/25 · 11/7 예정)</td><td>0</td><td>1</td><td>10/25</td><td><span class="hwc"><i class="lo">0</i><i class="lo">30</i><i class="mid">60</i><i class="ok">100</i><i class="lo">30</i><i class="ok">80</i><i class="mid">55</i><i class="lo">20</i><i class="ok">80</i><i class="ok">100</i></span></td><td><span class="pill y">🟡 주의</span></td></tr>
+    <tr><td class="nm2">김○○</td><td>중2 · M4</td><td>0</td><td>1</td><td>0</td><td>11/7 예정</td><td><span class="hwc"><i class="ok">100</i><i class="ok">80</i><i class="ok">100</i><i class="ok">100</i><i class="mid">60</i><i class="ok">100</i><i class="ok">80</i><i class="ok">100</i><i class="ok">100</i><i class="ok">80</i></span></td><td><span class="pill g">🟢</span></td></tr>
+    <tr><td colspan="8" style="color:#8b95a3;text-align:center">… 재원생 전부 · 🔴 → 상담 리포트 「리커버리 이력」 줄과 학생 상세 머리에도 같은 배지 · 「재등록 불가」 확정은 원장이 학생 상세에서 직접 표시(자동 아님)</td></tr>
+  </table>
+  </div>
+</div></div>
+
+<h2><span class="no">④</span> 📨 숙제 미흡 안내문 (학생별 복사) <small>지금 안내문 단추에 사유별 문구</small></h2>
+<div class="sms">[루멘수학] 안녕하세요, 박○○ 학부모님.
+이번 주 숙제 확인에서 11/5(수) 35%, 10/31(금) 40%로 미흡한 날이 두 번 있어, 11월 7일(토) 오전 9시 리커버리 수업에서 밀린 숙제를 함께 마무리하려 합니다. 네이버 예약은 오전 9시로 신청 부탁드립니다.
+숙제 미흡으로 진행한 리커버리는 최근 3개월 동안 2번째입니다. 집에서도 숙제 시간이 확보될 수 있도록 응원해 주시면 큰 힘이 됩니다. 감사합니다.</div>
+<p class="kv" style="margin-top:8px;color:var(--mute)">날짜·%·횟수는 자료에서 자동으로 채워지고, 문구는 설정에서 고칠 수 있습니다. 3회째 안내문에는 「재등록이 어려울 수 있다」는 문장이 들어갑니다(원장이 켜고 끔).</p>
+
+<h2><span class="no">⑤</span> 상의할 것 · 6가지</h2>
+<div class="card ask">
+  <div class="q"><div class="k">1</div><div><b>자동 후보 기준</b><div class="opt"><span class="rec">최근 2주 수업 중 종합 60% 미만 2회 이상 (기준 ✎)</span><span>최근 1주 1회라도</span><span>자동 없이 원장이 직접만</span></div>숙제 종합 % 는 지금 숙제체크(선생님 확인값)로 셈. 학생 셀프 체크는 안 씀.</div></div>
+  <div class="q"><div class="k">2</div><div><b>재등록 검토 기준</b><div class="opt"><span class="rec">3개월 안 숙제 미흡 리커버리 3회 (🟡 2회 · 🔴 3회)</span><span>6개월 4회</span><span>횟수 대신 원장이 직접 표시만</span></div>🔴 는 「검토」 표시일 뿐이고, 「재등록 불가」 확정은 원장이 학생 상세에서 직접 찍습니다(자동 아님).</div></div>
+  <div class="q"><div class="k">3</div><div><b>숙제 미흡 리커버리에서 하는 것</b><div class="opt"><span class="rec">밀린 숙제 끝내기(학습지 안 만듦) · 끝나면 오답 쌍둥이</span><span>지금처럼 학습지 생성</span><span>원장이 그때 고름</span></div></div></div>
+  <div class="q"><div class="k">4</div><div><b>시간</b><div class="opt"><span class="rec">숙제 미흡은 09:00 기본(시간 칩에 09:00 추가) · 네이버 예약 9시 안내</span><span>주간테스트와 같은 시간대</span></div></div></div>
+  <div class="q"><div class="k">5</div><div><b>학부모 안내문</b><div class="opt"><span class="rec">사유별 문구 + 누적 횟수 자동 · 3회째엔 재등록 문장(원장이 켜고 끔)</span><span>지금 문구 그대로, 사유만 한 줄</span></div></div></div>
+  <div class="q"><div class="k">6</div><div><b>학생앱·학부모앱</b><div class="opt"><span class="rec">학생앱 🚑 카드에 「숙제 미흡」 사유 표시 · 학부모앱은 안내문만(앱엔 안 보임)</span><span>학부모앱 숙제 탭에 「리커버리 n회」 표시</span></div></div></div>
+</div>
+<div class="card" style="margin-top:14px">
+  <h3 style="margin-top:0">자료 (새 표 없음)</h3>
+  <p class="kv">사유는 지금 `rc_state` 의 `e.reason` 에 `'hw'` 로 적는다(통계 표 ② 학년×사유가 이미 이 칸을 읽음). 자동 후보는 등록부 `lumen_hw`(선생님 확인값)로 `rcRows()` 에서 셈 · 기준은 `rc_config.hw = {weeks:2, below:60, times:2, reEnroll:{months:3, times:3}}`. 누적은 `rc_state.calls` 3개월치를 세면 된다(장부 `rcLedgerData` 와 같은 자료). 재등록 불가 확정 표시는 등록부 `lumen_reenroll = {status:'hold'|'no', at, memo}`(원장만). 한 판(v19-176)으로 보드 칩·서랍·통계 표·안내문까지.</p>
+</div>
+</div>
+</body>
+</html>
