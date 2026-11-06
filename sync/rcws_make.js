@@ -15,6 +15,10 @@
  *   node sync/rcws_make.js --dry            # 설계만 (매쓰플랫에 쓰지 않음, 조회만)
  *   node sync/rcws_make.js                  # 생성·배정 · rc_ws_made · 운영 장부(rc_state) 기록
  *   옵션 --week 2026-10-10  --no-auto  --only <학생키>
+ *        --gap 3000       쌍둥이 조회 사이 쉬는 시간(ms). 기본 3초 — 매쓰플랫 보안문자(CAPTCHA) 때문
+ *        --no-cache       서버 캐시(mf_derivation_cache)를 쓰지 않고 매쓰플랫에서 새로 받는다
+ *        --req [키]       학원앱이 남긴 «예약»을 처리한다 (기본 ws_make_req). 요청이 없으면 바로 끝난다.
+ *                         한 명 끝날 때마다 진행률을 적는다 → 학원앱 「7/16 만드는 중」
  * 환경변수: SUPABASE_URL · SUPABASE_SERVICE_KEY · MATHFLAT_ID · MATHFLAT_PASSWORD (값은 어디에도 적지 않는다)
  * 출력에 학생 실명은 첫 글자만 쓴다(깃허브 로그).
  */
@@ -53,6 +57,21 @@ const NOBOOK = csv(opt('no-book', ''));   // 교재 오답 쌍둥이를 빼고 �
 const TESTS = {}; args.forEach((a, i) => { if (a === '--tests' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) TESTS[m[1]] = csv(m[2]); } });
 const UNIT_AUTO = !args.includes('--no-unit-auto');
 const FORCE_DESIGN = args.includes('--force-design');
+/* ★ 2026-11-06 — 매쓰플랫 보안문자(CAPTCHA) 대책 (docs/mathflat_derivation_cache.md)
+ *   쌍둥이 조회(/derivation/problem)를 한 번에 770회 간격 없이 부르다가 CAPTCHA_REQUIRED 로 막혔다.
+ *   ① 같은 문항은 한 번만 부른다(이번 실행 안 + Supabase mf_derivation_cache)
+ *   ② 새로 부를 때는 사이를 비운다(--gap, 기본 3초). 캐시에서 꺼낸 것은 안 쉰다
+ *   ③ 보안문자가 뜨면 그 자리에서 전부 멈춘다 — 재시도하지 않는다(우회가 아니다)
+ *   실측: 간격 없이 770회 → 수십 회에 걸림 / 3초 간격 685회 → 한 번도 안 걸림 */
+const GAP = Number(opt('gap', '3000'));
+const NO_CACHE = args.includes('--no-cache');   // 캐시 표를 쓰지 않는다(새로 받기)
+/* ★ 2026-11-06 원장 지시 「누른 뒤 바로 만들지 말고 시간을 들여 하는 기능」
+ *   --req [키]  학원앱이 남긴 «예약»을 처리한다 (기본 키 ws_make_req).
+ *               요청이 없으면 몇 초 만에 조용히 끝난다(5분마다 도는 워크플로에서 부른다).
+ *               한 명 끝날 때마다 진행률을 그 키에 적어, 학원앱이 「7/16 만드는 중」을 보여 줄 수 있다.
+ *   요청 모양 : { status:'requested', wk, reqAt, by }
+ *   진행 모양 : { status:'running'|'done'|'stopped', wk, total, done, items:[…], startedAt, finishedAt, note } */
+const REQ = args.includes('--req') ? (opt('req', 'ws_make_req') || 'ws_make_req') : null;
 if (FORCE_DESIGN && !DRY) { console.error('❌ --force-design 는 --dry 와 함께만 쓸 수 있습니다'); process.exit(1); }
 const gradeKey = (g) => { const m = String(g || '').match(/(초|중|고)[^0-9]*(\d)/); return m ? m[1] + m[2] : String(g || '').trim(); };
 const nrm = (x) => String(x || '').replace(/[\s\.\-–·()\[\]0-9ⅠⅡⅢⅣⅤⅥⅦ]/g, '').toLowerCase();   // 학원앱 rcNrm 과 같다
@@ -61,6 +80,13 @@ const DESIGN = { layoutType: 11, layoutColor: 'GREEN', partitionType: 4, wrongAn
   answerRateFlag: false, qrFlag: true, relationWorkbookFlag: true, includeProblemFlag: false, pdfDateType: 'TODAY', pdfDate: null,
   designTemplateId: 41988, problemPadding: 60, conceptSortType: 'CHAPTER' };
 const mask = (n) => (n ? String(n).charAt(0) + '○○' : '?');
+/* 예약 진행률 — 학원앱이 이 값을 읽어 띠로 보여 준다. 실패해도 본 작업은 계속한다. */
+let REQV = null;
+async function reqSave(patch) {
+  if (!REQ) return;
+  try { REQV = { ...(REQV || {}), ...patch, updated: new Date().toISOString() }; await setItem(REQ, REQV); }
+  catch (e) { console.log('  (진행률 적기 실패 — 그냥 계속합니다)'); }
+}
 
 /* ── Supabase ── */
 async function q(path) { const r = await fetch(`${SB}/rest/v1/${path}`, { headers: H }); if (!r.ok) throw new Error(`${path} → ${r.status}`); return r.json(); }
@@ -75,12 +101,72 @@ async function mfLogin() {
     body: JSON.stringify({ id: process.env.MATHFLAT_ID.trim(), password: process.env.MATHFLAT_PASSWORD.trim(), userType: 'TEACHER', serviceType: 'MATHFLAT' }) });
   const j = await r.json(); if (!r.ok || !j.accessToken) throw new Error('매쓰플랫 로그인 실패 ' + (j.code || r.status)); TOK = j.accessToken;
 }
-async function mf(method, p, body) {
+/* 매쓰플랫 토큰은 5분쯤 지나면 끊긴다(2026-11-06 실측 — 16명 중 3명 만들고 나머지가
+ * 전부 UNAUTHORIZED 로 죽었다). 간격을 두고 천천히 돌면 반드시 걸리는 길이다.
+ * → 2분 30초마다 미리 새로 받고, 그래도 401 이면 한 번 더 받아 재시도한다. */
+let TOK_AT = 0;
+const sleepMs = (ms) => new Promise((r) => setTimeout(r, ms));
+async function tokenOk() { if (Date.now() - TOK_AT > 150000) { await mfLogin(); TOK_AT = Date.now(); } }
+async function mfRaw(method, p, body, retried) {
+  await tokenOk();
   const r = await fetch(`${MF}${p}`, { method, headers: { 'content-type': 'application/json', accept: 'application/json, text/plain, */*', 'x-platform': 'TEACHER_WEB', 'x-freewheelin-host': 'mathflat.com', authorization: 'Bearer ' + TOK, 'x-auth-token': TOK, origin: WEB, referer: WEB + '/' }, body: body ? JSON.stringify(body) : undefined });
   const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch (e) {}
+  if (r.status === 401 && !retried) { await mfLogin(); TOK_AT = Date.now(); return mfRaw(method, p, body, true); }
   if (!r.ok) throw new Error(`${(j && j.code) || r.status} @ ${p}`);
   return j && (j.data !== undefined ? j.data : j);
 }
+
+/* ── 쌍둥이 조회 — 캐시 먼저, 없으면 간격을 두고 매쓰플랫 ──────────── */
+const DMEM = new Map();                 // 이번 실행 안에서만 (같은 문항을 최대 8번까지 부르던 것)
+let dLast = 0, dCalls = 0, dMem = 0, dDb = 0, CAPTCHA = null;
+const slimP = (x) => (x && x.problem ? { problem: { id: x.problem.id, level: x.problem.level, autoScoredType: x.problem.autoScoredType, type: x.problem.type, answer: x.problem.answer } } : null);
+const slim = (d) => ({ pairProblemList: ((d && d.pairProblemList) || []).map(slimP).filter(Boolean),
+                       similarProblemList: ((d && d.similarProblemList) || []).map(slimP).filter(Boolean) });
+/* 캐시 표가 아직 없으면(= 404/42P01) 조용히 끄고 매쓰플랫만 쓴다 */
+let DBCACHE = !NO_CACHE;
+async function cacheGet(pid) {
+  if (!DBCACHE) return null;
+  try {
+    const r = await fetch(`${SB}/rest/v1/mf_derivation_cache?select=pair,similar&problem_id=eq.${pid}`, { headers: H });
+    if (r.status === 404 || r.status === 400) { DBCACHE = false; return null; }
+    if (!r.ok) return null;
+    const rows = await r.json();
+    if (!rows.length) return null;
+    return { pairProblemList: rows[0].pair || [], similarProblemList: rows[0].similar || [] };
+  } catch (e) { return null; }
+}
+async function cachePut(pid, d) {
+  if (!DBCACHE) return;
+  try {
+    await fetch(`${SB}/rest/v1/mf_derivation_cache?on_conflict=problem_id`, { method: 'POST',
+      headers: { ...H, prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify([{ problem_id: Number(pid), pair: d.pairProblemList, similar: d.similarProblemList, fetched_at: new Date().toISOString() }]) });
+  } catch (e) { /* 캐시는 없어도 그만 */ }
+}
+async function mf(method, p, body) {
+  if (p.indexOf('/derivation/problem/') !== 0) return mfRaw(method, p, body);
+  if (CAPTCHA) throw new Error(CAPTCHA);
+  const pid = p.split('/').pop();
+  if (DMEM.has(pid)) { dMem++; return DMEM.get(pid); }
+  const hit = await cacheGet(pid);
+  if (hit) { dDb++; DMEM.set(pid, hit); return hit; }
+  const wait = GAP - (Date.now() - dLast);
+  if (wait > 0) await sleepMs(wait);
+  dLast = Date.now(); dCalls++;
+  let out;
+  try { out = slim(await mfRaw(method, p, body)); }
+  catch (e) {
+    if (/CAPTCHA/i.test(e.message)) {
+      CAPTCHA = `CAPTCHA_REQUIRED — ${dCalls}번째 쌍둥이 조회에서 보안문자. 여기서 멈춥니다(재시도하지 않습니다). 매쓰플랫 선생님 사이트에서 보안 확인 뒤 다시 돌려 주세요`;
+      console.log(`\n  ⛔ ${CAPTCHA}`);
+    }
+    throw e;
+  }
+  DMEM.set(pid, out); await cachePut(pid, out);
+  if (dCalls % 25 === 0) console.log(`      … 쌍둥이 조회 ${dCalls}회 (이번 실행 캐시 ${dMem} · 서버 캐시 ${dDb}) · 간격 ${GAP}ms`);
+  return out;
+}
+process.on('exit', () => { if (dCalls || dMem || dDb) console.log(`\n━━━ 쌍둥이 조회: 매쓰플랫 ${dCalls}회 · 이번 실행 캐시 ${dMem}회 · 서버 캐시 ${dDb}회 · 간격 ${GAP}ms${DBCACHE ? '' : ' (캐시 표 없음)'} ━━━`); });
 
 /* ── 학생·시험 고르기 (학원앱 rcRows 와 같은 기준) ── */
 function bandOf(grade) { const m = String(grade || '').match(/(초|중|고)[^0-9]*(\d)/); if (!m) return 'mid'; if (m[1] !== '초') return 'mid'; return Number(m[2]) >= 6 ? 'elem6' : 'elemLow'; }
@@ -238,6 +324,14 @@ async function build(M, P, name, school, sid, recDate, log) {
   const keys = Object.keys(C).filter((k) => C[k] && C[k].on && !C[k].done && !C[k].noshow && (!ONLY || k === ONLY) && SKIP.indexOf(k) < 0);
   if (!DRY) await mfLogin();
   else await mfLogin();   // 조회(필터·쌍둥이)는 dry 에서도 매쓰플랫 로그인이 필요하다 (쓰기는 없음)
+  if (REQ) {
+    const cur = (await store([REQ]))[REQ] || null;
+    if (!cur || cur.status !== 'requested') { console.log(`예약(${REQ}) 없음 — 할 일이 없습니다.`); return; }
+    if (cur.wk && cur.wk !== wk) console.log(`  (예약에 적힌 주 ${cur.wk} · 이번에 처리할 주 ${wk})`);
+    REQV = { ...cur, status: 'running', total: keys.length, done: 0, items: [], startedAt: new Date().toISOString(), finishedAt: null, note: null };
+    await reqSave({});
+    console.log(`예약 처리 시작 — ${keys.length}명 · 쌍둥이 간격 ${GAP}ms (대략 ${Math.ceil(keys.length * 40 * GAP / 60000)}분 걸립니다)`);
+  }
   const results = [];
   for (const k of keys) {
     const e = C[k]; const stu = sdb.find((s) => String(s.id) === String(k)) || sdb.find((s) => s.name === k) || sdb.find((s) => e.snap && s.name === e.snap.name);
@@ -290,8 +384,20 @@ async function build(M, P, name, school, sid, recDate, log) {
         const fresh = (await store(['rc_state'])).rc_state || state; if (fresh.calls && fresh.calls[wk] && fresh.calls[wk][k]) { fresh.calls[wk][k].ws = { wsId: res.wsId, n: res.n, parts: res.parts, at: res.at }; if (UPD_SCORE && fresh.calls[wk][k].snap) { const lt = (Array.isArray(useTests) ? useTests.slice().sort((a, b) => String(b.date).localeCompare(String(a.date))) : [useTests])[0]; if (lt) { fresh.calls[wk][k].snap.score = lt.score; fresh.calls[wk][k].snap.scoreDate = lt.date; fresh.calls[wk][k].snap.testTitle = lt.title; } } await setItem('rc_state', { calls: fresh.calls, dates: fresh.dates || {}, periods: fresh.periods || {}, updated: new Date().toISOString() }); }
       }
     } catch (err) { line('✗ 실패: ' + err.message); results.push({ k, skip: 'error', why: err.message }); }
+    if (REQ) {
+      const last = results[results.length - 1] || {};
+      await reqSave({ done: results.length,
+        items: [...((REQV && REQV.items) || []), { key: k, name: mask(name), ok: !!last.ok,
+          wsId: last.ok ? last.res.wsId : null, n: last.ok ? last.res.n : 0, why: last.ok ? null : (last.why || last.skip || null) }] });
+      if (CAPTCHA) { await reqSave({ status: 'stopped', note: CAPTCHA, finishedAt: new Date().toISOString() });
+        console.log('예약 처리 중단 — 보안문자'); break; }
+    }
     await new Promise((r) => setTimeout(r, 300));
   }
   const ok = results.filter((r) => r.ok); const tot = ok.reduce((s, r) => s + r.res.n, 0);
   console.log(`\n${DRY ? '[설계만]' : '[완료]'} 확정 ${keys.length}명 중 ${ok.length}명 ${DRY ? '설계' : '생성·배정'} · 총 ${tot}문항 · 건너뜀 ${results.length - ok.length}명 (${results.filter((r) => !r.ok).map((r) => r.skip).join(', ') || '-'})`);
+  if (REQ && (!REQV || REQV.status !== 'stopped')) {
+    await reqSave({ status: 'done', done: results.length, madeN: ok.length, totalProblems: tot, finishedAt: new Date().toISOString() });
+    console.log(`예약(${REQ}) 처리 끝 — 학원앱에 「완료」로 보입니다.`);
+  }
 })().catch((e) => { console.error('❌', e.message); process.exit(1); });

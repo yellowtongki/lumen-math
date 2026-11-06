@@ -125,6 +125,7 @@
 ## 📌 다른 채팅과 이어지는 작업
 
 - **아이디어 보관함**: `docs/ideas.md` — 원장님이 던진 아이디어를 모아두는 곳. 바로 개발하지 않아도 됨
+- **리커버리 학습지 「예약 → 천천히」**: 매쓰플랫이 쌍둥이 조회를 한 번에 많이 받으면 보안문자(CAPTCHA)를 낸다. 서버가 3초 간격으로 천천히 만들고 새벽에 미리 받아 둔다. **`docs/rcws_queue_handoff.md` 를 먼저 읽을 것** (2026-11-06, `sync/rcws_make.js --req` · `sync/mf_derivation_warm.js` · 표 `docs/mf_derivation_cache.sql` 은 새벽에). ⚠ **매쓰플랫 토큰은 5분이면 끊긴다** — 5분 넘는 작업에는 401 재로그인을 반드시 넣는다. 학원앱 버튼을 예약으로 바꾸는 일이 남아 있다
 - **고등부 주간테스트 학습지**: 매쓰플랫 「주간TEST」 보관함은 초1~중3만 있어서 고등은 직접 조립한다. **`docs/mathflat_weekly_test.md` 를 먼저 읽을 것** (2026-11-06, 도구 `sync/mf_weekly_test.js` · `mf_progress_by_unit.js`, 계획 `sync/weekly_plans/`). ⚠ 시험범위는 교재 «최근 쪽수»가 아니라 **학생들의 소단원별 채점 기록**으로 정한다
 - **풀이노트(학원노트) 만들기**: 문제집 PDF → 방안지 풀이노트, 남의 노트 로고 교체. **`docs/solution_note.md` 를 먼저 읽을 것** (2026-10-13, 도구 `sync/solution_note_build.py` · `note_logo_swap.py` · `mf_workbook_list.js`). 교재 원본·완성 노트는 저장소에 올리지 않는다(저작권). 컴퓨터(로컬)에서 하면 외장하드 PDF 를 바로 읽는다
 - **블로그·인스타 자동화**: 컴퓨터가 2대로 나뉘어 있다.
