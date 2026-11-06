@@ -69,6 +69,52 @@ const d = await deriv(pid);   // deriv() 안에서 mf_derivation_cache 조회 �
 캐시가 채워지면 리커버리 학습지는 **쌍둥이 조회 0회**로 몇 초 만에 끝난다.
 같은 오답 문항이 주마다 겹치므로 적중률은 계속 올라간다.
 
+## 2026-11-06 밤 실측 — ①번 처방이 통했다
+
+11/7 리커버리 16명분을 **캐시 + 3초 간격**으로 다시 돌려 **전원 생성·배정 성공**했다.
+
+| | 값 |
+|---|---|
+| 쌍둥이 조회 | **685회 실제 호출 · 135회 캐시** |
+| 간격 | 3초 |
+| 걸린 시간 | 20:51~21:29 KST (약 38분, 두 번에 나눠) |
+| 보안문자 | **한 번도 안 뜸** |
+| 결과 | 16명 전원 · 총 1,173문항 · `rc_ws_made`·`rc_state` 기록 완료 |
+
+간격 없이 770회를 쏘면 수십 회에 걸리고, **3초를 두면 685회가 멀쩡하다.**
+호출 수가 아니라 **속도**가 문제였다.
+
+### ⚠ 덤으로 드러난 버그 — 매쓰플랫 토큰이 5분 만에 끊긴다
+
+`sync/rcws_make.js` 의 `mf()` 에는 **401 재로그인이 없다.** 그동안 리커버리가 빨리 끝나
+안 드러났는데, 간격을 두고 천천히 가니 5분 지점부터 전부 죽었다
+(첫 실행: 3명 성공 뒤 13명 `UNAUTHORIZED @ /worksheet/filter/concept`).
+
+고칠 곳 — `sync/rcws_make.js` 의 `mf()`:
+
+```js
+let _loginAt = 0;
+async function mf(method, p, body, _retried) {
+  if (Date.now() - _loginAt > 150000) { await mfLogin(); _loginAt = Date.now(); }  // 2.5분마다 미리
+  const r = await fetch(`${MF}${p}`, { ... });
+  const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch (e) {}
+  if (r.status === 401 && !_retried) {            // 그래도 끊겼으면 한 번 더
+    await mfLogin(); _loginAt = Date.now();
+    return mf(method, p, body, true);
+  }
+  if (!r.ok) throw new Error(`${(j && j.code) || r.status} @ ${p}`);
+  return j && (j.data !== undefined ? j.data : j);
+}
+```
+
+`mfLogin()` 안에서도 `_loginAt = Date.now()` 를 찍어 둔다.
+`sync/mypaper_to_mathflat.js` 는 이미 같은 방식으로 401 재로그인을 하고 있다 — 그쪽을 본뜨면 된다.
+
+### 그래서 급할 때 쓰는 임시방편 (②가 생기기 전까지)
+
+`rcws_make.js` 에 **① 같은 문항 캐시 ② 호출 사이 3초 ③ 401 재로그인** 세 가지를 넣으면
+16명이 약 35분에 끝난다. ②(미리 받아 두기)가 생기면 몇 초로 줄어든다.
+
 ## 지키는 선
 
 - **보안문자는 풀지도, 피해 가지도 않는다.** 뜨면 멈춘다
