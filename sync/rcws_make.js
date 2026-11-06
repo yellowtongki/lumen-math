@@ -122,25 +122,45 @@ let dLast = 0, dCalls = 0, dMem = 0, dDb = 0, CAPTCHA = null;
 const slimP = (x) => (x && x.problem ? { problem: { id: x.problem.id, level: x.problem.level, autoScoredType: x.problem.autoScoredType, type: x.problem.type, answer: x.problem.answer } } : null);
 const slim = (d) => ({ pairProblemList: ((d && d.pairProblemList) || []).map(slimP).filter(Boolean),
                        similarProblemList: ((d && d.similarProblemList) || []).map(slimP).filter(Boolean) });
-/* 캐시 표가 아직 없으면(= 404/42P01) 조용히 끄고 매쓰플랫만 쓴다 */
-let DBCACHE = !NO_CACHE;
-async function cacheGet(pid) {
-  if (!DBCACHE) return null;
+/* 캐시를 어디에 둘까 — 전용 표 mf_derivation_cache 가 있으면 거기,
+ * 없으면 범용 저장소 lumen_store 의 `mfd_<번호>` 에 둔다.
+ * (표를 만드는 SQL 은 서비스 열쇠로 돌릴 수 없다 — 원장님이 Supabase 화면에서
+ *  docs/mf_derivation_cache.sql 을 한 번 돌리면 그때부터 저절로 표 쪽을 쓴다.)
+ * 유사 문제는 앞 30개만 담는다 — pick() 은 보통 2개만 집으므로 넉넉하고, 표가 작아진다. */
+const SIM_KEEP = 30;
+let CSTORE = NO_CACHE ? 'off' : null;      // null = 아직 모름 · 'table' · 'store' · 'off'
+async function cacheWhere() {
+  if (CSTORE) return CSTORE;
   try {
-    const r = await fetch(`${SB}/rest/v1/mf_derivation_cache?select=pair,similar&problem_id=eq.${pid}`, { headers: H });
-    if (r.status === 404 || r.status === 400) { DBCACHE = false; return null; }
-    if (!r.ok) return null;
-    const rows = await r.json();
-    if (!rows.length) return null;
-    return { pairProblemList: rows[0].pair || [], similarProblemList: rows[0].similar || [] };
+    const r = await fetch(`${SB}/rest/v1/mf_derivation_cache?select=problem_id&limit=1`, { headers: H });
+    CSTORE = r.ok ? 'table' : 'store';
+  } catch (e) { CSTORE = 'store'; }
+  return CSTORE;
+}
+async function cacheGet(pid) {
+  const w = await cacheWhere(); if (w === 'off') return null;
+  try {
+    if (w === 'table') {
+      const r = await fetch(`${SB}/rest/v1/mf_derivation_cache?select=pair,similar&problem_id=eq.${pid}`, { headers: H });
+      if (!r.ok) return null;
+      const rows = await r.json();
+      return rows.length ? { pairProblemList: rows[0].pair || [], similarProblemList: rows[0].similar || [] } : null;
+    }
+    const v = (await store(['mfd_' + pid]))['mfd_' + pid];
+    return v && v.pair ? { pairProblemList: v.pair, similarProblemList: v.similar || [] } : null;
   } catch (e) { return null; }
 }
 async function cachePut(pid, d) {
-  if (!DBCACHE) return;
+  const w = await cacheWhere(); if (w === 'off') return;
+  const pair = d.pairProblemList, similar = (d.similarProblemList || []).slice(0, SIM_KEEP);
   try {
-    await fetch(`${SB}/rest/v1/mf_derivation_cache?on_conflict=problem_id`, { method: 'POST',
-      headers: { ...H, prefer: 'resolution=merge-duplicates' },
-      body: JSON.stringify([{ problem_id: Number(pid), pair: d.pairProblemList, similar: d.similarProblemList, fetched_at: new Date().toISOString() }]) });
+    if (w === 'table') {
+      await fetch(`${SB}/rest/v1/mf_derivation_cache?on_conflict=problem_id`, { method: 'POST',
+        headers: { ...H, prefer: 'resolution=merge-duplicates' },
+        body: JSON.stringify([{ problem_id: Number(pid), pair, similar, fetched_at: new Date().toISOString() }]) });
+    } else {
+      await setItem('mfd_' + pid, { pair, similar, at: new Date().toISOString() });
+    }
   } catch (e) { /* 캐시는 없어도 그만 */ }
 }
 async function mf(method, p, body) {
@@ -166,7 +186,7 @@ async function mf(method, p, body) {
   if (dCalls % 25 === 0) console.log(`      … 쌍둥이 조회 ${dCalls}회 (이번 실행 캐시 ${dMem} · 서버 캐시 ${dDb}) · 간격 ${GAP}ms`);
   return out;
 }
-process.on('exit', () => { if (dCalls || dMem || dDb) console.log(`\n━━━ 쌍둥이 조회: 매쓰플랫 ${dCalls}회 · 이번 실행 캐시 ${dMem}회 · 서버 캐시 ${dDb}회 · 간격 ${GAP}ms${DBCACHE ? '' : ' (캐시 표 없음)'} ━━━`); });
+process.on('exit', () => { if (dCalls || dMem || dDb) console.log(`\n━━━ 쌍둥이 조회: 매쓰플랫 ${dCalls}회 · 이번 실행 캐시 ${dMem}회 · 서버 캐시 ${dDb}회 · 간격 ${GAP}ms · 캐시 ${CSTORE === 'table' ? '전용 표' : CSTORE === 'store' ? 'lumen_store' : '끔'} ━━━`); });
 
 /* ── 학생·시험 고르기 (학원앱 rcRows 와 같은 기준) ── */
 function bandOf(grade) { const m = String(grade || '').match(/(초|중|고)[^0-9]*(\d)/); if (!m) return 'mid'; if (m[1] !== '초') return 'mid'; return Number(m[2]) >= 6 ? 'elem6' : 'elemLow'; }

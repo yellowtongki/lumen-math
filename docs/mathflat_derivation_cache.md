@@ -30,6 +30,11 @@
 
 ## 표
 
+**캐시를 둘 곳은 두 가지다.** 전용 표가 있으면 거기, 없으면 범용 저장소 `lumen_store` 의 `mfd_<번호>` 키.
+전용 표를 만드는 SQL 은 **서비스 열쇠로 돌릴 수 없다**(PostgREST 는 DDL 을 못 한다. `exec_sql` RPC 도 없다).
+원장님이 Supabase 화면에서 `docs/mf_derivation_cache.sql` 을 한 번 돌리면 그때부터 코드가 **저절로** 표 쪽을 쓴다.
+**안 돌려도 전부 정상 작동한다** — `lumen_store` 에 담길 뿐이다.
+
 ```sql
 -- ⚠ 새벽에만 실행 (학생들이 앱을 쓰는 19~23시 금지)
 create table if not exists mf_derivation_cache (

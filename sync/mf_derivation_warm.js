@@ -29,7 +29,9 @@
  *
  * 환경변수: SUPABASE_URL · SUPABASE_SERVICE_KEY · MATHFLAT_ID · MATHFLAT_PASSWORD
  *
- * 먼저 할 것: docs/mf_derivation_cache.sql 로 표를 만든다 (새벽에)
+ * 캐시 두는 곳: 전용 표 mf_derivation_cache 가 있으면 거기, 없으면 lumen_store 의 `mfd_<번호>`.
+ *   (표를 만드는 SQL 은 서비스 열쇠로 못 돌린다 — 원장님이 Supabase 화면에서
+ *    docs/mf_derivation_cache.sql 을 한 번 돌리면 그때부터 저절로 표 쪽을 쓴다. 안 해도 돌아간다.)
  * 함께 보기: docs/mathflat_derivation_cache.md
  * ═══════════════════════════════════════════════════════════════════ */
 
@@ -96,27 +98,68 @@ async function mf(method, p, body, retried) {
   return j && (j.data !== undefined ? j.data : j);
 }
 
+let WHERE = 'table';
+const SIM_KEEP = 30;        // 유사는 앞 30개만 담는다 — pick() 은 보통 2개만 집는다
 const bankId = (p) => { const m = String((p && p.pimg) || '').match(/\/problem\/(\d+)\//); return m ? Number(m[1]) : null; };
+async function haveIds(ids) {
+  const have = new Set();
+  for (let i = 0; i < ids.length; i += 150) {
+    const part = ids.slice(i, i + 150);
+    try {
+      if (WHERE === 'table') {
+        const rows = await q(`mf_derivation_cache?select=problem_id&problem_id=in.(${part.join(',')})`);
+        rows.forEach((x) => have.add(Number(x.problem_id)));
+      } else {
+        const rows = await q(`lumen_store?select=key&key=in.(${part.map((x) => 'mfd_' + x).join(',')})`);
+        rows.forEach((x) => have.add(Number(String(x.key).slice(4))));
+      }
+    } catch (e) { /* 못 읽으면 그냥 다시 받는다 */ }
+  }
+  return have;
+}
+async function putOne(id, d) {
+  const pair = ((d && d.pairProblemList) || []).map(slimP).filter(Boolean);
+  const similar = ((d && d.similarProblemList) || []).map(slimP).filter(Boolean).slice(0, SIM_KEEP);
+  if (WHERE === 'table') {
+    await fetch(`${SB}/rest/v1/mf_derivation_cache?on_conflict=problem_id`, { method: 'POST',
+      headers: { ...H, prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify([{ problem_id: id, pair, similar, fetched_at: new Date().toISOString() }]) });
+  } else {
+    await fetch(`${SB}/rest/v1/lumen_store?on_conflict=key`, { method: 'POST',
+      headers: { ...H, prefer: 'resolution=merge-duplicates' },
+      body: JSON.stringify([{ key: 'mfd_' + id, value: { pair, similar, at: new Date().toISOString() } }]) });
+  }
+}
 const slimP = (x) => (x && x.problem ? { problem: { id: x.problem.id, level: x.problem.level, autoScoredType: x.problem.autoScoredType, type: x.problem.type, answer: x.problem.answer } } : null);
 
 async function prune() {
   const cut = new Date(Date.now() - KEEP_DAYS * 86400000).toISOString();
-  const r = await fetch(`${SB}/rest/v1/mf_derivation_cache?fetched_at=lt.${cut}`, { method: 'DELETE', headers: { ...H, prefer: 'count=exact' } });
-  if (!r.ok) { log(`오래된 줄 지우기 실패 ${r.status}`); return 0; }
-  const n = (r.headers.get('content-range') || '').split('/')[1];
-  log(`${KEEP_DAYS}일 넘은 줄 지움 (${n || '?'}건)`);
-  return 1;
+  if (WHERE === 'table') {
+    const r = await fetch(`${SB}/rest/v1/mf_derivation_cache?fetched_at=lt.${cut}`, { method: 'DELETE', headers: { ...H, prefer: 'count=exact' } });
+    if (!r.ok) { log(`오래된 줄 지우기 실패 ${r.status}`); return; }
+    log(`${KEEP_DAYS}일 넘은 줄 지움 (${(r.headers.get('content-range') || '').split('/')[1] || '?'}건)`);
+    return;
+  }
+  /* lumen_store 쪽은 값 안의 at 을 보고 지운다 */
+  let old = [];
+  try {
+    const rows = await qAll('lumen_store?select=key,value&key=like.mfd_*');
+    old = rows.filter((x) => { const a = x.value && x.value.at; return a && a < cut; }).map((x) => x.key);
+  } catch (e) { return; }
+  for (let i = 0; i < old.length; i += 100) {
+    const part = old.slice(i, i + 100);
+    await fetch(`${SB}/rest/v1/lumen_store?key=in.(${part.map(encodeURIComponent).join(',')})`, { method: 'DELETE', headers: H });
+  }
+  if (old.length) log(`${KEEP_DAYS}일 넘은 캐시 ${old.length}개 지움`);
 }
 
 (async () => {
   if (!SB || !KEY) throw new Error('SUPABASE_URL / SUPABASE_SERVICE_KEY 가 없습니다');
 
-  /* 표가 있는지 먼저 본다 */
+  /* 캐시를 어디에 둘까 — 전용 표가 있으면 거기, 없으면 lumen_store 의 `mfd_<번호>` */
   const probe = await fetch(`${SB}/rest/v1/mf_derivation_cache?select=problem_id&limit=1`, { headers: H });
-  if (!probe.ok) {
-    console.error(`❌ mf_derivation_cache 표가 없습니다 (${probe.status}). docs/mf_derivation_cache.sql 을 새벽에 먼저 돌려 주세요.`);
-    process.exit(1);
-  }
+  WHERE = probe.ok ? 'table' : 'store';
+  log(`캐시 두는 곳: ${WHERE === 'table' ? 'mf_derivation_cache 표' : 'lumen_store 의 mfd_* (전용 표가 아직 없습니다 — docs/mf_derivation_cache.sql 을 한 번 돌리면 저절로 표 쪽을 씁니다)'}`);
   if (PRUNE_ONLY) { await prune(); return; }
 
   const since = new Date(Date.now() - DAYS * 86400000).toISOString();
@@ -149,12 +192,7 @@ async function prune() {
 
   /* ③ 이미 캐시에 있는 것 빼기 */
   const ids = [...want.keys()];
-  const have = new Set();
-  for (let i = 0; i < ids.length; i += 200) {
-    const part = ids.slice(i, i + 200);
-    const rows = await q(`mf_derivation_cache?select=problem_id&problem_id=in.(${part.join(',')})`);
-    rows.forEach((x) => have.add(Number(x.problem_id)));
-  }
+  const have = await haveIds(ids);
   let todo = ids.filter((id) => !have.has(id) && want.get(id));   // 유형을 모르면 필터를 못 만든다
   const noCid = ids.filter((id) => !have.has(id) && !want.get(id)).length;
   log(`  전체 ${ids.length}개 · 이미 받아 둠 ${have.size}개 · 받을 것 ${todo.length}개` + (noCid ? ` (유형을 몰라 건너뜀 ${noCid}개)` : ''));
@@ -185,12 +223,7 @@ async function prune() {
       last = Date.now();
       try {
         const d = await mf('POST', '/derivation/problem/' + id, { excludedProblemIds: [], filterId: fid, bookType: 'WORKSHEET', tagTop: null });
-        const row = { problem_id: id,
-          pair: ((d && d.pairProblemList) || []).map(slimP).filter(Boolean),
-          similar: ((d && d.similarProblemList) || []).map(slimP).filter(Boolean),
-          fetched_at: new Date().toISOString() };
-        await fetch(`${SB}/rest/v1/mf_derivation_cache?on_conflict=problem_id`, { method: 'POST',
-          headers: { ...H, prefer: 'resolution=merge-duplicates' }, body: JSON.stringify([row]) });
+        await putOne(id, d);
         got++;
         if (got % 25 === 0) log(`  … ${got}/${todo.length}개 받음`);
       } catch (e) {

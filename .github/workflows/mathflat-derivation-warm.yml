@@ -24,7 +24,7 @@ on:
         description: '최근 며칠 오답까지 (기본 35)'
         required: false
       max:
-        description: '한 번에 받을 최대 문항 수 (기본 300)'
+        description: '한 번에 받을 최대 문항 수 (기본 500)'
         required: false
       gap:
         description: '쌍둥이 조회 사이 쉬는 시간 ms (기본 3000)'
@@ -52,5 +52,5 @@ jobs:
         run: |
           node sync/mf_derivation_warm.js \
             --days "${{ github.event.inputs.days || '35' }}" \
-            --max  "${{ github.event.inputs.max  || '300' }}" \
+            --max  "${{ github.event.inputs.max  || '500' }}" \
             --gap  "${{ github.event.inputs.gap  || '3000' }}"
