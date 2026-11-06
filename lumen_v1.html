@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-179';
+var APP_VER = 'v19-180';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9098,6 +9098,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-180',date:'2026-11-06',stability:'ok',memo:'🔐 <b>리커버리 — 매쓰플랫 계정 칸이 안 열리던 것 · 보안문자 안내</b> (원장 2026-11-06 「학원앱에서 매쓰플랫 입력이 안 된다」). [까닭] 오른쪽 도구 「🔐 계정 넣는 칸 열기」는 옛 카드 보드 오른쪽 «확정 명단» 패널의 계정 칸으로 가는 단추였는데, v19-174 줄 표가 그 패널을 빼서 눌러도 아무 일이 없었다. [고침] 도구 서랍의 🔐 매쓰플랫 계정 칸 안에 아이디·비밀번호 칸과 「🔐 저장」을 바로 둠(이 PC 에만 저장 · 서버로 안 감, 예전과 같음). 11/6 매쓰플랫이 쌍둥이 문제 조회에 «보안문자(CAPTCHA)»를 요구해 학습지 만들기가 막힐 때는 「매쓰플랫 선생님 사이트에서 보안 확인을 마친 뒤 다시」라고 알려 준다(앱이 보안문자를 대신 풀지 않음). 부품 modules/mfacct180_teacher.js · 검사 tests/test_v19180.js.'},
       {ver:'v19-179',date:'2026-11-06',stability:'ok',memo:'⚠ <b>리커버리 — 기간 밖 새 시험 경고</b> (원장 2026-11-06 「화목반 주간테스트 점수가 안 들어왔다」 → 「경고 띄우는 걸로 넣고 배포해」). [까닭] 선발 기간을 「직접 지정 10/29 ~ 11/4」로 고정해 둔 채라, 화목토반이 11/5 에 본 시험이 기간 밖이어서 보드에 10/29 점수가 대신 떴다(점수는 서버에 들어와 있었음). 이제 기간 지정을 쓰는 중에 그 끝날 뒤에 본 시험이 있으면 보드 맨 위에 주황 띠 「⚠ 선발 기간 밖에 더 새 시험이 있어요 — n명」과 단추 두 개 — <b>기간을 오늘까지 옮기기</b>(같은 길이로 끝을 오늘로) · <b>최근 1주(자동)로</b>. 선발 기준 줄의 기간 칩 옆에도 「⚠ 기간 밖 새 시험 n명」. 기간은 단추를 누를 때만 바뀐다. 부품 modules/rcrange179_teacher.js · 검사 tests/test_v19179.js.'},
       {ver:'v19-178',date:'2026-11-05',stability:'ok',memo:'👆 <b>숙제체크 칸 — 누르면 먼저 창</b> (원장 2026-11-05 「누르면 그냥 100퍼센트로 바뀐다 · 수정하겠습니까? 메뉴가 뜨거나 해야 한다 · 자꾸 누를 때마다 변경」). 이제 어느 칸이든 한 번 누르면 <b>창만 열리고</b> 값은 창에서 고른 것만 저장된다. 빈 칸 창에는 「다 했음 · 풀이만 · 채점까지 · 안 했음」 네 단추(누르면 저장되고 큰 창으로 이어져 단계별로 고침)와 「닫기(안 바꿈)」. 이미 찍은 칸은 예전 세부 창, 🙋 학생이 제출한 칸은 창 맨 위 「학생 값 그대로 ✓ 저장」. 같은 칸을 한 번 더 누르면 창이 닫힌다. 맨 위 초록 띠의 <b>⚡ 빠른 탭</b> 단추를 켜면 예전처럼 빈 칸 = 바로 100%(이 기기에만 기억). 저장·되돌리기·학부모앱 거울은 그대로. 부품 modules/hwtapask178_teacher.js · 검사 tests/test_v19178.js.'},
       {ver:'v19-177',date:'2026-11-05',stability:'ok',memo:'🎨 <b>숙제체크 칸 3판 — 색 = 숙제 이행도 · 모양 = 누가 매겼나</b> (원장 2026-11-05 「추천대로 배포」, 계약 docs/hw_dispatch_contract.md §12 · 시안 docs/mockup_hwcheck_selfcell.html). 칸 색은 <b>이행도(종합 %) 4단</b>만 말한다 — 100 진초록 · 60~99 연두 · 30~59 주황 · 0~29 빨강(60 = 학부모앱 「미흡」 선이라 주황·빨강 칸 = 학부모앱에서 미흡으로 보이는 칸). <b>누가 매겼는지</b>는 모양으로: 선생님이 찍은 칸 = 색 꽉 채움 · 학생이 「📤 제출」까지 한 칸 = 흰 바탕 + 같은 색 점선 + 「🙋 제출」 · 학생이 고르기만 한 칸 = 흐린 점점선 + 「✎ 작성 중」 · 아무도 안 누른 칸 = 지금처럼 빈 칸. 숫자는 그 값의 종합 %. 칸 아래쪽 작은 4칸 띠 = 풀이·채점·오답·아하 단계마다 같은 4단 색(아하 해당 없음은 회색) — 같은 50% 라도 어디서 멈췄는지 보인다. 선생님 값이 학생 말보다 30 이상 낮으면 모서리에 보라 「🙋80」(학생 값). <b>누르기</b>: 🙋 제출 칸 한 번 = 학생 값 그대로 저장(되돌리기 · 리포트 경고등 · 학생앱 파란 숫자 그대로) · ✎ 작성 중 칸 = 세부 창 · 빈 칸·선생님 칸 = 지금 그대로. 오늘 칸은 노란 테두리 대신 <b>파란 바깥선</b>(주황 이행도와 안 헷갈리게). 학생 줄 오른쪽 끝 「최근 4번」 = 선생님이 확인한 최근 4번 평균 % 칩 + ↗/→/↘(최근 2번이 그 앞 2번보다 10 넘게 오르내림) + 최근 3번 중 2번 이상 미흡이면 「🚑 후보」. 반 머리 줄엔 맨 위 띠 날짜의 반 평균 % 칩(선생님 값 우선, 없으면 학생 제출 값). 맨 위에 색 범례 한 줄. v19-176 의 칸 밖 알약은 없앴다(띠 · 반 머리 🙋n/m · 세부 창 학생 칸 맨 위는 그대로). 수업 모드 칸도 같은 색·모양(조금 크게) — 줄 끝 · 반 평균은 아이패드 폭 때문에 날짜 그리드에만. 학생별 보기 · 종이 체크표는 그대로. 부품 modules/hwcolor177_teacher.js · 검사 tests/test_v19177.js.'},
@@ -103597,7 +103598,60 @@ if (typeof rRecovery === 'function') rRecovery = (function(orig){ return functio
 }; })(rRecovery);
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~179: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-180: 🔐 리커버리 — 매쓰플랫 계정 칸이 안 열리던 것 · 보안문자(CAPTCHA) 안내 (원장 2026-11-06 「학원앱에서 매쓰플랫 입력이 안 된다」)
+ *  [까닭 1] 오른쪽 도구 「🔐 계정 넣는 칸 열기」(l3rAcctOpen)는 가운데 옛 카드 보드 오른쪽 «확정 명단» 패널의 계정 칸(#rcws-id)으로
+ *           가서 커서를 두는 단추였다. v19-174 줄 표가 그 패널을 가운데에서 빼서 #rcws-id 가 없어졌다 → 눌러도 아무 일 없음.
+ *  [고침 1] 도구 칸(서랍) 안에 아이디·비밀번호 칸과 「저장」을 바로 둔다(이 PC 의 or_mf_id / or_mf_pw — 서버로 안 감, 예전과 같음).
+ *           칸 id 는 l3r- 로 시작해 화면이 다시 그려져도 커서가 남는다(layout3 render 감싸기 규칙).
+ *  [까닭 2] 11/6 매쓰플랫이 쌍둥이 문제 조회(/derivation/problem)에 «CAPTCHA_REQUIRED»(보안문자)를 돌려준다.
+ *  [고침 2] 그 오류를 사람 말로 바꾼다: 「매쓰플랫이 보안 확인(보안문자)을 요구합니다 — 매쓰플랫 선생님 사이트에서 직접 확인을 마친 뒤 다시」.
+ *           보안문자를 앱이 대신 풀거나 피해 가지 않는다.
+ *  ※ 문자열 연결로만 HTML.
+ * ═══════════════════════════════════════════════════════════════════ */
+function l3rAcctBox(){
+  var a = { id: '', pw: '' }; try { a = rcwsAcct(); } catch(e){}
+  var ok = !!(a.id && a.pw);
+  var h = '<div class="l3-tool" id="l3r-acct-box"><b>🔐 매쓰플랫 계정</b>';
+  if (ok) {
+    h += '<span class="l3-sub" id="l3r-acct">✓ 이 PC 에 저장됨 (' + l3bQ(a.id.slice(0, 3)) + '***) · 즉시 생성 가능</span>'
+      + '<button type="button" class="l3-btn" id="l3r-acct-clear" onclick="rcwsClearAcct()">지우기</button>';
+  } else {
+    h += '<span class="l3-sub" id="l3r-acct">이 PC 에 저장 안 됨 — 넣으면 학습지를 바로 만듭니다 (이 PC 에만 저장 · 서버로 안 감)</span>'
+      + '<input id="l3r-mf-id" type="text" autocomplete="username" placeholder="매쓰플랫 아이디" style="width:100%;box-sizing:border-box;border:1.5px solid #cbd5e1;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:12.5px;margin-top:6px">'
+      + '<input id="l3r-mf-pw" type="password" autocomplete="current-password" placeholder="비밀번호" onkeydown="if(event.key===\'Enter\')l3rAcctSave()" style="width:100%;box-sizing:border-box;border:1.5px solid #cbd5e1;border-radius:8px;padding:7px 9px;font-family:inherit;font-size:12.5px;margin-top:5px">'
+      + '<button type="button" class="l3-btn" id="l3r-acct-save" onclick="l3rAcctSave()" style="margin-top:6px">🔐 저장</button>';
+  }
+  return h + '</div>';
+}
+window.l3rAcctSave = function(){
+  var id = String((document.getElementById('l3r-mf-id') || {}).value || '').trim();
+  var pw = String((document.getElementById('l3r-mf-pw') || {}).value || '').trim();
+  if (!id || !pw) { try { plToast('매쓰플랫 아이디와 비밀번호를 모두 넣어 주세요'); } catch(e){} return; }
+  try { localStorage.setItem('or_mf_id', id); localStorage.setItem('or_mf_pw', pw); } catch(e){}
+  try { RCWS.tok = null; } catch(e){}
+  try { plToast('🔐 매쓰플랫 계정을 이 PC 에 저장했습니다'); } catch(e){}
+  try { render(); } catch(e){}
+};
+/* 「계정 넣는 칸 열기」(옛 단추·다른 곳에서 부를 때) → 도구 서랍을 열고 아이디 칸에 커서 */
+window.l3rAcctOpen = function(){
+  try { if (typeof rb174Go === 'function') rb174Go('#l3r-acct-box'); } catch(e){}
+  setTimeout(function(){
+    var i = document.getElementById('l3r-mf-id') || document.getElementById('rcws-id');
+    if (i) { try { i.scrollIntoView({ block: 'center' }); } catch(e){} try { i.focus({ preventScroll: true }); } catch(e){ i.focus(); } }
+  }, 80);
+};
+/* 매쓰플랫 보안문자 → 사람 말 */
+var MF_CAPTCHA_MSG = '매쓰플랫이 보안 확인(보안문자)을 요구합니다 — 매쓰플랫 선생님 사이트(teacher.mathflat.com)에 직접 들어가 학습지 만들기에서 쌍둥이 문제를 한 번 불러 보안 확인을 마친 뒤 다시 눌러 주세요. 앱은 보안문자를 대신 풀지 않습니다.';
+if (typeof rcwsCall === 'function') rcwsCall = (function(orig){ return async function(){
+  try { return await orig.apply(this, arguments); }
+  catch(e){
+    if (e && /CAPTCHA/i.test(String(e.message || ''))) { try { plToast('⚠ ' + MF_CAPTCHA_MSG); } catch(_){} var x = new Error(MF_CAPTCHA_MSG); x.captcha = true; throw x; }
+    throw e;
+  }
+}; })(rcwsCall);
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~180: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
