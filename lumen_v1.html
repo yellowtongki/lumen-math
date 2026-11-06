@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-178';
+var APP_VER = 'v19-179';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9098,6 +9098,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-179',date:'2026-11-06',stability:'ok',memo:'⚠ <b>리커버리 — 기간 밖 새 시험 경고</b> (원장 2026-11-06 「화목반 주간테스트 점수가 안 들어왔다」 → 「경고 띄우는 걸로 넣고 배포해」). [까닭] 선발 기간을 「직접 지정 10/29 ~ 11/4」로 고정해 둔 채라, 화목토반이 11/5 에 본 시험이 기간 밖이어서 보드에 10/29 점수가 대신 떴다(점수는 서버에 들어와 있었음). 이제 기간 지정을 쓰는 중에 그 끝날 뒤에 본 시험이 있으면 보드 맨 위에 주황 띠 「⚠ 선발 기간 밖에 더 새 시험이 있어요 — n명」과 단추 두 개 — <b>기간을 오늘까지 옮기기</b>(같은 길이로 끝을 오늘로) · <b>최근 1주(자동)로</b>. 선발 기준 줄의 기간 칩 옆에도 「⚠ 기간 밖 새 시험 n명」. 기간은 단추를 누를 때만 바뀐다. 부품 modules/rcrange179_teacher.js · 검사 tests/test_v19179.js.'},
       {ver:'v19-178',date:'2026-11-05',stability:'ok',memo:'👆 <b>숙제체크 칸 — 누르면 먼저 창</b> (원장 2026-11-05 「누르면 그냥 100퍼센트로 바뀐다 · 수정하겠습니까? 메뉴가 뜨거나 해야 한다 · 자꾸 누를 때마다 변경」). 이제 어느 칸이든 한 번 누르면 <b>창만 열리고</b> 값은 창에서 고른 것만 저장된다. 빈 칸 창에는 「다 했음 · 풀이만 · 채점까지 · 안 했음」 네 단추(누르면 저장되고 큰 창으로 이어져 단계별로 고침)와 「닫기(안 바꿈)」. 이미 찍은 칸은 예전 세부 창, 🙋 학생이 제출한 칸은 창 맨 위 「학생 값 그대로 ✓ 저장」. 같은 칸을 한 번 더 누르면 창이 닫힌다. 맨 위 초록 띠의 <b>⚡ 빠른 탭</b> 단추를 켜면 예전처럼 빈 칸 = 바로 100%(이 기기에만 기억). 저장·되돌리기·학부모앱 거울은 그대로. 부품 modules/hwtapask178_teacher.js · 검사 tests/test_v19178.js.'},
       {ver:'v19-177',date:'2026-11-05',stability:'ok',memo:'🎨 <b>숙제체크 칸 3판 — 색 = 숙제 이행도 · 모양 = 누가 매겼나</b> (원장 2026-11-05 「추천대로 배포」, 계약 docs/hw_dispatch_contract.md §12 · 시안 docs/mockup_hwcheck_selfcell.html). 칸 색은 <b>이행도(종합 %) 4단</b>만 말한다 — 100 진초록 · 60~99 연두 · 30~59 주황 · 0~29 빨강(60 = 학부모앱 「미흡」 선이라 주황·빨강 칸 = 학부모앱에서 미흡으로 보이는 칸). <b>누가 매겼는지</b>는 모양으로: 선생님이 찍은 칸 = 색 꽉 채움 · 학생이 「📤 제출」까지 한 칸 = 흰 바탕 + 같은 색 점선 + 「🙋 제출」 · 학생이 고르기만 한 칸 = 흐린 점점선 + 「✎ 작성 중」 · 아무도 안 누른 칸 = 지금처럼 빈 칸. 숫자는 그 값의 종합 %. 칸 아래쪽 작은 4칸 띠 = 풀이·채점·오답·아하 단계마다 같은 4단 색(아하 해당 없음은 회색) — 같은 50% 라도 어디서 멈췄는지 보인다. 선생님 값이 학생 말보다 30 이상 낮으면 모서리에 보라 「🙋80」(학생 값). <b>누르기</b>: 🙋 제출 칸 한 번 = 학생 값 그대로 저장(되돌리기 · 리포트 경고등 · 학생앱 파란 숫자 그대로) · ✎ 작성 중 칸 = 세부 창 · 빈 칸·선생님 칸 = 지금 그대로. 오늘 칸은 노란 테두리 대신 <b>파란 바깥선</b>(주황 이행도와 안 헷갈리게). 학생 줄 오른쪽 끝 「최근 4번」 = 선생님이 확인한 최근 4번 평균 % 칩 + ↗/→/↘(최근 2번이 그 앞 2번보다 10 넘게 오르내림) + 최근 3번 중 2번 이상 미흡이면 「🚑 후보」. 반 머리 줄엔 맨 위 띠 날짜의 반 평균 % 칩(선생님 값 우선, 없으면 학생 제출 값). 맨 위에 색 범례 한 줄. v19-176 의 칸 밖 알약은 없앴다(띠 · 반 머리 🙋n/m · 세부 창 학생 칸 맨 위는 그대로). 수업 모드 칸도 같은 색·모양(조금 크게) — 줄 끝 · 반 평균은 아이패드 폭 때문에 날짜 그리드에만. 학생별 보기 · 종이 체크표는 그대로. 부품 modules/hwcolor177_teacher.js · 검사 tests/test_v19177.js.'},
       {ver:'v19-176',date:'2026-11-05',stability:'ok',memo:'🙋 <b>학원앱에서 학생 체크가 잘 보이게</b> (원장 2026-11-05 「학원앱에서 학생체크가 더 잘보이게」, 계약 docs/hw_dispatch_contract.md §11-2). 숙제체크 칸 아래 작은 점 4개(빈 칸 점선 포함)를 없애고 <b>알약 하나</b>로 바꿨다 — 학생이 「📤 선생님께 제출」까지 했으면 초록 바탕 흰 글자 「🙋 63」, 고르기만 하고 아직 제출 전이면 흰 바탕 초록 테두리 「✎ 63」, 안 눌렀으면 아무것도 안 그린다(숫자 = 학생 종합 %, 알약을 누르면 학생 값 창). 맨 위 초록 띠에 보고 있는 날짜(오늘 · 오늘 수업이 없으면 가장 최근 수업일) 「🙋 제출 n명 · ✎ 작성 중 n명 · 안 함 n명」과 단추 「제출한 학생 전부 학생 값으로 ✓」(이미 선생님이 찍은 칸은 건너뛰고 몇 명 건너뛰었는지 알려 줌). 반 머리 「한 번에」 줄에는 날짜마다 「🙋 제출/반 인원」 칩 — 누르면 그 반 그 날 제출한 학생만 학생 값으로 적는다. 칸을 눌러 여는 세부 창은 「🙋 학생 스스로」 칸을 제목 바로 아래 맨 위로 올리고 크게(풀이·채점·오답·아하 네 칸 · 「📤 제출 16:28」/「✎ 아직 제출 안 함」 · 「학생 값 그대로 ✓ 저장」). 학생이 안 눌렀으면 「🙋 학생이 아직 체크하지 않았어요」. 저장·리포트 경고등·학생앱 파란 숫자(hw_teach_)·XP 꺼짐은 v19-175 그대로. 부품 modules/hwsee176_teacher.js · 검사 tests/test_v19176.js.'},
@@ -103516,7 +103517,87 @@ if (typeof hwsDecorate === 'function') hwsDecorate = (function(orig){ return fun
 }; })(hwsDecorate);
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~178: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-179: 🚑 리커버리 — 「기간 지정」 밖에 더 새 주간테스트가 있으면 경고 (원장 2026-11-06 「화목반 주간테스트 점수가 안 들어왔다」 → 「경고 띄우는 걸로 넣고 배포해」)
+ *  [까닭] rc_config.range 를 10/29~11/04 로 고정해 둔 뒤 화목토반이 11/5 에 본 시험이 기간 밖이라 보드에 10/29 점수가 대신 떴다.
+ *  · 기간 지정(RC.cfg.range)을 쓰고 있고, 그 끝날 뒤에 본 시험(학생 응시일 me.date — rcRows 와 같은 기준)이 있으면
+ *    보드 맨 위에 주황 띠 「⚠ 기간(10/29~11/4) 밖에 더 새 시험이 있어요 — 9명 · 11/5」 + 단추 두 개:
+ *      ① 「기간을 오늘까지 옮기기 (10/31~11/6)」 = 같은 길이로 끝을 오늘(KST)로 → rcSaveCfg
+ *      ② 「최근 1주(자동)로」 = rcSetWeeks(1)
+ *  · 선발 기준 줄의 기간 칩 옆에도 작은 「⚠ 기간 밖 새 시험 n명」 칩(누르면 ①).
+ *  · 셈은 rcRows 와 같은 규칙: 초5 이하 빼고 · 중등은 WEEKLY · 고등은 WEEKLY·HIGH_TEST·CHAPTER · 점수 있는 응시만.
+ *  ※ 문자열 연결로만 HTML. 기간을 바꾸는 것은 단추를 누를 때만(자동으로 안 바꿈).
+ * ═══════════════════════════════════════════════════════════════════ */
+function rcrToday(){ return new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10); }
+function rcrAdd(ymd, n){ return new Date(Date.parse(ymd + 'T00:00:00Z') + n * 86400000).toISOString().slice(0, 10); }
+function rcrMD(ymd){ return ymd ? (Number(ymd.slice(5, 7)) + '/' + Number(ymd.slice(8, 10))) : ''; }
+/* 기간 끝 뒤에 본 시험 — { n: 학생 수, last: 가장 늦은 응시일, from, to } 또는 null */
+function rcrBeyond(){
+  try {
+    var R = RC && RC.cfg && RC.cfg.range; if (!R || !R.from || !R.to) return null;
+    var tests = (typeof WK !== 'undefined' && WK.tests) || []; if (!tests.length) return null;
+    var seen = {}, last = '';
+    (typeof getSortedStudents === 'function' ? getSortedStudents() : []).forEach(function(st){
+      if (!st || st.withdrawn) return;
+      var sid = (typeof bpSidOf === 'function') ? bpSidOf(st) : null; if (sid == null) return;
+      var band = (typeof rcGradeBand === 'function') ? rcGradeBand(st) : ''; if (band === 'elemLow') return;
+      var hi = /고/.test(String(st.grade || ''));
+      tests.forEach(function(t){
+        if (t.type !== 'WEEKLY' && !(hi && (t.type === 'HIGH_TEST' || t.type === 'CHAPTER'))) return;
+        var me = (t.students || []).find(function(sx){ return String(sx.sid) === String(sid) && sx.score != null; });
+        if (!me) return;
+        var took = me.date || t.date; if (!took || took <= R.to) return;
+        seen[String(st.id || st.name)] = 1; if (took > last) last = took;
+      });
+    });
+    var n = Object.keys(seen).length; if (!n) return null;
+    return { n: n, last: last, from: R.from, to: R.to };
+  } catch(e){ try { console.error('[리커버리 기간 밖 시험]', e); } catch(_){} return null; }
+}
+/* ① 같은 길이로 끝을 오늘로 */
+function rcrShifted(){
+  var R = RC.cfg.range; var span = Math.max(0, Math.round((Date.parse(R.to + 'T00:00:00Z') - Date.parse(R.from + 'T00:00:00Z')) / 86400000));
+  var to = rcrToday(); return { from: rcrAdd(to, -span), to: to };
+}
+window.rcrShift = function(){
+  if (!RC.cfg.range) return;
+  var nx = rcrShifted();
+  RC.cfg.range = { from: nx.from, to: nx.to };
+  try { rcSaveCfg(); } catch(e){}
+  try { plToast('🗓️ 선발 기간을 ' + rcrMD(nx.from) + ' ~ ' + rcrMD(nx.to) + ' 로 옮겼어요'); } catch(e){}
+  try { render(); } catch(e){}
+};
+window.rcrAuto = function(){ try { rcSetWeeks(1); plToast('🗓️ 선발 기간 = 최근 1주(자동)'); } catch(e){} };
+function rcrBanner(b){
+  var nx = rcrShifted();
+  return '<div class="rcr-warn" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff7ed;border:2px solid #fb923c;border-radius:13px;padding:10px 14px;margin:0 0 12px;font-size:13px;font-weight:800;color:#9a3412">'
+    + '<span style="font-size:15px">⚠</span><span>선발 기간(' + rcrMD(b.from) + ' ~ ' + rcrMD(b.to) + ') 밖에 <b>더 새 시험</b>이 있어요 — <b>' + b.n + '명</b> · 가장 늦은 응시 ' + rcrMD(b.last) + '. 지금 보드에는 그 점수가 안 들어가 있어요.</span>'
+    + '<span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">'
+    + '<button onclick="rcrShift()" style="border:none;background:#ea580c;color:#fff;border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">기간을 오늘까지 옮기기 (' + rcrMD(nx.from) + ' ~ ' + rcrMD(nx.to) + ')</button>'
+    + '<button onclick="rcrAuto()" style="border:1.5px solid #fdba74;background:#fff;color:#9a3412;border-radius:9px;padding:6px 12px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">최근 1주(자동)로</button>'
+    + '</span></div>';
+}
+if (typeof rRecovery === 'function') rRecovery = (function(orig){ return function(){
+  var h = orig.apply(this, arguments);
+  try {
+    if (typeof h !== 'string' || !RC || !RC.loaded || (RC.view && RC.view !== 'board')) return h;
+    var b = rcrBeyond(); if (!b) return h;
+    /* 기간 칩 옆 작은 칩 */
+    var i = h.indexOf('onclick="rcOpenPeriod()"');
+    if (i >= 0) { var j = h.indexOf('</button>', i); if (j > 0) h = h.slice(0, j + 9) + '<button onclick="rcrShift()" title="기간을 같은 길이로 오늘까지 옮깁니다" style="background:#fff7ed;border:1.5px solid #fb923c;border-radius:50px;padding:5px 12px;font-size:12px;font-weight:900;color:#c2410c;cursor:pointer;font-family:inherit">⚠ 기간 밖 새 시험 ' + b.n + '명</button>' + h.slice(j + 9); }
+    /* 맨 위 띠 — 첫 머리(🚑 리커버리 수업 줄) 다음 */
+    var anchor = '<div style="padding:18px 22px 40px;max-width:1560px">';
+    var k = h.indexOf(anchor);
+    if (k >= 0) { var head = h.indexOf('🚑 리커버리 수업', k);
+      var at = (head > 0) ? h.indexOf('</button></div>', head) : -1;
+      if (at > 0) h = h.slice(0, at + 15) + rcrBanner(b) + h.slice(at + 15);
+      else h = h.slice(0, k + anchor.length) + rcrBanner(b) + h.slice(k + anchor.length);
+    } else h = rcrBanner(b) + h;
+  } catch(e){ try { console.error('[리커버리 기간 경고]', e); } catch(_){} }
+  return h;
+}; })(rRecovery);
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~179: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
