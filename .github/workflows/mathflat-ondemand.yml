@@ -61,3 +61,18 @@ jobs:
           MATHSECR_ID: ${{ secrets.MATHSECR_ID }}          # 2026-10-05: 📚 기출 DB에서 찾기 — 목록 색인(12시간마다) · 시험지 받기
           MATHSECR_PASSWORD: ${{ secrets.MATHSECR_PASSWORD }}
         run: node sync/exam_hit_worker.js
+
+      # 🧩 리커버리 학습지 «예약» — 학원앱에서 누르면 ws_make_req 에 요청만 남는다(즉시 만들지 않는다).
+      # 2026-11-06 원장 지시: 매쓰플랫이 쌍둥이 조회를 한 번에 많이 받으면 보안문자(CAPTCHA)를 낸다.
+      # 그래서 서버가 «3초 간격으로 천천히» 만들고, 한 명 끝날 때마다 진행률을 적는다
+      # (학원앱은 그 값을 읽어 「7/16 만드는 중」을 보여 준다 — docs/mathflat_derivation_cache.md).
+      # 요청이 없으면 몇 초 만에 끝난다. 쌍둥이 캐시(mf_derivation_cache)가 차 있으면 몇 분이면 끝난다.
+      - name: 리커버리 학습지 예약 처리
+        if: always()
+        timeout-minutes: 50
+        env:
+          MATHFLAT_ID: ${{ secrets.MATHFLAT_ID }}
+          MATHFLAT_PASSWORD: ${{ secrets.MATHFLAT_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node sync/rcws_make.js --req --gap 3000
