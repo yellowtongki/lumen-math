@@ -453,7 +453,7 @@ async function main() {
   let ok = 0, fail = 0;
   for (const j of todo) {
     const { code, set } = j;
-    const expectedDate = set.id.slice(0, 4) + '.' + set.id.slice(4, 6) + '.' + set.id.slice(6, 8);
+    const expectedDate = plExpectedDate(set.id);   /* 2026-11-10: 새벽 3시 전 제출은 전날 플래너 (원장 「11/4 플래너를 12시에 냈는데 11/5로」) */
     try {
       const images = [];
       for (const f of set.files.slice(0, 2)) images.push(await fetchImage(code, f.name));
@@ -491,5 +491,13 @@ async function main() {
   if (fail && !ok) process.exit(1);
 }
 
-module.exports = { main, groupSets, buildPrompt, codiPromptLines, codiCoachSave, v3PromptEdit, v3Apply, planLines, plzCheck, plzTextSim };
+/* 제출 시각(setId YYYYMMDD_HHMM) → 그 플래너의 날짜 «YYYY.MM.DD». 새벽 3시 전 제출은 전날 플래너(학생앱 마감 = 다음날 새벽 3시와 같은 규칙).
+ *   AI 프롬프트의 «이 플래너는 ○○ 경 제출» 참고 날짜와, AI 가 날짜를 못 읽었을 때 쓰는 날짜가 이 값이다. */
+function plExpectedDate(id) {
+  const m = String(id || '').match(/^(\d{4})(\d{2})(\d{2})(?:_(\d{2})(\d{2}))?/); if (!m) return '';
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  if (m[4] !== undefined && (+m[4] * 100 + +m[5]) < 300) d.setUTCDate(d.getUTCDate() - 1);
+  return d.toISOString().slice(0, 10).replace(/-/g, '.');
+}
+module.exports = { plExpectedDate, main, groupSets, buildPrompt, codiPromptLines, codiCoachSave, v3PromptEdit, v3Apply, planLines, plzCheck, plzTextSim };
 if (require.main === module) main().catch((e) => { console.error('❌', e.message); process.exit(1); });

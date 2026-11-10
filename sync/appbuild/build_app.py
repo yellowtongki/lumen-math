@@ -993,6 +993,13 @@ if int(ver.replace('v19-',''))>=182:
 # v19-184: 예전 📊 월간보고서 탭 숨김 — 📑 월간보고서 한 화면으로 (화면 코드 rMfMonth 는 남겨 둔다)
 if int(ver.replace('v19-',''))>=184:
     rep("    {v:'mfmonth', icon:'📊', label:'월간보고서', act:function(){ VIEW='mfmonth'; }},\n", "")
+# v19-185: 플래너 AI 분석의 «참고 날짜» — 새벽 3시 전 제출은 전날 플래너 (원장 2026-11-10 「11/4 플래너를 12시에 냈는데 11/5로」 · 서버 sync/planner_night_grader.js plExpectedDate 와 같은 규칙)
+if int(ver.replace('v19-',''))>=185:
+    rep("        expectedDate = setId.slice(0,4) + '.' + setId.slice(4,6) + '.' + setId.slice(6,8);",
+        "        expectedDate = setId.slice(0,4) + '.' + setId.slice(4,6) + '.' + setId.slice(6,8);\n"
+        "        /* ★ v19-185: 새벽 3시 전(00:00~02:59) 제출은 전날 플래너 — AI 에게 주는 참고 날짜도 전날로 */\n"
+        "        var _hm = /^\\d{8}_(\\d{2})(\\d{2})/.exec(setId);\n"
+        "        if (_hm && (Number(_hm[1]) * 100 + Number(_hm[2])) < 300) { var _d = new Date(Date.UTC(Number(setId.slice(0,4)), Number(setId.slice(4,6)) - 1, Number(setId.slice(6,8)) - 1)); expectedDate = _d.toISOString().slice(0,10).replace(/-/g, '.'); }")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
