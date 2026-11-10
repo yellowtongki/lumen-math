@@ -8,7 +8,7 @@
 |---|---|---|
 | 학원앱 | `lumen_v19-184.html` | `lumen_v1.html` = v19-184 (11/10 📑 월간보고서 한 화면 + 루멘 학부모앱 공개 — 부품 `modules/mfrepmerge184_teacher.js` · 검사 `tests/test_v19184.js` 17/17 · 앞 판 v19-183 아하 학생 체크 배지) |
 | 학생앱 | `student_v2-162.html` | `student_v1.html` = v2-162 (11/10 원장 「학생앱배포」 — 💡 아하노트 미해결 접힌 줄(교재별·페이지·번호 순) · ✓ 수업 중 해결 체크, `build_student_v2162.py` · 검사 `tests/test_v2162.js` 28/28) |
-| 학부모앱 | `parent_v1-39.html` (만듦·배포 대기) | `parent.html` = **v1-38** 그대로 — v1-39 = 📑 월간 학습 보고서 화면·홈 도착 카드(`build_parent_v139.py` · `modules/parent39.js` · 검사 `tests/test_p139.js` 19/19). 원장 「학부모앱 배포」 때 교체 |
+| 학부모앱 | `parent_v1-39.html` | `parent.html` = **v1-39** (11/10 원장 「학부모앱 배포」 — 📑 월간 학습 보고서 화면·홈 도착 카드, `build_parent_v139.py` · `modules/parent39.js` · 검사 `tests/test_p139.js` 19/19) |
 
 ## 2. 학원앱 만드는 법 — 조립 도구 `sync/appbuild/`
 학원앱은 «바탕 `lumen_v19-42.html` + 기능별 부품(modules/) + 버전별 고침(build_app.py 의 `if int(ver)>=NN:` 블록) + 버전 메모(memos/)» 로 **조립**한다.
@@ -135,7 +135,7 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 
 ## 6. 남은 일 (11/10 기준 — 맨 위가 최신)
 **▶ 11/7~11/10 (세션 01VfKuf3oT4dgRfrB9nZhu2P 마무리 3) — 다음 세션 첫 일**
-- **📑 월간보고서 통합 (11/10, 원장 「추천대로」 · 시안 `docs/mockup_monthly_report.html`)**: 학원앱 v19-184 = 📑 한 화면(예전 📊 탭 숨김 — 예전 화면의 `mf_report_req` 는 처리하는 예약 작업이 없어 안 돌았다) · 의견 출처 태그(`mfrep_src_<달>`) · 「✍ 루멘 데이터로 다시 쓰기」(원장 프롬프트 mf_report_cfg + 매쓰플랫 숫자 + 우리 문항 기록 틀린 유형 + 숙제 이행도 + 아하 질문 → callAI) · 공개 대상 ☑매쓰플랫 ☑루멘 ☐문자 → `mfrep_req {mf, lumen}`. 서버 `sync/mf_report_worker.js`: lumen:true 면 `mfrep_pub_<코드>.months[달]` (숫자 = 매쓰플랫 scoring 그대로 · 의견 · lumen{hw 숙제 이행도, aha, plan 10점 만점}) · 목록 rows 에 code·lumen · 검사 `sync/test_mf_report_pub.js` 13/13. 학부모앱 v1-39 = 리포트 탭 달별 줄 → 보고서 화면 · 홈 도착 카드(14일 안·안 본 달). 매쓰플랫 PDF 주소는 못 찾아 뺐다(목록 응답에 주소 없음). 10월은 원장이 매쓰플랫 학부모앱에 먼저 공개하기로 — 루멘 학부모앱은 v1-39 배포 뒤 「루멘 학부모앱」만 체크해 다시 공개.
+- **📑 월간보고서 통합 (11/10, 원장 「추천대로」 · 시안 `docs/mockup_monthly_report.html`)**: 학원앱 v19-184 = 📑 한 화면(예전 📊 탭 숨김 — 예전 화면의 `mf_report_req` 는 처리하는 예약 작업이 없어 안 돌았다) · 의견 출처 태그(`mfrep_src_<달>`) · 「✍ 루멘 데이터로 다시 쓰기」(원장 프롬프트 mf_report_cfg + 매쓰플랫 숫자 + 우리 문항 기록 틀린 유형 + 숙제 이행도 + 아하 질문 → callAI) · 공개 대상 ☑매쓰플랫 ☑루멘 ☐문자 → `mfrep_req {mf, lumen}`. 서버 `sync/mf_report_worker.js`: lumen:true 면 `mfrep_pub_<코드>.months[달]` (숫자 = 매쓰플랫 scoring 그대로 · 의견 · lumen{hw 숙제 이행도, aha, plan 10점 만점}) · 목록 rows 에 code·lumen · 검사 `sync/test_mf_report_pub.js` 13/13. 학부모앱 v1-39 = 리포트 탭 달별 줄 → 보고서 화면 · 홈 도착 카드(14일 안·안 본 달). 매쓰플랫 PDF 주소는 못 찾아 뺐다(목록 응답에 주소 없음). 10월 30명 매쓰플랫 학부모앱 공개 끝(11/10 14:34, 문자 없음 · 실패 0 · 30명 모두 학습코드 있음). 학부모앱 v1-39 배포 끝(parent.html) — 남은 일: 원장이 📑 에서 30명 체크 → 「루멘 학부모앱」만 켜고 공개 → 서버 mfrep_pub_ 확인.
 - **배포 끝**: 학원앱 **v19-183**(`lumen_v1.html` · v19-182 🔑 서버 열쇠 칸 + v19-183 아하노트 학생 체크 배지) · 학생앱 **v2-162**(`student_v1.html`, 원장 「학생앱배포」) · 학부모앱 v1-38 그대로. app_latest teacher=v19-183 · student=v2-162. main 학원앱 판 = v19-164~183 + v19-42.
 - **🚑 리커버리 11/7 마무리**: 서버 예약 20/20 끝(789문항). 고등부 4명(11/6 고등 주간테스트) #85506333(15) #85506351(40) #85506365(34) #85506386(40). 91문항 중1 1명은 원장 지시로 다시 → 7일 기준 12문항 → 원장 「2주로」 `--recent <키>=14` 26문항 #85519471(옛 것 지움). 40 넘는 나머지 4장(65·62·53·48)은 원장 「그대로」.
 - **🔑 서버 접근 규칙 정비 (원장 지시 1~3단계 · 지시문은 채팅에만, 공개 저장소라 자세히 적지 않는다)**
