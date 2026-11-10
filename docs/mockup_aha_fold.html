@@ -1,0 +1,195 @@
+<title>아하노트 접힌 질문 목록</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* 레이아웃: 왼쪽 학생앱 폰 화면(실제 동작) · 오른쪽 학원앱에 보이는 모습 + 정할 것. 좁으면 한 줄로 */
+:root{
+  --bg:#eef1f6; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#d9e0ea;
+  --navy:#0d2240; --wait:#f59e0b; --waitbg:#fff7e6; --ok:#15803d; --okbg:#ecfdf3; --blue:#1d6fe8; --bluebg:#eaf2ff;
+  --danger:#b91c1c; --soft:#f6f8fb; --shadow:0 10px 30px rgba(13,34,64,.12);
+  --f-body:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1622; --card:#172233; --ink:#e7edf6; --sub:#9fb0c6; --line:#2a3a52; --navy:#0a1626; --waitbg:#3a2a0b; --okbg:#0e2e1d; --bluebg:#132a4d; --soft:#1b2940; --shadow:0 10px 30px rgba(0,0,0,.4); color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --card:#172233; --ink:#e7edf6; --sub:#9fb0c6; --line:#2a3a52; --navy:#0a1626; --waitbg:#3a2a0b; --okbg:#0e2e1d; --bluebg:#132a4d; --soft:#1b2940; --shadow:0 10px 30px rgba(0,0,0,.4); color-scheme:dark }
+body{ background:var(--bg); color:var(--ink); font-family:var(--f-body); }
+.wrap{ max-width:1100px; margin:0 auto; padding-block:20px 40px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); }
+h1{ font-size:20px; margin:0 0 4px; text-wrap:balance }
+.lead{ color:var(--sub); font-size:13.5px; line-height:1.6; margin:0 0 18px; max-width:70ch }
+.grid{ display:grid; grid-template-columns:380px 1fr; gap:24px; align-items:start }
+@media (max-width:860px){ .grid{ grid-template-columns:1fr } }
+.cap{ font-size:11.5px; font-weight:800; letter-spacing:.06em; color:var(--sub); margin:0 0 8px }
+
+/* 폰 */
+.phone{ background:var(--card); border-radius:28px; box-shadow:var(--shadow); overflow:hidden; border:1px solid var(--line); max-width:380px; width:100%; }
+.top{ background:var(--navy); color:#fff; padding:16px 16px 14px; display:flex; align-items:center; gap:10px }
+.top b{ font-size:17px } .top .bk{ width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.12); display:grid; place-items:center }
+.tabs{ display:flex; gap:4px; background:var(--soft); margin:12px; padding:4px; border-radius:12px }
+.tab{ flex:1; border:0; background:transparent; padding:8px 4px; border-radius:9px; font:inherit; font-size:13.5px; color:var(--sub); cursor:pointer }
+.tab b{ font-variant-numeric:tabular-nums; margin-left:3px }
+.tab.on{ background:var(--card); color:var(--ink); font-weight:800; box-shadow:0 1px 3px rgba(0,0,0,.08) }
+.list{ padding:0 12px 14px; display:flex; flex-direction:column; gap:10px; min-height:300px }
+.grp{ font-size:12px; font-weight:800; color:var(--sub); display:flex; justify-content:space-between; padding:4px 2px 0 }
+
+.row{ border:1.5px solid var(--line); border-radius:14px; background:var(--card); overflow:hidden }
+.row.wait{ border-color:#f6c76b; background:var(--waitbg) }
+.row.done{ border-color:#9fdcb4; background:var(--okbg) }
+.head{ display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; padding:11px 10px 11px 12px; cursor:pointer }
+.head:focus-visible{ outline:2px solid var(--blue); outline-offset:-2px }
+.where{ min-width:0 }
+.book{ font-size:13px; color:var(--sub); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+.pn{ font-size:18px; font-weight:900; font-variant-numeric:tabular-nums; letter-spacing:-.01em }
+.pn small{ font-size:12px; font-weight:700; color:var(--sub); margin-left:6px }
+.chips{ display:flex; gap:5px; flex-wrap:wrap; margin-top:4px }
+.chip{ font-size:11px; font-weight:800; padding:2px 7px; border-radius:7px; background:var(--soft); color:var(--sub) }
+.chip.w{ background:#fde68a; color:#78350f } .chip.h{ background:var(--bluebg); color:var(--blue) } .chip.c{ background:#bbf7d0; color:#14532d }
+.chk{ border:2px solid var(--ok); color:var(--ok); background:var(--card); border-radius:12px; padding:8px 9px; font:inherit; font-size:12px; font-weight:900; cursor:pointer; line-height:1.15; text-align:center; min-width:62px }
+.chk:hover{ background:var(--okbg) }
+.arrow{ display:inline-block; transition:transform .15s; color:var(--sub); font-size:12px; margin-left:4px }
+.row.open .arrow{ transform:rotate(90deg) }
+.body{ padding:0 12px 12px; display:none }
+.row.open .body{ display:block }
+.pic{ height:120px; border-radius:10px; background:repeating-linear-gradient(0deg, var(--soft) 0 18px, var(--line) 18px 19px); display:grid; place-items:center; color:var(--sub); font-size:12px; margin-bottom:8px }
+.q{ font-size:13px; line-height:1.55; margin:0 0 8px } .q b{ color:var(--danger); font-size:11.5px; margin-right:6px }
+.acts{ display:flex; gap:6px; flex-wrap:wrap }
+.btn{ border:1.5px solid var(--line); background:var(--card); color:var(--ink); border-radius:9px; padding:6px 10px; font:inherit; font-size:12px; cursor:pointer }
+.btn.self{ border-color:#f59e0b; color:#b45309 }
+.btn.del{ color:var(--danger) }
+.confirm{ display:none; gap:6px; padding:10px 12px; border-top:1px dashed #9fdcb4; background:var(--okbg); align-items:center; flex-wrap:wrap; font-size:12.5px }
+.row.ask .confirm{ display:flex }
+.confirm .yes{ background:var(--ok); color:#fff; border:0; border-radius:9px; padding:7px 12px; font:inherit; font-weight:800; cursor:pointer }
+.toast{ position:sticky; bottom:10px; margin:0 12px 12px; background:var(--navy); color:#fff; border-radius:12px; padding:10px 12px; font-size:12.5px; display:flex; justify-content:space-between; align-items:center; gap:8px }
+.toast button{ background:transparent; color:#93c5fd; border:0; font:inherit; font-weight:800; cursor:pointer }
+
+/* 오른쪽 */
+.panel{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:var(--shadow) }
+.panel + .panel{ margin-top:16px }
+.tline{ display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid var(--line); font-size:13px }
+.tline:last-child{ border-bottom:0 }
+.st{ font-size:11px; font-weight:800; border-radius:7px; padding:2px 7px; white-space:nowrap }
+.st.p{ background:#fde68a; color:#78350f } .st.r{ background:#bbf7d0; color:#14532d }
+.why{ font-size:11px; font-weight:800; background:var(--okbg); color:var(--ok); border:1px solid #bbf7d0; border-radius:7px; padding:1px 6px; margin-left:6px; white-space:nowrap }
+.mut{ color:var(--sub); font-size:12px }
+.qs{ display:flex; flex-direction:column; gap:12px; margin:0; padding:0; list-style:none }
+.qs li{ border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--soft) }
+.qs b{ display:block; font-size:13.5px; margin-bottom:4px }
+.qs p{ margin:0; font-size:12.5px; color:var(--sub); line-height:1.55 }
+.rec{ display:inline-block; font-size:11px; font-weight:800; color:var(--blue); background:var(--bluebg); border-radius:6px; padding:1px 6px; margin-right:4px }
+.flow{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; font-size:12.5px; margin-top:4px }
+.flow span{ background:var(--soft); border:1px solid var(--line); border-radius:8px; padding:4px 8px }
+@media (prefers-reduced-motion: reduce){ .arrow{ transition:none } }
+</style>
+
+<div class="wrap">
+  <h1>아하노트 — 미해결 질문을 접어서, 수업 중 해결은 학생이 체크</h1>
+  <p class="lead">왼쪽은 학생앱 화면이고 실제로 눌러 볼 수 있습니다. 줄을 누르면 펼쳐지고, 「✓ 수업 중 해결」을 누르면 해결로 넘어갑니다. 오른쪽은 같은 순간 학원앱에 보이는 모습입니다. 이름과 문제는 예시입니다.</p>
+
+  <div class="grid">
+    <div>
+      <p class="cap">학생앱 · 💡 IB아하노트</p>
+      <div class="phone">
+        <div class="top"><span class="bk">←</span><b>💡 IB아하노트</b></div>
+        <div class="tabs" role="tablist">
+          <button class="tab" id="t-all" data-f="all" type="button">전체<b id="n-all">0</b></button>
+          <button class="tab on" id="t-wait" data-f="wait" type="button">미해결<b id="n-wait">0</b></button>
+          <button class="tab" id="t-done" data-f="done" type="button">해결<b id="n-done">0</b></button>
+        </div>
+        <div class="list" id="list"></div>
+        <div class="toast" id="toast" hidden><span id="toast-t"></span><button type="button" id="undo">되돌리기</button></div>
+      </div>
+    </div>
+
+    <div>
+      <p class="cap">학원앱 · 아하노트 관리 (같은 학생)</p>
+      <div class="panel" id="tpanel"></div>
+
+      <div class="panel">
+        <p class="cap">이렇게 연결됩니다</p>
+        <div class="flow"><span>학생 「✓ 수업 중 해결」</span>→<span>서버 아하노트 «해결» + 이유 🏫 수업 중 해결 (학생 체크)</span>→<span>학원앱 해결 목록에 배지</span></div>
+        <p class="mut" style="margin:10px 0 0;line-height:1.6">새 칸을 만들지 않습니다. 원장님이 이미 쓰시는 해결 이유 「🏫 수업에서 다룸」에 «학생이 체크»라는 표시만 더합니다. 원장님이 학원앱에서 「↩ 미해결로」를 누르면 다시 학생앱 미해결로 돌아갑니다.</p>
+      </div>
+
+      <div class="panel">
+        <p class="cap">정해 주실 것 4가지</p>
+        <ol class="qs">
+          <li><b>① 학생이 체크하면 바로 «해결»로 할까요?</b><p><span class="rec">추천</span>바로 해결. 학원앱에 🏫 배지로 보이고, 원장님이 아니라고 보시면 한 번 눌러 되돌립니다. (다른 안: 「확인 대기」로 두고 원장님이 확정)</p></li>
+          <li><b>② 잘못 눌렀을 때 학생이 되돌릴 수 있게 할까요?</b><p><span class="rec">추천</span>누른 직후 5초 「되돌리기」 + 그날 안에는 해결 탭에서 「↩ 미해결로」. 다음 날부터는 원장님만.</p></li>
+          <li><b>③ 기존 「✓ 이제 알아요 — 정리해 주세요」 단추는?</b><p><span class="rec">추천</span>새 「✓ 수업 중 해결」로 합칩니다(단추 하나). 「🙋 스스로 풀었어요(재풀이 사진·점수)」는 그대로 둡니다.</p></li>
+          <li><b>④ 접힌 줄 순서는?</b><p><span class="rec">추천</span>교재별로 묶고 그 안은 페이지·번호 순. 수업 중에 책을 펴고 찾기 쉽습니다. (다른 안: 날짜순)</p></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var NOTES = [
+  { id:1, book:'개념원리 중등수학3(하)', p:109, no:20, d:'10/28', why:'문제잘못읽음', q:'그 기가 이 공식을 이용하려면?', st:'wait', hint:false },
+  { id:2, book:'개념원리 중등수학3(하)', p:112, no:7,  d:'10/30', why:'개념부족', q:'원주각이 왜 중심각의 절반인지 모르겠어요', st:'wait', hint:true },
+  { id:3, book:'개념원리 중등수학3(하)', p:118, no:15, d:'11/4',  why:'계산실수', q:'답이 2√3이 아니라 4√3인 이유', st:'wait', hint:false },
+  { id:4, book:'쎈 중등수학3(하)',       p:64,  no:812,d:'11/6',  why:'풀이막힘', q:'보조선을 어디에 그어야 할지', st:'wait', hint:false },
+  { id:5, book:'쎈 중등수학3(하)',       p:71,  no:869,d:'11/8',  why:'개념부족', q:'접선과 현이 이루는 각', st:'wait', hint:false },
+  { id:6, book:'학교 프린트 (범박중)',   p:3,   no:9,  d:'11/9',  why:'문제잘못읽음', q:'조건 해석이 헷갈려요', st:'wait', hint:false },
+  { id:7, book:'개념원리 중등수학3(하)', p:98,  no:11, d:'10/21', why:'계산실수', q:'', st:'done', how:'teacher', at:'10/23' },
+  { id:8, book:'쎈 중등수학3(하)',       p:52,  no:701,d:'10/25', why:'개념부족', q:'', st:'done', how:'class', at:'10/27' }
+];
+var F = 'wait', OPEN = {}, ASK = {}, LAST = null, TT = null;
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function counts(){ var w=0,d=0; NOTES.forEach(function(n){ n.st==='wait'?w++:d++; }); document.getElementById('n-all').textContent=w+d; document.getElementById('n-wait').textContent=w; document.getElementById('n-done').textContent=d; }
+function rowHtml(n){
+  var cls = 'row ' + n.st + (OPEN[n.id]?' open':'') + (ASK[n.id]?' ask':'');
+  var h = '<div class="'+cls+'" data-id="'+n.id+'">';
+  h += '<div class="head" tabindex="0" data-tg="'+n.id+'"><div class="where">';
+  h += '<div class="book">'+esc(n.book)+'</div>';
+  h += '<div class="pn">p'+n.p+' · #'+n.no+'<small>'+n.d+'</small><span class="arrow">▶</span></div>';
+  h += '<div class="chips">';
+  if(n.st==='wait'){ h += n.hint ? '<span class="chip h">💡 힌트 도착</span>' : '<span class="chip w">🟡 답변 대기</span>'; }
+  else { h += n.how==='class' ? '<span class="chip c">🏫 수업 중 해결 · '+n.at+'</span>' : '<span class="chip c">✅ 선생님 확인 · '+n.at+'</span>'; }
+  h += '<span class="chip">'+esc(n.why)+'</span></div></div>';
+  if(n.st==='wait') h += '<button class="chk" type="button" data-ck="'+n.id+'">✓<br>수업 중<br>해결</button>';
+  h += '</div>';
+  h += '<div class="confirm"><span>p'+n.p+' #'+n.no+' — 수업 시간에 해결했나요?</span><button class="yes" type="button" data-yes="'+n.id+'">네, 해결했어요</button><button class="btn" type="button" data-no="'+n.id+'">아니요</button></div>';
+  h += '<div class="body"><div class="pic">문제 사진</div>';
+  if(n.q) h += '<p class="q"><b>질문</b>“'+esc(n.q)+'”</p>';
+  if(n.st==='wait') h += '<div class="acts"><button class="btn self" type="button">🙋 스스로 풀었어요 (+점수)</button><button class="btn" type="button">고치기</button><button class="btn del" type="button">삭제</button></div>';
+  else h += '<div class="acts"><span class="mut">'+(n.how==='class'?'수업 시간에 해결했다고 체크했어요':'선생님이 해결로 확인했어요')+'</span></div>';
+  return h + '</div></div>';
+}
+function render(){
+  counts();
+  ['all','wait','done'].forEach(function(f){ document.getElementById('t-'+f).classList.toggle('on', F===f); });
+  var L = NOTES.filter(function(n){ return F==='all' || n.st===F; });
+  L.sort(function(a,b){ return a.book===b.book ? (a.p-b.p || a.no-b.no) : (a.book<b.book?-1:1); });
+  var h='', g=null;
+  if(!L.length) h = '<p class="mut" style="text-align:center;padding:40px 0">미해결 질문이 없어요 🎉</p>';
+  L.forEach(function(n){
+    if(n.book!==g){ g=n.book; var c=L.filter(function(x){ return x.book===g; }).length; h += '<div class="grp"><span>📕 '+esc(g)+'</span><span>'+c+'개</span></div>'; }
+    h += rowHtml(n);
+  });
+  document.getElementById('list').innerHTML = h;
+  tpanel();
+}
+function tpanel(){
+  var h = '<p class="cap">○○○ · 중3 — 미해결 '+NOTES.filter(function(n){return n.st==='wait';}).length+'</p>';
+  NOTES.slice().sort(function(a,b){ return (a.st===b.st)?0:(a.st==='wait'?-1:1); }).forEach(function(n){
+    h += '<div class="tline"><span class="st '+(n.st==='wait'?'p':'r')+'">'+(n.st==='wait'?'대기':'해결')+'</span>';
+    h += '<span style="min-width:0">'+esc(n.book)+' p'+n.p+' #'+n.no;
+    if(n.st==='done') h += n.how==='class' ? '<span class="why">🏫 수업 중 해결 · 학생 체크</span>' : '<span class="why">💬 답변함</span>';
+    h += '</span><span class="mut">'+(n.st==='done'?'<button class="btn" type="button" data-back="'+n.id+'">↩ 미해결로</button>':'<button class="btn" type="button">✓ 해결</button>')+'</span></div>';
+  });
+  document.getElementById('tpanel').innerHTML = h;
+}
+function find(id){ id=Number(id); for(var i=0;i<NOTES.length;i++) if(NOTES[i].id===id) return NOTES[i]; }
+function toast(t){ var el=document.getElementById('toast'); document.getElementById('toast-t').textContent=t; el.hidden=false; clearTimeout(TT); TT=setTimeout(function(){ el.hidden=true; LAST=null; }, 5000); }
+document.addEventListener('click', function(e){
+  var t = e.target.closest('[data-f],[data-tg],[data-ck],[data-yes],[data-no],[data-back],#undo'); if(!t) return;
+  if(t.dataset.f){ F=t.dataset.f; render(); return; }
+  if(t.dataset.ck){ e.stopPropagation(); ASK={}; ASK[t.dataset.ck]=1; render(); return; }
+  if(t.dataset.yes){ var n=find(t.dataset.yes); n.st='done'; n.how='class'; n.at='11/10'; ASK={}; LAST=n.id; render(); toast('🏫 p'+n.p+' #'+n.no+' 수업 중 해결로 옮겼어요'); return; }
+  if(t.dataset.no){ ASK={}; render(); return; }
+  if(t.dataset.back){ var b=find(t.dataset.back); b.st='wait'; delete b.how; render(); return; }
+  if(t.id==='undo'){ if(LAST){ var u=find(LAST); u.st='wait'; delete u.how; LAST=null; } document.getElementById('toast').hidden=true; render(); return; }
+  if(t.dataset.tg){ OPEN[t.dataset.tg]=!OPEN[t.dataset.tg]; render(); }
+});
+document.addEventListener('keydown', function(e){ var t=e.target; if((e.key==='Enter'||e.key===' ') && t.dataset && t.dataset.tg){ e.preventDefault(); OPEN[t.dataset.tg]=!OPEN[t.dataset.tg]; render(); } });
+render();
+</script>
