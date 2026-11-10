@@ -12,6 +12,8 @@
  *  저장(lumen_store): mfrep_<YYYY-MM> = { month, at, rows:[…], missing:[…] }  ← 학원앱이 읽는다 (학생 이름·의견 — 서버에만, 저장소엔 안 올림)
  *                     mfrep_req = { status:'requested'|'running'|'done'|'error', action, month, items, ids, sms, at }  ← 학원앱이 쓴다
  *                     mfrep_log = 최근 30번 처리 기록
+ *                     mfrep_pub_<학습코드> = { code, upd, months:{ 'YYYY-MM': {숫자=매쓰플랫 그대로 · comment · lumen:{hw,aha,plan}} } }
+ *                       ← 루멘 학부모앱이 자기 아이 것만 읽는다 (2026-11-10 · publish/unpublish 요청에 lumen:true 일 때 · mf:false 면 매쓰플랫은 안 건드림)
  *  실행: node sync/mf_report_worker.js --req            (요청 하나 처리 — collect_request_worker 가 5분마다 부른다)
  *        node sync/mf_report_worker.js --list 2026-10   (목록만 새로)
  *        node sync/mf_report_worker.js --make 2026-10 [--only I123,I456]   (그 달 보고서 «비공개»로 만들기 — 이미 있는 학생은 건너뜀)
@@ -79,6 +81,13 @@ async function buildList(ym) {
       shared: !!x.sharedToParent, pdf: x.pdfStatus, createdAt: x.createdAt, comment, commentOn, n: reps.filter((r) => r.studentId === sid).length });
   }
   rows.sort((a, b) => String(a.grade).localeCompare(String(b.grade)) || String(a.name).localeCompare(String(b.name), 'ko'));
+  /* ★ 2026-11-10: 루멘 학습코드 · 루멘 학부모앱 공개 여부(mfrep_pub_<코드>.months[ym]) */
+  try {
+    const cm = await codeMap(), codes = [];
+    rows.forEach((r) => { r.code = cm[r.sid] || ''; if (r.code) codes.push(r.code); });
+    const pubs = await getKvMany(codes.map((c) => 'mfrep_pub_' + c));
+    rows.forEach((r) => { const p = r.code ? pubs['mfrep_pub_' + r.code] : null; r.lumen = !!(p && p.months && p.months[ym]); r.lumenAt = r.lumen ? (p.months[ym].at || null) : null; });
+  } catch (e) { log('  루멘 공개 여부 읽기 실패', e.message); }
   const missing = act.filter((s) => !pick[s.id]).map((s) => ({ sid: s.id, name: s.name }));
   const val = { month: ym, at: new Date().toISOString(), rows, missing };
   await setKv('mfrep_' + ym, val);
@@ -118,6 +127,88 @@ async function setComment(reportId, text) {
   await mf('PUT', `/v2/report/custom/${reportId}`, { startDate: q.startDate, endDate: q.endDate, title: q.title, studentWorksheetIds: d.studentWorksheetIds ?? null, studentWorkbookIds: d.studentWorkbookIds ?? null, assignedCasIds: d.assignedCasIds ?? null, worksheetTags: d.worksheetTags ?? null, workbookTypes: d.workbookTypes ?? null, casTypes: [], includeSelfLearning: d.includeSelfLearning !== false, components: comps, aiCommentUsed: false, comparisonGroup: d.comparisonGroup ?? q.comparisonType ?? 'NATIONAL', additionalScore: 0, request: q, chapters: d.chapters || [] });
 }
 
+/* ══ 루멘 학부모앱용 보고서 (2026-11-10 원장 「학부모앱에서도 월간보고서가 보이게」 · 시안 docs/mockup_monthly_report.html) ══
+ *  숫자는 매쓰플랫 보고서(/v2/report/custom/{id}/scoring) 그대로 옮기고, 의견도 매쓰플랫에 저장된 글 그대로.
+ *  «루멘 기록»(숙제 이행도·아하노트 질문·플래너 평균)만 우리 자료로 더한다.
+ *  저장: lumen_store mfrep_pub_<학습코드> = { code, upd, months: { 'YYYY-MM': {...} } } — 학생마다 따로(학부모앱은 자기 아이 키만 읽는다). */
+const EVAL_KO = { PROBLEM_SOLVING_ABILITY: '문제 해결', REASONING_ABILITY: '추론', COMMUNICATION_ABILITY: '의사소통', CONNECTION_ABILITY: '연결', INFORMATION_PROCESSING_ABILITY: '정보 처리' };
+const BOOK_KO = { SCHOOL: '교과서', PUBLIC: '시중 교재', CUSTOM_SIGNATURE: '시그니처 교재' };
+async function getKvMany(keys) {
+  const out = {}; if (!keys.length) return out;
+  for (let i = 0; i < keys.length; i += 60) {
+    const part = keys.slice(i, i + 60).map((k) => '"' + k + '"').join(',');
+    const r = await fetch(`${SB}/rest/v1/lumen_store?key=in.(${encodeURIComponent(part)})&select=key,value`, { headers: SH });
+    if (!r.ok) continue; (await r.json()).forEach((x) => { out[x.key] = x.value; });
+  }
+  return out;
+}
+/* 매쓰플랫 학생 id → 루멘 학습코드 (mf_students 표) */
+async function codeMap() {
+  const r = await fetch(`${SB}/rest/v1/mf_students?select=mf_student_id,lumen_rec_code`, { headers: SH });
+  const m = {}; if (r.ok) (await r.json()).forEach((x) => { if (x.mf_student_id && x.lumen_rec_code) m[String(x.mf_student_id)] = String(x.lumen_rec_code); });
+  return m;
+}
+const num = (v) => (typeof v === 'number' && isFinite(v) ? v : 0);
+/* 매쓰플랫 보고서 내용 → 학부모앱 한 달 칸 (이름은 넣지 않는다 — 학부모앱이 자기 아이 이름을 안다) */
+function pubFromScoring(d, ym, reportId) {
+  const q = (d && d.request) || {};
+  const mc = q.monthlyComponent || {}, wc = q.weeklyComponent || {}, hc = q.studyHistoryComponent || {};
+  const byM = (arr) => (arr || []).map((x) => ({ m: `${x.year}-${String(x.month).padStart(2, '0')}`, s: num(x.student), c: num(x.comparison) }));
+  const rates = byM(mc.correctRatesPerMonth), counts = byM(mc.scoringCountsPerMonth);
+  const prev = rates.filter((x) => x.m < ym).slice(-1)[0] || null;
+  const chapters = ((q.studyPerformanceComponent || {}).middleChapters || []).map((c) => ({ name: String(c.name || ''), n: num(c.scoringCount), rate: num(c.correctRate) })).filter((c) => c.name && c.n > 0);
+  const sec = (((q.studyEvaluationComponent || {}).studyEvaluationSections) || [])[0] || {};
+  const st = hc.scoringCountsPerStudyType || {};
+  return {
+    v: 1, at: new Date().toISOString(), reportId: Number(reportId) || null, title: String(q.title || ''),
+    from: q.startDate || null, to: q.endDate || null,
+    rate: num(q.correctRate), count: num(q.scoringCount), rank: num(q.rank), level: num(q.level),
+    cmpType: q.comparisonType || '', rateCmp: (rates.find((x) => x.m === ym) || {}).c || 0,
+    prevRate: prev ? prev.s : null, prevM: prev ? prev.m : null,
+    months: rates.map((x) => ({ m: x.m, rate: x.s, cmp: x.c, n: ((counts.find((y) => y.m === x.m) || {}).s) || 0 })),
+    weeks: (wc.scoringCountsPerWeek || []).map((x) => ({ w: num(x.week), n: num(x.student), rate: num(((wc.correctRatesPerWeek || []).find((y) => y.week === x.week) || {}).student) })),
+    levels: (wc.correctRatesPerLevel || []).map((x) => ({ l: num(x.level), rate: num(x.student), cmp: num(x.comparison), n: num(((wc.scoringCountsPerLevel || []).find((y) => y.level === x.level) || {}).student) })),
+    chapters,
+    evals: (sec.behaviorSections || []).map((b) => ({ k: b.type, name: EVAL_KO[b.type] || String(b.type || ''), rate: num(b.studentCorrectRate), cmp: num(b.comparisonCorrectRate), rank: num(b.studentRank) })),
+    books: (hc.workbooks || []).map((w) => ({ title: String(w.title || ''), kind: BOOK_KO[w.type] || '', from: num(w.scoringStartPageNumber), to: num(w.scoringEndPageNumber), n: num(w.scoringCount), rate: num(w.correctRate) })).sort((a, b) => b.n - a.n),
+    sheets: { n: (hc.worksheets || []).length, count: num(st.worksheet) },
+    byType: { workbook: num(st.workbook), worksheet: num(st.worksheet), other: num(st.levelUpOrWrongAnswer) + num(st.challenge) + num(st.cas) },
+    comment: String((q.commentComponent || {}).comment || '').trim()
+  };
+}
+/* 루멘 기록 — 숙제 이행도(선생님 확인 평균) · 아하노트 질문 수 · 플래너 평균 (그 달 · 없는 칸은 null) */
+async function lumenRecord(code, ym) {
+  const out = { hw: null, hwN: 0, aha: null, plan: null, planN: 0 };
+  try {
+    const kv = await getKvMany(['hw_teach_' + code, 'student_planner_' + code]);
+    const ht = kv['hw_teach_' + code], by = (ht && ht.byDate) || {};
+    const ts = Object.keys(by).filter((d) => d.slice(0, 7) === ym).map((d) => Number(by[d] && by[d].t)).filter((x) => isFinite(x));
+    if (ts.length) { out.hw = Math.round(ts.reduce((a, b) => a + b, 0) / ts.length); out.hwN = ts.length; }
+    const pl = kv['student_planner_' + code], sc = (pl && pl.scores) || {}, dot = ym.replace('-', '.');
+    const ps = Object.keys(sc).filter((d) => d.slice(0, 7) === dot).map((d) => Number(sc[d])).filter((x) => isFinite(x));
+    if (ps.length) { out.plan = Math.round(ps.reduce((a, b) => a + b, 0) / ps.length * 10) / 10; out.planN = ps.length; }   // 10점 만점 · 소수 한 자리
+  } catch (e) { log('  루멘 기록(숙제·플래너) 읽기 실패', code, e.message); }
+  try {
+    const [y, m] = ym.split('-').map(Number), ny = m === 12 ? y + 1 : y, nm = m === 12 ? 1 : m + 1;
+    const from = `${ym}-01T00:00:00%2B09:00`, to = `${ny}-${String(nm).padStart(2, '0')}-01T00:00:00%2B09:00`;
+    const r = await fetch(`${SB}/rest/v1/aha_notes?select=id&student_code=eq.${encodeURIComponent(code)}&created_at=gte.${from}&created_at=lt.${to}`, { headers: { ...SH, prefer: 'count=exact', range: '0-0' } });
+    const cr = r.headers.get('content-range') || ''; const n = Number(cr.split('/')[1]); if (isFinite(n)) out.aha = n;
+  } catch (e) { log('  루멘 기록(아하노트) 읽기 실패', code, e.message); }
+  return out;
+}
+async function pubLumen(reportId, ym, code) {
+  const d = await mf('GET', `/v2/report/custom/${reportId}/scoring`);
+  const P = pubFromScoring(d, ym, reportId); P.lumen = await lumenRecord(code, ym);
+  const cur = (await getKv('mfrep_pub_' + code)) || {};
+  const months = Object.assign({}, cur.months || {}); months[ym] = P;
+  await setKv('mfrep_pub_' + code, { code, upd: new Date().toISOString(), months });
+}
+async function unpubLumen(ym, code) {
+  const cur = await getKv('mfrep_pub_' + code); if (!cur || !cur.months || !cur.months[ym]) return;
+  const months = Object.assign({}, cur.months); delete months[ym];
+  await setKv('mfrep_pub_' + code, { code, upd: new Date().toISOString(), months });
+}
+
 /* ── 요청 처리 ── */
 async function runReq() {
   const rq = await getKv('mfrep_req');
@@ -132,11 +223,25 @@ async function runReq() {
     else if (rq.action === 'comment') {
       for (const it of (rq.items || [])) { try { await setComment(it.reportId, it.comment); res.ok++; } catch (e) { res.fail++; res.errors.push(it.reportId + ' ' + e.message); } }
     } else if (rq.action === 'publish' || rq.action === 'unpublish') {
+      /* ★ 2026-11-10: 공개 대상 — rq.mf(매쓰플랫 학부모앱, 기본 켬) · rq.lumen(루멘 학부모앱, 기본 끔 — 옛 학원앱 요청은 매쓰플랫만) */
       const ids = (rq.ids || []).map(Number).filter(Boolean);
-      if (ids.length) {
+      const wantMf = rq.mf !== false, wantLm = rq.lumen === true;
+      if (ids.length && wantMf) {
         if (rq.action === 'publish') await mf('POST', '/v2/report/custom/share/parent-app', { reportIds: ids, shouldSendSmsToParent: !!rq.sms });
         else { try { await mf('POST', '/v2/report/custom/unshare/parent-app', { reportIds: ids }); } catch (e) { await mf('POST', '/v2/report/custom/unshare/parent-app', ids); } }
         res.ok = ids.length;
+      }
+      if (ids.length && wantLm) {
+        const list = (await getKv('mfrep_' + ym)) || {}, cm = await codeMap();
+        res.lumen = 0;
+        for (const id of ids) {
+          const row = (list.rows || []).find((r) => Number(r.reportId) === id);
+          const code = row ? (row.code || cm[row.sid]) : '';
+          if (!code) { res.fail++; res.errors.push(id + ' 루멘 학습코드 없음'); continue; }
+          try { if (rq.action === 'publish') await pubLumen(id, ym, code); else await unpubLumen(ym, code); res.lumen++; }
+          catch (e) { res.fail++; res.errors.push(id + ' 루멘 ' + e.message); }
+        }
+        if (!wantMf) res.ok = res.lumen;
       }
     } else if (rq.action !== 'list') throw new Error('모르는 요청 ' + rq.action);
     await buildList(ym);
@@ -168,4 +273,4 @@ if (require.main === module) (async () => {
   console.log('사용법: --req | --list YYYY-MM | --make YYYY-MM [--only id,..] | --auto');
 })().catch((e) => { console.error('❌', e.message); process.exit(1); });
 
-module.exports = { login, buildList, makeMonth, setComment, runReq };
+module.exports = { login, buildList, makeMonth, setComment, runReq, pubFromScoring, lumenRecord };
