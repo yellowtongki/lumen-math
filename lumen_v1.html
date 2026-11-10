@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-182';
+var APP_VER = 'v19-183';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9098,6 +9098,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-183',date:'2026-11-10',stability:'ok',memo:'💡 <b>아하노트 — 학생이 «수업 중 해결»로 체크한 것 따로 보이기</b> (원장 2026-11-10 「학원앱도 학생 체크 보이게」). 학생앱 v2-162 에서 학생이 미해결 줄의 「✓ 수업 중 해결」을 누르면 그 노트가 해결로 넘어옵니다. 이제 해결 목록 배지가 원장님이 정리한 「🏫 수업에서 다룸」(초록)과 달리 <b>「🏫 수업 중 해결 · 학생 체크」(파란 테두리)</b>로 보이고, 마우스를 올리면 체크한 시각이 나옵니다. 아니라고 보시면 예전처럼 그 줄의 해결 단추를 다시 눌러 미해결로 되돌리시면 됩니다.'},
       {ver:'v19-182',date:'2026-11-08',stability:'ok',memo:'🔑 <b>서버 접근 규칙 정비 1단계 — 서버 열쇠 칸</b> (원장 2026-11-08). [위치] ⚙ 설정 → 「🔑 API 키 설정」 바로 위 「🔑 서버 열쇠」. ① <b>✨ 새 열쇠 만들기</b> — 기기가 43글자 무작위 열쇠를 만들어 이 기기에만 저장하고 <b>한 번만</b> 보여 준다(열쇠 복사 · 서버 등록 한 줄 복사). ② <b>붙여넣기</b> — 아이패드 등 다른 기기에 같은 열쇠 넣기. 지문 6글자가 같으면 같은 열쇠. ③ <b>📋 서버 등록 한 줄</b> — 열쇠가 아니라 해시만 담긴 SQL 한 줄(Supabase SQL Editor 에서 원장님이 실행). ④ <b>🧪 열쇠 시험</b> — 시험 줄을 넣고 지워 보아 서버가 이 기기를 원장으로 알아보는지 확인. [함께] 비밀 값(서버 열쇠·AI 키·매쓰플랫 계정·GitHub 토큰·네이버 예약 열쇠 등)은 한 목록으로 묶어 서버로 올리지도 받지도 않는다. 주소 뒤 #dbkey= 로 열쇠 넣던 길은 없앴다.'},
       {ver:'v19-181',date:'2026-11-06',stability:'ok',memo:'🚑 <b>리커버리 학습지 — 예약하면 서버가 천천히 만든다</b> (원장 2026-11-06 「내가 누른 후 바로 생성하지 말고 시간을 들여 하는 기능」 · 다른 세션 인계 docs/rcws_queue_handoff.md). [까닭] 11/6 원장 PC 학원앱이 매쓰플랫 쌍둥이 조회를 간격 없이 수백 번 불러 보안문자에 막혔다. 이제 「⚡ 확정 전원 학습지 생성」은 매쓰플랫을 직접 부르지 않고 서버에 <b>예약</b>만 남긴다 → 서버가 5분 안에 시작해 문항 사이 3초씩 쉬며 만들고 매쓰플랫에 배정까지 한다(PC 를 꺼도 됨 · 설정 탭 GitHub 토큰이 있으면 바로 깨움). 보드 맨 위와 도구 「만들기」 칸에 <b>진행률 띠</b>(예약됨 → 7/16 만드는 중 · 약 n분 → ✅ 16명 완료 · 문항 수 / ⚠ 멈춤 이유 · 다시 예약). 끝나면 보드 「학습지」 칸이 저절로 채워진다. 🔐 계정 칸은 예약에는 필요 없음(서버에 있음) — 🧯 비상용 「이 PC 에서 바로 만들기」에만. 부품 modules/rcwsreq181_teacher.js · 검사 tests/test_v19181.js.'},
       {ver:'v19-180',date:'2026-11-06',stability:'ok',memo:'🔐 <b>리커버리 — 매쓰플랫 계정 칸이 안 열리던 것 · 보안문자 안내</b> (원장 2026-11-06 「학원앱에서 매쓰플랫 입력이 안 된다」). [까닭] 오른쪽 도구 「🔐 계정 넣는 칸 열기」는 옛 카드 보드 오른쪽 «확정 명단» 패널의 계정 칸으로 가는 단추였는데, v19-174 줄 표가 그 패널을 빼서 눌러도 아무 일이 없었다. [고침] 도구 서랍의 🔐 매쓰플랫 계정 칸 안에 아이디·비밀번호 칸과 「🔐 저장」을 바로 둠(이 PC 에만 저장 · 서버로 안 감, 예전과 같음). 11/6 매쓰플랫이 쌍둥이 문제 조회에 «보안문자(CAPTCHA)»를 요구해 학습지 만들기가 막힐 때는 「매쓰플랫 선생님 사이트에서 보안 확인을 마친 뒤 다시」라고 알려 준다(앱이 보안문자를 대신 풀지 않음). 부품 modules/mfacct180_teacher.js · 검사 tests/test_v19180.js.'},
@@ -103927,7 +103928,27 @@ window.dbkTest = async function(){
 };
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~182: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-183: 💡 아하노트 — 학생이 «수업 중 해결»로 체크한 것을 따로 보이게 (원장 2026-11-10 「학원앱도 학생 체크 보이게」)
+ *  학생앱 v2-162 「✓ 수업 중 해결」은 aha_notes.resolved_note JSON 에 {reason:'class', by:'student', at, student:'class'} 를 남긴다
+ *  (계약 docs/aha_backlog_resolve.md §1). 예전 배지(ahaReasonBadge)는 by 를 보지 않아 원장님이 정리한 「🏫 수업에서 다룸」과 같아 보였다.
+ *  → by:'student' 이면 「🏫 수업 중 해결 · 학생 체크」(파란 테두리) + 마우스를 올리면 체크한 시각.
+ *  되돌리기는 예전 그대로(줄의 해결 단추를 다시 누르면 미해결).  ※ 문자열 연결로만 HTML.
+ * ═══════════════════════════════════════════════════════════════════ */
+if (typeof ahaReasonBadge === 'function') ahaReasonBadge = (function(orig){ return function(n, small){
+  try {
+    if (n && !ahaIsPending(n)) {
+      var o = ahaRNote(n);
+      if (o.reason === 'class' && o.by === 'student') {
+        var t = ''; try { var d = new Date(o.at || n.resolved_at); if (!isNaN(d)) t = (d.getMonth()+1) + '/' + d.getDate() + ' ' + ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2); } catch(e){}
+        return '<span class="aha-stu-badge" title="학생이 학생앱에서 「✓ 수업 중 해결」을 눌렀습니다' + (t ? ' (' + t + ')' : '') + '" style="display:inline-block;font-size:' + (small ? '9.5px' : '11px') + ';font-weight:800;background:#eff6ff;color:#1d4ed8;border:1px solid #93c5fd;border-radius:7px;padding:0 7px;margin-left:5px;white-space:nowrap">🏫 수업 중 해결 · 학생 체크</span>';
+      }
+    }
+  } catch(e){}
+  return orig.apply(this, arguments);
+}; })(ahaReasonBadge);
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~183: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
