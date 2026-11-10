@@ -1,0 +1,219 @@
+<title>월간보고서 합치기 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* 레이아웃: 위 = 학원앱 «📑 월간보고서» 한 화면(왼쪽 학생 목록 · 가운데 보고서·의견·공개) / 아래 = 루멘 학부모앱 보고서 화면(폰) + 정할 것 */
+:root{
+  --bg:#eef1f6; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#d9e0ea; --soft:#f5f7fb;
+  --navy:#0d2240; --gold:#ffd54a; --ok:#15803d; --okbg:#ecfdf3; --blue:#1d6fe8; --bluebg:#eaf2ff; --amber:#b45309; --amberbg:#fff7e6; --vio:#6d28d9; --viobg:#f3efff;
+  --shadow:0 10px 28px rgba(13,34,64,.10);
+  --f-body:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1622; --card:#172233; --ink:#e7edf6; --sub:#9fb0c6; --line:#2a3a52; --soft:#1b2940; --navy:#0a1626; --okbg:#0e2e1d; --bluebg:#132a4d; --amberbg:#3a2a0b; --viobg:#261a44; --shadow:0 10px 28px rgba(0,0,0,.4); color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --card:#172233; --ink:#e7edf6; --sub:#9fb0c6; --line:#2a3a52; --soft:#1b2940; --navy:#0a1626; --okbg:#0e2e1d; --bluebg:#132a4d; --amberbg:#3a2a0b; --viobg:#261a44; --shadow:0 10px 28px rgba(0,0,0,.4); color-scheme:dark }
+body{ background:var(--bg); color:var(--ink); font-family:var(--f-body); }
+.wrap{ max-width:1180px; margin:0 auto; padding-block:20px 44px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); }
+h1{ font-size:20px; margin:0 0 4px; text-wrap:balance }
+.lead{ color:var(--sub); font-size:13.5px; line-height:1.6; margin:0 0 18px; max-width:76ch }
+.cap{ font-size:11.5px; font-weight:800; letter-spacing:.06em; color:var(--sub); margin:0 0 8px }
+.mut{ color:var(--sub); font-size:12px }
+.btn{ border:1.5px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:8px 12px; font:inherit; font-size:12.5px; font-weight:700; cursor:pointer }
+.btn:focus-visible,.stu:focus-visible{ outline:2px solid var(--blue); outline-offset:1px }
+
+/* 학원앱 */
+.app{ background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); overflow:hidden }
+.bar{ background:var(--navy); color:#fff; padding:12px 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center }
+.bar b{ font-size:16px } .bar .mon{ background:var(--gold); color:#0d2240; border-radius:10px; padding:5px 12px; font-weight:900; font-size:14px }
+.bar .sp{ flex:1 }
+.bar .pill{ font-size:12px; background:rgba(255,255,255,.12); border-radius:20px; padding:4px 10px }
+.cols{ display:grid; grid-template-columns:300px 1fr; min-height:520px }
+@media (max-width:860px){ .cols{ grid-template-columns:1fr } }
+.left{ border-right:1px solid var(--line); padding:12px; display:flex; flex-direction:column; gap:6px; background:var(--soft) }
+.filters{ display:flex; gap:5px; flex-wrap:wrap; margin-bottom:4px }
+.fchip{ font-size:11.5px; font-weight:800; border:1.5px solid var(--line); background:var(--card); color:var(--sub); border-radius:20px; padding:4px 9px; cursor:pointer }
+.fchip.on{ border-color:var(--navy); color:var(--ink) }
+.stu{ display:grid; grid-template-columns:1fr auto; gap:6px; align-items:center; background:var(--card); border:1.5px solid var(--line); border-radius:11px; padding:8px 10px; cursor:pointer; text-align:left; font:inherit; color:var(--ink) }
+.stu.on{ border-color:var(--blue); box-shadow:0 0 0 2px var(--bluebg) }
+.stu .nm{ font-weight:800; font-size:13.5px } .stu .gr{ font-size:11px; color:var(--sub); margin-left:4px }
+.stu .rate{ font-size:12px; font-weight:800; font-variant-numeric:tabular-nums }
+.dots{ display:flex; gap:4px; grid-column:1 / -1; flex-wrap:wrap }
+.tag{ font-size:10.5px; font-weight:800; border-radius:6px; padding:1px 6px; white-space:nowrap }
+.t-ai{ background:var(--soft); color:var(--sub); border:1px solid var(--line) }
+.t-ed{ background:var(--amberbg); color:var(--amber) }
+.t-lu{ background:var(--viobg); color:var(--vio) }
+.t-mf{ background:var(--bluebg); color:var(--blue) }
+.t-lm{ background:var(--okbg); color:var(--ok) }
+.t-no{ background:transparent; color:var(--sub); border:1px dashed var(--line) }
+
+.main{ padding:16px; display:flex; flex-direction:column; gap:14px; min-width:0 }
+.head{ display:flex; flex-wrap:wrap; gap:8px 16px; align-items:baseline }
+.head h2{ margin:0; font-size:18px } .head .mut{ font-size:12.5px }
+.kpis{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px }
+@media (max-width:560px){ .kpis{ grid-template-columns:repeat(2, minmax(0,1fr)) } }
+.kpi{ background:var(--soft); border:1px solid var(--line); border-radius:12px; padding:10px }
+.kpi b{ display:block; font-size:20px; font-variant-numeric:tabular-nums } .kpi span{ font-size:11.5px; color:var(--sub) }
+.units{ display:flex; flex-direction:column; gap:6px }
+.u{ display:grid; grid-template-columns:120px 1fr 44px; gap:8px; align-items:center; font-size:12.5px }
+.u .tr{ height:9px; border-radius:6px; background:var(--soft); border:1px solid var(--line); overflow:hidden }
+.u .tr i{ display:block; height:100%; background:var(--blue) }
+.u .tr i.low{ background:#e88d1d }
+.u em{ font-style:normal; font-variant-numeric:tabular-nums; text-align:right; font-weight:800 }
+.box{ border:1.5px solid var(--line); border-radius:14px; padding:12px }
+.ophead{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:8px }
+.ophead b{ font-size:13.5px; margin-right:auto }
+.seg{ display:flex; gap:4px; background:var(--soft); padding:3px; border-radius:10px }
+.seg button{ border:0; background:transparent; font:inherit; font-size:12px; padding:6px 9px; border-radius:8px; color:var(--sub); cursor:pointer }
+.seg button.on{ background:var(--card); color:var(--ink); font-weight:800; box-shadow:0 1px 3px rgba(0,0,0,.08) }
+textarea{ width:100%; box-sizing:border-box; min-height:120px; border:1.5px solid var(--line); border-radius:10px; padding:10px; font:inherit; font-size:13px; line-height:1.6; background:var(--card); color:var(--ink); resize:vertical }
+.cnt{ text-align:right; font-size:11px; color:var(--sub); margin-top:4px; font-variant-numeric:tabular-nums }
+.pub{ display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center }
+.pub label{ display:flex; gap:6px; align-items:center; font-size:13px; cursor:pointer }
+.pub .go{ margin-left:auto; background:var(--ok); color:#fff; border:0; border-radius:11px; padding:10px 16px; font:inherit; font-weight:900; font-size:13.5px; cursor:pointer }
+.done{ font-size:12.5px; font-weight:800; color:var(--ok) }
+.batch{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; border-top:1px dashed var(--line); padding-top:12px }
+.batch .mut{ margin-right:auto }
+
+/* 아래 */
+.grid2{ display:grid; grid-template-columns:380px 1fr; gap:24px; margin-top:26px; align-items:start }
+@media (max-width:860px){ .grid2{ grid-template-columns:1fr } }
+.phone{ background:var(--card); border:1px solid var(--line); border-radius:28px; overflow:hidden; box-shadow:var(--shadow); max-width:380px; width:100% }
+.ptop{ background:var(--navy); color:#fff; padding:16px 18px 18px }
+.ptop small{ display:block; opacity:.7; font-size:12px } .ptop b{ font-size:18px }
+.pbody{ padding:14px; display:flex; flex-direction:column; gap:12px }
+.pcard{ border:1px solid var(--line); border-radius:14px; padding:12px; background:var(--card) }
+.pcard h4{ margin:0 0 8px; font-size:13px; color:var(--sub) }
+.big3{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; text-align:center }
+.big3 b{ display:block; font-size:22px; font-variant-numeric:tabular-nums } .big3 span{ font-size:11px; color:var(--sub) }
+.trend{ font-size:12px; color:var(--ok); font-weight:800; margin-top:8px; text-align:center }
+.quote{ font-size:13.5px; line-height:1.75; margin:0 }
+.sig{ text-align:right; font-size:12px; color:var(--sub); margin-top:8px }
+.lumen{ display:grid; grid-template-columns:1fr 1fr; gap:6px }
+.lumen div{ background:var(--soft); border-radius:10px; padding:8px; font-size:12px } .lumen b{ display:block; font-size:16px }
+.pdf{ display:block; text-align:center; font-size:12.5px; font-weight:800; color:var(--blue); border:1.5px dashed var(--line); border-radius:10px; padding:9px }
+.months{ display:flex; gap:6px; overflow-x:auto } .months span{ font-size:12px; border:1.5px solid var(--line); border-radius:20px; padding:4px 10px; white-space:nowrap } .months span.on{ border-color:var(--navy); font-weight:800 }
+
+.panel{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:var(--shadow) }
+.panel + .panel{ margin-top:16px }
+.qs{ display:flex; flex-direction:column; gap:12px; margin:0; padding:0; list-style:none }
+.qs li{ border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--soft) }
+.qs b{ display:block; font-size:13.5px; margin-bottom:4px } .qs p{ margin:0; font-size:12.5px; color:var(--sub); line-height:1.55 }
+.rec{ display:inline-block; font-size:11px; font-weight:800; color:var(--blue); background:var(--bluebg); border-radius:6px; padding:1px 6px; margin-right:4px }
+.flow{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; font-size:12.5px }
+.flow span{ background:var(--soft); border:1px solid var(--line); border-radius:8px; padding:4px 8px }
+</style>
+
+<div class="wrap">
+  <h1>📑 월간보고서 — 한 화면으로 합치고, 루멘 학부모앱에도</h1>
+  <p class="lead">위는 합친 학원앱 화면, 아래 왼쪽은 학부모가 루멘 학부모앱에서 보는 보고서입니다. 왼쪽 학생을 누르면 바뀌고, 의견 고르기와 공개 단추도 눌러 볼 수 있습니다. 이름과 숫자는 예시입니다.</p>
+
+  <p class="cap">학원앱 · 진도·리포트 › 📑 월간보고서 (예전 📊 화면은 숨김)</p>
+  <div class="app">
+    <div class="bar"><b>📑 월간보고서</b><span class="mon">2026년 10월</span><span class="pill">매쓰플랫 보고서 31명 · 11/2 새벽 자동 생성</span><span class="sp"></span><span class="pill" id="sumpill"></span></div>
+    <div class="cols">
+      <div class="left">
+        <div class="filters" id="filters">
+          <button class="fchip on" data-f="all" type="button">전체</button>
+          <button class="fchip" data-f="todo" type="button">공개 전</button>
+          <button class="fchip" data-f="done" type="button">공개함</button>
+        </div>
+        <div id="stulist" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <div class="main" id="main"></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <p class="cap">루멘 학부모앱 · 📑 월간보고서</p>
+      <div class="phone" id="phone"></div>
+    </div>
+    <div>
+      <div class="panel">
+        <p class="cap">이렇게 이어집니다</p>
+        <div class="flow"><span>매달 2일 새벽 서버가 매쓰플랫 보고서 만들기(비공개)</span>→<span>원장님 확인·의견</span>→<span>「공개」 한 번</span>→<span>매쓰플랫 학부모앱 + 루멘 학부모앱</span></div>
+        <p class="mut" style="margin:10px 0 0;line-height:1.6">루멘 학부모앱에는 학생마다 따로 저장해서 자기 아이 것만 보이게 합니다(서버 보안 2단계와 맞춤). 「공개 취소」를 누르면 두 곳에서 함께 내려갑니다.</p>
+      </div>
+      <div class="panel">
+        <p class="cap">정해 주실 것 4가지</p>
+        <ol class="qs">
+          <li><b>① 「✍ 루멘 데이터로 다시 쓰기」의 재료</b><p><span class="rec">추천</span>우리가 모은 한 달 문항 기록(정답률·틀린 유형) + 숙제 체크 이행도 + 아하노트 질문 수. 원장님 프롬프트(예전 📊 화면에서 쓰시던 것)를 그대로 옮겨 씁니다. AI 비용은 원장님 API 키, 한 명에 몇 원 수준.</p></li>
+          <li><b>② 루멘 학부모앱 보고서에 «루멘 기록» 칸을 넣을까요?</b><p><span class="rec">추천</span>넣음 — 숙제 이행도·아하노트 질문·플래너 점수 세 줄. 매쓰플랫 보고서에는 없는 우리 학원만의 내용이라 학부모가 차이를 느낍니다.</p></li>
+          <li><b>③ 루멘 학부모앱 알림</b><p><span class="rec">추천</span>앱을 열면 「📑 10월 보고서가 도착했어요」 카드를 맨 위에 띄움. 문자는 지금처럼 매쓰플랫 문자(고르면)만.</p></li>
+          <li><b>④ 매쓰플랫 원본 PDF</b><p><span class="rec">추천</span>받을 수 있으면 보고서 맨 아래 「원본 PDF 보기」로 덧붙임. 안 되면 빼고, 루멘 화면만으로 갑니다.</p></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var S = [
+  { id:1, nm:'○○○', gr:'중1', rate:82, prev:76, days:14, n:612, mins:1180, op:'ai', mf:false, lm:false, units:[['정수와 유리수',88],['문자와 식',79],['일차방정식',71]], hw:86, aha:5, plan:91 },
+  { id:2, nm:'○○○', gr:'중2', rate:69, prev:72, days:11, n:438, mins:870,  op:'ed', mf:true,  lm:true,  units:[['일차함수',64],['연립방정식',73],['부등식',70]], hw:72, aha:2, plan:78 },
+  { id:3, nm:'○○○', gr:'중3', rate:91, prev:85, days:16, n:705, mins:1320, op:'lu', mf:false, lm:false, units:[['원의 성질',89],['삼각비',94],['통계',90]], hw:95, aha:8, plan:96 },
+  { id:4, nm:'○○○', gr:'초6', rate:77, prev:70, days:12, n:390, mins:760,  op:'ai', mf:false, lm:false, units:[['분수의 나눗셈',81],['비례식',72],['원의 넓이',76]], hw:80, aha:3, plan:84 },
+  { id:5, nm:'○○○', gr:'고1', rate:63, prev:60, days:9,  n:301, mins:640,  op:'ai', mf:false, lm:false, units:[['다항식',70],['방정식',58],['부등식',61]], hw:64, aha:6, plan:70 }
+];
+var OPS = {
+  ai:'10월 한 달 동안 꾸준히 학습에 참여하였으며, 정수와 유리수 단원에서 높은 정답률을 보였습니다. 일차방정식 단원은 조금 더 연습이 필요합니다. 다음 달에도 성실한 모습을 기대합니다.',
+  ed:'일차함수 그래프 해석에서 기울기와 y절편을 섞어 읽는 실수가 반복되었습니다. 수업 중 그래프를 먼저 말로 설명하게 하니 나아지고 있습니다. 11월은 연립방정식 활용 문제를 하루 5문항씩 이어 가겠습니다.',
+  lu:'10월 문항 705개 중 91%를 맞혔고, 9월보다 6%p 올랐습니다. 특히 삼각비 단원은 94%로 안정적입니다. 원의 성질에서 틀린 문제는 대부분 「접선과 현이 이루는 각」 유형이라, 11월 첫 주에 이 유형만 모아 다시 풀겠습니다. 아하노트 질문을 8번 올리며 막힌 곳을 스스로 정리한 점을 칭찬합니다.'
+};
+var OPLAB = { ai:['매쓰플랫 AI','t-ai'], ed:['직접 고침','t-ed'], lu:['루멘 데이터','t-lu'] };
+var SEL = 3, F = 'all';
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function cur(){ for(var i=0;i<S.length;i++) if(S[i].id===SEL) return S[i]; }
+function listHtml(){
+  var h='';
+  S.filter(function(s){ return F==='all' || (F==='done' ? (s.mf||s.lm) : !(s.mf||s.lm)); }).forEach(function(s){
+    h+='<button type="button" class="stu'+(s.id===SEL?' on':'')+'" data-s="'+s.id+'"><span><span class="nm">'+s.nm+'</span><span class="gr">'+s.gr+'</span></span><span class="rate" style="color:'+(s.rate>=80?'var(--ok)':(s.rate>=70?'var(--blue)':'var(--amber)'))+'">'+s.rate+'%</span>';
+    h+='<span class="dots"><span class="tag '+OPLAB[s.op][1]+'">'+OPLAB[s.op][0]+'</span>';
+    h+= s.mf ? '<span class="tag t-mf">매쓰플랫 ✓</span>' : '<span class="tag t-no">매쓰플랫</span>';
+    h+= s.lm ? '<span class="tag t-lm">루멘 ✓</span>' : '<span class="tag t-no">루멘</span>';
+    h+='</span></button>';
+  });
+  document.getElementById('stulist').innerHTML = h || '<p class="mut">해당 학생이 없어요</p>';
+  var done=S.filter(function(s){return s.mf&&s.lm;}).length;
+  document.getElementById('sumpill').textContent='공개 '+done+' / '+S.length;
+}
+function mainHtml(){
+  var s=cur(), d=s.rate-s.prev;
+  var h='<div class="head"><h2>'+s.nm+' · '+s.gr+'</h2><span class="mut">매쓰플랫 보고서 #'+(9120400+s.id)+' · 10/1 ~ 10/31</span></div>';
+  h+='<div class="kpis"><div class="kpi"><b>'+s.rate+'%</b><span>정답률 ('+(d>=0?'+':'')+d+'%p)</span></div><div class="kpi"><b>'+s.n+'</b><span>푼 문항</span></div><div class="kpi"><b>'+s.days+'일</b><span>학습한 날</span></div><div class="kpi"><b>'+Math.round(s.mins/60)+'시간</b><span>학습 시간</span></div></div>';
+  h+='<div class="units">'; s.units.forEach(function(u){ h+='<div class="u"><span>'+u[0]+'</span><span class="tr"><i class="'+(u[1]<70?'low':'')+'" style="width:'+u[1]+'%"></i></span><em>'+u[1]+'%</em></div>'; }); h+='</div>';
+  h+='<div class="box"><div class="ophead"><b>선생님 의견</b><div class="seg" role="tablist">';
+  ['ai','ed','lu'].forEach(function(k){ h+='<button type="button" data-op="'+k+'" class="'+(s.op===k?'on':'')+'">'+(k==='ai'?'매쓰플랫 AI 그대로':(k==='ed'?'✏ 직접 고치기':'✍ 루멘 데이터로 다시 쓰기'))+'</button>'; });
+  h+='</div></div><textarea id="op" aria-label="선생님 의견">'+esc(OPS[s.op])+'</textarea><div class="cnt"><span id="opn">'+OPS[s.op].length+'</span> / 650자 (매쓰플랫 한도)</div></div>';
+  h+='<div class="box pub"><b style="font-size:13.5px">공개</b>';
+  h+='<label><input type="checkbox" id="c-mf" checked> 매쓰플랫 학부모앱</label><label><input type="checkbox" id="c-lm" checked> 루멘 학부모앱</label><label><input type="checkbox" id="c-sms"> 문자도 보내기(매쓰플랫)</label>';
+  h+= (s.mf&&s.lm) ? '<span class="done" style="margin-left:auto">✓ 공개함 · 11/10</span><button type="button" class="btn" data-un="1">공개 취소</button>' : '<button type="button" class="go" data-pub="1">이 학생 공개</button>';
+  h+='</div>';
+  h+='<div class="batch"><span class="mut">의견을 다 본 학생만 한꺼번에 공개할 수도 있어요.</span><button type="button" class="btn">✍ 의견 없는 학생 루멘 데이터로 쓰기</button><button type="button" class="btn" data-all="1">공개 전 '+S.filter(function(x){return !(x.mf&&x.lm);}).length+'명 한꺼번에 공개</button></div>';
+  document.getElementById('main').innerHTML=h;
+}
+function phoneHtml(){
+  var s=cur(), d=s.rate-s.prev;
+  var h='<div class="ptop"><small>루멘수학 · '+s.nm+' 학부모님</small><b>📑 10월 학습 보고서</b></div><div class="pbody">';
+  h+='<div class="months"><span>8월</span><span>9월</span><span class="on">10월</span></div>';
+  if(!s.lm){ h+='<div class="pcard" style="text-align:center;padding:30px 12px"><b>아직 도착하지 않았어요</b><p class="mut" style="margin:6px 0 0">원장님이 「공개」를 누르면 여기에 보입니다.</p></div></div>'; document.getElementById('phone').innerHTML=h; return; }
+  h+='<div class="pcard"><h4>한눈에</h4><div class="big3"><div><b>'+s.rate+'%</b><span>정답률</span></div><div><b>'+s.n+'</b><span>푼 문항</span></div><div><b>'+s.days+'일</b><span>공부한 날</span></div></div><div class="trend" style="color:'+(d>=0?'var(--ok)':'var(--amber)')+'">9월보다 '+(d>=0?d+'%p 올랐어요 ↑':(-d)+'%p 내려갔어요 ↓')+'</div></div>';
+  h+='<div class="pcard"><h4>단원별 정답률</h4><div class="units">'; s.units.forEach(function(u){ h+='<div class="u" style="grid-template-columns:100px 1fr 40px"><span>'+u[0]+'</span><span class="tr"><i class="'+(u[1]<70?'low':'')+'" style="width:'+u[1]+'%"></i></span><em>'+u[1]+'%</em></div>'; }); h+='</div></div>';
+  h+='<div class="pcard"><h4>선생님 의견</h4><p class="quote">'+esc(document.getElementById('op')?document.getElementById('op').value:OPS[s.op])+'</p><div class="sig">루멘수학 김정수 원장</div></div>';
+  h+='<div class="pcard"><h4>루멘 기록 (학원 안)</h4><div class="lumen"><div><b>'+s.hw+'%</b>숙제 이행도</div><div><b>'+s.aha+'번</b>아하노트 질문</div><div><b>'+s.plan+'점</b>플래너 평균</div><div><b>'+s.days+'일</b>등원</div></div></div>';
+  h+='<span class="pdf">📄 매쓰플랫 원본 PDF 보기</span></div>';
+  document.getElementById('phone').innerHTML=h;
+}
+function render(){ listHtml(); mainHtml(); phoneHtml(); document.querySelectorAll('#filters .fchip').forEach(function(b){ b.classList.toggle('on', b.dataset.f===F); }); }
+document.addEventListener('click', function(e){
+  var t=e.target.closest('[data-s],[data-f],[data-op],[data-pub],[data-un],[data-all]'); if(!t) return;
+  var s=cur();
+  if(t.dataset.s){ SEL=Number(t.dataset.s); render(); return; }
+  if(t.dataset.f){ F=t.dataset.f; render(); return; }
+  if(t.dataset.op){ s.op=t.dataset.op; render(); return; }
+  if(t.dataset.pub){ s.mf=document.getElementById('c-mf').checked; s.lm=document.getElementById('c-lm').checked; render(); return; }
+  if(t.dataset.un){ s.mf=false; s.lm=false; render(); return; }
+  if(t.dataset.all){ S.forEach(function(x){ x.mf=true; x.lm=true; }); render(); return; }
+});
+document.addEventListener('input', function(e){ if(e.target.id==='op'){ document.getElementById('opn').textContent=e.target.value.length; cur().op='ed'; OPS.ed=e.target.value; document.querySelectorAll('[data-op]').forEach(function(b){ b.classList.toggle('on', b.dataset.op==='ed'); }); phoneHtml(); listHtml(); } });
+render();
+</script>
