@@ -47,6 +47,9 @@ svg{ display:block; width:100%; height:auto }
 .up{ color:var(--up) } .dn{ color:var(--dn) }
 .tag.up{ background:var(--dybg) } .tag.dn{ background:#fff1e6 }
 .tag.wk{ background:var(--wkbg); color:var(--wk) }
+.rk{ display:inline-flex; align-items:baseline; gap:4px; font-size:12px; font-weight:900; border-radius:8px; padding:2px 8px; white-space:nowrap; font-variant-numeric:tabular-nums }
+.rk small{ font-size:10px; font-weight:800; opacity:.85 }
+.lvl{ display:flex; gap:4px; flex-wrap:wrap; margin-top:8px }
 .mini{ display:flex; gap:6px; align-items:flex-end; height:84px; margin:6px 0 2px }
 .mini div{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; color:var(--sub); font-weight:700; font-variant-numeric:tabular-nums }
 .mini i{ display:block; width:100%; border-radius:6px 6px 3px 3px; background:var(--wk) }
@@ -108,7 +111,8 @@ svg{ display:block; width:100%; height:auto }
         <p class="cap">정해 주실 것 4가지</p>
         <ol class="qs">
           <li><b>① 성적 추이 화면 자리</b><p><span class="rec">추천</span>성적 탭 맨 위 카드(최근 주간 점수·상위 %) → 누르면 «📈 성적 추이» 화면. 아래 탭을 하나 더 늘리지 않습니다.</p></li>
-          <li><b>② 주간테스트 그래프에 무엇을 같이</b><p><span class="rec">추천</span>우리 아이 점수 + 전국 평균 선 · 회차마다 <b>«전국 823명 중 378등»</b>과 상위 %. 학원 등수는 지금 설정(보이기/숨기기)을 그대로 따릅니다.</p></li>
+          <li><b>② 주간테스트 그래프에 무엇을 같이</b><p><span class="rec">추천</span>우리 아이 점수 + 전국 평균 선 · 회차마다 <b>«378/823명»</b>(등급 색) · 맨 위에만 상위 %. 학원 등수는 지금 설정(보이기/숨기기)을 그대로 따릅니다.</p></li>
+          <li><b>등급 색</b><p>등수 칸에만 리포트 머리와 같은 색(1 초록 · 2 파랑 · 3 노랑 · 4 주황 · 5 빨강)을 칠합니다. 줄 전체를 칠하지 않아 낮은 등급도 부담스럽게 보이지 않게 했습니다. 등급은 매쓰플랫이 매긴 그 시험 등급을 그대로 씁니다.</p></li>
           <li><b>시험지 제목</b><p>회차·날짜마다 시험지 제목을 그대로 붙여 <b>몇 학년 시험인지, 어떤 범위인지</b> 바로 보이게 했습니다(예: «[중2] 주간 10회 · 삼각형의 성질»).</p></li>
           <li><b>③ 일일테스트는 무엇과 비교</b><p><span class="rec">추천</span>그날 학원 평균과의 차이(+/−) 막대 + 점수. 학원 평균이 없는 날은 점수만.</p></li>
           <li><b>④ 리포트 안 성장 추이</b><p><span class="rec">추천</span>위 ①처럼 «그 시험 종류 최근 6회 막대»로 바꾸고 «성적 추이 전체 보기»로 연결. 이미 발행한 옛 리포트는 그대로 두고, 다음 발행부터 바뀝니다.</p></li>
@@ -119,14 +123,16 @@ svg{ display:block; width:100%; height:auto }
 </div>
 
 <script>
-var WK = [ ['9/2',72,70,312,820,'[중2] 주간 1회 · 유리수와 순환소수'],['9/9',80,71,198,826,'[중2] 주간 2회 · 식의 계산'],['9/16',65,66,451,815,'[중2] 주간 3회 · 단항식·다항식'],['9/23',88,72,124,830,'[중2] 주간 4회 · 일차부등식'],['9/30',78,69,247,822,'[중2] 주간 5회 · 연립방정식'],['10/7',85,73,181,819,'[중2] 주간 6회 · 연립방정식 활용'],['10/14',90,74,97,824,'[중2] 주간 7회 · 일차함수와 그래프'],['10/21',75,70,288,817,'[중2] 주간 8회 · 일차함수의 활용'],['10/28',80,73,229,821,'[중2] 주간 9회 · 2학기 중간 대비'],['11/4',70,68,378,823,'[중2] 주간 10회 · 삼각형의 성질'] ];   /* 날짜 · 점수 · 전국 평균 · 전국 등수 · 응시 인원 · 시험지 제목 */
+var WK = [ ['9/2',72,70,312,820,'[중2] 주간 1회 · 유리수와 순환소수',3],['9/9',80,71,198,826,'[중2] 주간 2회 · 식의 계산',2],['9/16',65,66,451,815,'[중2] 주간 3회 · 단항식·다항식',4],['9/23',88,72,124,830,'[중2] 주간 4회 · 일차부등식',1],['9/30',78,69,247,822,'[중2] 주간 5회 · 연립방정식',2],['10/7',85,73,181,819,'[중2] 주간 6회 · 연립방정식 활용',2],['10/14',90,74,97,824,'[중2] 주간 7회 · 일차함수와 그래프',1],['10/21',75,70,288,817,'[중2] 주간 8회 · 일차함수의 활용',3],['10/28',80,73,229,821,'[중2] 주간 9회 · 2학기 중간 대비',2],['11/4',70,68,378,823,'[중2] 주간 10회 · 삼각형의 성질',3] ];   /* 날짜 · 점수 · 전국 평균 · 전국 등수 · 응시 인원 · 시험지 제목 · 등급(1~5, 리포트와 같은 값) */
 var DY = [ ['10/16',75,68,'[중2] 일일 · 일차함수 p.52~55'],['10/17',57,60,'[중2] 일일 · 일차함수 활용 p.56~59'],['10/20',83,74,'[중2] 일일 · 그래프 그리기'],['10/22',50,61,'[중2] 일일 · 연립방정식과 그래프'],['10/23',95,82,'[중2] 일일 · 기울기 구하기'],['10/27',66,63,'[중2] 일일 · 중간 대비 1'],['10/29',40,55,'[중2] 일일 · 중간 대비 2 (서술형)'],['10/30',87,79,'[중2] 일일 · 중간 대비 3'],['11/3',63,60,'[중2] 일일 · 삼각형의 성질 p.8~11'],['11/5',47,52,'[중2] 일일 · 이등변삼각형 p.12~15'],['11/6',66,58,'[중2] 일일 · 직각삼각형 합동'],['11/10',41,49,'[중2] 일일 · 외심 p.20~23'] ];   /* 날짜 · 점수 · 학원 평균 · 시험지 제목 */
 var T = 'wk', PER = '8';
+var LV = { 1: ['#059669', '#ecfdf5'], 2: ['#1d6fe8', '#eaf2ff'], 3: ['#b45309', '#fef3c7'], 4: ['#c2410c', '#ffedd5'], 5: ['#dc2626', '#fee2e2'] };   /* 리포트 머리와 같은 등급 색 */
+function rk(r){ var c = LV[r[6]] || LV[3]; return '<span class="rk" style="color:' + c[0] + ';background:' + c[1] + '">' + r[3] + '/' + r[4] + '명<small>' + r[6] + '등급</small></span>'; }
 function mini(){
   var L = WK.slice(-6), h = '';
   L.forEach(function(x, i){ h += '<div><b>' + x[1] + '</b><i style="height:' + Math.round(x[1] * 0.62) + 'px;' + (i === L.length - 1 ? '' : 'opacity:.45') + '"></i>' + x[0] + '</div>'; });
   document.getElementById('mini').innerHTML = h;
-  var z = WK[WK.length - 1]; document.getElementById('minit').innerHTML = '<b>' + z[5] + '</b><br>' + z[1] + '점 · 전국 <b>' + z[4] + '명 중 ' + z[3] + '등</b> (상위 ' + Math.round(z[3] / z[4] * 100) + '%)';
+  var z = WK[WK.length - 1]; document.getElementById('minit').innerHTML = '<b>' + z[5] + '</b><br>' + z[1] + '점 · 전국 ' + rk(z);
 }
 function line(pts, col, dash){ return '<polyline fill="none" stroke="' + col + '" stroke-width="' + (dash ? 1.6 : 2.6) + '" ' + (dash ? 'stroke-dasharray="4 4"' : '') + ' stroke-linecap="round" stroke-linejoin="round" points="' + pts.join(' ') + '"/>'; }
 function wkView(){
@@ -142,11 +148,12 @@ function wkView(){
   var h = '<div class="card"><div class="ct">🌐 전국주간테스트 <small>전국 같은 학년이 같은 시험지</small></div>'
     + '<div class="big"><b>' + last[1] + '점</b><span class="d ' + (d >= 0 ? 'up' : 'dn') + '">지난주보다 ' + (d >= 0 ? '+' : '') + d + '</span></div>'
     + '<div class="note" style="color:var(--ink);font-weight:700">' + last[5] + '</div>'
-    + '<div class="note">전국 <b>' + last[4] + '명 중 ' + last[3] + '등</b> (상위 ' + Math.round(last[3] / last[4] * 100) + '%) · 전국 평균 ' + last[2] + '점</div>'
+    + '<div class="note" style="margin-top:4px">전국 ' + rk(last) + ' · 상위 ' + Math.round(last[3] / last[4] * 100) + '% · 전국 평균 ' + last[2] + '점</div>'
     + '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="전국주간 점수 추이">' + g + '</svg>'
-    + '<div class="lg"><span><i style="background:var(--wk)"></i>우리 아이</span><span><i style="background:var(--avg)"></i>전국 평균</span></div></div>';
+    + '<div class="lg"><span><i style="background:var(--wk)"></i>우리 아이</span><span><i style="background:var(--avg)"></i>전국 평균</span></div>'
+    + '<div class="lvl">' + [1, 2, 3, 4, 5].map(function(n){ return '<span class="rk" style="color:' + LV[n][0] + ';background:' + LV[n][1] + '">' + n + '등급</span>'; }).join('') + '</div></div>';
   h += '<div class="card"><div class="ct">회차별 <small>최근이 위</small></div><div class="rows">';
-  L.slice().reverse().forEach(function(r){ h += '<div class="r"><span class="dt">' + r[0] + '</span><span style="min-width:0"><span class="sc">' + r[1] + '점</span> <span class="note">평균 ' + r[2] + '</span><span class="tt">' + r[5] + '</span></span><span class="tag wk">' + r[4] + '명 중 ' + r[3] + '등</span></div>'; });
+  L.slice().reverse().forEach(function(r){ h += '<div class="r"><span class="dt">' + r[0] + '</span><span style="min-width:0"><span class="sc">' + r[1] + '점</span> <span class="note">평균 ' + r[2] + '</span><span class="tt">' + r[5] + '</span></span>' + rk(r) + '</div>'; });
   return h + '</div></div>';
 }
 function dyView(){
