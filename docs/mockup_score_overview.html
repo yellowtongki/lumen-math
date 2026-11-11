@@ -1,0 +1,205 @@
+<title>성적 한눈에 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* 레이아웃: 학원앱 PC 화면 — 왼쪽 반 전체 목록(줄마다 주간·학교·일일 요약) · 오른쪽 고른 학생(전국주간 추이 · 학교 시험 타임라인 · 일일) · 아래 정한 것 */
+:root{
+  --bg:#eef1f6; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#dfe5ee; --soft:#f5f7fb; --navy:#0d2240;
+  --wk:#1d6fe8; --wkbg:#eaf2ff; --dy:#16a34a; --dn:#c2410c; --avg:#94a3b8; --sel:#fff7d6;
+  --g1:#059669; --g1b:#ecfdf5; --g2:#1d6fe8; --g2b:#eaf2ff; --g3:#b45309; --g3b:#fef3c7; --g4:#c2410c; --g4b:#ffedd5; --g5:#dc2626; --g5b:#fee2e2;
+  --shadow:0 10px 28px rgba(13,34,64,.10);
+  --f-body:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --card:#172233; --ink:#e7edf6; --sub:#9fb0c6; --line:#2a3a52; --soft:#1b2940; --wkbg:#132a4d; --sel:#3a2f0b; --g1b:#0e2e1d; --g2b:#132a4d; --g3b:#3a2a0b; --g4b:#3a1d0b; --g5b:#3a1111; --shadow:0 10px 28px rgba(0,0,0,.4); color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --card:#172233; --ink:#e7edf6; --sub:#9fb0c6; --line:#2a3a52; --soft:#1b2940; --wkbg:#132a4d; --sel:#3a2f0b; --g1b:#0e2e1d; --g2b:#132a4d; --g3b:#3a2a0b; --g4b:#3a1d0b; --g5b:#3a1111; --shadow:0 10px 28px rgba(0,0,0,.4); color-scheme:dark }
+body{ background:var(--bg); color:var(--ink); font-family:var(--f-body); }
+.wrap{ max-width:1240px; margin:0 auto; padding-block:20px 44px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); }
+h1{ font-size:20px; margin:0 0 4px; text-wrap:balance }
+.lead{ color:var(--sub); font-size:13.5px; line-height:1.6; margin:0 0 14px; max-width:80ch }
+.app{ background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); overflow:hidden }
+.bar{ background:var(--navy); color:#fff; padding:12px 16px; display:flex; flex-wrap:wrap; gap:8px; align-items:center }
+.bar b{ font-size:16px; margin-right:6px }
+.chip{ border:1.5px solid rgba(255,255,255,.25); background:transparent; color:#fff; border-radius:999px; padding:5px 12px; font:inherit; font-size:12.5px; font-weight:700; cursor:pointer }
+.chip.on{ background:#fff; color:var(--navy) }
+.cols{ display:grid; grid-template-columns:minmax(0, 520px) minmax(0, 1fr); min-height:640px }
+@media (max-width:1000px){ .cols{ grid-template-columns:1fr } }
+.left{ border-right:1px solid var(--line); background:var(--soft); padding:10px; display:flex; flex-direction:column; gap:6px; min-width:0 }
+.sorts{ display:flex; gap:5px; flex-wrap:wrap; align-items:center; font-size:12px; color:var(--sub); font-weight:700; margin-bottom:2px }
+.sorts button{ border:1.5px solid var(--line); background:var(--card); color:var(--sub); border-radius:999px; padding:4px 10px; font:inherit; font-size:12px; font-weight:800; cursor:pointer }
+.sorts button.on{ border-color:var(--navy); color:var(--ink) }
+.hdr,.row{ display:grid; grid-template-columns:86px minmax(0,1.25fr) minmax(0,1.1fr) 62px; gap:8px; align-items:center }
+.hdr{ font-size:11px; color:var(--sub); font-weight:800; padding:2px 10px }
+.row{ background:var(--card); border:1.5px solid var(--line); border-radius:12px; padding:8px 10px; cursor:pointer; text-align:left; font:inherit; color:var(--ink) }
+.row.on{ border-color:var(--wk); box-shadow:0 0 0 2px var(--wkbg) }
+.row:focus-visible{ outline:2px solid var(--wk) }
+.nm b{ display:block; font-size:13.5px } .nm small{ font-size:11px; color:var(--sub); font-weight:700 }
+.wkc{ display:flex; align-items:center; gap:8px; min-width:0 }
+.spark{ display:flex; gap:2px; align-items:flex-end; height:28px; flex:none }
+.spark i{ display:block; width:6px; border-radius:2px 2px 1px 1px }
+.wkt{ min-width:0 } .wkt b{ font-size:14px; font-variant-numeric:tabular-nums } .wkt .rk{ margin-left:4px }
+.rk{ display:inline-flex; align-items:baseline; gap:3px; font-size:11.5px; font-weight:900; border-radius:7px; padding:1px 7px; white-space:nowrap; font-variant-numeric:tabular-nums }
+.rk small{ font-size:9.5px; font-weight:800; opacity:.85 }
+.sch{ font-size:12px; min-width:0 } .sch b{ font-size:13px; font-variant-numeric:tabular-nums } .sch .s{ display:block; color:var(--sub); font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+.up{ color:var(--dy); font-weight:900 } .dn{ color:var(--dn); font-weight:900 }
+.dly{ font-size:12px; font-weight:800; text-align:right; font-variant-numeric:tabular-nums } .dly small{ display:block; font-size:10px; color:var(--sub); font-weight:700 }
+.right{ padding:16px; display:flex; flex-direction:column; gap:12px; min-width:0 }
+.who{ display:flex; flex-wrap:wrap; gap:6px 14px; align-items:baseline } .who h2{ margin:0; font-size:19px } .who span{ color:var(--sub); font-size:12.5px }
+.card{ border:1px solid var(--line); border-radius:14px; padding:13px 14px; background:var(--card) }
+.ct{ display:flex; align-items:center; gap:6px; font-weight:900; font-size:14px; margin-bottom:8px; flex-wrap:wrap }
+.ct small{ margin-left:auto; font-size:11px; color:var(--sub); font-weight:700 }
+.kp{ display:flex; gap:14px; flex-wrap:wrap; align-items:baseline; margin-bottom:6px }
+.kp b{ font-size:26px; font-variant-numeric:tabular-nums }
+.note{ font-size:11.5px; color:var(--sub); line-height:1.55 }
+svg{ display:block; width:100%; height:auto }
+.lg{ display:flex; gap:10px; font-size:11px; color:var(--sub); font-weight:700; margin-top:4px; flex-wrap:wrap; align-items:center }
+.lg i{ display:inline-block; width:14px; height:3px; border-radius:2px; vertical-align:middle; margin-right:4px }
+.tbl{ width:100%; border-collapse:collapse; font-size:12.5px }
+.tbl th{ text-align:left; font-size:11px; color:var(--sub); font-weight:800; padding:6px 6px; border-bottom:1px solid var(--line) }
+.tbl td{ padding:7px 6px; border-bottom:1px dashed var(--line); vertical-align:top; font-variant-numeric:tabular-nums }
+.tbl td.t{ color:var(--sub); font-size:11.5px }
+.tw{ overflow-x:auto }
+.tl{ display:flex; flex-direction:column; gap:8px }
+.sem{ display:grid; grid-template-columns:110px 1fr; gap:10px; align-items:start; border:1px solid var(--line); border-radius:12px; padding:10px }
+.sem .h b{ display:block; font-size:13px } .sem .h small{ font-size:11px; color:var(--sub); font-weight:700 }
+.subj{ display:flex; flex-wrap:wrap; gap:6px }
+.sj{ border:1px solid var(--line); border-radius:10px; padding:6px 9px; min-width:96px; font-size:11.5px; color:var(--sub); background:var(--soft) }
+.sj b{ display:block; color:var(--ink); font-size:15px; font-variant-numeric:tabular-nums }
+.sj.math{ border-color:var(--wk); background:var(--wkbg) }
+.more{ border:1.5px dashed var(--line); background:transparent; border-radius:9px; padding:5px 10px; font:inherit; font-size:12px; font-weight:800; color:var(--wk); cursor:pointer }
+.two{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px }
+@media (max-width:760px){ .two{ grid-template-columns:1fr } .hdr{ display:none } .row{ grid-template-columns:1fr 1fr } }
+.panel{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:var(--shadow); margin-top:16px }
+.cap{ font-size:11.5px; font-weight:800; letter-spacing:.06em; color:var(--sub); margin:0 0 8px }
+.dec{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:10px; margin:0; padding:0; list-style:none }
+.dec li{ border:1px solid var(--line); border-radius:12px; padding:11px; background:var(--soft); font-size:12.5px; color:var(--sub); line-height:1.55 }
+.dec b{ display:block; color:var(--ink); font-size:13px; margin-bottom:3px }
+</style>
+
+<div class="wrap">
+  <h1>📈 성적 한눈에 — 학원앱 시안</h1>
+  <p class="lead">왼쪽은 반 전체 목록, 오른쪽은 고른 학생입니다. 학생 줄을 누르면 오른쪽이 바뀝니다. 같은 화면이 학생 프로필의 새 탭 «📈 성적»에도 들어갑니다. 이름·점수는 예시입니다. 등급 색은 전국주간의 <b>전국 상위 %</b>로 매깁니다(10% · 30% · 50% · 70% · 그 아래).</p>
+
+  <div class="app">
+    <div class="bar"><b>📈 성적 한눈에</b>
+      <button type="button" class="chip on" data-g="all">전체</button><button type="button" class="chip" data-g="중2">중2</button><button type="button" class="chip" data-g="중1">중1</button><button type="button" class="chip" data-g="초6">초6</button><button type="button" class="chip" data-g="고1">고1</button>
+    </div>
+    <div class="cols">
+      <div class="left">
+        <div class="sorts">정렬 <button type="button" class="on" data-s="name">이름</button><button type="button" data-s="rank">전국 위치</button><button type="button" data-s="drop">최근 하락 큰 순</button></div>
+        <div class="hdr"><span>학생</span><span>🌐 전국주간 · 최근 6회</span><span>🎓 최근 학교 시험(수학)</span><span>📝 일일</span></div>
+        <div id="list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <div class="right" id="right"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <p class="cap">정한 것 (원장 11/11 「추천대로」)</p>
+    <ul class="dec">
+      <li><b>등급 색 = 전국 상위 %</b>상위 10% 이내 1등급 초록 · 30% 2 파랑 · 50% 3 노랑 · 70% 4 주황 · 그 아래 5 빨강. 등수 칸·막대·점에만 칠합니다.</li>
+      <li><b>자리 두 곳, 같은 그림</b>새 메뉴 «📈 성적 한눈에»(반 전체) + 학생 프로필 새 탭 «📈 성적». 학부모앱 성적 추이도 같은 그림·같은 자료.</li>
+      <li><b>학교 성적은 수학 기본</b>학기마다 수학을 크게, 다른 과목은 «＋ 다른 과목» 으로 펼침. 등급·석차(45/270)·학교 평균 함께.</li>
+      <li><b>학부모앱은 주간·일일만</b>학교 성적은 1단계에서 학부모앱에 내보내지 않습니다(나중에 원장님 확인 후).</li>
+      <li><b>전국 등수 보존</b>새벽 수집기가 회차마다 전국 등수(378/823명)를 따로 남깁니다. 지금은 약 90일 뒤 사라집니다.</li>
+      <li><b>리포트 없는 학생도</b>학생 프로필이 열리게 고칩니다(학교 성적만 있어도).</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+var GC = { 1: ['var(--g1)', 'var(--g1b)'], 2: ['var(--g2)', 'var(--g2b)'], 3: ['var(--g3)', 'var(--g3b)'], 4: ['var(--g4)', 'var(--g4b)'], 5: ['var(--g5)', 'var(--g5b)'] };
+function gOf(rank, n){ var p = rank / n * 100; return p <= 10 ? 1 : p <= 30 ? 2 : p <= 50 ? 3 : p <= 70 ? 4 : 5; }
+function rk(rank, n){ var g = gOf(rank, n), c = GC[g]; return '<span class="rk" style="color:' + c[0] + ';background:' + c[1] + '">' + rank + '/' + n + '명<small>' + g + '등급</small></span>'; }
+/* 예시 학생: 주간 [날짜, 점수, 전국 평균, 등수, 응시, 제목] · 학교 [학기, 시험, 수학 점수, 등급, 석차, 학교 평균, {다른 과목}] · 일일 [점수, 학원 평균] */
+function W(list){ return list.map(function(x){ return { d: x[0], s: x[1], avg: x[2], r: x[3], n: x[4], t: x[5] }; }); }
+var S = [
+  { id: 1, nm: '○○○1', gr: '중2', cls: '화목 T5', wk: W([['9/23',88,72,124,830,'[중2] 주간 4회 · 일차부등식'],['9/30',78,69,247,822,'[중2] 주간 5회 · 연립방정식'],['10/7',85,73,181,819,'[중2] 주간 6회 · 연립방정식 활용'],['10/14',90,74,97,824,'[중2] 주간 7회 · 일차함수와 그래프'],['10/21',75,70,288,817,'[중2] 주간 8회 · 일차함수의 활용'],['10/28',80,73,229,821,'[중2] 주간 9회 · 중간 대비'],['11/4',70,68,378,823,'[중2] 주간 10회 · 삼각형의 성질']]),
+    sch: [['2026 1학기','중간',88,2,'31/270',71,{국어:84,영어:91,과학:79}],['2026 1학기','기말',79,3,'62/268',68,{국어:80,영어:88,과학:75}],['2026 2학기','중간',84,2,'45/270',70,{국어:86,영어:90,과학:81}]],
+    dy: [[75,68],[57,60],[83,74],[50,61],[95,82],[66,63],[63,60],[47,52]] },
+  { id: 2, nm: '○○○2', gr: '중2', cls: '화목 T5', wk: W([['10/14',95,74,22,824,'[중2] 주간 7회'],['10/21',92,70,35,817,'[중2] 주간 8회'],['10/28',96,73,18,821,'[중2] 주간 9회'],['11/4',94,68,30,823,'[중2] 주간 10회 · 삼각형의 성질']]),
+    sch: [['2026 1학기','기말',97,1,'5/268',68,{}],['2026 2학기','중간',95,1,'8/270',70,{}]], dy: [[92,68],[88,60],[90,74],[85,61],[97,82],[91,63]] },
+  { id: 3, nm: '○○○3', gr: '중1', cls: '월수금 M7', wk: W([['10/14',70,71,402,910,'[중1] 주간 7회'],['10/21',62,66,511,905,'[중1] 주간 8회'],['10/28',58,64,560,912,'[중1] 주간 9회'],['11/4',49,62,688,908,'[중1] 주간 10회 · 작도와 합동']]),
+    sch: [['2026 2학기','중간',68,4,'132/240',72,{}]], dy: [[60,64],[55,61],[48,58],[52,60],[44,57]] },
+  { id: 4, nm: '○○○4', gr: '초6', cls: '화목 T630', wk: W([['10/21',85,74,140,1020,'[초6] 주간 8회'],['10/28',88,76,120,1015,'[초6] 주간 9회'],['11/4',91,75,88,1018,'[초6] 주간 10회 · 비례식']]),
+    sch: [], dy: [[80,72],[86,75],[90,77]] },
+  { id: 5, nm: '○○○5', gr: '고1', cls: '월수금 H1', wk: W([['10/21',62,58,310,640,'[고1] 공통수학2 주간 1회'],['11/6',65,60,288,652,'[고1] 공통수학2 주간 2회 · 명제']]),
+    sch: [['2026 1학기','기말',74,4,'98/310',61,{}],['2026 2학기','중간',81,3,'64/305',63,{}]], dy: [[70,65],[58,63]] }
+];
+var SEL = 1, G = 'all', SORT = 'name', MORE = {};
+function last(a){ return a[a.length - 1]; }
+function drop(s){ var w = s.wk; if (w.length < 2) return 0; return (w[w.length - 1].r / w[w.length - 1].n) - (w[w.length - 2].r / w[w.length - 2].n); }
+function rowHtml(s){
+  var w = last(s.wk), sp = '';
+  s.wk.slice(-6).forEach(function(x){ var g = gOf(x.r, x.n); sp += '<i style="height:' + Math.max(4, Math.round(x.s * 0.28)) + 'px;background:' + GC[g][0] + '"></i>'; });
+  var sc = s.sch.length ? last(s.sch) : null, pv = s.sch.length > 1 ? s.sch[s.sch.length - 2] : null, df = sc && pv ? sc[2] - pv[2] : null;
+  var dyAbove = s.dy.filter(function(x){ return x[0] >= x[1]; }).length;
+  var h = '<button type="button" class="row' + (s.id === SEL ? ' on' : '') + '" data-id="' + s.id + '">';
+  h += '<span class="nm"><b>' + s.nm + '</b><small>' + s.gr + ' · ' + s.cls + '</small></span>';
+  h += '<span class="wkc"><span class="spark">' + sp + '</span><span class="wkt"><b>' + w.s + '점</b>' + rk(w.r, w.n) + '</span></span>';
+  h += '<span class="sch">' + (sc ? '<b>' + sc[2] + '점</b> · ' + sc[3] + '등급 ' + (df == null ? '' : (df >= 0 ? '<span class="up">↑' + df + '</span>' : '<span class="dn">↓' + (-df) + '</span>')) + '<span class="s">' + sc[0].slice(5) + ' ' + sc[1] + ' · 석차 ' + sc[4] + '</span>' : '<span class="s">입력 없음</span>') + '</span>';
+  h += '<span class="dly">' + dyAbove + '/' + s.dy.length + '<small>학원 평균 이상</small></span></button>';
+  return h;
+}
+function list(){
+  var L = S.filter(function(s){ return G === 'all' || s.gr === G; });
+  if (SORT === 'rank') L.sort(function(a, b){ var x = last(a.wk), y = last(b.wk); return x.r / x.n - y.r / y.n; });
+  else if (SORT === 'drop') L.sort(function(a, b){ return drop(b) - drop(a); });
+  else L.sort(function(a, b){ return a.nm < b.nm ? -1 : 1; });
+  document.getElementById('list').innerHTML = L.map(rowHtml).join('') || '<p class="note">이 학년 학생이 없어요</p>';
+}
+function wkChart(L){
+  var W2 = 560, H = 170, pl = 30, pr = 16, pt = 18, pb = 22;
+  var x = function(i){ return pl + (L.length < 2 ? (W2 - pl - pr) / 2 : i * (W2 - pl - pr) / (L.length - 1)); }, y = function(v){ return pt + (100 - v) * (H - pt - pb) / 60; };
+  var g = '';
+  [40, 60, 80, 100].forEach(function(v){ g += '<line x1="' + pl + '" x2="' + (W2 - pr) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--line)"/><text x="' + (pl - 6) + '" y="' + (y(v) + 4) + '" font-size="10" text-anchor="end" fill="var(--sub)">' + v + '</text>'; });
+  if (L.length > 1) {
+    g += '<polyline fill="none" stroke="var(--avg)" stroke-width="1.6" stroke-dasharray="4 4" points="' + L.map(function(r, i){ return x(i) + ',' + y(r.avg); }).join(' ') + '"/>';
+    g += '<polyline fill="none" stroke="var(--wk)" stroke-width="2.4" stroke-linejoin="round" points="' + L.map(function(r, i){ return x(i) + ',' + y(r.s); }).join(' ') + '"/>';
+  }
+  L.forEach(function(r, i){ var c = GC[gOf(r.r, r.n)][0]; g += '<circle cx="' + x(i) + '" cy="' + y(r.s) + '" r="' + (i === L.length - 1 ? 6 : 4.5) + '" fill="' + c + '" stroke="var(--card)" stroke-width="1.5"/><text x="' + x(i) + '" y="' + (H - 6) + '" font-size="10" text-anchor="middle" fill="var(--sub)">' + r.d + '</text>'; });
+  return '<svg viewBox="0 0 ' + W2 + ' ' + H + '" role="img" aria-label="전국주간 점수 추이">' + g + '</svg>';
+}
+function right(){
+  var s = S.filter(function(x){ return x.id === SEL; })[0]; if (!s) return;
+  var w = last(s.wk), p = s.wk.length > 1 ? s.wk[s.wk.length - 2] : null, d = p ? w.s - p.s : 0;
+  var h = '<div class="who"><h2>' + s.nm + '</h2><span>' + s.gr + ' · ' + s.cls + '</span><span>학생 프로필 › 📈 성적 탭과 같은 화면</span></div>';
+  h += '<div class="card"><div class="ct">🌐 전국주간테스트 <small>전국 같은 학년 · 같은 시험지</small></div>';
+  h += '<div class="kp"><b>' + w.s + '점</b>' + rk(w.r, w.n) + '<span class="note">상위 ' + Math.round(w.r / w.n * 100) + '% · 전국 평균 ' + w.avg + '점' + (p ? ' · 지난번보다 <span class="' + (d >= 0 ? 'up' : 'dn') + '">' + (d >= 0 ? '+' : '') + d + '</span>' : '') + '</span></div>';
+  h += '<div class="note" style="color:var(--ink);font-weight:700;margin-bottom:4px">' + w.t + '</div>';
+  h += wkChart(s.wk) + '<div class="lg"><span><i style="background:var(--wk)"></i>우리 학생</span><span><i style="background:var(--avg)"></i>전국 평균</span>' + [1, 2, 3, 4, 5].map(function(n){ return '<span class="rk" style="color:' + GC[n][0] + ';background:' + GC[n][1] + '">' + n + '등급</span>'; }).join('') + '</div>';
+  h += '<div class="tw"><table class="tbl" style="margin-top:8px"><thead><tr><th>날짜</th><th>시험지</th><th>점수</th><th>전국 평균</th><th>전국 위치</th></tr></thead><tbody>';
+  s.wk.slice().reverse().forEach(function(r){ h += '<tr><td>' + r.d + '</td><td class="t">' + r.t + '</td><td><b>' + r.s + '</b></td><td>' + r.avg + '</td><td>' + rk(r.r, r.n) + '</td></tr>'; });
+  h += '</tbody></table></div></div>';
+  h += '<div class="two"><div class="card"><div class="ct">🎓 학교 시험 <small>수학 · 실제 성적표</small></div>';
+  if (!s.sch.length) h += '<p class="note">아직 입력한 학교 성적이 없어요. 🎓 학교성적에서 넣으면 여기에 이어집니다.</p>';
+  else {
+    h += '<div class="tl">';
+    s.sch.slice().reverse().forEach(function(c, i){
+      var key = s.id + '_' + i, oth = Object.keys(c[6] || {});
+      h += '<div class="sem"><span class="h"><b>' + c[0] + ' ' + c[1] + '</b><small>학교 평균 ' + c[5] + '점</small></span><span><span class="subj"><span class="sj math"><b>' + c[2] + '점</b>수학 · ' + c[3] + '등급 · ' + c[4] + '</span>';
+      if (MORE[key]) oth.forEach(function(k){ h += '<span class="sj"><b>' + c[6][k] + '</b>' + k + '</span>'; });
+      h += '</span>' + (oth.length ? '<button type="button" class="more" data-more="' + key + '" style="margin-top:6px">' + (MORE[key] ? '－ 접기' : '＋ 다른 과목 ' + oth.length) + '</button>' : '') + '</span></div>';
+    });
+    h += '</div>';
+  }
+  h += '</div><div class="card"><div class="ct">📝 일일테스트 <small>그날 학원 평균과의 차이</small></div>';
+  var Wd = 300, Hd = 150, mid = 75, bw = (Wd - 16) / s.dy.length, g = '<line x1="0" x2="' + Wd + '" y1="' + mid + '" y2="' + mid + '" stroke="var(--sub)"/>';
+  s.dy.forEach(function(r, i){ var df = r[0] - r[1], hh = Math.min(60, Math.abs(df) * 3.2), xx = 8 + i * bw + bw * .2, wd = bw * .6;
+    g += '<rect x="' + xx + '" y="' + (df >= 0 ? mid - hh : mid) + '" width="' + wd + '" height="' + Math.max(2, hh) + '" rx="3" fill="' + (df >= 0 ? 'var(--dy)' : 'var(--dn)') + '"/><text x="' + (xx + wd / 2) + '" y="' + (df >= 0 ? mid - hh - 4 : mid + hh + 11) + '" font-size="10" font-weight="800" text-anchor="middle" fill="' + (df >= 0 ? 'var(--dy)' : 'var(--dn)') + '">' + (df >= 0 ? '+' : '') + df + '</text>'; });
+  h += '<svg viewBox="0 0 ' + Wd + ' ' + Hd + '" role="img" aria-label="일일테스트 학원 평균과의 차이">' + g + '</svg><p class="note">최근 ' + s.dy.length + '회 중 ' + s.dy.filter(function(x){ return x[0] >= x[1]; }).length + '회 학원 평균 이상</p></div></div>';
+  document.getElementById('right').innerHTML = h;
+}
+function render(){
+  document.querySelectorAll('[data-g]').forEach(function(b){ b.classList.toggle('on', b.dataset.g === G); });
+  document.querySelectorAll('[data-s]').forEach(function(b){ b.classList.toggle('on', b.dataset.s === SORT); });
+  list(); right();
+}
+document.addEventListener('click', function(e){
+  var b = e.target.closest('[data-id],[data-g],[data-s],[data-more]'); if (!b) return;
+  if (b.dataset.id) SEL = Number(b.dataset.id);
+  if (b.dataset.g) { G = b.dataset.g; var f = S.filter(function(s){ return G === 'all' || s.gr === G; }); if (f.length && !f.some(function(s){ return s.id === SEL; })) SEL = f[0].id; }
+  if (b.dataset.s) SORT = b.dataset.s;
+  if (b.dataset.more) MORE[b.dataset.more] = !MORE[b.dataset.more];
+  render();
+});
+render();
+</script>
