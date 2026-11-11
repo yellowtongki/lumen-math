@@ -1000,6 +1000,10 @@ if int(ver.replace('v19-',''))>=185:
         "        /* ★ v19-185: 새벽 3시 전(00:00~02:59) 제출은 전날 플래너 — AI 에게 주는 참고 날짜도 전날로 */\n"
         "        var _hm = /^\\d{8}_(\\d{2})(\\d{2})/.exec(setId);\n"
         "        if (_hm && (Number(_hm[1]) * 100 + Number(_hm[2])) < 300) { var _d = new Date(Date.UTC(Number(setId.slice(0,4)), Number(setId.slice(4,6)) - 1, Number(setId.slice(6,8)) - 1)); expectedDate = _d.toISOString().slice(0,10).replace(/-/g, '.'); }")
+# v19-186: 기기 저장 공간 가득 참(원장 2026-11-11) — 서버 쌍둥이 캐시 mfd_<번호>(11/6~ · 약 2,100개 · 8MB, 학원앱은 안 씀)를 시작 다운로드에서 빼고, 이미 기기에 있는 것은 켤 때 버린다
+if int(ver.replace('v19-',''))>=186:
+    rep("var PULL_SKIP_PREFIX = ['mfrep_',", "var PULL_SKIP_PREFIX = ['mfd_', 'mfrep_',")
+    rep("  var SKIP = ['ptx_', 'analyzer_report_', 'exam_hit_', 'mf_tree_', 'backup_'];", "  var SKIP = ['mfd_', 'ptx_', 'analyzer_report_', 'exam_hit_', 'mf_tree_', 'backup_'];   /* v19-186: mfd_ 쌍둥이 캐시(서버 전용) */")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''

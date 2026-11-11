@@ -6,7 +6,7 @@
 ## 1. 지금 버전 (서버 `lumen_store.app_latest` 와 같다)
 | 앱 | 최신 파일 | 고정 주소(사용자가 여는 곳) |
 |---|---|---|
-| 학원앱 | `lumen_v19-185.html` | `lumen_v1.html` = v19-185 (11/10 📓 플래너 AI 참고 날짜 새벽 3시 규칙 — build_app.py rep · 검사 `tests/test_v19185.js` 9/9 · 앞 판 v19-184 📑 월간보고서 한 화면) |
+| 학원앱 | `lumen_v19-186.html` | `lumen_v1.html` = v19-186 (11/11 💾 저장 공간 가득 참 고침 — mfd_ 쌍둥이 캐시 받지 않기 · 검사 `tests/test_v19186.js` 6/6 · 앞 판 v19-185 플래너 새벽 3시 규칙) |
 | 학생앱 | `student_v2-162.html` | `student_v1.html` = v2-162 (11/10 원장 「학생앱배포」 — 💡 아하노트 미해결 접힌 줄(교재별·페이지·번호 순) · ✓ 수업 중 해결 체크, `build_student_v2162.py` · 검사 `tests/test_v2162.js` 28/28) |
 | 학부모앱 | `parent_v1-39.html` | `parent.html` = **v1-39** (11/10 원장 「학부모앱 배포」 — 📑 월간 학습 보고서 화면·홈 도착 카드, `build_parent_v139.py` · `modules/parent39.js` · 검사 `tests/test_p139.js` 19/19) |
 
@@ -135,6 +135,7 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 
 ## 6. 남은 일 (11/10 기준 — 맨 위가 최신)
 **▶ 11/11 (세션 01VfKuf3oT4dgRfrB9nZhu2P 마무리 4) — 다음 세션 첫 일**
+- **💾 「저장 공간이 가득 찼습니다」 (11/11 원장 캡처)**: 원인 = 서버 쌍둥이 캐시 `mfd_<번호>`(11/6 리커버리 서버판·05:10 새벽 데우기가 lumen_store 에 매일 쌓음 · 약 2,100개 · 8MB)가 PULL_SKIP 에 없어 학원앱이 시작 때마다 기기에 내려받음(학원앱은 안 씀). 학원앱 v19-186: PULL_SKIP_PREFIX + 켤 때 버리는 SKIP 에 'mfd_'. 할 일(선택): 캐시를 lumen_store 밖 전용 표로(`docs/mf_derivation_cache.sql` — 새벽에) — 서버 보안 2단계에서도 lumen_store 를 가볍게 하는 데 도움. 같은 날 조사: 기기로 받는 lumen_store 키 중 큰 것 = 리포트 달 서랍 or_students_<달>(6MB, 메모리 전용 처리됨) · ptx_(이미 SKIP) · exam_hit_*(학교별 130~160KB, SKIP 됨).
 - **배포 상태**: 학원앱 **v19-185**(`lumen_v1.html`) · 학생앱 **v2-162**(`student_v1.html`) · 학부모앱 **v1-39**(`parent.html`, 11/10 원장 「학부모앱 배포」). app_latest teacher=v19-185 · student=v2-162 (학부모앱은 app_latest 를 안 본다 — 고정 주소만 바꾸면 됨). main 학원앱 판 = v19-166~185 + v19-42.
 - **📈 학부모앱 성적 추이 — 시안만 (원장 11/11 「겹쳐서 보기 불편 · 최근 성적만 따로 / 성적 추이 탭 · 주간은 전국 시험이라 따로 · 일일은 난이도가 변함」)**: 시안 `docs/mockup_parent_score_trend.html`. ① 리포트 안 «최근 성적» = 그 리포트 시험 종류(주간이면 주간만) 최근 6회 막대 + «성적 추이 전체 보기» ② 성적 탭 맨 위 카드 → 새 화면 «📈 성적 추이»: 🌐 전국주간(점수 + 전국 평균 점선 + 회차별 «전국 상위 n%») / 📝 일일(그날 학원 평균과의 차이 ± 막대 + 날짜별 목록) · 최근 8회/전체. **원장 답 대기 4개**(자리 · 주간 비교 · 일일 비교 · 리포트 안 그래프 바꾸기). 만들 때 알아 둘 것: 지금 «성장 추이» 그래프는 학원앱이 발행하는 리포트 HTML 안(`buildMultiReportHTML` 의 growthH, 주간 `testType==='weekly'` · 나머지 일일)이고, 학부모앱이 따로 읽는 `pub_reports_<코드>.recent` 는 최근 8개뿐(칸: date·score·testType·avgScore(전국 평균)·rank·total·acadAvg(학원 평균)·acadRank·showAcadRank·showRank). 전체 추이를 그리려면 학원앱 발행 때 `pub_reports_<코드>` 에 짧은 전체 기록(hist: date·type·**title(시험지 제목 — 학년·범위)**·score·avg·rank·total·acadAvg)을 더해 올려야 한다. 원장 11/11 추가: 회차·날짜마다 **시험지 제목**(몇 학년·어떤 범위) 표시 · 전국테스트 등수는 **«378/823명»** 꼴(원장 「이게 더 보기 편하다」) + 등수 칸에만 등급 색(리포트 머리와 같은 1초록·2파랑·3노랑·4주황·5빨강 · 등급 = 매쓰플랫 그 시험 등급 rec.level) — 시안 v3.
 - **📈 학원앱 «성적 한눈에» — 설계 상의 중 (원장 11/11 「학원앱에서도 학생 성적을 쉽게 · 주간테스트와 학교 중간고사 실제 성적」)**: 설계 초안 `docs/score_overview_design.md`(지금 화면·자료 조사표 · 제안 · 단계 · 질문 4개). **바로잡음**: 리포트의 1~5등급은 매쓰플랫 등급이 아니라 `udLevel` 점수 기준(90/80/70/60) — 시안 문구 고침, 등급 색 기준(점수 vs 전국 상위 %)은 원장 답 대기. 알아 둘 것: `mf_weekly` 학생 natRank/natN 이 늘 비어 있음(전국 등수는 `mf_ws_behaviors` 90일 · 리포트에만) → 서버 수집기가 보존해야 함.

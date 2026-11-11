@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-185';
+var APP_VER = 'v19-186';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -1289,7 +1289,7 @@ window.supaPullStudentDbRescue = supaPullStudentDbRescue;
 
 // v18-23: onlyKeys를 주면 그 키들만 소량으로 받는다 — 전체(대용량) 동기화가 느린
 // 네트워크에서 실패할 때, 등록부·교재 같은 핵심만 먼저 받아 화면을 살리는 용도.
-var PULL_SKIP_PREFIX = ['mfrep_', 'wt_', 'consult_', 'mf_bookans_', 'mf_wsq_', 'mf_textbook_', 'mf_swb_', 'mf_ws_recent_', 'mf_wsans_', 'ms_exam', 'haesol_body_', 'hw_synced_', 'hw_scores_', 'typeach_stu_', 'stu_reports_', 'pub_reports_', 'submissions_', 'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_', 'naver_book', 'rec_read_', 'rec_review_'];
+var PULL_SKIP_PREFIX = ['mfd_', 'mfrep_', 'wt_', 'consult_', 'mf_bookans_', 'mf_wsq_', 'mf_textbook_', 'mf_swb_', 'mf_ws_recent_', 'mf_wsans_', 'ms_exam', 'haesol_body_', 'hw_synced_', 'hw_scores_', 'typeach_stu_', 'stu_reports_', 'pub_reports_', 'submissions_', 'or_students_archive_', 'ms_paper', 'ms_mypaper', 'quiz', 'wordlog_', 'naver_book', 'rec_read_', 'rec_review_'];
 var PULL_SKIP_KEYS = ['mf_type_ach', 'mf_sol_fix', 'mf_bookpages', 'ms_mydb_index', 'mf_ws_behaviors', 'mf_weekly', 'mf_progress', 'mf_books', 'mf_stuck', 'exam_lib', 'race_season_draft', 'race_board_draft', 'race_watch_draft', 'race_recount_req', 'lumen_db_key', 'naver_phone_links', 'or_nb_key', 'naver_bookings_archive', 'naver_msg_tpl', 'tenten_optional', 'raid_board_draft', 'raid_boss_lib', 'ops_plan', 'ops_checks', 'alert_state'];
 async function supaFullPull(onlyKeys) {
   var sb = getSupaClient();
@@ -9098,6 +9098,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-186',date:'2026-11-11',stability:'ok',memo:'💾 <b>「저장 공간이 가득 찼습니다」 고침</b> (원장 2026-11-11). [까닭] 11/6부터 서버가 리커버리 학습지용 «쌍둥이 문제 캐시»(mfd_로 시작하는 칸)를 매일 쌓는데(약 2,100개 · 8MB), 학원앱이 시작할 때마다 이것까지 내려받아 이 기기 저장 공간을 채웠습니다. 학원앱은 이 캐시를 쓰지 않습니다. [고침] 이제 내려받지 않고, 이미 기기에 쌓인 것은 앱을 켤 때 지웁니다. 서버의 자료는 그대로입니다(리커버리 학습지 만들기에 계속 씀).'},
       {ver:'v19-185',date:'2026-11-10',stability:'ok',memo:'📓 <b>플래너 — 새벽 3시 전에 낸 플래너를 다음 날 것으로 읽던 것 고침</b> (원장 2026-11-10 「11월 4일 플래너를 12시에 제출했는데 11월 5일 것으로 했나? 마감은 다음날 새벽 3시」). [까닭] AI 에게 사진을 보여 줄 때 「이 플래너는 ○○ 경 제출」이라고 참고 날짜를 알려 주는데, 이 날짜에 새벽 3시 규칙이 빠져 있었습니다(11/5 00:00 제출 → 「11/5 경」). 그래서 사진에 26.11.4 라고 적혀 있는데도 AI 가 11/5 로 적은 일이 생겼습니다. 이제 00:00~02:59 제출은 전날 플래너로 안내합니다. 학원앱에서 돌리는 AI 분석과 새벽 자동 채점(서버) 둘 다 고쳤습니다. 이미 잘못 들어간 한 건은 그 카드의 «AI 분석 결과(수정 가능)»에서 날짜를 2026.11.04 로 고쳐 저장하면 점수가 11/4 로 옮겨집니다.'},
       {ver:'v19-184',date:'2026-11-10',stability:'ok',memo:'📑 <b>월간보고서 한 화면 + 루멘 학부모앱 공개</b> (원장 2026-11-10 「학부모앱에서도 월간보고서가 보이게 · 두 가지 통합」 · 시안 docs/mockup_monthly_report.html). [위치] 진도·리포트 › 📑 월간보고서 (예전 📊 월간보고서 탭은 숨겼습니다). ① 학생 줄마다 <b>의견 출처</b>(매쓰플랫 AI / ✏ 직접 고침 / ✍ 루멘 데이터)와 <b>공개 두 칸</b>(매쓰플랫 ✓ · 루멘 ✓). ② 줄을 펼치면 「<b>✍ 루멘 데이터로 다시 쓰기</b>」 — 원장님 프롬프트 + 매쓰플랫 보고서 숫자(그대로) + 우리 문항 기록의 자주 틀린 유형 + 숙제 이행도 + 아하노트 질문 수로 AI가 새로 씁니다(원장님 키 · 저장은 「💾 고친 의견 저장」). 체크한 학생을 한꺼번에 쓰는 단추도 있습니다. ③ 아래 띠에서 공개할 곳을 고릅니다: ☑ 매쓰플랫 학부모앱 ☑ 루멘 학부모앱 ☐ 문자. 루멘 학부모앱에는 숫자는 매쓰플랫 그대로, 아래에 «루멘 기록»(숙제 이행도·아하노트 질문·플래너 평균)이 붙습니다. 「🙈 선택 공개 취소」도 고른 곳에서만 내려갑니다. ※ 루멘 학부모앱 화면은 학부모앱 새 판(v1-39)에서 보입니다.'},
       {ver:'v19-183',date:'2026-11-10',stability:'ok',memo:'💡 <b>아하노트 — 학생이 «수업 중 해결»로 체크한 것 따로 보이기</b> (원장 2026-11-10 「학원앱도 학생 체크 보이게」). 학생앱 v2-162 에서 학생이 미해결 줄의 「✓ 수업 중 해결」을 누르면 그 노트가 해결로 넘어옵니다. 이제 해결 목록 배지가 원장님이 정리한 「🏫 수업에서 다룸」(초록)과 달리 <b>「🏫 수업 중 해결 · 학생 체크」(파란 테두리)</b>로 보이고, 마우스를 올리면 체크한 시각이 나옵니다. 아니라고 보시면 예전처럼 그 줄의 해결 단추를 다시 눌러 미해결로 되돌리시면 됩니다.'},
@@ -96905,7 +96906,7 @@ rExamTrack = (function(orig){
  *   backup_* (서버 백업) 도 시작 때 받지 않는다.
  * ═══════════════════════════════════════════════════════════════ */
 (function(){
-  var SKIP = ['ptx_', 'analyzer_report_', 'exam_hit_', 'mf_tree_', 'backup_'];
+  var SKIP = ['mfd_', 'ptx_', 'analyzer_report_', 'exam_hit_', 'mf_tree_', 'backup_'];   /* v19-186: mfd_ 쌍둥이 캐시(서버 전용) */
   try { SKIP.forEach(function(p){ if (PULL_SKIP_PREFIX.indexOf(p) < 0) PULL_SKIP_PREFIX.push(p); }); } catch(e){}
   var KEEP_MONTHS = 3;   /* 이번 달 포함 최근 3달만 디스크에 */
   function oldDrawer(k){
@@ -104142,7 +104143,7 @@ function rMfrep(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~185: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~186: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
