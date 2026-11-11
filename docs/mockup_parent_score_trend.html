@@ -1,0 +1,168 @@
+<title>학부모앱 성적 추이 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* 레이아웃: 폰 화면 두 개(① 리포트 안 «최근 성적» ② 성적 탭 «📈 성적 추이») + 아래 정할 것 */
+:root{
+  --bg:#eef1f6; --card:#ffffff; --ink:#0d2240; --sub:#5b6b82; --line:#dfe5ee; --soft:#f5f7fb;
+  --wk:#1d6fe8; --wkbg:#eaf2ff; --dy:#16a34a; --dybg:#ecfdf3; --up:#15803d; --dn:#c2410c; --avg:#94a3b8;
+  --shadow:0 10px 28px rgba(13,34,64,.10);
+  --f-body:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0f1622; --card:#172233; --ink:#e7edf6; --sub:#9fb0c6; --line:#2a3a52; --soft:#1b2940; --wkbg:#132a4d; --dybg:#0e2e1d; --shadow:0 10px 28px rgba(0,0,0,.4); color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0f1622; --card:#172233; --ink:#e7edf6; --sub:#9fb0c6; --line:#2a3a52; --soft:#1b2940; --wkbg:#132a4d; --dybg:#0e2e1d; --shadow:0 10px 28px rgba(0,0,0,.4); color-scheme:dark }
+body{ background:var(--bg); color:var(--ink); font-family:var(--f-body); }
+.wrap{ max-width:1120px; margin:0 auto; padding-block:20px 44px; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)); }
+h1{ font-size:20px; margin:0 0 4px; text-wrap:balance }
+.lead{ color:var(--sub); font-size:13.5px; line-height:1.6; margin:0 0 18px; max-width:74ch }
+.cap{ font-size:11.5px; font-weight:800; letter-spacing:.06em; color:var(--sub); margin:0 0 8px }
+.grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 380px)) 1fr; gap:22px; align-items:start }
+@media (max-width:1100px){ .grid{ grid-template-columns:repeat(2, minmax(0, 380px)) } .qs-col{ grid-column:1 / -1 } }
+@media (max-width:820px){ .grid{ grid-template-columns:1fr } }
+.phone{ background:var(--bg); border:1px solid var(--line); border-radius:28px; overflow:hidden; box-shadow:var(--shadow); max-width:380px; width:100% }
+.ph{ background:var(--card); padding:14px 16px; font-weight:900; font-size:16px; border-bottom:1px solid var(--line); display:flex; gap:8px; align-items:center }
+.ph small{ font-size:11px; color:var(--sub); font-weight:700 }
+.pb{ padding:12px; display:flex; flex-direction:column; gap:10px }
+.card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:13px 14px }
+.ct{ display:flex; align-items:center; gap:6px; font-weight:900; font-size:14px; margin-bottom:8px }
+.ct small{ margin-left:auto; font-size:11px; color:var(--sub); font-weight:700 }
+.seg{ display:flex; gap:4px; background:var(--soft); padding:3px; border-radius:11px; margin-bottom:10px }
+.seg button{ flex:1; border:0; background:transparent; font:inherit; font-size:12.5px; font-weight:700; padding:7px 4px; border-radius:9px; color:var(--sub); cursor:pointer }
+.seg button.on{ background:var(--card); color:var(--ink); font-weight:900; box-shadow:0 1px 3px rgba(0,0,0,.08) }
+.seg button:focus-visible{ outline:2px solid var(--wk) }
+.big{ display:flex; align-items:baseline; gap:8px; margin-bottom:4px }
+.big b{ font-size:30px; font-variant-numeric:tabular-nums }
+.big .d{ font-size:13px; font-weight:900 }
+.note{ font-size:11.5px; color:var(--sub); line-height:1.55 }
+svg{ display:block; width:100%; height:auto }
+.lg{ display:flex; gap:12px; font-size:11px; color:var(--sub); font-weight:700; margin-top:4px; flex-wrap:wrap }
+.lg i{ display:inline-block; width:14px; height:3px; border-radius:2px; vertical-align:middle; margin-right:4px }
+.rows{ display:flex; flex-direction:column }
+.r{ display:grid; grid-template-columns:52px 1fr auto; gap:8px; align-items:center; padding:7px 0; border-bottom:1px dashed var(--line); font-size:12.5px }
+.r:last-child{ border-bottom:0 }
+.r .dt{ color:var(--sub); font-weight:700; font-variant-numeric:tabular-nums }
+.r .sc{ font-weight:900; font-variant-numeric:tabular-nums }
+.r .tag{ font-size:11px; font-weight:800; border-radius:7px; padding:2px 7px; white-space:nowrap; font-variant-numeric:tabular-nums }
+.up{ color:var(--up) } .dn{ color:var(--dn) }
+.tag.up{ background:var(--dybg) } .tag.dn{ background:#fff1e6 }
+.tag.wk{ background:var(--wkbg); color:var(--wk) }
+.mini{ display:flex; gap:6px; align-items:flex-end; height:84px; margin:6px 0 2px }
+.mini div{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:10.5px; color:var(--sub); font-weight:700; font-variant-numeric:tabular-nums }
+.mini i{ display:block; width:100%; border-radius:6px 6px 3px 3px; background:var(--wk) }
+.mini b{ font-size:11.5px; color:var(--ink) }
+.more{ display:block; text-align:center; font-size:12.5px; font-weight:900; color:var(--wk); border:1.5px dashed var(--line); border-radius:10px; padding:8px; margin-top:8px; background:transparent; width:100%; font-family:inherit; cursor:pointer }
+.panel{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; box-shadow:var(--shadow) }
+.panel + .panel{ margin-top:14px }
+.qs{ display:flex; flex-direction:column; gap:12px; margin:0; padding:0; list-style:none }
+.qs li{ border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--soft) }
+.qs b{ display:block; font-size:13.5px; margin-bottom:4px } .qs p{ margin:0; font-size:12.5px; color:var(--sub); line-height:1.55 }
+.rec{ display:inline-block; font-size:11px; font-weight:800; color:var(--wk); background:var(--wkbg); border-radius:6px; padding:1px 6px; margin-right:4px }
+</style>
+
+<div class="wrap">
+  <h1>📈 학부모앱 성적 추이 — 주간·일일을 나눠서</h1>
+  <p class="lead">지금은 리포트 안 «성장 추이»에 전국주간과 일일 점수가 한 그래프에 겹쳐 숫자가 엉킵니다. 시안은 두 곳을 바꿉니다. 왼쪽은 그날 리포트 안의 짧은 «최근 성적», 오른쪽은 성적 탭에 새로 생기는 «📈 성적 추이» 화면입니다. 숫자는 예시입니다.</p>
+
+  <div class="grid">
+    <div>
+      <p class="cap">① 리포트 안 — 그 시험 종류의 최근 6회만</p>
+      <div class="phone">
+        <div class="ph">📋 학습 리포트 <small>11/4 · 🌐 전국주간테스트</small></div>
+        <div class="pb">
+          <div class="card">
+            <div class="ct">📊 최근 전국주간테스트 <small>최근 6회</small></div>
+            <div class="mini" id="mini"></div>
+            <div class="note">이 리포트가 주간테스트면 주간 점수만, 일일테스트면 일일 점수만 보여요. 숫자가 겹치지 않게 막대 위에 한 번씩만 씁니다.</div>
+            <button type="button" class="more">📈 성적 추이 전체 보기 ›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p class="cap">② 성적 탭 › 📈 성적 추이 (새 화면)</p>
+      <div class="phone">
+        <div class="ph">📈 성적 추이 <small>○○○ · 중2</small></div>
+        <div class="pb">
+          <div class="seg" role="tablist">
+            <button type="button" class="on" data-t="wk">🌐 전국주간테스트</button>
+            <button type="button" data-t="dy">📝 일일테스트</button>
+          </div>
+          <div class="seg" style="margin-top:-4px">
+            <button type="button" class="on" data-p="8">최근 8회</button>
+            <button type="button" data-p="all">전체</button>
+          </div>
+          <div id="trend"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="qs-col">
+      <div class="panel">
+        <p class="cap">두 시험을 다르게 보여 주는 까닭</p>
+        <p class="note" style="font-size:12.5px;margin:0">🌐 <b>전국주간테스트</b>는 전국 같은 학년이 같은 시험지를 풀어서, 점수와 함께 <b>전국 평균</b>·<b>전국 상위 %</b>를 같이 그립니다.<br>📝 <b>일일테스트</b>는 날마다 범위·난이도가 달라 점수만 이어 보면 오르내림이 커 보입니다. 그래서 그날 <b>학원 평균과의 차이</b>(평균보다 +8점 등)를 막대로 보여 줍니다.</p>
+      </div>
+      <div class="panel">
+        <p class="cap">정해 주실 것 4가지</p>
+        <ol class="qs">
+          <li><b>① 성적 추이 화면 자리</b><p><span class="rec">추천</span>성적 탭 맨 위 카드(최근 주간 점수·상위 %) → 누르면 «📈 성적 추이» 화면. 아래 탭을 하나 더 늘리지 않습니다.</p></li>
+          <li><b>② 주간테스트 그래프에 무엇을 같이</b><p><span class="rec">추천</span>우리 아이 점수 + 전국 평균 선, 아래 줄 목록에 «전국 상위 n%». 학원 등수는 지금 설정(보이기/숨기기)을 그대로 따릅니다.</p></li>
+          <li><b>③ 일일테스트는 무엇과 비교</b><p><span class="rec">추천</span>그날 학원 평균과의 차이(+/−) 막대 + 점수. 학원 평균이 없는 날은 점수만.</p></li>
+          <li><b>④ 리포트 안 성장 추이</b><p><span class="rec">추천</span>위 ①처럼 «그 시험 종류 최근 6회 막대»로 바꾸고 «성적 추이 전체 보기»로 연결. 이미 발행한 옛 리포트는 그대로 두고, 다음 발행부터 바뀝니다.</p></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var WK = [ ['9/2',72,70,38],['9/9',80,71,24],['9/16',65,66,55],['9/23',88,72,15],['9/30',78,69,30],['10/7',85,73,22],['10/14',90,74,12],['10/21',75,70,35],['10/28',80,73,28],['11/4',70,68,46] ];   /* 날짜 · 점수 · 전국 평균 · 전국 상위 % */
+var DY = [ ['10/16',75,68],['10/17',57,60],['10/20',83,74],['10/22',50,61],['10/23',95,82],['10/27',66,63],['10/29',40,55],['10/30',87,79],['11/3',63,60],['11/5',47,52],['11/6',66,58],['11/10',41,49] ];   /* 날짜 · 점수 · 학원 평균 */
+var T = 'wk', PER = '8';
+function mini(){
+  var L = WK.slice(-6), h = '';
+  L.forEach(function(x, i){ h += '<div><b>' + x[1] + '</b><i style="height:' + Math.round(x[1] * 0.62) + 'px;' + (i === L.length - 1 ? '' : 'opacity:.45') + '"></i>' + x[0] + '</div>'; });
+  document.getElementById('mini').innerHTML = h;
+}
+function line(pts, col, dash){ return '<polyline fill="none" stroke="' + col + '" stroke-width="' + (dash ? 1.6 : 2.6) + '" ' + (dash ? 'stroke-dasharray="4 4"' : '') + ' stroke-linecap="round" stroke-linejoin="round" points="' + pts.join(' ') + '"/>'; }
+function wkView(){
+  var L = PER === 'all' ? WK : WK.slice(-8), W = 330, H = 150, pl = 28, pr = 12, pt = 16, pb = 22;
+  var x = function(i){ return pl + (L.length < 2 ? 0 : i * (W - pl - pr) / (L.length - 1)); }, y = function(v){ return pt + (100 - v) * (H - pt - pb) / 60; };   /* 40~100점 */
+  var g = '';
+  [40, 60, 80, 100].forEach(function(v){ g += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="var(--line)" stroke-width="1"/><text x="' + (pl - 6) + '" y="' + (y(v) + 4) + '" font-size="10" text-anchor="end" fill="var(--sub)">' + v + '</text>'; });
+  var me = L.map(function(r, i){ return x(i) + ',' + y(r[1]); }), av = L.map(function(r, i){ return x(i) + ',' + y(r[2]); });
+  g += line(av, 'var(--avg)', true) + line(me, 'var(--wk)', false);
+  L.forEach(function(r, i){ var last = i === L.length - 1; g += '<circle cx="' + x(i) + '" cy="' + y(r[1]) + '" r="' + (last ? 5 : 3.2) + '" fill="var(--wk)"/>'; if (last) g += '<text x="' + (x(i) - 4) + '" y="' + (y(r[1]) - 9) + '" font-size="12" font-weight="800" text-anchor="end" fill="var(--wk)">' + r[1] + '점</text>'; });
+  g += '<text x="' + x(0) + '" y="' + (H - 5) + '" font-size="10" fill="var(--sub)">' + L[0][0] + '</text><text x="' + x(L.length - 1) + '" y="' + (H - 5) + '" font-size="10" text-anchor="end" fill="var(--sub)">' + L[L.length - 1][0] + '</text>';
+  var last = L[L.length - 1], prev = L[L.length - 2], d = last[1] - prev[1];
+  var h = '<div class="card"><div class="ct">🌐 전국주간테스트 <small>전국 같은 학년이 같은 시험지</small></div>'
+    + '<div class="big"><b>' + last[1] + '점</b><span class="d ' + (d >= 0 ? 'up' : 'dn') + '">지난주보다 ' + (d >= 0 ? '+' : '') + d + '</span></div>'
+    + '<div class="note">전국 평균 ' + last[2] + '점 · <b>전국 상위 ' + last[3] + '%</b></div>'
+    + '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="전국주간 점수 추이">' + g + '</svg>'
+    + '<div class="lg"><span><i style="background:var(--wk)"></i>우리 아이</span><span><i style="background:var(--avg)"></i>전국 평균</span></div></div>';
+  h += '<div class="card"><div class="ct">회차별 <small>최근이 위</small></div><div class="rows">';
+  L.slice().reverse().forEach(function(r){ var df = r[1] - r[2]; h += '<div class="r"><span class="dt">' + r[0] + '</span><span><span class="sc">' + r[1] + '점</span> <span class="note">평균 ' + r[2] + '</span></span><span class="tag wk">상위 ' + r[3] + '%</span></div>'; });
+  return h + '</div></div>';
+}
+function dyView(){
+  var L = PER === 'all' ? DY : DY.slice(-8), W = 330, H = 150, mid = 75, pl = 8, pr = 8, bw = (W - pl - pr) / L.length;
+  var g = '<line x1="0" x2="' + W + '" y1="' + mid + '" y2="' + mid + '" stroke="var(--sub)" stroke-width="1"/><text x="' + (W - 2) + '" y="' + (mid - 4) + '" font-size="10" text-anchor="end" fill="var(--sub)">학원 평균</text>';
+  L.forEach(function(r, i){ var df = r[1] - r[2], hgt = Math.min(60, Math.abs(df) * 3.2), xx = pl + i * bw + bw * 0.2, w = bw * 0.6;
+    g += '<rect x="' + xx + '" y="' + (df >= 0 ? mid - hgt : mid) + '" width="' + w + '" height="' + Math.max(2, hgt) + '" rx="3" fill="' + (df >= 0 ? 'var(--dy)' : 'var(--dn)') + '"/>';
+    g += '<text x="' + (xx + w / 2) + '" y="' + (df >= 0 ? mid - hgt - 4 : mid + hgt + 11) + '" font-size="10" font-weight="800" text-anchor="middle" fill="' + (df >= 0 ? 'var(--dy)' : 'var(--dn)') + '">' + (df >= 0 ? '+' : '') + df + '</text>'; });
+  var above = L.filter(function(r){ return r[1] >= r[2]; }).length;
+  var h = '<div class="card"><div class="ct">📝 일일테스트 <small>날마다 범위·난이도가 달라요</small></div>'
+    + '<div class="big"><b>' + above + ' / ' + L.length + '회</b><span class="d up">학원 평균 이상</span></div>'
+    + '<div class="note">점수만 보면 오르내림이 커 보여서, 그날 학원 평균과의 차이로 봅니다. 위로 초록 = 평균보다 높음.</div>'
+    + '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="일일테스트 학원 평균과의 차이">' + g + '</svg></div>';
+  h += '<div class="card"><div class="ct">날짜별 <small>최근이 위</small></div><div class="rows">';
+  L.slice().reverse().forEach(function(r){ var df = r[1] - r[2]; h += '<div class="r"><span class="dt">' + r[0] + '</span><span><span class="sc">' + r[1] + '점</span> <span class="note">학원 평균 ' + r[2] + '</span></span><span class="tag ' + (df >= 0 ? 'up' : 'dn') + '">' + (df >= 0 ? '+' : '') + df + '</span></div>'; });
+  return h + '</div></div>';
+}
+function render(){
+  document.querySelectorAll('[data-t]').forEach(function(b){ b.classList.toggle('on', b.dataset.t === T); });
+  document.querySelectorAll('[data-p]').forEach(function(b){ b.classList.toggle('on', b.dataset.p === PER); });
+  document.getElementById('trend').innerHTML = T === 'wk' ? wkView() : dyView();
+}
+document.addEventListener('click', function(e){ var b = e.target.closest('[data-t],[data-p]'); if (!b) return; if (b.dataset.t) T = b.dataset.t; if (b.dataset.p) PER = b.dataset.p; render(); });
+mini(); render();
+</script>
