@@ -2690,6 +2690,20 @@ async function refreshWeekly() {
       if (dt > S.dt) S.dt = dt;
       if (dt > T.date) T.date = dt;
     });
+    /* ★ 2026-11-12: 전국 등수 보존 (원장 「학원앱에서 학생 성적을 쉽게 — 전국 378/823명」 · docs/score_overview_design.md)
+     *   전국 등수 원본 mf_ws_behaviors 는 약 90일만 남는다 → 회차(wid)×학생(sid)마다 mf_weekly 학생 칸 natRank·natN·natAvg 에 옮겨 적고,
+     *   예전에 적어 둔 값은 원본이 사라져도 그대로 둔다(지난 mf_weekly 에서 이어받음). 새 원본이 있으면 새 값. */
+    const natMap = {};
+    try {
+      const rp = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_weekly&select=value`, { headers: sbHeaders });
+      if (rp.ok) { const j = await rp.json(); ((j[0] && j[0].value && j[0].value.tests) || []).forEach((t) => (t.students || []).forEach((st) => {
+        if (st && st.natRank && st.natN) natMap[t.wid + '_' + st.sid] = { r: st.natRank, n: st.natN, a: st.natAvg == null ? null : st.natAvg };
+      })); }
+      const rb = await fetch(`${url}/rest/v1/lumen_store?key=eq.mf_ws_behaviors&select=value`, { headers: sbHeaders });
+      if (rb.ok) { const j = await rb.json(); const m = (j[0] && j[0].value && j[0].value.map) || {};
+        Object.keys(m).forEach((sw) => { const e = m[sw]; if (e && e.nat && e.nat.rank && e.nat.n && e.wid && e.sid != null) natMap[e.wid + '_' + e.sid] = { r: Number(e.nat.rank), n: Number(e.nat.n), a: e.nat.avg == null ? null : Number(e.nat.avg) }; }); }
+    } catch (e) { log('전국 등수 이어받기 실패(치명적 아님):', e.message); }
+    const natOf = (wid, sid) => natMap[wid + '_' + sid] || null;
     const out = [];
     Object.keys(tests).forEach((wid) => {
       const T = tests[wid];
@@ -2705,7 +2719,7 @@ async function refreshWeekly() {
           .sort((a, b) => b.cnt - a.cnt).slice(0, 8);
         return { sid: s.sid, score: s.score, correct: s.correct, total: s.total, date: s.dt,
           wrongConcepts, acadRank: rank, acadN: scored.length, acadAvg: avg,
-          natAvg: null, natRank: null, natN: null }; // 전국은 보고서 API 확보 후
+          ...(() => { const nt = natOf(wid, s.sid); return { natAvg: nt ? nt.a : null, natRank: nt ? nt.r : null, natN: nt ? nt.n : null }; })() }; // 전국 = mf_ws_behaviors(보고서) · 예전 값 보존
       });
       // 채점 미완료(이어 채점·미채점) 학생 추가 — 문항 기록은 없어도 명단·진행 상황 표시
       const am = assign[wid] || {};
@@ -2729,6 +2743,8 @@ async function refreshWeekly() {
     });
     const nStu = out.reduce((a, t) => a + t.students.length, 0);
     const nWk = out.filter((t) => t.type === 'WEEKLY').length, nCh = out.filter((t) => t.type === 'CHAPTER').length, nHi = out.filter((t) => t.type === 'HIGH_TEST').length;
+    const nNat = out.reduce((a, t) => a + t.students.filter((x) => x.natRank).length, 0);
+    log(`전국 등수 있는 학생기록 ${nNat}건`);
     log(`주간·단원테스트(mf_weekly): 테스트 ${out.length}개(주간 ${nWk}·단원 ${nCh}·고등 테스트 ${nHi}) · 학생기록 ${nStu}건 ${res.ok ? '저장 완료' : '저장 실패 ' + res.status}`);
   } catch (e) { log('주간테스트 갱신 실패(치명적 아님):', e.message); }
 }
