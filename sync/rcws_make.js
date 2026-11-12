@@ -46,6 +46,8 @@ const RULE = { twinPer: 2, tbPer: 1, bookTwin: 1, boost: true, theory: false, da
  *       수집기가 단원 정답률(mf_progress chapters)을 만든 바로 그 사전이다. 칩을 못 받으면 유형DB(mf_typedb 대단원→중단원) +
  *       유형 사전(mf_concept_names 의 중단원) / 기록 chapter 글자(앞 번호 뗀 것)로 대신한다. --no-unit-auto 로 끈다.
  *   --no-book 은 «범위 안 교재 오답»만 뺀다(단원 오답은 남긴다 — 학원앱과 같음)
+ *   --easy <학생키,…> 는 쉬운 문항 위주로 고른다 (2026-11-12 원장 지시)
+ *   --cap 30 (또는 --cap <학생키>=30) 은 문항 수 상한. 갈래 비율을 지키며 덜어낸다
  *   --no-test <학생키,…> 는 반대로 «주간테스트에서 오는 부분»(시험 쌍둥이·교과서)을 뺀다.
  *       선행 학생의 테스트가 지금 진도와 다를 때 쓴다 (2026-11-12 원장 지시)
  *   --force-design (--dry 와 함께만) 이번 주 학습지가 이미 있어도 설계만 다시 해 본다 */
@@ -62,6 +64,24 @@ const NOBOOK = csv(opt('no-book', ''));   // 교재 오답 쌍둥이를 빼고 �
  *     지금 진도와 어긋난다(2026-11-12 윤○○ — 64문항 중 15개가 중1-1 일차방정식이었다).
  *     교재 오답·단원 오답·보강은 그대로 둔다. --no-book 과 정반대다. */
 const NOTEST = csv(opt('no-test', ''));
+/* ★ 2026-11-12 원장 지시 「난이도 쉬운 것으로」
+ *   --easy <학생키,…>  그 학생은 쉬운 문항 위주로 고른다.
+ *     ① 쌍둥이·유사·유형 풀에서 «원래 문항과 같은 난이도»가 아니라 «낮은 난이도»를 먼저 집는다
+ *        (목표 난이도를 한 단계 낮추고 최대 «하(2)»로 묶는다. 같으면 더 쉬운 것 먼저)
+ *     ② 유형 풀을 받아올 때도 쉬운 쪽에 무게를 준다 (levelWeight)
+ *   점수가 낮아 기본 난이도로는 손도 못 대는 학생에게 쓴다. */
+const EASY = csv(opt('easy', ''));
+/* ★ 2026-11-12 원장 지시 「30문제 리커버리」 — 문항 수 상한
+ *   --cap 30                 모든 학생을 30문항까지
+ *   --cap <학생키>=30         그 학생만
+ *   넘치면 갈래(시험 쌍둥이·교과서·교재·보강) 비율을 지키면서 고르게 덜어낸다.
+ *   취약 단원이 여럿인 학생은 기본 설계가 100문항을 넘기도 한다. */
+const CAP = {}; let CAP_ALL = 0;
+args.forEach((a, i) => { if (a === '--cap' && args[i + 1]) { const v = args[i + 1];
+  const m = v.match(/^([^=]+)=(\d+)$/); if (m) CAP[m[1]] = Number(m[2]); else if (/^\d+$/.test(v)) CAP_ALL = Number(v); } });
+let CAP_NOW = 0;
+let EASY_ON = false;          // 학생 한 명을 만드는 동안만 켠다
+let LVCNT = {};               // 고른 문항의 난이도 세기 (최하1 하2 중3 상4 최상5)
 const TESTS = {}; args.forEach((a, i) => { if (a === '--tests' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) TESTS[m[1]] = csv(m[2]); } });
 const UNIT_AUTO = !args.includes('--no-unit-auto');
 const FORCE_DESIGN = args.includes('--force-design');
@@ -301,13 +321,24 @@ function plan(M, twinPer) {
   return { test: M.wrong.map((w) => ({ w, n: twinPer == null ? RULE.twinPer : twinPer })), tb: M.wrong.map((w) => ({ w, n: RULE.tbPer })), book: M.bookWrong.map((w) => ({ w, n: RULE.bookTwin })),
     boost: Object.keys(cnt).filter((c) => cnt[c] >= 2).map((c) => ({ cid: Number(c), n: RULE.boost ? 1 : 0, times: cnt[c] })) };
 }
-function pick(list, lv, n, excl, chosen) { const out = []; const pool = list.filter((p) => isAuto(p) && !excl[String(p.id)] && !chosen[String(p.id)]); pool.sort((a, b) => Math.abs((a.lv || 3) - lv) - Math.abs((b.lv || 3) - lv)); pool.slice(0, n).forEach((p) => { chosen[String(p.id)] = 1; out.push(p.id); }); return out; }
+function pick(list, lv, n, excl, chosen) {
+  const out = []; const pool = list.filter((p) => isAuto(p) && !excl[String(p.id)] && !chosen[String(p.id)]);
+  /* --easy: 목표 난이도를 한 단계 낮추고 «하(2)» 를 넘지 않게 한다 */
+  const tgt = EASY_ON ? Math.max(1, Math.min((lv || 3) - 1, 2)) : lv;
+  pool.sort((a, b) => {
+    const d = Math.abs((a.lv || 3) - tgt) - Math.abs((b.lv || 3) - tgt);
+    if (d) return d;
+    return EASY_ON ? (a.lv || 3) - (b.lv || 3) : 0;   // 같으면 쉬운 것 먼저
+  });
+  pool.slice(0, n).forEach((p) => { chosen[String(p.id)] = 1; out.push(p.id); LVCNT[p.lv || 3] = (LVCNT[p.lv || 3] || 0) + 1; });
+  return out;
+}
 
 /* ── 만들기 ── */
 async function build(M, P, name, school, sid, recDate, log) {
   const cids = {}; M.wrong.forEach((w) => { cids[w.cid] = 1; }); M.bookWrong.forEach((w) => { cids[w.cid] = 1; }); P.boost.forEach((b) => { cids[b.cid] = 1; });
   const cidList = Object.keys(cids).map(Number); if (!cidList.length) throw new Error('넣을 유형 없음');
-  const f = await mf('POST', '/worksheet/filter/concept', { type: 'CONCEPT', conceptIdList: cidList, excludedTopicIds: [], excludedSubTopicIds: [], problemList: null, problemCount: 100, level: 3, levelWeight: [10, 30, 30, 20, 10],
+  const f = await mf('POST', '/worksheet/filter/concept', { type: 'CONCEPT', conceptIdList: cidList, excludedTopicIds: [], excludedSubTopicIds: [], problemList: null, problemCount: 100, level: EASY_ON ? 2 : 3, levelWeight: EASY_ON ? [35, 40, 20, 5, 0] : [10, 30, 30, 20, 10],
     problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: MF_AUTO, excludePrevious: false, previousExclusionScope: null, studentIds: null, excludeOOC: true, equalityLevel: null, minRate: 0, maxRate: 100, selectedConceptIdList: [], selectedLittleChapterIdList: [] });
   const fid = f.filterId || f;
   const chosen = {}, items = [], parts = { twin: 0, tb: 0, book: 0, boost: 0, fallback: 0 };
@@ -315,7 +346,7 @@ async function build(M, P, name, school, sid, recDate, log) {
   const addPool = (ps) => { (Array.isArray(ps) ? ps : (ps.problemList || [])).forEach((p) => { const pr = p.problem || p; if (pr.conceptId && pr.id) (poolByCid[pr.conceptId] = poolByCid[pr.conceptId] || []).push({ id: pr.id, lv: pr.level || 3, autoScoredType: pr.autoScoredType, type: pr.type, answer: pr.answer }); }); };
   const pool = async (cid) => { if (!poolByCid) { poolByCid = {}; try { addPool(await mf('POST', '/worksheet/problem', { filterId: fid })); } catch (e) {} }
     if (cid && !(poolByCid[cid] || []).some((p) => isAuto(p) && !M.solved[String(p.id)] && !chosen[String(p.id)]) && !poolByCid['_tried' + cid]) { poolByCid['_tried' + cid] = 1;
-      try { const f2 = await mf('POST', '/worksheet/filter/concept', { type: 'CONCEPT', conceptIdList: [cid], excludedTopicIds: [], excludedSubTopicIds: [], problemList: null, problemCount: 40, level: 3, levelWeight: [10, 30, 30, 20, 10], problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: MF_AUTO, excludePrevious: false, previousExclusionScope: null, studentIds: null, excludeOOC: true, equalityLevel: null, minRate: 0, maxRate: 100, selectedConceptIdList: [], selectedLittleChapterIdList: [] }); addPool(await mf('POST', '/worksheet/problem', { filterId: f2.filterId || f2 })); } catch (e) {} }
+      try { const f2 = await mf('POST', '/worksheet/filter/concept', { type: 'CONCEPT', conceptIdList: [cid], excludedTopicIds: [], excludedSubTopicIds: [], problemList: null, problemCount: 40, level: EASY_ON ? 2 : 3, levelWeight: EASY_ON ? [35, 40, 20, 5, 0] : [10, 30, 30, 20, 10], problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: MF_AUTO, excludePrevious: false, previousExclusionScope: null, studentIds: null, excludeOOC: true, equalityLevel: null, minRate: 0, maxRate: 100, selectedConceptIdList: [], selectedLittleChapterIdList: [] }); addPool(await mf('POST', '/worksheet/problem', { filterId: f2.filterId || f2 })); } catch (e) {} }
     return poolByCid; };
   const twins = async (pid, lv, n, label) => { if (!n) return []; const d = await mf('POST', '/derivation/problem/' + pid, { excludedProblemIds: Object.keys(chosen).map(Number), filterId: fid, bookType: 'WORKSHEET', tagTop: null });
     const pk = (x) => ({ id: x.problem.id, lv: x.problem.level, autoScoredType: x.problem.autoScoredType, type: x.problem.type, answer: x.problem.answer });
@@ -329,6 +360,32 @@ async function build(M, P, name, school, sid, recDate, log) {
   for (const z of P.book) { if (!z.n) continue; let got = z.w.pid ? await twins(z.w.pid, z.w.lv, z.n, 'p.' + z.w.page + ' ' + z.w.no) : []; if (got.length < z.n) { const g = await same(z.w.cid, z.w.lv, z.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id) => items.push({ id, kind: 'book' })); parts.book += got.length; }
   for (const b of P.boost) { if (!b.n) continue; const got = await same(b.cid, 3, b.n); got.forEach((id) => items.push({ id, kind: 'boost' })); parts.boost += got.length; }
   if (!items.length) throw new Error('문항을 하나도 받지 못함');
+  /* 상한 — 갈래 비율을 지키며 고르게 덜어낸다 */
+  if (CAP_NOW && items.length > CAP_NOW) {
+    const byKind = {}; items.forEach((it, i) => { (byKind[it.kind] = byKind[it.kind] || []).push(i); });
+    const kinds = Object.keys(byKind), total = items.length, quota = {};
+    kinds.forEach((kd) => { quota[kd] = Math.max(1, Math.round(byKind[kd].length / total * CAP_NOW)); });
+    const order = kinds.slice().sort((a, b) => byKind[b].length - byKind[a].length);
+    let sum = kinds.reduce((a, kd) => a + quota[kd], 0), guard = 0;
+    while (sum !== CAP_NOW && guard++ < 500) {
+      for (const kd of order) {
+        if (sum > CAP_NOW && quota[kd] > 1) { quota[kd]--; sum--; }
+        else if (sum < CAP_NOW && quota[kd] < byKind[kd].length) { quota[kd]++; sum++; }
+        if (sum === CAP_NOW) break;
+      }
+    }
+    const keep = new Set();
+    kinds.forEach((kd) => { const arr = byKind[kd], q = Math.min(quota[kd], arr.length);
+      for (let j = 0; j < q; j++) keep.add(arr[Math.floor(j * arr.length / q)]); });
+    const before = items.length;
+    const trimmed = items.filter((_, i) => keep.has(i));
+    items.length = 0; trimmed.forEach((it) => items.push(it));
+    parts.twin = items.filter((it) => it.kind === 'twin').length;
+    parts.tb = items.filter((it) => it.kind === 'tb').length;
+    parts.book = items.filter((it) => it.kind === 'book').length;
+    parts.boost = items.filter((it) => it.kind === 'boost').length;
+    log(`    문항 수 상한 ${CAP_NOW} — ${before}문항에서 고르게 덜어냈습니다`);
+  }
   const d = new Date(recDate); const title = `리커버리 ${d.getMonth() + 1}/${d.getDate()} ${name}`;
   if (DRY) return { wsId: null, title, n: items.length, parts, items, at: new Date().toISOString() };
   const made = await mf('POST', '/worksheet', { filterId: fid, problemList: items.map((it) => ({ id: it.id, tagTop: null })), conceptIdList: [], littleChapterConceptIdList: [], assignStudentIdList: sid ? [sid] : [], shareScope: 'ACADEMY',
@@ -391,6 +448,8 @@ async function build(M, P, name, school, sid, recDate, log) {
       useTests = mine.slice(0, 2);
       line(`시험 2개 합침: ${useTests.map((t) => t.title + ' ' + t.date + ' ' + t.score + '점').join(' + ')}`);
     }
+    EASY_ON = EASY.indexOf(k) >= 0; LVCNT = {}; CAP_NOW = CAP[k] || CAP_ALL || 0;
+    if (EASY_ON) line('쉬운 난이도로 고릅니다 (--easy — 목표 난이도 한 단계 낮춤 · 최대 「하」)');
     const twinPer = (TWIN1.indexOf(k) >= 0 || (per && per.twin1)) ? 1 : null; if (twinPer) line('시험 오답 쌍둥이 1개씩 (줄임)');
     const noBook = NOBOOK.indexOf(k) >= 0 || !!(per && per.noBook);
     let unitArg = UNIT[k] || null, unitInfo = null;
@@ -405,6 +464,7 @@ async function build(M, P, name, school, sid, recDate, log) {
       line(`시험 오답 ${M.wrong.length} · 범위 유형 ${M.range.length} · 교재 오답(범위 안·${RULE.days}일) ${M.bookWrong.length}${M.bookWrong.filter((w) => !w.pid).length ? ' (번호 못 찾음 ' + M.bookWrong.filter((w) => !w.pid).length + ')' : ''} · 교과서 ${M.tb.title || '없음'} · 보강 유형 ${P.boost.length}` + (M.warn.length ? ' · ⚠ ' + M.warn.join(' / ') : ''));
       if (!M.wrong.length && !M.bookWrong.length) { line('✗ 틀린 문항이 없어 만들지 않음'); results.push({ k, skip: 'no wrong' }); continue; }
       const res = await build(M, P, name, school, sid, recDate, line);
+      line(`   난이도: 최하 ${LVCNT[1] || 0} · 하 ${LVCNT[2] || 0} · 중 ${LVCNT[3] || 0} · 상 ${LVCNT[4] || 0} · 최상 ${LVCNT[5] || 0}`);
       line(`${DRY ? '설계' : '✅ 생성·배정'} ${res.title.replace(name, mask(name))} · ${res.n}문항 (시험 쌍둥이 ${res.parts.twin} · 교과서 ${res.parts.tb} · 교재 쌍둥이 ${res.parts.book} · 보강 ${res.parts.boost}${res.parts.fallback ? ' · 같은 유형 대체 ' + res.parts.fallback : ''})${res.wsId ? ' · 매쓰플랫 #' + res.wsId : ''}`);
       results.push({ k, ok: true, res });
       if (!DRY) {
