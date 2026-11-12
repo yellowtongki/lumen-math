@@ -46,6 +46,8 @@ const RULE = { twinPer: 2, tbPer: 1, bookTwin: 1, boost: true, theory: false, da
  *       수집기가 단원 정답률(mf_progress chapters)을 만든 바로 그 사전이다. 칩을 못 받으면 유형DB(mf_typedb 대단원→중단원) +
  *       유형 사전(mf_concept_names 의 중단원) / 기록 chapter 글자(앞 번호 뗀 것)로 대신한다. --no-unit-auto 로 끈다.
  *   --no-book 은 «범위 안 교재 오답»만 뺀다(단원 오답은 남긴다 — 학원앱과 같음)
+ *   --no-test <학생키,…> 는 반대로 «주간테스트에서 오는 부분»(시험 쌍둥이·교과서)을 뺀다.
+ *       선행 학생의 테스트가 지금 진도와 다를 때 쓴다 (2026-11-12 원장 지시)
  *   --force-design (--dry 와 함께만) 이번 주 학습지가 이미 있어도 설계만 다시 해 본다 */
 const csv = (v) => String(v || '').split(',').map((x) => x.trim()).filter(Boolean);
 const TWIN1 = csv(opt('twin1', ''));
@@ -54,6 +56,12 @@ const UNIT = {}; args.forEach((a, i) => { if (a === '--unit' && args[i + 1]) { c
 const UPD_SCORE = args.includes('--update-score');
 const SKIP = csv(opt('skip', ''));   // 이번에는 건너뛸 학생키
 const NOBOOK = csv(opt('no-book', ''));   // 교재 오답 쌍둥이를 빼고 시험 오답만으로 (문항 수 줄이기)
+/* ★ 2026-11-12 원장 지시 — 선행 학생의 «지금 진도»만으로 만들기
+ *   --no-test <학생키,…>  주간테스트에서 오는 부분(시험 오답 쌍둥이 · 교과서 같은 유형)을 뺀다.
+ *     왜: 초6 학생이 중1(하)를 선행하는데 주간테스트는 중1(상)이면, 그 테스트에서 온 문항이
+ *     지금 진도와 어긋난다(2026-11-12 윤○○ — 64문항 중 15개가 중1-1 일차방정식이었다).
+ *     교재 오답·단원 오답·보강은 그대로 둔다. --no-book 과 정반대다. */
+const NOTEST = csv(opt('no-test', ''));
 const TESTS = {}; args.forEach((a, i) => { if (a === '--tests' && args[i + 1]) { const m = args[i + 1].match(/^([^=]+)=(.+)$/); if (m) TESTS[m[1]] = csv(m[2]); } });
 const UNIT_AUTO = !args.includes('--no-unit-auto');
 const FORCE_DESIGN = args.includes('--force-design');
@@ -393,6 +401,7 @@ async function build(M, P, name, school, sid, recDate, log) {
     }
     try {
       const M = await gather(sid, useTests, st.mf_textbooks || {}, unitArg); if (noBook) { M.bookWrong = M.bookWrong.filter((w) => w.unit); line('교재 오답 뺌 (줄임 · 단원 오답은 남김)'); } const P = plan(M, twinPer); if (unitArg) line(`단원 오답 ${M.unitN || 0}문항 더함 (${UNIT[k] ? UNIT[k].source : '자동'})`);
+      if (NOTEST.indexOf(k) >= 0) { const n1 = P.test.length, n2 = P.tb.length; P.test = []; P.tb = []; line(`주간테스트에서 오는 부분 뺌 (시험 오답 ${n1} · 교과서 ${n2}) — 교재·단원·보강만으로 만듭니다`); }
       line(`시험 오답 ${M.wrong.length} · 범위 유형 ${M.range.length} · 교재 오답(범위 안·${RULE.days}일) ${M.bookWrong.length}${M.bookWrong.filter((w) => !w.pid).length ? ' (번호 못 찾음 ' + M.bookWrong.filter((w) => !w.pid).length + ')' : ''} · 교과서 ${M.tb.title || '없음'} · 보강 유형 ${P.boost.length}` + (M.warn.length ? ' · ⚠ ' + M.warn.join(' / ') : ''));
       if (!M.wrong.length && !M.bookWrong.length) { line('✗ 틀린 문항이 없어 만들지 않음'); results.push({ k, skip: 'no wrong' }); continue; }
       const res = await build(M, P, name, school, sid, recDate, line);
