@@ -320,7 +320,7 @@ async function addRecent(M, sid, R) {
     const o = bk ? byW[wp] : byP[pid];
     if (o) { if (!wide && !o.recent) { o.recent = true; o.at = T(x); } return; }
     const w = bk ? { wpId: wp, bid: String(x.book_id), page: x.page, no: x.number, cid: Number(x.concept_id), lv: Number(x.level) || 3, date: String(x.score_datetime || '').slice(0, 10), at: T(x), pid: null, unit: true, recent: true }
-      : { wpId: null, bid: '', page: '학습지', no: x.number != null ? x.number : '', cid: Number(x.concept_id), lv: Number(x.level) || 3, date: String(x.score_datetime || '').slice(0, 10), at: T(x), pid, unit: true, recent: true };
+      : { wpId: null, bid: '', page: '학습지', ws: String(x.worksheet_title || ''), no: x.number != null ? x.number : '', cid: Number(x.concept_id), lv: Number(x.level) || 3, date: String(x.score_datetime || '').slice(0, 10), at: T(x), pid, unit: true, recent: true };
     if (bk) bids[String(x.book_id)] = 1;
     if (wide) { w.wide = true; M.recentWide.push(w); return; }
     n++; M.bookWrong.push(w); if (w.pid) M.solved[String(w.pid)] = 1; });
@@ -396,6 +396,12 @@ function plan(M, twinPer) {
 function pick(list, lv, n, excl, chosen) { const out = []; if (!CUR_HARD) lv = Math.min(Number(lv) || 3, 4); const pool = list.filter((p) => isAuto(p) && !excl[String(p.id)] && !chosen[String(p.id)] && !(EXC && p.cid != null && EXC[p.cid]) && (CUR_HARD || (Number(p.lv) || 3) < 5)); pool.sort((a, b) => Math.abs((a.lv || 3) - lv) - Math.abs((b.lv || 3) - lv)); pool.slice(0, n).forEach((p) => { chosen[String(p.id)] = 1; out.push(p.id); }); return out; }
 
 /* ── 만들기 ── */
+/* ★ 2026-11-13 원장 「리커버리 학습지에 출처도 기본으로」 — 문항마다 매쓰플랫 «연관 문항 정보»(tagTop) 칸에 출처를 적는다
+ *   (매쓰플랫 화면에서 만든 오답 학습지처럼: 「[쌍둥이] 중1 (2026.11.07) 7번」 · 「[쌍둥이] 쎈 중등수학1(하) p.52 463번」) */
+let BOOKN = {};
+const srcNo = (no) => String(no == null ? '' : no).replace(/번$/, '');
+function srcTest(M, no) { const m = String(no || '').match(/^\((.*?)\)\s*(.*)$/); return (m ? m[1] + ' ' + srcNo(m[2]) : (M.tag ? M.tag + ' ' : '') + srcNo(no)) + '번'; }
+function srcBook(w) { if (w.page === '학습지') return (w.ws || '학습지') + ' ' + srcNo(w.no) + '번'; return (BOOKN[String(w.bid)] || '교재') + (w.page != null && w.page !== '' ? ' p.' + w.page : '') + (w.no != null && w.no !== '' ? ' ' + srcNo(w.no) + '번' : ''); }
 async function build(M, P, name, school, sid, recDate, log, lim) {
   lim = lim || { max: MAXN, min: MINN, hardest: true, perType: false }; const MAXN_ = lim.max || 0, MINN_ = lim.min || 0; CUR_HARD = lim.hardest !== false;
   const cids = {}; M.wrong.forEach((w) => { cids[w.cid] = 1; }); M.bookWrong.forEach((w) => { cids[w.cid] = 1; }); P.boost.forEach((b) => { cids[b.cid] = 1; });
@@ -405,7 +411,8 @@ async function build(M, P, name, school, sid, recDate, log, lim) {
     problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: true, excludePrevious: false, previousExclusionScope: null, studentIds: null, excludeOOC: true, equalityLevel: null, minRate: 0, maxRate: 100, selectedConceptIdList: [], selectedLittleChapterIdList: [] });
   /* ★ 2026-11-13: 이 필터의 onlyAutoScorable 이 곧 학습지의 «자동채점» 표시(autoScorableFlag)다 — 만드는 학습지는 항상 켠다(--no-mf-auto 여도) */
   const fid = f.filterId || f;
-  const chosen = {}, items = [], parts = { twin: 0, tb: 0, book: 0, boost: 0, fallback: 0 };
+  const chosen = {}, items = [], parts = { twin: 0, tb: 0, book: 0, boost: 0, fallback: 0 }, KIND = {};
+  const kd = (id) => '[' + (KIND[id] || '같은 유형') + '] ';
   let poolByCid = null;
   const addPool = (ps) => { (Array.isArray(ps) ? ps : (ps.problemList || [])).forEach((p) => { const pr = p.problem || p; if (pr.conceptId && pr.id) (poolByCid[pr.conceptId] = poolByCid[pr.conceptId] || []).push({ id: pr.id, cid: pr.conceptId, lv: pr.level || 3, autoScoredType: pr.autoScoredType, type: pr.type, answer: pr.answer }); }); };
   const pool = async (cid) => { if (!poolByCid) { poolByCid = {}; try { addPool(await mf('POST', '/worksheet/problem', { filterId: fid })); } catch (e) {} }
@@ -416,23 +423,23 @@ async function build(M, P, name, school, sid, recDate, log, lim) {
     const pk = (x) => ({ id: x.problem.id, cid: x.problem.conceptId, lv: x.problem.level, autoScoredType: x.problem.autoScoredType, type: x.problem.type, answer: x.problem.answer });
     const pair = ((d && d.pairProblemList) || []).map(pk);
     const sim = ((d && d.similarProblemList) || []).map(pk);
-    let got = pick(pair, lv, n, M.solved, chosen); if (got.length < n) got = got.concat(pick(sim, lv, n - got.length, M.solved, chosen));
+    let got = pick(pair, lv, n, M.solved, chosen); got.forEach((id) => { KIND[id] = '쌍둥이'; }); if (got.length < n) { const s2 = pick(sim, lv, n - got.length, M.solved, chosen); s2.forEach((id) => { KIND[id] = '유사'; }); got = got.concat(s2); }
     log(`    ${label}: 쌍둥이 ${pair.length}·유사 ${sim.length} → ${got.length}`); return got; };
   const same = async (cid, lv, n) => { if (!n) return []; const Pz = await pool(cid); return pick(Pz[cid] || [], lv, n, M.solved, chosen); };
-  for (const x of P.test) { if (!x.n) continue; let got = x.w.pid ? await twins(x.w.pid, x.w.lv, x.n, x.w.no + '번') : []; if (got.length < x.n) { const g = await same(x.w.cid, x.w.lv, x.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id, j) => items.push({ id, kind: 'twin', r: j })); parts.twin += got.length; }
-  for (const y of P.tb) { if (!y.n) continue; let got = pick(M.tb.byCid[y.w.cid] || [], y.w.lv, y.n, M.solved, chosen); if (got.length < y.n) { const g = await same(y.w.cid, y.w.lv, y.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id) => items.push({ id, kind: 'tb' })); parts.tb += got.length; }
-  for (const z of P.book) { if (!z.n) continue; let got = z.w.pid ? await twins(z.w.pid, z.w.lv, z.n, 'p.' + z.w.page + ' ' + z.w.no) : []; if (got.length < z.n) { const g = await same(z.w.cid, z.w.lv, z.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id) => items.push({ id, kind: 'book', recent: !!z.w.recent, at: z.w.at || 0 })); parts.book += got.length; if (z.w.recent) parts.recent = (parts.recent || 0) + got.length; }
-  for (const b of P.boost) { if (!b.n) continue; const got = await same(b.cid, 3, b.n); got.forEach((id) => items.push({ id, kind: 'boost' })); parts.boost += got.length; }
+  for (const x of P.test) { if (!x.n) continue; let got = x.w.pid ? await twins(x.w.pid, x.w.lv, x.n, x.w.no + '번') : []; if (got.length < x.n) { const g = await same(x.w.cid, x.w.lv, x.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id, j) => items.push({ id, kind: 'twin', r: j, src: kd(id) + srcTest(M, x.w.no) })); parts.twin += got.length; }
+  for (const y of P.tb) { if (!y.n) continue; let got = pick(M.tb.byCid[y.w.cid] || [], y.w.lv, y.n, M.solved, chosen); if (got.length < y.n) { const g = await same(y.w.cid, y.w.lv, y.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id) => items.push({ id, kind: 'tb', src: '[교과서] ' + (M.tb.title || '교과서 같은 유형') })); parts.tb += got.length; }
+  for (const z of P.book) { if (!z.n) continue; let got = z.w.pid ? await twins(z.w.pid, z.w.lv, z.n, 'p.' + z.w.page + ' ' + z.w.no) : []; if (got.length < z.n) { const g = await same(z.w.cid, z.w.lv, z.n - got.length); parts.fallback += g.length; got = got.concat(g); } got.forEach((id) => items.push({ id, kind: 'book', recent: !!z.w.recent, at: z.w.at || 0, src: kd(id) + srcBook(z.w) })); parts.book += got.length; if (z.w.recent) parts.recent = (parts.recent || 0) + got.length; }
+  for (const b of P.boost) { if (!b.n) continue; const got = await same(b.cid, 3, b.n); got.forEach((id) => items.push({ id, kind: 'boost', src: '[보강] 약한 단원 같은 유형' })); parts.boost += got.length; }
   if (MINN_ && items.length < MINN_ && (M.recentWide || []).length) {   /* ★ --min ① 최근 오답 기간을 56일까지 넓혀 더 찾는다 */
     const have = {}; if (lim.perType) P.book.forEach((z) => { if (z.n > 0) have[z.w.cid] = 1; }); let wn = 0;
     for (const w of M.recentWide) { if (items.length >= MINN_) break; if (EXC && EXC[w.cid]) continue; if (lim.perType && have[w.cid]) continue;
       let got = w.pid ? await twins(w.pid, w.lv, 1, '넓힘 ' + (w.page === '학습지' ? '학습지' : 'p.' + w.page) + ' ' + w.no) : []; if (!got.length) { const g = await same(w.cid, w.lv, 1); parts.fallback += g.length; got = g; }
-      if (got.length) { have[w.cid] = 1; items.push({ id: got[0], kind: 'book', recent: true, wide: true, at: w.at || 0 }); parts.book++; parts.recent = (parts.recent || 0) + 1; wn++; } }
+      if (got.length) { have[w.cid] = 1; items.push({ id: got[0], kind: 'book', recent: true, wide: true, at: w.at || 0, src: kd(got[0]) + srcBook(w) }); parts.book++; parts.recent = (parts.recent || 0) + 1; wn++; } }
     log(`    --min ${MINN_}: 최근 오답 기간을 ${WIDE}일로 넓혀 ${wn}문항`); parts.wide = wn;
   }
   if (MINN_ && items.length < MINN_) {   /* ★ --min ② 틀린 유형의 같은 유형 문항으로 채움 */
     const cl = M.wrong.map((w) => w.cid).concat(M.bookWrong.map((w) => w.cid)).filter((c) => c != null); let i = 0, miss = 0; const before = items.length;
-    while (cl.length && items.length < MINN_ && miss < cl.length * 2) { const c = cl[i++ % cl.length]; const g = await same(c, 3, 1); if (!g.length) { miss++; continue; } items.push({ id: g[0], kind: 'boost', fill: 1 }); parts.boost++; }
+    while (cl.length && items.length < MINN_ && miss < cl.length * 2) { const c = cl[i++ % cl.length]; const g = await same(c, 3, 1); if (!g.length) { miss++; continue; } items.push({ id: g[0], kind: 'boost', fill: 1, src: '[같은 유형] 틀린 유형 더 풀기' }); parts.boost++; }
     log(`    --min ${MINN_}: 같은 유형 ${items.length - before}문항 채움`);
   }
   if (MAXN_ && items.length > MAXN_) {   /* ★ --max: 우선순위대로 남기고 나머지는 뺀다 — 쌍둥이 첫째 → 최근 오답(새것) → 교과서 → 쌍둥이 둘째 → 보강 → 교재·단원 오답 */
@@ -447,8 +454,9 @@ async function build(M, P, name, school, sid, recDate, log, lim) {
   }
   if (!items.length) throw new Error('문항을 하나도 받지 못함');
   const d = new Date(recDate); const title = `리커버리 ${d.getMonth() + 1}/${d.getDate()} ${name}`;
+  if (DRY) { const ex = {}; items.forEach((it) => { const k = String(it.src || '').slice(0, 5); if (!ex[k]) ex[k] = it.src; }); log('    출처 예: ' + Object.values(ex).filter(Boolean).slice(0, 5).join(' / ')); }
   if (DRY) return { wsId: null, title, n: items.length, parts, items, at: new Date().toISOString() };
-  const made = await mf('POST', '/worksheet', { filterId: fid, problemList: items.map((it) => ({ id: it.id, tagTop: null })), conceptIdList: [], littleChapterConceptIdList: [], assignStudentIdList: sid ? [sid] : [], shareScope: 'ACADEMY',
+  const made = await mf('POST', '/worksheet', { filterId: fid, problemList: items.map((it) => ({ id: it.id, tagTop: it.src ? String(it.src).slice(0, 80) : null })), conceptIdList: [], littleChapterConceptIdList: [], assignStudentIdList: sid ? [sid] : [], shareScope: 'ACADEMY',
     title, writer: '김정수 선생님', prefix: '취약유형', tag: 'WEAK_CONCEPT_CHIP', schoolType: school.schoolType, grade: String(school.grade), revision: 'CURRICULUM_22', ...DESIGN });
   const wsId = (made && (made.id || made.worksheetId)) || made;
   /* ★ 2026-11-13 원장 「리커버리 학습지 매쓰플랫에서 자동채점으로」 — 만든 뒤 다시 읽어 «자동채점» 표시를 확인한다 */
@@ -472,6 +480,7 @@ async function main() {
   const mfs = await q('mf_students?select=mf_student_id,name,lumen_rec_code');
   const tests = ((st.mf_weekly || {}).tests || []).filter((t) => t.type === 'WEEKLY' || t.type === 'HIGH_TEST');   // 2026-10-22: 고등부는 모든 테스트(수집기 HIGH_TEST)도
   const made = (st.rc_ws_made && st.rc_ws_made.byKey) || {};
+  BOOKN = {}; Object.entries((st.mf_books && st.mf_books.books) || {}).forEach(([k, v]) => { if (v && v.n) BOOKN[k] = v.n; });
   console.log(`규칙: 시험 오답 쌍둥이 ${RULE.twinPer} · 교과서 ${RULE.tbPer} · 범위 안 교재 오답 ${RULE.bookTwin} · 보강 ${RULE.boost ? '켬' : '끔'} · 최근 오답 ${rule.recent.on !== false ? rule.recent.days + '일' : '끔'} · 유형마다 1개 ${rule.perType !== false ? '켬' : '끔'} · 최상 ${rule.hardest ? '포함' : '빼기'} · 자동 단원 ${rule.unitAuto ? '켬' : '끔'} · 문항 ${(Number(rule.min) || 0)}~${Number(rule.max) || '없음(2주 이상 40)'}${EXCL_RE ? ' · 빼는 유형 ' + EXCL_RE.source : ''}${args.includes('--classic') ? ' (--classic)' : ''}`);
   console.log(`주 ${wk} (보충일 ${recDate}) · 기준 기간 ${from}~${to} · 자동채점 ${AUTO ? (MF_AUTO ? '매쓰플랫 기준(객관식)' : '서술형 제외·정답 있는 문항') : '제한 없음'} · ${DRY ? '[설계만]' : '[실제 생성·배정]'}`);
   const keys = Object.keys(C).filter((k) => C[k] && C[k].on && !C[k].done && !C[k].noshow && (!ONLY || String(ONLY).split(',').map((x) => x.trim()).indexOf(k) >= 0) && SKIP.indexOf(k) < 0);
