@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-190';
+var APP_VER = 'v19-191';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9098,6 +9098,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-191',date:'2026-11-13',stability:'ok',memo:'📖 <b>기출 해설집 — 학교 › 연도별 아코디언</b> (원장 2026-11-13 「기출해설집 학교별 연도별로 구분하는 아코디언식 형태로 하자」). 목록이 한 줄로 길게 늘어서 있던 것을 <b>🏫 학교 묶음</b>(권수 · 연도 범위 · 학년)으로 접고, 펼치면 <b>연도별(최근이 위)</b>로 나눴습니다. 학교를 펼치면 가장 최근 연도만 열려 있고, 접힌 연도에는 «중3 2학기 기말 · 고1 2학기 중간»처럼 무엇이 들었는지 한 줄로 보입니다. 여러 해를 묶은 «범위맞춤 대비» 해설집은 따로 «📦» 칸에. 학년 칩은 그대로(고르면 그 학년만, 다 펼친 채로), «모두 펼치기 / 모두 접기» 단추. 펼친 상태는 이 기기에 기억해서 문항을 보고 돌아와도 그대로입니다.'},
       {ver:'v19-190',date:'2026-11-13',stability:'ok',memo:'🚑 <b>리커버리 — 학생 서랍에 그 학생 안내문 · 고른 학생 줄 노랗게</b> (원장 2026-11-13 「학생별 안내문이 보이게 하자. 개별 화면에서 · ○○○이 안 보인다」). ① 줄을 눌러 여는 오른쪽 학생 서랍에 <b>«📨 학부모 안내문»</b>이 바로 보입니다(전체 안내문 창과 같은 글, 그 학생 것만). 칸에서 고쳐 쓰고 «📋 이 글 복사»로 문자앱에 붙여 넣으면 됩니다(보내지지는 않음). 호출 확정된 학생만 나옵니다. ② 위 «🔢 학생별 예상» 표는 호출 확정 순서라 줄 표와 순서가 달라 찾기 어려웠습니다 → 서랍에서 고른 학생의 줄을 <b>노랗게</b> 표시합니다.'},
       {ver:'v19-189',date:'2026-11-13',stability:'ok',memo:'🚑 <b>리커버리 — 「카드 보기」를 오른쪽 도구함으로 · 도구함 폭 2배</b> (원장 2026-11-13 「카드로 보기를 하고 다시 돌아가기가 없다 · 카드보기를 오른쪽 도구함에서 · 도구함 가로를 2배로」). ① 보드 위 칩 줄의 «🗂 카드 보기»를 빼고, 오른쪽 도구함 맨 위에 <b>«🗂 보기 방식 [☰ 줄 표] [🗂 카드]»</b>를 두었습니다. 줄 표에서도 카드에서도 같은 자리에서 바꿉니다. ② 오른쪽 도구함(서랍) 폭을 2배로 넓혔습니다(300 → 600px · 화면이 좁으면 화면 폭의 42%까지). 다른 화면의 도구함도 같이 넓어집니다.'},
       {ver:'v19-188',date:'2026-11-13',stability:'ok',memo:'📈 <b>성적 추이 2단계 — 학부모앱으로 · 리포트 안 최근 성적 · 홈 왼쪽 단추</b> (원장 2026-11-13 「성적 한눈에를 홈 왼쪽 명예의 전당 밑에 새 버튼 · 2단계 진행」). ① 홈 왼쪽 «🏆 명예의 전당» 밑에 <b>«📈 성적 한눈에»</b> 단추. ② 학부모앱에 리포트를 발행할 때 그 학생의 전국주간·일일 점수 기록을 함께 보냅니다 → 학부모앱 «🏅 성적 › 📈 성적 추이»(학부모앱 v1-40)에서 원장님 화면과 같은 그림으로 보입니다. 학교 성적은 보내지 않습니다. 최근 주간 리포트에서 전국 등수를 숨겨 두셨으면 전국 등수도 빼고 보냅니다. ③ 리포트 안 «📈 성장 추이»(주간·일일이 겹쳐 숫자가 엉키던 그래프) → <b>그 리포트 시험 종류의 최근 6회 막대</b>로 바뀝니다. 주간은 막대 색 = 전국 상위 % 등급 + 그 회 «378/823명», 일일은 학원 평균보다 높으면 초록·낮으면 주황. 이미 발행한 리포트는 다음 발행 때 새 모양으로 올라갑니다. ④ <b>🚑 리커버리 보드</b>(원장 「○○○이 안 보이고 주간 점수가 안 보인다」): 모든 줄에 이번 기간 가장 최근 주간 점수를 보여 줍니다(호출 사유가 아니면 회색). 주간·단원 기준을 모두 넘은 학생도 반 묶음 맨 아래에 흐리게 «✓ 기준 통과»로 보이고, 그 줄에서 바로 호출할 수 있습니다. 묶음 머리 숫자는 후보만 세고 «통과 n»을 따로 붙입니다.'},
@@ -104611,7 +104612,185 @@ if (typeof rw155EstTable === 'function') rw155EstTable = (function(orig){ return
 }; })(rw155EstTable);
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~190: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-191: 📖 기출 해설집 목록 — 학교 › 연도 아코디언
+ *   (원장 2026-11-13 「기출해설집 학교별 연도별로 구분하는 아코디언식 형태로 하자」)
+ *  [전] 등록 순서대로 카드가 한 줄로 길게 늘어서 있었다(35권 넘음) — 학년 칩만 있었다.
+ *  [후] ① 학교 묶음(🏫 이름 · n권 · 연도 범위 · 학년) — 눌러서 펼치기/접기
+ *       ② 그 안에 연도 묶음(2026학년도 · 2025학년도 …, 최근 연도가 위) — 학교를 펼치면 가장 최근 연도만 열려 있다
+ *          «중간 대비 · 23·24년 기출»처럼 여러 해를 묶은 해설집은 «📦 범위맞춤 대비 묶음» 칸으로
+ *       ③ 연도 안은 학년 → 기말·중간(늦은 시험이 위) 순서의 한 줄 카드
+ *       ④ 학년 칩은 그대로(고르면 그 학년만 · 학교는 모두 펼친 채로) · «모두 펼치기 / 모두 접기»
+ *       ⑤ 펼친 상태는 이 기기에 기억(문항 보기 → 목록으로 돌아와도 그대로)
+ *  화면만 바꾼다 — 목록 자료(lumen_haesol_catalog)·본문·삭제·불러오기는 그대로.
+ *  ※ 문자열 연결로만 HTML.
+ * ═══════════════════════════════════════════════════════════════════ */
+var HS191 = { open: null };
+function hs191LoadOpen(){
+  if (HS191.open) return HS191.open;
+  var o = {}; try { o = JSON.parse(localStorage.getItem('hs_acc191') || '{}') || {}; } catch(e){ o = {}; }
+  HS191.open = o; return o;
+}
+function hs191SaveOpen(){ try { localStorage.setItem('hs_acc191', JSON.stringify(HS191.open || {})); } catch(e){} }
+/* 학교 이름 — 카탈로그 school 칸, 없으면 제목 첫 낱말 */
+function hs191School(it){
+  var s = String(it.school || '').trim();
+  if (!s) s = String(it.title || '').trim().split(/\s+/)[0] || '';
+  return s || '학교 미상';
+}
+/* 연도 — 'pack'(여러 해 묶음) · '2025' · '' */
+function hs191Year(it){
+  var term = String(it.term || ''), title = String(it.title || ''), code = String(it.code || '');
+  if (/대비|범위맞춤/.test(term + ' ' + title) || /_pack$/.test(code)) return 'pack';
+  var m = term.match(/(20\d\d)/) || title.match(/(20\d\d)\s*학년도/) || code.match(/_(20\d\d)_/) || title.match(/(20\d\d)/);
+  return m ? m[1] : '';
+}
+/* 학기 순위 — 늦은 시험이 위로 (2학기 기말 > 2학기 중간 > 1학기 기말 > 1학기 중간) */
+function hs191TermRank(it){
+  var t = String(it.term || '') + ' ' + String(it.title || '');
+  var sem = /2\s*학기/.test(t) ? 2 : (/1\s*학기/.test(t) ? 1 : 0);
+  var fin = /기말/.test(t) ? 2 : (/중간/.test(t) ? 1 : 0);
+  return sem * 10 + fin;
+}
+function hs191GradeRank(it){
+  var g = hsGradeOf(it), L = ['중1','중2','중3','고1','고2','고3'];
+  var i = L.indexOf(g); return i < 0 ? 9 : i;
+}
+/* 학기만 짧게 — «2025 · 2학기 기말» → «2학기 기말» */
+function hs191TermShort(it){
+  var t = String(it.term || '').replace(/^\s*20\d\d\s*[·.\-]?\s*/, '').trim();
+  return t || '';
+}
+function hs191IsMid(name){ return /중학교$|중$/.test(name); }
+window.hs191Tog = function(k, def){
+  var o = hs191LoadOpen(); var cur = (k in o) ? !!o[k] : !!def;
+  o[k] = !cur; hs191SaveOpen(); render();
+};
+window.hs191All = function(on){
+  var o = hs191LoadOpen(); HS191.open = {};
+  var items = (HS.cat && HS.cat.items) || [];
+  items.forEach(function(it){
+    var s = hs191School(it), y = hs191Year(it) || '기타';
+    HS191.open['s:' + s] = !!on; HS191.open['y:' + s + '|' + y] = !!on;
+  });
+  hs191SaveOpen(); render();
+};
+function hs191Card(it){
+  var kill = (it.qs || []).filter(function(q){ return q.killer; }).length;
+  var warn = (it.qs || []).filter(function(q){ return q.warn; }).length;
+  var essay = (it.qs || []).filter(function(q){ return q.ans === '서술'; }).length;
+  var g = hsGradeOf(it), ts = hs191TermShort(it);
+  var code = String(it.code || '').replace(/'/g, '');
+  return '<div class="hs191-card" style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#fff;border:1.5px solid #e8eef6;border-radius:12px;padding:10px 13px;margin-top:7px">'
+    + '<span style="background:#eef4ff;color:#1d4ed8;border-radius:8px;padding:3px 9px;font-size:12px;font-weight:900;white-space:nowrap">' + hsEsc(g === '기타' ? (it.grade || '—') : g) + '</span>'
+    + '<div style="min-width:0;flex:1 1 220px">'
+    +   '<div style="font-size:14px;font-weight:900;color:#0d2240">' + hsEsc(ts || it.title || it.code) + '</div>'
+    +   '<div style="font-size:11.5px;color:#5b6b82;font-weight:700;margin-top:2px">' + hsEsc([it.subject, it.n ? it.n + '문항' : ''].filter(Boolean).join(' · ')) + '</div>'
+    + '</div>'
+    + (essay ? '<span style="background:#fef3c7;color:#a16207;border-radius:50px;padding:3px 9px;font-size:10.5px;font-weight:900">서술형 ' + essay + '</span>' : '')
+    + (kill ? '<span style="background:#f3e8ff;color:#7e22ce;border-radius:50px;padding:3px 9px;font-size:10.5px;font-weight:900">최고난도 ' + kill + '</span>' : '')
+    + (warn ? '<span style="background:#fee2e2;color:#dc2626;border-radius:50px;padding:3px 9px;font-size:10.5px;font-weight:900">⚠️ 문제 확인 ' + warn + '</span>' : '')
+    + '<button onclick="hsOpen(\'' + code + '\')" style="padding:7px 14px;background:#1d6fe8;color:#fff;border:none;border-radius:9px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">문항 보기</button>'
+    + '<button onclick="hsDel(\'' + code + '\')" title="' + hsEsc(String(it.addedAt || '').slice(0, 10)) + ' 등록" style="padding:7px 11px;background:#fff;color:#94a3b8;border:1.5px solid #e3e9f2;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">삭제</button>'
+    + '</div>';
+}
+rHaesolList = function(){
+  var all = (HS.cat.items || []).slice();
+  var h = '<div style="padding:14px;max-width:1000px">';
+  h += '<div style="background:linear-gradient(135deg,#0d2240,#1d6fe8);border-radius:14px;padding:18px 20px;margin-bottom:12px;color:#fff">'
+    + '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+    + '<div style="font-size:19px;font-weight:900">📖 기출 해설집</div>'
+    + '<div style="font-size:12px;opacity:.85;font-weight:700">학교 › 연도별로 모았습니다 — 눌러서 펼치세요</div>'
+    + '<button onclick="hsRefresh()" style="margin-left:auto;padding:9px 14px;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:9px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">🔄 새로고침</button>'
+    + '<button onclick="hsPick()" style="padding:9px 16px;background:#fff;color:#0d2240;border:none;border-radius:9px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">＋ 해설집 불러오기</button>'
+    + '</div></div>';
+  h += '<input type="file" id="hs-file" accept=".html,text/html" style="display:none" onchange="hsFile(this)">';
+  if (!all.length) {
+    h += '<div style="background:#fff;border-radius:14px;padding:44px;text-align:center;color:#94a3b8;font-size:13px;line-height:1.9">'
+      + '아직 목록이 비어 있습니다.'
+      + '<div style="margin-top:10px;font-size:12.5px;color:#5b6b82;font-weight:700">해설집은 Claude가 만들면 <b>서버에 자동으로 올라옵니다</b> — <b>🔄 새로고침</b>을 한 번 눌러 보세요.</div>'
+      + '<div style="margin-top:8px;font-size:12px;color:#b6c0cf">직접 넣고 싶으시면 <b>＋ 해설집 불러오기</b>로 <b>해설집.html</b> 파일을 고르셔도 됩니다.</div></div>';
+    return h + '</div>';
+  }
+  /* 학년 칩 (v18-124 그대로) + 모두 펼치기/접기 */
+  var gcnt = {};
+  all.forEach(function(it){ var g = hsGradeOf(it); gcnt[g] = (gcnt[g] || 0) + 1; });
+  var gorder = ['중1','중2','중3','고1','고2','고3','기타'].filter(function(g){ return gcnt[g]; });
+  if (HS.gfilter !== '전체' && !gcnt[HS.gfilter]) HS.gfilter = '전체';
+  h += '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;align-items:center">';
+  [['전체', all.length]].concat(gorder.map(function(g){ return [g, gcnt[g]]; })).forEach(function(p){
+    var on = (HS.gfilter === p[0]);
+    h += '<span onclick="hsGradeSet(\'' + p[0] + '\')" style="cursor:pointer;user-select:none;border:1.5px solid ' + (on ? '#0d2240' : '#e3e9f2') + ';background:' + (on ? '#0d2240' : '#fff') + ';color:' + (on ? '#fff' : '#5b6b82') + ';border-radius:50px;padding:6px 15px;font-size:12.5px;font-weight:900">'
+      + p[0] + ' <span style="font-weight:800;opacity:' + (on ? '.75' : '.55') + '">' + p[1] + '</span></span>';
+  });
+  h += '<span style="margin-left:auto;display:flex;gap:6px">'
+    + '<button onclick="hs191All(true)" style="padding:6px 11px;background:#fff;color:#334155;border:1.5px solid #e3e9f2;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">모두 펼치기</button>'
+    + '<button onclick="hs191All(false)" style="padding:6px 11px;background:#fff;color:#334155;border:1.5px solid #e3e9f2;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">모두 접기</button>'
+    + '</span></div>';
+  var items = (HS.gfilter === '전체') ? all : all.filter(function(it){ return hsGradeOf(it) === HS.gfilter; });
+  var filt = HS.gfilter !== '전체';
+  /* 학교 › 연도 묶기 */
+  var S = {};
+  items.forEach(function(it){
+    var s = hs191School(it), y = hs191Year(it) || '기타';
+    var sg = S[s] || (S[s] = { name: s, n: 0, years: {}, grades: {} });
+    sg.n++; sg.grades[hsGradeOf(it)] = 1;
+    (sg.years[y] = sg.years[y] || []).push(it);
+  });
+  var schools = Object.keys(S).map(function(k){ return S[k]; }).sort(function(a, b){
+    var ma = hs191IsMid(a.name) ? 0 : 1, mb = hs191IsMid(b.name) ? 0 : 1;
+    if (ma !== mb) return ma - mb;
+    return a.name.localeCompare(b.name, 'ko');
+  });
+  var o = hs191LoadOpen();
+  schools.forEach(function(sg){
+    var sk = 's:' + sg.name, sOpen = (sk in o) ? !!o[sk] : filt;
+    var ys = Object.keys(sg.years).sort(function(a, b){
+      var ra = a === 'pack' ? 1 : (a === '기타' ? 2 : 0), rb = b === 'pack' ? 1 : (b === '기타' ? 2 : 0);
+      if (ra !== rb) return ra - rb;
+      return b.localeCompare(a);
+    });
+    var nums = ys.filter(function(y){ return /^20\d\d$/.test(y); });
+    var range = nums.length ? (nums.length > 1 ? nums[nums.length - 1] + '~' + nums[0] : nums[0]) : '';
+    var gl = ['중1','중2','중3','고1','고2','고3'].filter(function(g){ return sg.grades[g]; }).join(' · ');
+    var esk = hsEsc(sk).replace(/'/g, '&#39;');
+    h += '<div class="hs191-school" style="background:#fff;border:1.5px solid ' + (sOpen ? '#bcd0ee' : '#e3e9f2') + ';border-radius:14px;margin-bottom:9px;overflow:hidden">'
+      + '<div class="hs191-sh" onclick="hs191Tog(\'' + esk + '\',' + (filt ? 'true' : 'false') + ')" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 16px;cursor:pointer;user-select:none;background:' + (sOpen ? '#f4f8ff' : '#fff') + '">'
+      +   '<span style="font-size:13px;color:#64748b;width:14px;display:inline-block;transition:transform .15s;transform:rotate(' + (sOpen ? 90 : 0) + 'deg)">▶</span>'
+      +   '<span style="font-size:16px;font-weight:900;color:#0d2240">🏫 ' + hsEsc(sg.name) + '</span>'
+      +   '<span style="background:#dcfce7;color:#16a34a;border-radius:50px;padding:3px 10px;font-size:11px;font-weight:900">' + sg.n + '권</span>'
+      +   (range ? '<span style="font-size:12px;color:#64748b;font-weight:800">' + range + '</span>' : '')
+      +   (gl ? '<span style="margin-left:auto;font-size:11.5px;color:#94a3b8;font-weight:800">' + gl + '</span>' : '')
+      + '</div>';
+    if (sOpen) {
+      h += '<div style="padding:2px 14px 12px">';
+      ys.forEach(function(y, i){
+        var yk = 'y:' + sg.name + '|' + y, yOpen = (yk in o) ? !!o[yk] : (filt || i === 0);
+        var L = sg.years[y].slice().sort(function(a, b){
+          var g = hs191GradeRank(a) - hs191GradeRank(b); if (g) return g;
+          var t = hs191TermRank(b) - hs191TermRank(a); if (t) return t;
+          return String(a.title || '').localeCompare(String(b.title || ''), 'ko');
+        });
+        var lab = y === 'pack' ? '📦 범위맞춤 대비 묶음' : (y === '기타' ? '연도 미상' : y + '학년도');
+        var eyk = hsEsc(yk).replace(/'/g, '&#39;');
+        h += '<div class="hs191-year" style="border-top:1px dashed #e3e9f2;padding-top:8px;margin-top:8px">'
+          + '<div class="hs191-yh" onclick="hs191Tog(\'' + eyk + '\',' + ((filt || i === 0) ? 'true' : 'false') + ')" style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;padding:3px 2px">'
+          +   '<span style="font-size:11px;color:#94a3b8;width:12px;display:inline-block;transform:rotate(' + (yOpen ? 90 : 0) + 'deg)">▶</span>'
+          +   '<span style="font-size:14px;font-weight:900;color:#1e3a5f">' + lab + '</span>'
+          +   '<span style="font-size:11.5px;color:#94a3b8;font-weight:800">' + L.length + '권</span>'
+          +   (yOpen ? '' : '<span style="font-size:11.5px;color:#94a3b8;font-weight:700;margin-left:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1">' + hsEsc(L.map(function(it){ var g = hsGradeOf(it); return (g === '기타' ? '' : g + ' ') + hs191TermShort(it); }).join(' · ')) + '</span>')
+          + '</div>';
+        if (yOpen) L.forEach(function(it){ h += hs191Card(it); });
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+  return h + '</div>';
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~191: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
