@@ -6,9 +6,9 @@
 ## 1. 지금 버전 (서버 `lumen_store.app_latest` 와 같다)
 | 앱 | 최신 파일 | 고정 주소(사용자가 여는 곳) |
 |---|---|---|
-| 학원앱 | `lumen_v19-187.html` | `lumen_v1.html` = v19-187 (11/12 📈 성적 한눈에 + 학생 프로필 «📈 성적» 탭 — 부품 `modules/scoreov187_teacher.js` · 검사 `tests/test_v19187.js` 22/22 · 앞 판 v19-186 저장 공간) |
+| 학원앱 | `lumen_v19-188.html` | `lumen_v1.html` = v19-188 (11/13 📈 성적 추이 2단계 — 학부모앱 hist 발행 · 리포트 안 최근 6회 막대 · 홈 왼쪽 «성적 한눈에» 단추 · 🚑 리커버리 모든 줄 주간 점수·기준 통과 학생 — 부품 `modules/scorepub188_teacher.js` · `modules/rcall188_teacher.js` · 검사 `tests/test_v19188.js` 10/10 · `tests/test_v19188_pub.js` 11/11) |
 | 학생앱 | `student_v2-162.html` | `student_v1.html` = v2-162 (11/10 원장 「학생앱배포」 — 💡 아하노트 미해결 접힌 줄(교재별·페이지·번호 순) · ✓ 수업 중 해결 체크, `build_student_v2162.py` · 검사 `tests/test_v2162.js` 28/28) |
-| 학부모앱 | `parent_v1-39.html` | `parent.html` = **v1-39** (11/10 원장 「학부모앱 배포」 — 📑 월간 학습 보고서 화면·홈 도착 카드, `build_parent_v139.py` · `modules/parent39.js` · 검사 `tests/test_p139.js` 19/19) |
+| 학부모앱 | `parent_v1-40.html` (만듦·배포 대기) | `parent.html` = **v1-39** 그대로 — v1-40 = 🏅 성적 탭 «📈 성적 추이» 카드 + 화면(주간·일일 · 378/823명 등급 색 · 시험지 제목, `build_parent_v140.py` · `modules/parent40.js` · 검사 `tests/test_p140.js` 13/13). 원장 «학부모앱 배포» 때 교체 |
 
 ## 2. 학원앱 만드는 법 — 조립 도구 `sync/appbuild/`
 학원앱은 «바탕 `lumen_v19-42.html` + 기능별 부품(modules/) + 버전별 고침(build_app.py 의 `if int(ver)>=NN:` 블록) + 버전 메모(memos/)» 로 **조립**한다.
@@ -135,6 +135,7 @@ NODE_PATH=node_modules node sync/appbuild/syntax.js lumen_v19-92.html   # 문법
 
 ## 6. 남은 일 (11/10 기준 — 맨 위가 최신)
 **▶ 11/11 (세션 01VfKuf3oT4dgRfrB9nZhu2P 마무리 4) — 다음 세션 첫 일**
+- **📈 2단계 + 리커버리 보드 (11/13)**: 원장 「성적 한눈에를 홈 왼쪽 명예의 전당 밑에 · 2단계 진행」 → 학원앱 v19-188: 홈 왼쪽 단추 · `udPublishParent` 가 `pub_reports_<코드>.hist`(soPubHist — wk·dy, 학교 없음, 최근 주간 리포트 showRank===false 면 r·n 비움) · 리포트 HTML 성장 추이 → `soRepRecent`(그 종류 최근 6회 막대). 학부모앱 v1-40(배포 대기) — hist 없으면 recent 8개로. **이미 발행한 학생은 다음 발행 때 hist 가 생김**(그 전엔 recent 로 최근 몇 회만). 같은 날 원장 「리커버리 월수금 ○○○ 안 보임 · 주간 점수 안 보임」: 보드가 후보만 그리고 주간 점수는 기준 미만일 때만 적던 것 → `rcall188_teacher.js`(모든 줄 최근 주간 점수 회색 칩 · 기준 통과 학생도 반 묶음 맨 아래 흐리게 «✓ 기준 통과» · 묶음 머리 «통과 n» · 미정/확정/1순위 칩에서는 빠짐). 서버 자료는 정상이었다(이번 주 점수 모두 수집 · 전국 등수 채워짐).
 - **📈 성적 한눈에 1단계 끝 (11/12, 원장 「만들어」)**: 학원앱 v19-187 = 시험·기출 줄 «📈 성적 한눈에»(학교성적 앞, VIEW `scoreov`) + 학생 프로필 «📈 성적» 탭 + 리포트 없는 학생 프로필 열림. 자료 = mf_weekly(WEEKLY + 제목에 «주간»인 HIGH_TEST — HIGH_TEST 는 «고등 자체»로 전국 칸 없음 · CHAPTER 제외) + 리포트(빈 전국 등수·옛 회차 보충 · 일일) + school_scores(수학 + 다른 과목). 학생 짝 = lumen_rec_code ↔ mf_students. 요약·미니 막대·정렬은 «전국 등수가 있는 최근 회차». 서버 `sync/mathflat_collector.js` refreshWeekly: mf_ws_behaviors(90일) nat → mf_weekly 학생 칸 natRank/natN/natAvg + 지난 mf_weekly 값 이어받기(11/12 실측: 주간 기록 400 중 292 채워짐, 6~7월은 원본 없음 → 리포트). **다음: 2단계 학부모앱 성적 추이**(같은 그림 · 학원앱이 pub_reports_<코드>.hist 를 함께 발행 · 시안 `docs/mockup_parent_score_trend.html`).
 - **💾 「저장 공간이 가득 찼습니다」 (11/11 원장 캡처)**: 원인 = 서버 쌍둥이 캐시 `mfd_<번호>`(11/6 리커버리 서버판·05:10 새벽 데우기가 lumen_store 에 매일 쌓음 · 약 2,100개 · 8MB)가 PULL_SKIP 에 없어 학원앱이 시작 때마다 기기에 내려받음(학원앱은 안 씀). 학원앱 v19-186: PULL_SKIP_PREFIX + 켤 때 버리는 SKIP 에 'mfd_'. 할 일(선택): 캐시를 lumen_store 밖 전용 표로(`docs/mf_derivation_cache.sql` — 새벽에) — 서버 보안 2단계에서도 lumen_store 를 가볍게 하는 데 도움. 같은 날 조사: 기기로 받는 lumen_store 키 중 큰 것 = 리포트 달 서랍 or_students_<달>(6MB, 메모리 전용 처리됨) · ptx_(이미 SKIP) · exam_hit_*(학교별 130~160KB, SKIP 됨).
 - **배포 상태**: 학원앱 **v19-185**(`lumen_v1.html`) · 학생앱 **v2-162**(`student_v1.html`) · 학부모앱 **v1-39**(`parent.html`, 11/10 원장 「학부모앱 배포」). app_latest teacher=v19-185 · student=v2-162 (학부모앱은 app_latest 를 안 본다 — 고정 주소만 바꾸면 됨). main 학원앱 판 = v19-166~185 + v19-42.
