@@ -402,7 +402,8 @@ async function build(M, P, name, school, sid, recDate, log, lim) {
   if (MINN_ && M.recentWide) M.recentWide.forEach((w) => { if (!(EXC && EXC[w.cid])) cids[w.cid] = 1; });
   const cidList = Object.keys(cids).map(Number); if (!cidList.length) throw new Error('넣을 유형 없음');
   const f = await mf('POST', '/worksheet/filter/concept', { type: 'CONCEPT', conceptIdList: cidList, excludedTopicIds: [], excludedSubTopicIds: [], problemList: null, problemCount: 100, level: 3, levelWeight: [10, 30, 30, 20, 10],
-    problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: MF_AUTO, excludePrevious: false, previousExclusionScope: null, studentIds: null, excludeOOC: true, equalityLevel: null, minRate: 0, maxRate: 100, selectedConceptIdList: [], selectedLittleChapterIdList: [] });
+    problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: true, excludePrevious: false, previousExclusionScope: null, studentIds: null, excludeOOC: true, equalityLevel: null, minRate: 0, maxRate: 100, selectedConceptIdList: [], selectedLittleChapterIdList: [] });
+  /* ★ 2026-11-13: 이 필터의 onlyAutoScorable 이 곧 학습지의 «자동채점» 표시(autoScorableFlag)다 — 만드는 학습지는 항상 켠다(--no-mf-auto 여도) */
   const fid = f.filterId || f;
   const chosen = {}, items = [], parts = { twin: 0, tb: 0, book: 0, boost: 0, fallback: 0 };
   let poolByCid = null;
@@ -449,7 +450,12 @@ async function build(M, P, name, school, sid, recDate, log, lim) {
   if (DRY) return { wsId: null, title, n: items.length, parts, items, at: new Date().toISOString() };
   const made = await mf('POST', '/worksheet', { filterId: fid, problemList: items.map((it) => ({ id: it.id, tagTop: null })), conceptIdList: [], littleChapterConceptIdList: [], assignStudentIdList: sid ? [sid] : [], shareScope: 'ACADEMY',
     title, writer: '김정수 선생님', prefix: '취약유형', tag: 'WEAK_CONCEPT_CHIP', schoolType: school.schoolType, grade: String(school.grade), revision: 'CURRICULUM_22', ...DESIGN });
-  return { wsId: (made && (made.id || made.worksheetId)) || made, title, n: items.length, parts, items, at: new Date().toISOString() };
+  const wsId = (made && (made.id || made.worksheetId)) || made;
+  /* ★ 2026-11-13 원장 「리커버리 학습지 매쓰플랫에서 자동채점으로」 — 만든 뒤 다시 읽어 «자동채점» 표시를 확인한다 */
+  let autoFlag = null;
+  try { const w = await mf('GET', `/worksheet/${wsId}?ignoredForDeleted=true`); autoFlag = !!((w && w.worksheet) || w || {}).autoScorableFlag; } catch (e) {}
+  if (autoFlag === false) log(`⚠ 학습지 #${wsId} 가 매쓰플랫에서 «자동채점»으로 표시되지 않았습니다 — 매쓰플랫에서 확인해 주세요`);
+  return { wsId, title, n: items.length, parts, items, at: new Date().toISOString(), autoFlag };
 }
 
 async function main() {
@@ -546,7 +552,7 @@ async function main() {
           let gone = false; for (const pth of ['/worksheet', '/worksheet/trash/by-worksheet']) { try { await mf('DELETE', pth, [Number(oldWs)]); gone = true; line(`옛 학습지 #${oldWs} 지움`); break; } catch (e2) { /* 다음 방법 */ } }
           if (!gone) line(`⚠ 옛 학습지 #${oldWs} 를 지우지 못했습니다 — 매쓰플랫에서 직접 지워 주세요`);
         }
-        made[k] = { wk, wsId: res.wsId, title: res.title, n: res.n, parts: res.parts, at: res.at, by: 'server', auto: AUTO };
+        made[k] = { wk, wsId: res.wsId, title: res.title, n: res.n, parts: res.parts, at: res.at, by: 'server', auto: AUTO, autoFlag: res.autoFlag };
         await setItem('rc_ws_made', { byKey: made, updated: new Date().toISOString() });
         const fresh = (await store(['rc_state'])).rc_state || state; if (fresh.calls && fresh.calls[wk] && fresh.calls[wk][k]) { fresh.calls[wk][k].ws = { wsId: res.wsId, n: res.n, parts: res.parts, at: res.at }; if (UPD_SCORE && fresh.calls[wk][k].snap) { const lt = (Array.isArray(useTests) ? useTests.slice().sort((a, b) => String(b.date).localeCompare(String(a.date))) : [useTests])[0]; if (lt) { fresh.calls[wk][k].snap.score = lt.score; fresh.calls[wk][k].snap.scoreDate = lt.date; fresh.calls[wk][k].snap.testTitle = lt.title; } } await setItem('rc_state', { calls: fresh.calls, dates: fresh.dates || {}, periods: fresh.periods || {}, updated: new Date().toISOString() }); }
       }
