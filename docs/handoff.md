@@ -8,7 +8,7 @@
 |---|---|---|
 | 학원앱 | `lumen_v19-188.html` | `lumen_v1.html` = v19-188 (11/13 📈 성적 추이 2단계 — 학부모앱 hist 발행 · 리포트 안 최근 6회 막대 · 홈 왼쪽 «성적 한눈에» 단추 · 🚑 리커버리 모든 줄 주간 점수·기준 통과 학생 — 부품 `modules/scorepub188_teacher.js` · `modules/rcall188_teacher.js` · 검사 `tests/test_v19188.js` 10/10 · `tests/test_v19188_pub.js` 11/11) |
 | 학생앱 | `student_v2-162.html` | `student_v1.html` = v2-162 (11/10 원장 「학생앱배포」 — 💡 아하노트 미해결 접힌 줄(교재별·페이지·번호 순) · ✓ 수업 중 해결 체크, `build_student_v2162.py` · 검사 `tests/test_v2162.js` 28/28) |
-| 학부모앱 | `parent_v1-40.html` (만듦·배포 대기) | `parent.html` = **v1-39** 그대로 — v1-40 = 🏅 성적 탭 «📈 성적 추이» 카드 + 화면(주간·일일 · 378/823명 등급 색 · 시험지 제목, `build_parent_v140.py` · `modules/parent40.js` · 검사 `tests/test_p140.js` 13/13). 원장 «학부모앱 배포» 때 교체 |
+| 학부모앱 | `parent_v1-40.html` | `parent.html` = **v1-40** (11/13 원장 «학부모앱 배포» — 🏅 성적 탭 «📈 성적 추이» 카드 + 화면 · 주간·일일 · 378/823명 등급 색 · 시험지 제목, `build_parent_v140.py` · `modules/parent40.js` · 검사 `tests/test_p140.js` 13/13 · v1-39 월간 학습 보고서 포함) |
 
 ## 2. 학원앱 만드는 법 — 조립 도구 `sync/appbuild/`
 학원앱은 «바탕 `lumen_v19-42.html` + 기능별 부품(modules/) + 버전별 고침(build_app.py 의 `if int(ver)>=NN:` 블록) + 버전 메모(memos/)» 로 **조립**한다.
