@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-193';
+var APP_VER = 'v19-194';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9098,6 +9098,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-194',date:'2026-11-14',stability:'ok',memo:'🧩 <b>학원앱에서 바로 만드는 리커버리 학습지에도 출처</b> (원장 2026-11-14 「곽선우 리커버리 학습지를 학원앱에서 만들었는데 출처가 안 보인다」). 11/14 새벽 서버(예약)로 만드는 학습지에는 출처를 넣었는데, 학원앱 설계 창에서 바로 만드는 길에는 빠져 있었습니다. 이제 둘 다 문항마다 매쓰플랫 «연관 문항 정보»에 <b>「[쌍둥이] 중1 (2026.11.14) 8번」 · 「[유사] 쎈 - 중등수학1(하) p.92 651번」 · 「[교과서] 교과서_비상 - 중등수학1」 · 「[보강] 유형명」</b>이 인쇄됩니다. 이미 만든 학습지는 그대로(출처는 만들 때만 붙음).'},
       {ver:'v19-193',date:'2026-11-14',stability:'ok',memo:'🛠 <b>오른쪽 도구 띠 2배 · 이름 · 리커버리 «카드 보기» 단추</b> (원장 2026-11-14 「리커버리 예전 버전 카드로 변환하는 버튼이 안 보인다 · 오른쪽 도구에 버튼 · 도구함 전체적으로 잘 보이게 2배」). 접혀 있을 때 오른쪽 끝 띠가 가늘고 그림만 있어 찾기 어려웠습니다 → 띠 폭 <b>2배</b>(44→88px), 단추·그림을 키우고 그림 밑에 <b>이름</b>(학생·규칙·만들기·안내문·인쇄·계정)을 붙였습니다. 리커버리 화면에서는 띠 맨 위에 주황 <b>«🗂 카드 보기»</b> 단추 — 누르면 예전 카드 보드, 다시 누르면(«☰ 줄 표») 줄 표로 돌아옵니다. 펼친 도구함도 그대로 넓게.'},
       {ver:'v19-192',date:'2026-11-14',stability:'ok',memo:'📖 <b>기출 해설집 — 학교 › 학년 › 연도</b> (원장 2026-11-14 「학교별 학년별 연도별로 구분되게」 · 시안 A). 학교를 펼치면 <b>학년 칸</b>(중1·중2·중3 …, 과목명과 권수)이 나오고, 학년 칸도 접고 펼 수 있습니다. 학년 안에서는 <b>연도를 왼쪽 제목</b>(최근이 위)으로 세우고 같은 해 안은 기말 → 중간 순서입니다. 학교 칸에는 학년별 권수(중2 1 · 중3 3)가 함께 보입니다. «범위맞춤 대비» 해설집은 학년 맨 아래 «📦 대비». 학년 칩·모두 펼치기/접기·펼친 상태 기억은 그대로.'},
       {ver:'v19-191',date:'2026-11-13',stability:'ok',memo:'📖 <b>기출 해설집 — 학교 › 연도별 아코디언</b> (원장 2026-11-13 「기출해설집 학교별 연도별로 구분하는 아코디언식 형태로 하자」). 목록이 한 줄로 길게 늘어서 있던 것을 <b>🏫 학교 묶음</b>(권수 · 연도 범위 · 학년)으로 접고, 펼치면 <b>연도별(최근이 위)</b>로 나눴습니다. 학교를 펼치면 가장 최근 연도만 열려 있고, 접힌 연도에는 «중3 2학기 기말 · 고1 2학기 중간»처럼 무엇이 들었는지 한 줄로 보입니다. 여러 해를 묶은 «범위맞춤 대비» 해설집은 따로 «📦» 칸에. 학년 칩은 그대로(고르면 그 학년만, 다 펼친 채로), «모두 펼치기 / 모두 접기» 단추. 펼친 상태는 이 기기에 기억해서 문항을 보고 돌아와도 그대로입니다.'},
@@ -82082,7 +82083,11 @@ async function rcwsBuild(model, plan, api, onLog){
     problemCount:100, level:3, levelWeight:[10,30,30,20,10], problemFilterType:'ALL', practiceTest:'INCLUDE', onlyAutoScorable:false, excludePrevious:false, previousExclusionScope:null,
     studentIds:null, excludeOOC:true, equalityLevel:null, minRate:0, maxRate:100, selectedConceptIdList:[], selectedLittleChapterIdList:[] });
   var fid=f&&(f.filterId||f); var rule=plan.rule;
-  var chosen={}; var items=[]; var parts={ twin:0, tb:0, book:0, boost:0, fallback:0 };
+  var chosen={}; var items=[]; var parts={ twin:0, tb:0, book:0, boost:0, fallback:0 }; var RCK={};   /* v19-194: 쌍둥이·유사 표시 */
+  var rcNo=function(no){ return String(no==null?'':no).replace(/번$/,''); };
+  var rcKd=function(id){ return '['+(RCK[id]||'같은 유형')+'] '; };
+  var rcTest=function(w){ var m=String(w.no==null?'':w.no).match(/^\((.*?)\)\s*(.*)$/); return (m?m[1]+' '+rcNo(m[2]):(w.tt||(model.test&&model.test.title)||'시험')+' '+rcNo(w.no))+'번'; };
+  var rcBook=function(w){ if(String(w.page)==='학습지') return (w.book||w.ws||'학습지')+' '+rcNo(w.no)+'번'; return (w.book||'교재')+(w.page!=null&&w.page!==''?' p.'+w.page:'')+(w.no!=null&&w.no!==''?' '+rcNo(w.no)+'번':''); };
   var poolByCid=null;
   function addPool(ps){ (Array.isArray(ps)?ps:(ps.problemList||[])).forEach(function(p){ var pr=p.problem||p; if(pr.conceptId&&pr.id) (poolByCid[pr.conceptId]=poolByCid[pr.conceptId]||[]).push({ id:pr.id, lv:pr.level||3, type:pr.type, answer:pr.answer }); }); }
   /* 유형 풀 — 처음 한 번 100문항, 그 유형이 비면 그 유형만의 필터를 따로 만든다 (v19-93) */
@@ -82099,8 +82104,8 @@ async function rcwsBuild(model, plan, api, onLog){
     var d=await api.call('POST','/derivation/problem/'+pid,{ excludedProblemIds:Object.keys(chosen).map(Number), filterId:fid, bookType:'WORKSHEET', tagTop:null });
     var pk=function(x){ return { id:x.problem.id, lv:x.problem.level, type:x.problem.type, answer:x.problem.answer }; };
     var pair=((d&&d.pairProblemList)||[]).map(pk), sim=((d&&d.similarProblemList)||[]).map(pk);
-    var got=rcwsPickFrom(pair, lv, n, model.solved, chosen, rule);
-    if(got.length<n) got=got.concat(rcwsPickFrom(sim, lv, n-got.length, model.solved, chosen, rule));
+    var got=rcwsPickFrom(pair, lv, n, model.solved, chosen, rule); got.forEach(function(id){ RCK[id]='쌍둥이'; });
+    if(got.length<n){ var _rs=rcwsPickFrom(sim, lv, n-got.length, model.solved, chosen, rule); _rs.forEach(function(id){ RCK[id]='유사'; }); got=got.concat(_rs); }
     log('  '+label+' → 쌍둥이 '+pair.length+'·유사 '+sim.length+' 중 '+got.length+'개');
     return got;
   }
@@ -82115,28 +82120,28 @@ async function rcwsBuild(model, plan, api, onLog){
   for(var i=0;i<plan.test.length;i++){ var x=plan.test[i]; if(!x.n) continue; var got=[];
     if(x.w.pid) got=await twinsOf(x.w.pid, x.w.lv, x.n, x.w.no+'번');
     if(got.length<x.n){ var g2=await sameType(x.w.cid, x.w.lv, x.n-got.length, x.w.no+'번 대체'); parts.fallback+=g2.length; got=got.concat(g2); }
-    got.forEach(function(id){ items.push({ id:id, kind:'twin', from:x.w.no }); }); parts.twin+=got.length; }
+    got.forEach(function(id){ items.push({ id:id, kind:'twin', from:x.w.no, src:rcKd(id)+rcTest(x.w) }); }); parts.twin+=got.length; }
   // ③ 교과서 같은 유형
   log('③ 교과서 같은 유형 ('+(model.tb.title||'교과서 없음')+')');
   for(var j=0;j<plan.tb.length;j++){ var y=plan.tb[j]; if(!y.n) continue;
     var tbl=model.tb.byCid[y.w.cid]||[]; var got3=rcwsPickFrom(tbl, y.w.lv, y.n, model.solved, chosen, rule);
     if(got3.length<y.n){ var g3=await sameType(y.w.cid, y.w.lv, y.n-got3.length, y.w.no+'번 교과서 대체'); parts.fallback+=g3.length; got3=got3.concat(g3); }
-    got3.forEach(function(id){ items.push({ id:id, kind:'tb', from:y.w.no }); }); parts.tb+=got3.length; }
+    got3.forEach(function(id){ items.push({ id:id, kind:'tb', from:y.w.no, src:'[교과서] '+(model.tb.title||'교과서 같은 유형') }); }); parts.tb+=got3.length; }
   // ④ 교재 오답 쌍둥이
   if(plan.book.length) log('④ 범위 안 교재 오답 '+plan.book.length+'문항의 쌍둥이');
   for(var k=0;k<plan.book.length;k++){ var z=plan.book[k]; if(!z.n) continue; var got4=[]; var lab=(z.w.book?z.w.book.slice(0,10)+' ':'')+'p.'+z.w.page+' '+z.w.no;
     if(z.w.pid) got4=await twinsOf(z.w.pid, z.w.lv, z.n, lab);
     if(got4.length<z.n){ var g4=await sameType(z.w.cid, z.w.lv, z.n-got4.length, lab+' 대체'); parts.fallback+=g4.length; got4=got4.concat(g4); }
-    got4.forEach(function(id){ items.push({ id:id, kind:'book', from:lab }); }); parts.book+=got4.length; }
+    got4.forEach(function(id){ items.push({ id:id, kind:'book', from:lab, src:rcKd(id)+rcBook(z.w) }); }); parts.book+=got4.length; }
   // ⑤ 보강
   if(plan.boost.some(function(b){ return b.n; })) log('⑤ 두 번 이상 틀린 유형 보강');
-  for(var q=0;q<plan.boost.length;q++){ var b=plan.boost[q]; if(!b.n) continue; var got5=await sameType(b.cid, 3, b.n, tqName(b.cid)); got5.forEach(function(id){ items.push({ id:id, kind:'boost', from:b.cid }); }); parts.boost+=got5.length; }
+  for(var q=0;q<plan.boost.length;q++){ var b=plan.boost[q]; if(!b.n) continue; var got5=await sameType(b.cid, 3, b.n, tqName(b.cid)); got5.forEach(function(id){ items.push({ id:id, kind:'boost', from:b.cid, src:'[보강] '+(typeof tqName==='function'&&tqName(b.cid)?tqName(b.cid):'약한 단원 같은 유형') }); }); parts.boost+=got5.length; }
   if(!items.length) throw new Error('매쓰플랫에서 문항을 하나도 받지 못했습니다');
   // ⑥ 학습지 생성 + 배정
   var sch=rcWsSchool(model.row.st)||{ schoolType:'MIDDLE', grade:'1' };
   var recDt=rcRecDate(rcWeekKey()); var dd=new Date(recDt); var title='리커버리 '+(dd.getMonth()+1)+'/'+dd.getDate()+' '+model.row.st.name;
   log('⑥ 학습지 '+items.length+'문항 만드는 중 — '+title);
-  var body=Object.assign({ filterId:fid, problemList:items.map(function(it){ return { id:it.id, tagTop:null }; }),
+  var body=Object.assign({ filterId:fid, problemList:items.map(function(it){ return { id:it.id, tagTop:(it.src?String(it.src).slice(0,80):null) }; }),
     conceptIdList:(plan.rule.theory?cidList:[]), littleChapterConceptIdList:[], assignStudentIdList:(model.sid?[model.sid]:[]), shareScope:'ACADEMY',
     title:title, writer:'김정수 선생님', prefix:'취약유형', tag:'WEAK_CONCEPT_CHIP', schoolType:sch.schoolType, grade:String(sch.grade), revision:'CURRICULUM_22' }, RCWS_DESIGN);
   var made=await api.call('POST','/worksheet', body);
@@ -104976,7 +104981,7 @@ if (typeof rb174RailIcons === 'function') rb174RailIcons = (function(orig){ retu
 }; })(rb174RailIcons);
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~193: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-35~194: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
