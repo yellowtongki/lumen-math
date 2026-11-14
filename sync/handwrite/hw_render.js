@@ -1,9 +1,10 @@
 // 손글씨 풀이 이미지 만들기 (시험판)
 // 사용: node sync/handwrite/hw_render.js <풀이.json> <결과.png> [글꼴폴더]
+// 글꼴이름: 4번째 인자 (기본 'Nanum Pen Script')
 // 글꼴폴더: @fontsource/nanum-pen-script 패키지 폴더(index.css 있는 곳). 글꼴은 저장소에 넣지 않는다.
 const fs = require('fs'), path = require('path');
 const { chromium } = require('playwright');
-const [, , specPath, outPath, fontDir] = process.argv;
+const [, , specPath, outPath, fontDir, fontName = 'Nanum Pen Script', fontSize = '38'] = process.argv;
 const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'));
 const COLORS = { blue: '#2148c9', green: '#1f9a4a', purple: '#8a3fc4', orange: '#e8860c', red: '#e23b4e', black: '#222' };
 
@@ -38,14 +39,14 @@ const html = `<!doctype html><meta charset="utf-8">
 body{margin:0;background:#fff;width:900px}
 .wrap{padding:40px 50px 50px}
 .pb{font:20px/1.75 'Noto Serif CJK KR','Noto Sans CJK KR',serif;color:#222;margin-bottom:110px}
-.sol{font-family:'Nanum Pen Script';font-size:38px;line-height:1.55}
+.sol{font-family:'${fontName}';font-size:${fontSize}px;line-height:1.55}
 .ln{white-space:nowrap;margin:6px 0}
 .g{display:inline-block}
 .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.82em;line-height:1.05;margin:0 4px}
 .nu{border-bottom:2px solid currentColor;padding:0 3px}
 .sq{white-space:nowrap}.rad{border-top:2px solid currentColor;padding-top:1px}
 sup{font-size:.6em}
-.ans{display:inline-block;margin-top:34px;color:${COLORS.red};border:3px solid ${COLORS.red};border-radius:8px;padding:2px 22px;font-size:38px;transform:rotate(-1deg)}
+.ans{display:inline-block;margin-top:34px;color:${COLORS.red};border:3px solid ${COLORS.red};border-radius:8px;padding:2px 22px;font-size:${fontSize}px;transform:rotate(-1deg);font-family:'${fontName}'}
 </style>
 <div class="wrap">${problem}<div class="sol">${lines}<div class="ans">${plain('정답 : ' + spec.answer)}</div></div></div>`;
 (async () => {
