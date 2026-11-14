@@ -265,7 +265,7 @@ async function makeOneWorksheet(job) {
     type: 'CONCEPT', conceptIdList: conceptIds,
     excludedTopicIds: [], excludedSubTopicIds: [], problemList: null,
     problemCount: count, level: 2, levelWeight: [0, 50, 50, 0, 0],
-    problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: false,
+    problemFilterType: 'ALL', practiceTest: 'INCLUDE', onlyAutoScorable: true,   // 2026-11-13 원장 「리커버리 학습지는 매쓰플랫 자동채점으로」 — 이 값이 학습지의 «자동채점» 표시(autoScorableFlag)가 된다
     excludePrevious: false, previousExclusionScope: null, studentIds: null,
     excludeOOC: true, equalityLevel: null, minRate: 0, maxRate: 100,
     selectedConceptIdList: [], selectedLittleChapterIdList: [],
