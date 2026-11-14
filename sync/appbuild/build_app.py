@@ -1041,6 +1041,24 @@ if int(ver.replace('v19-',''))>=188:
     rep("    await supaSetItem('pub_reports_'+code, meta);",
         "    try{ if(typeof soPubHist==='function') meta.hist=await soPubHist(st); }catch(e){ console.warn('성적 추이 기록 실패(발행은 계속)', e); }   /* ★ v19-188: 학부모앱 📈 성적 추이 */\n    await supaSetItem('pub_reports_'+code, meta);")
     rep("    let unitsH='';", "    try{ if(typeof soRepRecent==='function') growthH=soRepRecent(reports,d); }catch(e){}   /* ★ v19-188: 겹치던 성장 추이 → 그 종류 최근 6회 막대 */\n    let unitsH='';")
+if int(ver.replace('v19-',''))>=194:
+    # ★ v19-194: 학원앱에서 바로 만드는 리커버리 학습지에도 문항마다 출처(매쓰플랫 «연관 문항 정보» tagTop) — 서버판 rcws_make.js 와 같은 모양
+    #   (원장 2026-11-14 「곽선우 리커버리 학습지를 학원앱에서 만들었는데 출처가 안 보인다」)
+    rep("var chosen={}; var items=[]; var parts={ twin:0, tb:0, book:0, boost:0, fallback:0 };",
+        "var chosen={}; var items=[]; var parts={ twin:0, tb:0, book:0, boost:0, fallback:0 }; var RCK={};   /* v19-194: 쌍둥이·유사 표시 */\n"
+        "  var rcNo=function(no){ return String(no==null?'':no).replace(/번$/,''); };\n"
+        "  var rcKd=function(id){ return '['+(RCK[id]||'같은 유형')+'] '; };\n"
+        "  var rcTest=function(w){ var m=String(w.no==null?'':w.no).match(/^\\((.*?)\\)\\s*(.*)$/); return (m?m[1]+' '+rcNo(m[2]):(w.tt||(model.test&&model.test.title)||'시험')+' '+rcNo(w.no))+'번'; };\n"
+        "  var rcBook=function(w){ if(String(w.page)==='학습지') return (w.book||w.ws||'학습지')+' '+rcNo(w.no)+'번'; return (w.book||'교재')+(w.page!=null&&w.page!==''?' p.'+w.page:'')+(w.no!=null&&w.no!==''?' '+rcNo(w.no)+'번':''); };")
+    rep("var got=rcwsPickFrom(pair, lv, n, model.solved, chosen, rule);",
+        "var got=rcwsPickFrom(pair, lv, n, model.solved, chosen, rule); got.forEach(function(id){ RCK[id]='쌍둥이'; });")
+    rep("if(got.length<n) got=got.concat(rcwsPickFrom(sim, lv, n-got.length, model.solved, chosen, rule));",
+        "if(got.length<n){ var _rs=rcwsPickFrom(sim, lv, n-got.length, model.solved, chosen, rule); _rs.forEach(function(id){ RCK[id]='유사'; }); got=got.concat(_rs); }")
+    rep("items.push({ id:id, kind:'twin', from:x.w.no });", "items.push({ id:id, kind:'twin', from:x.w.no, src:rcKd(id)+rcTest(x.w) });")
+    rep("items.push({ id:id, kind:'tb', from:y.w.no });", "items.push({ id:id, kind:'tb', from:y.w.no, src:'[교과서] '+(model.tb.title||'교과서 같은 유형') });")
+    rep("items.push({ id:id, kind:'book', from:lab });", "items.push({ id:id, kind:'book', from:lab, src:rcKd(id)+rcBook(z.w) });")
+    rep("items.push({ id:id, kind:'boost', from:b.cid });", "items.push({ id:id, kind:'boost', from:b.cid, src:'[보강] '+(typeof tqName==='function'&&tqName(b.cid)?tqName(b.cid):'약한 단원 같은 유형') });")
+    rep("problemList:items.map(function(it){ return { id:it.id, tagTop:null }; })", "problemList:items.map(function(it){ return { id:it.id, tagTop:(it.src?String(it.src).slice(0,80):null) }; })")
 rep("var APP_VER = 'v19-42';","var APP_VER = '"+ver+"';")
 anchor="      {ver:'v19-42',date:'2026-09-24',stability:'ok',memo:'📘"; i=s.index(anchor)
 memos=''
