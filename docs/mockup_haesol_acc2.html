@@ -1,0 +1,117 @@
+<title>해설집 학교·학년·연도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* 레이아웃: 학원앱 «기출 해설집» 화면을 그대로 본뜬 한 단 목록 · 위에 보기 방식 A/B 전환 */
+:root{--bg:#eef2f8;--card:#fff;--ink:#0d2240;--sub:#5b6b82;--mute:#94a3b8;--line:#e3e9f2;--soft:#f4f8ff;--blue:#1d6fe8;--blue-s:#eef4ff;--green:#16a34a;--green-s:#dcfce7;--purple:#7e22ce;--purple-s:#f3e8ff;--amber:#a16207;--amber-s:#fef3c7;--head1:#0d2240;--head2:#1d6fe8;--f:"Noto Sans KR",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1420;--card:#151f30;--ink:#e6edf7;--sub:#a3b2c8;--mute:#6f819b;--line:#26354d;--soft:#1a2740;--blue:#6aa5ff;--blue-s:#1b2d4b;--green:#4ade80;--green-s:#123224;--purple:#c4a1ff;--purple-s:#2a1d44;--amber:#fbbf24;--amber-s:#3a2d10;--head1:#0b1b33;--head2:#1d4fa8;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1420;--card:#151f30;--ink:#e6edf7;--sub:#a3b2c8;--mute:#6f819b;--line:#26354d;--soft:#1a2740;--blue:#6aa5ff;--blue-s:#1b2d4b;--green:#4ade80;--green-s:#123224;--purple:#c4a1ff;--purple-s:#2a1d44;--amber:#fbbf24;--amber-s:#3a2d10;--head1:#0b1b33;--head2:#1d4fa8;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.note{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;color:var(--sub);font-size:13px;line-height:1.7}
+.note b{color:var(--ink)}
+.mode{display:flex;gap:8px;flex-wrap:wrap}
+.mode button{font-family:inherit;border:1.5px solid var(--line);background:var(--card);color:var(--sub);border-radius:10px;padding:8px 14px;font-weight:900;font-size:13px;cursor:pointer;text-align:left}
+.mode button.on{border-color:var(--ink);background:var(--ink);color:var(--card)}
+.mode small{display:block;font-weight:700;font-size:11.5px;opacity:.8}
+.hero{background:linear-gradient(135deg,var(--head1),var(--head2));border-radius:14px;padding:16px 20px;color:#fff;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hero b{font-size:19px;font-weight:900}.hero span{font-size:12px;opacity:.85;font-weight:700}
+.chips{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.chip{cursor:pointer;user-select:none;border:1.5px solid var(--line);background:var(--card);color:var(--sub);border-radius:50px;padding:6px 15px;font-size:12.5px;font-weight:900}
+.chip.on{border-color:var(--ink);background:var(--ink);color:var(--card)}
+.chip i{font-style:normal;opacity:.6;margin-left:3px}
+.school{background:var(--card);border:1.5px solid var(--line);border-radius:14px;overflow:hidden}
+.school.open{border-color:var(--blue)}
+.sh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 16px;cursor:pointer}
+.school.open>.sh{background:var(--soft)}
+.tri{display:inline-block;width:14px;color:var(--mute);font-size:12px;transition:transform .15s}
+.open>.sh .tri,.gopen>.gh .tri{transform:rotate(90deg)}
+.sname{font-size:16px;font-weight:900}
+.pill{border-radius:50px;padding:2px 10px;font-size:11px;font-weight:900;white-space:nowrap}
+.p-n{background:var(--green-s);color:var(--green)}
+.range{font-size:12px;color:var(--sub);font-weight:800}
+.gsum{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap}
+.gsum span{background:var(--blue-s);color:var(--blue);border-radius:7px;padding:2px 8px;font-size:11.5px;font-weight:900}
+.sbody{padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.grade{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.gh{display:flex;align-items:center;gap:9px;padding:10px 12px;cursor:pointer;background:var(--card)}
+.gopen>.gh{border-bottom:1px solid var(--line)}
+.gbadge{background:var(--blue);color:#fff;border-radius:8px;padding:3px 10px;font-weight:900;font-size:13px}
+.gsub{font-size:12px;color:var(--sub);font-weight:700}
+.gcnt{margin-left:auto;font-size:12px;color:var(--mute);font-weight:800}
+.gbody{padding:6px 12px 10px}
+.year{display:grid;grid-template-columns:86px 1fr;gap:10px;padding:8px 0;border-top:1px dashed var(--line)}
+.year:first-child{border-top:none}
+.ylab{font-weight:900;color:var(--ink);font-size:14px;padding-top:9px;font-variant-numeric:tabular-nums}
+.ylab small{display:block;font-size:11px;color:var(--mute);font-weight:700}
+.rows{display:flex;flex-direction:column;gap:6px;min-width:0}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--card)}
+.term{font-weight:900;font-size:14px;min-width:84px}
+.meta{font-size:12px;color:var(--sub);font-weight:700;flex:1 1 140px;min-width:0}
+.p-k{background:var(--purple-s);color:var(--purple)}.p-e{background:var(--amber-s);color:var(--amber)}
+.btn{font-family:inherit;border:0;background:var(--blue);color:#fff;border-radius:8px;padding:6px 12px;font-weight:900;font-size:12px;cursor:pointer}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;padding:2px 0 4px}
+.tab{cursor:pointer;border:1.5px solid var(--line);border-radius:9px;padding:6px 12px;font-weight:900;font-size:13px;color:var(--sub);background:var(--card)}
+.tab.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.tab i{font-style:normal;opacity:.7;margin-left:4px;font-size:11.5px}
+@media (max-width:560px){.year{grid-template-columns:1fr}.ylab{padding-top:0}.gsum{margin-left:0}}
+</style>
+<div class="wrap">
+  <div class="note">학원앱 <b>📖 기출 해설집</b> 목록 시안입니다. 저장소에 있는 해설집 36권으로 그렸습니다(앱은 39권). 아래에서 <b>보기 A·B</b>를 눌러 비교해 보세요. 학교·학년을 눌러 접고 펼 수 있습니다.</div>
+  <div class="mode" role="group" aria-label="보기 방식">
+    <button id="mA" class="on" onclick="setMode('A')">A · 학교 › 학년 › 연도 (추천)<small>학년도 접는 칸 · 연도는 왼쪽 제목으로 한눈에</small></button>
+    <button id="mB" onclick="setMode('B')">B · 학교 › 학년 탭 › 연도<small>학교를 펼치면 학년을 탭으로 골라 봄</small></button>
+  </div>
+  <div class="hero"><b>📖 기출 해설집</b><span>학교 › 학년 › 연도별로 모았습니다</span></div>
+  <div class="chips" id="gchips"></div>
+  <div id="list" style="display:flex;flex-direction:column;gap:9px"></div>
+  <div class="note"><b>A 를 추천하는 까닭</b> — 한 학교·한 학년의 해설집은 많아야 5권이라, 연도까지 접으면 누르는 횟수만 늘어납니다. 그래서 연도는 접지 않고 <b>왼쪽 제목</b>(2026 · 2025 …, 최근이 위)으로 세우고, 같은 해 안은 <b>기말 → 중간</b> 순서입니다. 여러 해를 묶은 «범위맞춤 대비» 해설집은 맨 아래 <b>📦 대비 묶음</b> 칸. 위 학년 칩(중1~고2)을 고르면 그 학년만 남기고 모두 펼칩니다. 펼친 상태는 기기에 기억합니다.</div>
+</div>
+<script>
+var D=[{"s":"범박고등학교","g":"고1","t":"2023 · 2학기 기말","sub":"수학(하)","n":25,"k":3},{"s":"범박고등학교","g":"고1","t":"2024 · 2학기 기말","sub":"수학(하)","n":23,"k":2},{"s":"범박고등학교","g":"고1","t":"2025 · 2학기 기말","sub":"공통수학2","n":23,"k":3},{"s":"범박고등학교","g":"고1","t":"2025 · 2학기 중간","sub":"공통수학2","n":23,"k":3},{"s":"범박고등학교","g":"고1","t":"2026 · 2학기 중간","sub":"공통수학2","n":23,"k":2},{"s":"범박고등학교","g":"고2","t":"2023 · 2학기 기말","sub":"수학II","n":22,"k":4},{"s":"범박고등학교","g":"고2","t":"2024 · 2학기 기말","sub":"수학II","n":25,"k":3},{"s":"범박고등학교","g":"고2","t":"2025 · 2학기 기말","sub":"수학II","n":23,"k":3},{"s":"범박고등학교","g":"고2","t":"2026 · 2학기 중간","sub":"미적분Ⅰ","n":23,"k":3},{"s":"범박중학교","g":"중2","t":"2025 · 2학기 중간","sub":"중등수학 2(하)","n":20,"k":5},{"s":"범박중학교","g":"중3","t":"2024 · 2학기 기말","sub":"중등수학 3(하)","n":22,"k":3},{"s":"범박중학교","g":"중3","t":"2025 · 2학기 기말","sub":"중등수학 3(하)","n":20,"k":3},{"s":"범박중학교","g":"중3","t":"2025 · 2학기 중간","sub":"중등수학 3(하)","n":20,"k":5},{"s":"부천일신중학교","g":"중3","t":"2025 · 2학기 중간","sub":"중등수학 3(하)","n":23,"k":4},{"s":"중대부고","g":"고1","t":"2025 · 2학기 기말","sub":"공통수학2","n":23,"k":4},{"s":"옥길중학교","g":"중1","t":"2024 · 2학기 중간","sub":"중등수학 1(하)","n":20,"k":7},{"s":"옥길중학교","g":"중2","t":"2025 · 2학기 중간","sub":"중등수학 2(하)","n":20,"k":2},{"s":"옥길중학교","g":"중2","t":"2026 · 2학기 중간","sub":"중등수학 2(하)","n":22,"k":2},{"s":"옥길중학교","g":"중3","t":"2024 · 2학기 기말","sub":"중등수학 3(하)","n":20,"k":3},{"s":"옥길중학교","g":"중3","t":"2025 · 2학기 기말","sub":"중등수학 3(하)","n":21,"k":4},{"s":"옥길중학교","g":"중3","t":"2025 · 2학기 중간","sub":"중등수학 3(하)","n":21,"k":2},{"s":"옥길중학교","g":"중3","t":"2학기 기말 대비 · 22·23년 기출","sub":"중등수학 3(하) 원과 직선·원주각","n":19,"k":4},{"s":"옥길중학교","g":"중3","t":"2학기 중간 대비 · 23·24년 기출","sub":"중등수학 3(하) 삼각비·통계","n":22,"k":4},{"s":"숙명여고","g":"고1","t":"2025 · 2학기 기말","sub":"공통수학2","n":23,"k":4},{"s":"소래고등학교","g":"고1","t":"2024 · 2학기 기말","sub":"수학(하)","n":22,"k":6},{"s":"소래고등학교","g":"고1","t":"2025 · 2학기 기말","sub":"공통수학2","n":22,"k":4},{"s":"소사고등학교","g":"고1","t":"2023 · 2학기 기말","sub":"수학(하)","n":20,"k":2},{"s":"소사고등학교","g":"고1","t":"2024 · 2학기 기말","sub":"수학(하)","n":21,"k":3},{"s":"소사고등학교","g":"고1","t":"2025 · 2학기 기말","sub":"공통수학2","n":21,"k":3},{"s":"소사고등학교","g":"고1","t":"2025 · 2학기 중간","sub":"공통수학2","n":21,"k":3},{"s":"소사고등학교","g":"고1","t":"2026 · 2학기 중간","sub":"공통수학2","n":24,"k":3},{"s":"소사고등학교","g":"고2","t":"2023 · 2학기 기말","sub":"수학II","n":20,"k":3},{"s":"소사고등학교","g":"고2","t":"2024 · 2학기 기말","sub":"수학II","n":20,"k":4},{"s":"소사고등학교","g":"고2","t":"2024 · 2학기 중간","sub":"수학II","n":20,"k":5},{"s":"소사고등학교","g":"고2","t":"2026 · 2학기 중간","sub":"미적분Ⅰ","n":24,"k":4},{"s":"옥길중학교","g":"중1","t":"2025 · 2학기 중간","sub":"중등수학 1(하)","n":21,"k":0}];
+var MODE='A',GF='전체',OPEN={'s:범박중학교':1,'g:범박중학교|중3':1,'g:범박중학교|중2':1,'g:범박중학교|중1':1},TAB={};
+var GORD=['중1','중2','중3','고1','고2','고3'];
+function yOf(x){var m=String(x.t).match(/(20\d\d)/);return /대비/.test(x.t)?'pack':(m?m[1]:'기타');}
+function trank(t){return (/2\s*학기/.test(t)?20:/1\s*학기/.test(t)?10:0)+(/기말/.test(t)?2:/중간/.test(t)?1:0);}
+function tshort(t){return String(t).replace(/^\s*20\d\d\s*·\s*/,'');}
+function isMid(s){return /중학교$|중$/.test(s);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function setMode(m){MODE=m;document.getElementById('mA').className=m==='A'?'on':'';document.getElementById('mB').className=m==='B'?'on':'';draw();}
+function tog(k){OPEN[k]=!OPEN[k];draw();}
+function setTab(s,g){TAB[s]=g;draw();}
+function setG(g){GF=g;draw();}
+function rowsHtml(L){
+  var Y={};L.forEach(function(x){(Y[yOf(x)]=Y[yOf(x)]||[]).push(x);});
+  var ys=Object.keys(Y).sort(function(a,b){var ra=a==='pack'?1:a==='기타'?2:0,rb=b==='pack'?1:b==='기타'?2:0;return ra-rb||b.localeCompare(a);});
+  return ys.map(function(y){
+    var R=Y[y].slice().sort(function(a,b){return trank(b.t)-trank(a.t);});
+    return '<div class="year"><div class="ylab">'+(y==='pack'?'📦 대비<small>범위맞춤 묶음</small>':y+'<small>학년도 · '+R.length+'권</small>')+'</div><div class="rows">'+R.map(function(x){
+      return '<div class="row"><span class="term">'+esc(tshort(x.t))+'</span><span class="meta">'+esc(x.sub)+' · '+x.n+'문항</span>'+(x.k?'<span class="pill p-k">최고난도 '+x.k+'</span>':'')+'<button class="btn" type="button">문항 보기</button></div>';}).join('')+'</div></div>';}).join('');
+}
+function draw(){
+  var gc={};D.forEach(function(x){gc[x.g]=(gc[x.g]||0)+1;});
+  document.getElementById('gchips').innerHTML=[['전체',D.length]].concat(GORD.filter(function(g){return gc[g];}).map(function(g){return [g,gc[g]];})).map(function(p){return '<span class="chip'+(GF===p[0]?' on':'')+'" onclick="setG(\''+p[0]+'\')">'+p[0]+'<i>'+p[1]+'</i></span>';}).join('');
+  var items=GF==='전체'?D:D.filter(function(x){return x.g===GF;}),filt=GF!=='전체';
+  var S={};items.forEach(function(x){(S[x.s]=S[x.s]||[]).push(x);});
+  var names=Object.keys(S).sort(function(a,b){return (isMid(a)?0:1)-(isMid(b)?0:1)||a.localeCompare(b,'ko');});
+  document.getElementById('list').innerHTML=names.map(function(s){
+    var L=S[s],sk='s:'+s,so=filt||!!OPEN[sk];
+    var yrs=L.map(yOf).filter(function(y){return /^20/.test(y);}).sort();var range=yrs.length?(yrs[0]===yrs[yrs.length-1]?yrs[0]:yrs[0]+'~'+yrs[yrs.length-1]):'';
+    var G={};L.forEach(function(x){(G[x.g]=G[x.g]||[]).push(x);});var gs=GORD.filter(function(g){return G[g];});
+    var h='<div class="school'+(so?' open':'')+'"><div class="sh" onclick="tog(\''+sk+'\')"><span class="tri">▶</span><span class="sname">🏫 '+esc(s)+'</span><span class="pill p-n">'+L.length+'권</span><span class="range">'+range+'</span><span class="gsum">'+gs.map(function(g){return '<span>'+g+' '+G[g].length+'</span>';}).join('')+'</span></div>';
+    if(so){
+      h+='<div class="sbody">';
+      if(MODE==='A'){
+        gs.forEach(function(g){var gk='g:'+s+'|'+g,go=filt||!!OPEN[gk];var subs=Array.from(new Set(G[g].map(function(x){return x.sub;}))).join(' · ');
+          h+='<div class="grade'+(go?' gopen':'')+'"><div class="gh" onclick="tog(\''+gk+'\')"><span class="tri">▶</span><span class="gbadge">'+g+'</span><span class="gsub">'+esc(subs)+'</span><span class="gcnt">'+G[g].length+'권</span></div>'+(go?'<div class="gbody">'+rowsHtml(G[g])+'</div>':'')+'</div>';});
+      }else{
+        var cur=TAB[s]&&G[TAB[s]]?TAB[s]:gs[gs.length-1];
+        h+='<div class="tabs">'+gs.map(function(g){return '<span class="tab'+(g===cur?' on':'')+'" onclick="setTab(\''+s+'\',\''+g+'\')">'+g+'<i>'+G[g].length+'</i></span>';}).join('')+'</div><div class="grade gopen"><div class="gbody">'+rowsHtml(G[cur])+'</div></div>';
+      }
+      h+='</div>';
+    }
+    return h+'</div>';
+  }).join('');
+}
+draw();
+</script>
