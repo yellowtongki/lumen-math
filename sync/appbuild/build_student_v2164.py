@@ -2,7 +2,7 @@
 # 학생앱 v2-164 조립 — «v2-163 복사 + rep 고침 + 뒤에 sync/streak_core.js · modules/stkstu164.js 붙이기»
 #   원장 2026-11-16 「연속 학습 표기를 플래너와 녹음에 도입 · 홈 화면에 보이게 · 따로 확인은 어디서 · 상위 5명 · 전체 학생 랭킹 · 추천대로 만들어」
 #   (시안 docs/mockup_streak_student.html)
-#   ① 홈: 공지 바로 밑 «🔥 연속 띠»(원장 「연속 띠가 포인트」) · 오늘 할 일 3칸(하브루타·플래너·📚 숙제 체크 — 누르면 아래에 숙제 체크 펼침) · 메뉴 4칸 한 줄
+#   ① 홈: 공지 바로 밑 «🔥 연속 띠»(원장 「연속 띠가 포인트」) · 오늘 할 일 밑에 📚 숙제 체크 보라 칸(따로) · 메뉴 4칸 한 줄
 #      (처음엔 리그 아래였다 → — 플래너 n일 연속 · 오늘 아직이면 «오늘 아직!» · 녹음 n회 · 연속 랭킹 n위
 #   ② 띠를 누르면 «🔥 연속 기록» 화면(screen-streak · 새 탭 없음): 플래너/녹음 전환 · 큰 카드(이번 주 점) · 연속 랭킹 TOP 5(전체 학생 · 별명) · 달력 · 메달 7/14/30/50/100
 #   자료: 내 것은 바로 계산(내 플래너 사진 목록 · submissions_<코드>), 랭킹은 서버가 매일 새벽 만드는 streak_board(sync/streak_board.js · planner-night.yml)
@@ -22,7 +22,7 @@ def rep(a, b, n=1):
 rep("var STU_VER = 'v2-163';", "var STU_VER = 'v2-164';")
 # ① 홈 띠 — 큰 칸 4개 바로 위
 # 홈 배치 (원장 2026-11-16 「연속 띠가 포인트 · 보여야 한다 · 숙제 체크를 오늘 할 일에 · 추천대로」)
-#   공지 → 🔥 연속 띠 → 📌 오늘 할 일 3칸(하브루타·플래너·📚 숙제 체크) → (숙제 체크 펼침) → 루멘 리그 → 메뉴 4칸 한 줄
+#   공지 → 🔥 연속 띠 → 📌 오늘 할 일(하브루타·플래너) → 📚 숙제 체크 보라 칸(따로 · 수업일 기준 — 원장 「숙제 체크는 수업 있는 날만 · 오늘 할 일 밑에 따로 보라색 칸」) → 루멘 리그 → 메뉴 4칸 한 줄
 rep("    <!-- v2-121: 📅 시험 D-day — 홈 첫 화면 (bellDday 가 내 달력 띠를 복사) -->",
     "    <!-- v2-164: 🔥 연속 띠 (stkLoad · stkPaintStrip) — 공지 바로 밑 · 누르면 «연속 기록» 화면 -->\n"
     "    <button type=\"button\" class=\"stk-strip\" id=\"stk-strip\" style=\"display:none\" onclick=\"stkOpen()\"></button>\n"
@@ -30,43 +30,10 @@ rep("    <!-- v2-121: 📅 시험 D-day — 홈 첫 화면 (bellDday 가 내 달
 # 숙제 체크 카드: 오늘 할 일 «위» → «아래»(셋째 칸을 누르면 여기서 펼침)
 rep('    <!-- v2-158: 📚 숙제 체크 카드 2판 (hwHomeUpdate · stu_features.hw 로 학년별 켬 · 「📌 오늘 할 일」 위) -->\n    <div id="hw-home" class="hwh hwk" style="display:none"></div>\n', '')
 rep("    <!-- v2-116: 🏆 루멘 리그 — 종목 4칸(진도·IB아하·플래너·스피치) + 종합. rcHomeUpdate 가 채운다 -->",
-    "    <!-- v2-164: 📚 숙제 체크 — «오늘 할 일» 셋째 칸을 누르면 여기 펼쳐진다(hwHomeUpdate · 접히면 숨김) -->\n"
+    "    <!-- v2-164: 📚 숙제 체크 — «오늘 할 일» 밑 보라색 칸(수업일 기준 · 머리를 누르면 펼침 · hwHomeUpdate 그대로) -->\n"
     "    <div id=\"hw-home\" class=\"hwh hwk\" style=\"display:none\"></div>\n"
     "    <!-- v2-116: 🏆 루멘 리그 — 종목 4칸(진도·IB아하·플래너·스피치) + 종합. rcHomeUpdate 가 채운다 -->")
-# 오늘 할 일 셋째 칸
-rep("""          <div class="td4-ms">오늘 제출 · 내 점수 보기</div>
-        </button>
-      </div>""", """          <div class="td4-ms">오늘 제출 · 내 점수 보기</div>
-        </button>
-        <button class="td4-card hwt" id="td4-hw" style="display:none" onclick="hwTileTap()">
-          <div class="td4-ic">📚</div><div class="td4-tt">숙제 체크</div>
-          <div class="td4-pc" id="td4-hw-pc">0<small>%</small></div>
-          <div class="td4-st" id="td4-hw-st">⬜ 수업 전에</div>
-        </button>
-      </div>""")
-# 숙제 체크: 접혀 있으면 카드 숨김 · 셋째 칸에 % · 상태
-rep("/* 날짜 ◀▶ — 지난 수업일(오늘-7일 안) ↔ 다음 수업일 */", """/* ★ v2-164: 숙제 체크는 «오늘 할 일» 셋째 칸 — 접혀 있으면 아래 카드 숨김, 펼치면 아래에 지금 화면 그대로 */
-(function(){
-  var _orig = window.hwHomeUpdate;
-  window.hwHomeUpdate = function(){
-    _orig.apply(this, arguments);
-    var el = document.getElementById('hw-home'), tile = document.getElementById('td4-hw'), row = tile && tile.parentNode;
-    var on = false; try { on = hwOpen() && HW.loaded; } catch(e){}
-    if (tile){ tile.style.display = on ? '' : 'none'; if (row) row.classList.toggle('td4-3', !!on); }
-    if (!on) return;
-    var open = hwFoldOpen(); if (el && !open) el.style.display = 'none';
-    try {
-      var sel = hwSelDate(), h4 = hwSelfOf(sel), pct = hwPct(h4), tt = hwTeachOf(sel);
-      var pressed = h4.set.p || h4.set.c || h4.set.w || h4.aSet || h4.aNone;
-      var pc = document.getElementById('td4-hw-pc'), st = document.getElementById('td4-hw-st');
-      if (pc) pc.innerHTML = (tt != null ? tt : pct) + '<small>%</small>';
-      if (st) st.textContent = open ? '▴ 아래에서 체크' : (tt != null ? '✓ 선생님 확인' : (h4.sub ? '✓ 제출함' : (pressed ? '제출 전 · 눌러서' : '⬜ 수업 전에')));
-      tile.classList.toggle('done', tt != null || !!h4.sub);
-    } catch(e){}
-  };
-})();
-window.hwTileTap = function(){ hwFoldSet(!hwFoldOpen()); hwHomeUpdate(); if (hwFoldOpen()){ var el = document.getElementById('hw-home'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
-/* 날짜 ◀▶ — 지난 수업일(오늘-7일 안) ↔ 다음 수업일 */""")
+
 # ② 화면
 rep("<!-- ══ 녹음제출 ══ -->",
     "<!-- ══ v2-164: 🔥 연속 기록 ══ -->\n<div class=\"screen\" id=\"screen-streak\">\n  <div class=\"sub-hdr\">\n    <button class=\"back-btn\" onclick=\"go('screen-home')\">←</button>\n"
@@ -102,9 +69,8 @@ CSS = (
   ".stk-note{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:8px;line-height:1.5}.stk-empty{text-align:center;color:#94a3b8;font-size:12.5px;font-weight:700;padding:14px}\n"
   "/* v2-164: 홈 배치 — 연속 띠는 공지 밑 · 오늘 할 일 3칸 · 메뉴 4칸 한 줄 */\n"
   ".h3-body .stk-strip{margin:0}\n"
-  ".td4-row.td4-3{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px}.td4-row.td4-3 .td4-card{min-width:0;padding-left:10px;padding-right:8px}.td4-row.td4-3 .td4-ms{display:none}.td4-row.td4-3 .td4-tt{font-size:15px}.td4-row.td4-3 .td4-st{font-size:12px}\n"
-  ".td4-card.hwt{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:0;text-align:left;font-family:inherit}.td4-card.hwt.done{background:linear-gradient(135deg,#6d28d9,#1d6fe8)}\n"
-  ".td4-card.hwt .td4-pc{font-size:22px;font-weight:900;line-height:1.1;margin-top:2px}.td4-card.hwt .td4-pc small{font-size:12px;margin-left:1px}\n"
+  "#hw-home.hwk{background:linear-gradient(135deg,#faf5ff,#ede9fe)!important;border:2px solid #c4b5fd!important;box-shadow:0 4px 12px rgba(124,58,237,.12)!important}\n"
+  "#hw-home .hwk-hd .t{color:#6d28d9!important}#hw-home .hwk-hd .d{color:#7c3aed!important;font-weight:800}\n"
   ".h3-tiles4.hm4{display:grid!important;grid-template-columns:repeat(4,1fr)!important;grid-template-rows:auto!important;min-height:0!important;flex:none!important;gap:8px!important}\n"
   ".h3-tiles4.hm4 .h3-tile{min-height:0!important;height:auto!important;padding:10px 4px!important;text-align:center!important;border-radius:16px!important}\n"
   ".h3-tiles4.hm4 .fd3,.h3-tiles4.hm4 .bdg3{display:none!important}.h3-tiles4.hm4 .ic3{font-size:26px!important;margin:0 auto 4px!important}.h3-tiles4.hm4 .fn3{font-size:12px!important;white-space:nowrap;letter-spacing:-.3px}\n"

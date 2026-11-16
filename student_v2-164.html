@@ -3043,9 +3043,8 @@ body.lyp-lock{overflow:hidden;}
 .stk-note{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:8px;line-height:1.5}.stk-empty{text-align:center;color:#94a3b8;font-size:12.5px;font-weight:700;padding:14px}
 /* v2-164: 홈 배치 — 연속 띠는 공지 밑 · 오늘 할 일 3칸 · 메뉴 4칸 한 줄 */
 .h3-body .stk-strip{margin:0}
-.td4-row.td4-3{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px}.td4-row.td4-3 .td4-card{min-width:0;padding-left:10px;padding-right:8px}.td4-row.td4-3 .td4-ms{display:none}.td4-row.td4-3 .td4-tt{font-size:15px}.td4-row.td4-3 .td4-st{font-size:12px}
-.td4-card.hwt{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:0;text-align:left;font-family:inherit}.td4-card.hwt.done{background:linear-gradient(135deg,#6d28d9,#1d6fe8)}
-.td4-card.hwt .td4-pc{font-size:22px;font-weight:900;line-height:1.1;margin-top:2px}.td4-card.hwt .td4-pc small{font-size:12px;margin-left:1px}
+#hw-home.hwk{background:linear-gradient(135deg,#faf5ff,#ede9fe)!important;border:2px solid #c4b5fd!important;box-shadow:0 4px 12px rgba(124,58,237,.12)!important}
+#hw-home .hwk-hd .t{color:#6d28d9!important}#hw-home .hwk-hd .d{color:#7c3aed!important;font-weight:800}
 .h3-tiles4.hm4{display:grid!important;grid-template-columns:repeat(4,1fr)!important;grid-template-rows:auto!important;min-height:0!important;flex:none!important;gap:8px!important}
 .h3-tiles4.hm4 .h3-tile{min-height:0!important;height:auto!important;padding:10px 4px!important;text-align:center!important;border-radius:16px!important}
 .h3-tiles4.hm4 .fd3,.h3-tiles4.hm4 .bdg3{display:none!important}.h3-tiles4.hm4 .ic3{font-size:26px!important;margin:0 auto 4px!important}.h3-tiles4.hm4 .fn3{font-size:12px!important;white-space:nowrap;letter-spacing:-.3px}
@@ -3217,14 +3216,9 @@ html.btabh-on .tab-body{padding-bottom:calc(var(--btabh) + 24px)}
           <div class="td4-st" id="td4-pl-st">⬜ 아직 안 함</div>
           <div class="td4-ms">오늘 제출 · 내 점수 보기</div>
         </button>
-        <button class="td4-card hwt" id="td4-hw" style="display:none" onclick="hwTileTap()">
-          <div class="td4-ic">📚</div><div class="td4-tt">숙제 체크</div>
-          <div class="td4-pc" id="td4-hw-pc">0<small>%</small></div>
-          <div class="td4-st" id="td4-hw-st">⬜ 수업 전에</div>
-        </button>
       </div>
     </div>
-    <!-- v2-164: 📚 숙제 체크 — «오늘 할 일» 셋째 칸을 누르면 여기 펼쳐진다(hwHomeUpdate · 접히면 숨김) -->
+    <!-- v2-164: 📚 숙제 체크 — «오늘 할 일» 밑 보라색 칸(수업일 기준 · 머리를 누르면 펼침 · hwHomeUpdate 그대로) -->
     <div id="hw-home" class="hwh hwk" style="display:none"></div>
     <!-- v2-116: 🏆 루멘 리그 — 종목 4칸(진도·IB아하·플래너·스피치) + 종합. rcHomeUpdate 가 채운다 -->
     <button class="rcbn lg4" id="rcbn" style="display:none" onclick="go('screen-league')">
@@ -24794,27 +24788,6 @@ window.hwHomeUpdate=function(){
   h+='</div>';
   el.innerHTML=h; el.style.display='block';
 };
-/* ★ v2-164: 숙제 체크는 «오늘 할 일» 셋째 칸 — 접혀 있으면 아래 카드 숨김, 펼치면 아래에 지금 화면 그대로 */
-(function(){
-  var _orig = window.hwHomeUpdate;
-  window.hwHomeUpdate = function(){
-    _orig.apply(this, arguments);
-    var el = document.getElementById('hw-home'), tile = document.getElementById('td4-hw'), row = tile && tile.parentNode;
-    var on = false; try { on = hwOpen() && HW.loaded; } catch(e){}
-    if (tile){ tile.style.display = on ? '' : 'none'; if (row) row.classList.toggle('td4-3', !!on); }
-    if (!on) return;
-    var open = hwFoldOpen(); if (el && !open) el.style.display = 'none';
-    try {
-      var sel = hwSelDate(), h4 = hwSelfOf(sel), pct = hwPct(h4), tt = hwTeachOf(sel);
-      var pressed = h4.set.p || h4.set.c || h4.set.w || h4.aSet || h4.aNone;
-      var pc = document.getElementById('td4-hw-pc'), st = document.getElementById('td4-hw-st');
-      if (pc) pc.innerHTML = (tt != null ? tt : pct) + '<small>%</small>';
-      if (st) st.textContent = open ? '▴ 아래에서 체크' : (tt != null ? '✓ 선생님 확인' : (h4.sub ? '✓ 제출함' : (pressed ? '제출 전 · 눌러서' : '⬜ 수업 전에')));
-      tile.classList.toggle('done', tt != null || !!h4.sub);
-    } catch(e){}
-  };
-})();
-window.hwTileTap = function(){ hwFoldSet(!hwFoldOpen()); hwHomeUpdate(); if (hwFoldOpen()){ var el = document.getElementById('hw-home'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
 /* 날짜 ◀▶ — 지난 수업일(오늘-7일 안) ↔ 다음 수업일 */
 window.hwNav=function(dir){
   var sel=hwSelDate(); var d=dir<0?hwPrevClass(sel):hwNextClass(sel);
