@@ -5486,7 +5486,7 @@ const SUPA_KEY = 'sb_publishable_D3ryC0YXrf5Fq2Buu8IA8A_OvmCQbbi';
  *   · 「🙋 스스로 해결」 점수를 +4 → +2 로 낮췄습니다(원장 결정 2026-09-08).
  *     규칙 칸에 「🎲 선생님이 무작위로 설명을 시킬 수 있어요」 안내를 넣었습니다.
  * ══════════════════════════════════════════════════════════════ */
-var STU_VER = 'v2-162';
+var STU_VER = 'v2-163';
 /* ═══ v2-128: 🌐 전국 등수 — 보고 싶은 학생만 (원장 결정 2026-10-07) ═══
  *   원장님 설정(wk_pub.natMode): 'all' 모두 · 'optin' 신청한 학생만 · nat:false 끔
  *   신청 = lumen_store natopt_<내 코드> { on, at, by:'student' } — 원장님도 학원앱에서 켜고 끌 수 있다
@@ -16406,9 +16406,17 @@ function blkChipsOf(codes){
  * v2-47b: 작은 방패는 흰 바탕에서 묻혀 안 보였다(원장님 지적).
  *   검정 바탕 + 금색 글자로 바꿔 확실히 눈에 띄게 한다.
  *   칩에 기수를 넣으면(BLACK II) 이름 긴 학생 줄이 밀려, 기수는 아랫줄로 뺀다. */
+/* ★ v2-163: 순위표 칩은 «지금 기수»만 — 날짜(from~to)로 판단 · 출신은 안 붙인다 (원장 2026-11-16) */
+function blkNowOf(code){
+  var cs=blkCohortsOf(code); if(!cs.length) return null;
+  var today=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+  var now=cs.filter(function(c){ var f=String(c.from||'').slice(0,10), t=String(c.to||'').slice(0,10);
+    if(f||t) return (!f||f<=today)&&(!t||today<=t); return !c.closed; });
+  return now.length?now[now.length-1]:null;
+}
 function blkTinyOf(code, px){
-  var cs=blkCohortsOf(code); if(!cs.length) return '';
-  var live=cs.some(function(c){ return !c.closed; });
+  if(!blkNowOf(code)) return '';
+  var live=true;
   return '<span style="display:inline-block;margin-left:3px;padding:2px 9px;border-radius:99px;'
     +'font-size:12px;font-weight:900;letter-spacing:.3px;white-space:nowrap;line-height:1.35;'
     +(live?'background:#15151c;color:#f0c75e;border:1px solid #d4af3788'
