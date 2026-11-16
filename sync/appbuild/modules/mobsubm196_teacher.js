@@ -21,7 +21,8 @@ mobRecLoad = async function(){
       var today = (files || []).filter(function(f){ var m = String(f.name || '').match(/(\d{8})/); return m && m[1] === ymd; });
       MOB.rec.map[code] = today.length > 0;
       var last = ''; today.forEach(function(f){ var t = String(f.created_at || f.updated_at || ''); if (t > last) last = t; });
-      MOB.rec.det[code] = { n: today.length, at: last };
+      var days = {}; (files || []).forEach(function(f){ var m = String(f.name || '').match(/(\d{8})/); if (!m) return; var t = String(f.created_at || f.updated_at || ''); if (!days[m[1]] || t > days[m[1]]) days[m[1]] = t || '1'; });
+      MOB.rec.det[code] = { n: today.length, at: last, days: days };   /* v19-197: 날짜별 달력용 */
     } catch(e){}
     if (mobActive() && MOB.view === 'subm' && i % 4 === 3) render();
   }
@@ -83,17 +84,17 @@ function mob196Subm(){
       : r.pl ? '<b style="color:#15803d">✓ ' + (r.pl.hm || '제출') + '</b>' + (r.pl.late ? ' <span style="color:#b45309">새벽</span>' : '') + (r.pl.pages ? ' <span style="color:#64748b">· ' + r.pl.pages + '장</span>' : '') + (r.pl.reviewed ? ' <span style="color:#1d6fe8">· 확인함</span>' : '')
       : '<b style="color:#dc2626">✗ 안 냄</b>';
     var both = r.recOk && r.pl, none = !r.recOk && !r.pl && r.recKnown && plReady;
-    h += '<div class="m196-row" style="background:#fff;border:1.5px solid ' + (none ? '#fecaca' : both ? '#bbf7d0' : '#e6eaf1') + ';border-radius:13px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center">'
+    h += '<div class="m196-row" onclick="m197Open(\'' + String(s.id).replace(/'/g, '') + '\')" style="cursor:pointer;background:#fff;border:1.5px solid ' + (none ? '#fecaca' : both ? '#bbf7d0' : '#e6eaf1') + ';border-radius:13px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center">'
       + '<div style="min-width:0"><div style="font-size:15px;font-weight:900;color:#0d2240">' + esc2(s.name) + '</div><div style="font-size:11px;color:#94a3b8;font-weight:700">' + esc2([String(s.grade || '').replace(/학교\s*/, '').replace('학년', ''), s.group].filter(Boolean).join(' · ')) + '</div></div>'
       + '<div style="display:flex;flex-direction:column;gap:3px;font-size:12.5px;text-align:right;white-space:nowrap"><div>🎙 ' + recH + '</div><div>📒 ' + plH + '</div></div></div>';
   });
   if (!shown.length) h += '<div style="background:#fff;border-radius:13px;padding:22px;text-align:center;color:#94a3b8;font-weight:700">해당하는 학생이 없습니다</div>';
-  h += '</div><div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:10px;line-height:1.6">플래너는 오늘 03:00 ~ 내일 02:59 에 낸 것(새벽 3시 규칙). 재생·검토·승인은 PC 화면에서.</div>';
+  h += '</div><div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:10px;line-height:1.6">플래너는 오늘 03:00 ~ 내일 02:59 에 낸 것(새벽 3시 규칙). 재생·검토·승인은 PC 화면에서. <b>이름을 누르면 날짜별 달력</b>.</div>';
   return h;
 }
 /* 홈 카드 누르면 학생별 화면 · 'subm' 보기는 홈 함수 자리에서 그린다(mobSync 의 else 갈래) */
 mobHome = (function(orig){ return function(){
-  if (MOB.view === 'subm') return mob196Subm();
+  if (MOB.view === 'subm') return M196.sel ? mob197Cal() : mob196Subm();
   var h = orig.apply(this, arguments);
   h = h.replace('<div style="background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:15px 17px;margin-bottom:14px"><div style="font-size:14px;font-weight:900;color:#0d2240;margin-bottom:9px">📥 오늘 제출 현황',
     '<div class="m196-card" onclick="mobGo(\'subm\')" style="background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:15px 17px;margin-bottom:14px;cursor:pointer"><div style="font-size:14px;font-weight:900;color:#0d2240;margin-bottom:9px">📥 오늘 제출 현황');
@@ -103,3 +104,69 @@ mobHome = (function(orig){ return function(){
   h = h.replace('제출 여부만 표시 — 재생·검토·승인은 PC 화면에서</div>', '<b style="color:#1d6fe8">눌러서 학생별 보기 ›</b> · 재생·검토·승인은 PC 화면에서</div>');
   return h;
 }; })(mobHome);
+
+/* ═══ v19-197: 학생 이름 누르면 날짜별 제출 달력 (원장 2026-11-16 「학생 이름 누르면 날짜별 제출하는 것 체크 표시로 며칠 날 내고 며칠 날 내지 않았는지」)
+ *   한 달 달력(월~일) · 칸마다 🎙 녹음 · 📒 플래너 ✓ / 수업일인데 안 냈으면 ✗ · 수업일은 옅은 파랑 · 미래 칸은 비움
+ *   수업 요일 = 등록부 반 요일(groupDays) · 없으면 반 이름 M → 월수금, T → 화목토
+ *   녹음 = recordings 파일 이름의 날짜 · 플래너 = setId 날짜(새벽 3시 규칙) — 학원앱에 이미 있는 기록 그대로 */
+M196.sel = null; M196.ym = null;
+window.m197Open = function(id){ M196.sel = String(id); var n = new Date(); M196.ym = [n.getFullYear(), n.getMonth()]; var ov = document.getElementById('MOB_OV'); if (ov) ov.scrollTop = 0; render(); };
+window.m197Back = function(){ M196.sel = null; render(); };
+window.m197Mon = function(d){ var y = M196.ym[0], m = M196.ym[1] + d; if (m < 0){ m = 11; y--; } if (m > 11){ m = 0; y++; } M196.ym = [y, m]; render(); };
+function m197Days(s){
+  var g = String(s.group || ''), gd = (typeof groupDays !== 'undefined' && groupDays && groupDays[g]) || null;
+  if (Array.isArray(gd) && gd.length) return gd.map(Number);
+  if (/^m/i.test(g)) return [1, 3, 5]; if (/^t/i.test(g)) return [2, 4, 6]; return [];
+}
+function m197Ymd(d){ return '' + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
+/* 플래너: 날짜(YYYYMMDD) → {hm, pages, reviewed} · 새벽 3시 전 제출은 전날 */
+function m197PlMap(s){
+  var M = {};
+  (s.lumen_planner_photos || []).forEach(function(p){
+    var id = String((p && p.setId) || ''), m = /^(\d{4})(\d{2})(\d{2})(?:_(\d{2})(\d{2}))?/.exec(id); if (!m) return;
+    var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])), hm = m[4] ? Number(m[4]) * 100 + Number(m[5]) : 1200;
+    if (hm < 300) d.setDate(d.getDate() - 1);
+    var k = m197Ymd(d), o = M[k] || (M[k] = { hm: '', pages: 0, reviewed: false });
+    o.hm = m[4] ? m[4] + ':' + m[5] : o.hm; o.pages += (p.urls || []).length; if (p.reviewed) o.reviewed = true;
+  });
+  return M;
+}
+function mob197Cal(){
+  var s = (students || []).find(function(x){ return String(x.id) === M196.sel; });
+  if (!s){ M196.sel = null; return mob196Subm(); }
+  var y = M196.ym[0], mo = M196.ym[1], cls = m197Days(s), pl = m197PlMap(s);
+  var code = s.lumen_rec_code ? String(s.lumen_rec_code) : '', rd = code ? ((MOB.rec.det || {})[code] || null) : null, rdays = (rd && rd.days) || {};
+  var todayK = m197Ymd(new Date());
+  var first = new Date(y, mo, 1), last = new Date(y, mo + 1, 0), lead = (first.getDay() + 6) % 7;   /* 월요일 시작 */
+  var nCls = 0, nRec = 0, nPl = 0, missR = [], missP = [];
+  var cells = '';
+  for (var i = 0; i < lead; i++) cells += '<div></div>';
+  for (var dd = 1; dd <= last.getDate(); dd++){
+    var d = new Date(y, mo, dd), k = m197Ymd(d), isCls = cls.indexOf(d.getDay()) >= 0, fut = k > todayK;
+    var r = !!rdays[k], p = !!pl[k];
+    var isToday = k === todayK;   /* 오늘은 마감 전(녹음 오늘 안 · 플래너 새벽 3시까지) — 안 냈어도 ✗ 대신 ⏳ */
+    if (isCls && !fut){ nCls++; if (r) nRec++; else if (!isToday) missR.push(dd); if (p) nPl++; else if (!isToday) missP.push(dd); }
+    var mk = function(ok, ic){ return fut ? '<span style="opacity:.25">' + ic + '</span>' : ok ? '<span style="color:#15803d">' + ic + '✓</span>' : (isCls ? (isToday ? '<span style="color:#94a3b8">' + ic + '⏳</span>' : '<span style="color:#dc2626">' + ic + '✗</span>') : '<span style="color:#cbd5e1">' + ic + '·</span>'); };
+    cells += '<div class="m197-day" data-d="' + k + '" style="border-radius:9px;padding:4px 2px;min-height:58px;background:' + (k === todayK ? '#fef9c3' : isCls ? '#eef4ff' : '#fff') + ';border:1px solid ' + (isCls ? '#cfe0fb' : '#eef2f7') + ';display:flex;flex-direction:column;align-items:center;gap:1px">'
+      + '<b style="font-size:12.5px;color:' + (d.getDay() === 0 ? '#dc2626' : '#0d2240') + '">' + dd + '</b>'
+      + '<span style="font-size:10.5px;font-weight:900;white-space:nowrap">' + mk(r, '🎙') + '</span>'
+      + '<span style="font-size:10.5px;font-weight:900;white-space:nowrap">' + mk(p, '📒') + '</span></div>';
+  }
+  var h = '';
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><button onclick="m197Back()" style="border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:7px 12px;font-family:inherit;font-weight:800;font-size:12.5px;color:#0d2240;cursor:pointer">‹ 제출 현황</button>'
+    + '<div style="min-width:0"><div style="font-size:17px;font-weight:900;color:#0d2240">' + esc2(s.name) + '</div><div style="font-size:11px;color:#94a3b8;font-weight:700">' + esc2([String(s.grade || '').replace(/학교\s*/, '').replace('학년', ''), s.group, cls.length ? '수업 ' + cls.map(function(x){ return '일월화수목금토'[x]; }).join('') : ''].filter(Boolean).join(' · ')) + '</div></div></div>';
+  h += '<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e6eaf1;border-radius:13px;padding:8px 10px;margin-bottom:8px">'
+    + '<button onclick="m197Mon(-1)" style="border:none;background:#f1f5f9;border-radius:8px;padding:6px 12px;font-family:inherit;font-weight:900;cursor:pointer">‹</button>'
+    + '<b style="font-size:15px;color:#0d2240">' + y + '년 ' + (mo + 1) + '월</b>'
+    + '<button onclick="m197Mon(1)" style="border:none;background:#f1f5f9;border-radius:8px;padding:6px 12px;font-family:inherit;font-weight:900;cursor:pointer">›</button></div>';
+  h += '<div class="m197-sum" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
+    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + (code ? (MOB.rec.done || rd ? nRec : '…') : '—') + '<span style="font-size:12px;color:#94a3b8">/' + nCls + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">🎙 수업일 녹음</div></div>'
+    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + nPl + '<span style="font-size:12px;color:#94a3b8">/' + nCls + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">📒 수업일 플래너</div></div></div>';
+  h += '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:14px;padding:8px">'
+    + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:11px;font-weight:900;color:#64748b;margin-bottom:4px"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span style="color:#dc2626">일</span></div>'
+    + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">' + cells + '</div></div>';
+  var miss = function(L, ic){ return L.length ? '<div style="font-size:12px;color:#b91c1c;font-weight:800;margin-top:6px">' + ic + ' 안 낸 수업일: ' + L.map(function(x){ return (mo + 1) + '/' + x; }).join(' · ') + '</div>' : ''; };
+  h += (code ? miss(missR, '🎙') : '<div style="font-size:12px;color:#94a3b8;font-weight:700;margin-top:6px">🎙 학생 코드가 없어 녹음을 확인할 수 없어요</div>') + miss(missP, '📒');
+  h += '<div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:8px;line-height:1.6">파란 칸 = 수업일 · ✓ 냄 · ✗ 수업일인데 안 냄 · ⏳ 오늘(아직 마감 전) · · 수업일 아님. 플래너는 새벽 3시 전 제출을 전날로 셉니다.</div>';
+  return h;
+}
