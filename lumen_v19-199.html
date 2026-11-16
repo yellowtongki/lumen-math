@@ -105155,8 +105155,45 @@ function m197RecDue(k, isCls){ return k >= M197_REC_DAILY_FROM ? true : isCls; }
     + '.m197-o.ok{background:#16a34a;box-shadow:0 0 0 2px #bbf7d0}.m197-o.no{background:#fff;border:3px solid #dc2626}'
     + '.m197-o.off{background:#f1f5f9}.m197-o.off i,.m197-o.fut i{filter:grayscale(1);opacity:.3}'
     + '.m197-o.wait{background:#fff;border:2px dashed #94a3b8}.m197-o.wait i{opacity:.55}.m197-o.fut{background:#f8fafc}'
-    + '.m197-o i{font-style:normal}';
+    + '.m197-o i{font-style:normal}'
+    + '.m197-o.no{position:relative;overflow:hidden}.m197-o.no::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;background:#dc2626;transform:rotate(45deg);border-radius:2px}'
+    + '.m198-st{border-radius:16px;padding:12px 12px 10px;color:#fff;position:relative;overflow:hidden}.m198-st.pl{background:linear-gradient(135deg,#ff9600,#ff6a00)}.m198-st.rc{background:linear-gradient(135deg,#ff7a00,#e8590c)}'
+    + '.m198-st.zero{background:#e2e8f0;color:#64748b}.m198-st .n{font-size:34px;font-weight:900;line-height:1;letter-spacing:-1px}.m198-st .u{font-size:12px;font-weight:900;opacity:.95}'
+    + '.m198-st .fl{position:absolute;right:8px;top:6px;font-size:34px}.m198-st .bt{font-size:10.5px;font-weight:800;opacity:.9;margin-top:4px}'
+    + '.m198-wk{display:flex;gap:3px;margin-top:7px}.m198-wk span{flex:1;text-align:center;font-size:9.5px;font-weight:900}.m198-wk i{display:block;margin:2px auto 0;width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,.35);font-style:normal;font-size:10px;line-height:15px;color:#ff6a00}'
+    + '.m198-wk i.y{background:#fff}.m198-wk i.t{outline:2px solid #fff;outline-offset:1px}.m198-st.zero .m198-wk i{background:#cbd5e1}.m198-st.zero .m198-wk i.y{background:#16a34a;color:#fff}';
   (document.head || document.documentElement).appendChild(st); } catch(e){} })();
+/* ★ v19-199: 🔥 연속 기록(듀오링고처럼) — 원장 2026-11-16 「이런 연속 학습 표기를 플래너와 녹음에 도입」
+ *   플래너 = 매일 낸 날이 끊기지 않고 이어진 날 수(오늘 아직 안 냈으면 어제까지) · 녹음 = «내야 하는 날»(수업일, 12월부터 매일)만 세어 끊기지 않은 횟수
+ *   최고 기록 = 남아 있는 기록 안에서 가장 길었던 연속 · 이번 주(월~일) 점 7개 */
+function m198Streak(has, due){
+  var d = new Date(), todayK = m197Ymd(d), cur = 0, started = false, i, k;
+  for (i = 0; i < 420; i++){
+    k = m197Ymd(d);
+    if (due(k, d)){
+      if (has[k]){ cur++; started = true; }
+      else if (k === todayK && !started){ /* 오늘은 마감 전 — 어제부터 */ }
+      else break;
+    }
+    d.setDate(d.getDate() - 1);
+  }
+  var best = 0, run = 0, keys = Object.keys(has).sort(), from = keys[0];
+  if (from){ var x = new Date(Number(from.slice(0, 4)), Number(from.slice(4, 6)) - 1, Number(from.slice(6, 8)));
+    while (m197Ymd(x) <= todayK){ k = m197Ymd(x); if (due(k, x)){ if (has[k]){ run++; if (run > best) best = run; } else if (k !== todayK) run = 0; } x.setDate(x.getDate() + 1); } }
+  return { cur: cur, best: Math.max(best, cur), today: !!has[todayK] };
+}
+function m198Card(kind, st, unit, has, due){
+  var mon = new Date(); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7));
+  var todayK = m197Ymd(new Date()), w = '';
+  for (var i = 0; i < 7; i++){ var d = new Date(mon); d.setDate(mon.getDate() + i); var k = m197Ymd(d);
+    w += '<span>' + '월화수목금토일'[i] + '<i class="' + (has[k] ? 'y' : '') + (k === todayK ? ' t' : '') + '">' + (has[k] ? '✓' : (due(k, d) || k > todayK ? '' : '·')) + '</i></span>'; }
+  return '<div class="m198-st ' + (st.cur ? kind : 'zero') + '" data-m198="' + kind + st.cur + '">'
+    + '<div class="fl">' + (st.cur ? '🔥' : '🧊') + '</div>'
+    + '<div class="u">' + (kind === 'pl' ? '📒 플래너' : '🎙 녹음') + '</div>'
+    + '<div class="n">' + st.cur + '<span style="font-size:14px;margin-left:2px">' + unit + ' 연속</span></div>'
+    + '<div class="bt">' + (st.cur && !st.today ? '오늘 내면 ' + (st.cur + 1) + unit + '! · ' : (!st.cur ? '오늘부터 다시 시작 · ' : '')) + '최고 ' + st.best + unit + '</div>'
+    + '<div class="m198-wk">' + w + '</div></div>';
+}
 function mob197Cal(){
   var s = (students || []).find(function(x){ return String(x.id) === M196.sel; });
   if (!s){ M196.sel = null; return mob196Subm(); }
@@ -105187,6 +105224,10 @@ function mob197Cal(){
     + '<button onclick="m197Mon(-1)" style="border:none;background:#f1f5f9;border-radius:8px;padding:6px 12px;font-family:inherit;font-weight:900;cursor:pointer">‹</button>'
     + '<b style="font-size:15px;color:#0d2240">' + y + '년 ' + (mo + 1) + '월</b>'
     + '<button onclick="m197Mon(1)" style="border:none;background:#f1f5f9;border-radius:8px;padding:6px 12px;font-family:inherit;font-weight:900;cursor:pointer">›</button></div>';
+  var _pl = {}; Object.keys(pl).forEach(function(k){ _pl[k] = 1; });
+  var _rdue = function(k, d){ return m197RecDue(k, cls.indexOf(d.getDay()) >= 0); };
+  h += '<div class="m198-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">' + m198Card('pl', m198Streak(_pl, function(){ return true; }), '일', _pl, function(){ return true; })
+    + (code ? m198Card('rc', m198Streak(rdays, _rdue), (m197RecDue(todayK, false) ? '일' : '회'), rdays, _rdue) : '<div class="m198-st zero"><div class="u">🎙 녹음</div><div class="bt">학생 코드 없음</div></div>') + '</div>';
   h += '<div class="m197-sum" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
     + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + (code ? (MOB.rec.done || rd ? nRec : '…') : '—') + '<span style="font-size:12px;color:#94a3b8">/' + nRecDue + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">🎙 녹음 (' + recRule + ')</div></div>'
     + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + nPl + '<span style="font-size:12px;color:#94a3b8">/' + nPlDue + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">📒 플래너 (매일)</div></div></div>';
