@@ -60,11 +60,14 @@ body{font-family:'Pretendard',sans-serif;background:#140707;-webkit-font-smoothi
 .num{font-size:250px;line-height:.86;letter-spacing:-.06em}
 .numunit{font-weight:800;font-size:86px;letter-spacing:-.03em;color:#fff6ea;
  text-shadow:0 6px 0 #2a0c0c,0 12px 26px rgba(0,0,0,.8)}
-.badge{margin-top:40px;position:relative;z-index:3;align-self:flex-start;display:flex;align-items:baseline;gap:14px;
- background:linear-gradient(180deg,#ffe488,#f0ad12);color:#1a0707;padding:16px 34px;border-radius:999px;
- box-shadow:0 14px 34px rgba(255,185,40,.32)}
-.badge b{font-weight:800;font-size:66px;letter-spacing:-.03em}
-.badge span{font-weight:800;font-size:44px}
+.dateblk{margin-top:34px;position:relative;z-index:3;align-self:flex-end;text-align:right}
+.dateblk:before{content:"";position:absolute;right:-60px;top:-50px;width:700px;height:300px;
+ background:radial-gradient(ellipse at 70% 50%,rgba(16,5,5,.82),transparent 70%);z-index:-1}
+.dateblk .lab{font-weight:800;font-size:46px;letter-spacing:.06em;color:#ffcf6b;
+ text-shadow:0 4px 16px rgba(0,0,0,.9)}
+.dateblk .row{display:flex;align-items:baseline;justify-content:flex-end;gap:16px;margin-top:4px}
+.dnum{font-size:176px;line-height:.92;letter-spacing:-.05em}
+.dunit{font-weight:800;font-size:72px;color:#fff6ea;text-shadow:0 6px 0 #2a0c0c,0 12px 26px rgba(0,0,0,.85)}
 .sub{margin-top:44px;position:relative;z-index:3;font-weight:700;font-size:54px;line-height:1.36;
  color:rgba(255,238,224,.92);text-shadow:0 4px 20px rgba(0,0,0,.85)}
 .sub em{font-style:normal;color:#ffd84a;font-weight:800}
@@ -91,7 +94,9 @@ body{font-family:'Pretendard',sans-serif;background:#140707;-webkit-font-smoothi
   <span class="t3d wh l2"><span class="b">공통수학1·2를</span><span class="f">공통수학1·2를</span></span>
   <span class="t3d wh l3"><span class="b">끝냅니다</span><span class="f">끝냅니다</span></span>
  </div>
- <div class="badge"><b>11.19</b><span>개강</span></div>
+ <div class="dateblk"><div class="lab">개강</div>
+  <div class="row"><span class="t3d gd dnum"><span class="b">11.19</span><span class="f">11.19</span></span><span class="dunit">목</span></div>
+ </div>
  <div class="chips"><div class="chip">전체 41회</div><div class="chip o">단원 테스트 7번</div><div class="chip o">3월 개학 전 완성</div></div>
  <div class="foot"><div class="fl">부천 옥길동 수학학원 루멘수학</div><div class="fr">1 / 6</div></div>
 </div></div>
