@@ -3041,6 +3041,14 @@ body.lyp-lock{overflow:hidden;}
 .stk-cal .y{background:#ff8a1f;color:#fff}.stk-cal .n{background:#f1f5f9;color:#94a3b8}.stk-cal .o{color:#cbd5e1}.stk-cal .t{border:2px dashed #ff8a1f;color:#ff8a1f}.stk-cal .f{color:#e2e8f0}
 .stk-ms{display:flex;gap:5px}.stk-ms b{flex:1;text-align:center;border-radius:10px;padding:7px 0;font-size:11px;background:#f1f5f9;color:#94a3b8}.stk-ms b.on{background:#fff7ed;color:#ea580c;border:1.5px solid #fdba74}
 .stk-note{font-size:10.5px;color:#94a3b8;font-weight:700;margin-top:8px;line-height:1.5}.stk-empty{text-align:center;color:#94a3b8;font-size:12.5px;font-weight:700;padding:14px}
+/* v2-164: 홈 배치 — 연속 띠는 공지 밑 · 오늘 할 일 3칸 · 메뉴 4칸 한 줄 */
+.h3-body .stk-strip{margin:0}
+.td4-row.td4-3{display:grid!important;grid-template-columns:repeat(3,1fr);gap:8px}.td4-row.td4-3 .td4-card{min-width:0;padding-left:10px;padding-right:8px}.td4-row.td4-3 .td4-ms{display:none}.td4-row.td4-3 .td4-tt{font-size:15px}.td4-row.td4-3 .td4-st{font-size:12px}
+.td4-card.hwt{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:0;text-align:left;font-family:inherit}.td4-card.hwt.done{background:linear-gradient(135deg,#6d28d9,#1d6fe8)}
+.td4-card.hwt .td4-pc{font-size:22px;font-weight:900;line-height:1.1;margin-top:2px}.td4-card.hwt .td4-pc small{font-size:12px;margin-left:1px}
+.h3-tiles4.hm4{display:grid!important;grid-template-columns:repeat(4,1fr)!important;grid-template-rows:auto!important;min-height:0!important;flex:none!important;gap:8px!important}
+.h3-tiles4.hm4 .h3-tile{min-height:0!important;height:auto!important;padding:10px 4px!important;text-align:center!important;border-radius:16px!important}
+.h3-tiles4.hm4 .fd3,.h3-tiles4.hm4 .bdg3{display:none!important}.h3-tiles4.hm4 .ic3{font-size:26px!important;margin:0 auto 4px!important}.h3-tiles4.hm4 .fn3{font-size:12px!important;white-space:nowrap;letter-spacing:-.3px}
 </style>
 <style>
 /* ══ v2-116: K안 홈 — 공지 크게 · 오늘 · 리그 4종목 · 큰 칸 4 · 🔔 서랍 · 아래 탭 (원장 결정 2026-09-29) ══ */
@@ -3191,10 +3199,10 @@ html.btabh-on .tab-body{padding-bottom:calc(var(--btabh) + 24px)}
       <span class="hm-nc-t" id="hm-nprev">학원 소식을 확인해 보세요</span>
       <span class="hm-nc-s" id="hm-nsub"></span>
     </button>
+    <!-- v2-164: 🔥 연속 띠 (stkLoad · stkPaintStrip) — 공지 바로 밑 · 누르면 «연속 기록» 화면 -->
+    <button type="button" class="stk-strip" id="stk-strip" style="display:none" onclick="stkOpen()"></button>
     <!-- v2-121: 📅 시험 D-day — 홈 첫 화면 (bellDday 가 내 달력 띠를 복사) -->
     <button class="cal-strip hm-dday" id="hm-dday" style="display:none" onclick="go('screen-cal')"></button>
-    <!-- v2-158: 📚 숙제 체크 카드 2판 (hwHomeUpdate · stu_features.hw 로 학년별 켬 · 「📌 오늘 할 일」 위) -->
-    <div id="hw-home" class="hwh hwk" style="display:none"></div>
     <!-- v2-34(C안): 📌 오늘 할 일 — 매일 하는 두 가지 (모양 그대로 · v2-116) -->
     <div class="td4">
       <div class="td4-hd">📌 오늘 할 일 <span id="td4-date"></span></div>
@@ -3209,8 +3217,15 @@ html.btabh-on .tab-body{padding-bottom:calc(var(--btabh) + 24px)}
           <div class="td4-st" id="td4-pl-st">⬜ 아직 안 함</div>
           <div class="td4-ms">오늘 제출 · 내 점수 보기</div>
         </button>
+        <button class="td4-card hwt" id="td4-hw" style="display:none" onclick="hwTileTap()">
+          <div class="td4-ic">📚</div><div class="td4-tt">숙제 체크</div>
+          <div class="td4-pc" id="td4-hw-pc">0<small>%</small></div>
+          <div class="td4-st" id="td4-hw-st">⬜ 수업 전에</div>
+        </button>
       </div>
     </div>
+    <!-- v2-164: 📚 숙제 체크 — «오늘 할 일» 셋째 칸을 누르면 여기 펼쳐진다(hwHomeUpdate · 접히면 숨김) -->
+    <div id="hw-home" class="hwh hwk" style="display:none"></div>
     <!-- v2-116: 🏆 루멘 리그 — 종목 4칸(진도·IB아하·플래너·스피치) + 종합. rcHomeUpdate 가 채운다 -->
     <button class="rcbn lg4" id="rcbn" style="display:none" onclick="go('screen-league')">
       <span class="lg4-hd">
@@ -3227,8 +3242,6 @@ html.btabh-on .tab-body{padding-bottom:calc(var(--btabh) + 24px)}
         <span class="lg4-c off" id="lgc-sp"><small>🎤 스피치</small><b>—</b><i>11월 시작</i></span>
       </span>
     </button>
-    <!-- v2-164: 🔥 연속 띠 (stkLoad · stkPaintStrip) — 누르면 «연속 기록» 화면 -->
-    <button type="button" class="stk-strip" id="stk-strip" style="display:none" onclick="stkOpen()"></button>
     <!-- v2-116: 큰 칸 4개 — 남는 세로를 채운다 (폰 비율) -->
     <div class="h3-tiles4 hm4">
       <button class="h3-tile hall3" onclick="hallOpen()">
@@ -24781,6 +24794,27 @@ window.hwHomeUpdate=function(){
   h+='</div>';
   el.innerHTML=h; el.style.display='block';
 };
+/* ★ v2-164: 숙제 체크는 «오늘 할 일» 셋째 칸 — 접혀 있으면 아래 카드 숨김, 펼치면 아래에 지금 화면 그대로 */
+(function(){
+  var _orig = window.hwHomeUpdate;
+  window.hwHomeUpdate = function(){
+    _orig.apply(this, arguments);
+    var el = document.getElementById('hw-home'), tile = document.getElementById('td4-hw'), row = tile && tile.parentNode;
+    var on = false; try { on = hwOpen() && HW.loaded; } catch(e){}
+    if (tile){ tile.style.display = on ? '' : 'none'; if (row) row.classList.toggle('td4-3', !!on); }
+    if (!on) return;
+    var open = hwFoldOpen(); if (el && !open) el.style.display = 'none';
+    try {
+      var sel = hwSelDate(), h4 = hwSelfOf(sel), pct = hwPct(h4), tt = hwTeachOf(sel);
+      var pressed = h4.set.p || h4.set.c || h4.set.w || h4.aSet || h4.aNone;
+      var pc = document.getElementById('td4-hw-pc'), st = document.getElementById('td4-hw-st');
+      if (pc) pc.innerHTML = (tt != null ? tt : pct) + '<small>%</small>';
+      if (st) st.textContent = open ? '▴ 아래에서 체크' : (tt != null ? '✓ 선생님 확인' : (h4.sub ? '✓ 제출함' : (pressed ? '제출 전 · 눌러서' : '⬜ 수업 전에')));
+      tile.classList.toggle('done', tt != null || !!h4.sub);
+    } catch(e){}
+  };
+})();
+window.hwTileTap = function(){ hwFoldSet(!hwFoldOpen()); hwHomeUpdate(); if (hwFoldOpen()){ var el = document.getElementById('hw-home'); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } };
 /* 날짜 ◀▶ — 지난 수업일(오늘-7일 안) ↔ 다음 수업일 */
 window.hwNav=function(dir){
   var sel=hwSelDate(); var d=dir<0?hwPrevClass(sel):hwNextClass(sel);

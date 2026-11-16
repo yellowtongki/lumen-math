@@ -49,7 +49,17 @@ const t = (name, ok, info) => { ok ? pass++ : fail++; console.log((ok ? '✅' : 
   await pg.evaluate(() => stkLoad(true)); await pg.waitForTimeout(400);
   const strip = await pg.evaluate(() => { const e = document.getElementById('stk-strip'); return { shown: e && e.style.display !== 'none', txt: e ? e.innerText.replace(/\s+/g, ' ') : '' }; });
   t('① 홈 띠: 12일 연속 · 오늘 아직! · 오늘 내면 13일 · 연속 랭킹 3위 · 녹음', strip.shown && /12\s*일 연속/.test(strip.txt) && /오늘 아직/.test(strip.txt) && /오늘 내면 13일/.test(strip.txt) && /연속 랭킹 3위/.test(strip.txt) && /녹음/.test(strip.txt), JSON.stringify(strip));
-  t('① 띠는 리그 아래 · 큰 칸 4개 위', await pg.evaluate(() => { const s = document.getElementById('stk-strip'), lg = document.getElementById('rcbn'), tl = document.querySelector('.h3-tiles4'); return !!(lg.compareDocumentPosition(s) & 4) && !!(s.compareDocumentPosition(tl) & 4); }), '');
+  t('① 띠는 공지 바로 밑 · 오늘 할 일 위', await pg.evaluate(() => { const s = document.getElementById('stk-strip'), nc = document.getElementById('hm-notice'), td = document.querySelector('.td4'); return !!(nc.compareDocumentPosition(s) & 4) && !!(s.compareDocumentPosition(td) & 4); }), '');
+  /* 숙제 체크 = 오늘 할 일 셋째 칸 */
+  await pg.evaluate(() => { SF.cfg = { hw: { on: true, off: [] } }; HW.loaded = true; HW.self = { byDate: {} }; HW.teach = { byDate: {} }; HW.days = { M4: [1, 3, 5] }; try { localStorage.removeItem('hw_fold_open'); } catch (e) {} hwHomeUpdate(); });
+  const hw1 = await pg.evaluate(() => ({ tile: document.getElementById('td4-hw').style.display !== 'none', three: document.querySelector('.td4-row').classList.contains('td4-3'), card: document.getElementById('hw-home').style.display, st: document.getElementById('td4-hw-st').textContent, pc: document.getElementById('td4-hw-pc').textContent, after: !!(document.querySelector('.td4').compareDocumentPosition(document.getElementById('hw-home')) & 4) }));
+  t('①-2 오늘 할 일 3칸(📚 숙제 체크 0% · 수업 전에) · 아래 숙제 카드는 접힘(숨김) · 카드 자리는 오늘 할 일 아래', hw1.tile && hw1.three && hw1.card === 'none' && /수업 전에/.test(hw1.st) && /^0%/.test(hw1.pc) && hw1.after, JSON.stringify(hw1));
+  await pg.evaluate(() => hwTileTap()); await pg.waitForTimeout(150);
+  const hw2 = await pg.evaluate(() => ({ card: document.getElementById('hw-home').style.display, st: document.getElementById('td4-hw-st').textContent, rows: document.querySelectorAll('#hw-home .hwk-r').length }));
+  t('①-3 숙제 칸 누르면 아래에 숙제 체크 펼침(눈금 4줄)', hw2.card === 'block' && hw2.rows === 4 && /아래에서/.test(hw2.st), JSON.stringify(hw2));
+  await pg.evaluate(() => hwTileTap()); await pg.waitForTimeout(100);
+  t('①-4 다시 누르면 접힘', await pg.evaluate(() => document.getElementById('hw-home').style.display === 'none'), '');
+  t('①-5 메뉴 4칸 한 줄', await pg.evaluate(() => { const t = Array.from(document.querySelectorAll('.h3-tiles4.hm4 > .h3-tile')).map((x) => Math.round(x.getBoundingClientRect().top)); return t.length === 4 && t.every((v) => Math.abs(v - t[0]) <= 2); }), JSON.stringify(await pg.evaluate(() => Array.from(document.querySelectorAll('.h3-tiles4.hm4 > .h3-tile')).map((x) => Math.round(x.getBoundingClientRect().top)))));
   if (SHOT) await pg.screenshot({ path: SHOT.replace(/\.png$/, '_home.png') });
   await pg.evaluate(() => document.getElementById('stk-strip').click()); await pg.waitForTimeout(400);
   const scr = await pg.evaluate(() => ({ act: document.getElementById('screen-streak').classList.contains('active'), txt: document.getElementById('stk-body').innerText.replace(/\s+/g, ' '),
