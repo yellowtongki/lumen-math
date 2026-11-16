@@ -131,6 +131,17 @@ function m197PlMap(s){
   });
   return M;
 }
+/* ★ v19-198: 제출 기준 (원장 2026-11-16 「플래너는 매일 제출이 기본 · 녹음은 월수금 수업이면 그 수업 전에 · 12월부터는 매일」)
+ *   플래너 = 매일 · 녹음 = 수업일만, M197_REC_DAILY_FROM(2026-12-01)부터 매일
+ *   표시(시안 A): 칸마다 동그라미 두 개 — 위 «녹»(녹음) · 아래 «플»(플래너)
+ *   초록 꽉 찬 = 냄 · 빨간 테 = 내야 하는 날인데 안 냄 · 연한 회색 = 내는 날 아님 · 점선 = 오늘(마감 전) · 앞날은 흐리게 */
+var M197_REC_DAILY_FROM = '20261201';
+function m197RecDue(k, isCls){ return k >= M197_REC_DAILY_FROM ? true : isCls; }
+(function(){ try { var st = document.createElement('style');
+  st.textContent = '.m197-o{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;box-sizing:border-box;line-height:1}'
+    + '.m197-o.ok{background:#16a34a;color:#fff}.m197-o.no{background:#fff;border:2.5px solid #dc2626;color:#dc2626}'
+    + '.m197-o.off{background:#f1f5f9;color:#cbd5e1}.m197-o.wait{background:#fff;border:2px dashed #94a3b8;color:#94a3b8}.m197-o.fut{background:#f8fafc;color:#e2e8f0}';
+  (document.head || document.documentElement).appendChild(st); } catch(e){} })();
 function mob197Cal(){
   var s = (students || []).find(function(x){ return String(x.id) === M196.sel; });
   if (!s){ M196.sel = null; return mob196Subm(); }
@@ -138,20 +149,22 @@ function mob197Cal(){
   var code = s.lumen_rec_code ? String(s.lumen_rec_code) : '', rd = code ? ((MOB.rec.det || {})[code] || null) : null, rdays = (rd && rd.days) || {};
   var todayK = m197Ymd(new Date());
   var first = new Date(y, mo, 1), last = new Date(y, mo + 1, 0), lead = (first.getDay() + 6) % 7;   /* 월요일 시작 */
-  var nCls = 0, nRec = 0, nPl = 0, missR = [], missP = [];
+  var nRecDue = 0, nRec = 0, nPlDue = 0, nPl = 0, missR = [], missP = [];
   var cells = '';
   for (var i = 0; i < lead; i++) cells += '<div></div>';
   for (var dd = 1; dd <= last.getDate(); dd++){
-    var d = new Date(y, mo, dd), k = m197Ymd(d), isCls = cls.indexOf(d.getDay()) >= 0, fut = k > todayK;
-    var r = !!rdays[k], p = !!pl[k];
-    var isToday = k === todayK;   /* 오늘은 마감 전(녹음 오늘 안 · 플래너 새벽 3시까지) — 안 냈어도 ✗ 대신 ⏳ */
-    if (isCls && !fut){ nCls++; if (r) nRec++; else if (!isToday) missR.push(dd); if (p) nPl++; else if (!isToday) missP.push(dd); }
-    var mk = function(ok, ic){ return fut ? '<span style="opacity:.25">' + ic + '</span>' : ok ? '<span style="color:#15803d">' + ic + '✓</span>' : (isCls ? (isToday ? '<span style="color:#94a3b8">' + ic + '⏳</span>' : '<span style="color:#dc2626">' + ic + '✗</span>') : '<span style="color:#cbd5e1">' + ic + '·</span>'); };
-    cells += '<div class="m197-day" data-d="' + k + '" style="border-radius:9px;padding:4px 2px;min-height:58px;background:' + (k === todayK ? '#fef9c3' : isCls ? '#eef4ff' : '#fff') + ';border:1px solid ' + (isCls ? '#cfe0fb' : '#eef2f7') + ';display:flex;flex-direction:column;align-items:center;gap:1px">'
+    var d = new Date(y, mo, dd), k = m197Ymd(d), isCls = cls.indexOf(d.getDay()) >= 0, fut = k > todayK, isToday = k === todayK;
+    var r = !!rdays[k], p = !!pl[k], dueR = !!code && m197RecDue(k, isCls), dueP = true;
+    if (!fut){
+      if (dueR){ nRecDue++; if (r) nRec++; else if (!isToday) missR.push(dd); } else if (r) nRec++;
+      if (dueP){ nPlDue++; if (p) nPl++; else if (!isToday) missP.push(dd); }
+    }
+    var o = function(ok, due, lab){ var c = fut ? 'fut' : ok ? 'ok' : (due ? (isToday ? 'wait' : 'no') : 'off'); return '<span class="m197-o ' + c + '" data-m197="' + lab + c + '">' + lab + '</span>'; };
+    cells += '<div class="m197-day" data-d="' + k + '" style="border-radius:9px;padding:4px 2px;min-height:62px;background:' + (isToday ? '#fef9c3' : isCls ? '#eef4ff' : '#fff') + ';border:1px solid ' + (isCls ? '#cfe0fb' : '#eef2f7') + ';display:flex;flex-direction:column;align-items:center;gap:3px">'
       + '<b style="font-size:12.5px;color:' + (d.getDay() === 0 ? '#dc2626' : '#0d2240') + '">' + dd + '</b>'
-      + '<span style="font-size:10.5px;font-weight:900;white-space:nowrap">' + mk(r, '🎙') + '</span>'
-      + '<span style="font-size:10.5px;font-weight:900;white-space:nowrap">' + mk(p, '📒') + '</span></div>';
+      + o(r, dueR, '녹') + o(p, dueP, '플') + '</div>';
   }
+  var recRule = (y * 100 + mo + 1) >= Number(M197_REC_DAILY_FROM.slice(0, 6)) ? '매일' : '수업일';
   var h = '';
   h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><button onclick="m197Back()" style="border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:7px 12px;font-family:inherit;font-weight:800;font-size:12.5px;color:#0d2240;cursor:pointer">‹ 제출 현황</button>'
     + '<div style="min-width:0"><div style="font-size:17px;font-weight:900;color:#0d2240">' + esc2(s.name) + '</div><div style="font-size:11px;color:#94a3b8;font-weight:700">' + esc2([String(s.grade || '').replace(/학교\s*/, '').replace('학년', ''), s.group, cls.length ? '수업 ' + cls.map(function(x){ return '일월화수목금토'[x]; }).join('') : ''].filter(Boolean).join(' · ')) + '</div></div></div>';
@@ -160,13 +173,18 @@ function mob197Cal(){
     + '<b style="font-size:15px;color:#0d2240">' + y + '년 ' + (mo + 1) + '월</b>'
     + '<button onclick="m197Mon(1)" style="border:none;background:#f1f5f9;border-radius:8px;padding:6px 12px;font-family:inherit;font-weight:900;cursor:pointer">›</button></div>';
   h += '<div class="m197-sum" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
-    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + (code ? (MOB.rec.done || rd ? nRec : '…') : '—') + '<span style="font-size:12px;color:#94a3b8">/' + nCls + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">🎙 수업일 녹음</div></div>'
-    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + nPl + '<span style="font-size:12px;color:#94a3b8">/' + nCls + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">📒 수업일 플래너</div></div></div>';
+    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + (code ? (MOB.rec.done || rd ? nRec : '…') : '—') + '<span style="font-size:12px;color:#94a3b8">/' + nRecDue + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">🎙 녹음 (' + recRule + ')</div></div>'
+    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + nPl + '<span style="font-size:12px;color:#94a3b8">/' + nPlDue + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">📒 플래너 (매일)</div></div></div>';
   h += '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:14px;padding:8px">'
     + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:11px;font-weight:900;color:#64748b;margin-bottom:4px"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span style="color:#dc2626">일</span></div>'
     + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">' + cells + '</div></div>';
-  var miss = function(L, ic){ return L.length ? '<div style="font-size:12px;color:#b91c1c;font-weight:800;margin-top:6px">' + ic + ' 안 낸 수업일: ' + L.map(function(x){ return (mo + 1) + '/' + x; }).join(' · ') + '</div>' : ''; };
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:800;color:#64748b;margin-top:8px">'
+    + '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o ok" style="width:18px;height:18px;font-size:9px">녹</span>냄</span>'
+    + '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o no" style="width:18px;height:18px;font-size:9px">녹</span>안 냄</span>'
+    + '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o wait" style="width:18px;height:18px;font-size:9px">녹</span>오늘(마감 전)</span>'
+    + '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o off" style="width:18px;height:18px;font-size:9px">녹</span>내는 날 아님</span></div>';
+  var miss = function(L, ic){ return L.length ? '<div style="font-size:12px;color:#b91c1c;font-weight:800;margin-top:6px">' + ic + ' 안 낸 날: ' + L.map(function(x){ return (mo + 1) + '/' + x; }).join(' · ') + '</div>' : ''; };
   h += (code ? miss(missR, '🎙') : '<div style="font-size:12px;color:#94a3b8;font-weight:700;margin-top:6px">🎙 학생 코드가 없어 녹음을 확인할 수 없어요</div>') + miss(missP, '📒');
-  h += '<div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:8px;line-height:1.6">파란 칸 = 수업일 · ✓ 냄 · ✗ 수업일인데 안 냄 · ⏳ 오늘(아직 마감 전) · · 수업일 아님. 플래너는 새벽 3시 전 제출을 전날로 셉니다.</div>';
+  h += '<div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:8px;line-height:1.6">위 동그라미 «녹» = 녹음 · 아래 «플» = 플래너. 플래너는 매일 · 녹음은 수업일(파란 칸)에, 2026년 12월부터는 매일. 플래너는 새벽 3시 전 제출을 전날로 셉니다.</div>';
   return h;
 }
