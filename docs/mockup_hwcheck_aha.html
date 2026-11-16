@@ -1,0 +1,95 @@
+<title>숙제체크 아하노트 확인</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* 레이아웃: 학원앱 숙제체크 세부 창(가운데 카드)을 그대로 본뜨고, 바뀌는 «아하노트» 칸만 크게 · 아래에 규칙과 정할 것 */
+:root{--bg:#eef2f8;--card:#fff;--ink:#0d2240;--sub:#5b6b82;--mute:#94a3b8;--line:#e3e9f2;--blue:#1d6fe8;--blue-s:#e8f0fe;--green:#15803d;--green-s:#ecfdf5;--green-l:#bbf7d0;--orange:#c2410c;--orange-s:#fff1e6;--red:#dc2626;--red-s:#fee2e2;--violet:#7c3aed;--violet-s:#f5f3ff;--amber:#a16207;--amber-s:#fef3c7;--f:"Noto Sans KR",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1420;--card:#151f30;--ink:#e6edf7;--sub:#a3b2c8;--mute:#6f819b;--line:#26354d;--blue:#6aa5ff;--blue-s:#1b2d4b;--green:#4ade80;--green-s:#123224;--green-l:#1f5134;--orange:#ff9a5c;--orange-s:#3a2416;--red:#f87171;--red-s:#3d1818;--violet:#c4a1ff;--violet-s:#2a1d44;--amber:#fbbf24;--amber-s:#3a2d10;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1420;--card:#151f30;--ink:#e6edf7;--sub:#a3b2c8;--mute:#6f819b;--line:#26354d;--blue:#6aa5ff;--blue-s:#1b2d4b;--green:#4ade80;--green-s:#123224;--green-l:#1f5134;--orange:#ff9a5c;--orange-s:#3a2416;--red:#f87171;--red-s:#3d1818;--violet:#c4a1ff;--violet-s:#2a1d44;--amber:#fbbf24;--amber-s:#3a2d10;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f);font-size:14px;line-height:1.6;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.note{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:12px 14px;color:var(--sub);font-size:13px}
+.note b{color:var(--ink)}
+.pop{background:var(--card);border:2.5px solid var(--blue);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.pop h1{margin:0;font-size:19px;font-weight:900}
+.self{border:2px solid var(--green);background:var(--green-s);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.self b{font-size:15px}.self .t{margin-left:auto;font-size:13px;color:var(--green);font-weight:800}
+.self .t big{font-size:20px;font-weight:900}
+.rows{display:grid;grid-template-columns:52px repeat(4,1fr);gap:6px;align-items:center}
+.rows span{font-weight:900;font-size:14px;text-align:center}
+.rows i{font-style:normal;border:1.5px solid var(--line);border-radius:10px;text-align:center;padding:6px 0;color:var(--mute);font-weight:700}
+.rows i.on{border-color:var(--blue);background:var(--blue-s);color:var(--blue)}
+.aha{border:2px solid var(--violet);background:var(--violet-s);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ah{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ah b{font-size:16px;font-weight:900;color:var(--violet)}
+.ah .pct{margin-left:auto;font-size:13px;font-weight:800;color:var(--sub)}
+.ah .pct big{font-size:22px;font-weight:900;color:var(--orange)}
+.bar{display:flex;height:10px;border-radius:6px;overflow:hidden;background:var(--line)}
+.bar div{background:var(--green)}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:11px;padding:9px 11px}
+.item.miss{border-color:var(--red)}
+.src{font-size:11.5px;font-weight:900;border-radius:7px;padding:3px 8px;white-space:nowrap}
+.s-unk{background:var(--amber-s);color:var(--amber)}.s-rt{background:var(--orange-s);color:var(--orange)}.s-re{background:var(--red-s);color:var(--red)}.s-t3{background:var(--line);color:var(--sub)}
+.what{min-width:0}
+.what b{display:block;font-size:14px;font-weight:900}
+.what small{display:block;font-size:12px;color:var(--sub);font-weight:600}
+.st{font-size:12.5px;font-weight:900;white-space:nowrap;border-radius:8px;padding:4px 9px}
+.ok{background:var(--green-s);color:var(--green)}.no{background:var(--red-s);color:var(--red)}.ref{color:var(--mute)}
+.item.t3{opacity:.75;border-style:dashed}
+.mode{display:flex;gap:6px}
+.mode i{font-style:normal;flex:1;text-align:center;border:1.5px solid var(--line);border-radius:10px;padding:7px 4px;font-weight:800;color:var(--sub);background:var(--card)}
+.mode i.on{border-color:var(--ink);color:var(--ink)}
+.foot{font-size:12px;color:var(--sub)}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.sec h2{margin:0;font-size:16px;font-weight:900}
+.sec ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.dq{border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.dq h3{margin:0 0 4px;font-size:14px}
+.dq li.rec{font-weight:800}.dq li.rec::after{content:" ← 추천";color:var(--orange);font-size:12px}
+@media (max-width:520px){.item{grid-template-columns:1fr}.rows{grid-template-columns:44px repeat(4,1fr)}}
+</style>
+<div class="wrap">
+  <div class="note">학원앱 <b>숙제체크 세부 창</b> 시안입니다. 바뀌는 곳은 아래 보라색 <b>💡 아하노트</b> 칸뿐이고, 나머지(학생 스스로 · 풀이·채점·오답 눈금)는 지금 그대로입니다. 이름·문제는 예시입니다.</div>
+
+  <div class="pop">
+    <h1>○○○ · 11/16 숙제</h1>
+    <div class="self">🙋 <b>학생 스스로</b> 풀이 100 · 채점 100 · 오답 100 <span class="t">학생 종합 <big>100%</big></span></div>
+    <div class="rows">
+      <span style="color:var(--blue)">풀이</span><i>0</i><i>30</i><i>60</i><i class="on">100</i>
+      <span style="color:var(--amber)">채점</span><i>0</i><i>30</i><i>60</i><i class="on">100</i>
+      <span style="color:var(--green)">오답</span><i>0</i><i>30</i><i>60</i><i class="on">100</i>
+    </div>
+
+    <div class="aha" aria-label="아하노트 칸 (바뀌는 곳)">
+      <div class="ah"><b>💡 아하노트</b><span class="src s-t3">자동 계산</span><span class="pct">막힌 문제 4개 중 2개 씀 · <big>50%</big></span></div>
+      <div class="bar" role="img" aria-label="4개 중 2개"><div style="width:50%"></div></div>
+
+      <div class="item"><span class="src s-unk">❓ 모름</span><div class="what"><b>개념+유형 중1(하) p.157 2번</b><small>학생앱에서 «모름 ?» · 11/16 15:40</small></div><span class="st ok">✅ 아하노트 씀 · 16:02</span></div>
+      <div class="item miss"><span class="src s-rt">🔁 재도전 못 맞힘</span><div class="what"><b>개념+유형 중1(하) p.154 14번</b><small>학생앱 2차 다시 도전 5번 모두 ✗ · 11/16 15:31</small></div><span class="st no">✗ 아하노트 없음</span></div>
+      <div class="item"><span class="src s-re">🔁 같은 문제 또 틀림</span><div class="what"><b>쎈 중등수학1(하) p.92 651번</b><small>매쓰플랫 채점 · 예전에도 틀린 문제</small></div><span class="st ok">✅ 아하노트 씀 · 11/16</span></div>
+      <div class="item miss"><span class="src s-unk">❓ 모름</span><div class="what"><b>리커버리 11/14 ○○○ 23번</b><small>학습지 · 학생앱에서 «모름 ?»</small></div><span class="st no">✗ 아하노트 없음</span></div>
+      <div class="item t3"><span class="src s-t3">📉 같은 유형 3회째</span><div class="what"><b>쎈 중등수학1(하) p.95 668번</b><small>지도 참고용 · 점수에는 안 넣음(지금 규칙 그대로)</small></div><span class="st ref">참고</span></div>
+
+      <div class="mode"><i class="on">자동</i><i>✍ 썼음</i><i>✕ 안 씀</i></div>
+      <div class="foot">아하노트 인정: 같은 학생 · <b>같은 교재(학습지) · 같은 쪽 · 같은 번호</b> · 그날부터 다음 숙제 확인 전까지 쓴 것. 사진만 올리고 번호를 안 적은 노트는 «그날 쓴 노트 수»로 남은 칸에 채웁니다.</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>무엇이 달라지나</h2>
+    <ul>
+      <li><b>막힌 문제가 늘어남</b>: 지금은 매쓰플랫에서 잡힌 «모름»·«같은 문제 또 틀림»만 셉니다. 여기에 학생앱의 <b>«모름 ?»</b>(수집 전이어도 바로)과 <b>«재도전에서 끝내 못 맞힌 문제»</b>를 더합니다. 같은 문제가 두 곳에 있으면 한 번만 셉니다.</li>
+      <li><b>문제별로 맞춰 봄</b>: 지금은 «막힘 4개 · 그날 노트 4장 → 100%»처럼 개수만 셌습니다. 이제 그 문제의 아하노트가 있는지 줄마다 ✅ / ✗.</li>
+      <li><b>«자동 / 썼음 / 안 씀»</b> 단추는 그대로 — 원장님이 직접 정하면 자동 계산보다 앞섭니다.</li>
+      <li>학생 기록은 읽기만 합니다. 학생앱은 바꾸지 않습니다(학생앱 «아하노트에 질문» 단추는 이미 있음).</li>
+      <li>숙제체크 칸(그리드)의 종합 %·학부모앱 숙제 %도 같은 새 계산을 씁니다.</li>
+    </ul>
+  </div>
+
+  <div class="sec">
+    <h2>정할 것</h2>
+    <div class="dq"><h3>1 · 재도전 «못 맞힘»은 언제부터 막힘으로 셀까</h3><ul><li class="rec">2차에서 못 맞히면 바로</li><li>3차까지 못 맞혀야</li></ul></div>
+    <div class="dq"><h3>2 · 아하노트 인정 기간</h3><ul><li class="rec">그날부터 다음 숙제 확인 전까지</li><li>그날 쓴 것만</li></ul></div>
+    <div class="dq"><h3>3 · 같은 유형 3회째</h3><ul><li class="rec">지금처럼 참고로만 보이고 점수엔 안 넣음</li><li>점수에도 넣음</li></ul></div>
+  </div>
+</div>
