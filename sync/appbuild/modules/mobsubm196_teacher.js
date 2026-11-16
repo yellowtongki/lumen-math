@@ -138,9 +138,12 @@ function m197PlMap(s){
 var M197_REC_DAILY_FROM = '20261201';
 function m197RecDue(k, isCls){ return k >= M197_REC_DAILY_FROM ? true : isCls; }
 (function(){ try { var st = document.createElement('style');
-  st.textContent = '.m197-o{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;box-sizing:border-box;line-height:1}'
-    + '.m197-o.ok{background:#16a34a;color:#fff}.m197-o.no{background:#fff;border:2.5px solid #dc2626;color:#dc2626}'
-    + '.m197-o.off{background:#f1f5f9;color:#cbd5e1}.m197-o.wait{background:#fff;border:2px dashed #94a3b8;color:#94a3b8}.m197-o.fut{background:#f8fafc;color:#e2e8f0}';
+  /* v19-199: 글자(녹·플) 대신 그림(🎙·📒) — 동그라미 색이 상태 */
+  st.textContent = '.m197-o{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;box-sizing:border-box;line-height:1}'
+    + '.m197-o.ok{background:#16a34a;box-shadow:0 0 0 2px #bbf7d0}.m197-o.no{background:#fff;border:3px solid #dc2626}'
+    + '.m197-o.off{background:#f1f5f9}.m197-o.off i,.m197-o.fut i{filter:grayscale(1);opacity:.3}'
+    + '.m197-o.wait{background:#fff;border:2px dashed #94a3b8}.m197-o.wait i{opacity:.55}.m197-o.fut{background:#f8fafc}'
+    + '.m197-o i{font-style:normal}';
   (document.head || document.documentElement).appendChild(st); } catch(e){} })();
 function mob197Cal(){
   var s = (students || []).find(function(x){ return String(x.id) === M196.sel; });
@@ -159,10 +162,10 @@ function mob197Cal(){
       if (dueR){ nRecDue++; if (r) nRec++; else if (!isToday) missR.push(dd); } else if (r) nRec++;
       if (dueP){ nPlDue++; if (p) nPl++; else if (!isToday) missP.push(dd); }
     }
-    var o = function(ok, due, lab){ var c = fut ? 'fut' : ok ? 'ok' : (due ? (isToday ? 'wait' : 'no') : 'off'); return '<span class="m197-o ' + c + '" data-m197="' + lab + c + '">' + lab + '</span>'; };
+    var o = function(ok, due, lab, ic){ var c = fut ? 'fut' : ok ? 'ok' : (due ? (isToday ? 'wait' : 'no') : 'off'); return '<span class="m197-o ' + c + '" data-m197="' + lab + c + '" title="' + (lab === '녹' ? '녹음' : '플래너') + '"><i>' + ic + '</i></span>'; };
     cells += '<div class="m197-day" data-d="' + k + '" style="border-radius:9px;padding:4px 2px;min-height:62px;background:' + (isToday ? '#fef9c3' : isCls ? '#eef4ff' : '#fff') + ';border:1px solid ' + (isCls ? '#cfe0fb' : '#eef2f7') + ';display:flex;flex-direction:column;align-items:center;gap:3px">'
       + '<b style="font-size:12.5px;color:' + (d.getDay() === 0 ? '#dc2626' : '#0d2240') + '">' + dd + '</b>'
-      + o(r, dueR, '녹') + o(p, dueP, '플') + '</div>';
+      + o(r, dueR, '녹', '🎙') + o(p, dueP, '플', '📒') + '</div>';
   }
   var recRule = (y * 100 + mo + 1) >= Number(M197_REC_DAILY_FROM.slice(0, 6)) ? '매일' : '수업일';
   var h = '';
@@ -178,13 +181,11 @@ function mob197Cal(){
   h += '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:14px;padding:8px">'
     + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:11px;font-weight:900;color:#64748b;margin-bottom:4px"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span style="color:#dc2626">일</span></div>'
     + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">' + cells + '</div></div>';
+  var lg = function(c, t){ return '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o ' + c + '" style="width:22px;height:22px;font-size:11px"><i>🎙</i></span>' + t + '</span>'; };
   h += '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:800;color:#64748b;margin-top:8px">'
-    + '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o ok" style="width:18px;height:18px;font-size:9px">녹</span>냄</span>'
-    + '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o no" style="width:18px;height:18px;font-size:9px">녹</span>안 냄</span>'
-    + '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o wait" style="width:18px;height:18px;font-size:9px">녹</span>오늘(마감 전)</span>'
-    + '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o off" style="width:18px;height:18px;font-size:9px">녹</span>내는 날 아님</span></div>';
+    + lg('ok', '냄') + lg('no', '안 냄') + lg('wait', '오늘(마감 전)') + lg('off', '내는 날 아님') + '</div>';
   var miss = function(L, ic){ return L.length ? '<div style="font-size:12px;color:#b91c1c;font-weight:800;margin-top:6px">' + ic + ' 안 낸 날: ' + L.map(function(x){ return (mo + 1) + '/' + x; }).join(' · ') + '</div>' : ''; };
   h += (code ? miss(missR, '🎙') : '<div style="font-size:12px;color:#94a3b8;font-weight:700;margin-top:6px">🎙 학생 코드가 없어 녹음을 확인할 수 없어요</div>') + miss(missP, '📒');
-  h += '<div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:8px;line-height:1.6">위 동그라미 «녹» = 녹음 · 아래 «플» = 플래너. 플래너는 매일 · 녹음은 수업일(파란 칸)에, 2026년 12월부터는 매일. 플래너는 새벽 3시 전 제출을 전날로 셉니다.</div>';
+  h += '<div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:8px;line-height:1.6">위 🎙 = 녹음 · 아래 📒 = 플래너 · 초록 동그라미 = 냄 · 빨간 테 = 안 냄. 플래너는 매일 · 녹음은 수업일(파란 칸)에, 2026년 12월부터는 매일. 플래너는 새벽 3시 전 제출을 전날로 셉니다.</div>';
   return h;
 }
