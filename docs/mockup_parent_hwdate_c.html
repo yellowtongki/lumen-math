@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>숙제 카드 C안</title>
+<style>
+:root{--bg:#eef2f7;--ink:#0f172a;--sub:#64748b;--line:#e2e8f0}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:var(--ink);padding:16px}
+h1{font-size:20px;margin:4px 0 6px}.lead{color:var(--sub);font-size:14px;margin:0 0 16px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:22px;max-width:1150px}
+.opt>h2{font-size:15px;margin:0 0 4px}.opt>p{font-size:13px;color:var(--sub);margin:0 0 10px;line-height:1.55}
+.card{background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 2px 10px rgba(15,23,42,.06)}
+.rowC{display:flex;gap:14px;padding:16px 16px 8px;align-items:center}
+.cal{flex:0 0 78px;border-radius:16px;overflow:hidden;text-align:center;border:2px solid #1e293b;background:#fff}
+.cal .m{background:#1e293b;color:#fff;font-size:12px;font-weight:800;padding:3px 0}
+.cal .d{font-size:34px;font-weight:900;line-height:1.15;padding-top:2px}.cal .w{font-size:13px;font-weight:800;color:#475569;padding-bottom:5px}
+.k{font-size:12px;color:var(--sub);font-weight:700}.t{font-size:20px;font-weight:900;margin:2px 0}
+.tot{display:inline-block;border-radius:10px;padding:1px 9px;color:#fff;font-size:15px;font-weight:900;margin-left:4px;vertical-align:2px}
+.bar{height:9px;background:#f1f5f9;border-radius:9px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%}
+.bd{padding:6px 16px 16px}
+.stg{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.st{border-radius:14px;padding:8px 2px 7px;text-align:center;border:2px solid}
+.st .n{font-size:12px;font-weight:800;color:#334155}
+.st .v{font-size:24px;font-weight:900;line-height:1.25;letter-spacing:-.5px}.st .v small{font-size:13px}
+.st .s{font-size:11px;font-weight:800}
+.st.na{background:#f8fafc;border-color:#cbd5e1;border-style:dashed}.st.na .v{color:#94a3b8;font-size:15px;line-height:1.9}
+.leg{display:flex;flex-wrap:wrap;gap:8px;font-size:11px;font-weight:800;color:#475569;margin-top:9px;align-items:center}
+.leg i{display:inline-block;width:13px;height:13px;border-radius:4px;border:2px solid;vertical-align:-2px;margin-right:3px}
+.next{margin-top:12px;display:flex;align-items:center;gap:8px;background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:12px;padding:9px 12px;font-size:13px;color:#475569}
+.next b{color:var(--ink)}
+.today{background:#0f172a;color:#fff;font-size:13px;font-weight:800;padding:8px 16px}
+.today span{background:#facc15;color:#0f172a;border-radius:99px;padding:2px 9px;margin:0 2px}
+.dim .rowC,.dim .bd{opacity:.55}
+</style></head><body>
+<h1>📚 학부모앱 숙제 카드 · C안 + 학원앱 색 그대로</h1>
+<p class="lead">학원앱 숙제체크(v19-177)와 같은 잣대예요. 칸마다 그 단계의 %를 숫자로 보여 주고, 색은 이행도 4단계로 나눕니다.<br>
+<b style="color:#15803d">100 진초록</b> · <b style="color:#4d7c0f">60~99 연두</b> · <b style="color:#c2410c">30~59 주황</b> · <b style="color:#b91c1c">0~29 빨강</b> · 맨 위 종합 %도 같은 색이에요.</p>
+<div class="grid" id="g"></div>
+<script>
+var T={100:{f:'#bbf7d0',s:'#16a34a',c:'#15803d',chip:'#16a34a',w:'다 함'},60:{f:'#ecfccb',s:'#84cc16',c:'#4d7c0f',chip:'#65a30d',w:'거의 함'},30:{f:'#fed7aa',s:'#f97316',c:'#c2410c',chip:'#ea580c',w:'조금'},0:{f:'#fecaca',s:'#ef4444',c:'#b91c1c',chip:'#dc2626',w:'안 함'}};
+function tier(v){return v>=100?100:v>=60?60:v>=30?30:0}
+var LBL={100:'🟢 숙제 완료',60:'🟡 거의 했어요',30:'🟠 조금 했어요',0:'🔴 숙제 미흡'};
+function card(o){
+  var vals=[o.p,o.c,o.w,o.a], nums=vals.filter(function(x){return x!=null}), tot=Math.round(nums.reduce(function(s,x){return s+x},0)/nums.length), K=T[tier(tot)];
+  var h='<div class="card'+(o.dim?' dim':'')+'">';
+  if(o.today) h+='<div class="today">⏳ 오늘 <span>'+o.today+'</span> 수업에서 선생님이 확인해요</div>';
+  h+='<div class="rowC"><div class="cal"><div class="m">'+o.mon+'월</div><div class="d">'+o.day+'</div><div class="w">'+o.dow+'요일</div></div>';
+  h+='<div style="flex:1"><div class="k">📚 '+(o.today?'지난 수업 숙제':'숙제 · 선생님 확인')+'</div><div class="t">'+LBL[tier(tot)]+'<span class="tot" style="background:'+K.chip+'">'+tot+'%</span></div>';
+  h+='<div class="bar"><i style="width:'+tot+'%;background:'+K.s+'"></i></div></div></div><div class="bd"><div class="stg">';
+  ['1 풀이','2 채점','3 오답','4 아하'].forEach(function(n,i){
+    var v=vals[i];
+    if(v==null){h+='<div class="st na"><div class="n">'+n+'</div><div class="v">해당 없음</div><div class="s" style="color:#94a3b8">질문 없던 날</div></div>';return}
+    var k=T[tier(v)];
+    h+='<div class="st" style="background:'+k.f+';border-color:'+k.s+'"><div class="n">'+n+'</div><div class="v" style="color:'+k.c+'">'+v+'<small>%</small></div><div class="s" style="color:'+k.c+'">'+k.w+'</div></div>';
+  });
+  h+='</div><div class="leg">'+[100,60,30,0].map(function(t){var k=T[t];return '<span><i style="background:'+k.f+';border-color:'+k.s+'"></i>'+(t==100?'100':t==60?'60~99':t==30?'30~59':'0~29')+'</span>'}).join('')+'</div>';
+  h+='<div class="next">⏳ 다음 확인 <b>'+o.next+'</b> · 수업 시간에 선생님이 확인하면 바로 바뀌어요</div></div></div>';
+  return h;
+}
+var ex=[
+ {h:'① 단계마다 다를 때 (가장 흔한 경우)',p:'풀이는 다 했고 채점은 거의, 오답·아하는 덜 한 날이에요. 어느 단계가 약한지 색으로 바로 보여요.',o:{mon:11,day:16,dow:'월',p:100,c:60,w:30,a:0,next:'11/18 (수)'}},
+ {h:'② 다 잘했을 때',p:'모두 진초록이에요. 아하노트 %는 학원앱처럼 질문한 문제 비율이라 60·100 말고 다른 숫자도 나와요.',o:{mon:11,day:14,dow:'금',p:100,c:100,w:100,a:83,next:'11/17 (월)'}},
+ {h:'③ 아하노트 질문이 없던 날',p:'학원앱의 «해당 없음» 회색 그대로예요. 종합 %는 나머지 세 단계로만 냅니다.',o:{mon:11,day:13,dow:'목',p:60,c:30,w:0,a:null,next:'11/15 (토)'}},
+ {h:'④ 수업 당일 · 아직 확인 전',p:'지난 결과를 흐리게 보여 주고 위에 «오늘 확인 예정» 띠를 얹어요. 빈 카드는 나오지 않아요.',o:{mon:11,day:16,dow:'월',p:100,c:60,w:30,a:0,next:'오늘 11/18 (수)',today:'11/18 (수)',dim:1}}
+];
+document.getElementById('g').innerHTML=ex.map(function(e){return '<div class="opt"><h2>'+e.h+'</h2><p>'+e.p+'</p>'+card(e.o)+'</div>'}).join('');
+</script>
+</body></html>
