@@ -64,18 +64,19 @@ body{font-family:'Pretendard',sans-serif;background:#140707;-webkit-font-smoothi
  text-shadow:0 6px 0 #2b0d0d,0 12px 26px rgba(0,0,0,.85)}
 
 /* 3. 무엇을 하는가 */
-.what{margin-top:40px;position:relative;z-index:2;display:flex;flex-direction:column;gap:8px}
-.wl{font-size:84px;line-height:1.1}
-.wl .u{font-size:104px}
+.who2{margin-top:14px;position:relative;z-index:2}
+.what{margin-top:16px;position:relative;z-index:2;display:flex;flex-direction:column;gap:8px}
+.wl{font-size:86px;line-height:1.1}
 
 /* 4. 개강일 — 오른쪽, 크게 */
 .date{margin-top:auto;position:relative;z-index:3;align-self:flex-end;text-align:right}
 .date:before{content:"";position:absolute;right:-70px;bottom:-40px;width:760px;height:330px;
  background:radial-gradient(ellipse at 72% 60%,rgba(14,4,4,.88),transparent 70%);z-index:-1}
 .date .lab{font-weight:800;font-size:52px;letter-spacing:.10em;color:#ffcf6b;text-shadow:0 4px 16px rgba(0,0,0,.9)}
-.date .row{display:flex;align-items:baseline;justify-content:flex-end;gap:16px;margin-top:2px}
-.dnum{font-size:186px;line-height:.94;letter-spacing:-.05em}
-.dunit{font-weight:800;font-size:68px;color:#fff6ea;text-shadow:0 6px 0 #2b0d0d,0 12px 26px rgba(0,0,0,.85)}
+.date .row{display:flex;align-items:baseline;justify-content:flex-end;gap:18px;margin-top:2px}
+.dnum{font-size:130px;line-height:.98;letter-spacing:-.05em}
+.dash{font-weight:800;font-size:92px;color:#ffcf6b;text-shadow:0 5px 0 #2b0d0d,0 10px 22px rgba(0,0,0,.85)}
+.dtail{margin-top:10px;font-weight:800;font-size:44px;color:#fff1e0;text-shadow:0 4px 16px rgba(0,0,0,.9)}
 
 /* 5. 꼬리말 */
 .foot{margin-top:40px;position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;
@@ -96,13 +97,24 @@ body{font-family:'Pretendard',sans-serif;background:#140707;-webkit-font-smoothi
   </div>
  </div>
 
+ <div class="who2">
+  <div class="whoRow">
+   <span class="t3d gd big"><span class="b">15주</span><span class="f">15주</span></span>
+   <span class="season">만에</span>
+  </div>
+ </div>
+
  <div class="what">
-  <span class="t3d wh wl"><span class="b">15주 만에</span><span class="f">15주 만에</span></span>
   <span class="t3d wh wl"><span class="b">공통수학1·2 완성</span><span class="f">공통수학1·2 완성</span></span>
  </div>
 
- <div class="date"><div class="lab">개강</div>
-  <div class="row"><span class="t3d gd dnum"><span class="b">11.19</span><span class="f">11.19</span></span><span class="dunit">목</span></div>
+ <div class="date"><div class="lab">수업 기간</div>
+  <div class="row">
+   <span class="t3d gd dnum"><span class="b">11.19</span><span class="f">11.19</span></span>
+   <span class="dash">—</span>
+   <span class="t3d gd dnum"><span class="b">2.26</span><span class="f">2.26</span></span>
+  </div>
+  <div class="dtail">11월 19일 목요일 개강</div>
  </div>
 
  <div class="foot"><div class="fl">부천 옥길동 수학학원 루멘수학</div><div class="fr">네이버 톡톡 상담</div></div>
