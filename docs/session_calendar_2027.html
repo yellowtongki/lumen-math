@@ -1,0 +1,206 @@
+<title>루멘 2027 회차 달력</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Gowun+Dodum&display=swap">
+<style>
+/* Layout: 위쪽 설정판(방학·반·첫 회차) → 반별 묶음 요약 → 달력 12장 그리드 */
+:root{
+  --bg:#f6f7f4; --card:#ffffff; --fg:#1f2a24; --muted:#66736b; --line:#dfe4dd;
+  --g:#cfe6c3; --gfg:#24502a; --b:#cddff8; --bfg:#1f3f73;
+  --hol:#d23a3a; --vac:#f7d4d4; --vacfg:#8a2a2a; --off:#e9e6df; --accent:#2f6b4f; --warn:#b5620e;
+  --sat:#2a55c4;
+  --f-body:"Noto Sans KR",system-ui,sans-serif; --f-head:"Gowun Dodum","Noto Sans KR",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141916; --card:#1c231f; --fg:#e6ece7; --muted:#9aa79f; --line:#2e3832;
+  --g:#2c4a2f; --gfg:#cfeccf; --b:#253a5c; --bfg:#d3e2ff; --hol:#ff7b7b; --vac:#5a2b2b; --vacfg:#ffd2d2; --off:#2a2f2b; --accent:#7cc39d; --warn:#f0a356; --sat:#8fb0ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141916; --card:#1c231f; --fg:#e6ece7; --muted:#9aa79f; --line:#2e3832;
+  --g:#2c4a2f; --gfg:#cfeccf; --b:#253a5c; --bfg:#d3e2ff; --hol:#ff7b7b; --vac:#5a2b2b; --vacfg:#ffd2d2; --off:#2a2f2b; --accent:#7cc39d; --warn:#f0a356; --sat:#8fb0ff; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px}
+h1{font-family:var(--f-head);font-size:26px;margin:0;text-wrap:balance}
+h2{font-family:var(--f-head);font-size:18px;margin:0 0 10px}
+.sub{color:var(--muted);margin:4px 0 0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.top{display:grid;grid-template-columns:1.2fr 1fr;gap:18px}
+@media (max-width:820px){.top{grid-template-columns:1fr}}
+label{font-size:12px;color:var(--muted);letter-spacing:.02em}
+input[type=date],input[type=number]{font:inherit;padding:5px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+input[type=number]{width:60px}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:5px 10px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.primary{background:var(--accent);color:var(--card);border-color:var(--accent)}
+.vrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.vrow .len{font-size:12px;font-variant-numeric:tabular-nums}
+.vrow .len.bad{color:var(--warn);font-weight:700}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.clsrow{display:grid;grid-template-columns:70px 1fr 1fr;gap:8px;align-items:center;padding:4px 0}
+.sumgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:820px){.sumgrid{grid-template-columns:1fr}}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:13px}
+td,th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
+th{font-weight:500;color:var(--muted);font-size:12px}
+.chip{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11px}
+.chip.short{background:var(--vac);color:var(--vacfg)}
+.chip.ok{background:var(--g);color:var(--gfg)}
+.months{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:22px 18px}
+.month{min-width:0;overflow:hidden}
+.month h3{font-family:var(--f-head);margin:0 0 6px;font-size:16px;display:flex;justify-content:space-between;align-items:baseline}
+.month h3 small{font-family:var(--f-body);font-size:11px;color:var(--muted);font-weight:400}
+.grid7{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}
+.dow{font-size:11px;text-align:center;color:var(--muted);padding:2px 0}
+.dow.sun{color:var(--hol)}.dow.sat{color:var(--sat)}
+.day{min-width:0;overflow:hidden;min-height:44px;border-radius:5px;padding:2px 3px;font-size:11px;line-height:1.25;position:relative;cursor:pointer;border:1px solid transparent;display:flex;flex-direction:column;gap:1px}
+.day:hover{border-color:var(--muted)}
+.day .n{font-weight:700;font-size:12px}
+.day.sun .n,.day.hol .n{color:var(--hol)} .day.sat .n{color:var(--sat)}
+.day.vac{background:var(--vac);color:var(--vacfg)}
+.day.off{background:var(--off)}
+.day .tag{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pill{display:block;border-radius:3px;padding:0 2px;font-size:10px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.pill.g{background:var(--g);color:var(--gfg)} .pill.b{background:var(--b);color:var(--bfg)} .pill.pre{background:var(--off);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);align-items:center}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+.note{font-size:12px;color:var(--muted)}
+.sch{font-size:10px;color:var(--warn);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:2px solid var(--warn);padding-top:1px}
+.sch.v{color:var(--accent);border-color:var(--accent)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>루멘 2027 회차 달력</h1>
+    <p class="sub">방학 날짜를 바꾸면 반별 묶음(월수금 12회 · 화목 8회 · 화목토 12회)이 바로 다시 계산됩니다. 날짜 칸을 누르면 그날만 휴강으로 바뀝니다.</p>
+  </header>
+
+  <div class="top">
+    <section class="panel">
+      <h2>방학 (학원 휴가)</h2>
+      <div id="vacList"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button id="addVac" class="primary">+ 방학 추가</button>
+        <button id="reset">처음 값으로</button>
+      </div>
+      <p class="note">토·일 포함 7일을 넘으면 주황색으로 알려 줍니다.</p>
+    </section>
+    <section class="panel">
+      <h2>반 설정</h2>
+      <div class="clsrow"><span></span><label>묶음 회차</label><label>첫 수업일 (2027 1차 시작)</label></div>
+      <div id="clsSet"></div>
+      <h2 style="margin-top:14px">달력에 보일 반</h2>
+      <div class="tabs" id="tabs"></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>반별 묶음 요약</h2>
+    <div class="sumgrid" id="summary"></div>
+  </section>
+
+  <section class="panel">
+    <div class="legend" style="margin-bottom:10px">
+      <span><i class="sw" style="background:var(--g)"></i><i class="sw" style="background:var(--b)"></i>묶음(번갈아 색칠) · 「3-5」= 3차 묶음의 5회째 · 앞글자 월=월수금, 화=화목, 토=화목토</span>
+      <span><i class="sw" style="background:var(--vac)"></i>방학</span>
+      <span><i class="sw" style="background:var(--off)"></i>개별 휴강(눌러서 지정)</span>
+      <span style="color:var(--hol)">빨간 날짜 = 공휴일</span>
+      <span style="color:var(--warn)">주황 줄 = 학교 시험(추정)</span>
+      <span style="color:var(--accent)">초록 줄 = 학교 방학·휴업(추정)</span>
+      <span class="tabs" id="range"></span>
+    </div>
+    <div class="months" id="months"></div>
+  </section>
+  <p class="note">공휴일: 우주항공청 2027년 월력요항(노동절·제헌절 대체공휴일 포함). 학교 일정은 학원앱이 나이스에서 받은 2026년 일정(범박중·옥길중·범박고·소사고·옥길버들초·산들초)을 요일에 맞춰 2027년으로 옮긴 <b>추정</b>입니다. 학교가 2027 학사일정을 올리면 바뀝니다. 2026년 12월은 참고용입니다.</p>
+</div>
+
+<script>
+const HOL={"2026-12-25":"성탄절","2027-01-01":"신정","2027-02-06":"설 연휴","2027-02-07":"설날","2027-02-08":"설 연휴","2027-02-09":"설 대체","2027-03-01":"삼일절","2027-05-01":"노동절","2027-05-03":"노동절 대체","2027-05-05":"어린이날","2027-05-13":"부처님오신날","2027-06-06":"현충일","2027-07-17":"제헌절","2027-07-19":"제헌절 대체","2027-08-15":"광복절","2027-08-16":"광복절 대체","2027-09-14":"추석 연휴","2027-09-15":"추석","2027-09-16":"추석 연휴","2027-10-03":"개천절","2027-10-04":"개천절 대체","2027-10-09":"한글날","2027-10-11":"한글날 대체","2027-12-25":"성탄절","2027-12-27":"성탄절 대체"};
+const SCH=[
+ ["2026-12-07","2026-12-16","고 2학기 기말",0],["2026-12-09","2026-12-22","중 2학기 기말",0],
+ ["2027-01-02","2027-01-06","초 겨울방학 시작",1],["2027-01-06","2027-01-08","중·고 종업·방학 시작",1],
+ ["2027-03-02","2027-03-02","개학",1],["2027-05-04","2027-05-04","재량휴업(대부분)",1],
+ ["2027-04-22","2027-04-25","소사고 중간",0],["2027-04-26","2027-04-30","중·고 1학기 중간",0],
+ ["2027-06-28","2027-07-02","고 1학기 기말",0],["2027-06-29","2027-07-07","중 1학기 기말",0],
+ ["2027-07-20","2027-08-11","중·고 여름방학",1],["2027-07-23","2027-08-18","초 여름방학",1],
+ ["2027-09-28","2027-10-12","2학기 중간",0],["2027-11-18","2027-11-18","수능(추정)",1],["2027-12-06","2027-12-21","2학기 기말",0]];
+const CLS=[{id:"mwf",name:"월수금",short:"월",days:[1,3,5]},{id:"tt",name:"화목",short:"화",days:[2,4]},{id:"tts",name:"화목토",short:"토",days:[2,4,6]}];
+const DEF={vac:[["2027-07-17","2027-07-23"]],n:{mwf:12,tt:8,tts:12},start:{mwf:"2027-01-01",tt:"2027-01-01",tts:"2027-01-01"},off:[],show:"all",half:false};
+let S;try{S=JSON.parse(localStorage.getItem("lumen27"))||null}catch(e){S=null}
+if(!S)S=JSON.parse(JSON.stringify(DEF));
+const save=()=>{try{localStorage.setItem("lumen27",JSON.stringify(S))}catch(e){}};
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const P=s=>{const[a,b,c]=s.split("-").map(Number);return new Date(a,b-1,c)};
+const md=s=>{const d=P(s);return `${d.getMonth()+1}/${d.getDate()}`};
+const inVac=s=>S.vac.some(([a,b])=>a&&b&&s>=a&&s<=b);
+
+function compute(){
+  const res={};
+  for(const c of CLS){
+    const map={},cycles=[];let cur=null;const N=S.n[c.id]||1;
+    for(let d=P(S.start[c.id]);d<=new Date(2027,11,31);d.setDate(d.getDate()+1)){
+      if(!c.days.includes(d.getDay()))continue;const s=iso(d);
+      if(HOL[s]||inVac(s)||S.off.includes(s))continue;
+      if(!cur||cur.k===N){cur={no:cycles.length+1,k:0,from:s};cycles.push(cur)}
+      cur.k++;cur.to=s;map[s]={no:cur.no,k:cur.k};
+    }
+    res[c.id]={map,cycles,N};
+  }
+  return res;
+}
+function render(){
+  const R=compute();
+  // vacations
+  const vl=document.getElementById("vacList");vl.innerHTML="";
+  S.vac.forEach((v,i)=>{const row=document.createElement("div");row.className="vrow";
+    let len="";if(v[0]&&v[1]){const n=Math.round((P(v[1])-P(v[0]))/864e5)+1;len=`<span class="len ${n>7||n<1?"bad":""}">${n}일${n>7?" · 7일 초과":""}</span>`}
+    row.innerHTML=`<input type="date" id="va${i}" value="${v[0]}"> ~ <input type="date" id="vb${i}" value="${v[1]}"> ${len} <button data-del="${i}" aria-label="방학 삭제">삭제</button>`;
+    vl.appendChild(row);
+    row.querySelector(`#va${i}`).onchange=e=>{S.vac[i][0]=e.target.value;save();render()};
+    row.querySelector(`#vb${i}`).onchange=e=>{S.vac[i][1]=e.target.value;save();render()};
+    row.querySelector("[data-del]").onclick=()=>{S.vac.splice(i,1);save();render()};
+  });
+  // class settings
+  const cs=document.getElementById("clsSet");cs.innerHTML="";
+  CLS.forEach(c=>{const r=document.createElement("div");r.className="clsrow";
+    r.innerHTML=`<b>${c.name}</b><span><input type="number" min="1" id="n_${c.id}" value="${S.n[c.id]}"> 회</span><input type="date" id="s_${c.id}" value="${S.start[c.id]}">`;
+    cs.appendChild(r);
+    r.querySelector(`#n_${c.id}`).onchange=e=>{S.n[c.id]=Math.max(1,+e.target.value||1);save();render()};
+    r.querySelector(`#s_${c.id}`).onchange=e=>{if(e.target.value){S.start[c.id]=e.target.value;save();render()}};
+  });
+  // tabs
+  const tb=document.getElementById("tabs");tb.innerHTML="";
+  [{id:"all",name:"세 반 모두"},...CLS].forEach(c=>{const b=document.createElement("button");b.textContent=c.name;b.setAttribute("aria-pressed",S.show===c.id);b.onclick=()=>{S.show=c.id;save();render()};tb.appendChild(b)});
+  // summary
+  const sm=document.getElementById("summary");sm.innerHTML="";
+  CLS.forEach(c=>{const r=R[c.id];const last=r.cycles[r.cycles.length-1];
+    let h=`<div><h2>${c.name} <span class="note">${r.N}회 묶음</span></h2><table><tr><th>차</th><th>기간</th><th>회</th></tr>`;
+    r.cycles.forEach(y=>{h+=`<tr><td>${y.no}차</td><td>${md(y.from)} ~ ${md(y.to)}</td><td>${y.k===r.N?`<span class="chip ok">${y.k}</span>`:`<span class="chip short">${y.k} / ${r.N}</span>`}</td></tr>`});
+    {const tot=r.cycles.reduce((a,y)=>a+y.k,0),need=12*r.N,df=tot-need;h+=`</table><p class="note"><b>올해 수업 ${tot}회</b> (12묶음 = ${need}회) → ${df>=0?`<span class="chip ok">여유 ${df}회</span> 이만큼 더 쉬어도 12묶음이 채워집니다.`:`<span class="chip short">${-df}회 부족</span> 12묶음을 못 채웁니다.`}</p>`}
+    h+=`<p class="note">${last&&last.k<r.N?`마지막 ${last.no}차가 ${last.k}회에서 해를 넘깁니다 → 2028년에 ${r.N-last.k}회 이어서.`:"2027년 안에 묶음이 딱 끝납니다."}</p></div>`;
+    sm.insertAdjacentHTML("beforeend",h)});
+  // months
+  const ms=document.getElementById("months");ms.innerHTML="";
+  const show=S.show==="all"?CLS:CLS.filter(c=>c.id===S.show);
+  const rg=document.getElementById("range");rg.innerHTML="";
+  [[false,"1년 전체"],[true,"상반기만 (1~6월)"]].forEach(([v,t])=>{const b=document.createElement("button");b.textContent=t;b.setAttribute("aria-pressed",!!S.half===v);b.onclick=()=>{S.half=v;save();render()};rg.appendChild(b)});
+  for(let mi=(S.half?0:-1);mi<(S.half?6:12);mi++){
+    const y=mi<0?2026:2027,m=mi<0?11:mi;const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate();
+    const cnt=show.map(c=>{let k=0;for(let d=1;d<=dim;d++)if(R[c.id].map[iso(new Date(y,m,d))])k++;return `${c.name} ${k}`}).join(" · ");
+    let h=`<div class="month"><h3>${y===2026?"2026년 ":""}${m+1}월 <small>${cnt}회</small></h3><div class="grid7">`;
+    "일월화수목금토".split("").forEach((w,i)=>h+=`<div class="dow ${i==0?"sun":i==6?"sat":""}">${w}</div>`);
+    for(let i=0;i<first.getDay();i++)h+="<div></div>";
+    for(let d=1;d<=dim;d++){const dt=new Date(y,m,d),s=iso(dt),wd=dt.getDay();
+      const cls=["day"];if(wd==0)cls.push("sun");if(wd==6)cls.push("sat");if(HOL[s])cls.push("hol");if(inVac(s))cls.push("vac");if(S.off.includes(s))cls.push("off");
+      let inner=`<span class="n">${d}</span>`;
+      if(HOL[s])inner+=`<span class="tag" style="color:var(--hol)">${HOL[s]}</span>`;
+      else if(inVac(s))inner+=`<span class="tag">방학</span>`;
+      else if(S.off.includes(s))inner+=`<span class="tag">휴강</span>`;
+      SCH.filter(([a,b])=>s>=a&&s<=b).forEach(([a,b,t,v])=>{if(s===a||dt.getDay()===1)inner+=`<span class="sch ${v?"v":""}" title="${t} ${md(a)}~${md(b)} (추정)">${t}</span>`;else inner+=`<span class="sch ${v?"v":""}">&nbsp;</span>`});
+      show.forEach(c=>{const x=R[c.id].map[s];if(x)inner+=`<span class="pill ${x.no%2?"g":"b"}">${S.show==="all"?c.short+" ":""}${x.no}-${x.k}</span>`});
+      h+=`<div class="${cls.join(" ")}" data-d="${s}" title="눌러서 휴강 지정/해제">${inner}</div>`}
+    h+="</div></div>";ms.insertAdjacentHTML("beforeend",h)}
+  ms.querySelectorAll(".day").forEach(el=>el.onclick=()=>{const s=el.dataset.d,i=S.off.indexOf(s);if(i<0)S.off.push(s);else S.off.splice(i,1);save();render()});
+}
+document.getElementById("addVac").onclick=()=>{S.vac.push(["",""]);save();render()};
+document.getElementById("reset").onclick=()=>{S=JSON.parse(JSON.stringify(DEF));save();render()};
+render();
+</script>

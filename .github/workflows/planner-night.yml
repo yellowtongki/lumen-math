@@ -45,3 +45,11 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           node sync/planner_night_grader.js --days "${{ github.event.inputs.days || '7' }}" --max "${{ github.event.inputs.max || '60' }}" ${{ github.event.inputs.dry == 'true' && '--dry' || '' }}
+      # 🔥 연속 기록 랭킹판 (학생앱 v2-164 «연속 기록» TOP 5) — 원장 2026-11-16 「상위 5명 · 전체 학생 랭킹」
+      # 플래너 채점이 실패해도 돈다. 다른 학생 사진·녹음 목록은 서버만 볼 수 있어 매일 새벽 여기서 계산한다.
+      - name: 연속 기록 랭킹판
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node sync/streak_board.js

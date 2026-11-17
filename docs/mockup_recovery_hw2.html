@@ -1,0 +1,152 @@
+<title>숙제미흡 리커버리 설계</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@500;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+/* 레이아웃: 한 단 문서 · 위에서 아래로 «왜 다르게 → 60문항 구성 → 매쓰플랫 미리보기 → 학원앱 흐름 → 정할 것» */
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --ink:#13233d; --sub:#5b6b82; --line:#e1e7f0;
+  --navy:#0d2240; --blue:#1d6fe8; --blue-s:#e8f0fe;
+  --hw:#c2410c; --hw-s:#fff1e6; --ok:#15803d; --ok-s:#ecfdf5; --warn:#b45309; --warn-s:#fef6e4; --red:#dc2626; --red-s:#fee2e2;
+  --f-head:"IBM Plex Sans KR","Noto Sans KR",system-ui,sans-serif; --f-body:"Noto Sans KR",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1522; --card:#162133; --ink:#e6edf7; --sub:#9aabc4; --line:#26354d;
+  --navy:#cfe0ff; --blue:#6aa5ff; --blue-s:#1b2d4b; --hw:#ff9a5c; --hw-s:#3a2416; --ok:#4ade80; --ok-s:#123224; --warn:#fbbf24; --warn-s:#3a2d10; --red:#f87171; --red-s:#3d1818; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1522; --card:#162133; --ink:#e6edf7; --sub:#9aabc4; --line:#26354d;
+  --navy:#cfe0ff; --blue:#6aa5ff; --blue-s:#1b2d4b; --hw:#ff9a5c; --hw-s:#3a2416; --ok:#4ade80; --ok-s:#123224; --warn:#fbbf24; --warn-s:#3a2d10; --red:#f87171; --red-s:#3d1818; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-head);text-wrap:balance;margin:0;color:var(--navy)}
+h1{font-size:26px}h2{font-size:19px}h3{font-size:15.5px}
+p{margin:0}
+.lead{color:var(--sub);font-size:14.5px}
+.sec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 20px;display:flex;flex-direction:column;gap:12px}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.t-hw{background:var(--hw-s);color:var(--hw)}.t-wk{background:var(--blue-s);color:var(--blue)}.t-ok{background:var(--ok-s);color:var(--ok)}.t-warn{background:var(--warn-s);color:var(--warn)}.t-red{background:var(--red-s);color:var(--red)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:9px 8px;text-align:left;vertical-align:top}
+th{font-size:12.5px;color:var(--sub);font-weight:700;letter-spacing:.02em}
+td.k{font-weight:700;color:var(--sub);white-space:nowrap}
+.mix{display:flex;height:34px;border-radius:9px;overflow:hidden;border:1px solid var(--line)}
+.mix div{display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#fff;min-width:0;white-space:nowrap}
+.m1{background:#c2410c}.m2{background:#1d6fe8}.m3{background:#64748b}
+.rows{display:grid;gap:10px}
+.row{display:grid;grid-template-columns:62px 1fr;gap:12px;align-items:start}
+.row .n{font-family:var(--f-head);font-size:24px;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums;text-align:right;line-height:1.2}
+.row .n small{font-size:12px;color:var(--sub);font-weight:500;display:block}
+.row b{color:var(--ink)}
+.row .d{color:var(--sub);font-size:13.5px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px;font-weight:700;color:var(--sub);background:var(--card)}
+.chip.on{border-color:var(--navy);background:var(--navy);color:var(--card)}
+.ws{border:1.5px dashed var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.ws-h{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ws-h strong{font-family:var(--f-head);font-size:16px}
+.q{display:grid;grid-template-columns:34px 1fr;gap:8px;font-size:13.5px;padding:7px 0;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:none}
+.q .no{font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums}
+.q .src{display:inline-block;font-size:12px;color:var(--hw);background:var(--hw-s);border-radius:6px;padding:1px 7px;margin-bottom:3px}
+.q .src.tw{color:var(--blue);background:var(--blue-s)}.q .src.bs{color:var(--sub);background:var(--bg)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.step{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.step .s{font-size:12px;font-weight:700;color:var(--sub)}
+.step b{font-size:14px}
+.step span{font-size:13px;color:var(--sub)}
+.drawer{border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.hwbar{display:grid;grid-template-columns:70px 1fr 44px;gap:8px;align-items:center;font-size:13px}
+.hwbar i{display:block;height:9px;border-radius:5px;background:var(--line);position:relative;overflow:hidden}
+.hwbar i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--w);background:var(--c)}
+.hwbar em{font-style:normal;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.btn{align-self:flex-start;border:0;border-radius:10px;padding:9px 16px;font-weight:700;font-family:inherit;font-size:14px;background:var(--hw);color:#fff}
+.decide{display:flex;flex-direction:column;gap:12px}
+.dq{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.dq h3 span{color:var(--sub);font-weight:500;font-size:13px;margin-left:6px}
+.dq ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.dq li.rec{font-weight:700}
+.dq li.rec::after{content:" ← 추천";color:var(--hw);font-weight:700;font-size:12.5px}
+.note{font-size:13px;color:var(--sub)}
+@media (max-width:520px){.row{grid-template-columns:48px 1fr}.row .n{font-size:20px}}
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:6px">
+    <span class="tag t-hw" style="align-self:flex-start">시안 · 상의용 — 아직 만들지 않음</span>
+    <h1>📚 숙제미흡 리커버리 설계</h1>
+    <p class="lead">원장님이 학생 이름을 체크하면, 주간테스트 리커버리와 <b>따로 한 장</b>이 더 나갑니다. 이름·숫자는 예시이고, 문항 비율은 11/14 옥○○(중1)의 실제 최근 2주 숙제 기록으로 계산했습니다.</p>
+  </header>
+
+  <section class="sec">
+    <h2>① 리커버리와 똑같이? 다르게?</h2>
+    <p>원인이 다르니 <b>내용도 다르게</b> 가는 것을 추천합니다. 주간테스트 리커버리는 «모르는 것을 다시», 숙제미흡 리커버리는 «안 한 숙제를 다른 문제로, 양으로 채우기»입니다.</p>
+    <div class="scroll"><table>
+      <thead><tr><th></th><th><span class="tag t-wk">📝 주간테스트 리커버리</span></th><th><span class="tag t-hw">📚 숙제미흡 리커버리</span></th></tr></thead>
+      <tbody>
+        <tr><td class="k">왜</td><td>주간테스트 점수·단원 정답률이 기준 아래</td><td>숙제를 안 해 옴 · 원장님이 체크</td></tr>
+        <tr><td class="k">문제</td><td>시험에서 틀린 문제 쌍둥이 · 교과서 · 최근 오답 쌍둥이</td><td><b>최근 2주 숙제로 나간 교재 범위</b>의 같은 유형 + 숙제에서 틀린 문제 쌍둥이</td></tr>
+        <tr><td class="k">난도</td><td>틀린 문제 수준 그대로(최상 뺌)</td><td><b>하~중 위주</b> — 어렵게가 아니라 양으로</td></tr>
+        <tr><td class="k">문항 수</td><td>최소 20 · 최대 40 (11/14부터)</td><td><b>기본 60</b> (원장님이 40·60·80 고름)</td></tr>
+        <tr><td class="k">제목</td><td>리커버리 11/14 이름</td><td>숙제미흡 리커버리 11/14 이름</td></tr>
+        <tr><td class="k">매쓰플랫</td><td colspan="2">둘 다 자동채점 켬 · 문항마다 출처 · 서로 겹치는 문제 없음 · 최근 6개월 안에 푼 문제 없음</td></tr>
+        <tr><td class="k">기록</td><td>리커버리 장부(주간)</td><td>같은 장부에 «숙제 미흡» 사유 · 3개월 누적 횟수</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec">
+    <h2>② 60문항 구성 (기본)</h2>
+    <div class="mix" role="img" aria-label="60문항 중 밀린 숙제 범위 36, 숙제 오답 쌍둥이 12, 기본 확인 12">
+      <div class="m1" style="flex:36">밀린 숙제 범위 36</div><div class="m2" style="flex:12">오답 쌍둥이 12</div><div class="m3" style="flex:12">기본 12</div>
+    </div>
+    <div class="rows">
+      <div class="row"><div class="n">36<small>60%</small></div><div><b>밀린 숙제 범위 같은 유형</b><p class="d">최근 2주 교재로 나간 유형에서 다른 문제. 숙제 % 가 낮았던 날의 범위를 먼저 · 책 비율대로. 예) 쎈 중1(하) 22 · 일품 중1(하) 10 · RPM 중2(하) 4</p></div></div>
+      <div class="row"><div class="n">12<small>20%</small></div><div><b>숙제에서 틀린 문제 쌍둥이</b><p class="d">같은 2주 숙제에서 ✗ 난 문제의 쌍둥이·유사 문제. 주간 리커버리에 이미 들어간 것은 뺌</p></div></div>
+      <div class="row"><div class="n">12<small>20%</small></div><div><b>기본 확인</b><p class="d">같은 유형의 쉬운 문제(난도 2) — 숙제를 안 해 개념이 빈 곳을 메움</p></div></div>
+    </div>
+    <div class="chips" aria-label="문항 수 고르기"><span class="note" style="align-self:center">문항 수</span><span class="chip">40</span><span class="chip on">60</span><span class="chip">80</span></div>
+    <p class="note">난도: 하(2) 35% · 중(3) 50% · 중상(4) 15% · 최상(5) 뺌. 주간 리커버리도 받는 학생은 <b>20~40 + 60</b> 이 됩니다 — ⑤ 정할 것 4.</p>
+  </section>
+
+  <section class="sec">
+    <h2>③ 매쓰플랫에 나가는 모양</h2>
+    <div class="ws">
+      <div class="ws-h"><strong>숙제미흡 리커버리 11/14 옥○○</strong><span class="tag t-ok">자동 채점</span><span class="tag t-hw">60문항</span></div>
+      <div class="q"><span class="no">1</span><div><span class="src">[숙제 범위] 쎈 중등수학1(하) · 회전체의 전개도</span><br>원뿔의 전개도에서 부채꼴의 중심각 구하기 …</div></div>
+      <div class="q"><span class="no">2</span><div><span class="src">[숙제 범위] 일품중등수학1(하) · 정다면체의 단면</span><br>정육면체를 한 평면으로 자른 단면의 모양 …</div></div>
+      <div class="q"><span class="no">37</span><div><span class="src tw">[숙제 오답 쌍둥이] 쎈 중등수학1(하) p.52 463번</span><br>…</div></div>
+      <div class="q"><span class="no">49</span><div><span class="src bs">[기본] 쎈 중등수학1(하) · 다면체의 면의 개수</span><br>…</div></div>
+    </div>
+    <p class="note">회색 칸이 매쓰플랫 «연관 문항 정보»로 인쇄되는 출처입니다(주간 리커버리는 오늘부터 이렇게 나감).</p>
+  </section>
+
+  <section class="sec">
+    <h2>④ 학원앱에서 쓰는 흐름</h2>
+    <div class="flow">
+      <div class="step"><span class="s">1 · 리커버리 보드</span><b>학생 줄 누름</b><span>오른쪽 학생 서랍이 열림</span></div>
+      <div class="step"><span class="s">2 · 서랍</span><b>📚 숙제 미흡 체크</b><span>최근 숙제 % 와 범위가 보임</span></div>
+      <div class="step"><span class="s">3 · 미리보기</span><b>구성 숫자 확인</b><span>40·60·80 고름</span></div>
+      <div class="step"><span class="s">4 · 예약</span><b>만들기 예약</b><span>서버가 3초 간격으로 천천히(보안문자 방지) · 5~15분</span></div>
+      <div class="step"><span class="s">5 · 기록</span><b>누적 횟수 · 안내문</b><span>3개월 2회 🟡 · 3회 🔴 재등록 검토</span></div>
+    </div>
+    <div class="drawer" aria-label="학생 서랍 예시">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>👤 옥○○ · 중1 · M4</b><span class="tag t-wk">📝 주간 20문항 만듦</span><span class="tag t-hw">📚 숙제 미흡 ✓</span><span class="tag t-warn">누적 2회 🟡</span></div>
+      <div class="hwbar"><span>11/13(금)</span><i style="--w:20%;--c:var(--red)"></i><em>20%</em></div>
+      <div class="hwbar"><span>11/11(수)</span><i style="--w:20%;--c:var(--red)"></i><em>20%</em></div>
+      <div class="hwbar"><span>11/9(월)</span><i style="--w:43%;--c:var(--red)"></i><em>43%</em></div>
+      <div class="hwbar"><span>11/6(금)</span><i style="--w:23%;--c:var(--red)"></i><em>23%</em></div>
+      <p class="note">숙제 범위(최근 2주 교재): 쎈 중1(하) 155문항 · 일품 중1(하) 69 · RPM 중2(하) 35 → 60문항 = 밀린 범위 36 · 오답 쌍둥이 12 · 기본 12</p>
+      <button class="btn" type="button">📚 숙제미흡 학습지 만들기 예약 (60)</button>
+    </div>
+  </section>
+
+  <section class="sec decide">
+    <h2>⑤ 정할 것</h2>
+    <div class="dq"><h3>1 · 내용<span>주간 리커버리와 같게 / 다르게</span></h3><ul><li class="rec">다르게 — 숙제 범위 중심(위 ②)</li><li>주간 리커버리와 똑같은 방식(시험 오답 쌍둥이 중심)</li></ul></div>
+    <div class="dq"><h3>2 · 기본 문항 수</h3><ul><li class="rec">60 (40·80 고를 수 있게)</li><li>40</li><li>80</li></ul></div>
+    <div class="dq"><h3>3 · 난도</h3><ul><li class="rec">하~중 위주(양으로 벌)</li><li>중~중상(어렵게)</li></ul></div>
+    <div class="dq"><h3>4 · 주간 리커버리도 받는 학생</h3><ul><li class="rec">두 장 그대로(예: 20 + 60 = 80)</li><li>합쳐서 최대 80까지만(숙제미흡 쪽을 줄임)</li><li>숙제미흡만 내고 주간 리커버리는 빼기</li></ul></div>
+    <div class="dq"><h3>5 · 숙제 범위</h3><ul><li class="rec">최근 2주 교재 기록에서 자동</li><li>원장님이 책·쪽을 직접 고름</li></ul></div>
+    <div class="dq"><h3>6 · 누가 고르나</h3><ul><li class="rec">원장님 체크만(지금 말씀하신 방식)</li><li>숙제 % 가 2주에 2번 60% 미만이면 자동 후보로 띄우고 원장님이 확정</li></ul></div>
+  </section>
+</div>

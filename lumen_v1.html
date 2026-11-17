@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-191';
+var APP_VER = 'v19-199';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9098,6 +9098,14 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-199',date:'2026-11-16',stability:'ok',memo:'📱 <b>제출 달력 — 이모지 · 안 낸 날 사선 · 🔥 연속 기록</b> (원장 2026-11-16 「녹·플 대신 이모지 · 빨간 동그라미에 사선 · 이런 연속 학습 표기를 플래너와 녹음에 도입」). 동그라미 안을 <b>🎙(녹음) · 📒(플래너)</b>로, 안 낸 날은 빨간 동그라미에 <b>사선</b>(🚫처럼). 달력 위에 <b>🔥 연속 카드</b> 두 장 — 📒 플래너 «12일 연속»(매일 · 오늘 아직이면 «오늘 내면 13일!») · 🎙 녹음 «13회 연속»(수업일, 12월부터 매일 «일 연속») · 최고 기록 · 이번 주 점 7개 · 끊기면 🧊 «오늘부터 다시 시작».'},
+      {ver:'v19-198',date:'2026-11-16',stability:'ok',memo:'📱 <b>학생별 제출 달력 — 동그라미로 · 플래너는 매일 · 녹음은 12월부터 매일</b> (원장 2026-11-16 「제출하면 녹색 동그라미로 · 잘 구분이 안 된다」 → 시안 A · 「플래너는 매일 제출이 기본, 녹음은 월수금 수업이면 그 수업 전에, 12월부터는 매일」). 칸마다 동그라미 두 개 — 위 «녹»(녹음) · 아래 «플»(플래너): <b>초록 꽉 찬 = 냄 · 빨간 테 = 내야 하는 날인데 안 냄</b> · 연한 회색 = 내는 날 아님 · 점선 = 오늘(마감 전). 플래너는 매일, 녹음은 수업일(파란 칸)만 — 2026년 12월 1일부터는 녹음도 매일로 셉니다. 요약도 «녹음 (수업일) n/m · 플래너 (매일) n/m».'},
+      {ver:'v19-197',date:'2026-11-16',stability:'ok',memo:'📱 <b>모바일 제출 현황 — 학생 이름 누르면 날짜별 달력</b> (원장 2026-11-16 「학생 이름 누르면 날짜별 제출하는 것 체크 표시로 며칠 날 내고 며칠 날 내지 않은 거를」). 한 달 달력(월~일)에 칸마다 <b>🎙 녹음 · 📒 플래너</b>: ✓ 냄 · ✗ 수업일인데 안 냄. 수업일(반 요일)은 파란 칸, 오늘은 노란 칸. 위에 «수업일 녹음 n/m · 플래너 n/m», 아래에 «안 낸 수업일: 11/4 · 11/9 …». ‹ › 로 지난달도 봅니다. 학원앱에 이미 있는 기록(녹음 파일 날짜 · 플래너 제출 날짜, 새벽 3시 규칙) 그대로.'},
+      {ver:'v19-196',date:'2026-11-16',stability:'ok',memo:'📱 <b>모바일 학원앱 — 오늘 제출 현황을 학생별로</b> (원장 2026-11-16 「모바일 학원앱에서 플래너와 녹음 제출현황을 자세히 확인 가능해야 한다 · 월수금반 학생별 제출현황」). 폰 홈의 «📥 오늘 제출 현황» 카드를 누르면 오늘 반 학생이 한 줄씩 나옵니다: 🎙 녹음(✓ 올린 시각 · 개수 / ✗ 안 냄) · 📒 플래너(✓ 낸 시각 · 장수 · 확인함 / ✗ 안 냄). 위 칩으로 «녹음 안 냄 · 플래너 안 냄 · 둘 다 냄»만 골라 보고, 안 낸 학생이 위로 옵니다. 플래너는 새벽 3시 규칙(오늘 03:00~내일 02:59). 재생·검토·승인은 그대로 PC 화면에서.'},
+      {ver:'v19-195',date:'2026-11-16',stability:'ok',memo:'🖤 <b>순위표 블랙반 엠블럼 — 지금 기수(2기)만</b> (원장 2026-11-16 「진도레이스나 주간테스트에서 블랙반은 현재 2기만 엠블럼이 표시되게」). 진도 레이스·리그 한눈에·모바일 레이스 순위표 이름 옆 엠블럼이 «지난 기수(출신)»까지 붙던 것을 <b>지금 기수만</b> 붙게 했습니다. 지금 기수는 <b>날짜</b>로 정합니다(오늘이 기수 기간 안이면 지금 기수) — 2기가 «마감»으로 저장돼 있어도 12/30까지는 지금 기수로 보입니다. 학생 상세·블랙반 관리 화면의 출신 표시는 그대로.'},
+      {ver:'v19-194',date:'2026-11-14',stability:'ok',memo:'🧩 <b>학원앱에서 바로 만드는 리커버리 학습지에도 출처</b> (원장 2026-11-14 「곽선우 리커버리 학습지를 학원앱에서 만들었는데 출처가 안 보인다」). 11/14 새벽 서버(예약)로 만드는 학습지에는 출처를 넣었는데, 학원앱 설계 창에서 바로 만드는 길에는 빠져 있었습니다. 이제 둘 다 문항마다 매쓰플랫 «연관 문항 정보»에 <b>「[쌍둥이] 중1 (2026.11.14) 8번」 · 「[유사] 쎈 - 중등수학1(하) p.92 651번」 · 「[교과서] 교과서_비상 - 중등수학1」 · 「[보강] 유형명」</b>이 인쇄됩니다. 이미 만든 학습지는 그대로(출처는 만들 때만 붙음).'},
+      {ver:'v19-193',date:'2026-11-14',stability:'ok',memo:'🛠 <b>오른쪽 도구 띠 2배 · 이름 · 리커버리 «카드 보기» 단추</b> (원장 2026-11-14 「리커버리 예전 버전 카드로 변환하는 버튼이 안 보인다 · 오른쪽 도구에 버튼 · 도구함 전체적으로 잘 보이게 2배」). 접혀 있을 때 오른쪽 끝 띠가 가늘고 그림만 있어 찾기 어려웠습니다 → 띠 폭 <b>2배</b>(44→88px), 단추·그림을 키우고 그림 밑에 <b>이름</b>(학생·규칙·만들기·안내문·인쇄·계정)을 붙였습니다. 리커버리 화면에서는 띠 맨 위에 주황 <b>«🗂 카드 보기»</b> 단추 — 누르면 예전 카드 보드, 다시 누르면(«☰ 줄 표») 줄 표로 돌아옵니다. 펼친 도구함도 그대로 넓게.'},
+      {ver:'v19-192',date:'2026-11-14',stability:'ok',memo:'📖 <b>기출 해설집 — 학교 › 학년 › 연도</b> (원장 2026-11-14 「학교별 학년별 연도별로 구분되게」 · 시안 A). 학교를 펼치면 <b>학년 칸</b>(중1·중2·중3 …, 과목명과 권수)이 나오고, 학년 칸도 접고 펼 수 있습니다. 학년 안에서는 <b>연도를 왼쪽 제목</b>(최근이 위)으로 세우고 같은 해 안은 기말 → 중간 순서입니다. 학교 칸에는 학년별 권수(중2 1 · 중3 3)가 함께 보입니다. «범위맞춤 대비» 해설집은 학년 맨 아래 «📦 대비». 학년 칩·모두 펼치기/접기·펼친 상태 기억은 그대로.'},
       {ver:'v19-191',date:'2026-11-13',stability:'ok',memo:'📖 <b>기출 해설집 — 학교 › 연도별 아코디언</b> (원장 2026-11-13 「기출해설집 학교별 연도별로 구분하는 아코디언식 형태로 하자」). 목록이 한 줄로 길게 늘어서 있던 것을 <b>🏫 학교 묶음</b>(권수 · 연도 범위 · 학년)으로 접고, 펼치면 <b>연도별(최근이 위)</b>로 나눴습니다. 학교를 펼치면 가장 최근 연도만 열려 있고, 접힌 연도에는 «중3 2학기 기말 · 고1 2학기 중간»처럼 무엇이 들었는지 한 줄로 보입니다. 여러 해를 묶은 «범위맞춤 대비» 해설집은 따로 «📦» 칸에. 학년 칩은 그대로(고르면 그 학년만, 다 펼친 채로), «모두 펼치기 / 모두 접기» 단추. 펼친 상태는 이 기기에 기억해서 문항을 보고 돌아와도 그대로입니다.'},
       {ver:'v19-190',date:'2026-11-13',stability:'ok',memo:'🚑 <b>리커버리 — 학생 서랍에 그 학생 안내문 · 고른 학생 줄 노랗게</b> (원장 2026-11-13 「학생별 안내문이 보이게 하자. 개별 화면에서 · ○○○이 안 보인다」). ① 줄을 눌러 여는 오른쪽 학생 서랍에 <b>«📨 학부모 안내문»</b>이 바로 보입니다(전체 안내문 창과 같은 글, 그 학생 것만). 칸에서 고쳐 쓰고 «📋 이 글 복사»로 문자앱에 붙여 넣으면 됩니다(보내지지는 않음). 호출 확정된 학생만 나옵니다. ② 위 «🔢 학생별 예상» 표는 호출 확정 순서라 줄 표와 순서가 달라 찾기 어려웠습니다 → 서랍에서 고른 학생의 줄을 <b>노랗게</b> 표시합니다.'},
       {ver:'v19-189',date:'2026-11-13',stability:'ok',memo:'🚑 <b>리커버리 — 「카드 보기」를 오른쪽 도구함으로 · 도구함 폭 2배</b> (원장 2026-11-13 「카드로 보기를 하고 다시 돌아가기가 없다 · 카드보기를 오른쪽 도구함에서 · 도구함 가로를 2배로」). ① 보드 위 칩 줄의 «🗂 카드 보기»를 빼고, 오른쪽 도구함 맨 위에 <b>«🗂 보기 방식 [☰ 줄 표] [🗂 카드]»</b>를 두었습니다. 줄 표에서도 카드에서도 같은 자리에서 바꿉니다. ② 오른쪽 도구함(서랍) 폭을 2배로 넓혔습니다(300 → 600px · 화면이 좁으면 화면 폭의 42%까지). 다른 화면의 도구함도 같이 넓어집니다.'},
@@ -82080,7 +82088,11 @@ async function rcwsBuild(model, plan, api, onLog){
     problemCount:100, level:3, levelWeight:[10,30,30,20,10], problemFilterType:'ALL', practiceTest:'INCLUDE', onlyAutoScorable:false, excludePrevious:false, previousExclusionScope:null,
     studentIds:null, excludeOOC:true, equalityLevel:null, minRate:0, maxRate:100, selectedConceptIdList:[], selectedLittleChapterIdList:[] });
   var fid=f&&(f.filterId||f); var rule=plan.rule;
-  var chosen={}; var items=[]; var parts={ twin:0, tb:0, book:0, boost:0, fallback:0 };
+  var chosen={}; var items=[]; var parts={ twin:0, tb:0, book:0, boost:0, fallback:0 }; var RCK={};   /* v19-194: 쌍둥이·유사 표시 */
+  var rcNo=function(no){ return String(no==null?'':no).replace(/번$/,''); };
+  var rcKd=function(id){ return '['+(RCK[id]||'같은 유형')+'] '; };
+  var rcTest=function(w){ var m=String(w.no==null?'':w.no).match(/^\((.*?)\)\s*(.*)$/); return (m?m[1]+' '+rcNo(m[2]):(w.tt||(model.test&&model.test.title)||'시험')+' '+rcNo(w.no))+'번'; };
+  var rcBook=function(w){ if(String(w.page)==='학습지') return (w.book||w.ws||'학습지')+' '+rcNo(w.no)+'번'; return (w.book||'교재')+(w.page!=null&&w.page!==''?' p.'+w.page:'')+(w.no!=null&&w.no!==''?' '+rcNo(w.no)+'번':''); };
   var poolByCid=null;
   function addPool(ps){ (Array.isArray(ps)?ps:(ps.problemList||[])).forEach(function(p){ var pr=p.problem||p; if(pr.conceptId&&pr.id) (poolByCid[pr.conceptId]=poolByCid[pr.conceptId]||[]).push({ id:pr.id, lv:pr.level||3, type:pr.type, answer:pr.answer }); }); }
   /* 유형 풀 — 처음 한 번 100문항, 그 유형이 비면 그 유형만의 필터를 따로 만든다 (v19-93) */
@@ -82097,8 +82109,8 @@ async function rcwsBuild(model, plan, api, onLog){
     var d=await api.call('POST','/derivation/problem/'+pid,{ excludedProblemIds:Object.keys(chosen).map(Number), filterId:fid, bookType:'WORKSHEET', tagTop:null });
     var pk=function(x){ return { id:x.problem.id, lv:x.problem.level, type:x.problem.type, answer:x.problem.answer }; };
     var pair=((d&&d.pairProblemList)||[]).map(pk), sim=((d&&d.similarProblemList)||[]).map(pk);
-    var got=rcwsPickFrom(pair, lv, n, model.solved, chosen, rule);
-    if(got.length<n) got=got.concat(rcwsPickFrom(sim, lv, n-got.length, model.solved, chosen, rule));
+    var got=rcwsPickFrom(pair, lv, n, model.solved, chosen, rule); got.forEach(function(id){ RCK[id]='쌍둥이'; });
+    if(got.length<n){ var _rs=rcwsPickFrom(sim, lv, n-got.length, model.solved, chosen, rule); _rs.forEach(function(id){ RCK[id]='유사'; }); got=got.concat(_rs); }
     log('  '+label+' → 쌍둥이 '+pair.length+'·유사 '+sim.length+' 중 '+got.length+'개');
     return got;
   }
@@ -82113,28 +82125,28 @@ async function rcwsBuild(model, plan, api, onLog){
   for(var i=0;i<plan.test.length;i++){ var x=plan.test[i]; if(!x.n) continue; var got=[];
     if(x.w.pid) got=await twinsOf(x.w.pid, x.w.lv, x.n, x.w.no+'번');
     if(got.length<x.n){ var g2=await sameType(x.w.cid, x.w.lv, x.n-got.length, x.w.no+'번 대체'); parts.fallback+=g2.length; got=got.concat(g2); }
-    got.forEach(function(id){ items.push({ id:id, kind:'twin', from:x.w.no }); }); parts.twin+=got.length; }
+    got.forEach(function(id){ items.push({ id:id, kind:'twin', from:x.w.no, src:rcKd(id)+rcTest(x.w) }); }); parts.twin+=got.length; }
   // ③ 교과서 같은 유형
   log('③ 교과서 같은 유형 ('+(model.tb.title||'교과서 없음')+')');
   for(var j=0;j<plan.tb.length;j++){ var y=plan.tb[j]; if(!y.n) continue;
     var tbl=model.tb.byCid[y.w.cid]||[]; var got3=rcwsPickFrom(tbl, y.w.lv, y.n, model.solved, chosen, rule);
     if(got3.length<y.n){ var g3=await sameType(y.w.cid, y.w.lv, y.n-got3.length, y.w.no+'번 교과서 대체'); parts.fallback+=g3.length; got3=got3.concat(g3); }
-    got3.forEach(function(id){ items.push({ id:id, kind:'tb', from:y.w.no }); }); parts.tb+=got3.length; }
+    got3.forEach(function(id){ items.push({ id:id, kind:'tb', from:y.w.no, src:'[교과서] '+(model.tb.title||'교과서 같은 유형') }); }); parts.tb+=got3.length; }
   // ④ 교재 오답 쌍둥이
   if(plan.book.length) log('④ 범위 안 교재 오답 '+plan.book.length+'문항의 쌍둥이');
   for(var k=0;k<plan.book.length;k++){ var z=plan.book[k]; if(!z.n) continue; var got4=[]; var lab=(z.w.book?z.w.book.slice(0,10)+' ':'')+'p.'+z.w.page+' '+z.w.no;
     if(z.w.pid) got4=await twinsOf(z.w.pid, z.w.lv, z.n, lab);
     if(got4.length<z.n){ var g4=await sameType(z.w.cid, z.w.lv, z.n-got4.length, lab+' 대체'); parts.fallback+=g4.length; got4=got4.concat(g4); }
-    got4.forEach(function(id){ items.push({ id:id, kind:'book', from:lab }); }); parts.book+=got4.length; }
+    got4.forEach(function(id){ items.push({ id:id, kind:'book', from:lab, src:rcKd(id)+rcBook(z.w) }); }); parts.book+=got4.length; }
   // ⑤ 보강
   if(plan.boost.some(function(b){ return b.n; })) log('⑤ 두 번 이상 틀린 유형 보강');
-  for(var q=0;q<plan.boost.length;q++){ var b=plan.boost[q]; if(!b.n) continue; var got5=await sameType(b.cid, 3, b.n, tqName(b.cid)); got5.forEach(function(id){ items.push({ id:id, kind:'boost', from:b.cid }); }); parts.boost+=got5.length; }
+  for(var q=0;q<plan.boost.length;q++){ var b=plan.boost[q]; if(!b.n) continue; var got5=await sameType(b.cid, 3, b.n, tqName(b.cid)); got5.forEach(function(id){ items.push({ id:id, kind:'boost', from:b.cid, src:'[보강] '+(typeof tqName==='function'&&tqName(b.cid)?tqName(b.cid):'약한 단원 같은 유형') }); }); parts.boost+=got5.length; }
   if(!items.length) throw new Error('매쓰플랫에서 문항을 하나도 받지 못했습니다');
   // ⑥ 학습지 생성 + 배정
   var sch=rcWsSchool(model.row.st)||{ schoolType:'MIDDLE', grade:'1' };
   var recDt=rcRecDate(rcWeekKey()); var dd=new Date(recDt); var title='리커버리 '+(dd.getMonth()+1)+'/'+dd.getDate()+' '+model.row.st.name;
   log('⑥ 학습지 '+items.length+'문항 만드는 중 — '+title);
-  var body=Object.assign({ filterId:fid, problemList:items.map(function(it){ return { id:it.id, tagTop:null }; }),
+  var body=Object.assign({ filterId:fid, problemList:items.map(function(it){ return { id:it.id, tagTop:(it.src?String(it.src).slice(0,80):null) }; }),
     conceptIdList:(plan.rule.theory?cidList:[]), littleChapterConceptIdList:[], assignStudentIdList:(model.sid?[model.sid]:[]), shareScope:'ACADEMY',
     title:title, writer:'김정수 선생님', prefix:'취약유형', tag:'WEAK_CONCEPT_CHIP', schoolType:sch.schoolType, grade:String(sch.grade), revision:'CURRICULUM_22' }, RCWS_DESIGN);
   var made=await api.call('POST','/worksheet', body);
@@ -104790,7 +104802,449 @@ rHaesolList = function(){
 };
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~191: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-192: 📖 기출 해설집 목록 — 학교 › 학년 › 연도 (시안 A)
+ *   (원장 2026-11-14 「학교별 학년별 연도별로 구분되게」 → 시안 docs/mockup_haesol_acc2.html 「추천대로 A」)
+ *  v19-191(학교 › 연도) 위에 «학년» 단을 더한다.
+ *   ① 학교 칸: 🏫 이름 · n권 · 연도 범위 · 학년별 권수(중2 1 · 중3 3) — 눌러서 접기/펴기
+ *   ② 학년 칸: [중3] 과목명 · n권 — 눌러서 접기/펴기 (처음엔 펼침)
+ *   ③ 학년 안: 연도를 왼쪽 제목으로(2026 · 2025 …, 최근 위 · 접지 않음) · 같은 해 안은 기말 → 중간
+ *      여러 해를 묶은 «범위맞춤 대비» 해설집은 맨 아래 «📦 대비»
+ *   ④ 학년 칩(중1~고2) 고르면 그 학년만 · 모두 펼침 · 모두 펼치기/접기 · 펼친 상태 기기에 기억(hs_acc191 그대로)
+ *  화면만 바꾼다 — 목록 자료·본문·삭제·불러오기는 그대로. ※ 문자열 연결로만 HTML.
+ * ═══════════════════════════════════════════════════════════════════ */
+(function(){
+  try {
+    var css = document.createElement('style');
+    css.textContent = '.hs192-year{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:8px 0;border-top:1px dashed #e3e9f2}'
+      + '.hs192-year:first-child{border-top:none}'
+      + '.hs192-ylab{font-weight:900;color:#0d2240;font-size:14px;padding-top:9px}'
+      + '.hs192-ylab small{display:block;font-size:11px;color:#94a3b8;font-weight:700}'
+      + '@media (max-width:600px){.hs192-year{grid-template-columns:1fr}.hs192-ylab{padding-top:0}}';
+    (document.head || document.documentElement).appendChild(css);
+  } catch(e){}
+})();
+var HS192_GORD = ['중1','중2','중3','고1','고2','고3','기타'];
+function hs192Q(s){ return hsEsc(s).replace(/'/g, '&#39;'); }
+function hs192Row(it){
+  var kill = (it.qs || []).filter(function(q){ return q.killer; }).length;
+  var warn = (it.qs || []).filter(function(q){ return q.warn; }).length;
+  var essay = (it.qs || []).filter(function(q){ return q.ans === '서술'; }).length;
+  var code = String(it.code || '').replace(/'/g, '');
+  var ts = hs191TermShort(it) || it.title || it.code;
+  return '<div class="hs191-card hs192-row" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1.5px solid #e8eef6;border-radius:10px;padding:8px 11px">'
+    + '<span style="font-weight:900;font-size:14px;color:#0d2240;min-width:88px">' + hsEsc(ts) + '</span>'
+    + '<span style="font-size:12px;color:#5b6b82;font-weight:700;flex:1 1 150px;min-width:0">' + hsEsc([it.subject, it.n ? it.n + '문항' : ''].filter(Boolean).join(' · ')) + '</span>'
+    + (essay ? '<span style="background:#fef3c7;color:#a16207;border-radius:50px;padding:3px 9px;font-size:10.5px;font-weight:900">서술형 ' + essay + '</span>' : '')
+    + (kill ? '<span style="background:#f3e8ff;color:#7e22ce;border-radius:50px;padding:3px 9px;font-size:10.5px;font-weight:900">최고난도 ' + kill + '</span>' : '')
+    + (warn ? '<span style="background:#fee2e2;color:#dc2626;border-radius:50px;padding:3px 9px;font-size:10.5px;font-weight:900">⚠️ 문제 확인 ' + warn + '</span>' : '')
+    + '<button onclick="hsOpen(\'' + code + '\')" style="padding:6px 13px;background:#1d6fe8;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit">문항 보기</button>'
+    + '<button onclick="hsDel(\'' + code + '\')" title="' + hsEsc(String(it.addedAt || '').slice(0, 10)) + ' 등록" style="padding:6px 10px;background:#fff;color:#94a3b8;border:1.5px solid #e3e9f2;border-radius:8px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit">삭제</button>'
+    + '</div>';
+}
+/* 한 학년 안: 연도 제목(왼쪽) + 줄 */
+function hs192Years(L){
+  var Y = {};
+  L.forEach(function(it){ var y = hs191Year(it) || '기타'; (Y[y] = Y[y] || []).push(it); });
+  var ys = Object.keys(Y).sort(function(a, b){
+    var ra = a === 'pack' ? 1 : (a === '기타' ? 2 : 0), rb = b === 'pack' ? 1 : (b === '기타' ? 2 : 0);
+    return (ra - rb) || b.localeCompare(a);
+  });
+  return ys.map(function(y){
+    var R = Y[y].slice().sort(function(a, b){ return (hs191TermRank(b) - hs191TermRank(a)) || String(a.title || '').localeCompare(String(b.title || ''), 'ko'); });
+    var lab = y === 'pack' ? '📦 대비<small>범위맞춤 묶음 · ' + R.length + '권</small>' : (y === '기타' ? '연도 미상<small>' + R.length + '권</small>' : y + '<small>학년도 · ' + R.length + '권</small>');
+    return '<div class="hs191-year hs192-year"><div class="hs191-yh hs192-ylab">' + lab + '</div><div style="display:flex;flex-direction:column;gap:6px;min-width:0">'
+      + R.map(hs192Row).join('') + '</div></div>';
+  }).join('');
+}
+hs191All = function(on){
+  HS191.open = {};
+  ((HS.cat && HS.cat.items) || []).forEach(function(it){
+    var s = hs191School(it); HS191.open['s:' + s] = !!on; HS191.open['g:' + s + '|' + hsGradeOf(it)] = !!on;
+  });
+  hs191SaveOpen(); render();
+};
+window.hs191All = hs191All;
+rHaesolList = function(){
+  var all = (HS.cat.items || []).slice();
+  var h = '<div style="padding:14px;max-width:1000px">';
+  h += '<div style="background:linear-gradient(135deg,#0d2240,#1d6fe8);border-radius:14px;padding:18px 20px;margin-bottom:12px;color:#fff">'
+    + '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+    + '<div style="font-size:19px;font-weight:900">📖 기출 해설집</div>'
+    + '<div style="font-size:12px;opacity:.85;font-weight:700">학교 › 학년 › 연도별로 모았습니다 — 눌러서 펼치세요</div>'
+    + '<button onclick="hsRefresh()" style="margin-left:auto;padding:9px 14px;background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:9px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">🔄 새로고침</button>'
+    + '<button onclick="hsPick()" style="padding:9px 16px;background:#fff;color:#0d2240;border:none;border-radius:9px;font-size:12.5px;font-weight:900;cursor:pointer;font-family:inherit">＋ 해설집 불러오기</button>'
+    + '</div></div>';
+  h += '<input type="file" id="hs-file" accept=".html,text/html" style="display:none" onchange="hsFile(this)">';
+  if (!all.length) {
+    h += '<div style="background:#fff;border-radius:14px;padding:44px;text-align:center;color:#94a3b8;font-size:13px;line-height:1.9">'
+      + '아직 목록이 비어 있습니다.'
+      + '<div style="margin-top:10px;font-size:12.5px;color:#5b6b82;font-weight:700">해설집은 Claude가 만들면 <b>서버에 자동으로 올라옵니다</b> — <b>🔄 새로고침</b>을 한 번 눌러 보세요.</div>'
+      + '<div style="margin-top:8px;font-size:12px;color:#b6c0cf">직접 넣고 싶으시면 <b>＋ 해설집 불러오기</b>로 <b>해설집.html</b> 파일을 고르셔도 됩니다.</div></div>';
+    return h + '</div>';
+  }
+  var gcnt = {};
+  all.forEach(function(it){ var g = hsGradeOf(it); gcnt[g] = (gcnt[g] || 0) + 1; });
+  var gorder = HS192_GORD.filter(function(g){ return gcnt[g]; });
+  if (HS.gfilter !== '전체' && !gcnt[HS.gfilter]) HS.gfilter = '전체';
+  h += '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;align-items:center">';
+  [['전체', all.length]].concat(gorder.map(function(g){ return [g, gcnt[g]]; })).forEach(function(p){
+    var on = (HS.gfilter === p[0]);
+    h += '<span onclick="hsGradeSet(\'' + p[0] + '\')" style="cursor:pointer;user-select:none;border:1.5px solid ' + (on ? '#0d2240' : '#e3e9f2') + ';background:' + (on ? '#0d2240' : '#fff') + ';color:' + (on ? '#fff' : '#5b6b82') + ';border-radius:50px;padding:6px 15px;font-size:12.5px;font-weight:900">'
+      + p[0] + ' <span style="font-weight:800;opacity:' + (on ? '.75' : '.55') + '">' + p[1] + '</span></span>';
+  });
+  h += '<span style="margin-left:auto;display:flex;gap:6px">'
+    + '<button onclick="hs191All(true)" style="padding:6px 11px;background:#fff;color:#334155;border:1.5px solid #e3e9f2;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">모두 펼치기</button>'
+    + '<button onclick="hs191All(false)" style="padding:6px 11px;background:#fff;color:#334155;border:1.5px solid #e3e9f2;border-radius:9px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit">모두 접기</button>'
+    + '</span></div>';
+  var filt = HS.gfilter !== '전체';
+  var items = filt ? all.filter(function(it){ return hsGradeOf(it) === HS.gfilter; }) : all;
+  var S = {};
+  items.forEach(function(it){ var s = hs191School(it); (S[s] = S[s] || []).push(it); });
+  var names = Object.keys(S).sort(function(a, b){ return ((hs191IsMid(a) ? 0 : 1) - (hs191IsMid(b) ? 0 : 1)) || a.localeCompare(b, 'ko'); });
+  var o = hs191LoadOpen();
+  names.forEach(function(s){
+    var L = S[s], sk = 's:' + s, sOpen = (sk in o) ? !!o[sk] : filt;
+    var G = {}; L.forEach(function(it){ var g = hsGradeOf(it); (G[g] = G[g] || []).push(it); });
+    var gs = HS192_GORD.filter(function(g){ return G[g]; });
+    var yrs = L.map(hs191Year).filter(function(y){ return /^20\d\d$/.test(y); }).sort();
+    var range = yrs.length ? (yrs[0] === yrs[yrs.length - 1] ? yrs[0] : yrs[0] + '~' + yrs[yrs.length - 1]) : '';
+    h += '<div class="hs191-school" style="background:#fff;border:1.5px solid ' + (sOpen ? '#bcd0ee' : '#e3e9f2') + ';border-radius:14px;margin-bottom:9px;overflow:hidden">'
+      + '<div class="hs191-sh" onclick="hs191Tog(\'' + hs192Q(sk) + '\',' + (filt ? 'true' : 'false') + ')" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px 16px;cursor:pointer;user-select:none;background:' + (sOpen ? '#f4f8ff' : '#fff') + '">'
+      +   '<span style="font-size:13px;color:#64748b;width:14px;display:inline-block;transform:rotate(' + (sOpen ? 90 : 0) + 'deg)">▶</span>'
+      +   '<span style="font-size:16px;font-weight:900;color:#0d2240">🏫 ' + hsEsc(s) + '</span>'
+      +   '<span style="background:#dcfce7;color:#16a34a;border-radius:50px;padding:3px 10px;font-size:11px;font-weight:900">' + L.length + '권</span>'
+      +   (range ? '<span style="font-size:12px;color:#64748b;font-weight:800">' + range + '</span>' : '')
+      +   '<span style="margin-left:auto;display:flex;gap:5px;flex-wrap:wrap">' + gs.map(function(g){ return '<span style="background:#eef4ff;color:#1d6fe8;border-radius:7px;padding:2px 8px;font-size:11.5px;font-weight:900">' + g + ' ' + G[g].length + '</span>'; }).join('') + '</span>'
+      + '</div>';
+    if (sOpen) {
+      h += '<div style="padding:4px 14px 14px;display:flex;flex-direction:column;gap:10px">';
+      gs.forEach(function(g){
+        var gk = 'g:' + s + '|' + g, gOpen = (gk in o) ? !!o[gk] : true;
+        var subs = []; G[g].forEach(function(it){ var x = String(it.subject || '').replace(/\s*\(20\d\d개정\)/, ''); if (x && subs.indexOf(x) < 0) subs.push(x); });
+        h += '<div class="hs192-grade" style="border:1px solid #e3e9f2;border-radius:12px;overflow:hidden">'
+          + '<div class="hs192-gh" onclick="hs191Tog(\'' + hs192Q(gk) + '\',true)" style="display:flex;align-items:center;gap:9px;padding:10px 12px;cursor:pointer;user-select:none;background:#fff' + (gOpen ? ';border-bottom:1px solid #e3e9f2' : '') + '">'
+          +   '<span style="font-size:12px;color:#94a3b8;width:12px;display:inline-block;transform:rotate(' + (gOpen ? 90 : 0) + 'deg)">▶</span>'
+          +   '<span style="background:#1d6fe8;color:#fff;border-radius:8px;padding:3px 10px;font-weight:900;font-size:13px">' + hsEsc(g) + '</span>'
+          +   '<span style="font-size:12px;color:#5b6b82;font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">' + hsEsc(subs.join(' · ')) + '</span>'
+          +   '<span style="font-size:12px;color:#94a3b8;font-weight:800">' + G[g].length + '권</span>'
+          + '</div>'
+          + (gOpen ? '<div style="padding:6px 12px 10px">' + hs192Years(G[g]) + '</div>' : '')
+          + '</div>';
+      });
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+  return h + '</div>';
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-193: 🛠 오른쪽 도구 띠 2배 · 글자 이름 · 리커버리 «카드 ↔ 줄 표» 단추를 띠에 바로
+ *   (원장 2026-11-14 「리커버리 예전 버전 카드로 변환하는 버튼이 안 보인다. 오른쪽 도구에 버튼 만들고,
+ *    오른쪽 도구함 전체적으로 잘 보이게 2배 크기로」)
+ *  [까닭] v19-189 에서 «보기 방식»을 도구함 «안»에 넣었는데, 도구함이 접혀 있으면 오른쪽 끝 44px 띠에
+ *         작은 그림(👤📝🛠…)만 보여 어디를 눌러야 하는지 알 수 없었다.
+ *  [고침] ① 띠 폭 44 → 88px · 단추 32 → 64×56px · 그림 16 → 24px · 그림 밑에 이름(학생·규칙·만들기 …)
+ *         ② 리커버리 화면에선 띠 맨 위에 «🗂 카드 보기» / «☰ 줄 표» 단추 — 도구함을 열지 않고 한 번에 바꾼다
+ *         ③ 펼친 도구함 폭은 그대로 2배(≈600px) + 띠 88px
+ *  PC 1280px 이상에서만(그보다 좁으면 예전처럼 둥근 단추). ※ 문자열 연결로만 HTML.
+ * ═══════════════════════════════════════════════════════════════════ */
+(function(){
+  try {
+    var st = document.createElement('style');
+    st.textContent = '@media(min-width:1280px){'
+      + '.tool-panel.l3-rail{width:88px!important;min-width:88px!important}'
+      + '.tool-panel.l3-rail.l3-rail-open{width:min(688px,46vw)!important;min-width:min(688px,46vw)!important}'
+      + '.l3-rbar{width:88px!important;gap:8px!important;padding:12px 0!important}'
+      + '.l3-ric{width:72px!important;height:58px!important;border-radius:12px!important;font-size:24px!important;flex-direction:column!important;gap:3px!important;line-height:1!important}'
+      + '.l3-ric .r193-t{display:block;font-size:11.5px;font-weight:900;color:#334155;letter-spacing:-.02em;white-space:nowrap}'
+      + '.l3-ric.on .r193-t{color:#fff}'
+      + '.l3-ric.r193-view{background:#fff7ed!important;border:2px solid #ea580c!important;height:64px!important}'
+      + '.l3-ric.r193-view .r193-t{color:#c2410c}'
+      + '.l3-ric.r193-view:hover{background:#ffedd5!important}'
+      + '.l3-rlb{font-size:12px!important;margin-top:6px!important}'
+      + '}';
+    (document.head || document.documentElement).appendChild(st);
+  } catch(e){}
+})();
+var R193_NAME = { stu:'학생', rule:'규칙', make:'만들기', sms:'안내문', print:'인쇄', acct:'계정', tools:'도구' };
+function r193ViewBtn(){
+  var mode = 'table'; try { mode = rb174View().mode || 'table'; } catch(e){}
+  var toCards = mode !== 'cards';
+  return '<button type="button" class="l3-ric r193-view" data-l3-ric="view" data-r193-to="' + (toCards ? 'cards' : 'table') + '"'
+    + ' title="' + (toCards ? '예전 카드 보드로 보기' : '줄 표로 돌아가기') + '" aria-label="' + (toCards ? '카드 보기' : '줄 표') + '"'
+    + ' onclick="rv189Mode(\'' + (toCards ? 'cards' : 'table') + '\')">' + (toCards ? '🗂' : '☰') + '<span class="r193-t">' + (toCards ? '카드 보기' : '줄 표') + '</span></button>';
+}
+if (typeof rb174RailIcons === 'function') rb174RailIcons = (function(orig){ return function(v){
+  var h = String(orig.apply(this, arguments));
+  /* 단추마다 그림 밑에 이름 */
+  h = h.replace(/(<button type="button" class="l3-ric[^"]*" data-l3-ric="([a-z]+)"[^>]*>)([\s\S]*?)(<\/button>)/g, function(all, open, id, ic, close){
+    var nm = R193_NAME[id]; return nm ? open + ic + '<span class="r193-t">' + nm + '</span>' + close : all;
+  });
+  var rcOk = false; try { rcOk = v === 'recovery' && RC && RC.loaded && typeof rv189Mode === 'function'; } catch(e){}
+  return rcOk ? r193ViewBtn() + h : h;
+}; })(rb174RailIcons);
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-195: 🖤 순위표(진도 레이스·리그 한눈에·모바일 레이스) 블랙반 엠블럼 — «지금 기수»만
+ *   (원장 2026-11-16 「진도레이스나 주간테스트에서 블랙반은 현재 2기만 엠블럼이 표시되게 · 지금은 1기도 표시」 → 「추천대로」)
+ *  [전] blkTinyOf = 지금 기수(마감 안 된 것)가 있으면 그것, 없으면 «지난 기수(출신)» 하나 → 1기 출신에게도 Ⅰ 이 붙었다.
+ *       게다가 2기(9/1~12/30)가 «마감»으로 저장돼 있어 2기도 출신 취급이었다.
+ *  [후] 지금 기수 = 오늘(한국 날짜)이 그 기수 기간(from~to) 안 — 기간이 없으면 «마감 안 됨»으로 판단.
+ *       순위표에는 지금 기수만 · 출신은 안 붙인다. 학생 상세·블랙반 관리 화면(다른 함수)은 그대로.
+ * ═══════════════════════════════════════════════════════════════════ */
+function blkNowOf(code){
+  var cs = []; try { cs = blkCohortsOf(code); } catch(e){ return null; }
+  if (!cs.length) return null;
+  var today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+  var now = cs.filter(function(c){
+    var f = String(c.from || '').slice(0, 10), t = String(c.to || '').slice(0, 10);
+    if (f || t) return (!f || f <= today) && (!t || today <= t);
+    return !c.closed;
+  });
+  return now.length ? now[now.length - 1] : null;
+}
+blkTinyOf = function(code, px){
+  var c = blkNowOf(code);
+  return c ? blkEmblem(c.no, px || 15, false) : '';
+};
+window.blkNowOf = blkNowOf; window.blkTinyOf = blkTinyOf;
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-196: 📱 모바일 학원앱 «오늘 제출 현황» → 학생별 녹음·플래너 제출 목록
+ *   (원장 2026-11-16 「모바일 학원앱에서 플래너와 녹음 제출현황을 자세히 확인 가능해야 한다 · 월수금반 학생별 제출현황」)
+ *  ① 홈의 «📥 오늘 제출 현황» 카드를 누르면 학생별 화면(MOB.view 'subm')
+ *  ② 학생 한 줄 = 이름 · 학년·반 · 🎙 녹음(✓ 시각 · n개 / ✗) · 📒 플래너(✓ 시각 · n장 · 확인함 / ✗)
+ *     위 칩: 전체 · 녹음 안 냄 · 플래너 안 냄 · 둘 다 냄 / 맨 위 숫자 요약
+ *  ③ 플래너 «오늘 것» = 새벽 3시 규칙(v19-185) — 오늘 03:00 ~ 내일 02:59 에 낸 것
+ *  ④ 녹음은 학생마다 recordings 버킷 목록에서 오늘 날짜 파일(이름의 YYYYMMDD)과 올린 시각(created_at)
+ *  보기만 한다(재생·검토·승인은 PC 화면). ※ 문자열 연결로만 HTML.
+ * ═══════════════════════════════════════════════════════════════════ */
+var M196 = { f: 'all' };
+/* 녹음: 개수·마지막 시각까지 기억하도록 다시 정의 (홈 숫자 MOB.rec.map 은 그대로 채운다) */
+mobRecLoad = async function(){
+  if (MOB.rec.started) return; MOB.rec.started = true; MOB.rec.det = MOB.rec.det || {};
+  var ymd = mobToday().replace(/\./g, '');
+  var ro = mobRoster().list.filter(function(s){ return s.lumen_rec_code; });
+  for (var i = 0; i < ro.length; i++){
+    var code = String(ro[i].lumen_rec_code);
+    try {
+      var files = await fetchRecordings(code);
+      var today = (files || []).filter(function(f){ var m = String(f.name || '').match(/(\d{8})/); return m && m[1] === ymd; });
+      MOB.rec.map[code] = today.length > 0;
+      var last = ''; today.forEach(function(f){ var t = String(f.created_at || f.updated_at || ''); if (t > last) last = t; });
+      var days = {}; (files || []).forEach(function(f){ var m = String(f.name || '').match(/(\d{8})/); if (!m) return; var t = String(f.created_at || f.updated_at || ''); if (!days[m[1]] || t > days[m[1]]) days[m[1]] = t || '1'; });
+      MOB.rec.det[code] = { n: today.length, at: last, days: days };   /* v19-197: 날짜별 달력용 */
+    } catch(e){}
+    if (mobActive() && MOB.view === 'subm' && i % 4 === 3) render();
+  }
+  MOB.rec.done = true;
+  if (mobActive() && (MOB.view === 'home' || MOB.view === 'subm')) render();
+};
+window.mobRecLoad = mobRecLoad;
+function m196Hm(iso){ if (!iso) return ''; var d = new Date(iso); if (isNaN(d)) return ''; return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+/* 오늘 낸 플래너 — setId «YYYYMMDD_HHMM…» · 03:00 전이면 전날 것 */
+function m196Planner(s){
+  var n = new Date(), y = n.getFullYear(), mo = n.getMonth(), d = n.getDate();
+  var today = '' + y + String(mo + 1).padStart(2, '0') + String(d).padStart(2, '0');
+  var tm = new Date(y, mo, d + 1), tmr = '' + tm.getFullYear() + String(tm.getMonth() + 1).padStart(2, '0') + String(tm.getDate()).padStart(2, '0');
+  var L = (s.lumen_planner_photos || []).filter(function(p){
+    var id = String((p && p.setId) || ''); var m = /^(\d{8})(?:_(\d{2})(\d{2}))?/.exec(id); if (!m) return false;
+    var hm = m[2] ? Number(m[2]) * 100 + Number(m[3]) : 1200;
+    return (m[1] === today && hm >= 300) || (m[1] === tmr && hm < 300);
+  });
+  if (!L.length) return null;
+  var last = L[L.length - 1], id = String(last.setId), hm = /^\d{8}_(\d{2})(\d{2})/.exec(id);
+  var pages = 0; L.forEach(function(p){ pages += (p.urls || []).length; });
+  return { n: L.length, pages: pages, hm: hm ? hm[1] + ':' + hm[2] : '', late: /^\d{8}_(0[0-2])/.test(id) && id.slice(0, 8) === tmr, reviewed: L.some(function(p){ return p.reviewed; }) };
+}
+window.m196F = function(f){ M196.f = f; render(); };
+function mob196Subm(){
+  var ro = mobRoster(), WD = ['일','월','화','수','목','금','토'], n = new Date();
+  var plReady = !!window._homePlannerDone, recReady = !!MOB.rec.done;
+  var rows = ro.list.map(function(s){
+    var code = s.lumen_rec_code ? String(s.lumen_rec_code) : '';
+    var rd = code ? ((MOB.rec.det || {})[code] || (MOB.rec.map[code] ? { n: 1, at: '' } : null)) : null;
+    var recOk = !!(rd && rd.n), pl = m196Planner(s);
+    return { s: s, code: code, rec: rd, recOk: recOk, recKnown: !code || recReady || (MOB.rec.det && code in MOB.rec.det), pl: pl };
+  });
+  var cRec = rows.filter(function(r){ return r.recOk; }).length, cPl = rows.filter(function(r){ return r.pl; }).length;
+  var cBoth = rows.filter(function(r){ return r.recOk && r.pl; }).length;
+  var cNoRec = rows.filter(function(r){ return !r.recOk; }).length, cNoPl = rows.filter(function(r){ return !r.pl; }).length;
+  var F = M196.f;
+  var shown = rows.filter(function(r){ return F === 'all' ? true : F === 'norec' ? !r.recOk : F === 'nopl' ? !r.pl : (r.recOk && r.pl); });
+  /* 안 낸 학생이 위로 */
+  shown.sort(function(a, b){ var sa = (a.recOk ? 1 : 0) + (a.pl ? 1 : 0), sb = (b.recOk ? 1 : 0) + (b.pl ? 1 : 0); return (sa - sb) || String(a.s.name).localeCompare(String(b.s.name), 'ko'); });
+  var h = '';
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><button onclick="mobGo(\'home\')" style="border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:7px 12px;font-family:inherit;font-weight:800;font-size:12.5px;color:#0d2240;cursor:pointer">‹ 홈</button>'
+    + '<div style="font-size:17px;font-weight:900;color:#0d2240">📥 오늘 제출 현황</div></div>';
+  h += '<div style="font-size:12.5px;color:#64748b;font-weight:700;margin-bottom:10px">' + (n.getMonth() + 1) + '월 ' + n.getDate() + '일 ' + WD[n.getDay()] + '요일 · ' + (ro.key === '전체' ? '수업 요일 아님' : esc2(ro.key) + ' ' + ro.list.length + '명') + '</div>';
+  if (!ro.list.length) return h + '<div style="background:#fff;border-radius:14px;padding:30px;text-align:center;color:#94a3b8;font-weight:700">오늘은 수업이 없습니다.</div>';
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">'
+    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:14px;padding:11px;text-align:center"><div style="font-size:22px;font-weight:900;color:#0d2240">' + (recReady ? cRec : '…') + '<span style="font-size:13px;color:#94a3b8">/' + rows.filter(function(r){ return r.code; }).length + '</span></div><div style="font-size:11.5px;font-weight:800;color:#64748b">🎙 녹음 제출</div></div>'
+    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:14px;padding:11px;text-align:center"><div style="font-size:22px;font-weight:900;color:#0d2240">' + (plReady ? cPl : '…') + '<span style="font-size:13px;color:#94a3b8">/' + ro.list.length + '</span></div><div style="font-size:11.5px;font-weight:800;color:#64748b">📒 플래너 제출</div></div></div>';
+  var chip = function(k, t, c){ var on = F === k; return '<span onclick="m196F(\'' + k + '\')" style="cursor:pointer;user-select:none;border:1.5px solid ' + (on ? '#0d2240' : '#e3e9f2') + ';background:' + (on ? '#0d2240' : '#fff') + ';color:' + (on ? '#fff' : '#5b6b82') + ';border-radius:50px;padding:6px 12px;font-size:12px;font-weight:900;white-space:nowrap">' + t + ' <span style="opacity:.6">' + c + '</span></span>'; };
+  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">' + chip('all', '전체', ro.list.length) + chip('norec', '🎙 녹음 안 냄', cNoRec) + chip('nopl', '📒 플래너 안 냄', cNoPl) + chip('both', '✓ 둘 다 냄', cBoth) + '</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:7px">';
+  shown.forEach(function(r){
+    var s = r.s;
+    var recH = !r.code ? '<span style="color:#94a3b8">코드 없음</span>'
+      : !r.recKnown ? '<span style="color:#cbd5e1">확인 중…</span>'
+      : r.recOk ? '<b style="color:#15803d">✓ ' + (m196Hm(r.rec.at) || '제출') + '</b>' + (r.rec.n > 1 ? ' <span style="color:#64748b">· ' + r.rec.n + '개</span>' : '')
+      : '<b style="color:#dc2626">✗ 안 냄</b>';
+    var plH = !plReady ? '<span style="color:#cbd5e1">확인 중…</span>'
+      : r.pl ? '<b style="color:#15803d">✓ ' + (r.pl.hm || '제출') + '</b>' + (r.pl.late ? ' <span style="color:#b45309">새벽</span>' : '') + (r.pl.pages ? ' <span style="color:#64748b">· ' + r.pl.pages + '장</span>' : '') + (r.pl.reviewed ? ' <span style="color:#1d6fe8">· 확인함</span>' : '')
+      : '<b style="color:#dc2626">✗ 안 냄</b>';
+    var both = r.recOk && r.pl, none = !r.recOk && !r.pl && r.recKnown && plReady;
+    h += '<div class="m196-row" onclick="m197Open(\'' + String(s.id).replace(/'/g, '') + '\')" style="cursor:pointer;background:#fff;border:1.5px solid ' + (none ? '#fecaca' : both ? '#bbf7d0' : '#e6eaf1') + ';border-radius:13px;padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center">'
+      + '<div style="min-width:0"><div style="font-size:15px;font-weight:900;color:#0d2240">' + esc2(s.name) + '</div><div style="font-size:11px;color:#94a3b8;font-weight:700">' + esc2([String(s.grade || '').replace(/학교\s*/, '').replace('학년', ''), s.group].filter(Boolean).join(' · ')) + '</div></div>'
+      + '<div style="display:flex;flex-direction:column;gap:3px;font-size:12.5px;text-align:right;white-space:nowrap"><div>🎙 ' + recH + '</div><div>📒 ' + plH + '</div></div></div>';
+  });
+  if (!shown.length) h += '<div style="background:#fff;border-radius:13px;padding:22px;text-align:center;color:#94a3b8;font-weight:700">해당하는 학생이 없습니다</div>';
+  h += '</div><div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:10px;line-height:1.6">플래너는 오늘 03:00 ~ 내일 02:59 에 낸 것(새벽 3시 규칙). 재생·검토·승인은 PC 화면에서. <b>이름을 누르면 날짜별 달력</b>.</div>';
+  return h;
+}
+/* 홈 카드 누르면 학생별 화면 · 'subm' 보기는 홈 함수 자리에서 그린다(mobSync 의 else 갈래) */
+mobHome = (function(orig){ return function(){
+  if (MOB.view === 'subm') return M196.sel ? mob197Cal() : mob196Subm();
+  var h = orig.apply(this, arguments);
+  h = h.replace('<div style="background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:15px 17px;margin-bottom:14px"><div style="font-size:14px;font-weight:900;color:#0d2240;margin-bottom:9px">📥 오늘 제출 현황',
+    '<div class="m196-card" onclick="mobGo(\'subm\')" style="background:#fff;border:1px solid #e6eaf1;border-radius:16px;padding:15px 17px;margin-bottom:14px;cursor:pointer"><div style="font-size:14px;font-weight:900;color:#0d2240;margin-bottom:9px">📥 오늘 제출 현황');
+  /* 홈 플래너 숫자도 학생별 화면과 같은 새벽 3시 규칙으로 */
+  try { if (window._homePlannerDone) { var c = mobRoster().list.filter(function(x){ return m196Planner(x); }).length;
+    h = h.replace(/(<div style="font-size:21px;font-weight:900;color:#0d2240">)\d+(<span style="font-size:13px;color:#94a3b8">\/\d+<\/span><\/div><div style="font-size:11px;font-weight:800;color:#64748b;margin-top:2px">📔 플래너 제출)/, '$1' + c + '$2'); } } catch(e){}
+  h = h.replace('제출 여부만 표시 — 재생·검토·승인은 PC 화면에서</div>', '<b style="color:#1d6fe8">눌러서 학생별 보기 ›</b> · 재생·검토·승인은 PC 화면에서</div>');
+  return h;
+}; })(mobHome);
+
+/* ═══ v19-197: 학생 이름 누르면 날짜별 제출 달력 (원장 2026-11-16 「학생 이름 누르면 날짜별 제출하는 것 체크 표시로 며칠 날 내고 며칠 날 내지 않았는지」)
+ *   한 달 달력(월~일) · 칸마다 🎙 녹음 · 📒 플래너 ✓ / 수업일인데 안 냈으면 ✗ · 수업일은 옅은 파랑 · 미래 칸은 비움
+ *   수업 요일 = 등록부 반 요일(groupDays) · 없으면 반 이름 M → 월수금, T → 화목토
+ *   녹음 = recordings 파일 이름의 날짜 · 플래너 = setId 날짜(새벽 3시 규칙) — 학원앱에 이미 있는 기록 그대로 */
+M196.sel = null; M196.ym = null;
+window.m197Open = function(id){ M196.sel = String(id); var n = new Date(); M196.ym = [n.getFullYear(), n.getMonth()]; var ov = document.getElementById('MOB_OV'); if (ov) ov.scrollTop = 0; render(); };
+window.m197Back = function(){ M196.sel = null; render(); };
+window.m197Mon = function(d){ var y = M196.ym[0], m = M196.ym[1] + d; if (m < 0){ m = 11; y--; } if (m > 11){ m = 0; y++; } M196.ym = [y, m]; render(); };
+function m197Days(s){
+  var g = String(s.group || ''), gd = (typeof groupDays !== 'undefined' && groupDays && groupDays[g]) || null;
+  if (Array.isArray(gd) && gd.length) return gd.map(Number);
+  if (/^m/i.test(g)) return [1, 3, 5]; if (/^t/i.test(g)) return [2, 4, 6]; return [];
+}
+function m197Ymd(d){ return '' + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
+/* 플래너: 날짜(YYYYMMDD) → {hm, pages, reviewed} · 새벽 3시 전 제출은 전날 */
+function m197PlMap(s){
+  var M = {};
+  (s.lumen_planner_photos || []).forEach(function(p){
+    var id = String((p && p.setId) || ''), m = /^(\d{4})(\d{2})(\d{2})(?:_(\d{2})(\d{2}))?/.exec(id); if (!m) return;
+    var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])), hm = m[4] ? Number(m[4]) * 100 + Number(m[5]) : 1200;
+    if (hm < 300) d.setDate(d.getDate() - 1);
+    var k = m197Ymd(d), o = M[k] || (M[k] = { hm: '', pages: 0, reviewed: false });
+    o.hm = m[4] ? m[4] + ':' + m[5] : o.hm; o.pages += (p.urls || []).length; if (p.reviewed) o.reviewed = true;
+  });
+  return M;
+}
+/* ★ v19-198: 제출 기준 (원장 2026-11-16 「플래너는 매일 제출이 기본 · 녹음은 월수금 수업이면 그 수업 전에 · 12월부터는 매일」)
+ *   플래너 = 매일 · 녹음 = 수업일만, M197_REC_DAILY_FROM(2026-12-01)부터 매일
+ *   표시(시안 A): 칸마다 동그라미 두 개 — 위 «녹»(녹음) · 아래 «플»(플래너)
+ *   초록 꽉 찬 = 냄 · 빨간 테 = 내야 하는 날인데 안 냄 · 연한 회색 = 내는 날 아님 · 점선 = 오늘(마감 전) · 앞날은 흐리게 */
+var M197_REC_DAILY_FROM = '20261201';
+function m197RecDue(k, isCls){ return k >= M197_REC_DAILY_FROM ? true : isCls; }
+(function(){ try { var st = document.createElement('style');
+  /* v19-199: 글자(녹·플) 대신 그림(🎙·📒) — 동그라미 색이 상태 */
+  st.textContent = '.m197-o{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;box-sizing:border-box;line-height:1}'
+    + '.m197-o.ok{background:#16a34a;box-shadow:0 0 0 2px #bbf7d0}.m197-o.no{background:#fff;border:3px solid #dc2626}'
+    + '.m197-o.off{background:#f1f5f9}.m197-o.off i,.m197-o.fut i{filter:grayscale(1);opacity:.3}'
+    + '.m197-o.wait{background:#fff;border:2px dashed #94a3b8}.m197-o.wait i{opacity:.55}.m197-o.fut{background:#f8fafc}'
+    + '.m197-o i{font-style:normal}'
+    + '.m197-o.no{position:relative;overflow:hidden}.m197-o.no::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;background:#dc2626;transform:rotate(45deg);border-radius:2px}'
+    + '.m198-st{border-radius:16px;padding:12px 12px 10px;color:#fff;position:relative;overflow:hidden}.m198-st.pl{background:linear-gradient(135deg,#ff9600,#ff6a00)}.m198-st.rc{background:linear-gradient(135deg,#ff7a00,#e8590c)}'
+    + '.m198-st.zero{background:#e2e8f0;color:#64748b}.m198-st .n{font-size:34px;font-weight:900;line-height:1;letter-spacing:-1px}.m198-st .u{font-size:12px;font-weight:900;opacity:.95}'
+    + '.m198-st .fl{position:absolute;right:8px;top:6px;font-size:34px}.m198-st .bt{font-size:10.5px;font-weight:800;opacity:.9;margin-top:4px}'
+    + '.m198-wk{display:flex;gap:3px;margin-top:7px}.m198-wk span{flex:1;text-align:center;font-size:9.5px;font-weight:900}.m198-wk i{display:block;margin:2px auto 0;width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,.35);font-style:normal;font-size:10px;line-height:15px;color:#ff6a00}'
+    + '.m198-wk i.y{background:#fff}.m198-wk i.t{outline:2px solid #fff;outline-offset:1px}.m198-st.zero .m198-wk i{background:#cbd5e1}.m198-st.zero .m198-wk i.y{background:#16a34a;color:#fff}';
+  (document.head || document.documentElement).appendChild(st); } catch(e){} })();
+/* ★ v19-199: 🔥 연속 기록(듀오링고처럼) — 원장 2026-11-16 「이런 연속 학습 표기를 플래너와 녹음에 도입」
+ *   플래너 = 매일 낸 날이 끊기지 않고 이어진 날 수(오늘 아직 안 냈으면 어제까지) · 녹음 = «내야 하는 날»(수업일, 12월부터 매일)만 세어 끊기지 않은 횟수
+ *   최고 기록 = 남아 있는 기록 안에서 가장 길었던 연속 · 이번 주(월~일) 점 7개 */
+function m198Streak(has, due){
+  var d = new Date(), todayK = m197Ymd(d), cur = 0, started = false, i, k;
+  for (i = 0; i < 420; i++){
+    k = m197Ymd(d);
+    if (due(k, d)){
+      if (has[k]){ cur++; started = true; }
+      else if (k === todayK && !started){ /* 오늘은 마감 전 — 어제부터 */ }
+      else break;
+    }
+    d.setDate(d.getDate() - 1);
+  }
+  var best = 0, run = 0, keys = Object.keys(has).sort(), from = keys[0];
+  if (from){ var x = new Date(Number(from.slice(0, 4)), Number(from.slice(4, 6)) - 1, Number(from.slice(6, 8)));
+    while (m197Ymd(x) <= todayK){ k = m197Ymd(x); if (due(k, x)){ if (has[k]){ run++; if (run > best) best = run; } else if (k !== todayK) run = 0; } x.setDate(x.getDate() + 1); } }
+  return { cur: cur, best: Math.max(best, cur), today: !!has[todayK] };
+}
+function m198Card(kind, st, unit, has, due){
+  var mon = new Date(); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7));
+  var todayK = m197Ymd(new Date()), w = '';
+  for (var i = 0; i < 7; i++){ var d = new Date(mon); d.setDate(mon.getDate() + i); var k = m197Ymd(d);
+    w += '<span>' + '월화수목금토일'[i] + '<i class="' + (has[k] ? 'y' : '') + (k === todayK ? ' t' : '') + '">' + (has[k] ? '✓' : (due(k, d) || k > todayK ? '' : '·')) + '</i></span>'; }
+  return '<div class="m198-st ' + (st.cur ? kind : 'zero') + '" data-m198="' + kind + st.cur + '">'
+    + '<div class="fl">' + (st.cur ? '🔥' : '🧊') + '</div>'
+    + '<div class="u">' + (kind === 'pl' ? '📒 플래너' : '🎙 녹음') + '</div>'
+    + '<div class="n">' + st.cur + '<span style="font-size:14px;margin-left:2px">' + unit + ' 연속</span></div>'
+    + '<div class="bt">' + (st.cur && !st.today ? '오늘 내면 ' + (st.cur + 1) + unit + '! · ' : (!st.cur ? '오늘부터 다시 시작 · ' : '')) + '최고 ' + st.best + unit + '</div>'
+    + '<div class="m198-wk">' + w + '</div></div>';
+}
+function mob197Cal(){
+  var s = (students || []).find(function(x){ return String(x.id) === M196.sel; });
+  if (!s){ M196.sel = null; return mob196Subm(); }
+  var y = M196.ym[0], mo = M196.ym[1], cls = m197Days(s), pl = m197PlMap(s);
+  var code = s.lumen_rec_code ? String(s.lumen_rec_code) : '', rd = code ? ((MOB.rec.det || {})[code] || null) : null, rdays = (rd && rd.days) || {};
+  var todayK = m197Ymd(new Date());
+  var first = new Date(y, mo, 1), last = new Date(y, mo + 1, 0), lead = (first.getDay() + 6) % 7;   /* 월요일 시작 */
+  var nRecDue = 0, nRec = 0, nPlDue = 0, nPl = 0, missR = [], missP = [];
+  var cells = '';
+  for (var i = 0; i < lead; i++) cells += '<div></div>';
+  for (var dd = 1; dd <= last.getDate(); dd++){
+    var d = new Date(y, mo, dd), k = m197Ymd(d), isCls = cls.indexOf(d.getDay()) >= 0, fut = k > todayK, isToday = k === todayK;
+    var r = !!rdays[k], p = !!pl[k], dueR = !!code && m197RecDue(k, isCls), dueP = true;
+    if (!fut){
+      if (dueR){ nRecDue++; if (r) nRec++; else if (!isToday) missR.push(dd); } else if (r) nRec++;
+      if (dueP){ nPlDue++; if (p) nPl++; else if (!isToday) missP.push(dd); }
+    }
+    var o = function(ok, due, lab, ic){ var c = fut ? 'fut' : ok ? 'ok' : (due ? (isToday ? 'wait' : 'no') : 'off'); return '<span class="m197-o ' + c + '" data-m197="' + lab + c + '" title="' + (lab === '녹' ? '녹음' : '플래너') + '"><i>' + ic + '</i></span>'; };
+    cells += '<div class="m197-day" data-d="' + k + '" style="border-radius:9px;padding:4px 2px;min-height:62px;background:' + (isToday ? '#fef9c3' : isCls ? '#eef4ff' : '#fff') + ';border:1px solid ' + (isCls ? '#cfe0fb' : '#eef2f7') + ';display:flex;flex-direction:column;align-items:center;gap:3px">'
+      + '<b style="font-size:12.5px;color:' + (d.getDay() === 0 ? '#dc2626' : '#0d2240') + '">' + dd + '</b>'
+      + o(r, dueR, '녹', '🎙') + o(p, dueP, '플', '📒') + '</div>';
+  }
+  var recRule = (y * 100 + mo + 1) >= Number(M197_REC_DAILY_FROM.slice(0, 6)) ? '매일' : '수업일';
+  var h = '';
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><button onclick="m197Back()" style="border:1px solid #e2e8f0;background:#fff;border-radius:10px;padding:7px 12px;font-family:inherit;font-weight:800;font-size:12.5px;color:#0d2240;cursor:pointer">‹ 제출 현황</button>'
+    + '<div style="min-width:0"><div style="font-size:17px;font-weight:900;color:#0d2240">' + esc2(s.name) + '</div><div style="font-size:11px;color:#94a3b8;font-weight:700">' + esc2([String(s.grade || '').replace(/학교\s*/, '').replace('학년', ''), s.group, cls.length ? '수업 ' + cls.map(function(x){ return '일월화수목금토'[x]; }).join('') : ''].filter(Boolean).join(' · ')) + '</div></div></div>';
+  h += '<div style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e6eaf1;border-radius:13px;padding:8px 10px;margin-bottom:8px">'
+    + '<button onclick="m197Mon(-1)" style="border:none;background:#f1f5f9;border-radius:8px;padding:6px 12px;font-family:inherit;font-weight:900;cursor:pointer">‹</button>'
+    + '<b style="font-size:15px;color:#0d2240">' + y + '년 ' + (mo + 1) + '월</b>'
+    + '<button onclick="m197Mon(1)" style="border:none;background:#f1f5f9;border-radius:8px;padding:6px 12px;font-family:inherit;font-weight:900;cursor:pointer">›</button></div>';
+  var _pl = {}; Object.keys(pl).forEach(function(k){ _pl[k] = 1; });
+  var _rdue = function(k, d){ return m197RecDue(k, cls.indexOf(d.getDay()) >= 0); };
+  h += '<div class="m198-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">' + m198Card('pl', m198Streak(_pl, function(){ return true; }), '일', _pl, function(){ return true; })
+    + (code ? m198Card('rc', m198Streak(rdays, _rdue), (m197RecDue(todayK, false) ? '일' : '회'), rdays, _rdue) : '<div class="m198-st zero"><div class="u">🎙 녹음</div><div class="bt">학생 코드 없음</div></div>') + '</div>';
+  h += '<div class="m197-sum" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">'
+    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + (code ? (MOB.rec.done || rd ? nRec : '…') : '—') + '<span style="font-size:12px;color:#94a3b8">/' + nRecDue + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">🎙 녹음 (' + recRule + ')</div></div>'
+    + '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:12px;padding:9px;text-align:center"><div style="font-size:19px;font-weight:900;color:#0d2240">' + nPl + '<span style="font-size:12px;color:#94a3b8">/' + nPlDue + '</span></div><div style="font-size:11px;font-weight:800;color:#64748b">📒 플래너 (매일)</div></div></div>';
+  h += '<div style="background:#fff;border:1px solid #e6eaf1;border-radius:14px;padding:8px">'
+    + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:11px;font-weight:900;color:#64748b;margin-bottom:4px"><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span><span style="color:#dc2626">일</span></div>'
+    + '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">' + cells + '</div></div>';
+  var lg = function(c, t){ return '<span style="display:inline-flex;align-items:center;gap:4px"><span class="m197-o ' + c + '" style="width:22px;height:22px;font-size:11px"><i>🎙</i></span>' + t + '</span>'; };
+  h += '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:800;color:#64748b;margin-top:8px">'
+    + lg('ok', '냄') + lg('no', '안 냄') + lg('wait', '오늘(마감 전)') + lg('off', '내는 날 아님') + '</div>';
+  var miss = function(L, ic){ return L.length ? '<div style="font-size:12px;color:#b91c1c;font-weight:800;margin-top:6px">' + ic + ' 안 낸 날: ' + L.map(function(x){ return (mo + 1) + '/' + x; }).join(' · ') + '</div>' : ''; };
+  h += (code ? miss(missR, '🎙') : '<div style="font-size:12px;color:#94a3b8;font-weight:700;margin-top:6px">🎙 학생 코드가 없어 녹음을 확인할 수 없어요</div>') + miss(missP, '📒');
+  h += '<div style="font-size:10.5px;color:#94a3b8;font-weight:600;margin-top:8px;line-height:1.6">위 🎙 = 녹음 · 아래 📒 = 플래너 · 초록 동그라미 = 냄 · 빨간 테 = 안 냄. 플래너는 매일 · 녹음은 수업일(파란 칸)에, 2026년 12월부터는 매일. 플래너는 새벽 3시 전 제출을 전날로 셉니다.</div>';
+  return h;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~199: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
