@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-199';
+var APP_VER = 'v19-200';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9098,6 +9098,7 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-200',date:'2026-11-20',stability:'ok',memo:'🚑 <b>리커버리 — 따로 추가한 학생만 만들기</b> (원장 2026-11-20 「내가 따로 추가한 학생의 학습지도 만드는 기능」). 이번 주 학습지를 이미 만든 학생이 있으면 「⚡ 확정 전원」 단추가 <b>「➕ 새로 추가한 n명만 만들기 (예상 m문항)」</b>로 바뀌고, 아래에 «⏳ 아직: 이름 | ✅ 만든 학생 n명»이 보인다. 누르면 예전처럼 서버 예약 — 서버는 이미 만든 학생을 건너뛰고 아직 안 만든 학생만 만든다. 모두 만들었으면 «✅ 확정 n명 모두 만듦». 부품 modules/rcnew200_teacher.js.'},
       {ver:'v19-199',date:'2026-11-16',stability:'ok',memo:'📱 <b>제출 달력 — 이모지 · 안 낸 날 사선 · 🔥 연속 기록</b> (원장 2026-11-16 「녹·플 대신 이모지 · 빨간 동그라미에 사선 · 이런 연속 학습 표기를 플래너와 녹음에 도입」). 동그라미 안을 <b>🎙(녹음) · 📒(플래너)</b>로, 안 낸 날은 빨간 동그라미에 <b>사선</b>(🚫처럼). 달력 위에 <b>🔥 연속 카드</b> 두 장 — 📒 플래너 «12일 연속»(매일 · 오늘 아직이면 «오늘 내면 13일!») · 🎙 녹음 «13회 연속»(수업일, 12월부터 매일 «일 연속») · 최고 기록 · 이번 주 점 7개 · 끊기면 🧊 «오늘부터 다시 시작».'},
       {ver:'v19-198',date:'2026-11-16',stability:'ok',memo:'📱 <b>학생별 제출 달력 — 동그라미로 · 플래너는 매일 · 녹음은 12월부터 매일</b> (원장 2026-11-16 「제출하면 녹색 동그라미로 · 잘 구분이 안 된다」 → 시안 A · 「플래너는 매일 제출이 기본, 녹음은 월수금 수업이면 그 수업 전에, 12월부터는 매일」). 칸마다 동그라미 두 개 — 위 «녹»(녹음) · 아래 «플»(플래너): <b>초록 꽉 찬 = 냄 · 빨간 테 = 내야 하는 날인데 안 냄</b> · 연한 회색 = 내는 날 아님 · 점선 = 오늘(마감 전). 플래너는 매일, 녹음은 수업일(파란 칸)만 — 2026년 12월 1일부터는 녹음도 매일로 셉니다. 요약도 «녹음 (수업일) n/m · 플래너 (매일) n/m».'},
       {ver:'v19-197',date:'2026-11-16',stability:'ok',memo:'📱 <b>모바일 제출 현황 — 학생 이름 누르면 날짜별 달력</b> (원장 2026-11-16 「학생 이름 누르면 날짜별 제출하는 것 체크 표시로 며칠 날 내고 며칠 날 내지 않은 거를」). 한 달 달력(월~일)에 칸마다 <b>🎙 녹음 · 📒 플래너</b>: ✓ 냄 · ✗ 수업일인데 안 냄. 수업일(반 요일)은 파란 칸, 오늘은 노란 칸. 위에 «수업일 녹음 n/m · 플래너 n/m», 아래에 «안 낸 수업일: 11/4 · 11/9 …». ‹ › 로 지난달도 봅니다. 학원앱에 이미 있는 기록(녹음 파일 날짜 · 플래너 제출 날짜, 새벽 3시 규칙) 그대로.'},
@@ -105244,7 +105245,47 @@ function mob197Cal(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~199: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-200: 🚑 리커버리 «만들기» 칸 — 따로 추가한 학생만 만들기 (원장 2026-11-20 「내가 따로 추가한 학생의 학습지도 만드는 기능」)
+ *  11/19 예약 처리 뒤 명단에 넣은 학생(최○○)이 빠져 있었다. 예약은 원래 «이미 만든 학생은 건너뛰고» 만드는데,
+ *  단추가 «확정 전원 (8명 · 예상 375문항)»이라 다시 누르면 모두 새로 만들 것처럼 보였다.
+ *  · 이번 주 이미 만든 학생이 있고 아직 안 만든 학생이 있으면 → 「➕ 새로 추가한 n명만 만들기 (예상 m문항)」
+ *  · 모두 만들었으면 → 「✅ 확정 n명 모두 만듦」(누를 수 없음)
+ *  · 단추 아래 한 줄: «⏳ 아직: 이름 · 이름 | ✅ 만든 학생 n명»
+ *  누르는 일은 그대로 rcMakeWsAll(서버 예약 ws_make_req) — 서버 sync/rcws_make.js 가 이미 만든 학생을 건너뛴다.
+ *  ※ 서버 읽기·쓰기 추가 없음. 문자열 연결로만 HTML. 앞의 l3rMakeBox 감싸기(v19-123·155·181)를 한 번 더 감싼다.
+ * ═══════════════════════════════════════════════════════════════════ */
+function rn200State(){
+  var conf = []; try { conf = rcConfirmed().filter(function(c){ return !(c.e && c.e.done) && !(c.e && c.e.noshow); }); } catch(e){ return null; }
+  var made = [], pend = [];
+  conf.forEach(function(c){ var m = null; try { m = rcwsMadeOf(c.k); } catch(e){} (m ? made : pend).push(c); });
+  var sum = null;
+  try { if (typeof rw155Est === 'function' && RW155 && RW155.bd && RW155.bd.key) { var rule = rcwsRule(); sum = 0; pend.forEach(function(c){ if (c.row) sum += rw155Est(c.row, rule).total; }); } } catch(e){ sum = null; }
+  return { made: made, pend: pend, sum: sum };
+}
+if (typeof l3rMakeBox === 'function') l3rMakeBox = (function(orig){ return function(){
+  var h = orig.apply(this, arguments);
+  try {
+    var S = rn200State(); if (!S || !S.made.length) return h;
+    var re = /(<button type="button" class="l3-btn main" id="l3r-all"[^>]*>)⚡ 확정 전원 학습지 생성[^<]*(<\/button>)/;
+    if (!re.test(h)) return h;
+    var nm = function(c){ return rcwsEsc200(c.name || (c.row && c.row.st && c.row.st.name) || ''); };
+    if (S.pend.length) {
+      h = h.replace(re, '$1➕ 새로 추가한 ' + S.pend.length + '명만 만들기' + (S.sum ? ' (예상 ' + S.sum + '문항)' : '') + '$2');
+    } else {
+      h = h.replace(re, function(all, a, b){ return a.replace('<button', '<button disabled') + '✅ 확정 ' + S.made.length + '명 모두 만듦' + b; });
+    }
+    var line = '<div class="l3-sub" id="rn200-who" style="font-size:12px;font-weight:800;margin:4px 0 2px;line-height:1.6">'
+      + (S.pend.length ? '<span style="color:#b45309">⏳ 아직: ' + S.pend.map(nm).join(' · ') + '</span> <span style="color:#cbd5e1">|</span> ' : '')
+      + '<span style="color:#15803d">✅ 만든 학생 ' + S.made.length + '명</span></div>';
+    var j = h.indexOf('</button>', h.indexOf('id="l3r-all"'));
+    if (j > 0) h = h.slice(0, j + 9) + line + h.slice(j + 9);
+  } catch(e){ try { console.error('[리커버리 추가 학생 만들기]', e); } catch(_){} }
+  return h;
+}; })(l3rMakeBox);
+function rcwsEsc200(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~200: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹
