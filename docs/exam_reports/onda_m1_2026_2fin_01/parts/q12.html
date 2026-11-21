@@ -1,0 +1,71 @@
+  <section class="sol killer" id="q12">
+    <div class="sol-head">
+      <span class="sol-k red">12</span>
+      <div>
+        <div class="sol-title">상대도수를 <b>차례로 더해</b> 경계 기록을 찾는다</div>
+        <div class="sol-kind"><span class="dbadge k">킬러 · 난이도 3 · 4점</span> 자료의 정리 · 상대도수의 그래프</div>
+      </div>
+    </div>
+    <div class="sol-body">
+      <div class="pstate">남학생 수가 여학생 수보다 \(5\)명이 많은 어느 중학교 \(105\)명의 멀리뛰기 기록에 대한 상대도수 분포를 나타낸 그래프이다. 남학생 중 상위 \(50\%\) 이내에 드는 학생의 기록은 여학생들 사이에서 최소 상위 \(a\%\) 이내에 드는 기록이라 할 때, 상위 \(a\%\) 이내 여학생 수는?<br>① \(20\)명 ② \(25\)명 ③ \(30\)명 ④ \(35\)명 ⑤ \(40\)명</div>
+      <div class="fig-frame">
+        <svg viewBox="0 0 360 248" width="100%" style="max-width:360px" role="img" aria-label="남학생과 여학생의 멀리뛰기 기록 상대도수 그래프">
+          <g stroke="var(--line)" stroke-width="1">
+            <line x1="35" y1="25" x2="35" y2="215"/><line x1="75" y1="25" x2="75" y2="215"/>
+            <line x1="115" y1="25" x2="115" y2="215"/><line x1="195" y1="25" x2="195" y2="215"/>
+            <line x1="235" y1="25" x2="235" y2="215"/><line x1="275" y1="25" x2="275" y2="215"/>
+            <line x1="315" y1="25" x2="315" y2="215"/>
+            <line x1="35" y1="170" x2="315" y2="170"/><line x1="35" y1="125" x2="315" y2="125"/>
+            <line x1="35" y1="80" x2="315" y2="80"/><line x1="35" y1="35" x2="315" y2="35"/>
+          </g>
+          <line x1="155" y1="25" x2="155" y2="215" stroke="var(--red)" stroke-width="1.8" stroke-dasharray="5 4"/>
+          <text x="159" y="22" font-size="11.5" font-weight="800" fill="var(--red)">190 cm</text>
+          <line x1="35" y1="215" x2="325" y2="215" stroke="var(--ink)" stroke-width="1.8"/>
+          <line x1="35" y1="215" x2="35" y2="22" stroke="var(--ink)" stroke-width="1.8"/>
+          <polyline points="55,215 95,170 135,35 175,89 215,134 255,197 295,215" fill="none" stroke="var(--indigo)" stroke-width="2.4"/>
+          <polyline points="55,215 95,98 135,53 175,98 215,161 255,206 295,215" fill="none" stroke="var(--amber)" stroke-width="2.2" stroke-dasharray="6 4"/>
+          <g fill="var(--indigo)"><circle cx="95" cy="170" r="3.2"/><circle cx="135" cy="35" r="3.2"/><circle cx="175" cy="89" r="3.2"/><circle cx="215" cy="134" r="3.2"/><circle cx="255" cy="197" r="3.2"/></g>
+          <g fill="var(--amber)"><circle cx="95" cy="98" r="3.2"/><circle cx="135" cy="53" r="3.2"/><circle cx="175" cy="98" r="3.2"/><circle cx="215" cy="161" r="3.2"/><circle cx="255" cy="206" r="3.2"/></g>
+          <g font-size="10.5" fill="var(--ink-soft)" text-anchor="end">
+            <text x="31" y="219">0</text><text x="31" y="174">0.1</text><text x="31" y="129">0.2</text><text x="31" y="84">0.3</text><text x="31" y="39">0.4</text>
+          </g>
+          <g font-size="10.5" fill="var(--ink-soft)" text-anchor="middle">
+            <text x="75" y="229">170</text><text x="115" y="229">180</text><text x="155" y="229">190</text>
+            <text x="195" y="229">200</text><text x="235" y="229">210</text><text x="275" y="229">220</text>
+            <text x="322" y="229">(cm)</text>
+          </g>
+          <text x="206" y="54" font-size="12" font-weight="800" fill="var(--indigo)">남학생 (55명)</text>
+          <text x="44" y="52" font-size="12" font-weight="800" fill="var(--amber)">여학생 (50명)</text>
+        </svg>
+        <div class="fig-cap">계급의 폭은 \(10\,\mathrm{cm}\). 남학생 \(0.10,\ 0.40,\ 0.28,\ 0.18,\ 0.04\) / 여학생 \(0.26,\ 0.36,\ 0.26,\ 0.12,\ 0.02\)</div>
+      </div>
+      <div class="step">
+        <span class="step-lab"><span class="dot"></span>1단계 — 남녀 인원수부터</span>
+        <p>합이 \(105\)명, 차가 \(5\)명이다.</p>
+        <div class="mathrow">$$(\text{남})=\frac{105+5}{2}=55,\qquad(\text{여})=\frac{105-5}{2}=50$$</div>
+      </div>
+      <div class="step">
+        <span class="step-lab green"><span class="dot"></span>2단계 — 남학생 상위 \(50\%\)의 경계 기록</span>
+        <p>멀리뛰기는 <b>멀리 뛸수록 상위</b>다. 그래프 왼쪽(작은 기록)부터 남학생의 상대도수를 더해 보자.</p>
+        <table class="calc">
+          <tr><th>기록(cm)</th><th>남학생 상대도수</th><th>여기까지 누적</th></tr>
+          <tr><td>160 이상 ~ 170 미만</td><td>0</td><td>0</td></tr>
+          <tr><td>170 ~ 180</td><td>0.10</td><td>0.10</td></tr>
+          <tr class="hi"><td>180 ~ 190</td><td>0.40</td><td><b>0.50</b></td></tr>
+          <tr><td>190 ~ 200</td><td>0.28</td><td>0.78</td></tr>
+          <tr><td>200 ~ 210</td><td>0.18</td><td>0.96</td></tr>
+          <tr><td>210 ~ 220</td><td>0.04</td><td>1.00</td></tr>
+        </table>
+        <p>\(190\,\mathrm{cm}\) 미만이 딱 \(0.50\). 즉 남학생을 기록순으로 줄 세우면 <b>위쪽 절반이 \(190\,\mathrm{cm}\) 이상</b>이다. 경계 기록은 \(190\,\mathrm{cm}\).</p>
+      </div>
+      <div class="step">
+        <span class="step-lab amber"><span class="dot"></span>3단계 — 그 기록은 여학생 사이에서 상위 몇 %?</span>
+        <p>여학생 중 \(190\,\mathrm{cm}\) 이상인 학생의 상대도수를 더한다.</p>
+        <div class="mathrow">$$0.26+0.12+0.02=0.40$$</div>
+        <p>즉 \(a=40\). 여학생은 \(50\)명이므로</p>
+        <div class="mathrow">$$50\times 0.40=20\ (\text{명})$$</div>
+      </div>
+      <div class="result"><span class="lab">정답</span><span class="val">\(20\)명 \(\Rightarrow\) ①</span></div>
+      <div class="miss"><b>가장 잦은 실수</b> ① 남녀 인원수를 나누지 않고 \(105\)명에 그냥 곱하는 것, ② 멀리뛰기인데 <b>작은 기록이 상위</b>라고 착각해 왼쪽부터 세는 것, ③ 상대도수를 사람 수로 착각하는 것. <b>상대도수 \(\times\) 그 집단의 전체 인원 \(=\) 도수</b>이고, 이 문제는 집단이 <b>둘</b>(55명 / 50명)이라는 점이 핵심이다.</div>
+    </div>
+  </section>
