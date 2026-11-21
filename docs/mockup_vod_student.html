@@ -1,0 +1,114 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>강의실 학생별 보기 시안</title>
+<style>
+:root{--ink:#0f172a;--sub:#64748b;--line:#e2e8f0;--navy:#0d2240;--red:#e8192c}
+*{box-sizing:border-box}body{margin:0;background:#eef2f7;font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:var(--ink);padding:16px;font-size:13px}
+h1{font-size:21px;margin:2px 0 6px}h2{font-size:17px;margin:26px 0 4px}.lead{color:var(--sub);line-height:1.6;margin:0 0 10px;font-size:13.5px}
+.box{background:#fff;border-radius:16px;box-shadow:0 2px 8px rgba(15,23,42,.06);padding:14px;max-width:1180px}
+table{border-collapse:collapse;width:100%}th{font-size:11.5px;color:var(--sub);text-align:left;font-weight:800;padding:7px 8px;border-bottom:1.5px solid var(--line);white-space:nowrap}
+td{padding:8px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.cmp td:first-child{font-weight:800;width:150px}.cmp td{line-height:1.5}.y{color:#15803d;font-weight:800}.n{color:#b91c1c;font-weight:800}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.chip{border:1.5px solid var(--line);border-radius:99px;padding:4px 11px;font-weight:800;font-size:12px;background:#fff}.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip b{color:var(--red);margin-left:3px}.chip.on b{color:#facc15}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.kpi div{background:#f8fafc;border-radius:12px;padding:8px 14px;min-width:110px}.kpi small{display:block;color:var(--sub);font-weight:700;font-size:11px}.kpi b{font-size:21px}
+.bar{height:8px;background:#f1f5f9;border-radius:8px;overflow:hidden;width:120px;display:inline-block;vertical-align:middle}.bar i{display:block;height:100%}
+.st{display:inline-block;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:900;white-space:nowrap}
+.ok{background:#dcfce7;color:#15803d}.warn{background:#fef3c7;color:#b45309}.bad{background:#fee2e2;color:#b91c1c}.gray{background:#f1f5f9;color:#64748b}
+.nm{font-weight:900;font-size:13.5px}.nm small{display:block;color:var(--sub);font-weight:700;font-size:11px}
+.sel td{background:#fffbeb}
+.grid2{display:grid;grid-template-columns:1fr 1.25fr;gap:14px;max-width:1180px}
+.drawer{background:#fff;border-radius:16px;box-shadow:0 6px 20px rgba(15,23,42,.12);overflow:hidden}
+.dh{background:var(--navy);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px}.dh .av{width:44px;height:44px;border-radius:12px;background:#1d6fe8;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px}
+.dh b{font-size:18px}.dh small{display:block;opacity:.75;font-weight:700}
+.dk{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}.dk div{background:#f8fafc;border-radius:10px;padding:7px 9px}.dk small{display:block;color:var(--sub);font-weight:700;font-size:10.5px}.dk b{font-size:18px}
+.next{margin:12px 14px 4px;background:linear-gradient(135deg,#0d2240,#1d4ed8);color:#fff;border-radius:12px;padding:10px 13px;font-weight:800}.next small{display:block;opacity:.8;font-size:11px}
+.unit{margin:10px 14px 0;font-weight:900;font-size:12.5px;color:#334155;display:flex;justify-content:space-between}.unit span{color:var(--sub);font-weight:700}
+.vrow{display:grid;grid-template-columns:1fr 120px 46px 86px;gap:8px;align-items:center;margin:0 14px;padding:7px 0;border-bottom:1px dashed #eef2f7}
+.vrow .t{font-weight:800}.vrow .t small{display:block;color:var(--sub);font-weight:700;font-size:10.5px}
+.link{margin:4px 14px 0 14px;font-size:11px;color:#6d28d9;font-weight:800}
+.memo{margin:12px 14px;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;color:#94a3b8;min-height:44px}
+.btns{display:flex;gap:6px;padding:0 14px 14px;flex-wrap:wrap}.btns span{border-radius:10px;padding:8px 12px;font-weight:900;font-size:12px;background:#eff6ff;color:#1d4ed8}.btns span.p{background:var(--red);color:#fff}
+.three{display:grid;grid-template-columns:220px 1fr 300px;gap:12px;max-width:1180px}
+.col{background:#fff;border-radius:14px;padding:10px;box-shadow:0 2px 8px rgba(15,23,42,.06)}
+.li{display:flex;justify-content:space-between;align-items:center;padding:7px 8px;border-radius:10px;font-weight:800}.li.on{background:#eff6ff;outline:2px solid #1d6fe8}
+.li small{color:var(--sub);font-weight:700;font-size:10.5px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.seg{display:flex;gap:2px;margin:6px 0 2px}.seg i{flex:1;height:12px;border-radius:3px}
+.ttl{font-weight:900;margin-bottom:8px}
+</style></head><body>
+<h1>🎬 강의실 · 학생별로 한눈에 — 시안 3가지</h1>
+<p class="lead">원장님이 보내 주신 다른 학원 화면과 지금 루멘 학원앱(🗺 시청 지도)을 비교해서 만들었어요. 이름·숫자는 모두 예시예요.</p>
+
+<div class="box"><table class="cmp">
+<tr><th></th><th>다른 학원 (남쌤)</th><th>지금 루멘 학원앱</th><th>시안에서 바꾸는 것</th></tr>
+<tr><td>반 전체 보기</td><td><span class="y">반 칩 + 학생 표</span> · 진도율 막대 · 상태</td><td>🗺 시청 지도(영상 × 학생 칸) — 폴더를 골라야 보임</td><td>반 칩 + <b>학생 한 줄 표</b>를 맨 앞 화면으로</td></tr>
+<tr><td>학생 한 명 보기</td><td><span class="y">학생 누르면 단원 목록 + 수업 메모</span></td><td><span class="n">없음</span> — 칸을 하나씩 눌러 회차 창으로만</td><td><b>학생 서랍</b>: 단원별 영상 · 다음에 볼 영상 · 메모</td></tr>
+<tr><td>챙길 학생</td><td>«보충 필요만» 체크 (이해도·성취율 70% 미만)</td><td>마감 지남 빨간 테두리(칸마다)</td><td><b>«챙길 학생» 칩</b> — 마감 지남 · 3일 안 봄 · 건너뛰며 봄</td></tr>
+<tr><td>영상 + 문제</td><td>영상 · 개념문제 · 문제지 한 화면</td><td>영상과 매쓰플랫 정답률이 따로</td><td>단원 옆에 <b>매쓰플랫 정답률 · 아하노트 질문 수</b>를 붙임 (루멘만의 장점)</td></tr>
+<tr><td>내보내기</td><td>엑셀로 내보내기</td><td>없음</td><td>학부모 «영상 학습» 한 줄 보내기(선택)</td></tr>
+</table></div>
+
+<h2>A안 · 반 칩 + 학생 한 줄 표 (첫 화면)</h2>
+<p class="lead">강의실을 열면 학생 표부터 보여요. 줄을 누르면 B안 서랍이 열려요. 빨간 숫자는 «챙길 학생» 수예요.</p>
+<div class="box">
+<div class="chips"><span class="chip">전체 52</span><span class="chip">초6 8</span><span class="chip on">중1 M4 9<b>3</b></span><span class="chip">중2 T5 7<b>1</b></span><span class="chip">중3 6</span><span class="chip">고1 공통수학2 기말 12<b>4</b></span><span class="chip">고2 10</span><span class="chip" style="border-color:#fca5a5;color:#b91c1c">🚩 챙길 학생만</span></div>
+<div class="kpi"><div><small>학생</small><b>9명</b></div><div><small>평균 진도</small><b>64%</b></div><div><small>마감 지난 영상</small><b style="color:#b91c1c">7개</b></div><div><small>3일 넘게 안 봄</small><b style="color:#b45309">2명</b></div><div><small>이번 주 본 영상</small><b>31편</b></div></div>
+<table><tr><th>학생</th><th>진도 (완료/배정)</th><th>마감 지남</th><th>다시 봄</th><th>마지막 시청</th><th>단원 정답률<br><span style="font-weight:600">매쓰플랫</span></th><th>상태</th></tr>
+<tr class="sel"><td class="nm">김하늘<small>중1 · 옥길중</small></td><td><span class="bar"><i style="width:45%;background:#f97316"></i></span> <b>45%</b> 9/20</td><td><b style="color:#b91c1c">3</b></td><td>1</td><td>11/17 (월) 21:40</td><td>68%</td><td><span class="st bad">🚩 밀림</span></td></tr>
+<tr><td class="nm">박도윤<small>중1 · 옥길중</small></td><td><span class="bar"><i style="width:100%;background:#16a34a"></i></span> <b>100%</b> 20/20</td><td>0</td><td>4</td><td>11/20 (목) 19:12</td><td>91%</td><td><span class="st ok">✓ 완료</span></td></tr>
+<tr><td class="nm">이서윤<small>중1 · 부천중</small></td><td><span class="bar"><i style="width:80%;background:#84cc16"></i></span> <b>80%</b> 16/20</td><td>0</td><td>2</td><td>11/20 (목) 22:05</td><td>83%</td><td><span class="st ok">진행 중</span></td></tr>
+<tr><td class="nm">정민준<small>중1 · 옥길중</small></td><td><span class="bar"><i style="width:30%;background:#ef4444"></i></span> <b>30%</b> 6/20</td><td><b style="color:#b91c1c">4</b></td><td>0</td><td>11/14 (금) 18:30 <span class="st warn">7일 전</span></td><td>59%</td><td><span class="st bad">🚩 안 봄</span></td></tr>
+<tr><td class="nm">최유나<small>중1 · 부천중</small></td><td><span class="bar"><i style="width:65%;background:#84cc16"></i></span> <b>65%</b> 13/20</td><td>0</td><td>0</td><td>11/19 (수) 20:44</td><td>74%</td><td><span class="st warn">⏩ 건너뛰며 봄</span></td></tr>
+</table>
+<p class="lead" style="margin-top:8px;font-size:11.5px">진도 = 90% 이상 본 영상 비율 · 🚩 밀림 = 마감 지난 영상 있음 · 🚩 안 봄 = 3일 넘게 시청 없음 · ⏩ = 빨리 감기로 본 영상 있음 · 단원 정답률은 같은 단원 매쓰플랫 채점 기록</p>
+</div>
+
+<h2>B안 · 학생 서랍 (학생 한 명 자세히)</h2>
+<p class="lead">학생 이름을 누르면 오른쪽에서 열려요. «다음에 볼 영상», 단원별 영상, 그 단원 문제 성적, 아하노트 질문을 한곳에 모았어요.</p>
+<div class="grid2">
+<div class="box" style="padding:0;overflow:hidden"><table>
+<tr><th>학생</th><th>진도</th><th>상태</th></tr>
+<tr class="sel"><td class="nm">김하늘<small>중1 M4</small></td><td><b>45%</b> 9/20</td><td><span class="st bad">🚩 밀림</span></td></tr>
+<tr><td class="nm">박도윤<small>중1 M4</small></td><td><b>100%</b></td><td><span class="st ok">✓ 완료</span></td></tr>
+<tr><td class="nm">이서윤<small>중1 M4</small></td><td><b>80%</b></td><td><span class="st ok">진행 중</span></td></tr>
+<tr><td class="nm">정민준<small>중1 M4</small></td><td><b>30%</b></td><td><span class="st bad">🚩 안 봄</span></td></tr>
+</table></div>
+<div class="drawer">
+ <div class="dh"><div class="av">김</div><div><b>김하늘</b><small>중1 · 옥길중 · M4 · 강의 폴더 «중1-2 기말»</small></div></div>
+ <div class="dk"><div><small>진도</small><b>45%</b></div><div><small>마감 지남</small><b style="color:#b91c1c">3</b></div><div><small>이번 주 시청</small><b>2편 · 38분</b></div><div><small>마지막</small><b style="font-size:14px">11/17 21:40</b></div></div>
+ <div class="next">▶ 다음에 볼 영상 · 원과 부채꼴 ② 부채꼴의 넓이<small>마감 11/18 (화) 지남 · 지금까지 35% 봄</small></div>
+ <div class="unit">Ⅱ-1 다각형 <span>3/3 완료 · 매쓰플랫 82%</span></div>
+ <div class="vrow"><div class="t">① 다각형의 내각<small>11/10 내줌 · 11/11 봄</small></div><span class="bar" style="width:120px"><i style="width:100%;background:#16a34a"></i></span><b>100%</b><span class="st ok">완료 ↻2</span></div>
+ <div class="unit">Ⅱ-2 원과 부채꼴 <span>1/3 완료 · 매쓰플랫 <b style="color:#c2410c">54%</b></span></div>
+ <div class="vrow"><div class="t">① 원과 부채꼴의 성질<small>11/14 내줌 · 11/17 봄</small></div><span class="bar" style="width:120px"><i style="width:100%;background:#16a34a"></i></span><b>100%</b><span class="st ok">완료</span></div>
+ <div class="vrow"><div class="t">② 부채꼴의 넓이<small>마감 11/18</small></div><span class="bar" style="width:120px"><i style="width:35%;background:#f97316"></i></span><b>35%</b><span class="st bad">마감 지남</span></div>
+ <div class="vrow"><div class="t">③ 호의 길이 활용<small>마감 11/18</small></div><span class="bar" style="width:120px"><i style="width:0%"></i></span><b>0%</b><span class="st bad">마감 지남</span></div>
+ <div class="link">💡 이 단원 아하노트 질문 2개 · 오답 «현의 길이는 정비례 아님» 3번 틀림 → 영상 ②를 먼저 보게 하세요</div>
+ <div class="unit">Ⅲ-1 다면체와 회전체 <span>0/2 · 아직 마감 전</span></div>
+ <div class="vrow"><div class="t">① 다면체<small>마감 11/25</small></div><span class="bar" style="width:120px"><i style="width:0"></i></span><b>0%</b><span class="st gray">시청 전</span></div>
+ <div class="memo">수업 메모 — 수업 태도, 영상 보고 질문한 것 등 (학생 기록에 함께 남아요)</div>
+ <div class="btns"><span class="p">📣 학생앱에 «영상 보세요» 알림</span><span>📨 학부모 한 줄 복사</span><span>🗺 이 학생 시청 지도</span></div>
+</div></div>
+
+<h2>C안 · 3칸 한 화면 (리커버리 화면처럼)</h2>
+<p class="lead">왼쪽 학생 목록 · 가운데 그 학생 단원 진도 · 오른쪽 영상 한 편 자세히(구간별로 본 곳·건너뛴 곳). PC 넓은 화면용이에요.</p>
+<div class="three">
+ <div class="col"><div class="ttl">중1 M4 · 9명</div>
+  <div class="li on"><span><span class="dot" style="background:#ef4444"></span>김하늘</span><small>45%</small></div>
+  <div class="li"><span><span class="dot" style="background:#16a34a"></span>박도윤</span><small>100%</small></div>
+  <div class="li"><span><span class="dot" style="background:#84cc16"></span>이서윤</span><small>80%</small></div>
+  <div class="li"><span><span class="dot" style="background:#ef4444"></span>정민준</span><small>30%</small></div>
+  <div class="li"><span><span class="dot" style="background:#f59e0b"></span>최유나</span><small>65%</small></div></div>
+ <div class="col"><div class="ttl">김하늘 · 단원별 진도</div>
+  <div class="unit" style="margin:6px 0 0">Ⅱ-1 다각형 <span>100%</span></div><div class="seg"><i style="background:#16a34a"></i><i style="background:#16a34a"></i><i style="background:#16a34a"></i></div>
+  <div class="unit" style="margin:10px 0 0">Ⅱ-2 원과 부채꼴 <span>45%</span></div><div class="seg"><i style="background:#16a34a"></i><i style="background:#f97316;outline:2px solid #1d6fe8"></i><i style="background:#fecaca"></i></div>
+  <div class="unit" style="margin:10px 0 0">Ⅲ-1 다면체와 회전체 <span>0%</span></div><div class="seg"><i style="background:#e2e8f0"></i><i style="background:#e2e8f0"></i></div>
+  <p class="lead" style="font-size:11.5px;margin-top:10px">칸 하나 = 영상 한 편 · 색 = 얼마나 봤나 · 연한 빨강 = 마감 지났는데 안 봄</p></div>
+ <div class="col"><div class="ttl">② 부채꼴의 넓이 · 14분</div>
+  <div class="seg" style="margin-top:4px"><i style="background:#16a34a"></i><i style="background:#16a34a"></i><i style="background:#16a34a"></i><i style="background:#fde68a"></i><i style="background:#e2e8f0"></i><i style="background:#e2e8f0"></i><i style="background:#e2e8f0"></i><i style="background:#e2e8f0"></i></div>
+  <p class="lead" style="font-size:11.5px">초록 = 본 구간 · 노랑 = 빨리 감기 · 회색 = 안 본 구간</p>
+  <table><tr><th>회차</th><th>날짜</th><th>본 구간</th></tr><tr><td>1</td><td>11/17 21:30</td><td>0:00~4:55</td></tr></table>
+  <div class="btns" style="padding:10px 0 0"><span class="p">📣 이 영상 다시 보기 알림</span></div></div>
+</div>
+<p class="lead" style="margin-top:18px"><b>추천</b>: A안을 강의실 첫 화면으로 하고, 학생을 누르면 B안 서랍이 열리게 합치기. 지금 «🗺 시청 지도»는 «영상별로 보기» 단추로 그대로 남겨요.</p>
+</body></html>
