@@ -1,0 +1,87 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이탈 방지 시안</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#eef2f7;font-family:-apple-system,"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#0f172a;padding:16px;font-size:13px}
+h1{font-size:21px;margin:2px 0 6px}h2{font-size:17px;margin:26px 0 4px}.lead{color:#64748b;line-height:1.6;margin:0 0 10px;font-size:13.5px}
+.box{background:#fff;border-radius:16px;box-shadow:0 2px 8px rgba(15,23,42,.06);padding:14px;max-width:1180px}
+table{border-collapse:collapse;width:100%}th{font-size:11.5px;color:#64748b;text-align:left;font-weight:800;padding:7px 8px;border-bottom:1.5px solid #e2e8f0}td{padding:8px;border-bottom:1px solid #f1f5f9;vertical-align:top;line-height:1.5}
+.new{display:inline-block;background:#7c3aed;color:#fff;border-radius:6px;padding:0 6px;font-size:10.5px;font-weight:900;margin-left:4px}
+.have{color:#15803d;font-weight:800}.nope{color:#b91c1c;font-weight:800}
+.tabs{display:flex;gap:6px;margin-bottom:12px}.tab{border-radius:10px;padding:8px 14px;font-weight:900;background:#f1f5f9;color:#64748b}.tab.on{background:#0d2240;color:#fff}
+.kpi{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.kpi div{background:#f8fafc;border-radius:12px;padding:8px 14px;min-width:110px}.kpi small{display:block;color:#64748b;font-weight:700;font-size:11px}.kpi b{font-size:20px}
+.card{border:1px solid #e6eaf1;border-radius:14px;padding:11px 13px;margin-bottom:9px;display:flex;gap:12px;align-items:flex-start}
+.nm{min-width:110px;font-weight:900;font-size:14px}.nm small{display:block;color:#64748b;font-weight:700;font-size:11px}
+.sigs{flex:1;display:flex;flex-wrap:wrap;gap:6px}.sg{border-radius:10px;padding:5px 9px;font-size:12px;font-weight:800;line-height:1.4}.sg small{display:block;font-weight:700;font-size:10.5px;opacity:.85}
+.r{background:#fee2e2;color:#991b1b}.y{background:#fef3c7;color:#92400e}.p{background:#ede9fe;color:#5b21b6;outline:2px solid #a78bfa}
+.btn{border-radius:10px;padding:7px 11px;font-weight:900;font-size:12px;background:#0d2240;color:#fff;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mini{background:#f8fafc;border-radius:12px;padding:10px 12px}.mini h4{margin:0 0 6px;font-size:12.5px;color:#334155}
+.big{font-size:22px;font-weight:900}.rank{font-size:11.5px;color:#64748b;font-weight:700}
+.warnbox{background:#fff1f2;border:2px solid #fda4af;border-radius:12px;padding:10px 13px;margin:10px 0;color:#9f1239;font-weight:800;line-height:1.6}
+.okbox{background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:10px 13px;color:#166534;font-weight:800;line-height:1.6}
+.bars{display:flex;align-items:flex-end;gap:4px;height:60px}.bars i{flex:1;border-radius:4px 4px 0 0}
+.ta{border:1.5px solid #e2e8f0;border-radius:12px;padding:10px 12px;line-height:1.7;min-height:80px}
+.bad{background:#fee2e2;color:#b91c1c;border-radius:4px;padding:0 3px;text-decoration:underline wavy #ef4444}
+.rule{font-size:12px;font-weight:800;margin-top:8px;line-height:1.8}
+</style></head><body>
+<h1>🚨 이탈 방지 — 시안 (원장 전용 · 자동 문자 없음)</h1>
+<p class="lead">이사회 인수인계(docs/handoff_churn_guard.md)대로 그렸어요. 이름·숫자는 모두 예시예요.</p>
+
+<div class="box"><b>이미 있는 것 vs 새로 만들 것</b>
+<table style="margin-top:6px"><tr><th>인수인계 요청</th><th>지금 학원앱 (🚨 위험 신호, v19-43)</th><th>이번에 할 일</th></tr>
+<tr><td>🔴 정답률 저하 (2주 70% 미만)</td><td class="have">비슷한 것 있음 — «최근 15문항 이상 60% 미만» · «직전보다 15%p 하락»</td><td>기준 70%로 · 레이스 2주 숫자 함께 표시</td></tr>
+<tr><td>🔴 플래너 끊김 (7일)</td><td class="have">있음 — 3일 연속 미제출 (🟡)</td><td>7일 끊김을 🔴 로 올림</td></tr>
+<tr><td>🟡 <b>많이 푸는데 많이 틀림</b></td><td class="nope">없음 ← 이번 휴원 학생을 놓친 이유</td><td><b>새로 만듦</b> (학년 안 분량 순위 × 정답률 순위)</td></tr>
+<tr><td>🟡 성적 기록 없음</td><td class="nope">없음</td><td>새로 · 기록 없으면 «✏️ 바로 입력» 단추</td></tr>
+<tr><td>🟡 주간 점수 2주 0점</td><td class="nope">없음</td><td>새로 (플래너 주간 점수)</td></tr>
+<tr><td>📞 상담 전 브리핑</td><td class="nope">없음 (신호 누르면 다른 화면으로 갈 뿐)</td><td><b>새 화면</b> — 4주 요약 · 학년 위치 · «하면 안 되는 말»</td></tr>
+<tr><td>🎉 성과 알림</td><td class="nope">없음</td><td><b>새 탭</b> — 성적 오른 학생 · 축하 문자 규칙 검사</td></tr>
+</table></div>
+
+<h2>① 🚨 위험 신호 (탭 1)</h2>
+<p class="lead">걸린 학생만, 신호마다 <b>근거 숫자와 기간</b>을 붙여요. 보라 테두리가 이번에 새로 잡는 신호예요.</p>
+<div class="box">
+<div class="tabs"><span class="tab on">🚨 위험 신호 6</span><span class="tab">📞 상담 전 브리핑</span><span class="tab">🎉 성과 알림 3</span></div>
+<div class="kpi"><div><small>🔴 바로 볼 학생</small><b style="color:#b91c1c">2명</b></div><div><small>🟡 지켜볼 학생</small><b style="color:#b45309">4명</b></div><div><small>성적 기록 없는 학생</small><b>21명</b></div><div><small>기준일</small><b style="font-size:15px">11/22 (일)</b></div></div>
+<div class="card"><div class="nm">김하늘<small>중1 · 옥길중 · M4</small></div><div class="sigs">
+ <span class="sg p">🟡 많이 푸는데 많이 틀림<small>4주 1,624문항(학년 9명 중 5위) · 정답률 66%(학년 최저)</small></span>
+ <span class="sg r">🔴 정답률 저하<small>최근 2주 66% · 기준 70%</small></span>
+ <span class="sg y">🟡 성적 기록 없음<small>2학기 중간고사 · ✏️ 바로 입력</small></span></div><span class="btn">📞 브리핑</span></div>
+<div class="card"><div class="nm">정민준<small>중2 · 부천중 · T5</small></div><div class="sigs">
+ <span class="sg r">🔴 플래너 끊김<small>11/14 뒤 8일 없음</small></span>
+ <span class="sg p">🟡 주간 점수 0<small>11/9 주 · 11/16 주 연속 0점</small></span></div><span class="btn">📞 브리핑</span></div>
+<div class="card"><div class="nm">최유나<small>중1 · 부천중 · M4</small></div><div class="sigs">
+ <span class="sg y">🟡 주간테스트 급락<small>88 → 64점 (11/14→11/21)</small></span>
+ <span class="sg y">🟡 질문 후 또 틀림<small>«부채꼴의 넓이» 2번</small></span></div><span class="btn">📞 브리핑</span></div>
+<p class="lead" style="font-size:11.5px;margin-top:6px">기존 신호(채점 끊김 · 진도 경고 · 주간테스트 급락 · 질문 후 또 틀림)는 그대로 함께 보여요.</p>
+</div>
+
+<h2>② 📞 상담 전 브리핑 (학생 누르면)</h2>
+<p class="lead">상담·문자 전에 이 한 화면만 보면 되게. 맨 위에 <b>«하면 안 되는 말»</b>이 자동으로 떠요.</p>
+<div class="box">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div><b style="font-size:18px">김하늘</b> <span style="color:#64748b;font-weight:700">중1 · 옥길중 · M4 · 최근 4주 (10/26~11/22)</span></div><span class="btn" style="background:#e2e8f0;color:#0f172a">🖨 인쇄</span></div>
+<div class="warnbox">⚠ «공부량이 적다»고 말하지 마세요 — 4주 1,624문항, 학년 9명 중 5위(중앙값 이상)입니다.<br>✅ 대신: «양은 충분해요. 정답률이 66%라 <b>푸는 방법</b>(오답 다시 풀기 · 아하노트)을 같이 바꿔 볼게요»</div>
+<div class="grid">
+ <div class="mini"><h4>📝 레이스 (매쓰플랫)</h4><span class="big">1,624문항</span> <span class="rank">학년 9명 중 5위</span><br><span class="big" style="color:#b91c1c">66%</span> <span class="rank">정답률 · 학년 9위(최저) · 학년 평균 78%</span>
+  <div class="bars" style="margin-top:8px"><i style="height:70%;background:#fca5a5"></i><i style="height:64%;background:#fca5a5"></i><i style="height:68%;background:#fca5a5"></i><i style="height:62%;background:#ef4444"></i></div><div class="rank">주별 정답률 70 · 64 · 68 · 62%</div></div>
+ <div class="mini"><h4>📓 플래너</h4><span class="big">24일</span> <span class="rank">/ 28일 제출</span><br><span class="big">8.6점</span> <span class="rank">평균 · 마지막 11/18</span>
+  <div class="bars" style="margin-top:8px"><i style="height:90%;background:#86efac"></i><i style="height:85%;background:#86efac"></i><i style="height:88%;background:#86efac"></i><i style="height:60%;background:#facc15"></i></div><div class="rank">주별 제출 7 · 6 · 7 · 4일</div></div>
+ <div class="mini"><h4>🏫 학교 시험</h4><span class="nope">2학기 중간고사 기록 없음</span> <span class="btn" style="background:#1d6fe8;margin-left:6px">✏️ 바로 입력</span><div class="rank" style="margin-top:6px">1학기 기말 85점 (기록 있음)</div></div>
+ <div class="mini"><h4>📨 학부모 연락</h4>마지막 문자 <b>11/14 (금)</b> · 8일 전<div class="rank">Ultra Feedback 11/20 발송</div><div class="rank">주간테스트 최근 3회 72 · 70 · 68점</div></div>
+</div></div>
+
+<h2>③ 🎉 성과 알림 (탭 3)</h2>
+<p class="lead">성적을 넣으면 직전보다 오른 학생이 뜨고, <b>48시간 안</b>에 축하 문자 대상이에요. 문자는 원장님이 직접 보내요(자동 발송 없음).</p>
+<div class="box"><div class="grid">
+ <div><table><tr><th>학생</th><th>시험</th><th>변화</th><th>남은 시간</th></tr>
+  <tr><td><b>이서윤</b> 중1</td><td>2학기 중간</td><td class="have">78 → 92 (+14)</td><td>31시간</td></tr>
+  <tr><td><b>박도윤</b> 중2</td><td>주간테스트</td><td class="have">70 → 84 (+14)</td><td>40시간</td></tr>
+  <tr><td><b>오시안</b> 초6</td><td>단원평가</td><td class="have">80 → 90 (+10)</td><td>12시간</td></tr></table></div>
+ <div><b>✉️ 이서윤 축하 문자 쓰기</b>
+  <div class="ta" style="margin-top:6px">서윤이 2학기 중간고사 92점, 지난번보다 14점이나 올랐어요! 오답노트를 꾸준히 한 덕분이에요. <span class="bad">다만</span> 서술형은 <span class="bad">아직 부족해서</span> 다음 주부터 <span class="bad">보충 수업</span>을 …</div>
+  <div class="rule"><span class="nope">✗ «다만» 금지</span> · <span class="nope">✗ 점수 깎는 표현 «아직 부족»</span> · <span class="nope">✗ 같은 주 추가 시간·비용 요구 «보충 수업»</span></div>
+  <div class="okbox" style="margin-top:8px">세 줄을 지우면 «📋 복사»가 켜져요. 축하만 담아서 보내요.</div></div>
+</div></div>
+
+<p class="lead" style="margin-top:18px"><b>어디에 두나</b>: 학원앱 홈 맨 위 «🚨 이번 주 챙길 학생 2 · 🎉 축하할 학생 3» 카드 → 누르면 이 화면. 학생앱·학부모앱에는 절대 안 보여요. 서버에 새로 쓰는 것은 없고, 이미 있는 자료(race_board · 플래너 · school_scores · 주간테스트)만 읽어요.</p>
+</body></html>
