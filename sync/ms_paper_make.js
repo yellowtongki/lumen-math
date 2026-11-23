@@ -61,7 +61,7 @@ async function cellsOf(kind, id) {
 
   const src = await cellsOf('mydbs', mydb);
   const ids = nums.map((n) => { const c = src.find((x) => x.questionNumber === n); if (!c) throw new Error(`원본에 ${n}번이 없습니다`); return c.id; });
-  const avg = nums.reduce((s, n) => s + (src.find((x) => x.questionNumber === n).answers[0].difficulty.mathSecr || 0), 0) / nums.length;
+  const avg = nums.reduce((s, n) => s + (((((src.find((x) => x.questionNumber === n).answers || [])[0] || {}).difficulty || {}).mathSecr || 0)), 0) / nums.length;
   console.log(`원본 ${mydb} (${src.length}문항)에서 ${nums.length}문항 · 평균 난이도 ${avg.toFixed(2)}`);
   if (DRY) return console.log('(미리보기 — 만들지 않음)');
 
