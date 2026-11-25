@@ -56,6 +56,12 @@ const hasAddr = /옥길로\s?116/.test(body);
 // 지도(장소) 카드 안에 주소가 글자로 들어간다 → 본문에 또 적을 필요가 없다 (2026-10-11 원장 지시)
 const hasMap = /\[지도:\s*루멘수학교습소\]/.test(body);
 const sq = (body.match(/^■/gm) || []).length;
+// 카드가 몇 장 필요한가 — 기본 6장. 가격·시간만 전하는 «안내 글»은 머리말에 cards: 1 처럼 적어 낮춘다
+// (2026-11-21 원장 지시 「특강글에는 카드뉴스 필요없다」). 네이버 목록 썸네일 때문에 보통 1장은 둔다
+// 글자수 하한 — 기본 1,000자. 가격·시간만 전하는 안내 글은 머리말에 chars: 700 처럼 적어 낮춘다.
+// 안내 글을 억지로 늘리면 군더더기가 된다 (2026-11-21).
+const needChars = meta.chars === undefined ? 1000 : (parseInt(meta.chars, 10) || 0);
+const needCards = meta.cards === undefined ? 6 : (parseInt(meta.cards, 10) || 0);
 // 실사진 몇 곳이 필요한가 — 기본 3곳. 카드만 쓰는 홍보·안내 글은 머리말에 photos: 1 처럼 적는다
 const photoSlots = (body.match(/\[실사진/g) || []).length;
 const needPhotos = meta.photos === undefined ? 3 : (parseInt(meta.photos, 10) || 0);
@@ -84,11 +90,13 @@ const checks = [
   ['제목 있음', !!meta.title, meta.title || '(없음)'],
   // 하한 1,000자: 클래스바이 기준은 1,050자였으나 원장님 발행본(2026-09-20)이 1,047자라 현실에 맞춤.
   // 1,400자 미만은 통과시키되 경고 — 길수록 검색에 유리하다는 건 일반적으로 맞다.
-  ['본문 1,000자 이상 (목표 1,500)', plain.length >= 1000, `${plain.length}자`,
-    plain.length < 1400 ? '통과하지만 1,500자에 가까울수록 좋습니다' : ''],
+  [`본문 ${needChars.toLocaleString()}자 이상${needChars >= 1000 ? ' (목표 1,500)' : ' (머리말 chars)'}`,
+    plain.length >= needChars, `${plain.length}자`,
+    needChars >= 1000 && plain.length < 1400 ? '통과하지만 1,500자에 가까울수록 좋습니다' : ''],
   // 6장은 하한이다. 학원앱 「적중 분석」 도구가 만든 카드뉴스는 12장이 나온다.
-  ['카드 6장 이상 (cards.json)', (spec.cards || []).length >= 6, `${(spec.cards || []).length}장`],
-  ['카드 PNG 6장 이상', pngs.length >= 6, `${pngs.length}장`],
+  [`카드 ${needCards}장 이상 (cards.json)`, (spec.cards || []).length >= needCards,
+    `${(spec.cards || []).length}장${meta.cards !== undefined ? ` (머리말 cards: ${needCards})` : ''}`],
+  [`카드 PNG ${needCards}장 이상`, pngs.length >= needCards, `${pngs.length}장`],
   ['본문에 카드 자리가 카드 수만큼 있음', slotFiles.length === pngs.length,
     slotFiles.length === pngs.length ? `${slotFiles.length}곳`
       : `본문 ${slotFiles.length}곳 / 카드 ${pngs.length}장 — 「[카드 1: 01_cover.png]」 처럼 본문에 적어야 올라갑니다`],

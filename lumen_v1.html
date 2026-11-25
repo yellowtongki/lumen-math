@@ -442,7 +442,7 @@ let _syncTimer = null;
 let _lastSyncAt = null;
 let _pendingKeys = new Set();
 // v18-36: 진단 팝업 등에서 쓰는 버전 표기 — 한 곳만 고치면 되도록 상수화
-var APP_VER = 'v19-199';
+var APP_VER = 'v19-202';
 window.APP_VER = APP_VER;
 /* ★ v18-90: 화면에 보이는 버전 글자를 APP_VER 하나에서만 가져온다.
  * 예전에는 <title>과 왼쪽 사이드바에 버전을 손으로 적어 두었는데, 새 버전 파일을
@@ -9098,6 +9098,9 @@ function rWsGradeDetail(sh){
 function getDefaultVersionMemo(){
   return {
     lumen:[
+      {ver:'v19-202',date:'2026-11-22',stability:'ok',memo:'🚨 <b>이탈 방지 — 위험 신호 2판 · 📞 상담 전 브리핑 · 🎉 성과 알림</b> (루멘이사회 2026-11-22 결정 · docs/handoff_churn_guard.md · 시안 docs/mockup_churn_guard.html · 원장 「만들어. 배포」). 원장님만 보는 화면이고 문자는 자동으로 보내지 않는다. ① 새 신호: 🔴 정답률 저하(최근 2주 15문항 이상 70% 미만 — 옛 60% 대신) · 🔴 플래너 끊김(7일 넘게) · 🟡 <b>많이 푸는데 많이 틀림</b>(레이스 같은 학년에서 푼 문항 중앙값 이상인데 정답률 하위 25% — 이번 휴원 학생을 놓친 신호) · 🟡 주간 점수 0(이번 달). 맨 위에 «2학기 학교 성적 기록 없는 중·고생 n명». ② 학생 이름 옆 <b>📞 브리핑</b> — 레이스 문항·정답률·학년 순위, 최근 2주 정답률, 플래너 4주, 학교 시험, 주간테스트 3회, 걸린 신호. 푼 양이 학년 중앙값 이상이면 맨 위에 «공부량이 적다고 말하지 마세요»와 대신 할 말. ③ <b>🎉 성과 알림</b> 탭 — 학교 성적·주간테스트가 직전보다 오른 학생(기록 뒤 48시간), 축하 문자 쓰기: «다만»·깎는 표현·추가 수업/비용이 있으면 빨갛게 + 복사 막음. ④ 홈 🚨 카드 위 «챙길 학생 n · 축하할 학생 n». 부품 modules/churn202_teacher.js.'},
+      {ver:'v19-201',date:'2026-11-21',stability:'ok',memo:'🎬 <b>강의실 — 학생별로 한눈에</b> (원장 2026-11-21 「다른 학원 영상학습관리와 비교 · 개별 학생 확인이 잘 안 보인다」 → 시안 «A안+B안»). 모니터링 첫 탭이 <b>👤 학생별</b>: 맨 위 반 칩(빨간 숫자 = 챙길 학생) · «🚩 챙길 학생만» · 숫자 5개(학생 · 평균 진도 · 마감 지난 영상 · 3일 넘게 안 봄 · 최근 7일 본 영상), 아래 학생 한 줄 표(진도 막대 완료/배정 · 마감 지남 · 다시 봄 · 마지막 시청 · 상태 🚩밀림/🚩안 봄/⏩건너뛰며 봄/✓완료/진행 중). 줄을 누르면 오른쪽 <b>학생 서랍</b>: 진도 · 마감 지남 · 최근 7일 · 마지막 시청, ▶ 다음에 볼 영상, 폴더 › 단원별 영상(막대 · % · 내준 날 · 마감 · 상태), 📨 학부모 한 줄 복사. 영상 줄을 누르면 🗺 시청 지도의 회차 창으로. 🗺 시청 지도 · 🎬 영상별 · 🏫 반별은 그대로. 부품 modules/vodstu201_teacher.js.'},
+      {ver:'v19-200',date:'2026-11-20',stability:'ok',memo:'🚑 <b>리커버리 — 따로 추가한 학생만 만들기</b> (원장 2026-11-20 「내가 따로 추가한 학생의 학습지도 만드는 기능」). 이번 주 학습지를 이미 만든 학생이 있으면 「⚡ 확정 전원」 단추가 <b>「➕ 새로 추가한 n명만 만들기 (예상 m문항)」</b>로 바뀌고, 아래에 «⏳ 아직: 이름 | ✅ 만든 학생 n명»이 보인다. 누르면 예전처럼 서버 예약 — 서버는 이미 만든 학생을 건너뛰고 아직 안 만든 학생만 만든다. 모두 만들었으면 «✅ 확정 n명 모두 만듦». 부품 modules/rcnew200_teacher.js.'},
       {ver:'v19-199',date:'2026-11-16',stability:'ok',memo:'📱 <b>제출 달력 — 이모지 · 안 낸 날 사선 · 🔥 연속 기록</b> (원장 2026-11-16 「녹·플 대신 이모지 · 빨간 동그라미에 사선 · 이런 연속 학습 표기를 플래너와 녹음에 도입」). 동그라미 안을 <b>🎙(녹음) · 📒(플래너)</b>로, 안 낸 날은 빨간 동그라미에 <b>사선</b>(🚫처럼). 달력 위에 <b>🔥 연속 카드</b> 두 장 — 📒 플래너 «12일 연속»(매일 · 오늘 아직이면 «오늘 내면 13일!») · 🎙 녹음 «13회 연속»(수업일, 12월부터 매일 «일 연속») · 최고 기록 · 이번 주 점 7개 · 끊기면 🧊 «오늘부터 다시 시작».'},
       {ver:'v19-198',date:'2026-11-16',stability:'ok',memo:'📱 <b>학생별 제출 달력 — 동그라미로 · 플래너는 매일 · 녹음은 12월부터 매일</b> (원장 2026-11-16 「제출하면 녹색 동그라미로 · 잘 구분이 안 된다」 → 시안 A · 「플래너는 매일 제출이 기본, 녹음은 월수금 수업이면 그 수업 전에, 12월부터는 매일」). 칸마다 동그라미 두 개 — 위 «녹»(녹음) · 아래 «플»(플래너): <b>초록 꽉 찬 = 냄 · 빨간 테 = 내야 하는 날인데 안 냄</b> · 연한 회색 = 내는 날 아님 · 점선 = 오늘(마감 전). 플래너는 매일, 녹음은 수업일(파란 칸)만 — 2026년 12월 1일부터는 녹음도 매일로 셉니다. 요약도 «녹음 (수업일) n/m · 플래너 (매일) n/m».'},
       {ver:'v19-197',date:'2026-11-16',stability:'ok',memo:'📱 <b>모바일 제출 현황 — 학생 이름 누르면 날짜별 달력</b> (원장 2026-11-16 「학생 이름 누르면 날짜별 제출하는 것 체크 표시로 며칠 날 내고 며칠 날 내지 않은 거를」). 한 달 달력(월~일)에 칸마다 <b>🎙 녹음 · 📒 플래너</b>: ✓ 냄 · ✗ 수업일인데 안 냄. 수업일(반 요일)은 파란 칸, 오늘은 노란 칸. 위에 «수업일 녹음 n/m · 플래너 n/m», 아래에 «안 낸 수업일: 11/4 · 11/9 …». ‹ › 로 지난달도 봅니다. 학원앱에 이미 있는 기록(녹음 파일 날짜 · 플래너 제출 날짜, 새벽 3시 규칙) 그대로.'},
@@ -105244,7 +105247,377 @@ function mob197Cal(){
 }
 
 /* ═══════════════════════════════════════════════════════════════════
- * v19-35~199: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
+ * v19-200: 🚑 리커버리 «만들기» 칸 — 따로 추가한 학생만 만들기 (원장 2026-11-20 「내가 따로 추가한 학생의 학습지도 만드는 기능」)
+ *  11/19 예약 처리 뒤 명단에 넣은 학생(최○○)이 빠져 있었다. 예약은 원래 «이미 만든 학생은 건너뛰고» 만드는데,
+ *  단추가 «확정 전원 (8명 · 예상 375문항)»이라 다시 누르면 모두 새로 만들 것처럼 보였다.
+ *  · 이번 주 이미 만든 학생이 있고 아직 안 만든 학생이 있으면 → 「➕ 새로 추가한 n명만 만들기 (예상 m문항)」
+ *  · 모두 만들었으면 → 「✅ 확정 n명 모두 만듦」(누를 수 없음)
+ *  · 단추 아래 한 줄: «⏳ 아직: 이름 · 이름 | ✅ 만든 학생 n명»
+ *  누르는 일은 그대로 rcMakeWsAll(서버 예약 ws_make_req) — 서버 sync/rcws_make.js 가 이미 만든 학생을 건너뛴다.
+ *  ※ 서버 읽기·쓰기 추가 없음. 문자열 연결로만 HTML. 앞의 l3rMakeBox 감싸기(v19-123·155·181)를 한 번 더 감싼다.
+ * ═══════════════════════════════════════════════════════════════════ */
+function rn200State(){
+  var conf = []; try { conf = rcConfirmed().filter(function(c){ return !(c.e && c.e.done) && !(c.e && c.e.noshow); }); } catch(e){ return null; }
+  var made = [], pend = [];
+  conf.forEach(function(c){ var m = null; try { m = rcwsMadeOf(c.k); } catch(e){} (m ? made : pend).push(c); });
+  var sum = null;
+  try { if (typeof rw155Est === 'function' && RW155 && RW155.bd && RW155.bd.key) { var rule = rcwsRule(); sum = 0; pend.forEach(function(c){ if (c.row) sum += rw155Est(c.row, rule).total; }); } } catch(e){ sum = null; }
+  return { made: made, pend: pend, sum: sum };
+}
+if (typeof l3rMakeBox === 'function') l3rMakeBox = (function(orig){ return function(){
+  var h = orig.apply(this, arguments);
+  try {
+    var S = rn200State(); if (!S || !S.made.length) return h;
+    var re = /(<button type="button" class="l3-btn main" id="l3r-all"[^>]*>)⚡ 확정 전원 학습지 생성[^<]*(<\/button>)/;
+    if (!re.test(h)) return h;
+    var nm = function(c){ return rcwsEsc200(c.name || (c.row && c.row.st && c.row.st.name) || ''); };
+    if (S.pend.length) {
+      h = h.replace(re, '$1➕ 새로 추가한 ' + S.pend.length + '명만 만들기' + (S.sum ? ' (예상 ' + S.sum + '문항)' : '') + '$2');
+    } else {
+      h = h.replace(re, function(all, a, b){ return a.replace('<button', '<button disabled') + '✅ 확정 ' + S.made.length + '명 모두 만듦' + b; });
+    }
+    var line = '<div class="l3-sub" id="rn200-who" style="font-size:12px;font-weight:800;margin:4px 0 2px;line-height:1.6">'
+      + (S.pend.length ? '<span style="color:#b45309">⏳ 아직: ' + S.pend.map(nm).join(' · ') + '</span> <span style="color:#cbd5e1">|</span> ' : '')
+      + '<span style="color:#15803d">✅ 만든 학생 ' + S.made.length + '명</span></div>';
+    var j = h.indexOf('</button>', h.indexOf('id="l3r-all"'));
+    if (j > 0) h = h.slice(0, j + 9) + line + h.slice(j + 9);
+  } catch(e){ try { console.error('[리커버리 추가 학생 만들기]', e); } catch(_){} }
+  return h;
+}; })(l3rMakeBox);
+function rcwsEsc200(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+/* ═════════════════════════════════════════════════════════════════
+ * v19-201: 🎬 강의실 › 모니터링 «👤 학생별» 2판 — A안(반 칩 + 학생 한 줄 표) + B안(학생 서랍)
+ *   (원장 2026-11-21 「다른 학원 영상학습관리와 비교 · 개별 학생 확인이 잘 안 보인다」 → 시안 docs/mockup_vod_student.html «추천대로 A+B»)
+ *  ① 모니터링 첫 탭 = 👤 학생별 (🗺 시청 지도 · 🎬 영상별 · 🏫 반별 탭은 그대로)
+ *  ② 반 칩(학생 반 group · 빨간 숫자 = 챙길 학생 수) · «🚩 챙길 학생만» · 위 숫자 5개
+ *  ③ 학생 한 줄: 진도(완료/배정) · 마감 지남 · 다시 봄(2번 이상 본 영상) · 마지막 시청 · 상태
+ *     상태 = 🚩 밀림(마감 지난 미완료) > 🚩 안 봄(배정 있는데 3일 넘게 시청 없음) > ⏩ 건너뛰며 봄(본 시간 < 간 지점의 절반) > ✓ 완료 > 진행 중
+ *  ④ 줄을 누르면 오른쪽 서랍(좁으면 아래): 숫자 4칸 · ▶ 다음에 볼 영상 · 폴더 › 단원별 영상(막대 · % · 내준 날 · 마감 · 상태)
+ *     · 📨 학부모 한 줄 복사 · 영상 줄을 누르면 🗺 시청 지도의 회차 창(그 폴더)으로
+ *  계산은 v19-135 vod5Info(같은 «완료» 기준 = 폴더 완료 %)를 그대로 쓴다. 서버 읽기·쓰기 추가 없음(VOD_LOGS 그대로).
+ *  ※ 문자열 연결로만. 앞 vodMonitor 감싸기(v19-135)를 한 번 더 감싼다.
+ * ═════════════════════════════════════════════════════════════════ */
+var VOD7 = { grp:'', flag:false, sel:'' };
+var VOD7_IDLE_DAYS = 3;
+try{ if(typeof VOD_MON_TAB!=='undefined') VOD_MON_TAB='student'; }catch(e){}
+
+function vod7AllVids(){ var out=[]; try{ vodFolders().forEach(function(f){ vodVideosOf(f.id).forEach(function(v){ out.push(v); }); }); }catch(e){} return out; }
+/* 학생 한 명 요약 */
+function vod7Sum(code, vids){
+  var asg=0, done=0, late=0, re=0, ff=0, last='', lm=0, firstGiven=0, rows=[];
+  vids.forEach(function(v){
+    var a=vodAssignOf(v.id); if(a.codes.indexOf(code)<0) return;
+    var i=vod5Info(v.id, code, a.due); asg++;
+    if(i.done) done++; if(i.late) late++; if(i.n>=2) re++;
+    var skip=(i.maxPos>=60 && i.watched < i.maxPos*0.5);
+    if(skip) ff++;
+    var t=vod5Ms(i.last); if(i.last && t>=lm){ lm=t; last=i.last; }
+    var g=vod5GivenAt(v.id, code), gm=vod5Ms(g); if(gm && (!firstGiven || gm<firstGiven)) firstGiven=gm;
+    rows.push({ v:v, i:i, due:a.due, given:g, skip:skip });
+  });
+  var idleFrom = lm || firstGiven;
+  var idle = asg>done && idleFrom && (Date.now()-idleFrom) > VOD7_IDLE_DAYS*86400000;
+  if(asg>done && !lm && !firstGiven) idle=true;
+  var st = late?'late':(idle?'idle':(ff?'skip':(asg&&done>=asg?'done':'run')));
+  return { code:code, asg:asg, done:done, late:late, re:re, ff:ff, last:last, lm:lm, idle:idle, st:st, rows:rows, pct:asg?Math.round(done/asg*100):0 };
+}
+var VOD7_ST = { late:['🚩 밀림','#fee2e2','#b91c1c'], idle:['🚩 안 봄','#fee2e2','#b91c1c'], skip:['⏩ 건너뛰며 봄','#fef3c7','#b45309'], done:['✓ 완료','#dcfce7','#15803d'], run:['진행 중','#e0f2fe','#0369a1'] };
+function vod7Badge(st){ var s=VOD7_ST[st]||VOD7_ST.run; return '<span style="display:inline-block;border-radius:99px;padding:2px 9px;font-size:11px;font-weight:900;white-space:nowrap;background:'+s[1]+';color:'+s[2]+'">'+s[0]+'</span>'; }
+function vod7Flag(x){ return x.st==='late'||x.st==='idle'||x.st==='skip'; }
+function vod7BarCol(p){ return p>=100?'#16a34a':(p>=60?'#84cc16':(p>=30?'#f97316':'#ef4444')); }
+function vod7Bar(p, w){ return '<span style="display:inline-block;vertical-align:middle;width:'+(w||110)+'px;height:8px;background:#f1f5f9;border-radius:8px;overflow:hidden"><i style="display:block;height:100%;width:'+Math.max(0,Math.min(100,p))+'%;background:'+vod7BarCol(p)+'"></i></span>'; }
+function vod7Ago(ms){ if(!ms) return ''; var d=Math.floor((Date.now()-ms)/86400000); return d>=VOD7_IDLE_DAYS?' <span style="display:inline-block;border-radius:99px;padding:1px 7px;font-size:10.5px;font-weight:900;background:#fef3c7;color:#b45309">'+d+'일 전</span>':''; }
+
+function vod7Data(){
+  var all=[]; try{ all=(typeof getSortedStudents==='function')?(getSortedStudents(true)||[]):[]; }catch(e){}
+  var vids=vod7AllVids(), out=[];
+  all.forEach(function(s){ if(!s||!s.lumen_rec_code||s.withdrawn) return; var x=vod7Sum(s.lumen_rec_code, vids); if(!x.asg) return; x.s=s; x.grp=String(s.group||'반 없음'); out.push(x); });
+  return out;
+}
+window.vod7Grp=function(g){ VOD7.grp=(VOD7.grp===g?'':g); render(); };
+window.vod7FlagTog=function(){ VOD7.flag=!VOD7.flag; render(); };
+window.vod7Pick=function(c){ VOD7.sel=(VOD7.sel===c?'':c); render(); try{ var d=document.getElementById('vod7-drawer'); if(d && window.innerWidth<1100) d.scrollIntoView({ block:'start', behavior:'smooth' }); }catch(e){} };
+window.vod7Map=function(vid, code){ try{ var v=vodVideoById(vid); if(v && typeof VOD_FOLDER!=='undefined') VOD_FOLDER=v.folderId; }catch(e){} try{ VOD5.sel=''; VOD5.open={ vid:vid, code:code }; }catch(e){} VOD_MON_TAB='map'; render(); };
+window.vod7Copy=function(code){
+  var D=vod7Data().filter(function(x){ return x.code===code; })[0]; if(!D) return;
+  var nm=D.s.name||'', nx=D.rows.filter(function(r){ return !r.i.done; });
+  var t='[루멘수학] '+nm+' 학생 영상 학습 — 배정 '+D.asg+'편 중 '+D.done+'편 완료('+D.pct+'%)'
+    +(D.late?(', 마감 지난 영상 '+D.late+'편'):'')
+    +(D.last?(', 마지막 시청 '+vod5When(D.last)):', 아직 시청 기록이 없어요')
+    +(nx.length?('. 다음에 볼 영상: «'+(nx[0].v.title||'')+'»'):'')+'.';
+  try{ navigator.clipboard.writeText(t).then(function(){ try{ plToast('📨 복사했어요'); }catch(e){} }, function(){ prompt('복사해서 쓰세요', t); }); }catch(e){ prompt('복사해서 쓰세요', t); }
+};
+
+function vod7Drawer(D){
+  var s=D.s, h='<div id="vod7-drawer" style="flex:1 1 420px;min-width:0;max-width:100%;background:#fff;border-radius:16px;box-shadow:0 6px 20px rgba(15,23,42,.12);overflow:hidden;align-self:flex-start">';
+  h+='<div style="background:#0d2240;color:#fff;padding:13px 15px;display:flex;align-items:center;gap:11px"><div style="width:42px;height:42px;border-radius:12px;background:#1d6fe8;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px">'+vodEsc(String(s.name||'?').slice(0,1))+'</div>'
+    +'<div style="flex:1;min-width:0"><b style="font-size:17px">'+vodEsc(s.name||'')+'</b><div style="opacity:.75;font-weight:700;font-size:11.5px">'+vodEsc([s.grade||'', s.school||'', s.group||''].filter(Boolean).join(' · '))+'</div></div>'
+    +'<button type="button" onclick="vod7Pick(\''+vodEsc(D.code)+'\')" aria-label="닫기" style="background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer">✕</button></div>';
+  function k(lb, v, c){ return '<div style="background:#f8fafc;border-radius:10px;padding:7px 9px"><small style="display:block;color:#64748b;font-weight:700;font-size:10.5px">'+lb+'</small><b style="font-size:16px;'+(c?'color:'+c:'')+'">'+v+'</b></div>'; }
+  var wk=0, wkSec=0, since=Date.now()-7*86400000;
+  D.rows.forEach(function(r){ try{ vod5Sessions(r.v.id, D.code).forEach(function(l){ if(vod5T(l)>=since && (+l.watched_sec||0)>=VOD_SHORT_SEC){ wk++; wkSec+=(+l.watched_sec||0); } }); }catch(e){} });
+  h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:11px 13px;border-bottom:1px solid #e2e8f0">'
+    +k('진도', D.pct+'% <small style="font-size:11px;color:#64748b">'+D.done+'/'+D.asg+'</small>', vod7BarCol(D.pct))+k('마감 지남', D.late, D.late?'#b91c1c':'')
+    +k('최근 7일', wk+'회 · '+Math.round(wkSec/60)+'분')+k('마지막', D.last?vod5When(D.last):'없음')+'</div>';
+  var nx=D.rows.filter(function(r){ return !r.i.done; }).sort(function(a,b){ var da=a.due||'9999', db=b.due||'9999'; return da<db?-1:(da>db?1:(vod5Ms(a.given)-vod5Ms(b.given))); })[0];
+  if(nx) h+='<div onclick="vod7Map(\''+vodEsc(nx.v.id)+'\',\''+vodEsc(D.code)+'\')" style="cursor:pointer;margin:11px 13px 4px;background:linear-gradient(135deg,#0d2240,#1d4ed8);color:#fff;border-radius:12px;padding:10px 13px;font-weight:800">▶ 다음에 볼 영상 · '+vodEsc(nx.v.title||'')
+    +'<small style="display:block;opacity:.85;font-size:11px">'+(nx.due?('마감 '+vod5Day(nx.due)+(nx.i.late?' 지남':'')+' · '):'')+'지금까지 '+nx.i.pct+'% 봄</small></div>';
+  /* 폴더 › 단원별 */
+  var byF={}, fo=[];
+  D.rows.forEach(function(r){ var f=r.v.folderId; if(!byF[f]){ byF[f]={}; fo.push(f); } byF[f][r.v.id]=r; });
+  fo.forEach(function(fid){
+    var f=vodFolderById(fid), rs=byF[fid], groups=[];
+    try{ groups=vodGroupedVideos(fid); }catch(e){ groups=[{ name:'', videos:vodVideosOf(fid) }]; }
+    h+='<div style="margin:12px 13px 2px;font-size:11.5px;font-weight:900;color:#1d4ed8">📁 '+vodEsc(f?f.name:'폴더')+'</div>';
+    groups.forEach(function(g){
+      var list=(g.videos||[]).filter(function(v){ return rs[v.id]; }); if(!list.length) return;
+      var dn=list.filter(function(v){ return rs[v.id].i.done; }).length;
+      h+='<div style="margin:8px 13px 0;font-weight:900;font-size:12.5px;color:#334155;display:flex;justify-content:space-between;gap:8px"><span>'+vodEsc(g.name||'미분류')+'</span><span style="color:#64748b;font-weight:700">'+dn+'/'+list.length+' 완료</span></div>';
+      list.forEach(function(v){
+        var r=rs[v.id], i=r.i, st=i.done?(i.n>=2?['완료 ↻'+i.n,'#dcfce7','#15803d']:['완료','#dcfce7','#15803d']):(i.late?['마감 지남','#fee2e2','#b91c1c']:(r.skip?['⏩ 건너뜀','#fef3c7','#b45309']:(i.all?['보는 중','#e0f2fe','#0369a1']:['시청 전','#f1f5f9','#64748b'])));
+        h+='<div class="vod7-v" onclick="vod7Map(\''+vodEsc(v.id)+'\',\''+vodEsc(D.code)+'\')" title="누르면 🗺 시청 지도의 회차 창" style="cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto 40px auto;gap:8px;align-items:center;margin:0 13px;padding:7px 0;border-bottom:1px dashed #eef2f7">'
+          +'<div style="min-width:0"><div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+vodEsc(v.title||'')+'</div><small style="color:#64748b;font-weight:700;font-size:10.5px">'
+          +[r.given?(vod6DateOnlySafe(r.given)+' 내줌'):'', r.due?('마감 '+vod5Day(r.due)):'', i.last?(vod5When(i.last)+' 봄'):''].filter(Boolean).join(' · ')+'</small></div>'
+          +vod7Bar(i.pct, 90)+'<b style="font-size:12px;text-align:right">'+i.pct+'%</b>'
+          +'<span style="display:inline-block;border-radius:99px;padding:2px 8px;font-size:10.5px;font-weight:900;white-space:nowrap;background:'+st[1]+';color:'+st[2]+'">'+st[0]+'</span></div>';
+      });
+    });
+  });
+  h+='<div style="display:flex;gap:6px;padding:12px 13px 14px;flex-wrap:wrap"><button type="button" onclick="vod7Copy(\''+vodEsc(D.code)+'\')" style="border:0;border-radius:10px;padding:8px 12px;font-weight:900;font-size:12px;background:#eff6ff;color:#1d4ed8;cursor:pointer;font-family:inherit">📨 학부모 한 줄 복사</button></div>';
+  return h+'</div>';
+}
+function vod6DateOnlySafe(iso){ try{ return vod6DateOnly(iso); }catch(e){ return vod5When(iso); } }
+
+function vod7Page(){
+  var h='<div style="flex:1;overflow:auto;padding:14px">';
+  if(VOD_LOGS===null) return h+'<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">시청 기록 불러오는 중…</div></div>';
+  var all=vod7Data();
+  if(!all.length) return h+'<div style="padding:40px;text-align:center;color:#94a3b8;font-size:13px">영상을 배정받은 학생이 없어요</div></div>';
+  var gs={}, go=[]; all.forEach(function(x){ if(!gs[x.grp]){ gs[x.grp]={ n:0, f:0 }; go.push(x.grp); } gs[x.grp].n++; if(vod7Flag(x)) gs[x.grp].f++; });
+  go.sort();
+  if(VOD7.grp && !gs[VOD7.grp]) VOD7.grp='';
+  var nf=all.filter(vod7Flag).length;
+  function chip(on, label, n, f, click, red){ return '<button type="button" onclick="'+click+'" style="border:1.5px solid '+(red&&!on?'#fca5a5':(on?'#0d2240':'#e2e8f0'))+';border-radius:99px;padding:5px 12px;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit;background:'+(on?'#0d2240':'#fff')+';color:'+(on?'#fff':(red?'#b91c1c':'#0f172a'))+'">'+label+(n!=null?' '+n:'')+(f?'<b style="color:'+(on?'#facc15':'#e8192c')+';margin-left:4px">'+f+'</b>':'')+'</button>'; }
+  h+='<div class="vod7-chips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+chip(!VOD7.grp,'전체',all.length,nf,'vod7Grp(\'\')');
+  go.forEach(function(g){ h+=chip(VOD7.grp===g, vodEsc(g), gs[g].n, gs[g].f, 'vod7Grp(\''+vodEsc(g).replace(/'/g,'\\\'')+'\')'); });
+  h+=chip(VOD7.flag,'🚩 챙길 학생만',null,0,'vod7FlagTog()',true)+'</div>';
+  var rows=all.filter(function(x){ return (!VOD7.grp||x.grp===VOD7.grp) && (!VOD7.flag||vod7Flag(x)); });
+  var base=all.filter(function(x){ return !VOD7.grp||x.grp===VOD7.grp; });
+  var avg=base.length?Math.round(base.reduce(function(s,x){ return s+x.pct; },0)/base.length):0;
+  var lateV=base.reduce(function(s,x){ return s+x.late; },0), idleN=base.filter(function(x){ return x.idle; }).length, since=Date.now()-7*86400000, wk=0;
+  base.forEach(function(x){ x.rows.forEach(function(r){ if(vod5Ms(r.i.last)>=since) wk++; }); });
+  function kp(l,v,c){ return '<div style="background:#fff;border-radius:12px;padding:8px 14px;min-width:104px;border:1px solid #e2e8f0"><small style="display:block;color:#64748b;font-weight:700;font-size:11px">'+l+'</small><b style="font-size:20px;'+(c?'color:'+c:'')+'">'+v+'</b></div>'; }
+  h+='<div class="vod7-kpi" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+kp('학생',base.length+'명')+kp('평균 진도',avg+'%')+kp('마감 지난 영상',lateV+'개',lateV?'#b91c1c':'')+kp(VOD7_IDLE_DAYS+'일 넘게 안 봄',idleN+'명',idleN?'#b45309':'')+kp('최근 7일 본 영상',wk+'편')+'</div>';
+  var selD=VOD7.sel?all.filter(function(x){ return x.code===VOD7.sel; })[0]:null; if(VOD7.sel && !selD) VOD7.sel='';
+  h+='<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">';
+  var th='font-size:11.5px;color:#64748b;text-align:left;font-weight:800;padding:8px;border-bottom:1.5px solid #e2e8f0;white-space:nowrap', td='padding:8px;border-bottom:1px solid #f1f5f9;vertical-align:middle;font-size:12.5px';
+  h+='<div style="flex:'+(selD?'1 1 460px':'1 1 100%')+';min-width:0;max-width:100%;background:#fff;border-radius:14px;border:1px solid #e2e8f0;overflow:auto"><table id="vod7-tbl" style="border-collapse:collapse;width:100%">'
+    +'<tr><th style="'+th+'">학생</th><th style="'+th+'">진도 (완료/배정)</th><th style="'+th+'">마감 지남</th>'+(selD?'':'<th style="'+th+'">다시 봄</th>')+'<th style="'+th+'">마지막 시청</th><th style="'+th+'">상태</th></tr>';
+  if(!rows.length) h+='<tr><td colspan="6" style="'+td+';text-align:center;color:#94a3b8;padding:24px">챙길 학생이 없어요 👍</td></tr>';
+  rows.forEach(function(x){
+    var on=(x.code===VOD7.sel);
+    h+='<tr class="vod7-row" data-code="'+vodEsc(x.code)+'" onclick="vod7Pick(\''+vodEsc(x.code)+'\')" style="cursor:pointer;'+(on?'background:#fffbeb':'')+'">'
+      +'<td style="'+td+'"><b style="font-size:13.5px">'+vodEsc(x.s.name||'')+'</b><small style="display:block;color:#64748b;font-weight:700;font-size:11px">'+vodEsc([x.s.grade?String(x.s.grade).replace('학교 ','').replace('학년',''):'', x.grp].filter(Boolean).join(' · '))+'</small></td>'
+      +'<td style="'+td+';white-space:nowrap">'+vod7Bar(x.pct)+' <b>'+x.pct+'%</b> <span style="color:#64748b">'+x.done+'/'+x.asg+'</span></td>'
+      +'<td style="'+td+'">'+(x.late?'<b style="color:#b91c1c">'+x.late+'</b>':'0')+'</td>'
+      +(selD?'':'<td style="'+td+'">'+x.re+'</td>')
+      +'<td style="'+td+';white-space:nowrap">'+(x.last?vod5When(x.last):'<span style="color:#94a3b8">없음</span>')+(x.asg>x.done?vod7Ago(x.lm):'')+'</td>'
+      +'<td style="'+td+'">'+vod7Badge(x.st)+'</td></tr>';
+  });
+  h+='</table><div style="padding:8px 10px;font-size:11px;color:#64748b;line-height:1.6">진도 = 폴더 완료 기준(보통 90%)을 넘긴 영상 비율 · 🚩 밀림 = 마감 지난 영상 · 🚩 안 봄 = '+VOD7_IDLE_DAYS+'일 넘게 시청 없음 · ⏩ = 본 시간이 간 지점의 절반도 안 됨(빨리 감기·건너뛰기) · 줄을 누르면 학생 서랍</div></div>';
+  if(selD) h+=vod7Drawer(selD);
+  return h+'</div></div>';
+}
+
+if(typeof vodMonitor==='function'){
+  vodMonitor=(function(o){ return function(){
+    if(VOD_MON_TAB!=='student') return o.apply(this, arguments);
+    var body=''; try{ body=vod7Page(); }catch(e){ console.error(e); body='<div style="padding:20px;color:#b91c1c;font-weight:800">학생별 오류: '+vodEsc(e.message)+'</div>'; }
+    return '<div style="height:100%;display:flex;flex-direction:column;overflow:hidden">'+vodMonTabs()+body+'</div>';
+  }; })(vodMonitor);
+}
+if(typeof vodMonTabs==='function'){
+  vodMonTabs=(function(o){ return function(){
+    var h=o.apply(this, arguments);
+    var a=h.indexOf('<button onclick="vodMonSetTab(\'student\')"'), m=h.indexOf('<button onclick="vodMonSetTab(\'map\')"');
+    if(a>m && m>=0){ var e=h.indexOf('</button>', a)+9; var st=h.slice(a, e); h=h.slice(0,a)+h.slice(e); h=h.slice(0,m)+st+h.slice(m); }
+    return h;
+  }; })(vodMonTabs);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-202: 🚨 이탈 방지 — 위험 신호 2판 · 📞 상담 전 브리핑 · 🎉 성과 알림
+ *   (루멘이사회 2026-11-22 결정 · 인수인계 docs/handoff_churn_guard.md · 시안 docs/mockup_churn_guard.html · 원장 「만들어. 배포」)
+ *   원장 전용 화면. 학생앱·학부모앱에는 아무것도 안 간다. 문자는 자동으로 보내지 않는다(복사만). 서버에 새로 쓰는 것 없음.
+ *  ① 위험 신호(riskOf 감싸기) — 새 신호
+ *     · 🔴 정답률 저하: 최근 2주 묶음(유형 성취도) 15문항 이상 70% 미만 (옛 «60% 미만» 대신)
+ *     · 🔴 플래너 끊김: 최근 30일 안에 올린 적 있는데 7일 연속 없음 (옛 사흘은 🟡 그대로)
+ *     · 🟡 많이 푸는데 많이 틀림: race_board 같은 학년(4명 이상)에서 푼 문항 ≥ 중앙값 · 정답률 ≤ 하위 25%
+ *     · 🟡 주간 점수 0: 이번 달 플래너 순위(planner_ranking_YYYY-MM)의 주간 점수 0 (달이 10일 넘게 지났을 때)
+ *     · 성적 기록 없음은 카드마다 띄우지 않고 맨 위 숫자 + 브리핑에만(대부분이 걸려 시끄러움)
+ *  ② 화면 위 탭: 🚨 위험 신호 · 🎉 성과 알림 / 학생 카드 이름 옆 «📞 브리핑»
+ *  ③ 📞 브리핑(창): 레이스(문항·정답률·학년 순위) · 유형 성취도 2주 · 플래너 4주(제출일·평균) · 주간테스트 최근 3회 · 학교 시험
+ *     · 맨 위 «하면 안 되는 말»: 푼 양이 학년 중앙값 이상이면 «공부량이 적다» 금지 + 대신 할 말
+ *  ④ 🎉 성과 알림: 학교 성적(school_scores, 수학) 직전보다 오름 · 주간테스트 직전보다 10점 이상 — 기록 뒤 48시간 안
+ *     · 축하 문자 쓰기: «다만/하지만 · 부족/아쉽 · 보충/추가 수업/비용» 이 있으면 빨갛게 + 복사 막음
+ *  ⑤ 홈 🚨 카드 위 한 줄 «🚨 챙길 학생 n · 🎉 축하할 학생 n»
+ *  ※ 문자열 연결로만(템플릿 리터럴 금지). 읽기: race_board · planner_ranking_YYYY-MM (htKv) · 등록부 lumen_planner · schoolScores · WK.
+ * ═══════════════════════════════════════════════════════════════════ */
+var CG = { race:null, prank:null, busy:false, tab:'risk', brief:'', msg:{}, msgFor:'' };
+function cgKick(){
+  if(CG.busy || (CG.race && CG.prank)) return; CG.busy=true;
+  var ym=riskKst().slice(0,7);
+  Promise.all([ htKv('race_board').catch(function(){ return null; }), htKv('planner_ranking_'+ym).catch(function(){ return null; }) ])
+    .then(function(r){ CG.race=r[0]||{}; CG.prank=r[1]||{}; })
+    .then(function(){ CG.busy=false; if(VIEW==='risk'||VIEW==='home') render(); });
+}
+function cgRows(){ var r=CG.race||{}; return [].concat(Array.isArray(r.mid)?r.mid:[], Array.isArray(r.elem)?r.elem:[]); }
+function cgRaceOf(code){ return cgRows().filter(function(x){ return x && String(x.code)===String(code); })[0]||null; }
+function cgQ(arr, q){ if(!arr.length) return null; var a=arr.slice().sort(function(x,y){ return x-y; }); var i=(a.length-1)*q, lo=Math.floor(i), hi=Math.ceil(i); return a[lo]+(a[hi]-a[lo])*(i-lo); }
+/* 같은 학년 비교 — 분량 순위 · 정답률 순위 · 중앙값 · 하위 25% */
+function cgGrade(code){
+  var me=cgRaceOf(code); if(!me || !me.gr) return null;
+  var g=cgRows().filter(function(x){ return x && x.gr===me.gr && (+x.n||0)>0; });
+  var ns=g.map(function(x){ return +x.n||0; }), rs=g.map(function(x){ return +x.rate||0; });
+  var nRank=1+g.filter(function(x){ return (+x.n||0)>(+me.n||0); }).length, rRank=1+g.filter(function(x){ return (+x.rate||0)>(+me.rate||0); }).length;
+  return { me:me, size:g.length, nMed:cgQ(ns,0.5), rQ1:cgQ(rs,0.25), rAvg:rs.length?Math.round(rs.reduce(function(a,b){ return a+b; },0)/rs.length):null, nRank:nRank, rRank:rRank };
+}
+function cgPlanDays(st, days){ var pl=st.lumen_planner||{}, n=0, sum=0, last=''; for(var i=0;i<days;i++){ var d=riskKst(Date.now()-i*86400000); var v=pl[d]; if(v!==undefined && v!==null){ n++; sum+=(+v||0); if(!last) last=d; } } return { n:n, avg:n?Math.round(sum/n*10)/10:null, last:last }; }
+function cgPlanLast(st){ var pl=st.lumen_planner||{}, ks=Object.keys(pl).filter(function(k){ return pl[k]!==null && pl[k]!==undefined; }).sort(); return ks.length?ks[ks.length-1]:''; }
+function cgDaysSince(ymd){ return ymd?Math.floor((Date.parse(riskKst()+'T00:00:00+09:00')-Date.parse(ymd+'T00:00:00+09:00'))/86400000):null; }
+function cgWeekly(code){ var r=((CG.prank||{}).ranking)||[]; return r.filter(function(x){ return x && String(x.code)===String(code); })[0]||null; }
+function cgScores(st){
+  var all=[]; try{ all=(schoolScores&&schoolScores[st.id])||[]; }catch(e){}
+  return all.map(function(e){ var m=(e.subjects||[]).filter(function(s){ return /수학/.test(s.name||''); })[0]; return { d:String(e.examDate||''), name:((e.semester&&e.semester.term)?e.semester.term+' ':'')+(e.examType||e.examName||'시험'), score:m&&m.score!=null&&m.score!==''?+m.score:null, at:e.createdAt||'' }; })
+    .filter(function(x){ return x.score!=null; }).sort(function(a,b){ return a.d<b.d?-1:1; });
+}
+function cgNoScore(st){ if(!/중|고/.test(String(st.grade||''))) return false; return !cgScores(st).some(function(x){ return x.d>='2026-09-01'; }); }
+
+/* ── ① riskOf 감싸기 ── */
+if(typeof riskOf==='function') riskOf=(function(o){ return function(st){
+  var out=o.apply(this, arguments)||[];
+  try{
+    var code=String(st.lumen_rec_code||''), t=(typeof riskTq==='function')?riskTq(code):null;
+    out=out.filter(function(x){ return x.k!=='low'; });
+    if(t && t.n>=15 && t.rate!=null && t.rate<70 && !out.some(function(x){ return x.k==='drop'; }))
+      out.push({ k:'low', sev:2, t:'정답률 저하 '+t.rate+'%', d:'최근 2주 '+t.n+'문항 · 기준 70%', go:'typeach' });
+    var last=cgPlanLast(st), ago=cgDaysSince(last);
+    if(last && ago!=null && ago>=7 && ago<=30){ out=out.filter(function(x){ return x.k!=='plan'; }); out.push({ k:'plan', sev:2, t:'플래너 끊김 '+ago+'일', d:last.slice(5).replace('-','/')+' 뒤로 없음', go:'lgall' }); }
+    var G=cgGrade(code);
+    if(G && G.size>=4 && (+G.me.n||0)>=G.nMed && (+G.me.rate||0)<=G.rQ1)
+      out.push({ k:'many', sev:1, t:'많이 푸는데 많이 틀림', d:(+G.me.n||0).toLocaleString()+'문항(학년 '+G.size+'명 중 '+G.nRank+'위) · 정답률 '+G.me.rate+'%(학년 '+G.rRank+'위 · 평균 '+G.rAvg+'%)', go:'lgall' });
+    var W=cgWeekly(code), dom=+riskKst().slice(8,10);
+    if(CG.prank && dom>10 && (!W || (+W.weekly||0)===0) && cgPlanLast(st)) out.push({ k:'wzero', sev:1, t:'주간 점수 0', d:'이번 달('+riskKst().slice(5,7)+'월) 주간계획·순공 점수 없음', go:'lgall' });
+  }catch(e){ try{ console.error('[이탈 방지 신호]', e); }catch(_){} }
+  return out;
+}; })(riskOf);
+try{ RISK_NAMES.low='정답률 저하'; RISK_NAMES.many='많이 푸는데 많이 틀림'; RISK_NAMES.wzero='주간 점수 0'; }catch(e){}
+
+/* ── ④ 성과 알림 ── */
+function cgWins(){
+  var out=[], now=Date.now();
+  getSortedStudents().filter(function(s){ return s && !s.withdrawn; }).forEach(function(s){
+    var sc=cgScores(s);
+    if(sc.length>=2){ var a=sc[sc.length-1], b=sc[sc.length-2], at=Date.parse(a.at||(a.d+'T12:00:00+09:00'));
+      if(a.score>b.score && now-at<=48*3600000) out.push({ st:s, kind:'학교 '+a.name, from:b.score, to:a.score, left:Math.max(0,Math.round((48*3600000-(now-at))/3600000)) }); }
+    try{ if(typeof WK!=='undefined' && WK.loaded){ var sid=_wkSidByName()[String(s.name||'').trim()]; var h=(sid!==undefined)?_wkHistOf(sid):[];
+      if(h.length>=2 && h[0].score!=null && h[1].score!=null && h[0].score>=h[1].score+10){ var at2=Date.parse(String(h[0].date||'').replace(/\./g,'-')+'T18:00:00+09:00');
+        if(!isNaN(at2) && now-at2<=48*3600000) out.push({ st:s, kind:'주간테스트', from:h[1].score, to:h[0].score, left:Math.max(0,Math.round((48*3600000-(now-at2))/3600000)) }); } } }catch(e){}
+  });
+  return out.sort(function(a,b){ return a.left-b.left; });
+}
+var CG_BAN=[ [/다만|하지만|그런데|그러나/g,'«다만»류 금지'], [/부족|아쉽|모자라|약하/g,'점수 깎는 표현'], [/보충|추가 ?수업|더 오래|시간을 늘|비용|수강료|등록/g,'같은 주 추가 시간·비용 요구'] ];
+function cgBanHits(t){ var hits=[]; CG_BAN.forEach(function(b){ var m=String(t||'').match(b[0]); if(m) hits.push(b[1]+' «'+m[0]+'»'); }); return hits; }
+window.cgMsgInput=function(el){ CG.msg[CG.msgFor]=el.value; var hits=cgBanHits(el.value), box=document.getElementById('cg-ban'), btn=document.getElementById('cg-copy');
+  if(box) box.innerHTML=hits.length?hits.map(function(x){ return '<span style="color:#b91c1c">✗ '+esc2(x)+'</span>'; }).join(' · '):'<span style="color:#15803d">✓ 축하만 담겼어요</span>';
+  if(btn){ btn.disabled=!!hits.length || !String(el.value).trim(); btn.style.opacity=btn.disabled?'.45':'1'; } };
+window.cgMsgPick=function(id){ CG.msgFor=id; render(); };
+window.cgMsgCopy=function(){ var t=CG.msg[CG.msgFor]||''; if(cgBanHits(t).length) return; try{ navigator.clipboard.writeText(t).then(function(){ try{ plToast('📋 복사했어요 — 문자는 원장님이 직접 보내세요'); }catch(e){} }); }catch(e){ prompt('복사해서 쓰세요', t); } };
+function cgWinsPage(){
+  var W=cgWins(), h='<div style="background:#fff;border:1px solid #e6eaf1;border-radius:14px;padding:14px 16px">';
+  h+='<div style="font-size:12px;color:#64748b;font-weight:700;margin-bottom:8px">성적이 직전보다 오른 학생 · 기록 뒤 48시간 안 — 축하 문자는 원장님이 직접 보내요(자동 발송 없음)</div>';
+  if(!W.length) return h+'<div style="padding:20px;text-align:center;color:#94a3b8;font-weight:800">지금 축하할 학생이 없어요 · 학교 성적을 넣거나 주간테스트가 오르면 여기에 떠요</div></div>';
+  if(!CG.msgFor || !W.some(function(w){ return w.st.id===CG.msgFor; })) CG.msgFor=W[0].st.id;
+  h+='<div style="display:flex;gap:14px;flex-wrap:wrap"><table style="flex:1 1 320px;border-collapse:collapse"><tr>'+['학생','시험','변화','남은 시간'].map(function(x){ return '<th style="font-size:11.5px;color:#64748b;text-align:left;padding:6px 8px;border-bottom:1.5px solid #e2e8f0">'+x+'</th>'; }).join('')+'</tr>';
+  W.forEach(function(w){ var on=w.st.id===CG.msgFor; h+='<tr class="cg-win" onclick="cgMsgPick(\''+esc2(w.st.id)+'\')" style="cursor:pointer;'+(on?'background:#fffbeb':'')+'"><td style="padding:7px 8px"><b>'+esc2(w.st.name)+'</b></td><td style="padding:7px 8px">'+esc2(w.kind)+'</td><td style="padding:7px 8px;color:#15803d;font-weight:900">'+w.from+' → '+w.to+' (+'+(Math.round((w.to-w.from)*10)/10)+')</td><td style="padding:7px 8px">'+w.left+'시간</td></tr>'; });
+  h+='</table>';
+  var cur=W.filter(function(w){ return w.st.id===CG.msgFor; })[0], nm=String(cur.st.name||'').replace(/^.(.+)$/,'$1');
+  if(CG.msg[CG.msgFor]==null) CG.msg[CG.msgFor]=nm+'이(가) '+cur.kind+' '+cur.to+'점, 지난번보다 '+(Math.round((cur.to-cur.from)*10)/10)+'점이나 올랐어요! 그동안 꾸준히 해 온 덕분이에요. 함께 축하해 주세요 😊';
+  var hits=cgBanHits(CG.msg[CG.msgFor]);
+  h+='<div style="flex:1 1 340px"><b>✉️ '+esc2(cur.st.name)+' 축하 문자</b><textarea id="cg-msg" oninput="cgMsgInput(this)" style="display:block;width:100%;min-height:110px;margin-top:6px;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px;font-family:inherit;font-size:13px;line-height:1.6">'+esc2(CG.msg[CG.msgFor])+'</textarea>'
+    +'<div id="cg-ban" style="font-size:12px;font-weight:800;margin-top:6px">'+(hits.length?hits.map(function(x){ return '<span style="color:#b91c1c">✗ '+esc2(x)+'</span>'; }).join(' · '):'<span style="color:#15803d">✓ 축하만 담겼어요</span>')+'</div>'
+    +'<div style="font-size:11px;color:#64748b;margin-top:4px">규칙(이사회 결정): «다만» 금지 · 점수 깎는 표현 금지 · 같은 주에 추가 시간·비용 요구 금지</div>'
+    +'<button id="cg-copy" type="button" onclick="cgMsgCopy()" '+(hits.length?'disabled ':'')+'style="margin-top:8px;border:0;border-radius:10px;padding:9px 14px;font-weight:900;background:#0d2240;color:#fff;cursor:pointer;font-family:inherit;opacity:'+(hits.length?'.45':'1')+'">📋 복사</button></div></div>';
+  return h+'</div>';
+}
+
+/* ── ③ 상담 전 브리핑 ── */
+window.cgBrief=function(id){ CG.brief=id||''; render(); };
+function cgBriefHtml(st){
+  var code=String(st.lumen_rec_code||''), G=cgGrade(code), t=(typeof riskTq==='function')?riskTq(code):null, P=cgPlanDays(st,28), sc=cgScores(st);
+  var wk=[]; try{ if(typeof WK!=='undefined'&&WK.loaded){ var sid=_wkSidByName()[String(st.name||'').trim()]; wk=(sid!==undefined)?_wkHistOf(sid).slice(0,3):[]; } }catch(e){}
+  function tile(ttl, body){ return '<div style="background:#f8fafc;border-radius:12px;padding:10px 12px"><div style="font-size:12.5px;font-weight:900;color:#334155;margin-bottom:5px">'+ttl+'</div>'+body+'</div>'; }
+  var sub='font-size:11.5px;color:#64748b;font-weight:700';
+  var h='<div onclick="if(event.target===this)cgBrief(\'\')" style="position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow:auto">'
+    +'<div id="cg-brief" style="background:#fff;border-radius:18px;max-width:760px;width:100%;padding:16px 18px;box-shadow:0 20px 50px rgba(0,0,0,.25)">';
+  h+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><b style="font-size:18px">📞 '+esc2(st.name)+'</b><span style="'+sub+'">'+esc2([String(st.grade||'').replace('학교 ',''), st.school||'', st.group||''].filter(Boolean).join(' · '))+' · 상담 전 브리핑 · 원장님만</span>'
+    +'<button type="button" onclick="window.print()" style="margin-left:auto;border:0;border-radius:9px;padding:6px 10px;font-weight:900;background:#e2e8f0;cursor:pointer;font-family:inherit">🖨 인쇄</button><button type="button" onclick="cgBrief(\'\')" style="border:0;background:transparent;font-size:18px;cursor:pointer">✕</button></div>';
+  if(G && (+G.me.n||0)>=G.nMed){
+    h+='<div class="cg-dont" style="background:#fff1f2;border:2px solid #fda4af;border-radius:12px;padding:10px 13px;margin:6px 0 10px;color:#9f1239;font-weight:800;line-height:1.6">⚠ «공부량이 적다»고 말하지 마세요 — 레이스 '+(+G.me.n||0).toLocaleString()+'문항, 학년 '+G.size+'명 중 '+G.nRank+'위(중앙값 이상)입니다.'
+      +((+G.me.rate||0)<75?'<br>✅ 대신: «양은 충분해요. 정답률이 '+G.me.rate+'%라 <b>푸는 방법</b>(오답 다시 풀기 · 아하노트)을 같이 바꿔 볼게요»':'')+'</div>';
+  } else if(G){
+    h+='<div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-radius:12px;padding:9px 12px;margin:6px 0 10px;color:#075985;font-weight:800;line-height:1.6">ℹ 푼 양은 학년 '+G.size+'명 중 '+G.nRank+'위예요(중앙값 아래). 분량 이야기를 할 때도 숫자로 말해 주세요.</div>';
+  }
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">';
+  h+=tile('📝 레이스 (매쓰플랫)', G?('<b style="font-size:20px">'+(+G.me.n||0).toLocaleString()+'문항</b> <span style="'+sub+'">학년 '+G.size+'명 중 '+G.nRank+'위</span><br><b style="font-size:20px;color:'+((+G.me.rate||0)<70?'#b91c1c':'#0f172a')+'">'+G.me.rate+'%</b> <span style="'+sub+'">정답률 · 학년 '+G.rRank+'위 · 평균 '+G.rAvg+'%</span><div style="'+sub+'">'+esc2((CG.race&&CG.race.from)||'')+' 부터 · '+(+G.me.days||0)+'일 참여</div>'):'<span style="'+sub+'">레이스 기록 없음</span>');
+  h+=tile('📊 최근 2주 정답률 (유형 성취도)', t&&t.rate!=null?('<b style="font-size:20px">'+t.rate+'%</b> <span style="'+sub+'">'+t.n+'문항</span>'+(t.prate!=null?'<div style="'+sub+'">직전 2주 '+t.prate+'% ('+t.pn+'문항)</div>':'')):'<span style="'+sub+'">기록 없음</span>');
+  h+=tile('📓 플래너 (최근 4주)', '<b style="font-size:20px">'+P.n+'일</b> <span style="'+sub+'">/ 28일 제출</span><br><b style="font-size:20px">'+(P.avg!=null?P.avg+'점':'—')+'</b> <span style="'+sub+'">평균 · 마지막 '+(cgPlanLast(st)?cgPlanLast(st).slice(5).replace('-','/'):'없음')+'</span>');
+  h+=tile('🏫 학교 시험 (수학)', sc.length?sc.slice(-3).reverse().map(function(x,i){ return '<div>'+esc2(x.d.slice(0,7).replace('-','.'))+' '+esc2(x.name)+' <b>'+x.score+'점</b>'+(i===0&&sc.length>=2?(' <span style="color:'+(x.score>=sc[sc.length-2].score?'#15803d':'#b91c1c')+';font-weight:900">'+(x.score>=sc[sc.length-2].score?'+':'')+(Math.round((x.score-sc[sc.length-2].score)*10)/10)+'</span>'):'')+'</div>'; }).join('')+(cgNoScore(st)?'<div style="color:#b45309;font-weight:800;margin-top:4px">2학기 시험 기록 없음</div>':''):'<span style="color:#b45309;font-weight:800">학교 성적 기록 없음</span><div style="'+sub+'">시험 › 학교 성적에서 넣어 주세요</div>');
+  h+=tile('📝 주간테스트 최근 3회', wk.length?wk.map(function(x){ return '<div>'+esc2(x.date)+' <b>'+x.score+'점</b></div>'; }).join(''):'<span style="'+sub+'">기록 없음</span>');
+  var sig=[]; try{ sig=riskOf(st)||[]; }catch(e){}
+  h+=tile('🚨 지금 걸린 신호', sig.length?sig.map(function(x){ return '<div style="color:'+(x.sev===2?'#b91c1c':'#b45309')+';font-weight:800">'+(x.sev===2?'🔴 ':'🟡 ')+esc2(x.t)+'</div>'; }).join(''):'<span style="color:#15803d;font-weight:800">없음</span>');
+  h+='</div><div style="'+sub+';margin-top:10px">학생·학부모에게는 보이지 않는 화면이에요. 문자는 자동으로 보내지 않아요.</div>';
+  return h+'</div></div>';
+}
+
+/* ── ② 화면 감싸기 ── */
+window.cgTab=function(k){ CG.tab=k; render(); };
+if(typeof rRisk==='function') rRisk=(function(o){ return function(){
+  cgKick();
+  var wins=[]; try{ wins=cgWins(); }catch(e){}
+  var noSc=0; try{ noSc=getSortedStudents().filter(function(s){ return s&&!s.withdrawn&&cgNoScore(s); }).length; }catch(e){}
+  var tabs='<div class="cg-tabs" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:12px">'
+    +['risk','win'].map(function(k){ var on=CG.tab===k; return '<button type="button" onclick="cgTab(\''+k+'\')" style="border:0;border-radius:10px;padding:8px 14px;font-weight:900;font-family:inherit;cursor:pointer;background:'+(on?'#0d2240':'#fff')+';color:'+(on?'#fff':'#64748b')+'">'+(k==='risk'?'🚨 위험 신호':'🎉 성과 알림 '+wins.length)+'</button>'; }).join('')
+    +'<span style="font-size:12px;color:#64748b;font-weight:800;margin-left:6px">🏫 2학기 학교 성적 기록 없는 중·고생 <b style="color:#b45309">'+noSc+'명</b></span>'
+    +'<span style="margin-left:auto;font-size:11px;color:#94a3b8;font-weight:700">원장님 전용 · 자동 문자 없음'+(CG.busy?' · 🔄 레이스·플래너 순위 불러오는 중':'')+'</span></div>';
+  var h;
+  if(CG.tab==='win') h='<div style="padding:18px 22px 60px;background:#eef2f8;min-height:100%"><div style="font-size:21px;font-weight:900;color:#0d2240;margin-bottom:10px">🎉 성과 알림</div>'+tabs+cgWinsPage()+'</div>';
+  else {
+    h=o.apply(this, arguments);
+    var a='<div style="padding:18px 22px 60px;background:#eef2f8;min-height:100%">';
+    if(h.indexOf(a)===0){ var e=h.indexOf('</div></div>', a.length); if(e>0) h=h.slice(0,e+12)+tabs+h.slice(e+12); else h=a+tabs+h.slice(a.length); }
+    /* 학생 카드 이름 뒤 📞 브리핑 */
+    getSortedStudents().forEach(function(s){ if(!s||!s.name) return; var k='<b style="font-size:15px;color:#0d2240">'+esc2(s.name)+'</b>'; if(h.indexOf(k)>=0) h=h.split(k).join(k+'<button type="button" class="cg-bb" onclick="event.stopPropagation();cgBrief(\''+esc2(s.id)+'\')" style="border:0;border-radius:8px;padding:3px 8px;margin-left:4px;font-size:11px;font-weight:900;background:#0d2240;color:#fff;cursor:pointer;font-family:inherit">📞 브리핑</button>'); });
+    h=h.replace('기준 — 채점 끊김','기준 — 🆕 정답률 저하: 최근 2주 15문항 이상 70% 미만(🔴) · 🆕 플래너 끊김: 7일 넘게 없음(🔴) · 🆕 많이 푸는데 많이 틀림: 레이스 같은 학년 4명 이상에서 푼 문항 중앙값 이상 · 정답률 하위 25% · 🆕 주간 점수 0: 이번 달 주간계획·순공 0점 · 채점 끊김');
+  }
+  if(CG.brief){ var st=getSortedStudents().filter(function(s){ return s&&s.id===CG.brief; })[0]; if(st){ try{ h+=cgBriefHtml(st); }catch(e){ console.error(e); } } else CG.brief=''; }
+  return h;
+}; })(rRisk);
+
+/* ── ⑤ 홈 한 줄 ── */
+if(typeof rHomeRisk==='function') rHomeRisk=(function(o){ return function(){
+  var h=o.apply(this, arguments);
+  try{
+    cgKick();
+    var n=getSortedStudents().filter(function(s){ return s&&s.lumen_rec_code&&!s.withdrawn; }).filter(function(s){ return (riskOf(s)||[]).some(function(x){ return x.sev===2; }); }).length, w=cgWins().length;
+    h='<div class="cg-home" onclick="VIEW=\'risk\';CG.tab=\'risk\';render()" style="cursor:pointer;margin-top:16px;background:#0d2240;color:#fff;border-radius:14px;padding:11px 16px;display:flex;gap:14px;align-items:center;font-weight:900;flex-wrap:wrap">🚨 이번 주 챙길 학생 <span style="color:#fca5a5;font-size:18px">'+n+'</span><span onclick="event.stopPropagation();VIEW=\'risk\';CG.tab=\'win\';render()">🎉 축하할 학생 <span style="color:#facc15;font-size:18px">'+w+'</span></span><span style="margin-left:auto;font-size:11px;opacity:.7">원장님만 보는 화면 ›</span></div>'+h;
+  }catch(e){}
+  return h;
+}; })(rHomeRisk);
+
+/* ═══════════════════════════════════════════════════════════════════
+ * v19-35~202: 📚 기출 분석 + 🎯 시험 대비 — 기준을 «수학비서 기출 DB»로 (docs/exam_prep_contract.md §8)
  * 원장 결정 2026-09-23: 「단원·유형 기준은 수학비서. 이미지 넣어도 된다. 매쓰플랫 접속은 새벽에만. 옥길중부터」
  *
  *  자료 세 겹

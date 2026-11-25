@@ -8,7 +8,8 @@
  *   문항 담기      POST /bms/api/v1/my-papers/{id}/cells?action=add&curriculumId=2  {cellIds:[…], afterNumber:0} → 204
  *                  (cellIds = 나만의 DB cells 의 id. 보낸 순서대로 1번부터 들어간다 — 실측)
  *   폴더 옮기기    POST /bms/api/v1/my-papers?action=move&targetPaperIds=…&targetFolderId=… → 204
- *   (그 밖: 복제 action=duplicate · 지우기 DELETE /my-papers?targetPaperIds= · 이름 PATCH /my-papers/{id})
+ *   이름 바꾸기    PATCH /bms/api/v1/my-papers/{id}  {action:'rename', title} → 204  ({title} 만 보내면 400 — 2026-11-21 실측)
+ *   (그 밖: 복제 action=duplicate · 지우기 DELETE /my-papers?targetPaperIds=)
  *   ⚠️ 이렇게 새로 만든 문제지는 cells 를 읽을 때 curriculumId=2 를 붙여야 한다(없으면 400).
  *
  * 쓰는 법
