@@ -285,6 +285,23 @@ function v3PromptEdit(lines, expectedDate) {
   }
   return out;
 }
+/* 2026-11-26 (학원앱 v19-204 와 짝): AI가 연도만 1년 틀리게 읽으면(학생이 연도를 안 쓰거나 작게 씀) 제출 연도로 고친다.
+ * 연도를 맞췄을 때 예상 날짜와 3일 안일 때만. 고치면 analysis.yearFixed = '2025→2026'. (11/16 «2025.11.16» → 365일 지각 · 0점 사고) */
+function yearFix(analysis, expectedDate) {
+  if (!analysis || !analysis.date) return false;
+  const re = /(\d{4})[.\-\/]\s*(\d{1,2})[.\-\/]\s*(\d{1,2})/;
+  const a = String(analysis.date).match(re); let e = String(expectedDate || '').match(re);
+  if (!e) { const m = String(expectedDate || '').match(/^(\d{4})(\d{2})(\d{2})/); if (m) e = m; }
+  if (!a || !e) return false;
+  const ay = +a[1], ey = +e[1]; if (Math.abs(ay - ey) !== 1) return false;
+  if (Math.abs(Date.UTC(ey, +a[2] - 1, +a[3]) - Date.UTC(ey, +e[2] - 1, +e[3])) > 3 * 86400000) return false;
+  const pad = (n) => (n < 10 ? '0' : '') + n;
+  analysis.date = ey + '.' + pad(+a[2]) + '.' + pad(+a[3]);
+  const n = String(analysis.dateNext || '').match(re);
+  if (n && +n[1] === ay) analysis.dateNext = (+n[1] + (ey - ay)) + '.' + pad(+n[2]) + '.' + pad(+n[3]);
+  analysis.yearFixed = ay + '→' + ey;
+  return true;
+}
 function v3Apply(analysis, expectedDate, cfg, rv) {
   const dk = dateKey(analysis.date) || dateKey(expectedDate);
   if (!dk || dk < START) return analysis;
@@ -466,6 +483,7 @@ async function main() {
       analysis.aiProvider = 'routine';
       analysis.analyzedAt = new Date().toISOString();
       analysis.promptVersion = 'v2.1';
+      if (yearFix(analysis, expectedDate)) log(code, set.id, '날짜 연도 고침', analysis.yearFixed);
       v3Apply(analysis, expectedDate, cfg, rulesV);
       try { plzCheck((db || []).find((x) => x && x.lumen_rec_code === code), analysis, set.id); } catch (e) { log(code, set.id, '날짜·중복 검사 실패(채점은 유지):', e.message); }   /* v19-66 짝 */
       if (analysis.dateNext === undefined || analysis.dateNext === null) analysis.dateNext = '';
@@ -499,5 +517,5 @@ function plExpectedDate(id) {
   if (m[4] !== undefined && (+m[4] * 100 + +m[5]) < 300) d.setUTCDate(d.getUTCDate() - 1);
   return d.toISOString().slice(0, 10).replace(/-/g, '.');
 }
-module.exports = { plExpectedDate, main, groupSets, buildPrompt, codiPromptLines, codiCoachSave, v3PromptEdit, v3Apply, planLines, plzCheck, plzTextSim };
+module.exports = { plExpectedDate, yearFix, main, groupSets, buildPrompt, codiPromptLines, codiCoachSave, v3PromptEdit, v3Apply, planLines, plzCheck, plzTextSim };
 if (require.main === module) main().catch((e) => { console.error('❌', e.message); process.exit(1); });
