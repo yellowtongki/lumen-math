@@ -10,6 +10,7 @@
  *   ① 멈춤: 서버 lumen_store «mf_login_guard».blockedUntil 이 지나지 않았으면 로그인하지 않고 바로 실패(code MF_PAUSED)
  *   ② 같이 쓰기: 최근 REUSE_MS(2분) 안에 받은 열쇠(토큰)가 있으면 새로 로그인하지 않고 그 답을 돌려준다
  *   ③ 간격: 마지막 로그인 뒤 GAP_MS(60초)가 안 지났으면 기다렸다가 한다(최대 90초)
+ *   ⓪ 브라우저 표시: mathflat.com 으로 가는 요청에 user-agent 가 없으면 채운다(없으면 WAF 가 전부 403 으로 막는다)
  *   ④ 차단 기록: 로그인 답이 WAF_BLOCKED · CAPTCHA_REQUIRED 면 blockedUntil = 지금 + PAUSE_MS(3시간) 을 남긴다
  *      → 다른 작업들도 그 시간 동안 로그인하지 않는다. 사람이 풀었으면 `node sync/mf_login_guard.js --clear`
  *   서버(SUPABASE_URL·SUPABASE_SERVICE_KEY)가 없으면 아무것도 안 하고 그대로 통과한다.
@@ -27,6 +28,7 @@ const GAP_MS = Number(process.env.MFG_GAP_MS || 60000);
 const PAUSE_MS = Number(process.env.MFG_PAUSE_MS || 3 * 3600000);
 const MAX_WAIT = 90000;
 const BLOCK_CODES = ['WAF_BLOCKED', 'CAPTCHA_REQUIRED'];
+const UA = process.env.MFG_UA || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
 function make(realFetch, opts) {
   opts = opts || {};
@@ -60,7 +62,29 @@ function make(realFetch, opts) {
     const m = String((init && init.method) || (url && url.method) || 'GET').toUpperCase();
     return m === 'POST' && /mathflat\.com\/v2\/login(\?|$)/.test(u);
   }
+  /* 브라우저 표시(user-agent) 붙이기 — 2026-11-27 실측:
+   * 매쓰플랫 WAF 는 user-agent 가 없는 요청을 주소 가리지 않고 403 WAF_BLOCKED 로 막는다.
+   *   헤더 없이 /curriculums/core  → 403 WAF_BLOCKED
+   *   user-agent 만 붙이면        → 401 invalid_token (= WAF 를 지나 서버가 정상 응답)
+   * 맨 처음 만든 sync/mathflat_login_http.js 는 원래 이 표시를 보내고 있었고,
+   * 뒤에 만든 스크립트 22개가 빠뜨렸다. 여기서 한 번에 채워 준다(이미 있으면 건드리지 않는다). */
+  function withUA(url, init) {
+    const u = String((url && url.url) || url || '');
+    if (!/\bmathflat\.com\b/.test(u)) return init;
+    const has = (h) => {
+      if (!h) return false;
+      if (typeof h.get === 'function') return !!h.get('user-agent');
+      if (Array.isArray(h)) return h.some((kv) => String(kv[0]).toLowerCase() === 'user-agent');
+      return Object.keys(h).some((k) => k.toLowerCase() === 'user-agent');
+    };
+    const h = init && init.headers;
+    if (has(h)) return init;
+    if (h && typeof h.set === 'function') { h.set('user-agent', UA); return init; }
+    if (Array.isArray(h)) return Object.assign({}, init, { headers: h.concat([['user-agent', UA]]) });
+    return Object.assign({}, init || {}, { headers: Object.assign({}, h || {}, { 'user-agent': UA }) });
+  }
   async function guarded(url, init) {
+    init = withUA(url, init);
     if (!SB || !SK || process.env.MFG_OFF === '1' || !isLogin(url, init)) return realFetch(url, init);
     let st = await read(); const t = now();
     if (st.blockedUntil && Date.parse(st.blockedUntil) > t) {
