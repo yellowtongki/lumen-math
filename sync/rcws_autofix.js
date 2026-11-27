@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+try { require('./mf_login_guard.js'); } catch (e) {}   /* 🛡 매쓰플랫 로그인 줄이기 (2026-11-27) */
 /* 🧩 리커버리 학습지 «자동채점» 고치기 (2026-11-13 원장 「리커버리 학습지 매쓰플랫에서 자동채점으로 되어 있나? 안 되어 있으면 수정」)
  *
  * 배경: 매쓰플랫 학습지의 «자동 채점» 표시(autoScorableFlag)는 학습지를 만들 때 쓴 필터의 onlyAutoScorable 값이다.

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+try { require('./mf_login_guard.js'); } catch (e) {}   /* 🛡 매쓰플랫 로그인 줄이기 (2026-11-27) */
 /**
  * 시그니처 교재 PDF 내려받기
  *
