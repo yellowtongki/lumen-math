@@ -37,6 +37,7 @@ const D=Object.assign({
   line:'공통수학1·2 완성',
   dateLab:'수업 기간', dates:['11.19','2.26'], dateTail:'11월 19일 목요일 개강',
   footL:'부천 옥길동 수학학원 루멘수학', footR:'네이버 톡톡 상담',
+  badge:'', steps:[], bgPos:'center', note:'',
 }, fs.existsSync(path.join(dir,'hero.json')) ? JSON.parse(fs.readFileSync(path.join(dir,'hero.json'),'utf8')) : {});
 const BG='file://'+path.join(dir,D.bg);
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
@@ -49,7 +50,7 @@ ${FONT}
 html,body{width:1080px;height:1350px;overflow:hidden}
 body{font-family:'Pretendard',sans-serif;background:#140707;-webkit-font-smoothing:antialiased}
 .w{position:absolute;inset:0;overflow:hidden}
-.ph{position:absolute;inset:0;background:url('${BG}') center/cover no-repeat;filter:brightness(.80) saturate(1.05)}
+.ph{position:absolute;inset:0;background:url('${BG}') ${D.bgPos}/cover no-repeat;filter:brightness(.80) saturate(1.05)}
 .scrimL{position:absolute;inset:0;background:linear-gradient(104deg,rgba(26,6,6,.95) 0%,rgba(28,8,8,.86) 46%,rgba(28,8,8,.40) 72%,rgba(28,8,8,.14) 100%)}
 .scrimB{position:absolute;left:0;right:0;bottom:0;height:560px;background:linear-gradient(180deg,transparent,rgba(14,4,4,.92))}
 .scrimT{position:absolute;left:0;right:0;top:0;height:320px;background:linear-gradient(180deg,rgba(14,4,4,.80),transparent)}
@@ -89,18 +90,37 @@ body{font-family:'Pretendard',sans-serif;background:#140707;-webkit-font-smoothi
 .what{margin-top:16px;position:relative;z-index:2;display:flex;flex-direction:column;gap:8px}
 .wl{font-size:86px;line-height:1.1}
 
+/* 3-1. 붉은 띠 — 마감·신설 같은 한 마디 */
+.badge{align-self:flex-start;margin-top:26px;position:relative;z-index:3;
+ background:linear-gradient(180deg,#d8333d,#a8141d);color:#fff;font-weight:800;font-size:46px;
+ letter-spacing:-.02em;padding:16px 34px;border-radius:14px;
+ box-shadow:0 14px 34px rgba(190,30,40,.44), inset 0 2px 0 rgba(255,255,255,.22)}
+
+/* 3-2. 수업 흐름 */
+.note{margin-top:32px;align-self:flex-start;position:relative;z-index:3;display:flex;align-items:baseline;gap:16px;
+ background:rgba(255,255,255,.09);border:2.5px solid rgba(255,214,150,.44);border-radius:18px;padding:16px 30px}
+.note i{font-style:normal;font-weight:800;font-size:40px;color:#ffcf6b}
+.note b{font-weight:800;font-size:56px;color:#fff6ea;letter-spacing:-.03em}
+.steps{margin-top:36px;position:relative;z-index:3;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:14px}
+.step b{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+ background:linear-gradient(180deg,#ffe488,#f0ad12);color:#1a0707;font-weight:800;font-size:36px}
+.step span{font-weight:800;font-size:48px;color:#fff6ea;letter-spacing:-.03em;
+ text-shadow:0 5px 0 #2b0d0d,0 10px 22px rgba(0,0,0,.8)}
+.arw{font-weight:800;font-size:44px;color:#ffcf6b;opacity:.9}
+
 /* 4. 개강일 — 오른쪽, 크게 */
-.date{margin-top:auto;position:relative;z-index:3;align-self:flex-end;text-align:right}
+.date{margin-top:52px;position:relative;z-index:3;align-self:flex-end;text-align:right}
 .date:before{content:"";position:absolute;right:-70px;bottom:-40px;width:760px;height:330px;
  background:radial-gradient(ellipse at 72% 60%,rgba(14,4,4,.88),transparent 70%);z-index:-1}
-.date .lab{font-weight:800;font-size:52px;letter-spacing:.10em;color:#ffcf6b;text-shadow:0 4px 16px rgba(0,0,0,.9)}
+.date .lab{font-weight:800;font-size:58px;letter-spacing:.10em;color:#ffcf6b;text-shadow:0 4px 16px rgba(0,0,0,.9)}
 .date .row{display:flex;align-items:baseline;justify-content:flex-end;gap:18px;margin-top:2px}
-.dnum{font-size:130px;line-height:.98;letter-spacing:-.05em}
+.dnum{font-size:160px;line-height:.98;letter-spacing:-.05em}
 .dash{font-weight:800;font-size:92px;color:#ffcf6b;text-shadow:0 5px 0 #2b0d0d,0 10px 22px rgba(0,0,0,.85)}
-.dtail{margin-top:10px;font-weight:800;font-size:44px;color:#fff1e0;text-shadow:0 4px 16px rgba(0,0,0,.9)}
+.dtail{margin-top:10px;font-weight:800;font-size:46px;color:#fff1e0;text-shadow:0 4px 16px rgba(0,0,0,.9)}
 
 /* 5. 꼬리말 */
-.foot{margin-top:40px;position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;
+.foot{margin-top:auto;position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;
  border-top:3px solid rgba(255,214,150,.26);padding-top:28px}
 .fl{font-weight:800;font-size:44px;color:#fff1e0;letter-spacing:-.02em}
 .fr{font-weight:700;font-size:34px;color:rgba(255,226,196,.72)}
@@ -115,6 +135,13 @@ body{font-family:'Pretendard',sans-serif;background:#140707;-webkit-font-smoothi
  </div>`).join('')}
 
  ${D.line?`<div class="what">${t3d('wh wl',D.line)}</div>`:''}
+
+ ${D.badge?`<div class="badge">${esc(D.badge)}</div>`:''}
+
+ ${D.note?`<div class="note"><i>${esc(D.note.lab||'')}</i><b>${esc(D.note.val||D.note)}</b></div>`:''}
+
+ ${D.steps&&D.steps.length?`<div class="steps">${D.steps.map((s,i)=>
+   `${i?'<span class="arw">›</span>':''}<div class="step"><b>${i+1}</b><span>${esc(s)}</span></div>`).join('')}</div>`:''}
 
  <div class="date"><div class="lab">${esc(D.dateLab)}</div>
   <div class="row">${D.dates.map(d=>t3d('gd dnum',d)).join('<span class="dash">—</span>')}</div>
