@@ -2,7 +2,15 @@
 /**
  * sync/card_hero_preview.js — 「표지(hero)」 카드 시안 만들기
  *
- *   node sync/card_hero_preview.js <나올 파일.png>
+ *   node sync/card_hero_preview.js <나올 파일.png> [글 폴더]
+ *
+ * 글 폴더에 hero.json 이 있으면 그 글자로 만든다. 없으면 예비고1 기본값.
+ *   { "bg":"bg_01_desk_night.png",
+ *     "rows":[{"gold":"예비고1","white":"겨울 특강"},{"gold":"15주","white":"만에"}],
+ *     "line":"공통수학1·2 완성",
+ *     "dateLab":"수업 기간", "dates":["11.19","2.26"],
+ *     "dateTail":"11월 19일 목요일 개강",
+ *     "footL":"부천 옥길동 수학학원 루멘수학", "footR":"네이버 톡톡 상담" }
  *
  * 2026-11-17 판 — 네이버 플레이스·당근 홍보에도 그대로 쓰는 표지.
  * 한눈에 들어와야 하는 것 셋만 남겼다: 예비고1 · 개강일 · 루멘수학.
@@ -19,7 +27,20 @@ const ROOT=path.resolve(__dirname,'..'), FD=path.join(ROOT,'sync','_fonts');
 const m={Regular:400,Medium:500,SemiBold:600,Bold:700,ExtraBold:800};
 const FONT=Object.entries(m).map(([w,n])=>`@font-face{font-family:'Pretendard';font-weight:${n};font-display:block;src:url('file://${path.join(FD,'Pretendard-'+w+'.woff2')}') format('woff2')}`).join('\n');
 const LOGO='file://'+path.join(ROOT,'assets','logo.png');
-const BG='file://'+path.join(ROOT,'blog','2026-11-16-prehigh-winter','bg_01_desk_night.png');
+const out=process.argv[2];
+if(!out){console.error('사용법: node sync/card_hero_preview.js <나올 파일.png> [글 폴더]');process.exit(1);}
+const folder=process.argv[3]||'blog/2026-11-16-prehigh-winter';
+const dir=path.resolve(ROOT,folder);
+const D=Object.assign({
+  bg:'bg_01_desk_night.png',
+  rows:[{gold:'예비고1',white:'겨울 특강'},{gold:'15주',white:'만에'}],
+  line:'공통수학1·2 완성',
+  dateLab:'수업 기간', dates:['11.19','2.26'], dateTail:'11월 19일 목요일 개강',
+  footL:'부천 옥길동 수학학원 루멘수학', footR:'네이버 톡톡 상담',
+}, fs.existsSync(path.join(dir,'hero.json')) ? JSON.parse(fs.readFileSync(path.join(dir,'hero.json'),'utf8')) : {});
+const BG='file://'+path.join(dir,D.bg);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const t3d=(cls,s)=>`<span class="t3d ${cls}"><span class="b">${esc(s)}</span><span class="f">${esc(s)}</span></span>`;
 const MJ='file://'+path.join(ROOT,'sync','_vendor','tex-svg.js');
 
 const html=`<!doctype html><html><head><meta charset="utf-8"><style>
@@ -89,35 +110,18 @@ body{font-family:'Pretendard',sans-serif;background:#140707;-webkit-font-smoothi
 <div class="pad">
  <div class="lock"><img src="${LOGO}"><div><b>루멘수학</b><i>부천 옥길동</i></div></div>
 
- <div class="who">
-  <svg class="brush" viewBox="0 0 560 34" preserveAspectRatio="none"><path d="M5 21 C104 7,216 27,320 15 S484 8,556 18 L554 29 C460 19,344 36,218 26 S76 32,7 29 Z" fill="#c0202a"/></svg>
-  <div class="whoRow">
-   <span class="t3d gd big"><span class="b">예비고1</span><span class="f">예비고1</span></span>
-   <span class="season">겨울 특강</span>
-  </div>
+ ${D.rows.map((r,i)=>`<div class="${i?'who2':'who'}">${i?'':'<svg class="brush" viewBox="0 0 560 34" preserveAspectRatio="none"><path d="M5 21 C104 7,216 27,320 15 S484 8,556 18 L554 29 C460 19,344 36,218 26 S76 32,7 29 Z" fill="#c0202a"/></svg>'}
+  <div class="whoRow">${t3d('gd big',r.gold)}${r.white?`<span class="season">${esc(r.white)}</span>`:''}</div>
+ </div>`).join('')}
+
+ ${D.line?`<div class="what">${t3d('wh wl',D.line)}</div>`:''}
+
+ <div class="date"><div class="lab">${esc(D.dateLab)}</div>
+  <div class="row">${D.dates.map(d=>t3d('gd dnum',d)).join('<span class="dash">—</span>')}</div>
+  ${D.dateTail?`<div class="dtail">${esc(D.dateTail)}</div>`:''}
  </div>
 
- <div class="who2">
-  <div class="whoRow">
-   <span class="t3d gd big"><span class="b">15주</span><span class="f">15주</span></span>
-   <span class="season">만에</span>
-  </div>
- </div>
-
- <div class="what">
-  <span class="t3d wh wl"><span class="b">공통수학1·2 완성</span><span class="f">공통수학1·2 완성</span></span>
- </div>
-
- <div class="date"><div class="lab">수업 기간</div>
-  <div class="row">
-   <span class="t3d gd dnum"><span class="b">11.19</span><span class="f">11.19</span></span>
-   <span class="dash">—</span>
-   <span class="t3d gd dnum"><span class="b">2.26</span><span class="f">2.26</span></span>
-  </div>
-  <div class="dtail">11월 19일 목요일 개강</div>
- </div>
-
- <div class="foot"><div class="fl">부천 옥길동 수학학원 루멘수학</div><div class="fr">네이버 톡톡 상담</div></div>
+ <div class="foot"><div class="fl">${esc(D.footL)}</div><div class="fr">${esc(D.footR)}</div></div>
 </div></div>
 <script src="${MJ}"></script>
 <script>
@@ -128,8 +132,6 @@ window.addEventListener('load',()=>{const h=document.getElementById('tex');
   const d=document.createElement('div');d.className='tex';d.style.left=x+'px';d.style.top=y+'px';
   d.appendChild(svg);h.appendChild(d)});window.__ok=1});
 </script></body></html>`;
-const out=process.argv[2];
-if(!out){console.error('사용법: node sync/card_hero_preview.js <나올 파일.png>');process.exit(1);}
 fs.mkdirSync(path.dirname(path.resolve(out)),{recursive:true});
 fs.writeFileSync(out.replace(/\.png$/,'.html'),html);
 (async()=>{const {chromium}=require('playwright');
