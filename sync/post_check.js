@@ -71,6 +71,8 @@ const slotMissing = slotFiles.filter(f => !pngs.includes(f));
 const vague = body.match(/오늘 오전|오늘 오후(?!에는 그 앞)|며칠 전|얼마 전/g) || [];
 // 진도 레이스와 부딪히는 문장 (2026-10-18 원장 지적) — 프로필 5-1-2
 const antiVolume = /많이 푸는 것보다/.test(body);
+// 한 반의 자랑으로 쓰면 「다른 수업은 안 그런다」가 된다 (2026-11-28 원장 지적) — 프로필 5-1-3
+const antiOnlyUs = /그날 배운 것은 그날|모르는 채로 넘어가지/.test(body);
 // 카드에서 「밖으로 나가는 글자」만 모은다 (_메모·파일 이름은 내부용이라 검사에서 뺀다)
 // note 는 카드에 찍히는 글자다. 단 external(밖에서 받은 PNG)에서는 내부 메모라 뺀다
 const skipKey = (card, k) => k.startsWith('_') || ['type', 'file', 'bg'].includes(k)
@@ -121,6 +123,9 @@ const checks = [
   ['주소 — 지도나 주소 한 줄 중 하나', hasMap || hasAddr,
     hasMap ? '지도 카드에 주소가 들어감' : (hasAddr ? '본문 끝 주소 한 줄' : '지도를 넣거나 맨 끝에 주소를 적으세요')],
   ['■ 기호는 첫 소제목 하나만', sq <= 1, `${sq}개`],
+  ['「그날 배운 것은 그날」류를 반 자랑으로 쓰지 않음', true,
+    antiOnlyUs ? '⚠️ 찾았습니다' : '',
+    antiOnlyUs ? '한 반의 특징으로 쓰면 다른 수업은 안 그런다는 뜻이 됩니다. 그 반에만 있는 진짜 차이를 쓰세요 (프로필 5-1-3)' : ''],
   ['「많이 푸는 것보다」를 쓰지 않음', true,
     antiVolume ? '⚠️ 찾았습니다' : '',
     antiVolume ? '진도 레이스와 부딪힙니다. 「푼 문제를 다시 맞힐 수 있을 때, 많이 푼 것이 점수가 됩니다」로 바꾸세요 (프로필 5-1-2)' : ''],
