@@ -784,6 +784,9 @@ iframe.rep{width:100%;height:calc(100vh - 130px);border:none;background:#f0f4f8}
 .p41next{margin-top:10px;background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:12px;padding:8px 11px;font-size:12.5px;color:#475569}.p41next b{color:#0f172a}
 .p41today{background:#0f172a;color:#fff;font-size:12.5px;font-weight:800;padding:8px 15px}.p41today span{background:#facc15;color:#0f172a;border-radius:99px;padding:1px 8px;margin:0 2px}
 .p41dim .p41row,.p41dim .p41stg,.p41dim .p41leg{opacity:.55}
+/* v1-42: 홈 성적 추이 카드 · 더보기 칸 높이 맞춤 */
+.p42trend .p40card{margin:0;border:2px solid #fed7aa;background:linear-gradient(135deg,#fff,#fff7ed);box-shadow:0 3px 12px rgba(13,34,64,.05)}
+.p35more .grid button{min-height:104px;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -809,7 +812,7 @@ function db(){ if(!sb && window.supabase) sb = window.supabase.createClient(SUPA
 
 /* ★ v1-29: 화면에 보이는 버전을 한 곳(PAR_VER)에서만 가져온다.
  * 예전에는 <title>에 손으로 적어 두어 v1-18에 멈춰 있었다. */
-var PAR_VER = 'v1-41';
+var PAR_VER = 'v1-42';
 window.PAR_VER = PAR_VER;
 try{ document.title = '루멘수학 학부모 ' + PAR_VER; }catch(e){}
 
@@ -1550,6 +1553,7 @@ var RCT={bronze:['브론즈','#a16207','linear-gradient(135deg,#d9a441,#9a6b21)'
          master:['마스터','#7c3aed','linear-gradient(135deg,#e9d5ff,#a855f7)']};
 function rcpN(v){ return String(v==null?0:v).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
 function vRace(top){
+  var atTop=(top!==false);   /* v1-42: 아래 «var top=…showTop» 이 매개변수를 덮어써 더보기에서도 맨 위 걸치기가 켜졌다 */
   var b=P.race; if(!b||b.open===false) return '';
   var today=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
   if(today<b.from) return '';
@@ -1569,7 +1573,7 @@ function vRace(top){
   var top=Number(b.showTop)||5;
   // v1-26: 기본은 접어 둔다 — 홈이 너무 길어지지 않게 (원장님 지시 2026-08-27)
   var open = !!P.raceOpen;
-  var h='<div class="rcp'+(top===false?'':' top')+(open?' open':'')+'">';
+  var h='<div class="rcp'+(atTop?' top':'')+(open?' open':'')+'">';
   h+='<div class="rhd" onclick="toggleRace()"><div class="t">🏁 '+esc(b.name||'진도 레이스')+'</div>'
     +'<div class="d">'+(ended?'최종 결과':(left>0?('D-'+left):'오늘 마감'))+'</div><div class="ch">⌄</div></div>';
   // 접혀 있을 때 한 줄 요약 — 눌러야 할 이유를 준다
@@ -3367,6 +3371,7 @@ function vHome(){
   h+='<div class="p35two">'+p35Box('plan')+p35Box('rec')+'</div>';
   h+=p35HwCard();
   h+=p35RepCard();
+  try{ var tr42=p40Card(); if(tr42) h+='<div class="p42trend">'+tr42+'</div>'; }catch(e){}   /* v1-42: 📈 성적 추이 바로가기 (A안) */
   h+='</div>';
   h+=p35BellSheet();
   return h;
@@ -3379,8 +3384,8 @@ function vMore(){
   h+='<div class="p35more"><div class="grid">';
   h+='<button onclick="goTab(\'roadmap\')"><span>🗺️</span><b>로드맵</b><small>교재 여정 · 진도</small></button>';
   h+='<button onclick="goTab(\'planner\')"><span>📓</span><b>플래너 기록</b><small>점수 · 순공 시간</small></button>';
-  h+='<button onclick="goTab(\'rec\')"><span>🎙️</span><b>녹음 제출 기록</b><small>하브루타</small></button>';
-  h+='<button onclick="goTab(\'score\')"><span>🧭</span><b>진학 나침반</b><small>성적 탭 안</small></button>';
+  h+='<button onclick="goTab(\'rec\')"><span>🎙️</span><b>녹음 제출 기록</b><small>제출 날짜 · 선생님 한마디</small></button>';
+  h+='<button onclick="goTab(\'score\')"><span>🧭</span><b>진학 나침반</b><small>예상 내신 등급</small></button>';
   h+='</div></div>';
   var race=vRace(false); if(race) h+=race;
   var blk=vBlack(false); if(blk) h+=blk;
